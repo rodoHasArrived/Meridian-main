@@ -12,8 +12,7 @@ async function main() {
   if (!trackerOnly) {
     const rendered = await generateUiDiagrams({ repoRoot, renderAll });
 
-    // Diagrams are emitted to both docs/diagrams/ and docs/diagrams/ui/, so log
-    // repo-relative paths — basenames alone render the two copies identically.
+    // Log repo-relative paths so the output names the exact committed artifact.
     for (const item of rendered) {
       const suffix = item.svgChanged ? 'svg updated' : 'svg unchanged';
       const from = path.relative(repoRoot, item.dotPath).replaceAll(path.sep, '/');

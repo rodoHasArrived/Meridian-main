@@ -141,6 +141,10 @@ Use this module for deterministic business-rule kernels shared by strategy, trad
 - Stream-oriented helpers should receive ordered, bounded inputs. Page large storage/backfill batches before crossing into F#, and keep `mergeStreams` / `bufferByTime` on timestamp-ordered streams so they can avoid whole-batch sorting and grouping.
 - Sensitive-action policy evaluates explicit guardrails such as MFA, dual approval, privileged roles, and segregation-of-duties before C# services write audit or workflow state.
 
+## Audit hardening (2026-11)
+
+- **Position limit unwinds.** `RiskRules.positionLimit` always approves an order that shrinks a position on the same side of zero, or flattens it, even when the position is already over the limit. An order that crosses zero must still land within the limit.
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.

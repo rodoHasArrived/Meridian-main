@@ -52,9 +52,10 @@ public sealed class PortfolioMarginModel : IMarginModel
     {
         ArgumentNullException.ThrowIfNull(position);
 
-        var notional = position.Quantity * lastPrice;
-        var stressedUp = position.Quantity * (lastPrice * (1m + _stressUpPercent));
-        var stressedDown = position.Quantity * (lastPrice * (1m - _stressDownPercent));
+        var quantity = position.ExactQuantity;
+        var notional = quantity * lastPrice;
+        var stressedUp = quantity * (lastPrice * (1m + _stressUpPercent));
+        var stressedDown = quantity * (lastPrice * (1m - _stressDownPercent));
 
         // Initial margin = maximum loss under any stress scenario
         var maxLoss = Math.Max(notional - stressedUp, notional - stressedDown);
@@ -83,29 +84,32 @@ public sealed class PortfolioMarginModel : IMarginModel
         var totalNotional = 0m;
         var totalInitialMargin = 0m;
         var totalMaintenanceMargin = 0m;
-        var longMarketValue = 0m;
+
+        MarginPricing.ThrowIfAnyUnpriced(positions, prices);
 
         foreach (var (symbol, position) in positions)
         {
-            if (!prices.TryGetValue(symbol, out var price))
+            var quantity = position.ExactQuantity;
+            if (quantity == 0m)
                 continue;
 
-            var notional = position.Quantity * price;
+            var price = prices[symbol];
+            var notional = quantity * price;
             totalNotional += notional;
 
-            var stressedUp = position.Quantity * (price * (1m + _stressUpPercent));
-            var stressedDown = position.Quantity * (price * (1m - _stressDownPercent));
+            var stressedUp = quantity * (price * (1m + _stressUpPercent));
+            var stressedDown = quantity * (price * (1m - _stressDownPercent));
             var maxLoss = Math.Max(notional - stressedUp, notional - stressedDown);
             maxLoss = Math.Max(maxLoss, 0m);
 
             totalInitialMargin += maxLoss;
             totalMaintenanceMargin += maxLoss * 0.80m;
-
-            if (!position.IsShort)
-                longMarketValue += notional;
         }
 
-        var portfolioEquity = longMarketValue + cash;
+        // Net equity = long MV − short MV + cash. The signed notionals already carry each
+        // short as a negative market value (the liability to buy the shares back); counting
+        // only longs would overstate equity by the full short value and hide margin calls.
+        var portfolioEquity = totalNotional + cash;
 
         return new MarginRequirement(
             Symbol: null,

@@ -20,6 +20,8 @@ public sealed class CashFlowExerciseChoiceViewModel : BindableBase
     private bool _include;
     private string _exerciseDate;
     private string _amount = string.Empty;
+    private string _noticeEvidenceId = string.Empty;
+    private string _noticeDate = string.Empty;
 
     public CashFlowExerciseChoiceViewModel(CashFlowExerciseEligibility entry, Action onChanged)
     {
@@ -37,6 +39,10 @@ public sealed class CashFlowExerciseChoiceViewModel : BindableBase
     public bool Include { get => _include; set { if (SetProperty(ref _include, value)) OnChanged(); } }
     public string ExerciseDate { get => _exerciseDate; set { if (SetProperty(ref _exerciseDate, value ?? string.Empty)) OnChanged(); } }
     public string Amount { get => _amount; set { if (SetProperty(ref _amount, value ?? string.Empty)) OnChanged(); } }
+    /// <summary>Date the notice was (or would be) given, yyyy-MM-dd; blank means the exercise date itself.</summary>
+    public string NoticeDate { get => _noticeDate; set { if (SetProperty(ref _noticeDate, value ?? string.Empty)) OnChanged(); } }
+    /// <summary>Identity of an approved exercise notice; when set the exercise is retained rather than hypothetical.</summary>
+    public string NoticeEvidenceId { get => _noticeEvidenceId; set { if (SetProperty(ref _noticeEvidenceId, value ?? string.Empty)) OnChanged(); } }
 }
 
 /// <summary>Exact server decimals for one projected event; nothing is recomputed on the desktop.</summary>
@@ -79,9 +85,23 @@ public sealed class ContractualCashFlowScenarioViewModel : BindableBase
     private string _runIdText = string.Empty;
     private ContractualCashFlowRun? _loadedRun;
     private string _replayStatus = string.Empty;
+    private string _compareRunIdText = string.Empty;
+    private ContractualCashFlowRunComparison? _comparison;
 
     public ContractualCashFlowScenarioViewModel(IWorkstationContractualCashFlowApiClient client, string subjectKind, Guid subjectId, string subjectLabel)
     {
+        CashDeltasTable = new WorkstationTableModel<CashFlowDateDelta>(
+            CashDeltas,
+            [
+                new("Date", nameof(CashFlowDateDelta.Date), 95, "{0:yyyy-MM-dd}"),
+                new("Stream", nameof(CashFlowDateDelta.StreamId), 110),
+                new("First run", nameof(CashFlowDateDelta.LeftNetCash), 120),
+                new("Second run", nameof(CashFlowDateDelta.RightNetCash), 120),
+                new("Delta", nameof(CashFlowDateDelta.Delta), 120)
+            ],
+            "Net cash deltas by date",
+            "No net cash differences",
+            "Compare two retained runs of this subject to list dated net cash differences.");
         EventsTable = new WorkstationTableModel<CashFlowEventRow>(
             Events,
             [
@@ -109,6 +129,7 @@ public sealed class ContractualCashFlowScenarioViewModel : BindableBase
         RetainRunCommand = new AsyncRelayCommand(RetainRunAsync, () => CanRetain);
         LoadRunCommand = new AsyncRelayCommand(LoadRunAsync, () => !IsBusy && Guid.TryParse(RunIdText, out _));
         VerifyReplayCommand = new AsyncRelayCommand(VerifyReplayAsync, () => !IsBusy && _loadedRun is not null);
+        CompareRunsCommand = new AsyncRelayCommand(CompareRunsAsync, () => !IsBusy && _loadedRun is not null && Guid.TryParse(CompareRunIdText, out _));
     }
 
     public string SubjectKind { get; }
@@ -127,6 +148,11 @@ public sealed class ContractualCashFlowScenarioViewModel : BindableBase
     public IAsyncRelayCommand RetainRunCommand { get; }
     public IAsyncRelayCommand LoadRunCommand { get; }
     public IAsyncRelayCommand VerifyReplayCommand { get; }
+    public IAsyncRelayCommand CompareRunsCommand { get; }
+    public ObservableCollection<CashFlowDateDelta> CashDeltas { get; } = new();
+    /// <summary>Dense-table projection of <see cref="CashDeltas"/> for the workstation grid control.</summary>
+    public WorkstationTableModel<CashFlowDateDelta> CashDeltasTable { get; }
+    public ObservableCollection<string> BlockerDeltas { get; } = new();
 
     public DateTime ValuationDate { get => _valuationDate; set => Edit(ref _valuationDate, value); }
     public string KnowledgeCutoff { get => _knowledgeCutoff; set => Edit(ref _knowledgeCutoff, value ?? string.Empty); }
@@ -151,6 +177,11 @@ public sealed class ContractualCashFlowScenarioViewModel : BindableBase
     public ContractualCashFlowRun? LoadedRun => _loadedRun;
     public Guid PendingRunId => _runId;
     public string ReplayStatusText { get => _replayStatus; private set => SetProperty(ref _replayStatus, value); }
+    public string CompareRunIdText { get => _compareRunIdText; set { if (SetProperty(ref _compareRunIdText, value ?? string.Empty)) CompareRunsCommand.NotifyCanExecuteChanged(); } }
+    public ContractualCashFlowRunComparison? Comparison => _comparison;
+    public string ComparisonText => _comparison is { } c
+        ? $"{c.LeftRunId:D} ({(c.LeftReplayVerified ? "replay verified" : "REPLAY FAILED")}) vs {c.RightRunId:D} ({(c.RightReplayVerified ? "replay verified" : "REPLAY FAILED")}) · {(c.SameRequest ? "same request" : "different requests")} · total net cash delta {CashFlowEventRow.Exact(c.TotalDelta)}"
+        : string.Empty;
 
     public string EvidenceText => _result?.Evidence is { } e
         ? $"{e.EngineVersion} · input {e.InputHash} · output {e.OutputHash} · source terms {e.SourceTermsHash} (v{e.SourceVersion})" + (e.Warnings.Count > 0 ? $" · warnings: {string.Join("; ", e.Warnings)}" : string.Empty)
@@ -174,7 +205,14 @@ public sealed class ContractualCashFlowScenarioViewModel : BindableBase
             if (!DateOnly.TryParseExact(choice.ExerciseDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var exerciseDate)
                 || !decimal.TryParse(choice.Amount, NumberStyles.Number, CultureInfo.InvariantCulture, out var amount))
             { refusal = $"Choose an exercise date and a decimal amount for the {choice.Entry.Side} on {choice.Entry.StreamId}."; return null; }
-            exercises.Add(new SelectedCashFlowExercise(choice.Entry.Side, choice.Entry.EntryStartDate, choice.Entry.StreamId, exerciseDate, exerciseDate, amount));
+            var noticeDate = exerciseDate;
+            if (!string.IsNullOrWhiteSpace(choice.NoticeDate)
+                && !DateOnly.TryParseExact(choice.NoticeDate.Trim(), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out noticeDate))
+            { refusal = $"Enter the notice date for the {choice.Entry.Side} on {choice.Entry.StreamId} as yyyy-MM-dd, or leave it blank to notice on the exercise date."; return null; }
+            if (noticeDate > exerciseDate)
+            { refusal = $"The notice date for the {choice.Entry.Side} on {choice.Entry.StreamId} cannot follow its exercise date."; return null; }
+            var notice = string.IsNullOrWhiteSpace(choice.NoticeEvidenceId) ? null : choice.NoticeEvidenceId.Trim();
+            exercises.Add(new SelectedCashFlowExercise(choice.Entry.Side, choice.Entry.EntryStartDate, choice.Entry.StreamId, exerciseDate, noticeDate, amount, notice is null, notice));
         }
         IReadOnlyList<CashFlowPrepaymentAssumption>? prepayments = null;
         if (PrepaymentEnabled)
@@ -237,6 +275,7 @@ public sealed class ContractualCashFlowScenarioViewModel : BindableBase
     private async Task LoadRunAsync()
     {
         if (!Guid.TryParse(RunIdText, out var runId)) { StatusText = "Enter a retained run identity."; return; }
+        ClearComparison();
         var token = Begin("Loading retained run…");
         try
         {
@@ -277,6 +316,42 @@ public sealed class ContractualCashFlowScenarioViewModel : BindableBase
         finally { End(token); }
     }
 
+    /// <summary>A comparison belongs to the pair it was computed for; loading another run or starting a new comparison drops it first.</summary>
+    private void ClearComparison()
+    {
+        _comparison = null;
+        CashDeltas.Clear();
+        BlockerDeltas.Clear();
+        RaisePropertyChanged(nameof(Comparison));
+        RaisePropertyChanged(nameof(ComparisonText));
+    }
+
+    private async Task CompareRunsAsync()
+    {
+        if (_loadedRun is not { } run || !Guid.TryParse(CompareRunIdText, out var other)) return;
+        if (other == run.RunId) { StatusText = "Choose two different retained runs to compare."; return; }
+        ClearComparison();
+        var token = Begin("Comparing retained runs…");
+        try
+        {
+            var response = await _client.CompareRunsAsync(SubjectKind, SubjectId, run.RunId, other, token).ConfigureAwait(true);
+            if (token.IsCancellationRequested) return;
+            if (!response.Success || response.Data is null) { StatusText = Refused("Retained runs could not be compared", response.StatusCode, response.ErrorMessage); return; }
+            _comparison = response.Data;
+            CashDeltas.Clear();
+            foreach (var delta in response.Data.CashDeltas) CashDeltas.Add(delta);
+            BlockerDeltas.Clear();
+            foreach (var delta in response.Data.BlockerDeltas)
+                BlockerDeltas.Add($"{(delta.Side == "LeftOnly" ? "Only in first" : "Only in second")}: {delta.Code}{(delta.StreamId is null ? string.Empty : $" ({delta.StreamId})")}: {delta.Message}");
+            RaisePropertyChanged(nameof(Comparison));
+            RaisePropertyChanged(nameof(ComparisonText));
+            StatusText = response.Data.CashDeltas.Count == 0 ? "No net cash differences between the two retained runs." : $"{response.Data.CashDeltas.Count} dated net cash difference(s).";
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception ex) { if (!token.IsCancellationRequested) StatusText = $"Retained runs could not be compared: {ex.Message}"; }
+        finally { End(token); }
+    }
+
     private void Apply(ContractualCashFlowResult result, bool rebuildExercises)
     {
         _result = result;
@@ -294,7 +369,7 @@ public sealed class ContractualCashFlowScenarioViewModel : BindableBase
             foreach (var entry in result.ExerciseEligibility)
             {
                 var choice = new CashFlowExerciseChoiceViewModel(entry, OnExerciseEdited);
-                if (previous.TryGetValue(Key(entry), out var old)) { choice.Include = old.Include; choice.ExerciseDate = old.ExerciseDate; choice.Amount = old.Amount; }
+                if (previous.TryGetValue(Key(entry), out var old)) { choice.Include = old.Include; choice.ExerciseDate = old.ExerciseDate; choice.NoticeDate = old.NoticeDate; choice.Amount = old.Amount; choice.NoticeEvidenceId = old.NoticeEvidenceId; }
                 Exercises.Add(choice);
             }
         }
@@ -368,6 +443,7 @@ public sealed class ContractualCashFlowScenarioViewModel : BindableBase
         RetainRunCommand.NotifyCanExecuteChanged();
         LoadRunCommand.NotifyCanExecuteChanged();
         VerifyReplayCommand.NotifyCanExecuteChanged();
+        CompareRunsCommand.NotifyCanExecuteChanged();
         RaisePropertyChanged(nameof(CanRetain));
     }
 }

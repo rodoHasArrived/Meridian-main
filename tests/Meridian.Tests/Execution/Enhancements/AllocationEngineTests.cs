@@ -18,6 +18,26 @@ public sealed class AllocationEngineTests
     // AllocationRule
     // -------------------------------------------------------------------------
 
+    public static TheoryData<Dictionary<string, decimal>> InvalidWeights => new()
+    {
+        new Dictionary<string, decimal>(),
+        new Dictionary<string, decimal> { ["a"] = 0m, ["b"] = 0m },
+        new Dictionary<string, decimal> { ["a"] = 2m, ["b"] = -1m },
+    };
+
+    [Theory]
+    [MemberData(nameof(InvalidWeights))]
+    public void Allocate_RuleBuiltWithPublicConstructor_RejectsInvalidWeights(Dictionary<string, decimal> weights)
+    {
+        // The positional constructor bypasses AllocationRule.Create's checks.
+        var rule = new AllocationRule(Guid.NewGuid(), "direct", weights);
+
+        var act = () => _engine.Allocate("AAPL", 100, 150m, rule, DateTimeOffset.UtcNow);
+
+        act.Should().Throw<ArgumentException>()
+            .Which.Should().NotBeOfType<IndexOutOfRangeException>();
+    }
+
     [Fact]
     public void AllocationRule_EqualWeight_DistributesEvenly()
     {
