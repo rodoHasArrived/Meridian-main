@@ -137,7 +137,24 @@ public sealed record CashDistributionCorporateActionTerms(
     string EventType,
     decimal? AmountPerUnit,
     string? Currency,
-    SecurityIncomeComponent Component) : CorporateActionTerms(EventType);
+    SecurityIncomeComponent Component) : CorporateActionTerms(EventType)
+{
+    /// <summary>The recorded amount per unit when it is positive; null when absent, zero or negative.</summary>
+    public decimal? PositiveAmountPerUnit => AmountPerUnit is > 0m ? AmountPerUnit : null;
+
+    /// <summary>
+    /// Gross cash due on a holding: the amount per unit times the holding's economic units. A
+    /// per-unit distribution reads only on lots counted in shares or fund units; a lot measured
+    /// in face, notional, commitment amount or contracts has no per-unit meaning, so the result is
+    /// null rather than a per-unit rate multiplied by a currency amount.
+    /// </summary>
+    public decimal? GrossAmountFor(LotQuantity holding)
+        => PositiveAmountPerUnit is { } perUnit
+           && holding.Amount > 0m
+           && holding.UnitKind is SecurityLotUnitKind.Shares or SecurityLotUnitKind.Units
+            ? perUnit * holding.EconomicUnits
+            : null;
+}
 
 /// <summary>Unit count scaled by a ratio (forward or reverse split).</summary>
 public sealed record SplitCorporateActionTerms(string EventType, decimal? Ratio) : CorporateActionTerms(EventType);

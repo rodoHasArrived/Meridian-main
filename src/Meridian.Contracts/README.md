@@ -1872,6 +1872,12 @@ payload keeps investor-level account evidence, allocation rules, statement/resta
 audit drill-throughs on shared DTOs while naming broader cap-table, LP portal, live-payment, and
 forecasting behavior as planned rather than live.
 
+## Security Master governance controls (2026-11)
+
+- **Contract-multiplier requirement.** `InstrumentTypeDescriptorCatalog.RequiresContractMultiplier(assetClass)` is true only when a descriptor whose *primary* asset class matches declares `multiplier` among its required economic terms (listed options and futures; not swaps, warrants or FX forwards). Compatible-class lists are deliberately ignored. Clients call this instead of matching asset-class names, so they cannot diverge.
+
+See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D8) for status and open decisions.
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
