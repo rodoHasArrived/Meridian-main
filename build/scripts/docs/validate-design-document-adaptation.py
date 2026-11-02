@@ -13,7 +13,7 @@ CONFORMANCE_MAP = Path("docs/architecture/design-module-conformance.yml")
 ROADMAP_REGISTRY = Path("docs/roadmap/data/roadmap-items.yml")
 DECISION_REGISTRY = Path("docs/roadmap/data/decision-log.yml")
 ADOPTION_DECISION = "DEC-TRADING-STRATEGY-DIRECTION-001"
-DESIGN_VERSION = "1.6"
+DESIGN_VERSION = "1.7"
 DIRECTION_SECTION = "22.7 Strategy and Order-Management Direction"
 
 EXPECTED_MODULES = [
