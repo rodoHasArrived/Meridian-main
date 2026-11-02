@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 using System.Text;
 using Meridian.Contracts.Integrity;
@@ -105,6 +106,26 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
 
             if (priorPosted && postingContext.AutoReverseSupersededPostings)
             {
+                // An amended cash distribution is reversed only once its replacement is known to
+                // post: reversing first and then skipping the rebook would leave an amended (not
+                // cancelled) dividend with no economic effect. Cancellations reverse unconditionally.
+                if (!state.IsCancelled
+                    && !existingIds.Contains(action.CorpActId)
+                    && IsCashDistributionPosting(action, out var amendedTerms))
+                {
+                    if (postingContext.PositionQuantity > 0m)
+                        security ??= await _queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
+                    if (!TryResolveCashDistribution(amendedTerms, postingContext.PositionQuantity, security, out _, out var amendmentSkipReason))
+                    {
+                        _logger.LogWarning(
+                            "SecurityMasterLedgerBridge left the original posting of amended corporate action {CorporateActionId} for {Ticker} in place because the amended terms cannot post: {SkipReason}",
+                            action.CorpActId,
+                            normalizedTicker,
+                            amendmentSkipReason);
+                        continue;
+                    }
+                }
+
                 posted += ReverseSupersededPostings(ledger, state, existingIds, normalizedTicker);
             }
 
@@ -154,55 +175,28 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
                 // amount is recorded only in its payload posts like one recorded in the column.
                 case CorporateActionLedgerPostingKind.DividendDeclaration
                     when CorporateActionTerms.From(action) is CashDistributionCorporateActionTerms { PositiveAmountPerUnit: { } amountPerUnit } cashTerms:
-                    if (postingContext.PositionQuantity <= 0m)
-                    {
-                        _logger.LogWarning(
-                            "SecurityMasterLedgerBridge skipped dividend {CorporateActionId} for {Ticker} because no record-date position quantity was supplied.",
-                            action.CorpActId,
-                            normalizedTicker);
-                        break;
-                    }
-
                     // The record-date quantity is unitized through the asset-class registry: the
                     // distribution is paid on economic units, and only on share- or unit-counted lots.
-                    security ??= await _queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
-                    if (security is null)
+                    if (postingContext.PositionQuantity > 0m)
+                        security ??= await _queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
+                    if (!TryResolveCashDistribution(cashTerms, postingContext.PositionQuantity, security, out var distribution, out var skipReason))
                     {
                         _logger.LogWarning(
-                            "SecurityMasterLedgerBridge skipped dividend {CorporateActionId} for {Ticker} because the Security Master record is unavailable to unitize the position.",
-                            action.CorpActId,
-                            normalizedTicker);
-                        break;
-                    }
-
-                    if (!LotQuantity.TryFor(security.AssetClass, postingContext.PositionQuantity, security.AssetSpecificTerms, out var holding, out var unitError))
-                    {
-                        _logger.LogWarning(
-                            "SecurityMasterLedgerBridge skipped dividend {CorporateActionId} for {Ticker}: {UnitError}",
+                            "SecurityMasterLedgerBridge skipped dividend {CorporateActionId} for {Ticker}: {SkipReason}",
                             action.CorpActId,
                             normalizedTicker,
-                            unitError);
+                            skipReason);
                         break;
                     }
 
-                    if (cashTerms.GrossAmountFor(holding) is not { } grossDividend)
-                    {
-                        _logger.LogWarning(
-                            "SecurityMasterLedgerBridge skipped dividend {CorporateActionId} for {Ticker}: {AssetClass} lots are measured in {UnitKind}, which has no per-unit reading.",
-                            action.CorpActId,
-                            normalizedTicker,
-                            security.AssetClass,
-                            holding.UnitKind);
-                        break;
-                    }
-
+                    var (grossDividend, economicUnits) = distribution;
                     var withholding = grossDividend * postingContext.WithholdingTaxRate;
                     // Return of capital reduces the security's carrying value instead of
                     // recognizing dividend income; the receivable/receipt legs are shared.
                     var creditAccount = eventType == CorporateActionEventTypes.ReturnOfCapital
                         ? LedgerAccounts.Securities(normalizedTicker)
                         : LedgerAccounts.DividendIncome;
-                    PostDividendDeclaration(ledger, action, normalizedTicker, ts, meta, grossDividend, amountPerUnit, holding.EconomicUnits, creditAccount);
+                    PostDividendDeclaration(ledger, action, normalizedTicker, ts, meta, grossDividend, amountPerUnit, economicUnits, creditAccount);
                     if (withholding > 0m)
                     {
                         PostWithholdingAccrual(ledger, action, normalizedTicker, postingContext, withholding);
@@ -279,6 +273,58 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
     }
 
     // ── Private helpers ───────────────────────────────────────────────────────
+
+    /// <summary>Whether the action posts as a cash-distribution declaration with a positive per-unit amount.</summary>
+    private static bool IsCashDistributionPosting(
+        CorporateActionDto action,
+        [NotNullWhen(true)] out CashDistributionCorporateActionTerms? terms)
+    {
+        terms = CorporateActionTerms.From(action) as CashDistributionCorporateActionTerms;
+        return terms is { PositiveAmountPerUnit: not null }
+            && CorporateActionTypeDescriptorCatalog.TryNormalize(action.EventType, out var descriptor)
+            && descriptor.LedgerPostingKind == CorporateActionLedgerPostingKind.DividendDeclaration;
+    }
+
+    /// <summary>
+    /// The gross amount and economic units a cash distribution posts on, with the record-date
+    /// quantity unitized through the asset-class registry; or why it cannot post.
+    /// </summary>
+    private static bool TryResolveCashDistribution(
+        CashDistributionCorporateActionTerms terms,
+        decimal positionQuantity,
+        SecurityDetailDto? security,
+        out (decimal GrossAmount, decimal EconomicUnits) distribution,
+        [NotNullWhen(false)] out string? skipReason)
+    {
+        distribution = default;
+        if (positionQuantity <= 0m)
+        {
+            skipReason = "no record-date position quantity was supplied.";
+            return false;
+        }
+
+        if (security is null)
+        {
+            skipReason = "the Security Master record is unavailable to unitize the position.";
+            return false;
+        }
+
+        if (!LotQuantity.TryFor(security.AssetClass, positionQuantity, security.AssetSpecificTerms, out var holding, out var unitError))
+        {
+            skipReason = unitError;
+            return false;
+        }
+
+        if (terms.GrossAmountFor(holding) is not { } grossAmount)
+        {
+            skipReason = $"{security.AssetClass} lots are measured in {holding.UnitKind}, which has no per-unit reading.";
+            return false;
+        }
+
+        distribution = (grossAmount, holding.EconomicUnits);
+        skipReason = null;
+        return true;
+    }
 
     /// <summary>
     /// Books balanced reversing entries for every posting of the superseded actions in this

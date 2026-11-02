@@ -69,7 +69,7 @@ public sealed class SecurityMasterCostBasisAdjustmentService : ISecurityMasterCo
         ArgumentNullException.ThrowIfNull(openLots);
 
         var adjustments = new List<LedgerTaxLotBasisAdjustment>();
-        AddCorporateActionAdjustments(adjustments, await GetEffectiveActionsAsync(securityId, asOf, ct).ConfigureAwait(false), securityId, asOf);
+        AddCorporateActionAdjustments(adjustments, await GetEffectiveActionsAsync(securityId, asOf, ct).ConfigureAwait(false), openLots, securityId, asOf);
 
         var security = await _queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
         if (security is not null)
@@ -133,6 +133,7 @@ public sealed class SecurityMasterCostBasisAdjustmentService : ISecurityMasterCo
     private void AddCorporateActionAdjustments(
         List<LedgerTaxLotBasisAdjustment> adjustments,
         IReadOnlyList<CorporateActionDto> effectiveActions,
+        IReadOnlyList<LedgerTaxLot> openLots,
         Guid securityId,
         DateOnly asOf)
     {
@@ -153,11 +154,53 @@ public sealed class SecurityMasterCostBasisAdjustmentService : ISecurityMasterCo
             }
             else if (terms is CashDistributionCorporateActionTerms { EventType: CorporateActionEventTypes.ReturnOfCapital, PositiveAmountPerUnit: { } perShare })
             {
-                adjustments.Add(new LedgerTaxLotBasisAdjustment(
-                    LedgerTaxLotBasisAdjustmentKind.ReturnOfCapital, perShare, action.ExDate, securityId, LotId: null, reference).EnsureValid());
+                AddReturnOfCapitalAdjustments(adjustments, perShare, action, openLots, securityId, reference);
             }
         }
     }
+
+    /// <summary>
+    /// A per-unit return of capital relieves basis only on lots counted in shares or fund units: a
+    /// commitment, face, notional or contract lot has no per-unit reading of the distribution, so
+    /// those lots are left unadjusted and reported rather than having their basis silently reduced.
+    /// </summary>
+    private void AddReturnOfCapitalAdjustments(
+        List<LedgerTaxLotBasisAdjustment> adjustments,
+        decimal perUnit,
+        CorporateActionDto action,
+        IReadOnlyList<LedgerTaxLot> openLots,
+        Guid securityId,
+        string reference)
+    {
+        var securityLots = openLots
+            .Where(lot => lot.SecurityId is null || lot.SecurityId == securityId)
+            .ToArray();
+        var incompatible = securityLots
+            .Where(static lot => !IsUnitCounted(lot))
+            .ToArray();
+        if (incompatible.Length == 0)
+        {
+            adjustments.Add(new LedgerTaxLotBasisAdjustment(
+                LedgerTaxLotBasisAdjustmentKind.ReturnOfCapital, perUnit, action.ExDate, securityId, LotId: null, reference).EnsureValid());
+            return;
+        }
+
+        foreach (var lot in securityLots.Where(IsUnitCounted))
+        {
+            adjustments.Add(new LedgerTaxLotBasisAdjustment(
+                LedgerTaxLotBasisAdjustmentKind.ReturnOfCapital, perUnit, action.ExDate, securityId, lot.LotId, reference).EnsureValid());
+        }
+
+        _logger.LogWarning(
+            "Return of capital {CorporateActionId} for {SecurityId} left {LotCount} lot(s) unadjusted: lots measured in {UnitKinds} have no per-unit reading of the distribution.",
+            action.CorpActId,
+            securityId,
+            incompatible.Length,
+            string.Join(", ", incompatible.Select(static lot => lot.UnitKind).Distinct()));
+    }
+
+    private static bool IsUnitCounted(LedgerTaxLot lot)
+        => lot.UnitKind is SecurityLotUnitKind.Shares or SecurityLotUnitKind.Units;
 
     private void AddFactorAdjustment(
         List<LedgerTaxLotBasisAdjustment> adjustments,

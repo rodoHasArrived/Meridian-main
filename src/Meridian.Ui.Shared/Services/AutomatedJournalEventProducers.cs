@@ -144,9 +144,11 @@ public sealed class CorporateActionDividendEventProducer
                     continue;
 
                 // The held quantity is unitized through the asset-class registry, so a dividend is
-                // paid on economic units and only on lots counted in shares or fund units.
+                // paid on economic units and only on lots counted in shares or fund units. An
+                // ID-keyed position reads the record as of the run, like a ticker-resolved one, so a
+                // later reclassification cannot change how a historical dividend is unitized.
                 var security = resolvedByTicker
-                    ?? await _securityMaster.GetByIdAsync(securityId.Value, ct).ConfigureAwait(false);
+                    ?? await _securityMaster.GetByIdAsOfAsync(securityId.Value, request.AsOf, ct).ConfigureAwait(false);
                 if (security is null)
                 {
                     skipped.Add(new AutomatedJournalEventProductionSkip(

@@ -104,6 +104,30 @@ public sealed class SecurityMasterLedgerBridgeAutoReverseTests
     }
 
     [Fact]
+    public async Task AutoReverse_AmendmentWhoseTermsCannotPost_LeavesTheOriginalInPlace()
+    {
+        var (bridge, queryService) = CreateBridge();
+        var ledger = new DomainLedger();
+        var context = new CorporateActionLedgerPostingContext(PositionQuantity: 100m, AutoReverseSupersededPostings: true);
+        var original = MakeDividend(0.25m);
+
+        queryService.GetCorporateActionsAsync(SecurityId, Arg.Any<CancellationToken>()).Returns(new[] { original });
+        await bridge.PostCorporateActionsAsync(SecurityId, Ticker, ledger, context);
+        var afterFirstSync = ledger.JournalEntryCount;
+        var incomeBefore = ledger.GetBalance(LedgerAccounts.DividendIncome);
+
+        // The record is unavailable when the amendment arrives, so its replacement cannot be
+        // unitized. Reversing first would leave an amended (not cancelled) dividend with no effect.
+        queryService.GetByIdAsync(SecurityId, Arg.Any<CancellationToken>()).Returns((SecurityDetailDto?)null);
+        var amendment = MakeDividend(0.30m) with { SupersedesCorpActId = original.CorpActId };
+        queryService.GetCorporateActionsAsync(SecurityId, Arg.Any<CancellationToken>()).Returns(new[] { original, amendment });
+        await bridge.PostCorporateActionsAsync(SecurityId, Ticker, ledger, context);
+
+        ledger.JournalEntryCount.Should().Be(afterFirstSync, "nothing is reversed until the amended terms can be rebooked");
+        ledger.GetBalance(LedgerAccounts.DividendIncome).Should().Be(incomeBefore);
+    }
+
+    [Fact]
     public async Task AutoReverse_DatesReversalAtCorrectionEvent_NotOriginalPeriod()
     {
         var (bridge, queryService) = CreateBridge();
