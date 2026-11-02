@@ -1098,7 +1098,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
         {
             ScheduleTermsWriteRules.EnsureAmendmentDoesNotPromoteStrayContainers(projection.AssetClass,
                 projection.AssetSpecificTerms, effectiveTerms);
-            SecurityAssetPackAdmission.EnsureSubmittedFields(projection.AssetClass, effectiveTerms);
+            SecurityAssetPackAdmission.EnsureSubmittedFields(projection.AssetClass, effectiveTerms, projection.AssetSpecificTerms);
         }
         catch (InvalidOperationException exception)
         {

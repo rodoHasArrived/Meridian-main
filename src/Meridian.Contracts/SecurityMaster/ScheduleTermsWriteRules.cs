@@ -10,14 +10,35 @@ namespace Meridian.Contracts.SecurityMaster;
 /// Semantic write rules for declared schedule terms. Readable-only containers and profile fields
 /// retain ADR-024's separate guards; this validator never grants a readable version write authority.
 /// </summary>
-public static class ScheduleTermsWriteRules
+/// <remarks>
+/// The rules added after declaring writes went live (the schedule-terms rule gaps) judge only a
+/// declaration being introduced or changed. A write that names the terms it replaces (<c>retained</c>)
+/// keeps every unchanged container under the rules it was stored under, so a stored row stays amendable
+/// by a patch-less or unrelated amendment; an explicit replacement of the container is judged in full.
+/// </remarks>
+public static partial class ScheduleTermsWriteRules
 {
     /// <summary>Checks the complete effective payload against this node's writable schedule contract.</summary>
     public static void Validate(string assetClass, JsonElement payload)
-        => ValidateDeclarations(assetClass, payload, SecurityAssetClassCatalog.GetTermsVersion(assetClass));
+        => Validate(assetClass, payload, retained: null);
+
+    /// <summary>
+    /// Checks the complete effective payload of a write that replaces <paramref name="retained"/> (the
+    /// stored terms; null for a create). Containers unchanged from it are judged as retained declarations.
+    /// </summary>
+    public static void Validate(string assetClass, JsonElement payload, JsonElement? retained)
+        => ValidateDeclarations(assetClass, payload, SecurityAssetClassCatalog.GetTermsVersion(assetClass), retained);
 
     /// <summary>Pure pre-rollout diagnostics through an explicit readable version, without changing the write version.</summary>
     public static void ValidateDeclarations(string assetClass, JsonElement payload, int termsVersion)
+        => ValidateDeclarations(assetClass, payload, termsVersion, retained: null);
+
+    /// <summary>
+    /// Diagnostics through an explicit readable version for a payload that replaces
+    /// <paramref name="retained"/>; a stored row read back passes itself, so only the rules it was
+    /// stored under apply.
+    /// </summary>
+    public static void ValidateDeclarations(string assetClass, JsonElement payload, int termsVersion, JsonElement? retained)
     {
         var canonical = SecurityAssetClassCatalog.GetOrDefault(assetClass).AssetClass;
         if (termsVersion < 1 || termsVersion > SecurityAssetClassCatalog.GetReadsTermsThrough(canonical))
@@ -36,9 +57,12 @@ public static class ScheduleTermsWriteRules
             || puts is { ValueKind: JsonValueKind.Array } putArray && putArray.EnumerateArray().Any(row => !IsUnsetScheduleEntry(row));
         var maturity = hasEntries ? Date(payload, "maturity") ?? Date(payload, "maturityDate") : null;
         var frequency = hasEntries ? Text(payload, "paymentFrequency") : null;
+        var changes = new DeclarationChanges(payload, retained);
+        var issue = hasEntries ? RootAnchorDate(canonical, payload, IssueDateKey) : null;
         if (Available(SecurityVersionedTerms.CallScheduleKey))
         {
-            var first = ValidateSchedule(calls, true, canonical, maturity, frequency, block);
+            var first = ValidateSchedule(calls, true, canonical, maturity, frequency, block,
+                new GapScope(changes.Changed(SecurityVersionedTerms.CallScheduleKey), changes.Changed(IssueDateKey), issue));
             if (first is not null)
             {
                 if (SecurityAssetTermsSchema.Field(canonical, "isCallable") is not null && Member(payload, "isCallable") is not { ValueKind: JsonValueKind.True })
@@ -47,10 +71,14 @@ public static class ScheduleTermsWriteRules
                     : SecurityAssetTermsSchema.Field(canonical, "callableDate") is not null ? "callableDate" : null;
                 if (scalarKey is not null && Date(payload, scalarKey) != first)
                     Refuse($"{scalarKey} must equal the earliest declared call date so scalar consumers agree with it.");
+                if ((changes.Changed(SecurityVersionedTerms.CallScheduleKey) || changes.Changed(NonCallPeriodEndKey))
+                    && RootAnchorDate(canonical, payload, NonCallPeriodEndKey) is { } nonCallPeriodEnd && first < nonCallPeriodEnd)
+                    Refuse(DescribeCallBeforeNonCallPeriodEnd(first.Value, nonCallPeriodEnd));
             }
         }
         if (Available(SecurityVersionedTerms.PutScheduleKey))
-            ValidateSchedule(puts, false, canonical, maturity, frequency, block);
+            ValidateSchedule(puts, false, canonical, maturity, frequency, block,
+                new GapScope(changes.Changed(SecurityVersionedTerms.PutScheduleKey), changes.Changed(IssueDateKey), issue));
 
         // Swap's write version remains 1: no per-leg declaration is admitted by this contract step.
         // If a later step makes that field writable, ResolveShape must support it before admission.
@@ -121,7 +149,7 @@ public static class ScheduleTermsWriteRules
     }
 
     private static DateOnly? ValidateSchedule(JsonElement? declaration, bool call, string assetClass, DateOnly? maturity,
-        string? couponFrequency, JsonElement? conventions)
+        string? couponFrequency, JsonElement? conventions, GapScope gaps)
     {
         if (declaration is not { } schedule || !SecurityAssetTermsSchema.IsPopulatedTermValue(schedule))
             return null;
@@ -130,20 +158,22 @@ public static class ScheduleTermsWriteRules
         var startKey = call ? "callDate" : "putDate";
         var endKey = call ? "callEndDate" : "putEndDate";
         var schemaKey = call ? SecurityVersionedTerms.CallScheduleKey : SecurityVersionedTerms.PutScheduleKey;
-        var rows = schedule.EnumerateArray().Where(row => !IsUnsetScheduleEntry(row)).Select(row =>
+        var rows = schedule.EnumerateArray().Select((row, position) => (Row: row, Path: $"{schemaKey}[{position}]"))
+            .Where(item => !IsUnsetScheduleEntry(item.Row)).Select(item =>
         {
-            ValidateMembers(row, SecurityAssetTermsSchema.ElementFields(assetClass, schemaKey), schemaKey);
-            return (Row: row, Start: Date(row, startKey), End: Date(row, endKey));
+            ValidateMembers(item.Row, SecurityAssetTermsSchema.ElementFields(assetClass, schemaKey), schemaKey);
+            return (item.Row, item.Path, Start: Date(item.Row, startKey), End: Date(item.Row, endKey));
         }).OrderBy(row => row.Start).ToArray();
         if (rows.Any(row => row.Start is null))
             Refuse($"Every written {schemaKey} entry requires an ISO {startKey}.");
         for (var index = 0; index < rows.Length; index++)
         {
-            var (row, start, end) = rows[index];
+            var (row, path, start, end) = rows[index];
             var next = index + 1 < rows.Length ? rows[index + 1].Start : null;
             if (next == start)
                 Refuse($"Duplicate {startKey} values are invalid.");
-            if (end is null && next is null && maturity is null)
+            // R24: a European entry exercises on its start date only, so its window needs no end.
+            if (end is null && next is null && maturity is null && Text(row, "exerciseStyle") != "European")
                 Refuse("The final exercise window needs an end date or maturity.");
             if (end < start || maturity is not null && (start > maturity || end > maturity))
                 Refuse("An exercise window is inverted or extends beyond maturity.");
@@ -176,6 +206,10 @@ public static class ScheduleTermsWriteRules
             // plausibility floor of 10 percent. This is not an inherent bound of percentage prices.
             if (price is { ValueKind: not JsonValueKind.Null } value && (!value.TryGetDecimal(out var amount) || amount < 10m))
                 Refuse("Exercise prices below the approved plausibility floor of 10 percent require repair.");
+            if (gaps.Entries && DescribeEntryGap(row, path, call, end, style!, frequency, noticeType, minimum, maximum) is { } entryGap)
+                Refuse(entryGap);
+            if ((gaps.Entries || gaps.IssueChanged) && gaps.Issue is { } issue && start < issue)
+                Refuse(DescribeWindowBeforeIssue(path, startKey, start!.Value, issue));
         }
         return rows.Length == 0 ? null : rows[0].Start;
     }
