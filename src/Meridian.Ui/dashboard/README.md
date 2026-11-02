@@ -24,6 +24,14 @@ command. The server recomputes the preview before creating a governed draft. Sta
 outcomes require inspection and refresh; approval and publishing remain in the existing workflow.
 Focused coverage: `bond-analytics.api.test.ts` and `bond-analytics-panel.test.tsx`.
 
+The Calculation version selector defaults to v2 and retains explicit v1 replay. Choose v3 for a
+typed Floating bond with a named index; the shared service verifies eligibility. V3 shows projected
+coupon payments with observed/forecast reset evidence, index/coupon annual fractions, spread in
+basis points, retained curve identities, projected-flow yield, and separate DV01/SpreadDv01 units.
+Yield is not discount margin. Model changes clear pending/results state; incompatible or missing
+inputs remain typed refusals with no metrics, payments or model fallback. See the
+[synthetic SOFR walkthrough](../../../docs/engineering/plans/bond-capability-expansion.md#workstation-floating-analytics).
+
 Provider credential editors require explicit selection of an existing owned connection. Status,
 save, verification and deletion use the same retained connection; account and environment come
 from authenticated ownership. Missing or changed ownership blocks changes without provider-wide
