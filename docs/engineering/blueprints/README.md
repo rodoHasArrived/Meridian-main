@@ -37,6 +37,7 @@ remains in the [roadmap registry](../../roadmap/README.md) and
 | Blueprint | Home | Lane | Design scope |
 |---|---|---|---|
 | [Repo Engine, Depreciation Schedule, and Borrower-Side Debt](financing-liabilities-depreciation-blueprint.md) | `docs/engineering/blueprints/` | Ledger / financing | Repo agreements, fixed-asset depreciation, and borrower-side debt workflows |
+| [Direct Lending: Term-Driven Excess Payment Application](direct-lending-excess-payment-application.md) | `docs/engineering/blueprints/` | Direct lending / ledger | Excess-payment rule on loan terms, prepaid-interest and unapplied-cash balances, split payment journals (`PRD-115`) |
 | [Fail-Closed Mark Freshness and Mark-Age Surfacing](w10-mark-001-fail-closed-marks.md) | `docs/engineering/blueprints/` | Ledger / valuation | Mark freshness policies, override evidence, and mark-age surfacing (`W10-MARK-001`) |
 | [Risk Engine: Severity-Aware Evaluation and Pre-Trade Decision Journal](risk-engine-severity-and-decision-journal-blueprint.md) | `docs/engineering/blueprints/` | Execution / pre-trade risk | Severity-aware pre-trade decisions and durable decision evidence |
 | [Full Incentive-Fee Mechanics](accounting/incentive-fee-mechanics.md) | `docs/engineering/blueprints/accounting/` | Ledger / fund accounting | Hurdles, crystallization, high-water marks, and loss carryforward |
