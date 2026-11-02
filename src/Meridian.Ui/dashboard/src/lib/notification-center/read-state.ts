@@ -136,6 +136,27 @@ export function markNotificationsRead(state: NotificationReadState, ids: readonl
   return { ...state, readIds };
 }
 
+/** Sets an id's read/dismissed membership to an explicit status. Used to undo a
+ *  single read or dismiss action; returns the same reference when nothing changes. */
+export function setNotificationStatus(
+  state: NotificationReadState,
+  id: string,
+  status: { read: boolean; dismissed: boolean }
+): NotificationReadState {
+  const isRead = state.readIds.includes(id);
+  const isDismissed = state.dismissedIds.includes(id);
+  if (isRead === status.read && isDismissed === status.dismissed) {
+    return state;
+  }
+  return {
+    ...state,
+    readIds: status.read ? withId(state.readIds, id) : state.readIds.filter((entry) => entry !== id),
+    dismissedIds: status.dismissed
+      ? withId(state.dismissedIds, id)
+      : state.dismissedIds.filter((entry) => entry !== id)
+  };
+}
+
 export function dismissNotification(state: NotificationReadState, id: string): NotificationReadState {
   if (state.dismissedIds.includes(id)) {
     return state;

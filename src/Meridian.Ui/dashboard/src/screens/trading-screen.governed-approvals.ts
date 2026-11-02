@@ -5,6 +5,7 @@ import {
   denyRiskEscalation,
   getRiskEscalations
 } from "@/lib/api.risk-escalations";
+import { useVisibleInterval } from "@/hooks/use-visible-interval";
 import { ApiError } from "@/lib/api-errors";
 import type { RiskEscalation, RiskEscalationApprovalResponse } from "@/types";
 
@@ -98,18 +99,11 @@ export function useGovernedApprovalsViewModel(
     void refresh();
   }, [refresh]);
 
-  useEffect(() => {
-    // Escalations arrive from live strategy runs and other operators, not only from this
-    // browser's own ticket. Without a poll the panel would show a queue frozen at mount
-    // for as long as the screen stays open — but a session that may not read the queue
-    // must not keep asking.
-    if (forbidden) {
-      return;
-    }
-
-    const timer = setInterval(() => void refresh(), refreshIntervalMs);
-    return () => clearInterval(timer);
-  }, [forbidden, refresh, refreshIntervalMs]);
+  // Escalations arrive from live strategy runs and other operators, not only from this
+  // browser's own ticket. Without a poll the panel would show a queue frozen at mount
+  // for as long as the screen stays open — but a session that may not read the queue
+  // must not keep asking. Paused while the tab is hidden.
+  useVisibleInterval(refresh, forbidden ? null : refreshIntervalMs);
 
   const setReason = useCallback((escalationId: string, reason: string) => {
     setReasons((current) => ({ ...current, [escalationId]: reason }));
