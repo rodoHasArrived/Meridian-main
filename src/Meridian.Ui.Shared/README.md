@@ -2920,6 +2920,12 @@ ADR-022 report of active securitised `Bond` and `CustomAsset` rows with their pr
 `StructuredCredit` terms and blockers. It is mapped only when the Postgres-backed service is
 registered and it never writes; applying a proposal is a governed amendment.
 
+## Security Master governance controls (2026-11)
+
+- **Governed term-amendment refusal.** The Security Master endpoints build their HTTP 403 problem from `GovernedTermAmendmentPolicy.RefusalTitle` and `RefusalDetail`, so the API and the WPF editor show the same guidance when `RequireGovernedTermAmendments` is on.
+
+See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D8) for status and open decisions.
+
 ## Diagrams
 
 See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.
