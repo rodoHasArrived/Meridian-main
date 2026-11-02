@@ -18,7 +18,33 @@ public static partial class ScheduleTermsWriteRules
     private static readonly JsonElement AbsentValue = JsonDocument.Parse("null").RootElement.Clone();
 
     /// <summary>Which gap rules judge one schedule: its own entries when changed, C1a also when the issue date changed.</summary>
-    private readonly record struct GapScope(bool Entries, bool IssueChanged, DateOnly? Issue);
+    private readonly record struct GapScope(bool Entries, bool IssueChanged, DateOnly? Issue, IReadOnlySet<string> RetainedNames);
+
+    // R30 names-only check of an unset block or entry. Unset values never count as a change, so this runs
+    // on every write; a member name the stored container already holds (in any entry) is kept, so a stored
+    // row stays amendable, while any other undeclared, case-variant or repeated name is refused.
+    private static void ValidateUnsetMemberNames(JsonElement value, IReadOnlyList<SecurityAssetTermField> fields, string path,
+        IReadOnlySet<string> retainedNames)
+    {
+        var names = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var property in value.EnumerateObject())
+            if (!names.Add(property.Name)
+                || !fields.Any(field => field.Key == property.Name) && !retainedNames.Contains(property.Name))
+                Refuse($"Unknown, case-variant or repeated member '{path}.{property.Name}'.");
+    }
+
+    // The member names the retained (stored) container holds: the block's, or every object entry's.
+    private static IReadOnlySet<string> RetainedMemberNames(JsonElement? retained, string key)
+    {
+        var names = new HashSet<string>(StringComparer.Ordinal);
+        if (retained is not { ValueKind: JsonValueKind.Object } stored || !stored.TryGetProperty(key, out var container))
+            return names;
+        var holders = container.ValueKind == JsonValueKind.Array ? container.EnumerateArray().ToArray() : [container];
+        foreach (var holder in holders.Where(holder => holder.ValueKind == JsonValueKind.Object))
+            foreach (var property in holder.EnumerateObject())
+                names.Add(property.Name);
+        return names;
+    }
 
     /// <summary>
     /// Whether a root key's value differs from the terms the write replaces, as terms: unset members and

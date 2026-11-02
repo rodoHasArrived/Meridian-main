@@ -52,8 +52,9 @@ public static partial class ScheduleTermsWriteRules
         var blockFields = SecurityAssetTermsSchema.ElementFields(canonical, SecurityVersionedTerms.ScheduleConventionsKey);
         if (block is { } declaredBlock && SecurityAssetTermsSchema.IsPopulatedTermValue(declaredBlock))
             ValidateMembers(declaredBlock, blockFields, SecurityVersionedTerms.ScheduleConventionsKey, blockChanged);
-        else if (blockChanged && block is { ValueKind: JsonValueKind.Object } unsetBlock)
-            ValidateMemberNames(unsetBlock, blockFields, SecurityVersionedTerms.ScheduleConventionsKey); // R30
+        else if (block is { ValueKind: JsonValueKind.Object } unsetBlock)
+            ValidateUnsetMemberNames(unsetBlock, blockFields, SecurityVersionedTerms.ScheduleConventionsKey,
+                RetainedMemberNames(retained, SecurityVersionedTerms.ScheduleConventionsKey)); // R30
         ValidateCalendars(block, blockChanged);
         ValidateShape(canonical, payload, termsVersion, block);
         var calls = Available(SecurityVersionedTerms.CallScheduleKey) ? Container(payload, SecurityVersionedTerms.CallScheduleKey) : null;
@@ -66,7 +67,8 @@ public static partial class ScheduleTermsWriteRules
         if (Available(SecurityVersionedTerms.CallScheduleKey))
         {
             var first = ValidateSchedule(calls, true, canonical, maturity, frequency, block,
-                new GapScope(changes.Changed(SecurityVersionedTerms.CallScheduleKey), changes.Changed(IssueDateKey), issue));
+                new GapScope(changes.Changed(SecurityVersionedTerms.CallScheduleKey), changes.Changed(IssueDateKey), issue,
+                    RetainedMemberNames(retained, SecurityVersionedTerms.CallScheduleKey)));
             if (first is not null)
             {
                 if (SecurityAssetTermsSchema.Field(canonical, "isCallable") is not null && Member(payload, "isCallable") is not { ValueKind: JsonValueKind.True })
@@ -82,7 +84,8 @@ public static partial class ScheduleTermsWriteRules
         }
         if (Available(SecurityVersionedTerms.PutScheduleKey))
             ValidateSchedule(puts, false, canonical, maturity, frequency, block,
-                new GapScope(changes.Changed(SecurityVersionedTerms.PutScheduleKey), changes.Changed(IssueDateKey), issue));
+                new GapScope(changes.Changed(SecurityVersionedTerms.PutScheduleKey), changes.Changed(IssueDateKey), issue,
+                    RetainedMemberNames(retained, SecurityVersionedTerms.PutScheduleKey)));
 
         // Swap's write version remains 1: no per-leg declaration is admitted by this contract step.
         // If a later step makes that field writable, ResolveShape must support it before admission.
@@ -158,10 +161,11 @@ public static partial class ScheduleTermsWriteRules
         var startKey = call ? "callDate" : "putDate";
         var endKey = call ? "callEndDate" : "putEndDate";
         var schemaKey = call ? SecurityVersionedTerms.CallScheduleKey : SecurityVersionedTerms.PutScheduleKey;
-        // R30: member names are checked in every object entry, populated or not, of a changed schedule.
-        if (gaps.Entries && declaration is { ValueKind: JsonValueKind.Array } entries)
+        // R30: member names are checked in every unset object entry, whether or not the schedule changed;
+        // only a name the stored schedule already holds is kept (an unset value is never a change).
+        if (declaration is { ValueKind: JsonValueKind.Array } entries)
             foreach (var unset in entries.EnumerateArray().Where(row => row.ValueKind == JsonValueKind.Object && IsUnsetScheduleEntry(row)))
-                ValidateMemberNames(unset, SecurityAssetTermsSchema.ElementFields(assetClass, schemaKey), schemaKey);
+                ValidateUnsetMemberNames(unset, SecurityAssetTermsSchema.ElementFields(assetClass, schemaKey), schemaKey, gaps.RetainedNames);
         if (declaration is not { } schedule || !SecurityAssetTermsSchema.IsPopulatedTermValue(schedule))
             return null;
         if (schedule.ValueKind != JsonValueKind.Array)

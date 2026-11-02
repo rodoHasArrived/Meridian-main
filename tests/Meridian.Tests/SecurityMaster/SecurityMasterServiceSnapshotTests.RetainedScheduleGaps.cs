@@ -87,4 +87,23 @@ public sealed partial class SecurityMasterServiceSnapshotTests
 
         harness.Appended.Should().NotBeEmpty();
     }
+
+    [Theory]
+    [InlineData("scheduleConventions", """{"BusinessDayConvention":null}""", "scheduleConventions.BusinessDayConvention")]
+    [InlineData("callSchedule", """[{"callDate":"2028-01-01","exerciseStyle":"European"},{"calDate":null}]""", "callSchedule.calDate")]
+    public async Task AmendWithAnUnsetContainerHoldingAnUnknownName_IsRefusedByR30(string key, string container, string member)
+    {
+        var securityId = Guid.NewGuid();
+        var harness = new ServiceHarness();
+        var stored = AdmissionBond("""[{"callDate":"2028-01-01","exerciseStyle":"European"}]""");
+        harness.Seed(securityId, "Bond", stored);
+        var patch = System.Text.Json.Nodes.JsonNode.Parse(stored)!.AsObject();
+        patch[key] = System.Text.Json.Nodes.JsonNode.Parse(container);
+
+        await harness.Service.Invoking(service => service.AmendTermsAsync(AmendRequest(securityId, Parse(patch.ToJsonString()))))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage($"*Unknown, case-variant or repeated member '{member}'.*");
+
+        harness.Appended.Should().BeEmpty();
+    }
 }

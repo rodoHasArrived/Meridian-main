@@ -58,6 +58,33 @@ public sealed class ScheduleTermsWriteRulesStrictWalkGapTests
     }
 
     [Theory]
+    [InlineData("""{"scheduleConventions":{"BusinessDayConvention":null}}""", "{}", "scheduleConventions.BusinessDayConvention")]
+    [InlineData("""{"scheduleConventions":{"settlementLagDays":null}}""", """{"scheduleConventions":{"accrualAdjusted":null}}""", "scheduleConventions.settlementLagDays")]
+    [InlineData("""{"putSchedule":[{"putDate":"2027-01-01","exerciseStyle":"European"},{"calDate":null}]}""",
+        """{"putSchedule":[{"putDate":"2027-01-01","exerciseStyle":"European"}]}""", "putSchedule.calDate")]
+    public void R30_AnUnsetContainerAddedOnAnAmendment_IsCheckedEvenThoughUnsetIsNoChange(string containers, string stored, string member)
+    {
+        var payload = Bond(JsonSerializer.Deserialize<JsonElement>(containers));
+        var retained = Bond(JsonSerializer.Deserialize<JsonElement>(stored));
+
+        var action = () => ScheduleTermsWriteRules.Validate("Bond", payload, retained);
+
+        action.Should().Throw<InvalidOperationException>().Which.Message.Should()
+            .Be(Prefix + $"Unknown, case-variant or repeated member '{member}'.");
+    }
+
+    [Fact]
+    public void R30_ANameTheStoredContainerAlreadyHolds_IsKept()
+    {
+        var retained = Bond(JsonSerializer.Deserialize<JsonElement>("""{"callSchedule":[{"callDate":null,"foo":null}]}"""));
+        var payload = Bond(JsonSerializer.Deserialize<JsonElement>("""{"callSchedule":[{"foo":null}],"scheduleConventions":{"accrualAdjusted":null}}"""));
+
+        var action = () => ScheduleTermsWriteRules.Validate("Bond", payload, retained);
+
+        action.Should().NotThrow("a stored row stays amendable; only names it does not already hold are refused");
+    }
+
+    [Theory]
     [InlineData("""{"scheduleConventions":[]}""")]
     [InlineData("""{"callSchedule":{"x":null}}""")]
     [InlineData("""{"callSchedule":[{"callDate":null,"exerciseStyle":null}]}""")]
