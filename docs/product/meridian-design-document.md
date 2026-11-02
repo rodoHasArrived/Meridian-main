@@ -2987,11 +2987,13 @@ text below remains the design intent the row's exit criteria were drawn from.
 
 **Operator outcome:** let a self-directed principal — one person who both prepares and approves,
 typically in a Single Family Office deployment — complete governed workflows honestly. Source
-enforces two principals in governed flows (`MakerCheckerRequired` for corporate-action posting,
-`SelfApprovalNotAllowed` for reconciliation casework, `OperatorOverrideSelfApprovalException` for
-Security Master overrides), while the v1 supported envelope (Section 12.3, ADR-019) is a
-single-operator local workstation with no supported path for a remote independent approver. A
-second login on the same workstation would make "who approved it?" untrue.
+enforces actor separation for corporate-action approval/posting (`MakerCheckerRequired`),
+reconciliation waiver/supersession (`SelfApprovalNotAllowed`), and new Security Master override
+approval (`OperatorOverrideSelfApprovalException`). Reconciliation also has an existing privileged
+resolver/sign-off exception with a reason. Distinct actor identifiers alone do not prove different
+human control. The v1 supported envelope (ADR-019) is a single-operator local workstation with no
+supported path for a remote independent approver; a second login controlled by the preparer does
+not create independent review.
 
 **Composition and boundary:** an audited, tenant-scoped declaration that a scope operates under
 single-principal control. Within it, eligible approvals are recorded as **attestations** by the
@@ -3003,8 +3005,9 @@ policy stay blocked. Identity & Access owns the declaration; each domain keeps i
 and adds the attested path. This candidate changes no ADR or `PRD-000` sign-off; real maker-checker
 between distinct principals in a small-team, single-node envelope is a separate envelope decision.
 
-**Acceptance scenario:** with the declaration off, self-approval is refused exactly as today. With
-it on, an eligible corporate-action posting completes as an attestation, its package shows the
+**Acceptance scenario:** with the declaration off, existing guarded approvals and their documented
+exceptions behave exactly as today; attestation grants no authority. With it on, an eligible
+corporate-action posting completes as an attestation, its package shows the
 attestation label, and Verified Coverage lists the item as attested. Turning the declaration on or
 off is an audited administrative action. Packages delivered under it reproduce their original
 attestation labels after it is withdrawn, and later items require independent approval.
@@ -3014,3 +3017,12 @@ this labeled attestation path, never as independent review. Still open under the
 stay excluded, how stakeholders see attestations in delivered packages, whether attested items count
 toward the Verified Coverage headline (`W11-COVER-001`), and the row's sequence relative to a future
 small-team envelope decision.
+
+**Draft policy input (2026-11-02):** the
+[security and accounting proposal](single-principal-attestation-policy-proposal-2026-11-02.md)
+and [synthetic acceptance matrix](single-principal-attestation-acceptance-matrix-2026-11-02.md)
+compare named non-posting attestations with a separately adopted economic-action allowlist,
+define proposed exclusions, authority/evidence/withdrawal rules and shared labels, and recommend
+separate coverage treatment. The proposed non-posting slice does not complete the posting example
+above. Owner decisions and independent Security and Accounting review remain open; these documents
+implement no exception, adopt no policy option and change no metric formula or deployment authority.

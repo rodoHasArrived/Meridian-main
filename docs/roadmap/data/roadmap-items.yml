@@ -2855,20 +2855,24 @@ items:
     current_summary: >-
       Adopted as unranked planned direction under DEC-SINGLE-PRINCIPAL-001 from design charter
       Section 25.3.12, answering the open question recorded by DEC-VALUE-PROPOSITION-001. Source
-      enforces two distinct principals in governed flows (MakerCheckerRequired for corporate-action
-      posting, SelfApprovalNotAllowed for reconciliation casework, OperatorOverrideSelfApprovalException
-      for Security Master overrides) while the ADR-019 v1 envelope is a single-operator local
-      workstation with no supported path for an independent approver, so one person cannot honestly
-      complete governed workflows today. The row adds an audited, tenant-scoped single-principal
+      enforces actor separation for corporate-action approval/posting (MakerCheckerRequired),
+      reconciliation waiver/supersession (SelfApprovalNotAllowed), and new Security Master override
+      approvals (OperatorOverrideSelfApprovalException); existing privileged reconciliation sign-off
+      with a reason remains a separate path, and distinct actor IDs alone do not prove independent
+      human control. The ADR-019 v1 envelope is a single-operator local workstation with no supported
+      path for an independent approver. The row plans an audited, tenant-scoped single-principal
       declaration under which eligible approvals are recorded as preparer attestations that every
       passport, trace, package, and audit view labels as not independently reviewed, with Verified
       Coverage reporting attested items separately. It registers planning scope only: no ADR-019
       envelope text, PRD-000 sign-off, source enforcement, rank, or release authority changes, and
       small-team maker-checker between distinct principals remains a separate future envelope
-      decision.
+      decision. The 2026-11-02 draft policy proposal and synthetic acceptance matrix compare a
+      named non-posting first slice with separately adopted economic-action eligibility and record
+      proposed exclusions, evidence, withdrawal, labels, and coverage treatment. Owner decisions
+      and independent Security and Accounting review remain open; no policy option is adopted.
     exit_criteria:
-      - An audited, tenant-scoped single-principal declaration exists; with it off, self-approval
-        is refused exactly as today in every governed flow.
+      - An audited, tenant-scoped single-principal declaration exists; with it off, existing guarded
+        approvals and their documented exceptions behave exactly as today, with no attestation authority.
       - With it on, eligible approvals are recorded as attestations by the preparer, distinct from
         independent approvals in contracts, storage, and audit events; material or high-risk classes
         named by policy stay blocked.
@@ -2897,4 +2901,8 @@ items:
         path: docs/product/meridian-design-document.md
       - type: reference
         path: docs/product/value-proposition-review-2026-11-01.md
-    last_reviewed: 2026-11-01
+      - type: reference
+        path: docs/product/single-principal-attestation-policy-proposal-2026-11-02.md
+      - type: reference
+        path: docs/product/single-principal-attestation-acceptance-matrix-2026-11-02.md
+    last_reviewed: 2026-11-02
