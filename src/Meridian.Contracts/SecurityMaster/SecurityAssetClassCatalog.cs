@@ -708,6 +708,15 @@ public static class SecurityAssetClassCatalog
     }
 
     /// <summary>
+    /// The canonical class name for a catalog name or registered alias, in any casing ("Loan" and
+    /// "directloan" are DirectLoan); any other spelling is returned unchanged so callers that refuse
+    /// or tolerate unknown classes still see what was submitted. The F# codec switches on the
+    /// canonical name, so a class must pass through here before it is mapped.
+    /// </summary>
+    public static string Canonicalize(string assetClass)
+        => TryGet(assetClass, out var descriptor) ? descriptor.AssetClass : assetClass;
+
+    /// <summary>
     /// Resolves a free-text asset-class label — the kind a brokerage or custodian stamps on a
     /// position ("us_equity", "Treasury Bond", "Private Credit Loan") — to the one catalog class it
     /// names. The label is tried as declared, then with separators removed ("Treasury Bill" is the
