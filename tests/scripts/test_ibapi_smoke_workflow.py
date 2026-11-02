@@ -84,6 +84,7 @@ class IbApiSmokeWorkflowTests(unittest.TestCase):
             "tests/scripts/test_ibapi_smoke_workflow.py",
             "tests/scripts/test_validate_test_results.py",
             ".github/workflows/ibapi-smoke.yml",
+            ".github/actions/setup-dotnet-nuget/action.yml",
         ]
         self.assertEqual(self.workflow["on"]["push"]["branches"], ["main"])
         for event in ("pull_request", "push"):

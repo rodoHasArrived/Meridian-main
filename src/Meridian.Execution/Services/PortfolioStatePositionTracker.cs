@@ -73,7 +73,9 @@ public sealed class PortfolioStatePositionTracker : IPositionTracker
 
     private static PositionState ToPositionState(IPosition position, DateTimeOffset asOf)
     {
-        var quantity = (decimal)position.Quantity;
+        // ExactQuantity, not the whole-share Quantity: rounding a 0.5-share holding to 0 would
+        // hide it from position limits and derive the mark from the wrong divisor below.
+        var quantity = position.ExactQuantity;
 
         // IPosition exposes unrealised P&L but not the current mark directly. Recover the mark from
         // the identity UnrealizedPnl = (MarketPrice - AverageCostBasis) * Quantity so that the

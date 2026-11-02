@@ -71,6 +71,13 @@ lockfile integrity checks, and npm's normal audit behavior. The docs and workflo
 pip download caches keyed by the docs and CI requirements files; both install their pinned
 requirements on every run. The workflow lane also installs Pillow to run screenshot validation.
 
+The shared composite action `.github/actions/setup-dotnet-nuget` installs the `global.json` SDK
+and restores that same NuGet cache key. Workflows whose setup is exactly that adjacent pair use it
+after `actions/checkout`; a step `id: nuget` still exposes `outputs.cache-hit`. `meridian-ci.yml`
+and workflows with interleaved steps, `dotnet-version` inputs, conditions, or no cache keep their
+inline steps, so the inline key must change together with the composite action's key.
+Workflow hygiene applies the same SHA-pin rule to external actions inside local composite actions.
+
 Browser CI reads its supported Node version from `.nvmrc`, which the doctor prerequisite checker
 also uses. Every local CI lane runs the shared `build/python/prerequisites.py` preflight before
 restore, build, or npm installation. See [prerequisite profiles](../../docs/engineering/README.md#prerequisite-checks)

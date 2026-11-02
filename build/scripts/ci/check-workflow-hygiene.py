@@ -15,6 +15,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 WORKFLOW_DIR = REPO_ROOT / ".github" / "workflows"
+LOCAL_ACTION_DIR = REPO_ROOT / ".github" / "actions"
 
 ACTIVE_DOC_ROOTS = [
     REPO_ROOT / ".github" / "workflows",
@@ -89,7 +90,9 @@ def check_duplicate_workflow_names(failures: list[str]) -> None:
 def check_action_refs(failures: list[str]) -> None:
     # Cover every external action, including repository subpaths and reusable workflows.
     uses_pattern = re.compile(r"^\s*(?:-\s*)?uses:\s*([^\s#]+)([^\n]*)", re.MULTILINE)
-    for workflow in sorted(WORKFLOW_DIR.glob("*.yml")) + sorted(WORKFLOW_DIR.glob("*.yaml")):
+    # Local composite actions run inside the same jobs, so their external refs need the same pin.
+    local_actions = sorted(LOCAL_ACTION_DIR.glob("**/action.yml")) + sorted(LOCAL_ACTION_DIR.glob("**/action.yaml"))
+    for workflow in sorted(WORKFLOW_DIR.glob("*.yml")) + sorted(WORKFLOW_DIR.glob("*.yaml")) + local_actions:
         text = workflow.read_text(encoding="utf-8")
         for reference, comment in uses_pattern.findall(text):
             reference = reference.strip('\"\'')
