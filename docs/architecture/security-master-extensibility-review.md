@@ -7814,22 +7814,21 @@ revisit the earlier 5b-1 decisions OD1, OD2 or OD3.
 
 **Open risks.** The direct-lending gate has no fallback verifier when none is registered; both hosts
 register one. Fail-closed gating means an unreadable floor now also stops projection rebuilds and
-holds direct-lending publication in its outbox, not only commands. The new public
-`ScheduleTermsWriteRules` overloads and the new exception type need the generated contract
-inventory refreshed. WPF tests were not run on this branch (they need Windows); the WPF host sees
+holds direct-lending publication in its outbox, not only commands. The generated contract
+inventory is refreshed for the new public `ScheduleTermsWriteRules` overloads and exception type. WPF tests were not run on this branch (they need Windows); the WPF host sees
 only a `StartupRefusedException` subclass.
 
 **Validation record.**
 
 | Check | Result |
 | --- | --- |
-| Targeted suite (`Meridian.Tests`, filter over SecurityMaster, Schedule, TermsCapability, FieldEdit, Workbench, Conflict, Upcaster, Amortization, DirectLending, ExceptionHandler, Calendar, SecurityTerm, BondExercise and the new floor and 503 classes) | 6893 passed, 240 skipped, 1 failed: the Docker-only `BondProjectionGoldenTests.Bond_KeysetPagesAreBounded...`, which also fails at the base |
-| `AssetAmortizationPostgresRoundTripTests` against a scratch PostgreSQL 16 cluster | 8 passed |
-| Mutation check | 31 of 31 mutations caught |
+| Targeted suite (`Meridian.Tests`, filter over SecurityMaster, Schedule, TermsCapability, FieldEdit, Workbench, Conflict, Upcaster, Amortization, DirectLending, ExceptionHandler, Calendar, SecurityTerm, BondExercise and the new floor and 503 classes) | 6904 passed, 240 skipped, 1 failed: the Docker-only `BondProjectionGoldenTests.Bond_KeysetPagesAreBounded...`, which also fails at the base |
+| PostgreSQL-backed integration tests (Security Master, terms capability floor, amortization, atomic tax-lot journal, ledger composition) against scratch PostgreSQL 16 Security Master and ledger databases | 348 passed, 0 skipped |
+| Mutation check | 37 of 37 mutations caught (31 for the change, 6 for the review fixes) |
 | Guards (test-skip register, duplicate helpers, inline SHA-256, file size, warning suppressions, endpoint cancellation, contract-type parity) and `dotnet format whitespace` on the changed files | Pass |
 | QG against 20 synthetic rows on a scratch PostgreSQL 16 cluster | All 12 expected rule rows; negative controls (a clean declaration, a call exactly at `nonCallPeriodEnd`, unset containers with declared names only, a profile envelope, a Swap) not reported |
-| `bash scripts/ci.sh` | `<pending: coordinator>` |
-| Generated outputs (contract inventory, repo navigation, status) regenerated and `check-generated-output` clean | `<pending: coordinator>` |
-| Documentation checks (`check-ai-inventory`, ADR and link verification) | `<pending: coordinator>` |
-| Independent code review | `<pending: coordinator>` |
-| `Meridian CI / quality-gate` on the pull request | `<pending: coordinator>` |
+| `bash scripts/ci.sh` | Not run as a whole; the `verify-docs` lane passed, and schema-control `verify` passed against main |
+| Generated outputs (contract inventory, repo navigation, status) regenerated and `check-generated-output` clean | Pass; the generated-output repair pre-check against main reports `ready` with no changes |
+| Documentation checks (`check-ai-inventory`, ADR and link verification, `validate-doc-hashes`) | Pass |
+| Independent code review | Adversarial review: 4 confirmed findings (1 medium: a floor refusal on the ledger posting route answered 409; 3 low: amortization approval appended before the floor check, the R30 name check skipped on amends, the C5c text), all fixed with tests |
+| `Meridian CI / quality-gate` on the pull request | Reported on the pull request |
