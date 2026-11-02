@@ -1326,6 +1326,7 @@ workstation-mode host writes these lines to the same file. Verify it with
 - **Backfill cancellation.** `HistoricalBackfillService` and `CrossSourceBackfillReconciliationService` rethrow `OperationCanceledException` only for caller cancellation. A provider timeout is recorded as a per-symbol or per-provider failure.
 - **Help text.** `HelpCommand` cites only repository paths that exist, which `HelpCommandTests.HelpText_CitedRepositoryPaths_AllExist` enforces.
 - **OAuth refresh start-up.** If `OAuthTokenRefreshService`'s first initialization fails (vault unavailable, transient I/O), the background loop retries with capped exponential backoff (30 s, doubling to 15 min) instead of exiting. Before, tokens stopped refreshing until the process restarted.
+- **Manual payment breakdowns (in-memory service).** `DirectLendingServiceSupport.ResolveMixedPayment` applies the same owed-balance cap as the F# servicing aggregate, so both service implementations allocate identically. Excess is reported as `UnappliedAmount` (see `PRD-115` for term-driven handling).
 
 ## Security Master governance controls (2026-11)
 
