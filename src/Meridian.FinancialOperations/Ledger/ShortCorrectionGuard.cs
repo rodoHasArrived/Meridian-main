@@ -38,10 +38,36 @@ public static class ShortCorrectionGuard
     {
         if (posted.Count == 0 || posted.Count != reversal.Count)
             return false;
-        return posted.All(line => reversal.Count(candidate => candidate.Account == line.Account
-            && candidate.Debit == line.Credit && candidate.Credit == line.Debit
-            && SameDimensions(candidate.Dimensions, line.Dimensions)
-            && InverseCurrency(candidate.Currency, line.Currency)) == 1);
+        // Consume reversal lines once: duplicate economic lines are legitimate, but one
+        // reversal line must never satisfy two posted lines (or leave an extra line unmatched).
+        var consumed = new bool[reversal.Count];
+        foreach (var line in posted)
+        {
+            var found = false;
+            for (var i = 0; i < reversal.Count; i++)
+            {
+                if (consumed[i])
+                    continue;
+
+                var candidate = reversal[i];
+                if (candidate.Account != line.Account
+                    || candidate.Debit != line.Credit || candidate.Credit != line.Debit
+                    || !SameDimensions(candidate.Dimensions, line.Dimensions)
+                    || !InverseCurrency(candidate.Currency, line.Currency))
+                    continue;
+
+                consumed[i] = true;
+                found = true;
+                break;
+            }
+
+            if (!found)
+                return false;
+        }
+
+        // The counts are equal, so consuming one distinct candidate per posted line
+        // proves there are no unconsumed reversal lines.
+        return true;
     }
 
     private static bool SameDimensions(LedgerLineDimensionSet? left, LedgerLineDimensionSet? right)
