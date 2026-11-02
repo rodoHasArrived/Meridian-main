@@ -1327,6 +1327,15 @@ workstation-mode host writes these lines to the same file. Verify it with
 - **Help text.** `HelpCommand` cites only repository paths that exist, which `HelpCommandTests.HelpText_CitedRepositoryPaths_AllExist` enforces.
 - **OAuth refresh start-up.** If `OAuthTokenRefreshService`'s first initialization fails (vault unavailable, transient I/O), the background loop retries with capped exponential backoff (30 s, doubling to 15 min) instead of exiting. Before, tokens stopped refreshing until the process restarted.
 
+## Security Master governance controls (2026-11)
+
+- **Governed term amendments.** `IGovernedTermAmendmentPolicy` (`GovernedTermAmendmentPolicy`) is the single source of the `SecurityMasterWorkbench:RequireGovernedTermAmendments` refusal, shared by the web API and the WPF editor so they cannot disagree. It is consulted by client edit surfaces, not by `ISecurityMasterService.AmendTermsAsync`, which is also the governed publisher's write and provider ingest's.
+- **Independent profile approval.** `SecurityAssetProfileGovernanceService` refuses an asset-profile approval by the actor who drafted it when `SecurityMasterWorkbench:RequireIndependentProfileApprover` is on. It defaults to off, and the setting is read at approval time so it hot-reloads. `RequireIndependentReviewer` remains unconsumed.
+- **Classification labels.** `SecurityEconomicDefinitionAdapter` stores asset-class, family and sub-type labels from the F# domain's explicit name functions rather than union `ToString()`, which would emit payload syntax such as `OtherFamily "x"` or `Some(...)`.
+- **Removed prototype.** The unused Application-side `SecurityMaster/CashFlow/ScheduleSpecFactory` prototype was deleted; production uses `Meridian.Contracts.SecurityMaster.ScheduleSpecFactory`.
+
+See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D8) for status and open decisions.
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
