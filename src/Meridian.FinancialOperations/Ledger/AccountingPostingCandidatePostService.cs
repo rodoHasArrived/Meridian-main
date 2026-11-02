@@ -63,6 +63,9 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
         _termsCapabilityCheck = termsCapabilityCheck;
     }
 
+    /// <summary>The composed terms capability floor check, or null when none was composed (pinned by composition tests).</summary>
+    internal Func<CancellationToken, Task>? TermsCapabilityCheck => _termsCapabilityCheck;
+
     public async Task<PostedPostingRuleJournalCandidateResultDto> PostCandidateAsync(
         PostPostingRuleJournalCandidateRequestDto request,
         CancellationToken ct = default)
