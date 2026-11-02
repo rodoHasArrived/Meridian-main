@@ -11,7 +11,14 @@
       "id": "direct-lending",
       "filename_template": "{ordinal:03d}_{slug}.sql",
       "ordinal_pattern": "^(?P<ordinal>\\d+)_",
-      "reservations": []
+      "reservations": [
+        {
+          "ordinal": 10,
+          "slug": "direct_lending_excess_payment_balances",
+          "description": "Prepaid-interest and unapplied-cash servicing balances",
+          "blueprint": "docs/engineering/blueprints/direct-lending-excess-payment-application.md"
+        }
+      ]
     },
     {
       "id": "asset-operations",
