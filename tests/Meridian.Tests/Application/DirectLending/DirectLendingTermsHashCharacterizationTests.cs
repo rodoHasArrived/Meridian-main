@@ -41,6 +41,50 @@ public sealed class DirectLendingTermsHashCharacterizationTests
     public void ComputeTermsHash_InterestOnlyWithGrace_MatchesBaseCapture()
         => DirectLendingServiceSupport.ComputeTermsHash(InterestOnlyWithGraceTerms()).Should().Be(InterestOnlyWithGraceHash);
 
+    /// <summary>
+    /// Uppercase hex for <see cref="FixedBulletTerms"/> with an explicit
+    /// <see cref="ExcessPaymentApplication.PrincipalPrepayment"/> rule (PRD-115). Pinned identically in
+    /// the F# lane, so both computations of a rule-bearing hash stay equal.
+    /// </summary>
+    public const string FixedBulletWithPrincipalPrepaymentRuleHash = "229F0A104022000EBB8CB539D80A04A9EF5894A1AAFF3891EBA7B2380FC73290";
+
+    [Fact]
+    public void ComputeTermsHash_UnspecifiedExcessRule_IsOmittedSoExistingHashesAreUnchanged()
+    {
+        var terms = FixedBulletTerms();
+
+        terms.ExcessPaymentApplication.Should().BeNull();
+        terms.EffectiveExcessPaymentApplication.Should().Be(ExcessPaymentApplication.HoldUnapplied);
+        System.Text.Json.JsonSerializer.Serialize(terms).Should().NotContain("ExcessPaymentApplication");
+        DirectLendingServiceSupport.ComputeTermsHash(terms).Should().Be(FixedBulletHash);
+    }
+
+    [Fact]
+    public void ComputeTermsHash_ExplicitExcessRule_IsAMaterialTermAndChangesTheHash()
+    {
+        var withRule = FixedBulletTerms() with { ExcessPaymentApplication = ExcessPaymentApplication.PrincipalPrepayment };
+
+        DirectLendingServiceSupport.ComputeTermsHash(withRule).Should().Be(FixedBulletWithPrincipalPrepaymentRuleHash);
+        DirectLendingServiceSupport.ComputeTermsHash(withRule).Should().NotBe(FixedBulletHash);
+        DirectLendingServiceSupport.ComputeTermsHash(FixedBulletTerms() with { ExcessPaymentApplication = ExcessPaymentApplication.PrepaidInterest })
+            .Should().NotBe(FixedBulletWithPrincipalPrepaymentRuleHash);
+    }
+
+    [Fact]
+    public void ExcessRule_RoundTripsThroughEventJson()
+    {
+        var withRule = FixedBulletTerms() with { ExcessPaymentApplication = ExcessPaymentApplication.PrepaidInterest };
+        var options = new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web);
+
+        var roundTripped = System.Text.Json.JsonSerializer.Deserialize<DirectLendingTermsDto>(
+            System.Text.Json.JsonSerializer.Serialize(withRule, options), options)!;
+        var legacy = System.Text.Json.JsonSerializer.Deserialize<DirectLendingTermsDto>(
+            System.Text.Json.JsonSerializer.Serialize(FixedBulletTerms(), options), options)!;
+
+        roundTripped.ExcessPaymentApplication.Should().Be(ExcessPaymentApplication.PrepaidInterest);
+        legacy.ExcessPaymentApplication.Should().BeNull("events recorded before the rule existed carry no value");
+    }
+
     [Fact]
     public void CreateTermsVersion_StampsTheSameHash()
         => DirectLendingServiceSupport.CreateTermsVersion(
