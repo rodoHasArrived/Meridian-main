@@ -66,7 +66,7 @@ export function ActivationHeaderProgress({ status }: { status?: FirstRunStatus |
         </span>
       ) : null}
 
-      <button
+      {!model.finished ? <button
         type="button"
         aria-label={model.triggerAriaLabel}
         title={model.triggerTitle}
@@ -81,7 +81,7 @@ export function ActivationHeaderProgress({ status }: { status?: FirstRunStatus |
       >
         {model.finished ? <Check size={13} aria-hidden="true" /> : <ListChecks size={13} aria-hidden="true" />}
         {model.triggerLabel}
-      </button>
+      </button> : null}
 
       <button
         className="rounded-full border border-slate-700 px-2.5 py-1 text-xs text-slate-300 hover:border-cyan-400 hover:text-cyan-200"

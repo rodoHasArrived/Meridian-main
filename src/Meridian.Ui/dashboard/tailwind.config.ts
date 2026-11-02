@@ -10,8 +10,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["Segoe UI Variable Text", "Segoe UI", "system-ui", "ui-sans-serif"],
-        mono: ["Cascadia Mono", "JetBrains Mono", "Consolas", "ui-monospace", "SFMono-Regular"],
+        sans: ["Segoe UI Variable Text", "Segoe UI", "system-ui", "ui-sans-serif", "sans-serif"],
+        mono: ["Cascadia Mono", "JetBrains Mono", "Consolas", "ui-monospace", "SFMono-Regular", "monospace"],
         display: ["Segoe UI Variable Display", "Segoe UI Semibold", "Segoe UI", "system-ui", "ui-sans-serif"]
       },
       colors: {
