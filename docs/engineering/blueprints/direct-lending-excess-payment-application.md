@@ -1,6 +1,6 @@
 # Direct Lending: Term-Driven Excess Payment Application
 
-**Status:** Proposed. Design only; no code yet. Owner decisions are recorded in [Decisions](#decisions).
+**Status:** Approved design (owner decisions recorded 2026-11-02). Implementation proceeds by [increment](#increments).
 **Owner:** Direct Lending + Ledger
 **Reviewed:** 2026-11-02
 **Registered in:** [`docs/engineering/blueprints/README.md`](README.md)
@@ -104,8 +104,8 @@ at the amount owed. Only the **remaining excess** is then routed by the rule in 
 | Rule | Excess goes to | Limits |
 |---|---|---|
 | `null` / `HoldUnapplied` | `UnappliedCash` | none |
-| `PrincipalPrepayment` | `PrincipalOutstanding` (lots earliest first, as principal payments do today); any remainder → `UnappliedCash` | capped at outstanding principal; behaviour when `PrepaymentAllowed = false` per [Decision 2](#decisions); penalty per [Decision 3](#decisions) |
-| `PrepaidInterest` | `PrepaidInterest` | none (optionally capped at the next period's expected interest, [Decision 4](#decisions)) |
+| `PrincipalPrepayment` | `PrincipalOutstanding` (lots earliest first, as principal payments do today); any remainder → `UnappliedCash` | capped at outstanding principal; when `PrepaymentAllowed = false` the excess is held unapplied with a note ([Decision 2](#decisions)); the penalty is charged automatically ([Decision 3](#decisions)) |
+| `PrepaidInterest` | `PrepaidInterest` | none: uncapped, consumed by daily accruals ([Decision 4](#decisions)) |
 
 `MixedPaymentResolutionDto` keeps `UnappliedAmount` for compatibility and adds:
 
@@ -132,8 +132,7 @@ InterestAccruedUnpaid += dailyInterest - consumed
 ```
 
 The accrual event records `prepaidInterestConsumed`, and the journal reflects it (§5). PIK
-accrual is left unchanged; PIK loans do not consume prepaid interest unless
-[Decision 4](#decisions) says otherwise.
+accrual is left unchanged: PIK interest does not consume prepaid interest ([Decision 4](#decisions)).
 
 ### 5. Journals
 
@@ -170,18 +169,20 @@ Both are maker-checker governed like other direct-lending commands.
 
 ## Decisions
 
-These need the owner before implementation. Each has a recommendation.
+The owner decided all four on 2026-11-02, each as recommended.
 
-1. **Default for loans without the rule.** *Recommended:* `HoldUnapplied`. This is the current
-   behaviour, now made visible, so no existing loan changes allocation.
-2. **`PrincipalPrepayment` when `PrepaymentAllowed = false`.** *Recommended:* hold as unapplied and
-   record `ExcessRuleNote`. The alternative is to reject the payment, which blocks cash posting
-   for an operator choice the terms forbid.
-3. **Prepayment penalty on excess applied to principal.** *Recommended:* charge it automatically at
-   `PrepaymentPenaltyRate` on the excess applied, as a `loan.prepayment-penalty-charged` event in
-   the same command. The alternative is to leave penalties to the existing manual command.
-4. **Prepaid-interest consumption.** *Recommended:* consumed by daily accruals (§4), uncapped, and
-   not applied to PIK interest. The alternative is to apply it only on scheduled payment dates.
+1. **Default for loans without the rule: `HoldUnapplied`.** A null rule behaves as `HoldUnapplied`.
+   This is the current behaviour, now tracked as `UnappliedCash`, so no existing loan changes
+   allocation.
+2. **`PrincipalPrepayment` with `PrepaymentAllowed = false`: hold as unapplied, with a note.** The
+   excess goes to `UnappliedCash` and `ExcessRuleNote` records why. Cash posting never fails for
+   this reason.
+3. **Prepayment penalty: charged automatically.** When excess is applied to principal, the same
+   command emits `loan.prepayment-penalty-charged` for `PrepaymentPenaltyRate × excess applied to
+   principal`, journaled as today (Dr `PenaltyReceivable` / Cr `PenaltyIncome`). A zero or missing
+   rate charges nothing.
+4. **Prepaid-interest consumption: by daily accruals, uncapped.** Each daily accrual is offset from
+   `PrepaidInterest` first until it is exhausted. PIK interest is not offset.
 
 ## Increments
 
