@@ -60,8 +60,47 @@ public sealed class SecurityMasterTermsCapabilityRefusalEndpointsTests
         await AssertServiceUnavailableAsync(response);
     }
 
+    [Fact]
+    public async Task TermBlockAmend_RefusedByTheCapabilityFloor_Returns503WithTheOperatorReason()
+    {
+        var securityId = Guid.NewGuid();
+        var service = Substitute.For<ISecurityMasterService>();
+        service.AmendTermBlockAsync(Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<AmendSecurityTermBlockRequest>(), Arg.Any<CancellationToken>())
+            .Returns<Task<SecurityDetailDto>>(_ => throw MissingFloorRefusal());
+        var query = Substitute.For<ISecurityMasterQueryService>();
+        query.GetByIdAsync(securityId, Arg.Any<CancellationToken>()).Returns(new SecurityDetailDto(securityId, "Bond",
+            SecurityStatusDto.Active, "Meridian Bond", "USD", JsonSerializer.SerializeToElement(new { }),
+            JsonSerializer.SerializeToElement(new { maturity = "2030-01-01" }), [], [], 1, DateTimeOffset.UtcNow, null));
+        await using var app = await CreateAppAsync(service, query);
+
+        using var response = await app.GetTestClient().PutAsJsonAsync(
+            $"/api/security-master/{securityId}/terms/principalSchedule",
+            new AmendSecurityTermBlockRequest(1, JsonSerializer.SerializeToElement(Array.Empty<object>()), DateTimeOffset.UtcNow,
+                "test", "test", null, "replace the principal schedule"),
+            WebJson);
+
+        await AssertServiceUnavailableAsync(response);
+    }
+
+    [Fact]
+    public async Task Deactivate_RefusedByTheCapabilityFloor_Returns503WithTheOperatorReason()
+    {
+        var securityId = Guid.NewGuid();
+        var service = Substitute.For<ISecurityMasterService>();
+        service.DeactivateAsync(Arg.Any<DeactivateSecurityRequest>(), Arg.Any<CancellationToken>())
+            .Returns<Task>(_ => throw MissingFloorRefusal());
+        await using var app = await CreateAppAsync(service);
+
+        using var response = await app.GetTestClient().PostAsJsonAsync(
+            "/api/security-master/deactivate",
+            new DeactivateSecurityRequest(securityId, 1, DateTimeOffset.UtcNow, "test", "test", null, "deactivate"),
+            WebJson);
+
+        await AssertServiceUnavailableAsync(response);
+    }
+
     // The verifier's own refusal, so the case pins the type the real command boundary throws.
-    private static Exception MissingFloorRefusal()
+    internal static Exception MissingFloorRefusal()
     {
         try
         {
@@ -75,7 +114,7 @@ public sealed class SecurityMasterTermsCapabilityRefusalEndpointsTests
         throw new InvalidOperationException("The missing floor was expected to refuse a node that writes declared terms.");
     }
 
-    private static async Task AssertServiceUnavailableAsync(HttpResponseMessage response)
+    internal static async Task AssertServiceUnavailableAsync(HttpResponseMessage response)
     {
         response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
         var body = await response.Content.ReadAsStringAsync();
@@ -99,7 +138,7 @@ public sealed class SecurityMasterTermsCapabilityRefusalEndpointsTests
             SourceRecordId: null,
             Reason: "create");
 
-    private static async Task<WebApplication> CreateAppAsync(ISecurityMasterService service)
+    private static async Task<WebApplication> CreateAppAsync(ISecurityMasterService service, ISecurityMasterQueryService? query = null)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = Environments.Development });
         builder.WebHost.UseTestServer();
@@ -108,7 +147,7 @@ public sealed class SecurityMasterTermsCapabilityRefusalEndpointsTests
             [$"{SecurityMasterWorkbenchOptions.SectionName}:{nameof(SecurityMasterWorkbenchOptions.RequireGovernedTermAmendments)}"] = "false"
         });
         builder.Services.Configure<SecurityMasterWorkbenchOptions>(builder.Configuration.GetSection(SecurityMasterWorkbenchOptions.SectionName));
-        builder.Services.AddSingleton(Substitute.For<ISecurityMasterQueryService>());
+        builder.Services.AddSingleton(query ?? Substitute.For<ISecurityMasterQueryService>());
         builder.Services.AddSingleton(service);
         builder.Services.AddMeridianApiProblemDetails();
 

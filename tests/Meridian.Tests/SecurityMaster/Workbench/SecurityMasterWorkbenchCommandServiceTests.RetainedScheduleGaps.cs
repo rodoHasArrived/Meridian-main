@@ -49,3 +49,23 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
             .Should().ThrowAsync<ArgumentException>().WithMessage("*Declared callSchedule?0? is European, which exercises on its start date only*");
     }
 }
+
+// A publish handler refused by the terms capability floor surfaces as that refusal (the API's 503),
+// not as a generic publish failure; the revision stays Approved for a retry once the floor is restored.
+public sealed partial class SecurityMasterWorkbenchCommandServiceTests
+{
+    [Fact]
+    public async Task Publish_HandlerRefusedByTheTermsCapabilityFloor_SurfacesTheRefusal_AndLeavesRevisionApproved()
+    {
+        var refusing = new RecordingHandler(order: 10, onHandle: () =>
+            throw Meridian.Tests.Ui.SecurityMasterTermsCapabilityRefusalEndpointsTests.MissingFloorRefusal());
+        var harness = new Harness(currentVersion: 6, handlers: [refusing]);
+        var revisionId = await harness.SeedRevisionAsync(SecurityMasterRevisionStateDto.Approved);
+        var request = new PublishSecurityMasterRevisionRequest(SecurityId, revisionId, "ops.analyst", "ops.reviewer");
+
+        await harness.Service.Invoking(s => s.PublishRevisionAsync(request))
+            .Should().ThrowAsync<Meridian.Application.SecurityMaster.SecurityMasterTermsCapabilityRefusedException>();
+
+        (await harness.Revisions.GetAsync(revisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Approved);
+    }
+}
