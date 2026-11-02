@@ -11827,6 +11827,7 @@ Meridian-main
 │   │   │   ├── ScheduleTermsWriteRulesTests.cs
 │   │   │   ├── SchemaTermsValidationTests.cs
 │   │   │   ├── SecurityAccountingInstrumentClassTests.cs
+│   │   │   ├── SecurityAssetClassAliasMappingTests.cs
 │   │   │   ├── SecurityAssetClassBehaviorFactsTests.cs
 │   │   │   ├── SecurityAssetClassCatalogTests.cs
 │   │   │   ├── SecurityAssetClassOperationalWiringTests.cs
