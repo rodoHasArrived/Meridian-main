@@ -18,6 +18,15 @@ review for Bond/CD passports (`ViewModels/SecurityMaster/`): server-calculated, 
 analytics shown as exact decimals, and a hash-bound migration preview that stages an ordinary
 governed draft. The desktop never prices locally and resubmits digests, not displayed amounts.
 
+The analytics model selector defaults to `bond-analytics-v2` for fixed/zero-coupon bonds and retains
+legacy v1; explicitly select v3 for a typed floating bond with a named index. V3 shows projected-flow
+yield (not discount margin), yield DV01 and coupon-spread `SpreadDv01` separately, and a reset-evidence
+table with observed/forecast fixings, source, rates and spread units. Missing fixing/forward-curve
+refusals clear calculated values; no request falls back to another model. Model changes also discard
+pending or prior results. `BondAnalyticsViewModelTests`, `BondAnalyticsFloatingViewTests`, and
+`WorkstationBondAnalyticsApiClientTests` cover the selection, transport, display and refusal paths.
+Windows execution is required to verify the native WPF view.
+
 Credential management offers the browser's ownership administration (`ViewModels/Settings/
 ProviderOwnershipAdministrationViewModel` over `WorkstationProviderOwnershipApiClient`): create an
 owned connection, preview the non-secret vault status, migrate only with the previewed credential
