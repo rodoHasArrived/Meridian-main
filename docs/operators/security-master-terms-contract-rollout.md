@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-10-28
+**Reviewed:** 2026-11-02
 
 ## Purpose and Scope
 
@@ -194,14 +194,16 @@ the separate MSIX package, record the desktop as the paragraph above describes.
 ### 3. Before 5b-2 deploys: the stored-data gates (each environment)
 
 Each check is expected to find nothing: AQ1 and AQ2 report no hits, and Q1, Q1b and QR return no
-rows. Record the result, the revision of this page the queries were copied from, the database and
-schemas, the timestamp and the operator. QR guards the economic-replay refusal that 5b-1 adds, so
-run it before 5b-1 deploys as well.
+rows. QG, added with the schedule-terms rule gaps on 2026-11-02, is expected to return no rows too,
+but its hits are rows to repair, not a deploy hold (see QG below). Record the result, the revision
+of this page the queries were copied from, the database and schemas, the timestamp and the
+operator. QR guards the economic-replay refusal that 5b-1 adds, so run it before 5b-1 deploys as
+well.
 
 - **AQ1 and AQ2, again.** As in step 1.
-- **Encoding check.** Run it first in the Security Master session. Q1, Q1b and QR trim from class
-  names the whitespace .NET trims, Unicode spaces included, and their Unicode escapes match code
-  points only in a UTF8 database, which nothing in Meridian enforces, so the block refuses any other
+- **Encoding check.** Run it first in the Security Master session. Q1, Q1b, QR and QG trim from
+  class names the whitespace .NET trims, Unicode spaces included, and their Unicode escapes match
+  code points only in a UTF8 database, which nothing in Meridian enforces, so the block refuses any other
   encoding.
 
   ```sql
@@ -317,6 +319,167 @@ run it before 5b-1 deploys as well.
   order by 1;
   ```
 
+- **QG, schedule-terms rule gaps.** It counts, per class and rule, stored Bond,
+  CertificateOfDeposit and StructuredCredit rows whose declared containers a write rule added on
+  2026-11-02 would refuse if the container were introduced or changed
+  ([ADR-025](../adr/025-contractual-schedule-kernel.md#declared-schedule-write-rule-gaps--2026-11-02)).
+  It uses Q1's class filter, trim, collation and profile-envelope exclusion, so run the encoding
+  check first. Those rules judge only a container a write introduces or changes; a retained,
+  unchanged container keeps the rules it was stored under. A hit is therefore a row to repair, not
+  a deploy hold: the row stays amendable, including by patch-less amends such as backfill, EDGAR and
+  ticker-change updates, and only a write that changes the named container is refused. It reports
+  these rules:
+
+  | `rule` | What the stored container holds |
+  | --- | --- |
+  | `E4 frequency on a non-Bermudan entry` | An `exerciseFrequency` on a call or put entry whose `exerciseStyle` is not `Bermudan` |
+  | `E7 European entry with an end date` | A European entry with a `callEndDate` or `putEndDate` |
+  | `E9a makeWholeSpreadBps without priceType MakeWhole` | A call entry's `makeWholeSpreadBps` without `priceType` `MakeWhole` |
+  | `E9b negative makeWholeSpreadBps` | A `MakeWhole` call entry's spread below zero |
+  | `E10d noticeDayType without counts` | A `noticeDayType` with neither `minimumNoticeDays` nor `maximumNoticeDays` |
+  | `C1a window opens before issueDate` | A Bond entry's `callDate` or `putDate` before the root `issueDate`, both written `yyyy-MM-dd` |
+  | `C5c call opens before nonCallPeriodEnd` | A StructuredCredit call opening before `nonCallPeriodEnd`, both written `yyyy-MM-dd` |
+  | `NotPeriodic exerciseFrequency` | `AtMaturity` or one of its spellings (`MATURITY`, `BULLET`, `ZEROCOUPON`, `ZERO`, `SINGLE`, `ONCE`, compared upper-cased with non-alphanumerics removed, as the parser normalizes) |
+  | `Blank string member` | A whitespace-only String member of a populated entry or `scheduleConventions` block |
+  | `R30 unknown member in an unset container` | A member name the shape does not declare (a case variant of a declared name included) inside an unset block or entry |
+  | `Calendar id not canonical` | A `paymentCalendars` id outside `^[A-Z][A-Z0-9]{1,15}$`, matched exactly, so `usny` and `" GBLO"` are hits |
+  | `Calendar id repeated` | A `paymentCalendars` id named twice |
+
+  jsonb keeps only the last of a repeated key, so a repeated member name cannot be seen here, and
+  case-variant root container keys are Q1's. Replace `<deployment_schema>` with the Security Master
+  schema.
+
+  ```sql
+  -- QG, schedule-terms rule gaps. Counts stored Bond, CertificateOfDeposit and StructuredCredit rows
+  -- whose declared containers a gap rule would refuse if the container were introduced or changed
+  -- (a retained, unchanged container keeps the rules it was stored under). Same class filter, trim,
+  -- collation and profile-envelope exclusion as Q1. Replace <deployment_schema>.
+  with rows as (
+      select s.security_id, k.asset_class, t.terms
+      from <deployment_schema>.securities s
+      join (values ('bond', 'Bond'), ('corporatebond', 'Bond'), ('municipalbond', 'Bond'),
+                   ('certificateofdeposit', 'CertificateOfDeposit'),
+                   ('structuredcredit', 'StructuredCredit'), ('mortgagebacked', 'StructuredCredit'),
+                   ('mortgagebackedsecurity', 'StructuredCredit'), ('mbs', 'StructuredCredit'),
+                   ('assetbacked', 'StructuredCredit'), ('assetbackedsecurity', 'StructuredCredit'),
+                   ('abs', 'StructuredCredit')) k(name, asset_class)
+        on k.name = lower(regexp_replace(s.asset_class collate "C", '^[\s\u0085\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000]+|[\s\u0085\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000]+$', '', 'g'))
+      cross join lateral (select case when jsonb_typeof(s.asset_specific_terms) = 'object'
+                                      then s.asset_specific_terms else '{}'::jsonb end) t(terms)
+      where not (k.asset_class = 'StructuredCredit'
+                 and ((jsonb_typeof(t.terms->'customProfileId') = 'string'
+                       and (t.terms->>'customProfileId') collate "C" ~ '[^\s\u0085\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000]') is true
+                      or (jsonb_typeof(t.terms->'profileFields') = 'object') is true))
+  ),
+  entries as (
+      select r.security_id, r.asset_class, r.terms, c.kind, c.start_key, c.end_key, e.value as entry,
+             jsonb_path_exists(e.value, '$.** ? (@.type() != "null" && @.type() != "array" && @.type() != "object")') as populated
+      from rows r
+      cross join (values ('callSchedule', 'callDate', 'callEndDate'), ('putSchedule', 'putDate', 'putEndDate')) c(kind, start_key, end_key)
+      cross join lateral jsonb_array_elements(case when jsonb_typeof(r.terms->c.kind) = 'array'
+                                                   then r.terms->c.kind else '[]'::jsonb end) e(value)
+      where jsonb_typeof(e.value) = 'object'
+  ),
+  blocks as (
+      select r.security_id, r.asset_class, r.terms->'scheduleConventions' as block,
+             jsonb_path_exists(r.terms->'scheduleConventions', '$.** ? (@.type() != "null" && @.type() != "array" && @.type() != "object")') as populated
+      from rows r
+      where jsonb_typeof(r.terms->'scheduleConventions') = 'object'
+  ),
+  hits as (
+      -- E4: exerciseFrequency on an entry that is not Bermudan.
+      select asset_class, 'E4 frequency on a non-Bermudan entry' as rule, security_id from entries
+      where populated and jsonb_typeof(entry->'exerciseFrequency') = 'string' and (entry->>'exerciseStyle') is distinct from 'Bermudan'
+      union all
+      -- E7: a European entry with an end date.
+      select asset_class, 'E7 European entry with an end date', security_id from entries
+      where populated and entry->>'exerciseStyle' = 'European' and jsonb_typeof(entry->end_key) = 'string'
+      union all
+      -- E9a/E9b: a make-whole spread off a MakeWhole call, or negative.
+      select asset_class, 'E9a makeWholeSpreadBps without priceType MakeWhole', security_id from entries
+      where populated and kind = 'callSchedule' and jsonb_typeof(entry->'makeWholeSpreadBps') = 'number'
+        and (entry->>'priceType') is distinct from 'MakeWhole'
+      union all
+      select asset_class, 'E9b negative makeWholeSpreadBps', security_id from entries
+      where populated and kind = 'callSchedule' and jsonb_typeof(entry->'makeWholeSpreadBps') = 'number'
+        and entry->>'priceType' = 'MakeWhole' and (entry->>'makeWholeSpreadBps')::numeric < 0
+      union all
+      -- E10d: a noticeDayType without counts.
+      select asset_class, 'E10d noticeDayType without counts', security_id from entries
+      where populated and jsonb_typeof(entry->'noticeDayType') = 'string'
+        and coalesce(jsonb_typeof(entry->'minimumNoticeDays'), 'null') = 'null'
+        and coalesce(jsonb_typeof(entry->'maximumNoticeDays'), 'null') = 'null'
+      union all
+      -- C1a: a window opening before issueDate (Bond declares issueDate; exact dates only).
+      select asset_class, 'C1a window opens before issueDate', security_id from entries
+      where populated and asset_class = 'Bond'
+        and (entry->>start_key) ~ '^\d{4}-\d{2}-\d{2}$' and (terms->>'issueDate') ~ '^\d{4}-\d{2}-\d{2}$'
+        and jsonb_typeof(entry->start_key) = 'string' and jsonb_typeof(terms->'issueDate') = 'string'
+        and (entry->>start_key) collate "C" < (terms->>'issueDate') collate "C"
+      union all
+      -- C5c: the earliest call opening before nonCallPeriodEnd (StructuredCredit).
+      select asset_class, 'C5c call opens before nonCallPeriodEnd', security_id from entries
+      where populated and asset_class = 'StructuredCredit' and kind = 'callSchedule'
+        and jsonb_typeof(entry->'callDate') = 'string' and (entry->>'callDate') ~ '^\d{4}-\d{2}-\d{2}$'
+        and jsonb_typeof(terms->'nonCallPeriodEnd') = 'string' and (terms->>'nonCallPeriodEnd') ~ '^\d{4}-\d{2}-\d{2}$'
+        and (entry->>'callDate') collate "C" < (terms->>'nonCallPeriodEnd') collate "C"
+      union all
+      -- Periodic: a recognized but non-periodic exerciseFrequency (AtMaturity and its spellings).
+      select asset_class, 'NotPeriodic exerciseFrequency', security_id from entries
+      where populated and jsonb_typeof(entry->'exerciseFrequency') = 'string'
+        and upper(regexp_replace(entry->>'exerciseFrequency', '[^[:alnum:]]', '', 'g'))
+            in ('ATMATURITY', 'MATURITY', 'BULLET', 'ZEROCOUPON', 'ZERO', 'SINGLE', 'ONCE')
+      union all
+      -- Blank: a whitespace-only string member of a populated entry or block.
+      select e.asset_class, 'Blank string member', e.security_id from entries e
+      cross join lateral jsonb_each(e.entry) m
+      where e.populated and m.key in ('exerciseStyle', 'exerciseFrequency', 'priceBasis', 'priceType', 'partialRedemption', 'noticeDayType')
+        and jsonb_typeof(m.value) = 'string' and (m.value #>> '{}') ~ '^[\s\u0085\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000]*$'
+      union all
+      select b.asset_class, 'Blank string member', b.security_id from blocks b
+      cross join lateral jsonb_each(b.block) m
+      where b.populated and m.key in ('businessDayConvention', 'rollConvention', 'direction', 'stubPolicy', 'couponRateUnit', 'couponCashBasis')
+        and jsonb_typeof(m.value) = 'string' and (m.value #>> '{}') ~ '^[\s\u0085\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000]*$'
+      union all
+      -- R30: an unknown or case-variant member name inside an unset block or entry.
+      select e.asset_class, 'R30 unknown member in an unset container', e.security_id from entries e
+      cross join lateral jsonb_object_keys(e.entry) m(key)
+      where not e.populated
+        and m.key collate "C" not in (select unnest(case e.kind
+            when 'callSchedule' then array['callDate', 'callEndDate', 'exerciseStyle', 'exerciseFrequency', 'callPrice', 'priceBasis', 'priceType',
+                                          'makeWholeSpreadBps', 'partialRedemption', 'minimumNoticeDays', 'maximumNoticeDays', 'noticeDayType']
+            else array['putDate', 'putEndDate', 'exerciseStyle', 'exerciseFrequency', 'putPrice', 'priceBasis',
+                       'minimumNoticeDays', 'maximumNoticeDays', 'noticeDayType'] end))
+      union all
+      select b.asset_class, 'R30 unknown member in an unset container', b.security_id from blocks b
+      cross join lateral jsonb_object_keys(b.block) m(key)
+      where not b.populated
+        and m.key collate "C" not in ('businessDayConvention', 'accrualAdjusted', 'paymentCalendars', 'paymentLagBusinessDays', 'rollConvention',
+                                      'endOfMonthRule', 'firstRegularDate', 'lastRegularDate', 'direction', 'stubPolicy', 'couponRateUnit', 'couponCashBasis')
+      union all
+      -- Calendars: a string id outside the canonical grammar, or one named twice, in a populated block.
+      select b.asset_class, 'Calendar id not canonical', b.security_id from blocks b
+      cross join lateral jsonb_array_elements(case when jsonb_typeof(b.block->'paymentCalendars') = 'array'
+                                                   then b.block->'paymentCalendars' else '[]'::jsonb end) id(value)
+      where b.populated and jsonb_typeof(id.value) = 'string' and (id.value #>> '{}') collate "C" !~ '^[A-Z][A-Z0-9]{1,15}$'
+      union all
+      select b.asset_class, 'Calendar id repeated', b.security_id from blocks b
+      where b.populated and jsonb_typeof(b.block->'paymentCalendars') = 'array'
+        and (select count(*) <> count(distinct id.value #>> '{}' collate "C")
+             from jsonb_array_elements(b.block->'paymentCalendars') id(value) where jsonb_typeof(id.value) = 'string')
+  )
+  select asset_class, rule, count(distinct security_id) as securities
+  from hits
+  group by 1, 2
+  order by 1, 2;
+  ```
+
+  To read a hit, list the securities behind it: keep the query's CTEs and replace its final
+  `select` with `select * from hits where rule = '<rule>'`. Repair a row by amending it with a
+  corrected container on a node that runs this change; the refusal it would otherwise meet names
+  the entry path (`callSchedule[i]` or `putSchedule[i]`, the stored index) and the rule. Record the
+  hits and each repair, or the decision to leave a row as stored, in the change record.
+
 ### 4. Before 5b-2 deploys: fleet and calendar parity
 
 - **Every node runs 5a or later.** Check the step 2 inventory again for each environment, desktops
@@ -344,6 +507,37 @@ run it before 5b-1 deploys as well.
   helpers that delegate to that path). A visible desktop shell cannot write while its hosted
   startup check is pending, and a successful startup/earlier command is never cached as authority
   for a later write. Configured direct/manual writers also verify if the DI argument was omitted.
+
+  These fail-closed semantics are kept as main shipped them: an unreadable floor refuses, and the
+  owner's earlier "allow and log on unreadable" choice (OD5) is superseded now that declaring
+  writes are live. Since 2026-11-02:
+
+  - **A refused request answers 503.** The verifier throws
+    `SecurityMasterTermsCapabilityRefusedException`, a `StartupRefusedException`, so startup refuses
+    exactly as before. On a request the shared API exception handler answers HTTP 503 with Problem
+    Details `type` `https://meridian.io/errors/service-unavailable`, service
+    `security master terms capability`, error code 5001 and the fixed `detail` "Security Master
+    terms writes are unavailable on this node: its minimum terms capability floor could not be
+    verified or does not match this build. An operator must verify the floor (migration 057 and the
+    activated floor row) before retrying." The specific cause is not returned; it is in the node's
+    log, at Warning, with the verifier's own message. A 503 means this node, not the request:
+    verify the floor table and the node's build, then retry, or retry on a node whose floor check
+    passes. A 400 is still a refused write. The 503 is the answer on every route that writes behind
+    the floor: the ledger posting-candidate route, Security Master conflict resolution, the workbench
+    commands and the bond cutover no longer turn it into 409, and a workbench publish whose
+    side-effect handler the floor refuses answers 503 (the revision stays Approved; publish again once
+    the floor passes) instead of 500 `publish-side-effect-failed`.
+  - **More writes ask the floor.** Beside canonical creates, amendments and deactivations, the
+    verifier now gates, before anything is persisted: a full warm projection rebuild, each
+    incremental replay batch and a scoped asset-class rebuild (`SecurityMasterRebuildOrchestrator`),
+    the direct-lending Asset Operations publication
+    (`PostgresDirectLendingCommandService.PublishAssetOperationsAsync`), and a new amortization
+    batch, reversals included (`AccountingPostingCandidatePostService`, through
+    `LedgerFeatureRegistration`). A refused publication fails its outbox delivery, which retries; a
+    refused rebuild or amortization batch writes nothing, not even the batch's Approved lifecycle
+    stage, so the batch can be posted again, with any approval notes, once the floor passes. An exact replay of a retained
+    amortization journal is still served below the floor, and reads, the in-memory amortization
+    bridge and non-amortization postings are not gated. No migration or table is added.
 
   **Do not activate from this code change alone.** After the fleet inventory, calendars and data
   gates above are recorded and reviewed, 5b-2's first deployment action is the floor insertion.
@@ -398,7 +592,8 @@ prove that an older already-running process has been drained.
 
 ## Expected Results
 
-- Step 1 and step 3: every check finds nothing in every environment, recorded.
+- Step 1 and step 3: every check finds nothing in every environment, recorded. A QG hit is
+  recorded with its repair and does not hold the deploy.
 - Step 2 and step 4: every node in the inventory has a recorded capability line that names
   `security-master-declared-schedule-v1`, and every node that serves projections lists the same
   calendars.
@@ -415,13 +610,15 @@ prove that an older already-running process has been drained.
 | Calendar lists differ between projection nodes | The capability lines; the per-calendar lines and Warnings | Align the files ([calendar procedure](business-day-calendar-files.md)), restart, and compare again |
 | A calendar file is refused at start | The Warning naming the file, the reason and whether each id it names still resolves | Fix the file as the calendar procedure describes; until then each id it names stays unresolvable, unless the Warning says that id still resolves from another file or to the built-in `WEEKENDS` |
 | Q1, Q1b or QR returns rows | The query output: class, key or container, and counts | Hold 5b-2, and 5b-1 for QR; follow the remediation the 5b pull requests add here |
+| QG returns rows | The query output: class, rule and counts; the securities from its `hits` CTE | Do not hold the deploy; repair each row with a corrected container as QG describes, and record it |
+| A Security Master write, rebuild or publication answers 503 or is refused for the capability floor | The node's log: the verifier's Warning or Error and SQLSTATE; the floor row; the node's build | Verify migration 057, the floor row and the node's build; retry once the floor check passes. A direct-lending publication retries from its outbox |
 | A rollback below a floor is proposed | The floor table above | Do not roll back below it; roll forward or to an allowed build |
 
 ## Evidence and Handoff
 
 The release owner keeps, per environment: the node inventory with each node's capability line and
 timestamp (for a desktop, its capture file and the version and SHA-256 of `Meridian.Desktop.dll`),
-the AQ1, AQ2, Q1, Q1b and QR results, the calendar parity comparison, the owner
+the AQ1, AQ2, Q1, Q1b, QR and QG results (with any QG repairs), the calendar parity comparison, the owner
 confirmations, the drain and routing decisions, and any rollback decision with the floor it
 respected. Each receipt names its environment, artifact or revision, timestamp and responsible
 person. Mark unperformed checks pending; this procedure records no production action by itself.

@@ -1312,6 +1312,20 @@ workstation-mode host writes these lines to the same file. Verify it with
 `SecurityMasterTermsCapabilityStartupTests`, `BusinessDayCalendarSourceCompositionTests` and
 `UiServerLoggingTests`.
 
+`SecurityMasterTermsCapabilityVerifier` throws `SecurityMasterTermsCapabilityRefusedException`, a
+`StartupRefusedException`, at each of its refusal sites, with its fail-closed semantics unchanged:
+startup refuses as before, and a refused request answers 503 through the shared API exception
+handler. Besides canonical creates, amendments and deactivations, the verifier gates
+`SecurityMasterRebuildOrchestrator` before the warm persist, each replayed batch and the upserts
+of a scoped asset-class rebuild (built by `UflProjectionRebuilder`), the direct-lending Asset Operations publication in
+`PostgresDirectLendingCommandService`, whose refusal fails the outbox delivery so it retries, and,
+through `LedgerFeatureRegistration`, new amortization batches in Financial Operations. An omitted
+rebuild verifier falls back to the options-built one, as `SecurityMasterService` does; the
+direct-lending and amortization gates are ungated when no verifier is registered. Verify it with
+`SecurityMasterRebuildCapabilityFloorTests`, the `CapabilityFloor` partial of
+`PostgresDirectLendingCommandServiceTests` and `LedgerFeatureRegistrationCapabilityFloorTests`
+(`docs/operators/security-master-terms-contract-rollout.md`).
+
 ## API contract notes
 
 - Instruments-owned options-chain provider IDs are normalized with trim plus invariant lowercase

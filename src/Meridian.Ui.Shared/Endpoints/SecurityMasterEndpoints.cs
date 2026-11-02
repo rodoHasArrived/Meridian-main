@@ -1085,7 +1085,8 @@ public static partial class SecurityMasterEndpoints
                     return Results.Conflict(ErrorResponse.Validation(
                         "The conflict was resolved concurrently by another operator."));
                 }
-                catch (InvalidOperationException ex)
+                // A terms capability floor refusal is the shared handler's 503, never this route's 409 (ADR-025).
+                catch (InvalidOperationException ex) when (ex is not AppSecurityMaster.SecurityMasterTermsCapabilityRefusedException)
                 {
                     // The transactional persisted-value guard superseded or refreshed the row.
                     return Results.Problem(

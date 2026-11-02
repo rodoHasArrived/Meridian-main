@@ -7762,3 +7762,73 @@ activation is established by this source disposition.
 These changes narrow D1/D3/D4/D9/D10 and the schedule priorities to the consumer, replay and rollout
 boundaries stated here. They do not dispose of unrelated governed-write, classification-label,
 identifier, audit-history or custom-profile findings in the consolidated queue.
+
+## Resolution pass — 2026-11-02 (priority 5, increment 5b-1 gaps: schedule-terms write rules, 503 refusals and floor gates)
+
+This pass records the source on branch `codex/schedule-terms-rule-gaps`, based on main at
+`f484915f6`. It changes no dated observation above and establishes no deployment, floor activation
+or fleet state.
+
+**What main already had.** The #3319 work described in the source disposition above already
+shipped increment 5b-1 (the shared schedule write rules and the capability floor) and the 5b-2
+raise (Bond and CertificateOfDeposit write through terms version 3, StructuredCredit through 4).
+An independently built 5b-1 branch, `codex/schedule-terms-contract-rules` (head `58395f956`), was
+therefore dropped and kept local only. Its rules that main lacked were compared with main's
+`ScheduleTermsWriteRules` and ported onto it as the gaps below; nothing else from that branch
+merges.
+
+| Gap | What landed |
+| --- | --- |
+| Entry rules main did not have | E4 (`exerciseFrequency` only on a Bermudan entry), E7 (a European entry declares no end date), E9a and E9b (`makeWholeSpreadBps` only on a `MakeWhole` entry, never negative), E10d (`noticeDayType` needs a notice count), C1a (no exercise window before the root `issueDate`, Bond) and C5c (no call before `nonCallPeriodEnd`, StructuredCredit), in `src/Meridian.Contracts/SecurityMaster/ScheduleTermsWriteRules.Gaps.cs`, with main's `Invalid declared schedule terms: ` prefix and the entry's stored index in the path |
+| C2 refused a European last entry, which has no window to end (R24) | The European last entry is exempt; C2's text is unchanged. This is the one loosening, and it applies to every write |
+| The strict walk let some malformed containers through | `paymentCalendars` ids must match the calendar-file grammar and be named once (the grammar moved from `FileBusinessDayCalendarSource` to `BusinessDayCalendars.IsCanonicalCalendarId` in `Meridian.Contracts`, with the file source's refusal text byte-identical); R30's member-name check also runs inside unset blocks and entries; blank String members are refused; a non-periodic `exerciseFrequency` gets its own text; a member type the walker cannot check refuses the write (none exists today); member names are checked before member values |
+| A tightened rule applied to stored rows would make them un-amendable by patch-less amends | Every new or tightened rule judges only a root container the write introduces or changes, compared as terms with the retained row; creates introduce every container, and read-back exercise analytics pass the row as its own retained terms ([ADR-025](../adr/025-contractual-schedule-kernel.md#declared-schedule-write-rule-gaps--2026-11-02)) |
+| A floor refusal on a request surfaced as a 500 | `SecurityMasterTermsCapabilityRefusedException` (a `StartupRefusedException`) is thrown at all five verifier refusal sites, and `MeridianApiExceptionHandler` answers it 503 with a fixed operator reason; the cause stays in the log. Route catches that map `InvalidOperationException` to 409 around gated writes (ledger posting candidates, conflict resolution, workbench commands, bond cutover) exclude it, and a refused workbench publish handler rethrows it (review finding, 2026-11-02) |
+| Terms-carrying writes outside the command boundary did not ask the floor (OD4) | Projection rebuilds (warm, incremental and scoped asset-class), the direct-lending Asset Operations publication and new amortization batches, reversals included, ask main's verifier before persisting; exact replays of retained amortization journals are still served |
+| Stored rows had no list of what the new rules would refuse | Query QG in the [terms contract rollout](../operators/security-master-terms-contract-rollout.md), step 3; a hit is a row to repair, not a deploy hold |
+
+**Deliberately left out.** The startup capability line's floor suffix; OD5's allow-on-unreadable
+floor, which the owner's disposition supersedes, so main's fail-closed verifier stands; any change
+to terms or write versions, stamp floors or the declared mapping version; the dropped branch's
+migration 056, its gate class and its own rule and decoding classes. Main's existing rules, the
+stray-container guard among them, are unchanged and still judge retained containers.
+
+**Deviations from the dropped branch.** The rules live in main's single validator rather than the
+branch's separate classes. The branch applied its rules to every write; here they judge only
+introduced or changed containers, except R30's names-only check, which runs on every write and keeps
+names the stored container already holds. R30 and repeated or unknown names keep main's texts. C5c
+names the earliest call by its stored index, as the rule definition does. C1a and C5c
+read anchors written `yyyy-MM-dd` only, where the branch used the current-culture reader. The 503
+detail is a fixed reason, because main's verifier messages are written for startup. The amortization
+gate is an optional delegate that `LedgerFeatureRegistration` supplies, because
+`Meridian.FinancialOperations` cannot reference the Application verifier. `Meridian.Contracts`
+gains `InternalsVisibleTo` for `Meridian.Tests` to pin `IsCheckedMemberType`.
+
+**Owner decisions (2026-11-02).** After main's #3319 work was found: drop the 5b-1 branch; port
+E4, E7, E9a/b, E10d, C1a and C5c, canonical and non-repeated calendar ids, R30 in unset
+containers and fail-closed unknown member types; keep main's fail-closed floor verifier (OD5
+superseded now that declaring writes are live); include the 503 for floor refusals, the floor gates
+on projection rebuilds, direct-lending projection upserts and new amortization batches (OD4), and
+the European exemption from C2 (R24); leave out the startup-line floor suffix. This pass does not
+revisit the earlier 5b-1 decisions OD1, OD2 or OD3.
+
+**Open risks.** The direct-lending gate has no fallback verifier when none is registered; both hosts
+register one. Fail-closed gating means an unreadable floor now also stops projection rebuilds and
+holds direct-lending publication in its outbox, not only commands. The generated contract
+inventory is refreshed for the new public `ScheduleTermsWriteRules` overloads and exception type. WPF tests were not run on this branch (they need Windows); the WPF host sees
+only a `StartupRefusedException` subclass.
+
+**Validation record.**
+
+| Check | Result |
+| --- | --- |
+| Targeted suite (`Meridian.Tests`, filter over SecurityMaster, Schedule, TermsCapability, FieldEdit, Workbench, Conflict, Upcaster, Amortization, DirectLending, ExceptionHandler, Calendar, SecurityTerm, BondExercise and the new floor and 503 classes) | 6904 passed, 240 skipped, 1 failed: the Docker-only `BondProjectionGoldenTests.Bond_KeysetPagesAreBounded...`, which also fails at the base |
+| PostgreSQL-backed integration tests (Security Master, terms capability floor, amortization, atomic tax-lot journal, ledger composition) against scratch PostgreSQL 16 Security Master and ledger databases | 348 passed, 0 skipped |
+| Mutation check | 37 of 37 mutations caught (31 for the change, 6 for the review fixes) |
+| Guards (test-skip register, duplicate helpers, inline SHA-256, file size, warning suppressions, endpoint cancellation, contract-type parity) and `dotnet format whitespace` on the changed files | Pass |
+| QG against 20 synthetic rows on a scratch PostgreSQL 16 cluster | All 12 expected rule rows; negative controls (a clean declaration, a call exactly at `nonCallPeriodEnd`, unset containers with declared names only, a profile envelope, a Swap) not reported |
+| `bash scripts/ci.sh` | Not run as a whole; the `verify-docs` lane passed, and schema-control `verify` passed against main |
+| Generated outputs (contract inventory, repo navigation, status) regenerated and `check-generated-output` clean | Pass; the generated-output repair pre-check against main reports `ready` with no changes |
+| Documentation checks (`check-ai-inventory`, ADR and link verification, `validate-doc-hashes`) | Pass |
+| Independent code review | Adversarial review: 4 confirmed findings (1 medium: a floor refusal on the ledger posting route answered 409; 3 low: amortization approval appended before the floor check, the R30 name check skipped on amends, the C5c text), all fixed with tests |
+| `Meridian CI / quality-gate` on the pull request | Reported on the pull request |

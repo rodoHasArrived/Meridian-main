@@ -4401,6 +4401,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterService.cs
 │   │   │   ├── SecurityMasterService.WriteRefusals.cs
 │   │   │   ├── SecurityMasterStructuredCreditReclassificationService.cs
+│   │   │   ├── SecurityMasterTermsCapabilityRefusedException.cs
 │   │   │   ├── SecurityMasterTermsCapabilityVerifier.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.Discard.cs
@@ -4938,6 +4939,7 @@ Meridian-main
 │   │   │   ├── ScheduleConventionTerms.cs
 │   │   │   ├── ScheduleSpecFactory.cs
 │   │   │   ├── ScheduleTermsWriteRules.cs
+│   │   │   ├── ScheduleTermsWriteRules.Gaps.cs
 │   │   │   ├── SecurityAssetClassCatalog.cs
 │   │   │   ├── SecurityAssetClassRegistry.cs
 │   │   │   ├── SecurityAssetClassTermsUpgrade.cs
@@ -10735,6 +10737,7 @@ Meridian-main
 │   │   │   │   ├── HostTenantScopeCompositionTests.cs
 │   │   │   │   ├── HttpClientFeatureRegistrationTests.cs
 │   │   │   │   ├── InstanceCompositionConfigurationTests.cs
+│   │   │   │   ├── LedgerFeatureRegistrationCapabilityFloorTests.cs
 │   │   │   │   ├── LedgerFeatureRegistrationTests.cs
 │   │   │   │   ├── LegacySnapshotStartupTests.cs
 │   │   │   │   ├── LocalTenantCapabilityCompositionTests.cs
@@ -10792,6 +10795,7 @@ Meridian-main
 │   │   │   │   ├── DirectLendingServicerStatementServiceTests.cs
 │   │   │   │   ├── DirectLendingTermsHashCharacterizationTests.cs
 │   │   │   │   ├── ManualPaymentResolutionTests.cs
+│   │   │   │   ├── PostgresDirectLendingCommandServiceTests.CapabilityFloor.cs
 │   │   │   │   ├── PostgresDirectLendingCommandServiceTests.cs
 │   │   │   │   └── PostgresDirectLendingProjectionCharacterizationTests.cs
 │   │   │   ├── FundStructure
@@ -11001,6 +11005,7 @@ Meridian-main
 │   │   │   └── PluginBacktestStrategyLiveSourceTests.cs
 │   │   ├── Calendars
 │   │   │   ├── BusinessDayAdjustmentTests.cs
+│   │   │   ├── BusinessDayCalendarsCanonicalIdTests.cs
 │   │   │   ├── BusinessDayCalendarTests.cs
 │   │   │   └── FileBusinessDayCalendarSourceTests.cs
 │   │   ├── CertificatesOfDeposit
@@ -11287,6 +11292,7 @@ Meridian-main
 │   │   │   ├── BondCanonicalProjectionTests.cs
 │   │   │   ├── BondConsistencyTests.cs
 │   │   │   ├── BondExerciseDelayedCouponTests.cs
+│   │   │   ├── BondExerciseDelayedCouponTests.RetainedDeclarations.cs
 │   │   │   ├── BondMigrationServiceTests.cs
 │   │   │   ├── BondProjectionServiceTests.cs
 │   │   │   └── BondReferenceExpansionTests.cs
@@ -11765,6 +11771,7 @@ Meridian-main
 │   │   │   │   ├── SecurityMasterConflictAuthorityPolicyTests.cs
 │   │   │   │   ├── SecurityMasterWorkbenchCommandServiceTests.AheadOfWrite.cs
 │   │   │   │   ├── SecurityMasterWorkbenchCommandServiceTests.cs
+│   │   │   │   ├── SecurityMasterWorkbenchCommandServiceTests.RetainedScheduleGaps.cs
 │   │   │   │   └── SecurityMasterWorkbenchCommandServiceTests.ScheduleSubmission.cs
 │   │   │   ├── AlternativeAssetLotTests.cs
 │   │   │   ├── AssetOperationsProjectionRoundTripTests.cs
@@ -11831,6 +11838,8 @@ Meridian-main
 │   │   │   ├── QuotedPriceValuationModelTests.cs
 │   │   │   ├── RegistryMigratedProjectionGoldenTests.cs
 │   │   │   ├── ScheduleConventionsDecodeGoldenTests.cs
+│   │   │   ├── ScheduleTermsWriteRulesGapTests.cs
+│   │   │   ├── ScheduleTermsWriteRulesStrictWalkGapTests.cs
 │   │   │   ├── ScheduleTermsWriteRulesTests.cs
 │   │   │   ├── SchemaTermsValidationTests.cs
 │   │   │   ├── SecurityAccountingInstrumentClassTests.cs
@@ -11920,6 +11929,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterQueryServiceAsOfTests.cs
 │   │   │   ├── SecurityMasterQueryServiceEquityTermsTests.cs
 │   │   │   ├── SecurityMasterQueryServiceProfileSearchTests.cs
+│   │   │   ├── SecurityMasterRebuildCapabilityFloorTests.cs
 │   │   │   ├── SecurityMasterRebuildOrchestratorTests.cs
 │   │   │   ├── SecurityMasterRecordedIdentifierPostgresTests.cs
 │   │   │   ├── SecurityMasterRecordedIdentifierQueryTests.cs
@@ -11932,6 +11942,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterServiceSnapshotTests.CapabilityFloor.cs
 │   │   │   ├── SecurityMasterServiceSnapshotTests.cs
 │   │   │   ├── SecurityMasterServiceSnapshotTests.DayCount.cs
+│   │   │   ├── SecurityMasterServiceSnapshotTests.RetainedScheduleGaps.cs
 │   │   │   ├── SecurityMasterServiceSnapshotTests.StrayScheduleAmendment.cs
 │   │   │   ├── SecurityMasterSnapshotStoreTests.cs
 │   │   │   ├── SecurityMasterStructuredCreditReclassificationServiceTests.cs
@@ -12449,6 +12460,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterSnapshotLotEconomicsTests.cs
 │   │   │   ├── SecurityMasterStructuredCreditReclassificationEndpointsTests.cs
 │   │   │   ├── SecurityMasterTermBlockEndpointsTests.cs
+│   │   │   ├── SecurityMasterTermsCapabilityRefusalEndpointsTests.cs
 │   │   │   ├── SecurityMasterUnderlyingEndpointsTests.cs
 │   │   │   ├── SecurityMasterValidationEndpointsTests.cs
 │   │   │   ├── SecurityMasterWorkbenchEndpointsTests.cs
@@ -12512,6 +12524,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpointsTests.RecurringJournals.cs
 │   │   │   ├── WorkstationEndpointsTests.ReportAuthority.cs
 │   │   │   ├── WorkstationEndpointsTests.StrategyTenantScope.cs
+│   │   │   ├── WorkstationEndpointsTests.TermsCapabilityRefusal.cs
 │   │   │   ├── WorkstationEndpointsTests.TradingTenantScope.cs
 │   │   │   ├── WorkstationEndpointsTests.Wave4.cs
 │   │   │   ├── WorkstationFamilyOfficeEndpointsTests.cs

@@ -843,7 +843,8 @@ lookup paths, and evidence trails those layers rely on.
   read once at host start in ordinal file-name order through the strict source-generated
   `BusinessDayCalendarFileJsonContext` (camelCase, unknown and repeated members refused) beside the
   built-in `WEEKENDS`. A file is refused, with a Warning naming it and the reason, for malformed or
-  missing members, a version below 1, an id outside `^[A-Z][A-Z0-9]{1,15}$` or not equal to its
+  missing members, a version below 1, an id outside `^[A-Z][A-Z0-9]{1,15}$`
+  (`BusinessDayCalendars.IsCanonicalCalendarId` in `Meridian.Contracts`) or not equal to its
   file stem, the reserved `WEEKENDS`, a weekend day that is not an exact English day name, no
   working day, inverted coverage or an id another file that passes these checks also defines (both
   are refused). A refused file loads nothing, and its Warning says whether each id it names (its
