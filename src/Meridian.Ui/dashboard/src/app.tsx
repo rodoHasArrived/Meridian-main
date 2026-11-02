@@ -21,6 +21,8 @@ import {
   type AppShellOperatingScopeInput
 } from "@/app-shell.operating-scope";
 import { CommandPalette } from "@/components/meridian/command-palette";
+import { KeyboardShortcutsSheet } from "@/components/meridian/keyboard-shortcuts-sheet";
+import { getGlobalKeyBinding, matchesKeyCombo } from "@/lib/keymap";
 import { ScopePicker } from "@/components/meridian/scope-picker";
 import { collectScopeFundAccounts } from "@/lib/operating-scope/fund-accounts";
 import {
@@ -343,6 +345,7 @@ function AppShell({
   onRetryDemoModeProbe?: () => void;
 }) {
   const [commandOpen, setCommandOpen] = useState(false);
+  const [keyboardHelpOpen, setKeyboardHelpOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
   const [scopePickerOpen, setScopePickerOpen] = useState(false);
   const [layoutRestoreSequence, setLayoutRestoreSequence] = useState(0);
@@ -513,26 +516,32 @@ function AppShell({
   const scopeDimensionsInEffect = useMemo(() => operatingScopeDimensionsForRoute(pathname), [pathname]);
 
   useEffect(() => {
-    const handleCommandShortcut = (event: KeyboardEvent) => {
+    const handleGlobalShortcut = (event: KeyboardEvent) => {
+      const targetIsEditable = isAppShellEditableShortcutTarget(event.target);
       const command = resolveAppShellCommandPaletteShortcut({
         key: event.key,
         ctrlKey: event.ctrlKey,
         metaKey: event.metaKey,
         altKey: event.altKey,
         shiftKey: event.shiftKey,
-        targetIsEditable: isAppShellEditableShortcutTarget(event.target),
+        targetIsEditable,
         commandPaletteOpen: commandOpen
       });
-      if (command !== "toggle-command-palette") {
+      if (command === "toggle-command-palette") {
+        event.preventDefault();
+        setCommandOpen((current) => !current);
         return;
       }
 
-      event.preventDefault();
-      setCommandOpen((current) => !current);
+      // "?" opens the shortcut list; never while typing or while the palette is open.
+      if (!targetIsEditable && !commandOpen && matchesKeyCombo(event, getGlobalKeyBinding("keyboard-help").keys)) {
+        event.preventDefault();
+        setKeyboardHelpOpen(true);
+      }
     };
 
-    window.addEventListener("keydown", handleCommandShortcut);
-    return () => window.removeEventListener("keydown", handleCommandShortcut);
+    window.addEventListener("keydown", handleGlobalShortcut);
+    return () => window.removeEventListener("keydown", handleGlobalShortcut);
   }, [commandOpen, setCommandOpen]);
 
   // Tell any open companion panes when the main workstation window goes away, so
@@ -889,6 +898,7 @@ function AppShell({
         })}
       />
 
+      <KeyboardShortcutsSheet open={keyboardHelpOpen} onOpenChange={setKeyboardHelpOpen} />
       <CommandPalette
         open={commandOpen}
         onOpenChange={setCommandOpen}

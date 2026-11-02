@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useVisibleInterval } from "@/hooks/use-visible-interval";
 import { cn } from "@/lib/utils";
 
 type PendingAction = "shutdown" | "restart";
@@ -54,12 +55,11 @@ export function LifecycleControlPanel() {
   useEffect(() => {
     const controller = new AbortController();
     void refresh(controller.signal);
-    const interval = window.setInterval(() => void refresh(controller.signal), 5_000);
-    return () => {
-      controller.abort();
-      window.clearInterval(interval);
-    };
+    return () => controller.abort();
   }, [refresh]);
+
+  // Paused while the tab is hidden; refreshes once on return.
+  useVisibleInterval(() => refresh(), 5_000);
 
   useEffect(() => {
     if (
