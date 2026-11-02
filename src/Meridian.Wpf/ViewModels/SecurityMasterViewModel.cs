@@ -4059,7 +4059,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
             missingFields.Add("trading hours");
         }
 
-        if (RequiresContractMultiplier(SelectedAssetClass) &&
+        if (InstrumentTypeDescriptorCatalog.RequiresContractMultiplier(SelectedAssetClass) &&
             _selectedTradingParameters?.ContractMultiplier is null or <= 0)
         {
             missingFields.Add("contract multiplier");
@@ -4269,9 +4269,6 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
 
         return normalized.Replace(".", " > ", StringComparison.Ordinal);
     }
-
-    private static bool RequiresContractMultiplier(string assetClass)
-        => InstrumentTypeDescriptorCatalog.RequiresContractMultiplier(assetClass);
 
     private static string NormalizeConflictValue(string value)
     {
