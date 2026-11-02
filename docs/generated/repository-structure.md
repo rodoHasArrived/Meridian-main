@@ -7177,8 +7177,10 @@ Meridian-main
 │   │   │   ├── scripts
 │   │   │   │   ├── eslint-rules
 │   │   │   │   │   └── kebab-filename.mjs
+│   │   │   │   ├── check-typography.mjs
 │   │   │   │   ├── run-vitest-stable.mjs
 │   │   │   │   ├── smoke-workstation.mjs
+│   │   │   │   ├── typography-allowlist.json
 │   │   │   │   ├── vitest-evidence.mjs
 │   │   │   │   └── vitest-evidence.test.mjs
 │   │   │   ├── src
@@ -7536,6 +7538,8 @@ Meridian-main
 │   │   │   │   │       ├── skeleton.test.tsx
 │   │   │   │   │       ├── skeleton.tsx
 │   │   │   │   │       ├── spinner.tsx
+│   │   │   │   │       ├── status-badge.test.tsx
+│   │   │   │   │       ├── status-badge.tsx
 │   │   │   │   │       ├── status-banner.tsx
 │   │   │   │   │       ├── stepper.test.tsx
 │   │   │   │   │       ├── stepper.tsx
