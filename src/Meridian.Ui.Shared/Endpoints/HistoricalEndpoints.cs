@@ -36,13 +36,17 @@ public static class HistoricalEndpoints
                 return Results.BadRequest(new { error = "Symbol is required" });
             }
 
+            if (!HistoricalDataQueryService.IsValidSymbol(symbol) || limit is < 1 or > 1000 || skip is < 0 ||
+                (from.HasValue && to.HasValue && from > to))
+                return Results.BadRequest(new { error = "Invalid symbol, range, or pagination (limit 1..1000)." });
+
             var query = new HistoricalDataQuery(
                 symbol.ToUpperInvariant(),
                 from,
                 to,
                 dataType,
                 skip,
-                limit);
+                limit ?? 1000);
 
             try
             {
@@ -55,7 +59,7 @@ public static class HistoricalEndpoints
             }
             catch (Exception ex)
             {
-                return Results.BadRequest(new { error = ex.Message });
+                return Results.BadRequest(new { error = "Historical query could not be completed." });
             }
         })
         .WithName("QueryHistoricalData").RequirePermission(UserPermission.ViewHistoricalData)
@@ -73,7 +77,7 @@ public static class HistoricalEndpoints
             }
             catch (Exception ex)
             {
-                return Results.BadRequest(new { error = ex.Message });
+                return Results.BadRequest(new { error = "Historical query could not be completed." });
             }
         })
         .WithName("GetAvailableSymbols").RequirePermission(UserPermission.ViewHistoricalData)
@@ -95,7 +99,7 @@ public static class HistoricalEndpoints
             }
             catch (Exception ex)
             {
-                return Results.BadRequest(new { error = ex.Message });
+                return Results.BadRequest(new { error = "Historical query could not be completed." });
             }
         })
         .WithName("GetSymbolDateRange").RequirePermission(UserPermission.ViewHistoricalData)
@@ -153,11 +157,11 @@ public static class HistoricalEndpoints
             }
             catch (ArgumentException ex)
             {
-                return Results.BadRequest(new { error = ex.Message });
+                return Results.BadRequest(new { error = "Historical query could not be completed." });
             }
             catch (Exception ex)
             {
-                return Results.BadRequest(new { error = ex.Message });
+                return Results.BadRequest(new { error = "Historical query could not be completed." });
             }
         })
         .WithName("GetSymbolBars").RequirePermission(UserPermission.ViewHistoricalData)

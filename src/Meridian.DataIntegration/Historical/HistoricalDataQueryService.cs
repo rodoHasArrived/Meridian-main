@@ -16,6 +16,14 @@ namespace Meridian.DataIntegration.Historical;
 /// </summary>
 public sealed class HistoricalDataQueryService
 {
+    /// <summary>Reject path components and wildcard syntax before filesystem discovery.</summary>
+    public static bool IsValidSymbol(string? symbol)
+    {
+        if (string.IsNullOrWhiteSpace(symbol) || symbol.Length > 32 || symbol is "." or "..")
+            return false;
+        return symbol.All(ch => char.IsAsciiLetterOrDigit(ch) || ch is '.' or '-' or '_' or '^');
+    }
+
     private readonly ILogger<HistoricalDataQueryService> _log;
     private readonly string _dataRoot;
     private readonly JsonSerializerOptions _jsonOptions;
@@ -48,6 +56,9 @@ public sealed class HistoricalDataQueryService
         CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
+        if (!IsValidSymbol(query.Symbol) || query.Limit is < 1 or > 1000 || query.Skip is < 0 || (query.From.HasValue && query.To.HasValue && query.From > query.To))
+            throw new ArgumentException("Invalid historical query.");
+        query = query with { Limit = query.Limit ?? 1000 };
         var result = new HistoricalDataQueryResult
         {
             Symbol = query.Symbol,
@@ -129,7 +140,7 @@ public sealed class HistoricalDataQueryService
         foreach (var dir in Directory.GetDirectories(_dataRoot))
         {
             var dirName = Path.GetFileName(dir);
-            if (IsLikelySymbolName(dirName) &&
+            if (IsValidSymbol(dirName) && IsLikelySymbolName(dirName) &&
                 Directory.GetFiles(dir, "*.jsonl*", SearchOption.AllDirectories).Length > 0)
             {
                 symbols.Add(dirName.ToUpperInvariant());
@@ -158,6 +169,8 @@ public sealed class HistoricalDataQueryService
     /// </summary>
     public HistoricalDataDateRange GetDateRange(string symbol)
     {
+        if (!IsValidSymbol(symbol))
+            throw new ArgumentException("Invalid symbol.", nameof(symbol));
         var files = FindDataFilesForSymbol(symbol);
         if (files.Count == 0)
         {
@@ -203,7 +216,7 @@ public sealed class HistoricalDataQueryService
         CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
-        if (string.IsNullOrWhiteSpace(query.Symbol))
+        if (!IsValidSymbol(query.Symbol))
         {
             throw new ArgumentException("Symbol is required", nameof(query));
         }
@@ -670,6 +683,8 @@ public sealed class HistoricalDataQueryService
 
     private List<string> FindDataFilesForSymbol(string symbol)
     {
+        if (!IsValidSymbol(symbol))
+            throw new ArgumentException("Invalid symbol.", nameof(symbol));
         var files = new List<string>();
 
         if (!Directory.Exists(_dataRoot))

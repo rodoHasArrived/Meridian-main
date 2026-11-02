@@ -72,6 +72,9 @@ internal sealed class BarMidpointFillModel(
         var remainingAbsolute = order.RemainingQuantity;
         var fillableAbsolute = ComputeFillableQuantity(remainingAbsolute, bar.Volume);
 
+        if (order.TimeInForce == TimeInForce.FillOrKill && fillableAbsolute < remainingAbsolute)
+            return new OrderFillResult(order with { Status = OrderStatus.Cancelled, IsTriggered = triggered }, [], RemoveOrder: true);
+
         if (fillableAbsolute == 0)
         {
             // Volume cap prevents any fill this bar — leave the order working.
@@ -113,10 +116,13 @@ internal sealed class BarMidpointFillModel(
             IsTriggered = triggered
         };
 
+        if (order.TimeInForce == TimeInForce.ImmediateOrCancel && !updated.IsComplete)
+            updated = updated with { Status = OrderStatus.Cancelled };
+
         return new OrderFillResult(
             updated,
             [fill],
-            RemoveOrder: isFullyFilled,
+            RemoveOrder: isFullyFilled || order.TimeInForce is TimeInForce.ImmediateOrCancel or TimeInForce.FillOrKill,
             WasTriggered: triggered && !order.IsTriggered);
     }
 

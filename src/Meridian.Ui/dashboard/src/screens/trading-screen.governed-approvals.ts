@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
   approveRiskEscalation,
@@ -69,18 +69,23 @@ export function useGovernedApprovalsViewModel(
   const [statusText, setStatusText] = useState<string | null>(null);
   const [forbidden, setForbidden] = useState(false);
 
+  const refreshGeneration = useRef(0);
   const refresh = useCallback(async () => {
+    const generation = ++refreshGeneration.current;
     if (!enabled) {
       return;
     }
 
     try {
-      setEscalations(await services.getRiskEscalations());
+      const latest = await services.getRiskEscalations();
+      if (generation !== refreshGeneration.current) return;
+      setEscalations(latest);
       setForbidden(false);
       // A recovered poll must retire the outage banner. Leaving it up beside current data
       // gives an operator no way to tell a live failure from a healed one.
       setErrorText(null);
     } catch (error) {
+      if (generation !== refreshGeneration.current) return;
       if (error instanceof ApiError && error.status === 403) {
         // Not an error state: this session simply does not manage orders. Latch it so the
         // poll stops re-requesting something it will never be allowed to have.
@@ -122,6 +127,7 @@ export function useGovernedApprovalsViewModel(
         return;
       }
 
+      ++refreshGeneration.current;
       setPendingId(escalationId);
       setErrorText(null);
       setStatusText(null);

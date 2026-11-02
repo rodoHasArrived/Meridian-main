@@ -144,20 +144,23 @@ public sealed class CompositeSink : IStorageSink
         if (_sinks.Count == 1)
         {
             // Fast path: single sink — skip Task.WhenAll overhead.
-            await AppendToSinkAsync(0, evt, ct).ConfigureAwait(false);
+            if (!await AppendToSinkAsync(0, evt, ct).ConfigureAwait(false))
+                throw new IOException("No configured storage sink accepted the event.");
             return;
         }
 
         // Multi-sink: fan out in parallel. Independent sinks are written concurrently so that
         // total append latency equals max(sink latencies) rather than sum(sink latencies).
-        var tasks = new Task[_sinks.Count];
+        var tasks = new Task<bool>[_sinks.Count];
         for (var i = 0; i < _sinks.Count; i++)
             tasks[i] = AppendToSinkAsync(i, evt, ct);
 
-        await Task.WhenAll(tasks).ConfigureAwait(false);
+        var outcomes = await Task.WhenAll(tasks).ConfigureAwait(false);
+        if (!outcomes.Any(static accepted => accepted))
+            throw new IOException("No configured storage sink accepted the event.");
     }
 
-    private async Task AppendToSinkAsync(int i, MarketEvent evt, CancellationToken ct)
+    private async Task<bool> AppendToSinkAsync(int i, MarketEvent evt, CancellationToken ct)
     {
         var breaker = _breakers[i];
         var status = breaker.Status;
@@ -168,7 +171,9 @@ public sealed class CompositeSink : IStorageSink
             _logger.LogDebug(
                 "Skipping sink {SinkIndex}/{SinkCount} ({SinkType}) — circuit breaker open until {CircuitResetTime}",
                 i + 1, _sinks.Count, _sinkTypeNames[i], breaker.OpenUntil);
-            return;
+            if (_failurePolicy == FailurePolicy.FailOnAnyFailure)
+                throw new IOException($"Sink {_sinkTypeNames[i]} has an open circuit and cannot accept writes.");
+            return false;
         }
 
         var isHalfOpen = status == CircuitStatus.HalfOpen;
@@ -189,6 +194,7 @@ public sealed class CompositeSink : IStorageSink
 
                 breaker.RecordSuccess();
             }
+            return true;
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -217,26 +223,22 @@ public sealed class CompositeSink : IStorageSink
                 throw new InvalidOperationException(
                     $"Sink {_sinkTypeNames[i]} failed and FailurePolicy is FailOnAnyFailure.", ex);
             }
+            return false;
         }
     }
 
     public async Task FlushAsync(CancellationToken ct = default)
     {
         List<Exception>? exceptions = null;
+        var successfulFlushes = 0;
 
         for (var i = 0; i < _sinks.Count; i++)
         {
-            if (_breakers[i].Status == CircuitStatus.Open)
-            {
-                _logger.LogDebug(
-                    "Skipping flush for sink {SinkIndex}/{SinkCount} ({SinkType}) — circuit breaker open",
-                    i + 1, _sinks.Count, _sinkTypeNames[i]);
-                continue;
-            }
-
+            // Flush previously accepted buffers even when append circuits are open.
             try
             {
                 await _sinks[i].FlushAsync(ct).ConfigureAwait(false);
+                successfulFlushes++;
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
@@ -251,6 +253,8 @@ public sealed class CompositeSink : IStorageSink
         {
             throw new AggregateException("One or more sinks failed to flush.", exceptions);
         }
+        if (successfulFlushes == 0)
+            throw new IOException("No configured storage sink successfully flushed.");
     }
 
     public async ValueTask DisposeAsync()

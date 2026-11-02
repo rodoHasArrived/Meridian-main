@@ -54,21 +54,21 @@ module internal ServicingAggregate =
 
     let private buildResolution (servicing: LoanServicingStateDto) amount (requestedBreakdown: PaymentBreakdownDto) =
         let mutable remaining = amount
-        let take requested =
-            if remaining <= 0m || requested <= 0m then
+        let take requested outstanding =
+            if remaining <= 0m || requested <= 0m || outstanding <= 0m then
                 0m
             else
-                let applied = min remaining requested
+                let applied = min remaining (min requested outstanding)
                 remaining <- remaining - applied
                 applied
 
         let breakdown =
             PaymentBreakdownDto(
-                take requestedBreakdown.ToInterest,
-                take requestedBreakdown.ToCommitmentFee,
-                take requestedBreakdown.ToFees,
-                take requestedBreakdown.ToPenalty,
-                take requestedBreakdown.ToPrincipal)
+                take requestedBreakdown.ToInterest servicing.Balances.InterestAccruedUnpaid,
+                take requestedBreakdown.ToCommitmentFee servicing.Balances.CommitmentFeeAccruedUnpaid,
+                take requestedBreakdown.ToFees servicing.Balances.FeesAccruedUnpaid,
+                take requestedBreakdown.ToPenalty servicing.Balances.PenaltyAccruedUnpaid,
+                take requestedBreakdown.ToPrincipal servicing.Balances.PrincipalOutstanding)
 
         MixedPaymentResolutionDto(breakdown, "Manual", "manual-v1", remaining)
 

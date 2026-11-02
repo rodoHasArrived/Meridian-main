@@ -139,7 +139,7 @@ internal static class DirectLendingServiceSupport
         if (requestedBreakdown is not null)
         {
             resolved = new PaymentBreakdownDto(
-                Math.Min(remaining, Math.Max(0m, requestedBreakdown.ToInterest)),
+                Math.Min(Math.Min(remaining, Math.Max(0m, requestedBreakdown.ToInterest)), Math.Max(0m, servicing.Balances.InterestAccruedUnpaid)),
                 0m,
                 0m,
                 0m,
@@ -148,25 +148,25 @@ internal static class DirectLendingServiceSupport
 
             resolved = resolved with
             {
-                ToCommitmentFee = Math.Min(remaining, Math.Max(0m, requestedBreakdown.ToCommitmentFee))
+                ToCommitmentFee = Math.Min(Math.Min(remaining, Math.Max(0m, requestedBreakdown.ToCommitmentFee)), Math.Max(0m, servicing.Balances.CommitmentFeeAccruedUnpaid))
             };
             remaining -= resolved.ToCommitmentFee;
 
             resolved = resolved with
             {
-                ToFees = Math.Min(remaining, Math.Max(0m, requestedBreakdown.ToFees))
+                ToFees = Math.Min(Math.Min(remaining, Math.Max(0m, requestedBreakdown.ToFees)), Math.Max(0m, servicing.Balances.FeesAccruedUnpaid))
             };
             remaining -= resolved.ToFees;
 
             resolved = resolved with
             {
-                ToPenalty = Math.Min(remaining, Math.Max(0m, requestedBreakdown.ToPenalty))
+                ToPenalty = Math.Min(Math.Min(remaining, Math.Max(0m, requestedBreakdown.ToPenalty)), Math.Max(0m, servicing.Balances.PenaltyAccruedUnpaid))
             };
             remaining -= resolved.ToPenalty;
 
             resolved = resolved with
             {
-                ToPrincipal = Math.Min(remaining, Math.Max(0m, requestedBreakdown.ToPrincipal))
+                ToPrincipal = Math.Min(Math.Min(remaining, Math.Max(0m, requestedBreakdown.ToPrincipal)), Math.Max(0m, servicing.Balances.PrincipalOutstanding))
             };
             remaining -= resolved.ToPrincipal;
 
