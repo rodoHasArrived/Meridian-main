@@ -349,6 +349,20 @@ let ``Identifier source-provider metadata does not change canonical identity`` (
     SecurityIdentifier.sameIdentity left right |> should equal true
 
 [<Fact>]
+let ``Identifier identity strips punctuation for alphanumeric kinds like the C# normalizer`` () =
+    let now = DateTimeOffset.UtcNow
+    let isin value = { createPrimaryTicker now with Kind = IdentifierKind.Isin; Value = value }
+
+    SecurityIdentifier.sameIdentity (isin "US 0378-3310 05") (isin "us0378331005") |> should equal true
+    SecurityIdentifier.normalizeIdentifierValue IdentifierKind.Isin " us-0378 331005 " |> should equal "US0378331005"
+
+[<Fact>]
+let ``Identifier identity keeps only digits for Valoren and leaves ticker punctuation intact`` () =
+    SecurityIdentifier.normalizeIdentifierValue IdentifierKind.Valoren "CH-1.234.567" |> should equal "1234567"
+    SecurityIdentifier.normalizeIdentifierValue IdentifierKind.Ticker " brk.b " |> should equal "BRK.B"
+    SecurityIdentifier.normalizeIdentifierValue IdentifierKind.Cusip null |> should equal ""
+
+[<Fact>]
 let ``ProviderSymbol snapshot rejects provider metadata that contradicts its discriminant`` () =
     let identifier = {
         createPrimaryTicker DateTimeOffset.UtcNow with

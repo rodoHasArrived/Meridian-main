@@ -54,6 +54,28 @@ module SecurityIdentifier =
     let normalizeValue (value: string) =
         if isNull value then String.Empty else value.Trim().ToUpperInvariant()
 
+    /// Kind-aware value normalization. Mirrors Meridian.Contracts.SecurityMaster.SecurityIdentifierNormalizer
+    /// .NormalizeValue (and migration 016's SQL backfill) so the F# duplicate/expiry checks and the C#
+    /// lookup give one raw value one identity. Character classes are ASCII-only on purpose.
+    let normalizeIdentifierValue (kind: IdentifierKind) (value: string) =
+        let basic = normalizeValue value
+        let keep (predicate: char -> bool) = String(basic |> Seq.filter predicate |> Seq.toArray)
+        let isAsciiAlphanumeric c = (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')
+        let isAsciiDigit c = c >= '0' && c <= '9'
+        match kind with
+        | IdentifierKind.Isin
+        | IdentifierKind.Cusip
+        | IdentifierKind.Sedol
+        | IdentifierKind.Figi
+        | IdentifierKind.OccOptionSymbol
+        | IdentifierKind.Lei
+        | IdentifierKind.Wkn
+        | IdentifierKind.Cik
+        | IdentifierKind.LoanX
+        | IdentifierKind.Clip -> keep isAsciiAlphanumeric
+        | IdentifierKind.Valoren -> keep isAsciiDigit
+        | _ -> basic
+
     let provider identifier =
         match identifier.Kind with
         | IdentifierKind.ProviderSymbol provider -> Some provider
@@ -99,7 +121,10 @@ module SecurityIdentifier =
 
     let sameIdentity left right =
         left.Kind = right.Kind
-        && String.Equals(normalizeValue left.Value, normalizeValue right.Value, StringComparison.Ordinal)
+        && String.Equals(
+            normalizeIdentifierValue left.Kind left.Value,
+            normalizeIdentifierValue right.Kind right.Value,
+            StringComparison.Ordinal)
         && String.Equals(
             left |> provider |> Option.defaultValue String.Empty |> normalizeValue,
             right |> provider |> Option.defaultValue String.Empty |> normalizeValue,

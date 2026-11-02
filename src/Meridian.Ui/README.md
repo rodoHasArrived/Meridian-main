@@ -11,6 +11,10 @@ last_reviewed: 2026-10-28
 
 # src/Meridian.Ui
 
+The host-served bundle includes the Security Master bond analytics model selector and floating v3
+metrics, projected payments, fixing provenance and typed refusal states. Rebuild it from `dashboard/`
+after source changes; the shared analytics endpoint remains the calculation authority.
+
 The host-served workstation bundle uses paired React/React DOM runtime packages and preserves
 accessible separators between account labels, tab counts, and provider state badges. Dashboard
 runtime requirements remain declared in its package manifest and checked before dependency work.

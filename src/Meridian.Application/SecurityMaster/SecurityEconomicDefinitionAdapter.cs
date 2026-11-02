@@ -7,6 +7,25 @@ namespace Meridian.Application.SecurityMaster;
 
 internal static class SecurityEconomicDefinitionAdapter
 {
+    /// <summary>
+    /// Stored classification labels come from the F# domain's explicit name functions, never from the
+    /// union's <c>ToString()</c>, which renders <c>OtherFamily "x"</c> / <c>OtherSubType "x"</c> with
+    /// their payload syntax and an option-wrapped family as <c>Some(...)</c>.
+    /// </summary>
+    private static class ClassificationLabels
+    {
+        public static string AssetClass(SecurityClassification classification)
+            => SecurityClassificationModule.assetClassName(classification.AssetClass);
+
+        public static string? Family(SecurityClassification classification)
+            => classification.Family is null
+                ? null
+                : SecurityClassificationModule.familyName(classification.Family.Value);
+
+        public static string SubType(SecurityClassification classification)
+            => SecurityClassificationModule.subTypeName(classification.SubType);
+    }
+
     public static SecurityEconomicDefinition ToEconomicDefinition(SecurityProjectionRecord projection)
         => SecurityMasterLegacyUpgrade.toEconomicDefinition(SecurityMasterMapping.ToRecord(projection));
 
@@ -28,9 +47,9 @@ internal static class SecurityEconomicDefinitionAdapter
 
         return new SecurityEconomicDefinitionRecord(
             projection.SecurityId,
-            definition.Classification.AssetClass.ToString(),
-            definition.Classification.Family?.ToString(),
-            definition.Classification.SubType.ToString(),
+            ClassificationLabels.AssetClass(definition.Classification),
+            ClassificationLabels.Family(definition.Classification),
+            ClassificationLabels.SubType(definition.Classification),
             definition.Classification.TypeName,
             definition.Classification.IssuerType is null ? null : definition.Classification.IssuerType.Value,
             definition.Classification.RiskCountry is null ? null : definition.Classification.RiskCountry.Value,
@@ -50,10 +69,10 @@ internal static class SecurityEconomicDefinitionAdapter
     }
 
     public static string GetAssetClass(SecurityProjectionRecord projection)
-        => ToEconomicDefinition(projection).Classification.AssetClass.ToString();
+        => ClassificationLabels.AssetClass(ToEconomicDefinition(projection).Classification);
 
     public static string GetSubType(SecurityProjectionRecord projection)
-        => ToEconomicDefinition(projection).Classification.SubType.ToString();
+        => ClassificationLabels.SubType(ToEconomicDefinition(projection).Classification);
 
     public static SecurityProjectionRecord ToProjection(
         SecurityEconomicDefinitionRecord economic,
@@ -159,9 +178,9 @@ internal static class SecurityEconomicDefinitionAdapter
     private static JsonElement BuildClassificationJson(SecurityEconomicDefinition definition)
         => JsonSerializer.SerializeToElement(new
         {
-            assetClass = definition.Classification.AssetClass.ToString(),
-            assetFamily = definition.Classification.Family?.ToString(),
-            subType = definition.Classification.SubType.ToString(),
+            assetClass = ClassificationLabels.AssetClass(definition.Classification),
+            assetFamily = ClassificationLabels.Family(definition.Classification),
+            subType = ClassificationLabels.SubType(definition.Classification),
             typeName = definition.Classification.TypeName,
             issuerType = definition.Classification.IssuerType is null ? null : definition.Classification.IssuerType.Value,
             riskCountry = definition.Classification.RiskCountry is null ? null : definition.Classification.RiskCountry.Value

@@ -121,6 +121,12 @@ asset-class endpoints serialize.
 `SecurityMasterJsonContext` also registers the income schedule, factor history and term-block
 request contracts.
 
+## Security Master governance controls (2026-11)
+
+- **Config schema.** `ConfigJsonSchemaGenerator` includes the boolean `SecurityMasterWorkbench:RequireIndependentProfileApprover` key, matching `config/appsettings.schema.json`.
+
+See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D8) for status and open decisions.
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.

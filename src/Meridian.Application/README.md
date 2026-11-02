@@ -44,12 +44,10 @@ schedules through create, read and amendment, including common-only schedule cha
 replay keeps the original common and asset documents. See
 [dated economic schedule validation](../../docs/domain/security.md#dated-economic-schedule-validation).
 
-The internal `SecurityMaster/CashFlow/ScheduleSpecFactory` remains a preparatory adapter over decoded
-F# conventions, with its broader day/week cadence and explicit common-calendar fallback tests.
-Production projections explicitly use `Meridian.Contracts.SecurityMaster.ScheduleSpecFactory`:
-that versioned record reader follows the descriptor, requires monthly-or-longer coupon cadences or
-AtMaturity, and resolves only the declaring block's calendars. The prototype is not a production
-fallback; both factories retain their separate refusal and calendar tests. See the
+Production projections use `Meridian.Contracts.SecurityMaster.ScheduleSpecFactory`: that versioned
+record reader follows the descriptor, requires monthly-or-longer coupon cadences or AtMaturity, and
+resolves only the declaring block's calendars; it never substitutes a common or holiday calendar. The
+former Application-side prototype factory (with a common-calendar fallback) was removed. See the
 [contractual schedule rollout](../../docs/domain/contractual-schedule.md#future-expansion-notes)
 for the declared engine and remaining 5b work.
 Cash-flow service composition retains its exact six-argument and calendar-aware seven-argument
@@ -1328,6 +1326,15 @@ workstation-mode host writes these lines to the same file. Verify it with
 - **Backfill cancellation.** `HistoricalBackfillService` and `CrossSourceBackfillReconciliationService` rethrow `OperationCanceledException` only for caller cancellation. A provider timeout is recorded as a per-symbol or per-provider failure.
 - **Help text.** `HelpCommand` cites only repository paths that exist, which `HelpCommandTests.HelpText_CitedRepositoryPaths_AllExist` enforces.
 - **OAuth refresh start-up.** If `OAuthTokenRefreshService`'s first initialization fails (vault unavailable, transient I/O), the background loop retries with capped exponential backoff (30 s, doubling to 15 min) instead of exiting. Before, tokens stopped refreshing until the process restarted.
+
+## Security Master governance controls (2026-11)
+
+- **Governed term amendments.** `IGovernedTermAmendmentPolicy` (`GovernedTermAmendmentPolicy`) is the single source of the `SecurityMasterWorkbench:RequireGovernedTermAmendments` refusal, shared by the web API and the WPF editor so they cannot disagree. It is consulted by client edit surfaces, not by `ISecurityMasterService.AmendTermsAsync`, which is also the governed publisher's write and provider ingest's.
+- **Independent profile approval.** `SecurityAssetProfileGovernanceService` refuses an asset-profile approval by the actor who drafted it when `SecurityMasterWorkbench:RequireIndependentProfileApprover` is on. It defaults to off, and the setting is read at approval time so it hot-reloads. `RequireIndependentReviewer` remains unconsumed.
+- **Classification labels.** `SecurityEconomicDefinitionAdapter` stores asset-class, family and sub-type labels from the F# domain's explicit name functions rather than union `ToString()`, which would emit payload syntax such as `OtherFamily "x"` or `Some(...)`.
+- **Removed prototype.** The unused Application-side `SecurityMaster/CashFlow/ScheduleSpecFactory` prototype was deleted; production uses `Meridian.Contracts.SecurityMaster.ScheduleSpecFactory`.
+
+See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D8) for status and open decisions.
 
 ## Diagrams
 

@@ -15,7 +15,7 @@ do_not_edit: true
 
 This tracker is generated from the live WPF shell registry, the maintained desktop screenshot index, and a text scan of `tests/Meridian.Wpf.Tests` for route, page, and view-model references. It tracks source-derived evidence only; roadmap priority and product scope still belong in `docs/roadmap/data/*.yml` and the design document.
 
-- Source fingerprint: `addbff247d1b`
+- Source fingerprint: `97d718a3200c`
 - Baseline date for open Gantt tasks: `2026-06-17`
 - Registered WPF screens: `98`
 - Open automated tasks: `6`
@@ -696,7 +696,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as Provider (ProviderPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-provider.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, +40 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, +41 more.
 
 #### Backfill (`Backfill`)
 
@@ -760,7 +760,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as SecurityMaster (SecurityMasterPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-security-master.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, +27 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, +28 more.
 
 #### Symbol mapping (`SymbolMapping`)
 
