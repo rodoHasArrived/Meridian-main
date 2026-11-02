@@ -579,6 +579,41 @@ public sealed class CompositeSinkTests
         sink.Verify(x => x.FlushAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
+    [Fact]
+    public async Task BufferedEventInOpenCircuit_MustFlushBeforeAcknowledgement()
+    {
+        var buffered = new Mock<IStorageSink>();
+        var healthy = new Mock<IStorageSink>();
+        var attempts = 0;
+        buffered.Setup(s => s.AppendAsync(It.IsAny<MarketEvent>(), It.IsAny<CancellationToken>()))
+            .Returns((MarketEvent _, CancellationToken _) =>
+            {
+                attempts++;
+                return attempts == 1
+                    ? ValueTask.CompletedTask
+                    : ValueTask.FromException(new IOException("disk full"));
+            });
+        var composite = new CompositeSink(new[] { buffered.Object, healthy.Object },
+            maxConsecutiveFailures: 1);
+        await composite.AppendAsync(CreateTestEvent());
+        await composite.AppendAsync(CreateTestEvent());
+        await composite.FlushAsync();
+        buffered.Verify(s => s.FlushAsync(It.IsAny<CancellationToken>()), Times.Once);
+        healthy.Verify(s => s.FlushAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task BufferedSinkFlushFailure_PreventsAcknowledgementEvenWhenOtherSinkFlushes()
+    {
+        var buffered = new Mock<IStorageSink>();
+        buffered.Setup(s => s.FlushAsync(It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new IOException("disk full"));
+        var healthy = new Mock<IStorageSink>();
+        var composite = new CompositeSink(new[] { buffered.Object, healthy.Object });
+        await composite.AppendAsync(CreateTestEvent());
+        await Assert.ThrowsAsync<AggregateException>(() => composite.FlushAsync());
+    }
+
     #region Helpers
 
     private static Mock<IStorageSink> CreateFailingSink()
