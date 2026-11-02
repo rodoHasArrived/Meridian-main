@@ -88,6 +88,8 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
 
         var normalizedTicker = ticker.Trim().ToUpperInvariant();
         int posted = 0;
+        // Read lazily, only when a cash distribution needs the held quantity unitized.
+        SecurityDetailDto? security = null;
 
         foreach (var state in CorporateActionEffectiveStateProjector.Project(actions, DateTimeOffset.UtcNow))
         {
@@ -148,7 +150,10 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
 
             switch (descriptor.LedgerPostingKind)
             {
-                case CorporateActionLedgerPostingKind.DividendDeclaration when action.DividendPerShare.HasValue:
+                // Amounts are read from the typed corporate-action terms, so a return of capital whose
+                // amount is recorded only in its payload posts like one recorded in the column.
+                case CorporateActionLedgerPostingKind.DividendDeclaration
+                    when CorporateActionTerms.From(action) is CashDistributionCorporateActionTerms { PositiveAmountPerUnit: { } amountPerUnit } cashTerms:
                     if (postingContext.PositionQuantity <= 0m)
                     {
                         _logger.LogWarning(
@@ -158,14 +163,46 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
                         break;
                     }
 
-                    var grossDividend = action.DividendPerShare.Value * postingContext.PositionQuantity;
+                    // The record-date quantity is unitized through the asset-class registry: the
+                    // distribution is paid on economic units, and only on share- or unit-counted lots.
+                    security ??= await _queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
+                    if (security is null)
+                    {
+                        _logger.LogWarning(
+                            "SecurityMasterLedgerBridge skipped dividend {CorporateActionId} for {Ticker} because the Security Master record is unavailable to unitize the position.",
+                            action.CorpActId,
+                            normalizedTicker);
+                        break;
+                    }
+
+                    if (!LotQuantity.TryFor(security.AssetClass, postingContext.PositionQuantity, security.AssetSpecificTerms, out var holding, out var unitError))
+                    {
+                        _logger.LogWarning(
+                            "SecurityMasterLedgerBridge skipped dividend {CorporateActionId} for {Ticker}: {UnitError}",
+                            action.CorpActId,
+                            normalizedTicker,
+                            unitError);
+                        break;
+                    }
+
+                    if (cashTerms.GrossAmountFor(holding) is not { } grossDividend)
+                    {
+                        _logger.LogWarning(
+                            "SecurityMasterLedgerBridge skipped dividend {CorporateActionId} for {Ticker}: {AssetClass} lots are measured in {UnitKind}, which has no per-unit reading.",
+                            action.CorpActId,
+                            normalizedTicker,
+                            security.AssetClass,
+                            holding.UnitKind);
+                        break;
+                    }
+
                     var withholding = grossDividend * postingContext.WithholdingTaxRate;
                     // Return of capital reduces the security's carrying value instead of
                     // recognizing dividend income; the receivable/receipt legs are shared.
                     var creditAccount = eventType == CorporateActionEventTypes.ReturnOfCapital
                         ? LedgerAccounts.Securities(normalizedTicker)
                         : LedgerAccounts.DividendIncome;
-                    PostDividendDeclaration(ledger, action, normalizedTicker, ts, meta, grossDividend, postingContext.PositionQuantity, creditAccount);
+                    PostDividendDeclaration(ledger, action, normalizedTicker, ts, meta, grossDividend, amountPerUnit, holding.EconomicUnits, creditAccount);
                     if (withholding > 0m)
                     {
                         PostWithholdingAccrual(ledger, action, normalizedTicker, postingContext, withholding);
@@ -189,8 +226,9 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
                     posted++;
                     break;
 
-                case CorporateActionLedgerPostingKind.FactorPaydown when action.DistributionRatio.HasValue:
-                    var projection = ProjectFactorPaydown(action, normalizedTicker, postingContext, ts);
+                case CorporateActionLedgerPostingKind.FactorPaydown
+                    when CorporateActionTerms.From(action) is PrincipalPaydownCorporateActionTerms { PaydownRatio: { } factorDelta }:
+                    var projection = ProjectFactorPaydown(action, factorDelta, normalizedTicker, postingContext, ts);
                     if (!projection.ProducesPostingCandidate)
                     {
                         _logger.LogWarning(
@@ -201,11 +239,12 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
                         break;
                     }
 
-                    PostFactorPaydown(ledger, action, normalizedTicker, ts, meta, projection.PrincipalPaydown!.Value);
+                    PostFactorPaydown(ledger, action, factorDelta, normalizedTicker, ts, meta, projection.PrincipalPaydown!.Value);
                     posted++;
                     break;
 
-                case CorporateActionLedgerPostingKind.RedemptionMemo when action.RedemptionPricePercentOfPar.HasValue:
+                case CorporateActionLedgerPostingKind.RedemptionMemo
+                    when CorporateActionTerms.From(action) is RedemptionCorporateActionTerms { PricePercentOfPar: { } redemptionPricePercentOfPar }:
                     if (postingContext.PositionQuantity <= 0m)
                     {
                         _logger.LogWarning(
@@ -215,7 +254,7 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
                         break;
                     }
 
-                    var redemptionProceeds = action.RedemptionPricePercentOfPar.Value / 100m * postingContext.PositionQuantity;
+                    var redemptionProceeds = redemptionPricePercentOfPar / 100m * postingContext.PositionQuantity;
                     PostRedemptionMemo(ledger, action, normalizedTicker, ts, meta, eventType, redemptionProceeds);
                     posted++;
                     break;
@@ -307,12 +346,12 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
         DateTimeOffset ts,
         JournalEntryMetadata meta,
         decimal grossAmount,
-        decimal positionQuantity,
+        decimal amountPerUnit,
+        decimal economicUnits,
         LedgerAccount creditAccount)
     {
-        var amountPerShare = action.DividendPerShare!.Value;
         var recordDate = action.RecordDate?.ToString("yyyy-MM-dd") ?? "n/a";
-        var description = $"Dividend declared {ticker} ex {action.ExDate:yyyy-MM-dd} record {recordDate} @ {amountPerShare:N4}/sh x {positionQuantity:N4}";
+        var description = $"Dividend declared {ticker} ex {action.ExDate:yyyy-MM-dd} record {recordDate} @ {amountPerUnit:N4}/sh x {economicUnits:N4}";
 
         var entry = new JournalEntry(
             action.CorpActId,
@@ -451,12 +490,13 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
     private static void PostFactorPaydown(
         DomainLedger ledger,
         CorporateActionDto action,
+        decimal factorDelta,
         string ticker,
         DateTimeOffset ts,
         JournalEntryMetadata meta,
         decimal amount)
     {
-        var description = $"Principal paydown {ticker} ex {action.ExDate:yyyy-MM-dd} factor delta {action.DistributionRatio!.Value:N6}";
+        var description = $"Principal paydown {ticker} ex {action.ExDate:yyyy-MM-dd} factor delta {factorDelta:N6}";
 
         var entry = new JournalEntry(
             action.CorpActId,
@@ -475,11 +515,11 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
 
     private FactorPaydownProjectionResult ProjectFactorPaydown(
         CorporateActionDto action,
+        decimal factorDelta,
         string ticker,
         CorporateActionLedgerPostingContext context,
         DateTimeOffset occurredAtUtc)
     {
-        var factorDelta = action.DistributionRatio!.Value;
         var positionId = DeriveJournalId(action.SecurityId, $"factor-position:{ticker}");
         return _factorPaydownProjector.Project(new FactorPaydownProjectionRequest(
             action.SecurityId,

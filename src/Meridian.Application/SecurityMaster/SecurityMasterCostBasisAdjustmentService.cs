@@ -141,17 +141,21 @@ public sealed class SecurityMasterCostBasisAdjustmentService : ISecurityMasterCo
             if (action.ExDate > asOf)
                 continue;
 
-            var canonical = CorporateActionEventTypes.Normalize(action.EventType);
             var reference = $"corp-action:{action.CorpActId:D}";
 
-            if (canonical is CorporateActionEventTypes.StockSplit or CorporateActionEventTypes.ReverseStockSplit
-                && action.SplitRatio is { } ratio && ratio > 0m)
+            // Read through the typed corporate-action terms: a return of capital whose per-unit
+            // amount is recorded only in its payload relieves basis like one recorded in the column.
+            var terms = CorporateActionTerms.From(action);
+            if (terms is SplitCorporateActionTerms { Ratio: { } ratio } && ratio > 0m)
             {
                 adjustments.Add(new LedgerTaxLotBasisAdjustment(
                     LedgerTaxLotBasisAdjustmentKind.Split, ratio, action.ExDate, securityId, LotId: null, reference).EnsureValid());
             }
-            else if (canonical == CorporateActionEventTypes.ReturnOfCapital
-                && action.DividendPerShare is { } perShare && perShare > 0m)
+            else if (terms is CashDistributionCorporateActionTerms
+                     {
+                         EventType: CorporateActionEventTypes.ReturnOfCapital,
+                         PositiveAmountPerUnit: { } perShare
+                     })
             {
                 adjustments.Add(new LedgerTaxLotBasisAdjustment(
                     LedgerTaxLotBasisAdjustmentKind.ReturnOfCapital, perShare, action.ExDate, securityId, LotId: null, reference).EnsureValid());
