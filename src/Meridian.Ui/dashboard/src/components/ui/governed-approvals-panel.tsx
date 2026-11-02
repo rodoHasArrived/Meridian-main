@@ -12,7 +12,10 @@ export interface GovernedApprovalsPanelProps {
 
 function describeOrder(escalation: RiskEscalation): string {
   const price = escalation.limitPrice !== null ? ` @ ${escalation.limitPrice}` : "";
-  return `${escalation.side} ${escalation.quantity} ${escalation.symbol} ${escalation.type.toLowerCase()}${price}`;
+  const sized = escalation.routedNotional != null
+    ? `${escalation.side} ${escalation.routedNotional} notional of ${escalation.symbol}`
+    : `${escalation.side} ${escalation.quantity} ${escalation.symbol}`;
+  return `${sized} ${escalation.type.toLowerCase()}${price}`;
 }
 
 /**
@@ -77,6 +80,16 @@ export function GovernedApprovalsPanel({ model }: GovernedApprovalsPanelProps) {
                 <span className="text-xs text-muted-foreground">{escalation.ruleName ?? "risk"}</span>
               </div>
               <p className="text-sm text-muted-foreground">{escalation.reason}</p>
+              <div className="text-xs text-muted-foreground" data-testid="approval-economic-terms">
+                {escalation.stopPrice != null && <span>Stop: {escalation.stopPrice}. </span>}
+                {escalation.trailPrice != null && <span>Trail price: {escalation.trailPrice}. </span>}
+                {escalation.trailPercent != null && <span>Trail percent: {escalation.trailPercent}. </span>}
+                {escalation.timeInForce && <span>Time in force: {escalation.timeInForce}. </span>}
+                {escalation.optionContract != null && <span>Option: {JSON.stringify(escalation.optionContract)}. </span>}
+                {escalation.legs != null && <span>Legs: {JSON.stringify(escalation.legs)}. </span>}
+                {escalation.fundAccountId && <span>Account: {escalation.fundAccountId}. </span>}
+                {escalation.positionIntent && <span>Intent: {escalation.positionIntent}. </span>}
+              </div>
               <Input
                 aria-label={`Decision reason for ${escalation.symbol} escalation`}
                 placeholder="Reason for the decision (recorded in the audit trail)"

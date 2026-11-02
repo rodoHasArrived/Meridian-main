@@ -128,12 +128,17 @@ internal sealed class MarketImpactFillModel(
                 order.AccountId));
         }
 
+        if (order.TimeInForce == TimeInForce.FillOrKill &&
+            Math.Abs(fills.Sum(static f => f.FilledQuantity)) != remainingAbsolute)
+            return new OrderFillResult(order with { Status = OrderStatus.Cancelled, IsTriggered = triggered }, [], RemoveOrder: true);
+
         if (fills.Count == 0)
         {
+            var cancel = order.TimeInForce is TimeInForce.ImmediateOrCancel or TimeInForce.FillOrKill;
             return new OrderFillResult(
-                order with { IsTriggered = triggered },
+                order with { IsTriggered = triggered, Status = cancel ? OrderStatus.Cancelled : order.Status },
                 [],
-                RemoveOrder: false,
+                RemoveOrder: cancel,
                 WasTriggered: triggered && !order.IsTriggered);
         }
 

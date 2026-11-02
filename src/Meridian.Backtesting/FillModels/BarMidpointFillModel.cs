@@ -77,11 +77,11 @@ internal sealed class BarMidpointFillModel(
 
         if (fillableAbsolute == 0)
         {
-            // Volume cap prevents any fill this bar — leave the order working.
+            var cancel = order.TimeInForce is TimeInForce.ImmediateOrCancel or TimeInForce.FillOrKill;
             return new OrderFillResult(
-                order with { IsTriggered = triggered },
+                order with { IsTriggered = triggered, Status = cancel ? OrderStatus.Cancelled : order.Status },
                 [],
-                RemoveOrder: false,
+                RemoveOrder: cancel,
                 WasTriggered: triggered && !order.IsTriggered);
         }
 
