@@ -1793,13 +1793,7 @@ Linting is a correctness-only ESLint flat-config baseline (`eslint.config.mjs`):
 recommended, react-hooks rules, and a local kebab-case filename rule with grandfathered
 PascalCase/camelCase directories (`components/accounting`, `components/charts`,
 `features/accounting`). No stylistic or formatting rules are enforced. `react-hooks/exhaustive-deps`
-stays a warning; treat new warnings in touched files as part of the change.
-
-`npm run lint` also runs the typography floor ratchet (`scripts/check-typography-floor.mjs`). It counts
-sub-12px text (`text-[9|10|11px]` and CSS `font-size` below 12px) per file and compares the counts with
-`scripts/typography-floor-baseline.json`. New sub-12px text fails the check. When existing occurrences
-are removed, run `node scripts/check-typography-floor.mjs --update-baseline` to lock in the reduction.
-The baseline only shrinks. Screen-level
+stays a warning; treat new warnings in touched files as part of the change. Screen-level
 accessibility is exercised by the `src/screens/*.a11y.test.tsx` suites plus axe assertions embedded
 in the larger screen tests; keep new screens covered by at least one axe render.
 
