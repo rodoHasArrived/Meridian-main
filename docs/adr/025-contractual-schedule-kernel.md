@@ -412,7 +412,7 @@ This command verifies referenced files and directories exist; it does not valida
 
 ---
 
-*Last Updated: 2026-10-28*
+*Last Updated: 2026-11-02*
 
 ## Applications
 
@@ -819,3 +819,92 @@ Its outputs remain nonpostable; legacy calculated consumers refuse a declaring c
 See [Contractual Cash-Flow Projection](../domain/contractual-cash-flow-projection.md) for API,
 formula, source-evidence, replay and rollout boundaries. This records source capability, not fleet
 write activation, actual exercise authority, or release acceptance.
+
+## Declared-schedule write-rule gaps — 2026-11-02
+
+Declaring writes are live on main (the 5b-1 write rules and the 5b-2 raise shipped in #3319). This
+entry records the rules `ScheduleTermsWriteRules` gained afterwards
+(`src/Meridian.Contracts/SecurityMaster/ScheduleTermsWriteRules.cs` and its partial
+`ScheduleTermsWriteRules.Gaps.cs`), ported from an independently built 5b-1 branch. No terms
+version, write version, stamp floor or declared mapping version changes, so
+`security-master-declared-schedule-v1` and [ADR-024](024-terms-payload-format-and-version-policy.md)
+are unchanged. The owner's disposition is recorded in the
+[extensibility review](../architecture/security-master-extensibility-review.md) (resolution pass of
+2026-11-02).
+
+- **Safety rule: a new or tightened rule judges only what a write introduces or changes.** Main
+  re-admits retained declarations on every amend (`SecurityAssetPackAdmission.EnsureAdmitted`), so
+  a tightened rule applied to stored rows would make them un-amendable by patch-less amends
+  (Polygon backfill, EDGAR, ticker changes) with no operator path but rewriting the container.
+  `Validate(assetClass, payload, retained)` and
+  `ValidateDeclarations(assetClass, payload, termsVersion, retained)` take the stored terms; the
+  older overloads pass `retained: null`, which is a create, where every container is introduced.
+  The unit is the root container (`scheduleConventions`, `callSchedule`, `putSchedule`). C1a also
+  runs when the root `issueDate` changed, and C5c when `nonCallPeriodEnd` changed. A container is
+  changed when it differs from the retained terms as terms: unset members and entries
+  (`IsPopulatedTermValue` false) count as absent, member order is ignored, numbers compare by
+  value and strings ordinally. A raw JSON comparison would not do, because the F# codec
+  re-serializes stored containers in the frozen form, so every patch-less amend would look like a
+  change. The retained terms are passed by the Write-mode amend mapping
+  (`SecurityMasterMapping`), the service amend admission (`SecurityMasterService`, which covers
+  patch-less amends), workbench staging (`SecurityMasterWorkbenchCommandService`) and term-block
+  amends (`SecurityTermBlocks`); creates pass none. Read-back exercise analytics
+  (`BondExerciseEconomics.TryResolveScenarios`) pass the row as its own retained terms, so a stored
+  row is analysed under the rules it was stored under. Main's existing rules, the stray-container
+  guard `EnsureAmendmentDoesNotPromoteStrayContainers` among them, still judge retained containers
+  as before. A stored row that breaks a gap rule stays amendable; to change that container the
+  operator submits a corrected one, and the refusal names the entry path and the rule. An echoed
+  number spelled differently (`100` against `100.0`) is not a change; an echoed vocabulary value
+  re-spelled in another case is, and is judged in full.
+- **Entry rules.** Each refusal carries main's prefix `Invalid declared schedule terms: `, with
+  `{path}` the entry's stored index (`callSchedule[i]`, `putSchedule[i]`):
+  - E4: an `exerciseFrequency` only on a Bermudan entry.
+  - E7: a European entry exercises on its start date only, so it declares no `callEndDate` or
+    `putEndDate`.
+  - E9a and E9b: `makeWholeSpreadBps` only on a `priceType` `MakeWhole` entry (an entry with no
+    `priceType` is Fixed), and never below zero.
+  - E10d: a `noticeDayType` has no effect without `minimumNoticeDays` or `maximumNoticeDays`.
+  - C1a: no `callDate` or `putDate` before the root `issueDate`. It reads the anchor only where the
+    schema declares exactly that key as a Date (Bond today; CertificateOfDeposit and
+    StructuredCredit declare none) and only when it is written `yyyy-MM-dd`; any other spelling
+    skips the rule. The maturity side is main's existing C1b.
+  - C5c: the earliest call opens on or after `nonCallPeriodEnd` (StructuredCredit), read the same
+    way. It runs after main's call-scalar checks C5a and C5b.
+  - Inside an entry, main's existing checks run first, then the non-periodic frequency check, the
+    Bermudan-regular rule, the price floor, E4, E7, E9a/b, E10d and C1a.
+- **One loosening, R24.** C2 ("The final exercise window needs an end date or maturity.") no longer
+  applies to a European last entry, which has no window to end. Unlike the rules above, R24
+  applies to every write, retained containers included, because it only admits more.
+- **Strict-walk tightening.** In a container the write introduces or changes:
+  - `paymentCalendars` ids must be canonical, the grammar calendar files use
+    (`BusinessDayCalendars.IsCanonicalCalendarId`, now in `Meridian.Contracts`: an uppercase ASCII
+    letter followed by 1 to 15 uppercase ASCII letters or digits, matched exactly), and each id is
+    named once. Both are checked in a populated block, after main's nonblank-id check.
+  - R30: main's unknown, case-variant or repeated member check now also runs inside an unset object
+    block or entry, so a misspelled member cannot hide behind null values.
+  - A String member of a populated block or entry must not be blank; omitting it or sending `null`
+    leaves it unset.
+  - A recognized but non-periodic `exerciseFrequency` (`AtMaturity` and its spellings) is refused
+    with its own text. E4 or main's Bermudan-regular rule would refuse the same values; this check
+    only fixes which text answers first.
+  - A declared member whose type the walker cannot check refuses the write. No declared member has
+    such a type today; `ScheduleTermsWriteRules.IsCheckedMemberType` is pinned by a test.
+  - Member names of a populated container are checked before member values, where they were
+    interleaved per member, so a payload with both faults now reports the name fault first.
+- **Capability floor on requests and on other terms-carrying writes.** The floor verifier keeps
+  main's fail-closed semantics (an unreadable floor refuses, as does a missing one once declared
+  terms are writable); the owner kept them, which supersedes the earlier "allow on unreadable"
+  decision (OD5). It now throws `SecurityMasterTermsCapabilityRefusedException`, a
+  `StartupRefusedException`, so startup refuses as before, and on a request the shared API
+  exception handler answers 503. The verifier now also gates projection rebuilds, the
+  direct-lending Asset Operations publication and new amortization batches. The
+  [terms contract rollout](../operators/security-master-terms-contract-rollout.md) gives the
+  operator view and the stored-data query QG, which lists stored rows a gap rule would refuse if
+  their container were changed.
+
+Tests: `ScheduleTermsWriteRulesGapTests`, `ScheduleTermsWriteRulesStrictWalkGapTests`, the
+`RetainedScheduleGaps` partials of `SecurityMasterServiceSnapshotTests` and
+`SecurityMasterWorkbenchCommandServiceTests`, `BondExerciseDelayedCouponTests.RetainedDeclarations`,
+`BusinessDayCalendarsCanonicalIdTests`, `SecurityMasterTermsCapabilityRefusalEndpointsTests`,
+`SecurityMasterRebuildCapabilityFloorTests`, the `CapabilityFloor` partial of
+`PostgresDirectLendingCommandServiceTests` and `LedgerFeatureRegistrationCapabilityFloorTests`.

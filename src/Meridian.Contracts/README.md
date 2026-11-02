@@ -417,7 +417,10 @@ twelve-member call entry and nine-member put entry under six paths: `callSchedul
 registry, term blocks and field edits offer) now includes these top-level containers at the raised
 Bond/CD/StructuredCredit ceilings; swap-leg conventions remain readable ahead. `PopulatedTermsAbove`
 still guards containers introduced above a node's writable ceiling, and `ScheduleTermsWriteRules`
-checks populated declarations. The members of a container introduced above version 1 are frozen once readable:
+checks populated declarations. Its `Validate` and `ValidateDeclarations` overloads that take the
+retained terms apply the rules added on 2026-11-02 (E4, E7, E9a/b, E10d, C1a, C5c and the
+strict-walk checks) only to a root container the write introduces or changes; the overloads without
+them treat the write as a create (ADR-025, declared-schedule write-rule gaps). The members of a container introduced above version 1 are frozen once readable:
 `SecurityAssetClassTermsHistoryTests` compares each one with the committed
 `tests/fixtures/security-master/terms-element-shapes/versioned-containers.json` fixture, so a
 member added later needs a new container key at a new readable version.
@@ -527,7 +530,10 @@ accepts older numeric status payloads; persisted queue records already use text 
   SHA-256 content-hashed through `Sha256Digest`), `JointBusinessDayCalendar`, the built-in
   `BusinessDayCalendars.WeekendsOnly` (`WEEKENDS`) and the shared roll, add and count extensions,
   `BusinessDayConvention` with `BusinessDayAdjustment`, and `IBusinessDayCalendarSource` with the
-  in-memory `StaticBusinessDayCalendarSource`. A source never falls back to weekends-only for an
+  in-memory `StaticBusinessDayCalendarSource`. `BusinessDayCalendars.IsCanonicalCalendarId` (with
+  `MaxCalendarIdLength` and `CanonicalCalendarIdDescription`) owns the canonical id grammar, an
+  uppercase ASCII letter followed by 1 to 15 uppercase ASCII letters or digits, matched exactly;
+  calendar files and declared `paymentCalendars` share it. A source never falls back to weekends-only for an
   unknown id. Calendars are pure: no clock and no I/O. The file-backed source every host registers
   is `Meridian.Storage.Calendars.FileBusinessDayCalendarSource`.
 - `Backfill/` - shared historical backfill run-result and per-symbol completeness signal payloads
