@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "601ead7e44e5039c6b479964a2cd59fa650e577a4d12238252fbad742833f62f",
+      "fingerprint": "8efc74c02e6f9666a0da32335124404a58b75937cfb549f1d340182422a226a6",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -957,6 +957,7 @@
         "Meridian.Contracts.FixedIncome.BondAmortizationMethod",
         "Meridian.Contracts.FixedIncome.BondAnalyticsBlocker",
         "Meridian.Contracts.FixedIncome.BondAnalyticsCashFlow",
+        "Meridian.Contracts.FixedIncome.BondAnalyticsFloatingCoupon",
         "Meridian.Contracts.FixedIncome.BondAnalyticsRequest",
         "Meridian.Contracts.FixedIncome.BondAnalyticsResult",
         "Meridian.Contracts.FixedIncome.BondCalculationContext",
@@ -2009,6 +2010,7 @@
         "Meridian.Contracts.SecurityMaster.SecurityFieldProvenanceOrigins",
         "Meridian.Contracts.SecurityMaster.SecurityFieldProvenanceRecord",
         "Meridian.Contracts.SecurityMaster.SecurityForwardCurve",
+        "Meridian.Contracts.SecurityMaster.SecurityForwardCurveJsonContext",
         "Meridian.Contracts.SecurityMaster.SecurityForwardCurvePoint",
         "Meridian.Contracts.SecurityMaster.SecurityHistoryRequest",
         "Meridian.Contracts.SecurityMaster.SecurityIdentifierDto",
@@ -4112,7 +4114,7 @@
       "directories": [
         "src/Meridian.Contracts/SecurityMaster"
       ],
-      "fingerprint": "02ad01c9514e11c2d2ea65db4a884d1da4067ac47962ec70223750b2c472c976",
+      "fingerprint": "d1a3ecbf6058b299ad853e46677d7f4d34dc8f7c4c3bc21d18da958867256a00",
       "id": "security-master-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts.SecurityMaster"
@@ -4483,6 +4485,7 @@
         "Meridian.Contracts.SecurityMaster.SecurityFieldProvenanceOrigins",
         "Meridian.Contracts.SecurityMaster.SecurityFieldProvenanceRecord",
         "Meridian.Contracts.SecurityMaster.SecurityForwardCurve",
+        "Meridian.Contracts.SecurityMaster.SecurityForwardCurveJsonContext",
         "Meridian.Contracts.SecurityMaster.SecurityForwardCurvePoint",
         "Meridian.Contracts.SecurityMaster.SecurityHistoryRequest",
         "Meridian.Contracts.SecurityMaster.SecurityIdentifierDto",
@@ -4610,7 +4613,7 @@
       ]
     }
   ],
-  "fingerprint": "75dd7b147fe2642cf5ad65a08c24b6e785cc1ec7142824383edeba4f5ec6ee74",
+  "fingerprint": "61f71a5b502f5ae521f37f02c67ae1b331baba0949ea741171e0e337fbd941f4",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -5875,7 +5878,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "fbaf304af5931d30f11cfdb9b153948e4ea089157c3046f2a885dd47d5037e25",
+      "fingerprint": "8cb8e9bc480543f3e452674ae69c8af0b88b67331ddd96ebcf9854e9c75c6a39",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.FixedIncome",
       "object_ids": [
@@ -5883,6 +5886,7 @@
         "Meridian.Contracts.FixedIncome.BondAmortizationMethod",
         "Meridian.Contracts.FixedIncome.BondAnalyticsBlocker",
         "Meridian.Contracts.FixedIncome.BondAnalyticsCashFlow",
+        "Meridian.Contracts.FixedIncome.BondAnalyticsFloatingCoupon",
         "Meridian.Contracts.FixedIncome.BondAnalyticsRequest",
         "Meridian.Contracts.FixedIncome.BondAnalyticsResult",
         "Meridian.Contracts.FixedIncome.BondCalculationContext",
@@ -6760,7 +6764,7 @@
         "all-contracts",
         "security-master-contracts"
       ],
-      "fingerprint": "1e499402e58381149519ab9d9de3d005226448e014b4e9a5ea3a7d1f0f811734",
+      "fingerprint": "71402a8dd9c48f23bf4d85a52eb4c82fd193b92cab81f70f1dc7a11e4ab6fee9",
       "mapped_schemas": [
         "security_master"
       ],
@@ -7111,6 +7115,7 @@
         "Meridian.Contracts.SecurityMaster.SecurityFieldProvenanceOrigins",
         "Meridian.Contracts.SecurityMaster.SecurityFieldProvenanceRecord",
         "Meridian.Contracts.SecurityMaster.SecurityForwardCurve",
+        "Meridian.Contracts.SecurityMaster.SecurityForwardCurveJsonContext",
         "Meridian.Contracts.SecurityMaster.SecurityForwardCurvePoint",
         "Meridian.Contracts.SecurityMaster.SecurityHistoryRequest",
         "Meridian.Contracts.SecurityMaster.SecurityIdentifierDto",
@@ -129393,7 +129398,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "57b06cb3ac421bd38e6ac17df98af52ace0e0fee6f293104a6b6719dd496b173",
+      "fingerprint": "c84c1935fc9e29b9f018bb93d4215a4039832e26c5ae44f42b703a29efa08a5a",
       "full_name": "Meridian.Contracts.FixedIncome.BondAnalyticsCashFlow",
       "id": "Meridian.Contracts.FixedIncome.BondAnalyticsCashFlow",
       "kind": "record",
@@ -129426,6 +129431,20 @@
           "raw_type": "DateOnly",
           "source_line": 35,
           "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "FloatingCoupon",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "BondAnalyticsFloatingCoupon?",
+          "source_line": 43,
+          "type": "BondAnalyticsFloatingCoupon?"
         },
         {
           "collection": false,
@@ -129502,7 +129521,9 @@
       "namespace": "Meridian.Contracts.FixedIncome",
       "partial": false,
       "qualified_name": "Meridian.Contracts.FixedIncome.BondAnalyticsCashFlow",
-      "references": [],
+      "references": [
+        "Meridian.Contracts.FixedIncome.BondAnalyticsFloatingCoupon"
+      ],
       "source": {
         "line": 32,
         "path": "src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs"
@@ -129510,6 +129531,138 @@
       "sources": [
         {
           "line": 32,
+          "path": "src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "5490a4b9ba9a2fd6b610ffc9a6e0db4c2f8daa8be3dfa4999c9a5a3aadccd392",
+      "full_name": "Meridian.Contracts.FixedIncome.BondAnalyticsFloatingCoupon",
+      "id": "Meridian.Contracts.FixedIncome.BondAnalyticsFloatingCoupon",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CouponRate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 59,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "IndexName",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 56,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "IndexRate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 57,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "IsObserved",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 55,
+          "type": "bool"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ResetDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 54,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Source",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 60,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SpreadBps",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 58,
+          "type": "decimal"
+        }
+      ],
+      "name": "BondAnalyticsFloatingCoupon",
+      "namespace": "Meridian.Contracts.FixedIncome",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.FixedIncome.BondAnalyticsFloatingCoupon",
+      "references": [],
+      "source": {
+        "line": 53,
+        "path": "src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 53,
           "path": "src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs"
         }
       ],
@@ -129649,7 +129802,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "6b74ecf699279d410a01914f1f2c8142763155095b0e5ca485a84d21cf2074ad",
+      "fingerprint": "c09c43239232ca0151a1232d30c5ffb6f3950b972cb1c8ef6bba4274e908ca05",
       "full_name": "Meridian.Contracts.FixedIncome.BondAnalyticsResult",
       "id": "Meridian.Contracts.FixedIncome.BondAnalyticsResult",
       "kind": "record",
@@ -129666,7 +129819,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 64,
+          "source_line": 85,
           "type": "decimal?"
         },
         {
@@ -129680,7 +129833,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<BondAnalyticsBlocker>",
-          "source_line": 75,
+          "source_line": 96,
           "type": "IReadOnlyList<BondAnalyticsBlocker>"
         },
         {
@@ -129694,7 +129847,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<BondOperationCapability>",
-          "source_line": 76,
+          "source_line": 97,
           "type": "IReadOnlyList<BondOperationCapability>"
         },
         {
@@ -129708,7 +129861,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<BondAnalyticsCashFlow>",
-          "source_line": 72,
+          "source_line": 93,
           "type": "IReadOnlyList<BondAnalyticsCashFlow>"
         },
         {
@@ -129722,7 +129875,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 62,
+          "source_line": 83,
           "type": "decimal?"
         },
         {
@@ -129736,7 +129889,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "BondCalculationContext",
-          "source_line": 60,
+          "source_line": 81,
           "type": "BondCalculationContext"
         },
         {
@@ -129750,7 +129903,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 69,
+          "source_line": 90,
           "type": "decimal?"
         },
         {
@@ -129764,7 +129917,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 58,
+          "source_line": 79,
           "type": "string"
         },
         {
@@ -129778,7 +129931,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 66,
+          "source_line": 87,
           "type": "decimal?"
         },
         {
@@ -129792,7 +129945,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 77,
+          "source_line": 98,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -129806,7 +129959,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 63,
+          "source_line": 84,
           "type": "decimal?"
         },
         {
@@ -129820,7 +129973,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 70,
+          "source_line": 91,
           "type": "decimal?"
         },
         {
@@ -129834,7 +129987,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<BondExerciseYield>",
-          "source_line": 73,
+          "source_line": 94,
           "type": "IReadOnlyList<BondExerciseYield>"
         },
         {
@@ -129848,7 +130001,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<BondCalculationInput>",
-          "source_line": 74,
+          "source_line": 95,
           "type": "IReadOnlyList<BondCalculationInput>"
         },
         {
@@ -129862,7 +130015,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 67,
+          "source_line": 88,
           "type": "decimal?"
         },
         {
@@ -129876,7 +130029,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 59,
+          "source_line": 80,
           "type": "string"
         },
         {
@@ -129890,7 +130043,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 68,
+          "source_line": 89,
           "type": "decimal?"
         },
         {
@@ -129904,8 +130057,22 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 57,
+          "source_line": 78,
           "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "SpreadDv01",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "decimal?",
+          "source_line": 107,
+          "type": "decimal?"
         },
         {
           "collection": false,
@@ -129918,7 +130085,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "BondYieldConvention?",
-          "source_line": 61,
+          "source_line": 82,
           "type": "BondYieldConvention?"
         },
         {
@@ -129932,7 +130099,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 65,
+          "source_line": 86,
           "type": "decimal?"
         },
         {
@@ -129946,7 +130113,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 71,
+          "source_line": 92,
           "type": "decimal?"
         }
       ],
@@ -129964,12 +130131,12 @@
         "Meridian.Contracts.FixedIncome.BondYieldConvention"
       ],
       "source": {
-        "line": 56,
+        "line": 77,
         "path": "src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs"
       },
       "sources": [
         {
-          "line": 56,
+          "line": 77,
           "path": "src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs"
         }
       ],
@@ -130448,7 +130615,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "9bea63214532265034611a230dfb8e23535bf5aea0305f3bb3ea47fc37e07dc8",
+      "fingerprint": "17997fafcd4ceadafaa32d360887baa6da6a67d6e48de7a1e97ecf2231c32268",
       "full_name": "Meridian.Contracts.FixedIncome.BondExerciseYield",
       "id": "Meridian.Contracts.FixedIncome.BondExerciseYield",
       "kind": "record",
@@ -130466,7 +130633,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateOnly?",
-          "source_line": 48,
+          "source_line": 69,
           "type": "DateOnly?"
         },
         {
@@ -130480,7 +130647,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 44,
+          "source_line": 65,
           "type": "DateOnly"
         },
         {
@@ -130494,7 +130661,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 43,
+          "source_line": 64,
           "type": "string"
         },
         {
@@ -130508,7 +130675,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateOnly?",
-          "source_line": 47,
+          "source_line": 68,
           "type": "DateOnly?"
         },
         {
@@ -130522,7 +130689,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 45,
+          "source_line": 66,
           "type": "decimal"
         },
         {
@@ -130536,7 +130703,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 46,
+          "source_line": 67,
           "type": "decimal"
         }
       ],
@@ -130546,12 +130713,12 @@
       "qualified_name": "Meridian.Contracts.FixedIncome.BondExerciseYield",
       "references": [],
       "source": {
-        "line": 42,
+        "line": 63,
         "path": "src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs"
       },
       "sources": [
         {
-          "line": 42,
+          "line": 63,
           "path": "src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs"
         }
       ],
@@ -132208,7 +132375,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "28947912cbcf1eadaba0338dbfd34d5100037d47422354257881054b8ad925b8",
+      "fingerprint": "6d5f4babd38b10197d8b7171b3a4ac8dec5f58016c3da2a41b487b059048627c",
       "full_name": "Meridian.Contracts.FixedIncome.BondOperationCapability",
       "id": "Meridian.Contracts.FixedIncome.BondOperationCapability",
       "kind": "record",
@@ -132225,7 +132392,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 50,
+          "source_line": 71,
           "type": "string"
         },
         {
@@ -132240,7 +132407,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 50,
+          "source_line": 71,
           "type": "string?"
         },
         {
@@ -132254,7 +132421,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 50,
+          "source_line": 71,
           "type": "bool"
         }
       ],
@@ -132264,12 +132431,12 @@
       "qualified_name": "Meridian.Contracts.FixedIncome.BondOperationCapability",
       "references": [],
       "source": {
-        "line": 50,
+        "line": 71,
         "path": "src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs"
       },
       "sources": [
         {
-          "line": 50,
+          "line": 71,
           "path": "src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs"
         }
       ],
@@ -247458,7 +247625,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "71c5b1b2d54962c023b49598ea24f8d4e1c8c1924e9240012cbef6257c3338bb",
+      "fingerprint": "20d0c8fb9bad75277495a03a545777a5b62eb91c2e69013b5467cdc37e915b7d",
       "full_name": "Meridian.Contracts.SecurityMaster.ISecurityForwardCurveProvider",
       "id": "Meridian.Contracts.SecurityMaster.ISecurityForwardCurveProvider",
       "kind": "interface",
@@ -247472,12 +247639,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.ISecurityForwardCurveProvider",
       "references": [],
       "source": {
-        "line": 115,
+        "line": 120,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs"
       },
       "sources": [
         {
-          "line": 115,
+          "line": 120,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs"
         }
       ],
@@ -268572,6 +268739,46 @@
       "sources": [
         {
           "line": 15,
+          "path": "src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [
+        "JsonSerializerContext"
+      ],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "3a994dea560da2f17f0b3be33463f74e39bee11130db4ae40ddc71233efd0079",
+      "full_name": "Meridian.Contracts.SecurityMaster.SecurityForwardCurveJsonContext",
+      "id": "Meridian.Contracts.SecurityMaster.SecurityForwardCurveJsonContext",
+      "kind": "class",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [],
+      "name": "SecurityForwardCurveJsonContext",
+      "namespace": "Meridian.Contracts.SecurityMaster",
+      "partial": true,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityForwardCurveJsonContext",
+      "references": [],
+      "source": {
+        "line": 118,
+        "path": "src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs"
+      },
+      "sources": [
+        {
+          "line": 118,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs"
         }
       ],

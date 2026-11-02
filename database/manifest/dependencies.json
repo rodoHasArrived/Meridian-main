@@ -5680,6 +5680,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FixedIncome.BondAnalyticsFloatingCoupon"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.FixedIncome.BondAnalyticsRequest"
     },
     {
@@ -11987,6 +11993,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityForwardCurve"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityForwardCurveJsonContext"
     },
     {
       "kind": "contract-set-member",
@@ -25966,6 +25978,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityForwardCurveJsonContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityForwardCurvePoint"
     },
     {
@@ -31925,6 +31943,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Extensibility.TenantTemplateConfigurationBundleDto",
       "target": "contract:Meridian.Contracts.Extensibility.ExtensibilityConfigurationEnvelopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FixedIncome.BondAnalyticsCashFlow",
+      "target": "contract:Meridian.Contracts.FixedIncome.BondAnalyticsFloatingCoupon"
     },
     {
       "kind": "contract-reference",
@@ -56020,7 +56044,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "cac4e1a52be4a648849077594bbab124d42588f316a8548cdb1253b1400ae03f",
+  "fingerprint": "6b93497edeea1ffeef62acf64c2a24ca47f96fa2d56e0a833df54e1356875f42",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -61748,6 +61772,12 @@
       "id": "contract:Meridian.Contracts.FixedIncome.BondAnalyticsCashFlow",
       "kind": "contract-type",
       "label": "Meridian.Contracts.FixedIncome.BondAnalyticsCashFlow"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.FixedIncome.BondAnalyticsFloatingCoupon",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FixedIncome.BondAnalyticsFloatingCoupon"
     },
     {
       "classification": "request",
@@ -68060,6 +68090,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityForwardCurve",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityForwardCurve"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityForwardCurveJsonContext",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityForwardCurveJsonContext"
     },
     {
       "classification": "record",
@@ -81999,11 +82035,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3593,
-    "contract_set_memberships": 4448,
-    "edges": 9308,
+    "contract_references": 3594,
+    "contract_set_memberships": 4451,
+    "edges": 9312,
     "foreign_keys": 155,
     "logical_references": 6,
-    "nodes": 4505
+    "nodes": 4507
   }
 }
