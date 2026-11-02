@@ -1,6 +1,6 @@
 // Typography floor ratchet.
 //
-// The workstation type scale starts at 12px. Sub-12px text (Tailwind `text-[9px|10px|11px]`
+// The workstation type scale starts at 12px. Sub-12px text (Tailwind arbitrary-size utilities
 // or CSS `font-size` below 12px) is tolerated only where it already exists. This script
 // counts those occurrences per file and compares them with a checked-in baseline:
 //
@@ -21,8 +21,9 @@ const dashboardRoot = resolve(here, "..");
 const srcRoot = join(dashboardRoot, "src");
 const baselinePath = join(here, "typography-floor-baseline.json");
 
-// Tailwind arbitrary sub-12px font sizes, e.g. `text-[11px]`.
-const TAILWIND_SUB12 = /text-\[(?:[0-9]|10|11)(?:\.\d+)?px\]/g;
+// Tailwind arbitrary sub-12px font sizes. The class prefix is assembled at runtime so that
+// Tailwind's content scanner, which reads this repo's files, does not emit utilities from it.
+const TAILWIND_SUB12 = new RegExp("text-" + "\\[(?:[0-9]|10|11)(?:\\.\\d+)?px\\]", "g");
 // CSS font-size declarations below 12px, e.g. `font-size: 11px;` or `font-size: 10.5px`.
 const CSS_SUB12 = /font-size\s*:\s*(?:[0-9]|10|11)(?:\.\d+)?px/g;
 
