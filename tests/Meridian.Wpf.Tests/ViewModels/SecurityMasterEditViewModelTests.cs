@@ -303,6 +303,32 @@ public sealed class SecurityMasterEditViewModelTests
         });
     }
 
+    [Fact]
+    public void SaveAsync_WhenGovernedTermAmendmentsAreRequired_RefusesTheDirectAmendment()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var service = new Mock<ISecurityMasterService>(MockBehavior.Strict);
+            var policy = new Mock<Meridian.Application.SecurityMaster.IGovernedTermAmendmentPolicy>();
+            policy.SetupGet(p => p.RefusalReason).Returns("Direct term amendments are disabled by governance policy.");
+
+            var viewModel = SecurityMasterEditViewModel.CreateNew(
+                WpfServices.LoggingService.Instance,
+                NotificationService.Instance,
+                service.Object,
+                new StubAuthorizationSource("desktop.operator"),
+                new StubMutationAuthorization(granted: true),
+                policy.Object);
+            viewModel.LoadForEdit(CreateEquityDetail());
+            viewModel.DisplayName = "Apple Inc. Class A";
+
+            await viewModel.SaveCommand.ExecuteAsync(null);
+
+            viewModel.StatusText.Should().Contain("disabled by governance policy");
+            service.VerifyNoOtherCalls();
+        });
+    }
+
     private static SecurityMasterEditViewModel CreateViewModel(
         Mock<ISecurityMasterService>? service = null,
         WpfServices.IDesktopAuthorizationSource? operatorContext = null,

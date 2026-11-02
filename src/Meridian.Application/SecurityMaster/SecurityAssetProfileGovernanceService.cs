@@ -4,6 +4,7 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.ReferenceData.SecurityMaster;
 using Meridian.Storage;
 using Meridian.Storage.Archival;
+using Microsoft.Extensions.Options;
 
 namespace Meridian.Application.SecurityMaster;
 
@@ -69,6 +70,7 @@ public sealed class SecurityAssetProfileGovernanceService : ISecurityAssetProfil
     private readonly IReadOnlyList<SecurityAssetProfileDefinitionDto> _seedProfiles =
         StaticSecurityAssetProfileCatalog.CreateDefault().GetProfiles();
     private readonly string? _persistencePath;
+    private readonly Func<bool> _requireIndependentApprover = static () => false;
     private SecurityAssetProfileGovernanceSnapshot _inMemorySnapshot = new([], []);
 
     public SecurityAssetProfileGovernanceService()
@@ -79,6 +81,20 @@ public sealed class SecurityAssetProfileGovernanceService : ISecurityAssetProfil
     {
         ArgumentNullException.ThrowIfNull(storageOptions);
         _persistencePath = Path.Combine(storageOptions.RootPath, "governance", "security-asset-profiles.json");
+    }
+
+    /// <summary>
+    /// Production composition: an approval by the actor who drafted the version is refused while
+    /// <see cref="SecurityMasterWorkbenchOptions.RequireIndependentProfileApprover"/> is on (off by default). The setting is
+    /// read at approval time so it hot-reloads. The other constructors keep self-approval allowed.
+    /// </summary>
+    public SecurityAssetProfileGovernanceService(
+        StorageOptions storageOptions,
+        IOptionsMonitor<SecurityMasterWorkbenchOptions> workbenchOptions)
+        : this(storageOptions)
+    {
+        ArgumentNullException.ThrowIfNull(workbenchOptions);
+        _requireIndependentApprover = () => workbenchOptions.CurrentValue.RequireIndependentProfileApprover;
     }
 
     // The selectable catalog must stay aligned with write-time governance, which accepts a
@@ -245,6 +261,15 @@ public sealed class SecurityAssetProfileGovernanceService : ISecurityAssetProfil
             if (draft is null)
             {
                 throw new ArgumentException("A matching draft profile version is required before approval.", nameof(request));
+            }
+
+            // A draft records its author in ApprovedBy until it is approved.
+            if (_requireIndependentApprover()
+                && string.Equals(draft.ApprovedBy?.Trim(), resolvedActor, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ArgumentException(
+                    "A profile version must be approved by someone other than the actor who drafted it.",
+                    nameof(request));
             }
 
             var approved = draft with
