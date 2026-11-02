@@ -401,7 +401,8 @@ public static partial class WorkstationEndpoints
                 jsonOptions,
                 statusCode: StatusCodes.Status422UnprocessableEntity);
         }
-        catch (InvalidOperationException ex)
+        // A terms capability floor refusal is the shared handler's 503, never this route's 409 (ADR-025).
+        catch (InvalidOperationException ex) when (ex is not SecurityMasterTermsCapabilityRefusedException)
         {
             // A domain-state precondition failed (security not found for edit, missing trust snapshot, or
             // an approval gate that blocked the transition).

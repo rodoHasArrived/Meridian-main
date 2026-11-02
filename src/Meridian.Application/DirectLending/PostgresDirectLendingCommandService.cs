@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.DirectLending;
 using Meridian.FSharp.DirectLending.Aggregates;
@@ -19,6 +20,7 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
     private readonly LoanAccountingProjector _loanAccountingProjector;
     private readonly DirectLendingOptions _options;
     private readonly IAssetOperationsCommandService? _assetOperationsCommandService;
+    private readonly ISecurityMasterTermsCapabilityVerifier? _termsCapabilityVerifier;
 
     public PostgresDirectLendingCommandService(
         IDirectLendingStateStore stateStore,
@@ -26,7 +28,8 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
         IDirectLendingQueryService queryService,
         LoanAccountingProjector loanAccountingProjector,
         DirectLendingOptions options,
-        IAssetOperationsCommandService? assetOperationsCommandService = null)
+        IAssetOperationsCommandService? assetOperationsCommandService = null,
+        ISecurityMasterTermsCapabilityVerifier? termsCapabilityVerifier = null)
     {
         _stateStore = stateStore;
         _operationsStore = operationsStore;
@@ -34,6 +37,7 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
         _loanAccountingProjector = loanAccountingProjector;
         _options = options;
         _assetOperationsCommandService = assetOperationsCommandService;
+        _termsCapabilityVerifier = termsCapabilityVerifier;
     }
 
     public async Task<DirectLendingCommandResult<LoanContractDetailDto>> CreateLoanAsync(CreateLoanRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
@@ -1482,6 +1486,12 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
         {
             return;
         }
+
+        // The publication upserts the Security Master Asset Operations projection, which carries terms
+        // history and schedule-derived flows: the terms capability floor is verified first, so a refused
+        // node leaves the durable outbox delivery to retry (ADR-025).
+        if (_termsCapabilityVerifier is not null)
+            await _termsCapabilityVerifier.VerifyAsync(ct).ConfigureAwait(false);
 
         var projections = await _operationsStore.GetProjectionRunsAsync(contract.LoanId, ct).ConfigureAwait(false);
         if (projectionRun is not null &&

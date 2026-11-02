@@ -788,6 +788,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
 
         var invalidated = new List<string>();
         var failedHandlers = new List<string>();
+        SecurityMasterTermsCapabilityRefusedException? floorRefusal = null;
         foreach (var handler in _handlers)
         {
             var handlerName = handler.GetType().Name;
@@ -799,6 +800,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 failedHandlers.Add(handlerName);
+                floorRefusal ??= ex as SecurityMasterTermsCapabilityRefusedException;
                 _logger.LogError(
                     ex,
                     "Revision-published handler {Handler} failed for {SecurityId} revision {RevisionId}",
@@ -809,6 +811,13 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
         // If any handler failed, a required side effect (projection rebuild, coverage invalidation,
         // restatement proposal) did not run. Leave the revision Approved and surface the failure so
         // the caller can retry; handlers are idempotent, so a retry re-runs the full ordered fan-out.
+        // A handler refused by the terms capability floor surfaces as that refusal (503): the revision
+        // stays Approved and the idempotent fan-out is retried once the floor is restored (ADR-025).
+        if (floorRefusal is not null)
+        {
+            System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw(floorRefusal);
+        }
+
         if (failedHandlers.Count > 0)
         {
             throw new SecurityMasterPublishFailedException(request.SecurityId, request.RevisionId, failedHandlers);
@@ -1098,7 +1107,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
         {
             ScheduleTermsWriteRules.EnsureAmendmentDoesNotPromoteStrayContainers(projection.AssetClass,
                 projection.AssetSpecificTerms, effectiveTerms);
-            SecurityAssetPackAdmission.EnsureSubmittedFields(projection.AssetClass, effectiveTerms);
+            SecurityAssetPackAdmission.EnsureSubmittedFields(projection.AssetClass, effectiveTerms, projection.AssetSpecificTerms);
         }
         catch (InvalidOperationException exception)
         {

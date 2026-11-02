@@ -2915,6 +2915,16 @@ its pre-check's 400. A write
 that declares a non-flat `termsFormat` is told what to submit. Deactivate refusals still answer 500;
 no read route changes.
 
+A node whose Security Master terms capability floor refuses it answers 503 rather than 500:
+`MeridianApiExceptionHandler` maps `SecurityMasterTermsCapabilityRefusedException` to
+`ApiProblemDetails.ServiceUnavailable` (service `security master terms capability`) with the fixed
+`SecurityMasterTermsCapabilityRefusedException.RefusalMessage` as `detail`, and logs the specific
+cause at Warning instead of returning it. The ledger posting-candidate, conflict-resolution,
+workbench-command and bond-cutover routes exclude it from their `InvalidOperationException` 409
+catches. `SecurityMasterTermsCapabilityRefusalEndpointsTests` pins it on the create, amend, term-block
+and deactivate routes, and `WorkstationEndpointsTests` on the ledger posting route
+([terms contract rollout](../../docs/operators/security-master-terms-contract-rollout.md)).
+
 `POST /api/security-master/structured-credit-reclassification/report` (AdminMaintenance) builds the
 ADR-022 report of active securitised `Bond` and `CustomAsset` rows with their proposed
 `StructuredCredit` terms and blockers. It is mapped only when the Postgres-backed service is

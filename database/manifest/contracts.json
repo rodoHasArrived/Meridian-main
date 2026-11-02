@@ -4615,7 +4615,7 @@
       ]
     }
   ],
-  "fingerprint": "52b3b63930ebff3f239e8498d03ab7502e494226ec33113e7d08723b146a63bc",
+  "fingerprint": "9654f1a9a8eb089888a089a8f2550fcc9d58d81a8694fa21df522e9fab2074ff",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -6767,7 +6767,7 @@
         "all-contracts",
         "security-master-contracts"
       ],
-      "fingerprint": "4b01041f256c6aac80b1b29d52a35b891cbca3dea440f5956365cfaa7a751b11",
+      "fingerprint": "f76639c74558a07217b37a95ac23ff2ac6e2d4d1accdcf760ca2ec9be58c83a5",
       "mapped_schemas": [
         "security_master"
       ],
@@ -259183,7 +259183,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "6e2653a51602fb1a99eab2d0091c064436025c8f286b318f63db11c262dc5183",
+      "fingerprint": "d0d145bae1ca38d9fbb020249f36113c874eddcd8e38eca4b99d2b3dfedce783",
       "full_name": "Meridian.Contracts.SecurityMaster.ScheduleTermsWriteRules",
       "id": "Meridian.Contracts.SecurityMaster.ScheduleTermsWriteRules",
       "kind": "class",
@@ -259193,17 +259193,21 @@
       "members": [],
       "name": "ScheduleTermsWriteRules",
       "namespace": "Meridian.Contracts.SecurityMaster",
-      "partial": false,
+      "partial": true,
       "qualified_name": "Meridian.Contracts.SecurityMaster.ScheduleTermsWriteRules",
       "references": [],
       "source": {
-        "line": 13,
+        "line": 19,
         "path": "src/Meridian.Contracts/SecurityMaster/ScheduleTermsWriteRules.cs"
       },
       "sources": [
         {
-          "line": 13,
+          "line": 19,
           "path": "src/Meridian.Contracts/SecurityMaster/ScheduleTermsWriteRules.cs"
+        },
+        {
+          "line": 13,
+          "path": "src/Meridian.Contracts/SecurityMaster/ScheduleTermsWriteRules.Gaps.cs"
         }
       ],
       "type_parameters": []

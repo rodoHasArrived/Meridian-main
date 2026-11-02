@@ -127,7 +127,7 @@ public static class SecurityTermBlocks
         try
         {
             ScheduleTermsWriteRules.EnsureAmendmentDoesNotPromoteStrayContainers(assetClass, currentTerms, patched);
-            ScheduleTermsWriteRules.Validate(assetClass, patched);
+            ScheduleTermsWriteRules.Validate(assetClass, patched, currentTerms);
         }
         catch (InvalidOperationException exception)
         {
