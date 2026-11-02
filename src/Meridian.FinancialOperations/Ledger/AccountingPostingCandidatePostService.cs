@@ -39,6 +39,7 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
     private readonly IAssetAccountingEventProjectionStore? _assetAccountingEventStore;
     private readonly IBondCalculationPolicy? _bondCalculationPolicy;
     private readonly IBondSettlementConsiderationService? _bondSettlementConsiderationService;
+    private readonly Func<CancellationToken, Task>? _termsCapabilityCheck;
 
     public AccountingPostingCandidatePostService(
         IAccountingPostingCandidateWriteBuilder candidateBuilder,
@@ -47,7 +48,8 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
         IAssetAccountingEventProjectionStore? assetAccountingEventStore = null,
         IAccountingPostingCandidateAuthorityBuilder? authorityBuilder = null,
         IBondCalculationPolicy? bondCalculationPolicy = null,
-        IBondSettlementConsiderationService? bondSettlementConsiderationService = null)
+        IBondSettlementConsiderationService? bondSettlementConsiderationService = null,
+        Func<CancellationToken, Task>? termsCapabilityCheck = null)
     {
         _candidateBuilder = candidateBuilder ?? throw new ArgumentNullException(nameof(candidateBuilder));
         _authorityBuilder = authorityBuilder ?? candidateBuilder as IAccountingPostingCandidateAuthorityBuilder;
@@ -56,6 +58,9 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
         _assetAccountingEventStore = assetAccountingEventStore;
         _bondCalculationPolicy = bondCalculationPolicy;
         _bondSettlementConsiderationService = bondSettlementConsiderationService;
+        // The Security Master terms capability floor check (the Application verifier, which this layer
+        // cannot reference), asked before a new amortization batch opens its posting transaction.
+        _termsCapabilityCheck = termsCapabilityCheck;
     }
 
     public async Task<PostedPostingRuleJournalCandidateResultDto> PostCandidateAsync(
@@ -1219,6 +1224,10 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
                 ?? throw new InvalidOperationException("Amortization requires retained canonical lot and reference inputs.");
             if (!hasExistingJournal && inputs.Reversal is null)
                 await BondAmortizationPolicyGuard.RequireAsync(_bondCalculationPolicy, inputs.Security, ct).ConfigureAwait(false);
+            // A new amortization batch, reversals included, projects from Security Master terms; an exact
+            // replay of a retained journal is still served below the floor (ADR-025).
+            if (!hasExistingJournal && _termsCapabilityCheck is not null)
+                await _termsCapabilityCheck(ct).ConfigureAwait(false);
             var projection = OpenLotAmortization.Project(inputs);
             RequireAssetAssertion(inputs.ExpectedLot.SecurityId == authority.Context.SecurityId
                 && inputs.ExpectedLot.BookPositionId == authority.Context.BookPositionId

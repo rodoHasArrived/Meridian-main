@@ -13,7 +13,7 @@ using NSubstitute;
 
 namespace Meridian.Tests.Application.DirectLending;
 
-public sealed class PostgresDirectLendingCommandServiceTests
+public sealed partial class PostgresDirectLendingCommandServiceTests
 {
     [Fact]
     public async Task ServiceFacade_DerivedRuns_PreserveRetryMetadata()
