@@ -119,10 +119,11 @@ public static class SecurityIncomeCashFlowProjector
                 continue;
             }
 
-            var amount = kind == SecurityIncomeCashFlowKind.ReturnOfCapital
-                ? action.DividendPerShare ?? CorporateActionPayloads.ReadDecimal(action.Payload, CorporateActionPayloads.CapitalReturnPerShare)
-                : action.DividendPerShare;
-            if (amount is not > 0m)
+            // The typed cash-distribution terms own the per-unit amount (including the payload
+            // fallback a return of capital may use), so income projection, ledger posting and
+            // cost-basis relief read one definition of it.
+            var amount = (CorporateActionTerms.From(action) as CashDistributionCorporateActionTerms)?.PositiveAmountPerUnit;
+            if (amount is null)
             {
                 gaps.Add(Gap(action, "No positive amount per unit is recorded."));
                 continue;

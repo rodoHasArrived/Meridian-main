@@ -4613,7 +4613,7 @@
       ]
     }
   ],
-  "fingerprint": "67c095c91eaa8f8975547e7decb135415b673120092e63dc9e464fa88b361a86",
+  "fingerprint": "b8c0fa08cc9e8964a013f79aabdc82d012660bfb8d833b72c55013939382b09c",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -6764,7 +6764,7 @@
         "all-contracts",
         "security-master-contracts"
       ],
-      "fingerprint": "dcac44c302ea4a8eea2cfbf1c99a1a9e775404a9aac1461339babbdee11bd1c9",
+      "fingerprint": "db9c2e9a141f42ec9611b98b4319f3a09d12b6e9f4592efbbf846c1b3aa34fa5",
       "mapped_schemas": [
         "security_master"
       ],
@@ -246310,7 +246310,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "091c28c463f0964d0e9ab5ce52d3cd006f360f4aa04a2dacb9e9395ae0d2df21",
+      "fingerprint": "8f79ec6e388abe06b7e564fb5345b8c27caf9996d3eb2c59996a225944ab2308",
       "full_name": "Meridian.Contracts.SecurityMaster.ExchangeCorporateActionTerms",
       "id": "Meridian.Contracts.SecurityMaster.ExchangeCorporateActionTerms",
       "kind": "record",
@@ -246329,7 +246329,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 156,
+          "source_line": 173,
           "type": "decimal?"
         },
         {
@@ -246343,7 +246343,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 153,
+          "source_line": 170,
           "type": "string"
         },
         {
@@ -246357,7 +246357,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 155,
+          "source_line": 172,
           "type": "decimal?"
         },
         {
@@ -246371,7 +246371,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "bool?",
-          "source_line": 157,
+          "source_line": 174,
           "type": "bool?"
         },
         {
@@ -246385,7 +246385,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 154,
+          "source_line": 171,
           "type": "Guid?"
         }
       ],
@@ -246397,12 +246397,12 @@
         "Meridian.Contracts.SecurityMaster.CorporateActionTerms"
       ],
       "source": {
-        "line": 152,
+        "line": 169,
         "path": "src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs"
       },
       "sources": [
         {
-          "line": 152,
+          "line": 169,
           "path": "src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs"
         }
       ],
@@ -249183,7 +249183,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "c9f649639ef8958999a3111d6ff7acefa2116d9d4c76325b3e649ca79baa8b24",
+      "fingerprint": "8ee0140713309b00ea39743cb10c3b00f38a20f6732bb1d1db8277d32f264400",
       "full_name": "Meridian.Contracts.SecurityMaster.OfferCorporateActionTerms",
       "id": "Meridian.Contracts.SecurityMaster.OfferCorporateActionTerms",
       "kind": "record",
@@ -249202,7 +249202,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 185,
+          "source_line": 202,
           "type": "string"
         },
         {
@@ -249216,7 +249216,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateOnly?",
-          "source_line": 187,
+          "source_line": 204,
           "type": "DateOnly?"
         },
         {
@@ -249230,7 +249230,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "bool?",
-          "source_line": 188,
+          "source_line": 205,
           "type": "bool?"
         },
         {
@@ -249244,7 +249244,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "bool?",
-          "source_line": 189,
+          "source_line": 206,
           "type": "bool?"
         },
         {
@@ -249258,7 +249258,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 186,
+          "source_line": 203,
           "type": "decimal?"
         }
       ],
@@ -249270,12 +249270,12 @@
         "Meridian.Contracts.SecurityMaster.CorporateActionTerms"
       ],
       "source": {
-        "line": 184,
+        "line": 201,
         "path": "src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs"
       },
       "sources": [
         {
-          "line": 184,
+          "line": 201,
           "path": "src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs"
         }
       ],
@@ -254840,7 +254840,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "f62a703dbe429daf548b94e018710bff5f2fcf0b5c6ec113de865a49c31dc8ed",
+      "fingerprint": "4b49db1e3f4b39946cc215498b73488dcf706712ffe0a3ddf924bcb9e29cfdf6",
       "full_name": "Meridian.Contracts.SecurityMaster.PayloadCorporateActionTerms",
       "id": "Meridian.Contracts.SecurityMaster.PayloadCorporateActionTerms",
       "kind": "record",
@@ -254859,7 +254859,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 199,
+          "source_line": 216,
           "type": "string"
         },
         {
@@ -254873,7 +254873,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "JsonElement?",
-          "source_line": 199,
+          "source_line": 216,
           "type": "JsonElement?"
         }
       ],
@@ -254885,12 +254885,12 @@
         "Meridian.Contracts.SecurityMaster.CorporateActionTerms"
       ],
       "source": {
-        "line": 199,
+        "line": 216,
         "path": "src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs"
       },
       "sources": [
         {
-          "line": 199,
+          "line": 216,
           "path": "src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs"
         }
       ],
@@ -255577,7 +255577,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "e7adc10efc399531aa1419c1e5b75da9fa36ec7267be4dee5acba80c8749c388",
+      "fingerprint": "67630caf2f9b522233d15a0c33fe222d3ef9556989bb3a3f3fb36430e2df10c0",
       "full_name": "Meridian.Contracts.SecurityMaster.PrincipalPaydownCorporateActionTerms",
       "id": "Meridian.Contracts.SecurityMaster.PrincipalPaydownCorporateActionTerms",
       "kind": "record",
@@ -255596,7 +255596,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 178,
+          "source_line": 195,
           "type": "string"
         },
         {
@@ -255610,7 +255610,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 179,
+          "source_line": 196,
           "type": "decimal?"
         },
         {
@@ -255624,7 +255624,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 181,
+          "source_line": 198,
           "type": "decimal?"
         },
         {
@@ -255638,7 +255638,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 180,
+          "source_line": 197,
           "type": "decimal?"
         }
       ],
@@ -255650,12 +255650,12 @@
         "Meridian.Contracts.SecurityMaster.CorporateActionTerms"
       ],
       "source": {
-        "line": 177,
+        "line": 194,
         "path": "src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs"
       },
       "sources": [
         {
-          "line": 177,
+          "line": 194,
           "path": "src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs"
         }
       ],
@@ -256317,7 +256317,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "c5706a2fb909679248faf7df9617a739032d7d4fad9cbf7dd19da4723a90abf3",
+      "fingerprint": "39f9c8ea5a6f416abe371322e1b570da5bb63b13e46a23932ce70ab970556334",
       "full_name": "Meridian.Contracts.SecurityMaster.RedemptionCorporateActionTerms",
       "id": "Meridian.Contracts.SecurityMaster.RedemptionCorporateActionTerms",
       "kind": "record",
@@ -256336,7 +256336,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 172,
+          "source_line": 189,
           "type": "decimal?"
         },
         {
@@ -256350,7 +256350,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 170,
+          "source_line": 187,
           "type": "string"
         },
         {
@@ -256364,7 +256364,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "bool?",
-          "source_line": 174,
+          "source_line": 191,
           "type": "bool?"
         },
         {
@@ -256378,7 +256378,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "bool?",
-          "source_line": 173,
+          "source_line": 190,
           "type": "bool?"
         },
         {
@@ -256392,7 +256392,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 171,
+          "source_line": 188,
           "type": "decimal?"
         }
       ],
@@ -256404,12 +256404,12 @@
         "Meridian.Contracts.SecurityMaster.CorporateActionTerms"
       ],
       "source": {
-        "line": 169,
+        "line": 186,
         "path": "src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs"
       },
       "sources": [
         {
-          "line": 169,
+          "line": 186,
           "path": "src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs"
         }
       ],
@@ -256430,7 +256430,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "e42d79065ee951ba2265839319caf51efec1347aebd1ccdff2d31bab40870038",
+      "fingerprint": "c859420d7f7957a01542ede57c61033dfefe09159572e4e9aa5c84e6699531e5",
       "full_name": "Meridian.Contracts.SecurityMaster.ReferenceChangeCorporateActionTerms",
       "id": "Meridian.Contracts.SecurityMaster.ReferenceChangeCorporateActionTerms",
       "kind": "record",
@@ -256449,7 +256449,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 193,
+          "source_line": 210,
           "type": "string"
         },
         {
@@ -256463,7 +256463,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateOnly?",
-          "source_line": 195,
+          "source_line": 212,
           "type": "DateOnly?"
         },
         {
@@ -256477,7 +256477,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 196,
+          "source_line": 213,
           "type": "string?"
         },
         {
@@ -256491,7 +256491,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 194,
+          "source_line": 211,
           "type": "Guid?"
         }
       ],
@@ -256503,12 +256503,12 @@
         "Meridian.Contracts.SecurityMaster.CorporateActionTerms"
       ],
       "source": {
-        "line": 192,
+        "line": 209,
         "path": "src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs"
       },
       "sources": [
         {
-          "line": 192,
+          "line": 209,
           "path": "src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs"
         }
       ],
@@ -267190,7 +267190,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "61f9e510172a8cd98d9cffc7e2f600336088102c392cfb46ee5ebf5b09306d6d",
+      "fingerprint": "9933b93f0cb302e3f0b114edd77ffa9be96da97049422bc224ceaa621c291a89",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityDistributionCorporateActionTerms",
       "id": "Meridian.Contracts.SecurityMaster.SecurityDistributionCorporateActionTerms",
       "kind": "record",
@@ -267209,7 +267209,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 148,
+          "source_line": 165,
           "type": "Guid?"
         },
         {
@@ -267223,7 +267223,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 147,
+          "source_line": 164,
           "type": "string"
         },
         {
@@ -267237,7 +267237,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 149,
+          "source_line": 166,
           "type": "decimal?"
         }
       ],
@@ -267249,12 +267249,12 @@
         "Meridian.Contracts.SecurityMaster.CorporateActionTerms"
       ],
       "source": {
-        "line": 146,
+        "line": 163,
         "path": "src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs"
       },
       "sources": [
         {
-          "line": 146,
+          "line": 163,
           "path": "src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs"
         }
       ],
@@ -276808,7 +276808,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "ede1ea66d3bccff589094039998750e246d637aa5cb5c173fa35e14dbfd20c82",
+      "fingerprint": "291c893ba462f6e6ec3cadbb2e66eedf068d89cf416cfffbef54025dbbbd0dba",
       "full_name": "Meridian.Contracts.SecurityMaster.SplitCorporateActionTerms",
       "id": "Meridian.Contracts.SecurityMaster.SplitCorporateActionTerms",
       "kind": "record",
@@ -276827,7 +276827,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 143,
+          "source_line": 160,
           "type": "string"
         },
         {
@@ -276841,7 +276841,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 143,
+          "source_line": 160,
           "type": "decimal?"
         }
       ],
@@ -276853,12 +276853,12 @@
         "Meridian.Contracts.SecurityMaster.CorporateActionTerms"
       ],
       "source": {
-        "line": 143,
+        "line": 160,
         "path": "src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs"
       },
       "sources": [
         {
-          "line": 143,
+          "line": 160,
           "path": "src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs"
         }
       ],
@@ -279680,7 +279680,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "b694f1c4313326e6a31efbac67848d01b0873a00e10f28ef8a002056e09cc3e8",
+      "fingerprint": "c12e2087e57c2af64d54602bc44d25a2a39b59ffb99987e1fc94d0c6c4603b74",
       "full_name": "Meridian.Contracts.SecurityMaster.SubscriptionCorporateActionTerms",
       "id": "Meridian.Contracts.SecurityMaster.SubscriptionCorporateActionTerms",
       "kind": "record",
@@ -279699,7 +279699,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 161,
+          "source_line": 178,
           "type": "string"
         },
         {
@@ -279713,7 +279713,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 162,
+          "source_line": 179,
           "type": "decimal?"
         },
         {
@@ -279727,7 +279727,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 163,
+          "source_line": 180,
           "type": "decimal?"
         },
         {
@@ -279741,7 +279741,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 164,
+          "source_line": 181,
           "type": "Guid?"
         },
         {
@@ -279755,7 +279755,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 165,
+          "source_line": 182,
           "type": "Guid?"
         },
         {
@@ -279769,7 +279769,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 166,
+          "source_line": 183,
           "type": "decimal?"
         }
       ],
@@ -279781,12 +279781,12 @@
         "Meridian.Contracts.SecurityMaster.CorporateActionTerms"
       ],
       "source": {
-        "line": 160,
+        "line": 177,
         "path": "src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs"
       },
       "sources": [
         {
-          "line": 160,
+          "line": 177,
           "path": "src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs"
         }
       ],
