@@ -68,7 +68,10 @@ public sealed record DirectLendingTermsDto(
 constructors and positional call sites are unaffected. It is `null` for every existing terms
 version and omitted from the serialized JSON while `null`, so all three pinned characterization
 hashes, and every persisted terms version, keep their current hash. A non-null value changes the
-hash, which is correct because it is a material term. New tests pin both cases. Because the
+hash, which is correct because it is a material term. When set, the value serializes as its
+numeric enum value, for example `"excessPaymentApplication":1`, like the other enum terms. Neither
+hash serializer registers a string-enum converter. New tests pin both cases and the serialized
+form, so a future change to the serializer options fails a test instead of silently re-hashing. Because the
 attribute lives on the shared DTO, the C# and F# hashes stay in step without any change to their
 serializer options.
 
@@ -107,12 +110,14 @@ at the amount owed. Only the **remaining excess** is then routed by the rule in 
 | `PrincipalPrepayment` | `PrincipalOutstanding` (lots earliest first, as principal payments do today); any remainder → `UnappliedCash` | capped at outstanding principal; when `PrepaymentAllowed = false` the excess is held unapplied with a note ([Decision 2](#decisions)); the penalty is charged automatically ([Decision 3](#decisions)) |
 | `PrepaidInterest` | `PrepaidInterest` | none: uncapped, consumed by daily accruals ([Decision 4](#decisions)) |
 
-`MixedPaymentResolutionDto` keeps `UnappliedAmount` for compatibility and adds:
+`MixedPaymentResolutionDto.UnappliedAmount` stays the single canonical "held unapplied" figure,
+but it now means the amount held **after** routing. Under the default `HoldUnapplied` rule it
+is unchanged. The excess before routing is `ExcessToPrincipal + ExcessToPrepaidInterest +
+UnappliedAmount`, so there is no separate field that could drift. The DTO adds:
 
 ```csharp
 public decimal ExcessToPrincipal { get; init; }
 public decimal ExcessToPrepaidInterest { get; init; }
-public decimal ExcessHeldUnapplied { get; init; }   // == UnappliedAmount after routing
 public ExcessPaymentApplication? ExcessRuleApplied { get; init; }
 public string? ExcessRuleNote { get; init; }        // e.g. "prepayment not allowed; held unapplied"
 ```
