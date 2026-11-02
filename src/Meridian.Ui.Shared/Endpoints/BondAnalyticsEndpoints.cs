@@ -34,6 +34,7 @@ public static class BondAnalyticsEndpoints
             [FromQuery] decimal? cleanPrice,
             [FromQuery(Name = "yield")] decimal? annualYield,
             [FromQuery] string? yieldConvention,
+            [FromQuery] string? calculationVersion,
             [FromServices] IBondAnalyticsService service,
             CancellationToken ct) =>
         {
@@ -60,7 +61,8 @@ public static class BondAnalyticsEndpoints
 
             var result = await service.CalculateAsync(new BondAnalyticsRequest(
                 securityId, new BondCalculationContext(asOf, settlementDate, knownAt),
-                cleanPrice, annualYield, convention), ct).ConfigureAwait(false);
+                cleanPrice, annualYield, convention)
+            { CalculationVersion = calculationVersion }, ct).ConfigureAwait(false);
             return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
         })
         .WithTags("BondAnalytics")

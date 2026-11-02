@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 5 of 7
 
-Objects 321-400 of 486. References crossing pages remain available in the dependency manifest.
+Objects 321-400 of 487. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -252,6 +252,8 @@ classDiagram
         +BondCalculationInput? RetainedInput
         +string? Source
     }
+    class Meridian_Contracts_SecurityMaster_SecurityForwardCurveJsonContext["SecurityForwardCurveJsonContext"] {
+    }
     class Meridian_Contracts_SecurityMaster_SecurityForwardCurvePoint["SecurityForwardCurvePoint"] {
         +DateOnly Date
         +decimal Rate
@@ -429,16 +431,6 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecurityOverrideApprovalStatusDto["SecurityOverrideApprovalStatusDto"] {
     }
-    class Meridian_Contracts_SecurityMaster_SecurityOverrideAuditEntryDto["SecurityOverrideAuditEntryDto"] {
-        +string Actor
-        +SecurityOverrideApprovalStatusDto ApprovalStatus
-        +string? Comment
-        +string EventType
-        +DateTimeOffset OccurredAt
-        +string? ReasonCode
-        +DateTimeOffset? ReviewedAt
-        +string? Reviewer
-    }
     Meridian_Contracts_SecurityMaster_SecurityCashFlowCalculationReceipt --> Meridian_Contracts_SecurityMaster_SecurityCashFlowSourceDto
     Meridian_Contracts_SecurityMaster_SecurityCashFlowCalculationReceipt --> Meridian_Contracts_SecurityMaster_SecurityDetailDto
     Meridian_Contracts_SecurityMaster_SecurityCashFlowCalculationReceipt --> Meridian_Contracts_SecurityMaster_SecurityForwardCurve
@@ -471,5 +463,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityMasterReportingReference --> Meridian_Contracts_SecurityMaster_SecurityDetailDto
     Meridian_Contracts_SecurityMaster_SecurityMasterReportingReference --> Meridian_Contracts_SecurityMaster_SecurityEconomicDefinitionRecord
     Meridian_Contracts_SecurityMaster_SecurityMasterReportingReference --> Meridian_Contracts_SecurityMaster_SecurityMasterReportingResolutionMode
-    Meridian_Contracts_SecurityMaster_SecurityOverrideAuditEntryDto --> Meridian_Contracts_SecurityMaster_SecurityOverrideApprovalStatusDto
 ```
