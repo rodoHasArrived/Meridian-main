@@ -16,6 +16,7 @@ public sealed class DirectLendingWorkflowTests
         await service.BookDrawdownAsync(loan.LoanId, new BookDrawdownRequest(250_000m, new DateOnly(2026, 3, 23), new DateOnly(2026, 3, 23), "wire-1"));
         await service.AssessFeeAsync(loan.LoanId, new AssessFeeRequest("Origination", 1_500m, new DateOnly(2026, 3, 24), "Upfront"));
         await service.PostDailyAccrualAsync(loan.LoanId, new PostDailyAccrualRequest(new DateOnly(2026, 3, 24)));
+        var owed = (await service.GetServicingStateAsync(loan.LoanId))!.Balances;
 
         var servicing = await service.ApplyMixedPaymentAsync(
             loan.LoanId,
@@ -32,7 +33,16 @@ public sealed class DirectLendingWorkflowTests
         servicing!.Balances.PrincipalOutstanding.Should().Be(246_650m);
         cash.Should().ContainSingle(x => x.TransactionType == "MixedPayment" && x.Amount == 5_000m);
         allocations.Should().HaveCount(4);
-        allocations.Sum(x => x.AllocatedAmount).Should().Be(5_000m);
+
+        // One day of accrual owes less than the 100 interest and 50 commitment fee requested.
+        // Manual lines are capped at what is owed, so no phantom income is allocated; the
+        // shortfall against the 5,000 received is left unapplied rather than invented.
+        var expectedInterest = Math.Min(100m, owed.InterestAccruedUnpaid);
+        var expectedCommitmentFee = Math.Min(50m, owed.CommitmentFeeAccruedUnpaid);
+        allocations.Single(x => x.TargetType == "InterestAccrued").AllocatedAmount.Should().Be(expectedInterest);
+        allocations.Single(x => x.TargetType == "CommitmentFeeAccrued").AllocatedAmount.Should().Be(expectedCommitmentFee);
+        allocations.Sum(x => x.AllocatedAmount).Should().Be(expectedInterest + expectedCommitmentFee + 1_500m + 3_350m);
+        allocations.Sum(x => x.AllocatedAmount).Should().BeLessThanOrEqualTo(5_000m);
     }
 
     [Fact]

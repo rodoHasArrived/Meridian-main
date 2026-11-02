@@ -35,7 +35,9 @@ public sealed class RepoPathService
             if (!File.Exists(Path.Combine(fromEnv, SolutionFileName)))
                 throw new InvalidOperationException(
                     $"MDC_REPO_ROOT='{fromEnv}' does not contain '{SolutionFileName}'.");
-            return fromEnv;
+            // A trailing separator would otherwise make the boundary prefix "root//" and
+            // reject every path inside the repository.
+            return Path.TrimEndingDirectorySeparator(Path.GetFullPath(fromEnv));
         }
 
         // Walk up from the executable's location
@@ -66,13 +68,62 @@ public sealed class RepoPathService
             throw new ArgumentException("Path is required.", nameof(path));
 
         var fullPath = Path.GetFullPath(Path.IsPathRooted(path) ? path : Path.Combine(Root, path));
-        var rootPath = Path.GetFullPath(Root);
-        if (!fullPath.StartsWith(rootPath + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) &&
-            !string.Equals(fullPath, rootPath, StringComparison.OrdinalIgnoreCase))
+        var rootPath = Path.TrimEndingDirectorySeparator(Path.GetFullPath(Root));
+
+        // Compare the paths the file system will actually open: a symlink inside the
+        // repository can point anywhere, so resolve links on both sides first.
+        var realPath = ResolveLinks(fullPath);
+        var realRoot = ResolveLinks(rootPath);
+        if (!IsSameOrInside(realPath, realRoot) || !IsSameOrInside(fullPath, rootPath))
         {
             throw new InvalidOperationException($"Path is outside the Meridian repository root: {path}");
         }
 
         return fullPath;
+    }
+
+    // Case-insensitive only where the file system usually is; on Linux "/repo" and "/REPO"
+    // are different directories, so an ignore-case prefix check would admit a sibling.
+    private static readonly StringComparison PathComparison =
+        OperatingSystem.IsWindows() || OperatingSystem.IsMacOS()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
+
+    private static bool IsSameOrInside(string candidate, string root) =>
+        string.Equals(candidate, root, PathComparison) ||
+        candidate.StartsWith(root + Path.DirectorySeparatorChar, PathComparison);
+
+    /// <summary>
+    /// Resolves symbolic links on every existing component of <paramref name="fullPath"/>.
+    /// Components that do not exist yet (for example a file about to be created) are kept as-is.
+    /// </summary>
+    internal static string ResolveLinks(string fullPath)
+    {
+        var root = Path.GetPathRoot(fullPath) ?? string.Empty;
+        var current = root;
+        var parts = fullPath[root.Length..].Split(
+            [Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar],
+            StringSplitOptions.RemoveEmptyEntries);
+
+        for (var i = 0; i < parts.Length; i++)
+        {
+            var next = Path.Combine(current, parts[i]);
+            FileSystemInfo info = Directory.Exists(next) ? new DirectoryInfo(next) : new FileInfo(next);
+            if (!info.Exists)
+            {
+                // Nothing further can be a link; append the remaining components unchanged.
+                return Path.Combine([current, .. parts[i..]]);
+            }
+
+            if (info.LinkTarget is not null)
+            {
+                var target = info.ResolveLinkTarget(returnFinalTarget: true);
+                next = target is null ? next : Path.GetFullPath(target.FullName);
+            }
+
+            current = next;
+        }
+
+        return Path.TrimEndingDirectorySeparator(current);
     }
 }
