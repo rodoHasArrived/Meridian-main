@@ -252,7 +252,7 @@ public sealed class CompositeSinkTests
         // Trip the circuit
         for (var i = 0; i < maxFailures; i++)
         {
-            await composite.AppendAsync(CreateTestEvent());
+            await Assert.ThrowsAsync<IOException>(() => composite.AppendAsync(CreateTestEvent()).AsTask());
         }
 
         composite.GetSinkHealthReport()[0].State.Should().Be(SinkHealthState.Failed);
@@ -289,7 +289,7 @@ public sealed class CompositeSinkTests
         // Trip the circuit
         for (var i = 0; i < maxFailures; i++)
         {
-            await composite.AppendAsync(CreateTestEvent());
+            await Assert.ThrowsAsync<IOException>(() => composite.AppendAsync(CreateTestEvent()).AsTask());
         }
 
         composite.FailedSinkCount.Should().Be(1);
@@ -298,7 +298,7 @@ public sealed class CompositeSinkTests
         clock.Advance(resetTimeout + TimeSpan.FromSeconds(1));
 
         // Probe write will fail again
-        await composite.AppendAsync(CreateTestEvent());
+        await Assert.ThrowsAsync<IOException>(() => composite.AppendAsync(CreateTestEvent()).AsTask());
 
         // Should re-trip the circuit
         composite.GetSinkHealthReport()[0].State.Should().Be(SinkHealthState.Failed);
@@ -341,8 +341,8 @@ public sealed class CompositeSinkTests
             timeProvider: clock);
 
         // Fail fewer times than threshold
-        await composite.AppendAsync(CreateTestEvent());
-        await composite.AppendAsync(CreateTestEvent());
+        await Assert.ThrowsAsync<IOException>(() => composite.AppendAsync(CreateTestEvent()).AsTask());
+        await Assert.ThrowsAsync<IOException>(() => composite.AppendAsync(CreateTestEvent()).AsTask());
 
         var report = composite.GetSinkHealthReport();
         report[0].State.Should().Be(SinkHealthState.Degraded);
@@ -404,7 +404,7 @@ public sealed class CompositeSinkTests
             timeProvider: clock);
 
         // One failure puts it in Degraded state (below threshold)
-        await composite.AppendAsync(CreateTestEvent());
+        await Assert.ThrowsAsync<IOException>(() => composite.AppendAsync(CreateTestEvent()).AsTask());
 
         composite.DegradedSinkCount.Should().Be(1);
         composite.FailedSinkCount.Should().Be(0);
@@ -421,9 +421,9 @@ public sealed class CompositeSinkTests
             maxConsecutiveFailures: 10,
             timeProvider: clock);
 
-        await composite.AppendAsync(CreateTestEvent());
-        await composite.AppendAsync(CreateTestEvent());
-        await composite.AppendAsync(CreateTestEvent());
+        await Assert.ThrowsAsync<IOException>(() => composite.AppendAsync(CreateTestEvent()).AsTask());
+        await Assert.ThrowsAsync<IOException>(() => composite.AppendAsync(CreateTestEvent()).AsTask());
+        await Assert.ThrowsAsync<IOException>(() => composite.AppendAsync(CreateTestEvent()).AsTask());
 
         composite.AppendFailures.Should().Be(3);
     }
@@ -445,7 +445,7 @@ public sealed class CompositeSinkTests
         // Trip the circuit the first time
         for (var i = 0; i < maxFailures; i++)
         {
-            await composite.AppendAsync(CreateTestEvent());
+            await Assert.ThrowsAsync<IOException>(() => composite.AppendAsync(CreateTestEvent()).AsTask());
         }
 
         composite.TotalCircuitBreaks.Should().Be(1);
@@ -453,7 +453,7 @@ public sealed class CompositeSinkTests
         // Advance past reset, then trip again
         clock.Advance(resetTimeout + TimeSpan.FromSeconds(1));
         // Half-open probe fails
-        await composite.AppendAsync(CreateTestEvent());
+        await Assert.ThrowsAsync<IOException>(() => composite.AppendAsync(CreateTestEvent()).AsTask());
 
         // The consecutive failures are now maxFailures+1, so the circuit
         // should be re-tripped. TotalCircuitBreaks may increase.
@@ -526,8 +526,8 @@ public sealed class CompositeSinkTests
             timeProvider: clock);
 
         // Two failures
-        await composite.AppendAsync(CreateTestEvent());
-        await composite.AppendAsync(CreateTestEvent());
+        await Assert.ThrowsAsync<IOException>(() => composite.AppendAsync(CreateTestEvent()).AsTask());
+        await Assert.ThrowsAsync<IOException>(() => composite.AppendAsync(CreateTestEvent()).AsTask());
         composite.GetSinkHealthReport()[0].ConsecutiveFailures.Should().Be(2);
 
         // Third call succeeds
@@ -560,6 +560,59 @@ public sealed class CompositeSinkTests
     }
 
     #endregion
+
+    [Fact]
+    public async Task AllConfiguredSinksFail_ThrowsRatherThanAcknowledging()
+    {
+        var composite = new CompositeSink(new[] { CreateFailingSink().Object, CreateFailingSink().Object });
+        await Assert.ThrowsAsync<IOException>(() => composite.AppendAsync(CreateTestEvent()).AsTask());
+    }
+
+    [Fact]
+    public async Task OpenCircuitFlush_StillDrainsPreviouslyAcceptedBuffers()
+    {
+        var sink = CreateFailingSink();
+        var composite = new CompositeSink(new[] { sink.Object }, maxConsecutiveFailures: 1);
+        await Assert.ThrowsAsync<IOException>(() => composite.AppendAsync(CreateTestEvent()).AsTask());
+        await Assert.ThrowsAsync<IOException>(() => composite.AppendAsync(CreateTestEvent()).AsTask());
+        await composite.FlushAsync();
+        sink.Verify(x => x.FlushAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task BufferedEventInOpenCircuit_MustFlushBeforeAcknowledgement()
+    {
+        var buffered = new Mock<IStorageSink>();
+        var healthy = new Mock<IStorageSink>();
+        var attempts = 0;
+        buffered.Setup(s => s.AppendAsync(It.IsAny<MarketEvent>(), It.IsAny<CancellationToken>()))
+            .Returns((MarketEvent _, CancellationToken _) =>
+            {
+                attempts++;
+                return attempts == 1
+                    ? ValueTask.CompletedTask
+                    : ValueTask.FromException(new IOException("disk full"));
+            });
+        var composite = new CompositeSink(new[] { buffered.Object, healthy.Object },
+            maxConsecutiveFailures: 1);
+        await composite.AppendAsync(CreateTestEvent());
+        await composite.AppendAsync(CreateTestEvent());
+        await composite.FlushAsync();
+        buffered.Verify(s => s.FlushAsync(It.IsAny<CancellationToken>()), Times.Once);
+        healthy.Verify(s => s.FlushAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task BufferedSinkFlushFailure_PreventsAcknowledgementEvenWhenOtherSinkFlushes()
+    {
+        var buffered = new Mock<IStorageSink>();
+        buffered.Setup(s => s.FlushAsync(It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new IOException("disk full"));
+        var healthy = new Mock<IStorageSink>();
+        var composite = new CompositeSink(new[] { buffered.Object, healthy.Object });
+        await composite.AppendAsync(CreateTestEvent());
+        await Assert.ThrowsAsync<AggregateException>(() => composite.FlushAsync());
+    }
 
     #region Helpers
 

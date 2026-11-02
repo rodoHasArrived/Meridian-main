@@ -360,8 +360,8 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
     private string BuildQuotesUrl(IReadOnlyList<string> symbols, DateTimeOffset start, DateTimeOffset end, int? limit, string? pageToken)
     {
         var symbolsParam = string.Join(",", symbols);
-        var startStr = start.ToString("yyyy-MM-ddTHH:mm:ssZ");
-        var endStr = end.ToString("yyyy-MM-ddTHH:mm:ssZ");
+        var startStr = start.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ss\u0027Z\u0027", System.Globalization.CultureInfo.InvariantCulture);
+        var endStr = end.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ss\u0027Z\u0027", System.Globalization.CultureInfo.InvariantCulture);
 
         string url;
         if (symbols.Count == 1)
@@ -475,8 +475,8 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
     private string BuildTradesUrl(IReadOnlyList<string> symbols, DateTimeOffset start, DateTimeOffset end, int? limit, string? pageToken)
     {
         var symbolsParam = string.Join(",", symbols);
-        var startStr = start.ToString("yyyy-MM-ddTHH:mm:ssZ");
-        var endStr = end.ToString("yyyy-MM-ddTHH:mm:ssZ");
+        var startStr = start.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ss\u0027Z\u0027", System.Globalization.CultureInfo.InvariantCulture);
+        var endStr = end.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ss\u0027Z\u0027", System.Globalization.CultureInfo.InvariantCulture);
 
         string url;
         if (symbols.Count == 1)

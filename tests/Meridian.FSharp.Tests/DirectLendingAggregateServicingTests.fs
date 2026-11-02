@@ -317,6 +317,18 @@ let ``Manual breakdown smaller than the cash received leaves the excess unapplie
     payment.Servicing.Balances.PrincipalOutstanding |> should equal 494_000m
     payment.Servicing.DrawdownLots |> Seq.map _.RemainingPrincipal |> Seq.toList |> should equal [ 194_000m; 300_000m ]
 
+[<Fact>]
+let ``Manual allocation cannot assign cash to fees that are not owed`` () =
+    let contract, servicing = loanWithTwoLots (fixedTerms ())
+    let payment =
+        DirectLendingAggregateInterop.ApplyMixedPayment
+            servicing
+            contract.CurrentTerms
+            (ApplyMixedPaymentRequest(500m, DateOnly(2026, 4, 1), PaymentBreakdownDto(0m, 0m, 500m, 0m, 0m), "zero-fees"))
+    payment.Resolution.Breakdown.ToFees |> should equal 0m
+    payment.Resolution.UnappliedAmount |> should equal 500m
+    payment.Servicing.Balances.FeesAccruedUnpaid |> should equal servicing.Balances.FeesAccruedUnpaid
+
 // ── Rate resets and penalties ───────────────────────────────────────────────
 
 [<Fact>]

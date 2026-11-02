@@ -132,7 +132,7 @@ internal sealed class SimulatedPortfolio
 
         account.Positions.TryGetValue(symbol, out var existingQty);
 
-        if (qty < 0 && existingQty <= 0 && !account.Rules.AllowShortSelling)
+        if (qty < 0 && existingQty + qty < 0 && !account.Rules.AllowShortSelling)
             throw new InvalidOperationException($"Account '{accountId}' does not permit short selling.");
 
         var cashImpact = -(qty * price) - commission;

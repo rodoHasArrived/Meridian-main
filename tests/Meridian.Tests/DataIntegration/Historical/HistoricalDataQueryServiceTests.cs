@@ -83,6 +83,37 @@ public sealed class HistoricalDataQueryServiceTests : IDisposable
         symbols.Should().NotContain(["2026-05-15", "WORKSTATION", "workstation"]);
     }
 
+    [Theory]
+    [InlineData("..")]
+    [InlineData(".")]
+    [InlineData("../outside")]
+    [InlineData("A/B")]
+    [InlineData("*")]
+    public async Task QueryAsync_RejectsUnsafeSymbolBeforeEnumerating(string symbol)
+    {
+        var operation = () => _service.QueryAsync(new HistoricalDataQuery(symbol));
+        await operation.Should().ThrowAsync<ArgumentException>();
+    }
+
+    [Fact]
+    public async Task QueryAsync_RejectsExcessiveLimit()
+    {
+        var operation = () => _service.QueryAsync(new HistoricalDataQuery("SPY", Limit: 1001));
+        await operation.Should().ThrowAsync<ArgumentException>();
+    }
+
+    [Fact]
+    public async Task QueryAsync_DefaultLimitIsFinite()
+    {
+        var directory = Path.Combine(_root, "SPY");
+        Directory.CreateDirectory(directory);
+        var path = Path.Combine(directory, "2026-05-15.jsonl");
+        var line = BuildHistoricalBarJson("SPY", "2026-05-15");
+        await File.WriteAllLinesAsync(path, Enumerable.Repeat(line, 1050));
+        var result = await _service.QueryAsync(new HistoricalDataQuery("SPY"));
+        result.TotalRecords.Should().Be(1000);
+    }
+
     private static void WriteGzipJsonl(string path, string line)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);

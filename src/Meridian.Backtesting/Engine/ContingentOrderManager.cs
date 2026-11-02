@@ -98,7 +98,7 @@ internal static class ContingentOrderManager
                 continue;
             }
 
-            var newSignedQuantity = Math.Sign(sibling.Quantity) * nextRemaining;
+            var newSignedQuantity = Math.Sign(sibling.Quantity) * (Math.Abs(sibling.FilledQuantity) + nextRemaining);
             pendingOrders[i] = sibling with { Quantity = newSignedQuantity };
         }
     }

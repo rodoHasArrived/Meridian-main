@@ -56,6 +56,9 @@ internal sealed class MarketImpactFillModel(
         var remainingAbsolute = order.RemainingQuantity;
         var fillableAbsolute = ComputeFillableQuantity(remainingAbsolute, bar.Volume);
 
+        if (order.TimeInForce == TimeInForce.FillOrKill && fillableAbsolute < remainingAbsolute)
+            return new OrderFillResult(order with { Status = OrderStatus.Cancelled, IsTriggered = triggered }, [], RemoveOrder: true);
+
         if (fillableAbsolute == 0)
         {
             return new OrderFillResult(
@@ -125,12 +128,17 @@ internal sealed class MarketImpactFillModel(
                 order.AccountId));
         }
 
+        if (order.TimeInForce == TimeInForce.FillOrKill &&
+            Math.Abs(fills.Sum(static f => f.FilledQuantity)) != remainingAbsolute)
+            return new OrderFillResult(order with { Status = OrderStatus.Cancelled, IsTriggered = triggered }, [], RemoveOrder: true);
+
         if (fills.Count == 0)
         {
+            var cancel = order.TimeInForce is TimeInForce.ImmediateOrCancel or TimeInForce.FillOrKill;
             return new OrderFillResult(
-                order with { IsTriggered = triggered },
+                order with { IsTriggered = triggered, Status = cancel ? OrderStatus.Cancelled : order.Status },
                 [],
-                RemoveOrder: false,
+                RemoveOrder: cancel,
                 WasTriggered: triggered && !order.IsTriggered);
         }
 
@@ -144,10 +152,13 @@ internal sealed class MarketImpactFillModel(
             IsTriggered = triggered
         };
 
+        if (order.TimeInForce == TimeInForce.ImmediateOrCancel && !updated.IsComplete)
+            updated = updated with { Status = OrderStatus.Cancelled };
+
         return new OrderFillResult(
             updated,
             fills,
-            RemoveOrder: updated.IsComplete,
+            RemoveOrder: updated.IsComplete || order.TimeInForce is TimeInForce.ImmediateOrCancel or TimeInForce.FillOrKill,
             WasTriggered: triggered && !order.IsTriggered);
     }
 

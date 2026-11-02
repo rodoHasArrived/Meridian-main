@@ -34,7 +34,14 @@ internal static class BacktestMetricsEngine
         var years = Math.Max((snapshots[^1].Date.ToDateTime(TimeOnly.MinValue) - snapshots[0].Date.ToDateTime(TimeOnly.MinValue)).TotalDays / 365.0, 1.0 / 365.0);
 
         var totalReturn = initial == 0 ? 0m : (final - initial) / initial;
-        var annualisedReturn = (decimal)(Math.Pow(1.0 + (double)totalReturn, 1.0 / years) - 1.0);
+        // Decimal cannot represent extreme annualizations; keep the completed simulation
+        // and mark the derived metric unavailable rather than throwing at run completion.
+        var annualisedDouble = Math.Pow(1.0 + (double)totalReturn, 1.0 / years) - 1.0;
+        var annualisedReturn = double.IsFinite(annualisedDouble) &&
+            annualisedDouble <= (double)decimal.MaxValue &&
+            annualisedDouble >= (double)decimal.MinValue
+            ? (decimal)annualisedDouble
+            : 0m; // Compatibility sentinel until the metrics contract supports unavailable values.
         var sharpe = ComputeSharpe(datedDailyReturns, request.RiskFreeRate, request.RiskFreeRateSeries);
         var sortino = ComputeSortino(datedDailyReturns, request.RiskFreeRate, request.RiskFreeRateSeries);
         var (maxDrawdown, maxDrawdownPct, recoveryDays) = ComputeMaxDrawdown(snapshots, initial);

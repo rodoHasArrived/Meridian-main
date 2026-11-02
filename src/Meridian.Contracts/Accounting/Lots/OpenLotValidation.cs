@@ -1,5 +1,6 @@
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.FixedIncome;
+using Meridian.Contracts.Ledger;
 
 namespace Meridian.Contracts.Accounting.Lots;
 
@@ -27,7 +28,7 @@ public static class OpenLotValidation
         if (acquisition.AcquisitionCurrency == acquisition.FunctionalCurrency
             && (acquisition.AcquisitionFxRateToFunctional != 1m || acquisition.TransactionCostBasis != acquisition.FunctionalCostBasis))
             throw new ArgumentException("Same-currency acquisition FX must equal one and retained transaction and functional bases must agree exactly.");
-        if (Math.Abs(acquisition.FunctionalCostBasis - acquisition.TransactionCostBasis * acquisition.AcquisitionFxRateToFunctional) > 0.01m)
+        if (Math.Abs(acquisition.FunctionalCostBasis - acquisition.TransactionCostBasis * acquisition.AcquisitionFxRateToFunctional) > Math.Max(0.01m, MinorUnit(acquisition.FunctionalCurrency)))
             throw new ArgumentException("Retained acquisition basis does not reconcile to acquisition FX.");
         if (acquisition.Evidence is null || acquisition.Evidence.Count == 0
             || acquisition.Evidence.Any(e => !RetainedEvidenceIdentityValidator.IsComplete(e)))
@@ -71,6 +72,13 @@ public static class OpenLotValidation
         if (lot.CurrentFactor is { } currentFactor
             && (face is null || currentFactor < 0m || currentFactor >= face.BookedFactor))
             throw new ArgumentException("A current paydown factor requires face terms and lies in [0, booked factor).");
+    }
+
+    private static decimal MinorUnit(string currency)
+    {
+        var unit = 1m;
+        for (var i = 0; i < CurrencyMinorUnits.GetPrecision(currency); i++) unit /= 10m;
+        return unit;
     }
 
     private static bool Currency(string value) => value is { Length: 3 } && value.All(c => c is >= 'A' and <= 'Z');

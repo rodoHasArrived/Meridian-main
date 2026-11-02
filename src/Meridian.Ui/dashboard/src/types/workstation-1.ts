@@ -1061,6 +1061,16 @@ export interface RiskEscalation {
   type: string;
   quantity: number;
   limitPrice: number | null;
+  stopPrice?: number | null;
+  trailPrice?: number | null;
+  trailPercent?: number | null;
+  timeInForce?: string | null;
+  routedNotional?: number | null;
+  fundAccountId?: string | null;
+  strategyId?: string | null;
+  positionIntent?: string | null;
+  optionContract?: unknown | null;
+  legs?: unknown[] | null;
   reason: string;
   ruleName: string | null;
   status: "PendingApproval" | "Approved" | "Denied" | "Released";

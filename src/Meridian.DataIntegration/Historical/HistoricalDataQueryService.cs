@@ -16,6 +16,16 @@ namespace Meridian.DataIntegration.Historical;
 /// </summary>
 public sealed class HistoricalDataQueryService
 {
+    /// <summary>Reject path components and wildcard syntax before filesystem discovery.</summary>
+    public static bool IsValidSymbol(string? symbol)
+    {
+        if (string.IsNullOrWhiteSpace(symbol) || symbol.Length > 32 || symbol is "." or "..")
+            return false;
+        return symbol.All(ch => char.IsAsciiLetterOrDigit(ch) || ch is '.' or '-' or '_' or '^');
+    }
+
+    private const int MaxDiscoveredFiles = 500;
+    private const int MaxScannedLinesPerFile = 100_000;
     private readonly ILogger<HistoricalDataQueryService> _log;
     private readonly string _dataRoot;
     private readonly JsonSerializerOptions _jsonOptions;
@@ -48,6 +58,9 @@ public sealed class HistoricalDataQueryService
         CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
+        if (!IsValidSymbol(query.Symbol) || query.Limit is < 1 or > 1000 || query.Skip is < 0 || (query.From.HasValue && query.To.HasValue && query.From > query.To))
+            throw new ArgumentException("Invalid historical query.");
+        query = query with { Limit = query.Limit ?? 1000 };
         var result = new HistoricalDataQueryResult
         {
             Symbol = query.Symbol,
@@ -129,7 +142,7 @@ public sealed class HistoricalDataQueryService
         foreach (var dir in Directory.GetDirectories(_dataRoot))
         {
             var dirName = Path.GetFileName(dir);
-            if (IsLikelySymbolName(dirName) &&
+            if (IsValidSymbol(dirName) && IsLikelySymbolName(dirName) &&
                 Directory.GetFiles(dir, "*.jsonl*", SearchOption.AllDirectories).Length > 0)
             {
                 symbols.Add(dirName.ToUpperInvariant());
@@ -158,6 +171,8 @@ public sealed class HistoricalDataQueryService
     /// </summary>
     public HistoricalDataDateRange GetDateRange(string symbol)
     {
+        if (!IsValidSymbol(symbol))
+            throw new ArgumentException("Invalid symbol.", nameof(symbol));
         var files = FindDataFilesForSymbol(symbol);
         if (files.Count == 0)
         {
@@ -203,7 +218,7 @@ public sealed class HistoricalDataQueryService
         CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
-        if (string.IsNullOrWhiteSpace(query.Symbol))
+        if (!IsValidSymbol(query.Symbol))
         {
             throw new ArgumentException("Symbol is required", nameof(query));
         }
@@ -670,6 +685,8 @@ public sealed class HistoricalDataQueryService
 
     private List<string> FindDataFilesForSymbol(string symbol)
     {
+        if (!IsValidSymbol(symbol))
+            throw new ArgumentException("Invalid symbol.", nameof(symbol));
         var files = new List<string>();
 
         if (!Directory.Exists(_dataRoot))
@@ -695,7 +712,35 @@ public sealed class HistoricalDataQueryService
                 .Where(f => f.EndsWith(".jsonl") || f.EndsWith(".jsonl.gz")));
         }
 
-        return files.Distinct().ToList();
+        // Never follow reparse points in the selected file path or its ancestors.
+        // Path normalization alone does not prevent a symbolic link from escaping the root.
+        var root = Path.GetFullPath(_dataRoot);
+        var rootPrefix = Path.TrimEndingDirectorySeparator(root) + Path.DirectorySeparatorChar;
+        foreach (var file in files)
+        {
+            var fullPath = Path.GetFullPath(file);
+            if (!fullPath.StartsWith(rootPrefix, StringComparison.OrdinalIgnoreCase))
+                throw new UnauthorizedAccessException("Historical file escapes the configured data root.");
+
+            var current = Path.GetDirectoryName(fullPath);
+            while (current is not null && current.Length >= root.Length)
+            {
+                if (Directory.Exists(current) &&
+                    (File.GetAttributes(current) & FileAttributes.ReparsePoint) != 0)
+                    throw new UnauthorizedAccessException("Historical data directories cannot be symbolic links.");
+                if (string.Equals(current, root, StringComparison.OrdinalIgnoreCase))
+                    break;
+                current = Path.GetDirectoryName(current);
+            }
+
+            if ((File.GetAttributes(fullPath) & FileAttributes.ReparsePoint) != 0)
+                throw new UnauthorizedAccessException("Historical data files cannot be symbolic links.");
+        }
+
+        var distinctFiles = files.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        if (distinctFiles.Count > MaxDiscoveredFiles)
+            throw new InvalidOperationException("Historical query exceeds the file discovery limit.");
+        return distinctFiles;
     }
 
     private async Task<List<HistoricalDataRecord>> ReadDataFileAsync(
@@ -723,6 +768,8 @@ public sealed class HistoricalDataQueryService
             while ((line = await reader.ReadLineAsync(ct)) != null && records.Count < maxRecords)
             {
                 lineNumber++;
+                if (lineNumber > MaxScannedLinesPerFile)
+                    throw new InvalidOperationException("Historical query exceeds the per-file scan limit.");
 
                 if (string.IsNullOrWhiteSpace(line))
                     continue;

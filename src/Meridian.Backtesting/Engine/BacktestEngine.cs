@@ -695,8 +695,16 @@ public sealed class BacktestEngine(
                     pendingOrders.Add(contingentOrder);
             }
 
+            // IOC/FOK terminal decisions must survive engine-level fill accounting.
+            // Do not trust model-predicted filled quantities when the portfolio rejects fills.
+            var terminalCancellation = result.RemoveOrder && result.UpdatedOrder.Status == OrderStatus.Cancelled;
             if (acceptedFilledQuantity == 0)
             {
+                if (terminalCancellation)
+                {
+                    pendingOrders[i] = order with { Status = OrderStatus.Cancelled, IsTriggered = result.UpdatedOrder.IsTriggered };
+                    continue;
+                }
                 // Preserve trigger activation even when all generated fills were rejected.
                 pendingOrders[i] = result.WasTriggered
                     ? order with { IsTriggered = true }
@@ -707,9 +715,11 @@ public sealed class BacktestEngine(
             var updatedOrder = order with
             {
                 FilledQuantity = order.FilledQuantity + acceptedFilledQuantity,
-                Status = order.RemainingQuantity - Math.Abs(acceptedFilledQuantity) == 0
-                    ? OrderStatus.Filled
-                    : OrderStatus.PartiallyFilled,
+                Status = terminalCancellation
+                    ? OrderStatus.Cancelled
+                    : order.RemainingQuantity - Math.Abs(acceptedFilledQuantity) == 0
+                        ? OrderStatus.Filled
+                        : OrderStatus.PartiallyFilled,
                 IsTriggered = result.UpdatedOrder.IsTriggered
             };
 

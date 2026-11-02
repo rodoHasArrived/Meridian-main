@@ -169,8 +169,19 @@ public sealed class BackfillSchedule
     public BackfillJob CreateJob(DateOnly? fromDate = null, DateOnly? toDate = null)
     {
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
-        var from = fromDate ?? today.AddDays(-LookbackDays);
-        var to = toDate ?? today.AddDays(-1); // Yesterday (complete data)
+        // The weekday 23:00 UTC EOD preset runs after the US session closes.
+        // On Monday include Friday, rather than selecting Sunday's empty session.
+        var completedSession = BackfillType == ScheduledBackfillType.EndOfDay
+            ? today.DayOfWeek switch
+            {
+                DayOfWeek.Monday => today.AddDays(-3),
+                DayOfWeek.Sunday => today.AddDays(-2),
+                DayOfWeek.Saturday => today.AddDays(-1),
+                _ => today
+            }
+            : today.AddDays(-1);
+        var from = fromDate ?? (BackfillType == ScheduledBackfillType.EndOfDay ? completedSession : today.AddDays(-LookbackDays));
+        var to = toDate ?? completedSession;
 
         return new BackfillJob
         {
