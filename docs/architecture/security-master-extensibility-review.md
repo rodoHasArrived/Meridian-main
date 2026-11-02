@@ -7783,7 +7783,7 @@ merges.
 | C2 refused a European last entry, which has no window to end (R24) | The European last entry is exempt; C2's text is unchanged. This is the one loosening, and it applies to every write |
 | The strict walk let some malformed containers through | `paymentCalendars` ids must match the calendar-file grammar and be named once (the grammar moved from `FileBusinessDayCalendarSource` to `BusinessDayCalendars.IsCanonicalCalendarId` in `Meridian.Contracts`, with the file source's refusal text byte-identical); R30's member-name check also runs inside unset blocks and entries; blank String members are refused; a non-periodic `exerciseFrequency` gets its own text; a member type the walker cannot check refuses the write (none exists today); member names are checked before member values |
 | A tightened rule applied to stored rows would make them un-amendable by patch-less amends | Every new or tightened rule judges only a root container the write introduces or changes, compared as terms with the retained row; creates introduce every container, and read-back exercise analytics pass the row as its own retained terms ([ADR-025](../adr/025-contractual-schedule-kernel.md#declared-schedule-write-rule-gaps--2026-11-02)) |
-| A floor refusal on a request surfaced as a 500 | `SecurityMasterTermsCapabilityRefusedException` (a `StartupRefusedException`) is thrown at all five verifier refusal sites, and `MeridianApiExceptionHandler` answers it 503 with a fixed operator reason; the cause stays in the log |
+| A floor refusal on a request surfaced as a 500 | `SecurityMasterTermsCapabilityRefusedException` (a `StartupRefusedException`) is thrown at all five verifier refusal sites, and `MeridianApiExceptionHandler` answers it 503 with a fixed operator reason; the cause stays in the log. Route catches that map `InvalidOperationException` to 409 around gated writes (ledger posting candidates, conflict resolution, workbench commands, bond cutover) exclude it, and a refused workbench publish handler rethrows it (review finding, 2026-11-02) |
 | Terms-carrying writes outside the command boundary did not ask the floor (OD4) | Projection rebuilds (warm, incremental and scoped asset-class), the direct-lending Asset Operations publication and new amortization batches, reversals included, ask main's verifier before persisting; exact replays of retained amortization journals are still served |
 | Stored rows had no list of what the new rules would refuse | Query QG in the [terms contract rollout](../operators/security-master-terms-contract-rollout.md), step 3; a hit is a row to repair, not a deploy hold |
 
@@ -7795,7 +7795,9 @@ stray-container guard among them, are unchanged and still judge retained contain
 
 **Deviations from the dropped branch.** The rules live in main's single validator rather than the
 branch's separate classes. The branch applied its rules to every write; here they judge only
-introduced or changed containers. R30 and repeated or unknown names keep main's texts. C1a and C5c
+introduced or changed containers, except R30's names-only check, which runs on every write and keeps
+names the stored container already holds. R30 and repeated or unknown names keep main's texts. C5c
+names the earliest call by its stored index, as the rule definition does. C1a and C5c
 read anchors written `yyyy-MM-dd` only, where the branch used the current-culture reader. The 503
 detail is a fixed reason, because main's verifier messages are written for startup. The amortization
 gate is an optional delegate that `LedgerFeatureRegistration` supplies, because

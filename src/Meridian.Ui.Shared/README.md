@@ -2919,8 +2919,10 @@ A node whose Security Master terms capability floor refuses it answers 503 rathe
 `MeridianApiExceptionHandler` maps `SecurityMasterTermsCapabilityRefusedException` to
 `ApiProblemDetails.ServiceUnavailable` (service `security master terms capability`) with the fixed
 `SecurityMasterTermsCapabilityRefusedException.RefusalMessage` as `detail`, and logs the specific
-cause at Warning instead of returning it. `SecurityMasterTermsCapabilityRefusalEndpointsTests` pins
-it on the create and amend routes
+cause at Warning instead of returning it. The ledger posting-candidate, conflict-resolution,
+workbench-command and bond-cutover routes exclude it from their `InvalidOperationException` 409
+catches. `SecurityMasterTermsCapabilityRefusalEndpointsTests` pins it on the create, amend, term-block
+and deactivate routes, and `WorkstationEndpointsTests` on the ledger posting route
 ([terms contract rollout](../../docs/operators/security-master-terms-contract-rollout.md)).
 
 `POST /api/security-master/structured-credit-reclassification/report` (AdminMaintenance) builds the

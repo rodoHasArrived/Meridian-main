@@ -869,7 +869,9 @@ are unchanged. The owner's disposition is recorded in the
     StructuredCredit declare none) and only when it is written `yyyy-MM-dd`; any other spelling
     skips the rule. The maturity side is main's existing C1b.
   - C5c: the earliest call opens on or after `nonCallPeriodEnd` (StructuredCredit), read the same
-    way. It runs after main's call-scalar checks C5a and C5b.
+    way. It runs after main's call-scalar checks C5a and C5b, and names the earliest call by its
+    stored index: "Declared callSchedule[i] callDate {date} is before the nonCallPeriodEnd {date}; no
+    call may open before the non-call period ends."
   - Inside an entry, main's existing checks run first, then the non-periodic frequency check, the
     Bermudan-regular rule, the price floor, E4, E7, E9a/b, E10d and C1a.
 - **One loosening, R24.** C2 ("The final exercise window needs an end date or maturity.") no longer
@@ -881,7 +883,10 @@ are unchanged. The owner's disposition is recorded in the
     letter followed by 1 to 15 uppercase ASCII letters or digits, matched exactly), and each id is
     named once. Both are checked in a populated block, after main's nonblank-id check.
   - R30: main's unknown, case-variant or repeated member check now also runs inside an unset object
-    block or entry, so a misspelled member cannot hide behind null values.
+    block or entry, so a misspelled member cannot hide behind null values. Because an unset value is
+    never a change, this names-only check runs on every write, amendments and staging included, not
+    only on changed containers; it keeps a member name the stored container already holds (the
+    block's, or any stored entry's), so a stored row stays amendable.
   - A String member of a populated block or entry must not be blank; omitting it or sending `null`
     leaves it unset.
   - A recognized but non-periodic `exerciseFrequency` (`AtMaturity` and its spellings) is refused
@@ -896,8 +901,10 @@ are unchanged. The owner's disposition is recorded in the
   terms are writable); the owner kept them, which supersedes the earlier "allow on unreadable"
   decision (OD5). It now throws `SecurityMasterTermsCapabilityRefusedException`, a
   `StartupRefusedException`, so startup refuses as before, and on a request the shared API
-  exception handler answers 503. The verifier now also gates projection rebuilds, the
-  direct-lending Asset Operations publication and new amortization batches. The
+  exception handler answers 503; routes that map `InvalidOperationException` to 409 around a gated
+  write exclude it, and a workbench publish whose handler the floor refuses rethrows the refusal.
+  The verifier now also gates projection rebuilds, the direct-lending Asset Operations publication
+  and new amortization batches, the last before the Approved lifecycle stage is appended. The
   [terms contract rollout](../operators/security-master-terms-contract-rollout.md) gives the
   operator view and the stored-data query QG, which lists stored rows a gap rule would refuse if
   their container were changed.

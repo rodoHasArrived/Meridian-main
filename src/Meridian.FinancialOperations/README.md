@@ -1030,7 +1030,7 @@ for the same `(ledger book aggregate, source event)` return the existing journal
 economic event may still produce separate GAAP, cash, tax, statutory, or primary postings because
 each basis uses its own ledger-book aggregate.
 A new amortization batch, reversals included, also awaits the optional `termsCapabilityCheck`
-before its posting transaction opens; `LedgerFeatureRegistration` (Application) passes the Security
+before the Approved lifecycle stage is appended and its posting transaction opens; `LedgerFeatureRegistration` (Application) passes the Security
 Master terms capability verifier's `VerifyAsync` when one is registered, because this layer cannot
 reference it. An exact replay of a retained amortization journal is still served, and other intents
 are not gated.

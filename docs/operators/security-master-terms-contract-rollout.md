@@ -522,7 +522,11 @@ well.
     activated floor row) before retrying." The specific cause is not returned; it is in the node's
     log, at Warning, with the verifier's own message. A 503 means this node, not the request:
     verify the floor table and the node's build, then retry, or retry on a node whose floor check
-    passes. A 400 is still a refused write.
+    passes. A 400 is still a refused write. The 503 is the answer on every route that writes behind
+    the floor: the ledger posting-candidate route, Security Master conflict resolution, the workbench
+    commands and the bond cutover no longer turn it into 409, and a workbench publish whose
+    side-effect handler the floor refuses answers 503 (the revision stays Approved; publish again once
+    the floor passes) instead of 500 `publish-side-effect-failed`.
   - **More writes ask the floor.** Beside canonical creates, amendments and deactivations, the
     verifier now gates, before anything is persisted: a full warm projection rebuild, each
     incremental replay batch and a scoped asset-class rebuild (`SecurityMasterRebuildOrchestrator`),
@@ -530,7 +534,8 @@ well.
     (`PostgresDirectLendingCommandService.PublishAssetOperationsAsync`), and a new amortization
     batch, reversals included (`AccountingPostingCandidatePostService`, through
     `LedgerFeatureRegistration`). A refused publication fails its outbox delivery, which retries; a
-    refused rebuild or amortization batch writes nothing. An exact replay of a retained
+    refused rebuild or amortization batch writes nothing, not even the batch's Approved lifecycle
+    stage, so the batch can be posted again, with any approval notes, once the floor passes. An exact replay of a retained
     amortization journal is still served below the floor, and reads, the in-memory amortization
     bridge and non-amortization postings are not gated. No migration or table is added.
 
