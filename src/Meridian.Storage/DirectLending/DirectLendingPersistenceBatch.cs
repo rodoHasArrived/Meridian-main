@@ -1,3 +1,5 @@
+using Meridian.Storage.Ledger;
+
 namespace Meridian.Storage.DirectLending;
 
 public sealed record DirectLendingCashTransactionWrite(
@@ -35,12 +37,25 @@ public sealed record DirectLendingOutboxMessageWrite(
     DateTimeOffset OccurredAt,
     DateTimeOffset? VisibleAfter);
 
+/// <summary>An assessment caused by the primary command event, committed in the same transaction.</summary>
+public sealed record DirectLendingAdditionalEventWrite(
+    Guid EventId,
+    string EventType,
+    int EventSchemaVersion,
+    DateOnly? EffectiveDate,
+    string PayloadJson,
+    DirectLendingEventWriteMetadata Metadata,
+    IReadOnlyList<LedgerJournalEntryWrite>? LedgerJournalEntries,
+    IReadOnlyList<DirectLendingOutboxMessageWrite>? OutboxMessages);
+
 public sealed record DirectLendingPersistenceBatch(
     IReadOnlyList<DirectLendingCashTransactionWrite>? CashTransactions,
     IReadOnlyList<DirectLendingPaymentAllocationWrite>? PaymentAllocations,
     IReadOnlyList<DirectLendingFeeBalanceWrite>? FeeBalances,
     IReadOnlyList<DirectLendingOutboxMessageWrite>? OutboxMessages)
 {
+    public IReadOnlyList<DirectLendingAdditionalEventWrite> AdditionalEvents { get; init; } = [];
+
     public static readonly DirectLendingPersistenceBatch Empty =
         new([], [], [], []);
 }

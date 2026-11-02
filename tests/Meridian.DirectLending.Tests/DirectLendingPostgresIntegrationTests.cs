@@ -42,9 +42,9 @@ public sealed class DirectLendingPostgresIntegrationTests
         added.TotalCommitment.Should().BeNull();
         added.TotalCollateralValue.Should().BeNull();
         added.CurrencyTotals!.Single(item => item.Currency == CurrencyCode.USD)
-            .Should().Be(new LoanPortfolioCurrencyTotalsDto(CurrencyCode.USD, 1_000_000m, 0m, 0m, 0m, 1_000_000m, 0m));
+            .Should().Be(new LoanPortfolioCurrencyTotalsDto(CurrencyCode.USD, 1_000_000m, 0m, 0m, 0m, 1_000_000m, 0m, 0m, 0m));
         added.CurrencyTotals!.Single(item => item.Currency == CurrencyCode.EUR)
-            .Should().Be(new LoanPortfolioCurrencyTotalsDto(CurrencyCode.EUR, 2_000_000m, 0m, 0m, 0m, 2_000_000m, 300_000m));
+            .Should().Be(new LoanPortfolioCurrencyTotalsDto(CurrencyCode.EUR, 2_000_000m, 0m, 0m, 0m, 2_000_000m, 300_000m, 0m, 0m));
 
         await db.Service.UpdateCollateralValueAsync(usd.LoanId,
             new UpdateCollateralValueRequest(collateralId, 350_000m, new DateOnly(2026, 3, 23)));

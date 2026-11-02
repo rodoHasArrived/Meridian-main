@@ -1764,6 +1764,7 @@ Meridian-main
 │   │   ├── contractual-schedule.md
 │   │   ├── corporate-action-case.md
 │   │   ├── credit-support.md
+│   │   ├── direct-lending-cash.md
 │   │   ├── fund-event.md
 │   │   ├── intercompany-consolidation.md
 │   │   ├── market-curve.md
@@ -4185,6 +4186,8 @@ Meridian-main
 │   │   ├── DirectLending
 │   │   │   ├── AccrualLedgerService.cs
 │   │   │   ├── DailyAccrualWorker.cs
+│   │   │   ├── DirectLendingCashJournal.cs
+│   │   │   ├── DirectLendingCashReconciliation.cs
 │   │   │   ├── DirectLendingEventRebuilder.cs
 │   │   │   ├── DirectLendingOutboxDispatcher.cs
 │   │   │   ├── DirectLendingSchedulePeriods.cs
@@ -4706,6 +4709,8 @@ Meridian-main
 │   │   │   ├── DirectLendingCommandResults.cs
 │   │   │   ├── DirectLendingDtos.cs
 │   │   │   ├── DirectLendingOptions.cs
+│   │   │   ├── DirectLendingPaymentResolver.cs
+│   │   │   ├── DirectLendingPrepaidInterest.cs
 │   │   │   └── DirectLendingWorkflowDtos.cs
 │   │   ├── Domain
 │   │   │   ├── Enums
@@ -6631,7 +6636,9 @@ Meridian-main
 │   │   │   │   ├── 006_servicer_statement_intake.sql
 │   │   │   │   ├── 007_direct_lending_command_idempotency.sql
 │   │   │   │   ├── 008_direct_lending_pik_accrual.sql
-│   │   │   │   └── 009_direct_lending_cash_flow_identity.sql
+│   │   │   │   ├── 009_direct_lending_cash_flow_identity.sql
+│   │   │   │   ├── 010_direct_lending_excess_payment_balances.sql
+│   │   │   │   └── 010_direct_lending_retained_cash.sql
 │   │   │   ├── DirectLendingMigrationRunner.cs
 │   │   │   ├── DirectLendingPersistenceBatch.cs
 │   │   │   ├── IDirectLendingOperationsStore.cs
@@ -10002,6 +10009,7 @@ Meridian-main
 │   │   ├── DirectLendingDatabaseFactAttribute.cs
 │   │   ├── DirectLendingPostgresIntegrationTests.cs
 │   │   ├── DirectLendingPostgresTestDatabase.cs
+│   │   ├── DirectLendingRetainedCashTests.cs
 │   │   ├── DirectLendingServiceTests.cs
 │   │   ├── DirectLendingWorkflowTests.cs
 │   │   ├── GlobalUsings.cs
@@ -10784,6 +10792,8 @@ Meridian-main
 │   │   │   ├── DirectLending
 │   │   │   │   ├── AccrualLedgerServiceTests.cs
 │   │   │   │   ├── DailyAccrualWorkerTests.cs
+│   │   │   │   ├── DirectLendingCashAccountingTests.cs
+│   │   │   │   ├── DirectLendingCashParityTests.cs
 │   │   │   │   ├── DirectLendingEventRebuilderTests.cs
 │   │   │   │   ├── DirectLendingOutboxDispatcherTests.cs
 │   │   │   │   ├── DirectLendingOutboxFailureTests.cs
@@ -10791,7 +10801,8 @@ Meridian-main
 │   │   │   │   ├── DirectLendingTermsHashCharacterizationTests.cs
 │   │   │   │   ├── ManualPaymentResolutionTests.cs
 │   │   │   │   ├── PostgresDirectLendingCommandServiceTests.cs
-│   │   │   │   └── PostgresDirectLendingProjectionCharacterizationTests.cs
+│   │   │   │   ├── PostgresDirectLendingProjectionCharacterizationTests.cs
+│   │   │   │   └── Prd115JournalReplayTests.cs
 │   │   │   ├── FundStructure
 │   │   │   │   ├── FundStructureTenantAttributionTests.cs
 │   │   │   │   ├── FundStructureTenantBackfillCommandTests.cs

@@ -2,11 +2,36 @@
 
 # `direct-lending-contracts` data objects - page 2 of 2
 
-Objects 81-100 of 100. References crossing pages remain available in the dependency manifest.
+Objects 81-105 of 105. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% direct-lending-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_DirectLending_ReplayDirectLendingRequest["ReplayDirectLendingRequest"] {
+        +bool RecomputeDerivedArtifacts
+    }
+    class Meridian_Contracts_DirectLending_ReplayDirectLendingResultDto["ReplayDirectLendingResultDto"] {
+        +DateTimeOffset CompletedAt
+        +int EventsProcessed
+        +int LoansProcessed
+    }
+    class Meridian_Contracts_DirectLending_RequestProjectionRunRequest["RequestProjectionRunRequest"] {
+        +string? EngineVersion
+        +DateOnly? MarketDataAsOf
+        +DateOnly ProjectionAsOf
+        +string? TriggerType
+    }
+    class Meridian_Contracts_DirectLending_ResolveReconciliationExceptionRequest["ResolveReconciliationExceptionRequest"] {
+        +string AssignedTo
+        +string ResolutionNote
+    }
+    class Meridian_Contracts_DirectLending_RestructureLoanRequest["RestructureLoanRequest"] {
+        +DateOnly EffectiveDate
+        +decimal? HaircutAmount
+        +DirectLendingTermsDto? NewTerms
+        +string Reason
+        +RestructuringType RestructuringType
+    }
     class Meridian_Contracts_DirectLending_RestructuringType["RestructuringType"] {
     }
     class Meridian_Contracts_DirectLending_ServicerPositionReportLineDto["ServicerPositionReportLineDto"] {
@@ -176,6 +201,7 @@ classDiagram
         +DateOnly NewAppraisalDate
         +decimal NewEstimatedValue
     }
+    Meridian_Contracts_DirectLending_RestructureLoanRequest --> Meridian_Contracts_DirectLending_RestructuringType
     Meridian_Contracts_DirectLending_ServicerStatementApplyRequestDto --> Meridian_Contracts_DirectLending_ServicerStatementApplyMode
     Meridian_Contracts_DirectLending_ServicerStatementApplyResultDto --> Meridian_Contracts_DirectLending_ServicerStatementRowDto
     Meridian_Contracts_DirectLending_ServicerStatementApplyResultDto --> Meridian_Contracts_DirectLending_ServicerStatementValidationIssueDto

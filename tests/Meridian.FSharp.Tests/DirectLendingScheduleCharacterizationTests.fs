@@ -9,6 +9,7 @@ module Meridian.FSharp.Tests.DirectLendingScheduleCharacterizationTests
 
 open System
 open System.Collections.Generic
+open System.Text.Json
 open Xunit
 open FsUnit.Xunit
 open Meridian.Contracts.DirectLending
@@ -145,6 +146,40 @@ let ``Terms hash for the interest-only DTO with grace matches the base capture``
     let decision = createLoanWith (interestOnlyWithGraceTerms ())
 
     decision.TermsVersion.TermsHash |> should equal InterestOnlyWithGraceHash
+
+[<Fact>]
+let ``Absent and explicit null excess rule roundtrip with the historical terms hash`` () =
+    let options = JsonSerializerOptions(PropertyNamingPolicy = JsonNamingPolicy.CamelCase)
+    let original = fixedBulletTerms ()
+    let legacyJson = JsonSerializer.Serialize(original, options)
+    Assert.DoesNotContain("excessPaymentApplication", legacyJson)
+
+    let withExplicitNull = legacyJson.Substring(0, legacyJson.Length - 1) + ",\"excessPaymentApplication\":null}"
+    let roundtrip = JsonSerializer.Deserialize<DirectLendingTermsDto>(withExplicitNull, options)
+    let decision = createLoanWith roundtrip
+
+    decision.TermsVersion.TermsHash |> should equal FixedBulletHash
+    JsonSerializer.Serialize(roundtrip, options) |> should equal legacyJson
+
+[<Fact>]
+let ``An explicit excess rule receives a new hash without changing the retained legacy terms version`` () =
+    let options = JsonSerializerOptions(PropertyNamingPolicy = JsonNamingPolicy.CamelCase)
+    let original = fixedBulletTerms ()
+    let created = createLoanWith original
+    let amendedTerms = fixedBulletTermsWithRule (Nullable ExcessPaymentApplication.PrincipalPrepayment)
+    let amendedJson = JsonSerializer.Serialize(amendedTerms, options)
+    let amended =
+        DirectLendingAggregateInterop.AmendTerms
+            created.Contract created.Servicing
+            (AmendLoanTermsRequest(amendedTerms, "Explicit contractual cash election"))
+            (DateTimeOffset(2026, 1, 2, 0, 0, 0, TimeSpan.Zero))
+
+    amended.TermsVersion.TermsHash |> should equal FixedBulletWithPrincipalPrepaymentRuleHash
+    amended.Contract.TermsVersions[1].TermsHash |> should equal FixedBulletHash
+    amended.Contract.TermsVersions[1].Terms.ExcessPaymentApplication.HasValue |> should equal false
+    amended.Contract.CurrentTerms.ExcessPaymentApplication |> should equal (Nullable ExcessPaymentApplication.PrincipalPrepayment)
+    Assert.Contains("\"excessPaymentApplication\":1", amendedJson)
+    Assert.DoesNotContain("effectiveExcessPaymentApplication", amendedJson)
 
 // ----- SCH-DEF-006: 30/360 accrues per calendar day over 360 -----
 

@@ -4,6 +4,7 @@ using Meridian.Contracts.DirectLending;
 using Meridian.FSharp.DirectLendingInterop;
 using Meridian.Application.Composition;
 using Meridian.Contracts.Integrity;
+using Meridian.Storage.DirectLending;
 
 namespace Meridian.Application.DirectLending;
 
@@ -139,6 +140,12 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
             if (!_loans.TryGetValue(loanId, out var stored))
             {
                 return Task.FromResult<LoanContractDetailDto?>(null);
+            }
+
+            if (DirectLendingPaymentResolver.ValidateTermsAmendment(
+                ToServicingState(stored), stored.TermsVersions[^1].Terms, request.Terms) is { } amendmentError)
+            {
+                throw new DirectLendingCommandException(new DirectLendingCommandError(DirectLendingErrorCode.Validation, amendmentError));
             }
 
             var nextVersion = stored.TermsVersions[^1].VersionNumber + 1;
@@ -358,6 +365,30 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
                 return Task.FromResult<LoanServicingStateDto?>(null);
             }
 
+            if (metadata?.CommandId is { } commandId)
+            {
+                var prior = stored.History.FirstOrDefault(item => item.CommandId == commandId);
+                if (prior is not null)
+                {
+                    using var priorPayload = JsonDocument.Parse(prior.PayloadJson);
+                    if (prior.EventType != "loan.principal-payment-applied" ||
+                        !priorPayload.RootElement.TryGetProperty("request", out var retainedRequest) ||
+                        retainedRequest.Deserialize<ApplyPrincipalPaymentRequest>(EventJsonOptions) != request)
+                    {
+                        throw new DirectLendingCommandException(new DirectLendingCommandError(
+                            DirectLendingErrorCode.Conflict, "Command identity is already retained with different principal payment instructions."));
+                    }
+
+                    return Task.FromResult<LoanServicingStateDto?>(ToServicingState(stored));
+                }
+            }
+
+            if (DirectLendingPaymentResolver.ValidatePrincipalPayment(
+                ToServicingState(stored), stored.TermsVersions[^1].Terms, request.Amount, request.EffectiveDate) is { } paymentError)
+            {
+                throw new DirectLendingCommandException(new DirectLendingCommandError(DirectLendingErrorCode.Validation, paymentError));
+            }
+
             var principalBefore = stored.Servicing.Balances.PrincipalOutstanding;
             if (principalBefore <= 0m)
             {
@@ -389,7 +420,8 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
                 RequestedAmount = request.Amount,
                 AppliedAmount = appliedAmount,
                 request.EffectiveDate,
-                request.ExternalRef
+                request.ExternalRef,
+                request
             }, metadata);
             return Task.FromResult<LoanServicingStateDto?>(ToServicingState(stored));
         }
@@ -406,6 +438,23 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
                 return Task.FromResult<DailyAccrualEntryDto?>(null);
             }
 
+            if (metadata?.CommandId is { } commandId)
+            {
+                var prior = stored.History.FirstOrDefault(item => item.CommandId == commandId);
+                if (prior is not null)
+                {
+                    using var payload = JsonDocument.Parse(prior.PayloadJson);
+                    if (prior.EventType != "loan.daily-accrual-posted" ||
+                        !payload.RootElement.TryGetProperty("accrualDate", out var date) ||
+                        date.Deserialize<DateOnly>(EventJsonOptions) != request.AccrualDate ||
+                        !payload.RootElement.TryGetProperty("accrualEntryId", out var id))
+                        throw new DirectLendingCommandException(new DirectLendingCommandError(
+                            DirectLendingErrorCode.Conflict, "Command identity is already retained with different accrual instructions."));
+                    var retainedEntry = stored.Servicing.AccrualEntries.Single(item => item.AccrualEntryId == id.GetGuid());
+                    return Task.FromResult<DailyAccrualEntryDto?>(retainedEntry);
+                }
+            }
+
             EnsureActive(stored);
 
             if (stored.Servicing.LastAccrualDate is not null && request.AccrualDate <= stored.Servicing.LastAccrualDate.Value)
@@ -414,7 +463,9 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
             }
 
             var terms = stored.TermsVersions[^1].Terms;
-            var annualRate = ResolveAnnualRate(terms, stored.Servicing.CurrentRateReset);
+            var annualRate = DirectLendingInterop.ApplyRateBounds(
+                terms.EffectiveRateFloor, terms.EffectiveRateCap,
+                ResolveAnnualRate(terms, stored.Servicing.CurrentRateReset));
             // PIK posture: interest capitalizes into principal instead of accruing as a
             // cash receivable.
             var isPikAccrual = stored.Servicing.IsPikToggled;
@@ -431,6 +482,8 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
                     annualRate,
                     (int)terms.DayCountBasis,
                     request.AccrualDate);
+            // Match the canonical F# accrual contract before allocating earned interest.
+            accruedInterest = decimal.Round(accruedInterest, 2, MidpointRounding.AwayFromZero);
             var interestAmount = isPikAccrual ? 0m : accruedInterest;
             var pikInterestAmount = isPikAccrual ? accruedInterest : 0m;
 
@@ -441,6 +494,9 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
                     (int)terms.DayCountBasis,
                     request.AccrualDate)
                 : 0m;
+            commitmentFeeAmount = decimal.Round(commitmentFeeAmount, 2, MidpointRounding.AwayFromZero);
+            var prepaidApplication = DirectLendingPrepaidInterest.ApplyAccrual(
+                ToServicingState(stored), interestAmount, request.AccrualDate);
 
             var entry = new DailyAccrualEntryDto(
                 Guid.NewGuid(),
@@ -450,7 +506,9 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
                 0m,
                 annualRate,
                 DateTimeOffset.UtcNow,
-                pikInterestAmount);
+                pikInterestAmount,
+                prepaidApplication.AppliedAmount,
+                prepaidApplication.Releases);
 
             stored.Servicing.AccrualEntries.Add(entry);
             stored.Servicing = stored.Servicing with
@@ -458,8 +516,10 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
                 Balances = stored.Servicing.Balances with
                 {
                     PrincipalOutstanding = stored.Servicing.Balances.PrincipalOutstanding + pikInterestAmount,
-                    InterestAccruedUnpaid = stored.Servicing.Balances.InterestAccruedUnpaid + interestAmount,
-                    CommitmentFeeAccruedUnpaid = stored.Servicing.Balances.CommitmentFeeAccruedUnpaid + commitmentFeeAmount
+                    InterestAccruedUnpaid = stored.Servicing.Balances.InterestAccruedUnpaid + interestAmount - prepaidApplication.AppliedAmount,
+                    CommitmentFeeAccruedUnpaid = stored.Servicing.Balances.CommitmentFeeAccruedUnpaid + commitmentFeeAmount,
+                    PrepaidInterest = stored.Servicing.Balances.PrepaidInterest - prepaidApplication.AppliedAmount,
+                    PrepaidInterestLots = prepaidApplication.Lots
                 },
                 LastAccrualDate = request.AccrualDate
             };
@@ -480,7 +540,12 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
                 entry.CommitmentFeeAmount,
                 entry.PenaltyAmount,
                 entry.AnnualRateApplied,
-                entry.PikInterestAmount
+                entry.PikInterestAmount,
+                entry.RecordedAt,
+                entry.PrepaidInterestConsumed,
+                entry.PrepaidInterestReleases,
+                Currency = terms.BaseCurrency,
+                CashAccountingVersion = entry.PrepaidInterestConsumed > 0m ? DirectLendingPaymentResolver.CashAccountingVersion : null
             }, metadata);
             return Task.FromResult<DailyAccrualEntryDto?>(entry);
         }
@@ -521,6 +586,11 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
         if (terms.EffectiveRateFloor is { } floor && terms.EffectiveRateCap is { } cap && cap < floor)
         {
             throw new DirectLendingCommandException(new DirectLendingCommandError(DirectLendingErrorCode.Validation, "Effective rate cap must be greater than or equal to the effective rate floor."));
+        }
+
+        if (DirectLendingPaymentResolver.ValidatePolicy(terms) is { } policyError)
+        {
+            throw new DirectLendingCommandException(new DirectLendingCommandError(DirectLendingErrorCode.Validation, policyError));
         }
     }
 
@@ -581,7 +651,9 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
                     terms.OriginationDate,
                     terms.MaturityDate,
                     s.LastAccrualDate,
-                    s.LastPaymentDate);
+                    s.LastPaymentDate,
+                    s.Balances.UnappliedCash,
+                    s.Balances.PrepaidInterest);
             }).ToList();
 
             var collateral = _loans.Values.SelectMany(loan => loan.Servicing.Collateral ?? []).ToArray();
@@ -707,8 +779,15 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
 
             if (request.NewTerms is not null)
             {
+                ValidateTerms(request.NewTerms);
+                if (DirectLendingPaymentResolver.ValidateTermsAmendment(
+                    ToServicingState(stored), stored.TermsVersions[^1].Terms, request.NewTerms) is { } amendmentError)
+                {
+                    throw new DirectLendingCommandException(new DirectLendingCommandError(DirectLendingErrorCode.Validation, amendmentError));
+                }
+
                 var next = stored.TermsVersions.Max(v => v.VersionNumber) + 1;
-                var hash = Guid.NewGuid().ToString("N")[..8];
+                var hash = ComputeTermsHash(request.NewTerms);
                 stored.TermsVersions.Add(new LoanTermsVersionDto(next, hash, request.NewTerms, "Restructuring", request.Reason, DateTimeOffset.UtcNow));
             }
 
@@ -770,8 +849,12 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
     private static void ApplyPaymentToLots(List<DrawdownLotDto> lots, decimal appliedAmount)
     {
         var remaining = appliedAmount;
-        for (var i = 0; i < lots.Count && remaining > 0m; i++)
+        // Booking order can differ from drawdown date; use the same stable FIFO
+        // order as the F# aggregate and retained-event replay.
+        foreach (var i in Enumerable.Range(0, lots.Count).OrderBy(index => lots[index].DrawdownDate))
         {
+            if (remaining <= 0m)
+                break;
             var lot = lots[i];
             if (lot.RemainingPrincipal <= 0m)
             {
@@ -803,23 +886,26 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
         };
     }
 
-    private static void AppendEvent(StoredLoan stored, string eventType, DateOnly? effectiveDate, object payload, DirectLendingCommandMetadataDto? metadata)
+    private static void AppendEvent(StoredLoan stored, string eventType, DateOnly? effectiveDate, object payload,
+        DirectLendingCommandMetadataDto? metadata, Guid? eventId = null,
+        DirectLendingEventWriteMetadata? preparedMetadata = null)
     {
+        var retainedMetadata = preparedMetadata ?? DirectLendingServiceSupport.CreateEventMetadata(metadata, "meridian.direct-lending.in-memory");
+        var payloadJson = JsonSerializer.Serialize(payload, EventJsonOptions);
         stored.AggregateVersion++;
-        var commandId = metadata?.CommandId ?? Guid.NewGuid();
         stored.History.Add(new LoanEventLineageDto(
-            Guid.NewGuid(),
+            eventId ?? Guid.NewGuid(),
             stored.AggregateVersion,
             eventType,
             EventSchemaVersion: 1,
             effectiveDate,
             DateTimeOffset.UtcNow,
-            JsonSerializer.Serialize(payload, EventJsonOptions),
-            CausationId: metadata?.CausationId,
-            CorrelationId: metadata?.CorrelationId ?? commandId,
-            CommandId: commandId,
-            SourceSystem: metadata?.SourceSystem ?? "meridian.direct-lending.in-memory",
-            ReplayFlag: metadata?.ReplayFlag ?? false));
+            payloadJson,
+            CausationId: retainedMetadata.CausationId,
+            CorrelationId: retainedMetadata.CorrelationId,
+            CommandId: retainedMetadata.CommandId,
+            SourceSystem: retainedMetadata.SourceSystem,
+            ReplayFlag: retainedMetadata.ReplayFlag));
     }
 
     private static LoanContractDetailDto ToContractDetail(StoredLoan stored)

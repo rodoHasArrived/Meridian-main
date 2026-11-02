@@ -1,6 +1,6 @@
 {
-  "total_files": 796,
-  "total_lines": 181446,
+  "total_files": 797,
+  "total_lines": 181619,
   "orphaned_count": 259,
   "no_heading_count": 157,
   "stale_count": 0,
@@ -2222,6 +2222,14 @@
       "stale": false
     },
     {
+      "path": "docs/domain/direct-lending-cash.md",
+      "line_count": 75,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/domain/fund-event.md",
       "line_count": 36,
       "has_heading": true,
@@ -2263,7 +2271,7 @@
     },
     {
       "path": "docs/domain/README.md",
-      "line_count": 39,
+      "line_count": 40,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2391,7 +2399,7 @@
     },
     {
       "path": "docs/engineering/blueprints/README.md",
-      "line_count": 243,
+      "line_count": 242,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2703,7 +2711,7 @@
     },
     {
       "path": "docs/generated/database/contracts/direct-lending-contracts-page-01.md",
-      "line_count": 674,
+      "line_count": 685,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2711,7 +2719,7 @@
     },
     {
       "path": "docs/generated/database/contracts/direct-lending-contracts-page-02.md",
-      "line_count": 192,
+      "line_count": 218,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2967,7 +2975,7 @@
     },
     {
       "path": "docs/generated/database/modules/security_master.md",
-      "line_count": 1914,
+      "line_count": 1920,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3031,7 +3039,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 13182,
+      "line_count": 13193,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3487,7 +3495,7 @@
     },
     {
       "path": "docs/product/implementation-todo-list.md",
-      "line_count": 859,
+      "line_count": 861,
       "has_heading": true,
       "todo_count": 5,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6239,7 +6247,7 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 1417,
+      "line_count": 1426,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6271,7 +6279,7 @@
     },
     {
       "path": "src/Meridian.Contracts/README.md",
-      "line_count": 2137,
+      "line_count": 2145,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6343,7 +6351,7 @@
     },
     {
       "path": "src/Meridian.FSharp.DirectLending.Aggregates/README.md",
-      "line_count": 80,
+      "line_count": 95,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6503,7 +6511,7 @@
     },
     {
       "path": "src/Meridian.Storage/README.md",
-      "line_count": 1508,
+      "line_count": 1518,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

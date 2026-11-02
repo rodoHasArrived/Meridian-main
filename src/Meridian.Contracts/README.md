@@ -11,6 +11,14 @@ last_reviewed: 2026-10-31
 
 # src/Meridian.Contracts
 
+Direct-lending cash contracts use the canonical hash-compatible `ExcessPaymentApplication` term.
+The shared resolver preserves the existing capped allocation, routes residual cash, and retains
+cash liabilities and receipt-level terms hashes. Principal excess, prepaid interest and unapplied
+cash have separate conserved amounts; the approved excess-principal penalty is assessed separately.
+Both languages consume earned cash interest from retained prepaid receipts. Unsupported ledger
+precision is rejected and liability totals remain separate from exposure and from other currencies.
+See [direct-lending receipt accounting](../../docs/domain/direct-lending-cash.md).
+
 `BondAnalyticsCashFlow.FloatingCoupon` carries v3-only reset evidence: reset date, observed/forecast
 status, named index, index and effective coupon annual fractions, spread in basis points, and source.
 The optional field and `BondAnalyticsResult.SpreadDv01` are omitted from fixed/zero v1/v2 JSON.

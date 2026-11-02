@@ -27,9 +27,15 @@ public sealed class DirectLendingEventRebuilder
 
         LoanContractDetailDto? contract = null;
         LoanServicingStateDto? servicing = null;
+        (DirectLendingCashJournal.Receipt Receipt, LoanEventLineageDto Event)? pendingPenalty = null;
 
         foreach (var entry in history.OrderBy(static item => item.AggregateVersion))
         {
+            if (pendingPenalty is { } expectedPenalty &&
+                (entry.EventType != "loan.prepayment-penalty-charged" ||
+                 entry.EventId != expectedPenalty.Receipt.PrepaymentPenaltyEventId ||
+                 entry.AggregateVersion != expectedPenalty.Event.AggregateVersion + 1))
+                throw new InvalidOperationException("Retained receipt is missing its immediately linked automatic prepayment penalty event.");
             if (entry.EventSchemaVersion != 1)
             {
                 throw new InvalidOperationException(
@@ -83,6 +89,8 @@ public sealed class DirectLendingEventRebuilder
                     {
                         EnsureInitialized(contract, servicing, entry.EventType);
                         var terms = Deserialize<DirectLendingTermsDto>(root, "terms");
+                        if (DirectLendingPaymentResolver.ValidateTermsAmendment(servicing!, contract!.CurrentTerms, terms) is { } amendmentError)
+                            throw new InvalidOperationException(amendmentError);
                         var versionNumber = root.GetProperty("versionNumber").GetInt32();
                         var amendmentReason = GetOptionalString(root, "amendmentReason");
                         var termsVersion = CreateTermsVersion(versionNumber, terms, "TermsAmended", amendmentReason, entry.RecordedAt);
@@ -216,11 +224,108 @@ public sealed class DirectLendingEventRebuilder
                     }
 
 
+                case "loan.mixed-payment-applied":
+                    {
+                        EnsureInitialized(contract, servicing, entry.EventType);
+                        var receipt = DirectLendingCashJournal.Read(root);
+                        DirectLendingCashJournal.ValidateTerms(receipt, contract!);
+                        var resolution = receipt.Resolution
+                            ?? throw new InvalidOperationException("Mixed-payment replay requires its retained allocation resolution.");
+                        var breakdown = resolution.Breakdown;
+                        var principalAmount = breakdown.ToPrincipal + resolution.ExcessToPrincipal;
+                        var before = servicing!.Balances;
+                        if (receipt.IsVersioned &&
+                            (receipt.TermsVersion != contract!.CurrentTermsVersion ||
+                             principalAmount > before.PrincipalOutstanding ||
+                             breakdown.ToInterest > before.InterestAccruedUnpaid ||
+                             breakdown.ToCommitmentFee > before.CommitmentFeeAccruedUnpaid ||
+                             breakdown.ToFees > before.FeesAccruedUnpaid ||
+                             breakdown.ToPenalty > before.PenaltyAccruedUnpaid))
+                            throw new InvalidOperationException("Retained mixed-payment allocations exceed the balances or terms version at the event.");
+                        if (receipt.IsVersioned && resolution.ExcessRuleApplied == ExcessPaymentApplication.PrincipalPrepayment &&
+                            contract!.CurrentTerms.PrepaymentAllowed && resolution.UnappliedAmount > 0m &&
+                            principalAmount < before.PrincipalOutstanding)
+                            throw new InvalidOperationException("Retained principal-prepayment routing leaves unsupported unapplied excess before payoff.");
+
+                        var effectiveDate = entry.EffectiveDate ?? Deserialize<DateOnly>(root, "effectiveDate");
+                        var totalDrawnAfter = Math.Max(0m, servicing.TotalDrawn - principalAmount);
+                        DirectLendingCashJournal.ValidateEffectiveDate(receipt, effectiveDate);
+                        var prepaidLots = receipt.IsVersioned
+                            ? DirectLendingPrepaidInterest.CreateReceiptLots(servicing,
+                                contract!.TermsVersions.Single(item => item.VersionNumber == receipt.TermsVersion).Terms,
+                                receipt.CashTransactionId!.Value, effectiveDate, resolution.ExcessToPrepaidInterest)
+                            : before.PrepaidInterestLots;
+                        servicing = servicing with
+                        {
+                            TotalDrawn = totalDrawnAfter,
+                            AvailableToDraw = DirectLendingInterop.CalculateAvailableToDraw(servicing.CurrentCommitment, totalDrawnAfter),
+                            Balances = before with
+                            {
+                                // Legacy events retain the original clamp semantics; replay is not a correction journal.
+                                PrincipalOutstanding = Math.Max(0m, before.PrincipalOutstanding - principalAmount),
+                                InterestAccruedUnpaid = Math.Max(0m, before.InterestAccruedUnpaid - breakdown.ToInterest),
+                                CommitmentFeeAccruedUnpaid = Math.Max(0m, before.CommitmentFeeAccruedUnpaid - breakdown.ToCommitmentFee),
+                                FeesAccruedUnpaid = Math.Max(0m, before.FeesAccruedUnpaid - breakdown.ToFees),
+                                PenaltyAccruedUnpaid = Math.Max(0m, before.PenaltyAccruedUnpaid - breakdown.ToPenalty),
+                                UnappliedCash = before.UnappliedCash + (receipt.IsVersioned ? resolution.UnappliedAmount : 0m),
+                                PrepaidInterest = before.PrepaidInterest + (receipt.IsVersioned ? resolution.ExcessToPrepaidInterest : 0m),
+                                PrepaidInterestLots = prepaidLots
+                            },
+                            DrawdownLots = ApplyPaymentToLots(servicing.DrawdownLots, principalAmount),
+                            LastPaymentDate = effectiveDate,
+                            ServicingRevision = servicing.ServicingRevision + 1,
+                            RevisionHistory = PrependRevision(
+                                servicing.RevisionHistory,
+                                servicing.ServicingRevision + 1,
+                                "InternalEvent",
+                                effectiveDate,
+                                $"Mixed payment applied for {receipt.Amount:0.00}.",
+                                entry.RecordedAt)
+                        };
+                        if (receipt.AutomaticPrepaymentPenaltyAmount > 0m)
+                            pendingPenalty = (receipt, entry);
+                        break;
+                    }
+
+                case "loan.fee-assessed":
+                    {
+                        EnsureInitialized(contract, servicing, entry.EventType);
+                        var amount = root.GetProperty("amount").GetDecimal();
+                        var effectiveDate = entry.EffectiveDate ?? Deserialize<DateOnly>(root, "effectiveDate");
+                        servicing = servicing! with
+                        {
+                            Balances = servicing.Balances with { FeesAccruedUnpaid = servicing.Balances.FeesAccruedUnpaid + amount },
+                            ServicingRevision = servicing.ServicingRevision + 1,
+                            RevisionHistory = PrependRevision(
+                                servicing.RevisionHistory,
+                                servicing.ServicingRevision + 1,
+                                "InternalEvent",
+                                effectiveDate,
+                                $"Fee assessed for {amount:0.00}.",
+                                entry.RecordedAt)
+                        };
+                        break;
+                    }
+
                 case "loan.prepayment-penalty-charged":
                     {
                         EnsureInitialized(contract, servicing, entry.EventType);
                         var effectiveDate = entry.EffectiveDate ?? Deserialize<DateOnly>(root, "effectiveDate");
-                        var penaltyAmount = root.GetProperty("penaltyAmount").GetDecimal();
+                        var automaticPenalty = DirectLendingCashJournal.ReadAutomaticPenalty(root, contract!, effectiveDate);
+                        if (automaticPenalty is not null)
+                        {
+                            if (pendingPenalty is not { } expected || entry.CausationId != expected.Event.EventId ||
+                                entry.CommandId is not null)
+                                throw new InvalidOperationException("Retained automatic penalty is not linked to a pending receipt decision.");
+                            DirectLendingCashJournal.ValidatePenaltyReceipt(automaticPenalty, expected.Receipt,
+                                expected.Event.EventId, entry.EventId);
+                            pendingPenalty = null;
+                        }
+                        else if (pendingPenalty is not null)
+                            throw new InvalidOperationException("Retained automatic penalty companion lacks its linkage evidence.");
+                        var penaltyAmount = DirectLendingCashJournal.IsVersionedAssessment(root)
+                            ? DirectLendingCashJournal.ReadAssessmentAmount(root, penalty: true)
+                            : root.GetProperty("penaltyAmount").GetDecimal();
 
                         servicing = servicing! with
                         {
@@ -254,6 +359,12 @@ public sealed class DirectLendingEventRebuilder
                             pikElement.ValueKind == JsonValueKind.Number
                                 ? pikElement.GetDecimal()
                                 : 0m;
+                        var prepaidRelease = DirectLendingCashJournal.ReadAccrualRelease(root, interestAmount);
+                        DirectLendingCashJournal.ValidateAccrualDate(prepaidRelease, accrualDate);
+                        if (prepaidRelease.AppliedAmount > 0m && prepaidRelease.Currency != contract!.CurrentTerms.BaseCurrency)
+                            throw new InvalidOperationException("Retained prepaid-interest release currency differs from the contract at accrual.");
+                        var prepaidApplication = DirectLendingPrepaidInterest.ApplyRecordedRelease(servicing!, interestAmount,
+                            accrualDate, prepaidRelease.AppliedAmount, prepaidRelease.Releases);
                         var accrualEntry = new DailyAccrualEntryDto(
                             accrualEntryId,
                             accrualDate,
@@ -261,16 +372,22 @@ public sealed class DirectLendingEventRebuilder
                             commitmentFeeAmount,
                             penaltyAmount,
                             annualRateApplied,
-                            entry.RecordedAt,
-                            pikInterestAmount);
+                            root.TryGetProperty("recordedAt", out var retainedAccrualTime)
+                                ? retainedAccrualTime.GetDateTimeOffset() : entry.RecordedAt,
+                            pikInterestAmount,
+                            prepaidRelease.AppliedAmount,
+                            prepaidRelease.Releases);
 
                         servicing = servicing! with
                         {
                             Balances = servicing.Balances with
                             {
                                 PrincipalOutstanding = servicing.Balances.PrincipalOutstanding + pikInterestAmount,
-                                InterestAccruedUnpaid = servicing.Balances.InterestAccruedUnpaid + interestAmount,
-                                CommitmentFeeAccruedUnpaid = servicing.Balances.CommitmentFeeAccruedUnpaid + commitmentFeeAmount
+                                InterestAccruedUnpaid = servicing.Balances.InterestAccruedUnpaid + interestAmount - prepaidRelease.AppliedAmount,
+                                CommitmentFeeAccruedUnpaid = servicing.Balances.CommitmentFeeAccruedUnpaid + commitmentFeeAmount,
+                                PenaltyAccruedUnpaid = servicing.Balances.PenaltyAccruedUnpaid + penaltyAmount,
+                                PrepaidInterest = servicing.Balances.PrepaidInterest - prepaidRelease.AppliedAmount,
+                                PrepaidInterestLots = prepaidApplication.Lots
                             },
                             LastAccrualDate = accrualDate,
                             ServicingRevision = servicing.ServicingRevision + 1,
@@ -319,6 +436,9 @@ public sealed class DirectLendingEventRebuilder
                     throw new InvalidOperationException($"Unsupported direct-lending event type '{entry.EventType}' during rebuild.");
             }
         }
+
+        if (pendingPenalty is not null)
+            throw new InvalidOperationException("Retained receipt is missing its automatic prepayment penalty companion event.");
 
         EnsureInitialized(contract, servicing, "rebuild");
         var latestVersion = history.Max(static item => item.AggregateVersion);

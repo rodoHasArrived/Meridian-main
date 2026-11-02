@@ -62,6 +62,11 @@ internal static class DirectLendingServiceSupport
             return new DirectLendingCommandError(DirectLendingErrorCode.Validation, "Effective rate cap must be greater than or equal to the effective rate floor.");
         }
 
+        if (DirectLendingPaymentResolver.ValidatePolicy(terms) is { } policyError)
+        {
+            return new DirectLendingCommandError(DirectLendingErrorCode.Validation, policyError);
+        }
+
         return null;
     }
 
@@ -126,58 +131,19 @@ internal static class DirectLendingServiceSupport
             ReplayFlag: metadata?.ReplayFlag ?? false);
     }
 
-    public static MixedPaymentResolutionDto ResolveMixedPayment(LoanServicingStateDto servicing, decimal amount, PaymentBreakdownDto? requestedBreakdown)
+    public static MixedPaymentResolutionDto ResolveMixedPayment(
+        LoanServicingStateDto servicing, DirectLendingTermsDto terms, decimal amount,
+        PaymentBreakdownDto? requestedBreakdown, DateOnly effectiveDate)
     {
-        if (amount <= 0m)
+        try
         {
-            return new MixedPaymentResolutionDto(new PaymentBreakdownDto(0m, 0m, 0m, 0m, 0m), "Invalid", null, amount);
+            return DirectLendingPaymentResolver.Resolve(servicing, terms, amount, requestedBreakdown, effectiveDate);
         }
-
-        var remaining = amount;
-        PaymentBreakdownDto resolved;
-
-        if (requestedBreakdown is not null)
+        catch (ArgumentException exception)
         {
-            // A manual breakdown says where cash goes, but never more than is owed in a bucket:
-            // allocating 1,000 to interest when 10 is accrued would record 990 of income that
-            // does not exist. Each line is capped at the requested amount, the cash still
-            // unallocated, and the bucket's outstanding balance; any excess is reported as
-            // unapplied, as the automatic waterfall does.
-            var owed = servicing.Balances;
-            decimal Take(decimal requested, decimal outstanding)
-            {
-                var applied = Math.Min(remaining, Math.Min(Math.Max(0m, requested), Math.Max(0m, outstanding)));
-                remaining -= applied;
-                return applied;
-            }
-
-            resolved = new PaymentBreakdownDto(
-                Take(requestedBreakdown.ToInterest, owed.InterestAccruedUnpaid),
-                Take(requestedBreakdown.ToCommitmentFee, owed.CommitmentFeeAccruedUnpaid),
-                Take(requestedBreakdown.ToFees, owed.FeesAccruedUnpaid),
-                Take(requestedBreakdown.ToPenalty, owed.PenaltyAccruedUnpaid),
-                Take(requestedBreakdown.ToPrincipal, owed.PrincipalOutstanding));
-
-            return new MixedPaymentResolutionDto(resolved, "Manual", "v1", remaining);
+            throw new DirectLendingCommandException(new DirectLendingCommandError(
+                DirectLendingErrorCode.Validation, exception.Message));
         }
-
-        var balances = servicing.Balances;
-        var toInterest = Math.Min(remaining, balances.InterestAccruedUnpaid);
-        remaining -= toInterest;
-        var toCommitmentFee = Math.Min(remaining, balances.CommitmentFeeAccruedUnpaid);
-        remaining -= toCommitmentFee;
-        var toFees = Math.Min(remaining, balances.FeesAccruedUnpaid);
-        remaining -= toFees;
-        var toPenalty = Math.Min(remaining, balances.PenaltyAccruedUnpaid);
-        remaining -= toPenalty;
-        var toPrincipal = Math.Min(remaining, balances.PrincipalOutstanding);
-        remaining -= toPrincipal;
-
-        return new MixedPaymentResolutionDto(
-            new PaymentBreakdownDto(toInterest, toCommitmentFee, toFees, toPenalty, toPrincipal),
-            "WaterfallAuto",
-            "v1",
-            remaining);
     }
 
     public static DirectLendingPersistenceBatch WithOutbox(
@@ -203,16 +169,15 @@ internal static class DirectLendingServiceSupport
             messages.Add(CreateOutboxMessage("direct-lending.reconciliation.requested"));
         }
 
-        return new DirectLendingPersistenceBatch(
-            batch?.CashTransactions ?? [],
-            batch?.PaymentAllocations ?? [],
-            batch?.FeeBalances ?? [],
-            (batch?.OutboxMessages ?? []).Concat(messages).ToArray());
+        return (batch ?? DirectLendingPersistenceBatch.Empty) with
+        {
+            OutboxMessages = (batch?.OutboxMessages ?? []).Concat(messages).ToArray()
+        };
 
         DirectLendingOutboxMessageWrite CreateOutboxMessage(string topic)
             => new(
                 topic,
-                loanId.ToString("D"),
+                $"{loanId:D}:{sourceEventId:D}",
                 JsonSerializer.Serialize(new
                 {
                     loanId,

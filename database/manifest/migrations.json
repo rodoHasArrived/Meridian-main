@@ -640,6 +640,15 @@
       "sha256": "ecf4860c90bdc362b06f70b1c7a7f33779174d35e04ba83d337e5963d30ff506"
     },
     {
+      "filename": "010_direct_lending_excess_payment_balances.sql",
+      "immutable": true,
+      "migration_set_id": "direct-lending",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/DirectLending/Migrations/010_direct_lending_excess_payment_balances.sql",
+      "schema": "security_master",
+      "sha256": "ca1dcccefa79fc9802ded1772ed6a6f08f0892925f32674f4b440af1bb2efb2f"
+    },
+    {
       "filename": "001_asset_operations.sql",
       "immutable": true,
       "migration_set_id": "asset-operations",
@@ -1406,7 +1415,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "92c9a4b3a15a62a0598800685ccaf2a34ac4ef2cfd016f356ce46ea57296f3c3",
+  "fingerprint": "33d8c345a1e27d02b2b3174d773ea5ce1294f47743e8b192d7838bc071811389",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1644,9 +1653,9 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 156,
+    "files": 157,
     "migration_sets": 10,
-    "waivers": 28,
+    "waivers": 29,
     "warnings": 0
   },
   "waivers": [
@@ -1656,6 +1665,13 @@
       "reason": "Requires human schema/storage review. Authorized by the repository owner on 2026-10-16. The lexical TRUNCATE match declares a BEFORE TRUNCATE trigger that rejects truncation of the append-only Asset Operations write-event log; no data is truncated. PostgreSQL regression coverage attempts delete and truncate and verifies refusal.",
       "review_after": "2027-04-16",
       "rule_id": "migration-truncate"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/DirectLending/Migrations/010_direct_lending_excess_payment_balances.sql",
+      "reason": "Proposed scoped exception submitted for independent human Accounting and Storage review; approval remains pending. Widens only direct-lending operational monetary columns to numeric so retained receipts, allocations, balances, fee assessments, journal drafts and reconciliation evidence preserve every accepted decimal exactly. No row, column, existing value or historical terms hash is removed or rewritten; authoritative ledger numeric(38,10), balance controls and period locks remain unchanged. New cash commands reject amounts that cannot round-trip that ledger contract. Apply with the transactional migration runner and a reviewed window for ALTER TABLE locks; populated upgrade, exact backfill, reapply and old-writer refusal are covered by synthetic PostgreSQL tests. Stop older writers before activation. Failed-upgrade rollback remains transactional; do not downgrade after retained liabilities, instructions or higher precision values exist. Historical rounded or missing accounting requires separately reviewed remediation.",
+      "review_after": "2027-05-02",
+      "rule_id": "migration-alter-column-type"
     },
     {
       "category": "destructive_changes",

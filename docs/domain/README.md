@@ -26,6 +26,7 @@ Start with:
 - [Account and Book Scopes](account-and-book-scopes.md)
 - [Intercompany Consolidation](intercompany-consolidation.md)
 - [Recurring Journal](recurring-journal.md)
+- [Direct-lending receipt accounting](direct-lending-cash.md)
 - [Security](security.md)
 - [Contractual Schedule](contractual-schedule.md)
 - [Contractual Cash-Flow Projection](contractual-cash-flow-projection.md)

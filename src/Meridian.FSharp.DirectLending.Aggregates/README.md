@@ -37,7 +37,22 @@ servicing, and accounting evidence can reconcile through the same instrument sou
 
 ## Audit hardening (2026-11)
 
-- **Manual payment breakdowns.** Each manual line is capped at the amount requested, the cash still unallocated, and the bucket's outstanding balance, so a breakdown can never book interest, fee, penalty or principal that is not owed. Excess is reported as `UnappliedAmount`, as in the automatic waterfall. Term-driven handling of that excess (principal prepayment, prepaid interest, tracked unapplied cash) is tracked as `PRD-115`.
+Each manual line is capped at the amount requested, the cash still unallocated, and the bucket's
+outstanding balance. The shared `DirectLendingPaymentResolver` preserves that allocation and the
+automatic waterfall, then routes only the residual under the canonical `ExcessPaymentApplication`
+term. A null rule means `HoldUnapplied` and preserves the legacy terms hash. Permitted excess
+principal prepayment reduces drawdown lots earliest first; prohibited excess prepayment stays
+unapplied with a note. A configured penalty is assessed automatically on the excess principal
+actually applied, after receipt allocations, as a separate event in the command's atomic write.
+
+Every receipt is represented by receivable/principal allocations and retained unapplied-cash or
+prepaid-interest liabilities. Prepaid-interest receipt lots retain their receipt identity, date,
+original amount, remaining balance, and canonical terms hash. Subsequent cash-interest accruals
+consume those balances without an additional contractual election or maturity cap, preserving
+gross accrual and exact consumption evidence. PIK, fees, and penalties do not consume prepaid
+interest. The implementation retains a strict later-date boundary; same-day application remains
+an explicit Accounting review item. Amendments cannot rewrite an existing receipt's terms
+evidence, and all other aggregate transitions preserve retained cash balances and receipt lots.
 
 ## Diagrams
 
@@ -75,6 +90,6 @@ Preserve accounting evidence and test direct-lending calculations with scenario 
 - `docs/status/contract-compatibility-matrix.md`
 
 Contract activation and amendment preserve collateral, unamortized discount/premium and the PIK
-toggle. The SCH-DEF-008 characterization now asserts that preservation. No servicing formula or event
-shape changes; scheduled PIK/resets still require an explicit persisted schedule/fixing policy and
+toggle. The SCH-DEF-008 characterization asserts that preservation. Existing schedule formulas
+remain unchanged; scheduled PIK/resets still require an explicit persisted schedule/fixing policy and
 versioned formula/residual state rather than assumptions based on payment frequency.

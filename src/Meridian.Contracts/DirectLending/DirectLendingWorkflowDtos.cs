@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Meridian.Contracts.DirectLending;
 
 public sealed record PaymentBreakdownDto(
@@ -14,7 +16,15 @@ public sealed record MixedPaymentResolutionDto(
     PaymentBreakdownDto Breakdown,
     string ResolutionBasis,
     string? RuleVersion,
-    decimal UnappliedAmount);
+    decimal UnappliedAmount)
+{
+    public decimal ExcessToPrincipal { get; init; }
+    public decimal ExcessToPrepaidInterest { get; init; }
+    public ExcessPaymentApplication? ExcessRuleApplied { get; init; }
+    public string? ExcessRuleNote { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? CashAccountingVersion { get; init; }
+}
 
 public sealed record ApplyMixedPaymentRequest(
     decimal Amount,

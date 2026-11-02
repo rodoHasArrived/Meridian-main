@@ -7,6 +7,7 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Ledger;
 using Meridian.Storage.DirectLending;
 using Meridian.Storage.Ledger;
+using Meridian.Storage.Migrations;
 using Meridian.TestSupport;
 using Npgsql;
 
@@ -28,7 +29,7 @@ internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
 
     internal const string TestSecuritySymbol = "DL-TEST";
 
-    private static readonly ITransactionalLedgerJournalStore _noOpLedgerJournalStore = new InMemoryNoOpLedgerJournalStore();
+    private readonly ITransactionalLedgerJournalStore _ledgerJournalStore;
     private static readonly Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService _securityMasterQueryService =
         new DeterministicSecurityMasterQueryService();
 
@@ -47,7 +48,8 @@ internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
             CurrentEventSchemaVersion = 1
         };
 
-        Store = new PostgresDirectLendingStateStore(Options, _noOpLedgerJournalStore);
+        _ledgerJournalStore = new TransactionalTestLedgerJournalStore(schema);
+        Store = new PostgresDirectLendingStateStore(Options, _ledgerJournalStore);
         Rebuilder = new DirectLendingEventRebuilder();
         QueryService = new PostgresDirectLendingQueryService(Store, Store, Rebuilder);
         CommandService = new PostgresDirectLendingCommandService(
@@ -55,7 +57,7 @@ internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
             Store,
             QueryService,
             new LoanAccountingProjector(
-                _noOpLedgerJournalStore,
+                _ledgerJournalStore,
                 new AccountingPolicyService(),
                 _securityMasterQueryService),
             Options);
@@ -83,7 +85,7 @@ internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
     /// <c>MERIDIAN_DISABLE_DOCKER_TESTS=true</c> is set, allowing the caller to skip
     /// the test.  In all other cases a real database (container or external) is used.
     /// </summary>
-    public static async Task<DirectLendingPostgresTestDatabase?> CreateOrSkipAsync()
+    public static async Task<DirectLendingPostgresTestDatabase?> CreateOrSkipAsync(bool throughLegacyMigration009 = false)
     {
         if (string.Equals(
                 Environment.GetEnvironmentVariable(DisableDockerEnvVar),
@@ -104,8 +106,37 @@ internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
         var database = new DirectLendingPostgresTestDatabase(server, schema);
         try
         {
-            var runner = new DirectLendingMigrationRunner(database.Options);
-            await runner.EnsureMigratedAsync().ConfigureAwait(false);
+            if (throughLegacyMigration009)
+            {
+                var legacyScripts = Directory.CreateTempSubdirectory("meridian-dl-through009-");
+                try
+                {
+                    foreach (var path in Directory.GetFiles(Path.Combine(AppContext.BaseDirectory, "DirectLending", "Migrations"), "*.sql")
+                        .Where(path => string.CompareOrdinal(Path.GetFileName(path), "010_direct_lending_excess_payment_balances.sql") < 0))
+                        File.Copy(path, Path.Combine(legacyScripts.FullName, Path.GetFileName(path)));
+                    await new PostgresMigrationRunner(new PostgresMigrationRunnerOptions
+                    {
+                        ConnectionString = database.ConnectionString,
+                        Schema = database.Schema,
+                        ScriptsSubdirectory = legacyScripts.FullName,
+                        DisplayName = "Direct lending through 009 test fixture",
+                        LockScopeName = "direct_lending",
+                        ConnectionStringSettingName = EnvVar,
+                        LedgerTableName = "direct_lending_schema_migrations",
+                        DriftPolicy = MigrationDriftPolicy.Reapply
+                    }).EnsureMigratedAsync().ConfigureAwait(false);
+                }
+                finally
+                {
+                    legacyScripts.Delete(recursive: true);
+                }
+            }
+            else
+            {
+                var runner = new DirectLendingMigrationRunner(database.Options);
+                await runner.EnsureMigratedAsync().ConfigureAwait(false);
+            }
+            await database.CreateLedgerEvidenceTableAsync().ConfigureAwait(false);
             return database;
         }
         catch
@@ -113,6 +144,32 @@ internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
             await database.DisposeAsync().ConfigureAwait(false);
             throw;
         }
+    }
+
+    private async Task CreateLedgerEvidenceTableAsync()
+    {
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync().ConfigureAwait(false);
+        await using var command = connection.CreateCommand();
+        // A transactional synthetic ledger participant proves commit/rollback integration;
+        // the governed ledger's own posting constraints are tested in its dedicated suite.
+        command.CommandText = $"create table {Schema}.test_ledger_evidence (loan_id uuid not null, source_event_id uuid primary key, event_type text not null, payload jsonb not null);";
+        await command.ExecuteNonQueryAsync().ConfigureAwait(false);
+    }
+
+    public async Task<IReadOnlyList<string>> GetLedgerEvidenceAsync(Guid loanId, string eventType)
+    {
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync().ConfigureAwait(false);
+        await using var command = connection.CreateCommand();
+        command.CommandText = $"select payload::text from {Schema}.test_ledger_evidence where loan_id = @loan_id and event_type = @event_type;";
+        command.Parameters.AddWithValue("loan_id", loanId);
+        command.Parameters.AddWithValue("event_type", eventType);
+        var result = new List<string>();
+        await using var reader = await command.ExecuteReaderAsync().ConfigureAwait(false);
+        while (await reader.ReadAsync().ConfigureAwait(false))
+            result.Add(reader.GetString(0));
+        return result;
     }
 
     public async Task<long> CountSnapshotsAsync(Guid loanId)
@@ -140,7 +197,7 @@ internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
         await _server.DisposeAsync().ConfigureAwait(false);
     }
 
-    private sealed class InMemoryNoOpLedgerJournalStore : ITransactionalLedgerJournalStore
+    private sealed class TransactionalTestLedgerJournalStore(string schema) : ITransactionalLedgerJournalStore
     {
         private static readonly LedgerAccountingPeriod TestAccountingPeriod = new(
             PeriodId: Guid.Parse("58190d5b-2306-4e0d-a818-a2fb5e087bbf"),
@@ -155,14 +212,24 @@ internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
             ClosedAt: null,
             Version: 0);
 
-        public Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default) => Task.CompletedTask;
+        public Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default)
+            => throw new NotSupportedException("The direct-lending fixture requires the caller's transaction.");
 
-        public Task AppendAsync(
+        public async Task AppendAsync(
             NpgsqlConnection connection,
             NpgsqlTransaction transaction,
             LedgerJournalEntryWrite entry,
-            CancellationToken ct = default) =>
-            Task.CompletedTask;
+            CancellationToken ct = default)
+        {
+            await using var command = connection.CreateCommand();
+            command.Transaction = transaction;
+            command.CommandText = $"insert into {schema}.test_ledger_evidence (loan_id, source_event_id, event_type, payload) values (@loan_id, @source_event_id, @event_type, cast(@payload as jsonb));";
+            command.Parameters.AddWithValue("loan_id", entry.AggregateId);
+            command.Parameters.AddWithValue("source_event_id", entry.SourceEventId!);
+            command.Parameters.AddWithValue("event_type", entry.RuleId!);
+            command.Parameters.AddWithValue("payload", JsonSerializer.Serialize(entry, new JsonSerializerOptions(JsonSerializerDefaults.Web)));
+            await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        }
 
         public Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByPeriodAsync(Guid periodId, CancellationToken ct = default) =>
             Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>([]);

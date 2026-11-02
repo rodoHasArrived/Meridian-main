@@ -33,8 +33,10 @@ public sealed class ManualPaymentResolutionTests
         // 10 of interest is owed; the operator types 1,000 to interest.
         var resolution = DirectLendingServiceSupport.ResolveMixedPayment(
             Servicing(principal: 0m, interest: 10m),
+            DirectLendingTermsHashCharacterizationTests.FixedBulletTerms(),
             amount: 1_000m,
-            new PaymentBreakdownDto(1_000m, 0m, 0m, 0m, 0m));
+            new PaymentBreakdownDto(1_000m, 0m, 0m, 0m, 0m),
+            new DateOnly(2026, 2, 15));
 
         resolution.ResolutionBasis.Should().Be("Manual");
         resolution.Breakdown.ToInterest.Should().Be(10m);
@@ -46,8 +48,10 @@ public sealed class ManualPaymentResolutionTests
     {
         var resolution = DirectLendingServiceSupport.ResolveMixedPayment(
             Servicing(principal: 5_000m, interest: 40m, fees: 25m),
+            DirectLendingTermsHashCharacterizationTests.FixedBulletTerms(),
             amount: 1_000m,
-            new PaymentBreakdownDto(100m, 0m, 100m, 0m, 2_000m));
+            new PaymentBreakdownDto(100m, 0m, 100m, 0m, 2_000m),
+            new DateOnly(2026, 2, 15));
 
         resolution.Breakdown.ToInterest.Should().Be(40m);
         resolution.Breakdown.ToFees.Should().Be(25m);

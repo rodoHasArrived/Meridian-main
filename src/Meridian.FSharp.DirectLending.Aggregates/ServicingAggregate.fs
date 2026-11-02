@@ -30,53 +30,6 @@ module internal ServicingAggregate =
 
         updated
 
-    let private autoAllocate (servicing: LoanServicingStateDto) (terms: DirectLendingTermsDto) amount (effectiveDate: DateOnly) =
-        let mutable remaining = amount
-        let take available =
-            if remaining <= 0m || available <= 0m then
-                0m
-            else
-                let applied = min remaining available
-                remaining <- remaining - applied
-                applied
-
-        let toInterest = take servicing.Balances.InterestAccruedUnpaid
-        let toCommitmentFee = take servicing.Balances.CommitmentFeeAccruedUnpaid
-        let toFees = take servicing.Balances.FeesAccruedUnpaid
-        let toPenalty = take servicing.Balances.PenaltyAccruedUnpaid
-        // During the interest-only period, scheduled principal is 0 in auto-allocation.
-        let toPrincipal =
-            if DirectLendingInterop.IsInterestOnlyPeriod(terms.OriginationDate, terms.InterestOnlyMonths, effectiveDate) then
-                0m
-            else
-                take servicing.Balances.PrincipalOutstanding
-        PaymentBreakdownDto(toInterest, toCommitmentFee, toFees, toPenalty, toPrincipal)
-
-    let private buildResolution (servicing: LoanServicingStateDto) amount (requestedBreakdown: PaymentBreakdownDto) =
-        // A manual line never allocates more than the bucket owes: 1,000 "to interest" against
-        // 10 accrued would book 990 of income that does not exist. Excess is reported as
-        // unapplied, exactly as the automatic waterfall reports it.
-        let mutable remaining = amount
-        let take requested outstanding =
-            let cap = min (max 0m requested) (max 0m outstanding)
-            if remaining <= 0m || cap <= 0m then
-                0m
-            else
-                let applied = min remaining cap
-                remaining <- remaining - applied
-                applied
-
-        let owed = servicing.Balances
-        let breakdown =
-            PaymentBreakdownDto(
-                take requestedBreakdown.ToInterest owed.InterestAccruedUnpaid,
-                take requestedBreakdown.ToCommitmentFee owed.CommitmentFeeAccruedUnpaid,
-                take requestedBreakdown.ToFees owed.FeesAccruedUnpaid,
-                take requestedBreakdown.ToPenalty owed.PenaltyAccruedUnpaid,
-                take requestedBreakdown.ToPrincipal owed.PrincipalOutstanding)
-
-        MixedPaymentResolutionDto(breakdown, "Manual", "manual-v1", remaining)
-
     let bookDrawdown (servicing: LoanServicingStateDto) amount tradeDate settleDate externalRef =
         let lotId = Guid.NewGuid()
         let lot = DrawdownLotDto(lotId, tradeDate, settleDate, amount, amount, externalRef)
@@ -88,7 +41,10 @@ module internal ServicingAggregate =
                 servicing.Balances.InterestAccruedUnpaid,
                 servicing.Balances.CommitmentFeeAccruedUnpaid,
                 servicing.Balances.FeesAccruedUnpaid,
-                servicing.Balances.PenaltyAccruedUnpaid)
+                servicing.Balances.PenaltyAccruedUnpaid,
+                UnappliedCash = servicing.Balances.UnappliedCash,
+                PrepaidInterest = servicing.Balances.PrepaidInterest,
+                PrepaidInterestLots = servicing.Balances.PrepaidInterestLots)
 
         let updated =
             LoanServicingStateDto(
@@ -160,7 +116,10 @@ module internal ServicingAggregate =
                 servicing.Balances.InterestAccruedUnpaid,
                 servicing.Balances.CommitmentFeeAccruedUnpaid,
                 servicing.Balances.FeesAccruedUnpaid,
-                servicing.Balances.PenaltyAccruedUnpaid)
+                servicing.Balances.PenaltyAccruedUnpaid,
+                UnappliedCash = servicing.Balances.UnappliedCash,
+                PrepaidInterest = servicing.Balances.PrepaidInterest,
+                PrepaidInterestLots = servicing.Balances.PrepaidInterestLots)
 
         let updated =
             LoanServicingStateDto(
@@ -186,20 +145,35 @@ module internal ServicingAggregate =
 
     let applyMixedPayment (servicing: LoanServicingStateDto) (terms: DirectLendingTermsDto) amount breakdown effectiveDate =
         let resolution =
-            match box breakdown with
-            | null -> MixedPaymentResolutionDto(autoAllocate servicing terms amount effectiveDate, "WaterfallAuto", "waterfall-v1", amount - (autoAllocate servicing terms amount effectiveDate).TotalAllocated)
-            | _ -> buildResolution servicing amount breakdown
+            DirectLendingPaymentResolver.Resolve(servicing, terms, amount, breakdown, effectiveDate)
+        let principalApplied = resolution.Breakdown.ToPrincipal + resolution.ExcessToPrincipal
+        let penaltyAssessed = DirectLendingPaymentResolver.CalculateExcessPrepaymentPenalty(terms, resolution)
+        let cashTransactionId = Guid.NewGuid()
+        let prepaidLots =
+            DirectLendingPrepaidInterest.CreateReceiptLots(
+                servicing, terms, cashTransactionId, effectiveDate, resolution.ExcessToPrepaidInterest)
 
         let updatedBalances =
             OutstandingBalancesDto(
-                max 0m (servicing.Balances.PrincipalOutstanding - resolution.Breakdown.ToPrincipal),
+                max 0m (servicing.Balances.PrincipalOutstanding - principalApplied),
                 max 0m (servicing.Balances.InterestAccruedUnpaid - resolution.Breakdown.ToInterest),
                 max 0m (servicing.Balances.CommitmentFeeAccruedUnpaid - resolution.Breakdown.ToCommitmentFee),
                 max 0m (servicing.Balances.FeesAccruedUnpaid - resolution.Breakdown.ToFees),
-                max 0m (servicing.Balances.PenaltyAccruedUnpaid - resolution.Breakdown.ToPenalty))
+                max 0m (servicing.Balances.PenaltyAccruedUnpaid - resolution.Breakdown.ToPenalty) + penaltyAssessed,
+                UnappliedCash = servicing.Balances.UnappliedCash + resolution.UnappliedAmount,
+                PrepaidInterest = servicing.Balances.PrepaidInterest + resolution.ExcessToPrepaidInterest,
+                PrepaidInterestLots = prepaidLots)
 
-        let totalDrawnAfter = max 0m (servicing.TotalDrawn - resolution.Breakdown.ToPrincipal)
+        let totalDrawnAfter = max 0m (servicing.TotalDrawn - principalApplied)
         let nextRevision = servicing.ServicingRevision + 1L
+        let finalRevision = nextRevision + (if penaltyAssessed > 0m then 1L else 0L)
+        let paymentHistory =
+            prependRevision nextRevision "InternalEvent" effectiveDate (sprintf "Mixed payment applied for %.2f." amount) servicing.RevisionHistory
+        let revisionHistory =
+            if penaltyAssessed > 0m then
+                prependRevision finalRevision "InternalEvent" effectiveDate (sprintf "Prepayment penalty charged for %.2f." penaltyAssessed) paymentHistory
+            else
+                paymentHistory
         let updated =
             LoanServicingStateDto(
                 servicing.LoanId,
@@ -208,26 +182,27 @@ module internal ServicingAggregate =
                 totalDrawnAfter,
                 DirectLendingInterop.CalculateAvailableToDraw(servicing.CurrentCommitment, totalDrawnAfter),
                 updatedBalances,
-                applyPaymentToLots resolution.Breakdown.ToPrincipal servicing.DrawdownLots,
+                applyPaymentToLots principalApplied servicing.DrawdownLots,
                 servicing.CurrentRateReset,
                 servicing.LastAccrualDate,
                 Nullable effectiveDate,
-                nextRevision,
-                prependRevision nextRevision "InternalEvent" effectiveDate (sprintf "Mixed payment applied for %.2f." amount) servicing.RevisionHistory,
+                finalRevision,
+                revisionHistory,
                 servicing.AccrualEntries,
                 Collateral = servicing.Collateral,
                 UnamortizedDiscount = servicing.UnamortizedDiscount,
                 UnamortizedPremium = servicing.UnamortizedPremium,
                 IsPikToggled = servicing.IsPikToggled)
 
-        let cashTransactionId = Guid.NewGuid()
         let allocations =
             [|
                 ("Interest", resolution.Breakdown.ToInterest)
                 ("CommitmentFee", resolution.Breakdown.ToCommitmentFee)
                 ("Fees", resolution.Breakdown.ToFees)
                 ("Penalty", resolution.Breakdown.ToPenalty)
-                ("Principal", resolution.Breakdown.ToPrincipal)
+                ("Principal", principalApplied)
+                ("UnappliedCash", resolution.UnappliedAmount)
+                ("PrepaidInterest", resolution.ExcessToPrepaidInterest)
             |]
             |> Array.choose (fun (targetType, allocatedAmount) ->
                 if allocatedAmount <= 0m then
@@ -237,9 +212,9 @@ module internal ServicingAggregate =
             |> Array.mapi (fun index (targetType, allocatedAmount) ->
                 { SequenceNumber = index + 1
                   TargetType = targetType
-                  TargetReference = Guid.NewGuid()
+                  TargetReference = servicing.LoanId
                   Amount = allocatedAmount
-                  AllocationRule = resolution.ResolutionBasis })
+                  AllocationRule = resolution.RuleVersion })
 
         { Servicing = updated
           Resolution = resolution
@@ -254,7 +229,10 @@ module internal ServicingAggregate =
                 servicing.Balances.InterestAccruedUnpaid,
                 servicing.Balances.CommitmentFeeAccruedUnpaid,
                 servicing.Balances.FeesAccruedUnpaid + amount,
-                servicing.Balances.PenaltyAccruedUnpaid)
+                servicing.Balances.PenaltyAccruedUnpaid,
+                UnappliedCash = servicing.Balances.UnappliedCash,
+                PrepaidInterest = servicing.Balances.PrepaidInterest,
+                PrepaidInterestLots = servicing.Balances.PrepaidInterestLots)
 
         let updated =
             LoanServicingStateDto(
@@ -288,7 +266,10 @@ module internal ServicingAggregate =
                 servicing.Balances.InterestAccruedUnpaid,
                 servicing.Balances.CommitmentFeeAccruedUnpaid,
                 servicing.Balances.FeesAccruedUnpaid,
-                servicing.Balances.PenaltyAccruedUnpaid)
+                servicing.Balances.PenaltyAccruedUnpaid,
+                UnappliedCash = servicing.Balances.UnappliedCash,
+                PrepaidInterest = servicing.Balances.PrepaidInterest,
+                PrepaidInterestLots = servicing.Balances.PrepaidInterestLots)
 
         let updated =
             LoanServicingStateDto(
@@ -354,6 +335,8 @@ module internal ServicingAggregate =
 
         let interestAmount = if isPikAccrual then 0m else accruedInterest
         let pikInterestAmount = if isPikAccrual then accruedInterest else 0m
+        let prepaidApplication =
+            DirectLendingPrepaidInterest.ApplyAccrual(servicing, interestAmount, accrualDate)
 
         let commitmentFeeAmount =
             if terms.CommitmentFeeRate.HasValue then
@@ -377,16 +360,21 @@ module internal ServicingAggregate =
                 0m,
                 annualRate,
                 DateTimeOffset.UtcNow,
-                pikInterestAmount)
+                pikInterestAmount,
+                PrepaidInterestConsumed = prepaidApplication.AppliedAmount,
+                PrepaidInterestReleases = prepaidApplication.Releases)
 
         let nextRevision = servicing.ServicingRevision + 1L
         let balances =
             OutstandingBalancesDto(
                 servicing.Balances.PrincipalOutstanding + pikInterestAmount,
-                servicing.Balances.InterestAccruedUnpaid + interestAmount,
+                servicing.Balances.InterestAccruedUnpaid + interestAmount - prepaidApplication.AppliedAmount,
                 servicing.Balances.CommitmentFeeAccruedUnpaid + commitmentFeeAmount,
                 servicing.Balances.FeesAccruedUnpaid,
-                servicing.Balances.PenaltyAccruedUnpaid)
+                servicing.Balances.PenaltyAccruedUnpaid,
+                UnappliedCash = servicing.Balances.UnappliedCash,
+                PrepaidInterest = servicing.Balances.PrepaidInterest - prepaidApplication.AppliedAmount,
+                PrepaidInterestLots = prepaidApplication.Lots)
 
         let accrualEntries =
             servicing.AccrualEntries
@@ -444,7 +432,10 @@ module internal ServicingAggregate =
                 servicing.Balances.InterestAccruedUnpaid,
                 servicing.Balances.CommitmentFeeAccruedUnpaid,
                 servicing.Balances.FeesAccruedUnpaid,
-                servicing.Balances.PenaltyAccruedUnpaid + penaltyAmount)
+                servicing.Balances.PenaltyAccruedUnpaid + penaltyAmount,
+                UnappliedCash = servicing.Balances.UnappliedCash,
+                PrepaidInterest = servicing.Balances.PrepaidInterest,
+                PrepaidInterestLots = servicing.Balances.PrepaidInterestLots)
 
         let updated =
             LoanServicingStateDto(
