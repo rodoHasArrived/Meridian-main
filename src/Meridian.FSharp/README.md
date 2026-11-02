@@ -145,6 +145,12 @@ Use this module for deterministic business-rule kernels shared by strategy, trad
 
 - **Position limit unwinds.** `RiskRules.positionLimit` always approves an order that shrinks a position on the same side of zero, or flattens it, even when the position is already over the limit. An order that crosses zero must still land within the limit.
 
+## Security Master governance controls (2026-11)
+
+- **Kind-aware identifier normalization.** `SecurityIdentifier.normalizeIdentifierValue` mirrors `Meridian.Contracts.SecurityMaster.SecurityIdentifierNormalizer.NormalizeValue` and migration 016's SQL backfill: ISIN, CUSIP, SEDOL, FIGI, OCC, LEI, WKN, CIK, LoanX and CLIP keep ASCII alphanumerics only, and Valoren keeps ASCII digits only. Duplicate and expiry checks use it, so the F# domain and the C# lookup give one raw value one identity.
+
+See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D8) for status and open decisions.
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
