@@ -359,7 +359,7 @@ public sealed class HistoricalBackfillService
                     }
                 }
             }
-            catch (OperationCanceledException) { throw; }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
             catch (RateLimitException ex)
             {
                 // Adaptive throttle: reduce available concurrency by 1 (floor: 1) via lock-free CAS
@@ -437,7 +437,7 @@ public sealed class HistoricalBackfillService
         {
             return await _symbolTimelineResolver.ResolveTickerForDateAsync(symbol, chunkStart, ct).ConfigureAwait(false);
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
             throw;
         }

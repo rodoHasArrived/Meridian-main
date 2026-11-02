@@ -72,8 +72,13 @@ public sealed record ProviderCredentialVerificationUpdate(
 }
 
 /// <summary>Indicates that credentials changed concurrently and the operation must use the current connection.</summary>
-public sealed class ProviderCredentialConflictException()
-    : InvalidOperationException("Provider credentials changed during the operation. Retry using the current connection.");
+public sealed class ProviderCredentialConflictException : InvalidOperationException
+{
+    public ProviderCredentialConflictException()
+        : base("Provider credentials changed during the operation. Retry using the current connection.") { }
+
+    public ProviderCredentialConflictException(string message) : base(message) { }
+}
 
 public sealed record ProviderCredentialStoreStatus(
     string ProviderId,

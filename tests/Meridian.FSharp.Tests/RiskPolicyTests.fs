@@ -72,6 +72,36 @@ let ``Position limit rejects projected quantity above max`` () =
     result.Reasons[0].Contains("Position limit exceeded") |> should equal true
 
 [<Fact>]
+let ``Position limit allows partial unwind of a position already over the limit`` () =
+    // Long 150 against a cap of 100: selling 30 leaves 120, still over, but less risk.
+    let ctx = RiskInterop.CreateContext(createOrder OrderSide.Sell 30m, 150m, 100m, Nullable(), Nullable(), Nullable())
+    let result = RiskInterop.EvaluatePositionLimit(ctx)
+
+    result.Approved |> should equal true
+
+[<Fact>]
+let ``Position limit allows partial cover of a short already over the limit`` () =
+    let ctx = RiskInterop.CreateContext(createOrder OrderSide.Buy 30m, -150m, 100m, Nullable(), Nullable(), Nullable())
+    let result = RiskInterop.EvaluatePositionLimit(ctx)
+
+    result.Approved |> should equal true
+
+[<Fact>]
+let ``Position limit rejects adding to a position already over the limit`` () =
+    let ctx = RiskInterop.CreateContext(createOrder OrderSide.Buy 1m, 150m, 100m, Nullable(), Nullable(), Nullable())
+    let result = RiskInterop.EvaluatePositionLimit(ctx)
+
+    result.Approved |> should equal false
+
+[<Fact>]
+let ``Position limit rejects an unwind that flips into an oversized opposite position`` () =
+    // Long 150, sell 260 → short 110: smaller in absolute terms but a new over-limit short.
+    let ctx = RiskInterop.CreateContext(createOrder OrderSide.Sell 260m, 150m, 100m, Nullable(), Nullable(), Nullable())
+    let result = RiskInterop.EvaluatePositionLimit(ctx)
+
+    result.Approved |> should equal false
+
+[<Fact>]
 let ``Scenario_RiskPositionLimit_GeneratedLargerExposureNeverTurnsRejectIntoApprove`` () =
     let property currentSeed maxSeed excessSeed extraSeed =
         let maxPosition = boundedInt 1 10_000 maxSeed |> decimal

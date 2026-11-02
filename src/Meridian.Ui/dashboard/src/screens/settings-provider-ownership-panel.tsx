@@ -7,6 +7,7 @@ import {
   applyProviderRuntimeCredential,
   bindProviderRuntimeCredential,
   createOwnedProviderConnection,
+  finalizeProviderCredentialMigration,
   getProviderRuntimeCredentialStatus,
   migrateProviderCredential,
   previewProviderCredentialMigration,
@@ -32,6 +33,7 @@ export interface ProviderOwnershipPanelProps {
     migrate?: typeof migrateProviderCredential;
     rollback?: typeof rollbackProviderCredential;
     runtimeStatus?: typeof getProviderRuntimeCredentialStatus;
+    finalize?: typeof finalizeProviderCredentialMigration;
     apply?: typeof applyProviderRuntimeCredential;
   };
 }
@@ -52,6 +54,7 @@ export function ProviderOwnershipPanel({ providerId, displayName, connection, on
   const migrate = api.migrate ?? migrateProviderCredential;
   const rollback = api.rollback ?? rollbackProviderCredential;
   const runtimeStatus = api.runtimeStatus ?? getProviderRuntimeCredentialStatus;
+  const finalize = api.finalize ?? finalizeProviderCredentialMigration;
   const apply = api.apply ?? applyProviderRuntimeCredential;
 
   const [newConnection, setNewConnection] = useState({ connectionId: "", displayName: "", externalAccountId: "", environment: "paper" });
@@ -165,7 +168,7 @@ export function ProviderOwnershipPanel({ providerId, displayName, connection, on
             })}>
             {busy === "migrate" ? "Migrating…" : "Migrate to this connection"}
           </Button>
-          <Button size="sm" variant="destructive" disabled={!selected || !receipt || receipt.rolledBack || busy !== null} aria-busy={busy === "rollback"}
+          <Button size="sm" variant="destructive" disabled={!selected || !receipt || receipt.rolledBack || !!receipt.finalizedAt || busy !== null} aria-busy={busy === "rollback"}
             onClick={() => void run("rollback", async () => {
               const next = await rollback(selected!.connectionId, { providerId, migrationId: receipt!.migrationId });
               setReceipt(next);
@@ -173,6 +176,14 @@ export function ProviderOwnershipPanel({ providerId, displayName, connection, on
               return `Migration ${next.migrationId} rolled back by ${next.rolledBackBy ?? "the server"}; the provider-wide record is restored and unverified.`;
             })}>
             {busy === "rollback" ? "Rolling back…" : "Roll back migration"}
+          </Button>
+          <Button size="sm" variant="outline" disabled={!selected || !receipt || receipt.rolledBack || !!receipt.finalizedAt || busy !== null} aria-busy={busy === "finalize"}
+            onClick={() => void run("finalize", async () => {
+              const next = await finalize(selected!.connectionId, { providerId, migrationId: receipt!.migrationId });
+              setReceipt(next);
+              return `Migration ${next.migrationId} finalized by ${next.finalizedBy ?? "the server"}; rollback has ended and the provider-wide record is released. The receipt stays in the audit trail.`;
+            })}>
+            {busy === "finalize" ? "Finalizing…" : "Finalize migration"}
           </Button>
           <Button size="sm" variant="outline" disabled={!selected || busy !== null} aria-busy={busy === "bind"}
             onClick={() => void run("bind", async () => {
@@ -223,7 +234,7 @@ export function ProviderOwnershipPanel({ providerId, displayName, connection, on
         ) : null}
         {receipt ? (
           <p className="break-all font-mono" aria-label={`${displayName} migration receipt`}>
-            Receipt {receipt.migrationId} · {receipt.rolledBack ? "rolled back" : "migrated"} · generation {receipt.credentialGeneration} · {receipt.scope.connectionId}
+            Receipt {receipt.migrationId} · {receipt.rolledBack ? "rolled back" : receipt.finalizedAt ? "finalized" : "migrated"} · generation {receipt.credentialGeneration} · {receipt.scope.connectionId}{receipt.oAuthTokenTransferred ? " · OAuth token moved with the record" : ""}
           </p>
         ) : null}
         {error ? <StatusBanner tone="danger" role="alert" title="Ownership command refused" detail={error} /> : null}

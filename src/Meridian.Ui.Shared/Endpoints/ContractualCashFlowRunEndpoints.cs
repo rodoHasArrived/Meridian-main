@@ -65,6 +65,25 @@ internal static class ContractualCashFlowRunEndpoints
             return run is null ? Results.NotFound() : Results.Json(run, json);
         }).WithName("GetContractual" + kind + "CashFlowRun").RequireAnyPermission(view, modify)
         .Produces<ContractualCashFlowRun>().Produces(StatusCodes.Status404NotFound);
+
+        // Pure read over two retained packets of the same subject; nothing is recalculated against current terms.
+        group.MapGet(path + "/{runId:guid}/compare/{otherRunId:guid}", async (Guid subjectId, Guid runId, Guid otherRunId, HttpContext context) =>
+        {
+            if (runId == otherRunId)
+                return Results.BadRequest("Choose two different retained runs to compare.");
+            if (!await ExistsAsync(context, kind, subjectId).ConfigureAwait(false))
+                return Results.NotFound();
+            var store = context.RequestServices.GetRequiredService<IContractualCashFlowRunStore>();
+            var left = await store.GetAsync(kind, subjectId, runId, context.RequestAborted).ConfigureAwait(false);
+            var right = await store.GetAsync(kind, subjectId, otherRunId, context.RequestAborted).ConfigureAwait(false);
+            if (left is null || right is null)
+                return Results.NotFound();
+            try
+            { return Results.Json(ContractualCashFlowRunComparer.Compare(left, right), json); }
+            catch (ArgumentException exception)
+            { return Results.BadRequest(exception.Message); }
+        }).WithName("CompareContractual" + kind + "CashFlowRuns").RequireAnyPermission(view, modify)
+        .Produces<ContractualCashFlowRunComparison>().Produces(StatusCodes.Status400BadRequest).Produces(StatusCodes.Status404NotFound);
     }
 
     private static async Task<bool> ExistsAsync(HttpContext context, string kind, Guid subjectId)

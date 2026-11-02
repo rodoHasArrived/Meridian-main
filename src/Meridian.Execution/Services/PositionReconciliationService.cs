@@ -139,8 +139,8 @@ public sealed class PositionReconciliationService
                 {
                     var localPos = match.Local;
                     var brokerPos = match.External;
-                    var diff = Math.Abs((decimal)localPos.Quantity - brokerPos.Quantity);
-                    var tolerance = _options.DivergenceTolerance * Math.Abs((decimal)localPos.Quantity);
+                    var diff = Math.Abs(localPos.ExactQuantity - brokerPos.Quantity);
+                    var tolerance = _options.DivergenceTolerance * Math.Abs(localPos.ExactQuantity);
 
                     if (diff <= tolerance)
                         matched.Add(match.Key);

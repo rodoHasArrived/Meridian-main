@@ -322,13 +322,17 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
     /// <param name="accountId">Account to evaluate.</param>
     /// <param name="prices">
     ///     Current market prices keyed by symbol (case-insensitive).
-    ///     Positions without a corresponding price entry are skipped.
+    ///     Every open position must have a price; margin is not evaluated on a partial feed.
     /// </param>
     /// <returns>
     ///     A <see cref="MarginCallStatus"/> for the account.
     ///     Returns <see cref="MarginCallStatus.NoMarginRequired"/> for cash accounts or
     ///     accounts with no open positions.
     /// </returns>
+    /// <exception cref="MarginPriceUnavailableException">
+    ///     An open position has no entry in <paramref name="prices"/>. Skipping it would
+    ///     understate the requirement, so the check fails closed instead.
+    /// </exception>
     public MarginCallStatus CheckMarginStatus(
         string accountId,
         IReadOnlyDictionary<string, decimal> prices)
@@ -346,26 +350,32 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
 
             var marginBorrowed = account.Positions.Values.Sum(static p => p.MarginBorrowed);
             var effectiveCash = account.Cash - marginBorrowed;
-            var equity = effectiveCash + account.LongMarketValue;
-            var posRequirements = new List<MarginRequirement>();
+            var executionPositions = account.Positions.ToDictionary(
+                kv => kv.Key,
+                kv => kv.Value.ToExecutionPosition(),
+                StringComparer.OrdinalIgnoreCase);
 
-            foreach (var (symbol, pos) in account.Positions)
+            // Computed first so a missing price fails closed before any per-position result.
+            var portfolioReq = account.MarginModel.CalculatePortfolioRequirement(
+                executionPositions,
+                prices,
+                effectiveCash);
+
+            // Net equity at the SUPPLIED prices (long MV − short MV + cash), the same snapshot the
+            // portfolio requirement used. The account's stored marks may be stale, and a
+            // per-position view priced differently could miss a call the portfolio view reports.
+            var equity = effectiveCash + portfolioReq.NotionalValue;
+
+            var posRequirements = new List<MarginRequirement>();
+            foreach (var (symbol, pos) in executionPositions)
             {
+                // Open positions are guaranteed a price by the portfolio check above; only a
+                // net-flat shared-book entry can be absent here, and it carries no requirement.
                 if (!prices.TryGetValue(symbol, out var px))
                     continue;
 
-                var req = account.MarginModel.CalculateForPosition(
-                    pos.ToExecutionPosition(), px, equity);
-                posRequirements.Add(req);
+                posRequirements.Add(account.MarginModel.CalculateForPosition(pos, px, equity));
             }
-
-            var portfolioReq = account.MarginModel.CalculatePortfolioRequirement(
-                account.Positions.ToDictionary(
-                    kv => kv.Key,
-                    kv => kv.Value.ToExecutionPosition(),
-                    StringComparer.OrdinalIgnoreCase),
-                prices,
-                effectiveCash);
 
             var isCall = portfolioReq.IsMarginCall;
             var deficiency = isCall ? Math.Abs(portfolioReq.ExcessLiquidity) : 0m;

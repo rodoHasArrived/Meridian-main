@@ -48,6 +48,19 @@ yield-to-worst v3 models retain their schemas, admission and replay arithmetic.
   curve is recorded by its retained version input; an unretained curve falls back to a
   source-generated content hash (`ForwardCurveContent`). v1/v2 output is unchanged; `SpreadDv01` and
   per-flow `FloatingCoupon` display evidence are omitted from their serialized results.
+- `BondSettlementConsiderationDto` optionally names the book's functional currency and the
+  settlement-date FX rate (stacked branch). Consideration stays in the bond's currency; the posting
+  guard requires every component line to carry the bond currency as transaction currency, the book
+  currency, that rate, and the component translated once and rounded to the book currency's minor
+  units. No FX result arises at settlement; later remeasurement of the foreign cash balance belongs
+  to the translation lane. Same-currency receipts omit both fields and keep their fingerprints.
+- `BondExerciseNoticeDto` (stacked branch) is governed evidence that a call or put was actually noticed:
+  source document hash, receipt date, noticed dates, price and amount, recorded by one actor and
+  approved or rejected once by another (`POST /api/security-master/{id}/exercise-notices`,
+  `.../exercise-notices/{noticeId}/decision`). The contractual cash-flow preview accepts a retained
+  (non-hypothetical) scenario exercise only when `IExerciseNoticeVerifier` matches it to an approved
+  notice for that security; loans and hosts without the store keep the existing blocker. Actual
+  redemption posting is a separate treatment; this only establishes evidence.
 - `IBondAnalyticsService` produces metrics, projected payments, capabilities and typed blockers.
 - Cash-flow context overloads preserve existing call signatures as compatibility adapters.
 - Reference array routes remain available; paged routes use bounded keyset cursors.

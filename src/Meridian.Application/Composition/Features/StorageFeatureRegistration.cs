@@ -107,6 +107,9 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             ProductionServiceRegistrationPolicy.IsProductionComposition(services));
 
         services.TryAddSingleton<ISecurityValidationSnapshotStore, FileSecurityValidationSnapshotStore>();
+        services.TryAddSingleton<FileBondExerciseNoticeStore>();
+        services.TryAddSingleton<Meridian.Contracts.CashFlows.IBondExerciseNoticeStore>(sp => sp.GetRequiredService<FileBondExerciseNoticeStore>());
+        services.TryAddSingleton<Meridian.Contracts.CashFlows.IExerciseNoticeVerifier>(sp => sp.GetRequiredService<FileBondExerciseNoticeStore>());
         services.TryAddScoped<Meridian.Contracts.CashFlows.IContractualCashFlowPreviewService, ContractualCashFlowPreviewService>();
         services.TryAddSingleton<Meridian.Contracts.CashFlows.IContractualCashFlowRunStore, FileContractualCashFlowRunStore>();
         services.TryAddSingleton<ISecurityValidationGateService, SecurityValidationGateService>();

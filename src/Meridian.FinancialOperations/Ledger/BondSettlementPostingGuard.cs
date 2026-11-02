@@ -5,7 +5,13 @@ using Meridian.Ledger;
 
 namespace Meridian.FinancialOperations.Ledger;
 
-/// <summary>Proves purchased interest is a separate receivable and observed consideration is the cash credit.</summary>
+/// <summary>
+/// Proves purchased interest is a separate receivable and observed consideration is the cash credit. For a
+/// foreign-currency settlement every component line carries the bond's currency as transaction currency,
+/// the book's functional currency, the retained settlement-date FX and the once-translated functional
+/// amount; no FX result arises at settlement, and later remeasurement of the foreign cash balance belongs
+/// to the translation lane, not to this receipt.
+/// </summary>
 internal static class BondSettlementPostingGuard
 {
     internal static async Task RequireVerifiedAsync(AssetAcquisitionLotDto acquisition,
@@ -40,12 +46,19 @@ internal static class BondSettlementPostingGuard
         if (new[] { receipt.CashAccountId, receipt.AccruedInterestAccountId, receipt.FeesAccountId }
             .Any(account => account == acquisition.AccountId))
             throw new InvalidOperationException("Bond clean lot cost, cash, purchased interest and fees require separate accounts.");
-        RequireLine(receipt.CashAccountId, receipt.DirtyConsideration, AccountingTemplateLineSideDto.Credit, LedgerAccountType.Asset);
-        RequireLine(receipt.AccruedInterestAccountId, receipt.PurchasedAccruedInterest, AccountingTemplateLineSideDto.Debit, LedgerAccountType.Asset);
+        // Each component (clean cost, purchased interest, fees) is translated once and rounded to the
+        // functional currency's minor units; the cash credit is the sum of those translated components,
+        // never a separate translation of the dirty total, so the functional journal balances by
+        // construction and no rounding residue needs a home. Same-currency settlements are the FX = 1 case.
+        var functionalCash = receipt.ToFunctional(receipt.CleanConsideration) + receipt.ToFunctional(receipt.PurchasedAccruedInterest)
+            + receipt.ToFunctional(receipt.Fees);
+        RequireLine(receipt.CashAccountId, receipt.DirtyConsideration, functionalCash, AccountingTemplateLineSideDto.Credit, LedgerAccountType.Asset);
+        RequireLine(receipt.AccruedInterestAccountId, receipt.PurchasedAccruedInterest, receipt.ToFunctional(receipt.PurchasedAccruedInterest),
+            AccountingTemplateLineSideDto.Debit, LedgerAccountType.Asset);
         if (receipt.Fees != 0m)
-            RequireLine(receipt.FeesAccountId!, receipt.Fees, AccountingTemplateLineSideDto.Debit, LedgerAccountType.Expense);
+            RequireLine(receipt.FeesAccountId!, receipt.Fees, receipt.ToFunctional(receipt.Fees), AccountingTemplateLineSideDto.Debit, LedgerAccountType.Expense);
 
-        void RequireLine(string accountId, decimal amount, AccountingTemplateLineSideDto side, LedgerAccountType accountType)
+        void RequireLine(string accountId, decimal amount, decimal functional, AccountingTemplateLineSideDto side, LedgerAccountType accountType)
         {
             var matches = retainedCandidate.GeneratedPostingLines.Select((line, index) => (line, index))
                 .Where(item => item.line.AccountPath == accountId).ToArray();
@@ -58,9 +71,12 @@ internal static class BondSettlementPostingGuard
             if (expected.line.Side != side || expected.line.Amount != amount || expected.line.Currency != receipt.Currency
                 || actual.Account.AccountType != accountType
                 || actual.Currency is not { } transaction || transaction.TransactionCurrency != receipt.Currency
-                || transaction.FunctionalCurrency != receipt.Currency || transaction.FxRateToFunctional != 1m
-                || actual.Debit != (side == AccountingTemplateLineSideDto.Debit ? amount : 0m)
-                || actual.Credit != (side == AccountingTemplateLineSideDto.Credit ? amount : 0m)
+                || transaction.FunctionalCurrency != receipt.EffectiveFunctionalCurrency
+                || transaction.FxRateToFunctional != receipt.EffectiveFxRateToFunctional
+                || transaction.TransactionDebit != (side == AccountingTemplateLineSideDto.Debit ? amount : 0m)
+                || transaction.TransactionCredit != (side == AccountingTemplateLineSideDto.Credit ? amount : 0m)
+                || actual.Debit != (side == AccountingTemplateLineSideDto.Debit ? functional : 0m)
+                || actual.Credit != (side == AccountingTemplateLineSideDto.Credit ? functional : 0m)
                 || entry.Lines.Count(line => line.Account == actual.Account) != 1)
                 throw new InvalidOperationException($"Bond settlement account '{accountId}' does not match its reviewed consideration component.");
         }

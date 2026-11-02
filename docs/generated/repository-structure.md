@@ -828,6 +828,9 @@ Meridian-main
 ├── .githooks
 │   └── pre-commit
 ├── .github
+│   ├── actions
+│   │   └── setup-dotnet-nuget
+│   │       └── action.yml
 │   ├── agents
 │   │   ├── adr-generator.agent.md
 │   │   ├── blueprint-agent.md
@@ -1617,41 +1620,6 @@ Meridian-main
 │   │   │   ├── symbol-search-resolution.dot
 │   │   │   ├── symbol-search-resolution.png
 │   │   │   └── symbol-search-resolution.svg
-│   │   ├── ui
-│   │   │   ├── README.md
-│   │   │   ├── ui-implementation-flow.dot
-│   │   │   ├── ui-implementation-flow.png
-│   │   │   ├── ui-implementation-flow.svg
-│   │   │   ├── ui-navigation-map.dot
-│   │   │   ├── ui-navigation-map.png
-│   │   │   ├── ui-navigation-map.svg
-│   │   │   ├── ui-wpf-screen-catalog.dot
-│   │   │   ├── ui-wpf-screen-catalog.png
-│   │   │   ├── ui-wpf-screen-catalog.svg
-│   │   │   ├── ui-wpf-screen-summary.dot
-│   │   │   ├── ui-wpf-screen-summary.png
-│   │   │   ├── ui-wpf-screen-summary.svg
-│   │   │   ├── ui-wpf-screens-accounting.dot
-│   │   │   ├── ui-wpf-screens-accounting.png
-│   │   │   ├── ui-wpf-screens-accounting.svg
-│   │   │   ├── ui-wpf-screens-data.dot
-│   │   │   ├── ui-wpf-screens-data.png
-│   │   │   ├── ui-wpf-screens-data.svg
-│   │   │   ├── ui-wpf-screens-portfolio.dot
-│   │   │   ├── ui-wpf-screens-portfolio.png
-│   │   │   ├── ui-wpf-screens-portfolio.svg
-│   │   │   ├── ui-wpf-screens-reporting.dot
-│   │   │   ├── ui-wpf-screens-reporting.png
-│   │   │   ├── ui-wpf-screens-reporting.svg
-│   │   │   ├── ui-wpf-screens-settings.dot
-│   │   │   ├── ui-wpf-screens-settings.png
-│   │   │   ├── ui-wpf-screens-settings.svg
-│   │   │   ├── ui-wpf-screens-strategy.dot
-│   │   │   ├── ui-wpf-screens-strategy.png
-│   │   │   ├── ui-wpf-screens-strategy.svg
-│   │   │   ├── ui-wpf-screens-trading.dot
-│   │   │   ├── ui-wpf-screens-trading.png
-│   │   │   └── ui-wpf-screens-trading.svg
 │   │   ├── uml
 │   │   │   ├── Activity Diagram - Data Collection Process Flow.png
 │   │   │   ├── Activity Diagram - Data Collection Process Flow.svg
@@ -4323,6 +4291,7 @@ Meridian-main
 │   │   ├── SecurityMaster
 │   │   │   ├── CashFlow
 │   │   │   │   ├── ContractualCashFlowPreviewService.cs
+│   │   │   │   ├── FileBondExerciseNoticeStore.cs
 │   │   │   │   ├── FileContractualCashFlowRunStore.cs
 │   │   │   │   ├── ScheduleSpecFactory.cs
 │   │   │   │   ├── SecurityPrincipalBalance.cs
@@ -4617,7 +4586,9 @@ Meridian-main
 │   │   │       ├── OpenLotUnifiedAmortization.cs
 │   │   │       ├── OpenLotValidation.cs
 │   │   │       ├── OpenLotYieldToWorst.cs
-│   │   │       └── ShortCarryInstruction.cs
+│   │   │       ├── ShortCarryInstruction.cs
+│   │   │       ├── ShortCorrection.cs
+│   │   │       └── ShortCoverTerms.cs
 │   │   ├── AccountingSystem
 │   │   │   └── AccountingSystemDtos.cs
 │   │   ├── Api
@@ -4681,12 +4652,14 @@ Meridian-main
 │   │   │   ├── IBusinessDayCalendarSource.cs
 │   │   │   └── JointBusinessDayCalendar.cs
 │   │   ├── CashFlows
+│   │   │   ├── BondExerciseNotice.cs
 │   │   │   ├── ContractualCashFlowContracts.cs
 │   │   │   ├── ContractualCashFlowEngine.cs
 │   │   │   ├── ContractualCashFlowEngine.Exercise.cs
 │   │   │   ├── ContractualCashFlowEngine.Prepayment.cs
 │   │   │   ├── ContractualCashFlowEngine.Walk.cs
 │   │   │   ├── ContractualCashFlowJsonContext.cs
+│   │   │   ├── ContractualCashFlowRunComparer.cs
 │   │   │   ├── ContractualCashFlowSubjectKinds.cs
 │   │   │   └── SecurityContractualCashFlowTerms.cs
 │   │   ├── Catalog
@@ -5384,6 +5357,7 @@ Meridian-main
 │   │   │   ├── IMarginModel.cs
 │   │   │   ├── MarginAccountType.cs
 │   │   │   ├── MarginCallStatus.cs
+│   │   │   ├── MarginPricing.cs
 │   │   │   ├── MarginRequirement.cs
 │   │   │   ├── PortfolioMarginModel.cs
 │   │   │   ├── RegTMarginModel.cs
@@ -5588,6 +5562,8 @@ Meridian-main
 │   │   │   ├── FactorPaydownLotInstructionService.cs
 │   │   │   ├── LedgerJournalConstruction.cs
 │   │   │   ├── ShortCarryPostingGuard.cs
+│   │   │   ├── ShortCorrectionGuard.cs
+│   │   │   ├── ShortCoverPostingGuard.cs
 │   │   │   ├── SpineAcquisitionLotCompletion.cs
 │   │   │   └── SpineAcquisitionLotFacts.cs
 │   │   ├── MiddleOffice
@@ -8182,6 +8158,7 @@ Meridian-main
 │   │   │   │   │   ├── statement-import-panel.view-model.test.ts
 │   │   │   │   │   ├── statement-import-panel.view-model.ts
 │   │   │   │   │   ├── statement-import-preview.tsx
+│   │   │   │   │   ├── statement-import-screen.test.tsx
 │   │   │   │   │   ├── statement-import-screen.tsx
 │   │   │   │   │   ├── strategy-designer-screen.copy.ts
 │   │   │   │   │   ├── strategy-designer-screen.test.tsx
@@ -9991,6 +9968,7 @@ Meridian-main
 │   │   ├── SecurityMaster
 │   │   │   └── StructuredCashFlowTermsResolverIntegrationTests.cs
 │   │   ├── ContractualCashFlowEngineTests.cs
+│   │   ├── ContractualCashFlowRunComparerTests.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.Contracts.UnitTests.csproj
 │   │   └── README.md
@@ -10031,6 +10009,7 @@ Meridian-main
 │   │   ├── CanonicalizationTests.fs
 │   │   ├── CashFlowProjectorTests.fs
 │   │   ├── DeterministicInvariantTests.fs
+│   │   ├── DirectLendingAggregateServicingTests.fs
 │   │   ├── DirectLendingInteropTests.fs
 │   │   ├── DirectLendingScheduleCharacterizationTests.fs
 │   │   ├── DomainTests.fs
@@ -10076,6 +10055,7 @@ Meridian-main
 │   │   └── WorkstationModeRunnerTests.cs
 │   ├── Meridian.LifecycleSupervisor.Tests
 │   │   ├── LauncherPolicyTests.cs
+│   │   ├── LauncherReceiptMonitorEdgeTests.cs
 │   │   ├── LifecycleDatabaseAclTests.cs
 │   │   ├── LifecycleDatabaseToolTests.cs
 │   │   ├── LifecycleStartupOutcomeTests.cs
@@ -10658,6 +10638,7 @@ Meridian-main
 │   │   │       ├── ZiggyCreatures.FusionCache.Serialization.SystemTextJson.dll
 │   │   │       └── ZstdSharp.dll
 │   │   ├── BacktestProxyRealismTests.cs
+│   │   ├── ContainedProcessTests.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.QuantScript.Tests.csproj
 │   │   ├── NotebookExecutionSessionTests.cs
@@ -10666,15 +10647,18 @@ Meridian-main
 │   │   ├── PriceSeriesTests.cs
 │   │   ├── QuantScriptCompositionAndLaunchTests.cs
 │   │   ├── QuantScriptNotebookStoreTests.cs
+│   │   ├── QuantScriptWorkerProgramTests.cs
 │   │   ├── QuantScriptWorkerProtocolTests.cs
 │   │   ├── RoslynScriptCompilerTests.cs
 │   │   ├── ScriptRunnerTests.cs
 │   │   ├── StatisticsEngineTests.cs
 │   │   └── TechnicalSeriesExtensionsTests.cs
 │   ├── Meridian.Setup.Tests
+│   │   ├── InstallationStagingTests.cs
 │   │   ├── InstallationTransactionTests.cs
 │   │   ├── Meridian.Setup.Tests.csproj
-│   │   └── PayloadPackageTests.cs
+│   │   ├── PayloadPackageTests.cs
+│   │   └── SetupTransactionLeaseTests.cs
 │   ├── Meridian.Tests
 │   │   ├── Application
 │   │   │   ├── Accounting
@@ -10928,6 +10912,7 @@ Meridian-main
 │   │   │   │   └── ProviderModuleSetupServiceTests.cs
 │   │   │   ├── Wizard
 │   │   │   │   └── WizardConfigurationStepTests.cs
+│   │   │   ├── BondExerciseNoticeStoreTests.cs
 │   │   │   ├── ContractualCashFlowPreviewTests.cs
 │   │   │   ├── ContractualCashFlowScheduleRefusalTests.cs
 │   │   │   ├── DirectLendingSchedulePeriodsTests.cs
@@ -11020,6 +11005,7 @@ Meridian-main
 │   │   ├── Compliance
 │   │   │   ├── AccessReviewServiceTests.cs
 │   │   │   ├── CompliancePolicyEngineTests.cs
+│   │   │   ├── FileComplianceApprovalStoreTests.cs
 │   │   │   └── ImmutableAuditLogServiceTests.cs
 │   │   ├── Contracts
 │   │   │   └── CoreExtensibilityContractsTests.cs
@@ -11264,7 +11250,9 @@ Meridian-main
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.ReferenceAuthority.cs
 │   │   │   │   ├── AssetAccountingLifecycleSeparationTests.cs
 │   │   │   │   ├── BondSettlementConsiderationTests.cs
-│   │   │   │   └── ShortCarryTests.cs
+│   │   │   │   ├── ShortCarryTests.cs
+│   │   │   │   ├── ShortCorrectionTests.cs
+│   │   │   │   └── ShortCoverCurrencyTests.cs
 │   │   │   ├── OperationsContinuity
 │   │   │   │   ├── FinancialOperationsCommandCenterReadService.AcceptanceTests.cs
 │   │   │   │   ├── FinancialOperationsCommandCenterReadService.PublicationTests.cs
@@ -11606,6 +11594,9 @@ Meridian-main
 │   │   │   ├── ShareClassUnitRegisterTests.cs
 │   │   │   └── YearEndCloseTests.cs
 │   │   ├── Mcp
+│   │   │   ├── McpRepoRootFixture.cs
+│   │   │   ├── RepoEditToolsTests.cs
+│   │   │   ├── RepoPathServiceTests.cs
 │   │   │   └── ToolProcessRunnerTests.cs
 │   │   ├── MoneyMarketFunds
 │   │   │   └── MoneyMarketFundProjectionServiceTests.cs
@@ -11967,7 +11958,8 @@ Meridian-main
 │   │   │   ├── Banking
 │   │   │   │   └── PostgresBankingIntegrityTests.cs
 │   │   │   ├── Etl
-│   │   │   │   └── EtlJobDefinitionStoreTests.cs
+│   │   │   │   ├── EtlJobDefinitionStoreTests.cs
+│   │   │   │   └── EtlLogAppendConcurrencyTests.cs
 │   │   │   ├── FundAccounts
 │   │   │   │   ├── FundAccountDatabaseFactAttribute.cs
 │   │   │   │   ├── FundAccountDatabaseFixture.cs
