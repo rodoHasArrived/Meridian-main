@@ -399,14 +399,25 @@ public static class InstrumentTypeDescriptorCatalog
         ByInstrumentType.TryGetValue(instrumentType, out descriptor!);
 
     /// <summary>
-    /// True when the descriptors for <paramref name="assetClass"/> declare a contract multiplier among
-    /// their required economic terms (listed options and futures; not swaps, warrants or FX forwards).
-    /// Clients use this instead of matching the asset-class name so they cannot diverge on which
-    /// classes need a multiplier.
+    /// True when a descriptor whose PRIMARY asset class is <paramref name="assetClass"/> declares a
+    /// contract multiplier among its required economic terms (listed options and futures; not swaps,
+    /// warrants or FX forwards). Compatible-class lists are deliberately not consulted: they let a
+    /// class be recorded under a related instrument type (an equity as a single-stock future, a spot
+    /// commodity as a future), which must not make every record of that class require a multiplier.
+    /// Clients use this instead of matching the asset-class name so they cannot diverge.
     /// </summary>
-    public static bool RequiresContractMultiplier(string? assetClass) =>
-        FindBySecurityMasterAssetClass(assetClass).Any(static descriptor =>
-            descriptor.RequiredEconomicTerms.Contains("multiplier", StringComparer.OrdinalIgnoreCase));
+    public static bool RequiresContractMultiplier(string? assetClass)
+    {
+        if (string.IsNullOrWhiteSpace(assetClass))
+        {
+            return false;
+        }
+
+        var normalized = assetClass.Trim();
+        return Descriptors.Any(descriptor =>
+            descriptor.SecurityMasterAssetClass.Equals(normalized, StringComparison.OrdinalIgnoreCase)
+            && descriptor.RequiredEconomicTerms.Contains("multiplier", StringComparer.OrdinalIgnoreCase));
+    }
 
     public static IReadOnlyList<InstrumentTypeDescriptor> FindBySecurityMasterAssetClass(string? assetClass)
     {

@@ -13,7 +13,8 @@ public sealed class InstrumentTypeDescriptorMultiplierTests
         => InstrumentTypeDescriptorCatalog.RequiresContractMultiplier(assetClass).Should().BeTrue();
 
     [Theory]
-    [InlineData("Equity")]
+    [InlineData("Equity")]      // listed as compatible on SingleStockFuture, which needs one
+    [InlineData("Commodity")]   // listed as compatible on Future, which needs one
     [InlineData("Swap")]
     [InlineData("Derivative")]
     [InlineData("")]
