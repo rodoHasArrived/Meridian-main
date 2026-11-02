@@ -523,6 +523,15 @@
       "sha256": "57b6128e514c884ac5bb41e5dcf667d38a241c36050b93e0a43c7572dedb3079"
     },
     {
+      "filename": "059_security_events_append_only_guard.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 59,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/059_security_events_append_only_guard.sql",
+      "schema": "security_master",
+      "sha256": "6ed00758a230f41d82245bde181a21d3b7b58bf74e6b624dfc6e661aca409a9f"
+    },
+    {
       "filename": "001_direct_lending.sql",
       "immutable": true,
       "migration_set_id": "direct-lending",
@@ -1397,7 +1406,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "c4b3ae17df99f23c67e100768a3c435d518b103db1b6a3ebd1875991ecce904c",
+  "fingerprint": "92c9a4b3a15a62a0598800685ccaf2a34ac4ef2cfd016f356ce46ea57296f3c3",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1635,9 +1644,9 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 155,
+    "files": 156,
     "migration_sets": 10,
-    "waivers": 27,
+    "waivers": 28,
     "warnings": 0
   },
   "waivers": [
@@ -1822,6 +1831,13 @@
       "reason": "Proposed exception submitted for independent human Security Master, cash-flow and schema/storage review; approval remains pending. Widens only direct_loan_principal_schedule_projection.amount and structured_credit_factor_schedule_projection.factor from bounded numeric typmods to unconstrained numeric, preserving every existing value and all accepted canonical decimal precision. No row, column or retained source document is removed. Apply through the transactional migration runner and advisory migration lock with a reviewed operational window for the ALTER TABLE locks; validate populated upgrade and fresh installation before rollout. Failed-upgrade rollback remains transactional. Do not downgrade after higher precision or larger principal values have been accepted. Previously rounded projection values are not reconstructed by this DDL; exact recovery requires separately governed replay from retained source terms.",
       "review_after": "2027-04-30",
       "rule_id": "migration-alter-column-type"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/059_security_events_append_only_guard.sql",
+      "reason": "Requires human schema/storage review. The lexical TRUNCATE match declares a BEFORE TRUNCATE trigger that rejects truncation of the append-only Security Master economic event log (security_events); no data is truncated. PostgreSQL regression coverage attempts update, delete and truncate and verifies refusal.",
+      "review_after": "2027-05-01",
+      "rule_id": "migration-truncate"
     },
     {
       "category": "removed_migrations",

@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "e88634cc1e9f105dcc30480e76932f8370be403777bc9d00ae627e95eaeb55d5",
+  "database_fingerprint": "b8d7526d130827d090f7247d08754e9e3db68bd888fc6837e01f6279ef16137c",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -27433,6 +27433,10 @@
       "object": "function:security_master.reject_security_curve_mutation()"
     },
     {
+      "fingerprint": "bc095e971208a7bbc4fb39c61c68f0ed4a683406523751b28b2493bf63d26067",
+      "object": "function:security_master.reject_security_event_mutation()"
+    },
+    {
       "fingerprint": "1e2b6992e7f6d3be838defbe9598445a1ca89b8ee60a9383e1eefa162e70fedc",
       "object": "function:security_master.reject_security_governance_event_mutation()"
     },
@@ -30753,7 +30757,7 @@
       "object": "schema:reporting"
     },
     {
-      "fingerprint": "3056ec46dcbeb379e234a7deb42eed4fa13d3dfe34b17cdc32b8560109d57b2c",
+      "fingerprint": "c685da15f883c0fba6c7a34c3c71131b08341d89578d49a438b0dc0feeb9c677",
       "object": "schema:security_master"
     },
     {
@@ -31561,7 +31565,7 @@
       "object": "table:security_master.security_curves"
     },
     {
-      "fingerprint": "3e60257c940e8778b43cb68ff44007a26ac5b7cb36d1243ee36e02873c5c23f5",
+      "fingerprint": "f38313d8c9941dc59f52efdc2619002dd31cf3ca91277c0239e526a6446db377",
       "object": "table:security_master.security_events"
     },
     {
@@ -31971,6 +31975,14 @@
     {
       "fingerprint": "c52342b755bfa5e48f7c4181755041a937cb84ea42fad0ba42ba51c54523b86c",
       "object": "trigger:security_master.security_curves.security_curves_write_once"
+    },
+    {
+      "fingerprint": "562375a8e247687c6222e0edf5698686c88cf826cfc92ab2cb044f6b26b301c1",
+      "object": "trigger:security_master.security_events.security_events_append_only"
+    },
+    {
+      "fingerprint": "076d5a6707da8ad3888670ecfbe82e73fca1c7d149d9facb58c50b4f21265b1b",
+      "object": "trigger:security_master.security_events.security_events_no_truncate"
     },
     {
       "fingerprint": "b406ca337ee266facd364d02f5977378da53c3a449df3d3c528d24f1c638071c",
@@ -131463,7 +131475,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "3056ec46dcbeb379e234a7deb42eed4fa13d3dfe34b17cdc32b8560109d57b2c",
+      "fingerprint": "c685da15f883c0fba6c7a34c3c71131b08341d89578d49a438b0dc0feeb9c677",
       "foreign_tables": [],
       "functions": [
         {
@@ -131680,6 +131692,37 @@
           "security_definer": false,
           "security_labels": [],
           "signature": "reject_security_curve_mutation()",
+          "strict": false,
+          "volatility": "volatile"
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "PUBLIC",
+              "grantor": "meridian",
+              "privilege": "execute"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "execute"
+            }
+          ],
+          "comment": null,
+          "definition_hash": "450eae97dc440eaa87d8bb1610159d801267d35985cd5a7ead159ec49c7aaffa",
+          "fingerprint": "bc095e971208a7bbc4fb39c61c68f0ed4a683406523751b28b2493bf63d26067",
+          "kind": "function",
+          "language": "plpgsql",
+          "name": "reject_security_event_mutation",
+          "owner": "meridian",
+          "parallel_safety": "unsafe",
+          "result_type": "trigger",
+          "schema": "security_master",
+          "security_definer": false,
+          "security_labels": [],
+          "signature": "reject_security_event_mutation()",
           "strict": false,
           "volatility": "volatile"
         },
@@ -166708,7 +166751,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "3e60257c940e8778b43cb68ff44007a26ac5b7cb36d1243ee36e02873c5c23f5",
+          "fingerprint": "f38313d8c9941dc59f52efdc2619002dd31cf3ca91277c0239e526a6446db377",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -166817,7 +166860,43 @@
           "schema": "security_master",
           "security_labels": [],
           "sequence": null,
-          "triggers": []
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER security_events_append_only BEFORE DELETE OR UPDATE ON security_master.security_events FOR EACH ROW EXECUTE FUNCTION security_master.reject_security_event_mutation()",
+              "definition_hash": "a112c479c15fbf77d99df04851f00b153b0468ae5dbceb2e44549a6400be54bc",
+              "enabled": "origin",
+              "events": [
+                "delete",
+                "update"
+              ],
+              "fingerprint": "562375a8e247687c6222e0edf5698686c88cf826cfc92ab2cb044f6b26b301c1",
+              "function_schema": "security_master",
+              "function_signature": "reject_security_event_mutation()",
+              "level": "row",
+              "name": "security_events_append_only",
+              "relation": "security_events",
+              "schema": "security_master",
+              "timing": "before"
+            },
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER security_events_no_truncate BEFORE TRUNCATE ON security_master.security_events FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_security_event_mutation()",
+              "definition_hash": "5f61643b15667b51ce4c135f64ab6fc62518aa865abf6c75228cdb21984914d0",
+              "enabled": "origin",
+              "events": [
+                "truncate"
+              ],
+              "fingerprint": "076d5a6707da8ad3888670ecfbe82e73fca1c7d149d9facb58c50b4f21265b1b",
+              "function_schema": "security_master",
+              "function_signature": "reject_security_event_mutation()",
+              "level": "statement",
+              "name": "security_events_no_truncate",
+              "relation": "security_events",
+              "schema": "security_master",
+              "timing": "before"
+            }
+          ]
         },
         {
           "acl": [
@@ -213638,7 +213717,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "3e60257c940e8778b43cb68ff44007a26ac5b7cb36d1243ee36e02873c5c23f5",
+          "fingerprint": "f38313d8c9941dc59f52efdc2619002dd31cf3ca91277c0239e526a6446db377",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -213747,7 +213826,43 @@
           "schema": "security_master",
           "security_labels": [],
           "sequence": null,
-          "triggers": []
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER security_events_append_only BEFORE DELETE OR UPDATE ON security_master.security_events FOR EACH ROW EXECUTE FUNCTION security_master.reject_security_event_mutation()",
+              "definition_hash": "a112c479c15fbf77d99df04851f00b153b0468ae5dbceb2e44549a6400be54bc",
+              "enabled": "origin",
+              "events": [
+                "delete",
+                "update"
+              ],
+              "fingerprint": "562375a8e247687c6222e0edf5698686c88cf826cfc92ab2cb044f6b26b301c1",
+              "function_schema": "security_master",
+              "function_signature": "reject_security_event_mutation()",
+              "level": "row",
+              "name": "security_events_append_only",
+              "relation": "security_events",
+              "schema": "security_master",
+              "timing": "before"
+            },
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER security_events_no_truncate BEFORE TRUNCATE ON security_master.security_events FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_security_event_mutation()",
+              "definition_hash": "5f61643b15667b51ce4c135f64ab6fc62518aa865abf6c75228cdb21984914d0",
+              "enabled": "origin",
+              "events": [
+                "truncate"
+              ],
+              "fingerprint": "076d5a6707da8ad3888670ecfbe82e73fca1c7d149d9facb58c50b4f21265b1b",
+              "function_schema": "security_master",
+              "function_signature": "reject_security_event_mutation()",
+              "level": "statement",
+              "name": "security_events_no_truncate",
+              "relation": "security_events",
+              "schema": "security_master",
+              "timing": "before"
+            }
+          ]
         },
         {
           "acl": [
@@ -224710,6 +224825,41 @@
           "level": "row",
           "name": "security_curves_write_once",
           "relation": "security_curves",
+          "schema": "security_master",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER security_events_append_only BEFORE DELETE OR UPDATE ON security_master.security_events FOR EACH ROW EXECUTE FUNCTION security_master.reject_security_event_mutation()",
+          "definition_hash": "a112c479c15fbf77d99df04851f00b153b0468ae5dbceb2e44549a6400be54bc",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "562375a8e247687c6222e0edf5698686c88cf826cfc92ab2cb044f6b26b301c1",
+          "function_schema": "security_master",
+          "function_signature": "reject_security_event_mutation()",
+          "level": "row",
+          "name": "security_events_append_only",
+          "relation": "security_events",
+          "schema": "security_master",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER security_events_no_truncate BEFORE TRUNCATE ON security_master.security_events FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_security_event_mutation()",
+          "definition_hash": "5f61643b15667b51ce4c135f64ab6fc62518aa865abf6c75228cdb21984914d0",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "076d5a6707da8ad3888670ecfbe82e73fca1c7d149d9facb58c50b4f21265b1b",
+          "function_schema": "security_master",
+          "function_signature": "reject_security_event_mutation()",
+          "level": "statement",
+          "name": "security_events_no_truncate",
+          "relation": "security_events",
           "schema": "security_master",
           "timing": "before"
         },

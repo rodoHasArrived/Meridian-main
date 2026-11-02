@@ -4610,7 +4610,7 @@
       ]
     }
   ],
-  "fingerprint": "75dd7b147fe2642cf5ad65a08c24b6e785cc1ec7142824383edeba4f5ec6ee74",
+  "fingerprint": "ece29f17ed64f56607885ebbeb1c13168461c4dd108c2a93d2081e242f419a50",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -6760,7 +6760,7 @@
         "all-contracts",
         "security-master-contracts"
       ],
-      "fingerprint": "1e499402e58381149519ab9d9de3d005226448e014b4e9a5ea3a7d1f0f811734",
+      "fingerprint": "ba130f5051537cc3fc54d7344bbff4bcc0cab838e5977a2ed179f35dd582716d",
       "mapped_schemas": [
         "security_master"
       ],
@@ -246781,7 +246781,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "26aa73f1b44b77d2fda54af6e201bd0de5b6fc6053630595a61e13596cee4b60",
+      "fingerprint": "198a7d75f69208dde62dfca89202f2af5985f95b98190718f2fffd72b0b22d8d",
       "full_name": "Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptor",
       "id": "Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptor",
       "kind": "record",
@@ -246800,7 +246800,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 431,
+          "source_line": 452,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -246814,7 +246814,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 423,
+          "source_line": 444,
           "type": "string"
         },
         {
@@ -246828,7 +246828,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 419,
+          "source_line": 440,
           "type": "string"
         },
         {
@@ -246842,7 +246842,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "InstrumentType",
-          "source_line": 418,
+          "source_line": 439,
           "type": "InstrumentType"
         },
         {
@@ -246856,7 +246856,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 426,
+          "source_line": 447,
           "type": "bool"
         },
         {
@@ -246870,7 +246870,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 425,
+          "source_line": 446,
           "type": "bool"
         },
         {
@@ -246884,7 +246884,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 424,
+          "source_line": 445,
           "type": "bool"
         },
         {
@@ -246898,7 +246898,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 437,
+          "source_line": 458,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -246912,7 +246912,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 435,
+          "source_line": 456,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -246926,7 +246926,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 432,
+          "source_line": 453,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -246940,7 +246940,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 428,
+          "source_line": 449,
           "type": "bool"
         },
         {
@@ -246954,7 +246954,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 434,
+          "source_line": 455,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -246968,7 +246968,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 433,
+          "source_line": 454,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -246982,7 +246982,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 429,
+          "source_line": 450,
           "type": "bool"
         },
         {
@@ -246996,7 +246996,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 427,
+          "source_line": 448,
           "type": "bool"
         },
         {
@@ -247010,7 +247010,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 438,
+          "source_line": 459,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -247024,7 +247024,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 420,
+          "source_line": 441,
           "type": "string"
         },
         {
@@ -247038,7 +247038,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 421,
+          "source_line": 442,
           "type": "string?"
         },
         {
@@ -247052,7 +247052,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 422,
+          "source_line": 443,
           "type": "string?"
         },
         {
@@ -247066,7 +247066,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 430,
+          "source_line": 451,
           "type": "string"
         },
         {
@@ -247080,7 +247080,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 436,
+          "source_line": 457,
           "type": "IReadOnlyList<string>"
         }
       ],
@@ -247092,12 +247092,12 @@
         "Meridian.Contracts.Domain.Enums.InstrumentType"
       ],
       "source": {
-        "line": 417,
+        "line": 438,
         "path": "src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs"
       },
       "sources": [
         {
-          "line": 417,
+          "line": 438,
           "path": "src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs"
         }
       ],
