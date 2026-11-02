@@ -298,10 +298,15 @@ public sealed class AssetAmortizationPostgresRoundTripTests : IDisposable
         // A node the Security Master terms capability floor refuses posts no new amortization batch.
         var belowFloor = new AccountingPostingCandidatePostService(candidateBuilder, journal, assetAccountingEventStore: assets,
             termsCapabilityCheck: RefusedByTheFloor);
-        await belowFloor.Invoking(service => service.PostCandidateAsync(request, ct))
+        // The refused attempt carries different approval notes: had it appended an Approved stage, the
+        // retry below would fail the retained-attestation match.
+        await belowFloor.Invoking(service => service.PostCandidateAsync(request with { ApprovalNotes = "Attempt on a refused node." }, ct))
             .Should().ThrowAsync<InvalidOperationException>().WithMessage(FloorRefusal);
         (await journal.GetByPeriodAsync(period.PeriodId, ct)).Should().BeEmpty();
         (await journal.GetTaxLotsByIdsAsync(bookId, [lotId], ct)).Single().Should().BeEquivalentTo(lot);
+        var afterRefusal = (await assets.GetLatestAsync(eventId, 1, ct))!.Projection;
+        afterRefusal.SpineVersion.Should().Be(drafted.SpineVersion, "a refused batch appends no Approved stage");
+        afterRefusal.Stages.Select(stage => stage.Stage).Should().NotContain(AssetAccountingLifecycleStageDto.Approved);
         var posted = await postingService.PostCandidateAsync(request, ct);
         posted.WasReplay.Should().BeFalse();
         posted.TaxLotMutationBatchId.Should().NotBeNull();

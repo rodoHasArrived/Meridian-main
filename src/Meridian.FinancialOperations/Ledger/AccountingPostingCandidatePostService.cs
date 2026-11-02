@@ -319,6 +319,12 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
             approvedWrite = BindAssetPostingIntentToJournal(approvedWrite, assetAuthority);
         }
 
+        // A new amortization batch (reversals included) asks the terms capability floor before the Approved
+        // stage is appended, so a refused node leaves no approval; exact replays are served (ADR-025).
+        if (hasAtomicLotMutation && existing is null && _termsCapabilityCheck is not null
+            && request.Candidate.AssetLotMutation?.Intent == AssetLotMutationIntentDto.Amortize)
+            await _termsCapabilityCheck(ct).ConfigureAwait(false);
+
         if (hasAtomicLotMutation && assetAuthority is not null)
         {
             await EnsureAssetProjectionApprovedAsync(
@@ -1227,10 +1233,6 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
                 ?? throw new InvalidOperationException("Amortization requires retained canonical lot and reference inputs.");
             if (!hasExistingJournal && inputs.Reversal is null)
                 await BondAmortizationPolicyGuard.RequireAsync(_bondCalculationPolicy, inputs.Security, ct).ConfigureAwait(false);
-            // A new amortization batch, reversals included, projects from Security Master terms; an exact
-            // replay of a retained journal is still served below the floor (ADR-025).
-            if (!hasExistingJournal && _termsCapabilityCheck is not null)
-                await _termsCapabilityCheck(ct).ConfigureAwait(false);
             var projection = OpenLotAmortization.Project(inputs);
             RequireAssetAssertion(inputs.ExpectedLot.SecurityId == authority.Context.SecurityId
                 && inputs.ExpectedLot.BookPositionId == authority.Context.BookPositionId
