@@ -1,6 +1,6 @@
 {
   "total_files": 796,
-  "total_lines": 181430,
+  "total_lines": 181445,
   "orphaned_count": 259,
   "no_heading_count": 157,
   "stale_count": 0,
@@ -3031,7 +3031,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 13180,
+      "line_count": 13181,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3487,7 +3487,7 @@
     },
     {
       "path": "docs/product/implementation-todo-list.md",
-      "line_count": 858,
+      "line_count": 859,
       "has_heading": true,
       "todo_count": 5,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6239,7 +6239,7 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 1416,
+      "line_count": 1417,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6247,7 +6247,7 @@
     },
     {
       "path": "src/Meridian.Audit/README.md",
-      "line_count": 99,
+      "line_count": 103,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6343,7 +6343,7 @@
     },
     {
       "path": "src/Meridian.FSharp.DirectLending.Aggregates/README.md",
-      "line_count": 76,
+      "line_count": 80,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6431,7 +6431,7 @@
     },
     {
       "path": "src/Meridian.Mcp/README.md",
-      "line_count": 94,
+      "line_count": 98,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

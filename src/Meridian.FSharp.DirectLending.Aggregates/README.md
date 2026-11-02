@@ -35,6 +35,10 @@ When changing persistence-facing behavior, keep loan state, accrual, cash-flow, 
 and servicer-report projections tied to Security Master identity and lineage so loan planning,
 servicing, and accounting evidence can reconcile through the same instrument source of truth.
 
+## Audit hardening (2026-11)
+
+- **Manual payment breakdowns.** Each manual line is capped at the amount requested, the cash still unallocated, and the bucket's outstanding balance, so a breakdown can never book interest, fee, penalty or principal that is not owed. Excess is reported as `UnappliedAmount`, as in the automatic waterfall. Term-driven handling of that excess (principal prepayment, prepaid interest, tracked unapplied cash) is tracked as `PRD-115`.
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.

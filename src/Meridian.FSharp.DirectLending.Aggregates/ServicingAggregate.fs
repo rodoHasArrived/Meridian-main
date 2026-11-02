@@ -53,22 +53,27 @@ module internal ServicingAggregate =
         PaymentBreakdownDto(toInterest, toCommitmentFee, toFees, toPenalty, toPrincipal)
 
     let private buildResolution (servicing: LoanServicingStateDto) amount (requestedBreakdown: PaymentBreakdownDto) =
+        // A manual line never allocates more than the bucket owes: 1,000 "to interest" against
+        // 10 accrued would book 990 of income that does not exist. Excess is reported as
+        // unapplied, exactly as the automatic waterfall reports it.
         let mutable remaining = amount
-        let take requested =
-            if remaining <= 0m || requested <= 0m then
+        let take requested outstanding =
+            let cap = min (max 0m requested) (max 0m outstanding)
+            if remaining <= 0m || cap <= 0m then
                 0m
             else
-                let applied = min remaining requested
+                let applied = min remaining cap
                 remaining <- remaining - applied
                 applied
 
+        let owed = servicing.Balances
         let breakdown =
             PaymentBreakdownDto(
-                take requestedBreakdown.ToInterest,
-                take requestedBreakdown.ToCommitmentFee,
-                take requestedBreakdown.ToFees,
-                take requestedBreakdown.ToPenalty,
-                take requestedBreakdown.ToPrincipal)
+                take requestedBreakdown.ToInterest owed.InterestAccruedUnpaid,
+                take requestedBreakdown.ToCommitmentFee owed.CommitmentFeeAccruedUnpaid,
+                take requestedBreakdown.ToFees owed.FeesAccruedUnpaid,
+                take requestedBreakdown.ToPenalty owed.PenaltyAccruedUnpaid,
+                take requestedBreakdown.ToPrincipal owed.PrincipalOutstanding)
 
         MixedPaymentResolutionDto(breakdown, "Manual", "manual-v1", remaining)
 
