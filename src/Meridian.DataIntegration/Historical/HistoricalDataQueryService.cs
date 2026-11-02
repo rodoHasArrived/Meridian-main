@@ -712,6 +712,31 @@ public sealed class HistoricalDataQueryService
                 .Where(f => f.EndsWith(".jsonl") || f.EndsWith(".jsonl.gz")));
         }
 
+        // Never follow reparse points in the selected file path or its ancestors.
+        // Path normalization alone does not prevent a symbolic link from escaping the root.
+        var root = Path.GetFullPath(_dataRoot);
+        var rootPrefix = Path.TrimEndingDirectorySeparator(root) + Path.DirectorySeparatorChar;
+        foreach (var file in files)
+        {
+            var fullPath = Path.GetFullPath(file);
+            if (!fullPath.StartsWith(rootPrefix, StringComparison.OrdinalIgnoreCase))
+                throw new UnauthorizedAccessException("Historical file escapes the configured data root.");
+
+            var current = Path.GetDirectoryName(fullPath);
+            while (current is not null && current.Length >= root.Length)
+            {
+                if (Directory.Exists(current) &&
+                    (File.GetAttributes(current) & FileAttributes.ReparsePoint) != 0)
+                    throw new UnauthorizedAccessException("Historical data directories cannot be symbolic links.");
+                if (string.Equals(current, root, StringComparison.OrdinalIgnoreCase))
+                    break;
+                current = Path.GetDirectoryName(current);
+            }
+
+            if ((File.GetAttributes(fullPath) & FileAttributes.ReparsePoint) != 0)
+                throw new UnauthorizedAccessException("Historical data files cannot be symbolic links.");
+        }
+
         var distinctFiles = files.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         if (distinctFiles.Count > MaxDiscoveredFiles)
             throw new InvalidOperationException("Historical query exceeds the file discovery limit.");
