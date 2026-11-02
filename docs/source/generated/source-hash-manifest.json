@@ -10,7 +10,7 @@
       "path": "src/Meridian.Application",
       "readme": "src/Meridian.Application/README.md",
       "readme_hash": "fdb24110cc428f73eef0f483fa389506eedc4d13dac40672cf23a86e4fcb687b",
-      "source_hash": "cbc7937df6ec027ed99298a69b746467206b3b6c6c393c5cceb8c51918d511cd"
+      "source_hash": "cf681e87bf2cc44f98acdb8c47f1dd0214a80daf1b700285e08fcad251610751"
     },
     {
       "id": "SRC-BACKTESTING",

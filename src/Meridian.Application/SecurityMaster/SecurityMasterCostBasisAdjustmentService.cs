@@ -151,11 +151,7 @@ public sealed class SecurityMasterCostBasisAdjustmentService : ISecurityMasterCo
                 adjustments.Add(new LedgerTaxLotBasisAdjustment(
                     LedgerTaxLotBasisAdjustmentKind.Split, ratio, action.ExDate, securityId, LotId: null, reference).EnsureValid());
             }
-            else if (terms is CashDistributionCorporateActionTerms
-                     {
-                         EventType: CorporateActionEventTypes.ReturnOfCapital,
-                         PositiveAmountPerUnit: { } perShare
-                     })
+            else if (terms is CashDistributionCorporateActionTerms { EventType: CorporateActionEventTypes.ReturnOfCapital, PositiveAmountPerUnit: { } perShare })
             {
                 adjustments.Add(new LedgerTaxLotBasisAdjustment(
                     LedgerTaxLotBasisAdjustmentKind.ReturnOfCapital, perShare, action.ExDate, securityId, LotId: null, reference).EnsureValid());
