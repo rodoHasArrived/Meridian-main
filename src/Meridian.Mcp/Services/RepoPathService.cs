@@ -70,11 +70,18 @@ public sealed class RepoPathService
         var fullPath = Path.GetFullPath(Path.IsPathRooted(path) ? path : Path.Combine(Root, path));
         var rootPath = Path.TrimEndingDirectorySeparator(Path.GetFullPath(Root));
 
-        // Compare the paths the file system will actually open: a symlink inside the
-        // repository can point anywhere, so resolve links on both sides first.
+        // Lexical check first, before touching the file system: probing an outside path (for
+        // example a UNC share on Windows) could itself reach a remote host.
+        if (!IsSameOrInside(fullPath, rootPath))
+        {
+            throw new InvalidOperationException($"Path is outside the Meridian repository root: {path}");
+        }
+
+        // Then compare the paths the file system will actually open: a symlink inside the
+        // repository can point anywhere, so resolve links on both sides.
         var realPath = ResolveLinks(fullPath);
         var realRoot = ResolveLinks(rootPath);
-        if (!IsSameOrInside(realPath, realRoot) || !IsSameOrInside(fullPath, rootPath))
+        if (!IsSameOrInside(realPath, realRoot))
         {
             throw new InvalidOperationException($"Path is outside the Meridian repository root: {path}");
         }
@@ -93,37 +100,57 @@ public sealed class RepoPathService
         string.Equals(candidate, root, PathComparison) ||
         candidate.StartsWith(root + Path.DirectorySeparatorChar, PathComparison);
 
+    // Bounds link chains (and cycles) the way the kernel's own resolution does (Linux: 40).
+    private const int MaxLinkHops = 40;
+
     /// <summary>
-    /// Resolves symbolic links on every existing component of <paramref name="fullPath"/>.
-    /// Components that do not exist yet (for example a file about to be created) are kept as-is.
+    /// Resolves symbolic links on every component of <paramref name="fullPath"/>, including
+    /// links inside link targets. Each link found is replaced by its immediate target spliced
+    /// with the rest of the path, and the walk restarts from the top, so no component of any
+    /// target is left unresolved. Components that do not exist yet are kept as-is. Exceeding
+    /// <see cref="MaxLinkHops"/> fails closed.
     /// </summary>
     internal static string ResolveLinks(string fullPath)
     {
-        var root = Path.GetPathRoot(fullPath) ?? string.Empty;
-        var current = root;
-        var parts = fullPath[root.Length..].Split(
-            [Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar],
-            StringSplitOptions.RemoveEmptyEntries);
-
-        for (var i = 0; i < parts.Length; i++)
+        var path = Path.GetFullPath(fullPath);
+        for (var hops = 0; hops <= MaxLinkHops; hops++)
         {
-            var next = Path.Combine(current, parts[i]);
-            FileSystemInfo info = Directory.Exists(next) ? new DirectoryInfo(next) : new FileInfo(next);
-            if (!info.Exists)
+            var root = Path.GetPathRoot(path) ?? string.Empty;
+            var parts = path[root.Length..].Split(
+                [Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar],
+                StringSplitOptions.RemoveEmptyEntries);
+            var current = root;
+            string? rewritten = null;
+
+            for (var i = 0; i < parts.Length; i++)
             {
-                // Nothing further can be a link; append the remaining components unchanged.
-                return Path.Combine([current, .. parts[i..]]);
+                var next = Path.Combine(current, parts[i]);
+                FileSystemInfo info = Directory.Exists(next) ? new DirectoryInfo(next) : new FileInfo(next);
+                if (!info.Exists && info.LinkTarget is null)
+                {
+                    // Nothing further exists, so nothing further can be a link.
+                    return Path.Combine([next, .. parts[(i + 1)..]]);
+                }
+
+                if (info.LinkTarget is { } target)
+                {
+                    // Immediate target only (relative targets are relative to the link's
+                    // directory); the restart resolves any links within it.
+                    var targetPath = Path.GetFullPath(target, current);
+                    rewritten = Path.Combine([targetPath, .. parts[(i + 1)..]]);
+                    break;
+                }
+
+                current = next;
             }
 
-            if (info.LinkTarget is not null)
-            {
-                var target = info.ResolveLinkTarget(returnFinalTarget: true);
-                next = target is null ? next : Path.GetFullPath(target.FullName);
-            }
+            if (rewritten is null)
+                return Path.TrimEndingDirectorySeparator(current);
 
-            current = next;
+            path = rewritten;
         }
 
-        return Path.TrimEndingDirectorySeparator(current);
+        throw new InvalidOperationException(
+            $"Too many levels of symbolic links while resolving '{fullPath}'.");
     }
 }

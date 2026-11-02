@@ -227,6 +227,43 @@ public sealed class RepoPathServiceTests
     }
 
     [Fact]
+    public void ResolveInsideRoot_LinkWhoseTargetPassesThroughAnotherOutsideLink_Throws()
+    {
+        // repo/redirect -> <outside>, repo/alias -> repo/redirect/sub. Following only the final
+        // component of alias's chain would leave "redirect" unresolved and admit the path.
+        if (OperatingSystem.IsWindows())
+            return;
+
+        using var repo = new TempMeridianRepo();
+        var outside = Path.Combine(repo.Sandbox, "outside");
+        Directory.CreateDirectory(Path.Combine(outside, "sub"));
+        File.WriteAllText(Path.Combine(outside, "sub", "secret.txt"), "secret");
+        Directory.CreateSymbolicLink(Path.Combine(repo.Root, "redirect"), outside);
+        Directory.CreateSymbolicLink(Path.Combine(repo.Root, "alias"), Path.Combine(repo.Root, "redirect", "sub"));
+        var service = new RepoPathService();
+
+        var act = () => service.ResolveInsideRoot("alias/secret.txt");
+
+        act.Should().Throw<InvalidOperationException>("opening the path reads <outside>/sub/secret.txt");
+    }
+
+    [Fact]
+    public void ResolveInsideRoot_SymlinkCycle_FailsClosed()
+    {
+        if (OperatingSystem.IsWindows())
+            return;
+
+        using var repo = new TempMeridianRepo();
+        File.CreateSymbolicLink(Path.Combine(repo.Root, "a"), Path.Combine(repo.Root, "b"));
+        File.CreateSymbolicLink(Path.Combine(repo.Root, "b"), Path.Combine(repo.Root, "a"));
+        var service = new RepoPathService();
+
+        var act = () => service.ResolveInsideRoot("a");
+
+        act.Should().Throw<InvalidOperationException>().WithMessage("*symbolic links*");
+    }
+
+    [Fact]
     public void ResolveInsideRoot_SymlinkInsideRootPointingInside_IsAccepted()
     {
         if (OperatingSystem.IsWindows())
