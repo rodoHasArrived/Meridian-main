@@ -1781,6 +1781,7 @@ Meridian-main
 │   │   │   │   ├── equalization-and-series-accounting.md
 │   │   │   │   ├── incentive-fee-mechanics.md
 │   │   │   │   └── README.md
+│   │   │   ├── direct-lending-excess-payment-application.md
 │   │   │   ├── financing-liabilities-depreciation-blueprint.md
 │   │   │   ├── portfolio-cash-ladder-blueprint-2026-07.md
 │   │   │   ├── README.md

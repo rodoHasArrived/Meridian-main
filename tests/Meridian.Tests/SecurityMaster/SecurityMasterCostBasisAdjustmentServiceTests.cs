@@ -108,6 +108,24 @@ public sealed class SecurityMasterCostBasisAdjustmentServiceTests
     }
 
     [Fact]
+    public async Task BuildAdjustmentsAsync_ReturnOfCapital_LeavesCommitmentMeasuredLotsUnadjusted()
+    {
+        var queryService = QueryServiceWith(actions: [Action("ReturnOfCapital", new DateOnly(2024, 3, 1), dividendPerShare: 0.40m)]);
+        var service = BuildService(queryService);
+        var shareLot = new LedgerTaxLot("lot-shares", new DateOnly(2024, 1, 1), 10m, 50m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m };
+        var commitmentLot = new LedgerTaxLot("lot-commitment", new DateOnly(2024, 1, 1), 1_000_000m, 1m, SecurityId) { UnitKind = SecurityLotUnitKind.Commitment, Multiplier = 1m };
+
+        var adjustments = await service.BuildAdjustmentsAsync(SecurityId, Lots(shareLot, commitmentLot), new DateOnly(2025, 1, 1));
+
+        // A per-unit rate has no reading on a commitment amount, so only the share lot is relieved.
+        adjustments.Should().ContainSingle();
+        adjustments[0].Kind.Should().Be(LedgerTaxLotBasisAdjustmentKind.ReturnOfCapital);
+        adjustments[0].LotId.Should().Be("lot-shares");
+        LedgerTaxLotBasisAdjuster.Apply(Lots(shareLot, commitmentLot), adjustments)
+            .Single(lot => lot.LotId == "lot-commitment").UnitCost.Should().Be(1m);
+    }
+
+    [Fact]
     public async Task BuildAdjustmentsAsync_CancelledCorporateAction_IsExcluded()
     {
         var queryService = QueryServiceWith(actions:
