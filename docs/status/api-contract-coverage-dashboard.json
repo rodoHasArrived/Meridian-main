@@ -3,12 +3,12 @@
   "title": "API Contract Coverage Dashboard",
   "generated_at": "1970-01-01T00:00:00+00:00",
   "score_percent": 20.1,
-  "endpoint_coverage_percent": 30.8,
+  "endpoint_coverage_percent": 30.7,
   "contract_coverage_percent": 4.1,
   "summary": {
-    "endpoint_count": 740,
+    "endpoint_count": 743,
     "documented_endpoint_count": 228,
-    "undocumented_endpoint_count": 512,
+    "undocumented_endpoint_count": 515,
     "workstation_contract_count": 962,
     "documented_workstation_contract_count": 39,
     "undocumented_workstation_contract_count": 923
@@ -3413,25 +3413,43 @@
     {
       "method": "POST",
       "path": "/api/security-master/{securityId:guid}/cashflow-projections/preview",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CashFlowPreview.cs:19",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CashFlowPreview.cs:20",
+      "documented": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/security-master/{securityId:guid}/exercise-notices",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CashFlowPreview.cs:42",
+      "documented": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/security-master/{securityId:guid}/exercise-notices",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CashFlowPreview.cs:54",
+      "documented": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/security-master/{securityId:guid}/exercise-notices/{noticeId:guid}/decision",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CashFlowPreview.cs:77",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/{securityId:guid}/cashflow-source",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CashFlowPreview.cs:44",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CashFlowPreview.cs:99",
       "documented": false
     },
     {
       "method": "PUT",
       "path": "/api/security-master/{securityId:guid}/cashflow-source",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CashFlowPreview.cs:57",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CashFlowPreview.cs:112",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/{securityId:guid}/cashflow-projections",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CashFlowPreview.cs:85",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CashFlowPreview.cs:140",
       "documented": false
     },
     {

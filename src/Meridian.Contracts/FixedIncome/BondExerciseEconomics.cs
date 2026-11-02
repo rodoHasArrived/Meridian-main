@@ -203,14 +203,20 @@ public static class BondExerciseEconomics
         return true;
     }
 
-    private static bool TryExerciseDates(JsonElement row, DateOnly start, DateOnly end, string style,
-        string? couponFrequency, out IReadOnlyList<DateOnly> dates, out string? refusal)
+    /// <summary>
+    /// Expands one declared redemption row into its exercise dates: a European row is its single date; a
+    /// Bermudan row is its start date followed by the regular-grid period ends up to its end date, on the
+    /// row's <c>exerciseFrequency</c> or, absent that, the coupon frequency. Shared by analytics and the
+    /// acquisition-price yield-to-worst comparison so both lists are the same dates.
+    /// </summary>
+    public static bool TryExerciseDates(JsonElement row, DateOnly start, DateOnly end, string style,
+        string? couponFrequency, out IReadOnlyList<DateOnly> dates, out string? refusal, string? exerciseFrequency = null)
     {
         dates = [start];
         refusal = null;
         if (style == "European")
             return true;
-        var frequency = BondContractualEconomics.Text(row, "exerciseFrequency") ?? couponFrequency;
+        var frequency = exerciseFrequency ?? BondContractualEconomics.Text(row, "exerciseFrequency") ?? couponFrequency;
         if (!SecurityTermConventions.TryParsePaymentFrequency(frequency, out var cadence)
             || cadence.PeriodsPerYear() is not { } periods)
         {
