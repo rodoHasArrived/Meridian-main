@@ -3,8 +3,8 @@
 # `security_master` schema
 
 - Relations: 127
-- Functions/procedures: 11
-- Triggers: 23
+- Functions/procedures: 12
+- Triggers: 25
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.

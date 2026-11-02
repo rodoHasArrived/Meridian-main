@@ -46,6 +46,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
     private readonly ISmService _service;
     private readonly WpfServices.DesktopAuthenticationSession? _authenticationSession;
     private readonly WpfServices.IDesktopMutationAuthorization _mutationAuthorization;
+    private readonly Meridian.Application.SecurityMaster.IGovernedTermAmendmentPolicy? _governedTermAmendmentPolicy;
     private readonly bool _hasPolygonApiKey;
     private readonly object _selectedSecurityLoadGate = new();
     private bool _isRefreshingSearchWorkspaceFilters;
@@ -1543,10 +1544,12 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
         ISmQueryService queryService,
         ISmService service,
         WpfServices.DesktopAuthenticationSession? authenticationSession = null,
-        WpfServices.IWorkstationContractualCashFlowApiClient? cashFlowClient = null)
+        WpfServices.IWorkstationContractualCashFlowApiClient? cashFlowClient = null,
+        Meridian.Application.SecurityMaster.IGovernedTermAmendmentPolicy? governedTermAmendmentPolicy = null)
     {
         _loggingService = loggingService;
         _cashFlowClient = cashFlowClient;
+        _governedTermAmendmentPolicy = governedTermAmendmentPolicy;
         _notificationService = notificationService;
         _backfillService = backfillService;
         _importService = importService;
@@ -1673,7 +1676,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
         if (!TryAuthorizeSecurityMasterMutation("create a security", out _))
             return;
 
-        EditVm = SecurityMasterEditViewModel.CreateNew(_loggingService, _notificationService, _service, _authenticationSession, _mutationAuthorization);
+        EditVm = SecurityMasterEditViewModel.CreateNew(_loggingService, _notificationService, _service, _authenticationSession, _mutationAuthorization, _governedTermAmendmentPolicy);
         WireEditVmEvents();
         IsEditPanelVisible = true;
     }
@@ -1703,7 +1706,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
             {
                 await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    EditVm = new SecurityMasterEditViewModel(_loggingService, _notificationService, _service, _authenticationSession, _mutationAuthorization);
+                    EditVm = new SecurityMasterEditViewModel(_loggingService, _notificationService, _service, _authenticationSession, _mutationAuthorization, _governedTermAmendmentPolicy);
                     EditVm.LoadForEdit(detail);
                     WireEditVmEvents();
                     IsEditPanelVisible = true;
@@ -4056,7 +4059,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
             missingFields.Add("trading hours");
         }
 
-        if (RequiresContractMultiplier(SelectedAssetClass) &&
+        if (InstrumentTypeDescriptorCatalog.RequiresContractMultiplier(SelectedAssetClass) &&
             _selectedTradingParameters?.ContractMultiplier is null or <= 0)
         {
             missingFields.Add("contract multiplier");
@@ -4266,11 +4269,6 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
 
         return normalized.Replace(".", " > ", StringComparison.Ordinal);
     }
-
-    private static bool RequiresContractMultiplier(string assetClass)
-        => assetClass.Contains("Option", StringComparison.OrdinalIgnoreCase) ||
-           assetClass.Contains("Future", StringComparison.OrdinalIgnoreCase) ||
-           assetClass.Contains("Derivative", StringComparison.OrdinalIgnoreCase);
 
     private static string NormalizeConflictValue(string value)
     {
