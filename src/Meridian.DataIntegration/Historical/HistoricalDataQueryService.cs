@@ -24,6 +24,8 @@ public sealed class HistoricalDataQueryService
         return symbol.All(ch => char.IsAsciiLetterOrDigit(ch) || ch is '.' or '-' or '_' or '^');
     }
 
+    private const int MaxDiscoveredFiles = 500;
+    private const int MaxScannedLinesPerFile = 100_000;
     private readonly ILogger<HistoricalDataQueryService> _log;
     private readonly string _dataRoot;
     private readonly JsonSerializerOptions _jsonOptions;
@@ -710,7 +712,10 @@ public sealed class HistoricalDataQueryService
                 .Where(f => f.EndsWith(".jsonl") || f.EndsWith(".jsonl.gz")));
         }
 
-        return files.Distinct().ToList();
+        var distinctFiles = files.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        if (distinctFiles.Count > MaxDiscoveredFiles)
+            throw new InvalidOperationException("Historical query exceeds the file discovery limit.");
+        return distinctFiles;
     }
 
     private async Task<List<HistoricalDataRecord>> ReadDataFileAsync(
@@ -738,6 +743,8 @@ public sealed class HistoricalDataQueryService
             while ((line = await reader.ReadLineAsync(ct)) != null && records.Count < maxRecords)
             {
                 lineNumber++;
+                if (lineNumber > MaxScannedLinesPerFile)
+                    throw new InvalidOperationException("Historical query exceeds the per-file scan limit.");
 
                 if (string.IsNullOrWhiteSpace(line))
                     continue;
