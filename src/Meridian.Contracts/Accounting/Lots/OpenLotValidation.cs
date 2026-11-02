@@ -1,5 +1,6 @@
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.FixedIncome;
+using Meridian.Core.Currency;
 
 namespace Meridian.Contracts.Accounting.Lots;
 
@@ -27,7 +28,7 @@ public static class OpenLotValidation
         if (acquisition.AcquisitionCurrency == acquisition.FunctionalCurrency
             && (acquisition.AcquisitionFxRateToFunctional != 1m || acquisition.TransactionCostBasis != acquisition.FunctionalCostBasis))
             throw new ArgumentException("Same-currency acquisition FX must equal one and retained transaction and functional bases must agree exactly.");
-        if (Math.Abs(acquisition.FunctionalCostBasis - acquisition.TransactionCostBasis * acquisition.AcquisitionFxRateToFunctional) > 0.01m)
+        if (Math.Abs(acquisition.FunctionalCostBasis - acquisition.TransactionCostBasis * acquisition.AcquisitionFxRateToFunctional) > Math.Max(0.01m, CurrencyMinorUnits.OneMinorUnit(acquisition.FunctionalCurrency)))
             throw new ArgumentException("Retained acquisition basis does not reconcile to acquisition FX.");
         if (acquisition.Evidence is null || acquisition.Evidence.Count == 0
             || acquisition.Evidence.Any(e => !RetainedEvidenceIdentityValidator.IsComplete(e)))

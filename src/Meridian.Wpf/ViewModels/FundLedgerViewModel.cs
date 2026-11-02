@@ -1004,7 +1004,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
                 UpdateAccountingRecordWorkbenchPresentation();
                 UpdateReportPackWorkbenchPresentation();
                 ApplyPrivateCapitalCloseCockpit(privateCapitalCloseCockpit);
-            });
+            }).Task.Unwrap();
         }
         else
         {
