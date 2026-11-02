@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "8efc74c02e6f9666a0da32335124404a58b75937cfb549f1d340182422a226a6",
+      "fingerprint": "7060565edc8367e93381155a227a603dec6387b838c5689cd1bf3b246890d3c5",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -716,6 +716,7 @@
         "Meridian.Contracts.DirectLending.DirectLendingSecurityMasterReferenceDto",
         "Meridian.Contracts.DirectLending.DirectLendingTermsDto",
         "Meridian.Contracts.DirectLending.DrawdownLotDto",
+        "Meridian.Contracts.DirectLending.ExcessPaymentApplication",
         "Meridian.Contracts.DirectLending.FeeBalanceDto",
         "Meridian.Contracts.DirectLending.JournalEntryDto",
         "Meridian.Contracts.DirectLending.JournalEntryStatus",
@@ -3355,7 +3356,7 @@
       "directories": [
         "src/Meridian.Contracts/DirectLending"
       ],
-      "fingerprint": "74a07799addc21886e379b14e0e6ebd50c077a73e088bc5ee460b3a3e3a7ad6a",
+      "fingerprint": "b3d5d8dec64c4634c1a2601d3d8fe83d754fd765066241740b85823a1ab7a93d",
       "id": "direct-lending-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts.DirectLending"
@@ -3405,6 +3406,7 @@
         "Meridian.Contracts.DirectLending.DirectLendingSecurityMasterReferenceDto",
         "Meridian.Contracts.DirectLending.DirectLendingTermsDto",
         "Meridian.Contracts.DirectLending.DrawdownLotDto",
+        "Meridian.Contracts.DirectLending.ExcessPaymentApplication",
         "Meridian.Contracts.DirectLending.FeeBalanceDto",
         "Meridian.Contracts.DirectLending.JournalEntryDto",
         "Meridian.Contracts.DirectLending.JournalEntryStatus",
@@ -4613,7 +4615,7 @@
       ]
     }
   ],
-  "fingerprint": "bae40b488a0619dba09b336225f108211dde1eb6d39920fe5ecc277e251b5eae",
+  "fingerprint": "52b3b63930ebff3f239e8498d03ab7502e494226ec33113e7d08723b146a63bc",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -5495,7 +5497,7 @@
         "all-contracts",
         "direct-lending-contracts"
       ],
-      "fingerprint": "b24734713875e4f2f2a01c6baa1a04a5c412ca7f85db6a7041dc3e8792472bda",
+      "fingerprint": "23d9f5bf9b90ec9f2e9059453ecb1dc651c7a41adc371590dcd62a0bcb85e418",
       "mapped_schemas": [
         "security_master"
       ],
@@ -5545,6 +5547,7 @@
         "Meridian.Contracts.DirectLending.DirectLendingSecurityMasterReferenceDto",
         "Meridian.Contracts.DirectLending.DirectLendingTermsDto",
         "Meridian.Contracts.DirectLending.DrawdownLotDto",
+        "Meridian.Contracts.DirectLending.ExcessPaymentApplication",
         "Meridian.Contracts.DirectLending.FeeBalanceDto",
         "Meridian.Contracts.DirectLending.JournalEntryDto",
         "Meridian.Contracts.DirectLending.JournalEntryStatus",
@@ -94976,7 +94979,7 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "e14bb4047d7d1406c303735475bc5cc46fcd4eb30a59ef68ea037bb8192599a3",
+      "fingerprint": "e777a52bb0c18d97f1957e4b88f47533b0c7924277818acb020eeda1a455d3b4",
       "full_name": "Meridian.Contracts.DirectLending.ActivateLoanRequest",
       "id": "Meridian.Contracts.DirectLending.ActivateLoanRequest",
       "kind": "record",
@@ -94995,7 +94998,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 245,
+          "source_line": 282,
           "type": "DateOnly"
         }
       ],
@@ -95005,12 +95008,12 @@
       "qualified_name": "Meridian.Contracts.DirectLending.ActivateLoanRequest",
       "references": [],
       "source": {
-        "line": 244,
+        "line": 281,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 244,
+          "line": 281,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -95029,7 +95032,7 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "34e611fdcdebd557f89cfa436115fbc1ed0a538c0f0a8a9615207b00ac2b950b",
+      "fingerprint": "912d21a2236b1bb62c4283b0c07b72a3b46d59b9f484ba15fb525cf748555f07",
       "full_name": "Meridian.Contracts.DirectLending.AddCollateralRequest",
       "id": "Meridian.Contracts.DirectLending.AddCollateralRequest",
       "kind": "record",
@@ -95048,7 +95051,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 440,
+          "source_line": 477,
           "type": "DateOnly"
         },
         {
@@ -95062,7 +95065,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "CollateralType",
-          "source_line": 436,
+          "source_line": 473,
           "type": "CollateralType"
         },
         {
@@ -95076,7 +95079,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "CurrencyCode",
-          "source_line": 439,
+          "source_line": 476,
           "type": "CurrencyCode"
         },
         {
@@ -95090,7 +95093,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 437,
+          "source_line": 474,
           "type": "string"
         },
         {
@@ -95104,7 +95107,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 438,
+          "source_line": 475,
           "type": "decimal"
         }
       ],
@@ -95117,12 +95120,12 @@
         "Meridian.Contracts.DirectLending.CurrencyCode"
       ],
       "source": {
-        "line": 435,
+        "line": 472,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 435,
+          "line": 472,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -95141,7 +95144,7 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "7831e18a5bd7e12114e5a1d4cc435a91deaa0ccdfce2d5d44f2f08beef2771ad",
+      "fingerprint": "3ae6eca8af910bd389a47b0884dc11631cf53ff32d5e411dc00ec7096781a8c9",
       "full_name": "Meridian.Contracts.DirectLending.AmendLoanTermsRequest",
       "id": "Meridian.Contracts.DirectLending.AmendLoanTermsRequest",
       "kind": "record",
@@ -95160,7 +95163,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 242,
+          "source_line": 279,
           "type": "string"
         },
         {
@@ -95174,7 +95177,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DirectLendingTermsDto",
-          "source_line": 241,
+          "source_line": 278,
           "type": "DirectLendingTermsDto"
         }
       ],
@@ -95186,12 +95189,12 @@
         "Meridian.Contracts.DirectLending.DirectLendingTermsDto"
       ],
       "source": {
-        "line": 240,
+        "line": 277,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 240,
+          "line": 277,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -95215,29 +95218,29 @@
         {
           "explicit_value": true,
           "name": "Bullet",
-          "source_line": 70,
+          "source_line": 72,
           "value": "0"
         },
         {
           "explicit_value": true,
           "name": "InterestOnly",
-          "source_line": 71,
+          "source_line": 73,
           "value": "1"
         },
         {
           "explicit_value": true,
           "name": "StraightLine",
-          "source_line": 72,
+          "source_line": 74,
           "value": "2"
         },
         {
           "explicit_value": true,
           "name": "CustomSchedule",
-          "source_line": 73,
+          "source_line": 75,
           "value": "3"
         }
       ],
-      "fingerprint": "1c0335bea5976c964e93fcee6f2147696f24e8b0c163a9b322a61bc735041ba3",
+      "fingerprint": "63bb022dde7b4be8bd38da06bc2acccb8c4067b0bc026a208d815c10f53407dd",
       "full_name": "Meridian.Contracts.DirectLending.AmortizationType",
       "id": "Meridian.Contracts.DirectLending.AmortizationType",
       "kind": "enum",
@@ -95251,12 +95254,12 @@
       "qualified_name": "Meridian.Contracts.DirectLending.AmortizationType",
       "references": [],
       "source": {
-        "line": 68,
+        "line": 70,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 68,
+          "line": 70,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -95275,7 +95278,7 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "5a7340ff786a3e387d8a662034b87301ba93c8700e58f52d32c56e1e67aa4caa",
+      "fingerprint": "f8dc915b66c59583873af045f7c8c51f100dbb18ea855d2602e26a573cd26630",
       "full_name": "Meridian.Contracts.DirectLending.AmortizeDiscountPremiumRequest",
       "id": "Meridian.Contracts.DirectLending.AmortizeDiscountPremiumRequest",
       "kind": "record",
@@ -95294,7 +95297,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 469,
+          "source_line": 506,
           "type": "DateOnly"
         }
       ],
@@ -95304,12 +95307,12 @@
       "qualified_name": "Meridian.Contracts.DirectLending.AmortizeDiscountPremiumRequest",
       "references": [],
       "source": {
-        "line": 468,
+        "line": 505,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 468,
+          "line": 505,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -95425,7 +95428,7 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "bccd28366f194a2166ed63ba3ce8b268cf705cedfbf2399cfd2da48e7dc4f6e9",
+      "fingerprint": "613a10e024627a3d6d58d492a7b04722c73c5631660338bb8cc2e604ad5dacd5",
       "full_name": "Meridian.Contracts.DirectLending.ApplyPrincipalPaymentRequest",
       "id": "Meridian.Contracts.DirectLending.ApplyPrincipalPaymentRequest",
       "kind": "record",
@@ -95444,7 +95447,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 260,
+          "source_line": 297,
           "type": "decimal"
         },
         {
@@ -95458,7 +95461,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 261,
+          "source_line": 298,
           "type": "DateOnly"
         },
         {
@@ -95472,7 +95475,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 262,
+          "source_line": 299,
           "type": "string?"
         }
       ],
@@ -95482,12 +95485,12 @@
       "qualified_name": "Meridian.Contracts.DirectLending.ApplyPrincipalPaymentRequest",
       "references": [],
       "source": {
-        "line": 259,
+        "line": 296,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 259,
+          "line": 296,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -95506,7 +95509,7 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "d3ae6eacee24dae7dfa568f0807511cd41a5a03d6fb1abb20762965aa31d2edf",
+      "fingerprint": "3ed9e3c5b106b164400bfd7bf6f503421846ff7b3c3cea58643a65f02386050b",
       "full_name": "Meridian.Contracts.DirectLending.ApplyRateResetRequest",
       "id": "Meridian.Contracts.DirectLending.ApplyRateResetRequest",
       "kind": "record",
@@ -95525,7 +95528,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 254,
+          "source_line": 291,
           "type": "DateOnly"
         },
         {
@@ -95539,7 +95542,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 255,
+          "source_line": 292,
           "type": "decimal"
         },
         {
@@ -95553,7 +95556,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 257,
+          "source_line": 294,
           "type": "string?"
         },
         {
@@ -95567,7 +95570,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 256,
+          "source_line": 293,
           "type": "decimal?"
         }
       ],
@@ -95577,12 +95580,12 @@
       "qualified_name": "Meridian.Contracts.DirectLending.ApplyRateResetRequest",
       "references": [],
       "source": {
-        "line": 253,
+        "line": 290,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 253,
+          "line": 290,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -95777,7 +95780,7 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "935d550ff817bf0cda70664b139fd88b85d00d77010833273fc75afa8540edda",
+      "fingerprint": "503baa1e2267cdaec25a71c04dddc35fbcd3552bf2518a65ba0397a211ab8d8c",
       "full_name": "Meridian.Contracts.DirectLending.BookDrawdownRequest",
       "id": "Meridian.Contracts.DirectLending.BookDrawdownRequest",
       "kind": "record",
@@ -95796,7 +95799,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 248,
+          "source_line": 285,
           "type": "decimal"
         },
         {
@@ -95810,7 +95813,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 251,
+          "source_line": 288,
           "type": "string?"
         },
         {
@@ -95824,7 +95827,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 250,
+          "source_line": 287,
           "type": "DateOnly"
         },
         {
@@ -95838,7 +95841,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 249,
+          "source_line": 286,
           "type": "DateOnly"
         }
       ],
@@ -95848,12 +95851,12 @@
       "qualified_name": "Meridian.Contracts.DirectLending.BookDrawdownRequest",
       "references": [],
       "source": {
-        "line": 247,
+        "line": 284,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 247,
+          "line": 284,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -95872,7 +95875,7 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "8bb0eb8e1eae6252a945e2c81d01c00cca7888714f08796346d34a6035cc3d21",
+      "fingerprint": "766cdd0a9ff77d398afa3159e56101a482b69daf9dc57a4f767e9164eac42109",
       "full_name": "Meridian.Contracts.DirectLending.BorrowerInfoDto",
       "id": "Meridian.Contracts.DirectLending.BorrowerInfoDto",
       "kind": "record",
@@ -95891,7 +95894,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 85,
+          "source_line": 103,
           "type": "Guid"
         },
         {
@@ -95905,7 +95908,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 86,
+          "source_line": 104,
           "type": "string"
         },
         {
@@ -95919,7 +95922,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 87,
+          "source_line": 105,
           "type": "Guid?"
         }
       ],
@@ -95929,12 +95932,12 @@
       "qualified_name": "Meridian.Contracts.DirectLending.BorrowerInfoDto",
       "references": [],
       "source": {
-        "line": 84,
+        "line": 102,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 84,
+          "line": 102,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -96162,7 +96165,7 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "0fc9396a4c3b1735cd78dc00c04ed8ba65fa67c613e1d0912909374bd139135b",
+      "fingerprint": "5cf4d09fde72de943886e5af466b17473422d7134a3617bc0abb71dbf1f25b86",
       "full_name": "Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest",
       "id": "Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest",
       "kind": "record",
@@ -96181,7 +96184,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 269,
+          "source_line": 306,
           "type": "DateOnly"
         },
         {
@@ -96195,7 +96198,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 270,
+          "source_line": 307,
           "type": "string?"
         },
         {
@@ -96209,7 +96212,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 268,
+          "source_line": 305,
           "type": "decimal"
         }
       ],
@@ -96219,12 +96222,12 @@
       "qualified_name": "Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest",
       "references": [],
       "source": {
-        "line": 267,
+        "line": 304,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 267,
+          "line": 304,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -96243,7 +96246,7 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "f6c290fe7c31808c835408d8f0e64b92b4ced5a831be253cb72b750499267b60",
+      "fingerprint": "da2b94c6874a69959f0805914d11f9af0ec2649d8873f8503cc90d49cb9475f8",
       "full_name": "Meridian.Contracts.DirectLending.CollateralDto",
       "id": "Meridian.Contracts.DirectLending.CollateralDto",
       "kind": "record",
@@ -96262,7 +96265,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 82,
+          "source_line": 100,
           "type": "DateOnly"
         },
         {
@@ -96276,7 +96279,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 77,
+          "source_line": 95,
           "type": "Guid"
         },
         {
@@ -96290,7 +96293,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "CollateralType",
-          "source_line": 78,
+          "source_line": 96,
           "type": "CollateralType"
         },
         {
@@ -96304,7 +96307,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "CurrencyCode",
-          "source_line": 81,
+          "source_line": 99,
           "type": "CurrencyCode"
         },
         {
@@ -96318,7 +96321,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 79,
+          "source_line": 97,
           "type": "string"
         },
         {
@@ -96332,7 +96335,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 80,
+          "source_line": 98,
           "type": "decimal"
         }
       ],
@@ -96345,12 +96348,12 @@
         "Meridian.Contracts.DirectLending.CurrencyCode"
       ],
       "source": {
-        "line": 76,
+        "line": 94,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 76,
+          "line": 94,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -96374,41 +96377,41 @@
         {
           "explicit_value": true,
           "name": "RealEstate",
-          "source_line": 35,
+          "source_line": 37,
           "value": "0"
         },
         {
           "explicit_value": true,
           "name": "Equipment",
-          "source_line": 36,
+          "source_line": 38,
           "value": "1"
         },
         {
           "explicit_value": true,
           "name": "Inventory",
-          "source_line": 37,
+          "source_line": 39,
           "value": "2"
         },
         {
           "explicit_value": true,
           "name": "AccountsReceivable",
-          "source_line": 38,
+          "source_line": 40,
           "value": "3"
         },
         {
           "explicit_value": true,
           "name": "FinancialInstrument",
-          "source_line": 39,
+          "source_line": 41,
           "value": "4"
         },
         {
           "explicit_value": true,
           "name": "Other",
-          "source_line": 40,
+          "source_line": 42,
           "value": "5"
         }
       ],
-      "fingerprint": "b5f02590c33d0b3c2871565400a37a543ad1de99c12977719a65c82ff0c4db98",
+      "fingerprint": "471dd4e97d1665ecc6a58929cbc09bb968bfc7daa417b14329a14b6840fe5181",
       "full_name": "Meridian.Contracts.DirectLending.CollateralType",
       "id": "Meridian.Contracts.DirectLending.CollateralType",
       "kind": "enum",
@@ -96422,12 +96425,12 @@
       "qualified_name": "Meridian.Contracts.DirectLending.CollateralType",
       "references": [],
       "source": {
-        "line": 33,
+        "line": 35,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 33,
+          "line": 35,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -96446,7 +96449,7 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "ab6962a455d91fd7028268f751810e3681b3a3bafe86aed15103fa5f856b3ab9",
+      "fingerprint": "2790ab4f69d976eea29c8a966a7ce18f52b495132eef3e2df3d93b277a9cfec8",
       "full_name": "Meridian.Contracts.DirectLending.CreateLoanRequest",
       "id": "Meridian.Contracts.DirectLending.CreateLoanRequest",
       "kind": "record",
@@ -96465,7 +96468,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "BorrowerInfoDto",
-          "source_line": 236,
+          "source_line": 273,
           "type": "BorrowerInfoDto"
         },
         {
@@ -96479,7 +96482,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 237,
+          "source_line": 274,
           "type": "DateOnly"
         },
         {
@@ -96493,7 +96496,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 235,
+          "source_line": 272,
           "type": "string"
         },
         {
@@ -96507,7 +96510,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 234,
+          "source_line": 271,
           "type": "Guid?"
         },
         {
@@ -96521,7 +96524,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DirectLendingTermsDto",
-          "source_line": 238,
+          "source_line": 275,
           "type": "DirectLendingTermsDto"
         }
       ],
@@ -96534,12 +96537,12 @@
         "Meridian.Contracts.DirectLending.DirectLendingTermsDto"
       ],
       "source": {
-        "line": 233,
+        "line": 270,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 233,
+          "line": 270,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -96731,35 +96734,35 @@
         {
           "explicit_value": true,
           "name": "USD",
-          "source_line": 5,
+          "source_line": 7,
           "value": "0"
         },
         {
           "explicit_value": true,
           "name": "EUR",
-          "source_line": 6,
+          "source_line": 8,
           "value": "1"
         },
         {
           "explicit_value": true,
           "name": "GBP",
-          "source_line": 7,
+          "source_line": 9,
           "value": "2"
         },
         {
           "explicit_value": true,
           "name": "JPY",
-          "source_line": 8,
+          "source_line": 10,
           "value": "3"
         },
         {
           "explicit_value": true,
           "name": "Other",
-          "source_line": 9,
+          "source_line": 11,
           "value": "4"
         }
       ],
-      "fingerprint": "b7adf5ee9e19de47079d9d9512d2d784c2e0a184a2b333c62e78fe93b55dcf9e",
+      "fingerprint": "2ec0042634a38b4442eeb60a6c65e4c4a30b7e2fdba4113ef6ca4b9103bb6083",
       "full_name": "Meridian.Contracts.DirectLending.CurrencyCode",
       "id": "Meridian.Contracts.DirectLending.CurrencyCode",
       "kind": "enum",
@@ -96773,12 +96776,12 @@
       "qualified_name": "Meridian.Contracts.DirectLending.CurrencyCode",
       "references": [],
       "source": {
-        "line": 3,
+        "line": 5,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 3,
+          "line": 5,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -96797,7 +96800,7 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "6e53898f5182cf1c53339636188084e9235c5dcf4d389ec402e55c90b1a640b0",
+      "fingerprint": "01b3be80a4249d743851a2a45b6a1a7de195d1e1d2fe8c7568585aeb1876a05c",
       "full_name": "Meridian.Contracts.DirectLending.DailyAccrualEntryDto",
       "id": "Meridian.Contracts.DirectLending.DailyAccrualEntryDto",
       "kind": "record",
@@ -96816,7 +96819,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 206,
+          "source_line": 243,
           "type": "DateOnly"
         },
         {
@@ -96830,7 +96833,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 205,
+          "source_line": 242,
           "type": "Guid"
         },
         {
@@ -96844,7 +96847,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 210,
+          "source_line": 247,
           "type": "decimal"
         },
         {
@@ -96858,7 +96861,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 208,
+          "source_line": 245,
           "type": "decimal"
         },
         {
@@ -96872,7 +96875,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 207,
+          "source_line": 244,
           "type": "decimal"
         },
         {
@@ -96886,7 +96889,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 209,
+          "source_line": 246,
           "type": "decimal"
         },
         {
@@ -96901,7 +96904,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 212,
+          "source_line": 249,
           "type": "decimal"
         },
         {
@@ -96915,7 +96918,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 211,
+          "source_line": 248,
           "type": "DateTimeOffset"
         }
       ],
@@ -96925,12 +96928,12 @@
       "qualified_name": "Meridian.Contracts.DirectLending.DailyAccrualEntryDto",
       "references": [],
       "source": {
-        "line": 204,
+        "line": 241,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 204,
+          "line": 241,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -96954,29 +96957,29 @@
         {
           "explicit_value": true,
           "name": "Act360",
-          "source_line": 27,
+          "source_line": 29,
           "value": "0"
         },
         {
           "explicit_value": true,
           "name": "Act365F",
-          "source_line": 28,
+          "source_line": 30,
           "value": "1"
         },
         {
           "explicit_value": true,
           "name": "Thirty360",
-          "source_line": 29,
+          "source_line": 31,
           "value": "2"
         },
         {
           "explicit_value": true,
           "name": "ActualActualISDA",
-          "source_line": 30,
+          "source_line": 32,
           "value": "3"
         }
       ],
-      "fingerprint": "16faead1cf8210ec215f851683abf5ca252427ac6e129571683c420ab2e1bc8e",
+      "fingerprint": "b84c6e01c577d0a56ccdd0a016e49099428402d3ca8def1ff07d10ce6d80bca4",
       "full_name": "Meridian.Contracts.DirectLending.DayCountBasis",
       "id": "Meridian.Contracts.DirectLending.DayCountBasis",
       "kind": "enum",
@@ -96990,12 +96993,12 @@
       "qualified_name": "Meridian.Contracts.DirectLending.DayCountBasis",
       "references": [],
       "source": {
-        "line": 25,
+        "line": 27,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 25,
+          "line": 27,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -97014,7 +97017,7 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "a23a39c935358df23528b6c9a1ec4c72f8ac5bb834bde75dc229520bc849af0c",
+      "fingerprint": "737383026773b4f5ed56e1879c8e45e18f97d0e10b02410d205feea515113618",
       "full_name": "Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope",
       "id": "Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope",
       "kind": "record",
@@ -97033,7 +97036,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "TCommand",
-          "source_line": 97,
+          "source_line": 115,
           "type": "TCommand"
         },
         {
@@ -97047,7 +97050,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DirectLendingCommandMetadataDto?",
-          "source_line": 98,
+          "source_line": 116,
           "type": "DirectLendingCommandMetadataDto?"
         }
       ],
@@ -97059,12 +97062,12 @@
         "Meridian.Contracts.DirectLending.DirectLendingCommandMetadataDto"
       ],
       "source": {
-        "line": 96,
+        "line": 114,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 96,
+          "line": 114,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -97211,7 +97214,7 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "ff1f0dc550acf4b0f9bd9147c03c878af24a6e0e31a8c7f428b1bd5adce0bfec",
+      "fingerprint": "9f8eb6c11df960a9a7ca80fd3e87ec1501a2ca75f7cad05f1aadba44dcbfa667",
       "full_name": "Meridian.Contracts.DirectLending.DirectLendingCommandMetadataDto",
       "id": "Meridian.Contracts.DirectLending.DirectLendingCommandMetadataDto",
       "kind": "record",
@@ -97230,7 +97233,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 92,
+          "source_line": 110,
           "type": "Guid?"
         },
         {
@@ -97244,7 +97247,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 90,
+          "source_line": 108,
           "type": "Guid?"
         },
         {
@@ -97258,7 +97261,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 91,
+          "source_line": 109,
           "type": "Guid?"
         },
         {
@@ -97272,7 +97275,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 94,
+          "source_line": 112,
           "type": "bool"
         },
         {
@@ -97286,7 +97289,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 93,
+          "source_line": 111,
           "type": "string?"
         }
       ],
@@ -97296,12 +97299,12 @@
       "qualified_name": "Meridian.Contracts.DirectLending.DirectLendingCommandMetadataDto",
       "references": [],
       "source": {
-        "line": 89,
+        "line": 107,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 89,
+          "line": 107,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -97456,7 +97459,7 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "52e61f01e3ba41aef9d64c4faab0d8695fefae805036cb5a5cdf526c67c3d775",
+      "fingerprint": "b4c077547e6821fd02a5115fb8a6860a4f4d847842a7771d5324112b752817f5",
       "full_name": "Meridian.Contracts.DirectLending.DirectLendingOperationsCalendarItemDto",
       "id": "Meridian.Contracts.DirectLending.DirectLendingOperationsCalendarItemDto",
       "kind": "record",
@@ -97475,7 +97478,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 382,
+          "source_line": 419,
           "type": "string"
         },
         {
@@ -97489,7 +97492,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 380,
+          "source_line": 417,
           "type": "DateOnly"
         },
         {
@@ -97503,7 +97506,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 378,
+          "source_line": 415,
           "type": "string"
         },
         {
@@ -97517,130 +97520,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 379,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "LoanId",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "Guid",
-          "source_line": 377,
-          "type": "Guid"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Route",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 383,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Status",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 381,
-          "type": "string"
-        }
-      ],
-      "name": "DirectLendingOperationsCalendarItemDto",
-      "namespace": "Meridian.Contracts.DirectLending",
-      "partial": false,
-      "qualified_name": "Meridian.Contracts.DirectLending.DirectLendingOperationsCalendarItemDto",
-      "references": [],
-      "source": {
-        "line": 376,
-        "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
-      },
-      "sources": [
-        {
-          "line": 376,
-          "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
-        }
-      ],
-      "type_parameters": []
-    },
-    {
-      "base_types": [],
-      "classification": "dto",
-      "containing_type": null,
-      "contract_sets": [
-        "all-contracts",
-        "direct-lending-contracts"
-      ],
-      "diagram": true,
-      "diagram_contract_sets": [
-        "direct-lending-contracts"
-      ],
-      "enum_members": [],
-      "fingerprint": "393d55849032c2d1e17c749acfab4441063f7a0ad316cd1410d86690eb6703d7",
-      "full_name": "Meridian.Contracts.DirectLending.DirectLendingOperationsCloseBlockerDto",
-      "id": "Meridian.Contracts.DirectLending.DirectLendingOperationsCloseBlockerDto",
-      "kind": "record",
-      "mapped_schemas": [
-        "security_master"
-      ],
-      "members": [
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "BlockerType",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
           "source_line": 416,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Detail",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 418,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "FacilityName",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 415,
           "type": "string"
         },
         {
@@ -97668,7 +97548,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 419,
+          "source_line": 420,
           "type": "string"
         },
         {
@@ -97678,18 +97558,18 @@
           "json_ignored": false,
           "json_name": null,
           "key_type": null,
-          "name": "Severity",
+          "name": "Status",
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 417,
+          "source_line": 418,
           "type": "string"
         }
       ],
-      "name": "DirectLendingOperationsCloseBlockerDto",
+      "name": "DirectLendingOperationsCalendarItemDto",
       "namespace": "Meridian.Contracts.DirectLending",
       "partial": false,
-      "qualified_name": "Meridian.Contracts.DirectLending.DirectLendingOperationsCloseBlockerDto",
+      "qualified_name": "Meridian.Contracts.DirectLending.DirectLendingOperationsCalendarItemDto",
       "references": [],
       "source": {
         "line": 413,
@@ -97716,7 +97596,130 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "871cc2835eeaab67542e460a7633175390c7a0d7511484a94b882cbab5e036af",
+      "fingerprint": "340679496b524510022f122b9932ae1b94272cc2a1484c5430d1aad988bf958f",
+      "full_name": "Meridian.Contracts.DirectLending.DirectLendingOperationsCloseBlockerDto",
+      "id": "Meridian.Contracts.DirectLending.DirectLendingOperationsCloseBlockerDto",
+      "kind": "record",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "BlockerType",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 453,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Detail",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 455,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "FacilityName",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 452,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "LoanId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 451,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Route",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 456,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Severity",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 454,
+          "type": "string"
+        }
+      ],
+      "name": "DirectLendingOperationsCloseBlockerDto",
+      "namespace": "Meridian.Contracts.DirectLending",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.DirectLending.DirectLendingOperationsCloseBlockerDto",
+      "references": [],
+      "source": {
+        "line": 450,
+        "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 450,
+          "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "direct-lending-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "direct-lending-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "49823d23fcca9aca5318754b7b8fa23c06aa790baddca9c04e1eed49a311d2e2",
       "full_name": "Meridian.Contracts.DirectLending.DirectLendingOperationsCollateralCoverageDto",
       "id": "Meridian.Contracts.DirectLending.DirectLendingOperationsCollateralCoverageDto",
       "kind": "record",
@@ -97735,7 +97738,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 358,
+          "source_line": 395,
           "type": "decimal"
         },
         {
@@ -97749,7 +97752,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 359,
+          "source_line": 396,
           "type": "decimal"
         },
         {
@@ -97763,7 +97766,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 361,
+          "source_line": 398,
           "type": "string"
         },
         {
@@ -97777,7 +97780,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 356,
+          "source_line": 393,
           "type": "string"
         },
         {
@@ -97791,7 +97794,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 355,
+          "source_line": 392,
           "type": "Guid"
         },
         {
@@ -97805,7 +97808,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 357,
+          "source_line": 394,
           "type": "decimal"
         },
         {
@@ -97819,7 +97822,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 362,
+          "source_line": 399,
           "type": "string"
         },
         {
@@ -97833,7 +97836,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 360,
+          "source_line": 397,
           "type": "string"
         }
       ],
@@ -97843,12 +97846,12 @@
       "qualified_name": "Meridian.Contracts.DirectLending.DirectLendingOperationsCollateralCoverageDto",
       "references": [],
       "source": {
-        "line": 354,
+        "line": 391,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 354,
+          "line": 391,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -97867,7 +97870,7 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "c085ea4b31341511a61b050d73cd0594d36e9652f192ec205a5d571cef7663a0",
+      "fingerprint": "11defb26d3722b2996471aa431db5e993451856b6d4b447cc45cb24f74f7d839",
       "full_name": "Meridian.Contracts.DirectLending.DirectLendingOperationsEvidenceItemDto",
       "id": "Meridian.Contracts.DirectLending.DirectLendingOperationsEvidenceItemDto",
       "kind": "record",
@@ -97886,7 +97889,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 388,
+          "source_line": 425,
           "type": "string"
         },
         {
@@ -97900,7 +97903,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 387,
+          "source_line": 424,
           "type": "string"
         },
         {
@@ -97914,7 +97917,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 389,
+          "source_line": 426,
           "type": "string"
         },
         {
@@ -97928,7 +97931,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 386,
+          "source_line": 423,
           "type": "Guid"
         },
         {
@@ -97942,7 +97945,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 391,
+          "source_line": 428,
           "type": "string"
         },
         {
@@ -97956,7 +97959,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 390,
+          "source_line": 427,
           "type": "string"
         }
       ],
@@ -97966,12 +97969,12 @@
       "qualified_name": "Meridian.Contracts.DirectLending.DirectLendingOperationsEvidenceItemDto",
       "references": [],
       "source": {
-        "line": 385,
+        "line": 422,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 385,
+          "line": 422,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -97990,7 +97993,7 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "140907291bf46a8e1377029783fd33d27a91da45d731ae37789fee0b318c4896",
+      "fingerprint": "e0fbc3ad46e90c0ea28b37b241bd76cd062eb2888d918b5daf8b5cb761c4d3e3",
       "full_name": "Meridian.Contracts.DirectLending.DirectLendingOperationsJournalPostureDto",
       "id": "Meridian.Contracts.DirectLending.DirectLendingOperationsJournalPostureDto",
       "kind": "record",
@@ -98009,7 +98012,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 399,
+          "source_line": 436,
           "type": "string"
         },
         {
@@ -98023,7 +98026,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 396,
+          "source_line": 433,
           "type": "int"
         },
         {
@@ -98037,7 +98040,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 395,
+          "source_line": 432,
           "type": "string"
         },
         {
@@ -98051,7 +98054,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 394,
+          "source_line": 431,
           "type": "Guid"
         },
         {
@@ -98065,7 +98068,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 397,
+          "source_line": 434,
           "type": "int"
         },
         {
@@ -98079,7 +98082,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 400,
+          "source_line": 437,
           "type": "string"
         },
         {
@@ -98093,7 +98096,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 398,
+          "source_line": 435,
           "type": "string"
         }
       ],
@@ -98103,12 +98106,12 @@
       "qualified_name": "Meridian.Contracts.DirectLending.DirectLendingOperationsJournalPostureDto",
       "references": [],
       "source": {
-        "line": 393,
+        "line": 430,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 393,
+          "line": 430,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -98127,7 +98130,7 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "927178dd4fd9c3af46b73ae77c572a4ec81b10ce8e0fa7accb70272ee7f228d0",
+      "fingerprint": "492af83f6cddf29a426ea16e499237422e6a1cb8e54f92f4f83ad56ad4fc17ff",
       "full_name": "Meridian.Contracts.DirectLending.DirectLendingOperationsLoanHealthDto",
       "id": "Meridian.Contracts.DirectLending.DirectLendingOperationsLoanHealthDto",
       "kind": "record",
@@ -98146,7 +98149,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 339,
+          "source_line": 376,
           "type": "string"
         },
         {
@@ -98160,7 +98163,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 342,
+          "source_line": 379,
           "type": "decimal"
         },
         {
@@ -98174,7 +98177,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "CurrencyCode",
-          "source_line": 341,
+          "source_line": 378,
           "type": "CurrencyCode"
         },
         {
@@ -98188,7 +98191,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 338,
+          "source_line": 375,
           "type": "string"
         },
         {
@@ -98202,7 +98205,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 350,
+          "source_line": 387,
           "type": "string"
         },
         {
@@ -98216,7 +98219,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 349,
+          "source_line": 386,
           "type": "string"
         },
         {
@@ -98230,7 +98233,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 344,
+          "source_line": 381,
           "type": "decimal"
         },
         {
@@ -98244,7 +98247,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateOnly?",
-          "source_line": 347,
+          "source_line": 384,
           "type": "DateOnly?"
         },
         {
@@ -98258,7 +98261,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateOnly?",
-          "source_line": 348,
+          "source_line": 385,
           "type": "DateOnly?"
         },
         {
@@ -98272,7 +98275,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 337,
+          "source_line": 374,
           "type": "Guid"
         },
         {
@@ -98286,7 +98289,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 346,
+          "source_line": 383,
           "type": "DateOnly"
         },
         {
@@ -98300,7 +98303,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 345,
+          "source_line": 382,
           "type": "decimal"
         },
         {
@@ -98314,7 +98317,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 343,
+          "source_line": 380,
           "type": "decimal"
         },
         {
@@ -98328,7 +98331,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 351,
+          "source_line": 388,
           "type": "string"
         },
         {
@@ -98343,7 +98346,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 352,
+          "source_line": 389,
           "type": "Guid?"
         },
         {
@@ -98357,7 +98360,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "LoanStatus",
-          "source_line": 340,
+          "source_line": 377,
           "type": "LoanStatus"
         }
       ],
@@ -98370,12 +98373,12 @@
         "Meridian.Contracts.DirectLending.LoanStatus"
       ],
       "source": {
-        "line": 336,
+        "line": 373,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 336,
+          "line": 373,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -98394,7 +98397,7 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "4901ef7e5573f5f8914810b7267bab77783d0af4877bd5f578ddcd9c01c0b6a4",
+      "fingerprint": "fc0437c58cc3b32dcb6fd24b698110b3f876ec984ea91d582e7cd94c9bcd370b",
       "full_name": "Meridian.Contracts.DirectLending.DirectLendingOperationsReadModelDto",
       "id": "Meridian.Contracts.DirectLending.DirectLendingOperationsReadModelDto",
       "kind": "record",
@@ -98413,7 +98416,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 322,
+          "source_line": 359,
           "type": "DateTimeOffset"
         },
         {
@@ -98427,7 +98430,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<DirectLendingOperationsCloseBlockerDto>",
-          "source_line": 332,
+          "source_line": 369,
           "type": "IReadOnlyList<DirectLendingOperationsCloseBlockerDto>"
         },
         {
@@ -98441,7 +98444,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<DirectLendingOperationsCollateralCoverageDto>",
-          "source_line": 326,
+          "source_line": 363,
           "type": "IReadOnlyList<DirectLendingOperationsCollateralCoverageDto>"
         },
         {
@@ -98455,7 +98458,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<DirectLendingOperationsStatusPostureDto>",
-          "source_line": 327,
+          "source_line": 364,
           "type": "IReadOnlyList<DirectLendingOperationsStatusPostureDto>"
         },
         {
@@ -98469,7 +98472,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<DirectLendingOperationsEvidenceItemDto>",
-          "source_line": 329,
+          "source_line": 366,
           "type": "IReadOnlyList<DirectLendingOperationsEvidenceItemDto>"
         },
         {
@@ -98483,7 +98486,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<DirectLendingOperationsJournalPostureDto>",
-          "source_line": 330,
+          "source_line": 367,
           "type": "IReadOnlyList<DirectLendingOperationsJournalPostureDto>"
         },
         {
@@ -98498,7 +98501,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 334,
+          "source_line": 371,
           "type": "Guid?"
         },
         {
@@ -98512,7 +98515,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<DirectLendingOperationsLoanHealthDto>",
-          "source_line": 325,
+          "source_line": 362,
           "type": "IReadOnlyList<DirectLendingOperationsLoanHealthDto>"
         },
         {
@@ -98526,7 +98529,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<DirectLendingOperationsReconciliationExceptionDto>",
-          "source_line": 331,
+          "source_line": 368,
           "type": "IReadOnlyList<DirectLendingOperationsReconciliationExceptionDto>"
         },
         {
@@ -98541,7 +98544,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<DirectLendingOperationsServicerStatementDto>?",
-          "source_line": 333,
+          "source_line": 370,
           "type": "IReadOnlyList<DirectLendingOperationsServicerStatementDto>?"
         },
         {
@@ -98555,7 +98558,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<DirectLendingOperationsCalendarItemDto>",
-          "source_line": 328,
+          "source_line": 365,
           "type": "IReadOnlyList<DirectLendingOperationsCalendarItemDto>"
         },
         {
@@ -98569,7 +98572,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 323,
+          "source_line": 360,
           "type": "string"
         },
         {
@@ -98583,7 +98586,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 324,
+          "source_line": 361,
           "type": "string"
         }
       ],
@@ -98603,12 +98606,12 @@
         "Meridian.Contracts.DirectLending.DirectLendingOperationsStatusPostureDto"
       ],
       "source": {
-        "line": 321,
+        "line": 358,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 321,
+          "line": 358,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -98627,7 +98630,7 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "8373f0d225f0db829f39fa61f782139e1502245937a9d086b65ead5a669c7a14",
+      "fingerprint": "8f79e77038b7a20a8178c3c574169ad4668838a07bd6fd5f68ca9c837acfab1d",
       "full_name": "Meridian.Contracts.DirectLending.DirectLendingOperationsReconciliationExceptionDto",
       "id": "Meridian.Contracts.DirectLending.DirectLendingOperationsReconciliationExceptionDto",
       "kind": "record",
@@ -98646,7 +98649,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 409,
+          "source_line": 446,
           "type": "string"
         },
         {
@@ -98660,7 +98663,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 410,
+          "source_line": 447,
           "type": "string"
         },
         {
@@ -98674,7 +98677,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 407,
+          "source_line": 444,
           "type": "decimal"
         },
         {
@@ -98688,7 +98691,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 403,
+          "source_line": 440,
           "type": "Guid"
         },
         {
@@ -98702,7 +98705,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 406,
+          "source_line": 443,
           "type": "string"
         },
         {
@@ -98716,7 +98719,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 405,
+          "source_line": 442,
           "type": "string"
         },
         {
@@ -98730,7 +98733,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 404,
+          "source_line": 441,
           "type": "Guid"
         },
         {
@@ -98744,7 +98747,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 411,
+          "source_line": 448,
           "type": "string"
         },
         {
@@ -98758,7 +98761,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 408,
+          "source_line": 445,
           "type": "string"
         }
       ],
@@ -98768,12 +98771,12 @@
       "qualified_name": "Meridian.Contracts.DirectLending.DirectLendingOperationsReconciliationExceptionDto",
       "references": [],
       "source": {
-        "line": 402,
+        "line": 439,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 402,
+          "line": 439,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -98792,7 +98795,7 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "0fb3ff455a52e9caf6fd58f7e0c956738824bd214b769972a919fbfd5437fa31",
+      "fingerprint": "ef73c7b75b5ac3e8c8244fe4b713335b0bb2ad227bb755f998402d418025101f",
       "full_name": "Meridian.Contracts.DirectLending.DirectLendingOperationsServicerStatementDto",
       "id": "Meridian.Contracts.DirectLending.DirectLendingOperationsServicerStatementDto",
       "kind": "record",
@@ -98811,7 +98814,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 431,
+          "source_line": 468,
           "type": "int"
         },
         {
@@ -98825,7 +98828,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 422,
+          "source_line": 459,
           "type": "Guid"
         },
         {
@@ -98839,7 +98842,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 433,
+          "source_line": 470,
           "type": "string"
         },
         {
@@ -98853,7 +98856,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 432,
+          "source_line": 469,
           "type": "string"
         },
         {
@@ -98867,7 +98870,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 429,
+          "source_line": 466,
           "type": "int"
         },
         {
@@ -98881,7 +98884,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "ServicerStatementKind",
-          "source_line": 423,
+          "source_line": 460,
           "type": "ServicerStatementKind"
         },
         {
@@ -98895,7 +98898,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 430,
+          "source_line": 467,
           "type": "int"
         },
         {
@@ -98909,7 +98912,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 427,
+          "source_line": 464,
           "type": "int"
         },
         {
@@ -98923,7 +98926,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 424,
+          "source_line": 461,
           "type": "string"
         },
         {
@@ -98937,7 +98940,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 425,
+          "source_line": 462,
           "type": "DateOnly"
         },
         {
@@ -98951,7 +98954,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 426,
+          "source_line": 463,
           "type": "string"
         },
         {
@@ -98965,7 +98968,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 428,
+          "source_line": 465,
           "type": "int"
         }
       ],
@@ -98977,12 +98980,12 @@
         "Meridian.Contracts.DirectLending.ServicerStatementKind"
       ],
       "source": {
-        "line": 421,
+        "line": 458,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 421,
+          "line": 458,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -99001,7 +99004,7 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "a48d104f9eb765e842a1c358f57fd580fe3a00f289bae2cb32bd9624047b8e9e",
+      "fingerprint": "878c998a60e59695ea2c48cc8b93c7becec7fff01469cbf1be55c9fdbfdd5cbe",
       "full_name": "Meridian.Contracts.DirectLending.DirectLendingOperationsStatusPostureDto",
       "id": "Meridian.Contracts.DirectLending.DirectLendingOperationsStatusPostureDto",
       "kind": "record",
@@ -99020,7 +99023,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "AmortizationType",
-          "source_line": 370,
+          "source_line": 407,
           "type": "AmortizationType"
         },
         {
@@ -99034,7 +99037,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 368,
+          "source_line": 405,
           "type": "string"
         },
         {
@@ -99048,7 +99051,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 372,
+          "source_line": 409,
           "type": "string"
         },
         {
@@ -99062,7 +99065,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 366,
+          "source_line": 403,
           "type": "string"
         },
         {
@@ -99076,7 +99079,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 365,
+          "source_line": 402,
           "type": "Guid"
         },
         {
@@ -99090,7 +99093,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "LoanStatus",
-          "source_line": 367,
+          "source_line": 404,
           "type": "LoanStatus"
         },
         {
@@ -99104,7 +99107,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 369,
+          "source_line": 406,
           "type": "bool"
         },
         {
@@ -99118,7 +99121,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 371,
+          "source_line": 408,
           "type": "string"
         },
         {
@@ -99132,7 +99135,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 373,
+          "source_line": 410,
           "type": "string"
         },
         {
@@ -99147,7 +99150,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 374,
+          "source_line": 411,
           "type": "Guid?"
         }
       ],
@@ -99160,12 +99163,12 @@
         "Meridian.Contracts.DirectLending.LoanStatus"
       ],
       "source": {
-        "line": 364,
+        "line": 401,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 364,
+          "line": 401,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -99637,7 +99640,7 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "b0a7d2155d685c5ae64e256fe57c9fc680d22cd14ec2b0354b9889b1beb8de1e",
+      "fingerprint": "f0d24cb665d4a351700940700a399643a86104076811909f2f9d53cbd9d350f3",
       "full_name": "Meridian.Contracts.DirectLending.DirectLendingSecurityMasterReferenceDto",
       "id": "Meridian.Contracts.DirectLending.DirectLendingSecurityMasterReferenceDto",
       "kind": "record",
@@ -99656,7 +99659,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 130,
+          "source_line": 167,
           "type": "string"
         },
         {
@@ -99670,7 +99673,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 131,
+          "source_line": 168,
           "type": "string"
         },
         {
@@ -99684,7 +99687,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 129,
+          "source_line": 166,
           "type": "string"
         },
         {
@@ -99698,7 +99701,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 127,
+          "source_line": 164,
           "type": "Guid"
         },
         {
@@ -99713,7 +99716,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 132,
+          "source_line": 169,
           "type": "string"
         },
         {
@@ -99727,7 +99730,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 128,
+          "source_line": 165,
           "type": "string"
         }
       ],
@@ -99737,12 +99740,12 @@
       "qualified_name": "Meridian.Contracts.DirectLending.DirectLendingSecurityMasterReferenceDto",
       "references": [],
       "source": {
-        "line": 126,
+        "line": 163,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 126,
+          "line": 163,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -99761,7 +99764,7 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "a58336a69c0890daf28caad53c252187c9db13fb945c5d7826bd03fdc037b92f",
+      "fingerprint": "053cbae276c2cb7af5a36acd10ad4f0c7951588d6b214d5cfa6c66db1dddf7f3",
       "full_name": "Meridian.Contracts.DirectLending.DirectLendingTermsDto",
       "id": "Meridian.Contracts.DirectLending.DirectLendingTermsDto",
       "kind": "record",
@@ -99780,7 +99783,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "AmortizationType",
-          "source_line": 113,
+          "source_line": 131,
           "type": "AmortizationType"
         },
         {
@@ -99794,7 +99797,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "CurrencyCode",
-          "source_line": 104,
+          "source_line": 122,
           "type": "CurrencyCode"
         },
         {
@@ -99808,7 +99811,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 110,
+          "source_line": 128,
           "type": "decimal?"
         },
         {
@@ -99822,7 +99825,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 103,
+          "source_line": 121,
           "type": "decimal"
         },
         {
@@ -99836,7 +99839,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 114,
+          "source_line": 132,
           "type": "decimal?"
         },
         {
@@ -99850,7 +99853,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 117,
+          "source_line": 135,
           "type": "string?"
         },
         {
@@ -99864,7 +99867,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DayCountBasis",
-          "source_line": 111,
+          "source_line": 129,
           "type": "DayCountBasis"
         },
         {
@@ -99878,7 +99881,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 115,
+          "source_line": 133,
           "type": "decimal?"
         },
         {
@@ -99893,7 +99896,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 121,
+          "source_line": 139,
           "type": "decimal?"
         },
         {
@@ -99908,8 +99911,22 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 120,
+          "source_line": 138,
           "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "ExcessPaymentApplication",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "ExcessPaymentApplication?",
+          "source_line": 155,
+          "type": "ExcessPaymentApplication?"
         },
         {
           "collection": false,
@@ -99922,7 +99939,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 106,
+          "source_line": 124,
           "type": "decimal?"
         },
         {
@@ -99936,7 +99953,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 109,
+          "source_line": 127,
           "type": "decimal?"
         },
         {
@@ -99951,7 +99968,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "int?",
-          "source_line": 119,
+          "source_line": 137,
           "type": "int?"
         },
         {
@@ -99965,7 +99982,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 107,
+          "source_line": 125,
           "type": "string?"
         },
         {
@@ -99980,7 +99997,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 118,
+          "source_line": 136,
           "type": "int"
         },
         {
@@ -99994,7 +100011,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 102,
+          "source_line": 120,
           "type": "DateOnly"
         },
         {
@@ -100008,7 +100025,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 101,
+          "source_line": 119,
           "type": "DateOnly"
         },
         {
@@ -100022,7 +100039,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "PaymentFrequency",
-          "source_line": 112,
+          "source_line": 130,
           "type": "PaymentFrequency"
         },
         {
@@ -100036,7 +100053,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 116,
+          "source_line": 134,
           "type": "bool"
         },
         {
@@ -100051,7 +100068,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 122,
+          "source_line": 140,
           "type": "decimal?"
         },
         {
@@ -100066,7 +100083,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 123,
+          "source_line": 141,
           "type": "decimal?"
         },
         {
@@ -100080,7 +100097,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "RateTypeKind",
-          "source_line": 105,
+          "source_line": 123,
           "type": "RateTypeKind"
         },
         {
@@ -100095,7 +100112,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DirectLendingSecurityMasterReferenceDto?",
-          "source_line": 124,
+          "source_line": 142,
           "type": "DirectLendingSecurityMasterReferenceDto?"
         },
         {
@@ -100109,7 +100126,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 108,
+          "source_line": 126,
           "type": "decimal?"
         }
       ],
@@ -100122,16 +100139,17 @@
         "Meridian.Contracts.DirectLending.CurrencyCode",
         "Meridian.Contracts.DirectLending.DayCountBasis",
         "Meridian.Contracts.DirectLending.DirectLendingSecurityMasterReferenceDto",
+        "Meridian.Contracts.DirectLending.ExcessPaymentApplication",
         "Meridian.Contracts.DirectLending.PaymentFrequency",
         "Meridian.Contracts.DirectLending.RateTypeKind"
       ],
       "source": {
-        "line": 100,
+        "line": 118,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 100,
+          "line": 118,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -100150,7 +100168,7 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "75ff7a87da124786afa2faca34bd5f308814a07cfe204b491a25d14be55d0b98",
+      "fingerprint": "fdf58bfac52b58d630b1445fb3b6f0765c5ed4ecd8d77d25847b478305e77cdb",
       "full_name": "Meridian.Contracts.DirectLending.DrawdownLotDto",
       "id": "Meridian.Contracts.DirectLending.DrawdownLotDto",
       "kind": "record",
@@ -100169,7 +100187,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 183,
+          "source_line": 220,
           "type": "DateOnly"
         },
         {
@@ -100183,7 +100201,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 187,
+          "source_line": 224,
           "type": "string?"
         },
         {
@@ -100197,7 +100215,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 182,
+          "source_line": 219,
           "type": "Guid"
         },
         {
@@ -100211,7 +100229,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 185,
+          "source_line": 222,
           "type": "decimal"
         },
         {
@@ -100225,7 +100243,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 186,
+          "source_line": 223,
           "type": "decimal"
         },
         {
@@ -100239,7 +100257,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 184,
+          "source_line": 221,
           "type": "DateOnly"
         }
       ],
@@ -100249,12 +100267,71 @@
       "qualified_name": "Meridian.Contracts.DirectLending.DrawdownLotDto",
       "references": [],
       "source": {
-        "line": 181,
+        "line": 218,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 181,
+          "line": 218,
+          "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [
+        "byte"
+      ],
+      "classification": "enum",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "direct-lending-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "direct-lending-contracts"
+      ],
+      "enum_members": [
+        {
+          "explicit_value": true,
+          "name": "HoldUnapplied",
+          "source_line": 85,
+          "value": "0"
+        },
+        {
+          "explicit_value": true,
+          "name": "PrincipalPrepayment",
+          "source_line": 88,
+          "value": "1"
+        },
+        {
+          "explicit_value": true,
+          "name": "PrepaidInterest",
+          "source_line": 91,
+          "value": "2"
+        }
+      ],
+      "fingerprint": "6c421771080089d70e2848601a1485dc45d1d5c6eb82800c538dc6a080ed05b9",
+      "full_name": "Meridian.Contracts.DirectLending.ExcessPaymentApplication",
+      "id": "Meridian.Contracts.DirectLending.ExcessPaymentApplication",
+      "kind": "enum",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [],
+      "name": "ExcessPaymentApplication",
+      "namespace": "Meridian.Contracts.DirectLending",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.DirectLending.ExcessPaymentApplication",
+      "references": [],
+      "source": {
+        "line": 82,
+        "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 82,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -100846,7 +100923,7 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "a1325a6505f19ab41605a895a15c1a52ccc72c0a2bfa7a88441920ade68c1af0",
+      "fingerprint": "ef1f813c00d1e174f6fb788c1c029f5ffcefef42baa733d969da323e9cced985",
       "full_name": "Meridian.Contracts.DirectLending.LoanAggregateSnapshotDto",
       "id": "Meridian.Contracts.DirectLending.LoanAggregateSnapshotDto",
       "kind": "record",
@@ -100865,7 +100942,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "long",
-          "source_line": 170,
+          "source_line": 207,
           "type": "long"
         },
         {
@@ -100879,7 +100956,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "LoanContractDetailDto",
-          "source_line": 171,
+          "source_line": 208,
           "type": "LoanContractDetailDto"
         },
         {
@@ -100893,7 +100970,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 169,
+          "source_line": 206,
           "type": "Guid"
         },
         {
@@ -100907,7 +100984,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "LoanServicingStateDto",
-          "source_line": 172,
+          "source_line": 209,
           "type": "LoanServicingStateDto"
         }
       ],
@@ -100920,12 +100997,12 @@
         "Meridian.Contracts.DirectLending.LoanServicingStateDto"
       ],
       "source": {
-        "line": 168,
+        "line": 205,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 168,
+          "line": 205,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -100944,7 +101021,7 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "b16e857e8fc23495de3f25ebf751320a8b8a8a8281c6deb59b9493975adbe2af",
+      "fingerprint": "0a8724b0de4d779a289737b176abe0ce084a929a1c0e33a5a502e20f21b78b10",
       "full_name": "Meridian.Contracts.DirectLending.LoanContractDetailDto",
       "id": "Meridian.Contracts.DirectLending.LoanContractDetailDto",
       "kind": "record",
@@ -100963,7 +101040,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateOnly?",
-          "source_line": 148,
+          "source_line": 185,
           "type": "DateOnly?"
         },
         {
@@ -100977,7 +101054,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "BorrowerInfoDto",
-          "source_line": 145,
+          "source_line": 182,
           "type": "BorrowerInfoDto"
         },
         {
@@ -100991,7 +101068,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateOnly?",
-          "source_line": 149,
+          "source_line": 186,
           "type": "DateOnly?"
         },
         {
@@ -101005,7 +101082,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DirectLendingTermsDto",
-          "source_line": 151,
+          "source_line": 188,
           "type": "DirectLendingTermsDto"
         },
         {
@@ -101019,7 +101096,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 150,
+          "source_line": 187,
           "type": "int"
         },
         {
@@ -101033,7 +101110,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 147,
+          "source_line": 184,
           "type": "DateOnly"
         },
         {
@@ -101047,7 +101124,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 144,
+          "source_line": 181,
           "type": "string"
         },
         {
@@ -101061,7 +101138,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 143,
+          "source_line": 180,
           "type": "Guid"
         },
         {
@@ -101075,7 +101152,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "LoanStatus",
-          "source_line": 146,
+          "source_line": 183,
           "type": "LoanStatus"
         },
         {
@@ -101089,7 +101166,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<LoanTermsVersionDto>",
-          "source_line": 152,
+          "source_line": 189,
           "type": "IReadOnlyList<LoanTermsVersionDto>"
         }
       ],
@@ -101104,12 +101181,12 @@
         "Meridian.Contracts.DirectLending.LoanTermsVersionDto"
       ],
       "source": {
-        "line": 142,
+        "line": 179,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 142,
+          "line": 179,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -101128,7 +101205,7 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "ddc6ea9d326d9681cf12a0448967f7c1ac01fcd4cf0ade8a8160a11e05e3fde0",
+      "fingerprint": "07f83636e0681b8b18e24d1881aefe816f46e5a049ccba8c8cd3ac37fc95872a",
       "full_name": "Meridian.Contracts.DirectLending.LoanEventLineageDto",
       "id": "Meridian.Contracts.DirectLending.LoanEventLineageDto",
       "kind": "record",
@@ -101147,7 +101224,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "long",
-          "source_line": 156,
+          "source_line": 193,
           "type": "long"
         },
         {
@@ -101161,7 +101238,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 162,
+          "source_line": 199,
           "type": "Guid?"
         },
         {
@@ -101175,7 +101252,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 164,
+          "source_line": 201,
           "type": "Guid?"
         },
         {
@@ -101189,7 +101266,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 163,
+          "source_line": 200,
           "type": "Guid?"
         },
         {
@@ -101203,7 +101280,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateOnly?",
-          "source_line": 159,
+          "source_line": 196,
           "type": "DateOnly?"
         },
         {
@@ -101217,7 +101294,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 155,
+          "source_line": 192,
           "type": "Guid"
         },
         {
@@ -101231,7 +101308,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 158,
+          "source_line": 195,
           "type": "int"
         },
         {
@@ -101245,7 +101322,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 157,
+          "source_line": 194,
           "type": "string"
         },
         {
@@ -101259,7 +101336,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 161,
+          "source_line": 198,
           "type": "string"
         },
         {
@@ -101273,7 +101350,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 160,
+          "source_line": 197,
           "type": "DateTimeOffset"
         },
         {
@@ -101287,7 +101364,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 166,
+          "source_line": 203,
           "type": "bool"
         },
         {
@@ -101301,7 +101378,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 165,
+          "source_line": 202,
           "type": "string?"
         }
       ],
@@ -101311,12 +101388,12 @@
       "qualified_name": "Meridian.Contracts.DirectLending.LoanEventLineageDto",
       "references": [],
       "source": {
-        "line": 154,
+        "line": 191,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 154,
+          "line": 191,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -101335,7 +101412,7 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "e419a98f9d9451e2623b2dfcbd8b035420cfc8bb4b9c1c3caf10e6ec63089aa9",
+      "fingerprint": "5528ac6723f120d252f7c86bbdbc6cf2f413f889e2da5051c2843cec739d837d",
       "full_name": "Meridian.Contracts.DirectLending.LoanPortfolioCurrencyTotalsDto",
       "id": "Meridian.Contracts.DirectLending.LoanPortfolioCurrencyTotalsDto",
       "kind": "record",
@@ -101354,7 +101431,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "CurrencyCode",
-          "source_line": 313,
+          "source_line": 350,
           "type": "CurrencyCode"
         },
         {
@@ -101368,7 +101445,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 318,
+          "source_line": 355,
           "type": "decimal?"
         },
         {
@@ -101382,7 +101459,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 319,
+          "source_line": 356,
           "type": "decimal?"
         },
         {
@@ -101396,7 +101473,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 314,
+          "source_line": 351,
           "type": "decimal?"
         },
         {
@@ -101410,7 +101487,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 316,
+          "source_line": 353,
           "type": "decimal?"
         },
         {
@@ -101424,7 +101501,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 317,
+          "source_line": 354,
           "type": "decimal?"
         },
         {
@@ -101438,7 +101515,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 315,
+          "source_line": 352,
           "type": "decimal?"
         }
       ],
@@ -101450,12 +101527,12 @@
         "Meridian.Contracts.DirectLending.CurrencyCode"
       ],
       "source": {
-        "line": 312,
+        "line": 349,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 312,
+          "line": 349,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -101474,7 +101551,7 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "b6c6fea4ca1aa1965e957e476cfa07d05ed2bc9ce8a653ad85e9b02de9fc5d28",
+      "fingerprint": "63f1e2d3e0f0ac0b380e561142d63bc535bc22885581c558a166dc34c36fcc40",
       "full_name": "Meridian.Contracts.DirectLending.LoanPortfolioSummaryDto",
       "id": "Meridian.Contracts.DirectLending.LoanPortfolioSummaryDto",
       "kind": "record",
@@ -101493,7 +101570,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 291,
+          "source_line": 328,
           "type": "int"
         },
         {
@@ -101508,7 +101585,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<LoanPortfolioCurrencyTotalsDto>?",
-          "source_line": 302,
+          "source_line": 339,
           "type": "IReadOnlyList<LoanPortfolioCurrencyTotalsDto>?"
         },
         {
@@ -101522,7 +101599,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 292,
+          "source_line": 329,
           "type": "int"
         },
         {
@@ -101536,7 +101613,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<LoanSummaryDto>",
-          "source_line": 301,
+          "source_line": 338,
           "type": "IReadOnlyList<LoanSummaryDto>"
         },
         {
@@ -101550,7 +101627,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 293,
+          "source_line": 330,
           "type": "int"
         },
         {
@@ -101564,7 +101641,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 299,
+          "source_line": 336,
           "type": "decimal?"
         },
         {
@@ -101578,7 +101655,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 300,
+          "source_line": 337,
           "type": "decimal?"
         },
         {
@@ -101592,7 +101669,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 295,
+          "source_line": 332,
           "type": "decimal?"
         },
         {
@@ -101607,7 +101684,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "CurrencyCode?",
-          "source_line": 303,
+          "source_line": 340,
           "type": "CurrencyCode?"
         },
         {
@@ -101621,7 +101698,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 297,
+          "source_line": 334,
           "type": "decimal?"
         },
         {
@@ -101635,7 +101712,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 290,
+          "source_line": 327,
           "type": "int"
         },
         {
@@ -101649,7 +101726,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 298,
+          "source_line": 335,
           "type": "decimal?"
         },
         {
@@ -101663,7 +101740,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 296,
+          "source_line": 333,
           "type": "decimal?"
         },
         {
@@ -101677,7 +101754,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 294,
+          "source_line": 331,
           "type": "int"
         }
       ],
@@ -101691,12 +101768,12 @@
         "Meridian.Contracts.DirectLending.LoanSummaryDto"
       ],
       "source": {
-        "line": 289,
+        "line": 326,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 289,
+          "line": 326,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -101715,7 +101792,7 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "a9bde37f036aa3bacbd71b695435b76aea2a5860fabd18acc2fa6ca20bc08733",
+      "fingerprint": "ddb5f8417471c7745b2f1e0c63fde8f82c000ff84c6dc12f531c154c865e1277",
       "full_name": "Meridian.Contracts.DirectLending.LoanServicingStateDto",
       "id": "Meridian.Contracts.DirectLending.LoanServicingStateDto",
       "kind": "record",
@@ -101734,7 +101811,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<DailyAccrualEntryDto>",
-          "source_line": 227,
+          "source_line": 264,
           "type": "IReadOnlyList<DailyAccrualEntryDto>"
         },
         {
@@ -101748,7 +101825,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 219,
+          "source_line": 256,
           "type": "decimal"
         },
         {
@@ -101762,7 +101839,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OutstandingBalancesDto",
-          "source_line": 220,
+          "source_line": 257,
           "type": "OutstandingBalancesDto"
         },
         {
@@ -101777,7 +101854,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<CollateralDto>?",
-          "source_line": 228,
+          "source_line": 265,
           "type": "IReadOnlyList<CollateralDto>?"
         },
         {
@@ -101791,7 +101868,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 217,
+          "source_line": 254,
           "type": "decimal"
         },
         {
@@ -101805,7 +101882,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "RateResetDto?",
-          "source_line": 222,
+          "source_line": 259,
           "type": "RateResetDto?"
         },
         {
@@ -101819,7 +101896,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<DrawdownLotDto>",
-          "source_line": 221,
+          "source_line": 258,
           "type": "IReadOnlyList<DrawdownLotDto>"
         },
         {
@@ -101834,7 +101911,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 231,
+          "source_line": 268,
           "type": "bool"
         },
         {
@@ -101848,7 +101925,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateOnly?",
-          "source_line": 223,
+          "source_line": 260,
           "type": "DateOnly?"
         },
         {
@@ -101862,7 +101939,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateOnly?",
-          "source_line": 224,
+          "source_line": 261,
           "type": "DateOnly?"
         },
         {
@@ -101876,7 +101953,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 215,
+          "source_line": 252,
           "type": "Guid"
         },
         {
@@ -101890,7 +101967,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<ServicingRevisionDto>",
-          "source_line": 226,
+          "source_line": 263,
           "type": "IReadOnlyList<ServicingRevisionDto>"
         },
         {
@@ -101904,7 +101981,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "long",
-          "source_line": 225,
+          "source_line": 262,
           "type": "long"
         },
         {
@@ -101918,7 +101995,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "LoanStatus",
-          "source_line": 216,
+          "source_line": 253,
           "type": "LoanStatus"
         },
         {
@@ -101932,7 +102009,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 218,
+          "source_line": 255,
           "type": "decimal"
         },
         {
@@ -101947,7 +102024,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 229,
+          "source_line": 266,
           "type": "decimal"
         },
         {
@@ -101962,7 +102039,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 230,
+          "source_line": 267,
           "type": "decimal"
         }
       ],
@@ -101980,12 +102057,12 @@
         "Meridian.Contracts.DirectLending.ServicingRevisionDto"
       ],
       "source": {
-        "line": 214,
+        "line": 251,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 214,
+          "line": 251,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -102009,59 +102086,59 @@
         {
           "explicit_value": true,
           "name": "Draft",
-          "source_line": 14,
+          "source_line": 16,
           "value": "0"
         },
         {
           "explicit_value": true,
           "name": "Approved",
-          "source_line": 15,
+          "source_line": 17,
           "value": "1"
         },
         {
           "explicit_value": true,
           "name": "Active",
-          "source_line": 16,
+          "source_line": 18,
           "value": "2"
         },
         {
           "explicit_value": true,
           "name": "Suspended",
-          "source_line": 17,
+          "source_line": 19,
           "value": "3"
         },
         {
           "explicit_value": true,
           "name": "Matured",
-          "source_line": 18,
+          "source_line": 20,
           "value": "4"
         },
         {
           "explicit_value": true,
           "name": "Closed",
-          "source_line": 19,
+          "source_line": 21,
           "value": "5"
         },
         {
           "explicit_value": true,
           "name": "Defaulted",
-          "source_line": 20,
+          "source_line": 22,
           "value": "6"
         },
         {
           "explicit_value": true,
           "name": "NonPerforming",
-          "source_line": 21,
+          "source_line": 23,
           "value": "7"
         },
         {
           "explicit_value": true,
           "name": "Workout",
-          "source_line": 22,
+          "source_line": 24,
           "value": "8"
         }
       ],
-      "fingerprint": "2e4caa8785dc6e5f4d5f989723de3d74cf70bc0d6c2f4cbaf3fbf0eacc404f83",
+      "fingerprint": "1288f2b71033a5cb89f8a499a50eedff9155022eb27760953943392a334b3d1f",
       "full_name": "Meridian.Contracts.DirectLending.LoanStatus",
       "id": "Meridian.Contracts.DirectLending.LoanStatus",
       "kind": "enum",
@@ -102075,12 +102152,12 @@
       "qualified_name": "Meridian.Contracts.DirectLending.LoanStatus",
       "references": [],
       "source": {
-        "line": 12,
+        "line": 14,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 12,
+          "line": 14,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -102099,7 +102176,7 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "49fc0b368eee2e4122e9b84fdada1d8b5bd4cfbcfd8fefc79f0653ebdffe0a88",
+      "fingerprint": "d6dfdc9e2e69b5b7e7b1e6abf738301d14a8d33832e04eb7a9127064caf51d15",
       "full_name": "Meridian.Contracts.DirectLending.LoanSummaryDto",
       "id": "Meridian.Contracts.DirectLending.LoanSummaryDto",
       "kind": "record",
@@ -102118,7 +102195,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 283,
+          "source_line": 320,
           "type": "decimal"
         },
         {
@@ -102132,7 +102209,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "CurrencyCode",
-          "source_line": 278,
+          "source_line": 315,
           "type": "CurrencyCode"
         },
         {
@@ -102146,7 +102223,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 275,
+          "source_line": 312,
           "type": "Guid"
         },
         {
@@ -102160,7 +102237,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 276,
+          "source_line": 313,
           "type": "string"
         },
         {
@@ -102174,7 +102251,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 279,
+          "source_line": 316,
           "type": "decimal"
         },
         {
@@ -102188,7 +102265,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 274,
+          "source_line": 311,
           "type": "string"
         },
         {
@@ -102202,7 +102279,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 281,
+          "source_line": 318,
           "type": "decimal"
         },
         {
@@ -102216,7 +102293,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateOnly?",
-          "source_line": 286,
+          "source_line": 323,
           "type": "DateOnly?"
         },
         {
@@ -102230,7 +102307,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateOnly?",
-          "source_line": 287,
+          "source_line": 324,
           "type": "DateOnly?"
         },
         {
@@ -102244,7 +102321,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 273,
+          "source_line": 310,
           "type": "Guid"
         },
         {
@@ -102258,7 +102335,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 285,
+          "source_line": 322,
           "type": "DateOnly"
         },
         {
@@ -102272,7 +102349,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 284,
+          "source_line": 321,
           "type": "DateOnly"
         },
         {
@@ -102286,7 +102363,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 282,
+          "source_line": 319,
           "type": "decimal"
         },
         {
@@ -102300,7 +102377,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 280,
+          "source_line": 317,
           "type": "decimal"
         },
         {
@@ -102314,7 +102391,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "LoanStatus",
-          "source_line": 277,
+          "source_line": 314,
           "type": "LoanStatus"
         }
       ],
@@ -102327,12 +102404,12 @@
         "Meridian.Contracts.DirectLending.LoanStatus"
       ],
       "source": {
-        "line": 272,
+        "line": 309,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 272,
+          "line": 309,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -102351,7 +102428,7 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "494142d0914f1577442bbd377ff26071527b232a2e5ecfacf48e82ad5c6a2ae6",
+      "fingerprint": "f553c71d94cdaba48d9329b3d211274d3a09cd941b91dfe42a26c575a26c8616",
       "full_name": "Meridian.Contracts.DirectLending.LoanTermsVersionDto",
       "id": "Meridian.Contracts.DirectLending.LoanTermsVersionDto",
       "kind": "record",
@@ -102370,7 +102447,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 139,
+          "source_line": 176,
           "type": "string?"
         },
         {
@@ -102384,7 +102461,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 140,
+          "source_line": 177,
           "type": "DateTimeOffset"
         },
         {
@@ -102398,7 +102475,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 138,
+          "source_line": 175,
           "type": "string"
         },
         {
@@ -102412,7 +102489,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DirectLendingTermsDto",
-          "source_line": 137,
+          "source_line": 174,
           "type": "DirectLendingTermsDto"
         },
         {
@@ -102426,7 +102503,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 136,
+          "source_line": 173,
           "type": "string"
         },
         {
@@ -102440,7 +102517,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 135,
+          "source_line": 172,
           "type": "int"
         }
       ],
@@ -102452,12 +102529,12 @@
         "Meridian.Contracts.DirectLending.DirectLendingTermsDto"
       ],
       "source": {
-        "line": 134,
+        "line": 171,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 134,
+          "line": 171,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -102573,7 +102650,7 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "9907ab60120f406c65b4a7cdbc505386b03d5973d567c99af8891dd346be1547",
+      "fingerprint": "5c226de98a3dbfee167b85764d513a7bb887f5c666a321a1eed1cdc6065af193",
       "full_name": "Meridian.Contracts.DirectLending.OutstandingBalancesDto",
       "id": "Meridian.Contracts.DirectLending.OutstandingBalancesDto",
       "kind": "record",
@@ -102592,7 +102669,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 177,
+          "source_line": 214,
           "type": "decimal"
         },
         {
@@ -102606,7 +102683,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 178,
+          "source_line": 215,
           "type": "decimal"
         },
         {
@@ -102620,7 +102697,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 176,
+          "source_line": 213,
           "type": "decimal"
         },
         {
@@ -102634,7 +102711,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 179,
+          "source_line": 216,
           "type": "decimal"
         },
         {
@@ -102648,7 +102725,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 175,
+          "source_line": 212,
           "type": "decimal"
         }
       ],
@@ -102658,12 +102735,12 @@
       "qualified_name": "Meridian.Contracts.DirectLending.OutstandingBalancesDto",
       "references": [],
       "source": {
-        "line": 174,
+        "line": 211,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 174,
+          "line": 211,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -102975,35 +103052,35 @@
         {
           "explicit_value": true,
           "name": "Monthly",
-          "source_line": 61,
+          "source_line": 63,
           "value": "0"
         },
         {
           "explicit_value": true,
           "name": "Quarterly",
-          "source_line": 62,
+          "source_line": 64,
           "value": "1"
         },
         {
           "explicit_value": true,
           "name": "SemiAnnual",
-          "source_line": 63,
+          "source_line": 65,
           "value": "2"
         },
         {
           "explicit_value": true,
           "name": "Annual",
-          "source_line": 64,
+          "source_line": 66,
           "value": "3"
         },
         {
           "explicit_value": true,
           "name": "Bullet",
-          "source_line": 65,
+          "source_line": 67,
           "value": "4"
         }
       ],
-      "fingerprint": "93f93fb4ee62b79952717ba33c165990ffc5625e1b4cdfade5b4cc78331d1efd",
+      "fingerprint": "133117766011d59af6da9ceb1a5bfb9cb00c38206deca137c8074329f5d28294",
       "full_name": "Meridian.Contracts.DirectLending.PaymentFrequency",
       "id": "Meridian.Contracts.DirectLending.PaymentFrequency",
       "kind": "enum",
@@ -103017,12 +103094,12 @@
       "qualified_name": "Meridian.Contracts.DirectLending.PaymentFrequency",
       "references": [],
       "source": {
-        "line": 59,
+        "line": 61,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 59,
+          "line": 61,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -103041,7 +103118,7 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "aafdbe980b79eb07c955e2da837892a598f3c71f3f0f2bc98c6cbce5e228998c",
+      "fingerprint": "b19cbbf85033395340ae9f33c5f27d03274cabe5b6d7f4624ff40e06f743dd2a",
       "full_name": "Meridian.Contracts.DirectLending.PostDailyAccrualRequest",
       "id": "Meridian.Contracts.DirectLending.PostDailyAccrualRequest",
       "kind": "record",
@@ -103060,7 +103137,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 265,
+          "source_line": 302,
           "type": "DateOnly"
         }
       ],
@@ -103070,12 +103147,12 @@
       "qualified_name": "Meridian.Contracts.DirectLending.PostDailyAccrualRequest",
       "references": [],
       "source": {
-        "line": 264,
+        "line": 301,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 264,
+          "line": 301,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -103619,7 +103696,7 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "8b45ee36dcb36c19e3a0aae8f2755bb76dad57b646b1db129eb7aa6761eb9bc8",
+      "fingerprint": "905ef488e9b6f7108a76204bf92ca11a39ae5ac414eb44ed4a44a1b5ffcc455b",
       "full_name": "Meridian.Contracts.DirectLending.RateResetDto",
       "id": "Meridian.Contracts.DirectLending.RateResetDto",
       "kind": "record",
@@ -103638,7 +103715,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 194,
+          "source_line": 231,
           "type": "decimal"
         },
         {
@@ -103652,7 +103729,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 190,
+          "source_line": 227,
           "type": "DateOnly"
         },
         {
@@ -103666,7 +103743,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 191,
+          "source_line": 228,
           "type": "string"
         },
         {
@@ -103680,7 +103757,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 192,
+          "source_line": 229,
           "type": "decimal"
         },
         {
@@ -103694,7 +103771,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 195,
+          "source_line": 232,
           "type": "string?"
         },
         {
@@ -103708,7 +103785,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 193,
+          "source_line": 230,
           "type": "decimal"
         }
       ],
@@ -103718,12 +103795,12 @@
       "qualified_name": "Meridian.Contracts.DirectLending.RateResetDto",
       "references": [],
       "source": {
-        "line": 189,
+        "line": 226,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 189,
+          "line": 226,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -103747,17 +103824,17 @@
         {
           "explicit_value": true,
           "name": "Fixed",
-          "source_line": 55,
+          "source_line": 57,
           "value": "0"
         },
         {
           "explicit_value": true,
           "name": "Floating",
-          "source_line": 56,
+          "source_line": 58,
           "value": "1"
         }
       ],
-      "fingerprint": "c2124bfaa2198a18aaf4fd65ab1c1fac4f648e6dee13da4993dfbf018384108c",
+      "fingerprint": "5b2b78b417e8686e0bfd0a41090323c596af9c6035704585dea9e6f21e3d30c9",
       "full_name": "Meridian.Contracts.DirectLending.RateTypeKind",
       "id": "Meridian.Contracts.DirectLending.RateTypeKind",
       "kind": "enum",
@@ -103771,12 +103848,12 @@
       "qualified_name": "Meridian.Contracts.DirectLending.RateTypeKind",
       "references": [],
       "source": {
-        "line": 53,
+        "line": 55,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 53,
+          "line": 55,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -104522,7 +104599,7 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "2a1ccd4d2b25f34115df218a8036baeac0cd182634bfcadfc278bb81bde48a2a",
+      "fingerprint": "64de928134a9bc3ffe4aa949d970ea4a58dabbad5a3b6ab16eb1fc5e996f9f70",
       "full_name": "Meridian.Contracts.DirectLending.RemoveCollateralRequest",
       "id": "Meridian.Contracts.DirectLending.RemoveCollateralRequest",
       "kind": "record",
@@ -104541,7 +104618,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 443,
+          "source_line": 480,
           "type": "Guid"
         },
         {
@@ -104555,7 +104632,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 444,
+          "source_line": 481,
           "type": "string"
         }
       ],
@@ -104565,12 +104642,12 @@
       "qualified_name": "Meridian.Contracts.DirectLending.RemoveCollateralRequest",
       "references": [],
       "source": {
-        "line": 442,
+        "line": 479,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 442,
+          "line": 479,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -104885,7 +104962,7 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "40665fd0a79c7851b87013710fb618e98343a21ab1da328835d0b2d22d6c61e5",
+      "fingerprint": "0e81340bd0867f13197b9bc1ff18d2f2602b02871c0e784a2dc55f16159cd3ab",
       "full_name": "Meridian.Contracts.DirectLending.RestructureLoanRequest",
       "id": "Meridian.Contracts.DirectLending.RestructureLoanRequest",
       "kind": "record",
@@ -104904,7 +104981,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 464,
+          "source_line": 501,
           "type": "DateOnly"
         },
         {
@@ -104919,7 +104996,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 466,
+          "source_line": 503,
           "type": "decimal?"
         },
         {
@@ -104934,7 +105011,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DirectLendingTermsDto?",
-          "source_line": 465,
+          "source_line": 502,
           "type": "DirectLendingTermsDto?"
         },
         {
@@ -104948,7 +105025,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 463,
+          "source_line": 500,
           "type": "string"
         },
         {
@@ -104962,7 +105039,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "RestructuringType",
-          "source_line": 462,
+          "source_line": 499,
           "type": "RestructuringType"
         }
       ],
@@ -104975,12 +105052,12 @@
         "Meridian.Contracts.DirectLending.RestructuringType"
       ],
       "source": {
-        "line": 461,
+        "line": 498,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 461,
+          "line": 498,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -105004,41 +105081,41 @@
         {
           "explicit_value": true,
           "name": "MaturityExtension",
-          "source_line": 45,
+          "source_line": 47,
           "value": "0"
         },
         {
           "explicit_value": true,
           "name": "RateReduction",
-          "source_line": 46,
+          "source_line": 48,
           "value": "1"
         },
         {
           "explicit_value": true,
           "name": "PrincipalHaircut",
-          "source_line": 47,
+          "source_line": 49,
           "value": "2"
         },
         {
           "explicit_value": true,
           "name": "DebtForEquitySwap",
-          "source_line": 48,
+          "source_line": 50,
           "value": "3"
         },
         {
           "explicit_value": true,
           "name": "PikConversion",
-          "source_line": 49,
+          "source_line": 51,
           "value": "4"
         },
         {
           "explicit_value": true,
           "name": "Full",
-          "source_line": 50,
+          "source_line": 52,
           "value": "5"
         }
       ],
-      "fingerprint": "d73cf4940dc98aaf372bc9cdf56e5eac678d0c44575e99323082b0701fb98269",
+      "fingerprint": "2fd554dff943d8948544874df9f3f3e6edca099930ce11ec90cdfe7873684f24",
       "full_name": "Meridian.Contracts.DirectLending.RestructuringType",
       "id": "Meridian.Contracts.DirectLending.RestructuringType",
       "kind": "enum",
@@ -105052,12 +105129,12 @@
       "qualified_name": "Meridian.Contracts.DirectLending.RestructuringType",
       "references": [],
       "source": {
-        "line": 43,
+        "line": 45,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 43,
+          "line": 45,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -107858,7 +107935,7 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "9af82aff2ae0d8e3bbef2d1cceecd85de70862b7bc4784c398054c70c01b9477",
+      "fingerprint": "ea6f3bcf9a26d9b3157c577cbb5fa4a356b8f170664788b5193868031db90dae",
       "full_name": "Meridian.Contracts.DirectLending.ServicingRevisionDto",
       "id": "Meridian.Contracts.DirectLending.ServicingRevisionDto",
       "kind": "record",
@@ -107877,7 +107954,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 201,
+          "source_line": 238,
           "type": "DateTimeOffset"
         },
         {
@@ -107891,7 +107968,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 200,
+          "source_line": 237,
           "type": "DateOnly"
         },
         {
@@ -107905,7 +107982,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 202,
+          "source_line": 239,
           "type": "string"
         },
         {
@@ -107919,7 +107996,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "long",
-          "source_line": 198,
+          "source_line": 235,
           "type": "long"
         },
         {
@@ -107933,7 +108010,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 199,
+          "source_line": 236,
           "type": "string"
         }
       ],
@@ -107943,12 +108020,12 @@
       "qualified_name": "Meridian.Contracts.DirectLending.ServicingRevisionDto",
       "references": [],
       "source": {
-        "line": 197,
+        "line": 234,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 197,
+          "line": 234,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -107967,7 +108044,7 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "feac8ad7be01531008c525929e854ff4f705ece08dfbd3ead563aac4cc0abf5d",
+      "fingerprint": "9026da284d1d2cce667d0e3d1eee6393f8a440d95f339f46ec644ac22ff2b409",
       "full_name": "Meridian.Contracts.DirectLending.TogglePikRequest",
       "id": "Meridian.Contracts.DirectLending.TogglePikRequest",
       "kind": "record",
@@ -107986,7 +108063,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 458,
+          "source_line": 495,
           "type": "DateOnly"
         },
         {
@@ -108000,7 +108077,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 457,
+          "source_line": 494,
           "type": "bool"
         },
         {
@@ -108015,7 +108092,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 459,
+          "source_line": 496,
           "type": "string?"
         }
       ],
@@ -108025,12 +108102,12 @@
       "qualified_name": "Meridian.Contracts.DirectLending.TogglePikRequest",
       "references": [],
       "source": {
-        "line": 456,
+        "line": 493,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 456,
+          "line": 493,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -108049,7 +108126,7 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "e12e7ec932e0e2c05b207099ee988bece9c5d70b18ea1b470309fb126db3f094",
+      "fingerprint": "4d78b5b94788ba187931ae0e51ea335abfeaf7e3d939c6940507bb1156f9ed8f",
       "full_name": "Meridian.Contracts.DirectLending.TransitionLoanStatusRequest",
       "id": "Meridian.Contracts.DirectLending.TransitionLoanStatusRequest",
       "kind": "record",
@@ -108068,7 +108145,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 454,
+          "source_line": 491,
           "type": "DateOnly"
         },
         {
@@ -108082,7 +108159,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "LoanStatus",
-          "source_line": 452,
+          "source_line": 489,
           "type": "LoanStatus"
         },
         {
@@ -108096,7 +108173,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 453,
+          "source_line": 490,
           "type": "string"
         }
       ],
@@ -108108,12 +108185,12 @@
         "Meridian.Contracts.DirectLending.LoanStatus"
       ],
       "source": {
-        "line": 451,
+        "line": 488,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 451,
+          "line": 488,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],
@@ -108132,7 +108209,7 @@
         "direct-lending-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "a2d48cf3a15fc81e2356e8a6653281b3bc07cd468211eed9b6cac53ecaccdd78",
+      "fingerprint": "872040da09c501fcdbe36c0f67bf7333f9a8803f76829442ae28c095a080c47c",
       "full_name": "Meridian.Contracts.DirectLending.UpdateCollateralValueRequest",
       "id": "Meridian.Contracts.DirectLending.UpdateCollateralValueRequest",
       "kind": "record",
@@ -108151,7 +108228,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 447,
+          "source_line": 484,
           "type": "Guid"
         },
         {
@@ -108165,7 +108242,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 449,
+          "source_line": 486,
           "type": "DateOnly"
         },
         {
@@ -108179,7 +108256,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 448,
+          "source_line": 485,
           "type": "decimal"
         }
       ],
@@ -108189,12 +108266,12 @@
       "qualified_name": "Meridian.Contracts.DirectLending.UpdateCollateralValueRequest",
       "references": [],
       "source": {
-        "line": 446,
+        "line": 483,
         "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
       },
       "sources": [
         {
-          "line": 446,
+          "line": 483,
           "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs"
         }
       ],

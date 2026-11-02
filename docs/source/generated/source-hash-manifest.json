@@ -30,8 +30,8 @@
       "id": "SRC-CONTRACTS",
       "path": "src/Meridian.Contracts",
       "readme": "src/Meridian.Contracts/README.md",
-      "readme_hash": "55efecf22cce58143b3a1d48fb39a1d13fecaee0c44ad93b6dcb86114077db64",
-      "source_hash": "8856ef0b5160305223c6469c51252cac7fb21f95d1a58ffb0c0c46d16a6b01cc"
+      "readme_hash": "df8ec68998231b17cdd7f60072f63e1114f962d4d7d4a636e7dc58aa9c7810dd",
+      "source_hash": "a69a0e5fd33fe385e4f756abb208cf9e0e06ab49c5f0773be3af6ab2b33ff231"
     },
     {
       "id": "SRC-CORE",
