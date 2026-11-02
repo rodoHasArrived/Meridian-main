@@ -1,9 +1,12 @@
 using System.Globalization;
 using System.Text.Json;
+using Meridian.Contracts.Calendars;
 
 namespace Meridian.Contracts.SecurityMaster;
 
-// The schedule-terms rule gaps (E4, E7, E9a/b, E10d, C1a, C5c) found after declaring writes went live.
+// The schedule-terms rule gaps found after declaring writes went live: E4, E7, E9a/b, E10d, C1a and C5c,
+// and the strict-walk gaps (canonical and unrepeated calendar ids, member names in unset containers (R30),
+// blank values, a periodic exerciseFrequency).
 // Each applies only to a container introduced or changed by the write (DeclarationChanges): a stored row
 // that predates a rule stays amendable without an unrelated repair, and an explicit replacement of the
 // container states it again and is judged in full.
@@ -122,6 +125,31 @@ public static partial class ScheduleTermsWriteRules
     private static string DescribeCallBeforeNonCallPeriodEnd(DateOnly earliest, DateOnly nonCallPeriodEnd)
         => $"Declared {SecurityVersionedTerms.CallScheduleKey} opens its earliest call on {Format(earliest)}, before the {NonCallPeriodEndKey} {Format(nonCallPeriodEnd)}; " +
            "no call may open before the non-call period ends.";
+
+    // A declared exercise frequency recurs a whole number of months apart.
+    private static bool IsPeriodicExerciseFrequency(string frequency)
+        => SecurityTermConventions.TryParsePaymentFrequency(frequency, out var cadence) && cadence.MonthsPerPeriod() is not null;
+
+    private static string DescribeNotPeriodic(string assetClass, string path, string frequency)
+        => $"Value '{frequency}' is not a periodic exercise frequency for '{path}' on asset class '{assetClass}': exercise dates recur a whole number of months apart. " +
+           $"Periodic values: {string.Join(", ", SecurityTermConventions.CanonicalValues(SecurityTermConventionKind.CouponFrequency).Where(IsPeriodicExerciseFrequency))}.";
+
+    // Declared paymentCalendars name canonical calendar ids (the grammar calendar files use), each once.
+    private static string? DescribeCalendarIdFault(JsonElement ids)
+    {
+        var named = new HashSet<string>(StringComparer.Ordinal);
+        var index = 0;
+        foreach (var item in ids.EnumerateArray())
+        {
+            var path = $"{SecurityVersionedTerms.ScheduleConventionsKey}.paymentCalendars[{index++}]";
+            var id = item.GetString();
+            if (!BusinessDayCalendars.IsCanonicalCalendarId(id))
+                return $"Property '{path}' must be a canonical calendar id ({BusinessDayCalendars.CanonicalCalendarIdDescription}), but was '{id}'.";
+            if (!named.Add(id))
+                return $"Property '{path}' names the calendar '{id}' again; name each calendar once.";
+        }
+        return null;
+    }
 
     private static string Format(DateOnly date) => date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 }

@@ -46,10 +46,15 @@ public static partial class ScheduleTermsWriteRules
         if (SecurityTermsEnvelope.IsProfileGovernedPayload(canonical, payload))
             return;
         bool Available(string key) => SecurityAssetTermsSchema.Field(canonical, key) is { } field && field.SinceTermsVersion <= termsVersion;
+        var changes = new DeclarationChanges(payload, retained);
         var block = Available(SecurityVersionedTerms.ScheduleConventionsKey) ? Container(payload, SecurityVersionedTerms.ScheduleConventionsKey) : null;
+        var blockChanged = changes.Changed(SecurityVersionedTerms.ScheduleConventionsKey);
+        var blockFields = SecurityAssetTermsSchema.ElementFields(canonical, SecurityVersionedTerms.ScheduleConventionsKey);
         if (block is { } declaredBlock && SecurityAssetTermsSchema.IsPopulatedTermValue(declaredBlock))
-            ValidateMembers(declaredBlock, SecurityAssetTermsSchema.ElementFields(canonical, SecurityVersionedTerms.ScheduleConventionsKey), SecurityVersionedTerms.ScheduleConventionsKey);
-        ValidateCalendars(block);
+            ValidateMembers(declaredBlock, blockFields, SecurityVersionedTerms.ScheduleConventionsKey, blockChanged);
+        else if (blockChanged && block is { ValueKind: JsonValueKind.Object } unsetBlock)
+            ValidateMemberNames(unsetBlock, blockFields, SecurityVersionedTerms.ScheduleConventionsKey); // R30
+        ValidateCalendars(block, blockChanged);
         ValidateShape(canonical, payload, termsVersion, block);
         var calls = Available(SecurityVersionedTerms.CallScheduleKey) ? Container(payload, SecurityVersionedTerms.CallScheduleKey) : null;
         var puts = Available(SecurityVersionedTerms.PutScheduleKey) ? Container(payload, SecurityVersionedTerms.PutScheduleKey) : null;
@@ -57,7 +62,6 @@ public static partial class ScheduleTermsWriteRules
             || puts is { ValueKind: JsonValueKind.Array } putArray && putArray.EnumerateArray().Any(row => !IsUnsetScheduleEntry(row));
         var maturity = hasEntries ? Date(payload, "maturity") ?? Date(payload, "maturityDate") : null;
         var frequency = hasEntries ? Text(payload, "paymentFrequency") : null;
-        var changes = new DeclarationChanges(payload, retained);
         var issue = hasEntries ? RootAnchorDate(canonical, payload, IssueDateKey) : null;
         if (Available(SecurityVersionedTerms.CallScheduleKey))
         {
@@ -151,17 +155,21 @@ public static partial class ScheduleTermsWriteRules
     private static DateOnly? ValidateSchedule(JsonElement? declaration, bool call, string assetClass, DateOnly? maturity,
         string? couponFrequency, JsonElement? conventions, GapScope gaps)
     {
+        var startKey = call ? "callDate" : "putDate";
+        var endKey = call ? "callEndDate" : "putEndDate";
+        var schemaKey = call ? SecurityVersionedTerms.CallScheduleKey : SecurityVersionedTerms.PutScheduleKey;
+        // R30: member names are checked in every object entry, populated or not, of a changed schedule.
+        if (gaps.Entries && declaration is { ValueKind: JsonValueKind.Array } entries)
+            foreach (var unset in entries.EnumerateArray().Where(row => row.ValueKind == JsonValueKind.Object && IsUnsetScheduleEntry(row)))
+                ValidateMemberNames(unset, SecurityAssetTermsSchema.ElementFields(assetClass, schemaKey), schemaKey);
         if (declaration is not { } schedule || !SecurityAssetTermsSchema.IsPopulatedTermValue(schedule))
             return null;
         if (schedule.ValueKind != JsonValueKind.Array)
             Refuse("Call and put schedules must be arrays.");
-        var startKey = call ? "callDate" : "putDate";
-        var endKey = call ? "callEndDate" : "putEndDate";
-        var schemaKey = call ? SecurityVersionedTerms.CallScheduleKey : SecurityVersionedTerms.PutScheduleKey;
         var rows = schedule.EnumerateArray().Select((row, position) => (Row: row, Path: $"{schemaKey}[{position}]"))
             .Where(item => !IsUnsetScheduleEntry(item.Row)).Select(item =>
         {
-            ValidateMembers(item.Row, SecurityAssetTermsSchema.ElementFields(assetClass, schemaKey), schemaKey);
+            ValidateMembers(item.Row, SecurityAssetTermsSchema.ElementFields(assetClass, schemaKey), schemaKey, gaps.Entries);
             return (item.Row, item.Path, Start: Date(item.Row, startKey), End: Date(item.Row, endKey));
         }).OrderBy(row => row.Start).ToArray();
         if (rows.Any(row => row.Start is null))
@@ -198,6 +206,8 @@ public static partial class ScheduleTermsWriteRules
             var frequency = Text(row, "exerciseFrequency");
             if (frequency is not null && !SecurityTermConventions.IsRecognized(SecurityTermConventionKind.CouponFrequency, frequency))
                 Refuse("Unknown exerciseFrequency.");
+            if (gaps.Entries && frequency is not null && !IsPeriodicExerciseFrequency(frequency))
+                Refuse(DescribeNotPeriodic(assetClass, $"{path}.exerciseFrequency", frequency));
             if (style == "Bermudan" && (!SecurityTermConventions.TryParsePaymentFrequency(frequency ?? couponFrequency, out var cadence)
                 || !SecurityTermConventions.IsSchedulableCoupon(cadence) || cadence.PeriodsPerYear() is null))
                 Refuse("Bermudan exercise requires a regular exercise or coupon frequency.");
@@ -220,18 +230,20 @@ public static partial class ScheduleTermsWriteRules
         => row.ValueKind == JsonValueKind.Null
             || row.ValueKind == JsonValueKind.Object && !SecurityAssetTermsSchema.IsPopulatedTermValue(row);
 
-    private static void ValidateMembers(JsonElement value, IReadOnlyList<SecurityAssetTermField> fields, string path)
+    // fresh: the container is introduced or changed, so the gap rules (blank values) apply too.
+    private static void ValidateMembers(JsonElement value, IReadOnlyList<SecurityAssetTermField> fields, string path, bool fresh)
     {
         if (value.ValueKind != JsonValueKind.Object)
             Refuse($"{path} must be an object.");
-        var names = new HashSet<string>(StringComparer.Ordinal);
+        ValidateMemberNames(value, fields, path);
         foreach (var property in value.EnumerateObject())
         {
-            var field = fields.FirstOrDefault(field => field.Key == property.Name);
-            if (field is null || !names.Add(property.Name))
-                Refuse($"Unknown, case-variant or repeated member '{path}.{property.Name}'.");
+            var field = fields.First(field => field.Key == property.Name);
             if (property.Value.ValueKind == JsonValueKind.Null)
                 continue;
+            // A member type the walk has no check for fails closed rather than passing unchecked.
+            if (!IsCheckedMemberType(field.Type))
+                Refuse($"Property '{path}.{field.Key}' is declared as {field.Type}, which a write cannot check inside a versioned container; the write is refused.");
             var valid = field.Type switch
             {
                 SecurityAssetTermFieldType.String => property.Value.ValueKind == JsonValueKind.String,
@@ -240,18 +252,38 @@ public static partial class ScheduleTermsWriteRules
                 SecurityAssetTermFieldType.Decimal => property.Value.ValueKind == JsonValueKind.Number && property.Value.TryGetDecimal(out _),
                 SecurityAssetTermFieldType.Date => property.Value.ValueKind == JsonValueKind.String && DateOnly.TryParseExact(property.Value.GetString(), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out _),
                 SecurityAssetTermFieldType.Array => property.Value.ValueKind == JsonValueKind.Array,
-                _ => true
+                _ => false
             };
             if (!valid)
                 Refuse($"{path}.{field.Key} has the wrong JSON type or literal.");
+            if (fresh && field.Type == SecurityAssetTermFieldType.String && string.IsNullOrWhiteSpace(property.Value.GetString()))
+                Refuse($"Property '{path}.{field.Key}' must not be blank; omit it or send null to leave it unset.");
         }
     }
 
-    private static void ValidateCalendars(JsonElement? block)
+    // Names only: every member of an object container or entry is a declared member, spelled exactly, once.
+    private static void ValidateMemberNames(JsonElement value, IReadOnlyList<SecurityAssetTermField> fields, string path)
     {
-        if (block is { ValueKind: JsonValueKind.Object } declaration && SecurityAssetTermsSchema.IsPopulatedTermValue(declaration) && Member(declaration, "paymentCalendars") is { ValueKind: not JsonValueKind.Null } ids
-            && (ids.ValueKind != JsonValueKind.Array || ids.EnumerateArray().Any(id => id.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(id.GetString()))))
+        var names = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var property in value.EnumerateObject())
+            if (!fields.Any(field => field.Key == property.Name) || !names.Add(property.Name))
+                Refuse($"Unknown, case-variant or repeated member '{path}.{property.Name}'.");
+    }
+
+    /// <summary>The member types the write walk checks; any other type inside a versioned container is refused.</summary>
+    internal static bool IsCheckedMemberType(SecurityAssetTermFieldType type)
+        => type is SecurityAssetTermFieldType.String or SecurityAssetTermFieldType.Boolean or SecurityAssetTermFieldType.Integer
+            or SecurityAssetTermFieldType.Decimal or SecurityAssetTermFieldType.Date or SecurityAssetTermFieldType.Array;
+
+    private static void ValidateCalendars(JsonElement? block, bool fresh)
+    {
+        if (block is not { ValueKind: JsonValueKind.Object } declaration || !SecurityAssetTermsSchema.IsPopulatedTermValue(declaration)
+            || Member(declaration, "paymentCalendars") is not { ValueKind: not JsonValueKind.Null } ids)
+            return;
+        if (ids.ValueKind != JsonValueKind.Array || ids.EnumerateArray().Any(id => id.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(id.GetString())))
             Refuse("paymentCalendars must contain nonblank calendar ids.");
+        if (fresh && DescribeCalendarIdFault(ids) is { } fault)
+            Refuse(fault);
     }
 
     private static bool HasCalendars(JsonElement? block)
