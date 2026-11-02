@@ -303,6 +303,22 @@ let ``Manual breakdown is honoured in waterfall order and caps at the cash recei
     payment.Allocations |> Array.forall (fun a -> a.AllocationRule = "Manual") |> should equal true
 
 [<Fact>]
+let ``Manual breakdown above the amount owed is capped and never books phantom income`` () =
+    let contract, servicing = loanWithTwoLots (fixedTerms ())
+    let owing = servicing |> withBalances 10m 0m 0m 0m
+
+    let payment =
+        DirectLendingAggregateInterop.ApplyMixedPayment
+            owing
+            contract.CurrentTerms
+            (ApplyMixedPaymentRequest(1_000m, DateOnly(2026, 4, 1), PaymentBreakdownDto(1_000m, 0m, 0m, 0m, 0m), "pay-over"))
+
+    payment.Resolution.Breakdown.ToInterest |> should equal 10m
+    payment.Resolution.UnappliedAmount |> should equal 990m
+    payment.Servicing.Balances.InterestAccruedUnpaid |> should equal 0m
+    payment.Allocations |> Array.sumBy (fun a -> a.Amount) |> should equal 10m
+
+[<Fact>]
 let ``Manual breakdown smaller than the cash received leaves the excess unapplied`` () =
     let contract, servicing = loanWithTwoLots (fixedTerms ())
 

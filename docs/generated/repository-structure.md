@@ -10789,6 +10789,7 @@ Meridian-main
 │   │   │   │   ├── DirectLendingOutboxFailureTests.cs
 │   │   │   │   ├── DirectLendingServicerStatementServiceTests.cs
 │   │   │   │   ├── DirectLendingTermsHashCharacterizationTests.cs
+│   │   │   │   ├── ManualPaymentResolutionTests.cs
 │   │   │   │   ├── PostgresDirectLendingCommandServiceTests.cs
 │   │   │   │   └── PostgresDirectLendingProjectionCharacterizationTests.cs
 │   │   │   ├── FundStructure

@@ -192,6 +192,107 @@ public sealed class RepoPathServiceTests
     }
 
     [Fact]
+    public void ResolveInsideRoot_DifferentlyCasedSiblingOnLinux_Throws()
+    {
+        // On Linux "/x/repo" and "/x/REPO" are distinct directories; an ignore-case prefix
+        // check would treat the sibling as inside the root.
+        if (!OperatingSystem.IsLinux())
+            return;
+
+        using var repo = new TempMeridianRepo();
+        var service = new RepoPathService();
+        var sibling = Path.Combine(repo.Sandbox, "REPO", "payload.txt");
+
+        var act = () => service.ResolveInsideRoot(sibling);
+
+        act.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
+    public void ResolveInsideRoot_SymlinkInsideRootPointingOutside_Throws()
+    {
+        if (OperatingSystem.IsWindows())
+            return; // creating symlinks on Windows needs elevation or developer mode
+
+        using var repo = new TempMeridianRepo();
+        var outside = Path.Combine(repo.Sandbox, "outside");
+        Directory.CreateDirectory(outside);
+        File.WriteAllText(Path.Combine(outside, "secret.txt"), "secret");
+        Directory.CreateSymbolicLink(Path.Combine(repo.Root, "link"), outside);
+        var service = new RepoPathService();
+
+        var act = () => service.ResolveInsideRoot("link/secret.txt");
+
+        act.Should().Throw<InvalidOperationException>("the link resolves outside the repository");
+    }
+
+    [Fact]
+    public void ResolveInsideRoot_LinkWhoseTargetPassesThroughAnotherOutsideLink_Throws()
+    {
+        // repo/redirect -> <outside>, repo/alias -> repo/redirect/sub. Following only the final
+        // component of alias's chain would leave "redirect" unresolved and admit the path.
+        if (OperatingSystem.IsWindows())
+            return;
+
+        using var repo = new TempMeridianRepo();
+        var outside = Path.Combine(repo.Sandbox, "outside");
+        Directory.CreateDirectory(Path.Combine(outside, "sub"));
+        File.WriteAllText(Path.Combine(outside, "sub", "secret.txt"), "secret");
+        Directory.CreateSymbolicLink(Path.Combine(repo.Root, "redirect"), outside);
+        Directory.CreateSymbolicLink(Path.Combine(repo.Root, "alias"), Path.Combine(repo.Root, "redirect", "sub"));
+        var service = new RepoPathService();
+
+        var act = () => service.ResolveInsideRoot("alias/secret.txt");
+
+        act.Should().Throw<InvalidOperationException>("opening the path reads <outside>/sub/secret.txt");
+    }
+
+    [Fact]
+    public void ResolveInsideRoot_SymlinkCycle_FailsClosed()
+    {
+        if (OperatingSystem.IsWindows())
+            return;
+
+        using var repo = new TempMeridianRepo();
+        File.CreateSymbolicLink(Path.Combine(repo.Root, "a"), Path.Combine(repo.Root, "b"));
+        File.CreateSymbolicLink(Path.Combine(repo.Root, "b"), Path.Combine(repo.Root, "a"));
+        var service = new RepoPathService();
+
+        var act = () => service.ResolveInsideRoot("a");
+
+        act.Should().Throw<InvalidOperationException>().WithMessage("*symbolic links*");
+    }
+
+    [Fact]
+    public void ResolveInsideRoot_SymlinkInsideRootPointingInside_IsAccepted()
+    {
+        if (OperatingSystem.IsWindows())
+            return;
+
+        using var repo = new TempMeridianRepo();
+        repo.WriteFile(Path.Combine("docs", "a.md"), "a");
+        Directory.CreateSymbolicLink(Path.Combine(repo.Root, "docs-link"), Path.Combine(repo.Root, "docs"));
+        var service = new RepoPathService();
+
+        var resolved = service.ResolveInsideRoot("docs-link/a.md");
+
+        resolved.Should().Be(Path.Combine(repo.Root, "docs-link", "a.md"));
+    }
+
+    [Fact]
+    public void Constructor_EnvironmentRootWithTrailingSeparator_StillAdmitsPathsInsideRoot()
+    {
+        using var repo = new TempMeridianRepo();
+        Environment.SetEnvironmentVariable(TempMeridianRepo.EnvVar, repo.Root + Path.DirectorySeparatorChar);
+        var service = new RepoPathService();
+
+        var resolved = service.ResolveInsideRoot(Path.Combine("docs", "a.md"));
+
+        resolved.Should().Be(Path.Combine(repo.Root, "docs", "a.md"));
+        service.Root.Should().Be(repo.Root);
+    }
+
+    [Fact]
     public void ResolveInsideRoot_AbsolutePathWithTraversalBackOutside_Throws()
     {
         using var repo = new TempMeridianRepo();

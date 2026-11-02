@@ -48,6 +48,10 @@ governed object. Dormant-access assessment never claims a mutation; the applied-
 reports `Applied`, `PartiallyApplied`, `Failed`, or `VerificationFailed` from authoritative before
 and after role state.
 
+## Audit hardening (2026-11)
+
+- **Approver identity normalization.** `ComplianceApprovalStore.RecordDecision` trims the incoming approver id exactly as stored ids are trimmed, so whitespace padding (`" requester-1 "`) can no longer bypass the self-approval or decision-replacement guards.
+
 ## Diagrams
 
 `DIA-ASSURANCE-LOOP`
