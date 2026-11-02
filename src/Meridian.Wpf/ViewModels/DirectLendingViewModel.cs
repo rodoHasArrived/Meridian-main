@@ -396,48 +396,66 @@ public sealed class DirectLendingViewModel : BindableBase
 
     public async Task RefreshAsync(CancellationToken ct = default)
     {
-        IsRefreshing = true;
-        StatusText = "Loading portfolio…";
+        // Capture the caller's UI context before asynchronous I/O. WPF-bound collections
+        // and notification properties must be updated on that context, including errors.
+        var uiContext = SynchronizationContext.Current;
+        async Task ApplyOnUiAsync(Action action)
+        {
+            if (uiContext is null || SynchronizationContext.Current == uiContext)
+            {
+                action();
+                return;
+            }
 
+            var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            uiContext.Post(_ =>
+            {
+                try { action(); completion.SetResult(); }
+                catch (Exception ex) { completion.SetException(ex); }
+            }, null);
+            await completion.Task.ConfigureAwait(false);
+        }
+
+        await ApplyOnUiAsync(() => { IsRefreshing = true; StatusText = "Loading portfolio…"; });
         try
         {
             var portfolioTask = _apiClient.GetWithResponseAsync<LoanPortfolioSummaryDto>("/api/loans/portfolio", ct);
             var operationsTask = _apiClient.GetWithResponseAsync<DirectLendingOperationsReadModelDto>("/api/loans/operations", ct);
-
             await Task.WhenAll(portfolioTask, operationsTask).ConfigureAwait(false);
-
             var portfolio = (await portfolioTask.ConfigureAwait(false)).DataOrLoggedNull("Load loan portfolio summary");
             var operations = (await operationsTask.ConfigureAwait(false)).DataOrLoggedNull("Load direct-lending operations read model");
-
-            _allLoans.Clear();
-            if (portfolio?.Loans is not null)
+            await ApplyOnUiAsync(() =>
             {
-                _allLoans.AddRange(portfolio.Loans);
-            }
-
-            ApplyOperationsReadModel(operations);
-
-            _hasLoadedPortfolioSnapshot = portfolio is not null;
-            ApplyFilter();
-
-            StatusText = BuildPortfolioStatusText(portfolio);
+                _allLoans.Clear();
+                if (portfolio?.Loans is not null) _allLoans.AddRange(portfolio.Loans);
+                ApplyOperationsReadModel(operations);
+                _hasLoadedPortfolioSnapshot = portfolio is not null;
+                ApplyFilter();
+                StatusText = BuildPortfolioStatusText(portfolio);
+            });
         }
         catch (OperationCanceledException)
         {
-            StatusText = "Refresh cancelled.";
+            await ApplyOnUiAsync(() => StatusText = "Refresh cancelled.");
         }
         catch (Exception)
         {
-            _hasLoadedPortfolioSnapshot = false;
-            _allLoans.Clear();
-            ApplyOperationsReadModel(null);
-            ApplyFilter();
-            StatusText = "Failed to load portfolio — check service connection.";
+            await ApplyOnUiAsync(() =>
+            {
+                _hasLoadedPortfolioSnapshot = false;
+                _allLoans.Clear();
+                ApplyOperationsReadModel(null);
+                ApplyFilter();
+                StatusText = "Failed to load portfolio — check service connection.";
+            });
         }
         finally
         {
-            IsRefreshing = false;
-            RaiseLoanCollectionStateChanged();
+            await ApplyOnUiAsync(() =>
+            {
+                IsRefreshing = false;
+                RaiseLoanCollectionStateChanged();
+            });
         }
     }
 
