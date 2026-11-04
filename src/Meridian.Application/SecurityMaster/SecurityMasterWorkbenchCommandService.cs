@@ -237,12 +237,22 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
                     // The draft durably records the exact overlay VALUE it governs (null models a
                     // CLEAR): without it, discarding a later same-path revision could never restore
                     // this revision's value — an approved predecessor would deadlock unpublishable.
-                    draftRevision = await _revisions.CreateDraftAsync(
-                        request.SecurityId, request.Actor, validatedPath, request.EffectiveFrom, request.Justification,
-                        request.FundProfileId,
-                        new SecurityMasterRevisionFieldValue(isClear ? null : request.NewValue),
-                        ct)
+                    var stagedValue = new SecurityMasterRevisionFieldValue(isClear ? null : request.NewValue);
+                    // Record the canonical state the proposal is drafted against, so publish can refuse
+                    // it if this field changes in between (remediation slice 2). The base is taken only
+                    // from a projection at the version verified above; otherwise the draft records no
+                    // base and publishes as before.
+                    var validatedBase = await TryCaptureFieldBaseAsync(request.SecurityId, validatedPath, currentVersion, ct)
                         .ConfigureAwait(false);
+                    draftRevision = validatedBase is not null
+                        ? await _revisions.CreateDraftAsync(
+                            request.SecurityId, request.Actor, validatedPath, request.EffectiveFrom, request.Justification,
+                            request.FundProfileId, stagedValue, validatedBase, ct)
+                            .ConfigureAwait(false)
+                        : await _revisions.CreateDraftAsync(
+                            request.SecurityId, request.Actor, validatedPath, request.EffectiveFrom, request.Justification,
+                            request.FundProfileId, stagedValue, ct)
+                            .ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -821,6 +831,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
         var invalidated = new List<string>();
         var failedHandlers = new List<string>();
         SecurityMasterTermsCapabilityRefusedException? floorRefusal = null;
+        StaleFieldProposalException? staleRefusal = null;
         foreach (var handler in _handlers)
         {
             var handlerName = handler.GetType().Name;
@@ -833,6 +844,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
             {
                 failedHandlers.Add(handlerName);
                 floorRefusal ??= ex as SecurityMasterTermsCapabilityRefusedException;
+                staleRefusal ??= ex as StaleFieldProposalException;
                 _logger.LogError(
                     ex,
                     "Revision-published handler {Handler} failed for {SecurityId} revision {RevisionId}",
@@ -850,10 +862,22 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
             System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw(floorRefusal);
         }
 
+        // A stale proposal is refused as itself (409): a retry cannot succeed, the operator must
+        // discard and restage against the current value.
+        if (staleRefusal is not null)
+        {
+            System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw(staleRefusal);
+        }
+
         if (failedHandlers.Count > 0)
         {
             throw new SecurityMasterPublishFailedException(request.SecurityId, request.RevisionId, failedHandlers);
         }
+
+        var canonicalMerge = _handlers
+            .OfType<ISecurityMasterCanonicalMergeOutcomeReporter>()
+            .Select(reporter => reporter.TakeOutcome(request.RevisionId))
+            .FirstOrDefault(static outcome => outcome is not null);
 
         // Converge the operator-override approval decision BEFORE the Published transition: the
         // approve seam records it best-effort (a failure there logs and defers here), and a
@@ -942,7 +966,33 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
             currentVersion,
             RestatementRequired: restatement.RestatementRequired,
             RestatementCandidates: restatement.Candidates,
-            InvalidatedProjections: invalidated);
+            InvalidatedProjections: invalidated,
+            CanonicalMerge: canonicalMerge);
+    }
+
+    /// <summary>
+    /// The canonical base of an <c>assetSpecificTerms.*</c> edit: the verified version and a snapshot of
+    /// the stored keys the approved merge would overwrite. Null when there is no projection store, the
+    /// path is not one the merge writes, or the projection is not at <paramref name="expectedVersion"/>.
+    /// </summary>
+    private async Task<SecurityMasterRevisionFieldBase?> TryCaptureFieldBaseAsync(
+        Guid securityId, string? fieldPath, long expectedVersion, CancellationToken ct)
+    {
+        if (_projectionStore is null
+            || string.IsNullOrWhiteSpace(fieldPath)
+            || !SecurityAssetTermsFieldEditValidator.TargetsAssetSpecificTerms(fieldPath))
+        {
+            return null;
+        }
+
+        var projection = await _projectionStore.GetProjectionAsync(securityId, ct).ConfigureAwait(false);
+        if (projection is null || projection.Version != expectedVersion)
+        {
+            return null;
+        }
+
+        var snapshot = SecurityAssetTermsFieldSnapshot.Capture(projection.AssetClass, projection.AssetSpecificTerms, fieldPath);
+        return snapshot is null ? null : new SecurityMasterRevisionFieldBase(expectedVersion, snapshot);
     }
 
     /// <summary>
