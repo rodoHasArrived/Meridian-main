@@ -3,7 +3,7 @@
 **Status:** active
 **Owner:** core-team
 **Reviewed:** 2026-10-28
-**Review history:** consolidation pass 2026-10-28; resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
+**Review history:** slice-4 disposition 2026-11-04; consolidation pass 2026-10-28; resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -257,6 +257,78 @@ were run for these documentation changes. Focused documentation checks and their
 in the integrating PR. Existing test names and older hosted results are evidence references, not
 new execution claims. No roadmap status, policy default, schema, production code or acceptance
 criterion is changed by this consolidation.
+
+---
+
+## Slice 4 disposition — 2026-11-04 (D10)
+
+Remediation-plan slice 4, implemented on a local branch from `origin/main` at `2535d263`. It narrows
+D10; it does not accept a unit policy. Decision **D3 stays open for the domain owner**.
+
+**Rate units.** `Meridian.Contracts.SecurityMaster.RateUnitNormalizer` is now the single reader of
+stored rate units. It returns `Resolved(fraction, unit, source)`, `Undeclared(raw)` or
+`OutOfRange(...)`. Precedence: the record's declared unit (`scheduleConventions.couponRateUnit`, or a
+leg's unit) for the fields it governs, then the field default in `SecurityRateFieldUnits`, and
+otherwise Undeclared. Zero resolves as unit-invariant. Magnitude never selects a unit.
+`SecurityRateFieldUnits` lists every rate field from `SecurityMaster.fs` with its meaning, default
+unit, fraction range and negative-rate policy. FX forward rates are prices and are excluded. Only
+`*Bps` fields (BasisPoints) and Deposit `interestRate` / CashSweep `yieldRate` (Fraction, the catalog's
+`QuotesRatesAsFractions` convention, negatives permitted) declare a default. Every field whose stored
+data is written both ways declares none, including Bond, CD, Swap leg, DirectLoan, Repo and
+StructuredCredit coupons, caps, floors and fixings.
+
+These readers now use the normalizer, and the magnitude heuristic is removed from each:
+
+- `ContractualCashFlowPreviewService.Rate` returns a `RateUnitUndeclared` or
+  `RateOutsideDeclaredRange` blocker.
+- `SecurityMasterCashFlowService.NormalizeAnnualRate` (legacy coupon, legacy leg fixed, fixing, cap
+  and floor), the declared projection and the declared floating bond leg set a `BlockedReason` that
+  quotes the raw value.
+- `SecurityMasterAccountingEventService.NormalizeRate` raises a High `SM_COUPON_RATE_UNIT_UNDECLARED`
+  or `SM_COUPON_RATE_OUT_OF_RANGE` issue, and no accrual or coupon receipt is posted. The source
+  adapter carries the retained `couponRateUnit` and the terms' catalog class.
+- `AssetObligationProjectionService` reads Deposit through the declared Fraction. A legacy 4.5 is now
+  out of range and yields no accrual convention; before, it was kept as percentage points.
+  Bond-family classes keep that reader's percentage-point convention.
+
+**Accounting disposition.** Every catalog descriptor declares an `AccountingInstrumentClass` or
+`AccountingOutsideSlice`. StructuredNote is outside the slice. `ResolveAccountingInstrumentClass` keeps
+its first pass, where any in-slice name wins. It then returns null for a catalogued outside-slice name
+before the `FixedIncome` → Bond taxonomy fallback, which now applies only to names the catalog does not
+model. A coverage test fails for a catalogued class without a disposition. StructuredNote is the only
+catalogued class with a `FixedIncome` taxonomy and no accounting class, so it is the only caller result
+that changes.
+
+**Consequences for D3 (open).** Writing `couponRateUnit` is still gated by ADR-024 increment 4a and
+the bond cutover path. Blocking undeclared legacy rates therefore blocks the following:
+
+- The legacy Security Master projection, the preview and accounting accruals for every non-zero
+  undeclared Bond, CD, DirectLoan, Repo and StructuredCredit coupon.
+- Every legacy swap leg with a non-zero fixed rate or retained fixing. The engine refuses declared
+  per-leg conventions (`LegConventionsNotFollowed`), so the engine has no route by which a swap can
+  declare a unit.
+- Discounted-cash-flow valuation of those records.
+
+The negative-rate policies of the readers also still differ. The legacy projection floors a negative
+annual rate at zero, the contractual preview pays signed interest, accounting posts nothing at or
+below zero, and the declared floating bond leg blocks. The domain owner must decide four things:
+
+- Canonical units and ranges per field.
+- Warn versus block for undeclared legacy rows, and the governed repair path.
+- A negative-rate and signed-interest model.
+- StructuredNote's accounting treatment.
+
+**Validation.** Run on a Linux container:
+
+```
+dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTargeting=true -m:2 --filter "<CashFlow|AccountingInstrumentClass|AccountingEvent|AssetObligation|ScheduleConventions|RateUnit|Reconciliation|Bond|Swap|Schedule|Valuation|LedgerBridge|AssetOperations|Passport|SecurityMaster>"
+```
+
+Result: 9,067 passed, 45 failed, 237 skipped (Docker-backed). The 45 failures are listed in the slice
+report. They are legacy-path fixtures whose rates have no declared unit: discounted-cash-flow
+valuation, forward-curve and swap leg projections, projection-shape goldens, twin comparisons and a
+floating bond with an undeclared cap. They are left failing on purpose until D3 decides whether they
+become blocked expectations or a policy default. Hosted checks were not run.
 
 ---
 

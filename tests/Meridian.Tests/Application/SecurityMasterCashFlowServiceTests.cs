@@ -27,14 +27,14 @@ public sealed partial class SecurityMasterCashFlowServiceTests
                 null));
         var query = Substitute.For<SecurityMasterQueryContract>();
         query.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
-            .Returns(BuildSecurity(
+            .Returns(DepositSecurity(
                 securityId,
                 JsonSerializer.SerializeToElement(new
                 {
                     issueDate = asOf,
                     maturityDate = asOf.AddYears(1),
                     par = 100m,
-                    couponRate = 6m,
+                    interestRate = 0.06m,
                     paymentFrequency = "SemiAnnual",
                     dayCountConvention = "30/360"
                 })));
@@ -76,14 +76,14 @@ public sealed partial class SecurityMasterCashFlowServiceTests
                 null));
         var query = Substitute.For<SecurityMasterQueryContract>();
         query.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
-            .Returns(BuildSecurity(
+            .Returns(DepositSecurity(
                 securityId,
                 JsonSerializer.SerializeToElement(new
                 {
                     issueDate = asOf,
                     maturityDate = asOf.AddYears(1),
                     par = 100m,
-                    couponRate = 6m,
+                    interestRate = 0.06m,
                     paymentFrequency = "SemiAnnual",
                     dayCountConvention = "30/360",
                     currentFactor = 0.8m,
@@ -122,14 +122,14 @@ public sealed partial class SecurityMasterCashFlowServiceTests
                 null));
         var query = Substitute.For<SecurityMasterQueryContract>();
         query.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
-            .Returns(BuildSecurity(
+            .Returns(DepositSecurity(
                 securityId,
                 JsonSerializer.SerializeToElement(new
                 {
                     issueDate = asOf,
                     maturityDate = asOf.AddYears(1),
                     par = 100m,
-                    couponRate = 6m,
+                    interestRate = 0.06m,
                     paymentFrequency = "SemiAnnual",
                     dayCountConvention = "30/360",
                     principalSchedule = Array.Empty<object>()
@@ -171,13 +171,13 @@ public sealed partial class SecurityMasterCashFlowServiceTests
                 null));
         var query = Substitute.For<SecurityMasterQueryContract>();
         query.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
-            .Returns(BuildSecurity(
+            .Returns(DepositSecurity(
                 securityId,
                 JsonSerializer.SerializeToElement(new
                 {
                     issueDate = asOf,
                     maturityDate = asOf.AddYears(1),
-                    couponRate = 6m,
+                    interestRate = 0.06m,
                     paymentFrequency = "SemiAnnual",
                     dayCountConvention = "30/360",
                     principalSchedule = Array.Empty<object>()
@@ -214,14 +214,14 @@ public sealed partial class SecurityMasterCashFlowServiceTests
                 null));
         var query = Substitute.For<SecurityMasterQueryContract>();
         query.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
-            .Returns(BuildSecurity(
+            .Returns(DepositSecurity(
                 securityId,
                 JsonSerializer.SerializeToElement(new
                 {
                     issueDate = asOf,
                     maturityDate = asOf.AddYears(1),
                     originalFace = 120m,
-                    couponRate = 0.12m,
+                    interestRate = 0.12m,
                     paymentFrequency = "Quarterly",
                     dayCountConvention = "ACT/360"
                 })));
@@ -257,12 +257,12 @@ public sealed partial class SecurityMasterCashFlowServiceTests
         var maturity = issueDate.AddYears(1);
         var service = BuildService(
             StoreWith(securityId, sourceKind),
-            QueryWith(securityId, JsonSerializer.SerializeToElement(new
+            DepositQueryWith(securityId, JsonSerializer.SerializeToElement(new
             {
                 issueDate,
                 maturityDate = maturity,
                 par = 100m,
-                couponRate = 6m,
+                interestRate = 0.06m,
                 paymentFrequency = "SemiAnnual",
                 dayCountConvention = "30/360",
                 principalSchedule = new object[]
@@ -301,11 +301,11 @@ public sealed partial class SecurityMasterCashFlowServiceTests
         var maturity = issueDate.AddYears(1);
         var service = BuildService(
             StoreWith(securityId, StructuredCashFlowSourceKind.CalculatedBullet),
-            QueryWith(securityId, JsonSerializer.SerializeToElement(new
+            DepositQueryWith(securityId, JsonSerializer.SerializeToElement(new
             {
                 issueDate,
                 maturityDate = maturity,
-                couponRate = 6m,
+                interestRate = 0.06m,
                 paymentFrequency = "SemiAnnual",
                 dayCountConvention = "30/360",
                 principalSchedule = new object[]
@@ -347,14 +347,14 @@ public sealed partial class SecurityMasterCashFlowServiceTests
                 null));
         var query = Substitute.For<SecurityMasterQueryContract>();
         query.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
-            .Returns(BuildSecurity(
+            .Returns(DepositSecurity(
                 securityId,
                 JsonSerializer.SerializeToElement(new
                 {
                     issueDate,
                     maturityDate = maturity,
                     par = 100m,
-                    couponRate = 6m,
+                    interestRate = 0.06m,
                     paymentFrequency = "SemiAnnual",
                     dayCountConvention = "30/360",
                     factorScheduleEntries = new object[]
@@ -403,14 +403,14 @@ public sealed partial class SecurityMasterCashFlowServiceTests
                 null));
         var query = Substitute.For<SecurityMasterQueryContract>();
         query.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
-            .Returns(BuildSecurity(
+            .Returns(DepositSecurity(
                 securityId,
                 JsonSerializer.SerializeToElement(new
                 {
                     issueDate,
                     maturityDate = maturity,
                     par = 100m,
-                    couponRate = 6m,
+                    interestRate = 0.06m,
                     paymentFrequency = "SemiAnnual",
                     dayCountConvention = "30/360",
                     currentFactor = 0.8m,
@@ -457,7 +457,7 @@ public sealed partial class SecurityMasterCashFlowServiceTests
                 null));
         var query = Substitute.For<SecurityMasterQueryContract>();
         query.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
-            .Returns(BuildSecurity(
+            .Returns(DepositSecurity(
                 securityId,
                 JsonSerializer.SerializeToElement(new
                 {
@@ -468,7 +468,7 @@ public sealed partial class SecurityMasterCashFlowServiceTests
                         issueDate,
                         maturityDate = maturity,
                         par = 100m,
-                        couponRate = 6m,
+                        interestRate = 0.06m,
                         paymentFrequency = "SemiAnnual",
                         dayCountConvention = "30/360",
                         currentFactor = 0.8m,
@@ -518,14 +518,14 @@ public sealed partial class SecurityMasterCashFlowServiceTests
                 null));
         var query = Substitute.For<SecurityMasterQueryContract>();
         query.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
-            .Returns(BuildSecurity(
+            .Returns(DepositSecurity(
                 securityId,
                 JsonSerializer.SerializeToElement(new
                 {
                     issueDate,
                     maturityDate,
                     par = 100m,
-                    couponRate = 4m,
+                    interestRate = 0.04m,
                     paymentFrequency = "Quarterly",
                     dayCountConvention = "30/360"
                 })));
@@ -565,12 +565,12 @@ public sealed partial class SecurityMasterCashFlowServiceTests
         var maturity = issueDate.AddYears(1);
         var service = BuildService(
             StoreWith(securityId, StructuredCashFlowSourceKind.CalculatedSinker),
-            QueryWith(securityId, JsonSerializer.SerializeToElement(new
+            DepositQueryWith(securityId, JsonSerializer.SerializeToElement(new
             {
                 issueDate,
                 maturityDate = maturity,
                 par = 100m,
-                couponRate = 6m,
+                interestRate = 0.06m,
                 paymentFrequency = "SemiAnnual",
                 dayCountConvention = "30/360",
                 principalSchedule = new object[]
@@ -607,14 +607,14 @@ public sealed partial class SecurityMasterCashFlowServiceTests
                 null));
         var query = Substitute.For<SecurityMasterQueryContract>();
         query.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
-            .Returns(BuildSecurity(
+            .Returns(DepositSecurity(
                 securityId,
                 JsonSerializer.SerializeToElement(new
                 {
                     issueDate = asOf,
                     maturityDate = asOf.AddYears(1),
                     par = 100m,
-                    couponRate = 6m,
+                    interestRate = 0.06m,
                     paymentFrequency = "SemiAnnual",
                     dayCountConvention = "30/360"
                 })));
@@ -645,14 +645,14 @@ public sealed partial class SecurityMasterCashFlowServiceTests
                 null));
         var query = Substitute.For<SecurityMasterQueryContract>();
         query.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
-            .Returns(BuildSecurity(
+            .Returns(DepositSecurity(
                 securityId,
                 JsonSerializer.SerializeToElement(new
                 {
                     issueDate = asOf,
                     maturityDate = asOf.AddYears(1),
                     originalFace = 120m,
-                    couponRate = 0.12m,
+                    interestRate = 0.12m,
                     paymentFrequency = "Quarterly",
                     dayCountConvention = "ACT/360",
                     factorSchedule = new[]
@@ -687,14 +687,14 @@ public sealed partial class SecurityMasterCashFlowServiceTests
                 null));
         var query = Substitute.For<SecurityMasterQueryContract>();
         query.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
-            .Returns(BuildSecurity(
+            .Returns(DepositSecurity(
                 securityId,
                 JsonSerializer.SerializeToElement(new
                 {
                     issueDate = asOf,
                     maturityDate = asOf.AddYears(1),
                     par = 100m,
-                    couponRate = 6m,
+                    interestRate = 0.06m,
                     paymentFrequency = "SemiAnnual",
                     dayCountConvention = "30/360"
                 })));
@@ -729,14 +729,14 @@ public sealed partial class SecurityMasterCashFlowServiceTests
                 null));
         var query = Substitute.For<SecurityMasterQueryContract>();
         query.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
-            .Returns(BuildSecurity(
+            .Returns(DepositSecurity(
                 securityId,
                 JsonSerializer.SerializeToElement(new
                 {
                     issueDate = asOf,
                     maturityDate = asOf.AddYears(1),
                     par = 100m,
-                    couponRate = 6m,
+                    interestRate = 0.06m,
                     paymentFrequency = "SemiAnnual",
                     dayCountConvention = "30/360"
                 })));
@@ -876,12 +876,17 @@ public sealed partial class SecurityMasterCashFlowServiceTests
     }
 
     [Theory]
-    [InlineData("Deposit", "interestRate")]
-    [InlineData("DirectLoan", "currentCouponRate")]
-    [InlineData("StructuredCredit", "couponOrIndex")]
-    [InlineData("Repo", "repoRate")]
-    public async Task CanonicalClassRate_ProducesInterestInsteadOfMissingTermZero(string assetClass, string rateField)
+    [InlineData("Deposit", "interestRate", 0.06, true)]
+    [InlineData("Deposit", "interestRate", 6.0, false)]
+    [InlineData("DirectLoan", "currentCouponRate", 6.0, false)]
+    [InlineData("StructuredCredit", "couponOrIndex", 6.0, false)]
+    [InlineData("Repo", "repoRate", 6.0, false)]
+    public async Task CanonicalClassRate_ProducesInterestInsteadOfMissingTermZero(string assetClass, string rateField, double rate, bool declared)
     {
+        // Review D10, slice 4: the class's own rate term is read (never a missing-term zero), and it
+        // pays interest only under a declared unit. Deposit interestRate declares Fraction; the other
+        // classes declare no default, so their legacy 6.0 is flagged rather than divided by 100, and a
+        // Deposit 6.0 is outside the declared Fraction range rather than reinterpreted.
         var securityId = Guid.NewGuid();
         var issue = WholePeriodIssueDate();
         var terms = JsonSerializer.SerializeToElement(new Dictionary<string, object>
@@ -889,7 +894,7 @@ public sealed partial class SecurityMasterCashFlowServiceTests
             ["issueDate"] = issue,
             ["maturityDate"] = issue.AddYears(1),
             ["par"] = 100m,
-            [rateField] = 6m,
+            [rateField] = (decimal)rate,
             ["dayCountConvention"] = "30/360"
         });
         var query = Substitute.For<SecurityMasterQueryContract>();
@@ -897,6 +902,13 @@ public sealed partial class SecurityMasterCashFlowServiceTests
             .Returns(BuildSecurity(securityId, terms) with { AssetClass = assetClass });
         var service = BuildService(StoreWith(securityId, StructuredCashFlowSourceKind.CalculatedBullet), query);
         var result = await service.GetProjectionAsync(securityId, StructuredCashFlowScenario.Base);
+        if (!declared)
+        {
+            result!.Schedule.Should().BeEmpty();
+            result.BlockedReason.Should().Contain($"Rate {rateField} = {(decimal)rate}");
+            return;
+        }
+
         result!.Schedule.Sum(p => p.InterestAmount).Should().Be(6m);
         result.BlockedReason.Should().BeNull();
     }
@@ -961,10 +973,12 @@ public sealed partial class SecurityMasterCashFlowServiceTests
     }
 
     [Theory]
-    [InlineData("Deposit", "interestRate")]
-    [InlineData("DirectLoan", "currentCouponRate")]
-    [InlineData("Repo", "repoRate")]
-    public async Task MissingActualPrincipal_PreservesExplicitNormalizedAnalysisButBlocksLedger(string assetClass, string rateField)
+    // Review D10, slice 4: DirectLoan and Repo rates declare no default unit, so their rows use an
+    // explicit zero (unit-invariant) to keep exercising the missing-principal block.
+    [InlineData("Deposit", "interestRate", 0.06)]
+    [InlineData("DirectLoan", "currentCouponRate", 0.0)]
+    [InlineData("Repo", "repoRate", 0.0)]
+    public async Task MissingActualPrincipal_PreservesExplicitNormalizedAnalysisButBlocksLedger(string assetClass, string rateField, double rate)
     {
         var id = Guid.NewGuid();
         var issue = WholePeriodIssueDate();
@@ -974,7 +988,7 @@ public sealed partial class SecurityMasterCashFlowServiceTests
             {
                 ["issueDate"] = issue,
                 ["maturityDate"] = issue.AddYears(1),
-                [rateField] = 6m
+                [rateField] = (decimal)rate
             })) with
         { AssetClass = assetClass });
         var service = BuildService(StoreWith(id, StructuredCashFlowSourceKind.CalculatedBullet), query);
@@ -1016,6 +1030,12 @@ public sealed partial class SecurityMasterCashFlowServiceTests
             Array.Empty<IStructuredCashFlowProvider>(),
             query,
             NullLogger<SecurityMasterCashFlowService>.Instance);
+
+    // Review D10, slice 4: the legacy coupon walk reads a coupon only under a declared unit. Bond
+    // couponRate declares none, so walk fixtures use a Deposit row (interestRate declares Fraction)
+    // carrying the same rate as a fraction; the walk and the expected amounts are unchanged.
+    private static SecurityDetailDto DepositSecurity(Guid securityId, JsonElement assetSpecificTerms)
+        => BuildSecurity(securityId, assetSpecificTerms) with { AssetClass = "Deposit" };
 
     private static SecurityDetailDto BuildSecurity(Guid securityId, JsonElement assetSpecificTerms)
         => new(

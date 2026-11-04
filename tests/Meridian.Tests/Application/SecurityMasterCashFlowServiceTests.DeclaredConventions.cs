@@ -76,7 +76,6 @@ public sealed partial class SecurityMasterCashFlowServiceTests
     [Theory]
     [InlineData("""{"accrualAdjusted":false,"couponRateUnit":"Percent"}""", 0.5, 0.1250)]
     [InlineData("""{"accrualAdjusted":false,"couponRateUnit":"Fraction"}""", 0.05, 1.2500)]
-    [InlineData(MinimalBlock, 0.5, 12.5000)]
     public async Task DeclaredConventions_CouponRateUnit_ReplacesTheLegacyHeuristic_SCH_DEF_003_Target(
         string block, double coupon, double expectedInterest)
     {
@@ -87,6 +86,22 @@ public sealed partial class SecurityMasterCashFlowServiceTests
 
         projection.BlockedReason.Should().BeNull();
         projection.Schedule.Select(static row => row.InterestAmount).Should().Equal(Enumerable.Repeat((decimal)expectedInterest, 4));
+    }
+
+    [Theory]
+    [InlineData(0.5)]
+    [InlineData(5.0)]
+    public async Task DeclaredConventions_ABlockWithoutACouponRateUnit_IsBlocked_NotReadByMagnitude(double coupon)
+    {
+        // Review D10, slice 4: the retired heuristic read 0.5 as fifty percent (12.5000 a quarter) and
+        // divided 5.0 by 100. Without a declared unit the projection is blocked with the raw value.
+        var t0 = ScheduleCharacterizationT0();
+        var projection = await ProjectDeclaredAsync(
+            DeclaredBond(MinimalBlock, t0, t0.AddMonths(12), "Quarterly", coupon: (decimal)coupon, declareUnit: false),
+            WeekendsSource);
+
+        projection.Schedule.Should().BeEmpty();
+        projection.BlockedReason.Should().StartWith($"Rate couponRate = {(decimal)coupon} on Bond has no declared unit");
     }
 
     [Fact]
@@ -637,8 +652,9 @@ public sealed partial class SecurityMasterCashFlowServiceTests
         string? dayCount = "30/360",
         decimal? coupon = 5m,
         decimal? par = 100m,
-        int? stamp = 2)
-        => JsonSerializer.SerializeToElement(DeclaredBondObject(block, issue, maturity, frequency, dayCount, coupon, par, stamp));
+        int? stamp = 2,
+        bool declareUnit = true)
+        => JsonSerializer.SerializeToElement(DeclaredBondObject(block, issue, maturity, frequency, dayCount, coupon, par, stamp, declareUnit));
 
     private static JsonObject DeclaredBondObject(
         string? block,
@@ -648,7 +664,8 @@ public sealed partial class SecurityMasterCashFlowServiceTests
         string? dayCount = "30/360",
         decimal? coupon = 5m,
         decimal? par = 100m,
-        int? stamp = 2)
+        int? stamp = 2,
+        bool declareUnit = true)
     {
         var terms = new JsonObject();
         if (stamp is { } version)
@@ -692,7 +709,15 @@ public sealed partial class SecurityMasterCashFlowServiceTests
 
         if (block is not null)
         {
-            terms["scheduleConventions"] = JsonNode.Parse(block);
+            var conventions = JsonNode.Parse(block);
+            // Review D10, slice 4: a coupon reads only under a declared unit. Fixtures that do not test
+            // the unit itself declare the Percent their 5.0 coupon has always meant.
+            if (declareUnit && conventions is JsonObject declaredBlock && !declaredBlock.ContainsKey("couponRateUnit"))
+            {
+                declaredBlock["couponRateUnit"] = "Percent";
+            }
+
+            terms["scheduleConventions"] = conventions;
         }
 
         return terms;

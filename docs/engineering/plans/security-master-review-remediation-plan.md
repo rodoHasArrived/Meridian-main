@@ -69,6 +69,13 @@ cannot enter bond posting through an unintended taxonomy fallback.
 **Decisions:** canonical units/ranges, legacy rows and accounting treatment require domain-owner
 review. The October 20 blanket `[0,1]` rule and all-fraction design are not accepted defaults.
 
+**Implementation note (2026-11-04):** a local implementation adds `RateUnitNormalizer`,
+`SecurityRateFieldUnits` and explicit catalog accounting dispositions. See the
+[slice-4 disposition](../../architecture/security-master-extensibility-review.md#slice-4-disposition--2026-11-04-d10).
+Decision D3 remains open: canonical units and ranges, warn versus block for undeclared legacy rows
+(the implementation blocks), negative-rate policy and StructuredNote accounting. Its legacy-fixture
+test failures wait on that decision.
+
 ## Slice 5 — Audit evidence contracts before storage/serialization changes
 
 **Evidence:** D7. Classify each mutable row (cash-flow source, entitlement, field provenance and
