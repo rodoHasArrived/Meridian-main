@@ -532,6 +532,15 @@
       "sha256": "6ed00758a230f41d82245bde181a21d3b7b58bf74e6b624dfc6e661aca409a9f"
     },
     {
+      "filename": "062_security_master_identifier_revisions.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 62,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/062_security_master_identifier_revisions.sql",
+      "schema": "security_master",
+      "sha256": "854966c2dac0552255eb40a0db4776c6c1fb50f1b4050bef9777d0630a800862"
+    },
+    {
       "filename": "001_direct_lending.sql",
       "immutable": true,
       "migration_set_id": "direct-lending",
@@ -1406,7 +1415,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "92c9a4b3a15a62a0598800685ccaf2a34ac4ef2cfd016f356ce46ea57296f3c3",
+  "fingerprint": "69aafe4b679221acb79e10c57b963b1e83c4c81a424ffa19444a82c245ded8e6",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1644,9 +1653,9 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 156,
+    "files": 157,
     "migration_sets": 10,
-    "waivers": 28,
+    "waivers": 29,
     "warnings": 0
   },
   "waivers": [
@@ -1837,6 +1846,13 @@
       "path": "src/Meridian.Storage/SecurityMaster/Migrations/059_security_events_append_only_guard.sql",
       "reason": "Requires human schema/storage review. The lexical TRUNCATE match declares a BEFORE TRUNCATE trigger that rejects truncation of the append-only Security Master economic event log (security_events); no data is truncated. PostgreSQL regression coverage attempts update, delete and truncate and verifies refusal.",
       "review_after": "2027-05-01",
+      "rule_id": "migration-truncate"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/062_security_master_identifier_revisions.sql",
+      "reason": "Requires independent human schema/storage review; no owner authorization is recorded for this waiver yet. The lexical TRUNCATE match declares a BEFORE TRUNCATE trigger that rejects truncation of the append-only identifier revision history (security_identifier_revisions); no data is truncated, and the migration only creates the table, appends Baseline revisions for existing security_identifiers rows and installs the refusal triggers. PostgreSQL regression coverage (SecurityIdentifierHistoryPostgresTests) attempts update, delete and truncate and verifies refusal and retention.",
+      "review_after": "2027-05-04",
       "rule_id": "migration-truncate"
     },
     {

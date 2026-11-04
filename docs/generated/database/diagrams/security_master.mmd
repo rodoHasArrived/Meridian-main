@@ -1286,6 +1286,25 @@ erDiagram
     security_master_security_governance_events_global_sequence_seq {
         text catalogued_object
     }
+    security_master_security_identifier_revisions {
+        uuid security_id PK,FK
+        text identifier_kind PK
+        text identifier_value PK
+        timestamp_with_time_zone valid_from PK
+        integer revision PK
+        text change_kind
+        text normalized_identifier_value
+        text provider
+        text normalized_provider
+        boolean is_primary
+        timestamp_with_time_zone valid_to
+        text source
+        numeric_5_4_ confidence
+        boolean manual_override
+        text recorded_by
+        timestamp_with_time_zone recorded_at
+        timestamp_with_time_zone history_available_from
+    }
     security_master_security_identifiers {
         uuid security_id PK,FK
         text identifier_kind PK
@@ -1751,6 +1770,7 @@ erDiagram
     security_master_securities ||--o{ security_master_security_alias_revisions : "security_alias_revisions_security_id_fkey"
     security_master_securities ||--o{ security_master_security_aliases : "security_aliases_security_id_fkey"
     security_master_securities ||--o{ security_master_security_cashflow_source_assignments : "security_cashflow_source_assignments_security_id_fkey"
+    security_master_securities ||--o{ security_master_security_identifier_revisions : "security_identifier_revisions_security_id_fkey"
     security_master_securities ||--o{ security_master_security_identifiers : "security_identifiers_security_id_fkey"
     security_master_securities ||--o{ security_master_security_operator_overrides : "security_operator_overrides_security_id_fkey"
     security_master_securities ||--o{ security_master_security_price_selection_receipts : "security_price_selection_receipts_security_id_fkey"
