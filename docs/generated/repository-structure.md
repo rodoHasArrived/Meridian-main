@@ -4344,8 +4344,10 @@ Meridian-main
 │   │   │   ├── FaceValueLotExtensions.cs
 │   │   │   ├── FileSecurityCashFlowReceiptStore.cs
 │   │   │   ├── GovernedTermAmendmentPolicy.cs
+│   │   │   ├── GovernedTermAmendmentRequiredException.cs
 │   │   │   ├── IAffectedLedgerBookResolver.cs
 │   │   │   ├── IEdgarIngestOrchestrator.cs
+│   │   │   ├── IGovernedPublicationAmender.cs
 │   │   │   ├── ILedgerPeriodLockReader.cs
 │   │   │   ├── IMultiAssetCoverageInvalidator.cs
 │   │   │   ├── IPeriodAwareRestatementResolver.cs
@@ -4409,6 +4411,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterWorkbenchCommandService.Overrides.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.ProfileFieldValidation.cs
 │   │   │   ├── SecurityMasterWorkbenchOptions.cs
+│   │   │   ├── SecurityMasterWriteAuthority.cs
 │   │   │   ├── SecurityMasterWriteRefusedException.cs
 │   │   │   ├── SecurityResolver.cs
 │   │   │   ├── SecurityResolverCompatibilityAdapter.cs
@@ -11767,8 +11770,10 @@ Meridian-main
 │   │   │   │   ├── ReportPackSecurityLineIndexTests.cs
 │   │   │   │   ├── ReportPeriodRangeTests.cs
 │   │   │   │   ├── SecurityMasterConflictAuthorityPolicyTests.cs
+│   │   │   │   ├── SecurityMasterGovernedWriteAuthorityTests.cs
 │   │   │   │   ├── SecurityMasterWorkbenchCommandServiceTests.AheadOfWrite.cs
 │   │   │   │   ├── SecurityMasterWorkbenchCommandServiceTests.cs
+│   │   │   │   ├── SecurityMasterWorkbenchCommandServiceTests.IndependentReviewer.cs
 │   │   │   │   ├── SecurityMasterWorkbenchCommandServiceTests.RetainedScheduleGaps.cs
 │   │   │   │   └── SecurityMasterWorkbenchCommandServiceTests.ScheduleSubmission.cs
 │   │   │   ├── AlternativeAssetLotTests.cs
