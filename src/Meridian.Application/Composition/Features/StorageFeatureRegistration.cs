@@ -312,6 +312,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
                 sp.GetService<ILedgerBookService>()));
             services.AddSingleton<ISecurityMasterSnapshotStore, PostgresSecurityMasterSnapshotStore>();
             services.AddSingleton<ISecurityMasterStore, PostgresSecurityMasterStore>();
+            // Read-only view of the identifier history the projection store appends (migration 062).
+            services.AddSingleton<ISecurityIdentifierHistoryStore, PostgresSecurityMasterStore>();
             services.AddSingleton<ISecurityUnderlyingGraphStore, PostgresSecurityUnderlyingGraphStore>();
             services.AddSingleton<IOtcContractStore, PostgresOtcContractStore>();
             services.AddSingleton<IOtcCollateralStore, PostgresOtcCollateralStore>();
