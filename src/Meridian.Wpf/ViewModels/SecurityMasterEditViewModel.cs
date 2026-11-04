@@ -341,7 +341,19 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
             SourceRecordId: null,
             Reason: "Amended via WPF UI");
 
-        return await _service.AmendTermsAsync(request, ct).ConfigureAwait(false);
+        try
+        {
+            return await _service.AmendTermsAsync(request, ct).ConfigureAwait(false);
+        }
+        catch (Meridian.Application.SecurityMaster.GovernedTermAmendmentRequiredException refusal)
+        {
+            // The service enforces the same setting itself, so a desktop composed without the policy
+            // (or whose setting changed after the check above) still cannot write directly.
+            StatusText = refusal.Message;
+            _notificationService.ShowNotification("Security Master", refusal.Message, NotificationType.Error);
+            _loggingService.LogWarning("Security Master direct amendment refused by the service: RequireGovernedTermAmendments is enabled.");
+            return null;
+        }
     }
 
     partial void OnAssetClassChanged(string value)

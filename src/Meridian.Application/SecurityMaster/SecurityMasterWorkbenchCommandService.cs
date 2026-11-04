@@ -61,6 +61,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
     private readonly ISecurityFieldProvenanceStore? _fieldProvenance;
     private readonly ISecurityMasterStore? _projectionStore;
     private readonly Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? _assetProfileCatalog;
+    private readonly Func<bool> _requireIndependentReviewer = static () => false;
 
     public SecurityMasterWorkbenchCommandService(
         ISecurityMasterEventStore eventStore,
@@ -76,8 +77,15 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
         ILogger<SecurityMasterWorkbenchCommandService> logger,
         ISecurityFieldProvenanceStore? fieldProvenance = null,
         ISecurityMasterStore? projectionStore = null,
-        Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null)
+        Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null,
+        Microsoft.Extensions.Options.IOptionsMonitor<SecurityMasterWorkbenchOptions>? workbenchOptions = null)
     {
+        if (workbenchOptions is not null)
+        {
+            // Read at each submit/approve so the setting hot-reloads.
+            _requireIndependentReviewer = () => workbenchOptions.CurrentValue.RequireIndependentReviewer;
+        }
+
         _eventStore = eventStore ?? throw new ArgumentNullException(nameof(eventStore));
         _overrides = overrides ?? throw new ArgumentNullException(nameof(overrides));
         _conflictPolicy = conflictPolicy ?? throw new ArgumentNullException(nameof(conflictPolicy));
@@ -551,6 +559,18 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
                     nameof(request));
             }
 
+            // The drafter is the revision's actor until it is submitted (each transition records its
+            // own actor), so this is the last point the maker's identity can be compared. With
+            // RequireIndependentReviewer on, the drafter cannot be named as reviewer by another
+            // submitter; the gate only lets the assigned reviewer approve.
+            if (_requireIndependentReviewer()
+                && string.Equals(request.Reviewer.Trim(), revision.Actor?.Trim(), StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ArgumentException(
+                    "The reviewer must be independent from the actor who drafted the revision; self-approval is not permitted.",
+                    nameof(request));
+            }
+
             // The submission rationale carries a durable REVISION-IDENTITY marker into the
             // workflow's approval evidence. Reconciling a stranded half-submission (below) is only
             // safe for the exact interrupted submission: without the marker, ANY draft — even one
@@ -643,6 +663,18 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
             throw new SecurityMasterRevisionStateException(
                 request.RevisionId,
                 $"was submitted through workflow '{revision.WorkflowId:D}' but approval was attempted via workflow '{request.WorkflowId:D}'.");
+        }
+
+        // With RequireIndependentReviewer on, the approving reviewer must differ from the submitter
+        // (the revision's actor while it is Submitted). Submission already refused a reviewer equal to
+        // the submitter or the drafter; this re-check covers revisions submitted before the setting was on.
+        var approvingReviewer = string.IsNullOrWhiteSpace(request.Reviewer) ? request.Actor : request.Reviewer;
+        if (_requireIndependentReviewer()
+            && string.Equals(approvingReviewer?.Trim(), revision.Actor?.Trim(), StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException(
+                "The approving reviewer must be independent from the actor who submitted the revision; self-approval is not permitted.",
+                nameof(request));
         }
 
         var dto = new OperationsApprovalDecisionRequestDto(
