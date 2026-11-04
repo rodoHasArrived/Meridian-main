@@ -176,6 +176,46 @@ compare their intended semantics with the F# registry rather than assume the two
 interchangeable. Decide how already-retained `Some(...)`/`OtherSubType ...` values are displayed
 and replayed; do not rewrite append-only economic events to clean up labels.
 
+**Slice 3 disposition — 2026-11-04.** Historical reads are compatible without rewriting retained
+evidence. `Meridian.Contracts.SecurityMaster.ClassificationLabelReader.Normalize` decodes the
+retired F# renderings (`Some(X)`, `Some("X")`, `OtherFamily "x"`, `OtherSubType "x"`, nested
+`Some(OtherFamily "x")`, `None` → no label) and otherwise returns the trimmed input; it is
+idempotent, and every current domain label is a fixed point. It is applied where a stored label is
+matched, displayed or grouped: the adapter's preferred-equity replay guard (labels and
+classification JSON), workbench classification/drill-in/passport/field values and its
+history change detection, the trial-balance workbook export, the WPF asset-family fields, and
+the accounting sub-type fallback. Query-service and rebuilder outputs already pass through these
+seams (`ToEconomicRecord` emits canonical names; `ToProjection` uses the guard); the rebuilt
+economic record itself is still returned as retained, so snapshots and events keep their stored
+labels. Every declared catalog class's new write is pinned to the F# names, and its retired
+`ToString()` rendering decodes to the same labels; a legacy-labelled event replays with unchanged
+bytes and rebuilds the same projection as its canonical twin.
+
+*Decision D2 (slice 3; not the D2 finding above) — normalize for grouping.* Certified-report rows
+carry the decoded family and sub-type, so a record retained as `Some(PreferredEquity)` now groups
+with its `PreferredEquity` peers rather than forming its own section. Grouping for current
+canonical labels is pinned as unchanged. The snapshot content hash still fingerprints the economic
+definition as retained, so a legacy-labelled input keeps a distinct receipt hash; the display and
+grouping repair cannot silently change stored classification.
+
+`InstrumentTypeDescriptorCatalog` is reconciled behavior-preservingly: `DomainLabelExceptions`
+lists its `OtherFamily`/`OtherSubType` placeholders (FX spot, Commodity, Crypto, Index, CFD) as
+descriptor-taxonomy labels, `ApproximateDomainLabelMappings` records the reviewed Warrant
+`OptionContract`, FX spot `BankProduct` and Deposit `DemandDeposit` approximations, and a coverage
+test fails when a descriptor label is neither a domain label nor listed. No descriptor value
+changes, so passport fallbacks still show the placeholder; mapping placeholders to no label there
+would change output and is left for a separate decision. A custom `OtherFamily`/`OtherSubType`
+caller value that itself looks like a legacy rendering (for example literally `None`) would be
+decoded; no such value is known.
+
+Validation (local, Linux, Release): `dotnet test tests/Meridian.Tests` filtered to
+`Classification|CertifiedReporting|SecurityEconomicDefinitionAdapter|InstrumentTypeDescriptor|ReportGenerationService|SecurityMasterAggregateRebuilder`
+passed 200, skipped 2, failed 0; workbench, accounting-adapter, fund-operations, passport,
+query-service and terms round-trip suites passed 830 of 830; the broader
+`Architecture|Reporting|SecurityMaster` run passed 6,563 with 260 skipped and 1 failure, a
+PostgreSQL fixture that could not reach Docker in this environment. `Meridian.Wpf` compiled with
+`EnableWindowsTargeting`; its UI was not run. Hosted checks remain authoritative.
+
 ### D7 — Audit history and serialization: distinguish current state from retained evidence
 
 Canonical writes and field attribution share a PostgreSQL transaction, and provenance upserts are

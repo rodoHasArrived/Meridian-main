@@ -1881,6 +1881,8 @@ forecasting behavior as planned rather than live.
 ## Security Master governance controls (2026-11)
 
 - **Contract-multiplier requirement.** `InstrumentTypeDescriptorCatalog.RequiresContractMultiplier(assetClass)` is true only when a descriptor whose *primary* asset class matches declares `multiplier` among its required economic terms (listed options and futures; not swaps, warrants or FX forwards). Compatible-class lists are deliberately ignored. Clients call this instead of matching asset-class names, so they cannot diverge.
+- **Stored classification labels.** `ClassificationLabelReader.Normalize` decodes labels retained before the F# name helpers (`Some(PreferredEquity)`, `OtherFamily "x"`, `Some(OtherSubType "x")`, `None`) at read, match and grouping seams; it is idempotent and returns every current canonical label unchanged. Stored events and projections are never rewritten.
+- **Descriptor labels.** `InstrumentTypeDescriptorCatalog.DomainLabelExceptions` lists the descriptor `OtherFamily`/`OtherSubType` placeholders that are not F# domain labels, and `ApproximateDomainLabelMappings` records Warrant/FX spot/Deposit approximations. A coverage test fails when a descriptor label is neither a domain label nor listed. Descriptor values are unchanged.
 
 See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D8) for status and open decisions.
 
