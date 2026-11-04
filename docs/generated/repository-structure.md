@@ -4892,6 +4892,7 @@ Meridian-main
 │   │   │   │   ├── ScheduleRoll.cs
 │   │   │   │   ├── ScheduleSpec.cs
 │   │   │   │   └── ScheduleTenor.cs
+│   │   │   ├── ClassificationLabelReader.cs
 │   │   │   ├── CommitmentLot.cs
 │   │   │   ├── CorporateActionCaseAccountingContracts.cs
 │   │   │   ├── CorporateActionEconomicFingerprint.cs
@@ -11776,6 +11777,7 @@ Meridian-main
 │   │   │   ├── BondCalculationReplayTests.cs
 │   │   │   ├── BondProjectionGoldenTests.cs
 │   │   │   ├── CanonicalRegistryCoverageSourceTests.cs
+│   │   │   ├── ClassificationLabelReaderTests.cs
 │   │   │   ├── ContractualCashFlowCompanionPostgresTests.cs
 │   │   │   ├── CorporateActionAccountingMigrationTests.cs
 │   │   │   ├── CorporateActionAccountingPostgresRoundTripTests.cs
@@ -11804,6 +11806,7 @@ Meridian-main
 │   │   │   ├── FaceValueLotTests.cs
 │   │   │   ├── ForwardCurveCashFlowTests.cs
 │   │   │   ├── InMemorySecurityForwardCurveProvider.cs
+│   │   │   ├── InstrumentTypeDescriptorDomainLabelTests.cs
 │   │   │   ├── InstrumentTypeDescriptorMultiplierTests.cs
 │   │   │   ├── KeyedGatePoolTests.cs
 │   │   │   ├── ListingIdentityTests.cs
