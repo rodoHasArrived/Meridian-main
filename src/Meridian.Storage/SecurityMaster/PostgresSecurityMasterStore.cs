@@ -22,16 +22,20 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         Func<PostgresSecurityMasterStore, NpgsqlConnection, NpgsqlTransaction, SecurityProjectionRecord, CancellationToken, Task> WriteAsync);
 
     /// <summary>
-    /// The projection writers that predate <see cref="SecurityTermsProjectionRegistry"/> and have
-    /// not moved onto it. Every other class — including Bond, whose three sibling tables are now
-    /// registry satellites — is a descriptor. Option stays here because its tables are keyed by
-    /// contract symbol rather than security, its alias table fans out from the record's aliases, its
+    /// The projection writers the declarative <see cref="SecurityTermsProjectionRegistry"/> cannot
+    /// express. Every other class — including Bond, whose three sibling tables are now registry
+    /// satellites — is a descriptor. Option stays here because its tables are keyed by contract
+    /// symbol rather than security, its alias table fans out from the record's aliases, its
     /// lifecycle row has an insert-only <c>listed_at</c>, and
     /// <see cref="PostgresOptionReferenceProjectionStore"/> writes the same tables from quotes.
+    /// CustomAsset is here because its fields are governed per profile and have no fixed column
+    /// set: it projects one row per <c>profileFields</c> key (migration 064), keyed by security and
+    /// field rather than a column per term.
     /// </summary>
     private static readonly IReadOnlyList<AssetProjectionWriter> HandWrittenProjectionWriters =
     [
         new("Option", static (store, c, t, r, ct) => store.UpsertOptionProjectionTablesAsync(c, t, r, ct)),
+        new(CustomAssetAssetClass, static (store, c, t, r, ct) => store.UpsertCustomAssetProfileFieldProjectionAsync(c, t, r, ct)),
     ];
 
     /// <summary>
@@ -579,7 +583,12 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         SecurityProjectionRecord record,
         CancellationToken ct)
     {
-        if (SecurityAssetClassCatalog.GetOrDefault(record.AssetClass).ProjectionKind != SecurityTermsProjectionKind.Specialized ||
+        // Option is no longer the only Specialized class (CustomAsset is too), so the catalog class
+        // itself is checked: a record that moved from Option to CustomAsset must clear the option
+        // tables. When Option was the sole Specialized class the two checks were equivalent.
+        var descriptor = SecurityAssetClassCatalog.GetOrDefault(record.AssetClass);
+        if (!string.Equals(descriptor.AssetClass, "Option", StringComparison.Ordinal) ||
+            descriptor.ProjectionKind != SecurityTermsProjectionKind.Specialized ||
             !TryBuildOptionProjection(record, out var projection))
         {
             await DeleteOptionProjectionTablesAsync(connection, transaction, record.SecurityId, ct).ConfigureAwait(false);

@@ -40,16 +40,29 @@ public sealed class ProjectionFanOutTests
     [Fact]
     public void AChangeToAnUnprojectedClass_RunsOnlyThePriorWriter()
     {
-        // CustomAsset is profile-governed and has no projection table; the Equity rows still go.
-        PostgresSecurityMasterStore.ProjectionWritersFor("Equity", "CustomAsset")
+        // Every catalog class is now projected; a class the catalog does not know has no writer,
+        // and the Equity rows still go.
+        PostgresSecurityMasterStore.ProjectionWritersFor("Equity", "UnknownClass")
             .Should().Equal("Equity");
     }
 
     [Fact]
     public void AnUnprojectedClassWithNoHistory_RunsNoWriter()
     {
-        PostgresSecurityMasterStore.ProjectionWritersFor(null, "CustomAsset").Should().BeEmpty();
-        PostgresSecurityMasterStore.ProjectionWritersFor("Unknown", "CustomAsset").Should().BeEmpty();
+        PostgresSecurityMasterStore.ProjectionWritersFor(null, "UnknownClass").Should().BeEmpty();
+        PostgresSecurityMasterStore.ProjectionWritersFor("Unknown", "UnknownClass").Should().BeEmpty();
+    }
+
+    [Fact]
+    public void CustomAsset_HasItsOwnProfileFieldWriter()
+    {
+        // CustomAsset used to be the one unprojected class; migration 064 gives it a profile-keyed
+        // projection, so moving to or from it runs its writer too.
+        PostgresSecurityMasterStore.ProjectionWritersFor(null, "CustomAsset").Should().Equal("CustomAsset");
+        PostgresSecurityMasterStore.ProjectionWritersFor("Equity", "CustomAsset")
+            .Should().BeEquivalentTo(new[] { "Equity", "CustomAsset" });
+        PostgresSecurityMasterStore.ProjectionWritersFor("CustomAsset", "Option")
+            .Should().Equal("Option", "CustomAsset");
     }
 
     [Fact]
@@ -58,7 +71,7 @@ public sealed class ProjectionFanOutTests
         foreach (var assetClass in PostgresSecurityMasterStore.ProjectedAssetClasses)
         {
             PostgresSecurityMasterStore.ProjectionWritersFor(null, assetClass).Should().Equal(assetClass);
-            PostgresSecurityMasterStore.ProjectionWritersFor(assetClass, "CustomAsset").Should().Equal(assetClass);
+            PostgresSecurityMasterStore.ProjectionWritersFor(assetClass, "UnknownClass").Should().Equal(assetClass);
         }
     }
 }

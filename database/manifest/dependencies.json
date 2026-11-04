@@ -52784,6 +52784,54 @@
       "target": "database:security_master.securities_pkey"
     },
     {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.custom_asset_profile_field_projection_profile_id_check on security_master.custom_asset_profile_field_projection",
+      "target": "database:security_master.custom_asset_profile_field_projection.custom_profile_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.custom_asset_profile_field_projection_raw_kind_check on security_master.custom_asset_profile_field_projection",
+      "target": "database:security_master.custom_asset_profile_field_projection.raw_value"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.custom_asset_profile_field_projection_raw_kind_check on security_master.custom_asset_profile_field_projection",
+      "target": "database:security_master.custom_asset_profile_field_projection.value_kind"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.custom_asset_profile_field_projection_typed_value_check on security_master.custom_asset_profile_field_projection",
+      "target": "database:security_master.custom_asset_profile_field_projection.boolean_value"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.custom_asset_profile_field_projection_typed_value_check on security_master.custom_asset_profile_field_projection",
+      "target": "database:security_master.custom_asset_profile_field_projection.numeric_value"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.custom_asset_profile_field_projection_typed_value_check on security_master.custom_asset_profile_field_projection",
+      "target": "database:security_master.custom_asset_profile_field_projection.text_value"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.custom_asset_profile_field_projection_typed_value_check on security_master.custom_asset_profile_field_projection",
+      "target": "database:security_master.custom_asset_profile_field_projection.value_kind"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.custom_asset_profile_field_projection_value_kind_check on security_master.custom_asset_profile_field_projection",
+      "target": "database:security_master.custom_asset_profile_field_projection.value_kind"
+    },
+    {
       "constraint": "direct_loan_covenant_projection_security_id_fkey",
       "kind": "foreign-key",
       "label": "security_id",
@@ -55464,6 +55512,12 @@
       "kind": "contains",
       "label": "",
       "source": "schema:security_master",
+      "target": "database:security_master.custom_asset_profile_field_projection"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
       "target": "database:security_master.data_vendor_entitlements"
     },
     {
@@ -56062,7 +56116,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "63fbb8c11c718db083912c6d610081c0846ee6db96477fafc2dfbdd60ff2f454",
+  "fingerprint": "5b15b33890438344e4760f42fd81bc81619c5ee8fb332a1f752de9efeace83ac",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -80251,6 +80305,62 @@
       "schema": "security_master"
     },
     {
+      "id": "database:security_master.custom_asset_profile_field_projection",
+      "kind": "database-table",
+      "label": "security_master.custom_asset_profile_field_projection",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.custom_asset_profile_field_projection.boolean_value",
+      "kind": "database-object",
+      "label": "security_master.custom_asset_profile_field_projection.boolean_value"
+    },
+    {
+      "id": "database:security_master.custom_asset_profile_field_projection.custom_profile_id",
+      "kind": "database-object",
+      "label": "security_master.custom_asset_profile_field_projection.custom_profile_id"
+    },
+    {
+      "id": "database:security_master.custom_asset_profile_field_projection.numeric_value",
+      "kind": "database-object",
+      "label": "security_master.custom_asset_profile_field_projection.numeric_value"
+    },
+    {
+      "id": "database:security_master.custom_asset_profile_field_projection.raw_value",
+      "kind": "database-object",
+      "label": "security_master.custom_asset_profile_field_projection.raw_value"
+    },
+    {
+      "id": "database:security_master.custom_asset_profile_field_projection.text_value",
+      "kind": "database-object",
+      "label": "security_master.custom_asset_profile_field_projection.text_value"
+    },
+    {
+      "id": "database:security_master.custom_asset_profile_field_projection.value_kind",
+      "kind": "database-object",
+      "label": "security_master.custom_asset_profile_field_projection.value_kind"
+    },
+    {
+      "id": "database:security_master.custom_asset_profile_field_projection_profile_id_check on security_master.custom_asset_profile_field_projection",
+      "kind": "database-object",
+      "label": "security_master.custom_asset_profile_field_projection_profile_id_check on security_master.custom_asset_profile_field_projection"
+    },
+    {
+      "id": "database:security_master.custom_asset_profile_field_projection_raw_kind_check on security_master.custom_asset_profile_field_projection",
+      "kind": "database-object",
+      "label": "security_master.custom_asset_profile_field_projection_raw_kind_check on security_master.custom_asset_profile_field_projection"
+    },
+    {
+      "id": "database:security_master.custom_asset_profile_field_projection_typed_value_check on security_master.custom_asset_profile_field_projection",
+      "kind": "database-object",
+      "label": "security_master.custom_asset_profile_field_projection_typed_value_check on security_master.custom_asset_profile_field_projection"
+    },
+    {
+      "id": "database:security_master.custom_asset_profile_field_projection_value_kind_check on security_master.custom_asset_profile_field_projection",
+      "kind": "database-object",
+      "label": "security_master.custom_asset_profile_field_projection_value_kind_check on security_master.custom_asset_profile_field_projection"
+    },
+    {
       "id": "database:security_master.data_vendor_entitlements",
       "kind": "database-table",
       "label": "security_master.data_vendor_entitlements",
@@ -82061,9 +82171,9 @@
   "summary": {
     "contract_references": 3595,
     "contract_set_memberships": 4453,
-    "edges": 9315,
+    "edges": 9324,
     "foreign_keys": 155,
     "logical_references": 6,
-    "nodes": 4508
+    "nodes": 4519
   }
 }

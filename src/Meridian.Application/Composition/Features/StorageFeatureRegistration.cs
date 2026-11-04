@@ -328,6 +328,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ICertificateOfDepositReferenceProjectionStore, PostgresCertificateOfDepositReferenceProjectionStore>();
             services.AddSingleton<IDirectLoanReferenceProjectionStore, PostgresDirectLoanReferenceProjectionStore>();
             services.AddSingleton<IStructuredCreditReferenceProjectionStore, PostgresStructuredCreditReferenceProjectionStore>();
+            services.AddSingleton<ICustomAssetProfileFieldProjectionStore, PostgresCustomAssetProfileFieldProjectionStore>();
             services.AddSingleton<IOperatorOverridesStore, PostgresOperatorOverridesStore>();
             services.AddSingleton<ISecurityFieldProvenanceStore, PostgresSecurityFieldProvenanceStore>();
             services.AddSingleton<ISecurityMasterCanonicalWriteScope, PostgresSecurityMasterCanonicalWriteScope>();
