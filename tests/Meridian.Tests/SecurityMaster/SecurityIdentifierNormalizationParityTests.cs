@@ -8,9 +8,10 @@ namespace Meridian.Tests.SecurityMaster;
 
 /// <summary>
 /// The F# duplicate/expiry checks and the C# lookup boundary must give one raw identifier value one
-/// identity. The F# domain cannot reference Contracts, so its kind-aware normalizer mirrors
-/// <see cref="SecurityIdentifierNormalizer.NormalizeValue"/>; this pins the two together for every
-/// kind both sides define.
+/// identity. Meridian.FSharp references Contracts, and its kind-aware normalizer delegates to
+/// <see cref="SecurityIdentifierNormalizer.NormalizeValue"/> through
+/// <c>SecurityIdentifier.toContractKind</c>; this pins the two together for every kind both sides
+/// define, so a mapping slip in the F# kind translation is caught.
 /// </summary>
 public sealed class SecurityIdentifierNormalizationParityTests
 {
@@ -47,5 +48,41 @@ public sealed class SecurityIdentifierNormalizationParityTests
         }
 
         compared.Should().BeGreaterThan(10, "the reflection mapping must actually cover the shared kinds");
+    }
+
+    [Fact]
+    public void FSharpKindTranslation_NamesTheContractsKindOfTheSameName()
+    {
+        var compared = 0;
+        foreach (var kind in Enum.GetValues<SecurityIdentifierKind>())
+        {
+            if (typeof(FsIdentifierKind).GetProperty(kind.ToString(), BindingFlags.Public | BindingFlags.Static)
+                    ?.GetValue(null) is not FsIdentifierKind fsKind)
+            {
+                continue; // Unknown and ProviderSymbol have no nullary F# counterpart.
+            }
+
+            FsSecurityIdentifier.toContractKind(fsKind).Should().Be(kind);
+            compared++;
+        }
+
+        FsSecurityIdentifier.toContractKind(FsIdentifierKind.NewProviderSymbol("XNAS"))
+            .Should().Be(SecurityIdentifierKind.ProviderSymbol);
+        compared.Should().BeGreaterThan(10);
+    }
+
+    [Theory]
+    [InlineData("US0378331005")]
+    [InlineData("US0378331006")]
+    [InlineData("037833100")]
+    [InlineData("037833101")]
+    [InlineData("529900T8BM49AURSDO55")]
+    [InlineData("529900T8BM49AURSDO56")]
+    [InlineData("")]
+    public void FSharpCheckDigitValidators_AgreeWithTryValidateFormat_ForCanonicalValues(string value)
+    {
+        FsSecurityIdentifier.validateIsin(value).Should().Be(SecurityIdentifierNormalizer.TryValidateFormat(SecurityIdentifierKind.Isin, value, out _));
+        FsSecurityIdentifier.validateCusip(value).Should().Be(SecurityIdentifierNormalizer.TryValidateFormat(SecurityIdentifierKind.Cusip, value, out _));
+        FsSecurityIdentifier.validateLei(value).Should().Be(SecurityIdentifierNormalizer.TryValidateFormat(SecurityIdentifierKind.Lei, value, out _));
     }
 }
