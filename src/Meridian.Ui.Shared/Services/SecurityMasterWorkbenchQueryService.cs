@@ -864,9 +864,9 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
     {
         var parts = new[]
         {
-            snapshot.EconomicDefinition.AssetClass,
-            snapshot.EconomicDefinition.AssetFamily,
-            snapshot.EconomicDefinition.SubType,
+            ClassificationLabelReader.Normalize(snapshot.EconomicDefinition.AssetClass),
+            ClassificationLabelReader.Normalize(snapshot.EconomicDefinition.AssetFamily),
+            ClassificationLabelReader.Normalize(snapshot.EconomicDefinition.SubType),
             snapshot.EconomicDefinition.Currency
         }
             .Where(static value => !string.IsNullOrWhiteSpace(value))
@@ -935,8 +935,8 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             InstrumentType: instrumentType,
             DisplayName: displayName,
             SecurityMasterAssetClass: assetClass,
-            AssetFamily: NormalizeOptional(snapshot.EconomicDefinition.AssetFamily) ?? primaryDescriptor?.SecurityMasterAssetFamily,
-            SubType: NormalizeOptional(snapshot.EconomicDefinition.SubType) ?? primaryDescriptor?.SecurityMasterSubType,
+            AssetFamily: ClassificationLabelReader.Normalize(snapshot.EconomicDefinition.AssetFamily) ?? primaryDescriptor?.SecurityMasterAssetFamily,
+            SubType: ClassificationLabelReader.Normalize(snapshot.EconomicDefinition.SubType) ?? primaryDescriptor?.SecurityMasterSubType,
             DefaultProviderSecurityType: SecurityMasterText(string.Join(", ", providerSecurityTypes), "n/a"),
             IsTradeable: primaryDescriptor?.IsTradeable ?? descriptors.Any(static descriptor => descriptor.IsTradeable),
             IsReferenceOnly: primaryDescriptor?.IsReferenceOnly ?? (descriptors.Count > 0 && descriptors.All(static descriptor => descriptor.IsReferenceOnly)),
@@ -1496,9 +1496,9 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
     {
         var classification = new[]
         {
-            snapshot.EconomicDefinition.AssetClass,
-            snapshot.EconomicDefinition.AssetFamily,
-            snapshot.EconomicDefinition.SubType,
+            ClassificationLabelReader.Normalize(snapshot.EconomicDefinition.AssetClass),
+            ClassificationLabelReader.Normalize(snapshot.EconomicDefinition.AssetFamily),
+            ClassificationLabelReader.Normalize(snapshot.EconomicDefinition.SubType),
             snapshot.EconomicDefinition.Currency
         }
             .Where(static value => !string.IsNullOrWhiteSpace(value))
@@ -3606,7 +3606,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             Status: detail.Status,
             Classification: new SecurityClassificationSummaryDto(
                 AssetClass: detail.AssetClass,
-                SubType: economic?.SubType,
+                SubType: ClassificationLabelReader.Normalize(economic?.SubType),
                 PrimaryIdentifierKind: primaryIdentifier?.Kind.ToString(),
                 PrimaryIdentifierValue: primaryIdentifier?.Value,
                 RiskCountry: riskCountry,
@@ -3617,8 +3617,8 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
                 Version: detail.Version,
                 EffectiveFrom: detail.EffectiveFrom,
                 EffectiveTo: detail.EffectiveTo,
-                SubType: economic?.SubType,
-                AssetFamily: economic?.AssetFamily,
+                SubType: ClassificationLabelReader.Normalize(economic?.SubType),
+                AssetFamily: ClassificationLabelReader.Normalize(economic?.AssetFamily),
                 IssuerType: economic?.IssuerType,
                 RiskCountry: riskCountry,
                 TypeName: economic?.TypeName));
@@ -3636,8 +3636,8 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             Version: detail.Version,
             EffectiveFrom: detail.EffectiveFrom,
             EffectiveTo: detail.EffectiveTo,
-            AssetFamily: economic?.AssetFamily,
-            SubType: economic?.SubType,
+            AssetFamily: ClassificationLabelReader.Normalize(economic?.AssetFamily),
+            SubType: ClassificationLabelReader.Normalize(economic?.SubType),
             IssuerType: economic?.IssuerType,
             RiskCountry: economic?.RiskCountry,
             WinningSourceSystem: winningSource?.SourceSystem,
@@ -3728,8 +3728,8 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
                 "displayname" => detail.DisplayName,
                 "currency" => detail.Currency,
                 "assetclass" => detail.AssetClass,
-                "assetfamily" => economic?.AssetFamily,
-                "subtype" => economic?.SubType,
+                "assetfamily" => ClassificationLabelReader.Normalize(economic?.AssetFamily),
+                "subtype" => ClassificationLabelReader.Normalize(economic?.SubType),
                 "issuertype" => economic?.IssuerType,
                 _ => null
             };
@@ -4089,6 +4089,12 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             _ => true
         };
 
+    private static bool ClassificationLabelsEqual(string? previous, string? current)
+        => string.Equals(
+            ClassificationLabelReader.Normalize(previous),
+            ClassificationLabelReader.Normalize(current),
+            StringComparison.OrdinalIgnoreCase);
+
     private static SecurityEconomicDefinitionRecord? TryParseHistoryRecord(JsonElement payload)
     {
         try
@@ -4143,9 +4149,11 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             fields.Add("Effective window");
         }
 
-        if (!string.Equals(previousRecord.AssetClass, currentRecord.AssetClass, StringComparison.OrdinalIgnoreCase)
-            || !string.Equals(previousRecord.AssetFamily, currentRecord.AssetFamily, StringComparison.OrdinalIgnoreCase)
-            || !string.Equals(previousRecord.SubType, currentRecord.SubType, StringComparison.OrdinalIgnoreCase))
+        // A retained event may carry the legacy F# label rendering while its successor carries the
+        // canonical name; compare decoded labels so a label-format change alone is not reported.
+        if (!ClassificationLabelsEqual(previousRecord.AssetClass, currentRecord.AssetClass)
+            || !ClassificationLabelsEqual(previousRecord.AssetFamily, currentRecord.AssetFamily)
+            || !ClassificationLabelsEqual(previousRecord.SubType, currentRecord.SubType))
         {
             fields.Add("Classification");
         }

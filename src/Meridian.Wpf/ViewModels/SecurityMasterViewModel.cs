@@ -992,7 +992,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
 
             var economic = SelectedTrustSnapshot?.EconomicDefinition;
             var identity = SelectedTrustSnapshot?.Identity;
-            var assetFamily = SecurityMasterTextHelpers.FirstNonEmpty(economic?.AssetFamily, economic?.AssetClass, SelectedSecurity?.Classification.AssetClass, "Security");
+            var assetFamily = SecurityMasterTextHelpers.FirstNonEmpty(ClassificationLabelReader.Normalize(economic?.AssetFamily), economic?.AssetClass, SelectedSecurity?.Classification.AssetClass, "Security");
             var issuerType = SecurityMasterTextHelpers.FirstNonEmpty(economic?.IssuerType, SelectedSecurity?.Classification.IssuerType, "Issuer");
             var country = SecurityMasterTextHelpers.FirstNonEmpty(identity?.CountryOfRisk, economic?.RiskCountry, SelectedSecurity?.Classification.RiskCountry, "Country unavailable");
             return $"{assetFamily} - {issuerType} - {country}";
@@ -3253,7 +3253,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
             new SecurityMasterPresentationField("Primary listing", SecurityMasterTextHelpers.FirstNonEmpty(identity.PrimaryListingMic, "Not supplied")),
             new SecurityMasterPresentationField("Country of risk", SecurityMasterTextHelpers.FirstNonEmpty(identity.CountryOfRisk, economic.RiskCountry, snapshot.Security.Classification.RiskCountry, "Not supplied")),
             new SecurityMasterPresentationField("Settlement cycle", identity.SettlementCycleDays is int days ? $"T+{days}" : "Not supplied"),
-            new SecurityMasterPresentationField("Asset family", SecurityMasterTextHelpers.FirstNonEmpty(economic.AssetFamily, economic.AssetClass, "Not supplied")),
+            new SecurityMasterPresentationField("Asset family", SecurityMasterTextHelpers.FirstNonEmpty(ClassificationLabelReader.Normalize(economic.AssetFamily), economic.AssetClass, "Not supplied")),
             new SecurityMasterPresentationField("Issuer type", SecurityMasterTextHelpers.FirstNonEmpty(economic.IssuerType, snapshot.Security.Classification.IssuerType, "Not supplied"))
         ]);
 
