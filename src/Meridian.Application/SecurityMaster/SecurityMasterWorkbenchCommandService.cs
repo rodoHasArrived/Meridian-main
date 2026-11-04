@@ -559,17 +559,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
                     nameof(request));
             }
 
-            // The drafter is the revision's actor until it is submitted (each transition records its
-            // own actor), so this is the last point the maker's identity can be compared. With
-            // RequireIndependentReviewer on, the drafter cannot be named as reviewer by another
-            // submitter; the gate only lets the assigned reviewer approve.
-            if (_requireIndependentReviewer()
-                && string.Equals(request.Reviewer.Trim(), revision.Actor?.Trim(), StringComparison.OrdinalIgnoreCase))
-            {
-                throw new ArgumentException(
-                    "The reviewer must be independent from the actor who drafted the revision; self-approval is not permitted.",
-                    nameof(request));
-            }
+            EnsureReviewerIsIndependentOfDrafter(request.Reviewer, revision);
 
             // The submission rationale carries a durable REVISION-IDENTITY marker into the
             // workflow's approval evidence. Reconciling a stranded half-submission (below) is only
@@ -665,17 +655,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
                 $"was submitted through workflow '{revision.WorkflowId:D}' but approval was attempted via workflow '{request.WorkflowId:D}'.");
         }
 
-        // With RequireIndependentReviewer on, the approving reviewer must differ from the submitter
-        // (the revision's actor while it is Submitted). Submission already refused a reviewer equal to
-        // the submitter or the drafter; this re-check covers revisions submitted before the setting was on.
-        var approvingReviewer = string.IsNullOrWhiteSpace(request.Reviewer) ? request.Actor : request.Reviewer;
-        if (_requireIndependentReviewer()
-            && string.Equals(approvingReviewer?.Trim(), revision.Actor?.Trim(), StringComparison.OrdinalIgnoreCase))
-        {
-            throw new ArgumentException(
-                "The approving reviewer must be independent from the actor who submitted the revision; self-approval is not permitted.",
-                nameof(request));
-        }
+        EnsureApproverIsIndependentOfSubmitter(request, revision);
 
         var dto = new OperationsApprovalDecisionRequestDto(
             ExpectedVersion: request.ExpectedWorkflowVersion,
