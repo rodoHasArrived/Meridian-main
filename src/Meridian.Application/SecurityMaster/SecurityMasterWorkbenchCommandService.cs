@@ -237,22 +237,9 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
                     // The draft durably records the exact overlay VALUE it governs (null models a
                     // CLEAR): without it, discarding a later same-path revision could never restore
                     // this revision's value — an approved predecessor would deadlock unpublishable.
-                    var stagedValue = new SecurityMasterRevisionFieldValue(isClear ? null : request.NewValue);
-                    // Record the canonical state the proposal is drafted against, so publish can refuse
-                    // it if this field changes in between (remediation slice 2). The base is taken only
-                    // from a projection at the version verified above; otherwise the draft records no
-                    // base and publishes as before.
-                    var validatedBase = await TryCaptureFieldBaseAsync(request.SecurityId, validatedPath, currentVersion, ct)
+                    draftRevision = await CreateFieldEditDraftAsync(
+                        request, validatedPath, new SecurityMasterRevisionFieldValue(isClear ? null : request.NewValue), currentVersion, ct)
                         .ConfigureAwait(false);
-                    draftRevision = validatedBase is not null
-                        ? await _revisions.CreateDraftAsync(
-                            request.SecurityId, request.Actor, validatedPath, request.EffectiveFrom, request.Justification,
-                            request.FundProfileId, stagedValue, validatedBase, ct)
-                            .ConfigureAwait(false)
-                        : await _revisions.CreateDraftAsync(
-                            request.SecurityId, request.Actor, validatedPath, request.EffectiveFrom, request.Justification,
-                            request.FundProfileId, stagedValue, ct)
-                            .ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -569,17 +556,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
                     nameof(request));
             }
 
-            // The drafter is the revision's actor until it is submitted (each transition records its
-            // own actor), so this is the last point the maker's identity can be compared. With
-            // RequireIndependentReviewer on, the drafter cannot be named as reviewer by another
-            // submitter; the gate only lets the assigned reviewer approve.
-            if (_requireIndependentReviewer()
-                && string.Equals(request.Reviewer.Trim(), revision.Actor?.Trim(), StringComparison.OrdinalIgnoreCase))
-            {
-                throw new ArgumentException(
-                    "The reviewer must be independent from the actor who drafted the revision; self-approval is not permitted.",
-                    nameof(request));
-            }
+            EnsureReviewerIsIndependentOfDrafter(request.Reviewer, revision);
 
             // The submission rationale carries a durable REVISION-IDENTITY marker into the
             // workflow's approval evidence. Reconciling a stranded half-submission (below) is only
@@ -675,17 +652,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
                 $"was submitted through workflow '{revision.WorkflowId:D}' but approval was attempted via workflow '{request.WorkflowId:D}'.");
         }
 
-        // With RequireIndependentReviewer on, the approving reviewer must differ from the submitter
-        // (the revision's actor while it is Submitted). Submission already refused a reviewer equal to
-        // the submitter or the drafter; this re-check covers revisions submitted before the setting was on.
-        var approvingReviewer = string.IsNullOrWhiteSpace(request.Reviewer) ? request.Actor : request.Reviewer;
-        if (_requireIndependentReviewer()
-            && string.Equals(approvingReviewer?.Trim(), revision.Actor?.Trim(), StringComparison.OrdinalIgnoreCase))
-        {
-            throw new ArgumentException(
-                "The approving reviewer must be independent from the actor who submitted the revision; self-approval is not permitted.",
-                nameof(request));
-        }
+        EnsureApproverIsIndependentOfSubmitter(request, revision);
 
         var dto = new OperationsApprovalDecisionRequestDto(
             ExpectedVersion: request.ExpectedWorkflowVersion,
@@ -862,22 +829,14 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
             System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw(floorRefusal);
         }
 
-        // A stale proposal is refused as itself (409): a retry cannot succeed, the operator must
-        // discard and restage against the current value.
-        if (staleRefusal is not null)
-        {
-            System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw(staleRefusal);
-        }
+        ThrowIfStaleProposal(staleRefusal);
 
         if (failedHandlers.Count > 0)
         {
             throw new SecurityMasterPublishFailedException(request.SecurityId, request.RevisionId, failedHandlers);
         }
 
-        var canonicalMerge = _handlers
-            .OfType<ISecurityMasterCanonicalMergeOutcomeReporter>()
-            .Select(reporter => reporter.TakeOutcome(request.RevisionId))
-            .FirstOrDefault(static outcome => outcome is not null);
+        var canonicalMerge = TakeCanonicalMergeOutcome(request.RevisionId);
 
         // Converge the operator-override approval decision BEFORE the Published transition: the
         // approve seam records it best-effort (a failure there logs and defers here), and a
@@ -968,31 +927,6 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
             RestatementCandidates: restatement.Candidates,
             InvalidatedProjections: invalidated,
             CanonicalMerge: canonicalMerge);
-    }
-
-    /// <summary>
-    /// The canonical base of an <c>assetSpecificTerms.*</c> edit: the verified version and a snapshot of
-    /// the stored keys the approved merge would overwrite. Null when there is no projection store, the
-    /// path is not one the merge writes, or the projection is not at <paramref name="expectedVersion"/>.
-    /// </summary>
-    private async Task<SecurityMasterRevisionFieldBase?> TryCaptureFieldBaseAsync(
-        Guid securityId, string? fieldPath, long expectedVersion, CancellationToken ct)
-    {
-        if (_projectionStore is null
-            || string.IsNullOrWhiteSpace(fieldPath)
-            || !SecurityAssetTermsFieldEditValidator.TargetsAssetSpecificTerms(fieldPath))
-        {
-            return null;
-        }
-
-        var projection = await _projectionStore.GetProjectionAsync(securityId, ct).ConfigureAwait(false);
-        if (projection is null || projection.Version != expectedVersion)
-        {
-            return null;
-        }
-
-        var snapshot = SecurityAssetTermsFieldSnapshot.Capture(projection.AssetClass, projection.AssetSpecificTerms, fieldPath);
-        return snapshot is null ? null : new SecurityMasterRevisionFieldBase(expectedVersion, snapshot);
     }
 
     /// <summary>
