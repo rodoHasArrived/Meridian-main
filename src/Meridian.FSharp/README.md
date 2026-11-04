@@ -147,7 +147,7 @@ Use this module for deterministic business-rule kernels shared by strategy, trad
 
 ## Security Master governance controls (2026-11)
 
-- **Kind-aware identifier normalization.** `SecurityIdentifier.normalizeIdentifierValue` mirrors `Meridian.Contracts.SecurityMaster.SecurityIdentifierNormalizer.NormalizeValue` and migration 016's SQL backfill: ISIN, CUSIP, SEDOL, FIGI, OCC, LEI, WKN, CIK, LoanX and CLIP keep ASCII alphanumerics only, and Valoren keeps ASCII digits only. Duplicate and expiry checks use it, so the F# domain and the C# lookup give one raw value one identity.
+- **Kind-aware identifier normalization.** `SecurityIdentifier.normalizeIdentifierValue` delegates to `Meridian.Contracts.SecurityMaster.SecurityIdentifierNormalizer.NormalizeValue` (which mirrors migration 016's SQL backfill) through `SecurityIdentifier.toContractKind`: ISIN, CUSIP, SEDOL, FIGI, OCC, LEI, WKN, CIK, LoanX and CLIP keep ASCII alphanumerics only, and Valoren keeps ASCII digits only. Duplicate and expiry checks use it, so the F# domain and the C# lookup give one raw value one identity. `validateIsin`, `validateCusip` and `validateLei` keep their signatures and delegate to `TryValidateFormat`, still rejecting values with punctuation the normalizer would strip. `validateLei` now applies ISO 17442 MOD 97-10 in written order (the former copy rotated four characters and rejected valid LEIs), and `validateCusip` no longer accepts the `*`, `@` and `#` private-placement characters, which the C# normalizer strips.
 
 See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D8) for status and open decisions.
 

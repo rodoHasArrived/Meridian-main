@@ -1348,8 +1348,9 @@ direct-lending and amortization gates are ungated when no verifier is registered
 - **Independent profile approval.** `SecurityAssetProfileGovernanceService` refuses an asset-profile approval by the actor who drafted it when `SecurityMasterWorkbench:RequireIndependentProfileApprover` is on. It defaults to off, and the setting is read at approval time so it hot-reloads. `RequireIndependentReviewer` remains unconsumed.
 - **Classification labels.** `SecurityEconomicDefinitionAdapter` stores asset-class, family and sub-type labels from the F# domain's explicit name functions rather than union `ToString()`, which would emit payload syntax such as `OtherFamily "x"` or `Some(...)`.
 - **Removed prototype.** The unused Application-side `SecurityMaster/CashFlow/ScheduleSpecFactory` prototype was deleted; production uses `Meridian.Contracts.SecurityMaster.ScheduleSpecFactory`.
+- **Derived term-key spellings.** `SecurityMasterConflictDetection.ProfileFieldComparisonExclusions` and the data-quality maturity reads (`MA001`, `VC002`, `SecurityMasterDataQualityService.MaturitySpellings`) take their spelling pairs (`maturity`/`maturityDate`, `dayCount`/`dayCountConvention`, factor `factor`/`currentFactor`) from `SecurityAssetTermsSchema` aliases instead of restated lists. `SecurityMasterTermSpellingDerivationTests` pins each derived set to the one it replaced; the conditional quality rules are unchanged.
 
-See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D8) for status and open decisions.
+See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D9, slice 6 disposition) for status and open decisions.
 
 ## Diagrams
 
