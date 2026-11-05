@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-05T16:02:19Z",
+  "generatedAt": "2026-11-05T19:57:13Z",
   "generatorVersion": "1.0",
-  "repositoryRoot": "Meridian-main",
+  "repositoryRoot": "agent-a94f74c3aa2de0ecd",
   "subsystems": [
     {
       "id": "host-shell",
@@ -2438,12 +2438,20 @@
   ],
   "recentChanges": [
     {
+      "path": "src/Meridian.FSharp.DirectLending.Aggregates/ServicingSchedule.fs",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-11-05T17:51:10+00:00",
+      "lastCommit": "a3fba8db",
+      "lastSummary": "fix(direct-lending): roll servicing schedule dates on the schedule kernel",
+      "touches": 2
+    },
+    {
       "path": "src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs",
       "subsystem": "Host and Composition",
       "lastModified": "2026-11-05T15:47:57+00:00",
       "lastCommit": "11f974e8",
       "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
-      "touches": 9
+      "touches": 11
     },
     {
       "path": "src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs",
@@ -2451,11 +2459,43 @@
       "lastModified": "2026-11-05T15:47:57+00:00",
       "lastCommit": "11f974e8",
       "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
-      "touches": 8
+      "touches": 10
     },
     {
       "path": "src/Meridian.FSharp.DirectLending.Aggregates/README.md",
       "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-11-05T15:47:57+00:00",
+      "lastCommit": "11f974e8",
+      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
+      "touches": 9
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T15:47:57+00:00",
+      "lastCommit": "11f974e8",
+      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
+      "touches": 9
+    },
+    {
+      "path": "src/Meridian.Application/DirectLending/AccrualLedgerService.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-05T15:47:57+00:00",
+      "lastCommit": "11f974e8",
+      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.Application/DirectLending/DirectLendingEventRebuilder.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-05T15:47:57+00:00",
+      "lastCommit": "11f974e8",
+      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.Application/DirectLending/DirectLendingOutboxDispatcher.cs",
+      "subsystem": "Host and Composition",
       "lastModified": "2026-11-05T15:47:57+00:00",
       "lastCommit": "11f974e8",
       "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
@@ -2467,71 +2507,7 @@
       "lastModified": "2026-11-05T15:47:57+00:00",
       "lastCommit": "11f974e8",
       "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
-      "touches": 7
-    },
-    {
-      "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
-      "touches": 7
-    },
-    {
-      "path": "src/Meridian.FSharp.DirectLending.Aggregates/ContractAggregate.fs",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
-      "touches": 7
-    },
-    {
-      "path": "src/Meridian.FSharp.DirectLending.Aggregates/ServicingAggregate.fs",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
-      "touches": 7
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
-      "touches": 7
-    },
-    {
-      "path": "src/Meridian.Application/DirectLending/AccrualLedgerService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
-      "touches": 6
-    },
-    {
-      "path": "src/Meridian.Application/DirectLending/DailyAccrualWorker.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
-      "touches": 6
-    },
-    {
-      "path": "src/Meridian.Application/DirectLending/DirectLendingEventRebuilder.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
-      "touches": 6
-    },
-    {
-      "path": "src/Meridian.Application/DirectLending/DirectLendingOutboxDispatcher.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
-      "touches": 6
+      "touches": 8
     },
     {
       "path": "src/Meridian.Application/DirectLending/IAccrualLedgerService.cs",
@@ -2539,7 +2515,7 @@
       "lastModified": "2026-11-05T15:47:57+00:00",
       "lastCommit": "11f974e8",
       "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
-      "touches": 6
+      "touches": 8
     },
     {
       "path": "src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs",
@@ -2547,7 +2523,7 @@
       "lastModified": "2026-11-05T15:47:57+00:00",
       "lastCommit": "11f974e8",
       "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
-      "touches": 6
+      "touches": 8
     },
     {
       "path": "src/Meridian.Application/DirectLending/IDirectLendingService.cs",
@@ -2555,7 +2531,7 @@
       "lastModified": "2026-11-05T15:47:57+00:00",
       "lastCommit": "11f974e8",
       "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
-      "touches": 6
+      "touches": 8
     },
     {
       "path": "src/Meridian.Application/DirectLending/InMemoryDirectLendingService.cs",
@@ -2563,7 +2539,7 @@
       "lastModified": "2026-11-05T15:47:57+00:00",
       "lastCommit": "11f974e8",
       "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
-      "touches": 6
+      "touches": 8
     },
     {
       "path": "src/Meridian.Application/DirectLending/LoanAccountingProjector.cs",
@@ -2571,7 +2547,7 @@
       "lastModified": "2026-11-05T15:47:57+00:00",
       "lastCommit": "11f974e8",
       "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
-      "touches": 6
+      "touches": 8
     },
     {
       "path": "src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs",
@@ -2579,7 +2555,7 @@
       "lastModified": "2026-11-05T15:47:57+00:00",
       "lastCommit": "11f974e8",
       "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
-      "touches": 6
+      "touches": 8
     },
     {
       "path": "src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs",
@@ -2587,31 +2563,31 @@
       "lastModified": "2026-11-05T15:47:57+00:00",
       "lastCommit": "11f974e8",
       "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
-      "touches": 6
+      "touches": 8
     },
     {
-      "path": "src/Meridian.FSharp.DirectLending.Aggregates/AggregateTypes.fs",
+      "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-05T15:47:57+00:00",
+      "lastCommit": "11f974e8",
+      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.FSharp.DirectLending.Aggregates/ContractAggregate.fs",
       "subsystem": "Domain, Ledger, and F#",
       "lastModified": "2026-11-05T15:47:57+00:00",
       "lastCommit": "11f974e8",
       "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
-      "touches": 6
+      "touches": 8
     },
     {
-      "path": "src/Meridian.FSharp.DirectLending.Aggregates/Interop.fs",
+      "path": "src/Meridian.FSharp.DirectLending.Aggregates/ServicingAggregate.fs",
       "subsystem": "Domain, Ledger, and F#",
       "lastModified": "2026-11-05T15:47:57+00:00",
       "lastCommit": "11f974e8",
       "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
-      "touches": 6
-    },
-    {
-      "path": "src/Meridian.FSharp.DirectLending.Aggregates/Meridian.FSharp.DirectLending.Aggregates.fsproj",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
-      "touches": 6
+      "touches": 8
     },
     {
       "path": "src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.cs",
@@ -2619,7 +2595,7 @@
       "lastModified": "2026-11-05T15:47:57+00:00",
       "lastCommit": "11f974e8",
       "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
-      "touches": 6
+      "touches": 8
     },
     {
       "path": "src/Meridian.Storage/Ledger/LedgerPeriodPostingGuard.cs",
@@ -2627,7 +2603,39 @@
       "lastModified": "2026-11-05T15:47:57+00:00",
       "lastCommit": "11f974e8",
       "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
-      "touches": 6
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.Application/DirectLending/DailyAccrualWorker.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-05T15:47:57+00:00",
+      "lastCommit": "11f974e8",
+      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.FSharp.DirectLending.Aggregates/AggregateTypes.fs",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-11-05T15:47:57+00:00",
+      "lastCommit": "11f974e8",
+      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.FSharp.DirectLending.Aggregates/Interop.fs",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-11-05T15:47:57+00:00",
+      "lastCommit": "11f974e8",
+      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.FSharp.DirectLending.Aggregates/Meridian.FSharp.DirectLending.Aggregates.fsproj",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-11-05T15:47:57+00:00",
+      "lastCommit": "11f974e8",
+      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
+      "touches": 7
     },
     {
       "path": "src/Meridian.Application/DirectLending/DirectLendingServicingPolicyValidator.cs",
@@ -2678,14 +2686,6 @@
       "touches": 1
     },
     {
-      "path": "src/Meridian.FSharp.DirectLending.Aggregates/ServicingSchedule.fs",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
-      "touches": 1
-    },
-    {
       "path": "src/Meridian.Storage/DirectLending/IDirectLendingIndexFixingStore.cs",
       "subsystem": "Providers and Storage",
       "lastModified": "2026-11-05T15:47:57+00:00",
@@ -2718,12 +2718,28 @@
       "touches": 1
     },
     {
+      "path": "src/Meridian.Application/README.md",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-04T22:06:46+00:00",
+      "lastCommit": "607b6a43",
+      "lastSummary": "Docs: record the slice-5 D7 disposition and identifier/governance storage contracts",
+      "touches": 27
+    },
+    {
+      "path": "src/Meridian.Storage/README.md",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-04T22:06:46+00:00",
+      "lastCommit": "607b6a43",
+      "lastSummary": "Docs: record the slice-5 D7 disposition and identifier/governance storage contracts",
+      "touches": 17
+    },
+    {
       "path": "src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs",
       "subsystem": "Host and Composition",
       "lastModified": "2026-11-04T22:06:21+00:00",
       "lastCommit": "54f58ad2",
       "lastSummary": "refactor(security-master): move independent-reviewer checks into a partial",
-      "touches": 10
+      "touches": 12
     },
     {
       "path": "src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.IndependentReview.cs",
@@ -2734,28 +2750,12 @@
       "touches": 1
     },
     {
-      "path": "src/Meridian.Application/README.md",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-04T21:25:45+00:00",
-      "lastCommit": "43cabc1a",
-      "lastSummary": "fix(security-master): enforce governed term amendments in the service",
-      "touches": 23
-    },
-    {
-      "path": "src/Meridian.Contracts/README.md",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-04T21:25:45+00:00",
-      "lastCommit": "43cabc1a",
-      "lastSummary": "fix(security-master): enforce governed term amendments in the service",
-      "touches": 21
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/README.md",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-04T21:25:45+00:00",
-      "lastCommit": "43cabc1a",
-      "lastSummary": "fix(security-master): enforce governed term amendments in the service",
-      "touches": 17
+      "path": "src/Meridian.Storage/SecurityMaster/PostgresOperatorOverridesStore.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-04T22:03:04+00:00",
+      "lastCommit": "bad74459",
+      "lastSummary": "Security Master slice 5: identifier history and versioned governance payloads",
+      "touches": 8
     }
   ],
   "recentChangesWindowDays": 14,
