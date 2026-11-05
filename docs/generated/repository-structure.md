@@ -4409,6 +4409,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterTermsCapabilityVerifier.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.Discard.cs
+│   │   │   ├── SecurityMasterWorkbenchCommandService.FieldBase.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.IndependentReview.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.Mutations.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.Overrides.cs
