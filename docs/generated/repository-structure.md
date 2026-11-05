@@ -6975,7 +6975,8 @@ Meridian-main
 │   │   │   │   ├── 057_terms_capability_floor.sql
 │   │   │   │   ├── 058_security_master_schedule_decimal_precision.sql
 │   │   │   │   ├── 059_security_events_append_only_guard.sql
-│   │   │   │   └── 060_security_master_revision_field_base.sql
+│   │   │   │   ├── 060_security_master_revision_field_base.sql
+│   │   │   │   └── 062_security_master_identifier_revisions.sql
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IBondReferenceProjectionStore.cs
 │   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs
@@ -6993,6 +6994,7 @@ Meridian-main
 │   │   │   ├── IOperatorOverridesStore.cs
 │   │   │   ├── IOptionReferenceProjectionStore.cs
 │   │   │   ├── ISecurityFieldProvenanceStore.cs
+│   │   │   ├── ISecurityIdentifierHistoryStore.cs
 │   │   │   ├── ISecurityMasterCashFlowStore.cs
 │   │   │   ├── ISecurityMasterEventStore.cs
 │   │   │   ├── ISecurityMasterPricingStore.cs
@@ -7036,6 +7038,7 @@ Meridian-main
 │   │   │   ├── PostgresSecurityMasterStore.Aliases.cs
 │   │   │   ├── PostgresSecurityMasterStore.cs
 │   │   │   ├── PostgresSecurityMasterStore.IdentifierCandidates.cs
+│   │   │   ├── PostgresSecurityMasterStore.IdentifierHistory.cs
 │   │   │   ├── PostgresSecurityMasterStore.PostingAuthority.cs
 │   │   │   ├── PostgresSecurityMasterStore.TermsProjection.cs
 │   │   │   ├── PostgresSecurityMasterTermsCapabilityStore.cs
@@ -7044,6 +7047,7 @@ Meridian-main
 │   │   │   ├── PostgresSwapReferenceProjectionStore.cs
 │   │   │   ├── SecurityAliasSnapshot.cs
 │   │   │   ├── SecurityGovernanceEventLog.cs
+│   │   │   ├── SecurityGovernancePayloads.cs
 │   │   │   ├── SecurityMasterCanonicalWriteScope.cs
 │   │   │   ├── SecurityMasterDbMapper.cs
 │   │   │   ├── SecurityMasterMigrationRunner.cs
@@ -9894,6 +9898,8 @@ Meridian-main
 │   │   │   │   └── face-value-lot-constant-yield.json
 │   │   │   └── KNOWN-DEFECTS.md
 │   │   ├── security-master
+│   │   │   ├── governance-payloads
+│   │   │   │   └── v1-captured.json
 │   │   │   ├── schedule-validation
 │   │   │   │   ├── accepted.json
 │   │   │   │   ├── duplicate-properties.json
@@ -11914,6 +11920,9 @@ Meridian-main
 │   │   │   ├── SecurityEconomicTermsV2BridgeCoverageTests.cs
 │   │   │   ├── SecurityEconomicTypedFactorHistoryTests.cs
 │   │   │   ├── SecurityEnrichmentTests.cs
+│   │   │   ├── SecurityGovernancePayloadContractTests.cs
+│   │   │   ├── SecurityGovernancePayloadPostgresTests.cs
+│   │   │   ├── SecurityIdentifierHistoryPostgresTests.cs
 │   │   │   ├── SecurityIdentifierNormalizationParityTests.cs
 │   │   │   ├── SecurityIdentifierNormalizerTests.cs
 │   │   │   ├── SecurityIncomeCashFlowProjectorTests.cs
