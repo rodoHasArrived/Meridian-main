@@ -397,16 +397,20 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
     /// Accrues interest on any outstanding margin loans in all margin accounts.
     /// </summary>
     /// <remarks>
-    /// Call this once per interest period (e.g. daily).  The charge is deducted from the
-    /// account's <c>Cash</c> balance and added to <c>MarginBorrowed</c> on each affected
-    /// position so that equity (and therefore buying power) is reduced accordingly.
+    /// Call this once per interest period (e.g. daily).  The charge is paid from the
+    /// account's <c>Cash</c> balance and posted as margin interest expense; the loan
+    /// principal (<c>MarginBorrowed</c>) is unchanged. Equity therefore falls by exactly
+    /// the interest, once — growing the loan as well would charge it a second time, both
+    /// in <see cref="PortfolioValue"/> and again when the sale repays the inflated loan.
+    /// This matches the backtest engine, which also settles margin interest from cash.
     /// </remarks>
     /// <param name="annualRate">Annual interest rate expressed as a decimal (e.g. 0.065 = 6.5 %).</param>
     /// <param name="days">Number of days to accrue interest for. Defaults to 1 (daily).</param>
+    /// <param name="asOf">Timestamp for the ledger posting. Defaults to the current UTC time.</param>
     /// <exception cref="ArgumentOutOfRangeException">
     ///     Thrown when <paramref name="annualRate"/> is negative or <paramref name="days"/> is less than 1.
     /// </exception>
-    public void AccrueMarginInterest(decimal annualRate, int days = 1)
+    public void AccrueMarginInterest(decimal annualRate, int days = 1, DateTimeOffset? asOf = null)
     {
         if (annualRate < 0m)
             throw new ArgumentOutOfRangeException(nameof(annualRate), "Annual rate must be non-negative.");
@@ -419,6 +423,8 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         var dailyRate = annualRate / 365m;
         var periodRate = dailyRate * days;
 
+        var ts = asOf ?? DateTimeOffset.UtcNow;
+
         lock (_lock)
         {
             foreach (var account in _accounts.Values)
@@ -426,15 +432,26 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
                 if (account.MarginModel is null)
                     continue; // cash account
 
+                var accountInterest = 0m;
                 foreach (var pos in account.Positions.Values)
                 {
                     if (pos.MarginBorrowed <= 0m)
                         continue;
 
-                    var interest = pos.MarginBorrowed * periodRate;
-                    pos.MarginBorrowed += interest; // outstanding loan grows
-                    account.Cash -= interest;       // deducted from cash / equity
+                    accountInterest += pos.MarginBorrowed * periodRate;
                 }
+
+                if (accountInterest == 0m)
+                    continue;
+
+                // Paid from cash once; the loan principal stays where it is.
+                account.Cash -= accountInterest;
+
+                _ledger?.PostLines(ts, $"Margin interest — {account.AccountId}",
+                [
+                    (LedgerAccounts.MarginInterestExpense, accountInterest, 0m),
+                    (LedgerAccounts.Cash, 0m, accountInterest),
+                ]);
             }
         }
     }
