@@ -1807,7 +1807,7 @@ authority, and the same shared contracts remain available to WPF without browser
 logic or a new route.
 
 `ui-api-routes.generated.ts` includes `SecurityMasterAssetClasses` and
-`SecurityMasterAssetClassDefinition`. `SecurityIdentifierKind` includes `LoanX` and `Clip`.
+`SecurityMasterAssetClassDefinition`. `SecurityIdentifierKind` includes `LoanX` and `Clip`, and the regulatory derivatives kinds `Uti`, `Upi`, `MarkitRedEntity` and `MarkitRedPair`.
 
 The passport editor builds its term picker from `GET /api/security-master/asset-classes/{assetClass}`
 (`security-master-schema.api.ts`): scalar-editable terms grouped as the registry declares them,
