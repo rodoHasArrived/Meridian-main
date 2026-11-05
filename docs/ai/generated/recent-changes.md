@@ -1,14 +1,18 @@
 # Meridian AI Recent Changes
 
-> Auto-generated on 2026-11-05T22:17:45Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-11-05T23:19:23Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 Rolling source-file activity for the last 14 days.
 
 | File | Subsystem | Last modified | Commit | Summary | Touches |
 |---|---|---|---|---|---|
+| `src/Meridian.Contracts/README.md` | Host and Composition | 2026-11-05T22:37:53+00:00 | `a87817c8` | fix(security-master): refuse shared-reference primaries on create and amend | 30 |
+| `src/Meridian.FSharp/README.md` | Domain, Ledger, and F# | 2026-11-05T22:37:53+00:00 | `a87817c8` | fix(security-master): refuse shared-reference primaries on create and amend | 14 |
+| `src/Meridian.FSharp/Domain/SecurityMasterCommands.fs` | Domain, Ledger, and F# | 2026-11-05T22:37:53+00:00 | `a87817c8` | fix(security-master): refuse shared-reference primaries on create and amend | 9 |
+| `src/Meridian.Storage/SecurityMaster/Migrations/064_custom_asset_profile_field_projection.sql` | Providers and Storage | 2026-11-05T22:34:11+00:00 | `a26dab51` | Index CustomAsset text values by hash so long text cannot fail the projection write | 2 |
+| `src/Meridian.Storage/SecurityMaster/PostgresCustomAssetProfileFieldProjectionStore.cs` | Providers and Storage | 2026-11-05T22:34:11+00:00 | `a26dab51` | Index CustomAsset text values by hash so long text cannot fail the projection write | 2 |
 | `src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs` | Providers and Storage | 2026-11-05T22:11:28+00:00 | `9ad456e9` | Select the option projection tables by descriptor fact, not by class name | 10 |
-| `src/Meridian.Application/README.md` | Host and Composition | 2026-11-05T19:20:34+00:00 | `e7d86c2b` | Refuse OtherSecurity classification text the label reader would misread | 31 |
-| `src/Meridian.Contracts/README.md` | Host and Composition | 2026-11-05T19:20:34+00:00 | `e7d86c2b` | Refuse OtherSecurity classification text the label reader would misread | 28 |
+| `src/Meridian.Application/README.md` | Host and Composition | 2026-11-05T19:20:34+00:00 | `e7d86c2b` | Refuse OtherSecurity classification text the label reader would misread | 32 |
 | `src/Meridian.Application/SecurityMaster/SecurityMasterService.cs` | Host and Composition | 2026-11-05T19:20:34+00:00 | `e7d86c2b` | Refuse OtherSecurity classification text the label reader would misread | 12 |
 | `src/Meridian.Application/SecurityMaster/SecurityMasterService.Creation.cs` | Host and Composition | 2026-11-05T19:20:34+00:00 | `e7d86c2b` | Refuse OtherSecurity classification text the label reader would misread | 4 |
 | `src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs` | Host and Composition | 2026-11-05T19:20:34+00:00 | `e7d86c2b` | Refuse OtherSecurity classification text the label reader would misread | 3 |
@@ -42,8 +46,4 @@ Rolling source-file activity for the last 14 days.
 | `src/Meridian.FSharp.DirectLending.Aggregates/Interop.fs` | Domain, Ledger, and F# | 2026-11-05T15:47:57+00:00 | `11f974e8` | feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling | 7 |
 | `src/Meridian.FSharp.DirectLending.Aggregates/Meridian.FSharp.DirectLending.Aggregates.fsproj` | Domain, Ledger, and F# | 2026-11-05T15:47:57+00:00 | `11f974e8` | feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling | 7 |
 | `src/Meridian.Application/DirectLending/DirectLendingServicingPolicyValidator.cs` | Host and Composition | 2026-11-05T15:47:57+00:00 | `11f974e8` | feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling | 1 |
-| `src/Meridian.Application/DirectLending/DirectLendingServicingScheduleSupport.cs` | Host and Composition | 2026-11-05T15:47:57+00:00 | `11f974e8` | feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling | 1 |
-| `src/Meridian.Application/DirectLending/InMemoryDirectLendingService.ServicingSchedules.cs` | Host and Composition | 2026-11-05T15:47:57+00:00 | `11f974e8` | feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling | 1 |
-| `src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.ServicingSchedules.cs` | Host and Composition | 2026-11-05T15:47:57+00:00 | `11f974e8` | feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling | 1 |
-| `src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs` | Host and Composition | 2026-11-05T15:47:57+00:00 | `11f974e8` | feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling | 1 |
 

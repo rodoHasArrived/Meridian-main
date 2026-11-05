@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-05T22:17:45Z",
+  "generatedAt": "2026-11-05T23:19:23Z",
   "generatorVersion": "1.0",
   "repositoryRoot": "agent-a6cc8e59dff3245bd",
   "subsystems": [
@@ -2438,6 +2438,46 @@
   ],
   "recentChanges": [
     {
+      "path": "src/Meridian.Contracts/README.md",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-05T22:37:53+00:00",
+      "lastCommit": "a87817c8",
+      "lastSummary": "fix(security-master): refuse shared-reference primaries on create and amend",
+      "touches": 30
+    },
+    {
+      "path": "src/Meridian.FSharp/README.md",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-11-05T22:37:53+00:00",
+      "lastCommit": "a87817c8",
+      "lastSummary": "fix(security-master): refuse shared-reference primaries on create and amend",
+      "touches": 14
+    },
+    {
+      "path": "src/Meridian.FSharp/Domain/SecurityMasterCommands.fs",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-11-05T22:37:53+00:00",
+      "lastCommit": "a87817c8",
+      "lastSummary": "fix(security-master): refuse shared-reference primaries on create and amend",
+      "touches": 9
+    },
+    {
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/064_custom_asset_profile_field_projection.sql",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-05T22:34:11+00:00",
+      "lastCommit": "a26dab51",
+      "lastSummary": "Index CustomAsset text values by hash so long text cannot fail the projection write",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Storage/SecurityMaster/PostgresCustomAssetProfileFieldProjectionStore.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-05T22:34:11+00:00",
+      "lastCommit": "a26dab51",
+      "lastSummary": "Index CustomAsset text values by hash so long text cannot fail the projection write",
+      "touches": 2
+    },
+    {
       "path": "src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs",
       "subsystem": "Providers and Storage",
       "lastModified": "2026-11-05T22:11:28+00:00",
@@ -2451,15 +2491,7 @@
       "lastModified": "2026-11-05T19:20:34+00:00",
       "lastCommit": "e7d86c2b",
       "lastSummary": "Refuse OtherSecurity classification text the label reader would misread",
-      "touches": 31
-    },
-    {
-      "path": "src/Meridian.Contracts/README.md",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-05T19:20:34+00:00",
-      "lastCommit": "e7d86c2b",
-      "lastSummary": "Refuse OtherSecurity classification text the label reader would misread",
-      "touches": 28
+      "touches": 32
     },
     {
       "path": "src/Meridian.Application/SecurityMaster/SecurityMasterService.cs",
@@ -2719,38 +2751,6 @@
     },
     {
       "path": "src/Meridian.Application/DirectLending/DirectLendingServicingPolicyValidator.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Application/DirectLending/DirectLendingServicingScheduleSupport.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Application/DirectLending/InMemoryDirectLendingService.ServicingSchedules.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.ServicingSchedules.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs",
       "subsystem": "Host and Composition",
       "lastModified": "2026-11-05T15:47:57+00:00",
       "lastCommit": "11f974e8",
