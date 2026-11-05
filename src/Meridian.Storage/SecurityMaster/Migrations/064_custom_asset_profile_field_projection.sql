@@ -48,8 +48,11 @@ create table if not exists __SCHEMA__.custom_asset_profile_field_projection (
 create index if not exists custom_asset_profile_field_projection_profile_idx
     on __SCHEMA__.custom_asset_profile_field_projection (custom_profile_id, profile_version);
 
+-- Text values are unbounded (profile Text fields carry no length limit), so the lookup index keys
+-- on md5(text_value) rather than the value itself, which could exceed the B-tree entry size limit and
+-- fail the projection write. Readers match the hash and then recheck the exact value.
 create index if not exists custom_asset_profile_field_projection_field_text_idx
-    on __SCHEMA__.custom_asset_profile_field_projection (custom_profile_id, field_key, text_value);
+    on __SCHEMA__.custom_asset_profile_field_projection (custom_profile_id, field_key, md5(text_value));
 
 comment on table __SCHEMA__.custom_asset_profile_field_projection is
     'Profile-keyed projection of CustomAsset profileFields: one row per field key, keyed by (security_id, field_key). Additive read model over securities.asset_specific_terms.';

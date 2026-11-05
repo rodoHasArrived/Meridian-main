@@ -556,7 +556,7 @@
       "ordinal": 64,
       "path": "src/Meridian.Storage/SecurityMaster/Migrations/064_custom_asset_profile_field_projection.sql",
       "schema": "security_master",
-      "sha256": "3266d82787b4406b0dc95959edee264bd0d7502c266fe7fd2ae1110f47bbddbe"
+      "sha256": "3b66440592481b5d7743c7d37e52549dd0f9db1f046abf81db6a33ee94ffba2b"
     },
     {
       "filename": "001_direct_lending.sql",
@@ -1442,7 +1442,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "5f07897d446912cccb40928f2700af055aa71e0d48129f6b497e79ed4a37e904",
+  "fingerprint": "70deff101c524488d53392e7df0c4031fa62c8daf76c11a73d42077f04a87e89",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {

@@ -4679,7 +4679,7 @@
   "enums": [],
   "exists": true,
   "extensions": [],
-  "fingerprint": "9b1d65692e543e26a1d45a921d1268f8d583aa2fa86c6a8398d28a2cefc6ef47",
+  "fingerprint": "36a05292a5455bd8f1f9e54bdbf0326061a421c493a8bd3f3e02c70a87a2c98d",
   "foreign_tables": [],
   "functions": [
     {
@@ -17740,21 +17740,21 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "6fd996d7fb5dd7869f37b31595a694cb88cbe7665f68071068dd25af8acacfe2",
+      "fingerprint": "a56b6478e53466ec985e70de761b70a6c4e7a1ac627de9f8bb25633a0011a978",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
         {
           "comment": null,
-          "definition": "CREATE INDEX custom_asset_profile_field_projection_field_text_idx ON security_master.custom_asset_profile_field_projection USING btree (custom_profile_id, field_key, text_value)",
-          "expression": null,
-          "fingerprint": "f79a5fe109dc458b8a739cc0324bf4e95a5c17a8fc622d9fb3a969cde9ebfe1e",
+          "definition": "CREATE INDEX custom_asset_profile_field_projection_field_text_idx ON security_master.custom_asset_profile_field_projection USING btree (custom_profile_id, field_key, md5(text_value))",
+          "expression": "md5(text_value)",
+          "fingerprint": "566890a5c9453adad53ca1a84c9caed69d8341bde77fb8a8bad59f4d2bfff200",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
             "custom_profile_id",
             "field_key",
-            "text_value"
+            "md5(text_value)"
           ],
           "live": true,
           "method": "btree",
@@ -66827,21 +66827,21 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "6fd996d7fb5dd7869f37b31595a694cb88cbe7665f68071068dd25af8acacfe2",
+      "fingerprint": "a56b6478e53466ec985e70de761b70a6c4e7a1ac627de9f8bb25633a0011a978",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
         {
           "comment": null,
-          "definition": "CREATE INDEX custom_asset_profile_field_projection_field_text_idx ON security_master.custom_asset_profile_field_projection USING btree (custom_profile_id, field_key, text_value)",
-          "expression": null,
-          "fingerprint": "f79a5fe109dc458b8a739cc0324bf4e95a5c17a8fc622d9fb3a969cde9ebfe1e",
+          "definition": "CREATE INDEX custom_asset_profile_field_projection_field_text_idx ON security_master.custom_asset_profile_field_projection USING btree (custom_profile_id, field_key, md5(text_value))",
+          "expression": "md5(text_value)",
+          "fingerprint": "566890a5c9453adad53ca1a84c9caed69d8341bde77fb8a8bad59f4d2bfff200",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
             "custom_profile_id",
             "field_key",
-            "text_value"
+            "md5(text_value)"
           ],
           "live": true,
           "method": "btree",

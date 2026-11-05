@@ -58,7 +58,8 @@ public sealed class PostgresCustomAssetProfileFieldProjectionStore : ICustomAsse
         return _reader.QueryAsync(
             SelectSql(
                 """
-                where custom_profile_id = @custom_profile_id and field_key = @field_key and text_value = @text_value
+                where custom_profile_id = @custom_profile_id and field_key = @field_key
+                  and md5(text_value) = md5(@text_value) and text_value = @text_value
                 order by security_id
                 """),
             [

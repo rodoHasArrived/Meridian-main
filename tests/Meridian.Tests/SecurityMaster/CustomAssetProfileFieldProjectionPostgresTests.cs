@@ -59,6 +59,30 @@ public sealed class CustomAssetProfileFieldProjectionPostgresTests : IClassFixtu
     }
 
     [SecurityMasterDatabaseFact]
+    public async Task ALongIncompressibleTextValue_Projects_AndIsFoundByItsExactValue()
+    {
+        // Profile Text fields have no length limit. An index over the raw value would exceed the
+        // B-tree entry size (~2.7 KB) for long, poorly compressible text and fail the canonical write.
+        var securityId = Guid.NewGuid();
+        var store = new PostgresSecurityMasterStore(_fixture.Options);
+        var reader = new PostgresCustomAssetProfileFieldProjectionStore(_fixture.Options);
+        var longText = string.Concat(Enumerable.Range(0, 400).Select(static _ => Guid.NewGuid().ToString("N")));
+        var terms = JsonSerializer.Serialize(new
+        {
+            customProfileId = "p-long-text",
+            profileVersion = 1,
+            profileFields = new { memo = longText, other = longText[..^1] + "x" },
+        });
+
+        await store.UpsertProjectionAsync(CustomAssetProfileFieldProjectionTests.Record("CustomAsset", terms, securityId, version: 1));
+
+        (await reader.GetProfileFieldsAsync(securityId)).Single(static row => row.FieldKey == "memo").TextValue.Should().Be(longText);
+        (await reader.FindByTextValueAsync("p-long-text", "memo", longText)).Should().ContainSingle(row => row.SecurityId == securityId);
+        (await reader.FindByTextValueAsync("p-long-text", "memo", longText[..^1] + "x")).Should().BeEmpty(
+            "the hash narrows the lookup and the exact value still decides it");
+    }
+
+    [SecurityMasterDatabaseFact]
     public async Task ARewrite_ReplacesTheFieldRows_AndALegacyRowWithoutAnEnvelopeClearsThem()
     {
         var securityId = Guid.NewGuid();
