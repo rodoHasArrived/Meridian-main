@@ -1,5 +1,5 @@
 import React from "react";
-import { ChevronRight } from "lucide-react";
+import { CalendarCheck, ChevronRight } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import "@/styles/workspace-nav.css";
 import { useWorkspaceExpansion } from "@/components/meridian/use-workspace-expansion";
@@ -9,6 +9,7 @@ import { DesignSystemNavRail, designSystemNavRailClasses } from "@/design-system
 import { FOCUS_VISIBLE_RING_CLASS } from "@/lib/focus-classes";
 import { cn } from "@/lib/utils";
 import type { AppShellOperatingScopeInput } from "@/app-shell.operating-scope";
+import type { WorkspaceAttentionCounts } from "@/lib/daily-control-tower";
 
 /**
  * Left-rail operator navigation sidebar. Renders as a fixed-width `<aside>` inside the
@@ -18,7 +19,9 @@ import type { AppShellOperatingScopeInput } from "@/app-shell.operating-scope";
  * host surfaces such as drawers to add wrapper classes and close after navigation.
  *
  * The rail intentionally avoids repeating the masthead brand or workspace header context. It keeps
- * one scannable list of the seven root workspaces, with the active item carrying `aria-current`.
+ * one scannable list of the seven root workspaces, with the active item carrying `aria-current`,
+ * under a pinned "Today" entry for the Daily Control Tower (a home page, not an eighth workspace).
+ * `attention` adds per-workspace counts from the same queue the Control Tower lists.
  *
  * Product maturity uses the canonical `Available`, `Preview`, and `Setup`
  * taxonomy, with matching `.operator-nav-status-*` visual modifiers.
@@ -28,16 +31,18 @@ interface WorkspaceNavProps {
   density?: "compact" | "detailed";
   onNavigate?: () => void;
   operatingContextScope?: AppShellOperatingScopeInput | null;
+  attention?: WorkspaceAttentionCounts | null;
 }
 
 export function WorkspaceNav({
   className,
   density = "detailed",
   onNavigate,
-  operatingContextScope = null
+  operatingContextScope = null,
+  attention = null
 }: WorkspaceNavProps) {
   const location = useLocation();
-  const viewModel = buildWorkspaceNavViewModel(location.pathname, undefined, location.search, operatingContextScope);
+  const viewModel = buildWorkspaceNavViewModel(location.pathname, undefined, location.search, operatingContextScope, attention);
   const compact = density === "compact";
   const activeWorkspaceKey = viewModel.activeWorkspaceKey ?? undefined;
   const { expandedWorkspaces, toggleWorkspace } = useWorkspaceExpansion(activeWorkspaceKey, location.pathname);
@@ -49,6 +54,27 @@ export function WorkspaceNav({
       ariaLabel={`${viewModel.brandTitle} navigation`}
       navAriaLabel="Workspaces"
     >
+      <div className={designSystemNavRailClasses.group}>
+        <div className={designSystemNavRailClasses.row}>
+          <Link
+            to={viewModel.today.route}
+            aria-current={viewModel.today.ariaCurrent}
+            aria-label={viewModel.today.ariaLabel}
+            title="Today: Daily Control Tower"
+            className={cn(
+              designSystemNavRailClasses.item,
+              "operator-nav-today",
+              FOCUS_VISIBLE_RING_CLASS,
+              viewModel.today.active && designSystemNavRailClasses.itemActive
+            )}
+            onClick={onNavigate}
+          >
+            <CalendarCheck className={designSystemNavRailClasses.itemIcon} width={16} height={16} aria-hidden="true" />
+            <span className="operator-nav-label truncate font-medium">{viewModel.today.label}</span>
+            <AttentionCount count={viewModel.today.attentionCount} />
+          </Link>
+        </div>
+      </div>
       <div className={designSystemNavRailClasses.section}>{viewModel.navEyebrow}</div>
       {!compact && viewModel.operatingScopeLabel ? (
         <div className={designSystemNavRailClasses.scope} aria-label={viewModel.operatingScopeAriaLabel ?? undefined}>
@@ -95,6 +121,7 @@ export function WorkspaceNav({
                 >
                   <img className={designSystemNavRailClasses.itemIcon} src={iconSrc} width="16" height="16" alt="" aria-hidden="true" />
                   <span className="operator-nav-label truncate font-medium">{item.label}</span>
+                  <AttentionCount count={item.attentionCount} />
                   {!compact ? (
                     <span className={cn(designSystemNavRailClasses.status, designSystemNavRailClasses.statusTone(item.maturityTone))}>
                       <span className={designSystemNavRailClasses.statusDot} aria-hidden="true" />
@@ -154,5 +181,17 @@ export function WorkspaceNav({
         );
       })}
     </DesignSystemNavRail>
+  );
+}
+
+/** Queue count badge; the count is also in the link's accessible name, so it is hidden here. */
+function AttentionCount({ count }: { count: number }) {
+  if (count <= 0) {
+    return null;
+  }
+  return (
+    <span className="operator-nav-count" aria-hidden="true">
+      {count > 99 ? "99+" : count}
+    </span>
   );
 }

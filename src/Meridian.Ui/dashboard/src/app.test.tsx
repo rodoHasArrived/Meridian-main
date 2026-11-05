@@ -504,6 +504,9 @@ describe("App", () => {
       { timeout: 10_000 }
     )).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Daily Control Tower Workstation" })).toBeInTheDocument();
+    // The front door is no longer orphaned: its breadcrumb and the pinned sidebar entry name it Today.
+    expect(within(screen.getByRole("navigation", { name: /breadcrumb/i })).getByText("Today")).toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: /^Today, Daily Control Tower, current route/ }).length).toBeGreaterThan(0);
     expect(screen.getByRole("region", { name: "Daily Control Tower continuity" })).toBeInTheDocument();
     const confidence = screen.getByRole("region", { name: "Daily control tower confidence" });
     ["Connectivity", "Scope", "Freshness", "Completeness", "Blocker"].forEach((label) => {
