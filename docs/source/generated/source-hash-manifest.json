@@ -157,7 +157,7 @@
       "path": "src/Meridian.FSharp.DirectLending.Aggregates",
       "readme": "src/Meridian.FSharp.DirectLending.Aggregates/README.md",
       "readme_hash": "67dc162cdf809f4c20c73ae8f4c8eb0c549a9b3823ae8557f08251e40f9f2fb6",
-      "source_hash": "ebf535c8df6cf8c9355db1b6073cff1bd57e5cda494f5053c085aba17bc67b07"
+      "source_hash": "6dd914d53047829112597df1e7ce7482902f0892887e23221d953cf66e04eda4"
     },
     {
       "id": "SRC-FSHARP-LEDGER",

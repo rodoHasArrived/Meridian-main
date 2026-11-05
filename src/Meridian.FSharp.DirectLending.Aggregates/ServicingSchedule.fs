@@ -2,6 +2,7 @@ namespace Meridian.FSharp.DirectLending.Aggregates
 
 open System
 open Meridian.Contracts.DirectLending
+open Meridian.Contracts.SecurityMaster.Schedules
 
 /// Pure date rules for the persisted direct-lending servicing schedules: floating-rate reset dates,
 /// fixing observation dates (lookback) and PIK capitalization dates. Every function is total over
@@ -34,10 +35,11 @@ module DirectLendingServicingSchedule =
         | PikCapitalizationFrequency.OnInterestPaymentDate -> paymentMonths terms.PaymentFrequency
         | other -> invalidArg "frequency" (sprintf "Unsupported PIK capitalization frequency '%A'." other)
 
-    /// Dates anchor + k*months for k = 0, 1, ... up to and including maturity. Each date is computed
-    /// from the anchor (not from the previous date), so a 31st anchor does not drift to the 28th.
+    /// Dates anchor + k*months for k = 0, 1, ... up to and including maturity, on the shared schedule
+    /// kernel's anchored grid: each date is computed from the anchor (not from the previous date), so a
+    /// 31st anchor gives Feb 28, Mar 31, Apr 30 instead of drifting to the 28th.
     let private stepDates (anchor: DateOnly) (months: int) (maturity: DateOnly) =
-        Seq.initInfinite (fun k -> anchor.AddMonths(k * months))
+        ScheduleGenerator.RollDates(anchor, ScheduleTenor.Months months, ScheduleAnchorMode.Anchored)
         |> Seq.takeWhile (fun date -> date <= maturity)
         |> Seq.toArray
 
