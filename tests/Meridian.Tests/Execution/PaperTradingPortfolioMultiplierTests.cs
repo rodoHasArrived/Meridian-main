@@ -104,6 +104,24 @@ public sealed class PaperTradingPortfolioMultiplierTests
     }
 
     [Fact]
+    public void WarrantFill_PaysPriceTimesMultiplier()
+    {
+        // Warrants are listed premium contracts too: the catalog marks them with the same
+        // UsesOccOptionSymbols fact as options, so the book pays price x quantity x multiplier.
+        var portfolio = new PaperTradingPortfolio(100_000m);
+        var report = Fill("XYZ.WS", OrderSide.Buy, qty: 1m, price: 2.00m) with
+        {
+            AssetClass = "Warrant",
+            LotUnitKind = SecurityLotUnitKind.Contracts,
+            LotMultiplier = 10m
+        };
+
+        portfolio.ApplyFill(report);
+
+        portfolio.Cash.Should().Be(99_980m);
+    }
+
+    [Fact]
     public void UnclassifiedReport_WithOmsMultiplier_PaysTheMultipliedPremium()
     {
         // The order-management path: no asset class on the report, only the multiplier the OMS

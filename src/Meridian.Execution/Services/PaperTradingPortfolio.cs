@@ -561,9 +561,11 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
     }
 
     /// <summary>
-    /// The multiplier that turns a fill's quantity × quote into money in this book. Options pay
-    /// their premium in full, so one $2.50 contract on a 100 multiplier moves $250 — the same
-    /// figure <c>OrderNotionalResolver</c> sizes the order at.
+    /// The multiplier that turns a fill's quantity × quote into money in this book. Listed
+    /// premium contracts — options and warrants, the classes whose catalog descriptor declares
+    /// <see cref="SecurityAssetClassDescriptor.UsesOccOptionSymbols"/> — pay their premium in full,
+    /// so one $2.50 option on a 100 multiplier moves $250, the same figure
+    /// <c>OrderNotionalResolver</c> sizes the order at.
     /// </summary>
     /// <remarks>
     /// Face-value fills are already converted to dollars per unit of face, so they stay at 1.
@@ -585,9 +587,9 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
 
         if (descriptor is not null)
         {
-            return string.Equals(descriptor.AssetClass, "Option", StringComparison.OrdinalIgnoreCase)
-                ? multiplier
-                : 1m;
+            // Read the catalog fact rather than the class name (the asset-class comparison
+            // ratchet forbids spelling classes outside the catalog).
+            return descriptor.UsesOccOptionSymbols ? multiplier : 1m;
         }
 
         return report.OptionContract is not null || multiplier != 1m ? multiplier : 1m;
@@ -1243,7 +1245,8 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
 
     /// <summary>
     /// Multiplier that turns quantity × quote into money in this book: the contract multiplier
-    /// for options (premium is paid in full), and 1 for everything else — including futures,
+    /// for listed premium contracts such as options and warrants (premium is paid in full), and 1
+    /// for everything else — including futures,
     /// which settle variation margin rather than exchanging notional and are not yet modelled.
     /// <see cref="CostBasis"/>, <see cref="MarketPrice"/> and lot entry prices stay per-unit
     /// quotes, because every downstream reader applies the multiplier to them itself; only the
