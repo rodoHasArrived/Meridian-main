@@ -111,8 +111,13 @@ public sealed class BrokeragePortfolioState(LiveBrokeragePortfolioSyncService sy
         AverageCostBasis = position.AverageEntryPrice,
         MarketPrice = position.MarketPrice,
         // Same multiplier the IPosition view carries, so PositionState's money fields match
-        // the broker's dollar market value and P&L rather than quote × contracts.
-        ContractMultiplier = ContractMultiplierFor(position, observation),
+        // the broker's dollar market value and P&L rather than quote × contracts. Unlike that
+        // view, this projection must stay readable while an option's multiplier is unresolved
+        // (position limits still read its quantity), so an unresolved contract keeps the 1x
+        // quote scale; readiness is already blocked and the IPosition view still fails closed.
+        ContractMultiplier = position.AssetClass == "us_option"
+            ? observation.OptionContractMultipliers.TryGetValue(position.Symbol, out var multiplier) ? multiplier : 1m
+            : 1m,
         LastUpdated = observation.Snapshot!.RetrievedAt
     };
 
