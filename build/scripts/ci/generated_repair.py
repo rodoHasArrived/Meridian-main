@@ -18,6 +18,7 @@ import stat
 import subprocess
 import sys
 import tempfile
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -450,7 +451,7 @@ def write_outputs(result: dict, path: Path) -> None:
         "noop": "No repair is needed; use the authoritative checks on the current revision.",
         "ready": "The trusted publisher must recheck revisions before an App-authenticated ordinary push.",
         "failed": "Inspect the run diagnostics and correct the failure; no validation bypass is permitted.",
-        "refreshed": "Inspect backlog and dispatched counts; later scans drain remaining eligible requests.",
+        "refreshed": "Inspect the dispatched generation runs; each eligible stale PR is queued for repair and fresh required checks.",
         "trusted-generation-requested": "Inspect the fresh default-branch generation run; its candidate must pass provenance, scope, and current-ref validation before any branch write.",
     }
     result.setdefault("next_action", next_actions.get(result["outcome"], "Inspect the generation report."))
@@ -592,26 +593,37 @@ def prepare_generation(root: Path, api: GitHub, run_id: int, default_branch: str
 def paginated(api: GitHub, path: str, key: str | None = None) -> list:
     values = []
     separator = "&" if "?" in path else "?"
-    for page in range(1, 11):
+    page = 1
+    while True:
         result = api.get(f"{path}{separator}per_page=100&page={page}")
         batch = result[key] if key else result
         values.extend(batch)
         if len(batch) < 100:
             return values
-    raise RepairError("Refresh scan exceeds its 1,000-item bound; narrow the backlog manually")
+        page += 1
 
 
-def refresh(api: GitHub, default_branch: str, limit: int = 10) -> dict:
-    """Bound fanout on main advancement; never retry an already requested pair."""
+def refresh(api: GitHub, default_branch: str) -> dict:
+    """Queue every stale open PR, pacing dispatches without a daily backlog."""
     base = api.get("/branches/" + urllib.parse.quote(default_branch, safe=""))["commit"]["sha"]
     runs = paginated(api, f"/actions/workflows/generated-repair.yml/runs?head_sha={base}", "workflow_runs")
     seen = set()
     for run in runs:
         try:
+            metadata = parse_run_metadata(run.get("display_title", ""))
             request = parse_request(run.get("display_title", ""))
-            seen.add((request["pr_number"], request["head_sha"], request["base_sha"]))
         except RepairError:
             continue
+        # Only an active or successful trusted dispatch covers this pair. Failed
+        # or cancelled generation must remain recoverable on the next scan.
+        if (run.get("event") == "workflow_dispatch"
+                and run.get("head_branch") == default_branch
+                and run.get("head_repository", {}).get("full_name") == api.repository
+                and run.get("head_sha") == metadata["workflow_execution_sha"]
+                and metadata["execution_ref"] == f"refs/heads/{default_branch}"
+                and (run.get("status") in {"queued", "in_progress", "waiting", "pending", "requested"}
+                     or (run.get("status") == "completed" and run.get("conclusion") == "success"))):
+            seen.add((request["pr_number"], request["head_sha"], request["base_sha"]))
     pulls = paginated(api, "/pulls?state=open&base=" + urllib.parse.quote(default_branch, safe=""))
     eligible, skipped = [], 0
     for pr in pulls:
@@ -627,17 +639,17 @@ def refresh(api: GitHub, default_branch: str, limit: int = 10) -> dict:
             continue
         eligible.append({"pr_number": number, "head_sha": head, "base_sha": base,
                          "attempt": 0, "root_sha": head})
-    for request in eligible[:limit]:
+    for index, request in enumerate(eligible):
+        # Stay below GitHub's secondary content-creation rate limit. The Actions
+        # queue controls generation concurrency; no PR is deferred to tomorrow.
+        if index:
+            time.sleep(1)
         dispatch_retry(api, request, default_branch)
-    # These are observed waiting pairs, not PR creation dates or inferred ages.
-    # Repeated receipts let metrics establish a lower bound on continuous wait.
-    waiting = [{key: item[key] for key in ("pr_number", "head_sha", "base_sha")}
-               for item in eligible[limit:]]
-    return {"status": "refreshed", "dispatched": len(eligible[:limit]), "backlog": max(0, len(eligible) - limit),
+    return {"status": "refreshed", "dispatched": len(eligible), "backlog": 0,
             "observed_at": datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z"),
-            "waiting_requests": waiting,
-            "reason": f"Dispatched {len(eligible[:limit])} stale PRs; backlog {max(0, len(eligible) - limit)}; "
-                      f"{skipped} head/base pairs already requested. Daily/manual refresh drains the backlog."}
+            "waiting_requests": [],
+            "reason": f"Dispatched all {len(eligible)} stale PRs; "
+                      f"{skipped} head/base pairs already active or successfully generated."}
 
 
 def main() -> int:
