@@ -12,6 +12,7 @@ import type {
   ExecutionBlotterSnapshot,
   ExecutionGatewayHealth
 } from "@/types/execution-blotter.types";
+import { formatMoney, formatQuantity } from "@/lib/format";
 
 export type ExecutionBlotterTone = "default" | "success" | "warning" | "danger";
 
@@ -160,7 +161,7 @@ function pnlTone(value: number): ExecutionBlotterTone {
 }
 
 function formatCurrency(value: number): string {
-  return value.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 2 });
+  return formatMoney(value, { context: "trading", decimals: 2 });
 }
 
 function formatSignedCurrency(value: number): string {
@@ -168,5 +169,5 @@ function formatSignedCurrency(value: number): string {
 }
 
 function formatNumber(value: number): string {
-  return value.toLocaleString(undefined, { maximumFractionDigits: 4 });
+  return formatQuantity(value, { maxDecimals: 4 });
 }

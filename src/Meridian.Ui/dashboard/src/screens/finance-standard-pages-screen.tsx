@@ -2,7 +2,7 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 import { LedgerAmountProofDrawer } from "@/components/meridian/proof-drawer";
 import type { LedgerAmountSelection } from "@/types/ledger-amount-proof";
 import { Link, useSearchParams } from "react-router-dom";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatMoney } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -500,7 +500,7 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
   // same governed debits and credits, so they carry it too rather than defaulting to dollars.
   // Ledger amounts keep the currency's full minor-unit precision ($500.00, not $500): Intl's
   // currency default supplies 2 decimals for USD/EUR and 0 for JPY.
-  const postedMoney = (value: number) => formatCurrency(value, { currency: baseCurrency || "USD" });
+  const postedMoney = (value: number) => formatMoney(value, { context: "accounting", currency: baseCurrency || "USD" });
 
   const filteredRows = useMemo(() => {
     const needle = searchText.trim().toLowerCase();

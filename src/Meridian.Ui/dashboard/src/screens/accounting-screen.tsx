@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import "@/styles/accounting-screen.css";
 import { useAccountingCloseSources, type CloseWorkflowQuery } from "./accounting-screen.close-sources";
 import { useValuationMarkPreview, ValuationMarkPreviewPanel } from "./accounting-screen.mark-preview";
-import { formatCurrency as formatCurrencyAmount } from "@/lib/format";
+import { formatCount, formatCurrency as formatCurrencyAmount } from "@/lib/format";
 import { StatStrip } from "@/components/meridian/stat-strip";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
@@ -1649,7 +1649,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
           item.label.toLowerCase().includes("coverage")
             ? { ...item, value: coveragePosture.label, detail: coveragePosture.detail, tone: coverageTone }
             : item.label.toLowerCase().includes("conflict")
-            ? { ...item, value: openConflictCount.toLocaleString(), tone: conflictTone }
+            ? { ...item, value: formatCount(openConflictCount), tone: conflictTone }
             : item
         )),
         ...(hasCoverageSummary ? [] : [{
@@ -1660,7 +1660,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
         }]),
         ...(hasConflictSummary ? [] : [{
           label: "Open conflicts",
-          value: openConflictCount.toLocaleString(),
+          value: formatCount(openConflictCount),
           detail: openConflictCount > 0 ? "Identifier conflicts require operator review." : "No open identifier conflicts.",
           tone: conflictTone
         }])

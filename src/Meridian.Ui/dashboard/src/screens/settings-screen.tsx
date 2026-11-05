@@ -2,7 +2,7 @@ import { OwnedProviderCredentialPanel } from "./settings-owned-provider-credenti
 import { Activity, ArrowRight, ExternalLink, GitBranch, KeyRound, LoaderCircle, MonitorCheck, RefreshCcw, Save, Search, ShieldCheck, Trash2, User } from "lucide-react";
 import { ProviderSetupPanel } from "@/components/data/provider-setup-panel";
 import { LifecycleControlPanel } from "@/components/meridian/lifecycle-control-panel";
-import { formatNumber as formatNumberAmount } from "@/lib/format";
+import { formatNumber as formatNumberAmount, formatUtcTimestamp } from "@/lib/format";
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { StatStrip } from "@/components/meridian/stat-strip";
@@ -411,7 +411,6 @@ function settingsStorageHealthTone(
   if (health === "Critical") return "danger";
   return "default";
 }
-
 
 const requirementToneClass = {
   success: "border-success/30 bg-success/10 text-success",
@@ -6700,14 +6699,8 @@ function formatProviderRuntimeUtcMinute(value: string | Date | null | undefined,
     return unavailableLabel;
   }
 
-  return `${PROVIDER_RUNTIME_UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${padProviderRuntimeUtc(date.getUTCHours())}:${padProviderRuntimeUtc(date.getUTCMinutes())} UTC`;
+  return formatUtcTimestamp(date);
 }
-
-function padProviderRuntimeUtc(value: number): string {
-  return value.toString().padStart(2, "0");
-}
-
-const PROVIDER_RUNTIME_UTC_MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 const PROVIDER_OPEN_API_AUTH_OPTIONS: { value: ProviderIntegrationAuthType; label: string }[] = [
   { value: "OAuth2", label: "OAuth2" },

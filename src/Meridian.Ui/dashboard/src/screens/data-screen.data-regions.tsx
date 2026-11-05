@@ -15,6 +15,7 @@ import {
 import type { CoverageGapsViewModel } from "@/screens/data-screen.coverage-gaps.view-model";
 import type { DataQualityPanelViewModel } from "@/screens/data-screen.data-quality.view-model";
 import { qualityToneBadgeVariant, resultToneClass } from "@/screens/data-screen.tone-styles";
+import { formatCount } from "@/lib/format";
 
 /** Reveal the provider capability matrix region in response to a contextual "compare" action. */
 function revealCapabilityMatrix(toast: ToastApi, symbol?: string) {
@@ -317,7 +318,7 @@ export function DataQualityRegion({
                                         </span>
                                         <span className="min-w-0 flex-1 text-muted-foreground">
                                           {new Date(gap.from).toLocaleString()} – {new Date(gap.to).toLocaleString()} ·{" "}
-                                          {gap.estimatedMissingEvents.toLocaleString()} estimated missing
+                                          {formatCount(gap.estimatedMissingEvents)} estimated missing
                                         </span>
                                         <Button
                                           type="button"

@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SeverityBadge } from "@/components/operations";
-import { formatCurrency as formatCurrencyAmount } from "@/lib/format";
+import { formatCount, formatCurrency as formatCurrencyAmount } from "@/lib/format";
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import type {
   AccountingWorkspaceResponse,
@@ -44,23 +44,23 @@ export function ReportingPrivateCapitalReadinessPanel({ data }: { data: Accounti
               <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
                 <ReportingPrivateCapitalMetric
                   label="Fund events"
-                  value={activity.fundEventCount.toLocaleString()}
-                  detail={`${activity.postedFundEventCount.toLocaleString()} posted / ${activity.submittedFundEventCount.toLocaleString()} submitted`}
+                  value={formatCount(activity.fundEventCount)}
+                  detail={`${formatCount(activity.postedFundEventCount)} posted / ${formatCount(activity.submittedFundEventCount)} submitted`}
                 />
                 <ReportingPrivateCapitalMetric
                   label="Capital accounts"
-                  value={activity.capitalAccountCount.toLocaleString()}
-                  detail={`${activity.approvalQueueCount.toLocaleString()} approval queue`}
+                  value={formatCount(activity.capitalAccountCount)}
+                  detail={`${formatCount(activity.approvalQueueCount)} approval queue`}
                 />
                 <ReportingPrivateCapitalMetric
                   label="Ledger impacts"
-                  value={ledgerImpacts.length.toLocaleString()}
-                  detail={`${ledgerImpacts.filter((impact) => impact.isPostingReady).length.toLocaleString()} posting-ready`}
+                  value={formatCount(ledgerImpacts.length)}
+                  detail={`${formatCount(ledgerImpacts.filter((impact) => impact.isPostingReady).length)} posting-ready`}
                 />
                 <ReportingPrivateCapitalMetric
                   label="Report outputs"
-                  value={reportOutputs.length.toLocaleString()}
-                  detail={`${reportOutputs.filter((output) => output.isReportReady).length.toLocaleString()} report-ready / ${activity.publishedReportOutputCount.toLocaleString()} published`}
+                  value={formatCount(reportOutputs.length)}
+                  detail={`${formatCount(reportOutputs.filter((output) => output.isReportReady).length)} report-ready / ${formatCount(activity.publishedReportOutputCount)} published`}
                 />
                 <ReportingPrivateCapitalMetric
                   label="Net activity"
@@ -71,7 +71,7 @@ export function ReportingPrivateCapitalReadinessPanel({ data }: { data: Accounti
 
               {activity.validationIssues.length > 0 ? (
                 <div role="status" aria-label="Private-capital data warnings" className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
-                  <p>{activity.validationIssues.length.toLocaleString()} data issue{activity.validationIssues.length === 1 ? "" : "s"} retained with the shared activity data.</p>
+                  <p>{formatCount(activity.validationIssues.length)} data issue{activity.validationIssues.length === 1 ? "" : "s"} retained with the shared activity data.</p>
                   <ul className="mt-2 space-y-1 text-xs">
                     {activity.validationIssues.slice(0, 3).map((issue, index) => (
                       <li key={`${issue.code}-${index}`}>{issue.code}: {issue.message}</li>
@@ -191,18 +191,18 @@ function ReportingPrivateCapitalFundEventRecordRow({
           />
         </div>
         <p className="mt-2 text-xs text-muted-foreground">
-          {record.reportOutputCount.toLocaleString()} output{record.reportOutputCount === 1 ? "" : "s"} / {record.reportLineProvenanceCount.toLocaleString()} provenance line{record.reportLineProvenanceCount === 1 ? "" : "s"}
+          {formatCount(record.reportOutputCount)} output{record.reportOutputCount === 1 ? "" : "s"} / {formatCount(record.reportLineProvenanceCount)} provenance line{record.reportLineProvenanceCount === 1 ? "" : "s"}
         </p>
         <p className="mt-1 break-all font-mono text-[11px] text-muted-foreground">
           {record.primaryReportOutputType ?? record.reportWorkflowState ?? record.publicationManifestId ?? "No primary report output"}
         </p>
       </td>
       <td className="px-3 py-2">
-        <div className="text-xs text-muted-foreground">{record.evidenceLinkCount.toLocaleString()} retained evidence link{record.evidenceLinkCount === 1 ? "" : "s"}</div>
+        <div className="text-xs text-muted-foreground">{formatCount(record.evidenceLinkCount)} retained evidence link{record.evidenceLinkCount === 1 ? "" : "s"}</div>
         <ReportingPrivateCapitalEvidenceCategories categories={record.evidenceCategories ?? []} />
       </td>
       <td className="px-3 py-2 text-xs">
-        <div>{record.ledgerImpactCount.toLocaleString()} ledger impact{record.ledgerImpactCount === 1 ? "" : "s"}</div>
+        <div>{formatCount(record.ledgerImpactCount)} ledger impact{record.ledgerImpactCount === 1 ? "" : "s"}</div>
         <div className="mt-1">{record.isPostingReady ? "Posting-ready" : "Posting review"}</div>
         <div className="mt-1 font-mono text-muted-foreground">{formatReportingMoney(record.grossAmount, record.currency)} gross</div>
       </td>
@@ -212,7 +212,7 @@ function ReportingPrivateCapitalFundEventRecordRow({
         <div className="mt-1 font-mono text-muted-foreground">
           {formatReportingMoney(record.capitalAccountOpeningNetActivity, record.currency)} to {formatReportingMoney(record.capitalAccountEndingNetActivity, record.currency)}
         </div>
-        <div className="mt-1">{record.capitalAccountSubledgerEntryCount.toLocaleString()} subledger movement{record.capitalAccountSubledgerEntryCount === 1 ? "" : "s"}</div>
+        <div className="mt-1">{formatCount(record.capitalAccountSubledgerEntryCount)} subledger movement{record.capitalAccountSubledgerEntryCount === 1 ? "" : "s"}</div>
       </td>
       <td className="px-3 py-2 text-[11px]">
         <ReportingPrivateCapitalRouteLink label="Command center" href={commandCenterRoute} />
@@ -260,10 +260,10 @@ function ReportingPrivateCapitalSubledgerRow({ subledger }: { subledger: Private
         <div className="mt-1">{formatReportingMoney(subledger.endingNetActivity, subledger.currency)} ending</div>
       </td>
       <td className="px-3 py-2 text-xs">
-        <div>{subledger.fundEventCount.toLocaleString()} fund event{subledger.fundEventCount === 1 ? "" : "s"}</div>
-        <div className="mt-1">{subledger.postedFundEventCount.toLocaleString()} posted</div>
-        <div className="mt-1">{subledger.approvalQueueCount.toLocaleString()} approval queue</div>
-        <div className="mt-1">{subledger.publishedReportOutputCount.toLocaleString()} published report output{subledger.publishedReportOutputCount === 1 ? "" : "s"}</div>
+        <div>{formatCount(subledger.fundEventCount)} fund event{subledger.fundEventCount === 1 ? "" : "s"}</div>
+        <div className="mt-1">{formatCount(subledger.postedFundEventCount)} posted</div>
+        <div className="mt-1">{formatCount(subledger.approvalQueueCount)} approval queue</div>
+        <div className="mt-1">{formatCount(subledger.publishedReportOutputCount)} published report output{subledger.publishedReportOutputCount === 1 ? "" : "s"}</div>
       </td>
       <td className="px-3 py-2 text-xs">
         <SeverityBadge
@@ -272,8 +272,8 @@ function ReportingPrivateCapitalSubledgerRow({ subledger }: { subledger: Private
         />
         <div className="mt-1 text-[11px] text-muted-foreground">{subledger.readinessReason || "No subledger readiness reason"}</div>
         <ReportingPrivateCapitalRouteLink label={subledger.nextAction || "Next action"} href={subledger.nextActionRoute ?? subledger.activityRoute} />
-        <div>{subledger.evidenceLinkCount.toLocaleString()} retained evidence link{subledger.evidenceLinkCount === 1 ? "" : "s"}</div>
-        <div className="mt-1">{subledger.validationIssueCount.toLocaleString()} validation issue{subledger.validationIssueCount === 1 ? "" : "s"}</div>
+        <div>{formatCount(subledger.evidenceLinkCount)} retained evidence link{subledger.evidenceLinkCount === 1 ? "" : "s"}</div>
+        <div className="mt-1">{formatCount(subledger.validationIssueCount)} validation issue{subledger.validationIssueCount === 1 ? "" : "s"}</div>
         <ReportingPrivateCapitalEvidenceCategories categories={subledger.evidenceCategories ?? []} />
       </td>
     </tr>
@@ -285,7 +285,7 @@ function ReportingPrivateCapitalLedgerImpactList({ impacts }: { impacts: Private
     <div className="rounded-md border border-border/70 bg-background/30 px-3 py-3">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <h4 className="text-sm font-semibold text-foreground">Ledger impacts</h4>
-        <Badge variant="outline">{impacts.length.toLocaleString()}</Badge>
+        <Badge variant="outline">{formatCount(impacts.length)}</Badge>
       </div>
       {impacts.length > 0 ? (
         <div role="list" aria-label="Private-capital ledger impacts" className="mt-3 space-y-2">
@@ -305,7 +305,7 @@ function ReportingPrivateCapitalLedgerImpactList({ impacts }: { impacts: Private
                 <span>Debits {formatReportingMoney(impact.totalDebits, impact.currency)}</span>
                 <span>Credits {formatReportingMoney(impact.totalCredits, impact.currency)}</span>
                 <span>Imbalance {formatReportingMoney(impact.imbalance, impact.currency)}</span>
-                <span>{impact.lineCount.toLocaleString()} GL lines</span>
+                <span>{formatCount(impact.lineCount)} GL lines</span>
               </div>
             </div>
           ))}
@@ -322,7 +322,7 @@ function ReportingPrivateCapitalReportOutputList({ outputs }: { outputs: Private
     <div className="rounded-md border border-border/70 bg-background/30 px-3 py-3">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <h4 className="text-sm font-semibold text-foreground">Report outputs</h4>
-        <Badge variant="outline">{outputs.length.toLocaleString()}</Badge>
+        <Badge variant="outline">{formatCount(outputs.length)}</Badge>
       </div>
       {outputs.length > 0 ? (
         <div role="list" aria-label="Private-capital report outputs" className="mt-3 space-y-2">
@@ -349,7 +349,7 @@ function ReportingPrivateCapitalReportOutputList({ outputs }: { outputs: Private
                 {formatReportingMoney(output.netCapitalActivity, output.currency)} / {output.approvalState} / {output.reportWorkflowState ?? "No workflow state"}
               </p>
               <p className="mt-1 text-[11px] text-muted-foreground">
-                {output.evidenceLinkCount.toLocaleString()} evidence link{output.evidenceLinkCount === 1 ? "" : "s"} / {(output.reportLineProvenanceCount ?? 0).toLocaleString()} provenance line{output.reportLineProvenanceCount === 1 ? "" : "s"}
+                {formatCount(output.evidenceLinkCount)} evidence link{output.evidenceLinkCount === 1 ? "" : "s"} / {formatCount((output.reportLineProvenanceCount ?? 0))} provenance line{output.reportLineProvenanceCount === 1 ? "" : "s"}
               </p>
               <ReportingPrivateCapitalRouteLink label={output.nextAction || "Output"} href={output.nextActionRoute ?? output.reportOutputRoute ?? output.reportRoute} />
             </div>
@@ -376,7 +376,7 @@ function ReportingPrivateCapitalEvidenceCategories({ categories }: { categories:
               status={category.isReady ? "Ready" : "ReviewRequired"}
               label={category.label || category.categoryId}
             />
-            <span className="font-mono text-[11px] text-muted-foreground">{category.evidenceLinkCount.toLocaleString()} evidence</span>
+            <span className="font-mono text-[11px] text-muted-foreground">{formatCount(category.evidenceLinkCount)} evidence</span>
           </div>
           <p className="mt-1 text-[11px] leading-5 text-muted-foreground">{category.summary || "No evidence summary retained."}</p>
           {(category.requiredEvidence ?? []).length > 0 ? (

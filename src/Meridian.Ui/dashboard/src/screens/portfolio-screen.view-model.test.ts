@@ -838,12 +838,12 @@ describe("buildPortfolioScreenViewModel", () => {
         quantity: "60",
         price: "$188.50",
         commission: "$3.00",
-        filledAt: "May 7, 11:50 UTC",
+        filledAt: "May 7, 2026, 11:50 UTC",
         accountId: "paper-account"
       }),
       expect.objectContaining({
         id: "fill-older",
-        filledAt: "May 7, 11:45 UTC"
+        filledAt: "May 7, 2026, 11:45 UTC"
       })
     ]);
   });
@@ -1329,7 +1329,7 @@ describe("buildPortfolioScreenViewModel", () => {
       { label: "Cash", value: "$150,000", tone: "default" },
       { label: "Buying power", value: "$150,000", tone: "default" },
       { label: "Warnings", value: "0 warnings", tone: "success" },
-      { label: "Latest sync", value: "May 7, 12:00 UTC", tone: "muted" }
+      { label: "Latest sync", value: "May 7, 2026, 12:00 UTC", tone: "muted" }
     ]);
   });
 

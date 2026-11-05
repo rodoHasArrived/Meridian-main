@@ -28,6 +28,7 @@ import type {
   ReportTemplateDraftRequest,
   RenderReportTemplateRequest
 } from "@/types";
+import { formatCount } from "@/lib/format";
 
 export type ReportWriterDropZone = "rowFields" | "columnFields" | "metrics" | "formulas";
 export type ReportWriterDraftState = Partial<Record<ReportWriterDropZone, ReportingWriterToken[]>>;
@@ -105,7 +106,7 @@ function buildReportWriterPreviewDatasetProfiles(
   return [
     ...datasetSources.map((source) => ({
       id: buildReportWriterDatasetSourceProfile(source.sourceId),
-      label: `${source.label} (${source.rowCount.toLocaleString()})`
+      label: `${source.label} (${formatCount(source.rowCount)})`
     })),
     ...reportWriterPreviewDatasetProfiles
   ];
@@ -1080,7 +1081,7 @@ export function ReportWriterDesignerGrid({
           aria-label={`${grid.title} retained dataset source`}
         >
           <span className="font-medium text-foreground">{selectedDatasetSource.label}</span>
-          <span className="ml-2 font-mono">{selectedDatasetSource.rowCount.toLocaleString()} rows</span>
+          <span className="ml-2 font-mono">{formatCount(selectedDatasetSource.rowCount)} rows</span>
           <p className="mt-1">{selectedDatasetSource.description}</p>
           <div className="mt-2 grid gap-1.5 sm:grid-cols-2" role="list" aria-label={`${grid.title} retained dataset field catalog`}>
             {buildReportWriterDatasetFieldCatalog(selectedDatasetSource).map((field) => (

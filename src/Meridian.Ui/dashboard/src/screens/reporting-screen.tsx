@@ -1,7 +1,7 @@
 import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import { FileText, Landmark, Network, PencilLine, RotateCcw, XCircle } from "lucide-react";
 import { useLocation } from "react-router-dom";
-import { formatCurrency as formatCurrencyAmount, formatPercent as formatPercentAmount } from "@/lib/format";
+import { formatCount, formatCurrency as formatCurrencyAmount, formatPercent as formatPercentAmount } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -1142,7 +1142,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                       <ReportingCutMetric label="P&L" value={formatReportingMoney(slice.totalPnl, slice.currency)} />
                       <ReportingCutMetric label="Prior" value={formatReportingMoney(slice.priorTotalPnl, slice.currency)} />
                       <ReportingCutMetric label="Change" value={formatReportingMoney(slice.pnlChange, slice.currency)} />
-                      <ReportingCutMetric label="Sources" value={slice.sourceCount.toLocaleString()} />
+                      <ReportingCutMetric label="Sources" value={formatCount(slice.sourceCount)} />
                     </dl>
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">{slice.readinessSummary}</p>
                     <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">{slice.versionStamp ?? slice.asOf}</p>
@@ -1192,7 +1192,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                       </span>
                     </div>
                     <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
-                      <ReportingCutMetric label="Rank" value={row.rank.toLocaleString()} />
+                      <ReportingCutMetric label="Rank" value={formatCount(row.rank)} />
                       <ReportingCutMetric label="Class" value={row.classification ?? "Unclassified"} />
                       <ReportingCutMetric label="Realized" value={formatReportingMoney(row.realizedPnl, row.currency)} />
                       <ReportingCutMetric label="Unrealized" value={formatReportingMoney(row.unrealizedPnl, row.currency)} />
@@ -1262,8 +1262,8 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                       </span>
                     </div>
                     <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
-                      <ReportingCutMetric label="Funds" value={row.fundCount.toLocaleString()} />
-                      <ReportingCutMetric label="Entities" value={row.entityCount.toLocaleString()} />
+                      <ReportingCutMetric label="Funds" value={formatCount(row.fundCount)} />
+                      <ReportingCutMetric label="Entities" value={formatCount(row.entityCount)} />
                       <ReportingCutMetric label="Gross" value={formatReportingMoney(row.grossExposure, row.currency)} />
                       <ReportingCutMetric label="Net" value={formatReportingMoney(row.netExposure, row.currency)} />
                       <ReportingCutMetric label="Cash" value={formatReportingMoney(row.totalCash, row.currency)} />
@@ -1322,14 +1322,14 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                     </div>
                     <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
                       <ReportingCutMetric label="Format" value={structuredExport.format} />
-                      <ReportingCutMetric label="Rows" value={structuredExport.rowCount.toLocaleString()} />
-                      <ReportingCutMetric label="Fields" value={structuredExport.fieldCount.toLocaleString()} />
-                      <ReportingCutMetric label="Sources" value={structuredExport.sourceCount.toLocaleString()} />
+                      <ReportingCutMetric label="Rows" value={formatCount(structuredExport.rowCount)} />
+                      <ReportingCutMetric label="Fields" value={formatCount(structuredExport.fieldCount)} />
+                      <ReportingCutMetric label="Sources" value={formatCount(structuredExport.sourceCount)} />
                       <ReportingCutMetric label="Schema" value={`v${structuredExport.schemaVersion}`} />
                       <ReportingCutMetric label="Currency" value={structuredExport.currency} />
                       <ReportingCutMetric
                         label="Lineage"
-                        value={(structuredExport.rowLineageCount ?? structuredExport.rowCount).toLocaleString()}
+                        value={formatCount((structuredExport.rowLineageCount ?? structuredExport.rowCount))}
                       />
                     </dl>
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">

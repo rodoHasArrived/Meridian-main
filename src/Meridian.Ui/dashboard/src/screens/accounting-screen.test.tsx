@@ -4436,7 +4436,7 @@ describe("AccountingScreen", () => {
     expect(screen.queryByRole("treegrid", { name: "Primary trial balance lines for the selected ledger run" })).not.toBeInTheDocument();
     const approvalQueue = screen.getByRole("region", { name: "Accounting approval queue" });
     expect(approvalQueue).toHaveTextContent("2026-05");
-    expect(approvalQueue).toHaveTextContent("Jun 1, 12:00 UTC");
+    expect(approvalQueue).toHaveTextContent("Jun 1, 2026, 12:00 UTC");
     expect(approvalQueue).not.toHaveTextContent("workflow-close-1");
     const workflowIdentifiers = screen.getByText("Workflow identifiers").closest("details");
     expect(workflowIdentifiers).not.toHaveAttribute("open");
