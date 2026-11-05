@@ -976,7 +976,8 @@ collections through `WorkspaceDecisionQueueControl`, preserving existing page ta
 `WorkspaceTone` queue-card and badge semantics for summary, approval, exception, and delivery
 decisions, including primary, secondary, and blocked cockpit actions.
 
-The Security Master edit view labels the `LoanX` and `Clip` identifier kinds, and the Strategy
+The Security Master edit view labels the `LoanX` and `Clip` identifier kinds and the regulatory
+derivatives kinds (`UTI`, `UPI`, `Markit RED entity (RED6)`, `Markit RED pair (RED9)`), and the Strategy
 feature module registers the canonical write scope next to the Security Master service.
 
 The desktop passport editor loads the asset-class registry definition and offers a term picker,
