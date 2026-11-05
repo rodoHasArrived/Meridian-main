@@ -3,12 +3,12 @@
   "title": "API Contract Coverage Dashboard",
   "generated_at": "1970-01-01T00:00:00+00:00",
   "score_percent": 20.0,
-  "endpoint_coverage_percent": 30.7,
+  "endpoint_coverage_percent": 30.6,
   "contract_coverage_percent": 4.0,
   "summary": {
-    "endpoint_count": 743,
+    "endpoint_count": 744,
     "documented_endpoint_count": 228,
-    "undocumented_endpoint_count": 515,
+    "undocumented_endpoint_count": 516,
     "workstation_contract_count": 964,
     "documented_workstation_contract_count": 39,
     "undocumented_workstation_contract_count": 925
@@ -707,13 +707,19 @@
     {
       "method": "POST",
       "path": "/api/reference-data/bonds/settlement-consideration",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:19",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:20",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/reference-data/bonds/{securityId:guid}/analytics",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:29",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:30",
+      "documented": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/reference-data/bonds/{securityId:guid}/exercise-notices",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:77",
       "documented": false
     },
     {
