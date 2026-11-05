@@ -750,8 +750,12 @@ public sealed partial class SecurityMasterCashFlowServiceTests
     }
 
     [Fact]
-    public async Task GetProjectionAsync_SwapLegsWithDirections_ShouldNetReceiveMinusPay()
+    public async Task GetProjectionAsync_SwapLegsWithDirections_IsBlockedUntilPerLegRateUnitsAreDeclarable()
     {
+        // D3 (decided 2026-11-05): undeclared non-zero rates block. These legs sit on a Bond row, whose
+        // only unit declaration (a scheduleConventions block) is refused beside legs
+        // (LegConventionsNotFollowed), so the case is blocked until per-leg units are declarable.
+        // Pinned before D3: receive fixed 20 and pay float 16.25 per half year, net 3.75, no principal.
         var securityId = Guid.Parse("66666666-ffff-ffff-ffff-666666666666");
         var asOf = WholePeriodIssueDate();
         var service = BuildService(
@@ -773,20 +777,16 @@ public sealed partial class SecurityMasterCashFlowServiceTests
 
         projection.Should().NotBeNull();
         projection!.TermsUsed!.HasLegs.Should().BeTrue();
-
-        // Receive fixed: 1000 x 4% x 0.5 = 20 per period; pay float at last fixing + spread:
-        // 1000 x 3.25% x 0.5 = 16.25 -> net 3.75, no principal (no exchange declared).
-        projection.Schedule.Should().HaveCount(2);
-        projection.Schedule.Should().OnlyContain(static row => row.InterestAmount == 3.75m && row.PrincipalAmount == 0m);
-
-        projection.LegSchedules.Should().HaveCount(2);
-        projection.LegSchedules![0].Schedule.Should().OnlyContain(static row => row.InterestAmount == 20m);
-        projection.LegSchedules[1].Schedule.Should().OnlyContain(static row => row.InterestAmount == 16.25m);
+        ShouldBeBlockedOnAnUndeclaredLegRate(projection, "fixedRate = 0.04");
     }
 
     [Fact]
-    public async Task GetProjectionAsync_SingleFloatingLeg_ProjectsFloatingRateNoteWithPrincipalExchange()
+    public async Task GetProjectionAsync_SingleFloatingLeg_IsBlockedUntilPerLegRateUnitsAreDeclarable()
     {
+        // D3 (decided 2026-11-05): undeclared non-zero rates block. These legs sit on a Bond row, whose
+        // only unit declaration (a scheduleConventions block) is refused beside legs
+        // (LegConventionsNotFollowed), so the case is blocked until per-leg units are declarable.
+        // Pinned before D3: four quarters of 7.5 and the 500 principal returned at maturity.
         var securityId = Guid.Parse("77777777-aaaa-bbbb-cccc-777777777777");
         var asOf = WholePeriodIssueDate();
         var terms = JsonSerializer.SerializeToElement(new
@@ -806,19 +806,18 @@ public sealed partial class SecurityMasterCashFlowServiceTests
 
         var projection = await service.GetProjectionAsync(securityId, StructuredCashFlowScenario.Base);
 
-        // A single directionless leg projects as Receive: 500 x (5% + 100bps) x 0.25 = 7.5 per
-        // quarter, principal returned at maturity.
         projection.Should().NotBeNull();
-        projection!.Schedule.Should().HaveCount(4);
-        projection.Schedule.Should().OnlyContain(static row => row.InterestAmount == 7.5m);
-        projection.Schedule.Last().PrincipalAmount.Should().Be(500m);
-        projection.Schedule.Last().Factor.Should().Be(0m);
-        projection.Schedule.Take(3).Should().OnlyContain(static row => row.PrincipalAmount == 0m);
+        ShouldBeBlockedOnAnUndeclaredLegRate(projection!, "currentIndexRate = 0.05");
     }
 
     [Fact]
-    public async Task GetProjectionAsync_FloatingLeg_AppliesScenarioShiftToFloatingRatesOnly()
+    public async Task GetProjectionAsync_FloatingLeg_ScenarioShift_IsBlockedUntilPerLegRateUnitsAreDeclarable()
     {
+        // D3 (decided 2026-11-05): undeclared non-zero rates block. These legs sit on a Bond row, whose
+        // only unit declaration (a scheduleConventions block) is refused beside legs
+        // (LegConventionsNotFollowed), so the case is blocked until per-leg units are declarable.
+        // Pinned before D3: +200bp moved only the floating leg, net 20 - 26.25 = -6.25 per half year.
+        // The old OnlyContain assertion also held on the empty blocked schedule, so it now names the block.
         var securityId = Guid.Parse("88888888-aaaa-bbbb-cccc-888888888888");
         var asOf = WholePeriodIssueDate();
         var service = BuildService(
@@ -838,15 +837,17 @@ public sealed partial class SecurityMasterCashFlowServiceTests
 
         var projection = await service.GetProjectionAsync(securityId, StructuredCashFlowScenario.Up200);
 
-        // +200bps moves only the floating leg: pay side becomes 5.25% -> 26.25 per period, while
-        // the contractual fixed 4% is unchanged -> net 20 - 26.25 = -6.25 (the position pays net).
         projection.Should().NotBeNull();
-        projection!.Schedule.Should().OnlyContain(static row => row.InterestAmount == -6.25m);
+        ShouldBeBlockedOnAnUndeclaredLegRate(projection!, "fixedRate = 0.04");
     }
 
     [Fact]
-    public async Task GetProjectionAsync_PersistedSwapLegsWithoutDirections_ProducesLegSchedulesButNoNet()
+    public async Task GetProjectionAsync_PersistedSwapLegsWithoutDirections_IsBlockedUntilPerLegRateUnitsAreDeclarable()
     {
+        // D3 (decided 2026-11-05): undeclared non-zero rates block. These legs sit on a Bond row, whose
+        // only unit declaration (a scheduleConventions block) is refused beside legs
+        // (LegConventionsNotFollowed), so the case is blocked until per-leg units are declarable.
+        // Pinned before D3: per-leg schedules for both legs and an empty net (directions unknown).
         var securityId = Guid.Parse("99999999-aaaa-bbbb-cccc-999999999999");
         var asOf = DateOnly.FromDateTime(DateTime.UtcNow.Date);
         var service = BuildService(
@@ -867,12 +868,18 @@ public sealed partial class SecurityMasterCashFlowServiceTests
 
         var projection = await service.GetProjectionAsync(securityId, StructuredCashFlowScenario.Base);
 
-        // Directions are unknown for a persisted F#-shape swap, so netting would be a guess: the
-        // flat schedule stays empty (nothing can post) while per-leg detail remains available.
         projection.Should().NotBeNull();
-        projection!.Schedule.Should().BeEmpty();
-        projection.LegSchedules.Should().HaveCount(2);
-        projection.LegSchedules![0].Schedule.Should().NotBeEmpty();
+        ShouldBeBlockedOnAnUndeclaredLegRate(projection!, "fixedRate = 0.041");
+    }
+
+    // The exact D3 block for an undeclared leg rate on these Bond rows.
+    private static void ShouldBeBlockedOnAnUndeclaredLegRate(StructuredCashFlowProjectionDto projection, string field)
+    {
+        projection.BlockedReason.Should().Be(
+            $"Rate {field} on Bond has no declared unit (Fraction, Percent or BasisPoints). "
+            + "A legacy value is flagged rather than converted; its unit cannot be inferred from its magnitude.");
+        projection.Schedule.Should().BeEmpty();
+        projection.LegSchedules.Should().BeNull();
     }
 
     [Theory]

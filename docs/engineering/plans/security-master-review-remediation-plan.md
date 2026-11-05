@@ -72,9 +72,10 @@ review. The October 20 blanket `[0,1]` rule and all-fraction design are not acce
 **Implementation note (2026-11-04):** a local implementation adds `RateUnitNormalizer`,
 `SecurityRateFieldUnits` and explicit catalog accounting dispositions. See the
 [slice-4 disposition](../../architecture/security-master-extensibility-review.md#slice-4-disposition--2026-11-04-d10).
-Decision D3 remains open: canonical units and ranges, warn versus block for undeclared legacy rows
-(the implementation blocks), negative-rate policy and StructuredNote accounting. Its legacy-fixture
-test failures wait on that decision.
+D3 decided 2026-11-05: undeclared non-zero rates block. Legacy fixed-income rows stop projecting
+until they declare a unit, Security Master engine swaps cannot declare per-leg units yet, and readers
+still treat negative rates differently. Canonical units and ranges, the repair path, the negative-rate
+policy and StructuredNote accounting remain open. The legacy-fixture tests now assert the decision.
 
 ## Slice 5 — Audit evidence contracts before storage/serialization changes
 

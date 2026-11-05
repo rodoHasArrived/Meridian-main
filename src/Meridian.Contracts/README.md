@@ -514,7 +514,8 @@ accepts older numeric status payloads; persisted queue records already use text 
   zero resolves as unit-invariant. `SecurityRateFieldUnits` inventories each rate field's meaning,
   default unit (Fraction, Percent or BasisPoints), fraction range and negative-rate policy. Only
   `*Bps` fields (BasisPoints) and Deposit/CashSweep rates (Fraction) declare a default; fields
-  stored both ways declare none. The defaults are proposed pending domain-owner decision D3.
+  stored both ways declare none. D3 (decided 2026-11-05): undeclared non-zero rates block; no field
+  default is added.
   Every `SecurityAssetClassCatalog` descriptor also declares an accounting disposition: an
   `AccountingInstrumentClass` or `AccountingOutsideSlice` (StructuredNote is outside the slice).
   `ResolveAccountingInstrumentClass` returns null for a catalogued outside-slice name before the

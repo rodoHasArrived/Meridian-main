@@ -303,10 +303,13 @@ public sealed partial class SecurityMasterCashFlowServiceTests
     public async Task DeclaredConventions_ARecordThatDeclaresNothing_ProjectsExactlyAsItsNoBlockTwin(
         string assetClass, string withBlock, string withoutBlock)
     {
+        // D3 (decided 2026-11-05): undeclared non-zero rates block. Neither twin declares a unit the
+        // reader honors, so both block on the same undeclared rate and stay equal member for member.
         var twin = await ProjectDeclaredAsync(Json(withBlock), WeekendsSource, assetClass: assetClass);
         var clean = await ProjectDeclaredAsync(Json(withoutBlock), WeekendsSource, assetClass: assetClass);
 
-        clean.Schedule.Should().NotBeEmpty("the clean twin projects rows to compare");
+        clean.Schedule.Should().BeEmpty("the clean twin's undeclared rate blocks");
+        clean.BlockedReason.Should().StartWith("Rate ").And.Contain($" on {assetClass} has no declared unit");
         twin.Schedule.Should().Equal(clean.Schedule);
         if (clean.LegSchedules is null)
         {
