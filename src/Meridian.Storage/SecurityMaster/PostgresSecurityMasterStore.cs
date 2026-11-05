@@ -583,11 +583,11 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         SecurityProjectionRecord record,
         CancellationToken ct)
     {
-        // Option is no longer the only Specialized class (CustomAsset is too), so the catalog class
-        // itself is checked: a record that moved from Option to CustomAsset must clear the option
-        // tables. When Option was the sole Specialized class the two checks were equivalent.
+        // Option is no longer the only Specialized class (CustomAsset is too), so the option tables
+        // also require the OCC-symbol fact: a record that moved from Option to CustomAsset must clear
+        // them. Option is the only Specialized class keyed by OCC contract symbols.
         var descriptor = SecurityAssetClassCatalog.GetOrDefault(record.AssetClass);
-        if (!string.Equals(descriptor.AssetClass, "Option", StringComparison.Ordinal) ||
+        if (!descriptor.UsesOccOptionSymbols ||
             descriptor.ProjectionKind != SecurityTermsProjectionKind.Specialized ||
             !TryBuildOptionProjection(record, out var projection))
         {
