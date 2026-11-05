@@ -29,6 +29,7 @@ import type {
   StrategyWorkspaceResponse,
   TradingWorkspaceResponse
 } from "@/types";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 interface OperatorReadinessConsoleProps {
   strategy: StrategyWorkspaceResponse | null;
@@ -418,7 +419,7 @@ function PrimaryNextAction({ action }: { action: ReadinessConsoleNextAction }) {
     >
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div className="min-w-0">
-          <div className="eyebrow-label">Primary next action</div>
+          <div className="eyebrow-label eyebrow-label--sentence">Primary next action</div>
           <div className="mt-1 text-sm font-semibold text-foreground">{action.title}</div>
           <p className="mt-1 text-xs leading-5 text-foreground/80">{action.detail}</p>
           <TechnicalDetails label="Action context" className="mt-2">
@@ -559,7 +560,7 @@ function DetailFieldList({ fields }: { fields: ReadinessConsoleSelectedWorkItemD
           key={field.label}
           className="grid grid-cols-[minmax(0,0.42fr)_minmax(0,0.58fr)] gap-3 rounded-sm border border-border/60 bg-background/25 px-2.5 py-2"
         >
-          <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{field.label}</dt>
+          <dt className={cn("text-[10px] text-muted-foreground", usesTrackedCaps(field.label) && "uppercase tracking-[0.14em]")}>{field.label}</dt>
           <dd className="break-words text-right font-mono text-xs text-foreground">{field.value}</dd>
         </div>
       ))}

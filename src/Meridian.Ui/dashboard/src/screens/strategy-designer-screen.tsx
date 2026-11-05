@@ -24,6 +24,7 @@ import {
   type StrategyDesignerViewModel,
   type StrategyLegDetailFieldViewModel
 } from "@/screens/strategy-designer-screen.view-model";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 const SAVE_DRAFT_BLOCKER_ID = "strategy-designer-save-draft-blocker";
 const BACKTEST_BLOCKER_ID = "strategy-designer-backtest-blocker";
@@ -427,7 +428,7 @@ function CellDetail({ detail }: { detail: StrategyBuilderCellDetailViewModel | n
 function StrategyDetailField({ field }: { field: StrategyLegDetailFieldViewModel }) {
   return (
     <div className="rounded-sm border border-border/60 bg-background/30 px-2.5 py-2">
-      <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{field.label}</dt>
+      <dt className={cn("text-[10px] text-muted-foreground", usesTrackedCaps(field.label) && "uppercase tracking-[0.14em]")}>{field.label}</dt>
       <dd className="mt-1 break-words font-mono text-xs text-foreground">{field.value}</dd>
     </div>
   );
@@ -616,7 +617,7 @@ function OptionsPayoffPanel({ vm }: { vm: StrategyDesignerViewModel }) {
           <div className="ml-auto grid min-w-[11rem] gap-1">
             <label
               htmlFor={vm.spotPriceField.id}
-              className="text-xs uppercase tracking-[0.14em] text-muted-foreground"
+              className={cn("text-xs text-muted-foreground", usesTrackedCaps(vm.spotPriceField.label) && "uppercase tracking-[0.14em]")}
             >
               {vm.spotPriceField.label}
             </label>

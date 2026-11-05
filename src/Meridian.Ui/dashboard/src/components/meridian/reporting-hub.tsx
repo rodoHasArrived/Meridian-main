@@ -83,7 +83,7 @@ const reportFamilyColumns: DenseDataTableColumn<ReportingHubCard>[] = [
     id: "action",
     label: "Action",
     render: (card) => (
-      <Button asChild variant={card.needsAttention ? "default" : "outline"} size="sm">
+      <Button asChild variant="outline" size="sm">
         <a href={card.nextActionHref} aria-label={`${card.nextActionLabel} for ${card.family}`}>
           <FileText className="h-4 w-4" aria-hidden="true" />
           {card.nextActionLabel}

@@ -16,6 +16,7 @@ import type { CoverageGapsViewModel } from "@/screens/data-screen.coverage-gaps.
 import type { DataQualityPanelViewModel } from "@/screens/data-screen.data-quality.view-model";
 import { qualityToneBadgeVariant, resultToneClass } from "@/screens/data-screen.tone-styles";
 import { formatCount } from "@/lib/format";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 /** Reveal the provider capability matrix region in response to a contextual "compare" action. */
 function revealCapabilityMatrix(toast: ToastApi, symbol?: string) {
@@ -215,7 +216,7 @@ export function DataQualityRegion({
                     className={cn("rounded-md border p-3 text-sm", resultToneClass[card.tone])}
                     title={card.detail}
                   >
-                    <div className="text-xs uppercase tracking-wide">{card.label}</div>
+                    <div className={cn("text-xs", usesTrackedCaps(card.label) && "uppercase tracking-wide")}>{card.label}</div>
                     <div className="mt-1 font-mono text-lg font-semibold">{card.value}</div>
                     <div className="mt-1 text-xs opacity-80">{card.detail}</div>
                   </div>

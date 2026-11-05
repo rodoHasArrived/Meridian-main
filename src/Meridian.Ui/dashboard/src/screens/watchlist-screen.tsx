@@ -35,6 +35,8 @@ import {
   useWatchlistRowActions,
   WatchlistRowActionsTrigger
 } from "@/screens/watchlist-screen.row-actions";
+import { cn } from "@/lib/utils";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 export function WatchlistScreen() {
   const { record: recordActivity } = useActivityLog();
@@ -179,7 +181,7 @@ export function WatchlistScreen() {
             {vm.addSymbolField.helperText}
           </p>
           <div className="mt-4 flex flex-wrap items-center gap-2" aria-label={vm.starterPackGroupLabel}>
-            <span className="text-xs font-semibold uppercase tracking-normal text-muted-foreground">{vm.starterPackEyebrow}</span>
+            <span className={cn("text-xs font-semibold tracking-normal text-muted-foreground", usesTrackedCaps(vm.starterPackEyebrow) && "uppercase")}>{vm.starterPackEyebrow}</span>
             {vm.starterPacks.map((pack) => (
               <Button
                 key={pack.id}
@@ -614,7 +616,7 @@ function WatchlistDetailPanel({
             <dl className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
               {detail.fields.map((field) => (
                 <div key={field.label} className="rounded-sm border border-border/60 bg-background/35 px-2.5 py-2">
-                  <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{field.label}</dt>
+                  <dt className={cn("text-[10px] text-muted-foreground", usesTrackedCaps(field.label) && "uppercase tracking-[0.14em]")}>{field.label}</dt>
                   <dd className={`mt-1 break-words font-mono text-xs ${detailFieldToneClass[field.tone]}`}>
                     {field.value}
                   </dd>

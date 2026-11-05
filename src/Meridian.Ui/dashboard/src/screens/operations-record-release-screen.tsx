@@ -40,6 +40,7 @@ import {
   type OperationsRecordReleaseViewModel
 } from "@/screens/operations-record-release-screen.view-model";
 import type { DataWorkspaceResponse, ReportingWorkspaceResponse } from "@/types";
+import { eyebrowClassName } from "@/design-system/label-case";
 
 interface OperationsRecordReleaseScreenProps {
   data: DataWorkspaceResponse | null;
@@ -176,7 +177,7 @@ function OperationsRecordStatusBand({ vm }: { vm: OperationsRecordReleaseViewMod
     // can exceed the band width and collapse the minmax(0,1fr) title column.
     <div className={cn("grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,33rem)]", readinessToneToPanelClass(vm.tone))}>
       <div className="min-w-0 px-1 py-1">
-        <div className="eyebrow-label">{vm.eyebrow}</div>
+        <div className={eyebrowClassName(vm.eyebrow)}>{vm.eyebrow}</div>
         <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
             <h1 className="font-display text-[1.25rem] font-semibold leading-tight text-foreground">{vm.title}</h1>

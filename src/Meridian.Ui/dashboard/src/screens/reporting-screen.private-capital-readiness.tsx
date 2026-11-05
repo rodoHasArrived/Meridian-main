@@ -12,6 +12,8 @@ import type {
   PrivateCapitalLedgerImpact,
   PrivateCapitalReportOutput
 } from "@/types";
+import { cn } from "@/lib/utils";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 export function ReportingPrivateCapitalReadinessPanel({ data }: { data: AccountingWorkspaceResponse | null }) {
   const activity = data?.manualJournalWorkbench?.privateCapitalActivity ?? null;
@@ -393,7 +395,7 @@ function ReportingPrivateCapitalEvidenceCategories({ categories }: { categories:
 function ReportingPrivateCapitalMetric({ label, value, detail }: { label: string; value: string; detail: string }) {
   return (
     <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
-      <div className="text-[11px] font-semibold uppercase text-muted-foreground">{label}</div>
+      <div className={cn("text-[11px] font-semibold text-muted-foreground", usesTrackedCaps(label) && "uppercase")}>{label}</div>
       <div className="mt-1 font-mono text-base text-foreground">{value}</div>
       <div className="mt-1 text-xs leading-5 text-muted-foreground">{detail}</div>
     </div>

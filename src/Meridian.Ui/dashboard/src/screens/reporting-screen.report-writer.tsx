@@ -29,6 +29,7 @@ import type {
   RenderReportTemplateRequest
 } from "@/types";
 import { formatCount } from "@/lib/format";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 export type ReportWriterDropZone = "rowFields" | "columnFields" | "metrics" | "formulas";
 export type ReportWriterDraftState = Partial<Record<ReportWriterDropZone, ReportingWriterToken[]>>;
@@ -1051,7 +1052,7 @@ export function ReportWriterDesignerGrid({
             </Select>
           </label>
           <label className="space-y-1">
-            <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{accessPrincipalIdLabel}</span>
+            <span className={cn("text-[10px] text-muted-foreground", usesTrackedCaps(accessPrincipalIdLabel) && "uppercase tracking-[0.14em]")}>{accessPrincipalIdLabel}</span>
             <Input
               value={settings.principalId}
               onChange={(event) => onSettingsChange(grid, "principalId", event.target.value)}
@@ -1064,7 +1065,7 @@ export function ReportWriterDesignerGrid({
       </div>
       {settings.previewDataset === "customRows" ? (
         <label className="mt-3 block space-y-1">
-          <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Custom dataset rows</span>
+          <span className="text-[10px] text-muted-foreground">Custom dataset rows</span>
           <textarea
             value={customDatasetText}
             onChange={(event) => onCustomDatasetChange(grid, event.target.value)}
@@ -1383,7 +1384,7 @@ export function ReportWriterDesignerGrid({
               </Select>
             </label>
             <label className="space-y-1">
-              <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Value columns (comma-separated)</span>
+              <span className="text-[10px] text-muted-foreground">Value columns (comma-separated)</span>
               <Input
                 value={chartDraft.valueColumns}
                 onChange={(event) => onChartDraftChange(grid, "valueColumns", event.target.value)}
@@ -1628,7 +1629,7 @@ function ReportWriterDropZoneView({
       onDragOver={(event) => event.preventDefault()}
       onDrop={(event) => onZoneDrop(event, grid, zone)}
     >
-      <div className="mb-2 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{label}</div>
+      <div className={cn("mb-2 text-[10px] text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-[0.14em]")}>{label}</div>
       <div className="flex flex-wrap gap-1.5">
         {tokens.length > 0 ? tokens.map((token, tokenIndex) => (
           <ReportWriterTokenChip

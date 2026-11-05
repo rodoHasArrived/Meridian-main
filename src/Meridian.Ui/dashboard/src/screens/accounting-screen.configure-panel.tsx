@@ -28,6 +28,7 @@ import {
   type ConfigureKeyValuePair,
   type ConfigureTone
 } from "@/screens/accounting-screen.configure-panel.view-model";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 function toneTextClass(tone: ConfigureTone): string {
   switch (tone) {
@@ -136,7 +137,7 @@ export function ConfigureCommandBar(): JSX.Element {
                     className="flex w-full items-center justify-between gap-2 rounded px-2 py-1.5 text-left text-xs hover:bg-secondary/40 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
                   >
                     <span className="text-foreground">{entry.label}</span>
-                    <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-muted-foreground">{entry.sectionLabel}</span>
+                    <span className={cn("text-[10px] text-muted-foreground", usesTrackedCaps(entry.sectionLabel) && "font-mono uppercase tracking-[0.08em]")}>{entry.sectionLabel}</span>
                   </button>
                 </li>
               ))}
@@ -494,7 +495,7 @@ export function LedgerBookSetupWizard({ view }: { view: AccountingConfigurationV
               <div className="grid gap-2">
                 {view.setupReadinessRows.map((row) => (
                   <div key={row.id} className="rounded-md border border-border/70 bg-secondary/15 px-3 py-2">
-                    <div className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">{row.label}</div>
+                    <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(row.label) && "uppercase tracking-[0.12em]")}>{row.label}</div>
                     <div className={cn("mt-1 text-sm font-semibold", toneTextClass(row.tone))}>{row.value}</div>
                     <p className="mt-1 text-xs text-muted-foreground">{row.detail}</p>
                   </div>
@@ -896,7 +897,7 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
               ))}
             </div>
             <div className="mt-3 grid gap-3 rounded-md border border-border/70 bg-background/45 px-3 py-3" role="region" aria-label="Accounting approval queue setup editor">
-              <div className="text-xs font-semibold uppercase text-muted-foreground">Approval queue setup</div>
+              <div className="text-xs font-semibold text-muted-foreground">Approval queue setup</div>
               <div className="grid gap-3 md:grid-cols-3">
                 <FormRow label="Queue id" labelFor="accounting-approval-queue-id">
                   <Input
@@ -954,7 +955,7 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
               />
             </div>
             <div className="mt-3 grid gap-3 rounded-md border border-border/70 bg-background/45 px-3 py-3" role="region" aria-label="Accounting dimension mapping setup editor">
-              <div className="text-xs font-semibold uppercase text-muted-foreground">Dimension mapping setup</div>
+              <div className="text-xs font-semibold text-muted-foreground">Dimension mapping setup</div>
               <div className="grid gap-3 md:grid-cols-3">
                 <FormRow label="Mapping id" labelFor="accounting-dimension-mapping-id">
                   <Input
@@ -1248,7 +1249,7 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
 
           {view.productionReadiness.migrationWorkerPlanRows.length > 0 ? (
             <div className="space-y-2" role="region" aria-label="Retained accounting migration worker plans">
-              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(view.productionReadiness.migrationWorkerPlanSummaryLabel) && "uppercase tracking-[0.14em]")}>
                 {view.productionReadiness.migrationWorkerPlanSummaryLabel}
               </div>
               <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">

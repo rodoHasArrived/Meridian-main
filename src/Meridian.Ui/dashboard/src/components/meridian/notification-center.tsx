@@ -16,6 +16,7 @@ import { formatRelativeAge } from "@/lib/time";
 import { cn } from "@/lib/utils";
 import type { NotificationEnvelope, NotificationSeverity } from "@/lib/notification-center/types";
 import type { SystemOverviewResponse } from "@/types";
+import { eyebrowClassName } from "@/design-system/label-case";
 
 const SEVERITY_ORDER: NotificationSeverity[] = ["critical", "warning", "info", "success"];
 const SEVERITY_LABELS: Record<NotificationSeverity, string> = {
@@ -109,7 +110,7 @@ export function NotificationCenter({ overview, fundAccountId }: NotificationCent
                 }
                 return (
                   <section key={severity} aria-label={`${SEVERITY_LABELS[severity]} notifications`} className="space-y-2">
-                    <div className="eyebrow-label">{SEVERITY_LABELS[severity]}</div>
+                    <div className={eyebrowClassName(SEVERITY_LABELS[severity])}>{SEVERITY_LABELS[severity]}</div>
                     <ul className="space-y-2">
                       {rows.map((entry) => (
                         <NotificationRow

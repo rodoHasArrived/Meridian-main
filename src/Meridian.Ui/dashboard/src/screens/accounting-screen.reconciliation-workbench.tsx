@@ -22,6 +22,7 @@ import type {
 } from "./accounting-screen.view-model";
 import type { ReconciliationQueueStatus, ReconciliationQueueSort } from "./reconciliation-view-state";
 import "@/styles/reconciliation-workbench.css";
+import { eyebrowClassName } from "@/design-system/label-case";
 
 type ReconciliationViewModel = ReturnType<typeof useAccountingReconciliationViewModel>;
 type Reconciliation = Pick<ReconciliationViewModel,
@@ -275,7 +276,7 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
                   aria-label={reconciliation.detailEmptyAriaLabel}
                   className="rounded-lg border border-border/70 bg-secondary/20 px-4 py-3 text-sm text-muted-foreground"
                 >
-                  <div className="eyebrow-label">{reconciliation.detailEmptyTitle}</div>
+                  <div className={eyebrowClassName(reconciliation.detailEmptyTitle)}>{reconciliation.detailEmptyTitle}</div>
                   <p className="mt-1">{reconciliation.detailEmptyText}</p>
                 </section>
               )}

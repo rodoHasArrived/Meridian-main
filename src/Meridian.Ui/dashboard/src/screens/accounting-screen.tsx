@@ -157,6 +157,7 @@ import {
   resolveApprovalReportPackId,
   splitApprovalWords
 } from "@/screens/accounting-screen.approvals";
+import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
 
 interface AccountingScreenProps {
   data: AccountingWorkspaceResponse | null;
@@ -399,7 +400,7 @@ function AccountingSystemReconciliationPanel({
       <CardHeader>
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <div className="eyebrow-label">External GL reconciliation</div>
+            <div className="eyebrow-label eyebrow-label--sentence">External GL reconciliation</div>
             <CardTitle className="mt-2 flex items-center gap-2 text-base">
               <BookCheck className="h-4 w-4 text-primary" aria-hidden="true" />
               {activeProvider ? presentExternalGlProviderEvidenceLabel(activeProvider.displayName) : "External GL evidence"}
@@ -577,7 +578,7 @@ function AccountingSystemReconciliationPanel({
             <div className="h-fit min-w-0 overflow-hidden rounded-md border border-border/70 bg-background/70 shadow-xs">
               <div className="border-b border-border/70 bg-secondary/35 px-4 py-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  <div className="text-xs font-semibold text-muted-foreground">
                     Cash reconciliation - broker statement vs. ledger
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -753,7 +754,7 @@ function AccountingSystemReconciliationPanel({
               <div className="mt-3 rounded-md border border-border/70 bg-background/50 px-2.5 py-2" aria-label="External GL export package history">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Retained package history</div>
+                    <div className="text-xs font-semibold text-muted-foreground">Retained package history</div>
                     <div className="mt-1 text-[11px] text-muted-foreground">
                       {exportPackages.length} retained package{exportPackages.length === 1 ? "" : "s"} for the selected provider, fund, and ledger book.
                     </div>
@@ -2105,7 +2106,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
         <CardHeader>
           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
             <div className="min-w-0">
-              <div className="eyebrow-label">{loading.eyebrow}</div>
+              <div className={eyebrowClassName(loading.eyebrow)}>{loading.eyebrow}</div>
               <CardTitle id={loading.titleId} className="mt-2 text-base">{loading.title}</CardTitle>
               <CardDescription id={loading.detailId} className="mt-2">{loading.detail}</CardDescription>
             </div>
@@ -2116,7 +2117,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
           </div>
           <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.38fr)]">
             <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3">
-              <div className="text-xs font-semibold uppercase text-muted-foreground">{loading.statusItemsLabel}</div>
+              <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(loading.statusItemsLabel) && "uppercase")}>{loading.statusItemsLabel}</div>
               <div role="list" className="mt-3 grid gap-2 md:grid-cols-3">
                 {loading.statusItems.map((item) => (
                   <div key={item.id} role="listitem" className="rounded-md border border-border/60 bg-background/45 px-3 py-2">
@@ -2127,7 +2128,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
               </div>
             </div>
             <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3">
-              <div className="text-xs font-semibold uppercase text-muted-foreground">{loading.actionsLabel}</div>
+              <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(loading.actionsLabel) && "uppercase")}>{loading.actionsLabel}</div>
               <div className="mt-3 grid gap-2">
                 {loading.actions.map((action) => (
                   <Button key={action.id} asChild size="sm" variant="outline" className="h-auto justify-start py-2 text-left">
@@ -2172,7 +2173,8 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
         </>
       ) : null}
 
-      {sectionVisibility.showCloseCockpitLanding || sectionVisibility.showWorkflowDetails ? <PrepareNextPeriodPanel initialWorkflowId={closeWorkflow?.workflowId} /> : null}
+      {/* On the landing the queue leads and preparation follows it (below); elsewhere it stays here. */}
+      {sectionVisibility.showWorkflowDetails && !sectionVisibility.showCloseCockpitLanding ? <PrepareNextPeriodPanel initialWorkflowId={closeWorkflow?.workflowId} /> : null}
 
       {sectionVisibility.showCloseCockpitLanding ? (
         <>
@@ -2196,6 +2198,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
               resolveDialog.open(breakId, "Dismissed");
             }}
           />
+          <PrepareNextPeriodPanel initialWorkflowId={closeWorkflow?.workflowId} />
           <TechnicalDetails label="System details" className="panel-surface">
             <div className="space-y-4">
               {workflowLaunch ? <AccountingWorkflowLaunchPanel view={workflowLaunch} /> : null}
@@ -2454,7 +2457,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
-                <div className="eyebrow-label">{cashFlow.eyebrow}</div>
+                <div className={eyebrowClassName(cashFlow.eyebrow)}>{cashFlow.eyebrow}</div>
                 <CardTitle>{cashFlow.title}</CardTitle>
                 <CardDescription className="mt-2 text-muted-foreground">
                   {cashFlow.description}
@@ -2770,7 +2773,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
           <CardContent className="grid gap-4">
             <div className="min-w-0">
               <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs">
-                <span className="font-medium uppercase tracking-[0.14em] text-muted-foreground">{reporting.listLabel}</span>
+                <span className={cn("font-medium text-muted-foreground", usesTrackedCaps(reporting.listLabel) && "uppercase tracking-[0.14em]")}>{reporting.listLabel}</span>
                 <span className="font-mono text-muted-foreground">{reporting.visibleCountLabel}</span>
               </div>
               <div role="list" aria-label={reporting.listLabel} className="space-y-2">
@@ -2820,7 +2823,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
               data-testid="reporting-profile-detail"
               className="min-w-0 overflow-hidden rounded-lg border border-border/70 bg-background/35 p-4"
             >
-              <div className="eyebrow-label">{reporting.statusTitle}</div>
+              <div className={eyebrowClassName(reporting.statusTitle)}>{reporting.statusTitle}</div>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">{reporting.statusDetail}</p>
               <p className="mt-2 font-mono text-xs text-muted-foreground">{reporting.nextAction}</p>
               {reporting.selectedProfile ? (
@@ -2920,7 +2923,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
           <section className="panel-surface-strong space-y-4 p-5" aria-label={securityMaster.pageView.ariaLabel}>
             <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
               <div className="max-w-3xl">
-                <div className="eyebrow-label">{securityMaster.pageView.eyebrow}</div>
+                <div className={eyebrowClassName(securityMaster.pageView.eyebrow)}>{securityMaster.pageView.eyebrow}</div>
                 <h2 className="mt-2 text-2xl font-semibold tracking-normal text-foreground">{securityMaster.pageView.title}</h2>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">{securityMaster.pageView.description}</p>
               </div>
@@ -2934,7 +2937,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
               {securityMaster.pageView.metrics.map((metric) => (
                 <div key={metric.id} className="rounded-lg border border-border/60 bg-secondary/25 p-4">
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{metric.label}</div>
+                  <div className={cn("text-[11px] font-semibold text-muted-foreground", usesTrackedCaps(metric.label) && "uppercase tracking-[0.14em]")}>{metric.label}</div>
                   <div
                     className={cn(
                       "mt-2 min-w-0 break-words font-mono text-lg font-semibold tabular-nums",
@@ -3155,11 +3158,11 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
             <section className="panel-surface-strong space-y-4 p-5" aria-labelledby="security-detail-page-title">
               <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                 <div className="min-w-0">
-                  <div className="eyebrow-label">{securityMaster.pageView.detailEyebrow}</div>
+                  <div className={eyebrowClassName(securityMaster.pageView.detailEyebrow)}>{securityMaster.pageView.detailEyebrow}</div>
                   <h2 id="security-detail-page-title" className="mt-2 text-xl font-semibold tracking-normal text-foreground">
                     {securityMaster.pageView.detailTitle}
                   </h2>
-                  <p className="mt-1 break-words font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground">
+                  <p className={cn("mt-1 break-words text-xs text-muted-foreground", usesTrackedCaps(securityMaster.pageView.detailSubtitle) && "font-mono uppercase tracking-[0.12em]")}>
                     {securityMaster.pageView.detailSubtitle}
                   </p>
                   <p className="mt-2 max-w-4xl text-sm leading-6 text-muted-foreground">
@@ -3241,7 +3244,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
                         ]}
                       />
                       <div>
-                        <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{identity.identifiersTitle}</div>
+                        <div className={cn("mb-2 text-xs font-semibold text-muted-foreground", usesTrackedCaps(identity.identifiersTitle) && "uppercase tracking-[0.14em]")}>{identity.identifiersTitle}</div>
                         {identity.identifiers.length === 0 ? (
                           <p role="status" className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3 text-sm text-muted-foreground">
                             {identity.identifierEmptyText}
@@ -3260,7 +3263,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
                       </div>
 
                       <div>
-                        <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{identity.aliasesTitle}</div>
+                        <div className={cn("mb-2 text-xs font-semibold text-muted-foreground", usesTrackedCaps(identity.aliasesTitle) && "uppercase tracking-[0.14em]")}>{identity.aliasesTitle}</div>
                         {identity.aliases.length === 0 ? (
                           <p role="status" className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3 text-sm text-muted-foreground">
                             {identity.aliasEmptyText}
@@ -3408,7 +3411,7 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                       "border-border/70 bg-secondary/20 text-muted-foreground"
               )}
             >
-              <div className="text-[11px] font-semibold uppercase">{metric.label}</div>
+              <div className={cn("text-[11px] font-semibold", usesTrackedCaps(metric.label) && "uppercase")}>{metric.label}</div>
               <div className="mt-1 font-mono text-base text-foreground">{metric.value}</div>
               <div className="mt-1 text-xs">{metric.detail}</div>
             </div>
@@ -3754,7 +3757,7 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                       ) : null}
                       {record.evidenceCategories.length > 0 ? (
                         <div className="mt-2 space-y-1" aria-label={`Evidence readiness categories for ${record.title}`}>
-                          <div className="text-[11px] font-semibold uppercase text-muted-foreground">
+                          <div className={cn("text-[11px] font-semibold text-muted-foreground", usesTrackedCaps(record.evidenceCategorySummaryLabel) && "uppercase")}>
                             {record.evidenceCategorySummaryLabel}
                           </div>
                           {record.evidenceCategories.map((category) => (
@@ -3882,7 +3885,7 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                       </div>
                       {subledger.evidenceCategories.length > 0 ? (
                         <div className="mt-2 space-y-1" aria-label={`Subledger evidence readiness categories for ${subledger.title}`}>
-                          <div className="text-[11px] font-semibold uppercase text-muted-foreground">
+                          <div className={cn("text-[11px] font-semibold text-muted-foreground", usesTrackedCaps(subledger.evidenceCategorySummaryLabel) && "uppercase")}>
                             {subledger.evidenceCategorySummaryLabel}
                           </div>
                           {subledger.evidenceCategories.map((category) => (
@@ -4156,7 +4159,7 @@ function ManualJournalEntryWorkbenchPanel({ view, search }: { view: ManualJourna
       <section className="workspace-section-band" aria-labelledby="manual-je-heading">
         <div className="workspace-section-subheader">
           <div className="min-w-0">
-            <p className="eyebrow-label">Manual journal entries</p>
+            <p className="eyebrow-label eyebrow-label--sentence">Manual journal entries</p>
             <h3 id="manual-je-heading" className="workspace-section-title">{view.title}</h3>
             <p className="workspace-section-summary">{view.description}</p>
           </div>
@@ -4191,7 +4194,7 @@ function ManualJournalEntryWorkbenchPanel({ view, search }: { view: ManualJourna
     <section className="workspace-section-band" aria-labelledby="manual-je-heading">
       <div className="workspace-section-subheader">
         <div className="min-w-0">
-          <p className="eyebrow-label">Manual journal entries</p>
+          <p className="eyebrow-label eyebrow-label--sentence">Manual journal entries</p>
           <h3 id="manual-je-heading" className="workspace-section-title">{view.title}</h3>
           <p className="workspace-section-summary">{view.description}</p>
         </div>
@@ -4257,7 +4260,7 @@ function ManualJournalEntryWorkbenchPanel({ view, search }: { view: ManualJourna
             <fieldset disabled={Boolean(view.draft.assetAccountingDraft)} className="min-w-0" aria-label="Journal source fields">
             <div className="accounting-reference-heading">
               <div className="min-w-0">
-                <p className="accounting-reference-kicker">Manual journal entry - balanced double-entry</p>
+                <p className="accounting-reference-kicker accounting-reference-kicker--sentence">Manual journal entry - balanced double-entry</p>
                 <p className="accounting-reference-subtitle">{view.draft.entryType} / {view.treasuryContextLabel}</p>
               </div>
               <div className={cn("accounting-reference-balance-badge", view.balanceStatusTone === "success" ? "is-balanced" : "is-out")}>
@@ -4542,7 +4545,7 @@ function ManualJournalEntryWorkbenchPanel({ view, search }: { view: ManualJourna
                   <input className="min-h-9 w-full rounded border border-border bg-background px-2" value={view.attachmentDraft.displayName} onChange={(event) => view.updateAttachmentDraft({ displayName: event.target.value })} />
                 </label>
                 <label className="space-y-1 text-sm">
-                  <span className="text-xs font-semibold uppercase text-muted-foreground">Route or path</span>
+                  <span className="text-xs font-semibold text-muted-foreground">Route or path</span>
                   <input className="min-h-9 w-full rounded border border-border bg-background px-2 font-mono" value={view.attachmentDraft.uri} onChange={(event) => view.updateAttachmentDraft({ uri: event.target.value })} />
                 </label>
                 <label className="space-y-1 text-sm">
@@ -4661,7 +4664,7 @@ function ManualJournalEntryWorkbenchPanel({ view, search }: { view: ManualJourna
             ) : null}
             {view.lifecycleCorrectionRows.length > 0 ? (
               <div className="mt-3">
-                <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Generated correction drafts</div>
+                <div className="text-xs font-semibold text-muted-foreground">Generated correction drafts</div>
                 <div className="mt-2 grid gap-2 md:grid-cols-2">
                   {view.lifecycleCorrectionRows.map((row) => (
                     <div key={row.id} className="rounded border border-border/70 bg-background/50 px-3 py-2 text-sm">
@@ -4784,7 +4787,7 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
       <div id="configure-section-setup" className="configure-anchor scroll-mt-20 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         {view.metricRows.map((metric) => (
           <div key={metric.id} className="panel-surface px-4 py-3">
-            <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{metric.label}</div>
+            <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(metric.label) && "uppercase tracking-[0.14em]")}>{metric.label}</div>
             <div className={cn("mt-2 font-mono text-xl font-semibold", cashFlowTextClass(metric.tone))}>{metric.value}</div>
             <p className="mt-2 text-xs leading-5 text-muted-foreground">{metric.detail}</p>
           </div>
@@ -4794,7 +4797,7 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
       <div className="grid gap-4 md:grid-cols-2">
         {view.setupReadinessRows.map((row) => (
           <div key={row.id} className="rounded-md border border-border/70 bg-secondary/20 px-4 py-3">
-            <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{row.label}</div>
+            <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(row.label) && "uppercase tracking-[0.14em]")}>{row.label}</div>
             <div className={cn("mt-2 text-sm font-semibold", cashFlowTextClass(row.tone))}>{row.value}</div>
             <p className="mt-2 text-xs leading-5 text-muted-foreground">{row.detail}</p>
           </div>
@@ -4840,7 +4843,7 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="min-w-0">
                       <div className="font-semibold text-foreground">{book.title}</div>
-                      <div className="mt-1 font-mono text-[11px] uppercase tracking-[0.08em] text-muted-foreground">{book.id}</div>
+                      <div className={cn("mt-1 text-[11px] text-muted-foreground", usesTrackedCaps(book.id) && "font-mono uppercase tracking-[0.08em]")}>{book.id}</div>
                     </div>
                     <Badge variant={accountingToolingBadgeVariant(book.tone)}>{book.statusLabel}</Badge>
                   </div>
@@ -5431,7 +5434,7 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
             </div>
 
             <div className="space-y-2">
-              <div className="eyebrow-label">Recent audit events</div>
+              <div className="eyebrow-label eyebrow-label--sentence">Recent audit events</div>
               {view.auditTrail.length > 0 ? view.auditTrail.map((event) => (
                 <div key={event.id} className="rounded-lg border border-border/70 bg-secondary/25 px-3 py-2 text-sm">
                   <div className="font-semibold text-foreground">{event.title}</div>
@@ -5457,7 +5460,7 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
 function RulesStudioList({ title, rows }: { title: string; rows: string[] }) {
   return (
     <div>
-      <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{title}</div>
+      <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(title) && "uppercase tracking-[0.14em]")}>{title}</div>
       <div className="mt-2 space-y-1.5">
         {rows.map((row, index) => (
           <div key={`${title}-${index}-${row}`} className="rounded border border-border/60 bg-secondary/20 px-2 py-1.5 text-xs leading-5 text-muted-foreground">

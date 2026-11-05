@@ -17,7 +17,7 @@ import {
   focusDenseRowDetailPanel,
   registerDenseRowRevealHandler
 } from "@/components/meridian/dense-row-detail-accessibility";
-import { usesTrackedCaps } from "@/design-system/label-case";
+import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
 import {
   computeRevealScrollTop,
   computeRowWindow,
@@ -64,7 +64,7 @@ export function ToolbarStrip({
             className={cn("meridian-toolbar-chip", item.active ? "active" : "")}
             aria-label={item.value ? `${item.label}: ${item.value}` : item.label}
           >
-            <span>{item.label}</span>
+            <span className={usesTrackedCaps(item.label) ? undefined : "meridian-toolbar-chip-sentence"}>{item.label}</span>
             {item.value ? <b>{item.value}</b> : null}
           </span>
         ))}
@@ -794,6 +794,19 @@ export interface EntitySummaryField {
   value: string;
 }
 
+const FIGURE_VALUE = /^[+\-−]?[$€£¥]?\(?[+\-−]?[$€£¥]?\d[\d,.\s]*\)?\s?(%|[A-Z]{3})?$/;
+const IDENTIFIER_VALUE = /^(?=[^\s]*\d)[A-Za-z0-9][A-Za-z0-9._:/-]{3,}$/;
+
+/**
+ * Whether a summary value is a figure ("$1,250.00", "(500.00)", "12.5%", "500.00 USD") or an
+ * identifier ("brk-2026-0042", "2026-06-30"), which keep the data face; phrases, statuses and
+ * written-out dates read in the body face.
+ */
+export function isDataLikeValue(value: string): boolean {
+  const text = value.trim();
+  return text.length > 0 && (FIGURE_VALUE.test(text) || IDENTIFIER_VALUE.test(text));
+}
+
 export function EntitySummary({
   id,
   eyebrow,
@@ -819,7 +832,7 @@ export function EntitySummary({
     <section id={id} className="entity-summary" role="region" aria-label={ariaLabel}>
       <div className="entity-summary-head">
         <div className="min-w-0">
-          <div className="eyebrow-label">{eyebrow}</div>
+          <div className={eyebrowClassName(eyebrow)}>{eyebrow}</div>
           <h3 className="entity-summary-title">{title}</h3>
           <p className="entity-summary-subtitle">{subtitle}</p>
           <p className="entity-summary-description">{description}</p>
@@ -833,7 +846,7 @@ export function EntitySummary({
         {fields.map((field) => (
           <div key={field.label} className="entity-summary-field">
             <dt>{field.label}</dt>
-            <dd>{field.value}</dd>
+            <dd className={isDataLikeValue(field.value) ? "entity-summary-value--data" : undefined}>{field.value}</dd>
           </div>
         ))}
       </dl>

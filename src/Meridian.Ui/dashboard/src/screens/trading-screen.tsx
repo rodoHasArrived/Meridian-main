@@ -80,6 +80,7 @@ import { ExecutionControlsHeader } from "@/screens/trading-screen.execution-cont
 import { BrokerageRecoveryPanel } from "@/screens/trading-screen.brokerage-recovery";
 import { LIVE_GOVERNED_APPROVAL_SERVICES, useGovernedApprovalsViewModel } from "@/screens/trading-screen.governed-approvals";
 import type { ExecutionAuditEntry, ExecutionControlSnapshot, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
+import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
 
 interface TradingScreenProps {
   data: TradingWorkspaceResponse | null;
@@ -643,7 +644,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
         aria-label={shellVm.workflowStrip.ariaLabel}
         className="panel-surface flex flex-wrap items-center gap-3 px-4 py-3"
       >
-        <span className="mr-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        <span className={cn("mr-1 text-xs font-semibold text-muted-foreground", usesTrackedCaps(shellVm.workflowStrip.eyebrow) && "uppercase tracking-[0.14em]")}>
           {shellVm.workflowStrip.eyebrow}
         </span>
         {shellVm.workflowStrip.chips.map((chip) => (
@@ -850,7 +851,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               <form onSubmit={(event) => { event.preventDefault(); void orderTicket.submitOrder(); }} className="space-y-4" aria-describedby={orderTicket.requirementId}>
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   <div className="space-y-1">
-                    <label htmlFor={orderTicket.controls.symbol.id} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{orderTicket.controls.symbol.label}</label>
+                    <label htmlFor={orderTicket.controls.symbol.id} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(orderTicket.controls.symbol.label) && "uppercase tracking-[0.14em]")}>{orderTicket.controls.symbol.label}</label>
                     <Input
                       id={orderTicket.controls.symbol.id}
                       type="text"
@@ -866,7 +867,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                     />
                   </div>
                   <div className="space-y-1">
-                    <label htmlFor={orderTicket.controls.side.id} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{orderTicket.controls.side.label}</label>
+                    <label htmlFor={orderTicket.controls.side.id} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(orderTicket.controls.side.label) && "uppercase tracking-[0.14em]")}>{orderTicket.controls.side.label}</label>
                     <Select
                       id={orderTicket.controls.side.id}
                       value={orderTicket.controls.side.value}
@@ -881,7 +882,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                     </Select>
                   </div>
                   <div className="space-y-1">
-                    <label htmlFor={orderTicket.controls.type.id} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{orderTicket.controls.type.label}</label>
+                    <label htmlFor={orderTicket.controls.type.id} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(orderTicket.controls.type.label) && "uppercase tracking-[0.14em]")}>{orderTicket.controls.type.label}</label>
                     <Select
                       id={orderTicket.controls.type.id}
                       value={orderTicket.controls.type.value}
@@ -896,7 +897,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                     </Select>
                   </div>
                   <div className="space-y-1">
-                    <label htmlFor={orderTicket.controls.quantity.id} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{orderTicket.controls.quantity.label}</label>
+                    <label htmlFor={orderTicket.controls.quantity.id} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(orderTicket.controls.quantity.label) && "uppercase tracking-[0.14em]")}>{orderTicket.controls.quantity.label}</label>
                     <Input
                       id={orderTicket.controls.quantity.id}
                       type="number"
@@ -913,7 +914,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                   </div>
                   {orderTicket.controls.limitPrice && (
                     <div className="space-y-1">
-                      <label htmlFor={orderTicket.controls.limitPrice.id} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                      <label htmlFor={orderTicket.controls.limitPrice.id} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(orderTicket.controls.limitPrice.label) && "uppercase tracking-[0.14em]")}>
                         {orderTicket.controls.limitPrice.label}
                       </label>
                       <Input
@@ -1123,7 +1124,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               >
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="space-y-1">
-                    <label htmlFor={paperSessions.strategyIdField.id} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                    <label htmlFor={paperSessions.strategyIdField.id} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(paperSessions.strategyIdField.label) && "uppercase tracking-[0.14em]")}>
                       {paperSessions.strategyIdField.label}
                     </label>
                     <Input
@@ -1144,7 +1145,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                     />
                   </div>
                   <div className="space-y-1">
-                    <label htmlFor={paperSessions.initialCashField.id} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                    <label htmlFor={paperSessions.initialCashField.id} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(paperSessions.initialCashField.label) && "uppercase tracking-[0.14em]")}>
                       {paperSessions.initialCashField.label}
                     </label>
                     <Input
@@ -1272,7 +1273,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               className="mt-4 rounded-lg border border-border/70 bg-secondary/20 p-4"
             >
               <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                <p className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(executionEvidence.auditTitle) && "uppercase tracking-[0.14em]")}>
                   {executionEvidence.auditTitle}
                 </p>
                 <span className="font-mono text-[11px] text-muted-foreground">{executionEvidence.auditCountLabel}</span>
@@ -1338,7 +1339,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
           </SheetHeader>
           <SheetBody>
             <div className="space-y-1">
-              <label htmlFor={strategyLifecycle.strategyIdInputId} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+              <label htmlFor={strategyLifecycle.strategyIdInputId} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(strategyLifecycle.strategyIdLabel) && "uppercase tracking-[0.14em]")}>
                 {strategyLifecycle.strategyIdLabel}
               </label>
               <input
@@ -1399,7 +1400,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
           </SheetHeader>
           <SheetBody className="space-y-3">
             <div className="grid gap-2">
-              <label htmlFor={sessionReplay.fileSelectId} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+              <label htmlFor={sessionReplay.fileSelectId} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(sessionReplay.fileSelectLabel) && "uppercase tracking-[0.14em]")}>
                 {sessionReplay.fileSelectLabel}
               </label>
               <Select
@@ -1422,7 +1423,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
 
             <div className="grid gap-3 lg:grid-cols-[minmax(7rem,9rem)_1fr] lg:items-end">
               <div className="grid gap-1.5">
-                <label htmlFor={sessionReplay.speedInputId} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                <label htmlFor={sessionReplay.speedInputId} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(sessionReplay.speedLabel) && "uppercase tracking-[0.14em]")}>
                   {sessionReplay.speedLabel}
                 </label>
                 <Input
@@ -1482,7 +1483,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
 
             <div className="grid gap-3 lg:grid-cols-[minmax(8rem,10rem)_1fr] lg:items-end">
               <div className="grid gap-1.5">
-                <label htmlFor={sessionReplay.seekInputId} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                <label htmlFor={sessionReplay.seekInputId} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(sessionReplay.seekLabel) && "uppercase tracking-[0.14em]")}>
                   {sessionReplay.seekLabel}
                 </label>
                 <Input
@@ -1569,7 +1570,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
 
             <div className="grid gap-3 sm:grid-cols-2">
               <label htmlFor={promotionGate.fields.runId.id} className="grid gap-1 text-sm">
-                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{promotionGate.fields.runId.label}</span>
+                <span className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(promotionGate.fields.runId.label) && "uppercase tracking-[0.14em]")}>{promotionGate.fields.runId.label}</span>
                 <input
                   id={promotionGate.fields.runId.id}
                   aria-label={promotionGate.fields.runId.ariaLabel}
@@ -1585,7 +1586,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                 ) : null}
               </label>
               <label htmlFor={promotionGate.fields.approvedBy.id} className="grid gap-1 text-sm">
-                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{promotionGate.fields.approvedBy.label}</span>
+                <span className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(promotionGate.fields.approvedBy.label) && "uppercase tracking-[0.14em]")}>{promotionGate.fields.approvedBy.label}</span>
                 <input
                   id={promotionGate.fields.approvedBy.id}
                   aria-label={promotionGate.fields.approvedBy.ariaLabel}
@@ -1600,7 +1601,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               </label>
             </div>
             <label htmlFor={promotionGate.fields.approvalReason.id} className="grid gap-1 text-sm">
-              <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{promotionGate.fields.approvalReason.label}</span>
+              <span className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(promotionGate.fields.approvalReason.label) && "uppercase tracking-[0.14em]")}>{promotionGate.fields.approvalReason.label}</span>
               <input
                 id={promotionGate.fields.approvalReason.id}
                 aria-label={promotionGate.fields.approvalReason.ariaLabel}
@@ -1614,7 +1615,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               />
             </label>
             <label htmlFor={promotionGate.fields.rejectionReason.id} className="grid gap-1 text-sm">
-              <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{promotionGate.fields.rejectionReason.label}</span>
+              <span className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(promotionGate.fields.rejectionReason.label) && "uppercase tracking-[0.14em]")}>{promotionGate.fields.rejectionReason.label}</span>
               <input
                 id={promotionGate.fields.rejectionReason.id}
                 aria-label={promotionGate.fields.rejectionReason.ariaLabel}
@@ -1628,7 +1629,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
             </label>
             <div className="grid gap-3 sm:grid-cols-2">
               <label htmlFor={promotionGate.fields.reviewNotes.id} className="grid gap-1 text-sm">
-                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{promotionGate.fields.reviewNotes.label}</span>
+                <span className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(promotionGate.fields.reviewNotes.label) && "uppercase tracking-[0.14em]")}>{promotionGate.fields.reviewNotes.label}</span>
                 <input
                   id={promotionGate.fields.reviewNotes.id}
                   aria-label={promotionGate.fields.reviewNotes.ariaLabel}
@@ -1641,7 +1642,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                 />
               </label>
               <label htmlFor={promotionGate.fields.manualOverrideId.id} className="grid gap-1 text-sm">
-                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{promotionGate.fields.manualOverrideId.label}</span>
+                <span className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(promotionGate.fields.manualOverrideId.label) && "uppercase tracking-[0.14em]")}>{promotionGate.fields.manualOverrideId.label}</span>
                 <input
                   id={promotionGate.fields.manualOverrideId.id}
                   aria-label={promotionGate.fields.manualOverrideId.ariaLabel}
@@ -1655,7 +1656,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               </label>
             </div>
             <label htmlFor={promotionGate.fields.evidenceReferences.id} className="grid gap-1 text-sm">
-              <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{promotionGate.fields.evidenceReferences.label}</span>
+              <span className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(promotionGate.fields.evidenceReferences.label) && "uppercase tracking-[0.14em]")}>{promotionGate.fields.evidenceReferences.label}</span>
               <textarea
                 id={promotionGate.fields.evidenceReferences.id}
                 aria-label={promotionGate.fields.evidenceReferences.ariaLabel}
@@ -1727,7 +1728,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                   <dl className="mt-2 grid gap-2 sm:grid-cols-3">
                     {promotionGate.evaluationPanel.metrics.map((metric) => (
                       <div key={metric.id}>
-                        <dt className="font-mono text-[10px] uppercase tracking-[0.14em] opacity-75">{metric.label}</dt>
+                        <dt className={cn("text-[10px] opacity-75", usesTrackedCaps(metric.label) && "font-mono uppercase tracking-[0.14em]")}>{metric.label}</dt>
                         <dd className="font-mono text-xs">{metric.value}</dd>
                       </div>
                     ))}
@@ -2080,7 +2081,7 @@ function PaperSessionReplayPanelView({ panel }: { panel: PaperSessionReplayPanel
 function DataRow({ label, value }: { label: string; value: string | null }) {
   return (
     <div className="data-grid-surface px-3 py-2">
-      <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{label}</div>
+      <div className={cn("text-[11px] font-semibold text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-[0.14em]")}>{label}</div>
       <div className="mt-1 font-mono text-sm text-foreground">{value ?? "Unavailable"}</div>
     </div>
   );
@@ -2287,7 +2288,7 @@ function TradingBlotterDetailPanel({
         <>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
-              <div className="eyebrow-label">{detail.statusLabel}</div>
+              <div className={eyebrowClassName(detail.statusLabel)}>{detail.statusLabel}</div>
               <h3 className="mt-1 break-words text-sm font-semibold text-foreground">{detail.title}</h3>
               <p className="mt-1 font-mono text-xs text-muted-foreground">{detail.subtitle}</p>
             </div>
@@ -2313,7 +2314,7 @@ function TradingBlotterDetailPanel({
 function Stat({ label, value, tone }: { label: string; value: string; tone?: string }) {
   return (
     <div className="workspace-header-card p-4">
-      <div className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">{label}</div>
+      <div className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-[0.16em]")}>{label}</div>
       <div className={cn("mt-2 font-mono text-sm font-semibold text-foreground", tone)}>{value}</div>
     </div>
   );
@@ -2392,7 +2393,7 @@ function OrderPreviewPanel({ preview }: { preview: OrderPreview }) {
       data-testid="order-preview"
     >
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <div className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+        <div className="text-[11px] font-medium text-muted-foreground">
           Order impact preview
         </div>
         <div className={cn("font-semibold", effectTone)} data-testid="order-preview-effect">
@@ -2434,7 +2435,7 @@ function OrderPreviewPanel({ preview }: { preview: OrderPreview }) {
 function PreviewStat({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
     <div>
-      <dt className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">{label}</dt>
+      <dt className={cn("text-[11px] text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-[0.14em]")}>{label}</dt>
       <dd className={cn("text-foreground", mono && "font-mono")}>{value}</dd>
     </div>
   );

@@ -5,6 +5,8 @@ import { Breadcrumb, type BreadcrumbItem } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { buildWorkspaceHeaderViewModel } from "@/components/meridian/workspace-header.view-model";
 import type { SessionInfo, WorkspaceSummary } from "@/types";
+import { cn } from "@/lib/utils";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 /**
  * Top-of-workspace header strip rendered inside each workspace layout.
@@ -73,7 +75,7 @@ export function WorkspaceHeader({
           aria-label={viewModel.liveBanner.ariaLabel}
         >
           <AlertTriangle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-          <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em]">
+          <span className={cn("text-[10px] font-semibold", usesTrackedCaps(viewModel.liveBanner.label) && "font-mono uppercase tracking-[0.14em]")}>
             {viewModel.liveBanner.label}
           </span>
           <span className="text-xs leading-5 opacity-80">{viewModel.liveBanner.detail}</span>
@@ -88,7 +90,7 @@ export function WorkspaceHeader({
         </div>
         {context ? <div className="workstation-header-context">{context}</div> : null}
         <div className="workstation-header-title-row">
-          <h1 className="font-display font-semibold text-foreground">{viewModel.title}</h1>
+          <h1 className="type-page-title text-foreground">{viewModel.title}</h1>
           {viewModel.badges.map((badge) => (
             <Badge key={badge.id} variant={badge.variant} aria-label={badge.ariaLabel}>
               {badge.label}

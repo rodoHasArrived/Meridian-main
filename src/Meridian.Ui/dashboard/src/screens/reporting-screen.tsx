@@ -128,6 +128,7 @@ import {
   normalizeIdentifierToken,
   parseReportTemplateVersion
 } from "@/screens/reporting-screen.report-writer-helpers";
+import { eyebrowClassName } from "@/design-system/label-case";
 
 interface ReportingScreenProps {
   data: ReportingWorkspacePayload | null;
@@ -1774,7 +1775,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
           <div className="min-w-0 space-y-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
-                <div className="eyebrow-label">{vm.workflowTaskPanel.eyebrow}</div>
+                <div className={eyebrowClassName(vm.workflowTaskPanel.eyebrow)}>{vm.workflowTaskPanel.eyebrow}</div>
                 <h3 className="mt-2 text-lg font-semibold text-foreground">{vm.workflowTaskPanel.title}</h3>
                 <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
                   {vm.workflowTaskPanel.description}
@@ -1844,7 +1845,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                 ))}
               </div>
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="eyebrow-label">{vm.workflowTaskPanel.publicationReview.evidenceLinksLabel}</div>
+                <div className={eyebrowClassName(vm.workflowTaskPanel.publicationReview.evidenceLinksLabel)}>{vm.workflowTaskPanel.publicationReview.evidenceLinksLabel}</div>
                 <Badge variant="outline">
                   {vm.workflowTaskPanel.publicationReview.evidenceLinks.length} link{vm.workflowTaskPanel.publicationReview.evidenceLinks.length === 1 ? "" : "s"}
                 </Badge>
@@ -1881,7 +1882,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                 </p>
               )}
               <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                <div className="eyebrow-label">{vm.workflowTaskPanel.publicationReview.lineProvenanceLabel}</div>
+                <div className={eyebrowClassName(vm.workflowTaskPanel.publicationReview.lineProvenanceLabel)}>{vm.workflowTaskPanel.publicationReview.lineProvenanceLabel}</div>
                 <Badge variant="outline">
                   {vm.workflowTaskPanel.publicationReview.lineProvenanceRows.length} line{vm.workflowTaskPanel.publicationReview.lineProvenanceRows.length === 1 ? "" : "s"}
                 </Badge>
@@ -1971,7 +1972,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                 ))}
               </div>
               <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                <div className="eyebrow-label">{vm.workflowTaskPanel.restatementReview.changedLinesLabel}</div>
+                <div className={eyebrowClassName(vm.workflowTaskPanel.restatementReview.changedLinesLabel)}>{vm.workflowTaskPanel.restatementReview.changedLinesLabel}</div>
                 <Badge variant="outline">{vm.workflowTaskPanel.restatementReview.evidenceSummary}</Badge>
               </div>
               {vm.workflowTaskPanel.restatementReview.hasChangedLines ? (

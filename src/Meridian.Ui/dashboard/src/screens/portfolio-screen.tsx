@@ -69,6 +69,7 @@ import type {
   StrategyWorkspaceResponse,
   TradingWorkspaceResponse
 } from "@/types";
+import { eyebrowClassName } from "@/design-system/label-case";
 
 interface PortfolioScreenProps {
   portfolio?: PortfolioWorkspaceResponse | null;
@@ -615,7 +616,7 @@ export function PortfolioScreen({
       >
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0">
-            <div className="eyebrow-label">{vm.workflowTaskPanel.eyebrow}</div>
+            <div className={eyebrowClassName(vm.workflowTaskPanel.eyebrow)}>{vm.workflowTaskPanel.eyebrow}</div>
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <h3 className="text-base font-semibold text-foreground">{vm.workflowTaskPanel.title}</h3>
               <Badge variant={workflowStatusVariant(vm.workflowTaskPanel.statusTone)}>
@@ -916,7 +917,7 @@ export function PortfolioScreen({
         <CardHeader>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <div className="eyebrow-label">{vm.brokeragePanelEyebrow}</div>
+              <div className={eyebrowClassName(vm.brokeragePanelEyebrow)}>{vm.brokeragePanelEyebrow}</div>
               <CardTitle className="mt-2 flex items-center gap-2 text-base">
                 <BriefcaseBusiness className="h-4 w-4 text-primary" />
                 Live brokerage portfolio
@@ -1102,7 +1103,7 @@ export function PortfolioScreen({
                   <>
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <div className="eyebrow-label">{vm.selectedBrokeragePosition.statusTitle}</div>
+                        <div className={eyebrowClassName(vm.selectedBrokeragePosition.statusTitle)}>{vm.selectedBrokeragePosition.statusTitle}</div>
                         <h3 className="mt-2 text-base font-semibold text-foreground">{vm.selectedBrokeragePosition.title}</h3>
                         <p className="mt-1 break-words font-mono text-xs text-muted-foreground">
                           {vm.selectedBrokeragePosition.subtitle}
@@ -1152,7 +1153,7 @@ export function PortfolioScreen({
                   </>
                 ) : (
                   <div role="status" className="text-sm leading-6 text-muted-foreground">
-                    <div className="eyebrow-label">No brokerage position selected</div>
+                    <div className="eyebrow-label eyebrow-label--sentence">No brokerage position selected</div>
                     <p className="mt-2">{vm.brokerageEmptyText}</p>
                   </div>
                 )}
@@ -1201,7 +1202,7 @@ export function PortfolioScreen({
               <>
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <div className="eyebrow-label">{vm.selectedPosition.statusTitle}</div>
+                    <div className={eyebrowClassName(vm.selectedPosition.statusTitle)}>{vm.selectedPosition.statusTitle}</div>
                     <h3 className="mt-2 text-base font-semibold text-foreground">{vm.selectedPosition.title}</h3>
                     <p className="mt-1 font-mono text-xs text-muted-foreground">{vm.selectedPosition.subtitle}</p>
                   </div>
@@ -1240,7 +1241,7 @@ export function PortfolioScreen({
               </>
             ) : (
               <div role="status" className="text-sm leading-6 text-muted-foreground">
-                <div className="eyebrow-label">{vm.positionDetailEmptyTitle}</div>
+                <div className={eyebrowClassName(vm.positionDetailEmptyTitle)}>{vm.positionDetailEmptyTitle}</div>
                 <p className="mt-2">{vm.positionEmptyText}</p>
               </div>
             )}
@@ -1366,7 +1367,7 @@ export function PortfolioScreen({
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <div className="eyebrow-label">{vm.runComparisonSummary.title}</div>
+                      <div className={eyebrowClassName(vm.runComparisonSummary.title)}>{vm.runComparisonSummary.title}</div>
                       <p className="mt-2 text-sm leading-6 text-muted-foreground">{vm.runComparisonSummary.description}</p>
                     </div>
                     <Badge variant={vm.runComparisonSummary.statusTone === "default" ? "outline" : vm.runComparisonSummary.statusTone}>
@@ -1376,7 +1377,7 @@ export function PortfolioScreen({
                   <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
                     {vm.runComparisonSummary.cards.map((card) => (
                       <div key={card.id} className="rounded-md border border-border/60 bg-background/45 px-3 py-3">
-                        <div className="eyebrow-label">{card.label}</div>
+                        <div className={eyebrowClassName(card.label)}>{card.label}</div>
                         <div className={cn("mt-2 font-mono text-sm font-semibold", detailFieldToneClass[card.tone])}>{card.value}</div>
                         <p className="mt-2 text-xs leading-5 text-muted-foreground">{card.detail}</p>
                       </div>
@@ -1389,7 +1390,7 @@ export function PortfolioScreen({
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <div className="eyebrow-label">{vm.runDrillInSummary.title}</div>
+                      <div className={eyebrowClassName(vm.runDrillInSummary.title)}>{vm.runDrillInSummary.title}</div>
                       <p className="mt-2 text-sm leading-6 text-muted-foreground">{vm.runDrillInSummary.description}</p>
                     </div>
                     <Button
@@ -1408,7 +1409,7 @@ export function PortfolioScreen({
                   <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                     {vm.runDrillInSummary.cards.map((card) => (
                       <div key={card.id} className="rounded-md border border-border/60 bg-background/45 px-3 py-3">
-                        <div className="eyebrow-label">{card.label}</div>
+                        <div className={eyebrowClassName(card.label)}>{card.label}</div>
                         <div className={cn("mt-2 font-mono text-sm font-semibold", detailFieldToneClass[card.tone])}>{card.value}</div>
                         <p className="mt-2 text-xs leading-5 text-muted-foreground">{card.detail}</p>
                       </div>
@@ -1430,7 +1431,7 @@ export function PortfolioScreen({
                           key={row.id}
                           className="grid gap-2 rounded-md border border-border/60 bg-background/45 px-3 py-2 sm:grid-cols-[minmax(0,0.45fr)_minmax(0,0.25fr)_minmax(0,1fr)]"
                         >
-                          <div className="eyebrow-label">{row.label}</div>
+                          <div className={eyebrowClassName(row.label)}>{row.label}</div>
                           <div className={cn("font-mono text-xs font-semibold sm:text-right", detailFieldToneClass[row.tone])}>
                             {row.value}
                           </div>
@@ -1442,7 +1443,7 @@ export function PortfolioScreen({
                   {vm.runDrillInSummary.tradeEvidenceRows.length > 0 ? (
                     <div className="mt-3 overflow-hidden rounded-md border border-border/60 bg-background/45">
                       <div className="border-b border-border/60 px-3 py-2">
-                        <div className="eyebrow-label">Recent trade evidence</div>
+                        <div className="eyebrow-label eyebrow-label--sentence">Recent trade evidence</div>
                       </div>
                       <div className="grid divide-y divide-border/60">
                         {vm.runDrillInSummary.tradeEvidenceRows.map((row) => (
@@ -1494,7 +1495,7 @@ export function PortfolioScreen({
                     <>
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <div className="eyebrow-label">{vm.selectedRun.statusTitle}</div>
+                          <div className={eyebrowClassName(vm.selectedRun.statusTitle)}>{vm.selectedRun.statusTitle}</div>
                           <h3 className="mt-2 text-base font-semibold text-foreground">{vm.selectedRun.title}</h3>
                         </div>
                         <Badge variant={vm.selectedRun.statusBadgeVariant}>{vm.selectedRun.statusBadgeLabel}</Badge>
@@ -1529,7 +1530,7 @@ export function PortfolioScreen({
                     </>
                   ) : (
                     <div role="status" className="text-sm leading-6 text-muted-foreground">
-                      <div className="eyebrow-label">{vm.runDetailEmptyTitle}</div>
+                      <div className={eyebrowClassName(vm.runDetailEmptyTitle)}>{vm.runDetailEmptyTitle}</div>
                       <p className="mt-2">{vm.runEmptyText}</p>
                     </div>
                   )}

@@ -12,6 +12,7 @@ import { accountingToolingBadgeVariant, accountingToolingBorderClass } from "@/s
 import { AccountingChip } from "@/screens/accounting-screen.workbench-context";
 import type { CapitalAccountWorkbenchViewModel } from "@/screens/accounting-screen.view-model";
 import { formatCount } from "@/lib/format";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWorkbenchViewModel }) {
   if (!view.available) {
@@ -313,7 +314,7 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="min-w-0">
                       <div className="font-semibold text-foreground">{row.title}</div>
-                      <div className="mt-1 text-xs uppercase text-muted-foreground">{row.kind}</div>
+                      <div className={cn("mt-1 text-xs text-muted-foreground", usesTrackedCaps(row.kind) && "uppercase")}>{row.kind}</div>
                     </div>
                     <Badge variant={accountingToolingBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
                   </div>
@@ -335,7 +336,7 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
 
         <div className="grid gap-3 md:grid-cols-2">
           <div className="rounded-md border border-success/30 bg-success/10 px-3 py-3">
-            <div className="text-xs font-semibold uppercase text-success">Live in v0.18 slice</div>
+            <div className="text-xs font-semibold text-success">Live in v0.18 slice</div>
             <ul className="mt-2 grid gap-1 text-sm text-foreground">
               {view.liveCapabilities.map((item) => <li key={item}>{item}</li>)}
             </ul>

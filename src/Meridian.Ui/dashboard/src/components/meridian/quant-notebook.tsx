@@ -23,6 +23,7 @@ import type {
 } from "@/components/meridian/quant-notebook.view-model";
 import { QuantPlotChart } from "@/components/meridian/quant-plot";
 import type { CellKind, CellOutput, QuantTrade } from "@/types";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 /** Map a `Badge` variant onto a Concrete operator-severity status string so notebook cell
  * execution states resolve to the right severity color through the shared `SeverityBadge`
@@ -223,7 +224,7 @@ function DataFetchPanel({ vm }: { vm: QuantNotebookViewModel }) {
           onChange={(value) => vm.setContext({ to: value })}
         />
         <div className="grid gap-1">
-          <label htmlFor={panel.fields.interval.id} className="text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          <label htmlFor={panel.fields.interval.id} className={cn("text-[0.65rem] font-semibold text-muted-foreground", usesTrackedCaps(panel.fields.interval.label) && "uppercase tracking-[0.14em]")}>
             {panel.fields.interval.label}
           </label>
             <Select
@@ -300,7 +301,7 @@ function DataContextInput({
 }) {
   return (
     <div className="grid gap-1">
-      <label htmlFor={field.id} className="text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+      <label htmlFor={field.id} className={cn("text-[0.65rem] font-semibold text-muted-foreground", usesTrackedCaps(field.label) && "uppercase tracking-[0.14em]")}>
         {field.label}
       </label>
       <Input
