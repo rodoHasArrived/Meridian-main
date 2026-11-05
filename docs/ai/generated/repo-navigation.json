@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-05T21:50:27Z",
+  "generatedAt": "2026-11-05T22:17:45Z",
   "generatorVersion": "1.0",
-  "repositoryRoot": "agent-a94f74c3aa2de0ecd",
+  "repositoryRoot": "agent-a6cc8e59dff3245bd",
   "subsystems": [
     {
       "id": "host-shell",
@@ -2438,12 +2438,20 @@
   ],
   "recentChanges": [
     {
+      "path": "src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-05T22:11:28+00:00",
+      "lastCommit": "9ad456e9",
+      "lastSummary": "Select the option projection tables by descriptor fact, not by class name",
+      "touches": 10
+    },
+    {
       "path": "src/Meridian.Application/README.md",
       "subsystem": "Host and Composition",
       "lastModified": "2026-11-05T19:20:34+00:00",
       "lastCommit": "e7d86c2b",
       "lastSummary": "Refuse OtherSecurity classification text the label reader would misread",
-      "touches": 30
+      "touches": 31
     },
     {
       "path": "src/Meridian.Contracts/README.md",
@@ -2451,7 +2459,7 @@
       "lastModified": "2026-11-05T19:20:34+00:00",
       "lastCommit": "e7d86c2b",
       "lastSummary": "Refuse OtherSecurity classification text the label reader would misread",
-      "touches": 27
+      "touches": 28
     },
     {
       "path": "src/Meridian.Application/SecurityMaster/SecurityMasterService.cs",
@@ -2523,7 +2531,7 @@
       "lastModified": "2026-11-05T15:47:57+00:00",
       "lastCommit": "11f974e8",
       "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
-      "touches": 11
+      "touches": 12
     },
     {
       "path": "src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs",
@@ -2743,14 +2751,6 @@
     },
     {
       "path": "src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs",
       "subsystem": "Host and Composition",
       "lastModified": "2026-11-05T15:47:57+00:00",
       "lastCommit": "11f974e8",
