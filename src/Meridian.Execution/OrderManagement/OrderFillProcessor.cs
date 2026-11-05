@@ -181,6 +181,23 @@ internal sealed class OrderFillProcessor(
                 fillIncrement = fillIncrement with { LotMultiplier = orderMultiplier };
             }
 
+            // Record the money scale the paper book books this fill at, so a replayed session
+            // reproduces it exactly and the accounting event's gross value agrees with the
+            // realized P&L the book reports. Only a non-unit scale is stamped: an unstamped
+            // record replays at 1x, which is exactly what both legacy records and 1x fills
+            // booked, and leaving 1x reports untouched keeps them identical to what arrived.
+            if (_portfolioState is PaperTradingPortfolio
+                && fillIncrement.BookedMoneyMultiplier is null
+                && !string.IsNullOrWhiteSpace(orderId)
+                && _context.ContainsOrder(orderId)
+                && PaperTradingPortfolio.ResolveMoneyMultiplier(
+                    fillIncrement,
+                    _context.GetContractMultiplier(orderId),
+                    fillIncrement.UsesFaceValuePercentageOfPar) is var bookedMultiplier and not 1m)
+            {
+                fillIncrement = fillIncrement with { BookedMoneyMultiplier = bookedMultiplier };
+            }
+
             progress = _fillProcessing.GetOrAdd(
                 report,
                 _ => new FillProcessingProgress(
@@ -403,7 +420,8 @@ internal sealed class OrderFillProcessor(
             newCash,
             fillIncrement.Timestamp,
             financialAccountId,
-            usesFaceValuePercentageOfPar);
+            usesFaceValuePercentageOfPar,
+            fillIncrement.BookedMoneyMultiplier ?? 1m);
     }
 
     /// <summary>

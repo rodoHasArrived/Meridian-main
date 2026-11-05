@@ -361,6 +361,12 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
                 kv => kv.Value.ToExecutionPosition(),
                 StringComparer.OrdinalIgnoreCase);
 
+            // The margin models value a position as quantity × price. Cash, loan and collateral
+            // in this book are already money-scaled for premium contracts, so the quote handed to
+            // the model is scaled the same way; otherwise a 100× option loan would be measured
+            // against a 1× holding and report a margin call that PortfolioValue does not show.
+            prices = ToMoneyPrices(account, prices);
+
             // Computed first so a missing price fails closed before any per-position result.
             var portfolioReq = account.MarginModel.CalculatePortfolioRequirement(
                 executionPositions,
@@ -388,6 +394,24 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
 
             return new MarginCallStatus(accountId, portfolioReq, posRequirements, isCall, deficiency);
         }
+    }
+
+    private static IReadOnlyDictionary<string, decimal> ToMoneyPrices(
+        AccountState account,
+        IReadOnlyDictionary<string, decimal> prices)
+    {
+        if (account.Positions.Values.All(static p => p.EconomicMultiplier == 1m))
+            return prices;
+
+        var scaled = new Dictionary<string, decimal>(prices.Count, StringComparer.OrdinalIgnoreCase);
+        foreach (var (symbol, price) in prices)
+        {
+            scaled[symbol] = account.Positions.TryGetValue(symbol, out var pos)
+                ? price * pos.EconomicMultiplier
+                : price;
+        }
+
+        return scaled;
     }
 
     /// <summary>
@@ -540,8 +564,12 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         if (!Enum.IsDefined(lotUnit))
             throw new ArgumentOutOfRangeException(nameof(report), "Lot denomination must be a defined unit.");
 
-        var economicMultiplier = ResolveEconomicMultiplier(
-            report, multiplier, faceValueSizing, assetClassResolved ? descriptor : null);
+        // A stamped fill replays at exactly the scale it was booked at; an unstamped live fill
+        // resolves it now (and the OMS stamps the increment before it is persisted).
+        var economicMultiplier = report.BookedMoneyMultiplier
+            ?? ResolveEconomicMultiplier(report, multiplier, faceValueSizing, assetClassResolved ? descriptor : null);
+        if (economicMultiplier <= 0m)
+            throw new ArgumentOutOfRangeException(nameof(report), "Booked money multiplier must be positive.");
 
         // A percentage of par is a fraction of par: convert once here so every downstream
         // lot, cost-basis, cash, and ledger computation shares one per-unit dollar price.
@@ -558,6 +586,40 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
                 explicitCosts, report.Timestamp, report.OrderId,
                 ownerAccountId, multiplier, faceValueSizing, lotUnit, economicMultiplier);
         }
+    }
+
+    /// <summary>
+    /// Applies a fill read back from a durable paper-session record. A record stamped with
+    /// <see cref="ExecutionReport.BookedMoneyMultiplier"/> replays at exactly that scale. A record
+    /// without the stamp was written before this book scaled contract premiums and booked its cash
+    /// at 1×, so it replays at 1× rather than being silently reinterpreted.
+    /// </summary>
+    internal void ApplyRecordedFill(ExecutionReport report)
+    {
+        ArgumentNullException.ThrowIfNull(report);
+        ApplyFill(report.BookedMoneyMultiplier is null ? report with { BookedMoneyMultiplier = 1m } : report);
+    }
+
+    /// <summary>
+    /// The money multiplier <see cref="ApplyFill(string, ExecutionReport, string?, decimal, bool)"/>
+    /// books a fill at, for callers that must stamp or mirror it (the OMS stamps it on the fill
+    /// increment before persisting it and carries it into the accounting event).
+    /// </summary>
+    internal static decimal ResolveMoneyMultiplier(
+        ExecutionReport report,
+        decimal contractMultiplier,
+        bool usesFaceValuePercentageOfPar)
+    {
+        ArgumentNullException.ThrowIfNull(report);
+        if (report.BookedMoneyMultiplier is { } booked)
+            return booked;
+
+        var faceValueSizing = usesFaceValuePercentageOfPar || report.UsesFaceValuePercentageOfPar;
+        var multiplier = report.LotMultiplier ?? contractMultiplier;
+        if (multiplier <= 0m)
+            throw new ArgumentOutOfRangeException(nameof(contractMultiplier), "Lot multiplier must be positive.");
+        var descriptor = SecurityAssetClassCatalog.TryResolveLabel(report.AssetClass, out var resolved) ? resolved : null;
+        return ResolveEconomicMultiplier(report, multiplier, faceValueSizing, descriptor);
     }
 
     /// <summary>

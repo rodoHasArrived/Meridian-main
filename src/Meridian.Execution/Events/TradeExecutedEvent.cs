@@ -43,7 +43,8 @@ public sealed record TradeExecutedEvent(
     decimal NewCash,
     DateTimeOffset OccurredAt,
     string? FinancialAccountId = null,
-    bool UsesFaceValuePercentageOfPar = false)
+    bool UsesFaceValuePercentageOfPar = false,
+    decimal MoneyMultiplier = 1m)
 {
     /// <summary>
     /// Gross trade value, always positive. For a face-value fill the clean price is a
@@ -51,6 +52,11 @@ public sealed record TradeExecutedEvent(
     /// the same convention pre-trade risk uses to measure the order — keeping the booked
     /// cash movement equal to the notional the risk gate approved.
     /// </summary>
+    /// <remarks>
+    /// <see cref="MoneyMultiplier"/> is the scale the paper book booked the fill at (the contract
+    /// multiplier for listed premium contracts such as options, 1 otherwise), so the gross value
+    /// agrees with the realized P&amp;L the same fill reports.
+    /// </remarks>
     public decimal GrossValue =>
-        FilledQuantity * (UsesFaceValuePercentageOfPar ? FillPrice / 100m : FillPrice);
+        FilledQuantity * (UsesFaceValuePercentageOfPar ? FillPrice / 100m : FillPrice) * MoneyMultiplier;
 }

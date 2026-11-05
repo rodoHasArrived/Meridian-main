@@ -2876,7 +2876,9 @@ read a park as a failure and resubmit — each resubmission mints a new client o
 `AggregatePortfolioExposureProvider` feeds the portfolio-aware rules from the same aggregated
 cross-run positions the Portfolio workspace reports, valuing them at live marks only while those
 marks are fresh, reserving accepted-but-unfilled orders, and reporting option reference prices per
-contract while keeping the contract multiplier in exposure totals.
+contract while keeping the contract multiplier in exposure totals. `BrokeragePortfolioState` puts the
+same observed option multiplier on the `PositionState` it projects, so that view's P&L and market
+value are in dollars rather than quote × contracts.
 
 `/api/security-master/asset-classes` and `/api/security-master/asset-classes/{assetClass}`
 return the Security Master asset-class registry (fields, validation, projection, lot and

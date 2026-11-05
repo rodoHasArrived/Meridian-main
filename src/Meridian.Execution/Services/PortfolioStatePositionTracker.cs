@@ -95,6 +95,9 @@ public sealed class PortfolioStatePositionTracker : IPositionTracker
             Quantity = quantity,
             AverageCostBasis = position.AverageCostBasis,
             MarketPrice = marketPrice,
+            // Carried so the projected money fields (UnrealizedPnl, MarketValue) stay on the
+            // same scale as the source portfolio instead of reverting to quote × quantity.
+            ContractMultiplier = multiplier,
             RealizedPnl = position.RealizedPnl,
             LastUpdated = asOf
         };

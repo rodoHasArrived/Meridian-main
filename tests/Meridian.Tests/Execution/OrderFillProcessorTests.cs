@@ -90,11 +90,44 @@ public sealed class OrderFillProcessorTests
         Assert.Equal(9_700m, portfolio.Cash);
         var stored = Assert.IsType<PaperSessionFillRecord>(store.StoredFill).Fill;
         Assert.Equal(100m, stored.LotMultiplier);
+        Assert.Equal(100m, stored.BookedMoneyMultiplier);
 
         // A replay has no OMS sidecar: the stamped report alone must reproduce the economics.
         var replayed = new PaperTradingPortfolio(10_000m);
         replayed.ApplyFill(stored);
         Assert.Equal(portfolio.Cash, replayed.Cash);
+    }
+
+    [Fact]
+    public async Task ProfitableOptionClose_PublishesGrossValueOnTheSameScaleAsRealizedPnl()
+    {
+        // Buy 1 contract at $2 (already on the book), then the OMS closes it at $3 on a 100
+        // multiplier: $100 realized on $300 proceeds, so the ledger's cost basis is $200. With
+        // an unscaled gross value the consumer would compute -$97 and refuse the posting.
+        var portfolio = new PaperTradingPortfolio(10_000m);
+        portfolio.ApplyFill(CreateReport("opening-buy") with
+        {
+            OrderQuantity = 1m, FilledQuantity = 1m, FillPrice = 2m
+        }, ownerAccountId: null, contractMultiplier: 100m);
+
+        var order = CreateOrder("option-close") with
+        {
+            Side = OrderSide.Sell, Quantity = 1m, FilledQuantity = 1m, ContractMultiplier = 100m
+        };
+        var report = CreateReport(order.OrderId) with
+        {
+            Side = OrderSide.Sell, OrderQuantity = 1m, FilledQuantity = 1m, FillPrice = 3m
+        };
+        var publisher = new RecordingPublisher();
+        var processor = CreateProcessor(order, portfolio, publisher, null, out _);
+
+        await processor.ProcessAsync(null, report, previousFilledQuantity: 0m);
+
+        var trade = Assert.Single(publisher.Events);
+        Assert.Equal(100m, trade.MoneyMultiplier);
+        Assert.Equal(100m, trade.RealizedPnl);
+        Assert.Equal(300m, trade.GrossValue);
+        Assert.Equal(200m, trade.GrossValue - trade.RealizedPnl);
     }
 
     [Fact]

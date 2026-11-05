@@ -207,7 +207,65 @@ public sealed class PaperTradingPortfolioMultiplierTests
 
         state.MarketPrice.Should().Be(3.00m);
         state.AverageCostBasis.Should().Be(2.50m);
+        state.ContractMultiplier.Should().Be(100m);
+        state.UnrealizedPnl.Should().Be(200m, "4 contracts x $0.50 x 100");
+        state.MarketValue.Should().Be(1_200m, "4 contracts x $3 x 100");
         tracker.GetPortfolioValue().Should().Be(100_200m);
+    }
+
+    [Fact]
+    public void RegTOption_MarginCheck_ValuesTheHoldingOnTheSameScaleAsTheLoan()
+    {
+        // $1,000 buys ten $2 contracts on a 100 multiplier at 50 % initial margin: cash $0,
+        // loan $1,000, holding $2,000. Valuing the holding at $20 would report negative equity.
+        var portfolio = new PaperTradingPortfolio(
+        [
+            new AccountDefinition("margin-1", "Reg T Margin", AccountKind.Brokerage, 1_000m,
+                MarginType: MarginAccountType.RegT),
+        ]);
+        portfolio.ApplyFill("margin-1", OptionFill(OrderSide.Buy, qty: 10m, price: 2.00m));
+        portfolio.Cash.Should().Be(0m);
+        portfolio.MarginBalance.Should().Be(1_000m);
+
+        var status = portfolio.CheckMarginStatus("margin-1", new Dictionary<string, decimal> { [Option] = 2.00m });
+
+        status.PortfolioRequirement.NotionalValue.Should().Be(2_000m);
+        status.IsMarginCall.Should().BeFalse("equity is $1,000, matching PortfolioValue");
+        portfolio.PortfolioValue.Should().Be(1_000m);
+    }
+
+    [Fact]
+    public void RecordedFill_WithoutBookedStamp_ReplaysAtTheOneTimesScaleItWasBookedAt()
+    {
+        // A session written before this book scaled premiums already carried the Security
+        // Master multiplier on the fill. Replay must not reinterpret it at 100x.
+        var portfolio = new PaperTradingPortfolio(100_000m);
+
+        portfolio.ApplyRecordedFill(OptionFill(OrderSide.Buy, qty: 1m, price: 2.50m));
+
+        portfolio.Cash.Should().Be(99_997.50m);
+    }
+
+    [Fact]
+    public void RecordedFill_WithBookedStamp_ReplaysAtExactlyThatScale()
+    {
+        var portfolio = new PaperTradingPortfolio(100_000m);
+
+        portfolio.ApplyRecordedFill(OptionFill(OrderSide.Buy, qty: 1m, price: 2.50m) with { BookedMoneyMultiplier = 100m });
+
+        portfolio.Cash.Should().Be(99_750m);
+    }
+
+    [Fact]
+    public void BookedStamp_IsOmittedFromSerializedReportsWhenAbsent()
+    {
+        // Existing durable records hash their serialized form; an unstamped report must
+        // serialize byte-for-byte as before so their canonical hashes still validate.
+        var unstamped = OptionFill(OrderSide.Buy, qty: 1m, price: 2.50m);
+
+        System.Text.Json.JsonSerializer.Serialize(unstamped, Meridian.Execution.Serialization.ExecutionJsonContext.Default.ExecutionReport)
+            .Should().NotContain("BookedMoneyMultiplier", because: "a null stamp is not written")
+            .And.NotContain("bookedMoneyMultiplier");
     }
 
     private static ExecutionReport OptionFill(OrderSide side, decimal qty, decimal price, decimal multiplier = 100m) =>

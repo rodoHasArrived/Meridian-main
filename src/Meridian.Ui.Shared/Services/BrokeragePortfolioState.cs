@@ -37,9 +37,7 @@ public sealed class BrokeragePortfolioState(LiveBrokeragePortfolioSyncService sy
                 position.UnrealizedPnl, 0m)
             {
                 ExactQuantity = position.Quantity,
-                ContractMultiplier = position.AssetClass == "us_option"
-                    ? LiveBrokeragePortfolioSyncService.GetObservedOptionMultiplier(observation, position.Symbol)
-                    : 1m,
+                ContractMultiplier = ContractMultiplierFor(position, observation),
                 OwnerQuantities = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase)
                 {
                     [observation.FundAccountId.ToString("D")] = position.Quantity
@@ -58,16 +56,16 @@ public sealed class BrokeragePortfolioState(LiveBrokeragePortfolioSyncService sy
             : null;
         return position is null
             ? new PositionState { Symbol = symbol, LastUpdated = observation?.Snapshot?.RetrievedAt ?? DateTimeOffset.MinValue }
-            : Project(position, observation!.Snapshot!.RetrievedAt);
+            : Project(position, observation!);
     }
 
     public IReadOnlyDictionary<string, PositionState> GetAllPositions()
     {
-        var snapshot = Observation()?.Snapshot;
-        return snapshot is null
+        var observation = Observation();
+        return observation?.Snapshot is not { } snapshot
             ? new Dictionary<string, PositionState>(StringComparer.OrdinalIgnoreCase)
             : ProjectPositions(snapshot).ToDictionary(position => position.Symbol,
-                position => Project(position, snapshot.RetrievedAt), StringComparer.OrdinalIgnoreCase);
+                position => Project(position, observation), StringComparer.OrdinalIgnoreCase);
     }
 
     public decimal GetPortfolioValue() => PortfolioValue;
@@ -106,14 +104,22 @@ public sealed class BrokeragePortfolioState(LiveBrokeragePortfolioSyncService sy
         }
     }
 
-    private static PositionState Project(BrokeragePositionSnapshotDto position, DateTimeOffset observedAt) => new()
+    private static PositionState Project(BrokeragePositionSnapshotDto position, LiveBrokeragePortfolioStatus observation) => new()
     {
         Symbol = position.Symbol,
         Quantity = position.Quantity,
         AverageCostBasis = position.AverageEntryPrice,
         MarketPrice = position.MarketPrice,
-        LastUpdated = observedAt
+        // Same multiplier the IPosition view carries, so PositionState's money fields match
+        // the broker's dollar market value and P&L rather than quote × contracts.
+        ContractMultiplier = ContractMultiplierFor(position, observation),
+        LastUpdated = observation.Snapshot!.RetrievedAt
     };
+
+    private static decimal ContractMultiplierFor(BrokeragePositionSnapshotDto position, LiveBrokeragePortfolioStatus observation)
+        => position.AssetClass == "us_option"
+            ? LiveBrokeragePortfolioSyncService.GetObservedOptionMultiplier(observation, position.Symbol)
+            : 1m;
 
     private LiveBrokeragePortfolioStatus? Observation()
     {

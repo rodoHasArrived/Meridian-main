@@ -174,14 +174,18 @@ does not supply canonical security/book identity, acquisition FX or production s
 
 Fills of listed premium contracts (options and warrants, whose catalog descriptor declares
 `UsesOccOptionSymbols`) pay their premium in full: paper cash, ledger amounts, lot basis, market
-value and P&L move at quote × quantity × contract multiplier, the same scale
-`OrderNotionalResolver` sizes the order at. Cost basis, lot entry prices and marks stay per-unit quotes, because readers apply the
-multiplier themselves; the aggregate position view carries the multiplier its P&L used, and
-`PortfolioStatePositionTracker` divides by it when recovering a mark. Face-value fills and every
+value and P&L move at quote × quantity × contract multiplier, the same scale `OrderNotionalResolver`
+sizes the order at. Cost basis, lot entry prices and marks stay per-unit quotes, because readers
+apply the multiplier themselves; the aggregate position view carries the multiplier its P&L used,
+and `PortfolioStatePositionTracker` divides by it when recovering a mark. Face-value fills and every
 other asset class stay at 1×. Futures stay at 1× on purpose until the book models variation margin.
 A fill whose multiplier differs from the open position's is refused. The OMS stamps the multiplier
-on each fill increment so session replay reproduces the same cash. Margin interest is paid from
-cash once, leaves the loan principal unchanged, and posts Margin Interest Expense against Cash.
+on each fill increment, and stamps `BookedMoneyMultiplier` when the scale is not 1, so session
+replay reproduces the same cash; records written before that stamp replay at the 1× they were booked
+at. The accounting `TradeExecutedEvent` carries the same `MoneyMultiplier`, so its gross value
+agrees with the realized P&L, and the Reg T margin check values holdings on that scale. Margin
+interest is paid from cash once, leaves the loan principal unchanged, and posts Margin Interest
+Expense against Cash.
 
 Both paper gateways resolve the final fill price through the shared trading-parameter helper.
 Tick-size rounding is best-effort: a rounded price is used only when it remains positive, stays
