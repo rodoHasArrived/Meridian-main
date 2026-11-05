@@ -520,6 +520,23 @@ describe("dashboard design-system contract", () => {
     expect(tailwindConfig).toContain("\"JetBrains Mono\"");
   });
 
+  it("ends every Tailwind font stack in a generic family so missing faces never fall back to serif", () => {
+    const tailwindConfig = readTailwindConfig();
+
+    // Chromium does not resolve ui-monospace / ui-sans-serif; without a CSS
+    // generic tail a machine lacking the named faces renders Times.
+    expect(tailwindConfig).toMatch(/sans:\s*\[[^\]]*"sans-serif"\s*\]/);
+    expect(tailwindConfig).toMatch(/mono:\s*\[[^\]]*"monospace"\s*\]/);
+    expect(tailwindConfig).toMatch(/display:\s*\[[^\]]*"sans-serif"\s*\]/);
+  });
+
+  it("imports Tailwind exactly once from the dashboard entry stylesheet", () => {
+    const entryStyles = readDashboardStyles();
+
+    expect(entryStyles.match(/@import\s+"tailwindcss"/g)).toHaveLength(1);
+    expect(entryStyles.match(/@config\s+"/g)).toHaveLength(1);
+  });
+
   it("declares local Segoe/Cascadia faces and fetches no external fonts", () => {
     const styles = readDashboardStyles();
 

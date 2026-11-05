@@ -415,8 +415,13 @@ describe("finance standard pages", () => {
 
     // The drill-through carries the period, which is how the detail screen resolves a posted
     // entry. It used to carry a runId, which no posted entry has.
-    expect(await screen.findByRole("table", { name: "Ledger Explorer results" })).toHaveTextContent("Open journal detail");
-    expect(screen.getByRole("link", { name: "Open journal detail" })).toHaveAttribute(
+    // The Journal ID column shows the ID itself (not generic link copy), and the posted
+    // amounts keep their cents.
+    const ledgerTable = await screen.findByRole("table", { name: "Ledger Explorer results" });
+    expect(ledgerTable).not.toHaveTextContent("Open journal detail");
+    expect(ledgerTable).toHaveTextContent("$500.00");
+    expect(screen.getByRole("link", { name: "Open journal je-cash-1" })).toHaveTextContent("je-cash-1");
+    expect(screen.getByRole("link", { name: "Open journal je-cash-1" })).toHaveAttribute(
       "href",
       `/accounting/journal-entries/detail?journalEntryId=je-cash-1&periodId=${LEDGER_PERIOD_ID}`
     );
@@ -426,8 +431,8 @@ describe("finance standard pages", () => {
     const proofPacket = mockPostedAmount();
     await renderPage(<LedgerExplorerScreen data={data} />, "/accounting/ledger");
     expect(getLedgerAmountProof).not.toHaveBeenCalled();
-    fireEvent.click(await screen.findByRole("button", { name: "Inspect debit $500 for Cash in journal je-proof" }));
-    const drawer = await screen.findByRole("dialog", { name: "Cash debit $500 proof detail" });
+    fireEvent.click(await screen.findByRole("button", { name: "Inspect debit $500.00 for Cash in journal je-proof" }));
+    const drawer = await screen.findByRole("dialog", { name: "Cash debit $500.00 proof detail" });
     expect(await within(drawer).findByRole("link", { name: "Open Retained journal line" })).toHaveAttribute("href", proofPacket.ledgerAmount!.evidence[0]!.route);
     expect(getLedgerAmountProof).toHaveBeenCalledWith(expect.objectContaining({
       subjectId: "je-proof:line-proof:debit", ledgerBookId: LEDGER_BOOK_ID, periodId: LEDGER_PERIOD_ID,
@@ -440,7 +445,7 @@ describe("finance standard pages", () => {
   it("requires a fresh amount click after visiting Trial balance and returning to Ledger", async () => {
     mockPostedAmount();
     await renderPage(<LedgerExplorerScreen data={data} />, "/accounting/ledger");
-    fireEvent.click(await screen.findByRole("button", { name: "Inspect debit $500 for Cash in journal je-proof" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Inspect debit $500.00 for Cash in journal je-proof" }));
     expect(await screen.findByRole("link", { name: "Open Retained journal line" })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("tab", { name: "Trial balance" }));
@@ -450,7 +455,7 @@ describe("finance standard pages", () => {
     await waitForAsyncEffects();
     await waitForAsyncEffects();
 
-    const amount = await screen.findByRole("button", { name: "Inspect debit $500 for Cash in journal je-proof" });
+    const amount = await screen.findByRole("button", { name: "Inspect debit $500.00 for Cash in journal je-proof" });
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(getLedgerAmountProof).toHaveBeenCalledTimes(1);
     fireEvent.click(amount);
@@ -483,7 +488,7 @@ describe("finance standard pages", () => {
         : scope === "period" ? [period, otherPeriod] : [period]) as never;
     });
     await renderPage(<LedgerExplorerScreen data={data} />, "/accounting/ledger");
-    fireEvent.click(await screen.findByRole("button", { name: "Inspect debit $500 for Cash in journal je-proof" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Inspect debit $500.00 for Cash in journal je-proof" }));
     expect(await screen.findByRole("link", { name: "Open Retained journal line" })).toBeInTheDocument();
 
     const selector = () => document.getElementById(`ledger-${scope}-select`) as HTMLSelectElement;
@@ -495,7 +500,7 @@ describe("finance standard pages", () => {
     await waitForAsyncEffects();
     await waitForAsyncEffects();
 
-    const amount = await screen.findByRole("button", { name: "Inspect debit $500 for Cash in journal je-proof" });
+    const amount = await screen.findByRole("button", { name: "Inspect debit $500.00 for Cash in journal je-proof" });
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(getLedgerAmountProof).toHaveBeenCalledTimes(1);
     fireEvent.click(amount);
@@ -508,7 +513,7 @@ describe("finance standard pages", () => {
     let completeProof!: (packet: typeof proofPacket) => void;
     vi.mocked(getLedgerAmountProof).mockImplementationOnce(() => new Promise((resolve) => { completeProof = resolve; }));
     await renderPage(<LedgerExplorerScreen data={data} />, "/accounting/ledger");
-    fireEvent.click(await screen.findByRole("button", { name: "Inspect debit $500 for Cash in journal je-proof" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Inspect debit $500.00 for Cash in journal je-proof" }));
     expect(screen.getByRole("dialog")).toHaveTextContent("Loading retained amount evidence");
     const signal = vi.mocked(getLedgerAmountProof).mock.calls[0][1]?.signal;
 
@@ -518,7 +523,7 @@ describe("finance standard pages", () => {
     fireEvent.click(screen.getByRole("tab", { name: "Ledger" }));
     await waitForAsyncEffects();
     await waitForAsyncEffects();
-    const amount = await screen.findByRole("button", { name: "Inspect debit $500 for Cash in journal je-proof" });
+    const amount = await screen.findByRole("button", { name: "Inspect debit $500.00 for Cash in journal je-proof" });
     await act(async () => { completeProof(proofPacket); });
 
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
@@ -580,8 +585,10 @@ describe("finance standard pages", () => {
     const table = await screen.findByRole("table", { name: "Ledger Explorer results" });
     expect(table).not.toHaveTextContent("Evidence status");
     expect(table).not.toHaveTextContent("Linked");
-    expect(table).toHaveTextContent("€500");
+    expect(table).toHaveTextContent("€500.00");
     expect(table).not.toHaveTextContent("$500");
+    // Posting lines inherit their entry's status; instruction copy is not a status value.
+    expect(table).not.toHaveTextContent("Select amount for proof");
     // The entry's lines agree on an entity, so the column names it rather than claiming the entry
     // spans every entity.
     expect(table).toHaveTextContent("entity-lux");
