@@ -85,13 +85,51 @@ public sealed class ClassificationLabelReaderTests
         }
     }
 
+    [Theory]
+    [InlineData("OtherSubType \"Some(Nested)\"", "Some(Nested)")]
+    [InlineData("OtherSubType \"None\"", "None")]
+    [InlineData("OtherFamily \"Some(x)\"", "Some(x)")]
+    [InlineData("Some(OtherSubType \"Some(x)\")", "Some(x)")]
+    [InlineData("Some(OtherFamily \"None\")", "None")]
+    [InlineData("OtherSubType \"OtherSubType \\\"x\\\"\"", "OtherSubType \"x\"")]
+    [InlineData("\"\\\"q\\\"\"", "\"q\"")]
+    public void Normalize_ReturnsAUnionPayloadVerbatim_WithoutReinterpretingIt(string stored, string expected)
+        => ClassificationLabelReader.Normalize(stored).Should().Be(expected,
+            "a union payload is the free-text label itself; decoding it again would change a valid classification");
+
+    [Theory]
+    [InlineData("Some(Nested)")]
+    [InlineData("Some(Crypto Spot)")]
+    [InlineData("Some(preferredEquity)")]
+    public void Normalize_KeepsCanonicalFreeTextThatOnlyLooksLikeAnOption(string stored)
+        => ClassificationLabelReader.Normalize(stored).Should().Be(stored,
+            "only a known case name, a union payload or a quoted literal is unwrapped from Some(...)");
+
+    [Fact]
+    public void KnownCaseNames_MatchTheFSharpClassificationUnions()
+    {
+        var fsharpNames = new[] { typeof(AssetClass), typeof(AssetFamily), typeof(SecuritySubType) }
+            .SelectMany(static type => FSharpType.GetUnionCases(type, null))
+            .Where(static unionCase => unionCase.GetFields().Length == 0)
+            .Select(static unionCase => unionCase.Name);
+
+        ClassificationLabelReader.KnownCaseNames.Should().BeEquivalentTo(fsharpNames,
+            "Some(...) is unwrapped only around a case name the retired writer could have rendered");
+    }
+
+    [Fact]
+    public void Normalize_KeepsADistinctionThatOnlyAPayloadCarries()
+        => ClassificationLabelReader.Normalize("OtherSubType \"A\"").Should().NotBe(
+            ClassificationLabelReader.Normalize("OtherSubType \"Some(A)\""),
+            "the history comparison must still see a real change between these two classifications");
+
     [Fact]
     public void Normalize_IsIdempotent()
     {
         var inputs = new[]
             {
                 "Some(PreferredEquity)", "Some(\"X\")", "OtherFamily \"Crypto\"", "Some(OtherSubType \"x\")",
-                "OtherFamily \"Some(Nested)\"", "None", "  CommonShare ", "OtherSubType", "\"\\\"q\\\"\"", ""
+                "OtherFamily \"Some(Nested)\"", "None", "  CommonShare ", "OtherSubType", ""
             }
             .Concat(CanonicalDomainLabels())
             .Concat(AllFamilies().Select(static family => FSharpOption<AssetFamily>.Some(family).ToString()))

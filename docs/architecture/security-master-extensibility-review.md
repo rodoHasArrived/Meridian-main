@@ -203,8 +203,13 @@ and replayed; do not rewrite append-only economic events to clean up labels.
 **Slice 3 disposition — 2026-11-04.** Historical reads are compatible without rewriting retained
 evidence. `Meridian.Contracts.SecurityMaster.ClassificationLabelReader.Normalize` decodes the
 retired F# renderings (`Some(X)`, `Some("X")`, `OtherFamily "x"`, `OtherSubType "x"`, nested
-`Some(OtherFamily "x")`, `None` → no label) and otherwise returns the trimmed input; it is
-idempotent, and every current domain label is a fixed point. It is applied where a stored label is
+`Some(OtherFamily "x")`, `None` → no label) and otherwise returns the trimmed input. The decode is
+a single structural pass. It removes at most one `Some(…)`, and only around a known F# case name, a
+union payload or a quoted literal. A union payload is the free-text label itself and is returned
+verbatim: a legacy `OtherSubType "Some(Nested)"` reads as `Some(Nested)`, and
+`OtherSubType "None"` reads as `None`. Every current domain label, including free text such as
+`Some(Nested)`, is returned unchanged. (Corrected 2026-11-05 after a review finding: the first
+version decoded recursively.) It is applied where a stored label is
 matched, displayed or grouped: the adapter's preferred-equity replay guard (labels and
 classification JSON), workbench classification/drill-in/passport/field values and its
 history change detection, the trial-balance workbook export, the WPF asset-family fields, and
@@ -228,9 +233,8 @@ descriptor-taxonomy labels, `ApproximateDomainLabelMappings` records the reviewe
 `OptionContract`, FX spot `BankProduct` and Deposit `DemandDeposit` approximations, and a coverage
 test fails when a descriptor label is neither a domain label nor listed. No descriptor value
 changes, so passport fallbacks still show the placeholder; mapping placeholders to no label there
-would change output and is left for a separate decision. A custom `OtherFamily`/`OtherSubType`
-caller value that itself looks like a legacy rendering (for example literally `None`) would be
-decoded; no such value is known.
+would change output and is left for a separate decision. A stored value whose whole text is exactly `None` still reads
+as no label, because that is the retired rendering of an absent family.
 
 Validation (local, Linux, Release): `dotnet test tests/Meridian.Tests` filtered to
 `Classification|CertifiedReporting|SecurityEconomicDefinitionAdapter|InstrumentTypeDescriptor|ReportGenerationService|SecurityMasterAggregateRebuilder`
