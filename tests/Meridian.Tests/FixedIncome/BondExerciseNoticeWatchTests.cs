@@ -176,6 +176,24 @@ public sealed class BondExerciseNoticeWatchTests
         result.Windows[0].DaysToDeadline.Should().Be(-30);
     }
 
+    [Fact]
+    public void EvaluationOnALaggedCouponPaymentDate_KeepsTheCashFlowAnchorAtTheEvaluationDate()
+    {
+        // The 2026-07-15 coupon accrues to Wednesday and pays two business days later, on Friday 2026-07-17.
+        // On that payment date the coupon is paid, so it must not read as an earned-but-unpaid entitlement.
+        // The call is mid-period, clear of any lagged coupon window of its own.
+        var call = European(30, 60, "Calendar");
+        call["callDate"] = "2027-04-15";
+        var security = Bond(Calls(call), paymentLag: 2);
+
+        var result = BondExerciseNoticeWatch.Evaluate(security, Calendars, new DateOnly(2026, 7, 17), 366);
+
+        result.Blockers.Should().BeEmpty();
+        result.Windows.Should().ContainSingle().Which.Should().Be(new BondExerciseNoticeWindow("Call",
+            new DateOnly(2027, 4, 15), 101m, new DateOnly(2027, 2, 14), new DateOnly(2027, 3, 16),
+            BondExerciseNoticeStatus.Upcoming, 242));
+    }
+
     [Theory]
     [InlineData("principalSchedule", "[{\"paymentDate\":\"2027-01-15\",\"amount\":0}]", "SM_SCHEDULE_RANGE_INVALID")]
     [InlineData("factorScheduleEntries", "[{\"asOfDate\":\"2027-01-15\",\"factor\":0.8},{\"asOfDate\":\"2027-01-15\",\"factor\":0.7}]", "SM_SCHEDULE_DUPLICATE_DATE")]
@@ -362,7 +380,7 @@ public sealed class BondExerciseNoticeWatchTests
 
     internal static SecurityDetailDto Bond(Dictionary<string, object?>[]? calls = null,
         Dictionary<string, object?>[]? puts = null, int stamp = 3, bool? isCallable = null,
-        Dictionary<string, object?>? extra = null)
+        Dictionary<string, object?>? extra = null, int paymentLag = 0)
     {
         var payload = new Dictionary<string, object?>
         {
@@ -380,7 +398,7 @@ public sealed class BondExerciseNoticeWatchTests
                 accrualAdjusted = false,
                 couponRateUnit = "Percent",
                 couponCashBasis = "Level",
-                paymentLagBusinessDays = 0,
+                paymentLagBusinessDays = paymentLag,
                 paymentCalendars = new[] { "WEEKENDS" }
             }
         };

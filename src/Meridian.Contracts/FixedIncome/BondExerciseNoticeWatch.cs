@@ -132,11 +132,12 @@ public static class BondExerciseNoticeWatch
         if (!schedule.Succeeded)
             return Refuse("ScheduleRefused", schedule.Failure.Message);
 
-        // The pricing resolver keeps only exercises strictly after its settlement date. A notice watch is
-        // inclusive of today, so resolve from the day before and keep exercises on or after the evaluation date.
-        // The yield convention only sets discount times, which the notice windows do not use.
+        // Cash flows, and with them the delayed-payment entitlement check, are anchored to the evaluation date.
+        // The pricing resolver keeps only exercises strictly after its settlement date, while a notice watch is
+        // inclusive of today, so scenario selection alone starts from the day before and keeps exercises on or
+        // after the evaluation date. The yield convention only sets discount times, which the windows do not use.
         var resolveFrom = asOf > issue ? asOf.AddDays(-1) : asOf;
-        if (!BondContractualEconomics.TryBuild(security.SecurityId, terms, declared, schedule, resolveFrom, annualRate.Value,
+        if (!BondContractualEconomics.TryBuild(security.SecurityId, terms, declared, schedule, asOf, annualRate.Value,
                 zeroCoupon, BondYieldConvention.AnnualEffective, out var flows, out _, out var refusal))
             return Refuse("CashFlowRefused", refusal!);
         if (!BondExerciseEconomics.TryResolveScenarios(security, terms, declared, schedule, resolveFrom, annualRate.Value,

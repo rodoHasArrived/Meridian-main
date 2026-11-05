@@ -7902,8 +7902,10 @@ regression test:
 - A retained row with a malformed owned schedule, or one that overflows decimal bounds, is now a
   blocked result (`InvalidEconomicSchedule` or `CalculationBoundsExceeded`) instead of an HTTP 500,
   as in analytics.
-- An exercise on the evaluation date stays visible. Scenarios resolve from the day before, so a
-  zero-minimum or maximum-only window is `Open` with `DaysToDeadline` 0 on its deadline day.
+- An exercise on the evaluation date stays visible. Scenario selection alone starts from the day
+  before, so a zero-minimum or maximum-only window is `Open` with `DaysToDeadline` 0 on its deadline
+  day. Cash flows, and with them the delayed-payment entitlement check, stay anchored to the
+  evaluation date, so evaluating on a lagged coupon's payment date does not block every window.
 - The read service asks the retained `IBondCalculationPolicy` cutover gate before evaluating, so
   a blocked or unreadable cutover receipt blocks this surface too (`CalculationPolicyBlocked`).
 
@@ -7928,7 +7930,7 @@ business-day adjustment) remain open.
 
 | Check | Result |
 | --- | --- |
-| New scenario suites `BondExerciseNoticeWatchTests` and `BondExerciseNoticeEndpointsTests` | 35 passed; 42 after the review fixes |
+| New scenario suites `BondExerciseNoticeWatchTests` and `BondExerciseNoticeEndpointsTests` | 35 passed; 43 after the review fixes |
 | Regression filter: `BondExercise`, `BondAnalytics`, `VersionedContainerKeyLiteralRatchet`, `EndpointStubDetection`, `PortfolioCashLadder` and route-wiring tests | 201 passed |
 | `Route`, `OpenApi`, `Architecture`, `ServiceRegistration` and `Composition` filters | 1070 passed, 1 skipped |
 | `generate-ui-api-routes-ts.py` | One new route constant |
