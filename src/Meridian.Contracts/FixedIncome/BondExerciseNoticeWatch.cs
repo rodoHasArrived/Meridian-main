@@ -16,7 +16,7 @@ public enum BondExerciseNoticeStatus
     Upcoming,
     /// <summary>The evaluation date is inside the notice window.</summary>
     Open,
-    /// <summary>The latest notice date has passed but the exercise date has not; retained notice evidence decides the actual status.</summary>
+    /// <summary>The latest notice date has passed but the exercise date is today or later; retained notice evidence decides the actual status.</summary>
     DeadlineElapsed
 }
 
@@ -64,15 +64,38 @@ public static class BondExerciseNoticeWatch
 
     /// <summary>
     /// Lists notice windows that are open, or that open or close on or before <paramref name="asOf"/> plus
-    /// <paramref name="horizonDays"/>, along with elapsed deadlines whose exercise date is still ahead. A window
+    /// <paramref name="horizonDays"/>, along with elapsed deadlines whose exercise date is today or later. A window
     /// is anchored on its earliest notice date, then its latest, then the exercise date when no bounds are stated.
     /// </summary>
     public static BondExerciseNoticeWatchResult Evaluate(SecurityDetailDto security, IBusinessDayCalendarSource? calendars,
         DateOnly asOf, int horizonDays = DefaultHorizonDays)
     {
         ArgumentNullException.ThrowIfNull(security);
-        BondExerciseNoticeWatchResult Refuse(string code, string reason)
-            => new(security.SecurityId, security.Version, asOf, horizonDays, [], [new(code, reason)], [AuthorityDiagnostic]);
+        // Retained-data refusals stay actionable blocked results, as in bond analytics, rather than faults.
+        try
+        {
+            return EvaluateCore(security, calendars, asOf, horizonDays);
+        }
+        catch (SecurityScheduleValidationException exception)
+        {
+            return Blocked(security, asOf, horizonDays, "InvalidEconomicSchedule", exception.Message);
+        }
+        catch (ArithmeticException)
+        {
+            return Blocked(security, asOf, horizonDays, "CalculationBoundsExceeded",
+                "Bond inputs exceed the supported decimal calculation bounds.");
+        }
+    }
+
+    /// <summary>A blocked result: the refusal, no windows and the authority diagnostic.</summary>
+    public static BondExerciseNoticeWatchResult Blocked(SecurityDetailDto security, DateOnly asOf, int horizonDays,
+        string code, string reason)
+        => new(security.SecurityId, security.Version, asOf, horizonDays, [], [new(code, reason)], [AuthorityDiagnostic]);
+
+    private static BondExerciseNoticeWatchResult EvaluateCore(SecurityDetailDto security, IBusinessDayCalendarSource? calendars,
+        DateOnly asOf, int horizonDays)
+    {
+        BondExerciseNoticeWatchResult Refuse(string code, string reason) => Blocked(security, asOf, horizonDays, code, reason);
 
         if (horizonDays is < 1 or > MaxHorizonDays)
             return Refuse("InvalidHorizon", $"The notice horizon must be between 1 and {MaxHorizonDays} days.");
@@ -109,18 +132,21 @@ public static class BondExerciseNoticeWatch
         if (!schedule.Succeeded)
             return Refuse("ScheduleRefused", schedule.Failure.Message);
 
+        // The pricing resolver keeps only exercises strictly after its settlement date. A notice watch is
+        // inclusive of today, so resolve from the day before and keep exercises on or after the evaluation date.
         // The yield convention only sets discount times, which the notice windows do not use.
-        if (!BondContractualEconomics.TryBuild(security.SecurityId, terms, declared, schedule, asOf, annualRate.Value,
+        var resolveFrom = asOf > issue ? asOf.AddDays(-1) : asOf;
+        if (!BondContractualEconomics.TryBuild(security.SecurityId, terms, declared, schedule, resolveFrom, annualRate.Value,
                 zeroCoupon, BondYieldConvention.AnnualEffective, out var flows, out _, out var refusal))
             return Refuse("CashFlowRefused", refusal!);
-        if (!BondExerciseEconomics.TryResolveScenarios(security, terms, declared, schedule, asOf, annualRate.Value,
+        if (!BondExerciseEconomics.TryResolveScenarios(security, terms, declared, schedule, resolveFrom, annualRate.Value,
                 BondYieldConvention.AnnualEffective, declared.Spec!.Tenor.PeriodsPerYear ?? 1, flows, calendars,
                 out var scenarios, out refusal))
             return Refuse("ExerciseScheduleRefused", refusal!);
 
         var horizonEnd = asOf.AddDays(horizonDays);
         var windows = new List<BondExerciseNoticeWindow>();
-        foreach (var scenario in scenarios)
+        foreach (var scenario in scenarios.Where(item => item.ExerciseDate >= asOf))
         {
             var status = Classify(scenario, asOf);
             var anchor = scenario.EarliestNoticeDate ?? scenario.LatestNoticeDate ?? scenario.ExerciseDate;

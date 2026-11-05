@@ -7,17 +7,20 @@ namespace Meridian.Ui.Shared.Services;
 /// <summary>
 /// Workstation read model for upcoming exercise notice windows on one retained Bond row. It loads the
 /// security as analytics does (current, or recorded as of an explicit knowledge cutoff) and delegates to
-/// <see cref="BondExerciseNoticeWatch"/>. Read-only: no terms are written and no notice is recorded.
+/// <see cref="BondExerciseNoticeWatch"/>, after the retained <see cref="IBondCalculationPolicy"/> cutover gate. Read-only: no terms are written and no notice is recorded.
 /// </summary>
 public sealed class BondExerciseNoticeReadService
 {
     private readonly ISecurityMasterQueryService _query;
     private readonly IBusinessDayCalendarSource? _calendars;
+    private readonly IBondCalculationPolicy? _policy;
 
-    public BondExerciseNoticeReadService(ISecurityMasterQueryService query, IBusinessDayCalendarSource? calendars = null)
+    public BondExerciseNoticeReadService(ISecurityMasterQueryService query, IBusinessDayCalendarSource? calendars = null,
+        IBondCalculationPolicy? policy = null)
     {
         _query = query ?? throw new ArgumentNullException(nameof(query));
         _calendars = calendars;
+        _policy = policy;
     }
 
     /// <summary>Returns null when no security is retained under the id (or none is eligible at <paramref name="knownAt"/> and none exists now).</summary>
@@ -42,6 +45,19 @@ public sealed class BondExerciseNoticeReadService
         if (security.EffectiveFrom > asOf || security.EffectiveTo is { } effectiveTo && asOf >= effectiveTo)
             return Blocked(securityId, security.Version, asOfDate, horizonDays, "TermsNotEffective",
                 "The selected retained terms are not effective at the evaluation date; a historically eligible terms version is required.");
+        // The retained cutover policy gates every bond calculation surface, as it does analytics.
+        if (_policy is not null)
+        {
+            try
+            {
+                if (await _policy.GetBlockerAsync(security, ct).ConfigureAwait(false) is { } policyBlocker)
+                    return BondExerciseNoticeWatch.Blocked(security, asOfDate, horizonDays, "CalculationPolicyBlocked", policyBlocker);
+            }
+            catch (SecurityScheduleValidationException exception)
+            {
+                return BondExerciseNoticeWatch.Blocked(security, asOfDate, horizonDays, "InvalidEconomicSchedule", exception.Message);
+            }
+        }
         return BondExerciseNoticeWatch.Evaluate(security, _calendars, asOfDate, horizonDays);
     }
 

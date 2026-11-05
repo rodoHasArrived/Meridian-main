@@ -152,6 +152,49 @@ public sealed class BondExerciseNoticeWatchTests
         far.Windows.Should().BeEmpty();
     }
 
+    [Theory]
+    // Exercise and deadline are both today: a zero minimum, or a maximum-only bound, keeps the window open.
+    [InlineData(0, 30, "2026-12-16")]
+    [InlineData(null, 30, "2026-12-16")]
+    [InlineData(0, null, null)]
+    public void ExerciseOnTheEvaluationDate_StaysOpenOnItsDeadlineDay(int? minimum, int? maximum, string? earliest)
+    {
+        var result = BondExerciseNoticeWatch.Evaluate(Bond(Calls(European(minimum, maximum, "Calendar"))), Calendars,
+            CallDate, 30);
+
+        result.Blockers.Should().BeEmpty();
+        result.Windows.Should().ContainSingle().Which.Should().Be(new BondExerciseNoticeWindow("Call", CallDate, 101m,
+            earliest is null ? null : DateOnly.Parse(earliest), CallDate, BondExerciseNoticeStatus.Open, 0));
+    }
+
+    [Fact]
+    public void ExerciseOnTheEvaluationDate_WithAPassedDeadline_IsReportedAsElapsed()
+    {
+        var result = BondExerciseNoticeWatch.Evaluate(Bond(Calls(European(30, 60, "Calendar"))), Calendars, CallDate, 30);
+
+        result.Windows.Should().ContainSingle().Which.Status.Should().Be(BondExerciseNoticeStatus.DeadlineElapsed);
+        result.Windows[0].DaysToDeadline.Should().Be(-30);
+    }
+
+    [Theory]
+    [InlineData("principalSchedule", "[{\"paymentDate\":\"2027-01-15\",\"amount\":0}]", "SM_SCHEDULE_RANGE_INVALID")]
+    [InlineData("factorScheduleEntries", "[{\"asOfDate\":\"2027-01-15\",\"factor\":0.8},{\"asOfDate\":\"2027-01-15\",\"factor\":0.7}]", "SM_SCHEDULE_DUPLICATE_DATE")]
+    public void InvalidRetainedEconomicSchedule_IsABlockedResultWithItsDiagnostics(string key, string rows, string code)
+    {
+        var security = Bond(Calls(European(30, 60, "Calendar")), extra: new()
+        {
+            ["profileFields"] = new Dictionary<string, object?> { [key] = JsonSerializer.Deserialize<JsonElement>(rows) },
+            [key] = Array.Empty<object>()
+        });
+
+        var result = BondExerciseNoticeWatch.Evaluate(security, Calendars, new DateOnly(2026, 12, 1), 90);
+
+        var blocker = result.Blockers.Should().ContainSingle().Subject;
+        blocker.Code.Should().Be("InvalidEconomicSchedule");
+        blocker.Reason.Should().Contain(code).And.Contain($"profileFields.{key}");
+        result.Windows.Should().BeEmpty();
+    }
+
     [Fact]
     public void BondWithoutDeclaredSchedules_HasNoWindowsAndNoRefusal()
     {
@@ -244,6 +287,44 @@ public sealed class BondExerciseNoticeWatchTests
         (await service.GetAsync(security.SecurityId, asOf, 90, knownAt))!.Windows.Should().ContainSingle();
         (await service.GetAsync(security.SecurityId, asOf, 90, knownAt.AddDays(-1)))!
             .Blockers.Should().ContainSingle().Which.Code.Should().Be("HistoricalTermsUnavailable");
+    }
+
+    [Fact]
+    public async Task ReadService_HonoursTheRetainedCalculationPolicy()
+    {
+        var security = Bond(Calls(European(30, 60, "Calendar")));
+        var query = Substitute.For<ISecurityMasterQueryService>();
+        query.GetByIdAsync(security.SecurityId, Arg.Any<CancellationToken>()).Returns(security);
+        var asOf = new DateTimeOffset(2026, 12, 1, 0, 0, 0, TimeSpan.Zero);
+
+        var blocking = Substitute.For<IBondCalculationPolicy>();
+        blocking.GetBlockerAsync(security, Arg.Any<CancellationToken>()).Returns("Cutover receipt is unavailable.");
+        var blocked = await new BondExerciseNoticeReadService(query, Calendars, blocking).GetAsync(security.SecurityId, asOf, 90);
+        blocked!.Blockers.Should().ContainSingle().Which.Should().Be(
+            new BondAnalyticsBlocker("CalculationPolicyBlocked", "Cutover receipt is unavailable."));
+        blocked.Windows.Should().BeEmpty();
+
+        // A policy that validates the owned schedules throws the shared validation exception for a malformed row.
+        var malformed = Bond(Calls(European(30, 60, "Calendar")), extra: new()
+        {
+            ["profileFields"] = new Dictionary<string, object?>
+            {
+                ["principalSchedule"] = JsonSerializer.Deserialize<JsonElement>("[{\"paymentDate\":\"2027-01-15\",\"amount\":0}]")
+            }
+        });
+        var validating = Substitute.For<IBondCalculationPolicy>();
+        validating.GetBlockerAsync(security, Arg.Any<CancellationToken>()).Returns<string?>(_ =>
+        {
+            SecurityEconomicScheduleParser.Parse(malformed.AssetSpecificTerms, malformed.CommonTerms).ThrowIfInvalid();
+            return null;
+        });
+        (await new BondExerciseNoticeReadService(query, Calendars, validating).GetAsync(security.SecurityId, asOf, 90))!
+            .Blockers.Should().ContainSingle().Which.Code.Should().Be("InvalidEconomicSchedule");
+
+        var permitting = Substitute.For<IBondCalculationPolicy>();
+        permitting.GetBlockerAsync(security, Arg.Any<CancellationToken>()).Returns((string?)null);
+        (await new BondExerciseNoticeReadService(query, Calendars, permitting).GetAsync(security.SecurityId, asOf, 90))!
+            .Windows.Should().ContainSingle();
     }
 
     private static IReadOnlyList<BondRedemptionScenario> AnalyticsScenarios(SecurityDetailDto security, DateOnly asOf)

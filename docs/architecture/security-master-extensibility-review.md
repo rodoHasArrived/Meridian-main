@@ -7896,6 +7896,17 @@ only of notice dates:
 - `GET /api/reference-data/bonds/{securityId}/exercise-notices` serves the result with analytics'
   tenant scope and permissions.
 
+**Review fixes (2026-11-05).** Three findings from the automated review are fixed, each with a
+regression test:
+
+- A retained row with a malformed owned schedule, or one that overflows decimal bounds, is now a
+  blocked result (`InvalidEconomicSchedule` or `CalculationBoundsExceeded`) instead of an HTTP 500,
+  as in analytics.
+- An exercise on the evaluation date stays visible. Scenarios resolve from the day before, so a
+  zero-minimum or maximum-only window is `Open` with `DaysToDeadline` 0 on its deadline day.
+- The read service asks the retained `IBondCalculationPolicy` cutover gate before evaluating, so
+  a blocked or unreadable cutover receipt blocks this surface too (`CalculationPolicyBlocked`).
+
 **Readable before writable.** The watch only reads retained rows; no write path is touched and no
 term is written. A stray schedule on a Bond stamped 2 is refused, not decoded. Call/put entries are
 never decoded from a profile envelope or from a row stamped below the arrays' version, as
@@ -7917,7 +7928,7 @@ business-day adjustment) remain open.
 
 | Check | Result |
 | --- | --- |
-| New scenario suites `BondExerciseNoticeWatchTests` and `BondExerciseNoticeEndpointsTests` | 35 passed |
+| New scenario suites `BondExerciseNoticeWatchTests` and `BondExerciseNoticeEndpointsTests` | 35 passed; 42 after the review fixes |
 | Regression filter: `BondExercise`, `BondAnalytics`, `VersionedContainerKeyLiteralRatchet`, `EndpointStubDetection`, `PortfolioCashLadder` and route-wiring tests | 201 passed |
 | `Route`, `OpenApi`, `Architecture`, `ServiceRegistration` and `Composition` filters | 1070 passed, 1 skipped |
 | `generate-ui-api-routes-ts.py` | One new route constant |
