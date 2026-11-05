@@ -804,7 +804,11 @@ Core workstation host. Do not introduce a second listener or independent monitor
   custom profile id, version, field-key, or field-value filters are supplied. Identifier fallback
   applies the same provider authority as the durable store: provider-bound
   identifiers and aliases require the exact normalized provider, while providerless legacy primary
-  fields remain eligible only when no matching authoritative identifier row exists. Profile
+  fields remain eligible only when no matching authoritative identifier row exists. Validation
+  warns with `SM_REGULATORY_IDENTIFIER_ASSET_CLASS_MISMATCH` when a UTI, UPI or Markit RED code sits
+  on an asset class `SecurityAssetClassCatalog.MayCarryIdentifierKind` does not admit, refuses a
+  shared-reference kind (UPI or RED) as primary with `SM_SHARED_IDENTIFIER_NOT_PRIMARY`, and treats
+  `Uti` as a canonical duplicate kind. Profile
   definitions are governed by `SecurityAssetProfileGovernanceService`, which merges seeded starter
   definitions
   with storage-root persisted drafts, approvals, rollback-created versions, and audit lineage.
