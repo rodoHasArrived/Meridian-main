@@ -228,6 +228,7 @@ classDiagram
     class Meridian_Contracts_SecurityMaster_CashFlowLegRateKind["CashFlowLegRateKind"] {
     }
     class Meridian_Contracts_SecurityMaster_ClassificationLabelReader["ClassificationLabelReader"] {
+        +IReadOnlySet~string~ KnownCaseNames
     }
     class Meridian_Contracts_SecurityMaster_CommitmentLot["CommitmentLot"] {
         +DateOnly CommittedDate

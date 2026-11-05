@@ -4623,7 +4623,7 @@
       ]
     }
   ],
-  "fingerprint": "6e0b184d6d0ff597f73515527dc070d08ddf3252f99e6078e5aab69909a314d4",
+  "fingerprint": "2f548fcb0ddec86d8fdc58d5a474091f81ac1dbc027f95917415ebb82764b8c2",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -6775,7 +6775,7 @@
         "all-contracts",
         "security-master-contracts"
       ],
-      "fingerprint": "ab7d892b00bcc33b8d28fe28e6fac4d086e0632898332400f822d5ac202f11c7",
+      "fingerprint": "eac5a1fe35ce876055f869a3cbbebb6ad9bbecb077c8d864c54cc7c0acf8e07c",
       "mapped_schemas": [
         "security_master"
       ],
@@ -233141,26 +233141,41 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "738ae7216477b1f5bfa2b615a57105456d10af933204ba72a40e79c39d5d0446",
+      "fingerprint": "094e7105bb0b3feabaac8553a44b1681b74d40629c65dcfcc2e7add148a42437",
       "full_name": "Meridian.Contracts.SecurityMaster.ClassificationLabelReader",
       "id": "Meridian.Contracts.SecurityMaster.ClassificationLabelReader",
       "kind": "class",
       "mapped_schemas": [
         "security_master"
       ],
-      "members": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "KnownCaseNames",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "IReadOnlySet<string>",
+          "source_line": 36,
+          "type": "IReadOnlySet<string>"
+        }
+      ],
       "name": "ClassificationLabelReader",
       "namespace": "Meridian.Contracts.SecurityMaster",
       "partial": false,
       "qualified_name": "Meridian.Contracts.SecurityMaster.ClassificationLabelReader",
       "references": [],
       "source": {
-        "line": 20,
+        "line": 27,
         "path": "src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs"
       },
       "sources": [
         {
-          "line": 20,
+          "line": 27,
           "path": "src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs"
         }
       ],
