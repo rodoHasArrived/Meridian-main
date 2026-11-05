@@ -157,13 +157,16 @@ internal static class SecurityEconomicDefinitionAdapter
         };
     }
 
-    private static bool HasPreferredClassification(SecurityEconomicDefinitionRecord economic)
+    internal static bool HasPreferredClassification(SecurityEconomicDefinitionRecord economic)
     {
-        static bool IsPreferredLabel(string? value)
-            => value is not null && (value.Equals("PreferredEquity", StringComparison.OrdinalIgnoreCase)
-                                     || value.Equals("PreferredShare", StringComparison.OrdinalIgnoreCase)
-                                     || value.Equals("Preferred", StringComparison.OrdinalIgnoreCase)
-                                     || value.Equals("ConvertiblePreferred", StringComparison.OrdinalIgnoreCase));
+        // Retained events may still carry the legacy F# rendering (Some(PreferredEquity),
+        // OtherSubType "..."), so labels are decoded before matching; the payload is not rewritten.
+        static bool IsPreferredLabel(string? stored)
+            => ClassificationLabelReader.Normalize(stored) is { } value
+               && (value.Equals("PreferredEquity", StringComparison.OrdinalIgnoreCase)
+                   || value.Equals("PreferredShare", StringComparison.OrdinalIgnoreCase)
+                   || value.Equals("Preferred", StringComparison.OrdinalIgnoreCase)
+                   || value.Equals("ConvertiblePreferred", StringComparison.OrdinalIgnoreCase));
 
         return IsPreferredLabel(economic.AssetFamily)
                || IsPreferredLabel(economic.SubType)

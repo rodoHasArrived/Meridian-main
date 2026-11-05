@@ -44,6 +44,17 @@ The rebuilt browser bundle includes the reconciliation queue/inspector pilot, UR
 break and filter continuity, navigation-state queue scroll restoration, and shared-shell recovery
 detail. Reconciliation commands and approvals remain owned by the existing shared services.
 
+The host-served bundle carries the shell hierarchy pass: a one-row masthead with the environment
+in the trust pill, a provenance banner that becomes a stripe once seen, a two-row workspace header,
+route-first workspace screens with the sidebar as the only sub-navigation, and a pinned Today entry
+with Control Tower attention counts. No shared contract changed.
+
+The host-served bundle carries the browser presentation correctness fixes: font stacks that end
+in a generic family (no serif fallback for data text), Ledger Explorer amounts at currency
+precision with journal-ID links, no invented Strategy metrics, and a masthead activation chip that
+leaves once setup is complete. No shared contract changed; entity display names still need a
+shared seam before the ledger can show them.
+
 ## Purpose
 
 Meridian.Ui contains the browser workstation source folder and built host-served workstation assets.

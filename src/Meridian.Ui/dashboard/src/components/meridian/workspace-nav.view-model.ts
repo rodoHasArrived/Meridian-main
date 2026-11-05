@@ -18,6 +18,7 @@ import {
   type AccountingNavigationItemDefinition
 } from "@/lib/accounting-navigation";
 import { WORKSPACE_NAVIGATION_FEATURES, type WorkstationFeatureDefinition } from "@/lib/workstation-features";
+import type { WorkspaceAttentionCounts } from "@/lib/daily-control-tower";
 import type { WorkspaceKey, WorkspaceSummary } from "@/types";
 
 export interface WorkspaceNavSubItemViewModel {
@@ -44,6 +45,8 @@ export interface WorkspaceNavItemViewModel {
   active: boolean;
   ariaCurrent: "page" | undefined;
   ariaLabel: string;
+  /** Control Tower queue items owned by this workspace; 0 renders no badge. */
+  attentionCount: number;
   subItems: WorkspaceNavSubItemViewModel[];
   subItemGroups: WorkspaceNavSubItemGroupViewModel[];
 }
@@ -58,8 +61,22 @@ export interface WorkspaceNavCurrentWorkspaceViewModel {
   ariaLabel: string;
 }
 
+/**
+ * The Daily Control Tower as the sidebar's front door: pinned above the seven workspaces and
+ * deliberately not one of them (the seven-workspace navigation rule is unchanged).
+ */
+export interface WorkspaceNavTodayViewModel {
+  label: string;
+  route: string;
+  active: boolean;
+  ariaCurrent: "page" | undefined;
+  ariaLabel: string;
+  attentionCount: number;
+}
+
 export interface WorkspaceNavViewModel {
   isHome: boolean;
+  today: WorkspaceNavTodayViewModel;
   activeWorkspaceKey: WorkspaceKey | null;
   brandTitle: string;
   brandSubtitle: string;
@@ -88,7 +105,8 @@ export function buildWorkspaceNavViewModel(
   pathname: string,
   workspaces: WorkspaceSummary[] = WORKSPACES,
   search = "",
-  operatingContextScope: AppShellOperatingScopeInput | null = null
+  operatingContextScope: AppShellOperatingScopeInput | null = null,
+  attention: WorkspaceAttentionCounts | null = null
 ): WorkspaceNavViewModel {
   const isHome = pathname === "/";
   const visibleWorkspaces = canonicalizeWorkspaceSummaries(workspaces);
@@ -108,6 +126,7 @@ export function buildWorkspaceNavViewModel(
       search
     );
     const workspaceScopeSummary = summarizeOperatingScopeForRoute(workspaceCanonicalRoute, operatingScope);
+    const attentionCount = attention?.byWorkspace[workspace.key] ?? 0;
     const buildSubItem = (
       sub: WorkspaceSubrouteDefinition | AccountingNavigationItemDefinition
     ): WorkspaceNavSubItemViewModel => {
@@ -145,11 +164,12 @@ export function buildWorkspaceNavViewModel(
       route: workspaceRoute,
       active,
       ariaCurrent: exactWorkspaceActive ? "page" : undefined,
-      ariaLabel: active
+      ariaLabel: `${active
         ? exactWorkspaceActive
-          ? `${workspace.label} workspace, current route, ${workspace.maturity} product maturity${formatPreservedScopeAriaSuffix(workspaceScopeSummary)}`
-          : `${workspace.label} workspace, active section, ${workspace.maturity} product maturity${formatPreservedScopeAriaSuffix(workspaceScopeSummary)}`
-        : `Open ${workspace.label} workspace, ${workspace.maturity} product maturity${formatPreservedScopeAriaSuffix(workspaceScopeSummary)}`,
+          ? `${workspace.label} workspace, current route, ${workspace.maturity} product maturity`
+          : `${workspace.label} workspace, active section, ${workspace.maturity} product maturity`
+        : `Open ${workspace.label} workspace, ${workspace.maturity} product maturity`}${formatAttentionAriaSuffix(attentionCount)}${formatPreservedScopeAriaSuffix(workspaceScopeSummary)}`,
+      attentionCount,
       subItems,
       subItemGroups
     };
@@ -159,8 +179,20 @@ export function buildWorkspaceNavViewModel(
 
   const contextItems = buildContextItems(pathname, currentWorkspace.key, operatingScope, search);
 
+  const todayAttentionCount = attention?.total ?? 0;
+  const todayRoute = appendOperatingScopeToRoute("/", operatingScope);
+  const today: WorkspaceNavTodayViewModel = {
+    label: "Today",
+    route: todayRoute,
+    active: isHome,
+    ariaCurrent: isHome ? "page" : undefined,
+    ariaLabel: `${isHome ? "Today, Daily Control Tower, current route" : "Open Today, the Daily Control Tower"}${formatAttentionAriaSuffix(todayAttentionCount)}`,
+    attentionCount: todayAttentionCount
+  };
+
   return {
     isHome,
+    today,
     activeWorkspaceKey: isHome ? null : currentWorkspace.key,
     brandTitle: "Meridian",
     brandSubtitle: "Operator Workstation",
@@ -312,4 +344,8 @@ function workspaceMaturityTone(maturity: WorkspaceSummary["maturity"]): Workspac
 
 function formatPreservedScopeAriaSuffix(scopeSummary: string | null): string {
   return scopeSummary ? `, preserving ${scopeSummary}` : "";
+}
+
+function formatAttentionAriaSuffix(count: number): string {
+  return count > 0 ? `, ${count} ${count === 1 ? "item needs" : "items need"} attention` : "";
 }

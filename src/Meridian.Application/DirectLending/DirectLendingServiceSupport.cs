@@ -62,6 +62,11 @@ internal static class DirectLendingServiceSupport
             return new DirectLendingCommandError(DirectLendingErrorCode.Validation, "Effective rate cap must be greater than or equal to the effective rate floor.");
         }
 
+        if (DirectLendingServicingPolicyValidator.Validate(terms) is { } policyError)
+        {
+            return new DirectLendingCommandError(DirectLendingErrorCode.Validation, policyError);
+        }
+
         return null;
     }
 

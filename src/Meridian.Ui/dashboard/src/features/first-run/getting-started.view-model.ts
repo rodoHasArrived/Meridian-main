@@ -14,6 +14,11 @@ export interface GettingStartedStep {
 export interface GettingStartedViewModel {
   /** False before setup is finished, or when the host reports no outcomes at all. */
   visible: boolean;
+  /**
+   * Whether the masthead trigger chip renders. A finished checklist leaves the masthead so a
+   * completed "N/N" count stops competing with operator work; the host keeps the record.
+   */
+  triggerVisible: boolean;
   completedCount: number;
   totalCount: number;
   triggerLabel: string;
@@ -28,6 +33,7 @@ export interface GettingStartedViewModel {
 
 const EMPTY: GettingStartedViewModel = {
   visible: false,
+  triggerVisible: false,
   completedCount: 0,
   totalCount: 0,
   triggerLabel: "",
@@ -63,6 +69,7 @@ export function buildGettingStartedViewModel(status?: FirstRunStatus | null): Ge
 
   return {
     visible: true,
+    triggerVisible: !finished,
     completedCount,
     totalCount,
     triggerLabel,
@@ -73,7 +80,7 @@ export function buildGettingStartedViewModel(status?: FirstRunStatus | null): Ge
     finished,
     headline: finished ? "You are set up" : "Getting started",
     summary: finished
-      ? "Every getting-started step is done. This checklist stays here as a record of what Meridian saw you complete."
+      ? "Every getting-started step is done. The checklist leaves the masthead once you close it; Meridian keeps the record of what you completed."
       : `${completedCount} of ${totalCount} done. Meridian marks a step complete when you finish it, not when you open the page.`,
     nextStep,
     steps

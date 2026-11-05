@@ -2,11 +2,17 @@
 
 # `security-master-contracts` data objects - page 6 of 7
 
-Objects 401-480 of 487. References crossing pages remain available in the dependency manifest.
+Objects 401-480 of 490. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityMasterSchemaVersions["SecurityMasterSchemaVersions"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityOptionRight["SecurityOptionRight"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityOverrideApprovalStatusDto["SecurityOverrideApprovalStatusDto"] {
+    }
     class Meridian_Contracts_SecurityMaster_SecurityOverrideAuditEntryDto["SecurityOverrideAuditEntryDto"] {
         +string Actor
         +SecurityOverrideApprovalStatusDto ApprovalStatus
@@ -462,37 +468,7 @@ classDiagram
         +string Reason
         +CorporateActionCaseScopeDto? ScopeAssertion
     }
-    class Meridian_Contracts_SecurityMaster_TransitionOtcMarginCallRequest["TransitionOtcMarginCallRequest"] {
-        +OtcMarginCallAction Action
-        +decimal? Amount
-        +Guid CallId
-        +string? Notes
-        +string? Reason
-        +DateOnly? SettledOn
-        +string? UpdatedBy
-    }
-    class Meridian_Contracts_SecurityMaster_UpsertCashFlowSourceRequest["UpsertCashFlowSourceRequest"] {
-        +string Actor
-        +string? ClientConfirmedBy
-        +bool Force
-        +bool IsClientOverride
-        +Guid SecurityId
-        +StructuredCashFlowSourceKind SourceKind
-    }
-    class Meridian_Contracts_SecurityMaster_UpsertCorporateActionProcessingOptionRequestDto["UpsertCorporateActionProcessingOptionRequestDto"] {
-        +string Actor
-        +IReadOnlyList~string~? Blockers
-        +Guid CaseId
-        +string CompanyId
-        +string? CorrelationId
-        +string Description
-        +long ExpectedVersion
-        +string IdempotencyKey
-        +string Label
-        +string OptionCode
-        +Guid? OptionId
-        +JsonElement? Parameters
-    }
+    Meridian_Contracts_SecurityMaster_SecurityOverrideAuditEntryDto --> Meridian_Contracts_SecurityMaster_SecurityOverrideApprovalStatusDto
     Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto --> Meridian_Contracts_SecurityMaster_SecurityPriceKind
     Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto --> Meridian_Contracts_SecurityMaster_SecurityPriceUnit
     Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto --> Meridian_Contracts_SecurityMaster_SecurityPricingHierarchyDto
@@ -542,5 +518,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationCandidateDto --> Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationBlockerDto
     Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationCandidateDto --> Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationDisposition
     Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationReportDto --> Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationCandidateDto
-    Meridian_Contracts_SecurityMaster_UpsertCashFlowSourceRequest --> Meridian_Contracts_SecurityMaster_StructuredCashFlowSourceKind
 ```

@@ -48,6 +48,7 @@ internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
         };
 
         Store = new PostgresDirectLendingStateStore(Options, _noOpLedgerJournalStore);
+        IndexFixingStore = new PostgresDirectLendingIndexFixingStore(Options);
         Rebuilder = new DirectLendingEventRebuilder();
         QueryService = new PostgresDirectLendingQueryService(Store, Store, Rebuilder);
         CommandService = new PostgresDirectLendingCommandService(
@@ -58,7 +59,8 @@ internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
                 _noOpLedgerJournalStore,
                 new AccountingPolicyService(),
                 _securityMasterQueryService),
-            Options);
+            Options,
+            indexFixingStore: IndexFixingStore);
         Service = new PostgresDirectLendingService(CommandService, QueryService);
     }
 
@@ -69,6 +71,8 @@ internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
     public DirectLendingOptions Options { get; }
 
     public PostgresDirectLendingStateStore Store { get; }
+
+    public PostgresDirectLendingIndexFixingStore IndexFixingStore { get; }
 
     public DirectLendingEventRebuilder Rebuilder { get; }
 

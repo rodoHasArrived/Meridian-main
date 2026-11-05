@@ -95,7 +95,9 @@ and Trading blotters retain their existing interaction models.
 ## Shared workstation header
 
 The browser shell combines `WorkspaceHeader` and its persistent operating scope in one compact
-header. `Workflow context` starts collapsed and reveals workflow steps and decision evidence.
+two-row header: the breadcrumb with the operating scope and `Workflow context` beside it, then the
+title with the shell actions. `Workflow context` starts collapsed and opens its workflow steps and
+decision evidence as a popover rather than widening the header.
 `Views` discloses existing saved-layout and save-current-view controls; Copy link and Refresh stay
 visible. Workspace descriptions are available under the About information disclosure. Live,
 simulated/seeded, unknown-provenance and degraded warnings remain outside disclosures.
@@ -256,6 +258,10 @@ Ledger Explorer clears the selected amount when its tab becomes inactive, its bo
 changes, or its posted journal no longer contains that amount. Returning to the prior scope
 requires a new amount click; a late evidence response cannot restore the previous drawer.
 `finance-standard-pages-screen.test.tsx` covers tab, book and period round trips and late responses.
+Posted debits and credits render at the book currency's minor-unit precision (`$500.00`), the
+Journal ID column links with the journal ID itself, and posting rows leave Status blank rather than
+carrying instruction copy. Entities still show the retained `entityId`: the posted-journal DTO
+carries no display name, so showing names needs a shared seam rather than a client-side guess.
 
 Reconciliation break details expose source observation state (New, Aging, Cleared, Recurring),
 lineage, occurrence and successful-run clearing independently of governed casework status.
@@ -263,9 +269,13 @@ lineage, occurrence and successful-run clearing independently of governed casewo
 The build lockfile resolves Browserslist 4.28.9, removing the high-severity cache-growth and
 custom-stats parsing advisories reported by the September 6 production-certification scan.
 
-Tailwind 4 uses its matching `@tailwindcss/postcss` adapter. The main stylesheet explicitly loads
-the existing `tailwind.config.ts` so Meridian's semantic colors, typography, shadows and utility
-sources remain part of generated CSS. The lockfile retains patched `source-map-js` 1.2.2.
+Tailwind 4 uses its matching `@tailwindcss/postcss` adapter. The main stylesheet imports Tailwind
+once, scoped with `source(none)`, and explicitly loads the existing `tailwind.config.ts` so
+Meridian's semantic colors, typography, shadows and utility sources remain part of generated CSS.
+Every config font stack ends in a CSS generic family (`monospace`, `sans-serif`): Chromium does not
+resolve `ui-monospace`, so without it a machine lacking Cascadia/JetBrains/Consolas renders data
+text in the serif default. `design-system-contract.test.ts` guards both rules. The lockfile retains
+patched `source-map-js` 1.2.2.
 
 First launch is browser-primary. `/setup` renders the first-run concierge while the
 shared first-run API remains the source of truth for starter kits, sample safety labels,
@@ -277,7 +287,12 @@ After setup the masthead `Getting started n/m` chip opens the activation checkli
 every outcome the host tracks and routes to the surface that completes the next one. Completion is
 reported by the surface that did the work -- statement import commit, reconciliation break
 resolution, report run, and analysis export each call `recordActivationOutcome` in
-`src/lib/first-run/activation.ts` -- so the count never advances on a page visit alone.
+`src/lib/first-run/activation.ts` -- so the count never advances on a page visit alone. Once every
+outcome is complete the chip leaves the masthead (it stays while its checklist sheet is open); the
+host keeps the completion record, and the sample-workspace badge and desktop launch remain.
+
+Strategy's PlotTool never substitutes literal values for run-linked metrics: a missing Net P&L,
+total return, Sharpe ratio or max drawdown renders `Unavailable` with a neutral tone.
 
 Quant Lab plots preserve the worker's calculated series, including fractional cumulative returns
 and drawdowns, without repeating financial transformations in the browser. Notebook execution
@@ -366,7 +381,20 @@ cash forecast, statement import, historical prices, and running reports. Local d
 searchable when remote command or entity search is unavailable; unwired routes stay excluded.
 Accounting onboarding searches open the existing External GL surface, which hosts the bounded
 onboarding workspace and its retained comparison and readiness evidence.
-The masthead places operator controls on a second row at laptop widths so search stays readable.
+From 1200px the masthead is one 48px row: the session environment is the trust pill's leading,
+never-shrinking badge (`PAPER · SEEDED · 1 warning`; LIVE uses the alarm-red `--live-env` token and
+follows the resolved session, not the workspace bootstrap), and desktop launch is an icon button with
+the same accessible name. Between 981px and 1199px operator controls take a second row so search
+stays readable.
+
+Workspace routes open on their own job: the route heading leads, the workspace KPI strip follows it,
+and the sidebar is the only sub-route navigation (Trading, Portfolio, Strategy and Data no longer
+repeat it as an in-page tab strip; Data's Backfill queue has its own sidebar entry). Off the Trading
+overview the brokerage recovery panel is one blocked-state row with a Review link to the full panel,
+and nothing once evidence reconciles. The sidebar pins `Today` (the Daily Control Tower) above the
+seven workspaces and shows per-workspace attention counts from `selectDailyControlTowerQueueItems`,
+the same selection the Control Tower lists; each count is part of its link's accessible name and the
+badge sits beside the link so the visible label stays in the name.
 
 ## Purpose
 
@@ -581,6 +609,10 @@ No-host browser previews must keep fixture data visibly labeled as demo data. Th
 non-dismissable provenance strip routes operators through the typed demo evidence path: watchlist,
 live quote evidence, trading readiness, and provider setup, while keeping retry-to-live behavior
 available. Do not add a second full-width seeded-data warning below the masthead.
+The full-width `DataProvenanceBanner` shows the first time a provenance and environment pairing
+appears in a browser and again whenever either changes; after that it is a 4px top-edge stripe with
+the same status role and full text for assistive technology (`compactAfterSeen`). LIVE sessions,
+unresolved sessions and `unknown` provenance (it carries the retry) always keep the full banner.
 The app-shell data-provenance badge combines the server-owned `/api/demo/mode` response with actual
 fixture usage. Explicit demo or fixture data always wins over a nominal live posture, and a missing
 or malformed mode response fails closed to simulated/unverified rather than being presented as real
@@ -1583,7 +1615,8 @@ event labels also normalize retained source names before entering the visible ev
 The browser workstation root (`/`) now opens the Daily Control Tower, a read-only shell projection
 of workflow continuity, trust posture, linked context, and timestamped evidence. Its landing model
 is a shell-level Home location rather than an eighth workspace: none of the seven root workspace
-items is marked current, and the operating-context copy identifies the Daily Control Tower instead
+items is marked current (the pinned sidebar `Today` entry is), the breadcrumb reads
+`Workstation > Today`, and the operating-context copy identifies the Daily Control Tower instead
 of falling back to Trading. Before the combined finance queue is shown, operators choose an
 operating scope or explicitly opt into cross-scope review.
 The landing model
@@ -1738,6 +1771,10 @@ The passport editor builds its term picker from `GET /api/security-master/asset-
 (`security-master-schema.api.ts`): scalar-editable terms grouped as the registry declares them,
 a value control per editor kind, and a client pre-check
 (`security-passport-schema-fields.view-model.ts`). The free-text field path stays as a fallback.
+
+## Security Master publish outcome
+
+`SecurityMasterPublishResult` in `lib/api/security-master-workbench.api.ts` carries an optional `canonicalMerge`. It says whether publishing the approved edit changed the golden record (`Merged` or `AlreadyCanonical`) or not (`OverlayOnly` or `NotApplicable`). When an approved proposal is stale because its field changed after the draft, the publish route answers 409 with `stale-field-proposal`. The existing classifier reports that as a revision-state conflict carrying the server message.
 
 ## Diagrams
 
