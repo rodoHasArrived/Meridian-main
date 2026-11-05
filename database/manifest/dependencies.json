@@ -54557,6 +54557,37 @@
       "target": "database:security_master.security_governance_events.stream"
     },
     {
+      "constraint": "security_identifier_revisions_security_id_fkey",
+      "kind": "foreign-key",
+      "label": "security_id",
+      "source": "database:security_master.security_identifier_revisions",
+      "target": "database:security_master.securities"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_identifier_revisions_change_kind_check on security_master.security_identifier_revisions",
+      "target": "database:security_master.security_identifier_revisions.change_kind"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_identifier_revisions_revision_check on security_master.security_identifier_revisions",
+      "target": "database:security_master.security_identifier_revisions.revision"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_identifier_revisions_security_id_fkey on security_master.security_identifier_revisions",
+      "target": "database:security_master.securities.security_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_identifier_revisions_security_id_fkey on security_master.security_identifier_revisions",
+      "target": "database:security_master.securities_pkey"
+    },
+    {
       "constraint": "security_identifiers_security_id_fkey",
       "kind": "foreign-key",
       "label": "security_id",
@@ -56322,6 +56353,12 @@
       "kind": "contains",
       "label": "",
       "source": "schema:security_master",
+      "target": "database:security_master.security_identifier_revisions"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
       "target": "database:security_master.security_identifiers"
     },
     {
@@ -56524,7 +56561,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "e29a87294e61a2790338a68120d70a9ec620b9eb00b1ab70b4f7ff7ba2a4c976",
+  "fingerprint": "70c46a2dc162ccb1e0d255751771d95d074d96a0ba8073d6bfdbf85f630579b5",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -82232,6 +82269,37 @@
       "label": "security_master.security_governance_events_stream_check on security_master.security_governance_events"
     },
     {
+      "id": "database:security_master.security_identifier_revisions",
+      "kind": "database-table",
+      "label": "security_master.security_identifier_revisions",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.security_identifier_revisions.change_kind",
+      "kind": "database-object",
+      "label": "security_master.security_identifier_revisions.change_kind"
+    },
+    {
+      "id": "database:security_master.security_identifier_revisions.revision",
+      "kind": "database-object",
+      "label": "security_master.security_identifier_revisions.revision"
+    },
+    {
+      "id": "database:security_master.security_identifier_revisions_change_kind_check on security_master.security_identifier_revisions",
+      "kind": "database-object",
+      "label": "security_master.security_identifier_revisions_change_kind_check on security_master.security_identifier_revisions"
+    },
+    {
+      "id": "database:security_master.security_identifier_revisions_revision_check on security_master.security_identifier_revisions",
+      "kind": "database-object",
+      "label": "security_master.security_identifier_revisions_revision_check on security_master.security_identifier_revisions"
+    },
+    {
+      "id": "database:security_master.security_identifier_revisions_security_id_fkey on security_master.security_identifier_revisions",
+      "kind": "database-object",
+      "label": "security_master.security_identifier_revisions_security_id_fkey on security_master.security_identifier_revisions"
+    },
+    {
       "id": "database:security_master.security_identifiers",
       "kind": "database-table",
       "label": "security_master.security_identifiers",
@@ -82746,9 +82814,9 @@
   "summary": {
     "contract_references": 3615,
     "contract_set_memberships": 4501,
-    "edges": 9392,
-    "foreign_keys": 155,
+    "edges": 9398,
+    "foreign_keys": 156,
     "logical_references": 6,
-    "nodes": 4547
+    "nodes": 4553
   }
 }
