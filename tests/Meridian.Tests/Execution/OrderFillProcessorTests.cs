@@ -73,6 +73,31 @@ public sealed class OrderFillProcessorTests
     }
 
     [Fact]
+    public async Task OptionFill_StampsTheMultiplierSoReplayRestoresTheSameCash()
+    {
+        var order = CreateOrder("option-replay") with { ContractMultiplier = 100m };
+        var report = CreateReport(order.OrderId) with { OrderQuantity = 2m, FilledQuantity = 2m, FillPrice = 1.50m };
+        var portfolio = new PaperTradingPortfolio(10_000m);
+        var store = new RecordingSessionStore();
+        await using var persistence = new PaperSessionPersistenceService(
+            NullLogger<PaperSessionPersistenceService>.Instance, store);
+        var session = await persistence.CreateSessionAsync(new CreatePaperSessionDto("option-replay", null, 10_000m));
+        var processor = CreateProcessor(order with { Quantity = 2m, FilledQuantity = 2m }, portfolio, new RecordingPublisher(), persistence, out _);
+
+        await processor.ProcessAsync(session.SessionId, report, 0m);
+
+        // 2 contracts x $1.50 premium x 100 = $300 paid.
+        Assert.Equal(9_700m, portfolio.Cash);
+        var stored = Assert.IsType<PaperSessionFillRecord>(store.StoredFill).Fill;
+        Assert.Equal(100m, stored.LotMultiplier);
+
+        // A replay has no OMS sidecar: the stamped report alone must reproduce the economics.
+        var replayed = new PaperTradingPortfolio(10_000m);
+        replayed.ApplyFill(stored);
+        Assert.Equal(portfolio.Cash, replayed.Cash);
+    }
+
+    [Fact]
     public async Task Retry_AfterSessionAndSubscriberFailures_DoesNotRepeatCompletedStages()
     {
         var order = CreateOrder("staged-retry");
@@ -306,6 +331,7 @@ public sealed class OrderFillProcessorTests
         public int ClaimAttempts { get; private set; }
         public int Acknowledgments { get; private set; }
         private PaperSessionFillRecord? _fill;
+        public PaperSessionFillRecord? StoredFill => _fill;
 
         public Task<PaperSessionFillAppendResult> TryAppendFillAsync(
             string sessionId, PaperSessionFillRecord record, CancellationToken ct = default)

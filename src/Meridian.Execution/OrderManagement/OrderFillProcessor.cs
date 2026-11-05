@@ -169,6 +169,18 @@ internal sealed class OrderFillProcessor(
                 fillIncrement = fillIncrement with { UsesFaceValuePercentageOfPar = true };
             }
 
+            // The contract multiplier rides on the increment for the same reason: the paper
+            // book pays an option's premium at quote × quantity × multiplier, and a replayed
+            // session record has no OMS sidecar to supply it. Like the face-value flag it is not
+            // part of the canonical fill identity.
+            if (!string.IsNullOrWhiteSpace(orderId)
+                && fillIncrement.LotMultiplier is null
+                && !fillIncrement.UsesFaceValuePercentageOfPar
+                && _context.GetContractMultiplier(orderId) is var orderMultiplier and > 1m)
+            {
+                fillIncrement = fillIncrement with { LotMultiplier = orderMultiplier };
+            }
+
             progress = _fillProcessing.GetOrAdd(
                 report,
                 _ => new FillProcessingProgress(
