@@ -156,27 +156,7 @@ type SecurityIdentifierSnapshot(identifier: Identifier) =
         | IdentifierKind.ProviderSymbol authoritativeProvider -> authoritativeProvider
         | _ -> identifier.Provider |> toNullableRef
 
-    let kind =
-        match identifier.Kind with
-        | IdentifierKind.Ticker -> "Ticker"
-        | IdentifierKind.Isin -> "Isin"
-        | IdentifierKind.Cusip -> "Cusip"
-        | IdentifierKind.Sedol -> "Sedol"
-        | IdentifierKind.Figi -> "Figi"
-        | IdentifierKind.OccOptionSymbol -> "OccOptionSymbol"
-        | IdentifierKind.ProviderSymbol _ -> "ProviderSymbol"
-        | IdentifierKind.InternalCode -> "InternalCode"
-        | IdentifierKind.Lei -> "Lei"
-        | IdentifierKind.PermId -> "PermId"
-        | IdentifierKind.Bbgid -> "Bbgid"
-        | IdentifierKind.Wkn -> "Wkn"
-        | IdentifierKind.Valoren -> "Valoren"
-        | IdentifierKind.PermTicker -> "PermTicker"
-        | IdentifierKind.Ric -> "Ric"
-        | IdentifierKind.Cik -> "Cik"
-        | IdentifierKind.LoanX -> "LoanX"
-        | IdentifierKind.Clip -> "Clip"
-        | IdentifierKind.ListingId -> "ListingId"
+    let kind = SecurityIdentifier.kindName identifier
 
     member _.Kind = kind
     member _.Value = identifier.Value

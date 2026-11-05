@@ -8,10 +8,9 @@ namespace Meridian.Tests.SecurityMaster;
 
 /// <summary>
 /// The F# duplicate/expiry checks and the C# lookup boundary must give one raw identifier value one
-/// identity. Meridian.FSharp references Contracts, and its kind-aware normalizer delegates to
-/// <see cref="SecurityIdentifierNormalizer.NormalizeValue"/> through
-/// <c>SecurityIdentifier.toContractKind</c>; this pins the two together for every kind both sides
-/// define, so a mapping slip in the F# kind translation is caught.
+/// identity. The F# normalizer delegates to <see cref="SecurityIdentifierNormalizer.NormalizeValue"/>
+/// through an exhaustive kind mapping; this pins that every C# kind has an F# counterpart that maps
+/// back to itself and normalizes identically.
 /// </summary>
 public sealed class SecurityIdentifierNormalizationParityTests
 {
@@ -25,7 +24,10 @@ public sealed class SecurityIdentifierNormalizationParityTests
         "  ",
         "LX 123456",
         "a/b_c=d#e^f",
-        "ÉCU0378331005"
+        "ÉCU0378331005",
+        " meridiansynth0000183-trade.0001 ",
+        "qz-rbg6 ztks42",
+        "2h6677 aa2"
     };
 
     [Theory]
@@ -47,7 +49,28 @@ public sealed class SecurityIdentifierNormalizationParityTests
             compared++;
         }
 
-        compared.Should().BeGreaterThan(10, "the reflection mapping must actually cover the shared kinds");
+        // Every kind except Unknown (read tolerance) and ProviderSymbol (carries its provider in the
+        // F# case, so it is not nullary) is compared.
+        compared.Should().Be(Enum.GetValues<SecurityIdentifierKind>().Length - 2, "every C# kind needs an F# counterpart");
+    }
+
+    [Fact]
+    public void FSharpKindMapping_RoundTripsEveryContractKind()
+    {
+        foreach (var kind in Enum.GetValues<SecurityIdentifierKind>())
+        {
+            if (kind is SecurityIdentifierKind.Unknown)
+            {
+                continue;
+            }
+
+            var fsKind = kind == SecurityIdentifierKind.ProviderSymbol
+                ? FsIdentifierKind.NewProviderSymbol("POLYGON")
+                : typeof(FsIdentifierKind).GetProperty(kind.ToString(), BindingFlags.Public | BindingFlags.Static)?.GetValue(null) as FsIdentifierKind;
+
+            fsKind.Should().NotBeNull($"{kind} must have an F# IdentifierKind case");
+            FsSecurityIdentifier.toContractKind(fsKind!).Should().Be(kind);
+        }
     }
 
     [Fact]

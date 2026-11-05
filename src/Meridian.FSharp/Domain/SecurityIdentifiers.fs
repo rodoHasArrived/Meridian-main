@@ -36,6 +36,14 @@ type IdentifierKind =
     | Clip
     /// Listing identity: a ticker on a specific ISO 10383 market, written "TICKER:MIC" (e.g. "AAPL:XNAS").
     | ListingId
+    /// Unique Transaction Identifier (ISO 23897) — LEI prefix plus unique value, at most 52 characters.
+    | Uti
+    /// Unique Product Identifier (ISO 4914) — shared by every contract on the same OTC derivative product.
+    | Upi
+    /// IHS Markit RED reference-entity code (RED6, six characters).
+    | MarkitRedEntity
+    /// IHS Markit RED pair code (RED9: entity code plus three-character obligation suffix).
+    | MarkitRedPair
 
 type Identifier = {
     Kind: IdentifierKind
@@ -54,10 +62,8 @@ module SecurityIdentifier =
     let normalizeValue (value: string) =
         if isNull value then String.Empty else value.Trim().ToUpperInvariant()
 
-    /// The Contracts identifier kind this F# kind names. The two enumerations declare the same
-    /// cases; ProviderSymbol carries its namespace in the F# discriminant and maps to the bare
-    /// Contracts kind. Contracts has no reference to this project, so delegating to it is the
-    /// dependency-safe direction (no project-reference cycle).
+    /// The Contracts kind this F# kind corresponds to. Exhaustive on purpose: a new F# case cannot
+    /// compile until it names its C# counterpart, and the C# normalizer stays the single authority.
     let toContractKind (kind: IdentifierKind) : Meridian.Contracts.SecurityMaster.SecurityIdentifierKind =
         match kind with
         | IdentifierKind.Ticker -> Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Ticker
@@ -79,11 +85,15 @@ module SecurityIdentifier =
         | IdentifierKind.LoanX -> Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.LoanX
         | IdentifierKind.Clip -> Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Clip
         | IdentifierKind.ListingId -> Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.ListingId
+        | IdentifierKind.Uti -> Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Uti
+        | IdentifierKind.Upi -> Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Upi
+        | IdentifierKind.MarkitRedEntity -> Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.MarkitRedEntity
+        | IdentifierKind.MarkitRedPair -> Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.MarkitRedPair
 
-    /// Kind-aware value normalization. Delegates to the single authority,
-    /// Meridian.Contracts.SecurityMaster.SecurityIdentifierNormalizer.NormalizeValue (which also
-    /// mirrors migration 016's SQL backfill), so the F# duplicate/expiry checks and the C# lookup
-    /// give one raw value one identity.
+    /// Kind-aware value normalization. Delegates to
+    /// Meridian.Contracts.SecurityMaster.SecurityIdentifierNormalizer.NormalizeValue so the F#
+    /// duplicate/expiry checks, the C# lookup boundary and the stored normalized columns share one
+    /// implementation and give one raw value one identity.
     let normalizeIdentifierValue (kind: IdentifierKind) (value: string) =
         Meridian.Contracts.SecurityMaster.SecurityIdentifierNormalizer.NormalizeValue(toContractKind kind, value)
 
@@ -104,27 +114,10 @@ module SecurityIdentifier =
                 StringComparison.Ordinal)
         | _ -> true
 
+    /// The persisted kind name — the Contracts enum member name, so the stored string and the C#
+    /// <c>SecurityIdentifierKind</c> parse cannot drift.
     let kindName identifier =
-        match identifier.Kind with
-        | IdentifierKind.Ticker -> "Ticker"
-        | IdentifierKind.Isin -> "Isin"
-        | IdentifierKind.Cusip -> "Cusip"
-        | IdentifierKind.Sedol -> "Sedol"
-        | IdentifierKind.Figi -> "Figi"
-        | IdentifierKind.OccOptionSymbol -> "OccOptionSymbol"
-        | IdentifierKind.ProviderSymbol _ -> "ProviderSymbol"
-        | IdentifierKind.InternalCode -> "InternalCode"
-        | IdentifierKind.Lei -> "Lei"
-        | IdentifierKind.PermId -> "PermId"
-        | IdentifierKind.Bbgid -> "Bbgid"
-        | IdentifierKind.Wkn -> "Wkn"
-        | IdentifierKind.Valoren -> "Valoren"
-        | IdentifierKind.PermTicker -> "PermTicker"
-        | IdentifierKind.Ric -> "Ric"
-        | IdentifierKind.Cik -> "Cik"
-        | IdentifierKind.LoanX -> "LoanX"
-        | IdentifierKind.Clip -> "Clip"
-        | IdentifierKind.ListingId -> "ListingId"
+        (toContractKind identifier.Kind).ToString()
 
     let isActiveAt asOf identifier =
         identifier.ValidFrom <= asOf
