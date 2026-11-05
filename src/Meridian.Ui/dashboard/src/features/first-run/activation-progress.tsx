@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Check, Circle, FlaskConical, ListChecks } from "lucide-react";
+import { ArrowRight, Check, Circle, FlaskConical, ListChecks, MonitorUp } from "lucide-react";
 import { apiPostJson } from "@/lib/api";
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import {
@@ -87,11 +87,16 @@ export function ActivationHeaderProgress({ status }: { status?: FirstRunStatus |
         </button>
       ) : null}
 
+      {/* Icon-sized so the masthead fits one row; the accessible name and tooltip keep
+          the full action. */}
       <button
-        className="rounded-full border border-slate-700 px-2.5 py-1 text-xs text-slate-300 hover:border-cyan-400 hover:text-cyan-200"
+        type="button"
+        aria-label="Open desktop workstation"
+        title="Open desktop workstation"
+        className="relative inline-flex h-9 w-9 items-center justify-center rounded-md border border-border/60 bg-transparent text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
         onClick={() => void apiPostJson(WORKSTATION_API_ENDPOINTS.desktopLaunch, { page: "Portfolio" })}
       >
-        Open desktop workstation
+        <MonitorUp className="h-4 w-4" aria-hidden="true" />
       </button>
 
       <Sheet open={open} onOpenChange={setOpen}>

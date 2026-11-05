@@ -241,6 +241,7 @@ export function TrialBalanceScreen() {
       onContextClose={() => postedLedger.selectTrialBalanceRow(null)}
     >
       <OperationalTrustSummary
+        disclosure
         source={{ value: "Posted journal", tone: postedLedger.view.trialBalance.state === "error" ? "blocked" : "ready" }}
         scope={{ value: selectedPeriodLabel ?? "No period selected", detail: selectedBasisLabel, tone: selectedPeriodId ? "ready" : "unknown" }}
         freshness={freshness}

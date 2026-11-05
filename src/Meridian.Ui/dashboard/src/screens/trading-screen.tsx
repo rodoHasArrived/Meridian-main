@@ -2,7 +2,7 @@ import { WorkspaceWorkbenchShell } from "@/components/meridian/workspace-workben
 import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, FastForward, FlaskConical, Layers, PauseCircle, PlayCircle, PlusCircle, RotateCcw, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
 import React from "react";
 import { MarkFreshnessCell } from "@/components/meridian/mark-freshness-cell";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
@@ -39,7 +39,6 @@ import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-acce
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { OperationalTrustSummary, type OperationalTrustTone } from "@/components/meridian/operational-trust-summary";
 import { StatStrip } from "@/components/meridian/stat-strip";
-import { WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 import { cn } from "@/lib/utils";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
@@ -110,27 +109,11 @@ const dataTonePanelClass: Record<TradingDataTone, string> = {
 
 type TradingRouteViewId = "overview" | "orders" | "positions" | "risk";
 
-interface TradingRouteTab {
-  id: string;
-  label: string;
-  route: string;
-  view: TradingRouteViewId | null;
-}
 
 /**
- * Route-scoped views: each Trading sub-route renders its focused tool and the
- * workspace root renders the acceptance/session overview. The tab strip and
- * the sidebar sub-navigation share this taxonomy, so there is exactly one
- * navigation system for the workspace.
+ * Route-scoped views: each Trading sub-route renders its focused tool and the workspace root
+ * renders the acceptance/session overview. The sidebar is the only sub-route navigation.
  */
-const tradingRouteTabs: TradingRouteTab[] = [
-  { id: "overview", label: "Overview", route: WORKSTATION_ROUTE_CATALOG.trading, view: "overview" },
-  { id: "orders", label: "Orders", route: WORKSTATION_ROUTE_CATALOG.tradingOrders, view: "orders" },
-  { id: "positions", label: "Positions", route: WORKSTATION_ROUTE_CATALOG.tradingPositions, view: "positions" },
-  { id: "risk", label: "Risk", route: WORKSTATION_ROUTE_CATALOG.tradingRisk, view: "risk" },
-  { id: "readiness", label: "Readiness", route: WORKSTATION_ROUTE_CATALOG.tradingReadiness, view: null }
-];
-
 export function resolveTradingRouteView(pathname: string): TradingRouteViewId {
   const segments = pathname.split("/").filter(Boolean);
   if (segments.includes("positions")) {
@@ -474,7 +457,6 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
   });
   const sessionReplay = useSessionReplayControlsViewModel();
   const promotionGate = usePromotionGateViewModel();
-  const navigate = useNavigate();
   const routeView = resolveTradingRouteView(pathname);
   const [sessionCloseTarget, setSessionCloseTarget] = React.useState<string | null>(null);
   const [sessionCloseAcknowledged, setSessionCloseAcknowledged] = React.useState(false);
@@ -528,11 +510,6 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
     promotionApprovedBy: promotionGate.form.approvedBy,
     promotionApprovalReason: promotionGate.form.approvalReason
   });
-  const routeTabs = tradingRouteTabs.map((tab) => ({
-    id: tab.id,
-    label: tab.label,
-    selected: tab.view === routeView
-  }));
   const showOverview = routeView === "overview";
   const showOrders = routeView === "orders";
   const showPositions = routeView === "positions";
@@ -563,35 +540,23 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
 
   return (
     <div className="space-y-5">
-      <StatStrip metrics={data.metrics} label="Trading headline metrics" />
-
+      {/* The route answers "where am I?" first; workspace-wide metrics follow. Sub-route
+          navigation is the sidebar's job alone (no in-page tab strip). */}
       <section
         id="trading-overview"
         role="region"
         aria-label="Execution cockpit context"
-        className="flex flex-wrap items-end justify-between gap-3"
+        className="min-w-0"
       >
-        <div className="min-w-0">
-          <h2 className="font-display text-lg font-semibold leading-tight text-foreground">
-            {routeCopy.title}
-          </h2>
-          <p className="mt-0.5 max-w-3xl text-xs leading-5 text-muted-foreground">
-            {routeCopy.description}
-          </p>
-        </div>
-        <WorkspaceTabStrip
-          label="Trading routes"
-          tabs={routeTabs}
-          onSelect={(id) => {
-            const tab = tradingRouteTabs.find((candidate) => candidate.id === id);
-            if (tab) {
-              // Preserve the querystring: the operating scope (symbol, fund
-              // account) is threaded through search params across the shell.
-              navigate({ pathname: tab.route, search });
-            }
-          }}
-        />
+        <h2 className="font-display text-lg font-semibold leading-tight text-foreground">
+          {routeCopy.title}
+        </h2>
+        <p className="mt-0.5 max-w-3xl text-xs leading-5 text-muted-foreground">
+          {routeCopy.description}
+        </p>
       </section>
+
+      <StatStrip metrics={data.metrics} label="Trading headline metrics" />
 
       <OperationalTrustSummary
         label="Trading data confidence"
@@ -625,12 +590,16 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
         } : undefined}
       />
 
+      {/* The full recovery workspace belongs to the overview; every other route keeps one
+          blocked-state row so its own object (blotter, book, guardrails) stays above the fold. */}
       <BrokerageRecoveryPanel
         readiness={tradingReadiness.readiness}
         fundAccountId={fundAccountId}
         busy={tradingReadiness.refreshing}
         error={tradingReadiness.errorText}
         onRecover={tradingReadiness.recoverBrokerage}
+        variant={showOverview ? "full" : "row"}
+        reviewHref={`${WORKSTATION_ROUTE_CATALOG.trading}${search}#brokerage-recovery`}
       />
 
       {showOverview ? (
