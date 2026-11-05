@@ -495,6 +495,7 @@ paths and original file names remain provenance metadata, not duplicate-detectio
 ## Audit hardening (2026-11)
 
 - **Backfill failover on timeouts.** `CompositeHistoricalDataProvider` and `CrossProviderValidator` rethrow `OperationCanceledException` only when the caller's token is cancelled. A provider-side timeout, such as `HttpClient.Timeout` surfacing as `TaskCanceledException`, now fails over to the next provider instead of ending the request.
+- **Polygon trading-parameter backfill uses the system-ingest path.** `TradingParametersBackfillService` amends through `ISecurityMasterAmender` when the composed service exposes it. That keeps provider-sourced tick and lot sizes writable while `SecurityMasterWorkbench:RequireGovernedTermAmendments` refuses operator-direct amendments.
 
 ## Diagrams
 

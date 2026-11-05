@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Application.SecurityMaster;
 
-public sealed partial class SecurityMasterService : ISecurityMasterService, ISecurityMasterAmender, IDisposable
+public sealed partial class SecurityMasterService : ISecurityMasterService, ISecurityMasterAmender, IGovernedPublicationAmender, IDisposable
 {
     /// <summary>
     /// Per-security amendment serialization from the conflict pre-check (which reads per-field
@@ -34,6 +34,8 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
     private readonly Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? _assetProfileCatalog;
     private readonly ISecurityFieldProvenanceStore? _fieldProvenance;
     private readonly ISecurityMasterTermsCapabilityVerifier _termsCapabilityVerifier;
+    private readonly IGovernedTermAmendmentPolicy _governedTermAmendmentPolicy;
+    private readonly ISecurityMasterRevisionStore? _revisionStore;
 
     // Owned lifetime token so background fire-and-forget tasks are cancelled on disposal.
     private readonly CancellationTokenSource _serviceCts = new();
@@ -55,8 +57,12 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
         Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null,
         ISecurityFieldProvenanceStore? fieldProvenance = null,
         ISecurityMasterCanonicalWriteScope? canonicalWriteScope = null,
-        ISecurityMasterTermsCapabilityVerifier? termsCapabilityVerifier = null)
+        ISecurityMasterTermsCapabilityVerifier? termsCapabilityVerifier = null,
+        IGovernedTermAmendmentPolicy? governedTermAmendmentPolicy = null,
+        ISecurityMasterRevisionStore? revisionStore = null)
     {
+        _governedTermAmendmentPolicy = governedTermAmendmentPolicy ?? PermissiveGovernedTermAmendmentPolicy.Instance;
+        _revisionStore = revisionStore;
         _canonicalWriteScope = canonicalWriteScope ?? PassthroughSecurityMasterCanonicalWriteScope.Instance;
         _eventStore = eventStore;
         _snapshotStore = snapshotStore;
@@ -76,8 +82,88 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
     public Task<SecurityDetailDto> CreateAsync(CreateSecurityRequest request, CancellationToken ct = default)
         => ExecuteCreateAsync(request, ct);
 
+    /// <summary>
+    /// The operator-direct amendment. Refused with <see cref="GovernedTermAmendmentRequiredException"/>
+    /// while <see cref="SecurityMasterWorkbenchOptions.RequireGovernedTermAmendments"/> is on; see
+    /// <see cref="IGovernedPublicationAmender"/> for the other two typed write paths.
+    /// </summary>
     public Task<SecurityDetailDto> AmendTermsAsync(AmendSecurityTermsRequest request, CancellationToken ct = default)
-        => AmendTermsInternalAsync(request, eventType: "TermsAmended", ct);
+    {
+        EnsureDirectAmendmentPermitted();
+        return AmendTermsInternalAsync(request, eventType: "TermsAmended", ct);
+    }
+
+    /// <summary>
+    /// The system-ingest amendment (provider backfill, EDGAR ingest, ticker symbology). The governed
+    /// setting does not block it, but it refuses a request naming an operator source system, so an
+    /// operator edit cannot be routed around the governed lifecycle through it.
+    /// </summary>
+    Task<SecurityDetailDto> ISecurityMasterAmender.AmendTermsAsync(AmendSecurityTermsRequest request, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        if (SecurityMasterWriteAuthority.IsOperatorSourceSystem(request.SourceSystem))
+        {
+            throw new SecurityMasterWriteRefusedException(
+                $"Source system '{request.SourceSystem}' is an operator surface; operator term amendments use the "
+                + "direct amendment path or the governed workbench, not the system-ingest path.");
+        }
+
+        return AmendTermsInternalAsync(request, eventType: "TermsAmended", ct);
+    }
+
+    /// <inheritdoc />
+    public async Task<SecurityDetailDto> AmendApprovedRevisionAsync(AmendSecurityTermsRequest request, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        await EnsureApprovedRevisionAuthorityAsync(request, ct).ConfigureAwait(false);
+        return await AmendTermsInternalAsync(request, eventType: "TermsAmended", ct).ConfigureAwait(false);
+    }
+
+    private void EnsureDirectAmendmentPermitted()
+    {
+        if (_governedTermAmendmentPolicy.RefusalReason is not null)
+        {
+            throw new GovernedTermAmendmentRequiredException();
+        }
+    }
+
+    /// <summary>
+    /// Governed publication must name, in <c>SourceRecordId</c>, a revision the durable store holds as
+    /// Approved (or Published, for a retried publish) for the same security. A host without a revision
+    /// store skips the check while governance is off (the store is what makes it checkable) and refuses
+    /// while governance is on, so turning the setting on fails closed.
+    /// </summary>
+    private async Task EnsureApprovedRevisionAuthorityAsync(AmendSecurityTermsRequest request, CancellationToken ct)
+    {
+        if (_revisionStore is null)
+        {
+            if (_governedTermAmendmentPolicy.RefusalReason is not null)
+            {
+                throw new SecurityMasterWriteRefusedException(
+                    "Governed publication cannot be verified: this host composes no revision store, so it cannot "
+                    + "confirm the amendment comes from an approved workbench revision.");
+            }
+
+            return;
+        }
+
+        if (!Guid.TryParse(request.SourceRecordId, out var revisionId))
+        {
+            throw new SecurityMasterWriteRefusedException(
+                "Governed publication must name the approved revision in SourceRecordId.");
+        }
+
+        var revision = await _revisionStore.GetAsync(revisionId, ct).ConfigureAwait(false);
+        if (revision is null
+            || revision.SecurityId != request.SecurityId
+            || revision.State is not (Meridian.Contracts.Workstation.SecurityMasterRevisionStateDto.Approved
+                or Meridian.Contracts.Workstation.SecurityMasterRevisionStateDto.Published))
+        {
+            throw new SecurityMasterWriteRefusedException(
+                $"Revision '{revisionId:D}' is not an approved revision of security '{request.SecurityId:D}', "
+                + "so it cannot publish a term amendment.");
+        }
+    }
 
     private async Task<SecurityDetailDto> AmendTermsInternalAsync(
         AmendSecurityTermsRequest request,
@@ -247,6 +333,7 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
 
     public async Task<SecurityDetailDto> AmendPreferredEquityTermsAsync(Guid securityId, AmendPreferredEquityTermsRequest request, CancellationToken ct = default)
     {
+        EnsureDirectAmendmentPermitted();
         var currentProjection = await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Security '{securityId}' was not found.");
         EnsurePatchBaseMatchesExpectedVersion(currentProjection, request.ExpectedVersion);
@@ -269,6 +356,7 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
 
     public async Task<SecurityDetailDto> AmendConvertibleEquityTermsAsync(Guid securityId, AmendConvertibleEquityTermsRequest request, CancellationToken ct = default)
     {
+        EnsureDirectAmendmentPermitted();
         var currentProjection = await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Security '{securityId}' was not found.");
         EnsurePatchBaseMatchesExpectedVersion(currentProjection, request.ExpectedVersion);
@@ -291,6 +379,7 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
 
     public async Task<SecurityDetailDto> AmendTermBlockAsync(Guid securityId, string blockKey, AmendSecurityTermBlockRequest request, CancellationToken ct = default)
     {
+        EnsureDirectAmendmentPermitted();
         ArgumentNullException.ThrowIfNull(request);
         var currentProjection = await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Security '{securityId}' was not found.");

@@ -1881,6 +1881,8 @@ forecasting behavior as planned rather than live.
 ## Security Master governance controls (2026-11)
 
 - **Contract-multiplier requirement.** `InstrumentTypeDescriptorCatalog.RequiresContractMultiplier(assetClass)` is true only when a descriptor whose *primary* asset class matches declares `multiplier` among its required economic terms (listed options and futures; not swaps, warrants or FX forwards). Compatible-class lists are deliberately ignored. Clients call this instead of matching asset-class names, so they cannot diverge.
+- **Profile drafter.** `SecurityAssetProfileDefinitionDto.DraftedBy` records who last drafted a profile version and is kept through approval, so maker-checker no longer reads the author from `ApprovedBy`. It is null on versions drafted before the field existed.
+- **System-ingest amender.** `ISecurityMasterAmender` is the system-ingest write path (provider backfill, EDGAR ingest, ticker changes). The governed-amendment setting does not block it, and its implementation refuses operator source systems.
 
 See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D8) for status and open decisions.
 

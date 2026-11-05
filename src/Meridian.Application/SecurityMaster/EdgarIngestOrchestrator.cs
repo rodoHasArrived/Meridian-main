@@ -25,6 +25,7 @@ public sealed class EdgarIngestOrchestrator : IEdgarIngestOrchestrator
     private readonly IEdgarReferenceDataStore _store;
     private readonly ContractSecurityMasterQueryService _queryService;
     private readonly ISecurityMasterService _securityMasterService;
+    private readonly ISecurityMasterAmender? _systemAmender;
     private readonly ISecurityMasterConflictService? _conflictService;
     private readonly ILogger<EdgarIngestOrchestrator> _logger;
 
@@ -34,8 +35,13 @@ public sealed class EdgarIngestOrchestrator : IEdgarIngestOrchestrator
         ContractSecurityMasterQueryService queryService,
         ISecurityMasterService securityMasterService,
         ILogger<EdgarIngestOrchestrator> logger,
-        ISecurityMasterConflictService? conflictService = null)
+        ISecurityMasterConflictService? conflictService = null,
+        ISecurityMasterAmender? systemAmender = null)
     {
+        // Provider ingest amends through the system-ingest path, which the governed-amendment setting
+        // does not block. Without an injected amender, the service's own system path is used when it
+        // exposes one.
+        _systemAmender = systemAmender ?? securityMasterService as ISecurityMasterAmender;
         _provider = provider;
         _store = store;
         _queryService = queryService;
@@ -338,20 +344,21 @@ public sealed class EdgarIngestOrchestrator : IEdgarIngestOrchestrator
         if (identifiersToAdd.Length == 0 && !ShouldAmendCommonTerms(existing, commonTerms))
             return SecurityWriteResult.Skipped;
 
-        await _securityMasterService.AmendTermsAsync(
-                new AmendSecurityTermsRequest(
-                    SecurityId: existing.SecurityId,
-                    ExpectedVersion: existing.Version,
-                    CommonTerms: commonTerms,
-                    AssetSpecificTermsPatch: null,
-                    IdentifiersToAdd: identifiersToAdd,
-                    IdentifiersToExpire: Array.Empty<SecurityIdentifierDto>(),
-                    EffectiveFrom: now,
-                    SourceSystem: SourceSystem,
-                    UpdatedBy: nameof(EdgarIngestOrchestrator),
-                    SourceRecordId: association.Cik,
-                    Reason: BuildReason(association, filer, snapshot)),
-                ct)
+        var amendRequest = new AmendSecurityTermsRequest(
+            SecurityId: existing.SecurityId,
+            ExpectedVersion: existing.Version,
+            CommonTerms: commonTerms,
+            AssetSpecificTermsPatch: null,
+            IdentifiersToAdd: identifiersToAdd,
+            IdentifiersToExpire: Array.Empty<SecurityIdentifierDto>(),
+            EffectiveFrom: now,
+            SourceSystem: SourceSystem,
+            UpdatedBy: nameof(EdgarIngestOrchestrator),
+            SourceRecordId: association.Cik,
+            Reason: BuildReason(association, filer, snapshot));
+        await (_systemAmender is { } systemAmender
+                ? systemAmender.AmendTermsAsync(amendRequest, ct)
+                : _securityMasterService.AmendTermsAsync(amendRequest, ct))
             .ConfigureAwait(false);
 
         return SecurityWriteResult.Amended;
