@@ -6,7 +6,7 @@ describe("design-system ratchets", () => {
   // occurrence, no new file may introduce one, and progress must be locked in by lowering the
   // baseline (`npm run ratchets:update`).
   it("lets no screen add hand-styled status chips or direct Intl formatting", () => {
-    const { regressions, improvements } = compareWithBaseline() as { regressions: string[]; improvements: string[] };
+    const { regressions, improvements } = compareWithBaseline();
 
     expect(regressions, "Use StatusBadge (@/design-system/status) and @/lib/format instead.").toEqual([]);
     expect(improvements, "Lower the baseline with `npm run ratchets:update`.").toEqual([]);
@@ -20,6 +20,6 @@ describe("design-system ratchets", () => {
 
   it("counts direct Intl formatting calls", () => {
     const source = "new Intl.NumberFormat('en-US').format(1); value.toLocaleString(); d.toLocaleDateString();";
-    expect((RATCHETS as Record<string, { count: (source: string) => number }>).directIntlFormatting.count(source)).toBe(3);
+    expect(RATCHETS.directIntlFormatting.count(source)).toBe(3);
   });
 });
