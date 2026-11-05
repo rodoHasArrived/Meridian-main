@@ -188,12 +188,10 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
                 "ProjectionBatchRebuilt",
                 "security-master.rebuild",
                 DateTimeOffset.UtcNow,
-                new
-                {
+                new ProjectionBatchRebuiltPayload(
                     projectionName,
                     lastGlobalSequence,
-                    records = acceptedRecords.Select(static record => new { record.SecurityId, record.Version }).ToArray()
-                },
+                    acceptedRecords.Select(static record => new ProjectionBatchRebuiltRecord(record.SecurityId, record.Version)).ToArray()),
                 ct).ConfigureAwait(false);
         }
 
@@ -599,52 +597,6 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         await UpsertOptionSeriesProjectionAsync(connection, transaction, projection, ct).ConfigureAwait(false);
         await UpsertOptionLifecycleProjectionAsync(connection, transaction, projection, ct).ConfigureAwait(false);
         await UpsertOptionAliasProjectionAsync(connection, transaction, projection, record.Aliases, ct).ConfigureAwait(false);
-    }
-
-    private async Task ReplaceIdentifiersAsync(
-        NpgsqlConnection connection,
-        NpgsqlTransaction transaction,
-        Guid securityId,
-        IReadOnlyList<SecurityIdentifierDto> identifiers,
-        CancellationToken ct)
-    {
-        await using (var delete = connection.CreateCommand())
-        {
-            delete.Transaction = transaction;
-            delete.CommandText = $"delete from {Qualified("security_identifiers")} where security_id = @security_id;";
-            delete.Parameters.AddWithValue("security_id", securityId);
-            await delete.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-        }
-
-        foreach (var identifier in identifiers)
-        {
-            await using var insert = connection.CreateCommand();
-            insert.Transaction = transaction;
-            insert.CommandText =
-                $"""
-                insert into {Qualified("security_identifiers")} (
-                    security_id, identifier_kind, identifier_value, normalized_identifier_value,
-                    provider, normalized_provider, is_primary,
-                    valid_from, valid_to, source, confidence, manual_override)
-                values (
-                    @security_id, @identifier_kind, @identifier_value, @normalized_identifier_value,
-                    @provider, @normalized_provider, @is_primary,
-                    @valid_from, @valid_to, @source, @confidence, @manual_override);
-                """;
-            insert.Parameters.AddWithValue("security_id", securityId);
-            insert.Parameters.AddWithValue("identifier_kind", identifier.Kind.ToString());
-            insert.Parameters.AddWithValue("identifier_value", identifier.Value);
-            insert.Parameters.AddWithValue("normalized_identifier_value", SecurityIdentifierNormalizer.GetOrComputeNormalizedValue(identifier));
-            insert.Parameters.AddWithValue("provider", (object?)identifier.Provider ?? DBNull.Value);
-            insert.Parameters.AddWithValue("normalized_provider", ToDbNullable(SecurityIdentifierNormalizer.GetOrComputeNormalizedProvider(identifier)));
-            insert.Parameters.AddWithValue("is_primary", identifier.IsPrimary);
-            insert.Parameters.AddWithValue("valid_from", identifier.ValidFrom.UtcDateTime);
-            insert.Parameters.AddWithValue("valid_to", (object?)identifier.ValidTo?.UtcDateTime ?? DBNull.Value);
-            insert.Parameters.AddWithValue("source", "SecurityMaster");
-            insert.Parameters.AddWithValue("confidence", DBNull.Value);
-            insert.Parameters.AddWithValue("manual_override", false);
-            await insert.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-        }
     }
 
     private async Task SaveCheckpointCoreAsync(

@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-05T21:59:28Z",
+  "generatedAt": "2026-11-05T21:50:27Z",
   "generatorVersion": "1.0",
-  "repositoryRoot": "agent-a6cc8e59dff3245bd",
+  "repositoryRoot": "agent-a94f74c3aa2de0ecd",
   "subsystems": [
     {
       "id": "host-shell",
@@ -2451,7 +2451,7 @@
       "lastModified": "2026-11-05T19:20:34+00:00",
       "lastCommit": "e7d86c2b",
       "lastSummary": "Refuse OtherSecurity classification text the label reader would misread",
-      "touches": 28
+      "touches": 27
     },
     {
       "path": "src/Meridian.Application/SecurityMaster/SecurityMasterService.cs",

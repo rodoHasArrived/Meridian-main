@@ -371,6 +371,37 @@ and the same timestamp-cutoff query can change after a pending transaction commi
 Fresh-install and populated through-036 and through-037 upgrade tests cover rollback, retry and
 restart receipts, retaining the previously applied migration checksums and close-price evidence.
 
+Migration `062_security_master_identifier_revisions.sql` adds the append-only
+`security_identifier_revisions` table; row triggers refuse update and delete and a statement
+trigger refuses truncate (SQL state 23514). `security_identifiers` stays the reconstructible
+current-state projection, and projection replacement still replaces its rows, but in the same
+transaction it now appends one revision per changed row identity (kind, value, valid-from):
+`Added`, `Amended`, `Expired` (valid-to first set) or `Removed`; an unchanged replay appends
+nothing. Replacement keeps the stored `source`, `confidence` and `manual_override` of an identity it
+already held instead of resetting them to `SecurityMaster`/null/false; new rows still get those
+defaults. Pre-existing rows become `Baseline` revisions available only from the migration
+(`history_available_from`), so earlier cutoffs report unknown history, not an absence.
+`ISecurityIdentifierHistoryStore` (implemented by `PostgresSecurityMasterStore`) reads every
+revision at a recorded cutoff and the recorded view of held identifiers with an optional
+valid-time filter. Recorded timestamps are transaction-start times kept monotonic per identity;
+like alias revisions they establish eligibility, not commit visibility. The economic identifier
+values were already retained in `security_events` payloads and replayed by the recorded
+identifier lookup; this table adds the row-level metadata and projection-only writes those
+payloads do not carry. Revisions name the projection-replacement actor; the authenticated actor of
+an event-sourced change remains on its event. The migration requires the repository's independent
+schema/storage review before merge.
+
+Governance payloads are typed. Each stream/event type declares a version-1 payload record in
+`SecurityGovernancePayloads.cs`, serialized through the source-generated
+`SecurityGovernanceJsonContext`; `PostgresSecurityGovernanceEventLog.AppendAsync<TPayload>` accepts
+only the declared type and writes `payload_version` explicitly. `SecurityGovernanceEvent.ReadPayload<T>`
+and `TryReadPayload<T>` dispatch on the stored version and refuse undeclared event types or
+versions this node cannot read; the raw `Payload` element remains available. Every retained row is
+version 1. Fixtures captured from the earlier reflective writers
+(`tests/fixtures/security-master/governance-payloads/v1-captured.json`) pin that those rows read
+unchanged and that new writes reproduce them byte for byte, including the PascalCase rebuild
+record entries. A shape change needs a new version and a reader for the old one.
+
 Symbol registry reconciliation persists canonical ownership for new Security Master entries, follows
 primary ticker changes, and withdraws names whose remaining authority is exclusively Security Master.
 Independent aliases and provider overrides remain retained. When they retain an entry after its

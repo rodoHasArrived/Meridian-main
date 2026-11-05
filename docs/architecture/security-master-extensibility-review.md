@@ -279,6 +279,46 @@ stores use local reflection options. Define versioned payload types and compatib
 changing serialization. A naming-policy change or a blanket serializer ban without retained-payload
 fixtures could break audit reads; this review makes no source-generation compatibility claim.
 
+**Slice 5 disposition — 2026-11-04 (source base `2535d263`).** Two D7 items are implemented; the
+row-classification audit is not.
+
+- *Identifier recorded history.* Existing recorded history was checked first: the
+  `GetRecordedByIdentifierAsOfAsync` lookup already replays identifier values from append-only
+  `security_events` payloads plus alias revisions, so the economic valid-time identity was not lost.
+  Those payloads do not carry the `security_identifiers` row metadata (`source`, `confidence`,
+  `manual_override`) or projection-only writes such as rebuilds, and replacement reset that metadata
+  on every write. Migration `062_security_master_identifier_revisions.sql` adds
+  `security_identifier_revisions` on the migration-038 alias pattern rather than a second event
+  history: append-only (row update/delete and truncate triggers, SQL state 23514), written in the
+  replacement's transaction as `Added`/`Amended`/`Expired`/`Removed` per row identity, with
+  `Baseline` revisions for pre-existing rows that are unavailable before the migration boundary.
+  Replacement now carries `source`/`confidence`/`manual_override` forward for an unchanged identity.
+  `ISecurityIdentifierHistoryStore` reads revisions at an explicit recorded cutoff and the recorded
+  view with an optional valid-time filter. Recorded timestamps establish eligibility, not commit
+  visibility, as for aliases. Revisions name the projection-replacement actor, not an authenticated
+  caller; the event remains the actor record for event-sourced changes.
+- *Governance payloads.* Before callers changed, the version-1 JSON every
+  `PostgresSecurityGovernanceEventLog.AppendAsync` caller produced was captured from the reflective
+  serializer by running the Security Master PostgreSQL tests at the base revision
+  (`tests/fixtures/security-master/governance-payloads/v1-captured.json`; Disputed/Cancelled
+  margin-call entries are derived from the captured Agreed payload because one writer statement
+  produces all three). Each stream/event type now has a typed payload record serialized through the
+  source-generated `SecurityGovernanceJsonContext`; `AppendAsync<TPayload>` accepts only the declared
+  type and writes `payload_version` explicitly; `ReadPayload<T>`/`TryReadPayload<T>` dispatch on the
+  stored version and refuse undeclared types or unreadable versions. The fixtures read unchanged
+  (including after a jsonb round trip of rows inserted without `payload_version`), and new writes
+  reproduce them byte for byte, so the source-generation compatibility claim is now limited to these
+  pinned shapes. Other stores' local reflection options were not changed.
+- *Evidence:* `SecurityIdentifierHistoryPostgresTests` (append-only refusals, rollback leaves no rows
+  or history, concurrent replacements, recorded/valid cutoffs, baseline boundary, canonical
+  event/projection/history atomicity), `SecurityGovernancePayloadContractTests` and
+  `SecurityGovernancePayloadPostgresTests`, run against PostgreSQL 16.
+- *Still open:* classifying cash-flow-source, entitlement, field-provenance and conflict-resolution
+  rows as reconstructible state or retained evidence; the WPF provenance composition; append-only
+  protection design for other economic tables beyond `security_events`; override-expiry and
+  patch-version acceptance proof. Migration 062 and its truncate-trigger waiver still need the
+  repository's independent schema/storage review; this disposition grants no waiver.
+
 ### D8 — Identifier normalization and listing identity: still open, scoped carefully
 
 F# `SecurityIdentifier.normalizeValue` trims/upper-cases; the C# kind-aware normalizer also removes
