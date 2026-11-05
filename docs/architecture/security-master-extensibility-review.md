@@ -7759,6 +7759,13 @@ activation is established by this source disposition.
   and the PIK toggle. Manual reset dates remain explicit servicing inputs. Automatic capitalization
   and reset scheduling still need persisted cadence, fixing, formula and residual policies; payment
   frequency alone supplies none of them.
+  *2026-11-05 update:* both policies are now persisted, opt-in loan terms executed by the daily
+  worker. They cover the PIK share and capitalization cadence, and a reset schedule with lookback and
+  declared-unit spread/floor/cap. Fixings come from an insert-only fixing store, and a missing fixing
+  fails closed. Accrual formula one is retained, and the shared-kernel formula v2 (residual carry,
+  SCH-DEF-006) remains increment-11 work. See the
+  [blueprint](../engineering/blueprints/direct-lending-pik-capitalization-and-rate-resets.md);
+  direct-lending migration 011 awaits independent schema review.
 - **OTC servicing.** Typed reset, compression, novation, credit-determination and auction-settlement
   events retain actor/source evidence, instrument targets, exact predecessor/successor snapshots,
   idempotency and strict replay. PostgreSQL updates the contract and appends history atomically;

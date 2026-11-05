@@ -163,23 +163,54 @@ public sealed class DirectLendingEventRebuilder
                         var spreadBps = root.GetProperty("spreadBps").GetDecimal();
                         var allInRate = root.GetProperty("allInRate").GetDecimal();
                         var sourceRef = GetOptionalString(root, "sourceRef");
+                        var resetKind = GetOptionalString(root, "resetKind") is { } kindText
+                            ? Enum.Parse<RateResetKind>(kindText, ignoreCase: true)
+                            : (RateResetKind?)null;
+                        DateOnly? fixingObservationDate =
+                            root.TryGetProperty("fixingObservationDate", out var observationElement) &&
+                            observationElement.ValueKind == JsonValueKind.String
+                                ? observationElement.Deserialize<DateOnly>(JsonOptions)
+                                : null;
+                        var schedule = contract!.CurrentTerms.RateResetSchedule;
+                        var isScheduled = resetKind == RateResetKind.Scheduled;
+                        var reset = new RateResetDto(
+                            effectiveDate,
+                            isScheduled && schedule is not null ? schedule.IndexName : contract.CurrentTerms.InterestIndexName ?? "FloatingIndex",
+                            observedRate,
+                            spreadBps,
+                            allInRate,
+                            sourceRef)
+                        {
+                            ResetKind = resetKind,
+                            FixingObservationDate = fixingObservationDate,
+                            FixingId = root.TryGetProperty("fixingId", out var fixingIdElement) && fixingIdElement.ValueKind == JsonValueKind.String
+                                ? fixingIdElement.GetGuid()
+                                : null,
+                            FixingRevision = root.TryGetProperty("fixingRevision", out var revisionElement) && revisionElement.ValueKind == JsonValueKind.Number
+                                ? revisionElement.GetInt32()
+                                : null
+                        };
 
                         servicing = servicing! with
                         {
-                            CurrentRateReset = new RateResetDto(
-                                effectiveDate,
-                                contract!.CurrentTerms.InterestIndexName ?? "FloatingIndex",
-                                observedRate,
-                                spreadBps,
-                                allInRate,
-                                sourceRef),
+                            CurrentRateReset = reset,
+                            // Loans with a reset schedule keep every reset (see ServicingAggregate).
+                            RateResetHistory = schedule is null
+                                ? servicing.RateResetHistory
+                                : (servicing.RateResetHistory ?? [])
+                                    .Where(item => item.EffectiveDate != effectiveDate)
+                                    .Append(reset)
+                                    .OrderBy(static item => item.EffectiveDate)
+                                    .ToArray(),
                             ServicingRevision = servicing.ServicingRevision + 1,
                             RevisionHistory = PrependRevision(
                                 servicing.RevisionHistory,
                                 servicing.ServicingRevision + 1,
-                                "InternalEvent",
+                                isScheduled ? "ScheduledRateReset" : "InternalEvent",
                                 effectiveDate,
-                                $"Rate reset applied at {allInRate:P4}.",
+                                isScheduled
+                                    ? $"Scheduled rate reset applied at {allInRate:P4}."
+                                    : $"Rate reset applied at {allInRate:P4}.",
                                 entry.RecordedAt)
                         };
                         break;
@@ -254,6 +285,9 @@ public sealed class DirectLendingEventRebuilder
                             pikElement.ValueKind == JsonValueKind.Number
                                 ? pikElement.GetDecimal()
                                 : 0m;
+                        var pikDeferred =
+                            root.TryGetProperty("pikCapitalizationDeferred", out var deferredElement) &&
+                            deferredElement.ValueKind == JsonValueKind.True;
                         var accrualEntry = new DailyAccrualEntryDto(
                             accrualEntryId,
                             accrualDate,
@@ -262,13 +296,15 @@ public sealed class DirectLendingEventRebuilder
                             penaltyAmount,
                             annualRateApplied,
                             entry.RecordedAt,
-                            pikInterestAmount);
+                            pikInterestAmount,
+                            pikDeferred);
 
                         servicing = servicing! with
                         {
+                            PikInterestAccruedUnpaid = servicing.PikInterestAccruedUnpaid + (pikDeferred ? pikInterestAmount : 0m),
                             Balances = servicing.Balances with
                             {
-                                PrincipalOutstanding = servicing.Balances.PrincipalOutstanding + pikInterestAmount,
+                                PrincipalOutstanding = servicing.Balances.PrincipalOutstanding + (pikDeferred ? 0m : pikInterestAmount),
                                 InterestAccruedUnpaid = servicing.Balances.InterestAccruedUnpaid + interestAmount,
                                 CommitmentFeeAccruedUnpaid = servicing.Balances.CommitmentFeeAccruedUnpaid + commitmentFeeAmount
                             },
@@ -279,9 +315,11 @@ public sealed class DirectLendingEventRebuilder
                                 servicing.ServicingRevision + 1,
                                 "InternalEvent",
                                 accrualDate,
-                                pikInterestAmount > 0m
-                                    ? $"Daily PIK accrual capitalized at annual rate {annualRateApplied:P4}."
-                                    : $"Daily accrual posted at annual rate {annualRateApplied:P4}.",
+                                pikDeferred
+                                    ? $"Daily accrual posted at annual rate {annualRateApplied:P4}; PIK {pikInterestAmount:0.00} deferred to capitalization."
+                                    : pikInterestAmount > 0m
+                                        ? $"Daily PIK accrual capitalized at annual rate {annualRateApplied:P4}."
+                                        : $"Daily accrual posted at annual rate {annualRateApplied:P4}.",
                                 entry.RecordedAt),
                             AccrualEntries = servicing.AccrualEntries.Concat([accrualEntry]).OrderByDescending(static item => item.AccrualDate).ToArray()
                         };
@@ -310,6 +348,36 @@ public sealed class DirectLendingEventRebuilder
                                 "PikToggle",
                                 effectiveDate,
                                 reason,
+                                entry.RecordedAt)
+                        };
+                        break;
+                    }
+
+                case "loan.pik-capitalized":
+                    {
+                        EnsureInitialized(contract, servicing, entry.EventType);
+                        var capitalizationDate = entry.EffectiveDate ?? Deserialize<DateOnly>(root, "capitalizationDate");
+                        var periodStart = Deserialize<DateOnly>(root, "periodStart");
+                        var periodEnd = Deserialize<DateOnly>(root, "periodEnd");
+                        var amount = root.GetProperty("amount").GetDecimal();
+                        var capitalization = new PikCapitalizationDto(capitalizationDate, periodStart, periodEnd, amount, entry.RecordedAt);
+
+                        servicing = servicing! with
+                        {
+                            Balances = servicing.Balances with
+                            {
+                                PrincipalOutstanding = servicing.Balances.PrincipalOutstanding + amount
+                            },
+                            PikInterestAccruedUnpaid = 0m,
+                            LastPikCapitalizationDate = capitalizationDate,
+                            PikCapitalizations = (servicing.PikCapitalizations ?? []).Append(capitalization).ToArray(),
+                            ServicingRevision = servicing.ServicingRevision + 1,
+                            RevisionHistory = PrependRevision(
+                                servicing.RevisionHistory,
+                                servicing.ServicingRevision + 1,
+                                "PikCapitalization",
+                                capitalizationDate,
+                                $"PIK interest of {amount:0.00} capitalized into principal.",
                                 entry.RecordedAt)
                         };
                         break;
