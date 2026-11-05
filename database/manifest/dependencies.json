@@ -5740,6 +5740,30 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FixedIncome.BondExerciseNoticeStatus"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FixedIncome.BondExerciseNoticeWatch"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FixedIncome.BondExerciseNoticeWatchResult"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FixedIncome.BondExerciseNoticeWindow"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.FixedIncome.BondExerciseYield"
     },
     {
@@ -32031,6 +32055,24 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.FixedIncome.BondExerciseNoticeWatchResult",
+      "target": "contract:Meridian.Contracts.FixedIncome.BondAnalyticsBlocker"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FixedIncome.BondExerciseNoticeWatchResult",
+      "target": "contract:Meridian.Contracts.FixedIncome.BondExerciseNoticeWindow"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FixedIncome.BondExerciseNoticeWindow",
+      "target": "contract:Meridian.Contracts.FixedIncome.BondExerciseNoticeStatus"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.FixedIncome.BondFloatingRateEvidence",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCouponRateUnit"
     },
@@ -56062,7 +56104,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "63fbb8c11c718db083912c6d610081c0846ee6db96477fafc2dfbdd60ff2f454",
+  "fingerprint": "cd4faeb7358324e2c6334f4ef3cf40c33bec50083755bd730e9dbcb9d9d252a1",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -61850,6 +61892,30 @@
       "id": "contract:Meridian.Contracts.FixedIncome.BondExerciseEconomics",
       "kind": "contract-type",
       "label": "Meridian.Contracts.FixedIncome.BondExerciseEconomics"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.FixedIncome.BondExerciseNoticeStatus",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FixedIncome.BondExerciseNoticeStatus"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.FixedIncome.BondExerciseNoticeWatch",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FixedIncome.BondExerciseNoticeWatch"
+    },
+    {
+      "classification": "result",
+      "id": "contract:Meridian.Contracts.FixedIncome.BondExerciseNoticeWatchResult",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FixedIncome.BondExerciseNoticeWatchResult"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.FixedIncome.BondExerciseNoticeWindow",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FixedIncome.BondExerciseNoticeWindow"
     },
     {
       "classification": "record",
@@ -82059,11 +82125,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3595,
-    "contract_set_memberships": 4453,
-    "edges": 9315,
+    "contract_references": 3598,
+    "contract_set_memberships": 4457,
+    "edges": 9322,
     "foreign_keys": 155,
     "logical_references": 6,
-    "nodes": 4508
+    "nodes": 4512
   }
 }
