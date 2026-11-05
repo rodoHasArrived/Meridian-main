@@ -218,7 +218,8 @@ fixtures could break audit reads; this review makes no source-generation compati
 F# `SecurityIdentifier.normalizeValue` trims/upper-cases; the C# kind-aware normalizer also removes
 permitted punctuation. The F# duplicate and expiry checks now use a kind-aware
 `normalizeIdentifierValue` that mirrors the C# rules, pinned by a parity test over every shared
-kind; the two implementations are still separate copies.
+kind; the two implementations are still separate copies. *(2026-11-05: the F# normalizer now
+delegates to the C# one; see [the regulatory derivatives identifiers pass](#resolution-pass--2026-11-05-regulatory-derivatives-identifiers-uti-upi-and-markit-red).)*
 The unused F# `validateLei` rotates four characters before MOD 97, unlike ISO 17442's LEI order;
 no production caller was found in this pass. Consolidate authority at a dependency-safe seam and
 pin F#, C# and SQL compatibility, without introducing a project-reference cycle. Listing MIC,
@@ -264,7 +265,10 @@ bounded claims and their stated remaining gates. Earlier "no graph/OTC/curve/upg
 factor" statements are historical, not current blockers. Schedule writers, call/put behavior,
 consumer integration, regulatory trade identifiers (including UTI/UPI/RED), collateral scope and
 operator acceptance still need explicit coverage and retain the limitations stated
-in their owning resolution sections and ADRs.
+in their owning resolution sections and ADRs. *(2026-11-05: the UTI, UPI and Markit RED identifier
+kinds, with format checks and asset-class rules, landed in [the regulatory derivatives identifiers
+pass](#resolution-pass--2026-11-05-regulatory-derivatives-identifiers-uti-upi-and-markit-red);
+regulatory reporting itself remains uncovered.)*
 
 **Validation of this consolidation.** Static source and immutable-diff review only; no .NET tests
 were run for these documentation changes. Focused documentation checks and their results belong
@@ -7846,3 +7850,68 @@ only a `StartupRefusedException` subclass.
 | Documentation checks (`check-ai-inventory`, ADR and link verification, `validate-doc-hashes`) | Pass |
 | Independent code review | Adversarial review: 4 confirmed findings (1 medium: a floor refusal on the ledger posting route answered 409; 3 low: amortization approval appended before the floor check, the R30 name check skipped on amends, the C5c text), all fixed with tests |
 | `Meridian CI / quality-gate` on the pull request | Reported on the pull request |
+
+## Resolution pass — 2026-11-05 (regulatory derivatives identifiers: UTI, UPI and Markit RED)
+
+This pass records the source on branch `claude/amazing-cray-x07r0a`, based on main at `5e1cfd09`.
+It changes no dated observation above. It closes the identifier part of D11's "regulatory trade
+identifiers (including UTI/UPI/RED)" gap and the D8 statement that the F# and C# normalizers are
+separate copies. It adds no regulatory reporting, submission or lifecycle-event workflow.
+
+**What landed.**
+
+| Item | Source |
+| --- | --- |
+| `SecurityIdentifierKind.Uti` (ISO 23897): 21-52 A-Z/0-9 characters whose first 20 are a valid ISO 17442 LEI (the existing MOD 97-10 check) | `SecurityIdentifiers.cs`, `SecurityIdentifierNormalizer.ValidateUti` |
+| `SecurityIdentifierKind.Upi` (ISO 4914): 12 characters, `QZ` prefix, digits and consonants without `Y`, ISO 7064 MOD 31,30 check character | `SecurityIdentifierNormalizer.ValidateUpi` |
+| `MarkitRedEntity` (RED6, 6 alphanumeric) and `MarkitRedPair` (RED9, 9 alphanumeric: entity code plus 3-character obligation suffix) | `SecurityIdentifierNormalizer.TryValidateFormat` |
+| All four normalize by stripping everything outside ASCII `A-Z0-9` | `SecurityIdentifierNormalizer.NormalizeValue` |
+| `IsSharedReferenceKind` (UPI and both RED kinds) joins `IsExcludedFromAmbiguityPairing`, so conflict detection and the candidate lookup skip them; `Uti` is a canonical duplicate kind | `SecurityIdentifierNormalizer`, `SecurityValidationService.CanonicalDuplicateIdentifierKinds` |
+| `SM_SHARED_IDENTIFIER_NOT_PRIMARY` (Error): a UPI or RED code cannot be primary, because migration 032's normalized primary-identifier unique index would refuse the second contract sharing it | `SecurityValidationService` |
+| Asset-class admission: `Uti`/`Upi` on Swap, CreditDefaultSwap, Swaption, CapFloor, FxForward, NonDeliverableForward and Cfd; RED kinds on CreditDefaultSwap only; every other kind unrestricted. A mismatch is the Warning `SM_REGULATORY_IDENTIFIER_ASSET_CLASS_MISMATCH`, following the `SM_OCC_SYMBOL_ASSET_CLASS_MISMATCH` precedent. The admitted classes also list the new kinds as preferred identifiers | `SecurityAssetClassCatalog.MayCarryIdentifierKind`, `GetPermittedAssetClasses` |
+| F# `IdentifierKind` gains the four cases; `SecurityIdentifier.toContractKind` maps every F# case exhaustively; `normalizeIdentifierValue` and `kindName` delegate to the Contracts normalizer and enum, and interop's persisted kind string reuses `kindName` | `src/Meridian.FSharp/Domain/SecurityIdentifiers.fs`, `Interop.SecurityMaster.fs` |
+| The C#-to-F# write mapping, the WPF identifier labels and the browser workstation's `SecurityIdentifierKind` union cover the new kinds | `SecurityMasterMapping.ToIdentifierKind`, `SecurityMasterEditViewModel`, `src/Meridian.Ui/dashboard/src/types/workstation-6.ts` |
+
+**Decisions and corrections.** The task brief described RED as 9-character entity and 6-character
+pair codes. Markit's convention is the reverse (RED6 entity, RED9 pair), and that is what is
+implemented, as two kinds because the entity and the pair are different reference objects. The
+UPI check character follows a secondary description of ISO 4914 Annex C and reproduces the published
+ANNA DSB example `QZRBG6ZTKS42`; it was not compared with the standard's text. RED publishes no check
+digit. ISO 23897 admits only A-Z and 0-9, so legacy UTIs that differ only by punctuation normalize
+to one identity, and a punctuated value draws `SM_IDENTIFIER_NORMALIZATION_RECOMMENDED`.
+
+**Asset-class rationale.** Each admitted class has `TradesAsBilateralContract`, so a security there
+is one contract and therefore one reportable trade, which is what a UTI names. Deliberately not
+admitted yet: `Repo` (SFTR UTIs need their own reporting regime), listed `Option` and `Future`
+(contract-level securities, not trades), and RED on credit-index swaptions (the index code belongs
+to the underlying).
+
+**Migration 016 and SQL parity.** Migration 016 is not edited. It is one-time and already applied,
+no stored row can carry the new kinds, and the store writes the C#-computed normalized value for
+every row (`PostgresSecurityMasterStore`), the same as for `LoanX` and `Clip`, which also postdate
+016. `SecurityIdentifierMigration016ParityTests` now ties the two statements together, which the
+2026-08-27 smaller note ("a new identifier kind needing stripping has no test tying the two
+statements together") said was missing. The test parses 016's three alphanumeric `case` lists and
+its Valoren arm, asserts that they match the C# normalizer, and requires every later stripping kind
+to be named on an explicit post-016 list. A new stripping kind therefore fails until someone decides
+whether existing rows need a backfill. The unused F# `validateLei` noted in D8 is unchanged.
+
+**Contracts manifest.** `database/manifest/contracts.json` is refreshed for the new enum members
+and shifted source lines. It was rendered with the schema-control contract builder over the
+committed catalog. Every other committed schema-control output reproduced byte-for-byte, and the
+hosted `schema-control.yml` verify step is authoritative.
+
+**Validation record.**
+
+| Check | Result |
+| --- | --- |
+| New and extended tests (`RegulatoryDerivativeIdentifierKindTests`, `SecurityIdentifierMigration016ParityTests`, `SecurityIdentifierNormalizationParityTests`, `LoanIdentifierKindTests`, `SecurityValidationServiceTests`) | 146 passed |
+| `Meridian.Tests` filtered to SecurityMaster, Identifier, AssetPack and AssetClass | 5844 passed, 177 skipped, 1 failed: the Docker-only `BondProjectionGoldenTests.Bond_KeysetPagesAreBounded...` (no Docker endpoint in this environment) |
+| `SecurityTermsWriteGoldenTests` | Golden `registry.dtos` refreshed. The diff was only the new preferred identifier kinds, checked by removing them and comparing equal. 51 passed |
+| `Meridian.FSharp.Tests` | 573 passed |
+| `Meridian.Wpf` Release build (`EnableWindowsTargeting`) | Succeeded; WPF tests not run (Windows only) |
+| Browser workstation `tsc --noEmit`; `check-contract-type-parity.py` | Pass; pass |
+| `validate-doc-hashes.py` after reviewing and updating the Application, Contracts, F#, WPF, UI and dashboard READMEs | 0 errors, 0 warnings |
+| `schema-control.py inventory` | 0 errors |
+| `run-maintained-generation.py --docs-only` | Converged; only the optional Docker UML render failed |
+| `bash scripts/ci.sh` | Not run as a whole; `Meridian CI / quality-gate` on the pull request is authoritative |

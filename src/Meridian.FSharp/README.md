@@ -124,8 +124,9 @@ Use this module for deterministic business-rule kernels shared by strategy, trad
   frozen declared mapping requires, even though version 3 is writable. Complete call/put schedules
   carry into the proposed version-4 terms when the target writer supports them, subject to full
   schedule validation. A blocked report retains their raw arrays for review.
-- `IdentifierKind` includes `LoanX` and `Clip` for syndicated-loan identifiers; interop maps
-  them to the matching C# `SecurityIdentifierKind` values.
+- `IdentifierKind` includes `LoanX` and `Clip` for syndicated-loan identifiers, and `Uti`, `Upi`,
+  `MarkitRedEntity` and `MarkitRedPair` for regulatory derivatives reporting; interop maps them to
+  the matching C# `SecurityIdentifierKind` values.
 - `SecurityTermModules` no longer carries `AccountingElections` or `Pci`. Amortization method,
   yield updates, cash-flow source and PCI designation are lot- and account-level accounting
   choices and live on the lot, not in security economics.
@@ -147,7 +148,7 @@ Use this module for deterministic business-rule kernels shared by strategy, trad
 
 ## Security Master governance controls (2026-11)
 
-- **Kind-aware identifier normalization.** `SecurityIdentifier.normalizeIdentifierValue` mirrors `Meridian.Contracts.SecurityMaster.SecurityIdentifierNormalizer.NormalizeValue` and migration 016's SQL backfill: ISIN, CUSIP, SEDOL, FIGI, OCC, LEI, WKN, CIK, LoanX and CLIP keep ASCII alphanumerics only, and Valoren keeps ASCII digits only. Duplicate and expiry checks use it, so the F# domain and the C# lookup give one raw value one identity.
+- **Kind-aware identifier normalization.** `SecurityIdentifier.normalizeIdentifierValue` delegates to `Meridian.Contracts.SecurityMaster.SecurityIdentifierNormalizer.NormalizeValue` through the exhaustive `SecurityIdentifier.toContractKind` mapping, and `kindName` is the mapped Contracts enum name (interop's persisted kind string reuses it). Duplicate and expiry checks use it, so the F# domain, the C# lookup and the stored normalized columns share one implementation. `SecurityIdentifierNormalizationParityTests` fails when a C# kind has no F# case.
 
 See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D8) for status and open decisions.
 

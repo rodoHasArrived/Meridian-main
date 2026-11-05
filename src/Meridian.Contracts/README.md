@@ -2012,6 +2012,42 @@ markets Meridian's providers and seed data use and maps unambiguous exchange nam
 `Nasdaq`, `AMEX`, ...) to a MIC, leaving routing labels such as `SMART` unresolved; its `Codes` and
 `ExchangeNames` tables also drive the `securities.listing_mic` backfill.
 
+### Security Master regulatory derivatives identifiers
+
+`SecurityIdentifierKind` carries four regulatory derivatives-reporting kinds. All four normalize by
+trimming, upper-casing and stripping everything outside ASCII `A-Z0-9`
+(`SecurityIdentifierNormalizer.NormalizeValue`), and `TryValidateFormat` checks:
+
+| Kind | Standard | Format rule | Scope |
+|---|---|---|---|
+| `Uti` | ISO 23897 | 21-52 characters; the first 20 are a valid ISO 17442 LEI (MOD 97-10) | one trade |
+| `Upi` | ISO 4914 (ANNA DSB) | 12 characters: `QZ`, nine digits or consonants (no vowels, no `Y`), ISO 7064 MOD 31,30 check character | one OTC derivative product |
+| `MarkitRedEntity` | Markit RED6 | 6 alphanumeric characters | one CDS reference entity |
+| `MarkitRedPair` | Markit RED9 | 9 alphanumeric characters (entity code + 3-character obligation suffix) | one entity/obligation pair |
+
+The UPI check character is verified against the published ANNA DSB example `QZRBG6ZTKS42`, not
+against the ISO 4914 Annex C text itself. RED publishes no check digit, so RED validation is
+structural.
+
+`SecurityIdentifierNormalizer.IsSharedReferenceKind` marks `Upi`, `MarkitRedEntity` and
+`MarkitRedPair`: many contracts legitimately share them, so they are excluded from
+identifier-ambiguity pairing (`IsExcludedFromAmbiguityPairing`). `SecurityValidationService` refuses
+them as a primary identifier (`SM_SHARED_IDENTIFIER_NOT_PRIMARY`), because the normalized
+primary-identifier unique index would reject the second contract. A `Uti` names one trade and is a
+canonical duplicate kind.
+
+`SecurityAssetClassCatalog.MayCarryIdentifierKind` restricts which asset classes may carry them.
+`Uti` and `Upi` are allowed on `Swap`, `CreditDefaultSwap`, `Swaption`, `CapFloor`, `FxForward`,
+`NonDeliverableForward` and `Cfd`. The RED kinds are allowed on `CreditDefaultSwap` only. Every other
+kind is unrestricted. A mismatch is the warning `SM_REGULATORY_IDENTIFIER_ASSET_CLASS_MISMATCH`.
+Repo (SFTR UTIs), listed options and futures, and RED on credit-index swaptions are not admitted
+yet.
+
+The F# `SecurityIdentifier.normalizeIdentifierValue` and `kindName` delegate to this normalizer
+through the exhaustive `toContractKind` mapping. Migration 016's SQL backfill predates `LoanX`,
+`Clip` and these four kinds; `SecurityIdentifierMigration016ParityTests` pins its kind lists to the
+C# rules.
+
 ### OTC contract model: exposure, collateral and margin calls
 
 `OtcContracts.cs` models master agreements, collateral agreements (CSAs), netting sets and bilateral
