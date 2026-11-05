@@ -2,9 +2,9 @@
 
 # `security_master` schema
 
-- Relations: 127
-- Functions/procedures: 12
-- Triggers: 25
+- Relations: 131
+- Functions/procedures: 13
+- Triggers: 27
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -33,6 +33,7 @@ erDiagram
         numeric_18_8_ annual_rate_applied
         timestamp_with_time_zone recorded_at
         numeric_24_8_ pik_interest_amount
+        boolean pik_capitalization_deferred
     }
     security_master_bond_accrual_convention_projection {
         uuid security_id PK,FK
@@ -674,6 +675,39 @@ erDiagram
     security_master_loan_event_position_seq {
         text catalogued_object
     }
+    security_master_loan_index_fixing {
+        uuid fixing_id PK
+        text index_name
+        date observation_date
+        integer revision
+        numeric_24_10_ declared_value
+        text declared_unit
+        numeric_18_10_ rate_fraction
+        text source_ref
+        timestamp_with_time_zone recorded_at
+        text recorded_by
+    }
+    security_master_loan_pik_capitalization_projection {
+        uuid loan_id PK
+        date capitalization_date PK
+        date period_start
+        date period_end
+        numeric_24_8_ amount
+        timestamp_with_time_zone recorded_at
+    }
+    security_master_loan_rate_reset_projection {
+        uuid loan_id PK
+        date effective_date PK
+        text reset_kind
+        text index_name
+        date fixing_observation_date
+        numeric_18_10_ observed_rate
+        numeric_18_6_ spread_bps
+        numeric_18_10_ all_in_rate
+        text source_ref
+        uuid fixing_id
+        integer fixing_revision
+    }
     security_master_loan_servicing_projection {
         uuid loan_id PK
         bigint aggregate_version
@@ -691,6 +725,8 @@ erDiagram
         date last_payment_date
         bigint servicing_revision
         timestamp_with_time_zone updated_at
+        numeric_24_8_ pik_interest_accrued_unpaid
+        date last_pik_capitalization_date
     }
     security_master_loan_snapshot {
         uuid loan_id PK
@@ -736,6 +772,8 @@ erDiagram
         numeric_18_8_ effective_rate_floor
         numeric_18_8_ effective_rate_cap
         numeric_18_8_ prepayment_penalty_rate
+        jsonb pik_capitalization_json
+        jsonb rate_reset_schedule_json
     }
     security_master_money_market_fund_projection {
         uuid security_id PK
@@ -1298,6 +1336,25 @@ erDiagram
     security_master_security_governance_events_global_sequence_seq {
         text catalogued_object
     }
+    security_master_security_identifier_revisions {
+        uuid security_id PK,FK
+        text identifier_kind PK
+        text identifier_value PK
+        timestamp_with_time_zone valid_from PK
+        integer revision PK
+        text change_kind
+        text normalized_identifier_value
+        text provider
+        text normalized_provider
+        boolean is_primary
+        timestamp_with_time_zone valid_to
+        text source
+        numeric_5_4_ confidence
+        boolean manual_override
+        text recorded_by
+        timestamp_with_time_zone recorded_at
+        timestamp_with_time_zone history_available_from
+    }
     security_master_security_identifiers {
         uuid security_id PK,FK
         text identifier_kind PK
@@ -1350,6 +1407,9 @@ erDiagram
         text fund_profile_id
         text field_value
         boolean field_value_recorded
+        bigint base_version
+        text field_base_value
+        boolean field_base_recorded
     }
     security_master_security_master_terms_capability_floor {
         boolean singleton PK
@@ -1763,6 +1823,7 @@ erDiagram
     security_master_securities ||--o{ security_master_security_alias_revisions : "security_alias_revisions_security_id_fkey"
     security_master_securities ||--o{ security_master_security_aliases : "security_aliases_security_id_fkey"
     security_master_securities ||--o{ security_master_security_cashflow_source_assignments : "security_cashflow_source_assignments_security_id_fkey"
+    security_master_securities ||--o{ security_master_security_identifier_revisions : "security_identifier_revisions_security_id_fkey"
     security_master_securities ||--o{ security_master_security_identifiers : "security_identifiers_security_id_fkey"
     security_master_securities ||--o{ security_master_security_operator_overrides : "security_operator_overrides_security_id_fkey"
     security_master_securities ||--o{ security_master_security_price_selection_receipts : "security_price_selection_receipts_security_id_fkey"
@@ -1786,7 +1847,7 @@ erDiagram
 | Relation | Kind | Columns | Primary key | Foreign keys | Indexes | Comment |
 | --- | --- | ---: | --- | ---: | ---: | --- |
 | `accounting_period_lock` | table | 10 | `ledger_basis`, `period_start_date`, `period_end_date` | 0 | 1 | - |
-| `accrual_entry_projection` | table | 9 | `accrual_entry_id` | 0 | 2 | - |
+| `accrual_entry_projection` | table | 10 | `accrual_entry_id` | 0 | 2 | - |
 | `bond_accrual_convention_projection` | table | 9 | `security_id` | 1 | 1 | - |
 | `bond_issuer_projection` | table | 8 | `security_id` | 1 | 2 | - |
 | `bond_lifecycle_projection` | table | 13 | `security_id` | 1 | 1 | - |
@@ -1834,10 +1895,13 @@ erDiagram
 | `loan_event` | table | 14 | `event_id` | 0 | 6 | - |
 | `loan_event_event_position_seq` | sequence | 0 | - | 0 | 0 | - |
 | `loan_event_position_seq` | sequence | 0 | - | 0 | 0 | - |
-| `loan_servicing_projection` | table | 16 | `loan_id` | 0 | 1 | - |
+| `loan_index_fixing` | table | 10 | `fixing_id` | 0 | 2 | Observed benchmark fixings for scheduled direct-lending rate resets; insert-only, highest revision per (index_name, observation_date) is effective. |
+| `loan_pik_capitalization_projection` | table | 6 | `loan_id`, `capitalization_date` | 0 | 1 | PIK capitalizations moving accrued PIK interest into direct-loan principal; rebuilt from loan_state servicing on every save. |
+| `loan_rate_reset_projection` | table | 11 | `loan_id`, `effective_date` | 0 | 1 | Applied manual and scheduled rate resets for direct loans with a reset schedule; rebuilt from loan_state servicing on every save. |
+| `loan_servicing_projection` | table | 18 | `loan_id` | 0 | 1 | - |
 | `loan_snapshot` | table | 5 | `loan_id`, `aggregate_version` | 0 | 2 | - |
 | `loan_state` | table | 6 | `loan_id` | 0 | 1 | - |
-| `loan_terms_version` | table | 28 | `loan_id`, `terms_version` | 0 | 2 | - |
+| `loan_terms_version` | table | 30 | `loan_id`, `terms_version` | 0 | 2 | - |
 | `money_market_fund_projection` | table | 9 | `security_id` | 0 | 3 | - |
 | `ndf_projection` | table | 13 | `security_id` | 0 | 3 | Relational projection of NonDeliverableForward asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms. |
 | `operations_workflow_audit` | table | 28 | `audit_id` | 0 | 5 | - |
@@ -1881,11 +1945,12 @@ erDiagram
 | `security_field_provenance` | table | 10 | `security_id`, `field_path`, `origin` | 0 | 2 | - |
 | `security_governance_events` | table | 8 | `global_sequence` | 0 | 3 | Append-only log of Security Master governance writes (operator overrides, alias changes, projection rebuilds, declared underlying-graph links, stored curves, OTC exposure snapshots, collateral balances and margin calls), written in the same transaction as the state change. |
 | `security_governance_events_global_sequence_seq` | sequence | 0 | - | 0 | 0 | - |
+| `security_identifier_revisions` | table | 17 | `security_id`, `identifier_kind`, `identifier_value`, `valid_from`, `revision` | 1 | 2 | Append-only recorded history of security_identifiers rows. Each projection replacement appends Added/Amended/Expired/Removed revisions in the same transaction; recorded-as-of reads select the latest revision per row identity at or before the cutoff. Pre-migration rows are Baseline revisions available only from history_available_from. |
 | `security_identifiers` | table | 12 | `security_id`, `identifier_kind`, `identifier_value`, `valid_from` | 1 | 3 | - |
 | `security_master_conflicts` | table | 14 | `conflict_id` | 0 | 2 | - |
 | `security_master_quality_reports` | table | 3 | `id` | 0 | 2 | - |
 | `security_master_quality_reports_id_seq` | sequence | 0 | - | 0 | 0 | - |
-| `security_master_revisions` | table | 13 | `revision_id` | 0 | 2 | - |
+| `security_master_revisions` | table | 16 | `revision_id` | 0 | 2 | - |
 | `security_master_terms_capability_floor` | table | 6 | `singleton` | 0 | 1 | One reviewed minimum declared-mapping/kernel capability floor for configured Security Master writers. Empty during 5b-1; activated only after the fleet inventory and data gates, before 5b-2. Server and WPF writer startup refuse unknown/newer active floors. Does not enable declared terms or authorize deployment. |
 | `security_operator_overrides` | table | 9 | `security_id` | 1 | 1 | - |
 | `security_price_selection_receipts` | table | 6 | `receipt_id` | 1 | 2 | Immutable golden-copy evaluation result, exact hierarchy snapshot, and quote comparisons; scoped receipt replay is the reproducibility authority. |

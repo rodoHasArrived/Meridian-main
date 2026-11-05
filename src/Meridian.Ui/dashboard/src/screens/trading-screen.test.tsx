@@ -386,15 +386,36 @@ describe("TradingScreen", () => {
     expect(resolveTradingRouteView("/trading/risky-widgets")).toBe("overview");
   });
 
-  it("navigates between route views from the tab strip", async () => {
-    const user = userEvent.setup();
-    await renderTradingScreen(data, "/trading?symbol=MSFT");
+  it("opens each route on its own job with the sidebar as the only sub-route navigation", async () => {
+    await renderTradingScreen(data, "/trading/orders?symbol=MSFT");
 
-    expect(screen.queryByText("Open orders")).not.toBeInTheDocument();
-    await user.click(screen.getByRole("tab", { name: "Orders" }));
-
+    // No in-page route tab strip duplicating the sidebar.
+    expect(screen.queryByRole("tablist", { name: "Trading routes" })).not.toBeInTheDocument();
+    // The route heading leads, ahead of the workspace-wide metrics.
+    const heading = screen.getByRole("region", { name: "Execution cockpit context" });
+    const metrics = screen.getByLabelText("Trading headline metrics");
+    expect(heading.compareDocumentPosition(metrics) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(await screen.findByText("Open orders")).toBeInTheDocument();
     expect(screen.queryByRole("region", { name: "Workflow control strip" })).not.toBeInTheDocument();
+  });
+
+  it("collapses brokerage recovery to one blocked row that reviews on the overview", async () => {
+    await renderTradingScreen(data, "/trading/orders?symbol=MSFT");
+
+    const recovery = screen.getByRole("region", { name: "Brokerage recovery" });
+    expect(within(recovery).getByRole("status")).toHaveTextContent("Live trading blocked — recovery required");
+    // The full workspace (synchronize action, evidence) stays on the overview.
+    expect(within(recovery).queryByRole("button", { name: /synchronize and reconcile/i })).not.toBeInTheDocument();
+    expect(within(recovery).getByRole("link", { name: "Review brokerage recovery" }))
+      .toHaveAttribute("href", "/trading?symbol=MSFT#brokerage-recovery");
+  });
+
+  it("keeps the full brokerage recovery panel on the trading overview", async () => {
+    await renderTradingScreen(data, "/trading?symbol=MSFT");
+
+    const recovery = screen.getByRole("region", { name: "Brokerage recovery" });
+    expect(within(recovery).getByRole("button", { name: /synchronize and reconcile/i })).toBeInTheDocument();
+    expect(within(recovery).queryByRole("link", { name: "Review brokerage recovery" })).not.toBeInTheDocument();
   });
 
   it("links position rows to the detail rail with keyboard selection", async () => {

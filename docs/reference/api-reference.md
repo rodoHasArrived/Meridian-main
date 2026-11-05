@@ -374,6 +374,11 @@ This table is intentionally **path-first** to support API documentation validati
 | `/api/loans/rebuild-all` | POST | Direct Lending | Triggers portfolio-wide loan snapshot rebuild. |
 | `/api/loans/rebuild-checkpoints` | GET | Direct Lending | Reads rebuild checkpoint posture before triggering rebuild mutation. |
 | `/api/loans/portfolio` | GET | Direct Lending | Reads aggregated direct-lending portfolio posture. |
+| `/api/loans/index-fixings` | POST | Direct Lending | Records or revises a benchmark fixing in a declared unit (insert-only revisions); requires ManageDirectLending, fund-scoped write tenant and mutation rate limiting. |
+| `/api/loans/index-fixings` | GET | Direct Lending | Lists effective fixings, filtered by `index`, `from`, `to`. |
+| `/api/loans/{loanId:guid}/rate-resets/scheduled` | POST | Direct Lending | Applies a scheduled floating-rate reset from the fixing store; returns 422 when the fixing is missing (fail closed). |
+| `/api/loans/{loanId:guid}/pik/capitalizations` | POST | Direct Lending | Capitalizes accrued PIK interest into principal on a policy date (Dr LoanPrincipal / Cr PikInterestReceivable). |
+| `/api/loans/{loanId:guid}/schedules/servicing` | GET | Direct Lending | Previews reset dates (with fixing availability) and PIK capitalization dates in a window of up to 3,660 days. |
 | `/api/security-master/corporate-actions/ingest` | POST | Security Master | Runs provider-backed corporate-action ingest across mastered tickers; requires Security Master mutation permission and returns retained ingest evidence. |
 
 ### Ledger account oversight (`/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/*`)

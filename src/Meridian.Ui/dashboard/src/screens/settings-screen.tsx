@@ -2397,8 +2397,7 @@ export function SettingsScreen({
 
   return (
     <div className="space-y-5">
-      <StatStrip metrics={settingsStatMetrics} label="Operator control posture metrics" />
-
+      {/* Route heading first ("where am I?"); workspace-wide metrics follow. */}
       <section
         id="settings-overview"
         role="region"
@@ -2414,6 +2413,8 @@ export function SettingsScreen({
           </p>
         </div>
       </section>
+
+      <StatStrip metrics={settingsStatMetrics} label="Operator control posture metrics" />
 
       {showChooserSection ? <SettingsTaskChooser /> : null}
 

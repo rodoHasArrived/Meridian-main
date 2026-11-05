@@ -21,6 +21,11 @@ export interface OperationalTrustSummaryProps {
   action?: ReactNode;
   label?: string;
   className?: string;
+  /**
+   * Collapse to one summary row (label, text status and value per fact) with the supporting
+   * detail and per-fact actions behind "Details". Use it where the card is chrome above a
+   * route's own content; leave it off where the confidence facts are the screen's job.
+   */
   disclosure?: boolean;
 }
 
@@ -109,40 +114,47 @@ export function OperationalTrustSummary({
           );
         })}
       </dl>
-      {action ? <div className="flex shrink-0 flex-wrap items-center gap-2">{action}</div> : null}
+      {action && !disclosure ? <div className="flex shrink-0 flex-wrap items-center gap-2">{action}</div> : null}
     </div>
   );
 
+  if (!disclosure) {
+    return (
+      <section className={cn("rounded-[2px] border border-border bg-card px-3.5 py-3", className)} aria-label={label}>
+        {detail}
+      </section>
+    );
+  }
+
   return (
     <section
-      className={cn("rounded-[2px] border border-border bg-card", !disclosure && "px-3.5 py-3", className)}
+      className={cn("operational-trust-summary flex items-start gap-2 rounded-[2px] border border-border bg-card", className)}
       aria-label={label}
     >
-      {disclosure ? (
-        <details className="group">
-          <summary className="flex cursor-pointer list-none items-start gap-3 px-3 py-2 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 [&::-webkit-details-marker]:hidden">
-            <span className="sr-only">{label}. </span>
-            <span className="grid min-w-0 flex-1 grid-cols-[repeat(auto-fit,minmax(min(100%,10rem),1fr))] gap-x-3 gap-y-2">
-              {facts.map(({ id, label: factLabel, fact }) => (
-                <span key={id} className="min-w-0 text-xs leading-5">
-                  <span className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-                    <span className="text-muted-foreground">{factLabel}</span>
-                    <span className={cn("inline-flex rounded-full border px-1.5 text-[11px]", toneClasses[fact.tone ?? "unknown"])}>
-                      {toneLabels[fact.tone ?? "unknown"]}
-                    </span>
-                  </span>
-                  <span className="block break-words font-medium text-foreground">{fact.value}</span>
+      <details className="group min-w-0 flex-1">
+        <summary className="flex cursor-pointer list-none items-center gap-3 px-3 py-1.5 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 [&::-webkit-details-marker]:hidden">
+          <span className="sr-only">{label}. </span>
+          {/* One row at normal widths: label, text status and value per fact. Values are
+              financially material, so a long one wraps onto another line; it never truncates. */}
+          <span className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-5 gap-y-0.5">
+            {facts.map(({ id, label: factLabel, fact }) => (
+              <span key={id} className="inline-flex min-w-0 max-w-full items-baseline gap-x-1.5 text-xs leading-5">
+                <span className="shrink-0 text-muted-foreground">{factLabel}</span>
+                <span className={cn("inline-flex shrink-0 rounded-full border px-1.5 text-[11px]", toneClasses[fact.tone ?? "unknown"])}>
+                  {toneLabels[fact.tone ?? "unknown"]}
                 </span>
-              ))}
-            </span>
-            <span className="flex shrink-0 items-center gap-1 text-xs font-medium text-muted-foreground">
-              Details
-              <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" aria-hidden="true" />
-            </span>
-          </summary>
-          <div className="border-t border-border px-3 py-3">{detail}</div>
-        </details>
-      ) : detail}
+                <span className="min-w-0 break-words font-medium text-foreground">{fact.value}</span>
+              </span>
+            ))}
+          </span>
+          <span className="flex shrink-0 items-center gap-1 text-xs font-medium text-muted-foreground">
+            Details
+            <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" aria-hidden="true" />
+          </span>
+        </summary>
+        <div className="border-t border-border px-3 py-3">{detail}</div>
+      </details>
+      {action ? <div className="flex shrink-0 flex-wrap items-center gap-2 py-1 pr-2">{action}</div> : null}
     </section>
   );
 }

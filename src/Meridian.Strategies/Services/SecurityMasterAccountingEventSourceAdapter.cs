@@ -637,14 +637,22 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
     /// which the event service's own gate rejects as SM_UNSUPPORTED_ACCOUNTING_INSTRUMENT at Info —
     /// the correct outcome for an instrument this first accounting slice does not cover.
     /// </para>
+    /// <para>
+    /// The sub-type is read through <see cref="ClassificationLabelReader"/>: an event retained before
+    /// the label helpers may still carry <c>OtherSubType "x"</c>, which is decoded here rather than
+    /// rewritten in the stored event.
+    /// </para>
     /// </summary>
     private static string ResolveAccountingAssetClass(SecurityEconomicDefinitionRecord definition)
-        => SecurityAssetClassCatalog.ResolveAccountingInstrumentClass(
-               definition.TypeName,
-               definition.SubType,
-               definition.AssetClass)
-           ?? definition.SubType
-           ?? definition.AssetClass;
+    {
+        var subType = ClassificationLabelReader.NormalizeRequired(definition.SubType);
+        return SecurityAssetClassCatalog.ResolveAccountingInstrumentClass(
+                   definition.TypeName,
+                   subType,
+                   definition.AssetClass)
+               ?? subType
+               ?? definition.AssetClass;
+    }
 
     private static string? NormalizeCouponType(string? couponType)
     {

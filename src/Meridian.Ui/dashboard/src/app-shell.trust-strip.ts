@@ -20,9 +20,33 @@ export interface AppShellTrustStripItem {
   actionLabel: string | null;
 }
 
+/**
+ * The session environment as the masthead pill's leading segment. PAPER vs LIVE is the one
+ * fact an operator cannot afford to lose, so it carries its own variant (LIVE uses the
+ * alarm-red `--live-env` token) and never shrinks, whatever else the pill truncates.
+ */
+export interface AppShellTrustStripEnvironment {
+  label: string;
+  variant: "live" | "paper" | "research" | "default";
+}
+
 export interface AppShellTrustStripState {
   ariaLabel: string;
+  environment: AppShellTrustStripEnvironment;
   items: AppShellTrustStripItem[];
+}
+
+function buildTrustStripEnvironment(session: SessionInfo | null, loading: boolean): AppShellTrustStripEnvironment {
+  switch (session?.environment) {
+    case "live":
+      return { label: "LIVE", variant: "live" };
+    case "paper":
+      return { label: "PAPER", variant: "paper" };
+    case "research":
+      return { label: "DEMO", variant: "research" };
+    default:
+      return loading ? { label: "LOADING", variant: "default" } : { label: "DEMO", variant: "research" };
+  }
 }
 
 export function buildTrustStripState({
@@ -93,6 +117,10 @@ export function buildTrustStripState({
 
   return {
     ariaLabel: "Workstation build, environment, provenance, and provider posture",
+    // Follows the session itself, not the workspace bootstrap: the session card this badge
+    // replaced showed PAPER/LIVE as soon as the session resolved, so a known environment is
+    // never hidden behind LOADING while workspace data is still arriving.
+    environment: buildTrustStripEnvironment(session, loading),
     items: [
       {
         id: "build",

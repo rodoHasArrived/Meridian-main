@@ -35,17 +35,6 @@ export type DataOperationsWorkstream =
   | "exports"
   | "query";
 
-export const DATA_ROUTE_TABS = [
-  { id: "overview", label: "Overview", route: WORKSTATION_ROUTE_CATALOG.data, workstream: "overview" },
-  { id: "providers", label: "Providers", route: WORKSTATION_ROUTE_CATALOG.dataProviders, workstream: "providers" },
-  { id: "import", label: "Import", route: WORKSTATION_ROUTE_CATALOG.dataImport, workstream: "import" },
-  { id: "backfills", label: "Backfills", route: WORKSTATION_ROUTE_CATALOG.dataBackfills, workstream: "backfills" },
-  { id: "operations", label: "Operations", route: WORKSTATION_ROUTE_CATALOG.dataOperations, workstream: "operations" },
-  { id: "assurance", label: "Assurance", route: WORKSTATION_ROUTE_CATALOG.dataAssurance, workstream: "assurance" },
-  { id: "exports", label: "Exports", route: WORKSTATION_ROUTE_CATALOG.dataExports, workstream: "exports" },
-  { id: "query", label: "SQL query", route: WORKSTATION_ROUTE_CATALOG.dataQuery, workstream: "query" }
-] as const;
-
 export const DATA_ROUTE_VIEW_COPY: Record<DataOperationsWorkstream, { title: string; description: string }> = {
   overview: {
     title: "Data overview",
