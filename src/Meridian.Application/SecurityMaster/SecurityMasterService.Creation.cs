@@ -13,6 +13,7 @@ public sealed partial class SecurityMasterService
         // A registered alias names its catalog class: canonicalize once at the boundary so the
         // profile override, the codec and the recorded event all see the class the record will carry.
         request = request with { AssetClass = SecurityAssetClassCatalog.Canonicalize(request.AssetClass) };
+        EnsureClassificationTextIsUnambiguous(request.AssetClass, request.AssetSpecificTerms);
         // Resolve the submitted profile and refuse contradictory metadata before domain mapping.
         var assetClassOverride = GetProfileBackedAssetClassOverride(request.AssetClass, request.AssetSpecificTerms);
         var result = SecurityMasterCommandFacade.Create(MapRequestOrRefuse(() => SecurityMasterMapping.ToCreateCommand(request)));

@@ -1,6 +1,6 @@
 {
   "total_files": 797,
-  "total_lines": 182394,
+  "total_lines": 182468,
   "orphaned_count": 259,
   "no_heading_count": 157,
   "stale_count": 0,
@@ -1679,7 +1679,7 @@
     },
     {
       "path": "docs/architecture/security-master-extensibility-review.md",
-      "line_count": 7865,
+      "line_count": 7921,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2831,7 +2831,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-01.md",
-      "line_count": 573,
+      "line_count": 570,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2839,7 +2839,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-02.md",
-      "line_count": 484,
+      "line_count": 487,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2847,7 +2847,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-03.md",
-      "line_count": 483,
+      "line_count": 471,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2855,7 +2855,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-04.md",
-      "line_count": 561,
+      "line_count": 569,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2863,7 +2863,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-05.md",
-      "line_count": 466,
+      "line_count": 475,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2871,7 +2871,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-06.md",
-      "line_count": 546,
+      "line_count": 521,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2879,7 +2879,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-07.md",
-      "line_count": 98,
+      "line_count": 129,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3039,7 +3039,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 13231,
+      "line_count": 13236,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6279,7 +6279,7 @@
     },
     {
       "path": "src/Meridian.Contracts/README.md",
-      "line_count": 2146,
+      "line_count": 2148,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
