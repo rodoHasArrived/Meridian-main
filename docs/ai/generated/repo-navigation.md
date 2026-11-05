@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-11-05T16:02:19Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-11-05T19:22:10Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -134,19 +134,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs` | Host and Composition | `11f974e8` (2026-11-05T15:47:57+00:00) | 9 |
-| `src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs` | Host and Composition | `11f974e8` (2026-11-05T15:47:57+00:00) | 8 |
-| `src/Meridian.FSharp.DirectLending.Aggregates/README.md` | Domain, Ledger, and F# | `11f974e8` (2026-11-05T15:47:57+00:00) | 8 |
-| `src/Meridian.Application/DirectLending/DirectLendingServiceSupport.cs` | Host and Composition | `11f974e8` (2026-11-05T15:47:57+00:00) | 7 |
-| `src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs` | Host and Composition | `11f974e8` (2026-11-05T15:47:57+00:00) | 7 |
-| `src/Meridian.FSharp.DirectLending.Aggregates/ContractAggregate.fs` | Domain, Ledger, and F# | `11f974e8` (2026-11-05T15:47:57+00:00) | 7 |
-| `src/Meridian.FSharp.DirectLending.Aggregates/ServicingAggregate.fs` | Domain, Ledger, and F# | `11f974e8` (2026-11-05T15:47:57+00:00) | 7 |
-| `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs` | Desktop and UI Workflows | `11f974e8` (2026-11-05T15:47:57+00:00) | 7 |
-| `src/Meridian.Application/DirectLending/AccrualLedgerService.cs` | Host and Composition | `11f974e8` (2026-11-05T15:47:57+00:00) | 6 |
-| `src/Meridian.Application/DirectLending/DailyAccrualWorker.cs` | Host and Composition | `11f974e8` (2026-11-05T15:47:57+00:00) | 6 |
-| `src/Meridian.Application/DirectLending/DirectLendingEventRebuilder.cs` | Host and Composition | `11f974e8` (2026-11-05T15:47:57+00:00) | 6 |
-| `src/Meridian.Application/DirectLending/DirectLendingOutboxDispatcher.cs` | Host and Composition | `11f974e8` (2026-11-05T15:47:57+00:00) | 6 |
-| `src/Meridian.Application/DirectLending/IAccrualLedgerService.cs` | Host and Composition | `11f974e8` (2026-11-05T15:47:57+00:00) | 6 |
-| `src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs` | Host and Composition | `11f974e8` (2026-11-05T15:47:57+00:00) | 6 |
-| `src/Meridian.Application/DirectLending/IDirectLendingService.cs` | Host and Composition | `11f974e8` (2026-11-05T15:47:57+00:00) | 6 |
+| `src/Meridian.Application/README.md` | Host and Composition | `e7d86c2b` (2026-11-05T19:20:34+00:00) | 29 |
+| `src/Meridian.Contracts/README.md` | Host and Composition | `e7d86c2b` (2026-11-05T19:20:34+00:00) | 27 |
+| `src/Meridian.Application/SecurityMaster/SecurityMasterService.cs` | Host and Composition | `e7d86c2b` (2026-11-05T19:20:34+00:00) | 12 |
+| `src/Meridian.Application/SecurityMaster/SecurityMasterService.Creation.cs` | Host and Composition | `e7d86c2b` (2026-11-05T19:20:34+00:00) | 4 |
+| `src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs` | Host and Composition | `e7d86c2b` (2026-11-05T19:20:34+00:00) | 3 |
+| `src/Meridian.Application/SecurityMaster/SecurityMasterService.ClassificationText.cs` | Host and Composition | `e7d86c2b` (2026-11-05T19:20:34+00:00) | 1 |
+| `src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs` | Desktop and UI Workflows | `1b819b69` (2026-11-05T19:05:10+00:00) | 12 |
+| `src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs` | Desktop and UI Workflows | `1b819b69` (2026-11-05T19:05:10+00:00) | 8 |
+| `src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs` | Desktop and UI Workflows | `4aa070c5` (2026-11-05T18:55:46+00:00) | 8 |
+| `src/Meridian.FSharp.DirectLending.Aggregates/ServicingSchedule.fs` | Domain, Ledger, and F# | `a3fba8db` (2026-11-05T17:51:10+00:00) | 2 |
+| `src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs` | Host and Composition | `11f974e8` (2026-11-05T15:47:57+00:00) | 10 |
+| `src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs` | Host and Composition | `11f974e8` (2026-11-05T15:47:57+00:00) | 10 |
+| `src/Meridian.FSharp.DirectLending.Aggregates/README.md` | Domain, Ledger, and F# | `11f974e8` (2026-11-05T15:47:57+00:00) | 9 |
+| `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs` | Desktop and UI Workflows | `11f974e8` (2026-11-05T15:47:57+00:00) | 9 |
+| `src/Meridian.Application/DirectLending/AccrualLedgerService.cs` | Host and Composition | `11f974e8` (2026-11-05T15:47:57+00:00) | 8 |
 
