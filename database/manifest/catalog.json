@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "b8d7526d130827d090f7247d08754e9e3db68bd888fc6837e01f6279ef16137c",
+  "database_fingerprint": "222aa05df625c97523f0fafad667b882feb019b339a0d586dbe11179a6afa0cb",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -19477,8 +19477,20 @@
       "object": "column:security_master.security_master_revisions.actor"
     },
     {
+      "fingerprint": "926a5cb82a4c30cce10bc091c0216c7043149f2033fc98860cb745e82808b530",
+      "object": "column:security_master.security_master_revisions.base_version"
+    },
+    {
       "fingerprint": "655791b054dca6f1f23fe96d8592142ca26a6a0cb91fb63d30c8984be0ce71de",
       "object": "column:security_master.security_master_revisions.created_at"
+    },
+    {
+      "fingerprint": "8a76668a96ebe0be7e4d97b62872d23774c0542880d4c2fd9058ea004a88f5ee",
+      "object": "column:security_master.security_master_revisions.field_base_recorded"
+    },
+    {
+      "fingerprint": "689ec056d55fba47f0cee58996b91ae02837aaa14ead2dd127a92e01c1541336",
+      "object": "column:security_master.security_master_revisions.field_base_value"
     },
     {
       "fingerprint": "8774180b9f534a58b78422165988816ca994369855ddd6509bcb58617fc6fbc7",
@@ -30757,7 +30769,7 @@
       "object": "schema:reporting"
     },
     {
-      "fingerprint": "c685da15f883c0fba6c7a34c3c71131b08341d89578d49a438b0dc0feeb9c677",
+      "fingerprint": "60989557deb9746358f71f81f593fdaa45c037449687b704230349c76e28baf8",
       "object": "schema:security_master"
     },
     {
@@ -31589,7 +31601,7 @@
       "object": "table:security_master.security_master_quality_reports"
     },
     {
-      "fingerprint": "5c9ca5ebd8f8a6c076a8d872166ebce89645684f1ecaf1b72f6f21d31c8d9a93",
+      "fingerprint": "d9277a8c4c44f67c59e559db4daee5c32bb7bfafb77cc5f75933d5f34ee593f4",
       "object": "table:security_master.security_master_revisions"
     },
     {
@@ -131475,7 +131487,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "c685da15f883c0fba6c7a34c3c71131b08341d89578d49a438b0dc0feeb9c677",
+      "fingerprint": "60989557deb9746358f71f81f593fdaa45c037449687b704230349c76e28baf8",
       "foreign_tables": [],
       "functions": [
         {
@@ -168901,6 +168913,54 @@
               "security_labels": [],
               "type_name": "bool",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "926a5cb82a4c30cce10bc091c0216c7043149f2033fc98860cb745e82808b530",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "base_version",
+              "nullable": true,
+              "ordinal_position": 14,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "689ec056d55fba47f0cee58996b91ae02837aaa14ead2dd127a92e01c1541336",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "field_base_value",
+              "nullable": true,
+              "ordinal_position": 15,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "boolean",
+              "default": "false",
+              "fingerprint": "8a76668a96ebe0be7e4d97b62872d23774c0542880d4c2fd9058ea004a88f5ee",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "field_base_recorded",
+              "nullable": false,
+              "ordinal_position": 16,
+              "security_labels": [],
+              "type_name": "bool",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -168928,7 +168988,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "5c9ca5ebd8f8a6c076a8d872166ebce89645684f1ecaf1b72f6f21d31c8d9a93",
+          "fingerprint": "d9277a8c4c44f67c59e559db4daee5c32bb7bfafb77cc5f75933d5f34ee593f4",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -215708,6 +215768,54 @@
               "security_labels": [],
               "type_name": "bool",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "926a5cb82a4c30cce10bc091c0216c7043149f2033fc98860cb745e82808b530",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "base_version",
+              "nullable": true,
+              "ordinal_position": 14,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "689ec056d55fba47f0cee58996b91ae02837aaa14ead2dd127a92e01c1541336",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "field_base_value",
+              "nullable": true,
+              "ordinal_position": 15,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "boolean",
+              "default": "false",
+              "fingerprint": "8a76668a96ebe0be7e4d97b62872d23774c0542880d4c2fd9058ea004a88f5ee",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "field_base_recorded",
+              "nullable": false,
+              "ordinal_position": 16,
+              "security_labels": [],
+              "type_name": "bool",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -215735,7 +215843,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "5c9ca5ebd8f8a6c076a8d872166ebce89645684f1ecaf1b72f6f21d31c8d9a93",
+          "fingerprint": "d9277a8c4c44f67c59e559db4daee5c32bb7bfafb77cc5f75933d5f34ee593f4",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [

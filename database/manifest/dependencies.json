@@ -17110,6 +17110,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SecurityMasterCanonicalMergeOutcomeDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SecurityMasterCanonicalMergeOutcomeKind"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.SecurityMasterChangeHistoryItemDto"
     },
     {
@@ -45741,6 +45753,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.SecurityMasterCanonicalMergeOutcomeDto",
+      "target": "contract:Meridian.Contracts.Workstation.SecurityMasterCanonicalMergeOutcomeKind"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.SecurityMasterConflictAssessmentDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterConflict"
     },
@@ -45863,6 +45881,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.SecurityMasterPublishResultDto",
       "target": "contract:Meridian.Contracts.Workstation.RestatementCandidateDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.SecurityMasterPublishResultDto",
+      "target": "contract:Meridian.Contracts.Workstation.SecurityMasterCanonicalMergeOutcomeDto"
     },
     {
       "kind": "contract-reference",
@@ -56104,7 +56128,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "cd4faeb7358324e2c6334f4ef3cf40c33bec50083755bd730e9dbcb9d9d252a1",
+  "fingerprint": "476727a91f96bd40dd54988e7f37aca7fe4a20721a06d5f86ea351f0c1669dd5",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -73265,6 +73289,18 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.SecurityMasterCanonicalMergeOutcomeDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SecurityMasterCanonicalMergeOutcomeDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Workstation.SecurityMasterCanonicalMergeOutcomeKind",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SecurityMasterCanonicalMergeOutcomeKind"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.SecurityMasterChangeHistoryItemDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.SecurityMasterChangeHistoryItemDto"
@@ -82125,11 +82161,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3598,
-    "contract_set_memberships": 4457,
-    "edges": 9322,
+    "contract_references": 3600,
+    "contract_set_memberships": 4459,
+    "edges": 9326,
     "foreign_keys": 155,
     "logical_references": 6,
-    "nodes": 4512
+    "nodes": 4514
   }
 }

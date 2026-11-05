@@ -3,15 +3,15 @@
   "title": "API Contract Coverage Dashboard",
   "generated_at": "1970-01-01T00:00:00+00:00",
   "score_percent": 20.0,
-  "endpoint_coverage_percent": 30.6,
-  "contract_coverage_percent": 4.1,
+  "endpoint_coverage_percent": 30.7,
+  "contract_coverage_percent": 4.0,
   "summary": {
-    "endpoint_count": 744,
+    "endpoint_count": 743,
     "documented_endpoint_count": 228,
-    "undocumented_endpoint_count": 516,
-    "workstation_contract_count": 962,
+    "undocumented_endpoint_count": 515,
+    "workstation_contract_count": 964,
     "documented_workstation_contract_count": 39,
-    "undocumented_workstation_contract_count": 923
+    "undocumented_workstation_contract_count": 925
   },
   "endpoints": [
     {
@@ -707,19 +707,13 @@
     {
       "method": "POST",
       "path": "/api/reference-data/bonds/settlement-consideration",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:20",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:19",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/reference-data/bonds/{securityId:guid}/analytics",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:30",
-      "documented": false
-    },
-    {
-      "method": "GET",
-      "path": "/api/reference-data/bonds/{securityId:guid}/exercise-notices",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:77",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:29",
       "documented": false
     },
     {
@@ -7881,18 +7875,28 @@
       "documented": false
     },
     {
+      "name": "SecurityMasterCanonicalMergeOutcomeKind",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:156",
+      "documented": false
+    },
+    {
+      "name": "SecurityMasterCanonicalMergeOutcomeDto",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:175",
+      "documented": false
+    },
+    {
       "name": "RestatementCandidateDto",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:157",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:184",
       "documented": false
     },
     {
       "name": "SecurityMasterConflictAuthorityDecision",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:168",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:195",
       "documented": false
     },
     {
       "name": "SecurityMasterRevisionPublishedEvent",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:178",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:205",
       "documented": false
     },
     {

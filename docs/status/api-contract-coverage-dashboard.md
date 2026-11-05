@@ -12,10 +12,10 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | Metric | Value |
 |---|---:|
 | Weighted score | 20.0% |
-| Endpoint coverage | 30.6% |
-| Workstation contract coverage | 4.1% |
-| Endpoints documented | 228 / 744 |
-| Workstation contracts documented | 39 / 962 |
+| Endpoint coverage | 30.7% |
+| Workstation contract coverage | 4.0% |
+| Endpoints documented | 228 / 743 |
+| Workstation contracts documented | 39 / 964 |
 
 ## Endpoint Coverage
 
@@ -517,11 +517,10 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `POST` | `/api/reference-data/bonds/migration-preview` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:19` |
 | `POST` | `/api/reference-data/bonds/migration-preview/batch` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:26` |
 | `POST` | `/api/reference-data/bonds/migration-submit` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:46` |
-| `POST` | `/api/reference-data/bonds/settlement-consideration` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:20` |
+| `POST` | `/api/reference-data/bonds/settlement-consideration` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:19` |
 | `GET` | `/api/reference-data/bonds/{securityId:guid}` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:27` |
 | `GET` | `/api/reference-data/bonds/{securityId:guid}/accrual-convention` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:59` |
-| `GET` | `/api/reference-data/bonds/{securityId:guid}/analytics` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:30` |
-| `GET` | `/api/reference-data/bonds/{securityId:guid}/exercise-notices` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:77` |
+| `GET` | `/api/reference-data/bonds/{securityId:guid}/analytics` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:29` |
 | `GET` | `/api/reference-data/bonds/{securityId:guid}/lifecycle` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:43` |
 | `GET` | `/api/reference-data/certificates-of-deposit/by-issuer` | Gap | `src/Meridian.Ui.Shared/Endpoints/CertificateOfDepositReferenceEndpoints.cs:33` |
 | `GET` | `/api/reference-data/certificates-of-deposit/maturing-before` | Gap | `src/Meridian.Ui.Shared/Endpoints/CertificateOfDepositReferenceEndpoints.cs:44` |
@@ -1392,7 +1391,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `ResolveReconciliationBreakRequest` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1025` |
 | `ResolveSecurityMasterMappings` | Gap | `src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:21` |
 | `ResolveSourceConflictRequest` | Gap | `src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:58` |
-| `RestatementCandidateDto` | Gap | `src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:157` |
+| `RestatementCandidateDto` | Gap | `src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:184` |
 | `RetainedLedgerAmountDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:580` |
 | `ReviewOnboardingWorkspaceRequestDto` | Gap | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:34` |
 | `ReviewReconciliationBreakRequest` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1015` |
@@ -1417,9 +1416,11 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `SecurityEconomicDefinitionSummaryDto` | Gap | `src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs:27` |
 | `SecurityIdentityDrillInDto` | Gap | `src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs:56` |
 | `SecurityMasterAccountingIssueDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:331` |
+| `SecurityMasterCanonicalMergeOutcomeDto` | Gap | `src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:175` |
+| `SecurityMasterCanonicalMergeOutcomeKind` | Gap | `src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:156` |
 | `SecurityMasterChangeHistoryItemDto` | Gap | `src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:194` |
 | `SecurityMasterConflictAssessmentDto` | Gap | `src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:145` |
-| `SecurityMasterConflictAuthorityDecision` | Gap | `src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:168` |
+| `SecurityMasterConflictAuthorityDecision` | Gap | `src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:195` |
 | `SecurityMasterConflictRecommendationKind` | Gap | `src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:41` |
 | `SecurityMasterConflictResolutionDto` | Gap | `src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:132` |
 | `SecurityMasterDownstreamImpactDto` | Gap | `src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:349` |
@@ -1443,7 +1444,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `SecurityMasterPublishResultDto` | Gap | `src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:145` |
 | `SecurityMasterRecommendedActionDto` | Gap | `src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:372` |
 | `SecurityMasterRecommendedActionKind` | Gap | `src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:26` |
-| `SecurityMasterRevisionPublishedEvent` | Gap | `src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:178` |
+| `SecurityMasterRevisionPublishedEvent` | Gap | `src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:205` |
 | `SecurityMasterRevisionStateDto` | Gap | `src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:21` |
 | `SecurityMasterScheduleBookDto` | Gap | `src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:219` |
 | `SecurityMasterScheduleEventDto` | Gap | `src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:233` |
@@ -1735,8 +1736,8 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 ## Follow-up Queue
 
-- Document or intentionally suppress 516 mapped endpoint gap(s).
-- Document or intentionally suppress 923 workstation contract gap(s).
+- Document or intentionally suppress 515 mapped endpoint gap(s).
+- Document or intentionally suppress 925 workstation contract gap(s).
 
 ---
 
