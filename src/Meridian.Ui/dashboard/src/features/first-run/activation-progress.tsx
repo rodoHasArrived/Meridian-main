@@ -66,22 +66,26 @@ export function ActivationHeaderProgress({ status }: { status?: FirstRunStatus |
         </span>
       ) : null}
 
-      <button
-        type="button"
-        aria-label={model.triggerAriaLabel}
-        title={model.triggerTitle}
-        onClick={() => setOpen(true)}
-        className={cn(
-          "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs transition-colors",
-          "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
-          model.finished
-            ? "bg-emerald-400/15 text-emerald-200 hover:bg-emerald-400/25"
-            : "bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-slate-100"
-        )}
-      >
-        {model.finished ? <Check size={13} aria-hidden="true" /> : <ListChecks size={13} aria-hidden="true" />}
-        {model.triggerLabel}
-      </button>
+      {/* Kept mounted while the sheet is open so finishing the last step mid-sheet does not
+          pull the drawer's trigger out from under it; it leaves on the next close. */}
+      {model.triggerVisible || open ? (
+        <button
+          type="button"
+          aria-label={model.triggerAriaLabel}
+          title={model.triggerTitle}
+          onClick={() => setOpen(true)}
+          className={cn(
+            "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs transition-colors",
+            "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
+            model.finished
+              ? "bg-emerald-400/15 text-emerald-200 hover:bg-emerald-400/25"
+              : "bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-slate-100"
+          )}
+        >
+          {model.finished ? <Check size={13} aria-hidden="true" /> : <ListChecks size={13} aria-hidden="true" />}
+          {model.triggerLabel}
+        </button>
+      ) : null}
 
       <button
         className="rounded-full border border-slate-700 px-2.5 py-1 text-xs text-slate-300 hover:border-cyan-400 hover:text-cyan-200"

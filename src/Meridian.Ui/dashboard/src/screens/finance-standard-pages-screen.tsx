@@ -3,7 +3,6 @@ import { LedgerAmountProofDrawer } from "@/components/meridian/proof-drawer";
 import type { LedgerAmountSelection } from "@/types/ledger-amount-proof";
 import { Link, useSearchParams } from "react-router-dom";
 import { formatCurrency } from "@/lib/format";
-import { formatCurrencyForCode } from "@/screens/accounting-screen.formatting";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -499,8 +498,9 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
 
   // The trial balance on the sibling tab is labelled in the book's base currency; these are the
   // same governed debits and credits, so they carry it too rather than defaulting to dollars.
-  const postedMoney = (value: number) =>
-    (baseCurrency ? formatCurrencyForCode(value, baseCurrency) : formatCurrency(value));
+  // Ledger amounts keep the currency's full minor-unit precision ($500.00, not $500): Intl's
+  // currency default supplies 2 decimals for USD/EUR and 0 for JPY.
+  const postedMoney = (value: number) => formatCurrency(value, { currency: baseCurrency || "USD" });
 
   const filteredRows = useMemo(() => {
     const needle = searchText.trim().toLowerCase();
@@ -533,7 +533,9 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
           <CardTitle>Ledger Explorer</CardTitle>
           <CardDescription>Search journal activity by account, amount, journal ID, source, security, or entity.</CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-3 lg:grid-cols-2 xl:grid-cols-[minmax(0,1.25fr)_minmax(15rem,0.7fr)_minmax(9rem,0.45fr)_minmax(10rem,0.5fr)]">
+        {/* Three fields, three tracks: a fourth, unused track used to squeeze the period select
+            to 9rem and truncate labels such as "June 2026 · Hard closed". */}
+        <CardContent className="grid gap-3 lg:grid-cols-2 xl:grid-cols-[minmax(0,1.25fr)_minmax(15rem,0.7fr)_minmax(15rem,0.7fr)]">
           <FormRow label="Search by account, amount, journal ID, source, security, entity" labelFor="ledger-search">
             <Input
               id="ledger-search"
@@ -586,7 +588,7 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
                 ? "Loading the posted journal."
                 : postedLedger.journalErrorText
                   ? postedLedger.journalErrorText
-                  : `${filteredRows.length} posted entry(ies)${postedLedger.selectedPeriodLabel ? ` for ${postedLedger.selectedPeriodLabel}` : ""}.`}
+                  : `${filteredRows.length} posted entry(ies)${postedLedger.selectedPeriodLabel ? ` for ${postedLedger.selectedPeriodLabel}` : ""}.${filteredRows.length > 0 ? " Select a posting amount to open its proof." : ""}`}
             </CardDescription>
           </div>
           <Badge variant={filteredRows.length > 0 ? "success" : "outline"}>{filteredRows.length}</Badge>
@@ -612,14 +614,18 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
                   <tr className="border-t border-border/70">
                     <td className="px-3 py-2 text-xs">{formatDateTimeLabel(line.timestamp)}</td>
                     <td className="px-3 py-2">
+                      {/* The column is the journal ID, so the link shows the ID; the accessible
+                          name keeps the visible text and states the destination. */}
                       <Link
-                        className="font-semibold text-primary underline-offset-2 hover:underline"
+                        className="break-all font-mono text-xs font-semibold text-primary underline-offset-2 hover:underline"
+                        aria-label={`Open journal ${line.journalEntryId}`}
+                        title="Open journal detail"
                         to={workstationRouteWithQuery("accountingJournalEntryDetail", {
                           journalEntryId: line.journalEntryId,
                           periodId: postedLedger.selectedPeriodId
                         })}
                       >
-                        Open journal detail
+                        {line.journalEntryId}
                       </Link>
                     </td>
                     <td className="px-3 py-2">{line.accountScopeDisplayName ?? "Multiple accounts"}</td>
@@ -655,7 +661,9 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
                       ))}
                       <td className="px-3 py-2">{posting.dimensions?.entityId ?? "Not scoped to one entity"}</td>
                       <td className="px-3 py-2">{posting.description || "Retained posting line"}</td>
-                      <td className="px-3 py-2 text-xs">Select amount for proof</td>
+                      {/* Posting lines carry their entry's status; the proof hint lives in the
+                          card description rather than masquerading as a status value. */}
+                      <td className="px-3 py-2 text-xs text-muted-foreground" />
                     </tr>
                   ))}
                   </Fragment>
