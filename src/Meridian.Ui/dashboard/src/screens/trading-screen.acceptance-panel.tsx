@@ -1,4 +1,5 @@
 import { AlertTriangle, Network, RotateCcw, Settings, ShieldCheck } from "lucide-react";
+import { StatusBadge } from "@/design-system/status";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,6 +29,13 @@ export const acceptanceTone: Record<AcceptanceLevel, string> = {
   ready: "border-success/30 bg-success/10 text-success",
   review: "border-warning/30 bg-warning/10 text-warning",
   atRisk: "border-danger/30 bg-danger/10 text-danger"
+};
+
+/** Acceptance levels as StatusBadge severities, matching the colours of `acceptanceTone`. */
+export const acceptanceSeverity: Record<AcceptanceLevel, "ready" | "action" | "blocked"> = {
+  ready: "ready",
+  review: "action",
+  atRisk: "blocked"
 };
 
 const acceptanceLabel: Record<AcceptanceLevel, string> = {
@@ -195,9 +203,7 @@ function OperatorWorkItemList({
           <p className="mt-1 text-sm text-muted-foreground">{summaryText}</p>
         </div>
         {primaryKind && (
-          <span className="rounded-sm border border-border/70 px-3 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-            {primaryKind}
-          </span>
+          <StatusBadge status="info" dot={false} label={primaryKind} />
         )}
       </div>
 

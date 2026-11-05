@@ -46,7 +46,8 @@ import {
   saveFinancialRecordExplorerView
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { accountingToolingBadgeVariant, accountingToolingBorderClass, cashFlowBadgeClass, cashFlowTextClass, reportingBadgeClass } from "@/screens/accounting-screen.styles";
+import { accountingToolingBadgeVariant, accountingToolingBorderClass, cashFlowTextClass } from "@/screens/accounting-screen.styles";
+import { StatusBadge, toneToSeverity } from "@/design-system/status";
 import { WORKSTATION_ROUTE_CATALOG, workspaceForPath } from "@/lib/workspace";
 import { CapitalAccountWorkbenchPanel } from "@/screens/accounting-screen.capital-account-workbench-panel";
 import { AccountingPostedLedgerSection } from "@/screens/accounting-screen.posted-ledger-panel";
@@ -2459,15 +2460,13 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
                   {cashFlow.description}
                 </CardDescription>
               </div>
-              <span
+              <StatusBadge
                 aria-label={cashFlow.statusAriaLabel}
-                className={cn(
-                  "w-fit rounded-sm border px-2.5 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em]",
-                  cashFlowBadgeClass(cashFlow.statusTone)
-                )}
-              >
-                {cashFlow.statusLabel}
-              </span>
+                // Cash-flow "default" was the neutral chip, not the primary one.
+                status={cashFlow.statusTone === "default" ? "info" : toneToSeverity(cashFlow.statusTone)}
+                dot={false}
+                label={cashFlow.statusLabel}
+              />
             </div>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
@@ -2765,9 +2764,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
                 </CardTitle>
                 <CardDescription className="mt-2">{reporting.description}</CardDescription>
               </div>
-              <span className="w-fit rounded-sm border border-primary/35 bg-primary/10 px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-primary">
-                {reporting.countLabel}
-              </span>
+              <StatusBadge status="review" dot={false} label={reporting.countLabel} />
             </div>
           </CardHeader>
           <CardContent className="grid gap-4">
@@ -2797,16 +2794,12 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
                           <div className="font-semibold text-foreground">{profile.name}</div>
                           <div className="mt-1 truncate font-mono text-xs text-muted-foreground">{profile.targetLabel}</div>
                         </div>
-                        <span className="shrink-0 rounded-sm border border-primary/30 bg-primary/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.14em] text-primary">
-                          {profile.formatLabel}
-                        </span>
+                        <StatusBadge className="shrink-0" status="review" dot={false} label={profile.formatLabel} />
                       </div>
                       <p className="mt-2 line-clamp-2 text-sm leading-6 text-muted-foreground">{profile.description}</p>
                       <div className="mt-3 flex flex-wrap gap-2">
                         {profile.badges.map((badge) => (
-                          <span key={`${profile.id}-${badge.label}`} className={reportingBadgeClass(badge.tone)}>
-                            {badge.label}
-                          </span>
+                          <StatusBadge key={`${profile.id}-${badge.label}`} status={toneToSeverity(badge.tone)} dot={false} label={badge.label} />
                         ))}
                       </div>
                     </button>
@@ -3042,9 +3035,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
                     <ShieldCheck className="h-5 w-5 text-primary" />
                     Identifier conflicts
                     {securityMaster.openConflictCount > 0 && (
-                      <span className="inline-flex items-center rounded-sm border border-warning/35 bg-warning/10 px-2 py-0.5 font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-warning">
-                        {securityMaster.conflictCountLabel}
-                      </span>
+                      <StatusBadge status="action" dot={false} label={securityMaster.conflictCountLabel} />
                     )}
                   </CardTitle>
                   <CardDescription className="mt-2">
@@ -3123,9 +3114,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
                         <div>
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-semibold">{conflict.fieldLabel}</span>
-                            <span className={cn("rounded-sm border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em]", conflict.statusTone === "warning" ? "border-warning/35 bg-warning/10 text-warning" : "border-border/70 bg-secondary text-muted-foreground")}>
-                              {conflict.statusLabel}
-                            </span>
+                            <StatusBadge status={conflict.statusTone === "warning" ? "action" : "info"} dot={false} label={conflict.statusLabel} />
                           </div>
                           <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
                             <span><span className="font-semibold text-foreground">Provider A:</span> {conflict.providerASummary}</span>

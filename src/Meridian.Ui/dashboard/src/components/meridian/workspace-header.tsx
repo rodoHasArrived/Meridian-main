@@ -101,10 +101,13 @@ export function WorkspaceHeader({
               event.currentTarget.querySelector("summary")?.focus();
             }
           }}>
-            <summary aria-label={`About ${workspace.label}`} title={`About ${workspace.label}`}>
+            <summary aria-label={`About ${workspace.label}`} title={viewModel.aboutTitle}>
               <Info className="size-4" aria-hidden="true" />
             </summary>
-            <p>{viewModel.description}</p>
+            <p>
+              {viewModel.description}
+              <span className="mt-2 block text-xs text-muted-foreground">{viewModel.maturityNote}</span>
+            </p>
           </details>
         </div>
         <div className="workstation-header-actions">

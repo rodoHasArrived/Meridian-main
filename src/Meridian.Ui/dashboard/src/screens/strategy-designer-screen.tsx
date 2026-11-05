@@ -1,4 +1,5 @@
 import { ArrowRightLeft, CircleDot, Database, Eye, FlaskConical, GitBranch, Layers, Network, PlayCircle, Save, Search, ShieldCheck, Sparkles, Workflow } from "lucide-react";
+import { StatusBadge } from "@/design-system/status";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { MetricSnapshotCard } from "@/components/meridian/metric-card";
 import { EmptyState as ConcreteEmptyState } from "@/components/data/empty-state";
@@ -525,9 +526,7 @@ function BacktestProofPanel({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
               <Eye className="h-3.5 w-3.5" aria-hidden="true" />
               <span>{action.method}</span>
               <span>{action.label}</span>
-              <span className="rounded-sm border border-border/60 px-1 py-0.5 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-                {action.interactionLabel}
-              </span>
+              <StatusBadge status="info" dot={false} label={action.interactionLabel} />
             </a>
           ) : (
             <div
@@ -539,9 +538,7 @@ function BacktestProofPanel({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
               <Eye className="h-3.5 w-3.5" aria-hidden="true" />
               <span>{action.method}</span>
               <span>{action.label}</span>
-              <span className="rounded-sm border border-border/60 px-1 py-0.5 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-                {action.interactionLabel}
-              </span>
+              <StatusBadge status="info" dot={false} label={action.interactionLabel} />
             </div>
           ))}
         </div>

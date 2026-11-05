@@ -3,6 +3,7 @@ import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, Clipboar
 import React from "react";
 import { MarkFreshnessCell } from "@/components/meridian/mark-freshness-cell";
 import { useLocation } from "react-router-dom";
+import { StatusBadge, toneToSeverity } from "@/design-system/status";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
@@ -44,7 +45,7 @@ import { cn } from "@/lib/utils";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import {
   AcceptanceStatusCard,
-  acceptanceTone,
+  acceptanceSeverity,
   mapAcceptanceGate,
   type CockpitAcceptanceItem
 } from "@/screens/trading-screen.acceptance-panel";
@@ -1995,9 +1996,7 @@ function PaperSessionDetailPanelView({ detail }: { detail: PaperSessionDetailPan
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Session detail</p>
           <p className="mt-1 font-mono text-sm text-foreground">{detail.sessionId}</p>
         </div>
-        <span className={cn("rounded-sm border px-2.5 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em]", acceptanceTone[detail.statusTone])}>
-          {detail.statusLabel}
-        </span>
+        <StatusBadge status={acceptanceSeverity[detail.statusTone]} dot={false} label={detail.statusLabel} />
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
@@ -2269,9 +2268,7 @@ function TradingBlotterDetailPanel({
               <h3 className="mt-1 break-words text-sm font-semibold text-foreground">{detail.title}</h3>
               <p className="mt-1 font-mono text-xs text-muted-foreground">{detail.subtitle}</p>
             </div>
-            <span className={cn("rounded-sm border px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em]", dataTonePanelClass[detail.statusTone], dataToneClass[detail.statusTone])}>
-              Detail
-            </span>
+            <StatusBadge status={detail.statusTone === "default" ? "info" : toneToSeverity(detail.statusTone)} dot={false} label="Detail" />
           </div>
           <p className="mt-2 text-xs leading-5 text-foreground/80">{detail.detail}</p>
           <dl className="mt-3 grid gap-2 sm:grid-cols-2">

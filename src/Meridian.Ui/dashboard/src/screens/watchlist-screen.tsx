@@ -1,4 +1,5 @@
 import { useMemo, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent } from "react";
+import { StatusBadge } from "@/design-system/status";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Activity, AlertCircle, CheckCircle2, EyeOff, Eye, LineChart, Plus, RefreshCw, Settings, Trash2 } from "lucide-react";
 import { marketDataDeskPath } from "@/lib/workspace";
@@ -19,7 +20,6 @@ import {
   getSymbolsStatistics,
   removeSymbol as removeSymbolApi
 } from "@/lib/api";
-import { cn } from "@/lib/utils";
 import { useActivityLog } from "@/lib/activity-log/store";
 import { FreshnessChip } from "@/components/ui/freshness-chip";
 import {
@@ -549,17 +549,14 @@ function buildColumns(
             <span className="ml-1">{row.removeLabel}</span>
           </Button>
           {row.removeStatusLabel ? (
-            <span
+            <StatusBadge
               id={row.removeStatusId ?? undefined}
               role="status"
               aria-live="polite"
-              className={cn(
-                "inline-flex min-h-8 items-center rounded-sm border px-2 font-mono text-[10px] uppercase tracking-[0.12em]",
-                removeStatusToneClass[row.removeStatusTone]
-              )}
-            >
-              {row.removeStatusLabel}
-            </span>
+              status={row.removeStatusTone === "danger" ? "blocked" : "action"}
+              dot={false}
+              label={row.removeStatusLabel}
+            />
           ) : null}
           <WatchlistRowActionsTrigger
             label={`More actions for ${row.symbol}`}
@@ -575,11 +572,6 @@ const lastToneClass = {
   success: "text-success",
   danger: "text-danger",
   default: "text-foreground"
-} as const;
-
-const removeStatusToneClass = {
-  warning: "border-warning/35 bg-warning/10 text-warning",
-  danger: "border-danger/35 bg-danger/10 text-danger"
 } as const;
 
 function WatchlistDetailPanel({
