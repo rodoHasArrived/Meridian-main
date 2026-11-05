@@ -114,6 +114,77 @@ public sealed class AccrualLedgerServiceTests
             .WithMessage("*No ledger accounting period accepts Originating posting date '2026-03-24'*");
     }
 
+    [Fact]
+    public async Task AccrueAsync_PostsDeferredPikToPikReceivable_UnderCapitalizationPolicy()
+    {
+        var service = CreateService(BuildOpenPeriod());
+        var loanId = Guid.NewGuid();
+        var accrual = BuildAccrualEntry() with
+        {
+            InterestAmount = 166.66m,
+            CommitmentFeeAmount = 0m,
+            PikInterestAmount = 55.56m,
+            PikCapitalizationDeferred = true
+        };
+
+        var writes = await service.AccrueAsync(
+            loanId,
+            BuildContract(loanId),
+            new PostDailyAccrualRequest(accrual.AccrualDate),
+            accrual,
+            Guid.NewGuid(),
+            BuildMetadata());
+
+        var lines = writes.Should().ContainSingle().Subject.Entry.Lines;
+        lines.Should().Contain(line => line.Account.Name == "PikInterestReceivable" && line.Debit == 55.56m);
+        lines.Should().Contain(line => line.Account.Name == "PikInterestIncome" && line.Credit == 55.56m);
+        lines.Should().Contain(line => line.Account.Name == "AccruedInterestReceivable" && line.Debit == 166.66m);
+        lines.Should().NotContain(line => line.Account.Name == "LoanPrincipal" && line.Debit > 0m,
+            "deferred PIK is not principal until a capitalization date");
+    }
+
+    [Fact]
+    public async Task AccrueAsync_KeepsLegacyPikToggleCapitalizingIntoPrincipal()
+    {
+        var service = CreateService(BuildOpenPeriod());
+        var loanId = Guid.NewGuid();
+        var accrual = BuildAccrualEntry() with { InterestAmount = 0m, CommitmentFeeAmount = 0m, PikInterestAmount = 222.22m };
+
+        var writes = await service.AccrueAsync(
+            loanId,
+            BuildContract(loanId),
+            new PostDailyAccrualRequest(accrual.AccrualDate),
+            accrual,
+            Guid.NewGuid(),
+            BuildMetadata());
+
+        var lines = writes.Should().ContainSingle().Subject.Entry.Lines;
+        lines.Should().Contain(line => line.Account.Name == "LoanPrincipal" && line.Debit == 222.22m);
+        lines.Should().Contain(line => line.Account.Name == "InterestIncome" && line.Credit == 222.22m);
+        lines.Should().NotContain(line => line.Account.Name.StartsWith("PikInterest", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task CapitalizePikAsync_MovesPikReceivableIntoLoanPrincipal()
+    {
+        var service = CreateService(BuildOpenPeriod());
+        var loanId = Guid.NewGuid();
+        var capitalization = new PikCapitalizationDto(
+            new DateOnly(2026, 3, 24),
+            new DateOnly(2026, 3, 1),
+            new DateOnly(2026, 3, 24),
+            1_333.44m,
+            DateTimeOffset.Parse("2026-03-24T23:00:00Z"));
+
+        var writes = await service.CapitalizePikAsync(loanId, BuildContract(loanId), capitalization, Guid.NewGuid(), BuildMetadata());
+
+        var entry = writes.Should().ContainSingle().Subject.Entry;
+        entry.IsBalanced.Should().BeTrue();
+        entry.Lines.Should().HaveCount(2);
+        entry.Lines.Should().Contain(line => line.Account.Name == "LoanPrincipal" && line.Debit == 1_333.44m);
+        entry.Lines.Should().Contain(line => line.Account.Name == "PikInterestReceivable" && line.Credit == 1_333.44m);
+    }
+
     private static AccrualLedgerService CreateService(LedgerAccountingPeriod period)
     {
         var projector = new LoanAccountingProjector(

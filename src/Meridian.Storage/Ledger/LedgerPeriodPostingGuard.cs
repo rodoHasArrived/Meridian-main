@@ -302,6 +302,8 @@ public static class LedgerPeriodPostingGuard
             normalized.Equals("LoanAndAccrualsClearing", StringComparison.OrdinalIgnoreCase) ||
             normalized.Equals("AccruedInterestReceivable", StringComparison.OrdinalIgnoreCase) ||
             normalized.Equals("InterestIncome", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("PikInterestReceivable", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("PikInterestIncome", StringComparison.OrdinalIgnoreCase) ||
             normalized.Equals("CommitmentFeeReceivable", StringComparison.OrdinalIgnoreCase) ||
             normalized.Equals("CommitmentFeeIncome", StringComparison.OrdinalIgnoreCase) ||
             normalized.Equals("PenaltyReceivable", StringComparison.OrdinalIgnoreCase) ||
