@@ -9,8 +9,8 @@
       "id": "SRC-APP",
       "path": "src/Meridian.Application",
       "readme": "src/Meridian.Application/README.md",
-      "readme_hash": "10365b4b100a5d4b5d8a2ea647b57a77600d409af74b53c72f38f96bedf6dbbd",
-      "source_hash": "521d08a6ee60894a0edb8690c0a77441448fcb3cd4c9cbb729145182595a67b2"
+      "readme_hash": "9bb99f592e18184412f84ec9c5ff59f3933e5af3e32e269b398ed63ee626da13",
+      "source_hash": "e2d91d55f295aad0e7b7c6e0ec9fb962f94c095184bf6f984b00e2825a249c87"
     },
     {
       "id": "SRC-BACKTESTING",
@@ -30,8 +30,8 @@
       "id": "SRC-CONTRACTS",
       "path": "src/Meridian.Contracts",
       "readme": "src/Meridian.Contracts/README.md",
-      "readme_hash": "78693039719b24abaa13b7e5df271890ca695aed67372438de3a07305c5c2d2a",
-      "source_hash": "6774767b481b37c50c6ffe18e4066a935e08a2dff152da752725a5f43aa0240f"
+      "readme_hash": "936cd2cfb42b5d8b2d803eb156e02255e146875a258ec9aff104ac89e5406fab",
+      "source_hash": "072ac1e8dcba3de1c162bae268c50b5138fc53fbf3c4b20896684f1d6d0e095b"
     },
     {
       "id": "SRC-CORE",
@@ -149,8 +149,8 @@
       "id": "SRC-FSHARP",
       "path": "src/Meridian.FSharp",
       "readme": "src/Meridian.FSharp/README.md",
-      "readme_hash": "7131b9f179e5cbd2f8c7fb84e04d756dd5eff31df5d7f759d7892e663807248a",
-      "source_hash": "74ef9eddce9e693d5b54bd7fd40dbe2473354c16de9024ec5a0f804e1e4d670a"
+      "readme_hash": "3e5c69087575cd4f61ab2546617fcb2957f0c4a177c64e23a68eab4b27670e40",
+      "source_hash": "89330d3881e40f497c1b12018ec89204788411a08104936ef672c7bf05576b54"
     },
     {
       "id": "SRC-FSHARP-DIRECTLENDING",
@@ -247,8 +247,8 @@
       "id": "SRC-STORAGE",
       "path": "src/Meridian.Storage",
       "readme": "src/Meridian.Storage/README.md",
-      "readme_hash": "c52da5bdfac874f1b74ea0977e427fee31f80db46660634a5a2e6c72ed21ef49",
-      "source_hash": "0fefc9077c591e31b43ab3203214d690aa7dc884e18e76067d0e1bfd783826af"
+      "readme_hash": "bfa2893307818151e1fdafb0eecbeec0817795940afad0722d436c21ccfcecbd",
+      "source_hash": "5f41228707611a08b1bfa756afa90a3f8a7b9ac4dda1f2e95f8a0a7583234d65"
     },
     {
       "id": "SRC-STRATEGIES",

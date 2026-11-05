@@ -6975,13 +6975,15 @@ Meridian-main
 │   │   │   │   ├── 057_terms_capability_floor.sql
 │   │   │   │   ├── 058_security_master_schedule_decimal_precision.sql
 │   │   │   │   ├── 059_security_events_append_only_guard.sql
-│   │   │   │   └── 060_security_master_revision_field_base.sql
+│   │   │   │   ├── 060_security_master_revision_field_base.sql
+│   │   │   │   └── 064_custom_asset_profile_field_projection.sql
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IBondReferenceProjectionStore.cs
 │   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs
 │   │   │   ├── ICommodityReferenceProjectionStore.cs
 │   │   │   ├── ICorporateActionOperationsStore.cs
 │   │   │   ├── ICryptoReferenceProjectionStore.cs
+│   │   │   ├── ICustomAssetProfileFieldProjectionStore.cs
 │   │   │   ├── IDataVendorEntitlementStore.cs
 │   │   │   ├── IDepositReferenceProjectionStore.cs
 │   │   │   ├── IDirectLoanReferenceProjectionStore.cs
@@ -7011,6 +7013,7 @@ Meridian-main
 │   │   │   ├── PostgresCorporateActionOperationsStore.Cases.cs
 │   │   │   ├── PostgresCorporateActionOperationsStore.cs
 │   │   │   ├── PostgresCryptoReferenceProjectionStore.cs
+│   │   │   ├── PostgresCustomAssetProfileFieldProjectionStore.cs
 │   │   │   ├── PostgresDataVendorEntitlementStore.cs
 │   │   │   ├── PostgresDepositReferenceProjectionStore.cs
 │   │   │   ├── PostgresDirectLoanReferenceProjectionStore.cs
@@ -7035,6 +7038,7 @@ Meridian-main
 │   │   │   ├── PostgresSecurityMasterSnapshotStore.cs
 │   │   │   ├── PostgresSecurityMasterStore.Aliases.cs
 │   │   │   ├── PostgresSecurityMasterStore.cs
+│   │   │   ├── PostgresSecurityMasterStore.CustomAssetProfileFields.cs
 │   │   │   ├── PostgresSecurityMasterStore.IdentifierCandidates.cs
 │   │   │   ├── PostgresSecurityMasterStore.PostingAuthority.cs
 │   │   │   ├── PostgresSecurityMasterStore.TermsProjection.cs
@@ -11833,6 +11837,8 @@ Meridian-main
 │   │   │   ├── CorporateActionTaxonomyPropertyTests.cs
 │   │   │   ├── CorporateActionTermsTests.cs
 │   │   │   ├── CorporateActionTypeDescriptorCatalogTests.cs
+│   │   │   ├── CustomAssetProfileFieldProjectionPostgresTests.cs
+│   │   │   ├── CustomAssetProfileFieldProjectionTests.cs
 │   │   │   ├── DataVendorEntitlementServiceTests.cs
 │   │   │   ├── DayCountConventionsTests.cs
 │   │   │   ├── DiscountedCashFlowValuationModelTests.cs
@@ -11890,6 +11896,7 @@ Meridian-main
 │   │   │   ├── SecurityAssetClassTermsUpgraderTests.cs
 │   │   │   ├── SecurityAssetClassTermsUpgradeWiringTests.cs
 │   │   │   ├── SecurityAssetPackAdmissionTests.cs
+│   │   │   ├── SecurityAssetPackReadinessMappingTests.cs
 │   │   │   ├── SecurityAssetProfileGovernanceServiceTests.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcasterChainTests.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcasterPipelineTests.cs
@@ -11984,6 +11991,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterSnapshotStoreTests.cs
 │   │   │   ├── SecurityMasterStructuredCreditReclassificationServiceTests.cs
 │   │   │   ├── SecurityMasterTermsCapabilityPostgresTests.cs
+│   │   │   ├── SecurityMasterTermSpellingDerivationTests.cs
 │   │   │   ├── SecurityMasterTickerChangeServiceTests.cs
 │   │   │   ├── SecurityReferenceTaxonomyCatalogTests.cs
 │   │   │   ├── SecurityScheduleAuthoringParityTests.cs
