@@ -2,7 +2,7 @@
 
 # `security_master` schema
 
-- Relations: 127
+- Relations: 130
 - Functions/procedures: 12
 - Triggers: 25
 - Row-level security policies: 0
@@ -33,6 +33,7 @@ erDiagram
         numeric_18_8_ annual_rate_applied
         timestamp_with_time_zone recorded_at
         numeric_24_8_ pik_interest_amount
+        boolean pik_capitalization_deferred
     }
     security_master_bond_accrual_convention_projection {
         uuid security_id PK,FK
@@ -674,6 +675,39 @@ erDiagram
     security_master_loan_event_position_seq {
         text catalogued_object
     }
+    security_master_loan_index_fixing {
+        uuid fixing_id PK
+        text index_name
+        date observation_date
+        integer revision
+        numeric_24_10_ declared_value
+        text declared_unit
+        numeric_18_10_ rate_fraction
+        text source_ref
+        timestamp_with_time_zone recorded_at
+        text recorded_by
+    }
+    security_master_loan_pik_capitalization_projection {
+        uuid loan_id PK
+        date capitalization_date PK
+        date period_start
+        date period_end
+        numeric_24_8_ amount
+        timestamp_with_time_zone recorded_at
+    }
+    security_master_loan_rate_reset_projection {
+        uuid loan_id PK
+        date effective_date PK
+        text reset_kind
+        text index_name
+        date fixing_observation_date
+        numeric_18_10_ observed_rate
+        numeric_18_6_ spread_bps
+        numeric_18_10_ all_in_rate
+        text source_ref
+        uuid fixing_id
+        integer fixing_revision
+    }
     security_master_loan_servicing_projection {
         uuid loan_id PK
         bigint aggregate_version
@@ -691,6 +725,8 @@ erDiagram
         date last_payment_date
         bigint servicing_revision
         timestamp_with_time_zone updated_at
+        numeric_24_8_ pik_interest_accrued_unpaid
+        date last_pik_capitalization_date
     }
     security_master_loan_snapshot {
         uuid loan_id PK
@@ -736,6 +772,8 @@ erDiagram
         numeric_18_8_ effective_rate_floor
         numeric_18_8_ effective_rate_cap
         numeric_18_8_ prepayment_penalty_rate
+        jsonb pik_capitalization_json
+        jsonb rate_reset_schedule_json
     }
     security_master_money_market_fund_projection {
         uuid security_id PK
@@ -1789,7 +1827,7 @@ erDiagram
 | Relation | Kind | Columns | Primary key | Foreign keys | Indexes | Comment |
 | --- | --- | ---: | --- | ---: | ---: | --- |
 | `accounting_period_lock` | table | 10 | `ledger_basis`, `period_start_date`, `period_end_date` | 0 | 1 | - |
-| `accrual_entry_projection` | table | 9 | `accrual_entry_id` | 0 | 2 | - |
+| `accrual_entry_projection` | table | 10 | `accrual_entry_id` | 0 | 2 | - |
 | `bond_accrual_convention_projection` | table | 9 | `security_id` | 1 | 1 | - |
 | `bond_issuer_projection` | table | 8 | `security_id` | 1 | 2 | - |
 | `bond_lifecycle_projection` | table | 13 | `security_id` | 1 | 1 | - |
@@ -1837,10 +1875,13 @@ erDiagram
 | `loan_event` | table | 14 | `event_id` | 0 | 6 | - |
 | `loan_event_event_position_seq` | sequence | 0 | - | 0 | 0 | - |
 | `loan_event_position_seq` | sequence | 0 | - | 0 | 0 | - |
-| `loan_servicing_projection` | table | 16 | `loan_id` | 0 | 1 | - |
+| `loan_index_fixing` | table | 10 | `fixing_id` | 0 | 2 | Observed benchmark fixings for scheduled direct-lending rate resets; insert-only, highest revision per (index_name, observation_date) is effective. |
+| `loan_pik_capitalization_projection` | table | 6 | `loan_id`, `capitalization_date` | 0 | 1 | PIK capitalizations moving accrued PIK interest into direct-loan principal; rebuilt from loan_state servicing on every save. |
+| `loan_rate_reset_projection` | table | 11 | `loan_id`, `effective_date` | 0 | 1 | Applied manual and scheduled rate resets for direct loans with a reset schedule; rebuilt from loan_state servicing on every save. |
+| `loan_servicing_projection` | table | 18 | `loan_id` | 0 | 1 | - |
 | `loan_snapshot` | table | 5 | `loan_id`, `aggregate_version` | 0 | 2 | - |
 | `loan_state` | table | 6 | `loan_id` | 0 | 1 | - |
-| `loan_terms_version` | table | 28 | `loan_id`, `terms_version` | 0 | 2 | - |
+| `loan_terms_version` | table | 30 | `loan_id`, `terms_version` | 0 | 2 | - |
 | `money_market_fund_projection` | table | 9 | `security_id` | 0 | 3 | - |
 | `ndf_projection` | table | 13 | `security_id` | 0 | 3 | Relational projection of NonDeliverableForward asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms. |
 | `operations_workflow_audit` | table | 28 | `audit_id` | 0 | 5 | - |

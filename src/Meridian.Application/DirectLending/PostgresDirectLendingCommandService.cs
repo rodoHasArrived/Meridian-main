@@ -21,6 +21,7 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
     private readonly DirectLendingOptions _options;
     private readonly IAssetOperationsCommandService? _assetOperationsCommandService;
     private readonly ISecurityMasterTermsCapabilityVerifier? _termsCapabilityVerifier;
+    private readonly IDirectLendingIndexFixingStore? _indexFixingStore;
 
     public PostgresDirectLendingCommandService(
         IDirectLendingStateStore stateStore,
@@ -29,7 +30,8 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
         LoanAccountingProjector loanAccountingProjector,
         DirectLendingOptions options,
         IAssetOperationsCommandService? assetOperationsCommandService = null,
-        ISecurityMasterTermsCapabilityVerifier? termsCapabilityVerifier = null)
+        ISecurityMasterTermsCapabilityVerifier? termsCapabilityVerifier = null,
+        IDirectLendingIndexFixingStore? indexFixingStore = null)
     {
         _stateStore = stateStore;
         _operationsStore = operationsStore;
@@ -38,6 +40,7 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
         _options = options;
         _assetOperationsCommandService = assetOperationsCommandService;
         _termsCapabilityVerifier = termsCapabilityVerifier;
+        _indexFixingStore = indexFixingStore;
     }
 
     public async Task<DirectLendingCommandResult<LoanContractDetailDto>> CreateLoanAsync(CreateLoanRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
@@ -258,15 +261,26 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
         var allInRate = decision.AllInRate;
         var servicing = decision.Servicing;
 
-        using var payload = DirectLendingServiceSupport.CreatePayloadDocument(new
-        {
-            loanId,
-            request.EffectiveDate,
-            request.ObservedRate,
-            SpreadBps = spreadBps,
-            AllInRate = allInRate,
-            request.SourceRef
-        });
+        using var payload = currentTerms.RateResetSchedule is null
+            ? DirectLendingServiceSupport.CreatePayloadDocument(new
+            {
+                loanId,
+                request.EffectiveDate,
+                request.ObservedRate,
+                SpreadBps = spreadBps,
+                AllInRate = allInRate,
+                request.SourceRef
+            })
+            : DirectLendingServiceSupport.CreatePayloadDocument(new
+            {
+                loanId,
+                request.EffectiveDate,
+                request.ObservedRate,
+                SpreadBps = spreadBps,
+                AllInRate = allInRate,
+                request.SourceRef,
+                ResetKind = nameof(RateResetKind.Manual)
+            });
 
         await SaveAsync(
             loanId,
@@ -529,17 +543,30 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
         var entry = decision.Entry;
         var servicing = decision.Servicing;
 
-        using var payload = DirectLendingServiceSupport.CreatePayloadDocument(new
-        {
-            loanId,
-            entry.AccrualEntryId,
-            request.AccrualDate,
-            entry.InterestAmount,
-            entry.CommitmentFeeAmount,
-            entry.PenaltyAmount,
-            entry.AnnualRateApplied,
-            entry.PikInterestAmount
-        });
+        using var payload = entry.PikCapitalizationDeferred
+            ? DirectLendingServiceSupport.CreatePayloadDocument(new
+            {
+                loanId,
+                entry.AccrualEntryId,
+                request.AccrualDate,
+                entry.InterestAmount,
+                entry.CommitmentFeeAmount,
+                entry.PenaltyAmount,
+                entry.AnnualRateApplied,
+                entry.PikInterestAmount,
+                entry.PikCapitalizationDeferred
+            })
+            : DirectLendingServiceSupport.CreatePayloadDocument(new
+            {
+                loanId,
+                entry.AccrualEntryId,
+                request.AccrualDate,
+                entry.InterestAmount,
+                entry.CommitmentFeeAmount,
+                entry.PenaltyAmount,
+                entry.AnnualRateApplied,
+                entry.PikInterestAmount
+            });
 
         await SaveAsync(
             loanId,

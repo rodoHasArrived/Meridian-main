@@ -56,3 +56,15 @@ type DailyAccrualDecision =
 type PrepaymentPenaltyDecision =
     { Servicing: LoanServicingStateDto
       PenaltyAmount: decimal }
+
+type PikCapitalizationDecision =
+    { Servicing: LoanServicingStateDto
+      Capitalization: PikCapitalizationDto }
+
+/// The observed fixing a scheduled reset applies.
+type ScheduledFixing =
+    { ObservationDate: DateOnly
+      RateFraction: decimal
+      SourceRef: string
+      FixingId: Nullable<Guid>
+      FixingRevision: Nullable<int> }
