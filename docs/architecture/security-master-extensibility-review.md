@@ -200,6 +200,62 @@ compare their intended semantics with the F# registry rather than assume the two
 interchangeable. Decide how already-retained `Some(...)`/`OtherSubType ...` values are displayed
 and replayed; do not rewrite append-only economic events to clean up labels.
 
+**Slice 3 disposition — 2026-11-04.** Historical reads are compatible without rewriting retained
+evidence. `Meridian.Contracts.SecurityMaster.ClassificationLabelReader.Normalize` decodes the
+retired F# renderings (`Some(X)`, `Some("X")`, `OtherFamily "x"`, `OtherSubType "x"`, nested
+`Some(OtherFamily "x")`, `None` → no label) and otherwise returns the trimmed input. The decode is
+a single structural pass. It removes at most one `Some(…)`, and only around a known F# case name, a
+union payload or a quoted literal. A union payload is the free-text label itself and is returned
+verbatim: a legacy `OtherSubType "Some(Nested)"` reads as `Some(Nested)`, and
+`OtherSubType "None"` reads as `None`. Every current domain label, including free text such as
+`Some(Nested)`, is returned unchanged. (Corrected 2026-11-05 after a review finding: the first
+version decoded recursively.) It is applied where a stored label is
+matched, displayed or grouped: the adapter's preferred-equity replay guard (labels and
+classification JSON), workbench classification/drill-in/passport/field values and its
+history change detection, and the accounting sub-type fallback. Each label is decoded exactly
+once, where a stored record becomes a DTO or report row (the workbench economic-definition and
+workstation DTOs, certified-report rows). Consumers of those DTOs and rows, namely the passport
+classification summaries and profile, the WPF asset-family fields and the trial-balance
+CSV/XLSX export, show the already-decoded value and never decode it again. Query-service and rebuilder outputs already pass through these
+seams (`ToEconomicRecord` emits canonical names; `ToProjection` uses the guard); the rebuilt
+economic record itself is still returned as retained, so snapshots and events keep their stored
+labels. Every declared catalog class's new write is pinned to the F# names, and its retired
+`ToString()` rendering decodes to the same labels; a legacy-labelled event replays with unchanged
+bytes and rebuilds the same projection as its canonical twin.
+
+*Ambiguous free text is refused on write (2026-11-05).* Text alone cannot tell a new free-text label
+`None` or `Some(Equity)` from the retired rendering of the same characters, so the reader would
+misread it. `SecurityMasterService` therefore refuses, on create and on terms amendment, an
+`OtherSecurity` `subType` or `category` that `ClassificationLabelReader.IsAmbiguousFreeText` flags:
+`None`, a decodable `Some(…)`, a quoted literal, or an `OtherFamily "…"` / `OtherSubType "…"`
+payload. The refusal is a `SecurityMasterWriteRefusedException` naming the value the reader would
+return. Text the reader keeps unchanged, including `Some(Nested)`, is accepted. Every other stored
+free-text label is a catalog constant, and replaying retained events is not checked.
+
+*Decision D2 (slice 3; not the D2 finding above) — normalize for grouping.* Certified-report rows
+carry the decoded family and sub-type, so a record retained as `Some(PreferredEquity)` now groups
+with its `PreferredEquity` peers rather than forming its own section. Grouping for current
+canonical labels is pinned as unchanged. The snapshot content hash still fingerprints the economic
+definition as retained, so a legacy-labelled input keeps a distinct receipt hash; the display and
+grouping repair cannot silently change stored classification.
+
+`InstrumentTypeDescriptorCatalog` is reconciled behavior-preservingly: `DomainLabelExceptions`
+lists its `OtherFamily`/`OtherSubType` placeholders (FX spot, Commodity, Crypto, Index, CFD) as
+descriptor-taxonomy labels, `ApproximateDomainLabelMappings` records the reviewed Warrant
+`OptionContract`, FX spot `BankProduct` and Deposit `DemandDeposit` approximations, and a coverage
+test fails when a descriptor label is neither a domain label nor listed. No descriptor value
+changes, so passport fallbacks still show the placeholder; mapping placeholders to no label there
+would change output and is left for a separate decision. A stored value whose whole text is exactly `None` still reads
+as no label, because that is the retired rendering of an absent family.
+
+Validation (local, Linux, Release): `dotnet test tests/Meridian.Tests` filtered to
+`Classification|CertifiedReporting|SecurityEconomicDefinitionAdapter|InstrumentTypeDescriptor|ReportGenerationService|SecurityMasterAggregateRebuilder`
+passed 200, skipped 2, failed 0; workbench, accounting-adapter, fund-operations, passport,
+query-service and terms round-trip suites passed 830 of 830; the broader
+`Architecture|Reporting|SecurityMaster` run passed 6,563 with 260 skipped and 1 failure, a
+PostgreSQL fixture that could not reach Docker in this environment. `Meridian.Wpf` compiled with
+`EnableWindowsTargeting`; its UI was not run. Hosted checks remain authoritative.
+
 ### D7 — Audit history and serialization: distinguish current state from retained evidence
 
 Canonical writes and field attribution share a PostgreSQL transaction, and provenance upserts are

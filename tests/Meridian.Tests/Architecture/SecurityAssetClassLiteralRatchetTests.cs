@@ -27,11 +27,14 @@ public sealed class SecurityAssetClassLiteralRatchetTests
     // is held to the catalog elsewhere (SecurityAssetClassRegistryCoverageTests,
     // SecurityAssetClassParityGuardTests, SecurityAssetClassSurfaceParityTests, SecurityKindMappingTests).
     // The asset-pack registry's readiness and profile dispatch are held to every domain kind and
-    // canonical profile target by SecurityAssetClassOperationalWiringTests.
+    // canonical profile target by SecurityAssetClassOperationalWiringTests. The classification label
+    // reader's KnownCaseNames set is held to the F# AssetClass/AssetFamily/SecuritySubType unions by
+    // ClassificationLabelReaderTests.KnownCaseNames_MatchTheFSharpClassificationUnions.
     private static readonly string[] KnownDispatchSites =
     [
         "src/Meridian.Application/SecurityMaster/SecurityMasterMapping.cs",
         "src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs",
+        "src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs",
         "src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs",
         "src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs",
         "src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Profiles.cs",
