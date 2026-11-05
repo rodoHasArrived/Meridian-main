@@ -54,5 +54,20 @@ public interface IDirectLendingCommandService
     Task<DirectLendingCommandResult<LoanServicingStateDto>> AmortizeDiscountPremiumAsync(Guid loanId, AmortizeDiscountPremiumRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);
 
     Task<DirectLendingCommandResult<IReadOnlyList<LoanAggregateSnapshotDto>>> RebuildAllAsync(CancellationToken ct = default);
+
+    /// <summary>Records (or revises) an observed index fixing in its declared unit.</summary>
+    Task<DirectLendingCommandResult<DirectLendingIndexFixingDto>> RecordIndexFixingAsync(RecordIndexFixingRequest request, CancellationToken ct = default);
+
+    /// <summary>Effective index fixings, optionally filtered by index and observation-date range.</summary>
+    Task<IReadOnlyList<DirectLendingIndexFixingDto>> GetIndexFixingsAsync(string? indexName, DateOnly? from, DateOnly? to, CancellationToken ct = default);
+
+    /// <summary>Applies a scheduled reset from the fixing store; fails with <see cref="DirectLendingErrorCode.FixingMissing"/> when the fixing is absent.</summary>
+    Task<DirectLendingCommandResult<LoanServicingStateDto>> ApplyScheduledRateResetAsync(Guid loanId, ApplyScheduledRateResetRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);
+
+    /// <summary>Capitalizes accrued PIK interest into principal on a policy capitalization date.</summary>
+    Task<DirectLendingCommandResult<LoanServicingStateDto>> CapitalizePikAsync(Guid loanId, CapitalizePikRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);
+
+    /// <summary>Reset and capitalization dates in a window, with fixing availability. Read-only.</summary>
+    Task<LoanServicingSchedulePreviewDto?> GetServicingSchedulePreviewAsync(Guid loanId, DateOnly from, DateOnly to, CancellationToken ct = default);
 }
 

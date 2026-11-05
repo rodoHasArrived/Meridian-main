@@ -78,3 +78,11 @@ Contract activation and amendment preserve collateral, unamortized discount/prem
 toggle. The SCH-DEF-008 characterization now asserts that preservation. No servicing formula or event
 shape changes; scheduled PIK/resets still require an explicit persisted schedule/fixing policy and
 versioned formula/residual state rather than assumptions based on payment frequency.
+
+That persisted policy now exists as opt-in terms (2026-11-05): `PikCapitalization` (PIK share,
+cadence, anchor) and `RateResetSchedule` (index, cadence, lookback, declared-unit spread/floor/cap).
+`ServicingSchedule.fs` (`DirectLendingServicingSchedule`) owns the date rules; `ServicingAggregate`
+adds `capitalizePik` and `applyScheduledRateReset`, and `postDailyAccrual` defers the PIK share to
+`PikInterestAccruedUnpaid` when a policy is present. Loans without the new terms keep the legacy
+toggle behaviour and their terms hashes. Formula one and SCH-DEF-006 are unchanged. See
+[the blueprint](../../docs/engineering/blueprints/direct-lending-pik-capitalization-and-rate-resets.md).

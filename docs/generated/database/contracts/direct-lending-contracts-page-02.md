@@ -2,12 +2,127 @@
 
 # `direct-lending-contracts` data objects - page 2 of 2
 
-Objects 81-100 of 100. References crossing pages remain available in the dependency manifest.
+Objects 81-120 of 120. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% direct-lending-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_DirectLending_ProjectionRunStatus["ProjectionRunStatus"] {
+    }
+    class Meridian_Contracts_DirectLending_RateNormalizationResult["RateNormalizationResult"] {
+        +string? Error
+        +decimal Fraction
+    }
+    class Meridian_Contracts_DirectLending_RateResetDto["RateResetDto"] {
+        +decimal AllInRate
+        +DateOnly EffectiveDate
+        +Guid? FixingId
+        +DateOnly? FixingObservationDate
+        +int? FixingRevision
+        +string IndexName
+        +decimal ObservedRate
+        +RateResetKind? ResetKind
+        +string? SourceRef
+        +decimal SpreadBps
+    }
+    class Meridian_Contracts_DirectLending_RateResetFrequency["RateResetFrequency"] {
+    }
+    class Meridian_Contracts_DirectLending_RateResetKind["RateResetKind"] {
+    }
+    class Meridian_Contracts_DirectLending_RateTypeKind["RateTypeKind"] {
+    }
+    class Meridian_Contracts_DirectLending_RateUnitNormalizer["RateUnitNormalizer"] {
+    }
+    class Meridian_Contracts_DirectLending_RebuildCheckpointDto["RebuildCheckpointDto"] {
+        +string? Details
+        +Guid? LastEventId
+        +long LastProcessedPosition
+        +DateTimeOffset? LastRebuiltAt
+        +string ProjectionName
+        +string Status
+    }
+    class Meridian_Contracts_DirectLending_ReconcileLoanRequest["ReconcileLoanRequest"] {
+        +decimal AmountTolerance
+        +int DateToleranceDays
+    }
+    class Meridian_Contracts_DirectLending_ReconciliationExceptionDto["ReconciliationExceptionDto"] {
+        +string? AssignedTo
+        +DateTimeOffset CreatedAt
+        +Guid ExceptionId
+        +string ExceptionType
+        +Guid ReconciliationResultId
+        +string? ResolutionNote
+        +DateTimeOffset? ResolvedAt
+        +string Severity
+        +string Status
+    }
+    class Meridian_Contracts_DirectLending_ReconciliationResultDto["ReconciliationResultDto"] {
+        +decimal? ActualAmount
+        +DateOnly? ActualDate
+        +Guid? CashTransactionId
+        +DateTimeOffset CreatedAt
+        +decimal? ExpectedAmount
+        +DateOnly? ExpectedDate
+        +Guid LoanId
+        +string? MatchRule
+        +string MatchStatus
+        +IReadOnlyList~string~ Notes
+        +Guid? ProjectedCashFlowId
+        +Guid ReconciliationResultId
+    }
+    class Meridian_Contracts_DirectLending_ReconciliationRunDto["ReconciliationRunDto"] {
+        +DateTimeOffset? CompletedAt
+        +Guid LoanId
+        +Guid? ProjectionRunId
+        +Guid ReconciliationRunId
+        +DateTimeOffset RequestedAt
+        +string Status
+    }
+    class Meridian_Contracts_DirectLending_RecordIndexFixingRequest["RecordIndexFixingRequest"] {
+        +string IndexName
+        +DateOnly ObservationDate
+        +DeclaredRate Rate
+        +string? RecordedBy
+        +string? SourceRef
+    }
+    class Meridian_Contracts_DirectLending_RemoveCollateralRequest["RemoveCollateralRequest"] {
+        +Guid CollateralId
+        +string Reason
+    }
+    class Meridian_Contracts_DirectLending_ReplayDirectLendingRequest["ReplayDirectLendingRequest"] {
+        +bool RecomputeDerivedArtifacts
+    }
+    class Meridian_Contracts_DirectLending_ReplayDirectLendingResultDto["ReplayDirectLendingResultDto"] {
+        +DateTimeOffset CompletedAt
+        +int EventsProcessed
+        +int LoansProcessed
+    }
+    class Meridian_Contracts_DirectLending_RequestProjectionRunRequest["RequestProjectionRunRequest"] {
+        +string? EngineVersion
+        +DateOnly? MarketDataAsOf
+        +DateOnly ProjectionAsOf
+        +string? TriggerType
+    }
+    class Meridian_Contracts_DirectLending_ResolveReconciliationExceptionRequest["ResolveReconciliationExceptionRequest"] {
+        +string AssignedTo
+        +string ResolutionNote
+    }
+    class Meridian_Contracts_DirectLending_RestructureLoanRequest["RestructureLoanRequest"] {
+        +DateOnly EffectiveDate
+        +decimal? HaircutAmount
+        +DirectLendingTermsDto? NewTerms
+        +string Reason
+        +RestructuringType RestructuringType
+    }
     class Meridian_Contracts_DirectLending_RestructuringType["RestructuringType"] {
+    }
+    class Meridian_Contracts_DirectLending_ScheduledRateResetPreviewDto["ScheduledRateResetPreviewDto"] {
+        +bool Applied
+        +bool FixingAvailable
+        +DateOnly FixingObservationDate
+        +decimal? FixingRate
+        +string IndexName
+        +DateOnly ResetDate
     }
     class Meridian_Contracts_DirectLending_ServicerPositionReportLineDto["ServicerPositionReportLineDto"] {
         +decimal? CommitmentAvailable
@@ -176,6 +291,8 @@ classDiagram
         +DateOnly NewAppraisalDate
         +decimal NewEstimatedValue
     }
+    Meridian_Contracts_DirectLending_RateResetDto --> Meridian_Contracts_DirectLending_RateResetKind
+    Meridian_Contracts_DirectLending_RestructureLoanRequest --> Meridian_Contracts_DirectLending_RestructuringType
     Meridian_Contracts_DirectLending_ServicerStatementApplyRequestDto --> Meridian_Contracts_DirectLending_ServicerStatementApplyMode
     Meridian_Contracts_DirectLending_ServicerStatementApplyResultDto --> Meridian_Contracts_DirectLending_ServicerStatementRowDto
     Meridian_Contracts_DirectLending_ServicerStatementApplyResultDto --> Meridian_Contracts_DirectLending_ServicerStatementValidationIssueDto

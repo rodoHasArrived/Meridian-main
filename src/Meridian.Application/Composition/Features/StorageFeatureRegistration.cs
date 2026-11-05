@@ -565,6 +565,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
                     sp.GetService<ILedgerJournalStore>()));
             services.AddSingleton<IDirectLendingOperationsStore>(sp => (PostgresDirectLendingStateStore)sp.GetRequiredService<IDirectLendingStateStore>());
             services.AddSingleton<DirectLendingMigrationRunner>();
+            services.AddSingleton<IDirectLendingIndexFixingStore, PostgresDirectLendingIndexFixingStore>();
             services.AddSingleton<IDirectLendingQueryService, PostgresDirectLendingQueryService>();
             services.AddSingleton<LoanAccountingProjector>();
             services.AddSingleton<IAccrualLedgerService, AccrualLedgerService>();
