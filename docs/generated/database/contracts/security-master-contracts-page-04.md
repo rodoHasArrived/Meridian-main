@@ -346,11 +346,11 @@ classDiagram
         +string Category
         +string ChangeReason
         +IReadOnlyList~SecurityAssetProfileDateOrderRuleDto~ DateOrderRules
+        +string? DraftedBy
         +DateOnly EffectiveFrom
         +DateOnly? EffectiveTo
         +IReadOnlyList~SecurityAssetProfileFieldDefinitionDto~ Fields
         +IReadOnlyList~SecurityAssetProfileIdentifierPreferenceDto~ IdentifierPreferences
-        +IReadOnlyList~string~ LifecycleStates
     }
     class Meridian_Contracts_SecurityMaster_SecurityAssetProfileDraftRequestDto["SecurityAssetProfileDraftRequestDto"] {
         +IReadOnlyList~SecurityAssetProfileAccountingImpactHintDto~ AccountingImpactHints

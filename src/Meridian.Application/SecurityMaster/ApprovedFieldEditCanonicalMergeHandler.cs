@@ -10,7 +10,7 @@ namespace Meridian.Application.SecurityMaster;
 /// <summary>
 /// Published-revision side effect (<c>Order = 5</c>, runs before the projection rebuild): merges an
 /// approved <c>assetSpecificTerms.*</c> field edit into the CANONICAL security terms by emitting a
-/// complete economic-definition amendment through <see cref="ISecurityMasterAmender"/> — the current
+/// complete economic-definition amendment through <see cref="IGovernedPublicationAmender"/> — the current
 /// definition plus the one typed field change — so replay stays correct and the approved correction
 /// reaches cash-flow projection, amortization, pricing, and NAV instead of living only in the
 /// override overlay. Paths outside the asset-terms namespace stay overlay annotations by design
@@ -35,13 +35,13 @@ namespace Meridian.Application.SecurityMaster;
 /// </summary>
 public sealed class ApprovedFieldEditCanonicalMergeHandler : ISecurityMasterRevisionPublishedHandler
 {
-    private const string OperatorSourceSystem = "operator-workbench";
+    private const string OperatorSourceSystem = SecurityMasterWriteAuthority.WorkbenchSourceSystem;
     private const string ProfileFieldsKey = "profileFields";
 
     private readonly ISecurityMasterRevisionStore _revisions;
     private readonly ILogger<ApprovedFieldEditCanonicalMergeHandler> _logger;
     private readonly ISecurityMasterStore? _projectionStore;
-    private readonly ISecurityMasterAmender? _amender;
+    private readonly IGovernedPublicationAmender? _amender;
     private readonly ISecurityMasterConflictService? _conflictService;
     private readonly Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? _assetProfileCatalog;
 
@@ -49,7 +49,7 @@ public sealed class ApprovedFieldEditCanonicalMergeHandler : ISecurityMasterRevi
         ISecurityMasterRevisionStore revisions,
         ILogger<ApprovedFieldEditCanonicalMergeHandler> logger,
         ISecurityMasterStore? projectionStore = null,
-        ISecurityMasterAmender? amender = null,
+        IGovernedPublicationAmender? amender = null,
         ISecurityMasterConflictService? conflictService = null,
         Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null)
     {
@@ -182,7 +182,7 @@ public sealed class ApprovedFieldEditCanonicalMergeHandler : ISecurityMasterRevi
                 ? $"Approved workbench revision {revision.RevisionId:D} merged into canonical terms."
                 : revision.FieldJustification);
 
-        var detail = await _amender.AmendTermsAsync(amendRequest, ct).ConfigureAwait(false);
+        var detail = await _amender.AmendApprovedRevisionAsync(amendRequest, ct).ConfigureAwait(false);
 
         _logger.LogInformation(
             "Merged approved field edit {FieldPath} (revision {RevisionId}) into canonical terms for {SecurityId}; canonical version advanced to {Version}.",
