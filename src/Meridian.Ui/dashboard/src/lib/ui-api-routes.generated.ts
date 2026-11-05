@@ -406,6 +406,7 @@ export const UI_API_ROUTES = {
   ReferenceDataBondIssuerLadder: "/api/reference-data/bonds/issuer-ladder",
   ReferenceDataBondMaturityLadder: "/api/reference-data/bonds/maturity-ladder",
   ReferenceDataBondAnalytics: "/api/reference-data/bonds/{securityId:guid}/analytics",
+  ReferenceDataBondExerciseNotices: "/api/reference-data/bonds/{securityId:guid}/exercise-notices",
   ReferenceDataBondSettlementConsideration: "/api/reference-data/bonds/settlement-consideration",
   ReferenceDataBondIssuerLadderPage: "/api/reference-data/bonds/issuer-ladder/page",
   ReferenceDataBondMaturityLadderPage: "/api/reference-data/bonds/maturity-ladder/page",

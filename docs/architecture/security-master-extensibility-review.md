@@ -7832,3 +7832,62 @@ only a `StartupRefusedException` subclass.
 | Documentation checks (`check-ai-inventory`, ADR and link verification, `validate-doc-hashes`) | Pass |
 | Independent code review | Adversarial review: 4 confirmed findings (1 medium: a floor refusal on the ledger posting route answered 409; 3 low: amortization approval appended before the floor check, the R30 name check skipped on amends, the C5c text), all fixed with tests |
 | `Meridian CI / quality-gate` on the pull request | Reported on the pull request |
+
+## Consumer pass — 2026-11-05 (call/put notice-date watch)
+
+This pass records source on branch `claude/charming-heisenberg-f1a4pl`, based on main at
+`bf253e67`. It leaves every dated observation above unchanged. It establishes no deployment, no term
+write and no fleet state.
+
+**What the earlier "nothing consumes" boundary missed.** The 2026-10-28 source disposition says
+"call/put scenario and notice-date consumers remain increment-8 work". On current main that is true
+only of notice dates:
+
+| Candidate consumer | Status on main | Source evidence |
+| --- | --- | --- |
+| Yield-to-worst / call-adjusted analytics | Already consumed | `BondAnalyticsService` calls `BondExerciseEconomics.TryCalculate` and takes YTW over issuer calls only. Bermudan windows landed in D4 (`1c126afd`). `OpenLotYieldToWorst` reuses `TryExerciseDates`. The browser `bond-analytics-panel.tsx` and WPF `BondAnalyticsViewModel` show each scenario's latest notice date |
+| Exercise-scenario cash flows | Already consumed | `PortfolioCashLadderEngine.DeclaredBonds` resolves the declared scenarios and redemption cash. `ContractualCashFlowEngine.Exercise` checks a notice selection against the window |
+| Upcoming notice-date alert | **Not consumed** | No read model listed notice windows that are opening, open or near their deadline. A notice date appeared only inside a priced analytics run for a security the operator had already chosen |
+
+**What landed.** One consumer, the notice-date watch:
+
+- `BondExerciseNoticeWatch` (Contracts, `FixedIncome`) runs the cash ladder's precondition sequence
+  and then `BondExerciseEconomics.TryResolveScenarios`. Its exercise and notice dates are therefore
+  those analytics and the cash ladder use. That covers the stamp gate (version 3 or later), the
+  retained-declaration rules, business-day adjustment and business-day notice through the declared
+  payment calendars.
+- Each window is classified as `NotStated`, `Upcoming`, `Open` or `DeadlineElapsed`, with
+  `DaysToDeadline`. A window is kept when its anchor (earliest notice, else latest, else the
+  exercise date) falls on or before the horizon end, or when its deadline has elapsed but its
+  exercise date is still ahead.
+- `BondExerciseNoticeReadService` (Ui.Shared) loads the current or recorded row as analytics does and
+  refuses non-effective terms.
+- `GET /api/reference-data/bonds/{securityId}/exercise-notices` serves the result with analytics'
+  tenant scope and permissions.
+
+**Readable before writable.** The watch only reads retained rows; no write path is touched and no
+term is written. A stray schedule on a Bond stamped 2 is refused, not decoded. Call/put entries are
+never decoded from a profile envelope or from a row stamped below the arrays' version, as
+increments 4b and 5a require.
+
+**Deliberately left out.**
+
+- Joining `FileBondExerciseNoticeStore` evidence to mark a window as noticed.
+- A portfolio-wide sweep or operator-inbox item.
+- Any browser or WPF surface.
+- CertificateOfDeposit and StructuredCredit rows, which carry no bond coupon structure.
+- Floating, step, factored, make-whole, continuous and partial exercise, which keep fixed analytics'
+  refusals.
+
+The ADR-025 increment-8 proposals (Bermudan parameters, American-window calendars, notice-date
+business-day adjustment) remain open.
+
+**Validation record.**
+
+| Check | Result |
+| --- | --- |
+| New scenario suites `BondExerciseNoticeWatchTests` and `BondExerciseNoticeEndpointsTests` | 35 passed |
+| Regression filter: `BondExercise`, `BondAnalytics`, `VersionedContainerKeyLiteralRatchet`, `EndpointStubDetection`, `PortfolioCashLadder` and route-wiring tests | 201 passed |
+| `Route`, `OpenApi`, `Architecture`, `ServiceRegistration` and `Composition` filters | 1070 passed, 1 skipped |
+| `generate-ui-api-routes-ts.py` | One new route constant |
+| `bash scripts/ci.sh` | Not run as a whole; `Meridian CI / quality-gate` on the pull request is authoritative |
