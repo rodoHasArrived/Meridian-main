@@ -20,7 +20,7 @@ public sealed class PostgresSecurityMasterRevisionStore : ISecurityMasterRevisio
     private const string RevisionColumns =
         "revision_id, security_id, state, actor, created_at, updated_at, workflow_id, " +
         "field_path, field_effective_from, field_justification, fund_profile_id, " +
-        "field_value, field_value_recorded";
+        "field_value, field_value_recorded, base_version, field_base_value, field_base_recorded";
 
     private readonly SecurityMasterOptions _options;
 
@@ -47,6 +47,19 @@ public sealed class PostgresSecurityMasterRevisionStore : ISecurityMasterRevisio
         => PostgresSecurityMasterMutation.ExecuteAsync(_options, securityId,
             () => CreateDraftCoreAsync(securityId, actor, fieldPath, fieldEffectiveFrom, fieldJustification, fundProfileId, fieldValue, ct), ct);
 
+    public Task<SecurityMasterRevisionRecord> CreateDraftAsync(
+        Guid securityId,
+        string actor,
+        string fieldPath,
+        DateTimeOffset fieldEffectiveFrom,
+        string fieldJustification,
+        string? fundProfileId,
+        SecurityMasterRevisionFieldValue? fieldValue,
+        SecurityMasterRevisionFieldBase fieldBase,
+        CancellationToken ct = default)
+        => PostgresSecurityMasterMutation.ExecuteAsync(_options, securityId,
+            () => CreateDraftCoreAsync(securityId, actor, fieldPath, fieldEffectiveFrom, fieldJustification, fundProfileId, fieldValue, ct, fieldBase), ct);
+
     private async Task<SecurityMasterRevisionRecord> CreateDraftCoreAsync(
         Guid securityId,
         string actor,
@@ -55,7 +68,8 @@ public sealed class PostgresSecurityMasterRevisionStore : ISecurityMasterRevisio
         string? fieldJustification,
         string? fundProfileId,
         SecurityMasterRevisionFieldValue? fieldValue,
-        CancellationToken ct)
+        CancellationToken ct,
+        SecurityMasterRevisionFieldBase? fieldBase = null)
     {
         var now = DateTimeOffset.UtcNow;
         var record = new SecurityMasterRevisionRecord(
@@ -71,7 +85,9 @@ public sealed class PostgresSecurityMasterRevisionStore : ISecurityMasterRevisio
             FieldJustification: fieldJustification,
             FundProfileId: string.IsNullOrWhiteSpace(fundProfileId) ? null : fundProfileId.Trim(),
             FieldValue: fieldValue?.Value,
-            FieldValueRecorded: fieldValue is not null);
+            FieldValueRecorded: fieldValue is not null,
+            BaseVersion: fieldBase?.BaseVersion,
+            FieldBaseSnapshot: fieldBase?.FieldSnapshot);
 
         await using var lease = await PostgresSecurityMasterMutation.OpenConnectionAsync(_options, ct).ConfigureAwait(false);
         var connection = lease.Connection;
@@ -81,11 +97,11 @@ public sealed class PostgresSecurityMasterRevisionStore : ISecurityMasterRevisio
             insert into {Qualified(RevisionsTable)} (
                 revision_id, security_id, state, actor, created_at, updated_at, workflow_id,
                 field_path, field_effective_from, field_justification, fund_profile_id,
-                field_value, field_value_recorded)
+                field_value, field_value_recorded, base_version, field_base_value, field_base_recorded)
             values (
                 @revision_id, @security_id, @state, @actor, @created_at, @updated_at, @workflow_id,
                 @field_path, @field_effective_from, @field_justification, @fund_profile_id,
-                @field_value, @field_value_recorded);
+                @field_value, @field_value_recorded, @base_version, @field_base_value, @field_base_recorded);
             """;
         command.Parameters.AddWithValue("revision_id", record.RevisionId);
         command.Parameters.AddWithValue("security_id", record.SecurityId);
@@ -100,6 +116,9 @@ public sealed class PostgresSecurityMasterRevisionStore : ISecurityMasterRevisio
         command.Parameters.AddWithValue("fund_profile_id", (object?)record.FundProfileId ?? DBNull.Value);
         command.Parameters.AddWithValue("field_value", (object?)record.FieldValue ?? DBNull.Value);
         command.Parameters.AddWithValue("field_value_recorded", record.FieldValueRecorded);
+        command.Parameters.AddWithValue("base_version", (object?)record.BaseVersion ?? DBNull.Value);
+        command.Parameters.AddWithValue("field_base_value", (object?)record.FieldBaseSnapshot ?? DBNull.Value);
+        command.Parameters.AddWithValue("field_base_recorded", record.FieldBaseRecorded);
 
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         return record;
@@ -224,7 +243,10 @@ public sealed class PostgresSecurityMasterRevisionStore : ISecurityMasterRevisio
         FieldJustification: reader.IsDBNull(9) ? null : reader.GetString(9),
         FundProfileId: reader.IsDBNull(10) ? null : reader.GetString(10),
         FieldValue: reader.IsDBNull(11) ? null : reader.GetString(11),
-        FieldValueRecorded: !reader.IsDBNull(12) && reader.GetBoolean(12));
+        FieldValueRecorded: !reader.IsDBNull(12) && reader.GetBoolean(12),
+        // A base is read back only when the row recorded one, so a legacy row stays base-less.
+        BaseVersion: !reader.IsDBNull(15) && reader.GetBoolean(15) && !reader.IsDBNull(13) ? reader.GetInt64(13) : null,
+        FieldBaseSnapshot: !reader.IsDBNull(15) && reader.GetBoolean(15) && !reader.IsDBNull(14) ? reader.GetString(14) : null);
 
     private string Qualified(string table) => $"{_options.Schema}.{table}";
 }

@@ -21,6 +21,7 @@ erDiagram
         numeric_18_8_ annual_rate_applied
         timestamp_with_time_zone recorded_at
         numeric_24_8_ pik_interest_amount
+        boolean pik_capitalization_deferred
     }
     security_master_bond_accrual_convention_projection {
         uuid security_id PK,FK
@@ -662,6 +663,39 @@ erDiagram
     security_master_loan_event_position_seq {
         text catalogued_object
     }
+    security_master_loan_index_fixing {
+        uuid fixing_id PK
+        text index_name
+        date observation_date
+        integer revision
+        numeric_24_10_ declared_value
+        text declared_unit
+        numeric_18_10_ rate_fraction
+        text source_ref
+        timestamp_with_time_zone recorded_at
+        text recorded_by
+    }
+    security_master_loan_pik_capitalization_projection {
+        uuid loan_id PK
+        date capitalization_date PK
+        date period_start
+        date period_end
+        numeric_24_8_ amount
+        timestamp_with_time_zone recorded_at
+    }
+    security_master_loan_rate_reset_projection {
+        uuid loan_id PK
+        date effective_date PK
+        text reset_kind
+        text index_name
+        date fixing_observation_date
+        numeric_18_10_ observed_rate
+        numeric_18_6_ spread_bps
+        numeric_18_10_ all_in_rate
+        text source_ref
+        uuid fixing_id
+        integer fixing_revision
+    }
     security_master_loan_servicing_projection {
         uuid loan_id PK
         bigint aggregate_version
@@ -679,6 +713,8 @@ erDiagram
         date last_payment_date
         bigint servicing_revision
         timestamp_with_time_zone updated_at
+        numeric_24_8_ pik_interest_accrued_unpaid
+        date last_pik_capitalization_date
     }
     security_master_loan_snapshot {
         uuid loan_id PK
@@ -724,6 +760,8 @@ erDiagram
         numeric_18_8_ effective_rate_floor
         numeric_18_8_ effective_rate_cap
         numeric_18_8_ prepayment_penalty_rate
+        jsonb pik_capitalization_json
+        jsonb rate_reset_schedule_json
     }
     security_master_money_market_fund_projection {
         uuid security_id PK
@@ -1357,6 +1395,9 @@ erDiagram
         text fund_profile_id
         text field_value
         boolean field_value_recorded
+        bigint base_version
+        text field_base_value
+        boolean field_base_recorded
     }
     security_master_security_master_terms_capability_floor {
         boolean singleton PK

@@ -256,6 +256,10 @@ Ledger Explorer clears the selected amount when its tab becomes inactive, its bo
 changes, or its posted journal no longer contains that amount. Returning to the prior scope
 requires a new amount click; a late evidence response cannot restore the previous drawer.
 `finance-standard-pages-screen.test.tsx` covers tab, book and period round trips and late responses.
+Posted debits and credits render at the book currency's minor-unit precision (`$500.00`), the
+Journal ID column links with the journal ID itself, and posting rows leave Status blank rather than
+carrying instruction copy. Entities still show the retained `entityId`: the posted-journal DTO
+carries no display name, so showing names needs a shared seam rather than a client-side guess.
 
 Reconciliation break details expose source observation state (New, Aging, Cleared, Recurring),
 lineage, occurrence and successful-run clearing independently of governed casework status.
@@ -263,9 +267,13 @@ lineage, occurrence and successful-run clearing independently of governed casewo
 The build lockfile resolves Browserslist 4.28.9, removing the high-severity cache-growth and
 custom-stats parsing advisories reported by the September 6 production-certification scan.
 
-Tailwind 4 uses its matching `@tailwindcss/postcss` adapter. The main stylesheet explicitly loads
-the existing `tailwind.config.ts` so Meridian's semantic colors, typography, shadows and utility
-sources remain part of generated CSS. The lockfile retains patched `source-map-js` 1.2.2.
+Tailwind 4 uses its matching `@tailwindcss/postcss` adapter. The main stylesheet imports Tailwind
+once, scoped with `source(none)`, and explicitly loads the existing `tailwind.config.ts` so
+Meridian's semantic colors, typography, shadows and utility sources remain part of generated CSS.
+Every config font stack ends in a CSS generic family (`monospace`, `sans-serif`): Chromium does not
+resolve `ui-monospace`, so without it a machine lacking Cascadia/JetBrains/Consolas renders data
+text in the serif default. `design-system-contract.test.ts` guards both rules. The lockfile retains
+patched `source-map-js` 1.2.2.
 
 First launch is browser-primary. `/setup` renders the first-run concierge while the
 shared first-run API remains the source of truth for starter kits, sample safety labels,
@@ -277,7 +285,12 @@ After setup the masthead `Getting started n/m` chip opens the activation checkli
 every outcome the host tracks and routes to the surface that completes the next one. Completion is
 reported by the surface that did the work -- statement import commit, reconciliation break
 resolution, report run, and analysis export each call `recordActivationOutcome` in
-`src/lib/first-run/activation.ts` -- so the count never advances on a page visit alone.
+`src/lib/first-run/activation.ts` -- so the count never advances on a page visit alone. Once every
+outcome is complete the chip leaves the masthead (it stays while its checklist sheet is open); the
+host keeps the completion record, and the sample-workspace badge and desktop launch remain.
+
+Strategy's PlotTool never substitutes literal values for run-linked metrics: a missing Net P&L,
+total return, Sharpe ratio or max drawdown renders `Unavailable` with a neutral tone.
 
 Quant Lab plots preserve the worker's calculated series, including fractional cumulative returns
 and drawdowns, without repeating financial transformations in the browser. Notebook execution
@@ -1738,6 +1751,10 @@ The passport editor builds its term picker from `GET /api/security-master/asset-
 (`security-master-schema.api.ts`): scalar-editable terms grouped as the registry declares them,
 a value control per editor kind, and a client pre-check
 (`security-passport-schema-fields.view-model.ts`). The free-text field path stays as a fallback.
+
+## Security Master publish outcome
+
+`SecurityMasterPublishResult` in `lib/api/security-master-workbench.api.ts` carries an optional `canonicalMerge`. It says whether publishing the approved edit changed the golden record (`Merged` or `AlreadyCanonical`) or not (`OverlayOnly` or `NotApplicable`). When an approved proposal is stale because its field changed after the draft, the publish route answers 409 with `stale-field-proposal`. The existing classifier reports that as a revision-state conflict carrying the server message.
 
 ## Diagrams
 
