@@ -182,7 +182,8 @@ other asset class stay at 1×. Futures stay at 1× on purpose until the book mod
 A fill whose multiplier differs from the open position's is refused. The OMS stamps the multiplier
 on each fill increment, and stamps `BookedMoneyMultiplier` when the scale is not 1, so session
 replay reproduces the same cash; records written before that stamp replay at the 1× they were booked
-at. The accounting `TradeExecutedEvent` carries the same `MoneyMultiplier`, so its gross value
+at. A fill that adds to or closes an open position takes that position's scale, so a restored 1×
+legacy option position continues at 1× until it is flat. The accounting `TradeExecutedEvent` carries the same `MoneyMultiplier`, so its gross value
 agrees with the realized P&L, and the Reg T margin check values holdings on that scale. Margin
 interest is paid from cash once, leaves the loan principal unchanged, and posts Margin Interest
 Expense against Cash.
