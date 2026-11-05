@@ -381,6 +381,15 @@ public static partial class WorkstationEndpoints
                 jsonOptions,
                 statusCode: StatusCodes.Status500InternalServerError);
         }
+        catch (StaleFieldProposalException ex)
+        {
+            // The approved proposal was drafted against a value that has since changed. The revision
+            // stays Approved but cannot publish; the operator discards it and stages the edit again.
+            return Results.Json(
+                new { error = "stale-field-proposal", message = ex.Message, baseVersion = ex.BaseVersion, currentVersion = ex.CurrentVersion },
+                jsonOptions,
+                statusCode: StatusCodes.Status409Conflict);
+        }
         catch (SecurityMasterRevisionStateException ex)
         {
             // The revision is not in a state that permits this transition (e.g. publishing one that was
