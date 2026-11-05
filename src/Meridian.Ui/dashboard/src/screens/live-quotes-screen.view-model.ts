@@ -345,6 +345,8 @@ export interface LiveMarketDataWorkspaceViewModel {
   description: string;
   symbolSet: string[];
   symbolSetLabel: string;
+  /** False until the operator adds a symbol; the screen then shows one empty state, not several. */
+  hasSymbols: boolean;
   selectedSymbol: string | null;
   selectedSymbolSummary: string;
   matrixRows: LiveQuoteMatrixRowViewModel[];
@@ -1153,11 +1155,12 @@ export function buildLiveMarketDataWorkspaceViewModel({
     title: "Live Market Data Workspace",
     description: "Monitor real-time quotes, trades, BBO, spreads, provider posture, and latency from one symbol set.",
     symbolSet: [...symbolSet],
-    symbolSetLabel: symbolSet.length > 0 ? symbolSet.join(", ") : "No symbols",
+    symbolSetLabel: symbolSet.join(", "),
+    hasSymbols: symbolSet.length > 0,
     selectedSymbol: selectedRow?.symbol ?? null,
     selectedSymbolSummary: selectedRow
       ? `${selectedRow.symbol} ${selectedRow.stateLabel}; bid ${selectedRow.bidLabel}, ask ${selectedRow.askLabel}, spread ${selectedRow.spreadLabel}.`
-      : "No selected symbol summary is available.",
+      : "",
     matrixRows,
     selectedDetail,
     diagnostics,

@@ -1,4 +1,4 @@
-import { Component, lazy, memo, Suspense, useEffect, useMemo, useRef, useState, type ErrorInfo, type ReactNode } from "react";
+import { Component, lazy, memo, Suspense, useCallback, useEffect, useMemo, useRef, useState, type ErrorInfo, type ReactNode } from "react";
 import {
   ArrowRight,
   AlertTriangle,
@@ -42,6 +42,7 @@ import { isCompanionPaneRoute, openCompanionPane } from "@/lib/companion-pane/pa
 import { setOpenCompanionPaneIds } from "@/lib/companion-pane/open-registry";
 import { broadcastCompanionState } from "@/lib/companion-pane/opener-broadcast";
 import { applyDensity, writeStoredDensity } from "@/lib/density";
+import { ScopePickerOpenerProvider } from "@/lib/operating-scope/scope-picker-context";
 import type { LayoutRestorePlan } from "@/lib/saved-layouts";
 import { WorkspaceNav } from "@/components/meridian/workspace-nav";
 import { Skeleton } from "@/components/data/skeleton";
@@ -346,6 +347,7 @@ function AppShell({
   const [commandOpen, setCommandOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
   const [scopePickerOpen, setScopePickerOpen] = useState(false);
+  const openScopePicker = useCallback(() => setScopePickerOpen(true), []);
   const [layoutRestoreSequence, setLayoutRestoreSequence] = useState(0);
   const [routeAnnouncement, setRouteAnnouncement] = useState("");
   const [storedOperatingScope, setStoredOperatingScope] = useState(readStoredOperatingScope);
@@ -702,6 +704,7 @@ function AppShell({
   ]);
 
   return (
+    <ScopePickerOpenerProvider open={openScopePicker}>
     <div className="workstation-frame">
       <a className="skip-link" href="#workbench-content">Skip to workbench</a>
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
@@ -944,6 +947,7 @@ function AppShell({
         </SheetContent>
       </Sheet>
     </div>
+    </ScopePickerOpenerProvider>
   );
 }
 

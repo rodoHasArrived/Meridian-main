@@ -414,7 +414,9 @@ describe("TradingScreen", () => {
     await renderTradingScreen(data, "/trading?symbol=MSFT");
 
     const recovery = screen.getByRole("region", { name: "Brokerage recovery" });
-    expect(within(recovery).getByRole("button", { name: /synchronize and reconcile/i })).toBeInTheDocument();
+    // No fund account is in scope here, so the full panel's one next step is choosing one.
+    expect(within(recovery).getByRole("heading", { name: "Brokerage recovery" })).toBeInTheDocument();
+    expect(within(recovery).getByText("Choose a fund account")).toBeInTheDocument();
     expect(within(recovery).queryByRole("link", { name: "Review brokerage recovery" })).not.toBeInTheDocument();
   });
 
