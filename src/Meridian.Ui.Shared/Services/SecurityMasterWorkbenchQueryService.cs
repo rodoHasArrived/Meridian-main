@@ -864,9 +864,10 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
     {
         var parts = new[]
         {
-            ClassificationLabelReader.Normalize(snapshot.EconomicDefinition.AssetClass),
-            ClassificationLabelReader.Normalize(snapshot.EconomicDefinition.AssetFamily),
-            ClassificationLabelReader.Normalize(snapshot.EconomicDefinition.SubType),
+            // The snapshot's economic definition is already decoded (MapToEconomicDefinition).
+            snapshot.EconomicDefinition.AssetClass,
+            snapshot.EconomicDefinition.AssetFamily,
+            snapshot.EconomicDefinition.SubType,
             snapshot.EconomicDefinition.Currency
         }
             .Where(static value => !string.IsNullOrWhiteSpace(value))
@@ -935,8 +936,8 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             InstrumentType: instrumentType,
             DisplayName: displayName,
             SecurityMasterAssetClass: assetClass,
-            AssetFamily: ClassificationLabelReader.Normalize(snapshot.EconomicDefinition.AssetFamily) ?? primaryDescriptor?.SecurityMasterAssetFamily,
-            SubType: ClassificationLabelReader.Normalize(snapshot.EconomicDefinition.SubType) ?? primaryDescriptor?.SecurityMasterSubType,
+            AssetFamily: NormalizeOptional(snapshot.EconomicDefinition.AssetFamily) ?? primaryDescriptor?.SecurityMasterAssetFamily,
+            SubType: NormalizeOptional(snapshot.EconomicDefinition.SubType) ?? primaryDescriptor?.SecurityMasterSubType,
             DefaultProviderSecurityType: SecurityMasterText(string.Join(", ", providerSecurityTypes), "n/a"),
             IsTradeable: primaryDescriptor?.IsTradeable ?? descriptors.Any(static descriptor => descriptor.IsTradeable),
             IsReferenceOnly: primaryDescriptor?.IsReferenceOnly ?? (descriptors.Count > 0 && descriptors.All(static descriptor => descriptor.IsReferenceOnly)),
@@ -1496,9 +1497,10 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
     {
         var classification = new[]
         {
-            ClassificationLabelReader.Normalize(snapshot.EconomicDefinition.AssetClass),
-            ClassificationLabelReader.Normalize(snapshot.EconomicDefinition.AssetFamily),
-            ClassificationLabelReader.Normalize(snapshot.EconomicDefinition.SubType),
+            // The snapshot's economic definition is already decoded (MapToEconomicDefinition).
+            snapshot.EconomicDefinition.AssetClass,
+            snapshot.EconomicDefinition.AssetFamily,
+            snapshot.EconomicDefinition.SubType,
             snapshot.EconomicDefinition.Currency
         }
             .Where(static value => !string.IsNullOrWhiteSpace(value))

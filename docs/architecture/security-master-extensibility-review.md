@@ -212,8 +212,11 @@ verbatim: a legacy `OtherSubType "Some(Nested)"` reads as `Some(Nested)`, and
 version decoded recursively.) It is applied where a stored label is
 matched, displayed or grouped: the adapter's preferred-equity replay guard (labels and
 classification JSON), workbench classification/drill-in/passport/field values and its
-history change detection, the trial-balance workbook export, the WPF asset-family fields, and
-the accounting sub-type fallback. Query-service and rebuilder outputs already pass through these
+history change detection, and the accounting sub-type fallback. Each label is decoded exactly
+once, where a stored record becomes a DTO or report row (the workbench economic-definition and
+workstation DTOs, certified-report rows). Consumers of those DTOs and rows, namely the passport
+classification summaries and profile, the WPF asset-family fields and the trial-balance
+CSV/XLSX export, show the already-decoded value and never decode it again. Query-service and rebuilder outputs already pass through these
 seams (`ToEconomicRecord` emits canonical names; `ToProjection` uses the guard); the rebuilt
 economic record itself is still returned as retained, so snapshots and events keep their stored
 labels. Every declared catalog class's new write is pinned to the F# names, and its retired
