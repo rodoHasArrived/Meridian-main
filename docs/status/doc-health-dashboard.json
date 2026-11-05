@@ -1,6 +1,6 @@
 {
   "total_files": 796,
-  "total_lines": 181877,
+  "total_lines": 181910,
   "orphaned_count": 259,
   "no_heading_count": 157,
   "stale_count": 0,
@@ -2567,7 +2567,7 @@
     },
     {
       "path": "docs/engineering/plans/wpf-web-ui-alignment-plan.md",
-      "line_count": 215,
+      "line_count": 221,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3031,7 +3031,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 13195,
+      "line_count": 13197,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6535,7 +6535,7 @@
     },
     {
       "path": "src/Meridian.Ui/dashboard/README.md",
-      "line_count": 1917,
+      "line_count": 1937,
       "has_heading": true,
       "todo_count": 5,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6559,7 +6559,7 @@
     },
     {
       "path": "src/Meridian.Ui/README.md",
-      "line_count": 149,
+      "line_count": 154,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

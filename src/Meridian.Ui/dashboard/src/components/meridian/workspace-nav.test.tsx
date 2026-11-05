@@ -113,15 +113,21 @@ describe("WorkspaceNav", () => {
       { initialEntries: ["/trading"] }
     );
 
-    expect(screen.getByRole("link", { name: /^Open Today, the Daily Control Tower, 3 items need attention/ }))
-      .toHaveTextContent("3");
-    expect(screen.getByRole("link", { name: /^Open Accounting workspace.*, 2 items need attention/ }))
-      .toHaveTextContent("2");
-    expect(screen.getByRole("link", { name: /^Open Data workspace.*, 1 item needs attention/ }))
-      .toHaveTextContent("1");
+    const badgeFor = (link: HTMLElement) => link.parentElement?.querySelector(".operator-nav-count");
+    const today = screen.getByRole("link", { name: /^Open Today, the Daily Control Tower, 3 items need attention/ });
+    const accounting = screen.getByRole("link", { name: /^Open Accounting workspace.*, 2 items need attention/ });
+    const data = screen.getByRole("link", { name: /^Open Data workspace.*, 1 item needs attention/ });
+    expect(badgeFor(today)).toHaveTextContent("3");
+    expect(badgeFor(accounting)).toHaveTextContent("2");
+    expect(badgeFor(data)).toHaveTextContent("1");
+    // Label in Name (WCAG 2.5.3): the badge is a sibling, so each link's visible text is exactly
+    // its label and stays contained in the accessible name.
+    expect(today).toHaveTextContent(/^Today$/);
+    expect(accounting).toHaveTextContent(/^Accounting$/);
+    expect(badgeFor(accounting)).toHaveAttribute("aria-hidden", "true");
     // Workspaces with nothing queued carry no badge and no attention suffix.
     const portfolio = screen.getByRole("link", { name: /^Open Portfolio workspace/ });
-    expect(portfolio.querySelector(".operator-nav-count")).toBeNull();
+    expect(badgeFor(portfolio)).toBeNull();
     expect(portfolio).not.toHaveAccessibleName(/attention/);
   });
 

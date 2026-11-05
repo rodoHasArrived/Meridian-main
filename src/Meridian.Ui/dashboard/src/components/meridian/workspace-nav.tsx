@@ -55,7 +55,7 @@ export function WorkspaceNav({
       navAriaLabel="Workspaces"
     >
       <div className={designSystemNavRailClasses.group}>
-        <div className={designSystemNavRailClasses.row}>
+        <div className={cn(designSystemNavRailClasses.row, "operator-nav-row--today")}>
           <Link
             to={viewModel.today.route}
             aria-current={viewModel.today.ariaCurrent}
@@ -65,14 +65,15 @@ export function WorkspaceNav({
               designSystemNavRailClasses.item,
               "operator-nav-today",
               FOCUS_VISIBLE_RING_CLASS,
-              viewModel.today.active && designSystemNavRailClasses.itemActive
+              viewModel.today.active && designSystemNavRailClasses.itemActive,
+              viewModel.today.attentionCount > 0 && "operator-nav-item--with-count"
             )}
             onClick={onNavigate}
           >
             <CalendarCheck className={designSystemNavRailClasses.itemIcon} width={16} height={16} aria-hidden="true" />
             <span className="operator-nav-label truncate font-medium">{viewModel.today.label}</span>
-            <AttentionCount count={viewModel.today.attentionCount} />
           </Link>
+          <AttentionCount count={viewModel.today.attentionCount} />
         </div>
       </div>
       <div className={designSystemNavRailClasses.section}>{viewModel.navEyebrow}</div>
@@ -115,13 +116,13 @@ export function WorkspaceNav({
                   className={cn(
                     designSystemNavRailClasses.item,
                     FOCUS_VISIBLE_RING_CLASS,
-                    item.active && designSystemNavRailClasses.itemActive
+                    item.active && designSystemNavRailClasses.itemActive,
+                    item.attentionCount > 0 && "operator-nav-item--with-count"
                   )}
                   onClick={onNavigate}
                 >
                   <img className={designSystemNavRailClasses.itemIcon} src={iconSrc} width="16" height="16" alt="" aria-hidden="true" />
                   <span className="operator-nav-label truncate font-medium">{item.label}</span>
-                  <AttentionCount count={item.attentionCount} />
                   {!compact ? (
                     <span className={cn(designSystemNavRailClasses.status, designSystemNavRailClasses.statusTone(item.maturityTone))}>
                       <span className={designSystemNavRailClasses.statusDot} aria-hidden="true" />
@@ -129,6 +130,7 @@ export function WorkspaceNav({
                     </span>
                   ) : null}
                 </Link>
+                <AttentionCount count={item.attentionCount} />
                 {item.subItems.length > 0 ? (
                   <button
                     type="button"
@@ -184,7 +186,11 @@ export function WorkspaceNav({
   );
 }
 
-/** Queue count badge; the count is also in the link's accessible name, so it is hidden here. */
+/**
+ * Queue count badge. It sits beside the link, not inside it, and is hidden from assistive
+ * technology: the link's visible text stays exactly its label, so the accessible name (which
+ * carries "N items need attention") still contains the visible label (WCAG 2.5.3 Label in Name).
+ */
 function AttentionCount({ count }: { count: number }) {
   if (count <= 0) {
     return null;
