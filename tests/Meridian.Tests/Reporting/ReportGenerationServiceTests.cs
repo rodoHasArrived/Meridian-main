@@ -204,6 +204,25 @@ public sealed class ReportGenerationServiceTests
             "the receipt hashes the economic definition as retained; decoding is a read-side display/grouping repair");
     }
 
+    [Fact]
+    public async Task GenerateAsync_LegacyUnionPayload_IsKeptVerbatim_InRowsAndInTheCsvExport()
+    {
+        // A retained free-text payload is the label itself: OtherSubType "None" reads as the literal
+        // None and Some(OtherFamily "Some(Equity)") as Some(Equity). The export must carry the rows'
+        // already-decoded labels, not decode them a second time.
+        var report = await GenerateClassifiedReportAsync(
+            ("ODD", "Other", "Some(OtherFamily \"Some(Equity)\")", "OtherSubType \"None\""));
+
+        var row = report.TrialBalance.Single(static row => row.Symbol == "ODD");
+        row.SubType.Should().Be("None");
+        row.AssetFamily.Should().Be("Some(Equity)");
+
+        var csv = System.Text.Encoding.UTF8.GetString(
+            Meridian.Ui.Shared.Services.FundOperationsWorkspaceReadService.BuildTrialBalanceCsv(report.TrialBalance, CancellationToken.None));
+        var exported = csv.Split('\n').Single(static line => line.Contains("ODD", StringComparison.Ordinal));
+        exported.Should().Contain("None").And.Contain("Some(Equity)");
+    }
+
     private static readonly Guid ClassifiedFixtureNamespace = Guid.Parse("4d7f2c1e-9a0b-4c55-8e21-3b6a1f0d9c42");
 
     private static async Task<ReportPack> GenerateClassifiedReportAsync(
