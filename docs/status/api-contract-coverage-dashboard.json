@@ -2,16 +2,16 @@
   "dashboard": "api-contract-coverage",
   "title": "API Contract Coverage Dashboard",
   "generated_at": "1970-01-01T00:00:00+00:00",
-  "score_percent": 20.1,
+  "score_percent": 20.0,
   "endpoint_coverage_percent": 30.7,
-  "contract_coverage_percent": 4.1,
+  "contract_coverage_percent": 4.0,
   "summary": {
     "endpoint_count": 743,
     "documented_endpoint_count": 228,
     "undocumented_endpoint_count": 515,
-    "workstation_contract_count": 962,
+    "workstation_contract_count": 964,
     "documented_workstation_contract_count": 39,
-    "undocumented_workstation_contract_count": 923
+    "undocumented_workstation_contract_count": 925
   },
   "endpoints": [
     {
@@ -1469,73 +1469,73 @@
     {
       "method": "GET",
       "path": "/api/projections/{projectionRunId:guid}/flows",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:961",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1092",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/journals/{journalEntryId:guid}/post",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:978",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1109",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/reconciliation/{runId:guid}/results",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1035",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1166",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/reconciliation/exceptions",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1044",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1175",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/reconciliation/exceptions/{exceptionId:guid}/resolve",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1053",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1184",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/servicer-reports",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1076",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1207",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/servicer-reports/{batchId:guid}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1104",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1235",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/servicer-reports/{batchId:guid}/position-lines",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1112",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1243",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/servicer-reports/{batchId:guid}/transaction-lines",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1121",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1252",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/loans/rebuild-checkpoints",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1130",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1261",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/loans/portfolio",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1139",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1270",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/loans/rebuild-all",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1150",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1281",
       "documented": true
     },
     {
@@ -7875,18 +7875,28 @@
       "documented": false
     },
     {
+      "name": "SecurityMasterCanonicalMergeOutcomeKind",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:156",
+      "documented": false
+    },
+    {
+      "name": "SecurityMasterCanonicalMergeOutcomeDto",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:175",
+      "documented": false
+    },
+    {
       "name": "RestatementCandidateDto",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:157",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:184",
       "documented": false
     },
     {
       "name": "SecurityMasterConflictAuthorityDecision",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:168",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:195",
       "documented": false
     },
     {
       "name": "SecurityMasterRevisionPublishedEvent",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:178",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:205",
       "documented": false
     },
     {

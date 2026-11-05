@@ -5,25 +5,25 @@
 
 ## Overall Coverage
 
-**1711 / 9992** items documented (**17.1%**) &mdash; Grade: **F**
+**1734 / 10027** items documented (**17.3%**) &mdash; Grade: **F**
 
 ```text
-[===-----------------] 17.1%
+[===-----------------] 17.3%
 ```
 
 ## Coverage by Category
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 1622 | 9493 | 17.1% | F |
-| API Endpoints | 88 | 345 | 25.5% | F |
+| Public Classes / Interfaces | 1641 | 9524 | 17.2% | F |
+| API Endpoints | 92 | 349 | 26.4% | F |
 | Configuration Options | 1 | 143 | 0.7% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
 | ADR Implementations | 0 | 11 | 0.0% | F |
 
 ## Undocumented Items
 
-### Public Classes / Interfaces (7871 undocumented)
+### Public Classes / Interfaces (7883 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -77,7 +77,7 @@
 | `CrossSourceBackfillClosureDecision` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:533` |
 | `CrossSourceBackfillDiscrepancy` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:605` |
 | `CrossSourceBackfillProviderError` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:618` |
-| ... and 7821 more | |
+| ... and 7833 more | |
 
 ### API Endpoints (257 undocumented)
 
@@ -209,7 +209,7 @@
 
 ## Recommendations
 
-1. **Public Classes / Interfaces**: 7871 undocumented types. Add reference entries under `docs/reference/` for the types that carry contracts. Running DocFX does not move this metric: it emits browsable output from XML doc comments into `docs/docfx/api/*.yml`, which is gitignored and so is not part of the scanned corpus.
+1. **Public Classes / Interfaces**: 7883 undocumented types. Add reference entries under `docs/reference/` for the types that carry contracts. Running DocFX does not move this metric: it emits browsable output from XML doc comments into `docs/docfx/api/*.yml`, which is gitignored and so is not part of the scanned corpus.
 2. **API Endpoints**: 257 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
 3. **Configuration Options**: 142 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
 4. **ADR Implementations**: Referenced ADR(s) ADR-001, ADR-007, ADR-010, ADR-006, ADR-015, ADR-013, ADR-004, ADR-005, ADR-014, ADR-002, ADR-016 have no corresponding file in `docs/adr/`. Create the missing ADR document(s) using `docs/adr/_template.md`.

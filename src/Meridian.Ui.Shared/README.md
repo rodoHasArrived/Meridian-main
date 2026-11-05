@@ -2934,6 +2934,7 @@ registered and it never writes; applying a proposal is a governed amendment.
 
 ## Security Master governance controls (2026-11)
 
+- **Stale field proposals.** The workbench publish route answers a `StaleFieldProposalException` with 409 `stale-field-proposal`, carrying the base and current versions. A successful publish carries `canonicalMerge`, which says whether the approved edit changed the golden record.
 - **Governed term-amendment refusal.** The Security Master endpoints build their HTTP 403 problem from `GovernedTermAmendmentPolicy.RefusalTitle` and `RefusalDetail`, so the API and the WPF editor show the same guidance when `RequireGovernedTermAmendments` is on. The direct write routes also answer the service's own `GovernedTermAmendmentRequiredException` with that same 403, and the workstation host registers `IGovernedTermAmendmentPolicy`, which `SecurityMasterService` enforces.
 
 See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D8) for status and open decisions.

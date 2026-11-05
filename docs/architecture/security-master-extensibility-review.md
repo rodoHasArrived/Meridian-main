@@ -179,6 +179,16 @@ unconsumed. Deployment defaults and legacy draft handling (a draft's author is r
   - Revisions submitted before this change are not rechecked against their drafter, because a submitted revision no longer carries the drafter.
   - The stale-proposal half of D5 is slice 2.
 
+**Slice 2 disposition — 2026-11-04.** The stale-proposal half of D5 is now handled.
+- **Recording the base.** Staging an `assetSpecificTerms.*` edit records two things on the revision (migration `060`): the security version the edit was staged at (`base_version`), and a canonical snapshot of every stored key the merge would overwrite (`field_base_value`, built by `SecurityAssetTermsFieldSnapshot`). The snapshot covers each spelling and case variant of the declared key, or of the `profileFields` key.
+- **Checking it at publish.** At publish, `ApprovedFieldEditCanonicalMergeHandler` re-snapshots the field when the version moved:
+  - If the field changed, publication throws `StaleFieldProposalException`. The workbench route answers 409 `stale-field-proposal`, the revision stays Approved, and the operator discards it and re-stages.
+  - If only other fields changed, it merges onto the fresh projection, so those concurrent changes survive.
+  - A field that already holds the approved value converges with no write.
+  - Revisions without a recorded base publish as before.
+- **Publish outcome.** `SecurityMasterPublishResultDto.CanonicalMerge` reports `Merged`, `AlreadyCanonical`, `OverlayOnly` or `NotApplicable`, so operators can see whether the golden record changed. The revision link in `SourceRecordId` is kept.
+- **Still open.** Recovering the maker and checker from retained lineage still depends on the workflow's approval evidence, because revision transitions overwrite the actor.
+
 ### D6 — Classification labels: still open, including historical payload policy
 
 [SecurityEconomicDefinitionAdapter](../../src/Meridian.Application/SecurityMaster/SecurityEconomicDefinitionAdapter.cs)
@@ -7749,6 +7759,13 @@ activation is established by this source disposition.
   and the PIK toggle. Manual reset dates remain explicit servicing inputs. Automatic capitalization
   and reset scheduling still need persisted cadence, fixing, formula and residual policies; payment
   frequency alone supplies none of them.
+  *2026-11-05 update:* both policies are now persisted, opt-in loan terms executed by the daily
+  worker. They cover the PIK share and capitalization cadence, and a reset schedule with lookback and
+  declared-unit spread/floor/cap. Fixings come from an insert-only fixing store, and a missing fixing
+  fails closed. Accrual formula one is retained, and the shared-kernel formula v2 (residual carry,
+  SCH-DEF-006) remains increment-11 work. See the
+  [blueprint](../engineering/blueprints/direct-lending-pik-capitalization-and-rate-resets.md);
+  direct-lending migration 011 awaits independent schema review.
 - **OTC servicing.** Typed reset, compression, novation, credit-determination and auction-settlement
   events retain actor/source evidence, instrument targets, exact predecessor/successor snapshots,
   idempotency and strict replay. PostgreSQL updates the contract and appends history atomically;
