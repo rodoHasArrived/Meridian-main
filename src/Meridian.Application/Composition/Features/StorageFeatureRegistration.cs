@@ -353,7 +353,11 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<SecurityMasterRebuildOrchestrator>();
             services.AddSingleton<IUflProjectionRebuilder, UflProjectionRebuilder>();
             services.AddSingleton<ISecurityMasterService, SecurityMasterService>();
+            // Three typed write paths over one service: ISecurityMasterService is the operator-direct path
+            // (refused while SecurityMasterWorkbench:RequireGovernedTermAmendments is on), ISecurityMasterAmender
+            // the system-ingest path, and IGovernedPublicationAmender the approved-revision publication path.
             services.AddSingleton<ISecurityMasterAmender>(sp => (ISecurityMasterAmender)sp.GetRequiredService<ISecurityMasterService>());
+            services.AddSingleton<IGovernedPublicationAmender>(sp => (IGovernedPublicationAmender)sp.GetRequiredService<ISecurityMasterService>());
             services.AddSingleton<SecurityMasterQueryService>();
             services.AddSingleton<ISecurityMasterQueryService>(sp => sp.GetRequiredService<SecurityMasterQueryService>());
             services.AddSingleton<ISecurityMasterCorporateActionCommandService, SecurityMasterCorporateActionCommandService>();
@@ -521,6 +525,12 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<IDirectLoanReferenceService, NullDirectLoanReferenceService>();
         services.TryAddSingleton<IStructuredCreditReferenceService, NullStructuredCreditReferenceService>();
         services.TryAddSingleton<ISecurityMasterAmender, NullSecurityMasterService>();
+        services.TryAddSingleton<IGovernedPublicationAmender, NullSecurityMasterService>();
+        // The governed-amendment policy SecurityMasterService enforces on its operator-direct path.
+        // AddOptions keeps IOptionsMonitor resolvable in hosts that never bind the section (it then
+        // reads the defaults, under which direct amendments stay permitted).
+        services.AddOptions<SecurityMasterWorkbenchOptions>();
+        services.TryAddSingleton<IGovernedTermAmendmentPolicy, GovernedTermAmendmentPolicy>();
         services.TryAddSingleton<ISecurityMasterConflictService, NullSecurityMasterConflictService>();
         services.TryAddSingleton<ISecurityMasterImportService, NullSecurityMasterImportService>();
         services.TryAddSingleton<ISecurityMasterIngestStatusService>(sp => (ISecurityMasterIngestStatusService)sp.GetRequiredService<ISecurityMasterImportService>());

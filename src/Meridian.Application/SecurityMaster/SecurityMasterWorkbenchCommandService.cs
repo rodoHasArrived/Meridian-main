@@ -61,6 +61,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
     private readonly ISecurityFieldProvenanceStore? _fieldProvenance;
     private readonly ISecurityMasterStore? _projectionStore;
     private readonly Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? _assetProfileCatalog;
+    private readonly Func<bool> _requireIndependentReviewer = static () => false;
 
     public SecurityMasterWorkbenchCommandService(
         ISecurityMasterEventStore eventStore,
@@ -76,8 +77,15 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
         ILogger<SecurityMasterWorkbenchCommandService> logger,
         ISecurityFieldProvenanceStore? fieldProvenance = null,
         ISecurityMasterStore? projectionStore = null,
-        Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null)
+        Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null,
+        Microsoft.Extensions.Options.IOptionsMonitor<SecurityMasterWorkbenchOptions>? workbenchOptions = null)
     {
+        if (workbenchOptions is not null)
+        {
+            // Read at each submit/approve so the setting hot-reloads.
+            _requireIndependentReviewer = () => workbenchOptions.CurrentValue.RequireIndependentReviewer;
+        }
+
         _eventStore = eventStore ?? throw new ArgumentNullException(nameof(eventStore));
         _overrides = overrides ?? throw new ArgumentNullException(nameof(overrides));
         _conflictPolicy = conflictPolicy ?? throw new ArgumentNullException(nameof(conflictPolicy));
@@ -551,6 +559,8 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
                     nameof(request));
             }
 
+            EnsureReviewerIsIndependentOfDrafter(request.Reviewer, revision);
+
             // The submission rationale carries a durable REVISION-IDENTITY marker into the
             // workflow's approval evidence. Reconciling a stranded half-submission (below) is only
             // safe for the exact interrupted submission: without the marker, ANY draft — even one
@@ -644,6 +654,8 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
                 request.RevisionId,
                 $"was submitted through workflow '{revision.WorkflowId:D}' but approval was attempted via workflow '{request.WorkflowId:D}'.");
         }
+
+        EnsureApproverIsIndependentOfSubmitter(request, revision);
 
         var dto = new OperationsApprovalDecisionRequestDto(
             ExpectedVersion: request.ExpectedWorkflowVersion,
