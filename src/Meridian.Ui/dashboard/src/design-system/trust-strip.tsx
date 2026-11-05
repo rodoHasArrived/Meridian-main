@@ -1,6 +1,7 @@
 import { ChevronDown } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { AppShellTrustStripState } from "@/app-shell.view-model";
+import { DesignSystemBadge } from "@/design-system/badge";
 import { cn } from "@/lib/utils";
 
 const trustToneRank = {
@@ -16,16 +17,17 @@ const trustToneRank = {
  * actions remain available in a native disclosure.
  */
 export function DesignSystemTrustStrip({ viewModel }: { viewModel: AppShellTrustStripState }) {
-  const mode = viewModel.items.find((item) => item.id === "mode")?.value ?? "Unknown mode";
   const source = viewModel.items.find((item) => item.id === "source")?.value ?? "Unknown source";
   const provider = viewModel.items.find((item) => item.id === "providers");
   const summaryTone = viewModel.items.reduce<(typeof viewModel.items)[number]["tone"]>(
     (current, item) => trustToneRank[item.tone] > trustToneRank[current] ? item.tone : current,
     "ready"
   );
+  // The environment leads as its own badge (see AppShellTrustStripEnvironment); the rest of
+  // the summary is the part allowed to ellipsize: "PAPER · SEEDED · 1 degraded".
   const summaryValue = provider && provider.tone !== "ready"
-    ? `${mode} · ${source} · ${provider.value}`
-    : `${mode} · ${source}`;
+    ? `${source} · ${provider.value}`
+    : source;
   const summaryAriaLabel = `Environment, provenance, and provider posture. ${viewModel.items.map((item) => item.ariaLabel).join(" ")}`;
 
   return (
@@ -45,7 +47,15 @@ export function DesignSystemTrustStrip({ viewModel }: { viewModel: AppShellTrust
           )}
           aria-label={summaryAriaLabel}
         >
-          <span className="workstation-trust-label">Trust</span>
+          <DesignSystemBadge
+            className="workstation-trust-environment"
+            variant={viewModel.environment.variant}
+            dot
+            data-environment={viewModel.environment.variant}
+          >
+            {viewModel.environment.label}
+          </DesignSystemBadge>
+          <span className="workstation-trust-sep" aria-hidden="true">·</span>
           <span className="workstation-trust-value">{summaryValue}</span>
           <ChevronDown className="workstation-trust-chevron h-3.5 w-3.5" aria-hidden="true" />
         </summary>

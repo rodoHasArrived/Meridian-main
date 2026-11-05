@@ -212,6 +212,7 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
       description={vm.route.description}
     >
       <OperationalTrustSummary
+        disclosure
         label="Family office data confidence"
         source={{
           value: resolvedStructure?.displayName ?? loadStateSourceLabel(loadState),

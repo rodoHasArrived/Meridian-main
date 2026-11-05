@@ -4,7 +4,6 @@ import { BarChart3, BookOpenText, ChartScatter, Network, Sigma, Sparkles } from 
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { BiasDisclosurePanel } from "@/components/meridian/bias-disclosure-panel";
 import { StatStrip } from "@/components/meridian/stat-strip";
-import { WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
 import { QuantNotebook } from "@/components/meridian/quant-notebook";
 import { useQuantNotebookViewModel } from "@/components/meridian/quant-notebook.view-model";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
@@ -196,17 +195,6 @@ const plotToolObservationColumns: DenseDataTableColumn<StrategyPlotSampleRow>[] 
 
 type StrategyRouteViewId = "overview" | "promotions" | "lab";
 
-/**
- * Route-scoped tabs: the catchall Strategy sub-routes share the sidebar
- * taxonomy. Designer, Formula Workbench, Covered call, and Quant Lab are
- * separate screens and stay sidebar-only.
- */
-const strategyRouteTabs: { id: StrategyRouteViewId; label: string; route: string }[] = [
-  { id: "overview", label: "Overview", route: "/strategy" },
-  { id: "promotions", label: "Promotions", route: "/strategy/promotions" },
-  { id: "lab", label: "Strategy Lab", route: "/strategy/lab" }
-];
-
 export function resolveStrategyRouteView(pathname: string): StrategyRouteViewId {
   // Match the segment right after /strategy so a dynamic parameter deeper in
   // the path can never collide with a view keyword.
@@ -246,11 +234,6 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
   const showLab = routeView === "lab";
   const showRuns = routeView === "promotions";
   const requestedRunId = new URLSearchParams(search).get("runId")?.trim() ?? "";
-  const routeTabs = strategyRouteTabs.map((tab) => ({
-    id: tab.id,
-    label: tab.label,
-    selected: tab.id === routeView
-  }));
   const plotToolTabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const openedDeepLinkRunId = useRef<string | null>(null);
 
@@ -446,8 +429,8 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
 
   return (
     <div className="space-y-5">
-      <StatStrip metrics={data.metrics} label="Strategy headline metrics" />
-
+      {/* Route heading first; workspace-wide metrics follow. The sidebar is the only
+          sub-route navigation (no in-page tab strip). */}
       <section
         role="region"
         aria-label="Strategy workspace context"
@@ -461,19 +444,9 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
             {routeCopy.description}
           </p>
         </div>
-        <WorkspaceTabStrip
-          label="Strategy routes"
-          tabs={routeTabs}
-          onSelect={(id) => {
-            const tab = strategyRouteTabs.find((candidate) => candidate.id === id);
-            if (tab) {
-              // Preserve the querystring: the operating scope is threaded
-              // through search params across the shell.
-              navigate({ pathname: tab.route, search });
-            }
-          }}
-        />
       </section>
+
+      <StatStrip metrics={data.metrics} label="Strategy headline metrics" />
 
       {routeView === "overview" ? <StrategyOverviewHub vm={vm} /> : null}
 

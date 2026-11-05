@@ -7756,6 +7756,7 @@ Meridian-main
 │   │   │   │   │   ├── plaid-link.ts
 │   │   │   │   │   ├── portfolio-positions-table.test.ts
 │   │   │   │   │   ├── portfolio-positions-table.ts
+│   │   │   │   │   ├── provenance-banner-seen.ts
 │   │   │   │   │   ├── provider-credential-scope.test.ts
 │   │   │   │   │   ├── provider-credential-scope.ts
 │   │   │   │   │   ├── provider-integration-setup-validation.test.ts
@@ -8337,6 +8338,7 @@ Meridian-main
 │   │   │   │   ├── app-shell.route-focus.test.ts
 │   │   │   │   ├── app-shell.route-focus.ts
 │   │   │   │   ├── app-shell.status-panel.ts
+│   │   │   │   ├── app-shell.trust-strip.test.ts
 │   │   │   │   ├── app-shell.trust-strip.ts
 │   │   │   │   ├── app-shell.view-model.test.ts
 │   │   │   │   ├── app-shell.view-model.ts
