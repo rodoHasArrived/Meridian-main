@@ -4351,6 +4351,7 @@ Meridian-main
 │   │   │   ├── ILedgerPeriodLockReader.cs
 │   │   │   ├── IMultiAssetCoverageInvalidator.cs
 │   │   │   ├── IPeriodAwareRestatementResolver.cs
+│   │   │   ├── ISecurityMasterCanonicalMergeOutcomeReporter.cs
 │   │   │   ├── ISecurityMasterConflictAuthorityPolicy.cs
 │   │   │   ├── ISecurityMasterRevisionPublishedHandler.cs
 │   │   │   ├── ISecurityMasterRevisionStore.cs
@@ -4363,6 +4364,7 @@ Meridian-main
 │   │   │   ├── PostgresSecurityMasterRevisionStore.cs
 │   │   │   ├── SecurityAssetPackAdmission.cs
 │   │   │   ├── SecurityAssetProfileGovernanceService.cs
+│   │   │   ├── SecurityAssetTermsFieldSnapshot.cs
 │   │   │   ├── SecurityCashFlowReceiptJsonContext.cs
 │   │   │   ├── SecurityDayCountWriteGuard.cs
 │   │   │   ├── SecurityEconomicDefinitionAdapter.cs
@@ -4407,6 +4409,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterTermsCapabilityVerifier.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.Discard.cs
+│   │   │   ├── SecurityMasterWorkbenchCommandService.FieldBase.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.IndependentReview.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.Mutations.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.Overrides.cs
@@ -4416,6 +4419,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterWriteRefusedException.cs
 │   │   │   ├── SecurityResolver.cs
 │   │   │   ├── SecurityResolverCompatibilityAdapter.cs
+│   │   │   ├── StaleFieldProposalException.cs
 │   │   │   └── SymbolResolutionMismatchTracker.cs
 │   │   ├── Services
 │   │   │   ├── AutoConfigurationService.cs
@@ -6956,7 +6960,8 @@ Meridian-main
 │   │   │   │   ├── 056_otc_contract_lifecycle_events.sql
 │   │   │   │   ├── 057_terms_capability_floor.sql
 │   │   │   │   ├── 058_security_master_schedule_decimal_precision.sql
-│   │   │   │   └── 059_security_events_append_only_guard.sql
+│   │   │   │   ├── 059_security_events_append_only_guard.sql
+│   │   │   │   └── 060_security_master_revision_field_base.sql
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IBondReferenceProjectionStore.cs
 │   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs
@@ -11762,6 +11767,7 @@ Meridian-main
 │   │   │   │   ├── ApprovedFieldEditCanonicalMergeHandlerTests.AheadOfWrite.cs
 │   │   │   │   ├── ApprovedFieldEditCanonicalMergeHandlerTests.cs
 │   │   │   │   ├── ApprovedFieldEditCanonicalMergeHandlerTests.ScheduleAuthoring.cs
+│   │   │   │   ├── ApprovedFieldEditCanonicalMergeHandlerTests.StaleProposal.cs
 │   │   │   │   ├── InMemorySecurityMasterRevisionStoreTests.cs
 │   │   │   │   ├── LedgerBookAffectedResolverTests.cs
 │   │   │   │   ├── LedgerPeriodLockReaderTests.cs
@@ -11776,7 +11782,8 @@ Meridian-main
 │   │   │   │   ├── SecurityMasterWorkbenchCommandServiceTests.cs
 │   │   │   │   ├── SecurityMasterWorkbenchCommandServiceTests.IndependentReviewer.cs
 │   │   │   │   ├── SecurityMasterWorkbenchCommandServiceTests.RetainedScheduleGaps.cs
-│   │   │   │   └── SecurityMasterWorkbenchCommandServiceTests.ScheduleSubmission.cs
+│   │   │   │   ├── SecurityMasterWorkbenchCommandServiceTests.ScheduleSubmission.cs
+│   │   │   │   └── SecurityMasterWorkbenchCommandServiceTests.StaleProposal.cs
 │   │   │   ├── AlternativeAssetLotTests.cs
 │   │   │   ├── AssetOperationsProjectionRoundTripTests.cs
 │   │   │   ├── BondCalculationReplayTests.cs

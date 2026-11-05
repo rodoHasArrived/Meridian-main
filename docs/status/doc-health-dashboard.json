@@ -1,11 +1,11 @@
 {
   "total_files": 796,
-  "total_lines": 181905,
+  "total_lines": 181932,
   "orphaned_count": 259,
   "no_heading_count": 157,
   "stale_count": 0,
   "todo_count": 328,
-  "average_lines": 228.5,
+  "average_lines": 228.6,
   "health_score": 83,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1679,7 +1679,7 @@
     },
     {
       "path": "docs/architecture/security-master-extensibility-review.md",
-      "line_count": 7848,
+      "line_count": 7858,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2967,7 +2967,7 @@
     },
     {
       "path": "docs/generated/database/modules/security_master.md",
-      "line_count": 1914,
+      "line_count": 1917,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3031,7 +3031,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 13201,
+      "line_count": 13208,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6239,7 +6239,7 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 1436,
+      "line_count": 1437,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6271,7 +6271,7 @@
     },
     {
       "path": "src/Meridian.Contracts/README.md",
-      "line_count": 2145,
+      "line_count": 2146,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6527,7 +6527,7 @@
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
-      "line_count": 3027,
+      "line_count": 3028,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6535,7 +6535,7 @@
     },
     {
       "path": "src/Meridian.Ui/dashboard/README.md",
-      "line_count": 1917,
+      "line_count": 1921,
       "has_heading": true,
       "todo_count": 5,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

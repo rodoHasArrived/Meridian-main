@@ -1752,6 +1752,10 @@ The passport editor builds its term picker from `GET /api/security-master/asset-
 a value control per editor kind, and a client pre-check
 (`security-passport-schema-fields.view-model.ts`). The free-text field path stays as a fallback.
 
+## Security Master publish outcome
+
+`SecurityMasterPublishResult` in `lib/api/security-master-workbench.api.ts` carries an optional `canonicalMerge`. It says whether publishing the approved edit changed the golden record (`Merged` or `AlreadyCanonical`) or not (`OverlayOnly` or `NotApplicable`). When an approved proposal is stale because its field changed after the draft, the publish route answers 409 with `stale-field-proposal`. The existing classifier reports that as a revision-state conflict carrying the server message.
+
 ## Diagrams
 
 See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
