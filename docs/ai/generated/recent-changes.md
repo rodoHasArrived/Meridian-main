@@ -1,13 +1,13 @@
 # Meridian AI Recent Changes
 
-> Auto-generated on 2026-11-05T20:14:30Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-11-05T22:15:52Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 Rolling source-file activity for the last 14 days.
 
 | File | Subsystem | Last modified | Commit | Summary | Touches |
 |---|---|---|---|---|---|
-| `src/Meridian.Application/README.md` | Host and Composition | 2026-11-05T19:20:34+00:00 | `e7d86c2b` | Refuse OtherSecurity classification text the label reader would misread | 29 |
-| `src/Meridian.Contracts/README.md` | Host and Composition | 2026-11-05T19:20:34+00:00 | `e7d86c2b` | Refuse OtherSecurity classification text the label reader would misread | 27 |
+| `src/Meridian.Application/README.md` | Host and Composition | 2026-11-05T19:20:34+00:00 | `e7d86c2b` | Refuse OtherSecurity classification text the label reader would misread | 31 |
+| `src/Meridian.Contracts/README.md` | Host and Composition | 2026-11-05T19:20:34+00:00 | `e7d86c2b` | Refuse OtherSecurity classification text the label reader would misread | 29 |
 | `src/Meridian.Application/SecurityMaster/SecurityMasterService.cs` | Host and Composition | 2026-11-05T19:20:34+00:00 | `e7d86c2b` | Refuse OtherSecurity classification text the label reader would misread | 12 |
 | `src/Meridian.Application/SecurityMaster/SecurityMasterService.Creation.cs` | Host and Composition | 2026-11-05T19:20:34+00:00 | `e7d86c2b` | Refuse OtherSecurity classification text the label reader would misread | 4 |
 | `src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs` | Host and Composition | 2026-11-05T19:20:34+00:00 | `e7d86c2b` | Refuse OtherSecurity classification text the label reader would misread | 3 |

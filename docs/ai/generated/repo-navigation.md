@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-11-05T20:14:30Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-11-05T22:15:52Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -134,8 +134,8 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Application/README.md` | Host and Composition | `e7d86c2b` (2026-11-05T19:20:34+00:00) | 29 |
-| `src/Meridian.Contracts/README.md` | Host and Composition | `e7d86c2b` (2026-11-05T19:20:34+00:00) | 27 |
+| `src/Meridian.Application/README.md` | Host and Composition | `e7d86c2b` (2026-11-05T19:20:34+00:00) | 31 |
+| `src/Meridian.Contracts/README.md` | Host and Composition | `e7d86c2b` (2026-11-05T19:20:34+00:00) | 29 |
 | `src/Meridian.Application/SecurityMaster/SecurityMasterService.cs` | Host and Composition | `e7d86c2b` (2026-11-05T19:20:34+00:00) | 12 |
 | `src/Meridian.Application/SecurityMaster/SecurityMasterService.Creation.cs` | Host and Composition | `e7d86c2b` (2026-11-05T19:20:34+00:00) | 4 |
 | `src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs` | Host and Composition | `e7d86c2b` (2026-11-05T19:20:34+00:00) | 3 |

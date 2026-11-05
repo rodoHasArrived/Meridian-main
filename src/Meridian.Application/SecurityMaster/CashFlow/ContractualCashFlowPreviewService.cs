@@ -4,6 +4,7 @@ using Meridian.Contracts.Calendars;
 using Meridian.Contracts.CashFlows;
 using Meridian.Contracts.DirectLending;
 using Meridian.Contracts.SecurityMaster;
+using RateUnitNormalizer = Meridian.Contracts.SecurityMaster.RateUnitNormalizer;
 
 namespace Meridian.Application.SecurityMaster.CashFlow;
 

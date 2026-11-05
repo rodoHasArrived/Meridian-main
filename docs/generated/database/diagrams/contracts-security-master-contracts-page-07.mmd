@@ -1,5 +1,80 @@
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationBlockerDto["StructuredCreditReclassificationBlockerDto"] {
+        +string Code
+        +string Message
+    }
+    class Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationCandidateDto["StructuredCreditReclassificationCandidateDto"] {
+        +IReadOnlyList~StructuredCreditReclassificationBlockerDto~ Blockers
+        +JsonElement DerivedAssetSpecificTerms
+        +string DisplayName
+        +StructuredCreditReclassificationDisposition Disposition
+        +string PrimaryIdentifierKind
+        +string PrimaryIdentifierValue
+        +string? ProposedKind
+        +Guid SecurityId
+        +string SourceAssetClass
+        +string SourceLabel
+    }
+    class Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationDisposition["StructuredCreditReclassificationDisposition"] {
+    }
+    class Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationReportDto["StructuredCreditReclassificationReportDto"] {
+        +int BlockedCount
+        +int CandidateCount
+        +IReadOnlyList~StructuredCreditReclassificationCandidateDto~ Candidates
+        +DateTimeOffset GeneratedAt
+        +int ReadyCount
+        +int SecuritiesScanned
+        +int UnreadableCount
+    }
+    class Meridian_Contracts_SecurityMaster_StructuredFactorScheduleEntry["StructuredFactorScheduleEntry"] {
+        +DateOnly AsOfDate
+        +decimal Factor
+    }
+    class Meridian_Contracts_SecurityMaster_StructuredPrincipalScheduleEntry["StructuredPrincipalScheduleEntry"] {
+        +decimal Amount
+        +DateOnly PaymentDate
+    }
+    class Meridian_Contracts_SecurityMaster_StructuredStepCouponEntry["StructuredStepCouponEntry"] {
+        +DateOnly EffectiveDate
+        +decimal Rate
+    }
+    class Meridian_Contracts_SecurityMaster_SubscriptionCorporateActionTerms["SubscriptionCorporateActionTerms"] {
+        +string EventType
+        +decimal? PricePerUnit
+        +decimal? RightsPerHeldUnit
+        +Guid? RightsSecurityId
+        +Guid? SuccessorSecurityId
+        +decimal? UnitsPerRight
+    }
+    class Meridian_Contracts_SecurityMaster_TradingParametersDto["TradingParametersDto"] {
+        +DateTimeOffset AsOf
+        +decimal? CircuitBreakerThresholdPct
+        +decimal? ContractMultiplier
+        +bool? IsEasyToBorrow
+        +bool? IsFractionable
+        +bool? IsMarginable
+        +bool? IsShortable
+        +decimal? LotSize
+        +decimal? MarginRequirementPct
+        +decimal? MinimumOrderSize
+        +decimal? MinimumTradeIncrement
+        +decimal? PriceIncrement
+    }
+    class Meridian_Contracts_SecurityMaster_TransitionCorporateActionCaseRequestDto["TransitionCorporateActionCaseRequestDto"] {
+        +string Actor
+        +string? AssignedTo
+        +CorporateActionCaseTransitionAuthorityDto? Authority
+        +string? BlockedReason
+        +Guid CaseId
+        +string CompanyId
+        +string? CorrelationId
+        +long ExpectedVersion
+        +string IdempotencyKey
+        +bool PolicyOverride
+        +string Reason
+        +CorporateActionCaseScopeDto? ScopeAssertion
+    }
     class Meridian_Contracts_SecurityMaster_TransitionOtcMarginCallRequest["TransitionOtcMarginCallRequest"] {
         +OtcMarginCallAction Action
         +decimal? Amount
@@ -119,3 +194,6 @@ classDiagram
         +DateTimeOffset ValidFrom
         +DateTimeOffset? ValidTo
     }
+    Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationCandidateDto --> Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationBlockerDto
+    Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationCandidateDto --> Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationDisposition
+    Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationReportDto --> Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationCandidateDto
