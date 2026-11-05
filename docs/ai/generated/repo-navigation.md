@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-10-21T15:53:39Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-11-05T18:10:15Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -134,19 +134,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs` | Host and Composition | `468399d31` (2026-10-21T05:33:44Z) | 10 |
-| `src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs` | Unmapped | `468399d31` (2026-10-21T05:33:44Z) | 5 |
-| `src/Meridian.Application/SecurityMaster/AlternativeAssetLotExtensions.cs` | Host and Composition | `468399d31` (2026-10-21T05:33:44Z) | 2 |
-| `src/Meridian.Contracts/SecurityMaster/NotionalLot.cs` | Host and Composition | `468399d31` (2026-10-21T05:33:44Z) | 1 |
-| `src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs` | Host and Composition | `468399d31` (2026-10-21T05:33:44Z) | 1 |
-| `src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs` | Host and Composition | `0bd7b0bc4` (2026-10-20T20:28:18Z) | 16 |
-| `src/Meridian.Application/SecurityMaster/SecurityMasterDataQualityService.cs` | Host and Composition | `0bd7b0bc4` (2026-10-20T20:28:18Z) | 7 |
-| `src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.cs` | Desktop and UI Workflows | `0bd7b0bc4` (2026-10-20T20:28:18Z) | 3 |
-| `src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.CorporateActions.cs` | Desktop and UI Workflows | `7d276fc6d` (2026-10-20T20:14:06Z) | 5 |
-| `src/Meridian.Instruments/AssetOperations/AssetObligationProjectionService.cs` | Unmapped | `7d276fc6d` (2026-10-20T20:14:06Z) | 2 |
-| `src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs` | Host and Composition | `7d276fc6d` (2026-10-20T20:14:06Z) | 1 |
-| `src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.SecurityCoverage.cs` | Desktop and UI Workflows | `7d276fc6d` (2026-10-20T20:14:06Z) | 1 |
-| `src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs` | Host and Composition | `53223bf3b` (2026-10-20T19:34:19Z) | 2 |
-| `src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx` | Desktop and UI Workflows | `0aa3eeb19` (2026-10-20T19:26:20Z) | 3 |
-| `src/Meridian.Ui/dashboard/src/screens/settings-screen.operations-control.ts` | Desktop and UI Workflows | `0aa3eeb19` (2026-10-20T19:26:20Z) | 2 |
+| `src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs` | Host and Composition | `54f58ad2` (2026-11-04T22:06:21+00:00) | 12 |
+| `src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.IndependentReview.cs` | Host and Composition | `54f58ad2` (2026-11-04T22:06:21+00:00) | 1 |
+| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | `2b98a8fd` (2026-11-04T21:56:34+00:00) | 17 |
+| `src/Meridian.Application/README.md` | Host and Composition | `189f039d` (2026-11-04T21:51:43+00:00) | 27 |
+| `src/Meridian.Contracts/README.md` | Host and Composition | `189f039d` (2026-11-04T21:51:43+00:00) | 25 |
+| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | `189f039d` (2026-11-04T21:51:43+00:00) | 19 |
+| `src/Meridian.Application/SecurityMaster/ApprovedFieldEditCanonicalMergeHandler.cs` | Host and Composition | `189f039d` (2026-11-04T21:51:43+00:00) | 9 |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.SecurityMasterWorkbench.cs` | Desktop and UI Workflows | `189f039d` (2026-11-04T21:51:43+00:00) | 8 |
+| `src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs` | Host and Composition | `189f039d` (2026-11-04T21:51:43+00:00) | 7 |
+| `src/Meridian.Application/SecurityMaster/PostgresSecurityMasterRevisionStore.cs` | Host and Composition | `189f039d` (2026-11-04T21:51:43+00:00) | 7 |
+| `src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs` | Host and Composition | `189f039d` (2026-11-04T21:51:43+00:00) | 7 |
+| `src/Meridian.Ui/dashboard/src/lib/api/security-master-workbench.api.ts` | Desktop and UI Workflows | `189f039d` (2026-11-04T21:51:43+00:00) | 7 |
+| `src/Meridian.Application/SecurityMaster/ISecurityMasterCanonicalMergeOutcomeReporter.cs` | Host and Composition | `189f039d` (2026-11-04T21:51:43+00:00) | 1 |
+| `src/Meridian.Application/SecurityMaster/SecurityAssetTermsFieldSnapshot.cs` | Host and Composition | `189f039d` (2026-11-04T21:51:43+00:00) | 1 |
+| `src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs` | Host and Composition | `189f039d` (2026-11-04T21:51:43+00:00) | 1 |
 
