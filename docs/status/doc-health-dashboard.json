@@ -1,11 +1,11 @@
 {
-  "total_files": 796,
-  "total_lines": 181905,
+  "total_files": 797,
+  "total_lines": 182311,
   "orphaned_count": 259,
   "no_heading_count": 157,
   "stale_count": 0,
   "todo_count": 328,
-  "average_lines": 228.5,
+  "average_lines": 228.7,
   "health_score": 83,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1679,7 +1679,7 @@
     },
     {
       "path": "docs/architecture/security-master-extensibility-review.md",
-      "line_count": 7848,
+      "line_count": 7855,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2374,6 +2374,14 @@
       "stale": false
     },
     {
+      "path": "docs/engineering/blueprints/direct-lending-pik-capitalization-and-rate-resets.md",
+      "line_count": 211,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/engineering/blueprints/financing-liabilities-depreciation-blueprint.md",
       "line_count": 780,
       "has_heading": true,
@@ -2391,7 +2399,7 @@
     },
     {
       "path": "docs/engineering/blueprints/README.md",
-      "line_count": 243,
+      "line_count": 244,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2551,7 +2559,7 @@
     },
     {
       "path": "docs/engineering/plans/security-master-review-remediation-plan.md",
-      "line_count": 106,
+      "line_count": 114,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2703,7 +2711,7 @@
     },
     {
       "path": "docs/generated/database/contracts/direct-lending-contracts-page-01.md",
-      "line_count": 674,
+      "line_count": 662,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2711,7 +2719,7 @@
     },
     {
       "path": "docs/generated/database/contracts/direct-lending-contracts-page-02.md",
-      "line_count": 192,
+      "line_count": 309,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2967,7 +2975,7 @@
     },
     {
       "path": "docs/generated/database/modules/security_master.md",
-      "line_count": 1914,
+      "line_count": 1955,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3031,7 +3039,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 13201,
+      "line_count": 13221,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3767,7 +3775,7 @@
     },
     {
       "path": "docs/reference/api-reference.md",
-      "line_count": 856,
+      "line_count": 861,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6343,7 +6351,7 @@
     },
     {
       "path": "src/Meridian.FSharp.DirectLending.Aggregates/README.md",
-      "line_count": 80,
+      "line_count": 88,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
