@@ -203,11 +203,14 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
                     lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "InterestIncome", 0m, interest, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
                 }
 
-                // PIK interest capitalizes into loan principal instead of a cash receivable.
+                // Capitalization policy: PIK waits in a PIK receivable until a capitalization date.
+                // Legacy PIK toggle: PIK interest capitalizes into loan principal the same day.
                 if (pikInterest > 0m)
                 {
-                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "LoanPrincipal", pikInterest, 0m, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
-                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "InterestIncome", 0m, pikInterest, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
+                    var deferred = payload.RootElement.TryGetProperty("pikCapitalizationDeferred", out var deferredElement)
+                        && deferredElement.ValueKind == JsonValueKind.True;
+                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, deferred ? "PikInterestReceivable" : "LoanPrincipal", pikInterest, 0m, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
+                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, deferred ? "PikInterestIncome" : "InterestIncome", 0m, pikInterest, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
                 }
 
                 if (commitmentFee > 0m)
@@ -221,6 +224,13 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
                     lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "PenaltyReceivable", penalty, 0m, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
                     lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "PenaltyIncome", 0m, penalty, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
                 }
+                break;
+
+            case "loan.pik-capitalized":
+                var capitalizedPik = GetRequiredDecimal(payload.RootElement, "amount", "Amount");
+                description = "PIK capitalization";
+                lines.Add(new JournalLineDto(Guid.NewGuid(), 1, "LoanPrincipal", capitalizedPik, 0m, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
+                lines.Add(new JournalLineDto(Guid.NewGuid(), 2, "PikInterestReceivable", 0m, capitalizedPik, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
                 break;
 
             case "loan.mixed-payment-applied":
