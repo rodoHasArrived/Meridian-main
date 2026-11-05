@@ -566,7 +566,14 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<IDirectLendingOperationsStore>(sp => (PostgresDirectLendingStateStore)sp.GetRequiredService<IDirectLendingStateStore>());
             services.AddSingleton<DirectLendingMigrationRunner>();
             services.AddSingleton<IDirectLendingQueryService, PostgresDirectLendingQueryService>();
-            services.AddSingleton<LoanAccountingProjector>();
+            // Direct lending can be enabled through the Security Master connection-string fallback
+            // without a ledger database, so the journal store is optional here. The projector fails
+            // closed on every ledger-impacting event when no store is composed; it never posts
+            // around the governed ledger.
+            services.AddSingleton(sp => new LoanAccountingProjector(
+                sp.GetService<ILedgerJournalStore>(),
+                sp.GetRequiredService<IAccountingPolicyService>(),
+                sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>()));
             services.AddSingleton<IAccrualLedgerService, AccrualLedgerService>();
             services.AddSingleton<IDirectLendingCommandService, PostgresDirectLendingCommandService>();
             services.AddSingleton<IDirectLendingService, PostgresDirectLendingService>();
