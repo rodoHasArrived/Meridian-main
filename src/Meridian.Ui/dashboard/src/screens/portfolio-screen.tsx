@@ -21,7 +21,6 @@ import {
 import { OperationalTrustSummary, type OperationalTrustTone } from "@/components/meridian/operational-trust-summary";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { StatStrip } from "@/components/meridian/stat-strip";
-import { WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
 import { EmptyState } from "@/components/data/concrete";
 import { SeverityBadge, TrustStrip, type TrustStripItem } from "@/components/operations";
 import {
@@ -297,12 +296,6 @@ const brokeragePositionColumns: DenseDataTableColumn<PortfolioBrokeragePositionR
 
 type PortfolioRouteViewId = "overview" | "attribution" | "brokerage-sync";
 
-const portfolioRouteTabs: { id: PortfolioRouteViewId; label: string; route: string }[] = [
-  { id: "overview", label: "Overview", route: WORKSTATION_ROUTE_CATALOG.portfolio },
-  { id: "attribution", label: "Attribution", route: WORKSTATION_ROUTE_CATALOG.portfolioAttribution },
-  { id: "brokerage-sync", label: "Brokerage sync", route: WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync }
-];
-
 export function resolvePortfolioRouteView(pathname: string): PortfolioRouteViewId {
   // Match the segment right after /portfolio so a dynamic parameter deeper in
   // the path can never collide with a view keyword.
@@ -348,11 +341,6 @@ export function PortfolioScreen({
   const showOverview = routeView === "overview";
   const showAttribution = routeView === "attribution";
   const showBrokerageSync = routeView === "brokerage-sync";
-  const routeTabs = portfolioRouteTabs.map((tab) => ({
-    id: tab.id,
-    label: tab.label,
-    selected: tab.id === routeView
-  }));
   const brokerageAccountButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const shouldFocusBrokerageAccount = useRef(false);
   const drillInRequestId = useRef(0);
@@ -694,12 +682,8 @@ export function PortfolioScreen({
 
   return (
     <div className={showOverview ? "space-y-3" : "space-y-5"}>
-      <StatStrip
-        metrics={vm.metricsFromTrading ? vm.metricCards : vm.fallbackStats}
-        label="Portfolio headline metrics"
-        compact={showOverview}
-      />
-
+      {/* Route heading first; workspace-wide metrics follow. The sidebar is the only
+          sub-route navigation (no in-page tab strip). */}
       <section
         role="region"
         aria-label="Portfolio workbench context"
@@ -723,20 +707,14 @@ export function PortfolioScreen({
               Cash Ladder
             </Link>
           </Button>
-          <WorkspaceTabStrip
-            label="Portfolio routes"
-            tabs={routeTabs}
-            onSelect={(id) => {
-              const tab = portfolioRouteTabs.find((candidate) => candidate.id === id);
-              if (tab) {
-                // Preserve the querystring: the operating scope is threaded
-                // through search params across the shell.
-                navigate({ pathname: tab.route, search: location.search });
-              }
-            }}
-          />
         </div>
       </section>
+
+      <StatStrip
+        metrics={vm.metricsFromTrading ? vm.metricCards : vm.fallbackStats}
+        label="Portfolio headline metrics"
+        compact={showOverview}
+      />
 
       <OperationalTrustSummary
         label="Portfolio data confidence"
