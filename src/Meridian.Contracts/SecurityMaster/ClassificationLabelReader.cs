@@ -100,6 +100,14 @@ public static class ClassificationLabelReader
     }
 
     /// <summary>
+    /// True when <paramref name="value"/> is free text the decoder would change, because it looks like
+    /// a retired rendering. New writes refuse such text so stored labels stay unambiguous.
+    /// </summary>
+    public static bool IsAmbiguousFreeText(string? value)
+        => !string.IsNullOrWhiteSpace(value)
+           && !string.Equals(Normalize(value), value.Trim(), StringComparison.Ordinal);
+
+    /// <summary>
     /// Normalizes a label for a non-optional field (asset class, sub-type), keeping the stored
     /// value when the decoder would produce no label rather than turning a required field null.
     /// </summary>

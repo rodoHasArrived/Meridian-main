@@ -223,6 +223,15 @@ labels. Every declared catalog class's new write is pinned to the F# names, and 
 `ToString()` rendering decodes to the same labels; a legacy-labelled event replays with unchanged
 bytes and rebuilds the same projection as its canonical twin.
 
+*Ambiguous free text is refused on write (2026-11-05).* Text alone cannot tell a new free-text label
+`None` or `Some(Equity)` from the retired rendering of the same characters, so the reader would
+misread it. `SecurityMasterService` therefore refuses, on create and on terms amendment, an
+`OtherSecurity` `subType` or `category` that `ClassificationLabelReader.IsAmbiguousFreeText` flags:
+`None`, a decodable `Some(…)`, a quoted literal, or an `OtherFamily "…"` / `OtherSubType "…"`
+payload. The refusal is a `SecurityMasterWriteRefusedException` naming the value the reader would
+return. Text the reader keeps unchanged, including `Some(Nested)`, is accepted. Every other stored
+free-text label is a catalog constant, and replaying retained events is not checked.
+
 *Decision D2 (slice 3; not the D2 finding above) — normalize for grouping.* Certified-report rows
 carry the decoded family and sub-type, so a record retained as `Some(PreferredEquity)` now groups
 with its `PreferredEquity` peers rather than forming its own section. Grouping for current

@@ -181,6 +181,7 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
         // they run after the decode; a row this node cannot decode is a fault, and no amendment can
         // succeed here.
         EnsureAssetClassIsRecognizedHere(currentProjection);
+        EnsureClassificationTextIsUnambiguous(currentProjection.AssetClass, request.AssetSpecificTermsPatch);
         _ = MapRequestOrRefuse(() =>
         {
             ScheduleTermsWriteRules.EnsureAmendmentDoesNotPromoteStrayContainers(
