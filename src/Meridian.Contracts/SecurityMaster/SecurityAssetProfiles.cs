@@ -93,7 +93,11 @@ public sealed record SecurityAssetProfileDefinitionDto(
     // The governance approval reference for this version, so the write seam can verify the
     // approval evidence a record's envelope claims against the catalog's own facts. Null on
     // definitions predating the field — verification then has no catalog fact to compare.
-    string? ApprovalReference = null);
+    string? ApprovalReference = null,
+    // The actor who last drafted this version. Carried through approval so maker-checker can be
+    // checked on every path. Null on definitions drafted before the field existed; for an unapproved
+    // legacy draft the author is then still in ApprovedBy, and no maker is invented for older records.
+    string? DraftedBy = null);
 
 public sealed record SecurityAssetProfileTermsDto(
     string CustomProfileId,

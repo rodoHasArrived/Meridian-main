@@ -165,6 +165,30 @@ because no policy-default change is accepted by this review; `RequireIndependent
 unconsumed. Deployment defaults and legacy draft handling (a draft's author is read from
 `ApprovedBy`) still require a separate decision.
 
+**Slice 1 disposition — 2026-11-04.** The governed-write half of D5 is now enforced in the service.
+- **Governed amendments.** `SecurityMasterService` checks `IGovernedTermAmendmentPolicy` itself. With `RequireGovernedTermAmendments` on, `AmendTermsAsync` and the preferred, convertible and term-block amendments throw `GovernedTermAmendmentRequiredException`. The HTTP routes answer it with the shared 403, and the WPF editor reports it.
+- **Two other typed paths:**
+  - The governed publisher writes through `IGovernedPublicationAmender`. It requires `SourceRecordId` to name an Approved (or, on retry, Published) revision of the same security. With no revision store composed, it fails closed while governance is on.
+  - Provider and system ingest write through `ISecurityMasterAmender`: Polygon backfill, EDGAR and ticker changes. It refuses operator source systems.
+
+  No request flag can opt out.
+- **Independent field-edit review.** `RequireIndependentReviewer` is now read. With it on, a submission cannot name the drafter as reviewer, and the submitter cannot approve. Its code default changed from an unread `true` to `false` to keep behavior. The sample configuration keeps it on.
+- **Profile approval.** It records `DraftedBy`, and checks every drafted audit event of the version. A legacy draft falls back to its recorded author; no maker is invented.
+- **Defaults.** The deployment defaults for all three settings stay unchanged; turning them on is still a separate decision.
+- **Remaining limits:**
+  - Revisions submitted before this change are not rechecked against their drafter, because a submitted revision no longer carries the drafter.
+  - The stale-proposal half of D5 is slice 2.
+
+**Slice 2 disposition — 2026-11-04.** The stale-proposal half of D5 is now handled.
+- **Recording the base.** Staging an `assetSpecificTerms.*` edit records two things on the revision (migration `060`): the security version the edit was staged at (`base_version`), and a canonical snapshot of every stored key the merge would overwrite (`field_base_value`, built by `SecurityAssetTermsFieldSnapshot`). The snapshot covers each spelling and case variant of the declared key, or of the `profileFields` key.
+- **Checking it at publish.** At publish, `ApprovedFieldEditCanonicalMergeHandler` re-snapshots the field when the version moved:
+  - If the field changed, publication throws `StaleFieldProposalException`. The workbench route answers 409 `stale-field-proposal`, the revision stays Approved, and the operator discards it and re-stages.
+  - If only other fields changed, it merges onto the fresh projection, so those concurrent changes survive.
+  - A field that already holds the approved value converges with no write.
+  - Revisions without a recorded base publish as before.
+- **Publish outcome.** `SecurityMasterPublishResultDto.CanonicalMerge` reports `Merged`, `AlreadyCanonical`, `OverlayOnly` or `NotApplicable`, so operators can see whether the golden record changed. The revision link in `SourceRecordId` is kept.
+- **Still open.** Recovering the maker and checker from retained lineage still depends on the workflow's approval evidence, because revision transitions overwrite the actor.
+
 ### D6 — Classification labels: still open, including historical payload policy
 
 [SecurityEconomicDefinitionAdapter](../../src/Meridian.Application/SecurityMaster/SecurityEconomicDefinitionAdapter.cs)

@@ -985,7 +985,7 @@ pre-check; the free-text field path remains available.
 
 ## Security Master governance controls (2026-11)
 
-- **Desktop honours governed term amendments.** The desktop binds the `SecurityMasterWorkbench` configuration section and registers `IGovernedTermAmendmentPolicy`. When `RequireGovernedTermAmendments` is on, `SecurityMasterEditViewModel` refuses a direct amendment with the shared guidance instead of bypassing the gate the web API enforces.
+- **Desktop honours governed term amendments.** The desktop binds the `SecurityMasterWorkbench` configuration section and registers `IGovernedTermAmendmentPolicy`. When `RequireGovernedTermAmendments` is on, `SecurityMasterEditViewModel` refuses a direct amendment with the shared guidance instead of bypassing the gate the web API enforces. The service enforces the setting too, and the editor reports that refusal, so a desktop composed without the policy still cannot write directly.
 - **Contract-multiplier requirement.** `SecurityMasterViewModel` uses `InstrumentTypeDescriptorCatalog.RequiresContractMultiplier` rather than matching "Option"/"Future"/"Derivative" in the asset-class name.
 
 See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D8) for status and open decisions.

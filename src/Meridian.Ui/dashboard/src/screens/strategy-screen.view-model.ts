@@ -1933,9 +1933,12 @@ export function buildPlotToolState({
   const beta = 0.48;
   const meanX = 66.84;
   const meanY = 71.42;
-  const parsedSharpe = parseDecimalToken(activeRun?.sharpe) ?? 1.24;
-  const parsedReturn = activeRun?.totalReturn ?? parsePercentToken(activeRun?.pnl) ?? 0.042;
-  const maxDrawdown = comparison[0]?.maxDrawdown ?? -0.148;
+  // Run-linked metrics never fall back to invented literals: a missing value
+  // renders "Unavailable" so the PlotTool never shows fabricated performance.
+  const parsedSharpe = parseDecimalToken(activeRun?.sharpe);
+  const parsedReturn = activeRun?.totalReturn ?? parsePercentToken(activeRun?.pnl);
+  const maxDrawdown = comparison[0]?.maxDrawdown ?? null;
+  const netPnl = comparison[0]?.netPnl ?? activeRun?.netPnl ?? null;
   const queuedMetric = metrics.find((metric) => /queue/i.test(metric.label))?.value ?? `${runs.filter((run) => run.status === "Queued").length}`;
   const reviewMetric = metrics.find((metric) => /review/i.test(metric.label))?.value ?? `${runs.filter((run) => /review/i.test(run.status)).length}`;
   const promotionCue = formatPromotionState(activeRun?.promotionState ?? comparison[0]?.promotionState ?? null);
@@ -1955,9 +1958,9 @@ export function buildPlotToolState({
     detail: `${latestObservation.signalText} · highlighted at ${formatText(activeRun?.lastUpdated ?? "2m ago")} · x ${focusPoint.x}, y ${focusPoint.y}`
   };
   const momentRows: StrategyPlotMomentRow[] = [
-    { id: "net-pnl", label: "Net P&L", value: formatMoney(comparison[0]?.netPnl ?? activeRun?.netPnl ?? 3200, true), benchmark: "Pair summary" },
+    { id: "net-pnl", label: "Net P&L", value: formatMoney(netPnl, true), benchmark: "Pair summary" },
     { id: "return", label: "Total return", value: formatSignedPercent(parsedReturn), benchmark: "Run linked" },
-    { id: "sharpe", label: "Sharpe ratio", value: parsedSharpe.toFixed(3), benchmark: "Operator review" },
+    { id: "sharpe", label: "Sharpe ratio", value: formatNullableNumber(parsedSharpe, 3), benchmark: "Operator review" },
     { id: "drawdown", label: "Max drawdown", value: formatSignedPercent(maxDrawdown), benchmark: "Distribution tail" },
     { id: "promotion", label: "Promotion state", value: promotionCue, benchmark: "Strategy posture" },
     { id: "evidence", label: "Evidence pack", value: evidenceCue, benchmark: "Ledger / audit" }
@@ -2134,16 +2137,16 @@ export function buildPlotToolState({
         {
           id: "sharpe",
           label: "Sharpe (5d)",
-          value: parsedSharpe.toFixed(2),
+          value: formatNullableNumber(parsedSharpe, 2),
           detail: "Run-linked",
-          tone: parsedSharpe >= 1 ? "success" : "warning"
+          tone: parsedSharpe === null ? "default" : parsedSharpe >= 1 ? "success" : "warning"
         },
         {
           id: "drawdown",
           label: "Max DD",
           value: formatSignedPercent(maxDrawdown),
           detail: "Recent window",
-          tone: maxDrawdown < -0.1 ? "danger" : "warning"
+          tone: maxDrawdown === null ? "default" : maxDrawdown < -0.1 ? "danger" : "warning"
         }
       ],
       distributionBars: plotToolDistributionBars,

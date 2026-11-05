@@ -9982,12 +9982,6 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
-      "target": "contract:Meridian.Contracts.SecurityMaster.ClassificationLabelReader"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.CommitmentLot"
     },
     {
@@ -10889,18 +10883,6 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorCatalog"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:all-contracts",
-      "target": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelException"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:all-contracts",
-      "target": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelField"
     },
     {
       "kind": "contract-set-member",
@@ -17099,6 +17081,18 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.SecurityMasterAccountingIssueDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SecurityMasterCanonicalMergeOutcomeDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SecurityMasterCanonicalMergeOutcomeKind"
     },
     {
       "kind": "contract-set-member",
@@ -23986,12 +23980,6 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
-      "target": "contract:Meridian.Contracts.SecurityMaster.ClassificationLabelReader"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.CommitmentLot"
     },
     {
@@ -24893,18 +24881,6 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorCatalog"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:security-master-contracts",
-      "target": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelException"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:security-master-contracts",
-      "target": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelField"
     },
     {
       "kind": "contract-set-member",
@@ -38211,24 +38187,6 @@
     {
       "kind": "contract-reference",
       "label": "",
-      "source": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorCatalog",
-      "target": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelException"
-    },
-    {
-      "kind": "contract-reference",
-      "label": "",
-      "source": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelException",
-      "target": "contract:Meridian.Contracts.Domain.Enums.InstrumentType"
-    },
-    {
-      "kind": "contract-reference",
-      "label": "",
-      "source": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelException",
-      "target": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelField"
-    },
-    {
-      "kind": "contract-reference",
-      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.IssueOtcMarginCallRequest",
       "target": "contract:Meridian.Contracts.SecurityMaster.OtcMovementKind"
     },
@@ -45753,6 +45711,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.SecurityMasterCanonicalMergeOutcomeDto",
+      "target": "contract:Meridian.Contracts.Workstation.SecurityMasterCanonicalMergeOutcomeKind"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.SecurityMasterConflictAssessmentDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterConflict"
     },
@@ -45875,6 +45839,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.SecurityMasterPublishResultDto",
       "target": "contract:Meridian.Contracts.Workstation.RestatementCandidateDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.SecurityMasterPublishResultDto",
+      "target": "contract:Meridian.Contracts.Workstation.SecurityMasterCanonicalMergeOutcomeDto"
     },
     {
       "kind": "contract-reference",
@@ -56116,7 +56086,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "f462fd8adccac8a83cb70288b8704bc0a0ba4cce752d39983dc978ba249754c2",
+  "fingerprint": "998a15d3b900982e064b155cd2ec495b3f0012be33199e2e31e9cd43e80703ed",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -66148,12 +66118,6 @@
       "label": "Meridian.Contracts.SecurityMaster.CashFlowLegRateKind"
     },
     {
-      "classification": "class",
-      "id": "contract:Meridian.Contracts.SecurityMaster.ClassificationLabelReader",
-      "kind": "contract-type",
-      "label": "Meridian.Contracts.SecurityMaster.ClassificationLabelReader"
-    },
-    {
       "classification": "record",
       "id": "contract:Meridian.Contracts.SecurityMaster.CommitmentLot",
       "kind": "contract-type",
@@ -67058,18 +67022,6 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorCatalog",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorCatalog"
-    },
-    {
-      "classification": "record",
-      "id": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelException",
-      "kind": "contract-type",
-      "label": "Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelException"
-    },
-    {
-      "classification": "enum",
-      "id": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelField",
-      "kind": "contract-type",
-      "label": "Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelField"
     },
     {
       "classification": "request",
@@ -73268,6 +73220,18 @@
       "id": "contract:Meridian.Contracts.Workstation.SecurityMasterAccountingIssueDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.SecurityMasterAccountingIssueDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.SecurityMasterCanonicalMergeOutcomeDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SecurityMasterCanonicalMergeOutcomeDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Workstation.SecurityMasterCanonicalMergeOutcomeKind",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SecurityMasterCanonicalMergeOutcomeKind"
     },
     {
       "classification": "dto",
@@ -82131,11 +82095,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3598,
-    "contract_set_memberships": 4459,
-    "edges": 9324,
+    "contract_references": 3597,
+    "contract_set_memberships": 4455,
+    "edges": 9319,
     "foreign_keys": 155,
     "logical_references": 6,
-    "nodes": 4511
+    "nodes": 4510
   }
 }

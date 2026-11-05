@@ -1350,6 +1350,9 @@ erDiagram
         text fund_profile_id
         text field_value
         boolean field_value_recorded
+        bigint base_version
+        text field_base_value
+        boolean field_base_recorded
     }
     security_master_security_master_terms_capability_floor {
         boolean singleton PK
@@ -1885,7 +1888,7 @@ erDiagram
 | `security_master_conflicts` | table | 14 | `conflict_id` | 0 | 2 | - |
 | `security_master_quality_reports` | table | 3 | `id` | 0 | 2 | - |
 | `security_master_quality_reports_id_seq` | sequence | 0 | - | 0 | 0 | - |
-| `security_master_revisions` | table | 13 | `revision_id` | 0 | 2 | - |
+| `security_master_revisions` | table | 16 | `revision_id` | 0 | 2 | - |
 | `security_master_terms_capability_floor` | table | 6 | `singleton` | 0 | 1 | One reviewed minimum declared-mapping/kernel capability floor for configured Security Master writers. Empty during 5b-1; activated only after the fleet inventory and data gates, before 5b-2. Server and WPF writer startup refuse unknown/newer active floors. Does not enable declared terms or authorize deployment. |
 | `security_operator_overrides` | table | 9 | `security_id` | 1 | 1 | - |
 | `security_price_selection_receipts` | table | 6 | `receipt_id` | 1 | 2 | Immutable golden-copy evaluation result, exact hierarchy snapshot, and quote comparisons; scoped receipt replay is the reproducibility authority. |
