@@ -83,6 +83,7 @@ import {
   useOnboardingTour
 } from "@/components/meridian/onboarding-tour";
 import { ActivationHeaderProgress } from "@/features/first-run/activation-progress";
+import { buildWorkspaceAttentionCounts } from "@/lib/daily-control-tower";
 import { PriceAlertsProvider } from "@/lib/price-alerts/service";
 import {
   reportWorkstationRouteError,
@@ -590,6 +591,11 @@ function AppShell({
     workflowSummary,
     operatingScopeInput
   ]);
+  // Sidebar attention counts read the same queue selection the Daily Control Tower lists.
+  const workspaceAttention = useMemo(
+    () => buildWorkspaceAttentionCounts(shell.workflowContinuity),
+    [shell.workflowContinuity]
+  );
   const breadcrumbItems = useMemo(
     () => buildWorkspaceBreadcrumbItems(pathname, shell.activeWorkspace, navigate),
     [pathname, shell.activeWorkspace, navigate]
@@ -728,6 +734,8 @@ function AppShell({
         provenance={dataProvenance}
         onRetryLiveData={onRetryDemoModeProbe}
         retryBusy={demoModeProbeBusy}
+        environment={session?.environment ?? null}
+        compactAfterSeen
       />
       <DegradedModeBanner degradedMode={overview?.degradedMode} />
 
@@ -736,6 +744,7 @@ function AppShell({
           className="workstation-rail-desktop"
           density="compact"
           operatingContextScope={operatingScopeInput}
+          attention={workspaceAttention}
         />
 
         <main
@@ -929,6 +938,7 @@ function AppShell({
               className="workstation-nav-sheet"
               operatingContextScope={operatingScopeInput}
               onNavigate={() => setNavOpen(false)}
+              attention={workspaceAttention}
             />
           </SheetBody>
         </SheetContent>
@@ -1031,7 +1041,8 @@ function buildWorkspaceBreadcrumbItems(
   navigate: ReturnType<typeof useNavigate>
 ): BreadcrumbItem[] {
   if (pathname === "/") {
-    return [{ label: "Workstation", current: true }];
+    // The Daily Control Tower is the workstation's front door, named "Today" in the sidebar.
+    return [{ label: "Workstation" }, { label: "Today", current: true }];
   }
 
   const routeLabel = resolveWorkstationRouteBreadcrumbLabel(pathname, workspace);

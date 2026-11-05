@@ -33,6 +33,7 @@
     <Compile Include="CashFlowProjectorTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'DirectLending'" />
     <Compile Include="SettlementInstructionCommandsTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'DirectLending'" />
     <Compile Include="DirectLendingAggregateServicingTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'DirectLending'" />
+    <Compile Include="DirectLendingPikCapitalizationAndResetTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'DirectLending'" />
   </ItemGroup>
 
   <ItemGroup>

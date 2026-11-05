@@ -8,6 +8,8 @@ import type {
   AppShellWorkflowContinuityStatusTone,
   AppShellWorkflowContinuityViewModel
 } from "@/app-shell.view-model";
+import { normalizeWorkspacePath, WORKSPACES } from "@/lib/workspace";
+import type { WorkspaceKey } from "@/types";
 
 export type DailyControlTowerBadgeVariant = "outline" | "success" | "warning" | "danger";
 
@@ -66,13 +68,55 @@ const proofPassportLabels = [
   "Audit Trail"
 ] as const;
 
+/**
+ * The decision queue the Daily Control Tower lists: every ranked focus candidate, or the visible
+ * focus items when no ranked list exists. The one selection both the Control Tower and the
+ * sidebar attention counts read, so the two can never disagree about what needs an operator.
+ */
+export function selectDailyControlTowerQueueItems(viewModel: AppShellWorkflowContinuityViewModel): AppShellOperatorFocusItem[] {
+  return viewModel.operatorFocusCommandItems.length > 0
+    ? viewModel.operatorFocusCommandItems
+    : viewModel.operatorFocusItems;
+}
+
+export interface WorkspaceAttentionCounts {
+  /** Every queued item: the "Today" entry's count. */
+  total: number;
+  byWorkspace: Partial<Record<WorkspaceKey, number>>;
+}
+
+/** Per-workspace counts of the Control Tower queue, for the sidebar. */
+export function buildWorkspaceAttentionCounts(viewModel: AppShellWorkflowContinuityViewModel): WorkspaceAttentionCounts {
+  const byWorkspace: Partial<Record<WorkspaceKey, number>> = {};
+  const queue = selectDailyControlTowerQueueItems(viewModel);
+  for (const item of queue) {
+    const key = workspaceKeyForQueueItem(item);
+    if (key) {
+      byWorkspace[key] = (byWorkspace[key] ?? 0) + 1;
+    }
+  }
+  return { total: queue.length, byWorkspace };
+}
+
+function workspaceKeyForQueueItem(item: AppShellOperatorFocusItem): WorkspaceKey | null {
+  const pathname = item.route.split(/[?#]/, 1)[0].replace(/^\/workstation(?=\/)/, "");
+  const segment = pathname.split("/").filter(Boolean)[0];
+  if (segment) {
+    const key = normalizeWorkspacePath(pathname);
+    // normalizeWorkspacePath falls back to Trading for an unknown root; only trust a real match.
+    if (key !== "trading" || segment === "trading") {
+      return key;
+    }
+  }
+  const label = item.workspaceLabel.trim().toLowerCase();
+  return WORKSPACES.find((workspace) => workspace.label.toLowerCase() === label)?.key ?? null;
+}
+
 export function buildDailyControlTowerModel(
   viewModel: AppShellWorkflowContinuityViewModel,
   trustStrip: AppShellTrustStripState
 ): DailyControlTowerModel {
-  const focusItems = viewModel.operatorFocusCommandItems.length > 0
-    ? viewModel.operatorFocusCommandItems
-    : viewModel.operatorFocusItems;
+  const focusItems = selectDailyControlTowerQueueItems(viewModel);
   const queueRows = focusItems.map((item) => buildFocusRow(item, viewModel));
   const leadingRow = queueRows[0] ?? null;
   const decision = viewModel.decisionBrief;

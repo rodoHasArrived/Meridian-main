@@ -29,11 +29,14 @@ public sealed class SecurityAssetClassLiteralRatchetTests
     // The asset-pack registry's readiness and profile dispatch are held to every domain kind and
     // canonical profile target by SecurityAssetClassOperationalWiringTests. The rate-field unit table
     // (review D10, slice 4) is keyed by class and schema field like the schema itself, and is held to
-    // the catalog and schema by RateUnitNormalizerTests.
+    // the catalog and schema by RateUnitNormalizerTests. The classification label
+    // reader's KnownCaseNames set is held to the F# AssetClass/AssetFamily/SecuritySubType unions by
+    // ClassificationLabelReaderTests.KnownCaseNames_MatchTheFSharpClassificationUnions.
     private static readonly string[] KnownDispatchSites =
     [
         "src/Meridian.Application/SecurityMaster/SecurityMasterMapping.cs",
         "src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs",
+        "src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs",
         "src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs",
         "src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs",
         "src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Profiles.cs",

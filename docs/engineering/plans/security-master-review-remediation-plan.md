@@ -77,6 +77,15 @@ until they declare a unit, Security Master engine swaps cannot declare per-leg u
 still treat negative rates differently. Canonical units and ranges, the repair path, the negative-rate
 policy and StructuredNote accounting remain open. The legacy-fixture tests now assert the decision.
 
+**2026-11-05 partial input (direct lending only):** `RateUnitNormalizer`
+(`src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs`) is an explicit-unit normalizer
+(Fraction / Percent / BasisPoints, no unspecified unit, no magnitude inference, field-specific ranges
+allowing negative index, spread and floor). Only the new direct-lending
+[PIK capitalization and reset-schedule terms](../blueprints/direct-lending-pik-capitalization-and-rate-resets.md)
+use it. It is separate from the Security Master `RateUnitNormalizer`
+(`src/Meridian.Contracts/SecurityMaster/RateUnitNormalizer.cs`) in the implementation note above; the
+two may converge once canonical units are approved.
+
 ## Slice 5 — Audit evidence contracts before storage/serialization changes
 
 **Evidence:** D7. Classify each mutable row (cash-flow source, entitlement, field provenance and

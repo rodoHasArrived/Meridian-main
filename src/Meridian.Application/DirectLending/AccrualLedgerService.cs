@@ -6,7 +6,7 @@ using Meridian.Storage.Ledger;
 namespace Meridian.Application.DirectLending;
 
 /// <summary>
-/// Projects daily loan accruals and their reversals into ledger journal writes.
+/// Projects daily loan accruals, their reversals and PIK capitalizations into ledger journal writes.
 /// </summary>
 public sealed class AccrualLedgerService : IAccrualLedgerService
 {
@@ -35,7 +35,8 @@ public sealed class AccrualLedgerService : IAccrualLedgerService
             accrual.CommitmentFeeAmount,
             accrual.PenaltyAmount,
             accrual.AnnualRateApplied,
-            accrual.PikInterestAmount
+            accrual.PikInterestAmount,
+            accrual.PikCapitalizationDeferred
         });
 
         return _projector.ProjectAsync(
@@ -67,7 +68,8 @@ public sealed class AccrualLedgerService : IAccrualLedgerService
             accrual.CommitmentFeeAmount,
             accrual.PenaltyAmount,
             accrual.AnnualRateApplied,
-            accrual.PikInterestAmount
+            accrual.PikInterestAmount,
+            accrual.PikCapitalizationDeferred
         });
 
         return _projector.ProjectAsync(
@@ -81,5 +83,33 @@ public sealed class AccrualLedgerService : IAccrualLedgerService
             ct,
             LedgerPostingKindDto.Adjustment,
             adjustmentApproval);
+    }
+
+    public Task<IReadOnlyList<LedgerJournalEntryWrite>> CapitalizePikAsync(
+        Guid loanId,
+        LoanContractDetailDto contract,
+        PikCapitalizationDto capitalization,
+        Guid sourceEventId,
+        DirectLendingEventWriteMetadata metadata,
+        CancellationToken ct = default)
+    {
+        using var payload = DirectLendingServiceSupport.CreatePayloadDocument(new
+        {
+            loanId,
+            capitalization.CapitalizationDate,
+            capitalization.PeriodStart,
+            capitalization.PeriodEnd,
+            capitalization.Amount
+        });
+
+        return _projector.ProjectAsync(
+            loanId,
+            contract,
+            "loan.pik-capitalized",
+            capitalization.CapitalizationDate,
+            payload,
+            sourceEventId,
+            metadata,
+            ct);
     }
 }

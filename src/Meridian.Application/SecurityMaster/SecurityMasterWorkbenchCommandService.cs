@@ -61,6 +61,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
     private readonly ISecurityFieldProvenanceStore? _fieldProvenance;
     private readonly ISecurityMasterStore? _projectionStore;
     private readonly Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? _assetProfileCatalog;
+    private readonly Func<bool> _requireIndependentReviewer = static () => false;
 
     public SecurityMasterWorkbenchCommandService(
         ISecurityMasterEventStore eventStore,
@@ -76,8 +77,15 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
         ILogger<SecurityMasterWorkbenchCommandService> logger,
         ISecurityFieldProvenanceStore? fieldProvenance = null,
         ISecurityMasterStore? projectionStore = null,
-        Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null)
+        Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null,
+        Microsoft.Extensions.Options.IOptionsMonitor<SecurityMasterWorkbenchOptions>? workbenchOptions = null)
     {
+        if (workbenchOptions is not null)
+        {
+            // Read at each submit/approve so the setting hot-reloads.
+            _requireIndependentReviewer = () => workbenchOptions.CurrentValue.RequireIndependentReviewer;
+        }
+
         _eventStore = eventStore ?? throw new ArgumentNullException(nameof(eventStore));
         _overrides = overrides ?? throw new ArgumentNullException(nameof(overrides));
         _conflictPolicy = conflictPolicy ?? throw new ArgumentNullException(nameof(conflictPolicy));
@@ -229,11 +237,8 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
                     // The draft durably records the exact overlay VALUE it governs (null models a
                     // CLEAR): without it, discarding a later same-path revision could never restore
                     // this revision's value — an approved predecessor would deadlock unpublishable.
-                    draftRevision = await _revisions.CreateDraftAsync(
-                        request.SecurityId, request.Actor, validatedPath, request.EffectiveFrom, request.Justification,
-                        request.FundProfileId,
-                        new SecurityMasterRevisionFieldValue(isClear ? null : request.NewValue),
-                        ct)
+                    draftRevision = await CreateFieldEditDraftAsync(
+                        request, validatedPath, new SecurityMasterRevisionFieldValue(isClear ? null : request.NewValue), currentVersion, ct)
                         .ConfigureAwait(false);
                 }
                 catch (Exception ex)
@@ -551,6 +556,8 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
                     nameof(request));
             }
 
+            EnsureReviewerIsIndependentOfDrafter(request.Reviewer, revision);
+
             // The submission rationale carries a durable REVISION-IDENTITY marker into the
             // workflow's approval evidence. Reconciling a stranded half-submission (below) is only
             // safe for the exact interrupted submission: without the marker, ANY draft — even one
@@ -644,6 +651,8 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
                 request.RevisionId,
                 $"was submitted through workflow '{revision.WorkflowId:D}' but approval was attempted via workflow '{request.WorkflowId:D}'.");
         }
+
+        EnsureApproverIsIndependentOfSubmitter(request, revision);
 
         var dto = new OperationsApprovalDecisionRequestDto(
             ExpectedVersion: request.ExpectedWorkflowVersion,
@@ -789,6 +798,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
         var invalidated = new List<string>();
         var failedHandlers = new List<string>();
         SecurityMasterTermsCapabilityRefusedException? floorRefusal = null;
+        StaleFieldProposalException? staleRefusal = null;
         foreach (var handler in _handlers)
         {
             var handlerName = handler.GetType().Name;
@@ -801,6 +811,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
             {
                 failedHandlers.Add(handlerName);
                 floorRefusal ??= ex as SecurityMasterTermsCapabilityRefusedException;
+                staleRefusal ??= ex as StaleFieldProposalException;
                 _logger.LogError(
                     ex,
                     "Revision-published handler {Handler} failed for {SecurityId} revision {RevisionId}",
@@ -818,10 +829,14 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
             System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw(floorRefusal);
         }
 
+        ThrowIfStaleProposal(staleRefusal);
+
         if (failedHandlers.Count > 0)
         {
             throw new SecurityMasterPublishFailedException(request.SecurityId, request.RevisionId, failedHandlers);
         }
+
+        var canonicalMerge = TakeCanonicalMergeOutcome(request.RevisionId);
 
         // Converge the operator-override approval decision BEFORE the Published transition: the
         // approve seam records it best-effort (a failure there logs and defers here), and a
@@ -910,7 +925,8 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
             currentVersion,
             RestatementRequired: restatement.RestatementRequired,
             RestatementCandidates: restatement.Candidates,
-            InvalidatedProjections: invalidated);
+            InvalidatedProjections: invalidated,
+            CanonicalMerge: canonicalMerge);
     }
 
     /// <summary>

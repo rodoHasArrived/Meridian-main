@@ -176,6 +176,12 @@ view model must consume the same shared read model the browser screen consumes.
   control tower view over the existing dashboard/decision-queue state.
 - `strategy-designer-screen` remains optional pending a decision on whether the desktop lane needs a
   visual designer canvas beyond `QuantScriptPage`/`BacktestPage`.
+- Browser shell note (Phase 1 hierarchy pass, 2026-11-05): the web sidebar now pins a `Today` entry
+  for the Daily Control Tower and shows per-workspace attention counts. No shared contract changed:
+  the counts come from `selectDailyControlTowerQueueItems` in the dashboard's `lib/`, a projection of
+  the existing decision queue. When WPF builds its control tower view, derive any counts from the
+  same queue, and move that selector into `Meridian.Ui.Services` first if the desktop needs it, so
+  the two shells cannot disagree about what needs an operator.
 
 ### Wave P5 — Data operations and assurance parity
 

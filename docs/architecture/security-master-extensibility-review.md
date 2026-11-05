@@ -165,6 +165,30 @@ because no policy-default change is accepted by this review; `RequireIndependent
 unconsumed. Deployment defaults and legacy draft handling (a draft's author is read from
 `ApprovedBy`) still require a separate decision.
 
+**Slice 1 disposition — 2026-11-04.** The governed-write half of D5 is now enforced in the service.
+- **Governed amendments.** `SecurityMasterService` checks `IGovernedTermAmendmentPolicy` itself. With `RequireGovernedTermAmendments` on, `AmendTermsAsync` and the preferred, convertible and term-block amendments throw `GovernedTermAmendmentRequiredException`. The HTTP routes answer it with the shared 403, and the WPF editor reports it.
+- **Two other typed paths:**
+  - The governed publisher writes through `IGovernedPublicationAmender`. It requires `SourceRecordId` to name an Approved (or, on retry, Published) revision of the same security. With no revision store composed, it fails closed while governance is on.
+  - Provider and system ingest write through `ISecurityMasterAmender`: Polygon backfill, EDGAR and ticker changes. It refuses operator source systems.
+
+  No request flag can opt out.
+- **Independent field-edit review.** `RequireIndependentReviewer` is now read. With it on, a submission cannot name the drafter as reviewer, and the submitter cannot approve. Its code default changed from an unread `true` to `false` to keep behavior. The sample configuration keeps it on.
+- **Profile approval.** It records `DraftedBy`, and checks every drafted audit event of the version. A legacy draft falls back to its recorded author; no maker is invented.
+- **Defaults.** The deployment defaults for all three settings stay unchanged; turning them on is still a separate decision.
+- **Remaining limits:**
+  - Revisions submitted before this change are not rechecked against their drafter, because a submitted revision no longer carries the drafter.
+  - The stale-proposal half of D5 is slice 2.
+
+**Slice 2 disposition — 2026-11-04.** The stale-proposal half of D5 is now handled.
+- **Recording the base.** Staging an `assetSpecificTerms.*` edit records two things on the revision (migration `060`): the security version the edit was staged at (`base_version`), and a canonical snapshot of every stored key the merge would overwrite (`field_base_value`, built by `SecurityAssetTermsFieldSnapshot`). The snapshot covers each spelling and case variant of the declared key, or of the `profileFields` key.
+- **Checking it at publish.** At publish, `ApprovedFieldEditCanonicalMergeHandler` re-snapshots the field when the version moved:
+  - If the field changed, publication throws `StaleFieldProposalException`. The workbench route answers 409 `stale-field-proposal`, the revision stays Approved, and the operator discards it and re-stages.
+  - If only other fields changed, it merges onto the fresh projection, so those concurrent changes survive.
+  - A field that already holds the approved value converges with no write.
+  - Revisions without a recorded base publish as before.
+- **Publish outcome.** `SecurityMasterPublishResultDto.CanonicalMerge` reports `Merged`, `AlreadyCanonical`, `OverlayOnly` or `NotApplicable`, so operators can see whether the golden record changed. The revision link in `SourceRecordId` is kept.
+- **Still open.** Recovering the maker and checker from retained lineage still depends on the workflow's approval evidence, because revision transitions overwrite the actor.
+
 ### D6 — Classification labels: still open, including historical payload policy
 
 [SecurityEconomicDefinitionAdapter](../../src/Meridian.Application/SecurityMaster/SecurityEconomicDefinitionAdapter.cs)
@@ -175,6 +199,62 @@ retains labels such as Deposit `DemandDeposit`, FxSpot `BankProduct` and Warrant
 compare their intended semantics with the F# registry rather than assume the two taxonomies are
 interchangeable. Decide how already-retained `Some(...)`/`OtherSubType ...` values are displayed
 and replayed; do not rewrite append-only economic events to clean up labels.
+
+**Slice 3 disposition — 2026-11-04.** Historical reads are compatible without rewriting retained
+evidence. `Meridian.Contracts.SecurityMaster.ClassificationLabelReader.Normalize` decodes the
+retired F# renderings (`Some(X)`, `Some("X")`, `OtherFamily "x"`, `OtherSubType "x"`, nested
+`Some(OtherFamily "x")`, `None` → no label) and otherwise returns the trimmed input. The decode is
+a single structural pass. It removes at most one `Some(…)`, and only around a known F# case name, a
+union payload or a quoted literal. A union payload is the free-text label itself and is returned
+verbatim: a legacy `OtherSubType "Some(Nested)"` reads as `Some(Nested)`, and
+`OtherSubType "None"` reads as `None`. Every current domain label, including free text such as
+`Some(Nested)`, is returned unchanged. (Corrected 2026-11-05 after a review finding: the first
+version decoded recursively.) It is applied where a stored label is
+matched, displayed or grouped: the adapter's preferred-equity replay guard (labels and
+classification JSON), workbench classification/drill-in/passport/field values and its
+history change detection, and the accounting sub-type fallback. Each label is decoded exactly
+once, where a stored record becomes a DTO or report row (the workbench economic-definition and
+workstation DTOs, certified-report rows). Consumers of those DTOs and rows, namely the passport
+classification summaries and profile, the WPF asset-family fields and the trial-balance
+CSV/XLSX export, show the already-decoded value and never decode it again. Query-service and rebuilder outputs already pass through these
+seams (`ToEconomicRecord` emits canonical names; `ToProjection` uses the guard); the rebuilt
+economic record itself is still returned as retained, so snapshots and events keep their stored
+labels. Every declared catalog class's new write is pinned to the F# names, and its retired
+`ToString()` rendering decodes to the same labels; a legacy-labelled event replays with unchanged
+bytes and rebuilds the same projection as its canonical twin.
+
+*Ambiguous free text is refused on write (2026-11-05).* Text alone cannot tell a new free-text label
+`None` or `Some(Equity)` from the retired rendering of the same characters, so the reader would
+misread it. `SecurityMasterService` therefore refuses, on create and on terms amendment, an
+`OtherSecurity` `subType` or `category` that `ClassificationLabelReader.IsAmbiguousFreeText` flags:
+`None`, a decodable `Some(…)`, a quoted literal, or an `OtherFamily "…"` / `OtherSubType "…"`
+payload. The refusal is a `SecurityMasterWriteRefusedException` naming the value the reader would
+return. Text the reader keeps unchanged, including `Some(Nested)`, is accepted. Every other stored
+free-text label is a catalog constant, and replaying retained events is not checked.
+
+*Decision D2 (slice 3; not the D2 finding above) — normalize for grouping.* Certified-report rows
+carry the decoded family and sub-type, so a record retained as `Some(PreferredEquity)` now groups
+with its `PreferredEquity` peers rather than forming its own section. Grouping for current
+canonical labels is pinned as unchanged. The snapshot content hash still fingerprints the economic
+definition as retained, so a legacy-labelled input keeps a distinct receipt hash; the display and
+grouping repair cannot silently change stored classification.
+
+`InstrumentTypeDescriptorCatalog` is reconciled behavior-preservingly: `DomainLabelExceptions`
+lists its `OtherFamily`/`OtherSubType` placeholders (FX spot, Commodity, Crypto, Index, CFD) as
+descriptor-taxonomy labels, `ApproximateDomainLabelMappings` records the reviewed Warrant
+`OptionContract`, FX spot `BankProduct` and Deposit `DemandDeposit` approximations, and a coverage
+test fails when a descriptor label is neither a domain label nor listed. No descriptor value
+changes, so passport fallbacks still show the placeholder; mapping placeholders to no label there
+would change output and is left for a separate decision. A stored value whose whole text is exactly `None` still reads
+as no label, because that is the retired rendering of an absent family.
+
+Validation (local, Linux, Release): `dotnet test tests/Meridian.Tests` filtered to
+`Classification|CertifiedReporting|SecurityEconomicDefinitionAdapter|InstrumentTypeDescriptor|ReportGenerationService|SecurityMasterAggregateRebuilder`
+passed 200, skipped 2, failed 0; workbench, accounting-adapter, fund-operations, passport,
+query-service and terms round-trip suites passed 830 of 830; the broader
+`Architecture|Reporting|SecurityMaster` run passed 6,563 with 260 skipped and 1 failure, a
+PostgreSQL fixture that could not reach Docker in this environment. `Meridian.Wpf` compiled with
+`EnableWindowsTargeting`; its UI was not run. Hosted checks remain authoritative.
 
 ### D7 — Audit history and serialization: distinguish current state from retained evidence
 
@@ -7833,6 +7913,13 @@ activation is established by this source disposition.
   and the PIK toggle. Manual reset dates remain explicit servicing inputs. Automatic capitalization
   and reset scheduling still need persisted cadence, fixing, formula and residual policies; payment
   frequency alone supplies none of them.
+  *2026-11-05 update:* both policies are now persisted, opt-in loan terms executed by the daily
+  worker. They cover the PIK share and capitalization cadence, and a reset schedule with lookback and
+  declared-unit spread/floor/cap. Fixings come from an insert-only fixing store, and a missing fixing
+  fails closed. Accrual formula one is retained, and the shared-kernel formula v2 (residual carry,
+  SCH-DEF-006) remains increment-11 work. See the
+  [blueprint](../engineering/blueprints/direct-lending-pik-capitalization-and-rate-resets.md);
+  direct-lending migration 011 awaits independent schema review.
 - **OTC servicing.** Typed reset, compression, novation, credit-determination and auction-settlement
   events retain actor/source evidence, instrument targets, exact predecessor/successor snapshots,
   idempotency and strict replay. PostgreSQL updates the contract and appends history atomically;
