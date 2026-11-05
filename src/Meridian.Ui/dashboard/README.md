@@ -277,6 +277,48 @@ resolve `ui-monospace`, so without it a machine lacking Cascadia/JetBrains/Conso
 text in the serif default. `design-system-contract.test.ts` guards both rules. The lockfile retains
 patched `source-map-js` 1.2.2.
 
+Screens share one status component, one formatting module, one table system and one type scale.
+`scripts/design-system-ratchets.mjs` holds the remaining legacy uses in `src/screens/` to a
+checked-in baseline that may only shrink: `npm run ratchets` reports the counts,
+`npm run ratchets:update` lowers the baseline after a migration, and
+`src/design-system/design-system-ratchets.test.ts` fails on any growth and on progress that has
+not been recorded.
+
+- **Status.** `StatusBadge` from `@/design-system/status` has five tones (ready, review, action,
+  blocked, info), the same set WPF uses. `SeverityBadge` and `DesignSystemStatus` are aliases of
+  it. Labels of one or two words are tracked caps; longer labels render in sentence case. Product
+  maturity appears in the workspace About disclosure and the navigation tooltip, not as a badge.
+  The `adHocStatusBadges` ratchet counts hand-styled chips.
+- **Formatting.** `@/lib/format` is the only module that calls Intl. It provides `formatCount`,
+  `formatMoney` (`accounting` puts negatives in parentheses at the currency's minor units,
+  `trading` uses a minus sign at instrument precision, `summary` shows whole units),
+  `formatQuantity`, and `formatUtcTimestamp`/`formatUtcDate`, which always include the year.
+  ESLint blocks `Intl.*` and `toLocale*String` in `src/screens/`, except in files still listed in
+  the `directIntlFormatting` baseline.
+- **Tables.** `DenseDataTable` (`components/meridian/ui-kit-primitives.tsx`) provides:
+  - a sticky header inside a bounded scroll area;
+  - `aria-sort` sorting, either built in from a column's `sortValue` (numbers start
+    largest-first, text A–Z, missing values last) or owned by the caller through `sort` and
+    `onToggleSort`;
+  - `numeric` columns, right-aligned with tabular figures;
+  - `hideable` and `defaultHidden` columns behind a Columns menu, remembered per `tableId`;
+  - a per-table `density` override. Otherwise rows follow the operator density chosen in
+    Settings, which `main.tsx` re-applies at startup.
+
+  Grouped tables whose posting lines span columns, such as the Ledger Explorer, keep their own
+  rows inside a `dense-data-table` and use `DenseDataTableHeaderCell`, `nextDenseSort` and
+  `sortRowsByValue`. Sorting uses only raw values. Tables whose API rows carry preformatted
+  figures (trading and portfolio positions, orders) sort on their text columns, and the
+  reconciliation queue keeps its own sort control. The `rawTables` ratchet counts hand-built
+  tables.
+- **Type scale.** There are three tiers: `type-page-title` (the workspace header's h1),
+  `type-section` (CardTitle and region headings) and `type-label`. A label of one or two words may
+  add `type-label--caps`. Longer labels render in sentence case: `FormRow`,
+  `FormSectionLabel`, `Label`, `ToolbarStrip` and `EntitySummary` decide per rendered label,
+  and eyebrows use `eyebrowClassName()` or the `eyebrow-label--sentence` modifier. Prose uses the body face and mono is reserved for figures
+  and identifiers; `EntitySummary` values choose a face with `isDataLikeValue`. Each region has at
+  most one primary button.
+
 First launch is browser-primary. `/setup` renders the first-run concierge while the
 shared first-run API remains the source of truth for starter kits, sample safety labels,
 recommendations, and completed activation outcomes. Sample mode stays offline-capable
