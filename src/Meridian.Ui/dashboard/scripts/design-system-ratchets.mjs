@@ -8,6 +8,8 @@
 //     a border or radius, and horizontal padding) instead of the design-system StatusBadge.
 //   - directIntlFormatting: Intl.NumberFormat / Intl.DateTimeFormat / toLocale*String calls
 //     instead of the shared `@/lib/format` module.
+//   - rawTables: hand-built <table> elements instead of the table system (DenseDataTable, or
+//     DenseDataTableHeaderCell inside a `dense-data-table` for grouped rows).
 //
 // `design-system-ratchets.test.ts` fails when a file exceeds its baseline, when a file not in
 // the baseline gains an occurrence, or when a file drops below its baseline (lock the progress
@@ -24,6 +26,8 @@ const SCREENS_DIR = path.join(DASHBOARD_ROOT, "src", "screens");
 
 const STRING_LITERAL = /"([^"\n]*)"|'([^'\n]*)'|`([^`]*)`/g;
 const DIRECT_INTL = /Intl\.NumberFormat|Intl\.DateTimeFormat|\.toLocaleString\(|\.toLocaleDateString\(|\.toLocaleTimeString\(/g;
+// A <table opening tag that is not styled as the table system's `dense-data-table`.
+const RAW_TABLE = /<table\b(?![^>]*\bclassName="[^"]*\bdense-data-table\b)/g;
 
 /** A string literal styled like a status chip: tracked uppercase text in a bordered/rounded box. */
 export function isAdHocBadgeClass(value) {
@@ -51,6 +55,12 @@ export const RATCHETS = {
     description: "direct Intl / toLocale*String formatting in screens/ (use @/lib/format)",
     count(source) {
       return [...source.matchAll(DIRECT_INTL)].length;
+    }
+  },
+  rawTables: {
+    description: "hand-built <table> elements in screens/ (use DenseDataTable from ui-kit-primitives)",
+    count(source) {
+      return [...source.matchAll(RAW_TABLE)].length;
     }
   }
 };

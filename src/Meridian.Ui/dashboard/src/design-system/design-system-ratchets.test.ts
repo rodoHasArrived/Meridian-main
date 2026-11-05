@@ -5,10 +5,10 @@ describe("design-system ratchets", () => {
   // Phase 2 turned these rules on with a baseline of existing offenders: no file may gain an
   // occurrence, no new file may introduce one, and progress must be locked in by lowering the
   // baseline (`npm run ratchets:update`).
-  it("lets no screen add hand-styled status chips or direct Intl formatting", () => {
+  it("lets no screen add hand-styled status chips, direct Intl formatting or raw tables", () => {
     const { regressions, improvements } = compareWithBaseline();
 
-    expect(regressions, "Use StatusBadge (@/design-system/status) and @/lib/format instead.").toEqual([]);
+    expect(regressions, "Use StatusBadge (@/design-system/status), @/lib/format and DenseDataTable instead.").toEqual([]);
     expect(improvements, "Lower the baseline with `npm run ratchets:update`.").toEqual([]);
   });
 
@@ -21,5 +21,10 @@ describe("design-system ratchets", () => {
   it("counts direct Intl formatting calls", () => {
     const source = "new Intl.NumberFormat('en-US').format(1); value.toLocaleString(); d.toLocaleDateString();";
     expect(RATCHETS.directIntlFormatting.count(source)).toBe(3);
+  });
+
+  it("counts raw tables but not table-system tables", () => {
+    const source = '<table className="w-full text-sm"><table className="dense-data-table" aria-label="Ledger"><table>';
+    expect(RATCHETS.rawTables.count(source)).toBe(2);
   });
 });

@@ -153,44 +153,56 @@ const tradingRouteViewCopy: Record<TradingRouteViewId, { title: string; descript
 
 function buildPositionColumns(confirmVm: TradingConfirmViewModel): DenseDataTableColumn<TradingPositionRow>[] {
   return [
-    { id: "mark-readiness", label: "Mark readiness", render: (row) => <MarkFreshnessCell mark={row.markFreshness} /> },
+    {
+      id: "mark-readiness",
+      label: "Mark readiness",
+      // Ascending puts marks that need review first.
+      sortValue: (row) => (row.markFreshness.reviewRequired ? 0 : 1),
+      render: (row) => <MarkFreshnessCell mark={row.markFreshness} />
+    },
     {
       id: "symbol",
       label: "Symbol",
+      sortValue: (position) => position.symbol,
       className: "font-mono font-semibold text-foreground",
       render: (position) => position.symbol
     },
     {
       id: "side",
       label: "Side",
+      sortValue: (position) => position.side,
       className: "font-mono text-foreground",
       render: (position) => position.side
     },
     {
       id: "quantity",
       label: "Qty",
-      align: "right",
+      numeric: true,
+      hideable: true,
       className: "font-mono text-foreground",
       render: (position) => position.quantity
     },
     {
       id: "average",
       label: "Avg",
-      align: "right",
+      numeric: true,
+      hideable: true,
       className: "font-mono text-muted-foreground",
       render: (position) => position.averagePrice
     },
     {
       id: "mark",
       label: "Recorded mark",
-      align: "right",
+      numeric: true,
+      hideable: true,
       className: "font-mono text-muted-foreground",
       render: (position) => position.markPrice
     },
     {
       id: "day-pnl",
       label: "Day P&L",
-      align: "right",
+      numeric: true,
+      hideable: true,
       render: (position) => (
         <span className={cn("font-mono font-semibold", dataToneClass[position.dayPnlTone])}>
           {position.dayPnl}
@@ -200,7 +212,8 @@ function buildPositionColumns(confirmVm: TradingConfirmViewModel): DenseDataTabl
     {
       id: "unrealized",
       label: "Unrealized",
-      align: "right",
+      numeric: true,
+      hideable: true,
       render: (position) => (
         <span className={cn("font-mono font-semibold", dataToneClass[position.unrealizedPnlTone])}>
           {position.unrealizedPnl}
@@ -210,7 +223,8 @@ function buildPositionColumns(confirmVm: TradingConfirmViewModel): DenseDataTabl
     {
       id: "exposure",
       label: "Exposure",
-      align: "right",
+      numeric: true,
+      hideable: true,
       className: "font-mono text-foreground",
       render: (position) => position.exposure
     },
@@ -239,44 +253,51 @@ function buildOrderColumns(confirmVm: TradingConfirmViewModel): DenseDataTableCo
     {
       id: "order",
       label: "Order",
+      sortValue: (order) => order.orderId,
       className: "font-mono font-semibold text-foreground",
       render: (order) => order.orderId
     },
     {
       id: "symbol",
       label: "Symbol",
+      sortValue: (order) => order.symbol,
       className: "font-mono text-foreground",
       render: (order) => order.symbol
     },
     {
       id: "side",
       label: "Side",
+      sortValue: (order) => order.side,
       className: "font-mono text-foreground",
       render: (order) => order.side
     },
     {
       id: "type",
       label: "Type",
+      sortValue: (order) => order.type,
       className: "font-mono text-foreground",
       render: (order) => order.type
     },
     {
       id: "quantity",
       label: "Qty",
-      align: "right",
+      numeric: true,
+      hideable: true,
       className: "font-mono text-foreground",
       render: (order) => order.quantity
     },
     {
       id: "limit",
       label: "Limit",
-      align: "right",
+      numeric: true,
+      hideable: true,
       className: "font-mono text-muted-foreground",
       render: (order) => order.limitPrice
     },
     {
       id: "status",
       label: "Status",
+      sortValue: (order) => order.status,
       render: (order) => (
         <span className={cn("font-mono font-semibold", dataToneClass[order.statusTone])}>
           {order.status}
@@ -760,6 +781,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
           </CardHeader>
           <CardContent className="space-y-3">
             <DenseDataTable
+              tableId="trading-positions"
               ariaLabel={blotterVm.positionsTableLabel}
               caption="Select a position to update the position detail status window."
               columns={positionColumns}
@@ -991,6 +1013,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
           )}
           <CardContent className="space-y-3">
             <DenseDataTable
+              tableId="trading-orders"
               ariaLabel={blotterVm.ordersTableLabel}
               caption="Select an order to update the order detail status window."
               columns={orderColumns}

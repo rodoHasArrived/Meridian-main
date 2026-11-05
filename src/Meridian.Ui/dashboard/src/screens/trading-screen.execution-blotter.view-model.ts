@@ -42,6 +42,16 @@ export interface ExecutionBlotterRow {
   contractDetail: string | null;
   canUpsize: boolean;
   ariaLabel: string;
+  /** Raw figures behind the formatted columns, for sorting. */
+  values: ExecutionBlotterRowValues;
+}
+
+export interface ExecutionBlotterRowValues {
+  quantity: number;
+  averageCostBasis: number;
+  marketPrice: number;
+  marketValue: number;
+  unrealisedPnl: number;
 }
 
 export interface ExecutionProvenance {
@@ -134,6 +144,13 @@ export function buildExecutionBlotterRow(position: ExecutionBlotterPosition): Ex
     // The server decides which positions an upsize applies to; absence of the
     // flag is treated as "not offered" rather than assumed to be allowed.
     canUpsize: position.supportsUpsize === true,
+    values: {
+      quantity: position.quantity,
+      averageCostBasis: position.averageCostBasis,
+      marketPrice: position.marketPrice,
+      marketValue: position.marketValue,
+      unrealisedPnl: position.unrealisedPnl
+    },
     ariaLabel: `${position.side} ${formatNumber(position.quantity)} ${position.symbol}, market value ${formatCurrency(position.marketValue)}, unrealised ${formatSignedCurrency(position.unrealisedPnl)}`
   };
 }

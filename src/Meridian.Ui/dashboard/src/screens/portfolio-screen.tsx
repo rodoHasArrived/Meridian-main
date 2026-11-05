@@ -121,31 +121,36 @@ const positionColumns: DenseDataTableColumn<PortfolioPositionRow>[] = [
   {
     id: "quantity",
     label: "Qty",
-    align: "right",
+    numeric: true,
+    hideable: true,
     render: (row) => <span className="font-mono text-foreground">{row.quantity}</span>
   },
   {
     id: "average",
     label: "Avg",
-    align: "right",
+    numeric: true,
+    hideable: true,
     render: (row) => <span className="font-mono text-foreground">{row.avgPrice}</span>
   },
   {
     id: "mark",
     label: "Recorded mark",
-    align: "right",
+    numeric: true,
+    hideable: true,
     render: (row) => <span className="font-mono text-foreground">{row.markPrice}</span>
   },
   {
     id: "unrealized-pnl",
     label: "Unrealized P&L",
-    align: "right",
+    numeric: true,
+    hideable: true,
     render: (row) => <span className={cn("font-mono font-semibold", pnlToneClass[row.pnlTone])}>{row.unrealizedPnl}</span>
   },
   {
     id: "exposure",
     label: "Exposure",
-    align: "right",
+    numeric: true,
+    hideable: true,
     render: (row) => <span className="font-mono text-foreground">{row.exposure}</span>
   }
 ];
@@ -1274,6 +1279,7 @@ export function PortfolioScreen({
               />
               {vm.hasPositions ? (
                 <DenseDataTable
+                  tableId="portfolio-positions"
                   columns={positionColumns}
                   rows={visiblePositionRows}
                   sort={positionsTable.state.sort}

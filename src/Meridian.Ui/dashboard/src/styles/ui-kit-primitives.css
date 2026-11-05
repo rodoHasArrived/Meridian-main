@@ -66,10 +66,35 @@
 }
 
 .dense-data-table {
+  --dense-head-py: 0.4375rem;
+  --dense-cell-py: 0.4375rem;
+  --dense-cell-px: 0.625rem;
   width: 100%;
   min-width: 100%;
   border-collapse: collapse;
   font-size: 0.75rem;
+}
+
+/* Row rhythm follows the operator density chosen in Settings (data-theme-density on the
+   body) unless a table pins its own with the `density` prop (data-density on the wrap). */
+:where(body[data-theme-density="compact"]) .dense-data-table,
+.dense-data-table-wrap[data-density="compact"] .dense-data-table {
+  --dense-head-py: 0.25rem;
+  --dense-cell-py: 0.25rem;
+  --dense-cell-px: 0.5rem;
+}
+
+:where(body[data-theme-density="spacious"]) .dense-data-table,
+.dense-data-table-wrap[data-density="spacious"] .dense-data-table {
+  --dense-head-py: 0.6875rem;
+  --dense-cell-py: 0.75rem;
+  --dense-cell-px: 0.75rem;
+}
+
+.dense-data-table-wrap[data-density="default"] .dense-data-table {
+  --dense-head-py: 0.4375rem;
+  --dense-cell-py: 0.4375rem;
+  --dense-cell-px: 0.625rem;
 }
 
 .dense-data-table thead {
@@ -80,7 +105,7 @@
 }
 
 .dense-data-table th {
-  padding: 0.625rem 0.75rem;
+  padding: var(--dense-head-py) var(--dense-cell-px);
   color: var(--fg-muted);
   font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
   font-size: 0.75rem;
@@ -91,7 +116,7 @@
 }
 
 .dense-data-table td {
-  padding: 0.75rem;
+  padding: var(--dense-cell-py) var(--dense-cell-px);
   border-top: 1px solid rgba(74, 68, 60, 0.66);
   color: var(--ws-text);
   vertical-align: top;
@@ -127,6 +152,77 @@
 }
 
 .dense-data-table-sortable {
+  cursor: pointer;
+}
+
+/* Headers longer than two words read in sentence case, not tracked caps. */
+.dense-data-table th.dense-data-table-th-sentence {
+  letter-spacing: 0.01em;
+  text-transform: none;
+}
+
+/* Numeric columns: tabular figures so digits line up under a right-aligned header. */
+.dense-data-table .dense-data-table-numeric {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.dense-data-table-frame {
+  display: grid;
+  gap: 0.375rem;
+  min-width: 0;
+}
+
+.dense-data-table-columns {
+  position: relative;
+  justify-self: end;
+  font-size: 0.75rem;
+}
+
+.dense-data-table-columns > summary {
+  min-height: 1.75rem;
+  padding: 0.25rem 0.625rem;
+  border: 1px solid var(--ws-border);
+  border-radius: var(--radius-sm);
+  color: var(--fg-muted);
+  cursor: pointer;
+  list-style: none;
+}
+
+.dense-data-table-columns > summary::-webkit-details-marker {
+  display: none;
+}
+
+.dense-data-table-columns[open] > summary,
+.dense-data-table-columns > summary:hover {
+  color: var(--ws-text);
+}
+
+.dense-data-table-columns > summary:focus-visible {
+  outline: 2px solid rgba(217, 138, 100, 0.45);
+  outline-offset: 2px;
+}
+
+.dense-data-table-columns-menu {
+  position: absolute;
+  right: 0;
+  z-index: 5;
+  display: grid;
+  gap: 0.375rem;
+  min-width: 12rem;
+  margin: 0.25rem 0 0;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--ws-border);
+  border-radius: var(--radius-sm);
+  background: var(--ws-surface);
+  box-shadow: var(--shadow-menu);
+}
+
+.dense-data-table-columns-menu label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--ws-text);
   cursor: pointer;
 }
 
@@ -358,14 +454,14 @@
 .dense-data-table th {
   border-bottom: 1px solid var(--ws-border-strong);
   color: var(--ws-text-muted);
-  padding: 0.4375rem 0.625rem;
+  padding: var(--dense-head-py) var(--dense-cell-px);
   font-weight: 700;
   letter-spacing: 0;
 }
 
 .dense-data-table td {
   border-top: 1px solid var(--ws-row-border);
-  padding: 0.4375rem 0.625rem;
+  padding: var(--dense-cell-py) var(--dense-cell-px);
 }
 
 .dense-data-table tbody tr {
@@ -383,6 +479,21 @@
 .dense-data-table tbody tr.selected {
   background: var(--ws-row-selected);
   box-shadow: inset 3px 0 0 var(--cyan-primary);
+}
+
+/* Grouped tables (a ledger entry and its posting lines): child rows sit under their parent,
+   tinted and indented, and keep that tint through the zebra striping. */
+.dense-data-table tbody tr.dense-data-table-child-row,
+.dense-data-table tbody tr.dense-data-table-child-row:nth-child(even) {
+  background: var(--ws-surface-subtle);
+}
+
+.dense-data-table tbody tr.dense-data-table-child-row td {
+  border-top-style: dashed;
+}
+
+.dense-data-table tbody tr.dense-data-table-child-row td:first-child {
+  padding-left: calc(var(--dense-cell-px) + 0.75rem);
 }
 
 .dense-data-table-empty {
