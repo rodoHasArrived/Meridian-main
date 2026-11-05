@@ -49,7 +49,11 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
             [SecurityIdentifierKind.Cik] = "CIK",
             [SecurityIdentifierKind.LoanX] = "LoanX ID",
             [SecurityIdentifierKind.Clip] = "CLIP",
-            [SecurityIdentifierKind.ListingId] = "Listing (Ticker:MIC)"
+            [SecurityIdentifierKind.ListingId] = "Listing (Ticker:MIC)",
+            [SecurityIdentifierKind.Uti] = "UTI",
+            [SecurityIdentifierKind.Upi] = "UPI",
+            [SecurityIdentifierKind.MarkitRedEntity] = "Markit RED entity (RED6)",
+            [SecurityIdentifierKind.MarkitRedPair] = "Markit RED pair (RED9)"
         };
     private static readonly IReadOnlyDictionary<string, SecurityIdentifierKind> IdentifierKindLookup =
         IdentifierKindDisplayNames.ToDictionary(static pair => pair.Value, static pair => pair.Key, StringComparer.OrdinalIgnoreCase);
