@@ -2034,9 +2034,10 @@ structural.
 
 `SecurityIdentifierNormalizer.IsSharedReferenceKind` marks `Upi`, `MarkitRedEntity` and
 `MarkitRedPair`: many contracts legitimately share them, so they are excluded from
-identifier-ambiguity pairing (`IsExcludedFromAmbiguityPairing`). `SecurityValidationService` refuses
-them as a primary identifier (`SM_SHARED_IDENTIFIER_NOT_PRIMARY`), because the normalized
-primary-identifier unique index would reject the second contract. A `Uti` names one trade and is a
+identifier-ambiguity pairing (`IsExcludedFromAmbiguityPairing`). They cannot be a primary identifier,
+because the normalized primary-identifier unique index would reject the second contract: create and
+amend commands refuse them in the F# command validation (`primary_identifier_shared_reference`), and
+`SecurityValidationService` reports `SM_SHARED_IDENTIFIER_NOT_PRIMARY` for records already stored. A `Uti` names one trade and is a
 canonical duplicate kind.
 
 `SecurityAssetClassCatalog.MayCarryIdentifierKind` restricts which asset classes may carry them.

@@ -148,6 +148,7 @@ Use this module for deterministic business-rule kernels shared by strategy, trad
 
 ## Security Master governance controls (2026-11)
 
+- **Shared-reference primaries are refused.** Create and amend validation rejects a UPI or Markit RED code as the active primary identifier (`primary_identifier_shared_reference`), using `SecurityIdentifierNormalizer.IsSharedReferenceKind`.
 - **Kind-aware identifier normalization.** `SecurityIdentifier.normalizeIdentifierValue` delegates to `Meridian.Contracts.SecurityMaster.SecurityIdentifierNormalizer.NormalizeValue` through the exhaustive `SecurityIdentifier.toContractKind` mapping, and `kindName` is the mapped Contracts enum name (interop's persisted kind string reuses it). Duplicate and expiry checks use it, so the F# domain, the C# lookup and the stored normalized columns share one implementation. `SecurityIdentifierNormalizationParityTests` fails when a C# kind has no F# case.
 
 See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D8) for status and open decisions.

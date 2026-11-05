@@ -30,7 +30,7 @@
       "id": "SRC-CONTRACTS",
       "path": "src/Meridian.Contracts",
       "readme": "src/Meridian.Contracts/README.md",
-      "readme_hash": "6b3758ad8992d34ca7a435e63d818a84741072b7d41221d8204ed31fd27c7254",
+      "readme_hash": "4e856a60ba578c7e8561f3a59a871f548819d892e13e10f2a37311f3dd404d63",
       "source_hash": "9b92326574647989553f6cab127e390028b4aa7ef7fe717b9724d4faa660628a"
     },
     {
@@ -149,8 +149,8 @@
       "id": "SRC-FSHARP",
       "path": "src/Meridian.FSharp",
       "readme": "src/Meridian.FSharp/README.md",
-      "readme_hash": "11ca8ba89497cca6db2867000d142ec7d9a2dc0335bb10456cc15709d88fdc40",
-      "source_hash": "6d09653a6edd566f436fb471d19640a00f088eec15a882f1034dfc4e2be0bb10"
+      "readme_hash": "861f83e86064ff85b329d6f1bdb7d4dcc1b48339b11552ad6b68f12df3d3fe7f",
+      "source_hash": "c37843f5c7d7444ab8afec67be8ac06bf93937b45edcf76dcaf9fb14bf528f47"
     },
     {
       "id": "SRC-FSHARP-DIRECTLENDING",
