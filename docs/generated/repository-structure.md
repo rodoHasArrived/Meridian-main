@@ -4406,6 +4406,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterPublishFailedException.cs
 │   │   │   ├── SecurityMasterQueryService.cs
 │   │   │   ├── SecurityMasterService.AheadOfWriteTerms.cs
+│   │   │   ├── SecurityMasterService.ClassificationText.cs
 │   │   │   ├── SecurityMasterService.Creation.cs
 │   │   │   ├── SecurityMasterService.cs
 │   │   │   ├── SecurityMasterService.WriteRefusals.cs
@@ -4907,6 +4908,7 @@ Meridian-main
 │   │   │   │   ├── ScheduleRoll.cs
 │   │   │   │   ├── ScheduleSpec.cs
 │   │   │   │   └── ScheduleTenor.cs
+│   │   │   ├── ClassificationLabelReader.cs
 │   │   │   ├── CommitmentLot.cs
 │   │   │   ├── CorporateActionCaseAccountingContracts.cs
 │   │   │   ├── CorporateActionEconomicFingerprint.cs
@@ -7759,6 +7761,7 @@ Meridian-main
 │   │   │   │   │   ├── plaid-link.ts
 │   │   │   │   │   ├── portfolio-positions-table.test.ts
 │   │   │   │   │   ├── portfolio-positions-table.ts
+│   │   │   │   │   ├── provenance-banner-seen.ts
 │   │   │   │   │   ├── provider-credential-scope.test.ts
 │   │   │   │   │   ├── provider-credential-scope.ts
 │   │   │   │   │   ├── provider-integration-setup-validation.test.ts
@@ -8340,6 +8343,7 @@ Meridian-main
 │   │   │   │   ├── app-shell.route-focus.test.ts
 │   │   │   │   ├── app-shell.route-focus.ts
 │   │   │   │   ├── app-shell.status-panel.ts
+│   │   │   │   ├── app-shell.trust-strip.test.ts
 │   │   │   │   ├── app-shell.trust-strip.ts
 │   │   │   │   ├── app-shell.view-model.test.ts
 │   │   │   │   ├── app-shell.view-model.ts
@@ -11814,6 +11818,7 @@ Meridian-main
 │   │   │   ├── BondCalculationReplayTests.cs
 │   │   │   ├── BondProjectionGoldenTests.cs
 │   │   │   ├── CanonicalRegistryCoverageSourceTests.cs
+│   │   │   ├── ClassificationLabelReaderTests.cs
 │   │   │   ├── ContractualCashFlowCompanionPostgresTests.cs
 │   │   │   ├── CorporateActionAccountingMigrationTests.cs
 │   │   │   ├── CorporateActionAccountingPostgresRoundTripTests.cs
@@ -11842,6 +11847,7 @@ Meridian-main
 │   │   │   ├── FaceValueLotTests.cs
 │   │   │   ├── ForwardCurveCashFlowTests.cs
 │   │   │   ├── InMemorySecurityForwardCurveProvider.cs
+│   │   │   ├── InstrumentTypeDescriptorDomainLabelTests.cs
 │   │   │   ├── InstrumentTypeDescriptorMultiplierTests.cs
 │   │   │   ├── KeyedGatePoolTests.cs
 │   │   │   ├── ListingIdentityTests.cs
@@ -11929,6 +11935,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterAssetClassSupportTests.cs
 │   │   │   ├── SecurityMasterCanonicalSymbolSeedFallbackTests.cs
 │   │   │   ├── SecurityMasterCanonicalSymbolSeedReconciliationTests.cs
+│   │   │   ├── SecurityMasterClassificationTextGuardTests.cs
 │   │   │   ├── SecurityMasterClosePriceServiceTests.cs
 │   │   │   ├── SecurityMasterConflictServiceTests.cs
 │   │   │   ├── SecurityMasterConvertibleEquityAmendmentTests.cs

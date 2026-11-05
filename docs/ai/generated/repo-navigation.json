@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-05T19:57:13Z",
+  "generatedAt": "2026-11-05T20:14:30Z",
   "generatorVersion": "1.0",
-  "repositoryRoot": "agent-a94f74c3aa2de0ecd",
+  "repositoryRoot": "agent-a6e76d63624e4a6c6",
   "subsystems": [
     {
       "id": "host-shell",
@@ -2438,6 +2438,78 @@
   ],
   "recentChanges": [
     {
+      "path": "src/Meridian.Application/README.md",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-05T19:20:34+00:00",
+      "lastCommit": "e7d86c2b",
+      "lastSummary": "Refuse OtherSecurity classification text the label reader would misread",
+      "touches": 29
+    },
+    {
+      "path": "src/Meridian.Contracts/README.md",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-05T19:20:34+00:00",
+      "lastCommit": "e7d86c2b",
+      "lastSummary": "Refuse OtherSecurity classification text the label reader would misread",
+      "touches": 27
+    },
+    {
+      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterService.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-05T19:20:34+00:00",
+      "lastCommit": "e7d86c2b",
+      "lastSummary": "Refuse OtherSecurity classification text the label reader would misread",
+      "touches": 12
+    },
+    {
+      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterService.Creation.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-05T19:20:34+00:00",
+      "lastCommit": "e7d86c2b",
+      "lastSummary": "Refuse OtherSecurity classification text the label reader would misread",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-05T19:20:34+00:00",
+      "lastCommit": "e7d86c2b",
+      "lastSummary": "Refuse OtherSecurity classification text the label reader would misread",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterService.ClassificationText.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-05T19:20:34+00:00",
+      "lastCommit": "e7d86c2b",
+      "lastSummary": "Refuse OtherSecurity classification text the label reader would misread",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T19:05:10+00:00",
+      "lastCommit": "1b819b69",
+      "lastSummary": "fix(security-master): decode each retained label exactly once",
+      "touches": 12
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T19:05:10+00:00",
+      "lastCommit": "1b819b69",
+      "lastSummary": "fix(security-master): decode each retained label exactly once",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T18:55:46+00:00",
+      "lastCommit": "4aa070c5",
+      "lastSummary": "fix(reporting): export trial-balance rows with their already-decoded labels",
+      "touches": 8
+    },
+    {
       "path": "src/Meridian.FSharp.DirectLending.Aggregates/ServicingSchedule.fs",
       "subsystem": "Domain, Ledger, and F#",
       "lastModified": "2026-11-05T17:51:10+00:00",
@@ -2451,7 +2523,7 @@
       "lastModified": "2026-11-05T15:47:57+00:00",
       "lastCommit": "11f974e8",
       "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
-      "touches": 11
+      "touches": 10
     },
     {
       "path": "src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs",
@@ -2684,78 +2756,6 @@
       "lastCommit": "11f974e8",
       "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
       "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/DirectLending/IDirectLendingIndexFixingStore.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/DirectLending/Migrations/011_direct_lending_pik_capitalization_and_rate_resets.sql",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/DirectLending/PostgresDirectLendingIndexFixingStore.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.ServicingSchedules.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Application/README.md",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-04T22:06:46+00:00",
-      "lastCommit": "607b6a43",
-      "lastSummary": "Docs: record the slice-5 D7 disposition and identifier/governance storage contracts",
-      "touches": 27
-    },
-    {
-      "path": "src/Meridian.Storage/README.md",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-11-04T22:06:46+00:00",
-      "lastCommit": "607b6a43",
-      "lastSummary": "Docs: record the slice-5 D7 disposition and identifier/governance storage contracts",
-      "touches": 17
-    },
-    {
-      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-04T22:06:21+00:00",
-      "lastCommit": "54f58ad2",
-      "lastSummary": "refactor(security-master): move independent-reviewer checks into a partial",
-      "touches": 12
-    },
-    {
-      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.IndependentReview.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-04T22:06:21+00:00",
-      "lastCommit": "54f58ad2",
-      "lastSummary": "refactor(security-master): move independent-reviewer checks into a partial",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/SecurityMaster/PostgresOperatorOverridesStore.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-11-04T22:03:04+00:00",
-      "lastCommit": "bad74459",
-      "lastSummary": "Security Master slice 5: identifier history and versioned governance payloads",
-      "touches": 8
     }
   ],
   "recentChangesWindowDays": 14,

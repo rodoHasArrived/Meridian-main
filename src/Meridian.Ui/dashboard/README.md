@@ -95,7 +95,9 @@ and Trading blotters retain their existing interaction models.
 ## Shared workstation header
 
 The browser shell combines `WorkspaceHeader` and its persistent operating scope in one compact
-header. `Workflow context` starts collapsed and reveals workflow steps and decision evidence.
+two-row header: the breadcrumb with the operating scope and `Workflow context` beside it, then the
+title with the shell actions. `Workflow context` starts collapsed and opens its workflow steps and
+decision evidence as a popover rather than widening the header.
 `Views` discloses existing saved-layout and save-current-view controls; Copy link and Refresh stay
 visible. Workspace descriptions are available under the About information disclosure. Live,
 simulated/seeded, unknown-provenance and degraded warnings remain outside disclosures.
@@ -379,7 +381,20 @@ cash forecast, statement import, historical prices, and running reports. Local d
 searchable when remote command or entity search is unavailable; unwired routes stay excluded.
 Accounting onboarding searches open the existing External GL surface, which hosts the bounded
 onboarding workspace and its retained comparison and readiness evidence.
-The masthead places operator controls on a second row at laptop widths so search stays readable.
+From 1200px the masthead is one 48px row: the session environment is the trust pill's leading,
+never-shrinking badge (`PAPER · SEEDED · 1 warning`; LIVE uses the alarm-red `--live-env` token and
+follows the resolved session, not the workspace bootstrap), and desktop launch is an icon button with
+the same accessible name. Between 981px and 1199px operator controls take a second row so search
+stays readable.
+
+Workspace routes open on their own job: the route heading leads, the workspace KPI strip follows it,
+and the sidebar is the only sub-route navigation (Trading, Portfolio, Strategy and Data no longer
+repeat it as an in-page tab strip; Data's Backfill queue has its own sidebar entry). Off the Trading
+overview the brokerage recovery panel is one blocked-state row with a Review link to the full panel,
+and nothing once evidence reconciles. The sidebar pins `Today` (the Daily Control Tower) above the
+seven workspaces and shows per-workspace attention counts from `selectDailyControlTowerQueueItems`,
+the same selection the Control Tower lists; each count is part of its link's accessible name and the
+badge sits beside the link so the visible label stays in the name.
 
 ## Purpose
 
@@ -594,6 +609,10 @@ No-host browser previews must keep fixture data visibly labeled as demo data. Th
 non-dismissable provenance strip routes operators through the typed demo evidence path: watchlist,
 live quote evidence, trading readiness, and provider setup, while keeping retry-to-live behavior
 available. Do not add a second full-width seeded-data warning below the masthead.
+The full-width `DataProvenanceBanner` shows the first time a provenance and environment pairing
+appears in a browser and again whenever either changes; after that it is a 4px top-edge stripe with
+the same status role and full text for assistive technology (`compactAfterSeen`). LIVE sessions,
+unresolved sessions and `unknown` provenance (it carries the retry) always keep the full banner.
 The app-shell data-provenance badge combines the server-owned `/api/demo/mode` response with actual
 fixture usage. Explicit demo or fixture data always wins over a nominal live posture, and a missing
 or malformed mode response fails closed to simulated/unverified rather than being presented as real
@@ -1596,7 +1615,8 @@ event labels also normalize retained source names before entering the visible ev
 The browser workstation root (`/`) now opens the Daily Control Tower, a read-only shell projection
 of workflow continuity, trust posture, linked context, and timestamped evidence. Its landing model
 is a shell-level Home location rather than an eighth workspace: none of the seven root workspace
-items is marked current, and the operating-context copy identifies the Daily Control Tower instead
+items is marked current (the pinned sidebar `Today` entry is), the breadcrumb reads
+`Workstation > Today`, and the operating-context copy identifies the Daily Control Tower instead
 of falling back to Trading. Before the combined finance queue is shown, operators choose an
 operating scope or explicitly opt into cross-scope review.
 The landing model
