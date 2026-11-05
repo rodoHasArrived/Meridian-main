@@ -172,6 +172,16 @@ fills, including close/reopen at the same quantity and price. Legacy custom adju
 quantity/quote behavior and do not claim exact total-basis evidence. This calculation convergence
 does not supply canonical security/book identity, acquisition FX or production short-posting authority.
 
+Option fills pay their premium in full: paper cash, ledger amounts, lot basis, market value and P&L
+move at quote × quantity × contract multiplier, the same scale `OrderNotionalResolver` sizes the
+order at. Cost basis, lot entry prices and marks stay per-unit quotes, because readers apply the
+multiplier themselves; the aggregate position view carries the multiplier its P&L used, and
+`PortfolioStatePositionTracker` divides by it when recovering a mark. Face-value fills and every
+other asset class stay at 1×. Futures stay at 1× on purpose until the book models variation margin.
+A fill whose multiplier differs from the open position's is refused. The OMS stamps the multiplier
+on each fill increment so session replay reproduces the same cash. Margin interest is paid from
+cash once, leaves the loan principal unchanged, and posts Margin Interest Expense against Cash.
+
 Both paper gateways resolve the final fill price through the shared trading-parameter helper.
 Tick-size rounding is best-effort: a rounded price is used only when it remains positive, stays
 inside the captured market-data envelope, and respects any limit or stop-limit price. Otherwise,
