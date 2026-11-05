@@ -728,6 +728,8 @@ function AppShell({
         provenance={dataProvenance}
         onRetryLiveData={onRetryDemoModeProbe}
         retryBusy={demoModeProbeBusy}
+        environment={session?.environment ?? null}
+        compactAfterSeen
       />
       <DegradedModeBanner degradedMode={overview?.degradedMode} />
 

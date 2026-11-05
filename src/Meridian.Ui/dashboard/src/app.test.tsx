@@ -438,7 +438,7 @@ describe("App", () => {
       name: "Workstation build, environment, provenance, and provider posture"
     });
     expect(strip).toHaveAttribute("aria-live", "polite");
-    await userEvent.click(within(strip).getByText("Trust"));
+    await userEvent.click(strip.querySelector("summary") as HTMLElement);
     const trustDetails = within(strip).getByRole("group", {
       name: "Environment, provenance, and provider details"
     });
@@ -611,7 +611,7 @@ describe("App", () => {
     expect(document.querySelector('[data-design-system-component="Masthead"]')).toHaveClass("mds-masthead");
     expect(screen.getByText("Data", { selector: ".sub" })).toBeInTheDocument();
     const strip = screen.getByRole("region", { name: "Workstation build, environment, provenance, and provider posture" });
-    await userEvent.click(within(strip).getByText("Trust"));
+    await userEvent.click(strip.querySelector("summary") as HTMLElement);
     const trustDetails = within(strip).getByRole("group", {
       name: "Environment, provenance, and provider details"
     });
@@ -625,15 +625,18 @@ describe("App", () => {
     })).toHaveAttribute("href", "/data/providers");
   });
 
-  it("groups current session context for assistive technology", () => {
+  it("groups current session context for assistive technology", async () => {
     renderWithRouter(<App />, { initialEntries: ["/trading"] });
 
     const sessionContext = screen.getByRole("group", {
       name: "Current session: paper, Ops Desk, Operator"
     });
-    expect(within(sessionContext).getByText("paper")).toBeInTheDocument();
     expect(within(sessionContext).getByText("Ops Desk")).toBeInTheDocument();
     expect(within(sessionContext).getByText("Operator")).toBeInTheDocument();
+    // The environment badge moved into the trust pill so the masthead fits one row; it
+    // leads that pill and is still announced through the session group's name above.
+    const strip = screen.getByRole("region", { name: "Workstation build, environment, provenance, and provider posture" });
+    expect(await within(strip).findByText("PAPER")).toHaveAttribute("data-environment", "paper");
   });
 
   it("renders an informative startup status while workstation bootstrap is loading", () => {
