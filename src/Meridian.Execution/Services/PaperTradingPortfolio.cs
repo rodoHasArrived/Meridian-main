@@ -601,6 +601,24 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
     }
 
     /// <summary>
+    /// The money multiplier an open position in the default account was booked at, or
+    /// <see langword="null"/> when no position is open for <paramref name="symbol"/>. A fill that
+    /// adds to or closes that position must use the same scale: a session restored from records
+    /// written before premiums were scaled holds 1x positions, and continuing them at 1x until
+    /// they are flat keeps every lot, cash movement and replay consistent.
+    /// </summary>
+    internal decimal? GetOpenMoneyMultiplier(string symbol)
+    {
+        lock (_lock)
+        {
+            return _accounts.TryGetValue(DefaultAccountId, out var account)
+                && account.Positions.TryGetValue(symbol, out var pos)
+                    ? pos.EconomicMultiplier
+                    : null;
+        }
+    }
+
+    /// <summary>
     /// The money multiplier <see cref="ApplyFill(string, ExecutionReport, string?, decimal, bool)"/>
     /// books a fill at, for callers that must stamp or mirror it (the OMS stamps it on the fill
     /// increment before persisting it and carries it into the accounting event).

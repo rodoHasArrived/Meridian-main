@@ -183,19 +183,23 @@ internal sealed class OrderFillProcessor(
 
             // Record the money scale the paper book books this fill at, so a replayed session
             // reproduces it exactly and the accounting event's gross value agrees with the
-            // realized P&L the book reports. Only a non-unit scale is stamped: an unstamped
-            // record replays at 1x, which is exactly what both legacy records and 1x fills
-            // booked, and leaving 1x reports untouched keeps them identical to what arrived.
-            if (_portfolioState is PaperTradingPortfolio
+            // realized P&L the book reports. A fill that adds to or closes an open position
+            // takes that position's scale: a session restored from pre-stamp records holds 1x
+            // option positions, and they continue at 1x until flat instead of being refused.
+            // Only a scale that differs from what an unstamped record would replay or resolve
+            // to is stamped, so ordinary 1x reports stay identical to what arrived.
+            if (_portfolioState is PaperTradingPortfolio paperBook
                 && fillIncrement.BookedMoneyMultiplier is null
                 && !string.IsNullOrWhiteSpace(orderId)
-                && _context.ContainsOrder(orderId)
-                && PaperTradingPortfolio.ResolveMoneyMultiplier(
+                && _context.ContainsOrder(orderId))
+            {
+                var resolvedMultiplier = PaperTradingPortfolio.ResolveMoneyMultiplier(
                     fillIncrement,
                     _context.GetContractMultiplier(orderId),
-                    fillIncrement.UsesFaceValuePercentageOfPar) is var bookedMultiplier and not 1m)
-            {
-                fillIncrement = fillIncrement with { BookedMoneyMultiplier = bookedMultiplier };
+                    fillIncrement.UsesFaceValuePercentageOfPar);
+                var bookedMultiplier = paperBook.GetOpenMoneyMultiplier(fillIncrement.Symbol) ?? resolvedMultiplier;
+                if (bookedMultiplier != 1m || bookedMultiplier != resolvedMultiplier)
+                    fillIncrement = fillIncrement with { BookedMoneyMultiplier = bookedMultiplier };
             }
 
             progress = _fillProcessing.GetOrAdd(

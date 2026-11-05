@@ -107,16 +107,24 @@ public sealed class OrderFillProcessorTests
         var portfolio = new PaperTradingPortfolio(10_000m);
         portfolio.ApplyFill(CreateReport("opening-buy") with
         {
-            OrderQuantity = 1m, FilledQuantity = 1m, FillPrice = 2m
+            OrderQuantity = 1m,
+            FilledQuantity = 1m,
+            FillPrice = 2m
         }, ownerAccountId: null, contractMultiplier: 100m);
 
         var order = CreateOrder("option-close") with
         {
-            Side = OrderSide.Sell, Quantity = 1m, FilledQuantity = 1m, ContractMultiplier = 100m
+            Side = OrderSide.Sell,
+            Quantity = 1m,
+            FilledQuantity = 1m,
+            ContractMultiplier = 100m
         };
         var report = CreateReport(order.OrderId) with
         {
-            Side = OrderSide.Sell, OrderQuantity = 1m, FilledQuantity = 1m, FillPrice = 3m
+            Side = OrderSide.Sell,
+            OrderQuantity = 1m,
+            FilledQuantity = 1m,
+            FillPrice = 3m
         };
         var publisher = new RecordingPublisher();
         var processor = CreateProcessor(order, portfolio, publisher, null, out _);
@@ -128,6 +136,66 @@ public sealed class OrderFillProcessorTests
         Assert.Equal(100m, trade.RealizedPnl);
         Assert.Equal(300m, trade.GrossValue);
         Assert.Equal(200m, trade.GrossValue - trade.RealizedPnl);
+    }
+
+    [Fact]
+    public async Task LegacyOneTimesOptionPosition_ClosesAtItsBookedScale_AndReplaysTheSame()
+    {
+        // A session restored from records written before premiums were scaled holds the
+        // option at 1x even though its report carries the Security Master multiplier. The OMS
+        // close must continue at that scale rather than be refused as a multiplier mismatch
+        // (which would also leave an unreplayable record behind).
+        var legacyOpen = CreateReport("legacy-open") with
+        {
+            OrderQuantity = 1m,
+            FilledQuantity = 1m,
+            FillPrice = 2m,
+            AssetClass = "Option",
+            LotUnitKind = Meridian.Contracts.SecurityMaster.SecurityLotUnitKind.Contracts,
+            LotMultiplier = 100m
+        };
+        var portfolio = new PaperTradingPortfolio(10_000m);
+        portfolio.ApplyRecordedFill(legacyOpen);
+        Assert.Equal(9_998m, portfolio.Cash);
+
+        var order = CreateOrder("legacy-close") with
+        {
+            Side = OrderSide.Sell,
+            Quantity = 1m,
+            FilledQuantity = 1m,
+            ContractMultiplier = 100m
+        };
+        var report = CreateReport(order.OrderId) with
+        {
+            Side = OrderSide.Sell,
+            OrderQuantity = 1m,
+            FilledQuantity = 1m,
+            FillPrice = 3m
+        };
+        var store = new RecordingSessionStore();
+        await using var persistence = new PaperSessionPersistenceService(
+            NullLogger<PaperSessionPersistenceService>.Instance, store);
+        var session = await persistence.CreateSessionAsync(new CreatePaperSessionDto("legacy", null, 10_000m));
+        var publisher = new RecordingPublisher();
+        var processor = CreateProcessor(order, portfolio, publisher, persistence, out _);
+
+        await processor.ProcessAsync(session.SessionId, report, 0m);
+
+        Assert.Equal(10_001m, portfolio.Cash);
+        Assert.Equal(1m, portfolio.RealisedPnl);
+        // Flat; the entry can remain listed because the close is attributed to the order's
+        // fund while the legacy open had no owner, which is existing attribution behaviour.
+        Assert.All(portfolio.Positions.Values, position => Assert.Equal(0m, position.ExactQuantity));
+        var stored = Assert.IsType<PaperSessionFillRecord>(store.StoredFill).Fill;
+        Assert.Equal(1m, stored.BookedMoneyMultiplier);
+        var trade = Assert.Single(publisher.Events);
+        Assert.Equal(1m, trade.MoneyMultiplier);
+        Assert.Equal(3m, trade.GrossValue);
+
+        var replayed = new PaperTradingPortfolio(10_000m);
+        replayed.ApplyRecordedFill(legacyOpen);
+        replayed.ApplyRecordedFill(stored);
+        Assert.Equal(portfolio.Cash, replayed.Cash);
     }
 
     [Fact]
