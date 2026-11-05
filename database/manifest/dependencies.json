@@ -10102,6 +10102,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ClassificationLabelReader"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.CommitmentLot"
     },
     {
@@ -11003,6 +11009,18 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorCatalog"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelException"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelField"
     },
     {
       "kind": "contract-set-member",
@@ -24220,6 +24238,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ClassificationLabelReader"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.CommitmentLot"
     },
     {
@@ -25121,6 +25145,18 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorCatalog"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelException"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelField"
     },
     {
       "kind": "contract-set-member",
@@ -38513,6 +38549,24 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptor",
       "target": "contract:Meridian.Contracts.Domain.Enums.InstrumentType"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorCatalog",
+      "target": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelException"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelException",
+      "target": "contract:Meridian.Contracts.Domain.Enums.InstrumentType"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelException",
+      "target": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelField"
     },
     {
       "kind": "contract-reference",
@@ -54503,6 +54557,37 @@
       "target": "database:security_master.security_governance_events.stream"
     },
     {
+      "constraint": "security_identifier_revisions_security_id_fkey",
+      "kind": "foreign-key",
+      "label": "security_id",
+      "source": "database:security_master.security_identifier_revisions",
+      "target": "database:security_master.securities"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_identifier_revisions_change_kind_check on security_master.security_identifier_revisions",
+      "target": "database:security_master.security_identifier_revisions.change_kind"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_identifier_revisions_revision_check on security_master.security_identifier_revisions",
+      "target": "database:security_master.security_identifier_revisions.revision"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_identifier_revisions_security_id_fkey on security_master.security_identifier_revisions",
+      "target": "database:security_master.securities.security_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_identifier_revisions_security_id_fkey on security_master.security_identifier_revisions",
+      "target": "database:security_master.securities_pkey"
+    },
+    {
       "constraint": "security_identifiers_security_id_fkey",
       "kind": "foreign-key",
       "label": "security_id",
@@ -56268,6 +56353,12 @@
       "kind": "contains",
       "label": "",
       "source": "schema:security_master",
+      "target": "database:security_master.security_identifier_revisions"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
       "target": "database:security_master.security_identifiers"
     },
     {
@@ -56470,7 +56561,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "b3056d474a27fb289fcdf6908df1b245804402cafbd7c458e5d3e19d6eb78f27",
+  "fingerprint": "70c46a2dc162ccb1e0d255751771d95d074d96a0ba8073d6bfdbf85f630579b5",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -66622,6 +66713,12 @@
       "label": "Meridian.Contracts.SecurityMaster.CashFlowLegRateKind"
     },
     {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.ClassificationLabelReader",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.ClassificationLabelReader"
+    },
+    {
       "classification": "record",
       "id": "contract:Meridian.Contracts.SecurityMaster.CommitmentLot",
       "kind": "contract-type",
@@ -67526,6 +67623,18 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorCatalog",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorCatalog"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelException",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelException"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelField",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelField"
     },
     {
       "classification": "request",
@@ -82160,6 +82269,37 @@
       "label": "security_master.security_governance_events_stream_check on security_master.security_governance_events"
     },
     {
+      "id": "database:security_master.security_identifier_revisions",
+      "kind": "database-table",
+      "label": "security_master.security_identifier_revisions",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.security_identifier_revisions.change_kind",
+      "kind": "database-object",
+      "label": "security_master.security_identifier_revisions.change_kind"
+    },
+    {
+      "id": "database:security_master.security_identifier_revisions.revision",
+      "kind": "database-object",
+      "label": "security_master.security_identifier_revisions.revision"
+    },
+    {
+      "id": "database:security_master.security_identifier_revisions_change_kind_check on security_master.security_identifier_revisions",
+      "kind": "database-object",
+      "label": "security_master.security_identifier_revisions_change_kind_check on security_master.security_identifier_revisions"
+    },
+    {
+      "id": "database:security_master.security_identifier_revisions_revision_check on security_master.security_identifier_revisions",
+      "kind": "database-object",
+      "label": "security_master.security_identifier_revisions_revision_check on security_master.security_identifier_revisions"
+    },
+    {
+      "id": "database:security_master.security_identifier_revisions_security_id_fkey on security_master.security_identifier_revisions",
+      "kind": "database-object",
+      "label": "security_master.security_identifier_revisions_security_id_fkey on security_master.security_identifier_revisions"
+    },
+    {
       "id": "database:security_master.security_identifiers",
       "kind": "database-table",
       "label": "security_master.security_identifiers",
@@ -82672,11 +82812,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3612,
-    "contract_set_memberships": 4495,
-    "edges": 9383,
-    "foreign_keys": 155,
+    "contract_references": 3615,
+    "contract_set_memberships": 4501,
+    "edges": 9398,
+    "foreign_keys": 156,
     "logical_references": 6,
-    "nodes": 4544
+    "nodes": 4553
   }
 }

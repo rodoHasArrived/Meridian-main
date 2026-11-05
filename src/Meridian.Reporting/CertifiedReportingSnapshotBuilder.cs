@@ -137,8 +137,12 @@ internal static class CertifiedReportingSnapshotBuilder
             AssetClass: detail?.AssetClass,
             PrimaryIdentifierKind: primaryIdentifier?.Kind.ToString(),
             PrimaryIdentifierValue: primaryIdentifier?.Value,
-            SubType: economicDefinition?.SubType,
-            AssetFamily: economicDefinition?.AssetFamily,
+            // Decision D2 (Security Master review slice 3): rows group and display by the canonical
+            // label, so a record retained with the legacy F# rendering (Some(PreferredEquity),
+            // OtherFamily "x") joins its canonical peers. The content hash below still fingerprints
+            // the retained economic definition exactly as read; no stored label is rewritten.
+            SubType: ClassificationLabelReader.Normalize(economicDefinition?.SubType),
+            AssetFamily: ClassificationLabelReader.Normalize(economicDefinition?.AssetFamily),
             IssuerType: economicDefinition?.IssuerType,
             RiskCountry: economicDefinition?.RiskCountry,
             LookupQuality: ResolveLookupQuality(detail, economicDefinition, primaryIdentifier),
