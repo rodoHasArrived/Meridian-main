@@ -1,6 +1,6 @@
 {
   "total_files": 796,
-  "total_lines": 181886,
+  "total_lines": 181877,
   "orphaned_count": 259,
   "no_heading_count": 157,
   "stale_count": 0,
@@ -1679,7 +1679,7 @@
     },
     {
       "path": "docs/architecture/security-master-extensibility-review.md",
-      "line_count": 7848,
+      "line_count": 7834,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3031,7 +3031,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 13201,
+      "line_count": 13195,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6239,7 +6239,7 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 1436,
+      "line_count": 1431,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6271,7 +6271,7 @@
     },
     {
       "path": "src/Meridian.Contracts/README.md",
-      "line_count": 2145,
+      "line_count": 2143,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6391,7 +6391,7 @@
     },
     {
       "path": "src/Meridian.Infrastructure/README.md",
-      "line_count": 542,
+      "line_count": 541,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6535,7 +6535,7 @@
     },
     {
       "path": "src/Meridian.Ui/dashboard/README.md",
-      "line_count": 1904,
+      "line_count": 1917,
       "has_heading": true,
       "todo_count": 5,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6559,7 +6559,7 @@
     },
     {
       "path": "src/Meridian.Ui/README.md",
-      "line_count": 143,
+      "line_count": 149,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
