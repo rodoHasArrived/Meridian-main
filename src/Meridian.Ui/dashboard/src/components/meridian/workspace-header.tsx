@@ -79,29 +79,33 @@ export function WorkspaceHeader({
           <span className="text-xs leading-5 opacity-80">{viewModel.liveBanner.detail}</span>
         </div>
       ) : null}
+      {/* Two rows, in visual and focus order: breadcrumb with the operating scope beside it,
+          then the title with the shell actions. The scope used to take a third full-width
+          row; it now shares the breadcrumb row so route content starts higher. */}
       <div className="workspace-header-shell workstation-header-compact">
-        <div className="workstation-header-location">
+        <div className="workstation-header-crumbs">
           {breadcrumbItems.length > 0 ? <Breadcrumb items={breadcrumbItems} /> : null}
-          <div className="workstation-header-title-row">
-            <h1 className="font-display font-semibold text-foreground">{viewModel.title}</h1>
-            {viewModel.badges.map((badge) => (
-              <Badge key={badge.id} variant={badge.variant} aria-label={badge.ariaLabel}>
-                {badge.label}
-              </Badge>
-            ))}
-            <details className="workstation-header-info" onKeyDown={(event) => {
-              if (event.key === "Escape") {
-                event.preventDefault();
-                event.currentTarget.open = false;
-                event.currentTarget.querySelector("summary")?.focus();
-              }
-            }}>
-              <summary aria-label={`About ${workspace.label}`} title={`About ${workspace.label}`}>
-                <Info className="size-4" aria-hidden="true" />
-              </summary>
-              <p>{viewModel.description}</p>
-            </details>
-          </div>
+        </div>
+        {context ? <div className="workstation-header-context">{context}</div> : null}
+        <div className="workstation-header-title-row">
+          <h1 className="font-display font-semibold text-foreground">{viewModel.title}</h1>
+          {viewModel.badges.map((badge) => (
+            <Badge key={badge.id} variant={badge.variant} aria-label={badge.ariaLabel}>
+              {badge.label}
+            </Badge>
+          ))}
+          <details className="workstation-header-info" onKeyDown={(event) => {
+            if (event.key === "Escape") {
+              event.preventDefault();
+              event.currentTarget.open = false;
+              event.currentTarget.querySelector("summary")?.focus();
+            }
+          }}>
+            <summary aria-label={`About ${workspace.label}`} title={`About ${workspace.label}`}>
+              <Info className="size-4" aria-hidden="true" />
+            </summary>
+            <p>{viewModel.description}</p>
+          </details>
         </div>
         <div className="workstation-header-actions">
           {actions}
@@ -123,7 +127,6 @@ export function WorkspaceHeader({
             </Button>
           ) : null}
         </div>
-        {context ? <div className="workstation-header-context">{context}</div> : null}
         <span className="sr-only" aria-label={viewModel.sessionPillAriaLabel}>{viewModel.sessionLabel}</span>
       </div>
       <span className="sr-only" aria-live="polite">{viewModel.liveAnnouncement}</span>
