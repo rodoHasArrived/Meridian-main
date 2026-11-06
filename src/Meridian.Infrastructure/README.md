@@ -407,6 +407,9 @@ account's balances or positions. Account-summary request correlation is register
 so synchronous vendor callbacks cannot arrive before the awaiting operation exists.
 Alpaca trade-update streaming accumulates complete WebSocket messages across fragmented frames,
 bounds each message before UTF-8 decoding, and reconnects after an incomplete oversized payload.
+The file-backed trade-update cursor store takes its cross-process lease through
+`Core.IO.ExclusiveFileLock`: only sharing/lock contention is retried, with jittered backoff, and any
+other I/O fault surfaces immediately instead of after the lease timeout.
 Alpaca order cancellation accepts a typed client-ID or broker-ID namespace. Client identifiers use
 only the provider's dedicated lookup route, so a UUID-shaped client ID cannot collide with an
 unrelated broker UUID; DELETE receives only the resolved broker ID. HTTP 204 is acceptance rather

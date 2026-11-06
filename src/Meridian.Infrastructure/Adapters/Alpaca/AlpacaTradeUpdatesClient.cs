@@ -1183,28 +1183,19 @@ public sealed class FileAlpacaTradeUpdateCursorStore : IAlpacaTradeUpdateCursorS
     {
         Directory.CreateDirectory(Path.GetDirectoryName(_lockPath)!);
         _pathGuard.EnsurePath(_lockPath);
-        var stopwatch = Stopwatch.StartNew();
-        IOException? lastFailure = null;
-        while (stopwatch.Elapsed < WriterLeaseTimeout)
+        // Synchronous: the cursor-store contract is synchronous and this runs under the in-process
+        // _gate monitor, so only another process can contend. Only sharing/lock refusals are retried;
+        // any other I/O fault surfaces immediately instead of spinning for the full lease timeout.
+        try
         {
-            try
-            {
-                return new FileStream(
-                    _lockPath,
-                    FileMode.OpenOrCreate,
-                    FileAccess.ReadWrite,
-                    FileShare.None);
-            }
-            catch (IOException ex)
-            {
-                lastFailure = ex;
-                Thread.Sleep(25);
-            }
+            return ExclusiveFileLock.Acquire(_lockPath, WriterLeaseTimeout);
         }
-
-        throw new IOException(
-            $"Timed out acquiring the Alpaca trade-update state lease for '{_path}'.",
-            lastFailure);
+        catch (TimeoutException ex)
+        {
+            throw new IOException(
+                $"Timed out acquiring the Alpaca trade-update state lease for '{_path}'.",
+                ex.InnerException);
+        }
     }
 
     private static string NormalizeEnvironment(string tradingEnvironment)
