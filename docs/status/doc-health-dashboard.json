@@ -1,6 +1,6 @@
 {
   "total_files": 798,
-  "total_lines": 183283,
+  "total_lines": 183292,
   "orphaned_count": 259,
   "no_heading_count": 157,
   "stale_count": 0,
@@ -6287,7 +6287,7 @@
     },
     {
       "path": "src/Meridian.Contracts/README.md",
-      "line_count": 2207,
+      "line_count": 2210,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6599,7 +6599,7 @@
     },
     {
       "path": "src/Meridian.Wpf/README.md",
-      "line_count": 1090,
+      "line_count": 1096,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
