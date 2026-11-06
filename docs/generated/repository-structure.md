@@ -6658,6 +6658,7 @@ Meridian-main
 │   │   │   │   ├── 007_direct_lending_command_idempotency.sql
 │   │   │   │   ├── 008_direct_lending_pik_accrual.sql
 │   │   │   │   ├── 009_direct_lending_cash_flow_identity.sql
+│   │   │   │   ├── 010_direct_lending_excess_payment_balances.sql
 │   │   │   │   └── 011_direct_lending_pik_capitalization_and_rate_resets.sql
 │   │   │   ├── DirectLendingMigrationRunner.cs
 │   │   │   ├── DirectLendingPersistenceBatch.cs
@@ -10098,6 +10099,7 @@ Meridian-main
 │   │   ├── DirectLendingInteropTests.fs
 │   │   ├── DirectLendingPikCapitalizationAndResetTests.fs
 │   │   ├── DirectLendingScheduleCharacterizationTests.fs
+│   │   ├── DirectLendingTestBalances.fs
 │   │   ├── DomainTests.fs
 │   │   ├── FundEconomicsTests.fs
 │   │   ├── LedgerKernelTests.fs
@@ -10870,6 +10872,7 @@ Meridian-main
 │   │   │   │   ├── DailyAccrualWorkerServicingScheduleTests.cs
 │   │   │   │   ├── DailyAccrualWorkerTests.cs
 │   │   │   │   ├── DirectLendingEventRebuilderTests.cs
+│   │   │   │   ├── DirectLendingExcessBalancesCompatibilityTests.cs
 │   │   │   │   ├── DirectLendingOutboxDispatcherTests.cs
 │   │   │   │   ├── DirectLendingOutboxFailureTests.cs
 │   │   │   │   ├── DirectLendingServicerStatementServiceTests.cs

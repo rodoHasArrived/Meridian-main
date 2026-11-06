@@ -30,8 +30,8 @@
       "id": "SRC-CONTRACTS",
       "path": "src/Meridian.Contracts",
       "readme": "src/Meridian.Contracts/README.md",
-      "readme_hash": "2e3279ac9bfa1d9534e587d7b78160280118424895ae2c2ac6889ced8efa6029",
-      "source_hash": "728a943c61fe2b46b1c48322565f9ae7531ac7d6f3ce3185aba53e7af646d1a2"
+      "readme_hash": "f75a9949bc6807d3c0dc90dc2e5232339cb9e9d8ba5d25e1e4ca86f8f1fd0b98",
+      "source_hash": "4c810734921ade690e6032c657fd255ff9a3254d7f254c818e1676ac70bee550"
     },
     {
       "id": "SRC-CORE",
@@ -156,8 +156,8 @@
       "id": "SRC-FSHARP-DIRECTLENDING",
       "path": "src/Meridian.FSharp.DirectLending.Aggregates",
       "readme": "src/Meridian.FSharp.DirectLending.Aggregates/README.md",
-      "readme_hash": "67dc162cdf809f4c20c73ae8f4c8eb0c549a9b3823ae8557f08251e40f9f2fb6",
-      "source_hash": "6dd914d53047829112597df1e7ce7482902f0892887e23221d953cf66e04eda4"
+      "readme_hash": "fe5467c4419a1c85fc439243d1097c555204ca10470970fbe63adf108859cd86",
+      "source_hash": "58dae5663a0dc76567ac732bc87e86ae7c252af596053a1e49afc9df5346c8d9"
     },
     {
       "id": "SRC-FSHARP-LEDGER",
@@ -247,8 +247,8 @@
       "id": "SRC-STORAGE",
       "path": "src/Meridian.Storage",
       "readme": "src/Meridian.Storage/README.md",
-      "readme_hash": "aa80ea39ed076f19c006902fce561e6ee7c4bcf31f0e1a98b35e708a64c2526e",
-      "source_hash": "5449df81866de5390ee1e3c0fda585c84aff480de6b7ba7b7b01538b12d833ce"
+      "readme_hash": "991fa0f904250c26e2523643ea78da8063c2e1a3fd693e62a118c44ecb56cc43",
+      "source_hash": "d84561d72977973e9b543a7b399bae767e1248cf249d22bb206ca268c0e20e16"
     },
     {
       "id": "SRC-STRATEGIES",
