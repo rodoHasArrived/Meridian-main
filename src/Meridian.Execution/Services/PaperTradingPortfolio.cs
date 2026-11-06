@@ -773,9 +773,17 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
                 var quantityFactor = originalQuantity == 0m
                     ? 1m
                     : adjustment.AdjustedQuantity / originalQuantity;
+                // The adjuster derives its per-unit basis from the retained total, which this book
+                // holds in money (quote × quantity × multiplier). Lots and CostBasis are quotes, so
+                // bring that figure back to a quote first; otherwise a 100x option's lots would be
+                // re-priced 100x too high and HIFO would rank them on the wrong prices.
+                var adjustedUnitQuote = adjustment.AdjustedTotalCostBasis is { } adjustedTotal
+                    && adjustment.AdjustedQuantity != 0m
+                        ? adjustedTotal / (Math.Abs(adjustment.AdjustedQuantity) * pos.EconomicMultiplier)
+                        : adjustment.AdjustedCostBasis;
                 var priceFactor = originalCostBasis == 0m
                     ? 1m
-                    : adjustment.AdjustedCostBasis / originalCostBasis;
+                    : adjustedUnitQuote / originalCostBasis;
                 pos.RescaleLots(quantityFactor, priceFactor, adjustment.AdjustedQuantity, adjustment.AdjustedTotalCostBasis);
                 pos.Quantity = adjustment.AdjustedQuantity;
                 pos.CostBasis = adjustment.AdjustedTotalCostBasis.HasValue && pos.Quantity != 0m

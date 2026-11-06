@@ -290,6 +290,43 @@ public sealed class PaperTradingPortfolioMultiplierTests
     }
 
     [Fact]
+    public async Task OptionSplit_RescalesLotsToTheQuoteNotTheMoneyBasis()
+    {
+        // One contract at 2.50 (×100) holds $250 of basis. A 2-for-1 split leaves two contracts
+        // at a 1.25 quote; the lot must not be re-priced to $125 per contract.
+        var portfolio = new PaperTradingPortfolio(100_000m, ledger: null,
+            corporateActionAdjuster: new TwoForOneSplitAdjuster());
+        portfolio.ApplyFill(OptionFill(OrderSide.Buy, qty: 1m, price: 2.50m));
+
+        await portfolio.ApplyCorporateActionsAsync(Option, DateTimeOffset.UnixEpoch);
+
+        var lot = portfolio.GetPositionLots(Option).Should().ContainSingle().Subject;
+        lot.OpenQuantity.Should().Be(2m);
+        lot.EntryPrice.Should().Be(1.25m);
+        portfolio.Positions[Option].AverageCostBasis.Should().Be(1.25m);
+
+        portfolio.ApplyFill(OptionFill(OrderSide.Sell, qty: 2m, price: 1.50m));
+        portfolio.RealisedPnl.Should().Be(50m, "$300 of proceeds against $250 of retained basis");
+    }
+
+    private sealed class TwoForOneSplitAdjuster : ILivePositionCorporateActionAdjuster
+    {
+        public Task<PositionCorporateActionAdjustment> AdjustPositionAsync(string ticker, decimal quantity,
+            decimal costBasis, DateTimeOffset positionOpenedAt, CancellationToken ct = default) =>
+            throw new InvalidOperationException("The paper portfolio must supply its retained total basis.");
+
+        // Mirrors CorporateActionAdjustmentService: the per-unit basis is the retained total over
+        // the adjusted quantity, whatever money scale that total is held in.
+        public Task<PositionCorporateActionAdjustment> AdjustPositionAsync(string ticker, decimal quantity,
+            decimal costBasis, decimal totalCostBasis, DateTimeOffset positionOpenedAt, CancellationToken ct = default) =>
+            Task.FromResult(new PositionCorporateActionAdjustment(
+                ticker, quantity, quantity * 2m, costBasis, totalCostBasis / Math.Abs(quantity * 2m), 1)
+            {
+                AdjustedTotalCostBasis = totalCostBasis
+            });
+    }
+
+    [Fact]
     public void RecordedFill_WithoutBookedStamp_ReplaysAtTheOneTimesScaleItWasBookedAt()
     {
         // A session written before this book scaled premiums already carried the Security

@@ -865,9 +865,6 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
         AppendCanonical(canonical, FormatDecimal(evt.NewCash));
         AppendCanonical(canonical, evt.OccurredAt.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture));
         AppendCanonical(canonical, NormalizeOptional(evt.FinancialAccountId));
-        // Appended only when it scales the trade, so every 1x posting keeps its existing digest.
-        if (evt.ContractMultiplier != 1m)
-            AppendCanonical(canonical, "contractMultiplier=" + FormatDecimal(evt.ContractMultiplier));
         AppendCanonical(canonical, securityId.ToString("D"));
         AppendCanonical(canonical, activityType);
         foreach (var line in lines)
