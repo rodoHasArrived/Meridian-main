@@ -15286,6 +15286,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OperatingScopeValuesDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.OperationsAccountingRecordEvidenceCategoryDto"
     },
     {
@@ -15707,6 +15713,24 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.OperatorInboxDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OperatorScopePreferenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OperatorScopePreferenceSaveRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OperatorSurfaceVisitDto"
     },
     {
       "kind": "contract-set-member",
@@ -18706,6 +18730,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationCrossScreenCount"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationCrossScreenCountsDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.WorkstationDataBackfillRecord"
     },
     {
@@ -18911,6 +18947,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.WorkstationPortfolioSummaryTelemetry"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationProviderHealthCount"
     },
     {
       "kind": "contract-set-member",
@@ -43965,6 +44007,18 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OperatorScopePreferenceDto",
+      "target": "contract:Meridian.Contracts.Workstation.OperatingScopeValuesDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OperatorScopePreferenceSaveRequest",
+      "target": "contract:Meridian.Contracts.Workstation.OperatingScopeValuesDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.OperatorWorkItemDto",
       "target": "contract:Meridian.Contracts.Workstation.OperatorWorkItemKindDto"
     },
@@ -47897,6 +47951,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.WorkstationBrokerageSyncStatusDto",
       "target": "contract:Meridian.Contracts.Workstation.WorkstationBrokerageSyncHealth"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.WorkstationCrossScreenCountsDto",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationCrossScreenCount"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.WorkstationCrossScreenCountsDto",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationProviderHealthCount"
     },
     {
       "kind": "contract-reference",
@@ -56657,7 +56723,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "4e2a4bcae61afd22d0f8f52c8c2165e4f71ce860f8aa7c86514a53eacd18c530",
+  "fingerprint": "e1614459ff30780f56df800823b0dfd6a01e605ee78517bb5075a38a4d19a7f2",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -71994,6 +72060,12 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OperatingScopeValuesDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OperatingScopeValuesDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.OperationsAccountingRecordEvidenceCategoryDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.OperationsAccountingRecordEvidenceCategoryDto"
@@ -72417,6 +72489,24 @@
       "id": "contract:Meridian.Contracts.Workstation.OperatorInboxDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.OperatorInboxDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OperatorScopePreferenceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OperatorScopePreferenceDto"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Workstation.OperatorScopePreferenceSaveRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OperatorScopePreferenceSaveRequest"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OperatorSurfaceVisitDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OperatorSurfaceVisitDto"
     },
     {
       "classification": "dto",
@@ -75414,6 +75504,18 @@
     },
     {
       "classification": "record",
+      "id": "contract:Meridian.Contracts.Workstation.WorkstationCrossScreenCount",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.WorkstationCrossScreenCount"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.WorkstationCrossScreenCountsDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.WorkstationCrossScreenCountsDto"
+    },
+    {
+      "classification": "record",
       "id": "contract:Meridian.Contracts.Workstation.WorkstationDataBackfillRecord",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.WorkstationDataBackfillRecord"
@@ -75621,6 +75723,12 @@
       "id": "contract:Meridian.Contracts.Workstation.WorkstationPortfolioSummaryTelemetry",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.WorkstationPortfolioSummaryTelemetry"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Workstation.WorkstationProviderHealthCount",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.WorkstationProviderHealthCount"
     },
     {
       "classification": "dto",
@@ -82988,11 +83096,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3618,
-    "contract_set_memberships": 4505,
-    "edges": 9414,
+    "contract_references": 3622,
+    "contract_set_memberships": 4512,
+    "edges": 9425,
     "foreign_keys": 156,
     "logical_references": 6,
-    "nodes": 4568
+    "nodes": 4575
   }
 }

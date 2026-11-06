@@ -84,7 +84,8 @@ hosts without the wrapper preserve live environment reads and credential rotatio
 `AuthenticationModeResolver` is the shared strict parser used by host startup and sessions.
 Invalid modes refuse construction, including Development/Test and configured-account hosts.
 Durable sessions reload authoritative state under an exclusive cross-process file lease for
-every operation. Session hashes and bounded login-failure windows commit atomically together;
+every operation; the lease is taken through `Core.IO.ExclusiveFileLock`, which retries only
+contention. Session hashes and bounded login-failure windows commit atomically together;
 logout, user/global revocation, lockout, and expiry are observed by every instance using the same
 store. The previous hashed-session array upgrades on its next mutation. Corrupt or inaccessible
 state refuses access without falling back to cached permissions. All cooperating instances must
