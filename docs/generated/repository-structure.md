@@ -10723,6 +10723,7 @@ Meridian-main
 │   │   │       ├── ZiggyCreatures.FusionCache.dll
 │   │   │       ├── ZiggyCreatures.FusionCache.Serialization.SystemTextJson.dll
 │   │   │       └── ZstdSharp.dll
+│   │   ├── .gitignore
 │   │   ├── BacktestProxyRealismTests.cs
 │   │   ├── ContainedProcessTests.cs
 │   │   ├── GlobalUsings.cs
