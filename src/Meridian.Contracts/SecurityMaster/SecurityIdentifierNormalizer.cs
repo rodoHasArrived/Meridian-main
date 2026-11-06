@@ -401,8 +401,7 @@ public static class SecurityIdentifierNormalizer
 
         // ISO 17442 carries an ISO 7064 MOD 97-10 checksum in the last two digits. Expanding
         // letters to two-digit values (A=10 .. Z=35) and taking the whole 20-character code
-        // modulo 97 yields 1 for a valid LEI. See also the reference algorithm in
-        // src/Meridian.FSharp/Domain/SecurityIdentifiers.fs.
+        // modulo 97 yields 1 for a valid LEI. The F# SecurityIdentifier.validateLei delegates here.
         return Mod97(normalized) == 1;
     }
 
