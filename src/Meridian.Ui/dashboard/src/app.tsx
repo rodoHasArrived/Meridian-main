@@ -1,4 +1,4 @@
-import { Component, lazy, memo, Suspense, useEffect, useMemo, useRef, useState, type ErrorInfo, type ReactNode } from "react";
+import { Component, lazy, memo, Suspense, useCallback, useEffect, useMemo, useRef, useState, type ErrorInfo, type ReactNode } from "react";
 import {
   ArrowRight,
   AlertTriangle,
@@ -42,7 +42,10 @@ import { isCompanionPaneRoute, openCompanionPane } from "@/lib/companion-pane/pa
 import { setOpenCompanionPaneIds } from "@/lib/companion-pane/open-registry";
 import { broadcastCompanionState } from "@/lib/companion-pane/opener-broadcast";
 import { applyDensity, writeStoredDensity } from "@/lib/density";
-import type { LayoutRestorePlan } from "@/lib/saved-layouts";
+import { ScopePickerOpenerProvider } from "@/lib/operating-scope/scope-picker-context";
+import { readRecentScopes, rememberRecentScope } from "@/lib/operating-scope/recent-scopes";
+import { CrossScreenCountsProvider } from "@/lib/cross-screen-counts-context";
+import { buildLayoutRestorePlan, readUserLayouts, type LayoutRestorePlan } from "@/lib/saved-layouts";
 import { WorkspaceNav } from "@/components/meridian/workspace-nav";
 import { Skeleton } from "@/components/data/skeleton";
 import type { BreadcrumbItem } from "@/components/ui/breadcrumb";
@@ -61,6 +64,7 @@ import { StatusBanner } from "@/components/ui/status-banner";
 import { ToastProvider } from "@/components/ui/toast";
 import { useWorkstationData } from "@/hooks/use-workstation-data";
 import { markWorkflowPresetUsed, pinWorkflowPreset } from "@/lib/api";
+import { getOperatorScopePreference, saveOperatorScopePreference } from "@/lib/api/operator-workstation.api";
 import {
   useCommandPaletteActions,
   type CommandPaletteActionItem
@@ -346,9 +350,17 @@ function AppShell({
   const [commandOpen, setCommandOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
   const [scopePickerOpen, setScopePickerOpen] = useState(false);
+  const openScopePicker = useCallback(() => setScopePickerOpen(true), []);
   const [layoutRestoreSequence, setLayoutRestoreSequence] = useState(0);
   const [routeAnnouncement, setRouteAnnouncement] = useState("");
   const [storedOperatingScope, setStoredOperatingScope] = useState(readStoredOperatingScope);
+  // C1: recent scopes per browser; the default scope per operator, from the server.
+  const [recentScopes, setRecentScopes] = useState(() => readRecentScopes());
+  const [defaultScope, setDefaultScope] = useState<AppShellOperatingScopeInput | null>(null);
+  const defaultScopeCheckedRef = useRef(false);
+  // Set once the operator applies or restores any scope, including an empty one, so a default that
+  // loads late never replaces a choice they made while it was loading.
+  const operatorChoseScopeRef = useRef(false);
   const onboardingTour = useOnboardingTour();
   const workbenchRef = useRef<HTMLElement | null>(null);
   const previousRouteKeyRef = useRef<string | null>(null);
@@ -362,9 +374,46 @@ function AppShell({
     [storedOperatingScope, routeOperatingScope]
   );
   const operatingContextSymbol = operatingScopeInput.symbol ?? null;
+  // C1: load the operator's default scope once. It is applied only when this session opened with
+  // no scope at all (none in the link, none remembered in this browser) and the operator has not
+  // chosen one since, so it never overrides a shared link or the operator's own choice.
+  const openedUnscopedRef = useRef<boolean | null>(null);
+  if (openedUnscopedRef.current === null) openedUnscopedRef.current = !hasOperatingScopeValues(operatingScopeInput);
+  const currentOperatingScopeRef = useRef(operatingScopeInput);
+  currentOperatingScopeRef.current = operatingScopeInput;
+  useEffect(() => {
+    if (defaultScopeCheckedRef.current) return;
+    const controller = new AbortController();
+    void getOperatorScopePreference({ signal: controller.signal }).then((preference) => {
+      if (controller.signal.aborted) return;
+      defaultScopeCheckedRef.current = true;
+      const saved = preference.defaultScope ? compactOperatingScope(preference.defaultScope) : null;
+      setDefaultScope(saved && hasOperatingScopeValues(saved) ? saved : null);
+      if (
+        openedUnscopedRef.current
+        && !operatorChoseScopeRef.current
+        && !hasOperatingScopeValues(currentOperatingScopeRef.current)
+        && saved
+        && hasOperatingScopeValues(saved)
+      ) {
+        applyOperatingScopeRef.current(saved);
+      }
+    }).catch(() => {
+      // No session, an older host, or a failed read: no default, and the session stays as opened.
+      // An aborted read (StrictMode's effect replay, or unmount) leaves the check open to run again.
+      if (!controller.signal.aborted) defaultScopeCheckedRef.current = true;
+    });
+    return () => controller.abort();
+  }, []);
+  const handleSaveDefaultScope = async (next: AppShellOperatingScopeInput | null) => {
+    const compacted = next ? compactOperatingScope(next) : null;
+    const saved = await saveOperatorScopePreference(compacted && hasOperatingScopeValues(compacted) ? compacted : null);
+    setDefaultScope(saved.defaultScope ? compactOperatingScope(saved.defaultScope) : null);
+  };
   const {
     session,
     overview,
+    crossScreenCounts,
     strategy,
     trading,
     portfolio,
@@ -449,9 +498,24 @@ function AppShell({
     }),
     []
   );
+  // C4: saved views in the palette. A saved layout carries its route with every table's URL state
+  // (filters, sort, hidden columns), the operating scope and density, so opening one restores the
+  // whole view. Read when the palette opens so a view saved a moment ago is offered.
+  const savedViewActionItems = useMemo<CommandPaletteActionItem[]>(
+    () => (commandOpen ? readUserLayouts() : []).map((layout) => ({
+      id: `saved-view:${layout.id}`,
+      verbLabel: `Open saved view ${layout.name}`,
+      description: layout.description ?? "Restores its screen with filters, sort, columns, scope and density.",
+      keywords: ["saved view", "layout", layout.name],
+      run: async () => {
+        handleRestoreLayoutRef.current(buildLayoutRestorePlan(layout));
+      }
+    })),
+    [commandOpen]
+  );
   const paletteActionItems = useMemo(
-    () => [scopeActionItem, ...presetPinActionItems, ...screenActionItems],
-    [scopeActionItem, presetPinActionItems, screenActionItems]
+    () => [scopeActionItem, ...savedViewActionItems, ...presetPinActionItems, ...screenActionItems],
+    [scopeActionItem, savedViewActionItems, presetPinActionItems, screenActionItems]
   );
 
   useEffect(() => {
@@ -480,14 +544,21 @@ function AppShell({
   // Replace the operating scope from the picker: persist it and reflect the
   // applicable dimensions into the current route so URL-reading screens filter,
   // preserving any non-scope query params already on the route.
-  const handleSetOperatingScope = (next: AppShellOperatingScopeInput) => {
+  const applyOperatingScope = (next: AppShellOperatingScopeInput) => {
     const compacted = compactOperatingScope(next);
     scopeReplacementLocationRef.current = locationKey;
     writeStoredOperatingScope(compacted);
     setStoredOperatingScope(compacted);
+    setRecentScopes((current) => rememberRecentScope(compacted, current));
     const baseRoute = `${pathname}${removeOperatingScopeFromSearch(search)}`;
     const scopeState = buildOperatingScopeFromSearch("", compacted);
     navigate(`${appendOperatingScopeToRoute(baseRoute, scopeState)}${hash}`, { replace: true });
+  };
+  const applyOperatingScopeRef = useRef(applyOperatingScope);
+  applyOperatingScopeRef.current = applyOperatingScope;
+  const handleSetOperatingScope = (next: AppShellOperatingScopeInput) => {
+    operatorChoseScopeRef.current = true;
+    applyOperatingScope(next);
   };
 
   // Replay a saved layout: apply density and operating scope, re-open the recorded
@@ -500,6 +571,7 @@ function AppShell({
     applyDensity(plan.density);
 
     const compacted = compactOperatingScope(plan.operatingScope);
+    operatorChoseScopeRef.current = true;
     scopeReplacementLocationRef.current = locationKey;
     writeStoredOperatingScope(compacted);
     setStoredOperatingScope(compacted);
@@ -509,6 +581,8 @@ function AppShell({
 
     navigate(plan.route);
   };
+  const handleRestoreLayoutRef = useRef(handleRestoreLayout);
+  handleRestoreLayoutRef.current = handleRestoreLayout;
 
   const scopeFundAccountOptions = useMemo(() => collectScopeFundAccounts(brokeragePortfolio), [brokeragePortfolio]);
   const scopeDimensionsInEffect = useMemo(() => operatingScopeDimensionsForRoute(pathname), [pathname]);
@@ -559,6 +633,7 @@ function AppShell({
     payload: {
       session,
       overview,
+      crossScreenCounts,
       strategy,
       trading,
       portfolio,
@@ -582,6 +657,7 @@ function AppShell({
     dataProvenance,
     session,
     overview,
+    crossScreenCounts,
     strategy,
     trading,
     portfolio,
@@ -702,6 +778,8 @@ function AppShell({
   ]);
 
   return (
+    <ScopePickerOpenerProvider open={openScopePicker}>
+    <CrossScreenCountsProvider counts={crossScreenCounts}>
     <div className="workstation-frame">
       <a className="skip-link" href="#workbench-content">Skip to workbench</a>
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
@@ -758,7 +836,7 @@ function AppShell({
           <WorkspaceHeader
             actions={(
               <>
-                <CopyLinkButton />
+                <CopyLinkButton operatingScope={operatingScopeInput} />
                 <WorkspaceViewsMenu routeKey={`${shell.routeFocus.routeKey}:${layoutRestoreSequence}`}>
                   <LayoutSwitcher
                     route={`${pathname}${search}`}
@@ -918,6 +996,9 @@ function AppShell({
         scope={operatingScopeInput}
         fundAccounts={scopeFundAccountOptions}
         onApply={handleSetOperatingScope}
+        recentScopes={recentScopes}
+        defaultScope={defaultScope}
+        onSaveDefault={handleSaveDefaultScope}
       />
       <Sheet open={navOpen} onOpenChange={setNavOpen} side="left">
         <SheetContent
@@ -944,6 +1025,8 @@ function AppShell({
         </SheetContent>
       </Sheet>
     </div>
+    </CrossScreenCountsProvider>
+    </ScopePickerOpenerProvider>
   );
 }
 

@@ -5047,6 +5047,7 @@ Meridian-main
 │   │   │   ├── CashOperationsDtos.cs
 │   │   │   ├── CloseReadinessDtos.cs
 │   │   │   ├── CollateralExposureDtos.cs
+│   │   │   ├── CrossScreenCountsDtos.cs
 │   │   │   ├── DailyValuationScheduleDtos.cs
 │   │   │   ├── DataOperationsAssuranceDtos.cs
 │   │   │   ├── DataUploadDtos.cs
@@ -5070,6 +5071,8 @@ Meridian-main
 │   │   │   ├── MarkFreshnessDtos.cs
 │   │   │   ├── OnboardingDtos.cs
 │   │   │   ├── OperationsContinuityDtos.cs
+│   │   │   ├── OperatorScopePreferenceDtos.cs
+│   │   │   ├── OperatorSurfaceVisitDtos.cs
 │   │   │   ├── PilotReadinessArtifactDtos.cs
 │   │   │   ├── ReconciliationBreakLineageDtos.cs
 │   │   │   ├── ReconciliationDtos.cs
@@ -5144,6 +5147,7 @@ Meridian-main
 │   │   │   ├── UnsupportedAssetClassException.cs
 │   │   │   └── ValidationException.cs
 │   │   ├── IO
+│   │   │   ├── ExclusiveFileLock.cs
 │   │   │   ├── IAtomicFileWriter.cs
 │   │   │   └── RootedPathGuard.cs
 │   │   ├── Logging
@@ -7666,6 +7670,7 @@ Meridian-main
 │   │   │   │   │   │   ├── factor-paydown.api.ts
 │   │   │   │   │   │   ├── family-office.api.ts
 │   │   │   │   │   │   ├── mark-freshness.api.ts
+│   │   │   │   │   │   ├── operator-workstation.api.ts
 │   │   │   │   │   │   ├── portfolio-cash-ladder.api.ts
 │   │   │   │   │   │   ├── promotion.contracts.ts
 │   │   │   │   │   │   ├── provider-modules.api.test.ts
@@ -7714,7 +7719,10 @@ Meridian-main
 │   │   │   │   │   │   ├── fund-accounts.test.ts
 │   │   │   │   │   │   ├── fund-accounts.ts
 │   │   │   │   │   │   ├── persistence.test.ts
-│   │   │   │   │   │   └── persistence.ts
+│   │   │   │   │   │   ├── persistence.ts
+│   │   │   │   │   │   ├── recent-scopes.test.ts
+│   │   │   │   │   │   ├── recent-scopes.ts
+│   │   │   │   │   │   └── scope-picker-context.tsx
 │   │   │   │   │   ├── perf
 │   │   │   │   │   │   ├── off-thread-compute.test.tsx
 │   │   │   │   │   │   └── off-thread-compute.ts
@@ -7747,6 +7755,10 @@ Meridian-main
 │   │   │   │   │   ├── bond-decimal-format.ts
 │   │   │   │   │   ├── consolidation-api.test.ts
 │   │   │   │   │   ├── consolidation-api.ts
+│   │   │   │   │   ├── cross-screen-counts-context.tsx
+│   │   │   │   │   ├── cross-screen-counts.screens.test.ts
+│   │   │   │   │   ├── cross-screen-counts.test.ts
+│   │   │   │   │   ├── cross-screen-counts.ts
 │   │   │   │   │   ├── csv.test.ts
 │   │   │   │   │   ├── csv.ts
 │   │   │   │   │   ├── daily-control-tower.test.ts
@@ -7783,6 +7795,8 @@ Meridian-main
 │   │   │   │   │   ├── provider-integration-workbench.ts
 │   │   │   │   │   ├── quant-api-mappers.test.ts
 │   │   │   │   │   ├── quant-api-mappers.ts
+│   │   │   │   │   ├── queue-keyboard-map.test.ts
+│   │   │   │   │   ├── queue-keyboard-map.ts
 │   │   │   │   │   ├── quotes-stream.test.ts
 │   │   │   │   │   ├── quotes-stream.ts
 │   │   │   │   │   ├── report-amount-proof-api.test.ts
@@ -7841,8 +7855,11 @@ Meridian-main
 │   │   │   │   │   ├── saved-layouts.test.ts
 │   │   │   │   │   ├── saved-layouts.ts
 │   │   │   │   │   ├── security-schedule-dev-fixtures.ts
+│   │   │   │   │   ├── shareable-view.test.ts
 │   │   │   │   │   ├── shared-tone-mappings.test.ts
 │   │   │   │   │   ├── shared-tone-mappings.ts
+│   │   │   │   │   ├── since-last-visit.test.ts
+│   │   │   │   │   ├── since-last-visit.ts
 │   │   │   │   │   ├── sql-workbench-storage.test.ts
 │   │   │   │   │   ├── sql-workbench-storage.ts
 │   │   │   │   │   ├── system-status.ts
@@ -8131,6 +8148,9 @@ Meridian-main
 │   │   │   │   │   ├── quant-lab-screen.tsx
 │   │   │   │   │   ├── quant-lab-screen.view-model.test.ts
 │   │   │   │   │   ├── quant-lab-screen.view-model.ts
+│   │   │   │   │   ├── reconciliation-bulk-triage-bar.tsx
+│   │   │   │   │   ├── reconciliation-bulk-triage.test.ts
+│   │   │   │   │   ├── reconciliation-bulk-triage.ts
 │   │   │   │   │   ├── reconciliation-casework-outcome.ts
 │   │   │   │   │   ├── reconciliation-source-observation.test.ts
 │   │   │   │   │   ├── reconciliation-source-observation.ts
@@ -8310,6 +8330,7 @@ Meridian-main
 │   │   │   │   │   ├── consolidation.ts
 │   │   │   │   │   ├── contractual-cash-flow.types.ts
 │   │   │   │   │   ├── covered-call.types.ts
+│   │   │   │   │   ├── cross-screen-counts.ts
 │   │   │   │   │   ├── data-operations-assurance.ts
 │   │   │   │   │   ├── data-quality-watch.types.ts
 │   │   │   │   │   ├── direct-lending.types.ts
@@ -8325,6 +8346,8 @@ Meridian-main
 │   │   │   │   │   ├── lifecycle.ts
 │   │   │   │   │   ├── mark-freshness.ts
 │   │   │   │   │   ├── market-data.ts
+│   │   │   │   │   ├── operator-scope-preference.ts
+│   │   │   │   │   ├── operator-surface-visit.ts
 │   │   │   │   │   ├── portfolio-cash-ladder.types.ts
 │   │   │   │   │   ├── provider-accounting.ts
 │   │   │   │   │   ├── provider-integration-provenance.ts
@@ -8683,6 +8706,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpoints.CloseReadiness.cs
 │   │   │   ├── WorkstationEndpoints.Collateral.cs
 │   │   │   ├── WorkstationEndpoints.CollateralExposure.cs
+│   │   │   ├── WorkstationEndpoints.CrossScreenCounts.cs
 │   │   │   ├── WorkstationEndpoints.cs
 │   │   │   ├── WorkstationEndpoints.DataOperationsAssurance.cs
 │   │   │   ├── WorkstationEndpoints.DataProviders.cs
@@ -8694,6 +8718,8 @@ Meridian-main
 │   │   │   ├── WorkstationEndpoints.FinancialRecordExplorers.cs
 │   │   │   ├── WorkstationEndpoints.IBResults.cs
 │   │   │   ├── WorkstationEndpoints.OperatorInbox.cs
+│   │   │   ├── WorkstationEndpoints.OperatorScopePreference.cs
+│   │   │   ├── WorkstationEndpoints.OperatorSurfaceVisits.cs
 │   │   │   ├── WorkstationEndpoints.PlotTool.cs
 │   │   │   ├── WorkstationEndpoints.PortfolioAggregation.cs
 │   │   │   ├── WorkstationEndpoints.ProviderIntegrations.cs
@@ -8819,6 +8845,7 @@ Meridian-main
 │   │   │   ├── ConsolidationChartValidation.cs
 │   │   │   ├── ConsolidationWorkbenchService.cs
 │   │   │   ├── CrossProcessFileLock.cs
+│   │   │   ├── CrossScreenCountDefinitions.cs
 │   │   │   ├── DailyValuationBatchLifecycleService.cs
 │   │   │   ├── DailyValuationPositionService.cs
 │   │   │   ├── DailyValuationScheduler.cs
@@ -9007,6 +9034,8 @@ Meridian-main
 │   │   │   └── StreamTopic.cs
 │   │   ├── Workflows
 │   │   │   ├── BuiltInWorkflowDefinitionProvider.cs
+│   │   │   ├── FileOperatorScopePreferenceStore.cs
+│   │   │   ├── FileOperatorSurfaceVisitStore.cs
 │   │   │   ├── FileWorkflowPresetStore.cs
 │   │   │   ├── IWorkflowActionCatalog.cs
 │   │   │   ├── IWorkflowDefinitionProvider.cs
@@ -9890,6 +9919,8 @@ Meridian-main
 │   │   │       ├── mbs-factor-paydown.json
 │   │   │       ├── special-dividend-25pct-synthetic.json
 │   │   │       └── t-wbd-spinoff-2022.json
+│   │   ├── cross-screen-counts
+│   │   │   └── cross-screen-counts.json
 │   │   ├── fixed-income
 │   │   │   ├── golden
 │   │   │   │   ├── bond-analytics-versions.json
@@ -12153,6 +12184,7 @@ Meridian-main
 │   │   │   ├── DuckDbQueryServiceTests.cs
 │   │   │   ├── DurableAutomatedJournalPosterTests.cs
 │   │   │   ├── EventBufferTests.cs
+│   │   │   ├── ExclusiveFileLockTests.cs
 │   │   │   ├── ExportValidatorTests.cs
 │   │   │   ├── FileMaintenanceServiceTests.cs
 │   │   │   ├── FilePermissionsServiceTests.cs
@@ -12405,6 +12437,7 @@ Meridian-main
 │   │   │   ├── CredentialCompatibilityEndpointsTests.cs
 │   │   │   ├── CronEndpointsTests.cs
 │   │   │   ├── CrossProcessFileLockTests.cs
+│   │   │   ├── CrossScreenCountDefinitionsTests.cs
 │   │   │   ├── DailyValuationBatchLifecycleServiceTests.cs
 │   │   │   ├── DailyValuationPositionServiceTests.cs
 │   │   │   ├── DailyValuationScheduleIdentityTests.cs
@@ -12570,8 +12603,10 @@ Meridian-main
 │   │   │   ├── WorkstationEndpointsTests.AccountingConfiguration.cs
 │   │   │   ├── WorkstationEndpointsTests.AccountOversight.cs
 │   │   │   ├── WorkstationEndpointsTests.AuditIntegrity.cs
+│   │   │   ├── WorkstationEndpointsTests.BulkCasework.cs
 │   │   │   ├── WorkstationEndpointsTests.ClosePreparation.cs
 │   │   │   ├── WorkstationEndpointsTests.CloseReadiness.cs
+│   │   │   ├── WorkstationEndpointsTests.CrossScreenCounts.cs
 │   │   │   ├── WorkstationEndpointsTests.cs
 │   │   │   ├── WorkstationEndpointsTests.DataReadAuthorization.cs
 │   │   │   ├── WorkstationEndpointsTests.Extensibility.cs
@@ -12588,6 +12623,8 @@ Meridian-main
 │   │   │   ├── WorkstationEndpointsTests.MarkPreview.cs
 │   │   │   ├── WorkstationEndpointsTests.MetricTransport.cs
 │   │   │   ├── WorkstationEndpointsTests.OpenLotBackfill.cs
+│   │   │   ├── WorkstationEndpointsTests.OperatorScopePreference.cs
+│   │   │   ├── WorkstationEndpointsTests.OperatorSurfaceVisits.cs
 │   │   │   ├── WorkstationEndpointsTests.PostingActorBoundary.cs
 │   │   │   ├── WorkstationEndpointsTests.ProviderIntegrations.cs
 │   │   │   ├── WorkstationEndpointsTests.RecurringJournals.cs

@@ -1285,6 +1285,8 @@ export function PortfolioScreen({
                   rows={visiblePositionRows}
                   sort={positionsTable.state.sort}
                   onToggleSort={positionsTable.toggleSort}
+                  hiddenColumnIds={positionsTable.state.hiddenColumns}
+                  onHiddenColumnIdsChange={positionsTable.setHiddenColumns}
                   getRowId={(row) => row.id}
                   getRowAriaLabel={(row) => row.ariaLabel}
                   getRowSelectAriaLabel={(row) => row.selectAriaLabel}

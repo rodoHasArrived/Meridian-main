@@ -6,7 +6,6 @@ import {
   ArrowUp,
   BellPlus,
   CheckCircle2,
-  FileSpreadsheet,
   ListPlus,
   LineChart,
   Pause,
@@ -195,7 +194,7 @@ export function LiveQuotesScreen() {
                 {badge.label}: {badge.value}
               </Badge>
             ))}
-            <span className="font-semibold text-foreground">{workspaceVm.symbolSetLabel}</span>
+            {workspaceVm.hasSymbols ? <span className="font-semibold text-foreground">{workspaceVm.symbolSetLabel}</span> : null}
             {marketVm.venueLabel ? <Badge variant="outline">{marketVm.venueLabel}</Badge> : null}
             {marketVm.stale ? <Badge variant="warning">Stale</Badge> : null}
             <FreshnessChip
@@ -210,11 +209,33 @@ export function LiveQuotesScreen() {
         </CardContent>
       </Card>
 
+      {!workspaceVm.hasSymbols && !activeSymbol ? (
+        // One explanation and one next step for an empty quote list, instead of "No symbols"
+        // repeated in the status strip, the matrix description, the panel message and the table.
+        <Card>
+          <CardContent className="pt-6">
+            <EmptyState
+              icon="search"
+              title="Start a quote list"
+              detail="Add symbols to monitor quotes, spreads, provider posture and latency here. Detail, order book, replay and ticket workflows open once a symbol is selected."
+              action="Add starter symbols"
+              onAction={workspaceVm.loadStarterSet}
+            />
+            <p className="mt-2 text-center text-xs text-muted-foreground">
+              Or{" "}
+              <Link className="text-primary underline underline-offset-2" to={marketDataDeskPath("watchlist")} aria-label="Import symbols from watchlist">
+                import your watchlist
+              </Link>
+              , or enter a symbol above.
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(20rem,0.75fr)]">
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Quote matrix</CardTitle>
-            <CardDescription>{workspaceVm.selectedSymbolSummary}</CardDescription>
+            {workspaceVm.selectedSymbolSummary ? <CardDescription>{workspaceVm.selectedSymbolSummary}</CardDescription> : null}
           </CardHeader>
           <CardContent>
             <PanelStateMessage state={workspaceVm.snapshotState} />
@@ -244,38 +265,18 @@ export function LiveQuotesScreen() {
         </Card>
         ) : (
         <Card>
-          <CardContent className="space-y-3 pt-6">
+          <CardContent className="pt-6">
             <EmptyState
               icon="search"
-              title="Start a quote list"
-              detail="Add symbols before opening detail, order book, replay, or ticket workflows."
+              title="Select a symbol"
+              detail="Select a row in the quote matrix to open its detail, order book, replay and ticket workflows."
               compact
             />
-            <div className="grid gap-2 sm:grid-cols-3">
-              <Button type="button" variant="default" size="sm" onClick={workspaceVm.loadStarterSet}>
-                <ListPlus className="h-4 w-4" aria-hidden="true" />
-                Add starter symbols
-              </Button>
-              <Button asChild variant="outline" size="sm">
-                <Link to={marketDataDeskPath("watchlist")} aria-label="Import symbols from watchlist">
-                  <FileSpreadsheet className="h-4 w-4" aria-hidden="true" />
-                  Import watchlist
-                </Link>
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => document.getElementById(symbolLookupVm.inputId)?.focus()}
-              >
-                <Search className="h-4 w-4" aria-hidden="true" />
-                Search symbol
-              </Button>
-            </div>
           </CardContent>
         </Card>
         )}
       </div>
+      )}
 
       {activeSymbol ? (
         <>
