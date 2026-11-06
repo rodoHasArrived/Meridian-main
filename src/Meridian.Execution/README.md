@@ -21,6 +21,9 @@ differs from the open position's is refused. A new position takes the fill's exa
 values below 1. `TradeExecutedEvent` carries the same `ContractMultiplier`, so its `GrossValue` and the
 multiplied realized P&L reach the ledger handoff in the same money terms; events serialized before the
 member existed read as 1.
+When the gateway supplies no lot multiplier, the OMS stamps its resolved multiplier onto the fill
+report before booking, so session projection and restart replay apply the same multiplier as the live
+book.
 
 OMS amendments resolve explicit broker/client identifiers, retain replacement broker aliases under
 the original client identity, and process cumulative fills through the shared fill funnel.

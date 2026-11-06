@@ -205,6 +205,47 @@ public sealed class FixedIncomeFillBookingTests
     }
 
     [Fact]
+    public async Task OptionFill_WithoutGatewayMultiplier_SessionReplayBooksTheSameCashAsTheLiveBook()
+    {
+        // The gateway stamps no lot multiplier, so the OMS resolves 100 for the option. Session
+        // projection and replay apply the persisted report without the OMS context; the
+        // multiplier must therefore be stamped on that report, or replay books $2.50 for a
+        // contract the live book charged $250 for.
+        var sessions = new PaperSessionPersistenceService(NullLogger<PaperSessionPersistenceService>.Instance);
+        var session = await sessions.CreateSessionAsync(new CreatePaperSessionDto("strat-options", null, 10_000m));
+        var portfolio = new PaperTradingPortfolio(10_000m);
+        using var oms = new OrderManagementSystem(
+            new FaceValuePaperGateway(),
+            NullLogger<OrderManagementSystem>.Instance,
+            portfolioState: portfolio,
+            sessionPersistence: sessions);
+        await oms.StartAsync();
+
+        (await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 1m,
+            LimitPrice = 2.50m,
+            ClientOrderId = "OPTION-SESSION-BUY-1",
+            OptionContract = new OptionContractIdentity
+            {
+                UnderlyingSymbol = "AAPL",
+                ExpirationDate = new DateOnly(2026, 12, 18),
+                StrikePrice = 250m,
+                Right = "C"
+            },
+            Metadata = new Dictionary<string, string> { ["sessionId"] = session.SessionId }
+        })).Success.Should().BeTrue();
+
+        portfolio.Cash.Should().Be(9_750m);
+        var replay = await sessions.ReplaySessionAsync(session.SessionId);
+        replay.Should().NotBeNull();
+        replay!.Cash.Should().Be(9_750m, "replay must apply the same multiplier the live fill used");
+    }
+
+    [Fact]
     public void TradeExecutedEvent_SerializedBeforeTheMultiplierExisted_ReadsAsOne()
     {
         var legacyJson = """

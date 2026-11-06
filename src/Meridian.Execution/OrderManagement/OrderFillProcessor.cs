@@ -169,6 +169,20 @@ internal sealed class OrderFillProcessor(
                 fillIncrement = fillIncrement with { UsesFaceValuePercentageOfPar = true };
             }
 
+            // Likewise stamp the OMS-resolved contract multiplier when the gateway supplied none
+            // (for example an option with no security-master lot convention). Session projection
+            // and restart replay apply the persisted report without this context, so without the
+            // stamp they would book one contract at 2.50 as $2.50 while the live book moved $250.
+            // LotMultiplier is not part of the canonical fill identity either.
+            if (!string.IsNullOrWhiteSpace(orderId)
+                && !fillIncrement.UsesFaceValuePercentageOfPar
+                && fillIncrement.LotMultiplier is null
+                && _context.GetContractMultiplier(orderId) is var resolvedMultiplier
+                && resolvedMultiplier != 1m)
+            {
+                fillIncrement = fillIncrement with { LotMultiplier = resolvedMultiplier };
+            }
+
             progress = _fillProcessing.GetOrAdd(
                 report,
                 _ => new FillProcessingProgress(

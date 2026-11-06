@@ -135,8 +135,8 @@
       "id": "SRC-EXECUTION",
       "path": "src/Meridian.Execution",
       "readme": "src/Meridian.Execution/README.md",
-      "readme_hash": "d1a3ee23df8f4d08457576acc938e58c01df49ce316871bf4517e59d110b82d1",
-      "source_hash": "97c6a5fbd858c1919a47441595b0f12a07b89314e3dd0fcdf009e05c93f87fa0"
+      "readme_hash": "15bd5720de2e62d28ab42df4beab0b195180a285faa353a86b15846355c3a6f5",
+      "source_hash": "b7c0ef2ffd85aa0db50dbcb4fd24d12ca2183bbda47f9d379bf57d02875ce1d4"
     },
     {
       "id": "SRC-EXECUTION-SDK",
