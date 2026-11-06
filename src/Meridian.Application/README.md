@@ -227,6 +227,11 @@ Unspecified (`Other`) and undefined currency values leave monetary totals unavai
 Direct-lending outbox deliveries with unsupported topics or missing journal source evidence
 remain failed and retryable; they are never silently acknowledged as processed.
 
+Direct-lending storage falls back to the Security Master connection string, so it can compose
+without a ledger database. `LoanAccountingProjector` therefore resolves the ledger journal store
+optionally and fails closed on every ledger-impacting event when none is composed; no substitute
+ledger store is registered. Proof is in `StorageFeatureRegistrationTests`.
+
 
 Direct-lending projection and reconciliation endpoints preserve `X-Command-Id` through the
 shared service into committed run identity handling. Repeating a command on the same loan
