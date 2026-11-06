@@ -541,6 +541,15 @@ WPF. Each count is gated by the permission of the route that owns its source, an
 caller may not read it. `tests/fixtures/cross-screen-counts/cross-screen-counts.json` holds this
 class and the browser's `lib/cross-screen-counts.ts` to the same expected values.
 
+## Operator default scope
+
+`GET`/`PUT /api/workstation/operator/scope-preference` read and save the signed-in operator's
+default operating scope. `Workflows/FileOperatorScopePreferenceStore.cs` keeps one record per
+tenant, company and user under the data root (`workstation/operators/scope-preferences.json`)
+through the snapshot store's atomic replace; values are trimmed, capped at 128 printable characters,
+and an empty scope clears the default. Both routes require an authenticated session and only ever
+read or write the caller's own record.
+
 ## Portfolio cash-ladder currency evidence
 
 `PortfolioCashLadderReadService` requires currency evidence for every opening cash balance and

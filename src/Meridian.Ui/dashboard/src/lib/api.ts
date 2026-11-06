@@ -5,6 +5,7 @@ import {
   quantDataIntervalMinutes,
 } from "./quant-api-mappers";
 import type { WorkstationCrossScreenCounts } from "@/types/cross-screen-counts";
+import type { OperatingScopeValues, OperatorScopePreference } from "@/types/operator-scope-preference";
 import type { ApprovePromotionRequest, RejectPromotionRequest } from "./api/promotion.contracts";
 
 export { PAPER_PROMOTION_APPROVAL_CHECKLIST } from "./api/promotion.contracts";
@@ -1144,6 +1145,16 @@ export function synchronizeTradingBrokerage(fundAccountId: string, options: ApiR
 
 export function getOperatorInbox(fundAccountId?: string, options: ApiRequestOptions = {}) {
   return getJson<OperatorInbox>(workstationOperatorInboxEndpoint(fundAccountId), options);
+}
+
+/** The signed-in operator's default operating scope (C1). */
+export function getOperatorScopePreference(options: ApiRequestOptions = {}) {
+  return getJson<OperatorScopePreference>(WORKSTATION_API_ENDPOINTS.operatorScopePreference, options);
+}
+
+/** Saves (or, with null, clears) the signed-in operator's default operating scope. */
+export function saveOperatorScopePreference(defaultScope: OperatingScopeValues | null, options: ApiRequestOptions = {}) {
+  return putJson<OperatorScopePreference>(WORKSTATION_API_ENDPOINTS.operatorScopePreference, { defaultScope }, options);
 }
 
 /** Open orders, provider health and open breaks, counted once for every screen (A3). */

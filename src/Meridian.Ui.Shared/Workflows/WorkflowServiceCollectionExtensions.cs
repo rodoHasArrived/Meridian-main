@@ -22,6 +22,10 @@ public static class WorkflowServiceCollectionExtensions
                 sp.GetRequiredService<ILogger<FileWorkflowPresetStore>>());
         });
         services.AddSingleton<WorkflowPresetService>();
+        // Per-operator default operating scope (C1), stored beside the workflow presets.
+        services.AddSingleton<IOperatorScopePreferenceStore>(sp => new FileOperatorScopePreferenceStore(
+            ResolveDataRoot(sp),
+            sp.GetRequiredService<ILogger<FileOperatorScopePreferenceStore>>()));
         return services;
     }
 

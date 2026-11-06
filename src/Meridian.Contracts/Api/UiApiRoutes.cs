@@ -779,6 +779,9 @@ public static class UiApiRoutes
 
     /// <summary>Open orders, provider health and open breaks, counted once for every screen (A3).</summary>
     public const string WorkstationCrossScreenCounts = "/api/workstation/cross-screen-counts";
+
+    /// <summary>The signed-in operator's default operating scope (C1).</summary>
+    public const string WorkstationOperatorScopePreference = "/api/workstation/operator/scope-preference";
     public const string WorkstationEvidenceSubjects = "/api/workstation/evidence/subjects";
     public const string WorkstationEvidenceSubjectPacket = "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/packet";
     public const string WorkstationEvidenceSubjectGraph = "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/graph";

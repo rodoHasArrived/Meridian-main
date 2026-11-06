@@ -220,6 +220,10 @@ persistence port without referencing the Storage implementation.
 provider health and open breaks) with the definition each was counted with. A count the caller may
 not read, or whose source is not registered, is null, so clients show "—" rather than a substitute.
 
+`Workstation/OperatorScopePreferenceDtos.cs` carries the signed-in operator's default operating
+scope (symbol, fund account, run, provider and date dimensions), which browser and WPF apply when a
+session opens with no scope in its link or local storage.
+
 `Workstation/RecurringJournalDtos.cs` publishes one exact-scope occurrence projection for browser
 and WPF Accounting queues. It carries retained schedule/template versions, source evidence
 references, authoritative draft approval status, blockers, lock owner and governed reopen path.

@@ -645,6 +645,7 @@ export const UI_API_ROUTES = {
   WorkstationTradingBrokerageRecovery: "/api/workstation/trading/brokerage-recovery",
   WorkstationOperatorInbox: "/api/workstation/operator/inbox",
   WorkstationCrossScreenCounts: "/api/workstation/cross-screen-counts",
+  WorkstationOperatorScopePreference: "/api/workstation/operator/scope-preference",
   WorkstationEvidenceSubjects: "/api/workstation/evidence/subjects",
   WorkstationEvidenceSubjectPacket: "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/packet",
   WorkstationEvidenceSubjectGraph: "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/graph",

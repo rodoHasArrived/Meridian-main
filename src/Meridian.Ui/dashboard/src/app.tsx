@@ -43,6 +43,7 @@ import { setOpenCompanionPaneIds } from "@/lib/companion-pane/open-registry";
 import { broadcastCompanionState } from "@/lib/companion-pane/opener-broadcast";
 import { applyDensity, writeStoredDensity } from "@/lib/density";
 import { ScopePickerOpenerProvider } from "@/lib/operating-scope/scope-picker-context";
+import { readRecentScopes, rememberRecentScope } from "@/lib/operating-scope/recent-scopes";
 import { CrossScreenCountsProvider } from "@/lib/cross-screen-counts-context";
 import type { LayoutRestorePlan } from "@/lib/saved-layouts";
 import { WorkspaceNav } from "@/components/meridian/workspace-nav";
@@ -62,7 +63,7 @@ import {
 import { StatusBanner } from "@/components/ui/status-banner";
 import { ToastProvider } from "@/components/ui/toast";
 import { useWorkstationData } from "@/hooks/use-workstation-data";
-import { markWorkflowPresetUsed, pinWorkflowPreset } from "@/lib/api";
+import { getOperatorScopePreference, markWorkflowPresetUsed, pinWorkflowPreset, saveOperatorScopePreference } from "@/lib/api";
 import {
   useCommandPaletteActions,
   type CommandPaletteActionItem
@@ -352,6 +353,10 @@ function AppShell({
   const [layoutRestoreSequence, setLayoutRestoreSequence] = useState(0);
   const [routeAnnouncement, setRouteAnnouncement] = useState("");
   const [storedOperatingScope, setStoredOperatingScope] = useState(readStoredOperatingScope);
+  // C1: recent scopes per browser; the default scope per operator, from the server.
+  const [recentScopes, setRecentScopes] = useState(() => readRecentScopes());
+  const [defaultScope, setDefaultScope] = useState<AppShellOperatingScopeInput | null>(null);
+  const defaultScopeCheckedRef = useRef(false);
   const onboardingTour = useOnboardingTour();
   const workbenchRef = useRef<HTMLElement | null>(null);
   const previousRouteKeyRef = useRef<string | null>(null);
@@ -365,6 +370,30 @@ function AppShell({
     [storedOperatingScope, routeOperatingScope]
   );
   const operatingContextSymbol = operatingScopeInput.symbol ?? null;
+  // C1: load the operator's default scope once. It is applied only when this session opened with
+  // no scope at all (none in the link, none remembered in this browser), so it never overrides a
+  // shared link or the operator's last choice.
+  useEffect(() => {
+    if (defaultScopeCheckedRef.current) return;
+    defaultScopeCheckedRef.current = true;
+    const openedUnscoped = !hasOperatingScopeValues(operatingScopeInput);
+    const controller = new AbortController();
+    void getOperatorScopePreference({ signal: controller.signal }).then((preference) => {
+      const saved = preference.defaultScope ? compactOperatingScope(preference.defaultScope) : null;
+      setDefaultScope(saved && hasOperatingScopeValues(saved) ? saved : null);
+      if (openedUnscoped && saved && hasOperatingScopeValues(saved)) {
+        handleSetOperatingScopeRef.current(saved);
+      }
+    }).catch(() => {
+      // No session, an older host, or a failed read: no default, and the session stays as opened.
+    });
+    return () => controller.abort();
+  }, [operatingScopeInput]);
+  const handleSaveDefaultScope = async (next: AppShellOperatingScopeInput | null) => {
+    const compacted = next ? compactOperatingScope(next) : null;
+    const saved = await saveOperatorScopePreference(compacted && hasOperatingScopeValues(compacted) ? compacted : null);
+    setDefaultScope(saved.defaultScope ? compactOperatingScope(saved.defaultScope) : null);
+  };
   const {
     session,
     overview,
@@ -489,10 +518,13 @@ function AppShell({
     scopeReplacementLocationRef.current = locationKey;
     writeStoredOperatingScope(compacted);
     setStoredOperatingScope(compacted);
+    setRecentScopes((current) => rememberRecentScope(compacted, current));
     const baseRoute = `${pathname}${removeOperatingScopeFromSearch(search)}`;
     const scopeState = buildOperatingScopeFromSearch("", compacted);
     navigate(`${appendOperatingScopeToRoute(baseRoute, scopeState)}${hash}`, { replace: true });
   };
+  const handleSetOperatingScopeRef = useRef(handleSetOperatingScope);
+  handleSetOperatingScopeRef.current = handleSetOperatingScope;
 
   // Replay a saved layout: apply density and operating scope, re-open the recorded
   // companion panes, then navigate the captured route. Window placement across
@@ -766,7 +798,7 @@ function AppShell({
           <WorkspaceHeader
             actions={(
               <>
-                <CopyLinkButton />
+                <CopyLinkButton operatingScope={operatingScopeInput} />
                 <WorkspaceViewsMenu routeKey={`${shell.routeFocus.routeKey}:${layoutRestoreSequence}`}>
                   <LayoutSwitcher
                     route={`${pathname}${search}`}
@@ -926,6 +958,9 @@ function AppShell({
         scope={operatingScopeInput}
         fundAccounts={scopeFundAccountOptions}
         onApply={handleSetOperatingScope}
+        recentScopes={recentScopes}
+        defaultScope={defaultScope}
+        onSaveDefault={handleSaveDefaultScope}
       />
       <Sheet open={navOpen} onOpenChange={setNavOpen} side="left">
         <SheetContent

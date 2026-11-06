@@ -187,6 +187,7 @@ public static partial class WorkstationEndpoints
         .Produces<WorkflowLibraryDto>(200);
 
         MapCollateralEndpoints(group, jsonOptions);
+        MapOperatorScopePreferenceEndpoints(group, jsonOptions);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationWorkflowPresets), async (HttpContext context) =>
         {

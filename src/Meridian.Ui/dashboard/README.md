@@ -318,6 +318,13 @@ not been recorded.
   counts take the selector's value and drop their basis-less delta, and an unreadable count shows
   "—". `lib/cross-screen-counts.screens.test.ts` asserts Trading, Settings, Data and Accounting
   agree from one fixture set.
+- **Operating scope.** Copy link appends every scope dimension the current route did not write
+  into its URL (`buildShareableLink`), so a link from any screen restores the sender's scope in a
+  fresh browser. The scope picker offers the last five applied scopes (per browser) and the
+  operator's default scope from `/api/workstation/operator/scope-preference`; choosing either only
+  loads the draft, and Apply stays the one action that changes scope. The default is applied only
+  when a session opens with no scope in its link or browser. The continuity dock shows each
+  dimension as a chip on every workspace, marked applied or retained.
 - **Type scale.** There are three tiers: `type-page-title` (the workspace header's h1),
   `type-section` (CardTitle and region headings) and `type-label`. A label of one or two words may
   add `type-label--caps`. Longer labels render in sentence case: `FormRow`,

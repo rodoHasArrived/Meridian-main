@@ -14,6 +14,7 @@ export const WORKSTATION_API_ENDPOINTS = {
   tradingBrokerageRecovery: UI_API_ROUTES.WorkstationTradingBrokerageRecovery,
   operatorInbox: UI_API_ROUTES.WorkstationOperatorInbox,
   crossScreenCounts: UI_API_ROUTES.WorkstationCrossScreenCounts,
+  operatorScopePreference: UI_API_ROUTES.WorkstationOperatorScopePreference,
   portfolio: UI_API_ROUTES.WorkstationPortfolio,
   portfolioSummary: UI_API_ROUTES.WorkstationPortfolioSummary,
   portfolioMultiAssetCoverage: UI_API_ROUTES.WorkstationPortfolioMultiAssetCoverage,
