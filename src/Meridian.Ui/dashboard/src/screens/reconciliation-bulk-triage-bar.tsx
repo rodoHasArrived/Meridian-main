@@ -87,6 +87,9 @@ export function useReconciliationBulkTriage({
   // Bumped whenever the draft or its check changes, so a dry run that returns late cannot stand in
   // for a draft it did not check.
   const checkRevision = useRef(0);
+  // Read by start and cancel, which keyboard shortcuts can call while the buttons are disabled.
+  const busyRef = useRef(busy);
+  busyRef.current = busy;
 
   // Act only on what the operator can see: a break that leaves the filtered view leaves the selection.
   const visibleKey = visibleBreakIds.join("\u0000");
@@ -144,6 +147,8 @@ export function useReconciliationBulkTriage({
   }, [services]);
 
   const start = useCallback((kind: BulkTriageKind) => {
+    // One bulk action at a time: a running check or execute is never replaced mid-flight.
+    if (busyRef.current !== null) return;
     const next = emptyBulkTriageDraft(kind);
     checkRevision.current += 1;
     setBusy(null);
@@ -163,6 +168,8 @@ export function useReconciliationBulkTriage({
   }, []);
 
   const cancel = useCallback(() => {
+    // An execute already sent cannot be withdrawn; its result clears the draft when it lands.
+    if (busyRef.current === "executing") return;
     checkRevision.current += 1;
     setBusy((current) => current === "checking" ? null : current);
     setDraft(null);
@@ -171,11 +178,12 @@ export function useReconciliationBulkTriage({
   }, []);
 
   const check = useCallback(async () => {
+    if (busyRef.current !== null) return;
     if (draft) await runCheck(draft, selectedIds);
   }, [draft, runCheck, selectedIds]);
 
   const execute = useCallback(async () => {
-    if (!preview || !previewIsCurrent || preview.passedIds.length === 0) return;
+    if (busyRef.current !== null || !preview || !previewIsCurrent || preview.passedIds.length === 0) return;
     const checked = preview.draft;
     const applyUpdate = beginItemsUpdate?.();
     setBusy("executing");

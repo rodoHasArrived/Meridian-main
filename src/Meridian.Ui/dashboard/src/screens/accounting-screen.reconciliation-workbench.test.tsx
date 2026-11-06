@@ -230,6 +230,29 @@ describe("Reconciliation workbench", () => {
     expect(services.execute).not.toHaveBeenCalled();
   });
 
+  it("ignores the assign shortcut while a bulk execute is running (C2)", async () => {
+    const user = userEvent.setup();
+    const services = fakeBulkServices();
+    let release!: () => void;
+    services.execute.mockImplementationOnce((request) => new Promise((resolve) => {
+      release = () => resolve(bulkResult(request, () => true));
+    }));
+    renderWorkbench(undefined, services);
+    await user.click(screen.getByRole("checkbox", { name: /Add Cash review/ }));
+    await user.click(within(bulkBar()).getByRole("button", { name: "Assign to me" }));
+    await user.click(await within(bulkBar()).findByRole("button", { name: "Assign 1 break" }));
+    expect(within(bulkBar()).getByRole("button", { name: "Applying…" })).toBeDisabled();
+
+    queueRows()[0]!.focus();
+    await user.keyboard("a");
+    expect(services.dryRun).toHaveBeenCalledOnce();
+    expect(within(bulkBar()).getByRole("button", { name: "Applying…" })).toBeInTheDocument();
+
+    await act(async () => release());
+    expect(within(bulkBar()).getByText("1 break assigned. Each break keeps its own audit entry.")).toBeInTheDocument();
+    expect(services.execute).toHaveBeenCalledOnce();
+  });
+
   it("routes the selection to a named owner (C2)", async () => {
     const user = userEvent.setup();
     const services = fakeBulkServices();
