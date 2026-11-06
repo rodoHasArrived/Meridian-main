@@ -11416,6 +11416,48 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnit"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnitNormalizer"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution.OutOfRange"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution.Resolved"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution.Undeclared"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnitSource"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.RecordCorporateActionConflictRequestDto"
     },
     {
@@ -11603,6 +11645,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleTenorUnit"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAccountingDisposition"
     },
     {
       "kind": "contract-set-member",
@@ -12401,6 +12449,18 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityProjectionRecordExtensions"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityRateFieldDeclaration"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityRateFieldUnits"
     },
     {
       "kind": "contract-set-member",
@@ -25552,6 +25612,48 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnit"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnitNormalizer"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution.OutOfRange"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution.Resolved"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution.Undeclared"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnitSource"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.RecordCorporateActionConflictRequestDto"
     },
     {
@@ -25739,6 +25841,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleTenorUnit"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAccountingDisposition"
     },
     {
       "kind": "contract-set-member",
@@ -26537,6 +26645,18 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityProjectionRecordExtensions"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityRateFieldDeclaration"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityRateFieldUnits"
     },
     {
       "kind": "contract-set-member",
@@ -38925,6 +39045,48 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution.OutOfRange",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnit"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution.OutOfRange",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution.OutOfRange",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnitSource"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution.Resolved",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnit"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution.Resolved",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution.Resolved",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnitSource"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution.Undeclared",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.RecordCorporateActionConflictRequestDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseScopeDto"
     },
@@ -39833,6 +39995,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityRateFieldDeclaration",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnit"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityRateFieldUnits",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityRateFieldDeclaration"
     },
     {
       "kind": "contract-reference",
@@ -56615,7 +56789,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "78deb3cbaab8d4ff03d87bf63bdf686d057a151b7b2665505d252aaa5ef9dba3",
+  "fingerprint": "06b8e0c5e72daade73648d3e389a078d9d48efd73cbbbcff3533447f5136a38b",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -68081,6 +68255,48 @@
       "label": "Meridian.Contracts.SecurityMaster.PublishSecurityCurveVersionRequest"
     },
     {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.RateUnit",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.RateUnit"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.RateUnitNormalizer",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.RateUnitNormalizer"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.RateUnitResolution"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution.OutOfRange",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.RateUnitResolution.OutOfRange"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution.Resolved",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.RateUnitResolution.Resolved"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution.Undeclared",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.RateUnitResolution.Undeclared"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.RateUnitSource",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.RateUnitSource"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.SecurityMaster.RecordCorporateActionConflictRequestDto",
       "kind": "contract-type",
@@ -68271,6 +68487,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleTenorUnit",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleTenorUnit"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityAccountingDisposition",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityAccountingDisposition"
     },
     {
       "classification": "class",
@@ -69069,6 +69291,18 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityProjectionRecordExtensions",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityProjectionRecordExtensions"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityRateFieldDeclaration",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityRateFieldDeclaration"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityRateFieldUnits",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityRateFieldUnits"
     },
     {
       "classification": "dto",
@@ -82922,11 +83156,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3615,
-    "contract_set_memberships": 4501,
-    "edges": 9407,
+    "contract_references": 3624,
+    "contract_set_memberships": 4521,
+    "edges": 9436,
     "foreign_keys": 156,
     "logical_references": 6,
-    "nodes": 4564
+    "nodes": 4574
   }
 }

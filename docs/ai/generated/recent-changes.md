@@ -1,6 +1,6 @@
 # Meridian AI Recent Changes
 
-> Auto-generated on 2026-11-06T13:31:54Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-11-06T14:07:36Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 Rolling source-file activity for the last 14 days.
 

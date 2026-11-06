@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-06T13:31:54Z",
+  "generatedAt": "2026-11-06T14:07:36Z",
   "generatorVersion": "1.0",
-  "repositoryRoot": "agent-a6cc8e59dff3245bd",
+  "repositoryRoot": "agent-a6be291a2d62b6341",
   "subsystems": [
     {
       "id": "host-shell",
