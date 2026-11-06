@@ -909,7 +909,8 @@ carry it could be satisfied by the same edit that defeated it. **That journal is
 2; a v1 journal written before the boundary was bound is refused by name on read** rather than
 verified under the weaker rules or reported as tampering. Store write cycles (workspace saves and
 audit appends alike) and chain verification hold a cross-process lock file beside the snapshot for
-their whole read-modify-write span, so the browser host and the WPF shell composing this store over
+their whole read-modify-write span (`CrossProcessFileLock`, which delegates to
+`Core.IO.ExclusiveFileLock`), so the browser host and the WPF shell composing this store over
 one data root serialize against each other instead of interleaving whole-document replacements --
 without it, the later writer silently discarded the earlier process's committed event and the
 surviving snapshot then read as tampered against the anchor. The shared accounting endpoints stamp the resolved
