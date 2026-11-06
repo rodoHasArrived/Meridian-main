@@ -11,6 +11,8 @@ last_reviewed: 2026-10-31
 
 # src/Meridian.Ui.Shared
 
+Lean results ingest and auto-export reconfiguration confine request-supplied paths to the configured roots (`LEAN_RESULTS_PATH`/`LEAN_PATH` and `LEAN_DATA_PATH`/`LEAN_PATH`) and no longer echo paths in errors. `MarginCertificationStore` refuses to upsert over an unreadable evidence file. The workstation position-limit rule counts working orders.
+
 `MapUiEndpoints` registers the banking (`/api/banking/*`), ingestion-job (`/api/ingestion/*`) and
 money-market-fund (`/api/security-master/money-market-funds/*`) groups. Every route declares its
 permission; the groups resolve their services per request (501 when unregistered); malformed banking

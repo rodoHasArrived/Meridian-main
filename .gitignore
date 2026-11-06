@@ -300,3 +300,8 @@ __pycache__/
 # Provider credential sidecar — contains plaintext credentials; never commit
 provider-credentials.json
 tests/Meridian.Tests/Infrastructure/Providers/IBRuntimeGuidanceTests.cs
+
+# QuantScript worker sidecar output copied/published next to a project (build output, never source)
+**/workers/quant-script/
+# Vendored actionlint binary; CI installs a checksum-verified release instead
+tools/actionlint/actionlint.exe

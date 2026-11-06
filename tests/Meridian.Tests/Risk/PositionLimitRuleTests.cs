@@ -203,4 +203,74 @@ public sealed class PositionLimitRuleTests
         result.IsApproved.Should().BeFalse();
         result.RejectReason.Should().Contain(DefaultSymbol);
     }
+
+    // ── Working orders ───────────────────────────────────────────────────
+
+    private static OrderState WorkingOrder(string orderId, OrderSide side, decimal quantity, decimal filled = 0m) => new()
+    {
+        OrderId = orderId,
+        Symbol = DefaultSymbol,
+        Side = side,
+        Type = OrderType.Limit,
+        Quantity = quantity,
+        FilledQuantity = filled,
+        LimitPrice = 100m,
+        Status = filled > 0m ? OrderStatus.PartiallyFilled : OrderStatus.Accepted,
+    };
+
+    private static PositionLimitRule CreateSutWithBook(params OrderState[] book)
+    {
+        var orderManager = new Mock<IOrderManager>();
+        orderManager.Setup(m => m.GetExposureReservingOrders()).Returns(book);
+        return new PositionLimitRule(
+            new Mock<IPositionTracker>().Object,
+            () => DefaultMaxPositionSize,
+            NullLogger<PositionLimitRule>.Instance,
+            () => orderManager.Object);
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_RestingBuysAlreadyAtLimit_RejectsNextBuy()
+    {
+        // Five 90-share resting buys against a 100-share limit all used to pass, because only
+        // filled positions were counted.
+        var sut = CreateSutWithBook(WorkingOrder("o-1", OrderSide.Buy, 90m));
+
+        var result = await sut.EvaluateAsync(CreateBuyOrder(90m));
+
+        result.IsApproved.Should().BeFalse();
+        result.ObservedValue.Should().Be(180m, "the evidence must record the projection the rule evaluated");
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_PartiallyFilledWorkingOrder_CountsOnlyRemainingQuantity()
+    {
+        var sut = CreateSutWithBook(WorkingOrder("o-1", OrderSide.Buy, 90m, filled: 80m));
+
+        var result = await sut.EvaluateAsync(CreateBuyOrder(90m));
+
+        result.IsApproved.Should().BeTrue("10 remaining + 90 new stays within the 100-share limit");
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_OppositeSideWorkingOrder_DoesNotOffsetNewOrder()
+    {
+        // A resting sell can be cancelled at any time, so it must not create room for a buy.
+        var sut = CreateSutWithBook(WorkingOrder("o-1", OrderSide.Sell, 90m));
+
+        var result = await sut.EvaluateAsync(CreateBuyOrder(150m));
+
+        result.IsApproved.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_AmendmentProbe_DoesNotCountTheOrderBeingAmended()
+    {
+        var sut = CreateSutWithBook(WorkingOrder("o-1", OrderSide.Buy, 60m));
+        var amendment = CreateBuyOrder(90m) with { ClientOrderId = "o-1" };
+
+        var result = await sut.EvaluateAsync(amendment);
+
+        result.IsApproved.Should().BeTrue("the amended order replaces the 60-share original rather than adding to it");
+    }
 }

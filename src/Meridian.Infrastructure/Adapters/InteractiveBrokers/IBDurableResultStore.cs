@@ -105,12 +105,32 @@ public sealed class JsonIBDurableResultStore : IBDurableResultStore
         };
         lock (_gate)
         {
-            var results = Load();
-            results[CreateKey(durableResult)] = durableResult;
+            // Stage the update on a copy and publish it to memory only after the file is durably
+            // replaced. Mutating the cache first left readers seeing a result that a failed
+            // write never persisted (and that vanished on restart).
+            var results = new Dictionary<string, IBDurableResult>(Load(), StringComparer.Ordinal)
+            {
+                [CreateKey(durableResult)] = durableResult
+            };
             Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
             var temporary = _path + ".tmp";
-            File.WriteAllText(temporary, JsonSerializer.Serialize(results.Values));
-            File.Move(temporary, _path, overwrite: true);
+            try
+            {
+                using (var stream = new FileStream(temporary, FileMode.Create, FileAccess.Write, FileShare.None))
+                {
+                    JsonSerializer.Serialize(stream, results.Values);
+                    stream.Flush(flushToDisk: true);
+                }
+
+                File.Move(temporary, _path, overwrite: true);
+            }
+            catch
+            {
+                try { File.Delete(temporary); } catch (IOException) { } catch (UnauthorizedAccessException) { }
+                throw;
+            }
+
+            _results = results;
         }
     }
 
