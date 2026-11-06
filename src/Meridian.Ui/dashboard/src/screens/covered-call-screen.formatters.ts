@@ -1,3 +1,5 @@
+import { formatUtcTimestamp } from "@/lib/format";
+
 export function formatPrice(value: number): string {
   if (!Number.isFinite(value)) return "—";
   return value.toFixed(2);
@@ -49,11 +51,6 @@ export function formatUtcDateTime(value: string): string {
     return "Unavailable";
   }
 
-  return `${UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${padUtc(date.getUTCHours())}:${padUtc(date.getUTCMinutes())} UTC`;
+  return formatUtcTimestamp(date);
 }
 
-function padUtc(value: number): string {
-  return String(value).padStart(2, "0");
-}
-
-const UTC_MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];

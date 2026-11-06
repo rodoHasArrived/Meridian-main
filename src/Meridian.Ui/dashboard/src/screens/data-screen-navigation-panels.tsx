@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { useDataViewModel, type DataOperationsRouteFocusCardState } from "@/screens/data-screen.view-model";
+import { eyebrowClassName } from "@/design-system/label-case";
 
 export function DataOverviewHub({
   vm,
@@ -93,7 +94,7 @@ export function RouteFocusCard({ state }: { state: DataOperationsRouteFocusCardS
   return (
     <Card id={state.id} role={state.role} aria-label={state.ariaLabel} className="panel-surface-strong">
       <CardHeader>
-        <div className="eyebrow-label">{state.eyebrow}</div>
+        <div className={eyebrowClassName(state.eyebrow)}>{state.eyebrow}</div>
         <CardTitle>{state.title}</CardTitle>
         <CardDescription>{state.description}</CardDescription>
       </CardHeader>

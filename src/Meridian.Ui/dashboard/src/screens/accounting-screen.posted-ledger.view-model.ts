@@ -30,6 +30,7 @@ import {
   type AccountingTrialBalanceViewState
 } from "./accounting-screen.view-model";
 import type { AccountingWorkstream } from "./accounting-screen.task-mode-view-model";
+import { formatCount } from "@/lib/format";
 
 /**
  * View model for the Accounting workstream's posted-journal ledger panel.
@@ -479,7 +480,7 @@ export function buildPostedLedgerPnlViewState({
     {
       id: "open-breaks",
       label: "Open breaks",
-      value: pnl.openBreakCount.toLocaleString(),
+      value: formatCount(pnl.openBreakCount),
       tone: pnl.openBreakCount > 0 ? "warning" : "success"
     }
   ];

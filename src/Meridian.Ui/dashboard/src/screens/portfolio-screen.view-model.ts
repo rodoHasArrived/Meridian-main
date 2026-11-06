@@ -45,6 +45,7 @@ import type {
   StrategyRunContinuityWarningSeverity,
   TradingWorkspaceResponse
 } from "@/types";
+import { formatCount } from "@/lib/format";
 
 type PortfolioRiskState = TradingWorkspaceResponse["risk"];
 type PortfolioBrokerageStatus = TradingWorkspaceResponse["brokerage"];
@@ -1165,7 +1166,7 @@ export function buildPortfolioRunDrillInSummary(
       {
         id: "trades",
         label: "Trades",
-        value: trades ? trades.totalFills.toLocaleString() : "—",
+        value: trades ? formatCount(trades.totalFills) : "—",
         detail: trades
           ? `${formatCountLabel(trades.fills.length, "fill")} with ${formatCurrency(trades.totalCommissions)} commissions.`
           : "Trade-level fill evidence has not been loaded.",
@@ -1253,12 +1254,12 @@ function buildPortfolioRunTradeEvidenceRows(trades: RunFillSummary | null): Port
     .map((fill) => ({
       id: fill.fillId,
       symbol: fill.symbol,
-      quantity: fill.filledQuantity.toLocaleString(),
+      quantity: formatCount(fill.filledQuantity),
       price: formatCurrencyPrecise(fill.fillPrice),
       commission: formatCurrencyPrecise(fill.commission),
       filledAt: formatDateTime(fill.filledAt),
       accountId: fill.accountId ?? "No account",
-      ariaLabel: `${fill.symbol} fill ${fill.fillId}: ${fill.filledQuantity.toLocaleString()} at ${formatCurrencyPrecise(fill.fillPrice)} on ${formatDateTime(fill.filledAt)}`
+      ariaLabel: `${fill.symbol} fill ${fill.fillId}: ${formatCount(fill.filledQuantity)} at ${formatCurrencyPrecise(fill.fillPrice)} on ${formatDateTime(fill.filledAt)}`
     }));
 }
 

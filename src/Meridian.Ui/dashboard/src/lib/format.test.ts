@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  formatCount,
+  formatMoney,
+  formatQuantity,
+  formatUtcDate,
+  formatUtcTimestamp,
   formatAmountWithCode,
   formatCompactCurrency,
   formatCurrency,
@@ -167,3 +172,47 @@ describe("pluralizeCount", () => {
     expect(pluralizeCount(1234, "row")).toBe("1234 rows");
   });
 });
+
+describe("formatCount", () => {
+  it("groups with the en-US locale whatever the host locale, and falls back for non-finite input", () => {
+    expect(formatCount(1234567)).toBe("1,234,567");
+    expect(formatCount(0)).toBe("0");
+    expect(formatCount(Number.NaN)).toBe("—");
+    expect(formatCount(null, { fallback: "Unavailable" })).toBe("Unavailable");
+  });
+});
+
+describe("formatMoney", () => {
+  it("uses the currency's minor units and parentheses for negatives in the accounting context", () => {
+    expect(formatMoney(1234.5, { context: "accounting" })).toBe("$1,234.50");
+    expect(formatMoney(-1234.5, { context: "accounting" })).toBe("($1,234.50)");
+    expect(formatMoney(-500, { context: "accounting", currency: "EUR" })).toBe("(€500.00)");
+    expect(formatMoney(1500, { context: "accounting", currency: "JPY" })).toBe("¥1,500");
+    expect(formatMoney(-12.5, { context: "accounting", currency: null })).toBe("(12.50)");
+  });
+
+  it("uses instrument precision and a minus sign for trading, and whole units for summaries", () => {
+    expect(formatMoney(-0.0125, { context: "trading", decimals: 4 })).toBe("-$0.0125");
+    expect(formatMoney(3100, { context: "trading", signed: true })).toBe("+$3,100.00");
+    expect(formatMoney(3100.4, { context: "summary", signed: true })).toBe("+$3,100");
+    expect(formatMoney(undefined)).toBe("—");
+  });
+});
+
+describe("formatQuantity", () => {
+  it("formats at instrument precision with an optional sign", () => {
+    expect(formatQuantity(1250)).toBe("1,250");
+    expect(formatQuantity(0.012345)).toBe("0.0123");
+    expect(formatQuantity(12.5, { signed: true })).toBe("+12.5");
+    expect(formatQuantity(414.2, { minDecimals: 2, maxDecimals: 2 })).toBe("414.20");
+  });
+});
+
+describe("UTC date labels", () => {
+  it("always carries the year so a ledger or evidence timestamp is unambiguous", () => {
+    expect(formatUtcTimestamp(new Date("2026-06-30T18:05:00Z"))).toBe("Jun 30, 2026, 18:05 UTC");
+    expect(formatUtcTimestamp(new Date("2025-01-01T00:00:00Z"))).toBe("Jan 1, 2025, 00:00 UTC");
+    expect(formatUtcDate(new Date("2026-05-03T23:59:00Z"))).toBe("May 3, 2026");
+  });
+});
+

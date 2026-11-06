@@ -41,6 +41,8 @@ export interface WorkspaceNavItemViewModel {
   description: string;
   maturityLabel: string;
   maturityTone: WorkspaceNavMaturityTone;
+  /** The bare product maturity ("Preview"), for the link tooltip. */
+  maturity: string;
   route: string;
   active: boolean;
   ariaCurrent: "page" | undefined;
@@ -161,6 +163,7 @@ export function buildWorkspaceNavViewModel(
       description: workspace.description,
       maturityLabel: active ? `${workspace.maturity} · Current` : workspace.maturity,
       maturityTone,
+      maturity: workspace.maturity,
       route: workspaceRoute,
       active,
       ariaCurrent: exactWorkspaceActive ? "page" : undefined,

@@ -8,6 +8,7 @@ import type {
   ManualJournalLifecycleTransitionViewModel,
 } from "./accounting-screen.view-model";
 import type { JournalEntryLifecycleAction, JournalEntryLifecycleTransition, ManualJournalEntryDraft } from "@/types";
+import { formatCount as formatCountValue } from "@/lib/format";
 
 export const ASSET_REVIEW_ONLY_REASON = "Asset accounting drafts require retained approval evidence through the governed asset workflow; generic approval, posting and corrections are unavailable.";
 
@@ -237,7 +238,7 @@ export function formatManualJournalLifecycleTransition(
     auditLabel: `Audit ${transition.transitionId}`,
     correlationLabel: transition.correlationId ? `Correlation ${transition.correlationId}` : "No correlation id retained",
     evidenceLabel: transition.evidenceLinks.length > 0
-      ? `${transition.evidenceLinks.length.toLocaleString()} evidence link(s)`
+      ? `${formatCountValue(transition.evidenceLinks.length)} evidence link(s)`
       : "No transition evidence links",
     evidenceTone: transition.evidenceLinks.length > 0 ? "success" : "outline",
     evidenceRows

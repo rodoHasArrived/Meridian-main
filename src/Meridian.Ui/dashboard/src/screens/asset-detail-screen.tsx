@@ -14,6 +14,8 @@ import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/work
 import { ContractualCashFlowWorkbench } from "@/components/meridian/contractual-cash-flow-workbench";
 import { buildAssetDetailOverviewViewState, selectExactSecuritySearchResult } from "@/screens/asset-detail-screen.view-model";
 import type { CorporateAction, SecurityIdentityDrillIn, SecurityMasterEntry, TradingParameters } from "@/types";
+import { cn } from "@/lib/utils";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 const assetSearchSuggestions = ["AAPL", "MSFT", "US91282CHT18"];
 const assetDetailReadinessCues = [
@@ -340,7 +342,7 @@ function AssetDetailPanel({ securityId }: { securityId: string }) {
               <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {overview.fields.map((field) => (
                   <div key={field.label}>
-                    <dt className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{field.label}</dt>
+                    <dt className={cn("text-[10px] font-semibold text-muted-foreground", usesTrackedCaps(field.label) && "font-mono uppercase tracking-[0.14em]")}>{field.label}</dt>
                     <dd className="mt-1 text-sm text-foreground">{field.value}</dd>
                   </div>
                 ))}
@@ -349,7 +351,7 @@ function AssetDetailPanel({ securityId }: { securityId: string }) {
                 <dl className="grid gap-3 sm:grid-cols-2">
                   {overview.technicalFields.map((field) => (
                     <div key={field.label}>
-                      <dt className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{field.label}</dt>
+                      <dt className={cn("text-[10px] font-semibold text-muted-foreground", usesTrackedCaps(field.label) && "font-mono uppercase tracking-[0.14em]")}>{field.label}</dt>
                       <dd className="mt-1 break-words font-mono text-sm text-foreground">{field.value}</dd>
                     </div>
                   ))}
@@ -412,11 +414,11 @@ function AssetDetailPanel({ securityId }: { securityId: string }) {
                     <dd className="mt-1 text-sm text-foreground">{tradingParameters.marginRequirementPct != null ? `${tradingParameters.marginRequirementPct}%` : "Not set"}</dd>
                   </div>
                   <div>
-                    <dt className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Trading hours (UTC)</dt>
+                    <dt className="text-[10px] font-semibold text-muted-foreground">Trading hours (UTC)</dt>
                     <dd className="mt-1 text-sm text-foreground">{tradingParameters.tradingHoursUtc ?? "Not set"}</dd>
                   </div>
                   <div>
-                    <dt className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Circuit breaker threshold</dt>
+                    <dt className="text-[10px] font-semibold text-muted-foreground">Circuit breaker threshold</dt>
                     <dd className="mt-1 text-sm text-foreground">{tradingParameters.circuitBreakerThresholdPct != null ? `${tradingParameters.circuitBreakerThresholdPct}%` : "Not set"}</dd>
                   </div>
                 </dl>

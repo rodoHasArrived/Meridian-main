@@ -35,6 +35,8 @@ import type {
   MaintenanceStatistics,
   MaintenanceTaskTypeOption
 } from "@/types/archive-maintenance.types";
+import { cn } from "@/lib/utils";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 const EXECUTION_LIMIT = 25;
 
@@ -148,7 +150,7 @@ export function ArchiveMaintenanceOperations() {
         <div className="grid gap-2 md:grid-cols-4" aria-label="Archive maintenance posture">
           {metrics.map((metric) => (
             <div key={metric.id} className="rounded-[2px] border border-border bg-secondary/20 p-3">
-              <div className="text-xs uppercase tracking-wide text-muted-foreground">{metric.label}</div>
+              <div className={cn("text-xs text-muted-foreground", usesTrackedCaps(metric.label) && "uppercase tracking-wide")}>{metric.label}</div>
               <div className={toneTextClassName(metric.tone)}>{metric.value}</div>
               <div className="mt-1 text-xs text-muted-foreground">{metric.detail}</div>
             </div>

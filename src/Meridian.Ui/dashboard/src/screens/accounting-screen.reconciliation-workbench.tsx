@@ -22,6 +22,7 @@ import type {
 } from "./accounting-screen.view-model";
 import type { ReconciliationQueueStatus, ReconciliationQueueSort } from "./reconciliation-view-state";
 import "@/styles/reconciliation-workbench.css";
+import { eyebrowClassName } from "@/design-system/label-case";
 
 type ReconciliationViewModel = ReturnType<typeof useAccountingReconciliationViewModel>;
 type Reconciliation = Pick<ReconciliationViewModel,
@@ -69,11 +70,11 @@ const reconciliationBreakColumns: DenseDataTableColumn<ReconciliationBreakRowVie
       </span>
     )
   },
-  { id: "category", label: "Case", render: (row) => <span className="text-foreground">{row.financeLabel}</span> },
+  { id: "category", label: "Case", hideable: true, render: (row) => <span className="text-foreground">{row.financeLabel}</span> },
   {
     id: "variance",
     label: "Variance",
-    align: "right",
+    numeric: true,
     render: (row) => (
       <span
         className={cn(
@@ -85,9 +86,9 @@ const reconciliationBreakColumns: DenseDataTableColumn<ReconciliationBreakRowVie
       </span>
     )
   },
-  { id: "owner", label: "Owner", render: (row) => <span className="font-mono text-muted-foreground">{row.ownerLabel}</span> },
-  { id: "updated", label: "Updated", render: (row) => <span className="font-mono text-muted-foreground">{row.lastUpdatedAtLabel}</span> },
-  { id: "source", label: "Source observation", render: (row) => <span className="block"><span className="block">{sourceObservationLabel(row.lineage)}</span><span className="block text-muted-foreground">{sourceObservationAge(row.lineage)}</span></span> },
+  { id: "owner", label: "Owner", hideable: true, render: (row) => <span className="font-mono text-muted-foreground">{row.ownerLabel}</span> },
+  { id: "updated", label: "Updated", hideable: true, render: (row) => <span className="font-mono text-muted-foreground">{row.lastUpdatedAtLabel}</span> },
+  { id: "source", label: "Source observation", hideable: true, render: (row) => <span className="block"><span className="block">{sourceObservationLabel(row.lineage)}</span><span className="block text-muted-foreground">{sourceObservationAge(row.lineage)}</span></span> },
   { id: "status", label: "Case status", render: (row) => <Badge variant={row.statusBadgeVariant}>{row.status}</Badge> }
 ];
 
@@ -275,7 +276,7 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
                   aria-label={reconciliation.detailEmptyAriaLabel}
                   className="rounded-lg border border-border/70 bg-secondary/20 px-4 py-3 text-sm text-muted-foreground"
                 >
-                  <div className="eyebrow-label">{reconciliation.detailEmptyTitle}</div>
+                  <div className={eyebrowClassName(reconciliation.detailEmptyTitle)}>{reconciliation.detailEmptyTitle}</div>
                   <p className="mt-1">{reconciliation.detailEmptyText}</p>
                 </section>
               )}
@@ -456,6 +457,7 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
             {selectedOutsideFilter ? <p role="status" className="text-sm text-muted-foreground">The selected break is outside these filters. Its evidence remains in the inspector.</p> : null}
             <div ref={queueRef} className="reconciliation-queue-scroll" onScroll={rememberQueueScroll}>
               <DenseDataTable
+                tableId="reconciliation-breaks"
                 columns={reconciliationBreakColumns}
                 rows={visibleRows}
                 getRowId={(item) => item.breakId}
@@ -511,10 +513,10 @@ const reconciliationStatementRunColumns: DenseDataTableColumn<ReconciliationStat
   { id: "account", label: "Account", render: (row) => <span title={row.unavailableReason ?? undefined}>{row.accountLabel}</span> },
   { id: "period", label: "Period", render: (row) => <span className="font-mono text-muted-foreground" title={row.unavailableReason ?? undefined}>{row.periodLabel}</span> },
   { id: "status", label: "Status", render: (row) => <Badge variant={row.statusLabel === "Matched" || row.statusLabel === "Balanced" ? "success" : "warning"}>{row.statusLabel}</Badge> },
-  { id: "validation", label: "Validation issues", align: "right", render: (row) => <span className="font-mono tabular-nums">{row.validationIssueCountLabel}</span> },
-  { id: "matches", label: "Matches", align: "right", render: (row) => <span className="font-mono tabular-nums">{row.matchCountLabel}</span> },
-  { id: "breaks", label: "Breaks", align: "right", render: (row) => <span className="font-mono tabular-nums">{row.breakCountLabel}</span> },
-  { id: "cases", label: "Cases", align: "right", render: (row) => <span className="font-mono tabular-nums">{row.caseCountLabel}</span> },
+  { id: "validation", label: "Validation issues", numeric: true, render: (row) => <span className="font-mono tabular-nums">{row.validationIssueCountLabel}</span> },
+  { id: "matches", label: "Matches", numeric: true, render: (row) => <span className="font-mono tabular-nums">{row.matchCountLabel}</span> },
+  { id: "breaks", label: "Breaks", numeric: true, render: (row) => <span className="font-mono tabular-nums">{row.breakCountLabel}</span> },
+  { id: "cases", label: "Cases", numeric: true, render: (row) => <span className="font-mono tabular-nums">{row.caseCountLabel}</span> },
   { id: "imported", label: "Imported", render: (row) => <span className="font-mono text-muted-foreground">{row.importedAtLabel}</span> }
 ];
 
