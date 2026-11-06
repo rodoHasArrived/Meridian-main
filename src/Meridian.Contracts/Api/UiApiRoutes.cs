@@ -776,6 +776,15 @@ public static class UiApiRoutes
 
     public const string WorkstationTradingBrokerageRecovery = "/api/workstation/trading/brokerage-recovery";
     public const string WorkstationOperatorInbox = "/api/workstation/operator/inbox";
+
+    /// <summary>Open orders, provider health and open breaks, counted once for every screen (A3).</summary>
+    public const string WorkstationCrossScreenCounts = "/api/workstation/cross-screen-counts";
+
+    /// <summary>The signed-in operator's default operating scope (C1).</summary>
+    public const string WorkstationOperatorScopePreference = "/api/workstation/operator/scope-preference";
+
+    /// <summary>The signed-in operator's last visit to a workstation surface, for "since last visit" markers (C3).</summary>
+    public const string WorkstationOperatorSurfaceVisit = "/api/workstation/operator/visits/{surface}";
     public const string WorkstationEvidenceSubjects = "/api/workstation/evidence/subjects";
     public const string WorkstationEvidenceSubjectPacket = "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/packet";
     public const string WorkstationEvidenceSubjectGraph = "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/graph";

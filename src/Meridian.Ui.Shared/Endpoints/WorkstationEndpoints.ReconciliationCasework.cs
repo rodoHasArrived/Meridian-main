@@ -119,6 +119,11 @@ public static partial class WorkstationEndpoints
         {
             Actor = currentUser,
             Source = "workstation-reconciliation-bulk-casework",
+            // "Assign to me" names the authenticated operator, as the single-case review route does.
+            Assignee = request.AssignToCurrentOperator && request.Action == ReconciliationCaseworkAction.Assign
+                ? currentUser
+                : request.Assignee,
+            AssignToCurrentOperator = false,
             // Derived from the principal -- see the single-case handler above (#2673).
             ActionOrigin = EndpointAuthorization.DeriveActionOriginFromPrincipal(context),
             ApprovalActor = NormalizeOptional(request.ApprovalActor),
