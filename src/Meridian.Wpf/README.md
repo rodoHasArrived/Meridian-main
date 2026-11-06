@@ -46,6 +46,12 @@ horizon, rate shock, eligibility-driven exercise selections and one prepayment a
 ladder, blockers and evidence hashes as exact server decimals; retained runs under a client-generated
 identity that any edit renews; and replay verification of a loaded run by output hash.
 
+The Security Master conflict lane routes each open conflict by
+`SecurityMasterConflictFieldCategories` (Contracts): whole field-path segments are matched against
+declared identifier, trading-parameter, lifecycle, corporate-action, classification, currency and
+display names, so a profile field such as `transferRestrictions` is no longer misread as a RIC
+identifier conflict.
+
 The Security Master page's "Bond Ladders" tab (`ViewModels/SecurityMaster/BondReferenceLadderViewModel`)
 pages issuer and maturity ladders through the bounded keyset routes behind an explicit "Load more";
 the opaque cursor stays bound to its query and a changed query discards accumulated rows.

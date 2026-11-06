@@ -12244,6 +12244,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterConflictFieldCategories"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterConflictFieldCategory"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterConflictKinds"
     },
     {
@@ -26417,6 +26429,18 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterConflict"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterConflictFieldCategories"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterConflictFieldCategory"
     },
     {
       "kind": "contract-set-member",
@@ -56681,7 +56705,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "8c194e49f683dc57b6d4b9f2ea8b2d497194bb1e7af44d7e6b008f1031a5a5a0",
+  "fingerprint": "5a71899feb7f3097af7b831637916245d2d238ee29d231ffccb7a7141a0ddd77",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -68973,6 +68997,18 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterConflict",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityMasterConflict"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterConflictFieldCategories",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityMasterConflictFieldCategories"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterConflictFieldCategory",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityMasterConflictFieldCategory"
     },
     {
       "classification": "class",
@@ -83031,10 +83067,10 @@
   ],
   "summary": {
     "contract_references": 3619,
-    "contract_set_memberships": 4508,
-    "edges": 9418,
+    "contract_set_memberships": 4512,
+    "edges": 9422,
     "foreign_keys": 156,
     "logical_references": 6,
-    "nodes": 4571
+    "nodes": 4573
   }
 }
