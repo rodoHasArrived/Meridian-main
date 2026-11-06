@@ -12,7 +12,7 @@
 //
 // Usage:
 //   node scripts/check-typography-floor.mjs                   # check (used by `npm run lint`)
-//   node scripts/check-typography-floor.mjs --update-baseline # rewrite the baseline
+//   node scripts/check-typography-floor.mjs --update-baseline # rewrite the baseline; refuses any increase
 
 import { readFile, readdir, writeFile } from "node:fs/promises";
 import { dirname, join, relative, resolve, sep } from "node:path";
@@ -80,6 +80,18 @@ async function readBaseline() {
 const current = await measure();
 
 if (UPDATE) {
+  // The baseline only shrinks: refuse to record any file that gained occurrences or any new file.
+  const existing = await readBaseline();
+  const increases = Object.entries(current)
+    .filter(([file, count]) => count > (existing[file] ?? 0))
+    .map(([file, count]) => `${file}: ${count} sub-12px occurrences (baseline ${existing[file] ?? 0})`);
+  if (increases.length > 0) {
+    console.error("Refusing to update the typography floor baseline: it would allowlist new sub-12px text.");
+    for (const line of increases) {
+      console.error(`  - ${line}`);
+    }
+    process.exit(1);
+  }
   const sorted = Object.fromEntries(Object.entries(current).sort(([a], [b]) => a.localeCompare(b)));
   const payload = {
     description:
