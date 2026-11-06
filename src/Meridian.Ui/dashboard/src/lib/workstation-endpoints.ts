@@ -113,6 +113,11 @@ export const WORKSTATION_API_ENDPOINTS = {
   evidenceTemplates: UI_API_ROUTES.WorkstationEvidenceTemplates
 } as const;
 
+/** The signed-in operator's visits to one workstation surface (C3). */
+export function workstationOperatorSurfaceVisitEndpoint(surface: string): string {
+  return UI_API_ROUTES.WorkstationOperatorSurfaceVisit.replace("{surface}", encodeURIComponent(surface));
+}
+
 export function workstationIngestionOperationEndpoint(jobId: string): string {
   return routeWithParam(WORKSTATION_API_ENDPOINTS.ingestionOperation, "jobId", jobId);
 }

@@ -2,7 +2,8 @@ import { useState, type ComponentProps } from "react";
 import { MemoryRouter } from "react-router-dom";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { resetSinceLastVisitCache, type RecordSurfaceVisit } from "@/lib/since-last-visit";
 import { ReconciliationWorkbench } from "./accounting-screen.reconciliation-workbench";
 import { buildReconciliationBreakQueueState, useReconciliationResolveDialogViewModel } from "./accounting-screen.view-model";
 import type { BulkTriageServices } from "./reconciliation-bulk-triage-bar";
@@ -50,7 +51,13 @@ function fakeBulkServices(wouldSucceed: (breakId: string) => boolean = () => tru
   return { dryRun, execute, getTaxonomy } satisfies BulkTriageServices;
 }
 
-function renderWorkbench(runSelector?: WorkbenchProps["runSelector"], bulkServices: BulkTriageServices = fakeBulkServices()) {
+const offlineVisits: RecordSurfaceVisit = () => Promise.reject(new Error("offline"));
+
+function renderWorkbench(
+  runSelector?: WorkbenchProps["runSelector"],
+  bulkServices: BulkTriageServices = fakeBulkServices(),
+  visitRecorder: RecordSurfaceVisit = offlineVisits
+) {
   const assignBreak = vi.fn().mockResolvedValue(undefined);
   const resolveBreak = vi.fn().mockResolvedValue(undefined);
   const applyBreakQueueItems = vi.fn();
@@ -62,7 +69,7 @@ function renderWorkbench(runSelector?: WorkbenchProps["runSelector"], bulkServic
     const state = buildReconciliationBreakQueueState({ breakQueue: breaks, selectedBreakId, loading: false, loadError: null, action: null, actionError: null });
     const reconciliation = { ...state, selectBreak, assignBreak, applyBreakQueueItems, detailActions: null } as unknown as WorkbenchProps["reconciliation"];
     const dialog = useReconciliationResolveDialogViewModel(resolveBreak);
-    return <ReconciliationWorkbench reconciliation={reconciliation} resolveDialog={dialog} runSelector={runSelector} bulkServices={bulkServices} controls={{ queueSearch, queueStatus, queueSort, setQueueSearch, setQueueStatus, setQueueSort, clearQueueFilters: () => { setQueueSearch(""); setQueueStatus("all"); } }} />;
+    return <ReconciliationWorkbench reconciliation={reconciliation} resolveDialog={dialog} runSelector={runSelector} bulkServices={bulkServices} visitRecorder={visitRecorder} controls={{ queueSearch, queueStatus, queueSort, setQueueSearch, setQueueStatus, setQueueSort, clearQueueFilters: () => { setQueueSearch(""); setQueueStatus("all"); } }} />;
   }
   render(<MemoryRouter><Harness /></MemoryRouter>);
   return { assignBreak, resolveBreak, applyBreakQueueItems };
@@ -72,6 +79,11 @@ function breakTable() { return screen.getByRole("treegrid", { name: "Reconciliat
 function inspector() { return screen.getByRole("region", { name: "Selected reconciliation break" }); }
 function bulkBar() { return screen.getByRole("region", { name: "Bulk break actions" }); }
 function queueRows() { return within(breakTable()).getAllByRole("row").slice(1); }
+
+beforeEach(() => {
+  resetSinceLastVisitCache();
+  window.sessionStorage.clear();
+});
 
 describe("Reconciliation workbench", () => {
   it("keeps selected evidence visible when filtering the selected break out of the queue", async () => {
@@ -248,5 +260,26 @@ describe("Reconciliation workbench", () => {
     await user.type(screen.getByRole("textbox", { name: "Search breaks" }), "jak");
     expect(screen.getByRole("textbox", { name: "Search breaks" })).toHaveValue("jak");
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("marks breaks that are new since the operator's last visit (C3)", async () => {
+    const visitRecorder = vi.fn<RecordSurfaceVisit>().mockResolvedValue({
+      surface: "reconciliation-breaks",
+      previousVisitAt: "2026-10-01T12:00:00Z",
+      visitedAt: "2026-10-03T09:00:00Z"
+    });
+    renderWorkbench(undefined, fakeBulkServices(), visitRecorder);
+    expect(await screen.findByText("1 new since your last visit (Oct 1, 2026, 12:00 UTC).")).toBeInTheDocument();
+    expect(visitRecorder).toHaveBeenCalledExactlyOnceWith("reconciliation-breaks");
+    const [cashRow, feeRow] = queueRows();
+    expect(within(feeRow!).getByText("New")).toBeInTheDocument();
+    expect(feeRow).toHaveAccessibleName(/, new since your last visit$/);
+    expect(within(cashRow!).queryByText("New")).not.toBeInTheDocument();
+  });
+
+  it("shows no markers when the visit cannot be recorded (C3)", async () => {
+    renderWorkbench();
+    await waitFor(() => expect(within(breakTable()).getAllByRole("row")).toHaveLength(3));
+    expect(screen.queryByText(/since your last visit/)).not.toBeInTheDocument();
   });
 });

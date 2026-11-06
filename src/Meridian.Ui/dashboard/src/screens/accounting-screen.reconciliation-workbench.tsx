@@ -15,6 +15,15 @@ import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/comp
 import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
 import { WorkspaceWorkbenchShell } from "@/components/meridian/workspace-workbench-shell";
 import { BREAK_QUEUE_KEYBOARD_MAP, resolveQueueShortcut } from "@/lib/queue-keyboard-map";
+import {
+  BREAK_QUEUE_VISIT_SURFACE,
+  classifySinceLastVisit,
+  describeSinceLastVisit,
+  summarizeSinceLastVisit,
+  useSinceLastVisit,
+  type RecordSurfaceVisit,
+  type SinceLastVisitMark
+} from "@/lib/since-last-visit";
 import { cn } from "@/lib/utils";
 import { ReconciliationBulkTriageBar, useReconciliationBulkTriage, type BulkTriageServices } from "./reconciliation-bulk-triage-bar";
 import { sourceObservationLabel, sourceObservationAge } from "./reconciliation-source-observation";
@@ -101,7 +110,7 @@ const reconciliationBreakColumns: DenseDataTableColumn<ReconciliationBreakRowVie
   { id: "status", label: "Case status", render: (row) => <Badge variant={row.statusBadgeVariant}>{row.status}</Badge> }
 ];
 
-export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSelector, controls, selectionNotice, bulkServices }: {
+export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSelector, controls, selectionNotice, bulkServices, visitRecorder }: {
   reconciliation: Reconciliation;
   resolveDialog: ResolveDialog;
   runSelector?: ReactNode;
@@ -109,6 +118,8 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
   selectionNotice?: string | null;
   /** Bulk casework services; tests inject fakes. */
   bulkServices?: BulkTriageServices;
+  /** Records the operator's visit for "since your last visit" markers; tests inject fakes. */
+  visitRecorder?: RecordSurfaceVisit;
 }) {
   const location = useLocation();
   const queueRef = useRef<HTMLDivElement>(null);
@@ -126,6 +137,14 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
     services: bulkServices
   });
   const { isSelected: isBulkSelected, toggle: toggleBulkSelected } = triage;
+  // Since your last visit (C3): rows detected or updated after the operator's previous visit.
+  const sinceLastVisit = useSinceLastVisit(BREAK_QUEUE_VISIT_SURFACE, visitRecorder);
+  const visitBaseline = sinceLastVisit.baseline;
+  const sinceLastVisitLine = describeSinceLastVisit(sinceLastVisit, summarizeSinceLastVisit(reconciliation.rows, visitBaseline));
+  const withVisitMark = (row: ReconciliationBreakRowViewModel, label: string) => {
+    const mark = classifySinceLastVisit(row, visitBaseline);
+    return mark ? `${label}, ${mark} since your last visit` : label;
+  };
   const breakColumns = useMemo<DenseDataTableColumn<ReconciliationBreakRowViewModel>[]>(() => [
     {
       id: "select",
@@ -142,8 +161,19 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
         </span>
       )
     },
-    ...reconciliationBreakColumns
-  ], [isBulkSelected, toggleBulkSelected]);
+    ...reconciliationBreakColumns.map((column) => column.id !== "break" ? column : {
+      ...column,
+      render: (row: ReconciliationBreakRowViewModel) => {
+        const mark = classifySinceLastVisit(row, visitBaseline);
+        return (
+          <span className="flex items-start gap-2">
+            <span className="min-w-0 flex-1">{column.render(row)}</span>
+            {mark ? <SinceLastVisitBadge mark={mark} /> : null}
+          </span>
+        );
+      }
+    })
+  ], [isBulkSelected, toggleBulkSelected, visitBaseline]);
   const selectedOutsideFilter = selectedRow && !visibleRows.some((row) => row.breakId === selectedRow.breakId);
   useLayoutEffect(() => {
     const position = (window.history.state?.usr as { reconciliationQueueScroll?: number } | null)?.reconciliationQueueScroll;
@@ -535,7 +565,10 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
             </div>
             <ReconciliationBulkTriageBar triage={triage} visibleCount={visibleRows.length} />
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <p role="status" className="text-xs text-muted-foreground">{visibleRows.length} of {reconciliation.rows.length} loaded breaks</p>
+              <div className="space-y-0.5">
+                <p role="status" className="text-xs text-muted-foreground">{visibleRows.length} of {reconciliation.rows.length} loaded breaks</p>
+                {sinceLastVisitLine ? <p className="text-xs text-muted-foreground">{sinceLastVisitLine}</p> : null}
+              </div>
               <Button
                 ref={toggleRef}
                 type="button"
@@ -557,8 +590,8 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
                 columns={breakColumns}
                 rows={visibleRows}
                 getRowId={(item) => item.breakId}
-                getRowAriaLabel={(item) => item.rowAriaLabel}
-                getRowSelectAriaLabel={(item) => item.rowSelectAriaLabel}
+                getRowAriaLabel={(item) => withVisitMark(item, item.rowAriaLabel)}
+                getRowSelectAriaLabel={(item) => withVisitMark(item, item.rowSelectAriaLabel)}
                 getRowAriaControls={(item) => item.detailPanelId}
                 getRowAriaExpanded={(item) => item.isExpanded}
                 onRowSelect={(item) => reconciliation.selectBreak(item.breakId)}
@@ -599,6 +632,15 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
         </DialogContent>
       </Dialog>
     </section>
+  );
+}
+
+function SinceLastVisitBadge({ mark }: { mark: SinceLastVisitMark }) {
+  return (
+    <Badge variant="outline" className="shrink-0">
+      {mark === "new" ? "New" : "Updated"}
+      <span className="sr-only"> since your last visit</span>
+    </Badge>
   );
 }
 

@@ -109,6 +109,14 @@ const OPEN_BREAK_METRIC_IDS = new Set(["open-breaks", "breaks"]);
  * the payload's own card string, which was counted separately and could disagree with the list
  * beside it. Their delta is dropped: it had no stated basis. Other cards pass through unchanged.
  */
+/**
+ * Sets the open-breaks card's delta (C3). The delta must state its basis, e.g. "2 new since your
+ * last visit"; an empty delta leaves the card without one.
+ */
+export function applyOpenBreakDelta<T extends { id: string; delta: string }>(metrics: readonly T[], delta: string): T[] {
+  return metrics.map((metric) => OPEN_BREAK_METRIC_IDS.has(metric.id) ? { ...metric, delta } : metric);
+}
+
 export function applyCrossScreenCounts<T extends { id: string; value: string; delta: string; tone: string }>(
   metrics: readonly T[],
   values: CrossScreenCountValues

@@ -26,6 +26,10 @@ public static class WorkflowServiceCollectionExtensions
         services.AddSingleton<IOperatorScopePreferenceStore>(sp => new FileOperatorScopePreferenceStore(
             ResolveDataRoot(sp),
             sp.GetRequiredService<ILogger<FileOperatorScopePreferenceStore>>()));
+        // Per-operator last visit to each surface (C3), for "since your last visit" markers.
+        services.AddSingleton<IOperatorSurfaceVisitStore>(sp => new FileOperatorSurfaceVisitStore(
+            ResolveDataRoot(sp),
+            sp.GetRequiredService<ILogger<FileOperatorSurfaceVisitStore>>()));
         return services;
     }
 

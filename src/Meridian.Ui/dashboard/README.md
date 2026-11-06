@@ -342,6 +342,12 @@ not been recorded.
   `assignToCurrentOperator`, so it names the login user, not the display name) and writes an
   audit entry for each case. Resolve takes a reason, a root cause and a resolution from the
   taxonomy endpoint, plus an optional evidence reference.
+- **Since your last visit.** `lib/since-last-visit.ts` records the operator's visit to the break
+  queue (`POST /api/workstation/operator/visits/reconciliation-breaks`) once per browser tab. The
+  visit it replaces is the baseline: a break detected after it is marked New, a break whose
+  activity (`lastUpdatedAt`) moved after it is marked Updated, and the queue states the counts and
+  the baseline time. The Accounting open-breaks card reads the same baseline for its delta ("2 new
+  since your last visit"). When the visit cannot be recorded, nothing is marked.
 - **Queue keys.** `lib/queue-keyboard-map.ts` holds the break queue's key map; the handler, the
   `?` shortcut sheet and this table come from it, and `lib/queue-keyboard-map.test.ts` checks the
   table against the map. Keys work while focus is in the queue and not in a text field. The queue

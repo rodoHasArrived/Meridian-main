@@ -158,7 +158,8 @@ import {
   splitApprovalWords
 } from "@/screens/accounting-screen.approvals";
 import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
-import { applyCrossScreenCounts, selectCrossScreenCounts } from "@/lib/cross-screen-counts";
+import { applyCrossScreenCounts, applyOpenBreakDelta, selectCrossScreenCounts } from "@/lib/cross-screen-counts";
+import { BREAK_QUEUE_VISIT_SURFACE, sinceLastVisitDelta, summarizeSinceLastVisit, useSinceLastVisit } from "@/lib/since-last-visit";
 import { useSharedCrossScreenCounts } from "@/lib/cross-screen-counts-context";
 
 interface AccountingScreenProps {
@@ -1574,6 +1575,8 @@ function AccountingCaseWorkbench({
 export function AccountingScreen({ data, multiAssetCoverage, session = null }: AccountingScreenProps) {
   const { pathname, search, hash } = useLocation();
   const sharedCounts = useSharedCrossScreenCounts();
+  // The same per-tab baseline the break queue marks rows against (C3).
+  const breakQueueVisit = useSinceLastVisit(BREAK_QUEUE_VISIT_SURFACE);
   const navigate = useNavigate();
   const operatorIdentity = session?.displayName.trim() || null;
   const workstream = resolveAccountingWorkstream(pathname);
@@ -2163,7 +2166,13 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
         taskMode={taskMode}
       />
 
-      <StatStrip metrics={applyCrossScreenCounts(data.metrics, selectCrossScreenCounts({ shared: sharedCounts, breakQueue: data.breakQueue }))} label="Accounting headline metrics" />
+      <StatStrip
+        metrics={applyOpenBreakDelta(
+          applyCrossScreenCounts(data.metrics, selectCrossScreenCounts({ shared: sharedCounts, breakQueue: data.breakQueue })),
+          sinceLastVisitDelta(summarizeSinceLastVisit(data.breakQueue ?? [], breakQueueVisit.baseline))
+        )}
+        label="Accounting headline metrics"
+      />
       {currentDailyValuationSchedule && (sectionVisibility.showCloseCockpitLanding || sectionVisibility.showWorkflowDetails) ? <ValuationMarkPreviewPanel preview={valuationMarkPreview} /> : null}
 
       {workstream === "reconciliation" ? (

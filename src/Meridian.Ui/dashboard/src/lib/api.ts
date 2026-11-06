@@ -6,6 +6,7 @@ import {
 } from "./quant-api-mappers";
 import type { WorkstationCrossScreenCounts } from "@/types/cross-screen-counts";
 import type { OperatingScopeValues, OperatorScopePreference } from "@/types/operator-scope-preference";
+import type { OperatorSurfaceVisit } from "@/types/operator-surface-visit";
 import type { ApprovePromotionRequest, RejectPromotionRequest } from "./api/promotion.contracts";
 
 export { PAPER_PROMOTION_APPROVAL_CHECKLIST } from "./api/promotion.contracts";
@@ -486,6 +487,7 @@ import {
   workstationFinancialRecordExplorerSavedViewsEndpoint,
   workstationFinancialOperationsCommandCenterEndpoint,
   workstationOperatorInboxEndpoint,
+  workstationOperatorSurfaceVisitEndpoint,
   workstationCrossScreenCountsEndpoint,
   workstationOperationsContinuityApprovalApproveEndpoint,
   workstationOperationsContinuityApprovalRejectEndpoint,
@@ -1155,6 +1157,11 @@ export function getOperatorScopePreference(options: ApiRequestOptions = {}) {
 /** Saves (or, with null, clears) the signed-in operator's default operating scope. */
 export function saveOperatorScopePreference(defaultScope: OperatingScopeValues | null, options: ApiRequestOptions = {}) {
   return putJson<OperatorScopePreference>(WORKSTATION_API_ENDPOINTS.operatorScopePreference, { defaultScope }, options);
+}
+
+/** Records the signed-in operator's visit to a surface and returns the visit it replaced (C3). */
+export function recordOperatorSurfaceVisit(surface: string, options: ApiRequestOptions = {}) {
+  return postJson<OperatorSurfaceVisit>(workstationOperatorSurfaceVisitEndpoint(surface), undefined, options);
 }
 
 /** Open orders, provider health and open breaks, counted once for every screen (A3). */

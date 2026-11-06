@@ -550,6 +550,16 @@ through the snapshot store's atomic replace; values are trimmed, capped at 128 p
 and an empty scope clears the default. Both routes require an authenticated session and only ever
 read or write the caller's own record.
 
+## Operator surface visits
+
+`GET`/`POST /api/workstation/operator/visits/{surface}` read and record the signed-in operator's
+last visit to a workstation surface, the baseline for "since your last visit" markers.
+`Workflows/FileOperatorSurfaceVisitStore.cs` keeps one record per tenant, company, user and surface
+(`workstation/operators/surface-visits.json`) through the snapshot store's atomic replace. Recording
+returns the visit it replaced as `previousVisitAt`; reading records nothing. A surface id is a
+lowercase slug of at most 64 characters. Both routes require an authenticated session and only
+touch the caller's own records.
+
 ## Bulk break triage
 
 The break queue's bulk assign, route and resolve actions use
