@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "01030426ea39a3f5962205f0bcf14df8c1d6af337b2fc29410636d5d18731090",
+      "fingerprint": "e5269ddb419db244940488f45972a51ba1eecadb6d0e49a7629f0e525baa3700",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -987,6 +987,10 @@
         "Meridian.Contracts.FixedIncome.BondCouponStructureDto",
         "Meridian.Contracts.FixedIncome.BondEconomicsCompatibility",
         "Meridian.Contracts.FixedIncome.BondExerciseEconomics",
+        "Meridian.Contracts.FixedIncome.BondExerciseNoticeStatus",
+        "Meridian.Contracts.FixedIncome.BondExerciseNoticeWatch",
+        "Meridian.Contracts.FixedIncome.BondExerciseNoticeWatchResult",
+        "Meridian.Contracts.FixedIncome.BondExerciseNoticeWindow",
         "Meridian.Contracts.FixedIncome.BondExerciseYield",
         "Meridian.Contracts.FixedIncome.BondFloatingRateEvidence",
         "Meridian.Contracts.FixedIncome.BondInflationLinkedDto",
@@ -4674,7 +4678,7 @@
       ]
     }
   ],
-  "fingerprint": "2d4b78bd2c26afbdaefb77976d2678735faeafd3482c3e565a6979a3648183a4",
+  "fingerprint": "6980ada0dbcaf67a771ca41df13553f831df728e8d6bbdaf1085220eec35bc8d",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -5960,7 +5964,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "8cb8e9bc480543f3e452674ae69c8af0b88b67331ddd96ebcf9854e9c75c6a39",
+      "fingerprint": "42aab07bbeed0547aa57c7bc2598882e4eb9c69f94c5a56fbfd17e508ebecee6",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.FixedIncome",
       "object_ids": [
@@ -5977,6 +5981,10 @@
         "Meridian.Contracts.FixedIncome.BondCouponStructureDto",
         "Meridian.Contracts.FixedIncome.BondEconomicsCompatibility",
         "Meridian.Contracts.FixedIncome.BondExerciseEconomics",
+        "Meridian.Contracts.FixedIncome.BondExerciseNoticeStatus",
+        "Meridian.Contracts.FixedIncome.BondExerciseNoticeWatch",
+        "Meridian.Contracts.FixedIncome.BondExerciseNoticeWatchResult",
+        "Meridian.Contracts.FixedIncome.BondExerciseNoticeWindow",
         "Meridian.Contracts.FixedIncome.BondExerciseYield",
         "Meridian.Contracts.FixedIncome.BondFloatingRateEvidence",
         "Meridian.Contracts.FixedIncome.BondInflationLinkedDto",
@@ -132622,6 +132630,366 @@
         {
           "line": 14,
           "path": "src/Meridian.Contracts/FixedIncome/BondExerciseEconomics.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "enum",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [
+        {
+          "explicit_value": false,
+          "name": "NotStated",
+          "source_line": 14,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "Upcoming",
+          "source_line": 16,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "Open",
+          "source_line": 18,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "DeadlineElapsed",
+          "source_line": 20,
+          "value": null
+        }
+      ],
+      "fingerprint": "d925d6237033a00c7707d08da452243dbeed5e00168b8629cf3eebed7aa35a00",
+      "full_name": "Meridian.Contracts.FixedIncome.BondExerciseNoticeStatus",
+      "id": "Meridian.Contracts.FixedIncome.BondExerciseNoticeStatus",
+      "kind": "enum",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "BondExerciseNoticeStatus",
+      "namespace": "Meridian.Contracts.FixedIncome",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.FixedIncome.BondExerciseNoticeStatus",
+      "references": [],
+      "source": {
+        "line": 11,
+        "path": "src/Meridian.Contracts/FixedIncome/BondExerciseNoticeWatch.cs"
+      },
+      "sources": [
+        {
+          "line": 11,
+          "path": "src/Meridian.Contracts/FixedIncome/BondExerciseNoticeWatch.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "577bd35cf6fe48d1d1f1dfaf4d9efacdbc9f874a8a4380d22042931869335b5f",
+      "full_name": "Meridian.Contracts.FixedIncome.BondExerciseNoticeWatch",
+      "id": "Meridian.Contracts.FixedIncome.BondExerciseNoticeWatch",
+      "kind": "class",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "BondExerciseNoticeWatch",
+      "namespace": "Meridian.Contracts.FixedIncome",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.FixedIncome.BondExerciseNoticeWatch",
+      "references": [],
+      "source": {
+        "line": 54,
+        "path": "src/Meridian.Contracts/FixedIncome/BondExerciseNoticeWatch.cs"
+      },
+      "sources": [
+        {
+          "line": 54,
+          "path": "src/Meridian.Contracts/FixedIncome/BondExerciseNoticeWatch.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "result",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "27429911a1e9e0e53c92129b621f3e1e3276c867b2f87791d6c5f138ae121e27",
+      "full_name": "Meridian.Contracts.FixedIncome.BondExerciseNoticeWatchResult",
+      "id": "Meridian.Contracts.FixedIncome.BondExerciseNoticeWatchResult",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AsOf",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 39,
+          "type": "DateOnly"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "BondAnalyticsBlocker",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Blockers",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<BondAnalyticsBlocker>",
+          "source_line": 42,
+          "type": "IReadOnlyList<BondAnalyticsBlocker>"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "string",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Diagnostics",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<string>",
+          "source_line": 43,
+          "type": "IReadOnlyList<string>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "HorizonDays",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 40,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SecurityId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 37,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SecurityVersion",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "long?",
+          "source_line": 38,
+          "type": "long?"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "BondExerciseNoticeWindow",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Windows",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<BondExerciseNoticeWindow>",
+          "source_line": 41,
+          "type": "IReadOnlyList<BondExerciseNoticeWindow>"
+        }
+      ],
+      "name": "BondExerciseNoticeWatchResult",
+      "namespace": "Meridian.Contracts.FixedIncome",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.FixedIncome.BondExerciseNoticeWatchResult",
+      "references": [
+        "Meridian.Contracts.FixedIncome.BondAnalyticsBlocker",
+        "Meridian.Contracts.FixedIncome.BondExerciseNoticeWindow"
+      ],
+      "source": {
+        "line": 36,
+        "path": "src/Meridian.Contracts/FixedIncome/BondExerciseNoticeWatch.cs"
+      },
+      "sources": [
+        {
+          "line": 36,
+          "path": "src/Meridian.Contracts/FixedIncome/BondExerciseNoticeWatch.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "7417b5c2035f75d2c3a9c2f263d384e07f2f5a8d153eaf83c17c0d69bc02aa49",
+      "full_name": "Meridian.Contracts.FixedIncome.BondExerciseNoticeWindow",
+      "id": "Meridian.Contracts.FixedIncome.BondExerciseNoticeWindow",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "DaysToDeadline",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "int?",
+          "source_line": 31,
+          "type": "int?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EarliestNoticeDate",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly?",
+          "source_line": 28,
+          "type": "DateOnly?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ExerciseDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 26,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Kind",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 25,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "LatestNoticeDate",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly?",
+          "source_line": 29,
+          "type": "DateOnly?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RedemptionPrice",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 27,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Status",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "BondExerciseNoticeStatus",
+          "source_line": 30,
+          "type": "BondExerciseNoticeStatus"
+        }
+      ],
+      "name": "BondExerciseNoticeWindow",
+      "namespace": "Meridian.Contracts.FixedIncome",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.FixedIncome.BondExerciseNoticeWindow",
+      "references": [
+        "Meridian.Contracts.FixedIncome.BondExerciseNoticeStatus"
+      ],
+      "source": {
+        "line": 24,
+        "path": "src/Meridian.Contracts/FixedIncome/BondExerciseNoticeWatch.cs"
+      },
+      "sources": [
+        {
+          "line": 24,
+          "path": "src/Meridian.Contracts/FixedIncome/BondExerciseNoticeWatch.cs"
         }
       ],
       "type_parameters": []
