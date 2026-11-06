@@ -28,6 +28,7 @@ Reg T and portfolio margin models value positions at quantity × multiplier × p
 terms the paper book uses for cash and margin borrowing.
 Paper notional-based costs (basis-point commission, fees, slippage) and the spread cost use the same
 multiplied principal; per-share and fixed per-order charges are unchanged.
+Session TCA computes commission rates and notionals on the same multiplied principal.
 
 OMS amendments resolve explicit broker/client identifiers, retain replacement broker aliases under
 the original client identity, and process cumulative fills through the shared fill funnel.
