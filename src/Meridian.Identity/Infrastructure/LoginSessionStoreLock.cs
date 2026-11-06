@@ -1,33 +1,27 @@
-using System.Diagnostics;
+using Meridian.Core.IO;
 
 namespace Meridian.Identity.Infrastructure;
 
 /// <summary>Serializes durable identity state access across processes sharing a session store.</summary>
+/// <remarks>
+/// Synchronous by design: the caller takes this lease while holding its in-process persistence
+/// monitor. Retry, backoff, and the contention filter come from <see cref="ExclusiveFileLock"/>.
+/// </remarks>
 internal static class LoginSessionStoreLock
 {
+    private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(5);
+
     public static FileStream Acquire(string path)
     {
-        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-        var elapsed = Stopwatch.StartNew();
-        while (true)
+        try
         {
-            try
-            {
-                // Retain the lock file: deleting it could create two lock identities. The
-                // operating system releases the handle if its owning process terminates.
-                return new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
-            }
-            catch (IOException exception) when (IsContention(exception))
-            {
-                if (elapsed.Elapsed >= TimeSpan.FromSeconds(5))
-                    throw new TimeoutException("Timed out acquiring the authoritative login session store.", exception);
-                Thread.Sleep(10);
-            }
+            // Retain the lock file: deleting it could create two lock identities. The
+            // operating system releases the handle if its owning process terminates.
+            return ExclusiveFileLock.Acquire(path, Timeout);
+        }
+        catch (TimeoutException exception)
+        {
+            throw new TimeoutException("Timed out acquiring the authoritative login session store.", exception.InnerException);
         }
     }
-
-    private static bool IsContention(IOException exception)
-        => OperatingSystem.IsWindows()
-            ? (exception.HResult & 0xFFFF) is 32 or 33
-            : exception.HResult is 11 or 35;
 }

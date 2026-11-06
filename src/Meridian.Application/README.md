@@ -254,7 +254,12 @@ failover, symbol, subscription and provider-extended endpoints; the subscription
 module setup) uses `ConfigStore.UpdateAsync`, which loads the document inside that lock, applies the
 synchronous mutator and writes atomically, so concurrent writers editing different sections cannot drop
 each other's change (PRD-002 "concurrent configuration writes"). An edit through `UpdateAsync` fails
-closed on a corrupt or JSON-null file instead of replacing it with defaults. `ConfigStore.SaveAsync`
+closed on a corrupt or JSON-null file instead of replacing it with defaults. Read-only loads
+(`ConfigStore.Load` / `LoadConfig`, and environment overlays applied by `ConfigurationPipeline` and
+`ConfigurationService.LoadAndPrepareConfig`) also fail closed: a missing file yields defaults with a
+logged warning for first-run hosts, but an existing file that is malformed, JSON-null or unreadable
+throws `InvalidDataException` naming the path. Load diagnostics go through Serilog, not the console.
+The write lock waits through `Core.IO.ExclusiveFileLock` with jittered backoff. `ConfigStore.SaveAsync`
 remains whole-document replacement, last writer wins, reserved for callers that own the entire document:
 the CLI `SaveConfigAsync` path and the setup wizard's generated output. Capability override writes take
 the same lock, and so does the WPF shell: `ConfigServiceBase` runs every section-level mutation through a
