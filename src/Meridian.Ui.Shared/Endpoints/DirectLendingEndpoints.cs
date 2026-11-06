@@ -776,6 +776,137 @@ public static class DirectLendingEndpoints
         .RequireFundScopedWriteTenant()
         .RequirePermission(UserPermission.ManageDirectLending);
 
+        // PIK capitalization and floating-rate reset scheduling
+        // (docs/engineering/blueprints/direct-lending-pik-capitalization-and-rate-resets.md).
+        mutationGroup.MapPost("/index-fixings", async (JsonElement body, HttpContext context) =>
+        {
+            var service = ResolveService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            if (!TryBindCommand<RecordIndexFixingRequest>(body, jsonOptions, context, out var request, out _, out var error))
+            {
+                return Results.Problem(error, statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            try
+            {
+                var fixing = await service.RecordIndexFixingAsync(request!, context.RequestAborted).ConfigureAwait(false);
+                return fixing is null ? Results.NotFound() : Results.Json(fixing, jsonOptions);
+            }
+            catch (DirectLendingCommandException ex)
+            {
+                return ToProblem(ex);
+            }
+        })
+        .WithName("RecordDirectLendingIndexFixing")
+        .Produces<DirectLendingIndexFixingDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .AddEndpointFilter(requireManageDirectLending)
+        .RequireFundScopedWriteTenant()
+        .RequirePermission(UserPermission.ManageDirectLending);
+
+        group.MapGet("/index-fixings", async (string? index, DateOnly? from, DateOnly? to, HttpContext context) =>
+        {
+            var service = ResolveService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            var fixings = await service.GetIndexFixingsAsync(index, from, to, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(fixings, jsonOptions);
+        })
+        .WithName("GetDirectLendingIndexFixings")
+        .Produces<IReadOnlyList<DirectLendingIndexFixingDto>>(StatusCodes.Status200OK);
+
+        mutationGroup.MapPost("/{loanId:guid}/rate-resets/scheduled", async (Guid loanId, JsonElement body, HttpContext context) =>
+        {
+            var service = ResolveService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            if (!TryBindCommand<ApplyScheduledRateResetRequest>(body, jsonOptions, context, out var request, out var metadata, out var error))
+            {
+                return Results.Problem(error, statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            try
+            {
+                var servicing = await service.ApplyScheduledRateResetAsync(loanId, request!, metadata, context.RequestAborted).ConfigureAwait(false);
+                return servicing is null ? Results.NotFound() : Results.Json(servicing, jsonOptions);
+            }
+            catch (DirectLendingCommandException ex)
+            {
+                return ToProblem(ex);
+            }
+        })
+        .WithName("ApplyScheduledLoanRateReset")
+        .Produces<LoanServicingStateDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status422UnprocessableEntity)
+        .AddEndpointFilter(requireManageDirectLending)
+        .RequireFundScopedWriteTenant()
+        .RequirePermission(UserPermission.ManageDirectLending);
+
+        mutationGroup.MapPost("/{loanId:guid}/pik/capitalizations", async (Guid loanId, JsonElement body, HttpContext context) =>
+        {
+            var service = ResolveService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            if (!TryBindCommand<CapitalizePikRequest>(body, jsonOptions, context, out var request, out var metadata, out var error))
+            {
+                return Results.Problem(error, statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            try
+            {
+                var servicing = await service.CapitalizePikAsync(loanId, request!, metadata, context.RequestAborted).ConfigureAwait(false);
+                return servicing is null ? Results.NotFound() : Results.Json(servicing, jsonOptions);
+            }
+            catch (DirectLendingCommandException ex)
+            {
+                return ToProblem(ex);
+            }
+        })
+        .WithName("CapitalizeLoanPik")
+        .Produces<LoanServicingStateDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound)
+        .AddEndpointFilter(requireManageDirectLending)
+        .RequireFundScopedWriteTenant()
+        .RequirePermission(UserPermission.ManageDirectLending);
+
+        group.MapGet("/{loanId:guid}/schedules/servicing", async (Guid loanId, DateOnly? from, DateOnly? to, HttpContext context) =>
+        {
+            var service = ResolveService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            var start = from ?? DateOnly.FromDateTime(DateTime.UtcNow);
+            var end = to ?? start.AddYears(1);
+            try
+            {
+                var preview = await service.GetServicingSchedulePreviewAsync(loanId, start, end, context.RequestAborted).ConfigureAwait(false);
+                return preview is null ? Results.NotFound() : Results.Json(preview, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.ValidationProblem(new Dictionary<string, string[]> { ["window"] = [ex.Message] });
+            }
+        })
+        .WithName("GetLoanServicingSchedulePreview")
+        .Produces<LoanServicingSchedulePreviewDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound);
+
         mutationGroup.MapPost("/{loanId:guid}/restructures", async (Guid loanId, JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
@@ -1185,6 +1316,7 @@ public static class DirectLendingEndpoints
         {
             DirectLendingErrorCode.NotFound => StatusCodes.Status404NotFound,
             DirectLendingErrorCode.ConcurrencyConflict or DirectLendingErrorCode.Conflict => StatusCodes.Status409Conflict,
+            DirectLendingErrorCode.FixingMissing => StatusCodes.Status422UnprocessableEntity,
             _ => StatusCodes.Status400BadRequest
         });
 

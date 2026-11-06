@@ -73,6 +73,12 @@
       "review_after": "2027-05-01"
     },
     {
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/062_security_master_identifier_revisions.sql",
+      "rule_id": "migration-truncate",
+      "reason": "Requires independent human schema/storage review; no owner authorization is recorded for this waiver yet. The lexical TRUNCATE match declares a BEFORE TRUNCATE trigger that rejects truncation of the append-only identifier revision history (security_identifier_revisions); no data is truncated, and the migration only creates the table, appends Baseline revisions for existing security_identifiers rows and installs the refusal triggers. PostgreSQL regression coverage (SecurityIdentifierHistoryPostgresTests) attempts update, delete and truncate and verifies refusal and retention.",
+      "review_after": "2027-05-04"
+    },
+    {
       "path": "src/Meridian.Storage/AssetOperations/Migrations/006_asset_operations_write_events_truncate_guard.sql",
       "rule_id": "migration-truncate",
       "reason": "Requires human schema/storage review. Authorized by the repository owner on 2026-10-16. The lexical TRUNCATE match declares a BEFORE TRUNCATE trigger that rejects truncation of the append-only Asset Operations write-event log; no data is truncated. PostgreSQL regression coverage attempts delete and truncate and verifies refusal.",

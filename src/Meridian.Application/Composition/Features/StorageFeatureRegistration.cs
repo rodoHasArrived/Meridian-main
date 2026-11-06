@@ -312,6 +312,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
                 sp.GetService<ILedgerBookService>()));
             services.AddSingleton<ISecurityMasterSnapshotStore, PostgresSecurityMasterSnapshotStore>();
             services.AddSingleton<ISecurityMasterStore, PostgresSecurityMasterStore>();
+            // Read-only view of the identifier history the projection store appends (migration 062).
+            services.AddSingleton<ISecurityIdentifierHistoryStore, PostgresSecurityMasterStore>();
             services.AddSingleton<ISecurityUnderlyingGraphStore, PostgresSecurityUnderlyingGraphStore>();
             services.AddSingleton<IOtcContractStore, PostgresOtcContractStore>();
             services.AddSingleton<IOtcCollateralStore, PostgresOtcCollateralStore>();
@@ -575,6 +577,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
                     sp.GetService<ILedgerJournalStore>()));
             services.AddSingleton<IDirectLendingOperationsStore>(sp => (PostgresDirectLendingStateStore)sp.GetRequiredService<IDirectLendingStateStore>());
             services.AddSingleton<DirectLendingMigrationRunner>();
+            services.AddSingleton<IDirectLendingIndexFixingStore, PostgresDirectLendingIndexFixingStore>();
             services.AddSingleton<IDirectLendingQueryService, PostgresDirectLendingQueryService>();
             // Direct lending can be enabled through the Security Master connection-string fallback
             // without a ledger database, so the journal store is optional here. The projector fails

@@ -2151,14 +2151,15 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
 
   return (
     <div className="space-y-5">
-      <StatStrip metrics={data.metrics} label="Accounting headline metrics" />
-      {currentDailyValuationSchedule && (sectionVisibility.showCloseCockpitLanding || sectionVisibility.showWorkflowDetails) ? <ValuationMarkPreviewPanel preview={valuationMarkPreview} /> : null}
-
+      {/* Route heading first ("where am I?"); workspace-wide metrics follow. */}
       <AccountingWorkbenchContext
         workspace={workspace}
         workstream={workstream}
         taskMode={taskMode}
       />
+
+      <StatStrip metrics={data.metrics} label="Accounting headline metrics" />
+      {currentDailyValuationSchedule && (sectionVisibility.showCloseCockpitLanding || sectionVisibility.showWorkflowDetails) ? <ValuationMarkPreviewPanel preview={valuationMarkPreview} /> : null}
 
       {workstream === "reconciliation" ? (
         <>

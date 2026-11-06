@@ -524,6 +524,26 @@ let ``SecurityMaster.create rejects missing primary identifier and blank common 
         failwithf "Expected invalid create to be rejected, got: %A" events
 
 [<Fact>]
+let ``SecurityMaster.create refuses a shared-reference UPI as the primary identifier`` () =
+    let baseCommand = createEquityCreateCommand None
+    let upiPrimary =
+        { createPrimaryTicker baseCommand.EffectiveFrom with Kind = IdentifierKind.Upi; Value = "QZRBG6ZTKS42" }
+    let invalidCommand = { baseCommand with Identifiers = [ upiPrimary ] }
+
+    match SecurityMaster.create invalidCommand with
+    | Error errors ->
+        errors |> List.exists (fun error -> error.Code = "primary_identifier_shared_reference") |> should equal true
+    | Ok events ->
+        failwithf "Expected a UPI primary identifier to be refused, got: %A" events
+
+    let ticker = { createPrimaryTicker baseCommand.EffectiveFrom with IsPrimary = true }
+    let upiSecondary = { upiPrimary with IsPrimary = false }
+    match SecurityMaster.create { baseCommand with Identifiers = [ ticker; upiSecondary ] } with
+    | Error errors ->
+        errors |> List.exists (fun error -> error.Code = "primary_identifier_shared_reference") |> should equal false
+    | Ok _ -> ()
+
+[<Fact>]
 let ``SecurityMaster.amend emits TermsAmended when classification changes`` () =
     let preferredTerms, convertibleTerms, classification = createConvertiblePreferredClassification ()
     let currentRecord = createSecurityRecord (Some classification)

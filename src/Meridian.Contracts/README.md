@@ -1881,8 +1881,11 @@ forecasting behavior as planned rather than live.
 ## Security Master governance controls (2026-11)
 
 - **Contract-multiplier requirement.** `InstrumentTypeDescriptorCatalog.RequiresContractMultiplier(assetClass)` is true only when a descriptor whose *primary* asset class matches declares `multiplier` among its required economic terms (listed options and futures; not swaps, warrants or FX forwards). Compatible-class lists are deliberately ignored. Clients call this instead of matching asset-class names, so they cannot diverge.
+- **Canonical-merge outcome.** `SecurityMasterPublishResultDto.CanonicalMerge` (`SecurityMasterCanonicalMergeOutcomeDto`) reports `Merged`, `AlreadyCanonical`, `OverlayOnly` or `NotApplicable`. It is null when no handler reports.
 - **Profile drafter.** `SecurityAssetProfileDefinitionDto.DraftedBy` records who last drafted a profile version and is kept through approval, so maker-checker no longer reads the author from `ApprovedBy`. It is null on versions drafted before the field existed.
 - **System-ingest amender.** `ISecurityMasterAmender` is the system-ingest write path (provider backfill, EDGAR ingest, ticker changes). The governed-amendment setting does not block it, and its implementation refuses operator source systems.
+- **Stored classification labels.** `ClassificationLabelReader.Normalize` decodes labels retained before the F# name helpers (`Some(PreferredEquity)`, `OtherFamily "x"`, `Some(OtherSubType "x")`, `None`) at read, match and grouping seams. It removes at most one `Some(…)`, and only around a known case name (`KnownCaseNames`), a union payload or a quoted literal. A payload is returned verbatim, so `OtherSubType "Some(Nested)"` reads as `Some(Nested)`, and every current canonical label is returned unchanged. Stored events and projections are never rewritten. `IsAmbiguousFreeText` reports new free text the reader would change; the Security Master write path uses it to refuse such `OtherSecurity` subtypes and categories.
+- **Descriptor labels.** `InstrumentTypeDescriptorCatalog.DomainLabelExceptions` lists the descriptor `OtherFamily`/`OtherSubType` placeholders that are not F# domain labels, and `ApproximateDomainLabelMappings` records Warrant/FX spot/Deposit approximations. A coverage test fails when a descriptor label is neither a domain label nor listed. Descriptor values are unchanged.
 
 See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D8) for status and open decisions.
 
@@ -2011,6 +2014,43 @@ format-validated ISO 10383 market code (four letters or digits); `MicReference` 
 markets Meridian's providers and seed data use and maps unambiguous exchange names (`NYSE`,
 `Nasdaq`, `AMEX`, ...) to a MIC, leaving routing labels such as `SMART` unresolved; its `Codes` and
 `ExchangeNames` tables also drive the `securities.listing_mic` backfill.
+
+### Security Master regulatory derivatives identifiers
+
+`SecurityIdentifierKind` carries four regulatory derivatives-reporting kinds. All four normalize by
+trimming, upper-casing and stripping everything outside ASCII `A-Z0-9`
+(`SecurityIdentifierNormalizer.NormalizeValue`), and `TryValidateFormat` checks:
+
+| Kind | Standard | Format rule | Scope |
+|---|---|---|---|
+| `Uti` | ISO 23897 | 21-52 characters; the first 20 are a valid ISO 17442 LEI (MOD 97-10) | one trade |
+| `Upi` | ISO 4914 (ANNA DSB) | 12 characters: `QZ`, nine digits or consonants (no vowels, no `Y`), ISO 7064 MOD 31,30 check character | one OTC derivative product |
+| `MarkitRedEntity` | Markit RED6 | 6 alphanumeric characters | one CDS reference entity |
+| `MarkitRedPair` | Markit RED9 | 9 alphanumeric characters (entity code + 3-character obligation suffix) | one entity/obligation pair |
+
+The UPI check character is verified against the published ANNA DSB example `QZRBG6ZTKS42`, not
+against the ISO 4914 Annex C text itself. RED publishes no check digit, so RED validation is
+structural.
+
+`SecurityIdentifierNormalizer.IsSharedReferenceKind` marks `Upi`, `MarkitRedEntity` and
+`MarkitRedPair`: many contracts legitimately share them, so they are excluded from
+identifier-ambiguity pairing (`IsExcludedFromAmbiguityPairing`). They cannot be a primary identifier,
+because the normalized primary-identifier unique index would reject the second contract: create and
+amend commands refuse them in the F# command validation (`primary_identifier_shared_reference`), and
+`SecurityValidationService` reports `SM_SHARED_IDENTIFIER_NOT_PRIMARY` for records already stored. A `Uti` names one trade and is a
+canonical duplicate kind.
+
+`SecurityAssetClassCatalog.MayCarryIdentifierKind` restricts which asset classes may carry them.
+`Uti` and `Upi` are allowed on `Swap`, `CreditDefaultSwap`, `Swaption`, `CapFloor`, `FxForward`,
+`NonDeliverableForward` and `Cfd`. The RED kinds are allowed on `CreditDefaultSwap` only. Every other
+kind is unrestricted. A mismatch is the warning `SM_REGULATORY_IDENTIFIER_ASSET_CLASS_MISMATCH`.
+Repo (SFTR UTIs), listed options and futures, and RED on credit-index swaptions are not admitted
+yet.
+
+The F# `SecurityIdentifier.normalizeIdentifierValue` and `kindName` delegate to this normalizer
+through the exhaustive `toContractKind` mapping. Migration 016's SQL backfill predates `LoanX`,
+`Clip` and these four kinds; `SecurityIdentifierMigration016ParityTests` pins its kind lists to the
+C# rules.
 
 ### OTC contract model: exposure, collateral and margin calls
 

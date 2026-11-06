@@ -18,10 +18,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { StatStrip } from "@/components/meridian/stat-strip";
 import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 import type { DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
-import {
-  WorkspaceInspectorHost,
-  WorkspaceTabStrip
-} from "@/components/meridian/workspace-primitives";
+import { WorkspaceInspectorHost } from "@/components/meridian/workspace-primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -57,7 +54,7 @@ import { CoverageGapsRegion, DataQualityRegion } from "@/screens/data-screen.dat
 import { DataOverviewHub, RouteFocusCard } from "@/screens/data-screen-navigation-panels";
 import { CanonicalSymbolRegistryRegion } from "@/screens/data-screen.canonical-symbols";
 import { ProviderAccountingRegion } from "@/screens/data-screen.provider-accounting";
-import { DATA_ROUTE_TABS, DATA_ROUTE_VIEW_COPY } from "@/screens/data-screen.route-state";
+import { DATA_ROUTE_VIEW_COPY } from "@/screens/data-screen.route-state";
 import { resultToneClass } from "@/screens/data-screen.tone-styles";
 import { DataBackfillWorkstream, DataExportWorkstream, DataQueryWorkstream } from "@/screens/data-screen.workstreams";
 import { IngestionOperationsWorkstream, StorageAssuranceWorkstream } from "@/screens/data-operations-assurance-workstreams";
@@ -225,11 +222,6 @@ export function DataScreen({
   }
 
   const routeCopy = DATA_ROUTE_VIEW_COPY[activeWorkstream];
-  const routeTabs = DATA_ROUTE_TABS.map((tab) => ({
-    id: tab.id,
-    label: tab.label,
-    selected: tab.workstream === activeWorkstream
-  }));
   const analyticsDegraded = buildDataAnalyticsDegradedViewModel([
     { id: "data-quality", label: "Data quality", error: qualityPanel.error, loading: qualityPanel.loading, refresh: qualityPanel.refresh },
     { id: "capability-matrix", label: "Provider capability matrix", error: capabilityMatrixPanel.error, loading: capabilityMatrixPanel.loading, refresh: capabilityMatrixPanel.refresh },
@@ -240,8 +232,8 @@ export function DataScreen({
 
   return (
     <div className="workspace-screen data-workspace-screen">
-      <StatStrip metrics={data.metrics} label="Data headline metrics" />
-
+      {/* Route heading first; workspace-wide metrics follow. The sidebar is the only
+          sub-route navigation (no in-page tab strip). */}
       <section
         role="region"
         aria-label="Data workspace context"
@@ -256,18 +248,6 @@ export function DataScreen({
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <WorkspaceTabStrip
-            label="Data routes"
-            tabs={routeTabs}
-            onSelect={(id) => {
-              const tab = DATA_ROUTE_TABS.find((candidate) => candidate.id === id);
-              if (tab) {
-                // Preserve the querystring: the operating scope is threaded
-                // through search params across the shell.
-                navigate({ pathname: tab.route, search });
-              }
-            }}
-          />
           <Button
             type="button"
             size="sm"
@@ -291,6 +271,8 @@ export function DataScreen({
           </Button>
         </div>
       </section>
+
+      <StatStrip metrics={data.metrics} label="Data headline metrics" />
 
       {showHealthMonitoring ? (
         <div className="space-y-4">
