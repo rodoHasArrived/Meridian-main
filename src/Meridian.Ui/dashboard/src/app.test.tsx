@@ -1,10 +1,14 @@
-import { screen, waitFor, within } from "@testing-library/react";
+import { act, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
+import { StrictMode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "@/app";
+import { captureLayoutState, upsertUserLayout } from "@/lib/saved-layouts";
 import { useWorkstationData } from "@/hooks/use-workstation-data";
 import { apiGetJson } from "@/lib/api";
+import { getOperatorScopePreference } from "@/lib/api/operator-workstation.api";
+import { OPERATING_CONTEXT_STORAGE_KEY } from "@/lib/operating-scope/persistence";
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import { renderWithRouter } from "@/test/render";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -28,6 +32,14 @@ vi.mock("@/lib/api", async () => {
     markWorkflowPresetUsed: vi.fn().mockResolvedValue(undefined)
   };
 });
+
+vi.mock("@/lib/api/operator-workstation.api", () => ({
+  getCrossScreenCounts: vi.fn().mockResolvedValue(null),
+  getOperatorScopePreference: vi.fn().mockResolvedValue({ defaultScope: null, updatedAt: null }),
+  saveOperatorScopePreference: vi.fn().mockResolvedValue({ defaultScope: null, updatedAt: null }),
+  recordOperatorSurfaceVisit: vi.fn().mockRejectedValue(new Error("offline")),
+  getOperatorSurfaceVisit: vi.fn().mockRejectedValue(new Error("offline"))
+}));
 
 const mockedUseWorkstationData = vi.mocked(useWorkstationData);
 type WorkstationDataSnapshot = ReturnType<typeof useWorkstationData>;
@@ -59,6 +71,7 @@ function mockWorkstationData(overrides: Partial<WorkstationDataSnapshot>) {
   mockedUseWorkstationData.mockReturnValue({
     session: null,
     overview: null,
+    crossScreenCounts: null,
     strategy: null,
     trading: null,
     portfolio: null,
@@ -448,6 +461,66 @@ describe("App", () => {
     // on screen above every workspace, alongside the trust-strip cell.
     const provenanceBanner = await screen.findByRole("region", { name: "Data provenance" });
     expect(within(provenanceBanner).getByTestId("data-provenance-seeded")).toBeInTheDocument();
+  });
+
+  it("applies the operator's default scope to an unscoped session under StrictMode (C1)", async () => {
+    window.localStorage.removeItem(OPERATING_CONTEXT_STORAGE_KEY);
+    // Like fetch, the read rejects once its signal aborts.
+    vi.mocked(getOperatorScopePreference).mockImplementation((options = {}) => new Promise((resolve, reject) => {
+      const timer = setTimeout(() => resolve({ defaultScope: { symbol: "MSFT" }, updatedAt: "2026-11-06T09:00:00Z" }), 0);
+      options.signal?.addEventListener("abort", () => {
+        clearTimeout(timer);
+        reject(new DOMException("The read was aborted.", "AbortError"));
+      });
+    }));
+    renderWithRouter(<StrictMode><App /></StrictMode>, { initialEntries: ["/trading"] });
+    // StrictMode replays the effect: the first read is aborted, and the replay must still load it.
+    await waitFor(() => expect(window.localStorage.getItem(OPERATING_CONTEXT_STORAGE_KEY) ?? "").toContain("MSFT"));
+    expect(vi.mocked(getOperatorScopePreference).mock.calls.length).toBeGreaterThanOrEqual(2);
+    vi.mocked(getOperatorScopePreference).mockReset().mockResolvedValue({ defaultScope: null, updatedAt: null });
+    window.localStorage.removeItem(OPERATING_CONTEXT_STORAGE_KEY);
+  });
+
+  it("keeps an operator's explicit empty scope when the default loads late (C1)", async () => {
+    window.localStorage.removeItem(OPERATING_CONTEXT_STORAGE_KEY);
+    let release!: () => void;
+    vi.mocked(getOperatorScopePreference).mockImplementation(() => new Promise((resolve) => {
+      release = () => resolve({ defaultScope: { symbol: "MSFT" }, updatedAt: "2026-11-06T09:00:00Z" });
+    }));
+    const user = userEvent.setup();
+    renderWithRouter(<App />, { initialEntries: ["/trading"] });
+
+    // The operator applies an empty scope while the default is still loading.
+    await user.click(screen.getByRole("button", { name: /(Set|Change) operating scope/ }));
+    await user.click(screen.getByRole("button", { name: "Clear scope" }));
+    await user.click(screen.getByRole("button", { name: "Apply scope" }));
+    await act(async () => release());
+
+    expect(window.localStorage.getItem(OPERATING_CONTEXT_STORAGE_KEY) ?? "").not.toContain("MSFT");
+    expect(screen.getByText("No scope selected")).toBeInTheDocument();
+    vi.mocked(getOperatorScopePreference).mockReset().mockResolvedValue({ defaultScope: null, updatedAt: null });
+  });
+
+  it("offers saved views in the command palette (C4)", async () => {
+    upsertUserLayout({
+      id: "month-end-breaks",
+      name: "Month-end breaks",
+      description: null,
+      source: "user",
+      state: captureLayoutState({
+        route: "/accounting/reconciliation?reconciliationStatus=Open&reconciliationColumns=owner",
+        operatingScope: { fundAccountId: "fund-a" },
+        density: "compact",
+        panes: []
+      })
+    });
+    const user = userEvent.setup();
+    renderWithRouter(<App />, { initialEntries: ["/trading"] });
+
+    await user.keyboard("{Control>}k{/Control}");
+    const dialog = screen.getByRole("dialog", { name: "Open workstation command" });
+    expect(await within(dialog).findByText("Open saved view Month-end breaks")).toBeInTheDocument();
+    window.localStorage.removeItem("meridian.workstation.layouts.v1");
   });
 
   it("opens and closes the command palette with Control+K", async () => {
