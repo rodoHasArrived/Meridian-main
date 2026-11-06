@@ -2,8 +2,8 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-11-04
-**Review history:** slice 6 disposition 2026-11-04; consolidation pass 2026-10-28; resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
+**Reviewed:** 2026-11-06
+**Review history:** post-slice-6 source check 2026-11-06; slice 6 disposition 2026-11-04; consolidation pass 2026-10-28; resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -429,9 +429,12 @@ typed column to its kind. The writer is a specialized `AssetProjectionWriter` in
 `ProjectionKind` is now `Specialized`, so every catalog class has a projection (32 of 32). A record
 without a complete envelope (a legacy or unmapped row, a blank profile id, a non-integer version, or
 non-object `profileFields`) projects no rows and keeps its terms JSON as the only copy. Leaving the
-class clears the rows. The Option writer now checks its catalog class explicitly, because it is no
-longer the only Specialized class. `ICustomAssetProfileFieldProjectionStore` reads rows by security,
-profile and version, or exact string value. Profile `IsProjected`/`IsSearchable` remain declared
+class clears the rows. The Option writer now also requires the catalog's `UsesOccOptionSymbols`
+fact, because Option is no longer the only Specialized class (`9ad456e9` replaced a class-name
+comparison that the asset-class comparison ratchet forbids). `ICustomAssetProfileFieldProjectionStore`
+reads rows by security, profile and version, or exact string value. Profile Text fields have no
+length limit, so the text lookup index keys on `md5(text_value)` and the reader rechecks the exact
+value (`a26dab51`); a Postgres test projects and finds a 12.8 KB value. Profile `IsProjected`/`IsSearchable` remain declared
 promotion intent (D9): this projection writes every field regardless of either flag, and no typed
 per-field column exists. **Migration 064 requires the repository's independent schema/storage
 review before merge.** The table is created empty; existing CustomAsset records populate on their
