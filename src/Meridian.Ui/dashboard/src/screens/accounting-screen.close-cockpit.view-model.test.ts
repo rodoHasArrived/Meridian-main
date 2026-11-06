@@ -2574,7 +2574,8 @@ describe("accounting-screen close-cockpit view model", () => {
       fundAccountLabel: "fund-alpha"
     });
     expect(state.metricRows).toEqual(expect.arrayContaining([
-      expect.objectContaining({ id: "breaks", value: "2", tone: "warning" }),
+      // Counted once from the break queue (A3); the workflow's own break case is named in the detail, not added.
+      expect.objectContaining({ id: "breaks", value: "1", tone: "warning", detail: expect.stringContaining("also tracks 1 break case") }),
       expect.objectContaining({ id: "source-files", value: "2", tone: "warning" }),
       expect.objectContaining({ id: "adjustments", value: "2", tone: "warning" }),
       expect.objectContaining({ id: "valuations", value: "1", tone: "warning" }),
