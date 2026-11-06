@@ -158,6 +158,9 @@ import {
   splitApprovalWords
 } from "@/screens/accounting-screen.approvals";
 import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
+import { applyCrossScreenCounts, applyOpenBreakDelta, selectCrossScreenCounts } from "@/lib/cross-screen-counts";
+import { BREAK_QUEUE_VISIT_SURFACE, sinceLastVisitDelta, summarizeSinceLastVisit, useSinceLastVisit } from "@/lib/since-last-visit";
+import { useSharedCrossScreenCounts } from "@/lib/cross-screen-counts-context";
 
 interface AccountingScreenProps {
   data: AccountingWorkspaceResponse | null;
@@ -1571,6 +1574,10 @@ function AccountingCaseWorkbench({
 
 export function AccountingScreen({ data, multiAssetCoverage, session = null }: AccountingScreenProps) {
   const { pathname, search, hash } = useLocation();
+  const sharedCounts = useSharedCrossScreenCounts();
+  // The same baseline the break queue marks rows against (C3), read without recording a visit:
+  // only opening the queue itself advances it, not any other Accounting route.
+  const breakQueueVisit = useSinceLastVisit(BREAK_QUEUE_VISIT_SURFACE, undefined, { record: false });
   const navigate = useNavigate();
   const operatorIdentity = session?.displayName.trim() || null;
   const workstream = resolveAccountingWorkstream(pathname);
@@ -2160,7 +2167,13 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
         taskMode={taskMode}
       />
 
-      <StatStrip metrics={data.metrics} label="Accounting headline metrics" />
+      <StatStrip
+        metrics={applyOpenBreakDelta(
+          applyCrossScreenCounts(data.metrics, selectCrossScreenCounts({ shared: sharedCounts, breakQueue: data.breakQueue, openBreakCount: data.workspace?.openBreaks })),
+          sinceLastVisitDelta(summarizeSinceLastVisit(data.breakQueue ?? [], breakQueueVisit.baseline))
+        )}
+        label="Accounting headline metrics"
+      />
       {currentDailyValuationSchedule && (sectionVisibility.showCloseCockpitLanding || sectionVisibility.showWorkflowDetails) ? <ValuationMarkPreviewPanel preview={valuationMarkPreview} /> : null}
 
       {workstream === "reconciliation" ? (

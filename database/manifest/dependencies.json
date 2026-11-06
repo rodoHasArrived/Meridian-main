@@ -15262,6 +15262,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OperatingScopeValuesDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.OperationsAccountingRecordEvidenceCategoryDto"
     },
     {
@@ -15683,6 +15689,24 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.OperatorInboxDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OperatorScopePreferenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OperatorScopePreferenceSaveRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OperatorSurfaceVisitDto"
     },
     {
       "kind": "contract-set-member",
@@ -18682,6 +18706,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationCrossScreenCount"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationCrossScreenCountsDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.WorkstationDataBackfillRecord"
     },
     {
@@ -18887,6 +18923,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.WorkstationPortfolioSummaryTelemetry"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationProviderHealthCount"
     },
     {
       "kind": "contract-set-member",
@@ -43923,6 +43965,18 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OperatorScopePreferenceDto",
+      "target": "contract:Meridian.Contracts.Workstation.OperatingScopeValuesDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OperatorScopePreferenceSaveRequest",
+      "target": "contract:Meridian.Contracts.Workstation.OperatingScopeValuesDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.OperatorWorkItemDto",
       "target": "contract:Meridian.Contracts.Workstation.OperatorWorkItemKindDto"
     },
@@ -47855,6 +47909,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.WorkstationBrokerageSyncStatusDto",
       "target": "contract:Meridian.Contracts.Workstation.WorkstationBrokerageSyncHealth"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.WorkstationCrossScreenCountsDto",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationCrossScreenCount"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.WorkstationCrossScreenCountsDto",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationProviderHealthCount"
     },
     {
       "kind": "contract-reference",
@@ -53228,6 +53294,54 @@
       "target": "database:security_master.securities_pkey"
     },
     {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.custom_asset_profile_field_projection_profile_id_check on security_master.custom_asset_profile_field_projection",
+      "target": "database:security_master.custom_asset_profile_field_projection.custom_profile_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.custom_asset_profile_field_projection_raw_kind_check on security_master.custom_asset_profile_field_projection",
+      "target": "database:security_master.custom_asset_profile_field_projection.raw_value"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.custom_asset_profile_field_projection_raw_kind_check on security_master.custom_asset_profile_field_projection",
+      "target": "database:security_master.custom_asset_profile_field_projection.value_kind"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.custom_asset_profile_field_projection_typed_value_check on security_master.custom_asset_profile_field_projection",
+      "target": "database:security_master.custom_asset_profile_field_projection.boolean_value"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.custom_asset_profile_field_projection_typed_value_check on security_master.custom_asset_profile_field_projection",
+      "target": "database:security_master.custom_asset_profile_field_projection.numeric_value"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.custom_asset_profile_field_projection_typed_value_check on security_master.custom_asset_profile_field_projection",
+      "target": "database:security_master.custom_asset_profile_field_projection.text_value"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.custom_asset_profile_field_projection_typed_value_check on security_master.custom_asset_profile_field_projection",
+      "target": "database:security_master.custom_asset_profile_field_projection.value_kind"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.custom_asset_profile_field_projection_value_kind_check on security_master.custom_asset_profile_field_projection",
+      "target": "database:security_master.custom_asset_profile_field_projection.value_kind"
+    },
+    {
       "constraint": "direct_loan_covenant_projection_security_id_fkey",
       "kind": "foreign-key",
       "label": "security_id",
@@ -55939,6 +56053,12 @@
       "kind": "contains",
       "label": "",
       "source": "schema:security_master",
+      "target": "database:security_master.custom_asset_profile_field_projection"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
       "target": "database:security_master.data_vendor_entitlements"
     },
     {
@@ -56561,7 +56681,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "70c46a2dc162ccb1e0d255751771d95d074d96a0ba8073d6bfdbf85f630579b5",
+  "fingerprint": "8c194e49f683dc57b6d4b9f2ea8b2d497194bb1e7af44d7e6b008f1031a5a5a0",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -71874,6 +71994,12 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OperatingScopeValuesDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OperatingScopeValuesDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.OperationsAccountingRecordEvidenceCategoryDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.OperationsAccountingRecordEvidenceCategoryDto"
@@ -72297,6 +72423,24 @@
       "id": "contract:Meridian.Contracts.Workstation.OperatorInboxDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.OperatorInboxDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OperatorScopePreferenceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OperatorScopePreferenceDto"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Workstation.OperatorScopePreferenceSaveRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OperatorScopePreferenceSaveRequest"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OperatorSurfaceVisitDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OperatorSurfaceVisitDto"
     },
     {
       "classification": "dto",
@@ -75294,6 +75438,18 @@
     },
     {
       "classification": "record",
+      "id": "contract:Meridian.Contracts.Workstation.WorkstationCrossScreenCount",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.WorkstationCrossScreenCount"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.WorkstationCrossScreenCountsDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.WorkstationCrossScreenCountsDto"
+    },
+    {
+      "classification": "record",
       "id": "contract:Meridian.Contracts.Workstation.WorkstationDataBackfillRecord",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.WorkstationDataBackfillRecord"
@@ -75501,6 +75657,12 @@
       "id": "contract:Meridian.Contracts.Workstation.WorkstationPortfolioSummaryTelemetry",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.WorkstationPortfolioSummaryTelemetry"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Workstation.WorkstationProviderHealthCount",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.WorkstationProviderHealthCount"
     },
     {
       "classification": "dto",
@@ -80925,6 +81087,62 @@
       "schema": "security_master"
     },
     {
+      "id": "database:security_master.custom_asset_profile_field_projection",
+      "kind": "database-table",
+      "label": "security_master.custom_asset_profile_field_projection",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.custom_asset_profile_field_projection.boolean_value",
+      "kind": "database-object",
+      "label": "security_master.custom_asset_profile_field_projection.boolean_value"
+    },
+    {
+      "id": "database:security_master.custom_asset_profile_field_projection.custom_profile_id",
+      "kind": "database-object",
+      "label": "security_master.custom_asset_profile_field_projection.custom_profile_id"
+    },
+    {
+      "id": "database:security_master.custom_asset_profile_field_projection.numeric_value",
+      "kind": "database-object",
+      "label": "security_master.custom_asset_profile_field_projection.numeric_value"
+    },
+    {
+      "id": "database:security_master.custom_asset_profile_field_projection.raw_value",
+      "kind": "database-object",
+      "label": "security_master.custom_asset_profile_field_projection.raw_value"
+    },
+    {
+      "id": "database:security_master.custom_asset_profile_field_projection.text_value",
+      "kind": "database-object",
+      "label": "security_master.custom_asset_profile_field_projection.text_value"
+    },
+    {
+      "id": "database:security_master.custom_asset_profile_field_projection.value_kind",
+      "kind": "database-object",
+      "label": "security_master.custom_asset_profile_field_projection.value_kind"
+    },
+    {
+      "id": "database:security_master.custom_asset_profile_field_projection_profile_id_check on security_master.custom_asset_profile_field_projection",
+      "kind": "database-object",
+      "label": "security_master.custom_asset_profile_field_projection_profile_id_check on security_master.custom_asset_profile_field_projection"
+    },
+    {
+      "id": "database:security_master.custom_asset_profile_field_projection_raw_kind_check on security_master.custom_asset_profile_field_projection",
+      "kind": "database-object",
+      "label": "security_master.custom_asset_profile_field_projection_raw_kind_check on security_master.custom_asset_profile_field_projection"
+    },
+    {
+      "id": "database:security_master.custom_asset_profile_field_projection_typed_value_check on security_master.custom_asset_profile_field_projection",
+      "kind": "database-object",
+      "label": "security_master.custom_asset_profile_field_projection_typed_value_check on security_master.custom_asset_profile_field_projection"
+    },
+    {
+      "id": "database:security_master.custom_asset_profile_field_projection_value_kind_check on security_master.custom_asset_profile_field_projection",
+      "kind": "database-object",
+      "label": "security_master.custom_asset_profile_field_projection_value_kind_check on security_master.custom_asset_profile_field_projection"
+    },
+    {
       "id": "database:security_master.data_vendor_entitlements",
       "kind": "database-table",
       "label": "security_master.data_vendor_entitlements",
@@ -82812,11 +83030,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3615,
-    "contract_set_memberships": 4501,
-    "edges": 9398,
+    "contract_references": 3619,
+    "contract_set_memberships": 4508,
+    "edges": 9418,
     "foreign_keys": 156,
     "logical_references": 6,
-    "nodes": 4553
+    "nodes": 4571
   }
 }

@@ -51,6 +51,19 @@ readiness row; classes without a specialized profile carry a persistent operatio
 requirement. Canonical aliases live in `SecurityAssetClassCatalog`; broad legacy vocabulary such as
 Debt and SPV is scoped to readiness so it cannot classify imports or accounting records. Securitized
 aliases resolve exclusively to StructuredCredit, and BankLoan resolves to DirectLoan.
+`SecurityAssetPackReadinessMappingTests` pins the readiness-only alias table (each alias must name a
+canonical class and stay reachable past catalog labels) and requires every catalog class to name
+readiness projectors or appear in a reasoned fallback list. The pack registry's policy text
+(`AdmissionPolicy`, `LedgerExtensionPolicy`, lifecycle `CapturePolicy`) is informational and gates
+nothing: it is read for display and by `ValidateAll`'s own self-checks only.
+
+`SecurityAssetTermsSchema.DeclaredSpellings(key)` returns a top-level term's key followed by every
+alias a class declares for it (element fields excluded). Readers that accept "either spelling" of a
+term derive the list from it rather than restating it.
+
+`SecurityIdentifierNormalizer` is the single identifier normalization and check-digit authority:
+the F# `SecurityIdentifier.normalizeIdentifierValue`, `validateIsin`, `validateCusip` and
+`validateLei` delegate to it.
 
 `ReportLedgerAmountBindingDtos` retains generated trial-balance amounts with exact accounting scope
 and journal/line identities. Generated amount source evidence additionally carries its original
@@ -215,6 +228,14 @@ require a fresh preview. Unknown calculation versions are refused.
 
 `Etl/IEtlStagingStore.cs` lets source adapters retain imported streams through an injected
 persistence port without referencing the Storage implementation.
+
+`Workstation/CrossScreenCountsDtos.cs` carries the counts more than one screen shows (open orders,
+provider health and open breaks) with the definition each was counted with. A count the caller may
+not read, or whose source is not registered, is null, so clients show "—" rather than a substitute.
+
+`Workstation/OperatorScopePreferenceDtos.cs` carries the signed-in operator's default operating
+scope (symbol, fund account, run, provider and date dimensions), which browser and WPF apply when a
+session opens with no scope in its link or local storage.
 
 `Workstation/RecurringJournalDtos.cs` publishes one exact-scope occurrence projection for browser
 and WPF Accounting queues. It carries retained schedule/template versions, source evidence
@@ -1552,7 +1573,7 @@ and F# lanes pin that value identically. Routing, balances and journals follow i
 increments; see the
 [excess payment application blueprint](../../docs/engineering/blueprints/direct-lending-excess-payment-application.md).
 
-Accounting reconciliation casework contracts are shared here: break queue items carry assignee, priority, SLA policy/state/timestamps, age band, versioned taxonomy, threaded comments with mention/evidence/hash metadata, evidence counts, sign-off/reopen metadata, source-origin metadata, and optimistic concurrency versions. Resolve/dismiss, casework command, and bulk casework request payloads carry `ActionOrigin` so reviewed automation can draft triage but cannot resolve, sign off, dismiss, or reopen accounting exceptions. Casework command, bulk-triage, taxonomy, SLA policy, validation-problem, and sequenced audit-event payloads must remain additive so browser and WPF workstation clients use the same Accounting workflow.
+Accounting reconciliation casework contracts are shared here: break queue items carry assignee, priority, SLA policy/state/timestamps, age band, versioned taxonomy, threaded comments with mention/evidence/hash metadata, evidence counts, sign-off/reopen metadata, source-origin metadata, and optimistic concurrency versions. Resolve/dismiss, casework command, and bulk casework request payloads carry `ActionOrigin` so reviewed automation can draft triage but cannot resolve, sign off, dismiss, or reopen accounting exceptions. Casework command, bulk-triage, taxonomy, SLA policy, validation-problem, and sequenced audit-event payloads must remain additive so browser and WPF workstation clients use the same Accounting workflow. `ReconciliationBulkCaseworkRequest.AssignToCurrentOperator` (init-only, omitted from JSON when false) asks the server to assign the selected cases to the authenticated operator. `OperatorSurfaceVisitDto` carries an operator's previous and current visit to a workstation surface, the shared baseline for "since your last visit" markers.
 
 Manual journal entry contracts include private-capital entry types for capital calls,
 distributions, subscriptions, redemptions, LP transfers, and management fees. `TreasuryLedgerContextDto`
@@ -1964,7 +1985,8 @@ W7 live-readiness gate.
 ### Security Master asset-class registry
 
 `SecurityAssetClassRegistry` composes, per asset class, the catalog entry (lot unit, cash-flow
-behaviour, projection kind, preferred identifiers, terms version, multiplier key), the term
+behaviour, projection kind, preferred identifiers, terms version, multiplier key; every class now has
+a projection, and CustomAsset's kind is `Specialized` for its profile-keyed table), the term
 schema, validators and editor hints. `SecurityAssetClassRegistryCoverageTests` fails when an F#
 `SecurityKind` case has no definition. The registry backs `/api/security-master/asset-classes`.
 The OTC derivative classes `FxForward` (deliverable forward: pair, notional, forward rate, trade

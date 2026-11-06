@@ -112,9 +112,12 @@ export function buildCloseCommandCenterViewState({
     {
       id: "breaks",
       label: "Open breaks",
-      value: String(openBreakCount + workflowOpenBreakCount),
-      detail: `${formatCount(openBreakCount, "queue break")} and ${formatCount(workflowOpenBreakCount, "workflow break")} remain open.`,
-      tone: openBreakCount + workflowOpenBreakCount > 0 ? "warning" : "success",
+      // Counted once, from the break queue (A3); summing in the workflow's cases counted breaks twice.
+      value: String(openBreakCount),
+      detail: workflowOpenBreakCount > 0
+        ? `${formatCount(openBreakCount, "queue break")} open; the close workflow also tracks ${formatCount(workflowOpenBreakCount, "break case")}.`
+        : `${formatCount(openBreakCount, "queue break")} open.`,
+      tone: openBreakCount > 0 ? "warning" : "success",
       href: WORKSTATION_ROUTE_CATALOG.accountingReconciliation
     },
     {

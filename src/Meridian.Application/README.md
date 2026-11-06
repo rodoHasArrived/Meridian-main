@@ -259,7 +259,12 @@ failover, symbol, subscription and provider-extended endpoints; the subscription
 module setup) uses `ConfigStore.UpdateAsync`, which loads the document inside that lock, applies the
 synchronous mutator and writes atomically, so concurrent writers editing different sections cannot drop
 each other's change (PRD-002 "concurrent configuration writes"). An edit through `UpdateAsync` fails
-closed on a corrupt or JSON-null file instead of replacing it with defaults. `ConfigStore.SaveAsync`
+closed on a corrupt or JSON-null file instead of replacing it with defaults. Read-only loads
+(`ConfigStore.Load` / `LoadConfig`, and environment overlays applied by `ConfigurationPipeline` and
+`ConfigurationService.LoadAndPrepareConfig`) also fail closed: a missing file yields defaults with a
+logged warning for first-run hosts, but an existing file that is malformed, JSON-null or unreadable
+throws `InvalidDataException` naming the path. Load diagnostics go through Serilog, not the console.
+The write lock waits through `Core.IO.ExclusiveFileLock` with jittered backoff. `ConfigStore.SaveAsync`
 remains whole-document replacement, last writer wins, reserved for callers that own the entire document:
 the CLI `SaveConfigAsync` path and the setup wizard's generated output. Capability override writes take
 the same lock, and so does the WPF shell: `ConfigServiceBase` runs every section-level mutation through a
@@ -1364,8 +1369,9 @@ direct-lending and amortization gates are ungated when no verifier is registered
 - **Independent profile approval.** `SecurityAssetProfileGovernanceService` refuses an asset-profile approval by any actor who drafted that version when `SecurityMasterWorkbench:RequireIndependentProfileApprover` is on. A drafter is identified by the recorded `DraftedBy`, by the drafted audit events for that version, or, for a legacy draft without `DraftedBy`, by its recorded author. The setting defaults to off and is read at approval time.
 - **Classification labels.** `SecurityEconomicDefinitionAdapter` stores asset-class, family and sub-type labels from the F# domain's explicit name functions rather than union `ToString()`, which would emit payload syntax such as `OtherFamily "x"` or `Some(...)`. Labels retained before that change are decoded at read time by `Meridian.Contracts.SecurityMaster.ClassificationLabelReader` (preferred-equity replay guard, workbench DTO mapping, accounting sub-type and certified-report rows). Each label is decoded once, where a stored record becomes a DTO or row; downstream consumers such as the WPF display, the passport summaries and the CSV/XLSX export use that decoded value; retained events are not rewritten. Create and terms amendment refuse an `OtherSecurity` `subType`/`category` that would read back differently (`None`, `Some(Equity)`, a quoted literal or a union payload) with `SecurityMasterWriteRefusedException` (`SecurityMasterService.ClassificationText.cs`).
 - **Removed prototype.** The unused Application-side `SecurityMaster/CashFlow/ScheduleSpecFactory` prototype was deleted; production uses `Meridian.Contracts.SecurityMaster.ScheduleSpecFactory`.
+- **Derived term-key spellings.** `SecurityMasterConflictDetection.ProfileFieldComparisonExclusions` and the data-quality maturity reads (`MA001`, `VC002`, `SecurityMasterDataQualityService.MaturitySpellings`) take their spelling pairs (`maturity`/`maturityDate`, `dayCount`/`dayCountConvention`, factor `factor`/`currentFactor`) from `SecurityAssetTermsSchema` aliases instead of restated lists. `SecurityMasterTermSpellingDerivationTests` pins each derived set to the one it replaced; the conditional quality rules are unchanged.
 
-See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D8) for status and open decisions.
+See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D9, slice 6 disposition) for status and open decisions.
 
 ## Diagrams
 
