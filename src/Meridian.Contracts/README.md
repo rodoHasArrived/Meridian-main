@@ -511,8 +511,11 @@ accepts older numeric status payloads; persisted queue records already use text 
   absent, matching the `NormalizeOptional` convention used across the ledger surface.
 - `SecurityMaster/` - shared Security Master command/read payloads, including corporate-action
   append requests, append results, structured audit metadata, and the injectable command service
-  contract used by HTTP endpoints, imports, provider backfills, and workstation commands. The
-  contract-owned `InstrumentTypeDescriptorCatalog` carries additive provider-routing,
+  contract used by HTTP endpoints, imports, provider backfills, and workstation commands.
+  `SecurityMasterConflictFieldCategories` classifies a conflict by whole field-path segments
+  against declared names (`SecurityIdentifierKind` values, `TradingParametersDto` fields and
+  explicit lifecycle, corporate-action, classification, currency and display names), never by
+  substrings. The contract-owned `InstrumentTypeDescriptorCatalog` carries additive provider-routing,
   validation, lifecycle, ledger, and risk hints for existing `InstrumentType` values without
   changing enum wire values. Its sibling `CorporateActionTypeDescriptorCatalog` does the same
   for the canonical corporate-action vocabulary in `CorporateActionEventTypes`: per-type ISO

@@ -40,7 +40,11 @@ internal sealed class LiveRunMetricsTracker
 
     public long EventsProcessed { get; set; }
 
-    public void RecordFill(FillEvent fill, DateTimeOffset timestamp, bool usesFaceValuePercentageOfPar = false)
+    public void RecordFill(
+        FillEvent fill,
+        DateTimeOffset timestamp,
+        bool usesFaceValuePercentageOfPar = false,
+        decimal contractMultiplier = 1m)
     {
         _fills.Add(fill);
 
@@ -50,7 +54,11 @@ internal sealed class LiveRunMetricsTracker
         // and the pre-trade risk gate use. Multiplying the two raw books 100,000 face at 101.25
         // as a $10,125,000 cash flow instead of $101,250. Quantity and Price stay as quoted;
         // Amount alone carries the economic cash impact, matching SimulatedPortfolio.
-        var effectivePrice = usesFaceValuePercentageOfPar ? fill.FillPrice / 100m : fill.FillPrice;
+        // Otherwise the quoted price is scaled by the contract multiplier, the same money terms
+        // the paper book uses: one option contract at 2.50 with multiplier 100 is a $250 outflow.
+        var effectivePrice = usesFaceValuePercentageOfPar
+            ? fill.FillPrice / 100m
+            : fill.FillPrice * (contractMultiplier > 0m ? contractMultiplier : 1m);
         var tradeCashFlow = new TradeCashFlow(
             Timestamp: timestamp,
             Amount: -(fill.FilledQuantity * effectivePrice),

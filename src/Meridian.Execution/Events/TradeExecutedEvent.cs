@@ -31,6 +31,12 @@ namespace Meridian.Execution.Events;
 ///     <paramref name="FillPrice"/> as a percentage of par (fixed income). Booking consumers
 ///     must not multiply the two raw: 100,000 face at 101.25 is $101,250, not $10,125,000.
 /// </param>
+/// <param name="ContractMultiplier">
+///     Value of one unit of <paramref name="FilledQuantity"/> per unit of <paramref name="FillPrice"/>
+///     (100 for a standard equity option). <paramref name="RealizedPnl"/> is already in money terms,
+///     so <see cref="GrossValue"/> applies the same multiplier; one contract at 3.00 with multiplier
+///     100 is $300 of proceeds. Events serialized before this member existed read as 1.
+/// </param>
 public sealed record TradeExecutedEvent(
     Guid FillId,
     string OrderId,
@@ -43,14 +49,19 @@ public sealed record TradeExecutedEvent(
     decimal NewCash,
     DateTimeOffset OccurredAt,
     string? FinancialAccountId = null,
-    bool UsesFaceValuePercentageOfPar = false)
+    bool UsesFaceValuePercentageOfPar = false,
+    decimal ContractMultiplier = 1m)
 {
     /// <summary>
     /// Gross trade value, always positive. For a face-value fill the clean price is a
     /// percentage of par, so the price is scaled to a fraction of par before multiplying —
     /// the same convention pre-trade risk uses to measure the order — keeping the booked
-    /// cash movement equal to the notional the risk gate approved.
+    /// cash movement equal to the notional the risk gate approved. Otherwise the quoted price is
+    /// scaled by <see cref="ContractMultiplier"/>, matching the paper portfolio's cash and
+    /// realized P&amp;L.
     /// </summary>
     public decimal GrossValue =>
-        FilledQuantity * (UsesFaceValuePercentageOfPar ? FillPrice / 100m : FillPrice);
+        FilledQuantity * (UsesFaceValuePercentageOfPar
+            ? FillPrice / 100m
+            : FillPrice * (ContractMultiplier > 0m ? ContractMultiplier : 1m));
 }

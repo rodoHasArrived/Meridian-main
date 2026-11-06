@@ -15,6 +15,20 @@ Paper fills retain security-definition lot units and multipliers in execution re
 and contracts with multiplier one preserve their denomination after session replay. Legacy reports
 without class or lot metadata retain the existing share assumption. Contradictory units on an open
 position are refused before booking.
+Cash, realised and unrealised P&L, market value and ledger postings are scaled by the position's
+contract multiplier while lot prices and cost basis stay quoted per contract; a fill whose multiplier
+differs from the open position's is refused. A new position takes the fill's exact multiplier, including
+values below 1. `TradeExecutedEvent` carries the same `ContractMultiplier`, so its `GrossValue` and the
+multiplied realized P&L reach the ledger handoff in the same money terms; events serialized before the
+member existed read as 1.
+When the gateway supplies no lot multiplier, the OMS stamps its resolved multiplier onto the fill
+report before booking, so session projection and restart replay apply the same multiplier as the live
+book.
+Reg T and portfolio margin models value positions at quantity × multiplier × price, the same money
+terms the paper book uses for cash and margin borrowing.
+Paper notional-based costs (basis-point commission, fees, slippage) and the spread cost use the same
+multiplied principal; per-share and fixed per-order charges are unchanged.
+Session TCA computes commission rates and notionals on the same multiplied principal.
 
 OMS amendments resolve explicit broker/client identifiers, retain replacement broker aliases under
 the original client identity, and process cumulative fills through the shared fill funnel.
