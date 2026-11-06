@@ -3,6 +3,17 @@ namespace Meridian.Contracts.SecurityMaster;
 /// <summary>
 /// Asset-pack membership and writable contract schemas used by canonical Security Master admission.
 /// Prose policy fields describe coverage; they are not executable accounting or evidence rules.
+/// <para>
+/// <b>The policy text is informational and gates nothing.</b> <c>AdmissionPolicy</c>
+/// (<c>AccountingPostingPolicy</c>, <c>EvidencePolicy</c>, <c>CoreLedgerMutationPolicy</c>,
+/// <c>AllowsWideCapture</c>, <c>RequiresJournalTemplateBeforeAutomatedPosting</c>,
+/// <c>AutomationEscalationTriggers</c>), <c>LedgerExtensionPolicy</c> and lifecycle
+/// <c>CapturePolicy</c> are read only for display (operational readiness and workstation
+/// bootstrap) and by <see cref="ValidateAll"/>'s own completeness and wording self-checks. No
+/// posting, admission, evidence or close path consults them, so editing a policy string changes
+/// documentation only. A runtime rule needs a typed field and a named consumer; it must not be
+/// inferred from this text (extensibility review D9, slice 6 disposition 2026-11-04).
+/// </para>
 /// </summary>
 public static partial class SecurityAssetPackRegistry
 {
