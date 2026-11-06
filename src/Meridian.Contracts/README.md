@@ -229,6 +229,14 @@ require a fresh preview. Unknown calculation versions are refused.
 `Etl/IEtlStagingStore.cs` lets source adapters retain imported streams through an injected
 persistence port without referencing the Storage implementation.
 
+`Workstation/CrossScreenCountsDtos.cs` carries the counts more than one screen shows (open orders,
+provider health and open breaks) with the definition each was counted with. A count the caller may
+not read, or whose source is not registered, is null, so clients show "—" rather than a substitute.
+
+`Workstation/OperatorScopePreferenceDtos.cs` carries the signed-in operator's default operating
+scope (symbol, fund account, run, provider and date dimensions), which browser and WPF apply when a
+session opens with no scope in its link or local storage.
+
 `Workstation/RecurringJournalDtos.cs` publishes one exact-scope occurrence projection for browser
 and WPF Accounting queues. It carries retained schedule/template versions, source evidence
 references, authoritative draft approval status, blockers, lock owner and governed reopen path.
@@ -1578,7 +1586,7 @@ and F# lanes pin that value identically. Routing, balances and journals follow i
 increments; see the
 [excess payment application blueprint](../../docs/engineering/blueprints/direct-lending-excess-payment-application.md).
 
-Accounting reconciliation casework contracts are shared here: break queue items carry assignee, priority, SLA policy/state/timestamps, age band, versioned taxonomy, threaded comments with mention/evidence/hash metadata, evidence counts, sign-off/reopen metadata, source-origin metadata, and optimistic concurrency versions. Resolve/dismiss, casework command, and bulk casework request payloads carry `ActionOrigin` so reviewed automation can draft triage but cannot resolve, sign off, dismiss, or reopen accounting exceptions. Casework command, bulk-triage, taxonomy, SLA policy, validation-problem, and sequenced audit-event payloads must remain additive so browser and WPF workstation clients use the same Accounting workflow.
+Accounting reconciliation casework contracts are shared here: break queue items carry assignee, priority, SLA policy/state/timestamps, age band, versioned taxonomy, threaded comments with mention/evidence/hash metadata, evidence counts, sign-off/reopen metadata, source-origin metadata, and optimistic concurrency versions. Resolve/dismiss, casework command, and bulk casework request payloads carry `ActionOrigin` so reviewed automation can draft triage but cannot resolve, sign off, dismiss, or reopen accounting exceptions. Casework command, bulk-triage, taxonomy, SLA policy, validation-problem, and sequenced audit-event payloads must remain additive so browser and WPF workstation clients use the same Accounting workflow. `ReconciliationBulkCaseworkRequest.AssignToCurrentOperator` (init-only, omitted from JSON when false) asks the server to assign the selected cases to the authenticated operator. `OperatorSurfaceVisitDto` carries an operator's previous and current visit to a workstation surface, the shared baseline for "since your last visit" markers.
 
 Manual journal entry contracts include private-capital entry types for capital calls,
 distributions, subscriptions, redemptions, LP transfers, and management fees. `TreasuryLedgerContextDto`

@@ -4,6 +4,8 @@
 import type { AriaRole, JSX } from "react";
 import { injectStyle } from "../operations/inject-style";
 
+// The workstation's --accent is a bare HSL triple for Tailwind, so the action reads the full-color
+// --ws-accent tokens and the accent foreground, as the primary Button does (light and dark).
 const CSS = `
 .mds-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;
   text-align:center;font-family:var(--font-body);padding:48px 24px;gap:12px;}
@@ -12,10 +14,10 @@ const CSS = `
 .mds-empty__title{font-size:14px;font-weight:600;color:var(--text-secondary,#4E5258);}
 .mds-empty--compact .mds-empty__title{font-size:13px;}
 .mds-empty__detail{font-size:12px;color:var(--text-muted,#5E666F);max-width:280px;line-height:1.5;}
-.mds-empty__action{margin-top:4px;padding:7px 16px;border:1px solid var(--accent,#A85436);
-  background:var(--accent,#A85436);color:#fff;border-radius:var(--radius-button,2px);
+.mds-empty__action{margin-top:4px;padding:7px 16px;border:1px solid var(--ws-accent,#A85436);
+  background:var(--ws-accent,#A85436);color:hsl(var(--accent-foreground,0 0% 100%));border-radius:var(--radius-button,2px);
   font-family:var(--font-body);font-size:12px;font-weight:600;cursor:pointer;transition:background .12s ease;}
-.mds-empty__action:hover{background:var(--accent-pressed,#8C4429);border-color:var(--accent-pressed,#8C4429);}
+.mds-empty__action:hover{background:var(--ws-accent-pressed,#8C4429);border-color:var(--ws-accent-pressed,#8C4429);}
 .mds-empty__action:focus-visible{outline:var(--focus-ring,2px solid var(--ws-accent,#A85436));outline-offset:2px;}
 `;
 

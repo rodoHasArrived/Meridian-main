@@ -529,6 +529,47 @@ Provider setup passes the server-resolved actor into credential persistence. Pla
 require an authenticated actor and never fall back to a request identity; signed webhook authentication
 remains independent of operator sessions.
 
+## Cross-screen counts
+
+`Services/CrossScreenCountDefinitions.cs` is the one definition of each count several screens show:
+open orders are the orders the OMS reports open for the fund account in scope; provider health is
+rows with status Healthy out of every provider the Data workspace lists; open breaks are break-queue
+items not resolved, dismissed or signed off. The Trading, Data and Accounting headline cards count
+with it (the Data card previously read the metrics store's own tally, which could disagree with its
+list), and `GET /api/workstation/cross-screen-counts` returns all three for Settings, the shell and
+WPF. Each count is gated by the permission of the route that owns its source, and is null when the
+caller may not read it. `tests/fixtures/cross-screen-counts/cross-screen-counts.json` holds this
+class and the browser's `lib/cross-screen-counts.ts` to the same expected values.
+
+## Operator default scope
+
+`GET`/`PUT /api/workstation/operator/scope-preference` read and save the signed-in operator's
+default operating scope. `Workflows/FileOperatorScopePreferenceStore.cs` keeps one record per
+tenant, company and user under the data root (`workstation/operators/scope-preferences.json`)
+through the snapshot store's atomic replace; values are trimmed, capped at 128 printable characters,
+and an empty scope clears the default. Both routes require an authenticated session and only ever
+read or write the caller's own record.
+
+## Operator surface visits
+
+`GET`/`POST /api/workstation/operator/visits/{surface}` read and record the signed-in operator's
+last visit to a workstation surface, the baseline for "since your last visit" markers.
+`Workflows/FileOperatorSurfaceVisitStore.cs` keeps one record per tenant, company, user and surface
+(`workstation/operators/surface-visits.json`) through the snapshot store's atomic replace. Recording
+returns the visit it replaced as `previousVisitAt`; reading records nothing. A surface id is a
+lowercase slug of at most 64 characters. Both routes require an authenticated session and only
+touch the caller's own records.
+
+## Bulk break triage
+
+The break queue's bulk assign, route and resolve actions use
+`POST /api/workstation/reconciliation/break-queue/bulk/dry-run` and `/bulk/execute`, which run each
+case as its own casework command (`{bulkActionId}:{breakId}`) and retain one audit entry per case.
+The endpoint stamps the actor and source from the session. When `AssignToCurrentOperator` is set on
+an Assign request, it also replaces the assignee with the authenticated operator, then clears the
+flag before the queue hashes the request. `WorkstationEndpointsTests.BulkCasework.cs` covers the
+dry run, the per-case audit and the session assignee.
+
 ## Portfolio cash-ladder currency evidence
 
 `PortfolioCashLadderReadService` requires currency evidence for every opening cash balance and
@@ -902,7 +943,8 @@ carry it could be satisfied by the same edit that defeated it. **That journal is
 2; a v1 journal written before the boundary was bound is refused by name on read** rather than
 verified under the weaker rules or reported as tampering. Store write cycles (workspace saves and
 audit appends alike) and chain verification hold a cross-process lock file beside the snapshot for
-their whole read-modify-write span, so the browser host and the WPF shell composing this store over
+their whole read-modify-write span (`CrossProcessFileLock`, which delegates to
+`Core.IO.ExclusiveFileLock`), so the browser host and the WPF shell composing this store over
 one data root serialize against each other instead of interleaving whole-document replacements --
 without it, the later writer silently discarded the earlier process's committed event and the
 surviving snapshot then read as tampered against the anchor. The shared accounting endpoints stamp the resolved

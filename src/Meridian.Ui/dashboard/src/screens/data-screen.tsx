@@ -87,6 +87,8 @@ import type {
   SessionInfo
 } from "@/types";
 import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
+import { applyCrossScreenCounts, selectCrossScreenCounts } from "@/lib/cross-screen-counts";
+import { useSharedCrossScreenCounts } from "@/lib/cross-screen-counts-context";
 
 interface DataScreenProps {
   data: DataWorkspaceResponse | null;
@@ -177,6 +179,7 @@ export function DataScreen({
   onProviderSetupConfigured,
   onProviderRoutingRefresh
 }: DataScreenProps) {
+  const sharedCounts = useSharedCrossScreenCounts();
   const { pathname, search } = useLocation();
   const navigate = useNavigate();
   const providerSetupLifecycle = useMemo(
@@ -273,7 +276,7 @@ export function DataScreen({
         </div>
       </section>
 
-      <StatStrip metrics={data.metrics} label="Data headline metrics" />
+      <StatStrip metrics={applyCrossScreenCounts(data.metrics, selectCrossScreenCounts({ shared: sharedCounts, providers: data.providers }))} label="Data headline metrics" />
 
       {showHealthMonitoring ? (
         <div className="space-y-4">
