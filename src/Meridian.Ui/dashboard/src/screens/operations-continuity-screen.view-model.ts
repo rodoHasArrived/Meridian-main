@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { formatCurrency as formatCurrencyAmount } from "@/lib/format";
+import { formatCurrency as formatCurrencyAmount, formatNumber } from "@/lib/format";
 import { formatDate, formatDateOnly } from "@/screens/operations-continuity-screen.date-format";
 import {
   collectCloseWorkflowEvidenceLinks,
@@ -3952,9 +3952,7 @@ function formatOperatorDisplayName(value: string | null): string {
 }
 
 function formatDecimal(value: number | null | undefined): string {
-  return typeof value === "number" && Number.isFinite(value)
-    ? value.toLocaleString("en-US", { maximumFractionDigits: 4 })
-    : "Not recorded";
+  return formatNumber(value, { maximumFractionDigits: 4, fallback: "Not recorded" });
 }
 
 function formatCurrency(value: number | null | undefined, currency: string): string {
