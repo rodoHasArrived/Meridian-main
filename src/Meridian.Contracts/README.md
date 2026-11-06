@@ -51,6 +51,19 @@ readiness row; classes without a specialized profile carry a persistent operatio
 requirement. Canonical aliases live in `SecurityAssetClassCatalog`; broad legacy vocabulary such as
 Debt and SPV is scoped to readiness so it cannot classify imports or accounting records. Securitized
 aliases resolve exclusively to StructuredCredit, and BankLoan resolves to DirectLoan.
+`SecurityAssetPackReadinessMappingTests` pins the readiness-only alias table (each alias must name a
+canonical class and stay reachable past catalog labels) and requires every catalog class to name
+readiness projectors or appear in a reasoned fallback list. The pack registry's policy text
+(`AdmissionPolicy`, `LedgerExtensionPolicy`, lifecycle `CapturePolicy`) is informational and gates
+nothing: it is read for display and by `ValidateAll`'s own self-checks only.
+
+`SecurityAssetTermsSchema.DeclaredSpellings(key)` returns a top-level term's key followed by every
+alias a class declares for it (element fields excluded). Readers that accept "either spelling" of a
+term derive the list from it rather than restating it.
+
+`SecurityIdentifierNormalizer` is the single identifier normalization and check-digit authority:
+the F# `SecurityIdentifier.normalizeIdentifierValue`, `validateIsin`, `validateCusip` and
+`validateLei` delegate to it.
 
 `ReportLedgerAmountBindingDtos` retains generated trial-balance amounts with exact accounting scope
 and journal/line identities. Generated amount source evidence additionally carries its original
@@ -1964,7 +1977,8 @@ W7 live-readiness gate.
 ### Security Master asset-class registry
 
 `SecurityAssetClassRegistry` composes, per asset class, the catalog entry (lot unit, cash-flow
-behaviour, projection kind, preferred identifiers, terms version, multiplier key), the term
+behaviour, projection kind, preferred identifiers, terms version, multiplier key; every class now has
+a projection, and CustomAsset's kind is `Specialized` for its profile-keyed table), the term
 schema, validators and editor hints. `SecurityAssetClassRegistryCoverageTests` fails when an F#
 `SecurityKind` case has no definition. The registry backs `/api/security-master/asset-classes`.
 The OTC derivative classes `FxForward` (deliverable forward: pair, notional, forward rate, trade
