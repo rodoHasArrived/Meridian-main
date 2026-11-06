@@ -477,6 +477,8 @@ describe("ReportingIncomeComparisonPanel", () => {
     renderComparison(`${savedQuery}&incomeContribution=journal%3Alate-accrual-17`);
     const dialog = await screen.findByRole("dialog");
     expect(within(dialog).getByRole("status")).toHaveTextContent("Loading retained support");
+    // The read is issued from an effect, which can run after the loading text is already in the DOM.
+    await waitFor(() => expect(api.getIncomeContributionSupport).toHaveBeenCalled());
     const signal = vi.mocked(api.getIncomeContributionSupport).mock.calls[0][2]?.signal;
     fireEvent.click(within(dialog).getByRole("button", { name: "Return to comparison" }));
     expect(signal?.aborted).toBe(true);
