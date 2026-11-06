@@ -280,6 +280,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IFactorPaydownProjectionService, FactorPaydownProjectionService>();
         services.TryAddSingleton<IPortfolioCashBalanceProvider, PortfolioLedgerCashBalanceProvider>();
         services.TryAddSingleton<IPortfolioCashLadderQueryService, PortfolioCashLadderReadService>();
+        services.TryAddSingleton<BondExerciseNoticeReadService>();
         // Durable account forecast state is explicitly provisioned by operations, never on reads or capture.
         services.TryAddSingleton<FileAccountCashForecastStore>(sp =>
             new FileAccountCashForecastStore(sp.GetRequiredService<StorageOptions>().RootPath));
