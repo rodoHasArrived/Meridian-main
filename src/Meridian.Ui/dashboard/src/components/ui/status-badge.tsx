@@ -18,40 +18,39 @@ export interface StatusBadgeProps {
   children: ReactNode;
 }
 
-const TONE_VARIANT: Record<StatusTone, BadgeProps["variant"]> = {
+// Subtle tones use the design-system variant as-is. Adding colour classes to a variant
+// produces conflicting utilities (for example bg-secondary/35 against bg-primary), and cn()
+// does not resolve them, so the tone is chosen by variant alone.
+const SUBTLE_VARIANT: Record<StatusTone, BadgeProps["variant"]> = {
   neutral: "outline",
-  info: "outline",
+  info: "default",
   success: "success",
   warning: "warning",
   danger: "danger"
 };
 
-const INFO_CLASSES = "border-primary/40 text-primary";
-const SOLID_INFO_CLASSES = "border-primary bg-primary text-primary-foreground";
-
-// Solid semantic tones are rendered as their own span, not through Badge. The design-system
-// semantic variants carry a text-success/warning/danger class that would fight a contrasting
-// foreground, and cn() does not resolve class conflicts.
-const SOLID_TONE_CLASSES: Partial<Record<StatusTone, string>> = {
+// Solid tones are rendered as their own span with a fill and a single contrasting foreground.
+const SOLID_TONE_CLASSES: Record<StatusTone, string> = {
+  neutral: "",
+  info: "border-primary bg-primary text-primary-foreground",
   success: "border-success bg-success text-background",
   warning: "border-warning bg-warning text-background",
   danger: "border-danger bg-danger text-background"
 };
 
 /**
- * The one status pill for workstation screens. Built on {@link Badge} so the existing
- * design-system styling applies. Screen-specific chips should be re-pointed here.
+ * The one status pill for workstation screens. Subtle tones are design-system badges; solid
+ * tones are filled spans so the fill and label colours never fight each other. Screen-specific
+ * chips should be re-pointed here.
  *
  * @example
  * <StatusBadge tone="warning">Review required</StatusBadge>
  */
 export function StatusBadge({ tone = "neutral", emphasis = "subtle", dot = false, className, children }: StatusBadgeProps) {
-  const solid = emphasis === "solid";
-  const solidTone = solid ? SOLID_TONE_CLASSES[tone] : undefined;
-  if (solidTone) {
+  if (emphasis === "solid" && tone !== "neutral") {
     return (
       <span
-        className={["inline-flex items-center gap-1.5 rounded-[2px] border px-1.5 py-0.5 text-xs font-semibold leading-none", solidTone, className]
+        className={["inline-flex items-center gap-1.5 rounded-[2px] border px-1.5 py-0.5 text-xs font-semibold leading-none", SOLID_TONE_CLASSES[tone], className]
           .filter(Boolean)
           .join(" ")}
       >
@@ -60,10 +59,10 @@ export function StatusBadge({ tone = "neutral", emphasis = "subtle", dot = false
       </span>
     );
   }
-  const variant = solid && tone === "neutral" ? "default" : TONE_VARIANT[tone];
-  const toneClasses = tone === "info" ? (solid ? SOLID_INFO_CLASSES : INFO_CLASSES) : undefined;
+  // Solid neutral has no semantic meaning to fill with, so it uses the design-system default.
+  const variant = emphasis === "solid" ? "default" : SUBTLE_VARIANT[tone];
   return (
-    <Badge variant={variant} dot={dot} className={[toneClasses, className].filter(Boolean).join(" ") || undefined}>
+    <Badge variant={variant} dot={dot} className={className}>
       {children}
     </Badge>
   );

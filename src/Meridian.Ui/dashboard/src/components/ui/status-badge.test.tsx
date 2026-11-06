@@ -37,21 +37,24 @@ describe("StatusBadge", () => {
     expect(container.querySelector(".mds-badge__dot")).not.toBeNull();
   });
 
-  it.each(["success", "warning", "danger"] as const)(
-    "renders %s solid differently from subtle, with a filled background",
-    (tone) => {
-      const { unmount } = render(<StatusBadge tone={tone} emphasis="subtle">Label</StatusBadge>);
-      const subtleClass = screen.getByText("Label").className;
-      unmount();
+  it.each([
+    ["success", "bg-success", "text-background"],
+    ["warning", "bg-warning", "text-background"],
+    ["danger", "bg-danger", "text-background"],
+    ["info", "bg-primary", "text-primary-foreground"]
+  ] as const)("renders %s solid as a filled span with one contrasting foreground", (tone, fill, foreground) => {
+    render(<StatusBadge tone={tone} emphasis="solid">Label</StatusBadge>);
+    const className = screen.getByText("Label").className;
 
-      render(<StatusBadge tone={tone} emphasis="solid">Label</StatusBadge>);
-      const solidClass = screen.getByText("Label").className;
+    expect(className).toContain(fill);
+    expect(className).toContain(foreground);
+    // No competing semantic or outline colour classes that would override the fill.
+    expect(className).not.toContain(`text-${tone}`);
+    expect(className).not.toContain("bg-secondary");
+  });
 
-      expect(solidClass).not.toBe(subtleClass);
-      expect(solidClass).toContain(`bg-${tone}`);
-      // The solid label must use the contrasting foreground only; no competing semantic text colour.
-      expect(solidClass).toContain("text-background");
-      expect(solidClass).not.toContain(`text-${tone}`);
-    }
-  );
+  it("renders info subtle without an outline background that would fight the tint", () => {
+    render(<StatusBadge tone="info">Label</StatusBadge>);
+    expect(screen.getByText("Label").className).not.toContain("bg-secondary");
+  });
 });
