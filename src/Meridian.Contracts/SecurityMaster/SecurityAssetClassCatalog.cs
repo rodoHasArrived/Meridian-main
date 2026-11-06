@@ -304,7 +304,10 @@ public static class SecurityAssetClassCatalog
             RequiresGovernedProfile: true,
             LotUnit: SecurityLotUnitKind.Units,
             CashFlowBehavior: SecurityCashFlowBehavior.None,
-            ProjectionKind: SecurityTermsProjectionKind.TermsJsonOnly,
+            // Profile-keyed: one custom_asset_profile_field_projection row per profileFields key
+            // (migration 064), written by a specialized store writer because the field set is
+            // governed per profile rather than fixed per class.
+            ProjectionKind: SecurityTermsProjectionKind.Specialized,
             SupportsBasicCreateWorkflow: true,
             PreferredIdentifierKinds:
             [

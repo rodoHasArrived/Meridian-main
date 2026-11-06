@@ -2,7 +2,7 @@
 
 # `security_master` schema
 
-- Relations: 131
+- Relations: 132
 - Functions/procedures: 13
 - Triggers: 27
 - Row-level security policies: 0
@@ -456,6 +456,18 @@ erDiagram
         text quote_currency
         text network
         text primary_identifier_value
+        bigint version
+    }
+    security_master_custom_asset_profile_field_projection {
+        uuid security_id PK
+        text custom_profile_id
+        integer profile_version
+        text field_key PK
+        text value_kind
+        text text_value
+        numeric numeric_value
+        boolean boolean_value
+        jsonb raw_value
         bigint version
     }
     security_master_data_vendor_entitlements {
@@ -1876,6 +1888,7 @@ erDiagram
 | `corporate_actions` | table | 22 | `corp_act_id` | 2 | 5 | - |
 | `credit_default_swap_projection` | table | 19 | `security_id` | 0 | 3 | Relational projection of CreditDefaultSwap asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms. |
 | `crypto_projection` | table | 7 | `security_id` | 0 | 3 | - |
+| `custom_asset_profile_field_projection` | table | 10 | `security_id`, `field_key` | 0 | 3 | Profile-keyed projection of CustomAsset profileFields: one row per field key, keyed by (security_id, field_key). Additive read model over securities.asset_specific_terms. |
 | `data_vendor_entitlements` | table | 21 | `entitlement_id` | 0 | 4 | - |
 | `deposit_projection` | table | 11 | `security_id` | 0 | 3 | - |
 | `direct_lending_schema_migrations` | table | 3 | `filename` | 0 | 1 | - |

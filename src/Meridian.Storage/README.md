@@ -269,7 +269,8 @@ remaining unprojected classes (CommercialPaper, TreasuryBill, Repo, CashSweep, O
 Warrant, InvestmentFund, PrivateFundInterest, PrivateCompanyEquity, RealEstateHolding,
 CommitmentGuarantee) a relational projection written by the same declarative
 `SecurityTermsProjectionRegistry` descriptor path, so every catalog class except the
-profile-governed CustomAsset is now projected (25 of 26). Guid-typed terms project as `uuid`
+profile-governed CustomAsset was then projected (25 of 26; migration 064 below closes CustomAsset).
+Guid-typed terms project as `uuid`
 columns. The tables are created empty; an existing database populates them through
 `SecurityMasterRebuildOrchestrator.RebuildAssetClassAsync` per class.
 
@@ -282,6 +283,19 @@ the contract marks Required; the tables are created empty and populate as record
 Migration `047_rate_option_and_note_terms_projections.sql` does the same for `swaption_projection`,
 `cap_floor_projection` and `structured_note_projection` (31 of 32 classes projected); strike and
 rate columns are signed because negative strikes are valid in negative-rate currencies.
+
+Migration `064_custom_asset_profile_field_projection.sql` closes the last gap (32 of 32).
+CustomAsset fields are governed per profile, so `custom_asset_profile_field_projection` holds one
+row per `profileFields` key, keyed by `(security_id, field_key)`, with `custom_profile_id`,
+`profile_version` and the record `version`. `raw_value` (jsonb) keeps the stored value; `value_kind`
+is its `jsonb_typeof`, and `text_value`/`numeric_value`/`boolean_value` are derived from it in SQL,
+so a date-looking string stays a string and a number keeps full precision. A specialized
+`AssetProjectionWriter` (catalog `ProjectionKind.Specialized`, beside Option) replaces the rows on
+every write and clears them when the record has no complete envelope (a legacy or unmapped row) or
+leaves the class. `ICustomAssetProfileFieldProjectionStore`
+(`PostgresCustomAssetProfileFieldProjectionStore`) reads them by security, profile (and version) or
+exact string value. The table is created empty and populates as CustomAsset records are persisted
+or rebuilt. Migration 064 still needs the repository's independent schema/storage review.
 
 Security Master migration `050_otc_contracts.sql` creates the OTC contract model (master
 agreements, collateral agreements, netting sets, bilateral contracts) written by
