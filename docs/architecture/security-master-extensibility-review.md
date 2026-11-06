@@ -2,8 +2,8 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-10-28
-**Review history:** consolidation pass 2026-10-28; resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
+**Reviewed:** 2026-11-01
+**Review history:** scheduled institutional-requirements pass 2026-11-01; consolidation pass 2026-10-28; resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -381,6 +381,40 @@ were run for these documentation changes. Focused documentation checks and their
 in the integrating PR. Existing test names and older hosted results are evidence references, not
 new execution claims. No roadmap status, policy default, schema, production code or acceptance
 criterion is changed by this consolidation.
+
+---
+
+## Scheduled institutional-requirements pass — 2026-11-01
+
+Source snapshot `9412120c` (main). Interval since the 2026-10-28 consolidation (`6bcc7a02`):
+162 Security Master files, +7,685/−1,504, mostly the declared-schedule, versioned bond economics,
+contractual cash-flow scenario and OTC lifecycle work (migrations 056–058). Static source review
+only; no tests were run.
+
+### New finding
+
+**N1 — Two `ScheduleSpecFactory` mappings with divergent calendar rules.** The public
+[Contracts factory](../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs) is the
+production mapping (cash-flow service, bond analytics/migration, portfolio cash ladder, open-lot
+amortization) and states that it never falls back to the common terms' holiday calendar. The
+internal [Application factory](../../src/Meridian.Application/SecurityMaster/CashFlow/ScheduleSpecFactory.cs)
+(`e0fc1538`, 2026-10-28) has no production caller — only `ScheduleSpecFactoryTests` — and
+substitutes `commonCalendarId` when the block declares no calendar. A same-named, test-pinned
+mapping with the opposite refusal rule is a wiring hazard. Remove it, or retarget its tests at the
+Contracts factory, after confirming no host composition references it.
+
+### Open dispositions re-checked on this snapshot
+
+| Item | Current evidence | Status |
+| --- | --- | --- |
+| D3 WPF multiplier predicate | `SecurityMasterViewModel.RequiresContractMultiplier` still substring-matches `Option`/`Future`/`Derivative`. | Open |
+| D5 governed writes | `RequireGovernedTermAmendments` is read only in `SecurityMasterEndpoints`; profile approval still records `ApprovedBy` without a drafter comparison. | Open |
+| D6 classification labels | `SecurityEconomicDefinitionAdapter` still persists `Family?.ToString()` / `SubType.ToString()`. | Open |
+| D7 audit/serialization | No append-only trigger on `security_events`; `SecurityGovernanceEventLog` still takes an `object` payload. | Open |
+| D8 identifier normalization | F# `SecurityIdentifier.normalizeValue` (now `SecurityIdentifiers.fs`) remains separate from the C# kind-aware normalizer. | Open |
+| D10 StructuredNote accounting | Catalog entry present; accounting class precedence still unpinned. | Open (decision) |
+
+No roadmap status, policy default, schema or production code is changed by this pass.
 
 ---
 
