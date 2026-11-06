@@ -34,7 +34,7 @@
       "owner": "Execution",
       "category": "environment-gated",
       "tracking": "docs/testing/alpaca-paper-portfolio-sandbox.md",
-      "review_by": "2026-11-05"
+      "review_by": "2026-12-01"
     },
     {
       "path": "tests/Meridian.Tests/AssetOperations/AssetOperationsMigrationRunnerTests.cs",

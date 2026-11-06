@@ -40,6 +40,7 @@ import type {
   EvidenceRequestListKindCode,
   EvidenceVaultIntakeRequest
 } from "@/types";
+import { eyebrowClassName } from "@/design-system/label-case";
 
 const actionBadgeVariant: Record<EvidencePacketActionTone, "success" | "warning" | "danger" | "outline"> = {
   primary: "outline",
@@ -613,7 +614,7 @@ function EvidenceLineageDetailPanel({ detail, id }: { detail: EvidenceLineageDet
           <dl className="grid gap-2">
             {detail.technicalFields.map((field) => (
               <div key={field.label} className="rounded-sm border border-border/60 bg-secondary/20 px-2.5 py-2">
-                <dt className="eyebrow-label">{field.label}</dt>
+                <dt className={eyebrowClassName(field.label)}>{field.label}</dt>
                 <dd className="mt-1 break-all font-mono text-xs text-foreground">{field.value}</dd>
               </div>
             ))}
@@ -627,7 +628,7 @@ function EvidenceLineageDetailPanel({ detail, id }: { detail: EvidenceLineageDet
 function EvidenceMetric({ label, value, tone = "muted" }: { label: string; value: string; tone?: EvidenceStatusTone }) {
   return (
     <div className="rounded-md border border-border/70 bg-secondary/25 px-3 py-2">
-      <div className="eyebrow-label">{label}</div>
+      <div className={eyebrowClassName(label)}>{label}</div>
       <div className={cn("mt-1 font-mono tabular-nums text-lg font-semibold", evidenceStatusToneToTextClass(tone))}>{value}</div>
     </div>
   );
@@ -804,7 +805,7 @@ function EvidenceNodeDetailPanel({ detail, id }: { detail: EvidenceNodeDetailVie
         <dl className="grid gap-2 sm:grid-cols-2">
           {detail.fields.map((field) => (
             <div key={field.label} className="rounded-sm border border-border/60 bg-secondary/20 px-2.5 py-2">
-              <dt className="eyebrow-label">{field.label}</dt>
+              <dt className={eyebrowClassName(field.label)}>{field.label}</dt>
               <dd className="mt-1 break-all font-mono text-xs text-foreground">{field.value}</dd>
             </div>
           ))}
@@ -813,7 +814,7 @@ function EvidenceNodeDetailPanel({ detail, id }: { detail: EvidenceNodeDetailVie
           <dl className="grid gap-2 sm:grid-cols-2">
             {detail.technicalFields.map((field) => (
               <div key={field.label} className="rounded-sm border border-border/60 bg-secondary/20 px-2.5 py-2">
-                <dt className="eyebrow-label">{field.label}</dt>
+                <dt className={eyebrowClassName(field.label)}>{field.label}</dt>
                 <dd className="mt-1 break-all font-mono text-xs text-foreground">{field.value}</dd>
               </div>
             ))}
