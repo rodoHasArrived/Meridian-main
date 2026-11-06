@@ -67,6 +67,12 @@ export interface CrossScreenCountSources {
   providers?: readonly { status?: string | null }[] | null;
   /** The accounting break queue, when loaded. */
   breakQueue?: readonly { status?: string | null }[] | null;
+  /**
+   * An open-break total the server counted with the same definition, such as the accounting
+   * payload's `workspace.openBreaks`. It wins over `breakQueue`, which may be withheld (empty) from
+   * a caller who can see the count but not the cases.
+   */
+  openBreakCount?: number | null;
 }
 
 export interface CrossScreenCountValues {
@@ -85,8 +91,19 @@ export function selectCrossScreenCounts(sources: CrossScreenCountSources): Cross
     openOrders: countOpenOrders(sources.openOrders) ?? shared?.openOrders?.count ?? null,
     providers: countProviderHealth(sources.providers)
       ?? (shared?.providers ? { healthy: shared.providers.healthy, total: shared.providers.total } : null),
-    openBreaks: countOpenBreaks(sources.breakQueue) ?? shared?.openBreaks?.count ?? null
+    openBreaks: sources.openBreakCount ?? countOpenBreaks(sources.breakQueue) ?? shared?.openBreaks?.count ?? null
   };
+}
+
+/**
+ * Open breaks for an accounting payload: the server's total when it sent one, because the payload
+ * withholds `breakQueue` from callers who may not read case details; otherwise the queue's count.
+ */
+export function countAccountingOpenBreaks(accounting: {
+  workspace?: { openBreaks?: number | null } | null;
+  breakQueue?: readonly { status?: string | null }[] | null;
+}): number {
+  return accounting.workspace?.openBreaks ?? countOpenBreaks(accounting.breakQueue ?? []) ?? 0;
 }
 
 /** "2 of 4 healthy", or "—" when the count cannot be read. */

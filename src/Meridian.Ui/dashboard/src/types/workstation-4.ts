@@ -1773,6 +1773,17 @@ export interface AccountingWorkspaceResponse {
   metrics: MetricSnapshot[];
   reconciliationQueue: AccountingReconciliationRecord[];
   breakQueue: ReconciliationBreakQueueItem[];
+  /**
+   * `WorkstationAccountingWorkspaceSummary`. `openBreaks` is counted by the server over the whole
+   * queue, including when `breakQueue` is withheld from a caller who may not read case details.
+   */
+  workspace?: {
+    totalRuns: number;
+    reconciledRuns: number;
+    ledgerReadyRuns: number;
+    openBreaks: number;
+    securityIssues: number;
+  } | null;
   cashFlow: AccountingCashFlowSummary;
   reporting: AccountingReportingSummary;
   manualJournalWorkbench?: ManualJournalEntryWorkbench | null;

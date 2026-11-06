@@ -1,4 +1,4 @@
-import { countOpenBreaks } from "@/lib/cross-screen-counts";
+import { countAccountingOpenBreaks } from "@/lib/cross-screen-counts";
 import {
   appendLinkedContextSearchValue,
   buildLinkedContextItem,
@@ -25,8 +25,8 @@ export function buildAccountingLinkedContextItem(
     });
   }
 
-  // One count, from the break queue (A3).
-  const attentionCount = countOpenBreaks(accounting.breakQueue ?? []) ?? 0;
+  // One count (A3): the server's total, which a withheld break queue cannot undercount.
+  const attentionCount = countAccountingOpenBreaks(accounting);
   return buildLinkedContextItem({
     id: "accounting-reconciliation",
     label: "Reconciliation",

@@ -1,4 +1,4 @@
-import { countOpenBreaks } from "@/lib/cross-screen-counts";
+import { countAccountingOpenBreaks } from "@/lib/cross-screen-counts";
 import { pluralizeCount } from "@/lib/format";
 import type { WorkflowContinuityStepStatus } from "@/app-shell.workflow-continuity";
 import type {
@@ -59,8 +59,9 @@ export function buildAccountingReconciliationContinuityStatus(
     return { label: "Waiting", tone: "pending" };
   }
 
-  // One count, from the break queue (A3); it used to take the larger of two different tallies.
-  const attentionCount = countOpenBreaks(accounting.breakQueue ?? []) ?? 0;
+  // One count (A3): the server's open-break total, else the break queue's. It used to take the
+  // larger of two different tallies.
+  const attentionCount = countAccountingOpenBreaks(accounting);
   return attentionCount > 0
     ? { label: pluralizeCount(attentionCount, "open break"), tone: "review" }
     : { label: "Balanced", tone: "ready" };

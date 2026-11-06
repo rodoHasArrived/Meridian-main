@@ -319,7 +319,9 @@ not been recorded.
   server's `/api/workstation/cross-screen-counts`, loaded on every route. Headline cards for these
   counts take the selector's value and drop their basis-less delta, and an unreadable count shows
   "—". `lib/cross-screen-counts.screens.test.ts` asserts Trading, Settings, Data and Accounting
-  agree from one fixture set.
+  agree from one fixture set. Accounting takes open breaks from the payload's `workspace.openBreaks`,
+  which the server counts over the whole queue even when it withholds `breakQueue` from a caller
+  who may see the count but not the cases.
 - **Operating scope.** Copy link appends every scope dimension the current route did not write
   into its URL (`buildShareableLink`), so a link from any screen restores the sender's scope in a
   fresh browser. The scope picker offers the last five applied scopes (per browser) and the
@@ -347,7 +349,10 @@ not been recorded.
   visit it replaces is the baseline: a break detected after it is marked New, a break whose
   activity (`lastUpdatedAt`) moved after it is marked Updated, and the queue states the counts and
   the baseline time. The Accounting open-breaks card reads the same baseline for its delta ("2 new
-  since your last visit"). When the visit cannot be recorded, nothing is marked.
+  since your last visit"). When the visit cannot be recorded, nothing is marked. The tab cache
+  keeps the baseline with the visit it recorded; because session storage outlives a sign-out, a
+  later page load first reads the operator's last visit (`GET`, which records nothing) and reuses
+  the cache only when that is still this tab's visit.
 - **Queue keys.** `lib/queue-keyboard-map.ts` holds the break queue's key map; the handler, the
   `?` shortcut sheet and this table come from it, and `lib/queue-keyboard-map.test.ts` checks the
   table against the map. Keys work while focus is in the queue and not in a text field. The queue

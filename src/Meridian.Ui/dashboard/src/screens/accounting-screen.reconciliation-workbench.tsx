@@ -21,8 +21,8 @@ import {
   describeSinceLastVisit,
   summarizeSinceLastVisit,
   useSinceLastVisit,
-  type RecordSurfaceVisit,
-  type SinceLastVisitMark
+  type SinceLastVisitMark,
+  type SurfaceVisitServices
 } from "@/lib/since-last-visit";
 import { cn } from "@/lib/utils";
 import { ReconciliationBulkTriageBar, useReconciliationBulkTriage, type BulkTriageServices } from "./reconciliation-bulk-triage-bar";
@@ -110,7 +110,7 @@ const reconciliationBreakColumns: DenseDataTableColumn<ReconciliationBreakRowVie
   { id: "status", label: "Case status", render: (row) => <Badge variant={row.statusBadgeVariant}>{row.status}</Badge> }
 ];
 
-export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSelector, controls, selectionNotice, bulkServices, visitRecorder }: {
+export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSelector, controls, selectionNotice, bulkServices, visitServices }: {
   reconciliation: Reconciliation;
   resolveDialog: ResolveDialog;
   runSelector?: ReactNode;
@@ -118,8 +118,8 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
   selectionNotice?: string | null;
   /** Bulk casework services; tests inject fakes. */
   bulkServices?: BulkTriageServices;
-  /** Records the operator's visit for "since your last visit" markers; tests inject fakes. */
-  visitRecorder?: RecordSurfaceVisit;
+  /** Reads and records the operator's visit for "since your last visit" markers; tests inject fakes. */
+  visitServices?: Partial<SurfaceVisitServices>;
 }) {
   const location = useLocation();
   const queueRef = useRef<HTMLDivElement>(null);
@@ -138,7 +138,7 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
   });
   const { isSelected: isBulkSelected, toggle: toggleBulkSelected } = triage;
   // Since your last visit (C3): rows detected or updated after the operator's previous visit.
-  const sinceLastVisit = useSinceLastVisit(BREAK_QUEUE_VISIT_SURFACE, visitRecorder);
+  const sinceLastVisit = useSinceLastVisit(BREAK_QUEUE_VISIT_SURFACE, visitServices);
   const visitBaseline = sinceLastVisit.baseline;
   const sinceLastVisitLine = describeSinceLastVisit(sinceLastVisit, summarizeSinceLastVisit(reconciliation.rows, visitBaseline));
   const withVisitMark = (row: ReconciliationBreakRowViewModel, label: string) => {

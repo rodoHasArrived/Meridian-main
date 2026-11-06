@@ -372,24 +372,30 @@ function AppShell({
   );
   const operatingContextSymbol = operatingScopeInput.symbol ?? null;
   // C1: load the operator's default scope once. It is applied only when this session opened with
-  // no scope at all (none in the link, none remembered in this browser), so it never overrides a
-  // shared link or the operator's last choice.
+  // no scope at all (none in the link, none remembered in this browser) and the operator has not
+  // chosen one since, so it never overrides a shared link or the operator's own choice.
+  const openedUnscopedRef = useRef<boolean | null>(null);
+  if (openedUnscopedRef.current === null) openedUnscopedRef.current = !hasOperatingScopeValues(operatingScopeInput);
+  const currentOperatingScopeRef = useRef(operatingScopeInput);
+  currentOperatingScopeRef.current = operatingScopeInput;
   useEffect(() => {
     if (defaultScopeCheckedRef.current) return;
-    defaultScopeCheckedRef.current = true;
-    const openedUnscoped = !hasOperatingScopeValues(operatingScopeInput);
     const controller = new AbortController();
     void getOperatorScopePreference({ signal: controller.signal }).then((preference) => {
+      if (controller.signal.aborted) return;
+      defaultScopeCheckedRef.current = true;
       const saved = preference.defaultScope ? compactOperatingScope(preference.defaultScope) : null;
       setDefaultScope(saved && hasOperatingScopeValues(saved) ? saved : null);
-      if (openedUnscoped && saved && hasOperatingScopeValues(saved)) {
+      if (openedUnscopedRef.current && !hasOperatingScopeValues(currentOperatingScopeRef.current) && saved && hasOperatingScopeValues(saved)) {
         handleSetOperatingScopeRef.current(saved);
       }
     }).catch(() => {
       // No session, an older host, or a failed read: no default, and the session stays as opened.
+      // An aborted read (StrictMode's effect replay, or unmount) leaves the check open to run again.
+      if (!controller.signal.aborted) defaultScopeCheckedRef.current = true;
     });
     return () => controller.abort();
-  }, [operatingScopeInput]);
+  }, []);
   const handleSaveDefaultScope = async (next: AppShellOperatingScopeInput | null) => {
     const compacted = next ? compactOperatingScope(next) : null;
     const saved = await saveOperatorScopePreference(compacted && hasOperatingScopeValues(compacted) ? compacted : null);

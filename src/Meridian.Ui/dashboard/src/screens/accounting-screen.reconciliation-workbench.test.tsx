@@ -1,9 +1,9 @@
 import { useState, type ComponentProps } from "react";
 import { MemoryRouter } from "react-router-dom";
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { resetSinceLastVisitCache, type RecordSurfaceVisit } from "@/lib/since-last-visit";
+import { resetSinceLastVisitCache, type RecordSurfaceVisit, type SurfaceVisitServices } from "@/lib/since-last-visit";
 import { ReconciliationWorkbench } from "./accounting-screen.reconciliation-workbench";
 import { buildReconciliationBreakQueueState, useReconciliationResolveDialogViewModel } from "./accounting-screen.view-model";
 import type { BulkTriageServices } from "./reconciliation-bulk-triage-bar";
@@ -51,12 +51,13 @@ function fakeBulkServices(wouldSucceed: (breakId: string) => boolean = () => tru
   return { dryRun, execute, getTaxonomy } satisfies BulkTriageServices;
 }
 
-const offlineVisits: RecordSurfaceVisit = () => Promise.reject(new Error("offline"));
+const offline: RecordSurfaceVisit = () => Promise.reject(new Error("offline"));
+const offlineVisits: Partial<SurfaceVisitServices> = { record: offline, read: offline };
 
 function renderWorkbench(
   runSelector?: WorkbenchProps["runSelector"],
   bulkServices: BulkTriageServices = fakeBulkServices(),
-  visitRecorder: RecordSurfaceVisit = offlineVisits
+  visitServices: Partial<SurfaceVisitServices> = offlineVisits
 ) {
   const assignBreak = vi.fn().mockResolvedValue(undefined);
   const resolveBreak = vi.fn().mockResolvedValue(undefined);
@@ -69,7 +70,7 @@ function renderWorkbench(
     const state = buildReconciliationBreakQueueState({ breakQueue: breaks, selectedBreakId, loading: false, loadError: null, action: null, actionError: null });
     const reconciliation = { ...state, selectBreak, assignBreak, applyBreakQueueItems, detailActions: null } as unknown as WorkbenchProps["reconciliation"];
     const dialog = useReconciliationResolveDialogViewModel(resolveBreak);
-    return <ReconciliationWorkbench reconciliation={reconciliation} resolveDialog={dialog} runSelector={runSelector} bulkServices={bulkServices} visitRecorder={visitRecorder} controls={{ queueSearch, queueStatus, queueSort, setQueueSearch, setQueueStatus, setQueueSort, clearQueueFilters: () => { setQueueSearch(""); setQueueStatus("all"); } }} />;
+    return <ReconciliationWorkbench reconciliation={reconciliation} resolveDialog={dialog} runSelector={runSelector} bulkServices={bulkServices} visitServices={visitServices} controls={{ queueSearch, queueStatus, queueSort, setQueueSearch, setQueueStatus, setQueueSort, clearQueueFilters: () => { setQueueSearch(""); setQueueStatus("all"); } }} />;
   }
   render(<MemoryRouter><Harness /></MemoryRouter>);
   return { assignBreak, resolveBreak, applyBreakQueueItems };
@@ -203,6 +204,32 @@ describe("Reconciliation workbench", () => {
     });
   });
 
+  it("freezes the draft during a check and drops a dry run whose draft was abandoned (C2)", async () => {
+    const user = userEvent.setup();
+    const services = fakeBulkServices();
+    let release!: () => void;
+    services.dryRun.mockImplementationOnce((request) => new Promise((resolve) => {
+      release = () => resolve(bulkResult(request, () => true));
+    }));
+    renderWorkbench(undefined, services);
+    await user.click(screen.getByRole("checkbox", { name: /Add Cash review/ }));
+    await user.click(within(bulkBar()).getByRole("button", { name: "Route to owner" }));
+    await user.type(within(bulkBar()).getByRole("textbox", { name: "Owner" }), "desk-a");
+    await user.click(within(bulkBar()).getByRole("button", { name: "Check 1 break" }));
+    expect(within(bulkBar()).getByRole("textbox", { name: "Owner" })).toBeDisabled();
+
+    // The operator abandons the check and starts again for another owner before it returns.
+    await user.click(within(bulkBar()).getByRole("button", { name: "Cancel" }));
+    await user.click(within(bulkBar()).getByRole("button", { name: "Route to owner" }));
+    await user.type(within(bulkBar()).getByRole("textbox", { name: "Owner" }), "desk-b");
+    await act(async () => release());
+
+    expect(within(bulkBar()).queryByText(/can be routed/)).not.toBeInTheDocument();
+    expect(within(bulkBar()).queryByRole("button", { name: "Route 1 break" })).not.toBeInTheDocument();
+    expect(within(bulkBar()).getByRole("button", { name: "Check 1 break" })).toBeEnabled();
+    expect(services.execute).not.toHaveBeenCalled();
+  });
+
   it("routes the selection to a named owner (C2)", async () => {
     const user = userEvent.setup();
     const services = fakeBulkServices();
@@ -268,7 +295,7 @@ describe("Reconciliation workbench", () => {
       previousVisitAt: "2026-10-01T12:00:00Z",
       visitedAt: "2026-10-03T09:00:00Z"
     });
-    renderWorkbench(undefined, fakeBulkServices(), visitRecorder);
+    renderWorkbench(undefined, fakeBulkServices(), { record: visitRecorder, read: offline });
     expect(await screen.findByText("1 new since your last visit (Oct 1, 2026, 12:00 UTC).")).toBeInTheDocument();
     expect(visitRecorder).toHaveBeenCalledExactlyOnceWith("reconciliation-breaks");
     const [cashRow, feeRow] = queueRows();

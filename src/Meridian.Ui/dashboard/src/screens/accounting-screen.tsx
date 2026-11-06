@@ -2168,7 +2168,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
 
       <StatStrip
         metrics={applyOpenBreakDelta(
-          applyCrossScreenCounts(data.metrics, selectCrossScreenCounts({ shared: sharedCounts, breakQueue: data.breakQueue })),
+          applyCrossScreenCounts(data.metrics, selectCrossScreenCounts({ shared: sharedCounts, breakQueue: data.breakQueue, openBreakCount: data.workspace?.openBreaks })),
           sinceLastVisitDelta(summarizeSinceLastVisit(data.breakQueue ?? [], breakQueueVisit.baseline))
         )}
         label="Accounting headline metrics"

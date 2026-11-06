@@ -42,6 +42,8 @@ interface BulkTriageMessage {
 interface CheckedPreview extends BulkTriagePreview {
   operationId: string;
   breakIds: string[];
+  /** The draft the dry run checked; the execute sends exactly this. */
+  draft: BulkTriageDraft;
 }
 
 export interface ReconciliationBulkTriage {
@@ -81,6 +83,9 @@ export function useReconciliationBulkTriage({
   const [taxonomy, setTaxonomy] = useState<ReconciliationTaxonomySnapshot | null>(null);
   const [taxonomyError, setTaxonomyError] = useState<string | null>(null);
   const taxonomyRequested = useRef(false);
+  // Bumped whenever the draft or its check changes, so a dry run that returns late cannot stand in
+  // for a draft it did not check.
+  const checkRevision = useRef(0);
 
   // Act only on what the operator can see: a break that leaves the filtered view leaves the selection.
   const visibleKey = visibleBreakIds.join("\u0000");
@@ -95,7 +100,7 @@ export function useReconciliationBulkTriage({
   }, [visibleKey]);
 
   const selectedKey = selectedIds.join("\u0000");
-  const previewIsCurrent = preview !== null && preview.breakIds.join("\u0000") === selectedKey;
+  const previewIsCurrent = preview !== null && preview.draft === draft && preview.breakIds.join("\u0000") === selectedKey;
 
   const toggle = useCallback((breakId: string) => {
     setSelectedIds((current) => current.includes(breakId) ? current.filter((id) => id !== breakId) : [...current, breakId]);
@@ -121,21 +126,26 @@ export function useReconciliationBulkTriage({
       return;
     }
     const operationId = newBulkOperationId();
+    const revision = ++checkRevision.current;
     setBusy("checking");
     setMessage(null);
     try {
       const result = await services.dryRun(buildBulkCaseworkRequest(nextDraft, breakIds, { operationId, dryRun: true, operator: null }));
-      setPreview({ ...summarizeBulkDryRun(nextDraft.kind, result), operationId, breakIds });
+      if (checkRevision.current !== revision) return;
+      setPreview({ ...summarizeBulkDryRun(nextDraft.kind, result), operationId, breakIds, draft: nextDraft });
     } catch (err) {
+      if (checkRevision.current !== revision) return;
       const display = describeApiError(err, "The bulk check failed. Nothing was changed.");
       setMessage({ tone: "danger", text: display.summary, details: display.details });
     } finally {
-      setBusy(null);
+      if (checkRevision.current === revision) setBusy(null);
     }
   }, [services]);
 
   const start = useCallback((kind: BulkTriageKind) => {
     const next = emptyBulkTriageDraft(kind);
+    checkRevision.current += 1;
+    setBusy(null);
     setDraft(next);
     setPreview(null);
     setMessage(null);
@@ -145,11 +155,15 @@ export function useReconciliationBulkTriage({
   }, [loadTaxonomy, runCheck, selectedIds]);
 
   const updateDraft = useCallback((patch: Partial<BulkTriageDraft>) => {
+    checkRevision.current += 1;
+    setBusy((current) => current === "checking" ? null : current);
     setDraft((current) => current ? { ...current, ...patch } : current);
     setPreview(null);
   }, []);
 
   const cancel = useCallback(() => {
+    checkRevision.current += 1;
+    setBusy((current) => current === "checking" ? null : current);
     setDraft(null);
     setPreview(null);
     setMessage(null);
@@ -160,16 +174,17 @@ export function useReconciliationBulkTriage({
   }, [draft, runCheck, selectedIds]);
 
   const execute = useCallback(async () => {
-    if (!draft || !preview || !previewIsCurrent || preview.passedIds.length === 0) return;
+    if (!preview || !previewIsCurrent || preview.passedIds.length === 0) return;
+    const checked = preview.draft;
     setBusy("executing");
     setMessage(null);
     try {
-      const result = await services.execute(buildBulkCaseworkRequest(draft, preview.passedIds, {
+      const result = await services.execute(buildBulkCaseworkRequest(checked, preview.passedIds, {
         operationId: preview.operationId,
         dryRun: false,
         operator: null
       }));
-      const outcome = summarizeBulkExecute(draft.kind, result);
+      const outcome = summarizeBulkExecute(checked.kind, result);
       if (outcome.updatedItems.length > 0) onItemsUpdated?.(outcome.updatedItems);
       const changed = new Set(outcome.updatedItems.map((item) => item.breakId));
       setSelectedIds((current) => current.filter((id) => !changed.has(id)));
@@ -186,7 +201,7 @@ export function useReconciliationBulkTriage({
     } finally {
       setBusy(null);
     }
-  }, [draft, onItemsUpdated, preview, previewIsCurrent, services]);
+  }, [onItemsUpdated, preview, previewIsCurrent, services]);
 
   const selectedSet = useMemo(() => new Set(selectedIds), [selectedIds]);
   const isSelected = useCallback((breakId: string) => selectedSet.has(breakId), [selectedSet]);
@@ -242,43 +257,46 @@ export function ReconciliationBulkTriageBar({ triage, visibleCount }: { triage: 
             void (preview ? triage.execute() : triage.check());
           }}
         >
-          {draft.kind === "route" ? (
-            <div className="grid gap-2 sm:grid-cols-2">
-              <FormRow label="Owner" labelFor="bulk-route-owner">
-                <Input id="bulk-route-owner" value={draft.assignee} onChange={(event) => triage.updateDraft({ assignee: event.target.value })} placeholder="Operator or desk" />
-              </FormRow>
-              <FormRow label="Handoff note (optional)" labelFor="bulk-route-note">
-                <Input id="bulk-route-note" value={draft.reason} onChange={(event) => triage.updateDraft({ reason: event.target.value })} />
-              </FormRow>
-            </div>
-          ) : null}
-          {draft.kind === "resolve" ? (
-            <div className="grid gap-2 sm:grid-cols-2">
-              <FormRow label="Reason" labelFor="bulk-resolve-reason" hint="Recorded on every break as its resolution note.">
-                <Input id="bulk-resolve-reason" value={draft.reason} onChange={(event) => triage.updateDraft({ reason: event.target.value })} />
-              </FormRow>
-              <FormRow label="Evidence reference (optional)" labelFor="bulk-resolve-evidence" hint="For example journal:…, statement:… or evidence:…">
-                <Input id="bulk-resolve-evidence" value={draft.evidenceLink} onChange={(event) => triage.updateDraft({ evidenceLink: event.target.value })} />
-              </FormRow>
-              <FormRow label="Root cause" labelFor="bulk-resolve-root-cause">
-                <select id="bulk-resolve-root-cause" value={draft.rootCauseCode} onChange={(event) => triage.updateDraft({ rootCauseCode: event.target.value })}>
-                  <option value="">Choose a root cause</option>
-                  {(triage.taxonomy?.rootCauses ?? []).filter((value) => value.isActive).map((value) => (
-                    <option key={value.code} value={value.code}>{value.displayName}</option>
-                  ))}
-                </select>
-              </FormRow>
-              <FormRow label="Resolution" labelFor="bulk-resolve-resolution">
-                <select id="bulk-resolve-resolution" value={draft.resolutionCode} onChange={(event) => triage.updateDraft({ resolutionCode: event.target.value })}>
-                  <option value="">Choose a resolution</option>
-                  {(triage.taxonomy?.resolutionCodes ?? []).filter((value) => value.isActive).map((value) => (
-                    <option key={value.code} value={value.code}>{value.displayName}</option>
-                  ))}
-                </select>
-              </FormRow>
-              {triage.taxonomyError ? <p role="alert" className="text-sm text-danger sm:col-span-2">{triage.taxonomyError}</p> : null}
-            </div>
-          ) : null}
+          {/* The draft is frozen while its check or execute runs, so a result always matches it. */}
+          <fieldset disabled={triage.busy !== null} className="m-0 min-w-0 border-0 p-0">
+            {draft.kind === "route" ? (
+              <div className="grid gap-2 sm:grid-cols-2">
+                <FormRow label="Owner" labelFor="bulk-route-owner">
+                  <Input id="bulk-route-owner" value={draft.assignee} onChange={(event) => triage.updateDraft({ assignee: event.target.value })} placeholder="Operator or desk" />
+                </FormRow>
+                <FormRow label="Handoff note (optional)" labelFor="bulk-route-note">
+                  <Input id="bulk-route-note" value={draft.reason} onChange={(event) => triage.updateDraft({ reason: event.target.value })} />
+                </FormRow>
+              </div>
+            ) : null}
+            {draft.kind === "resolve" ? (
+              <div className="grid gap-2 sm:grid-cols-2">
+                <FormRow label="Reason" labelFor="bulk-resolve-reason" hint="Recorded on every break as its resolution note.">
+                  <Input id="bulk-resolve-reason" value={draft.reason} onChange={(event) => triage.updateDraft({ reason: event.target.value })} />
+                </FormRow>
+                <FormRow label="Evidence reference (optional)" labelFor="bulk-resolve-evidence" hint="For example journal:…, statement:… or evidence:…">
+                  <Input id="bulk-resolve-evidence" value={draft.evidenceLink} onChange={(event) => triage.updateDraft({ evidenceLink: event.target.value })} />
+                </FormRow>
+                <FormRow label="Root cause" labelFor="bulk-resolve-root-cause">
+                  <select id="bulk-resolve-root-cause" value={draft.rootCauseCode} onChange={(event) => triage.updateDraft({ rootCauseCode: event.target.value })}>
+                    <option value="">Choose a root cause</option>
+                    {(triage.taxonomy?.rootCauses ?? []).filter((value) => value.isActive).map((value) => (
+                      <option key={value.code} value={value.code}>{value.displayName}</option>
+                    ))}
+                  </select>
+                </FormRow>
+                <FormRow label="Resolution" labelFor="bulk-resolve-resolution">
+                  <select id="bulk-resolve-resolution" value={draft.resolutionCode} onChange={(event) => triage.updateDraft({ resolutionCode: event.target.value })}>
+                    <option value="">Choose a resolution</option>
+                    {(triage.taxonomy?.resolutionCodes ?? []).filter((value) => value.isActive).map((value) => (
+                      <option key={value.code} value={value.code}>{value.displayName}</option>
+                    ))}
+                  </select>
+                </FormRow>
+                {triage.taxonomyError ? <p role="alert" className="text-sm text-danger sm:col-span-2">{triage.taxonomyError}</p> : null}
+              </div>
+            ) : null}
+          </fieldset>
 
           {preview ? (
             <div role="status" className="space-y-1 text-sm">

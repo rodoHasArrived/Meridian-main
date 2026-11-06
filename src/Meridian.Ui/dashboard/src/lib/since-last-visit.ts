@@ -5,8 +5,12 @@
 // a row detected after it is new, and a row whose activity (`lastUpdatedAt`) moved after it is
 // updated. The baseline is fetched once per surface per browser tab and reused, so it does not
 // move while the operator works or when a screen re-mounts.
+//
+// The tab cache keeps the baseline with the visit this tab recorded. Session storage outlives a
+// sign-out, so a later page load reuses the cache only when the server's last visit for whoever is
+// now signed in is still that one; another operator in the same tab gets their own baseline.
 import { useEffect, useState } from "react";
-import { recordOperatorSurfaceVisit } from "@/lib/api/operator-workstation.api";
+import { getOperatorSurfaceVisit, recordOperatorSurfaceVisit } from "@/lib/api/operator-workstation.api";
 import { formatUtcTimestamp } from "@/lib/format";
 import type { OperatorSurfaceVisit } from "@/types/operator-surface-visit";
 
@@ -15,6 +19,12 @@ const SESSION_KEY_PREFIX = "meridian.workstation.surface-visit.v1:";
 
 export type SinceLastVisitMark = "new" | "updated";
 export type RecordSurfaceVisit = (surface: string) => Promise<OperatorSurfaceVisit>;
+
+/** `record` records a visit and returns the one it replaced; `read` returns the last one only. */
+export interface SurfaceVisitServices {
+  record: RecordSurfaceVisit;
+  read: RecordSurfaceVisit;
+}
 
 export interface SinceLastVisitState {
   status: "loading" | "ready" | "unavailable";
@@ -32,37 +42,56 @@ function sessionStore(): Storage | null {
   }
 }
 
+interface CachedVisit {
+  baseline: string | null;
+  visitedAt: string;
+}
+
+function readCachedVisit(storage: Storage | null, key: string): CachedVisit | null {
+  try {
+    const raw = storage?.getItem(key);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { baseline?: unknown; visitedAt?: unknown };
+    const { baseline, visitedAt } = parsed;
+    if (typeof visitedAt !== "string") return null;
+    if (baseline === null) return { baseline: null, visitedAt };
+    return typeof baseline === "string" ? { baseline, visitedAt } : null;
+  } catch {
+    // An unreadable cache falls through to the server.
+    return null;
+  }
+}
+
+function sameInstant(left: string | null | undefined, right: string | null | undefined): boolean {
+  const a = parseTime(left);
+  return a !== null && a === parseTime(right);
+}
+
 /** The surface's baseline for this tab: the visit the first load of the tab replaced. */
 export function loadSinceLastVisitBaseline(
   surface: string,
-  record?: RecordSurfaceVisit,
+  services: Partial<SurfaceVisitServices> = {},
   storage: Storage | null = sessionStore()
 ): Promise<string | null> {
   const key = `${SESSION_KEY_PREFIX}${surface}`;
-  try {
-    const cached = storage?.getItem(key);
-    if (cached) {
-      const baseline = (JSON.parse(cached) as { baseline?: unknown }).baseline;
-      if (baseline === null) return Promise.resolve(null);
-      if (typeof baseline === "string") return Promise.resolve(baseline);
-    }
-  } catch {
-    // An unreadable cache falls through to the server.
-  }
   const pending = inFlight.get(surface);
   if (pending) return pending;
-  const request = Promise.resolve()
-    // Resolved here, not as a default parameter, so a missing API fails into "unavailable".
-    .then(() => (record ?? recordOperatorSurfaceVisit)(surface))
-    .then((visit) => {
-      const baseline = visit.previousVisitAt ?? null;
-      try {
-        storage?.setItem(key, JSON.stringify({ baseline }));
-      } catch {
-        // Without session storage the in-memory promise still holds the baseline for this page.
-      }
-      return baseline;
-    });
+  // Resolved inside the chain, not as defaults, so a missing API fails into "unavailable".
+  const record = () => (services.record ?? recordOperatorSurfaceVisit)(surface);
+  const read = () => (services.read ?? getOperatorSurfaceVisit)(surface);
+  const recordAndCache = () => record().then((visit) => {
+    const baseline = visit.previousVisitAt ?? null;
+    try {
+      if (visit.visitedAt) storage?.setItem(key, JSON.stringify({ baseline, visitedAt: visit.visitedAt }));
+    } catch {
+      // Without session storage the in-memory promise still holds the baseline for this page.
+    }
+    return baseline;
+  });
+  const cached = readCachedVisit(storage, key);
+  const request = Promise.resolve().then(() => cached
+    ? read().then((last) => sameInstant(last.previousVisitAt, cached.visitedAt) ? cached.baseline : recordAndCache())
+    : recordAndCache());
   inFlight.set(surface, request);
   request.catch(() => inFlight.delete(surface));
   return request;
@@ -73,15 +102,17 @@ export function resetSinceLastVisitCache() {
   inFlight.clear();
 }
 
-export function useSinceLastVisit(surface: string, record?: RecordSurfaceVisit): SinceLastVisitState {
+export function useSinceLastVisit(surface: string, services?: Partial<SurfaceVisitServices>): SinceLastVisitState {
   const [state, setState] = useState<SinceLastVisitState>({ status: "loading", baseline: null });
+  const record = services?.record;
+  const read = services?.read;
   useEffect(() => {
     let active = true;
-    loadSinceLastVisitBaseline(surface, record)
+    loadSinceLastVisitBaseline(surface, { record, read })
       .then((baseline) => { if (active) setState({ status: "ready", baseline }); })
       .catch(() => { if (active) setState({ status: "unavailable", baseline: null }); });
     return () => { active = false; };
-  }, [record, surface]);
+  }, [read, record, surface]);
   return state;
 }
 

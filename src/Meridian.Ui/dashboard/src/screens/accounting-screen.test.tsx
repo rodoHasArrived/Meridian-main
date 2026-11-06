@@ -10,6 +10,7 @@ import * as markFreshnessApi from "@/lib/api/mark-freshness.api";
 import * as recurringJournalsApi from "@/lib/api/recurring-journals.api";
 import { AccountingScreen } from "@/screens/accounting-screen";
 import { resetSinceLastVisitCache } from "@/lib/since-last-visit";
+import { recordOperatorSurfaceVisit } from "@/lib/api/operator-workstation.api";
 import { TestMemoryRouter, renderWithRouter, waitForAsyncEffects } from "@/test/render";
 import { buildSuccessfulVerifiedOperationOutcome } from "@/test/verified-operation-outcome";
 import type {
@@ -81,6 +82,14 @@ vi.mock("@/lib/ledger-reports-api", () => ({
 
 vi.mock("@/lib/api/recurring-journals.api", () => ({
   getRecurringJournalQueue: vi.fn(async (scope) => ({ ...scope, occurrences: [] }))
+}));
+
+vi.mock("@/lib/api/operator-workstation.api", () => ({
+  getCrossScreenCounts: vi.fn().mockResolvedValue(null),
+  getOperatorScopePreference: vi.fn().mockResolvedValue({ defaultScope: null, updatedAt: null }),
+  saveOperatorScopePreference: vi.fn().mockResolvedValue({ defaultScope: null, updatedAt: null }),
+  recordOperatorSurfaceVisit: vi.fn().mockRejectedValue(new Error("offline")),
+  getOperatorSurfaceVisit: vi.fn().mockRejectedValue(new Error("offline"))
 }));
 
 vi.mock("@/lib/api", async () => {
@@ -1604,7 +1613,8 @@ describe("AccountingScreen", () => {
   it("states on the open-breaks card how many breaks are new since the operator's last visit (C3)", async () => {
     const baseline = "2025-12-31T00:00:00Z";
     resetSinceLastVisitCache();
-    window.sessionStorage.setItem("meridian.workstation.surface-visit.v1:reconciliation-breaks", JSON.stringify({ baseline }));
+    window.sessionStorage.clear();
+    vi.mocked(recordOperatorSurfaceVisit).mockResolvedValueOnce({ surface: "reconciliation-breaks", previousVisitAt: baseline, visitedAt: "2026-01-02T00:00:00Z" });
     try {
       await renderAccountingScreen({
         ...data,

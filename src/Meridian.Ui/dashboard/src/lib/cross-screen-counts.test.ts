@@ -3,12 +3,15 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   applyCrossScreenCounts,
+  countAccountingOpenBreaks,
   countOpenBreaks,
   countOpenOrders,
   countProviderHealth,
   formatProviderHealth,
   selectCrossScreenCounts
 } from "@/lib/cross-screen-counts";
+import { buildAccountingReconciliationContinuityStatus } from "@/screens/accounting-screen.workflow-continuity";
+import type { AccountingWorkspaceResponse } from "@/types";
 import type { WorkstationCrossScreenCounts } from "@/types/cross-screen-counts";
 
 // The same fixture the server's CrossScreenCountDefinitionsTests reads, so both count the same way.
@@ -55,6 +58,22 @@ describe("selectCrossScreenCounts", () => {
 
   it("falls back to the server's counts where the screen has no list", () => {
     expect(selectCrossScreenCounts({ shared })).toEqual({ openOrders: 7, providers: { healthy: 3, total: 5 }, openBreaks: 4 });
+  });
+
+  it("keeps the server's open-break total when the accounting payload withholds the queue", () => {
+    // A caller who may see the count but not the cases gets an empty breakQueue and the real total.
+    const withheld = { workspace: { openBreaks: 3 }, breakQueue: [] };
+    expect(countAccountingOpenBreaks(withheld)).toBe(3);
+    expect(selectCrossScreenCounts({ shared: null, breakQueue: [], openBreakCount: 3 }).openBreaks).toBe(3);
+    expect(countAccountingOpenBreaks({ breakQueue: [{ status: "Open" }, { status: "Resolved" }] })).toBe(1);
+
+    const continuity = buildAccountingReconciliationContinuityStatus({
+      metrics: [],
+      reconciliationQueue: [],
+      breakQueue: [],
+      workspace: { totalRuns: 0, reconciledRuns: 0, ledgerReadyRuns: 0, openBreaks: 3, securityIssues: 0 }
+    } as unknown as AccountingWorkspaceResponse);
+    expect(continuity.label).toContain("3 open breaks");
   });
 
   it("reports an unreadable count as null, never a substitute number", () => {

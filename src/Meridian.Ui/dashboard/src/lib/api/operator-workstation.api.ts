@@ -39,6 +39,11 @@ export function saveOperatorScopePreference(defaultScope: OperatingScopeValues |
   return apiPutJson<OperatorScopePreference>(UI_API_ROUTES.WorkstationOperatorScopePreference, { defaultScope }, options);
 }
 
+/** The signed-in operator's last visit to a surface, without recording one (C3). */
+export function getOperatorSurfaceVisit(surface: string, options: ApiRequestOptions = {}) {
+  return apiGetJson<OperatorSurfaceVisit>(workstationOperatorSurfaceVisitEndpoint(surface), options);
+}
+
 /** Records the signed-in operator's visit to a surface and returns the visit it replaced (C3). */
 export function recordOperatorSurfaceVisit(surface: string, options: ApiRequestOptions = {}) {
   return apiPostJson<OperatorSurfaceVisit>(workstationOperatorSurfaceVisitEndpoint(surface), undefined, options);

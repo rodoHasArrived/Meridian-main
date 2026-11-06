@@ -45,25 +45,41 @@ describe("since your last visit (C3)", () => {
   });
 
   it("records one visit per surface per tab and reuses its baseline", async () => {
-    const record = vi.fn().mockResolvedValue({ surface: BREAK_QUEUE_VISIT_SURFACE, previousVisitAt: baseline, visitedAt: "2026-11-06T09:00:00Z" });
+    const visitedAt = "2026-11-06T09:00:00Z";
+    const record = vi.fn().mockResolvedValue({ surface: BREAK_QUEUE_VISIT_SURFACE, previousVisitAt: baseline, visitedAt });
+    const read = vi.fn().mockResolvedValue({ surface: BREAK_QUEUE_VISIT_SURFACE, previousVisitAt: visitedAt, visitedAt: null });
     const [first, second] = await Promise.all([
-      loadSinceLastVisitBaseline(BREAK_QUEUE_VISIT_SURFACE, record),
-      loadSinceLastVisitBaseline(BREAK_QUEUE_VISIT_SURFACE, record)
+      loadSinceLastVisitBaseline(BREAK_QUEUE_VISIT_SURFACE, { record, read }),
+      loadSinceLastVisitBaseline(BREAK_QUEUE_VISIT_SURFACE, { record, read })
     ]);
     expect(first).toBe(baseline);
     expect(second).toBe(baseline);
-    // A reload of the tab keeps the baseline from session storage instead of moving it.
+    // A reload of the tab keeps the baseline: the server's last visit is still the one this tab made.
     resetSinceLastVisitCache();
-    expect(await loadSinceLastVisitBaseline(BREAK_QUEUE_VISIT_SURFACE, record)).toBe(baseline);
+    expect(await loadSinceLastVisitBaseline(BREAK_QUEUE_VISIT_SURFACE, { record, read })).toBe(baseline);
     expect(record).toHaveBeenCalledOnce();
+    expect(read).toHaveBeenCalledOnce();
+  });
+
+  it("gives another operator in the same tab their own baseline", async () => {
+    const record = vi.fn()
+      .mockResolvedValueOnce({ surface: BREAK_QUEUE_VISIT_SURFACE, previousVisitAt: baseline, visitedAt: "2026-11-06T09:00:00Z" })
+      .mockResolvedValueOnce({ surface: BREAK_QUEUE_VISIT_SURFACE, previousVisitAt: "2026-11-02T08:00:00Z", visitedAt: "2026-11-06T09:30:00Z" });
+    expect(await loadSinceLastVisitBaseline(BREAK_QUEUE_VISIT_SURFACE, { record })).toBe(baseline);
+
+    // Sign-out and sign-in keep session storage; the next operator's last visit is their own.
+    resetSinceLastVisitCache();
+    const read = vi.fn().mockResolvedValue({ surface: BREAK_QUEUE_VISIT_SURFACE, previousVisitAt: "2026-11-02T08:00:00Z", visitedAt: null });
+    expect(await loadSinceLastVisitBaseline(BREAK_QUEUE_VISIT_SURFACE, { record, read })).toBe("2026-11-02T08:00:00Z");
+    expect(record).toHaveBeenCalledTimes(2);
   });
 
   it("tries again after a failed visit instead of caching the failure", async () => {
     const record = vi.fn()
       .mockRejectedValueOnce(new Error("offline"))
       .mockResolvedValueOnce({ surface: BREAK_QUEUE_VISIT_SURFACE, previousVisitAt: null, visitedAt: "2026-11-06T09:00:00Z" });
-    await expect(loadSinceLastVisitBaseline(BREAK_QUEUE_VISIT_SURFACE, record)).rejects.toThrow("offline");
-    expect(await loadSinceLastVisitBaseline(BREAK_QUEUE_VISIT_SURFACE, record)).toBeNull();
+    await expect(loadSinceLastVisitBaseline(BREAK_QUEUE_VISIT_SURFACE, { record })).rejects.toThrow("offline");
+    expect(await loadSinceLastVisitBaseline(BREAK_QUEUE_VISIT_SURFACE, { record })).toBeNull();
     expect(record).toHaveBeenCalledTimes(2);
   });
 
