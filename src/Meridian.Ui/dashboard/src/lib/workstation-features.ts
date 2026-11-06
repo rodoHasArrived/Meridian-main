@@ -93,6 +93,10 @@ export const WORKSPACE_NAVIGATION_FEATURES: Readonly<Record<WorkspaceKey, readon
     feature("dataProviders", "Providers", "Review provider catalog, onboarding posture, connection health, and routing evidence.", ["data provider health", "data connections", "connection status"]),
     feature("dataQuotes", "Market data", "Inspect quotes, trades, depth, charts, and staged tickets.", ["live quotes", "prices", "market charts", "ticker"], { paletteLabel: "Live quotes" }),
     feature("dataOperations", "Ingestion operations", "Preview, trigger, and review historical data backfill jobs.", ["historical prices", "price history", "historical data", "backfill", "ingestion operations"], { id: "data-backfills", paletteLabel: "Backfill queues" }),
+    // The Backfill queue view used to be reachable only from the Data in-page tab strip; with the
+    // sidebar as the single sub-route navigation it needs its own entry. Its own id: the
+    // ingestion-operations entry above already owns "data-backfills".
+    feature("dataBackfills", "Backfill queue", "Review historical repair jobs with their status, ranges, and result evidence.", ["backfill queue", "historical repair", "repair jobs"], { id: "data-backfill-queue" }),
     feature("dataAssurance", "Storage assurance", "Review stored-data integrity, coverage, and assurance checks.", ["data quality", "storage checks", "data integrity"]),
     feature("dataExports", "Exports", "Review and export retained market data for downstream use.", ["download data", "export market data", "data files"]),
     feature("dataQuery", "SQL query", "Query retained data with SQL and inspect the returned records.", ["sql", "query data", "database query"])

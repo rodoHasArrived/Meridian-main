@@ -4335,7 +4335,8 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
             long currentVersion,
             IEnumerable<ISecurityMasterRevisionPublishedHandler>? handlers = null,
             Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null,
-            ISecurityMasterRevisionStore? revisions = null)
+            ISecurityMasterRevisionStore? revisions = null,
+            Microsoft.Extensions.Options.IOptionsMonitor<SecurityMasterWorkbenchOptions>? workbenchOptions = null)
         {
             _assetProfileCatalog = assetProfileCatalog
                 ?? Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog.CreateDefault();
@@ -4379,7 +4380,8 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
                 NullLogger<SecurityMasterWorkbenchCommandService>.Instance,
                 FieldProvenance.Object,
                 ProjectionStore.Object,
-                _assetProfileCatalog);
+                _assetProfileCatalog,
+                workbenchOptions);
         }
 
         private readonly Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog _assetProfileCatalog;

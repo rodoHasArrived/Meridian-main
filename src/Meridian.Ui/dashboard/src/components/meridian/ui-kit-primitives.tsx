@@ -17,11 +17,14 @@ import {
   focusDenseRowDetailPanel,
   registerDenseRowRevealHandler
 } from "@/components/meridian/dense-row-detail-accessibility";
+import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
 import {
   computeRevealScrollTop,
   computeRowWindow,
   resolveTypeaheadIndex
 } from "@/lib/dense-virtualization";
+import type { Density } from "@/lib/density";
+import { getLocalStorage } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 import "@/styles/ui-kit-primitives.css";
 
@@ -61,7 +64,7 @@ export function ToolbarStrip({
             className={cn("meridian-toolbar-chip", item.active ? "active" : "")}
             aria-label={item.value ? `${item.label}: ${item.value}` : item.label}
           >
-            <span>{item.label}</span>
+            <span className={usesTrackedCaps(item.label) ? undefined : "meridian-toolbar-chip-sentence"}>{item.label}</span>
             {item.value ? <b>{item.value}</b> : null}
           </span>
         ))}
@@ -79,6 +82,18 @@ export interface DenseDataTableColumn<T> {
   align?: "left" | "right";
   className?: string;
   sortable?: boolean;
+  /**
+   * Raw value for the table's built-in sorting. Giving one makes the column sortable when the
+   * table has no `onToggleSort` handler; numbers sort numerically, strings naturally
+   * ("A2" before "A10"), and null/undefined/NaN always sort last.
+   */
+  sortValue?: (row: T) => string | number | null | undefined;
+  /** Numeric column: right-aligned with tabular figures so digits line up down the column. */
+  numeric?: boolean;
+  /** Operators may hide this column from the table's Columns menu. */
+  hideable?: boolean;
+  /** Starts hidden until an operator shows it (implies `hideable`). */
+  defaultHidden?: boolean;
   render: (row: T) => ReactNode;
 }
 
@@ -114,6 +129,16 @@ export interface DenseDataTableProps<T> {
   sort?: DenseDataTableSortState | null;
   onToggleSort?: (columnId: string) => void;
   /**
+   * Initial order for built-in sorting (columns with `sortValue`). Ignored when the caller owns
+   * sorting through `onToggleSort`.
+   */
+  defaultSort?: DenseDataTableSortState | null;
+  /**
+   * Row rhythm for this table. Omit to follow the operator's workstation density
+   * (`data-theme-density` on the body, set from Settings).
+   */
+  density?: Density;
+  /**
    * Soft cap on rows mounted into the DOM for non-virtualized tables; excess
    * rows collapse behind a "Show all N rows" control. Defaults to
    * {@link DEFAULT_DENSE_TABLE_ROW_CAP}. Pass an explicit number to tune it, or
@@ -135,11 +160,16 @@ export interface DenseDataTableProps<T> {
    * pointer. Optional; when omitted rows carry no context-menu behaviour.
    */
   onRowContextMenu?: (row: T, event: ReactMouseEvent<HTMLTableRowElement>) => void;
+  /**
+   * Caller-owned hidden columns (C4), for a screen that keeps them in its URL view state so saved
+   * views and copied links carry them. Requires `onHiddenColumnIdsChange`; replaces the per-table
+   * browser memory used otherwise.
+   */
+  hiddenColumnIds?: readonly string[];
+  onHiddenColumnIdsChange?: (hiddenColumnIds: string[]) => void;
 }
 
 function DenseDataTableComponent<T>({
-  columns,
-  rows,
   getRowId,
   getRowAriaLabel,
   getRowAriaControls,
@@ -152,13 +182,52 @@ function DenseDataTableComponent<T>({
   ariaLabel,
   tableId,
   caption,
-  sort = null,
+  sort: controlledSort = null,
   onToggleSort,
+  defaultSort = null,
+  density,
   maxVisibleRows = DEFAULT_DENSE_TABLE_ROW_CAP,
   virtualization = null,
   getRowTypeaheadText,
-  onRowContextMenu
+  onRowContextMenu,
+  hiddenColumnIds: controlledHiddenColumnIds,
+  onHiddenColumnIdsChange,
+  rows: sourceRows,
+  columns: allColumns
 }: DenseDataTableProps<T>) {
+  // Built-in sorting applies only when the caller does not own the sort order.
+  const builtInSort = onToggleSort === undefined && allColumns.some((column) => column.sortValue !== undefined);
+  const [internalSort, setInternalSort] = useState<DenseDataTableSortState | null>(defaultSort);
+  const sort = builtInSort ? internalSort : controlledSort;
+  const toggleSort = builtInSort
+    ? (columnId: string) => setInternalSort((current) => {
+      const column = allColumns.find((candidate) => candidate.id === columnId);
+      return column ? nextDenseSort(current, column) : current;
+    })
+    : onToggleSort;
+  const sortColumn = builtInSort && sort ? allColumns.find((column) => column.id === sort.columnId) : undefined;
+  const rows = useMemo(
+    () => (sortColumn?.sortValue && sort ? sortRowsByValue(sourceRows, sortColumn.sortValue, sort.direction) : sourceRows),
+    [sourceRows, sortColumn, sort]
+  );
+
+  const [storedHiddenColumnIds, setStoredHiddenColumnIds] = useDenseColumnVisibility(allColumns, tableId);
+  const ownsHiddenColumns = controlledHiddenColumnIds !== undefined && onHiddenColumnIdsChange !== undefined;
+  const controlledHiddenKey = controlledHiddenColumnIds?.join("\u0000") ?? "";
+  const hiddenColumnIds = useMemo<ReadonlySet<string>>(
+    () => ownsHiddenColumns
+      ? new Set((controlledHiddenColumnIds ?? []).filter((id) => allColumns.some((column) => column.id === id && isHideableColumn(column))))
+      : storedHiddenColumnIds,
+    // The key stands in for the caller's array identity, which may change every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [ownsHiddenColumns, controlledHiddenKey, storedHiddenColumnIds, allColumns]
+  );
+  const setHiddenColumnIds = ownsHiddenColumns
+    ? (next: Set<string>) => onHiddenColumnIdsChange?.([...next])
+    : setStoredHiddenColumnIds;
+  const hideableColumns = allColumns.filter(isHideableColumn);
+  const columns = hiddenColumnIds.size === 0 ? allColumns : allColumns.filter((column) => !hiddenColumnIds.has(column.id));
+
   const generatedKeyboardInstructionsId = useId();
   const [showAllRows, setShowAllRows] = useState(false);
   const [selectionAnnouncement, setSelectionAnnouncement] = useState("");
@@ -377,34 +446,14 @@ function DenseDataTableComponent<T>({
       <thead>
         <tr aria-rowindex={isVirtual ? 1 : undefined}>
           {columns.map((column) => {
-            const sortable = Boolean(column.sortable && onToggleSort);
-            const sorted = sortable && sort?.columnId === column.id;
+            const sortable = builtInSort ? column.sortValue !== undefined : Boolean(column.sortable && onToggleSort);
             return (
-              <th
+              <DenseDataTableHeaderCell
                 key={column.id}
-                scope="col"
-                aria-sort={sortable ? sorted ? sort.direction === "asc" ? "ascending" : "descending" : "none" : undefined}
-                className={cn(
-                  column.align === "right" ? "text-right" : "text-left",
-                  sortable ? "dense-data-table-sortable" : undefined,
-                  sorted ? "dense-data-table-sorted" : undefined,
-                  column.className
-                )}
-              >
-                {sortable ? (
-                  <button
-                    type="button"
-                    className="dense-data-table-sort-button"
-                    onClick={() => onToggleSort?.(column.id)}
-                    aria-label={buildSortButtonAriaLabel(column, sorted ? sort : null)}
-                  >
-                    <span>{column.label}</span>
-                    <span className="dense-data-table-sort-indicator" aria-hidden="true">
-                      {sorted ? sort.direction === "asc" ? "↑" : "↓" : "↕"}
-                    </span>
-                  </button>
-                ) : column.label || (column.srLabel ? <span className="sr-only">{column.srLabel}</span> : null)}
-              </th>
+                column={column}
+                sort={sortable ? sort : undefined}
+                onToggleSort={sortable ? () => toggleSort?.(column.id) : undefined}
+              />
             );
           })}
         </tr>
@@ -456,7 +505,7 @@ function DenseDataTableComponent<T>({
                   {columns.map((column) => (
                     <td
                       key={column.id}
-                      className={cn(column.align === "right" ? "text-right" : "text-left", column.className)}
+                      className={cn(columnCellClassName(column), column.className)}
                     >
                       {column.render(row)}
                     </td>
@@ -475,10 +524,11 @@ function DenseDataTableComponent<T>({
     </table>
   );
 
-  return (
+  const wrapElement = (
     <div
       className={cn("dense-data-table-wrap", isVirtual ? "dense-data-table-wrap-virtual" : undefined)}
       data-empty={rows.length === 0 ? "true" : undefined}
+      data-density={density}
       ref={wrapRef}
       style={isVirtual ? { maxHeight: viewportHeight } : undefined}
       onScroll={isVirtual ? handleScroll : undefined}
@@ -503,9 +553,195 @@ function DenseDataTableComponent<T>({
       ) : null}
     </div>
   );
+
+  if (hideableColumns.length === 0) {
+    return wrapElement;
+  }
+
+  const visibleCount = columns.length;
+  return (
+    <div className="dense-data-table-frame">
+      <details className="dense-data-table-columns">
+        <summary>Columns</summary>
+        <fieldset className="dense-data-table-columns-menu">
+          <legend className="sr-only">Show columns in {ariaLabel}</legend>
+          {hideableColumns.map((column) => {
+            const shown = !hiddenColumnIds.has(column.id);
+            return (
+              <label key={column.id}>
+                <input
+                  type="checkbox"
+                  checked={shown}
+                  // The last visible column stays on so the table never renders empty.
+                  disabled={shown && visibleCount <= 1}
+                  onChange={() => setHiddenColumnIds(toggleHiddenColumn(hiddenColumnIds, column.id))}
+                />
+                <span>{column.label || column.srLabel || column.id}</span>
+              </label>
+            );
+          })}
+        </fieldset>
+      </details>
+      {wrapElement}
+    </div>
+  );
 }
 
 export const DenseDataTable = memo(DenseDataTableComponent) as typeof DenseDataTableComponent;
+
+const COLUMN_VISIBILITY_STORAGE_PREFIX = "meridian.workstation.table-columns.v1:";
+
+function isHideableColumn<T>(column: DenseDataTableColumn<T>): boolean {
+  return column.hideable === true || column.defaultHidden === true;
+}
+
+function columnCellClassName(column: { align?: "left" | "right"; numeric?: boolean }): string {
+  const right = column.align === "right" || (column.numeric === true && column.align !== "left");
+  return cn(right ? "text-right" : "text-left", column.numeric ? "dense-data-table-numeric" : undefined);
+}
+
+function toggleHiddenColumn(hidden: ReadonlySet<string>, columnId: string): Set<string> {
+  const next = new Set(hidden);
+  if (next.has(columnId)) {
+    next.delete(columnId);
+  } else {
+    next.add(columnId);
+  }
+  return next;
+}
+
+/**
+ * Hidden-column state for a table. A table with an id remembers the operator's choice in
+ * browser storage (best-effort: blocked storage falls back to the column defaults).
+ */
+function useDenseColumnVisibility<T>(
+  columns: DenseDataTableColumn<T>[],
+  tableId: string | undefined
+): [ReadonlySet<string>, (next: Set<string>) => void] {
+  const storageKey = tableId ? `${COLUMN_VISIBILITY_STORAGE_PREFIX}${tableId}` : null;
+  const [hidden, setHidden] = useState<ReadonlySet<string>>(() => {
+    const hideable = new Set(columns.filter(isHideableColumn).map((column) => column.id));
+    if (hideable.size === 0) {
+      return new Set();
+    }
+    const stored = storageKey ? readStoredHiddenColumns(storageKey) : null;
+    const initial = stored ?? columns.filter((column) => column.defaultHidden).map((column) => column.id);
+    return new Set(initial.filter((id) => hideable.has(id)));
+  });
+
+  const update = useCallback((next: Set<string>) => {
+    setHidden(next);
+    if (storageKey) {
+      try {
+        getLocalStorage()?.setItem(storageKey, JSON.stringify([...next]));
+      } catch {
+        // Column choices are a per-viewer convenience; blocked storage keeps them for the session.
+      }
+    }
+  }, [storageKey]);
+
+  return [hidden, update];
+}
+
+function readStoredHiddenColumns(storageKey: string): string[] | null {
+  try {
+    const raw = getLocalStorage()?.getItem(storageKey);
+    if (!raw) {
+      return null;
+    }
+    const parsed: unknown = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === "string") : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The table system's sort cycle: numeric columns start largest-first, text starts A–Z, and a
+ * second activation reverses. Exported for grouped tables that render their own rows.
+ */
+export function nextDenseSort(
+  current: DenseDataTableSortState | null,
+  column: { id: string; numeric?: boolean }
+): DenseDataTableSortState {
+  if (current?.columnId === column.id) {
+    return { columnId: column.id, direction: current.direction === "asc" ? "desc" : "asc" };
+  }
+  return { columnId: column.id, direction: column.numeric ? "desc" : "asc" };
+}
+
+export interface DenseDataTableHeaderCellProps {
+  column: Pick<DenseDataTableColumn<unknown>, "id" | "label" | "srLabel" | "align" | "numeric" | "className">;
+  /** The table's sort state; pass it (even `null`) only for a sortable column. */
+  sort?: DenseDataTableSortState | null;
+  onToggleSort?: () => void;
+}
+
+/**
+ * One header cell of the table system: alignment, tabular numerics, sentence case for headers
+ * longer than two words, and the sort button with `aria-sort`. DenseDataTable renders it, and
+ * grouped tables that render their own body rows (the ledger's entry + posting rows) use it so
+ * their headers behave identically.
+ */
+export function DenseDataTableHeaderCell({ column, sort, onToggleSort }: DenseDataTableHeaderCellProps) {
+  const sortable = sort !== undefined && onToggleSort !== undefined;
+  const sorted = sortable && sort?.columnId === column.id ? sort : null;
+  return (
+    <th
+      scope="col"
+      aria-sort={sortable ? sorted ? sorted.direction === "asc" ? "ascending" : "descending" : "none" : undefined}
+      className={cn(
+        columnCellClassName(column),
+        // Header caps are for one- or two-word labels; longer headers read in sentence case.
+        usesTrackedCaps(column.label) ? undefined : "dense-data-table-th-sentence",
+        sortable ? "dense-data-table-sortable" : undefined,
+        sorted ? "dense-data-table-sorted" : undefined,
+        column.className
+      )}
+    >
+      {sortable ? (
+        <button
+          type="button"
+          className="dense-data-table-sort-button"
+          onClick={onToggleSort}
+          aria-label={buildSortButtonAriaLabel(column, sorted)}
+        >
+          <span>{column.label}</span>
+          <span className="dense-data-table-sort-indicator" aria-hidden="true">
+            {sorted ? sorted.direction === "asc" ? "↑" : "↓" : "↕"}
+          </span>
+        </button>
+      ) : column.label || (column.srLabel ? <span className="sr-only">{column.srLabel}</span> : null)}
+    </th>
+  );
+}
+
+function isMissingSortValue(value: string | number | null | undefined): value is null | undefined {
+  return value === null || value === undefined || (typeof value === "number" && Number.isNaN(value));
+}
+
+/** Stable sort by a column's raw value; missing values stay at the end in either direction. */
+export function sortRowsByValue<T>(
+  rows: T[],
+  sortValue: (row: T) => string | number | null | undefined,
+  direction: "asc" | "desc"
+): T[] {
+  const factor = direction === "asc" ? 1 : -1;
+  return rows
+    .map((row, index) => ({ row, index, value: sortValue(row) }))
+    .sort((left, right) => {
+      const leftMissing = isMissingSortValue(left.value);
+      const rightMissing = isMissingSortValue(right.value);
+      if (leftMissing || rightMissing) {
+        return leftMissing === rightMissing ? left.index - right.index : leftMissing ? 1 : -1;
+      }
+      const compared = typeof left.value === "number" && typeof right.value === "number"
+        ? left.value - right.value
+        : String(left.value).localeCompare(String(right.value), "en-US", { numeric: true, sensitivity: "base" });
+      return compared === 0 ? left.index - right.index : compared * factor;
+    })
+    .map((entry) => entry.row);
+}
 
 function resolveFocusableDenseRowId<T>(
   rows: T[],
@@ -523,8 +759,8 @@ function resolveFocusableDenseRowId<T>(
   return getRowId(rows[0]);
 }
 
-function buildSortButtonAriaLabel<T>(
-  column: DenseDataTableColumn<T>,
+function buildSortButtonAriaLabel(
+  column: { label: string },
   sort: DenseDataTableSortState | null
 ): string {
   if (!sort) {
@@ -580,6 +816,19 @@ export interface EntitySummaryField {
   value: string;
 }
 
+const FIGURE_VALUE = /^[+\-−]?[$€£¥]?\(?[+\-−]?[$€£¥]?\d[\d,.\s]*\)?\s?(%|[A-Z]{3})?$/;
+const IDENTIFIER_VALUE = /^(?=[^\s]*\d)[A-Za-z0-9][A-Za-z0-9._:/-]{3,}$/;
+
+/**
+ * Whether a summary value is a figure ("$1,250.00", "(500.00)", "12.5%", "500.00 USD") or an
+ * identifier ("brk-2026-0042", "2026-06-30"), which keep the data face; phrases, statuses and
+ * written-out dates read in the body face.
+ */
+export function isDataLikeValue(value: string): boolean {
+  const text = value.trim();
+  return text.length > 0 && (FIGURE_VALUE.test(text) || IDENTIFIER_VALUE.test(text));
+}
+
 export function EntitySummary({
   id,
   eyebrow,
@@ -605,7 +854,7 @@ export function EntitySummary({
     <section id={id} className="entity-summary" role="region" aria-label={ariaLabel}>
       <div className="entity-summary-head">
         <div className="min-w-0">
-          <div className="eyebrow-label">{eyebrow}</div>
+          <div className={eyebrowClassName(eyebrow)}>{eyebrow}</div>
           <h3 className="entity-summary-title">{title}</h3>
           <p className="entity-summary-subtitle">{subtitle}</p>
           <p className="entity-summary-description">{description}</p>
@@ -619,7 +868,7 @@ export function EntitySummary({
         {fields.map((field) => (
           <div key={field.label} className="entity-summary-field">
             <dt>{field.label}</dt>
-            <dd>{field.value}</dd>
+            <dd className={isDataLikeValue(field.value) ? "entity-summary-value--data" : undefined}>{field.value}</dd>
           </div>
         ))}
       </dl>

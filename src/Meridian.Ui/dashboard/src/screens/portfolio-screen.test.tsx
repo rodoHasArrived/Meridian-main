@@ -377,25 +377,31 @@ describe("PortfolioScreen", () => {
     vi.restoreAllMocks();
   });
 
-  it("navigates between portfolio route views from the tab strip", async () => {
+  it.each([
+    ["/portfolio", "Execution-linked holdings"],
+    ["/portfolio/attribution", "Attribution"]
+  ])("opens %s on its own view with the sidebar as the only sub-route navigation", async (route, heading) => {
     await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />, {
-      initialEntries: ["/portfolio"]
+      initialEntries: [route]
     });
 
-    const tablist = screen.getByRole("tablist", { name: "Portfolio routes" });
-    expect(within(tablist).getByRole("tab", { name: "Overview", selected: true })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Execution-linked holdings" })).toBeInTheDocument();
-    expect(screen.getByRole("treegrid", { name: /open positions/i })).toBeDefined();
-    expect(screen.queryByText(/live brokerage portfolio/i)).toBeNull();
-    expect(screen.queryByRole("treegrid", { name: /run-linked equity/i })).toBeNull();
+    expect(screen.queryByRole("tablist", { name: "Portfolio routes" })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: heading })).toBeInTheDocument();
+    if (route === "/portfolio") {
+      expect(screen.getByRole("treegrid", { name: /open positions/i })).toBeDefined();
+      expect(screen.queryByText(/live brokerage portfolio/i)).toBeNull();
+      expect(screen.queryByRole("treegrid", { name: /run-linked equity/i })).toBeNull();
+    } else {
+      expect(screen.getByRole("treegrid", { name: /run-linked equity/i })).toBeDefined();
+      expect(screen.queryByRole("treegrid", { name: /open positions/i })).toBeNull();
+    }
+  });
 
-    const user = userEvent.setup();
-    await user.click(within(tablist).getByRole("tab", { name: "Attribution" }));
-    expect(screen.getByRole("heading", { name: "Attribution" })).toBeInTheDocument();
-    expect(screen.getByRole("treegrid", { name: /run-linked equity/i })).toBeDefined();
-    expect(screen.queryByRole("treegrid", { name: /open positions/i })).toBeNull();
+  it("opens /portfolio/brokerage-sync on the live brokerage portfolio", async () => {
+    await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />, {
+      initialEntries: ["/portfolio/brokerage-sync"]
+    });
 
-    await user.click(within(tablist).getByRole("tab", { name: "Brokerage sync" }));
     expect(screen.getAllByText(/live brokerage portfolio/i).length).toBeGreaterThan(0);
     expect(screen.queryByRole("treegrid", { name: /run-linked equity/i })).toBeNull();
   });
@@ -473,7 +479,7 @@ describe("PortfolioScreen", () => {
     const scope = screen.getByLabelText("Explorer scope");
     expect(scope).toHaveTextContent("Demo portfolio data");
     expect(scope).toHaveTextContent("Mean Reversion");
-    expect(scope).toHaveTextContent("Apr 28, 18:14 UTC");
+    expect(scope).toHaveTextContent("Apr 28, 2026, 18:14 UTC");
     const filters = screen.getByLabelText("Applied explorer filters");
     expect(filters).toHaveTextContent("Demo portfolio data");
     expect(filters).toHaveTextContent("Mean Reversion");
@@ -624,7 +630,7 @@ describe("PortfolioScreen", () => {
     expect(screen.getAllByText(/live brokerage portfolio/i).length).toBeGreaterThan(0);
     const trustSnapshot = screen.getByRole("region", { name: /alpaca paper brokerage sync snapshot/i });
     expect(within(trustSnapshot).getByText(/household synced/i)).toBeInTheDocument();
-    expect(within(trustSnapshot).getAllByText("May 7, 12:00 UTC").length).toBeGreaterThan(0);
+    expect(within(trustSnapshot).getAllByText("May 7, 2026, 12:00 UTC").length).toBeGreaterThan(0);
     expect(within(trustSnapshot).getAllByText("$375,000").length).toBeGreaterThan(0);
     expect(within(trustSnapshot).getByText("2 accounts")).toBeInTheDocument();
     expect(within(trustSnapshot).getByText("2 positions")).toBeInTheDocument();

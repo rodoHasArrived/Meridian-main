@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Check, Circle, FlaskConical, ListChecks } from "lucide-react";
+import { ArrowRight, Check, Circle, FlaskConical, ListChecks, MonitorUp } from "lucide-react";
 import { apiPostJson } from "@/lib/api";
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import {
@@ -66,28 +66,37 @@ export function ActivationHeaderProgress({ status }: { status?: FirstRunStatus |
         </span>
       ) : null}
 
+      {/* Kept mounted while the sheet is open so finishing the last step mid-sheet does not
+          pull the drawer's trigger out from under it; it leaves on the next close. */}
+      {model.triggerVisible || open ? (
+        <button
+          type="button"
+          aria-label={model.triggerAriaLabel}
+          title={model.triggerTitle}
+          onClick={() => setOpen(true)}
+          className={cn(
+            "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs transition-colors",
+            "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
+            model.finished
+              ? "bg-emerald-400/15 text-emerald-200 hover:bg-emerald-400/25"
+              : "bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-slate-100"
+          )}
+        >
+          {model.finished ? <Check size={13} aria-hidden="true" /> : <ListChecks size={13} aria-hidden="true" />}
+          {model.triggerLabel}
+        </button>
+      ) : null}
+
+      {/* Icon-sized so the masthead fits one row; the accessible name and tooltip keep
+          the full action. */}
       <button
         type="button"
-        aria-label={model.triggerAriaLabel}
-        title={model.triggerTitle}
-        onClick={() => setOpen(true)}
-        className={cn(
-          "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs transition-colors",
-          "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
-          model.finished
-            ? "bg-emerald-400/15 text-emerald-200 hover:bg-emerald-400/25"
-            : "bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-slate-100"
-        )}
-      >
-        {model.finished ? <Check size={13} aria-hidden="true" /> : <ListChecks size={13} aria-hidden="true" />}
-        {model.triggerLabel}
-      </button>
-
-      <button
-        className="rounded-full border border-slate-700 px-2.5 py-1 text-xs text-slate-300 hover:border-cyan-400 hover:text-cyan-200"
+        aria-label="Open desktop workstation"
+        title="Open desktop workstation"
+        className="relative inline-flex h-9 w-9 items-center justify-center rounded-md border border-border/60 bg-transparent text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
         onClick={() => void apiPostJson(WORKSTATION_API_ENDPOINTS.desktopLaunch, { page: "Portfolio" })}
       >
-        Open desktop workstation
+        <MonitorUp className="h-4 w-4" aria-hidden="true" />
       </button>
 
       <Sheet open={open} onOpenChange={setOpen}>

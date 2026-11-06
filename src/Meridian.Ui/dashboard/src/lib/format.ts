@@ -1,4 +1,6 @@
-// Shared currency, number, and percent formatting for workstation screens.
+// Shared currency, number, percent, count, quantity and date formatting for workstation screens.
+// This is the one Intl-backed formatting module: screens call it instead of Intl.NumberFormat or
+// toLocale*String directly (scripts/design-system-ratchets.mjs and the ESLint rule enforce that).
 // All helpers pin the en-US locale so operator machines render identical values
 // regardless of host locale, and all accept null/undefined/non-finite input,
 // rendering the configurable `fallback` instead.
@@ -175,3 +177,102 @@ export function formatAmountWithCode(
   const code = currency?.trim();
   return code ? `${text} ${code}` : text;
 }
+
+/** Grouped count, e.g. 1234 -> "1,234"; the same output as `value.toLocaleString("en-US")`. */
+export function formatCount(value: NullableNumber, options: Pick<NumberFormatOptions, "fallback"> = {}): string {
+  const { fallback = DEFAULT_FALLBACK } = options;
+  if (!isRenderable(value)) {
+    return fallback;
+  }
+
+  return value.toLocaleString(FORMAT_LOCALE);
+}
+
+/**
+ * Where a money value is read, which sets its precision and sign convention:
+ *  - `accounting`: the currency's minor units (2 for USD, 0 for JPY), negatives in parentheses.
+ *  - `trading`: instrument precision (`decimals`, else the currency's minor units), minus sign.
+ *  - `summary`: whole units for headline figures, minus sign.
+ */
+export type MoneyContext = "accounting" | "trading" | "summary";
+
+export interface MoneyFormatOptions {
+  /** ISO 4217 code; `null` renders a bare amount with no symbol. @default "USD" */
+  currency?: string | null;
+  /** @default "trading" */
+  context?: MoneyContext;
+  /** Fraction digits; overrides the context default (instrument precision for trading). */
+  decimals?: number;
+  /** Positives get an explicit "+". */
+  signed?: boolean;
+  fallback?: string;
+}
+
+/** Money for its reading context, e.g. accounting "(1,234.00)", trading "-$1,234.56", summary "$1,235". */
+export function formatMoney(value: NullableNumber, options: MoneyFormatOptions = {}): string {
+  const { currency, context = "trading", decimals, signed = false, fallback = DEFAULT_FALLBACK } = options;
+  if (!isRenderable(value)) {
+    return fallback;
+  }
+
+  const digits = decimals ?? (context === "summary" ? 0 : undefined);
+  const code = currency === null ? null : currency?.trim() || "USD";
+  let magnitude: string;
+  if (code === null) {
+    magnitude = Math.abs(value).toLocaleString(FORMAT_LOCALE, { minimumFractionDigits: digits ?? 2, maximumFractionDigits: digits ?? 2 });
+  } else try {
+    magnitude = new Intl.NumberFormat(FORMAT_LOCALE, {
+      style: "currency",
+      currency: code,
+      ...(digits === undefined ? {} : { minimumFractionDigits: digits, maximumFractionDigits: digits })
+    }).format(Math.abs(value));
+  } catch {
+    magnitude = `${code} ${Math.abs(value).toLocaleString(FORMAT_LOCALE, { minimumFractionDigits: digits ?? 2, maximumFractionDigits: digits ?? 2 })}`;
+  }
+
+  if (value < 0) {
+    return context === "accounting" ? `(${magnitude})` : `-${magnitude}`;
+  }
+  return signed && value > 0 ? `+${magnitude}` : magnitude;
+}
+
+export interface QuantityFormatOptions {
+  /** Maximum fraction digits (instrument precision). @default 4 */
+  maxDecimals?: number;
+  /** Minimum fraction digits. @default 0 */
+  minDecimals?: number;
+  signed?: boolean;
+  fallback?: string;
+}
+
+/** Quantity or price at instrument precision, e.g. "1,250", "0.0125", "+12.5". */
+export function formatQuantity(value: NullableNumber, options: QuantityFormatOptions = {}): string {
+  const { maxDecimals = 4, minDecimals = 0, signed = false, fallback = DEFAULT_FALLBACK } = options;
+  if (!isRenderable(value)) {
+    return fallback;
+  }
+
+  const text = value.toLocaleString(FORMAT_LOCALE, { minimumFractionDigits: minDecimals, maximumFractionDigits: maxDecimals });
+  return signed && value > 0 ? `+${text}` : text;
+}
+
+const UTC_MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"] as const;
+
+function padTwo(value: number): string {
+  return String(value).padStart(2, "0");
+}
+
+/**
+ * UTC timestamp label that always carries the year, e.g. "Jun 30, 2026, 18:05 UTC". The year
+ * is never dropped: a ledger or evidence timestamp has to be unambiguous, and a label that
+ * omitted it for the current year would read differently as the calendar turns.
+ */
+export function formatUtcTimestamp(date: Date): string {
+  return `${UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}, ${padTwo(date.getUTCHours())}:${padTwo(date.getUTCMinutes())} UTC`;
+}
+
+/** UTC calendar date with the year, e.g. "Jun 30, 2026". */
+export function formatUtcDate(date: Date): string {
+  return `${UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}`;
+}
+

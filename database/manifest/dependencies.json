@@ -4024,6 +4024,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.ApplyScheduledRateResetRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.ApplyWriteOffRequest"
     },
     {
@@ -4043,6 +4049,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.BorrowerInfoDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.CapitalizePikRequest"
     },
     {
       "kind": "contract-set-member",
@@ -4102,6 +4114,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.DeclaredRate"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope"
     },
     {
@@ -4133,6 +4151,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.DirectLendingErrorCode"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.DirectLendingIndexFixingDto"
     },
     {
       "kind": "contract-set-member",
@@ -4210,6 +4234,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.DirectLendingRateField"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.DirectLendingRateUnit"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.DirectLendingReplayCheckpointDto"
     },
     {
@@ -4241,6 +4277,18 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.FeeBalanceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.FloatingRateResetSchedule"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.FloorCapApplication"
     },
     {
       "kind": "contract-set-member",
@@ -4294,6 +4342,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.LoanServicingSchedulePreviewDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.LoanServicingStateDto"
     },
     {
@@ -4313,6 +4367,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.LoanTermsVersionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.LookbackDayKind"
     },
     {
       "kind": "contract-set-member",
@@ -4348,6 +4408,30 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.PikCapitalizationDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.PikCapitalizationFrequency"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.PikCapitalizationPolicy"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.PikElection"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.PostDailyAccrualRequest"
     },
     {
@@ -4372,13 +4456,37 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.RateNormalizationResult"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.RateResetDto"
     },
     {
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.RateResetFrequency"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.RateResetKind"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.RateTypeKind"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.RateUnitNormalizer"
     },
     {
       "kind": "contract-set-member",
@@ -4409,6 +4517,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.ReconciliationRunDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.RecordIndexFixingRequest"
     },
     {
       "kind": "contract-set-member",
@@ -4451,6 +4565,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.RestructuringType"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.ScheduledRateResetPreviewDto"
     },
     {
       "kind": "contract-set-member",
@@ -9982,6 +10102,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ClassificationLabelReader"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.CommitmentLot"
     },
     {
@@ -10883,6 +11009,18 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorCatalog"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelException"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelField"
     },
     {
       "kind": "contract-set-member",
@@ -15124,6 +15262,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OperatingScopeValuesDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.OperationsAccountingRecordEvidenceCategoryDto"
     },
     {
@@ -15545,6 +15689,24 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.OperatorInboxDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OperatorScopePreferenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OperatorScopePreferenceSaveRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OperatorSurfaceVisitDto"
     },
     {
       "kind": "contract-set-member",
@@ -17086,6 +17248,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SecurityMasterCanonicalMergeOutcomeDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SecurityMasterCanonicalMergeOutcomeKind"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.SecurityMasterChangeHistoryItemDto"
     },
     {
@@ -18532,6 +18706,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationCrossScreenCount"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationCrossScreenCountsDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.WorkstationDataBackfillRecord"
     },
     {
@@ -18737,6 +18923,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.WorkstationPortfolioSummaryTelemetry"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationProviderHealthCount"
     },
     {
       "kind": "contract-set-member",
@@ -19888,6 +20080,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:direct-lending-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.ApplyScheduledRateResetRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:direct-lending-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.ApplyWriteOffRequest"
     },
     {
@@ -19907,6 +20105,12 @@
       "label": "",
       "source": "contract-set:direct-lending-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.BorrowerInfoDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:direct-lending-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.CapitalizePikRequest"
     },
     {
       "kind": "contract-set-member",
@@ -19966,6 +20170,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:direct-lending-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.DeclaredRate"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:direct-lending-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope"
     },
     {
@@ -19997,6 +20207,12 @@
       "label": "",
       "source": "contract-set:direct-lending-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.DirectLendingErrorCode"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:direct-lending-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.DirectLendingIndexFixingDto"
     },
     {
       "kind": "contract-set-member",
@@ -20074,6 +20290,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:direct-lending-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.DirectLendingRateField"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:direct-lending-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.DirectLendingRateUnit"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:direct-lending-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.DirectLendingReplayCheckpointDto"
     },
     {
@@ -20105,6 +20333,18 @@
       "label": "",
       "source": "contract-set:direct-lending-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.FeeBalanceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:direct-lending-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.FloatingRateResetSchedule"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:direct-lending-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.FloorCapApplication"
     },
     {
       "kind": "contract-set-member",
@@ -20158,6 +20398,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:direct-lending-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.LoanServicingSchedulePreviewDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:direct-lending-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.LoanServicingStateDto"
     },
     {
@@ -20177,6 +20423,12 @@
       "label": "",
       "source": "contract-set:direct-lending-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.LoanTermsVersionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:direct-lending-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.LookbackDayKind"
     },
     {
       "kind": "contract-set-member",
@@ -20212,6 +20464,30 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:direct-lending-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.PikCapitalizationDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:direct-lending-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.PikCapitalizationFrequency"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:direct-lending-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.PikCapitalizationPolicy"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:direct-lending-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.PikElection"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:direct-lending-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.PostDailyAccrualRequest"
     },
     {
@@ -20236,13 +20512,37 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:direct-lending-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.RateNormalizationResult"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:direct-lending-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.RateResetDto"
     },
     {
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:direct-lending-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.RateResetFrequency"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:direct-lending-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.RateResetKind"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:direct-lending-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.RateTypeKind"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:direct-lending-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.RateUnitNormalizer"
     },
     {
       "kind": "contract-set-member",
@@ -20273,6 +20573,12 @@
       "label": "",
       "source": "contract-set:direct-lending-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.ReconciliationRunDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:direct-lending-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.RecordIndexFixingRequest"
     },
     {
       "kind": "contract-set-member",
@@ -20315,6 +20621,12 @@
       "label": "",
       "source": "contract-set:direct-lending-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.RestructuringType"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:direct-lending-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.ScheduledRateResetPreviewDto"
     },
     {
       "kind": "contract-set-member",
@@ -23968,6 +24280,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ClassificationLabelReader"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.CommitmentLot"
     },
     {
@@ -24869,6 +25187,18 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorCatalog"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelException"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelField"
     },
     {
       "kind": "contract-set-member",
@@ -30639,6 +30969,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.DirectLending.DeclaredRate",
+      "target": "contract:Meridian.Contracts.DirectLending.DirectLendingRateUnit"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope",
       "target": "contract:Meridian.Contracts.DirectLending.DirectLendingCommandMetadataDto"
     },
@@ -30659,6 +30995,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.DirectLending.DirectLendingCommandResult",
       "target": "contract:Meridian.Contracts.DirectLending.DirectLendingCommandError"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.DirectLending.DirectLendingIndexFixingDto",
+      "target": "contract:Meridian.Contracts.DirectLending.DeclaredRate"
     },
     {
       "kind": "contract-reference",
@@ -30778,13 +31120,49 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.DirectLending.DirectLendingTermsDto",
+      "target": "contract:Meridian.Contracts.DirectLending.FloatingRateResetSchedule"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.DirectLending.DirectLendingTermsDto",
       "target": "contract:Meridian.Contracts.DirectLending.PaymentFrequency"
     },
     {
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.DirectLending.DirectLendingTermsDto",
+      "target": "contract:Meridian.Contracts.DirectLending.PikCapitalizationPolicy"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.DirectLending.DirectLendingTermsDto",
       "target": "contract:Meridian.Contracts.DirectLending.RateTypeKind"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.DirectLending.FloatingRateResetSchedule",
+      "target": "contract:Meridian.Contracts.DirectLending.DeclaredRate"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.DirectLending.FloatingRateResetSchedule",
+      "target": "contract:Meridian.Contracts.DirectLending.FloorCapApplication"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.DirectLending.FloatingRateResetSchedule",
+      "target": "contract:Meridian.Contracts.DirectLending.LookbackDayKind"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.DirectLending.FloatingRateResetSchedule",
+      "target": "contract:Meridian.Contracts.DirectLending.RateResetFrequency"
     },
     {
       "kind": "contract-reference",
@@ -30867,6 +31245,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.DirectLending.LoanServicingSchedulePreviewDto",
+      "target": "contract:Meridian.Contracts.DirectLending.ScheduledRateResetPreviewDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.DirectLending.LoanServicingStateDto",
       "target": "contract:Meridian.Contracts.DirectLending.CollateralDto"
     },
@@ -30893,6 +31277,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.DirectLending.LoanServicingStateDto",
       "target": "contract:Meridian.Contracts.DirectLending.OutstandingBalancesDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.DirectLending.LoanServicingStateDto",
+      "target": "contract:Meridian.Contracts.DirectLending.PikCapitalizationDto"
     },
     {
       "kind": "contract-reference",
@@ -30933,6 +31323,24 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.DirectLending.PikCapitalizationPolicy",
+      "target": "contract:Meridian.Contracts.DirectLending.DeclaredRate"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.DirectLending.PikCapitalizationPolicy",
+      "target": "contract:Meridian.Contracts.DirectLending.PikCapitalizationFrequency"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.DirectLending.PikCapitalizationPolicy",
+      "target": "contract:Meridian.Contracts.DirectLending.PikElection"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.DirectLending.ProjectedCashFlowDto",
       "target": "contract:Meridian.Contracts.DirectLending.CurrencyCode"
     },
@@ -30941,6 +31349,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.DirectLending.ProjectionRunDto",
       "target": "contract:Meridian.Contracts.DirectLending.ProjectionRunStatus"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.DirectLending.RateResetDto",
+      "target": "contract:Meridian.Contracts.DirectLending.RateResetKind"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.DirectLending.RecordIndexFixingRequest",
+      "target": "contract:Meridian.Contracts.DirectLending.DeclaredRate"
     },
     {
       "kind": "contract-reference",
@@ -38175,6 +38595,24 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorCatalog",
+      "target": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelException"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelException",
+      "target": "contract:Meridian.Contracts.Domain.Enums.InstrumentType"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelException",
+      "target": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelField"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.IssueOtcMarginCallRequest",
       "target": "contract:Meridian.Contracts.SecurityMaster.OtcMovementKind"
     },
@@ -43527,6 +43965,18 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OperatorScopePreferenceDto",
+      "target": "contract:Meridian.Contracts.Workstation.OperatingScopeValuesDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OperatorScopePreferenceSaveRequest",
+      "target": "contract:Meridian.Contracts.Workstation.OperatingScopeValuesDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.OperatorWorkItemDto",
       "target": "contract:Meridian.Contracts.Workstation.OperatorWorkItemKindDto"
     },
@@ -45699,6 +46149,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.SecurityMasterCanonicalMergeOutcomeDto",
+      "target": "contract:Meridian.Contracts.Workstation.SecurityMasterCanonicalMergeOutcomeKind"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.SecurityMasterConflictAssessmentDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterConflict"
     },
@@ -45821,6 +46277,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.SecurityMasterPublishResultDto",
       "target": "contract:Meridian.Contracts.Workstation.RestatementCandidateDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.SecurityMasterPublishResultDto",
+      "target": "contract:Meridian.Contracts.Workstation.SecurityMasterCanonicalMergeOutcomeDto"
     },
     {
       "kind": "contract-reference",
@@ -47447,6 +47909,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.WorkstationBrokerageSyncStatusDto",
       "target": "contract:Meridian.Contracts.Workstation.WorkstationBrokerageSyncHealth"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.WorkstationCrossScreenCountsDto",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationCrossScreenCount"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.WorkstationCrossScreenCountsDto",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationProviderHealthCount"
     },
     {
       "kind": "contract-reference",
@@ -52342,6 +52816,42 @@
     {
       "kind": "normal",
       "label": "",
+      "source": "database:security_master.ck_loan_index_fixing_index_name on security_master.loan_index_fixing",
+      "target": "database:security_master.loan_index_fixing.index_name"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_loan_index_fixing_revision on security_master.loan_index_fixing",
+      "target": "database:security_master.loan_index_fixing.revision"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_loan_index_fixing_unit on security_master.loan_index_fixing",
+      "target": "database:security_master.loan_index_fixing.declared_unit"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_loan_pik_capitalization_projection_period on security_master.loan_pik_capitalization_projection",
+      "target": "database:security_master.loan_pik_capitalization_projection.period_end"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_loan_pik_capitalization_projection_period on security_master.loan_pik_capitalization_projection",
+      "target": "database:security_master.loan_pik_capitalization_projection.period_start"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_loan_rate_reset_projection_kind on security_master.loan_rate_reset_projection",
+      "target": "database:security_master.loan_rate_reset_projection.reset_kind"
+    },
+    {
+      "kind": "normal",
+      "label": "",
       "source": "database:security_master.ck_operations_workflow_audit_event_type on security_master.operations_workflow_audit",
       "target": "database:security_master.operations_workflow_audit.event_type"
     },
@@ -52782,6 +53292,54 @@
       "label": "",
       "source": "database:security_master.corporate_actions_security_id_fkey on security_master.corporate_actions",
       "target": "database:security_master.securities_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.custom_asset_profile_field_projection_profile_id_check on security_master.custom_asset_profile_field_projection",
+      "target": "database:security_master.custom_asset_profile_field_projection.custom_profile_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.custom_asset_profile_field_projection_raw_kind_check on security_master.custom_asset_profile_field_projection",
+      "target": "database:security_master.custom_asset_profile_field_projection.raw_value"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.custom_asset_profile_field_projection_raw_kind_check on security_master.custom_asset_profile_field_projection",
+      "target": "database:security_master.custom_asset_profile_field_projection.value_kind"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.custom_asset_profile_field_projection_typed_value_check on security_master.custom_asset_profile_field_projection",
+      "target": "database:security_master.custom_asset_profile_field_projection.boolean_value"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.custom_asset_profile_field_projection_typed_value_check on security_master.custom_asset_profile_field_projection",
+      "target": "database:security_master.custom_asset_profile_field_projection.numeric_value"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.custom_asset_profile_field_projection_typed_value_check on security_master.custom_asset_profile_field_projection",
+      "target": "database:security_master.custom_asset_profile_field_projection.text_value"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.custom_asset_profile_field_projection_typed_value_check on security_master.custom_asset_profile_field_projection",
+      "target": "database:security_master.custom_asset_profile_field_projection.value_kind"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.custom_asset_profile_field_projection_value_kind_check on security_master.custom_asset_profile_field_projection",
+      "target": "database:security_master.custom_asset_profile_field_projection.value_kind"
     },
     {
       "constraint": "direct_loan_covenant_projection_security_id_fkey",
@@ -54111,6 +54669,37 @@
       "label": "",
       "source": "database:security_master.security_governance_events_stream_check on security_master.security_governance_events",
       "target": "database:security_master.security_governance_events.stream"
+    },
+    {
+      "constraint": "security_identifier_revisions_security_id_fkey",
+      "kind": "foreign-key",
+      "label": "security_id",
+      "source": "database:security_master.security_identifier_revisions",
+      "target": "database:security_master.securities"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_identifier_revisions_change_kind_check on security_master.security_identifier_revisions",
+      "target": "database:security_master.security_identifier_revisions.change_kind"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_identifier_revisions_revision_check on security_master.security_identifier_revisions",
+      "target": "database:security_master.security_identifier_revisions.revision"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_identifier_revisions_security_id_fkey on security_master.security_identifier_revisions",
+      "target": "database:security_master.securities.security_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_identifier_revisions_security_id_fkey on security_master.security_identifier_revisions",
+      "target": "database:security_master.securities_pkey"
     },
     {
       "constraint": "security_identifiers_security_id_fkey",
@@ -55464,6 +56053,12 @@
       "kind": "contains",
       "label": "",
       "source": "schema:security_master",
+      "target": "database:security_master.custom_asset_profile_field_projection"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
       "target": "database:security_master.data_vendor_entitlements"
     },
     {
@@ -55573,6 +56168,24 @@
       "label": "",
       "source": "schema:security_master",
       "target": "database:security_master.loan_event_position_seq"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
+      "target": "database:security_master.loan_index_fixing"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
+      "target": "database:security_master.loan_pik_capitalization_projection"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
+      "target": "database:security_master.loan_rate_reset_projection"
     },
     {
       "kind": "contains",
@@ -55860,6 +56473,12 @@
       "kind": "contains",
       "label": "",
       "source": "schema:security_master",
+      "target": "database:security_master.security_identifier_revisions"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
       "target": "database:security_master.security_identifiers"
     },
     {
@@ -56062,7 +56681,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "63fbb8c11c718db083912c6d610081c0846ee6db96477fafc2dfbdd60ff2f454",
+  "fingerprint": "8c194e49f683dc57b6d4b9f2ea8b2d497194bb1e7af44d7e6b008f1031a5a5a0",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -60137,6 +60756,12 @@
     },
     {
       "classification": "request",
+      "id": "contract:Meridian.Contracts.DirectLending.ApplyScheduledRateResetRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.DirectLending.ApplyScheduledRateResetRequest"
+    },
+    {
+      "classification": "request",
       "id": "contract:Meridian.Contracts.DirectLending.ApplyWriteOffRequest",
       "kind": "contract-type",
       "label": "Meridian.Contracts.DirectLending.ApplyWriteOffRequest"
@@ -60158,6 +60783,12 @@
       "id": "contract:Meridian.Contracts.DirectLending.BorrowerInfoDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.DirectLending.BorrowerInfoDto"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.DirectLending.CapitalizePikRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.DirectLending.CapitalizePikRequest"
     },
     {
       "classification": "dto",
@@ -60215,6 +60846,12 @@
     },
     {
       "classification": "record",
+      "id": "contract:Meridian.Contracts.DirectLending.DeclaredRate",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.DirectLending.DeclaredRate"
+    },
+    {
+      "classification": "record",
       "id": "contract:Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope",
       "kind": "contract-type",
       "label": "Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope"
@@ -60248,6 +60885,12 @@
       "id": "contract:Meridian.Contracts.DirectLending.DirectLendingErrorCode",
       "kind": "contract-type",
       "label": "Meridian.Contracts.DirectLending.DirectLendingErrorCode"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.DirectLending.DirectLendingIndexFixingDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.DirectLending.DirectLendingIndexFixingDto"
     },
     {
       "classification": "dto",
@@ -60322,6 +60965,18 @@
       "label": "Meridian.Contracts.DirectLending.DirectLendingOutboxMessageDto"
     },
     {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.DirectLending.DirectLendingRateField",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.DirectLending.DirectLendingRateField"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.DirectLending.DirectLendingRateUnit",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.DirectLending.DirectLendingRateUnit"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.DirectLending.DirectLendingReplayCheckpointDto",
       "kind": "contract-type",
@@ -60356,6 +61011,18 @@
       "id": "contract:Meridian.Contracts.DirectLending.FeeBalanceDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.DirectLending.FeeBalanceDto"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.DirectLending.FloatingRateResetSchedule",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.DirectLending.FloatingRateResetSchedule"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.DirectLending.FloorCapApplication",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.DirectLending.FloorCapApplication"
     },
     {
       "classification": "dto",
@@ -60407,6 +61074,12 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.DirectLending.LoanServicingSchedulePreviewDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.DirectLending.LoanServicingSchedulePreviewDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.DirectLending.LoanServicingStateDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.DirectLending.LoanServicingStateDto"
@@ -60428,6 +61101,12 @@
       "id": "contract:Meridian.Contracts.DirectLending.LoanTermsVersionDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.DirectLending.LoanTermsVersionDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.DirectLending.LookbackDayKind",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.DirectLending.LookbackDayKind"
     },
     {
       "classification": "dto",
@@ -60460,6 +61139,30 @@
       "label": "Meridian.Contracts.DirectLending.PaymentFrequency"
     },
     {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.DirectLending.PikCapitalizationDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.DirectLending.PikCapitalizationDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.DirectLending.PikCapitalizationFrequency",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.DirectLending.PikCapitalizationFrequency"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.DirectLending.PikCapitalizationPolicy",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.DirectLending.PikCapitalizationPolicy"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.DirectLending.PikElection",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.DirectLending.PikElection"
+    },
+    {
       "classification": "request",
       "id": "contract:Meridian.Contracts.DirectLending.PostDailyAccrualRequest",
       "kind": "contract-type",
@@ -60484,6 +61187,12 @@
       "label": "Meridian.Contracts.DirectLending.ProjectionRunStatus"
     },
     {
+      "classification": "result",
+      "id": "contract:Meridian.Contracts.DirectLending.RateNormalizationResult",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.DirectLending.RateNormalizationResult"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.DirectLending.RateResetDto",
       "kind": "contract-type",
@@ -60491,9 +61200,27 @@
     },
     {
       "classification": "enum",
+      "id": "contract:Meridian.Contracts.DirectLending.RateResetFrequency",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.DirectLending.RateResetFrequency"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.DirectLending.RateResetKind",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.DirectLending.RateResetKind"
+    },
+    {
+      "classification": "enum",
       "id": "contract:Meridian.Contracts.DirectLending.RateTypeKind",
       "kind": "contract-type",
       "label": "Meridian.Contracts.DirectLending.RateTypeKind"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.DirectLending.RateUnitNormalizer",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.DirectLending.RateUnitNormalizer"
     },
     {
       "classification": "dto",
@@ -60524,6 +61251,12 @@
       "id": "contract:Meridian.Contracts.DirectLending.ReconciliationRunDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.DirectLending.ReconciliationRunDto"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.DirectLending.RecordIndexFixingRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.DirectLending.RecordIndexFixingRequest"
     },
     {
       "classification": "request",
@@ -60566,6 +61299,12 @@
       "id": "contract:Meridian.Contracts.DirectLending.RestructuringType",
       "kind": "contract-type",
       "label": "Meridian.Contracts.DirectLending.RestructuringType"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.DirectLending.ScheduledRateResetPreviewDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.DirectLending.ScheduledRateResetPreviewDto"
     },
     {
       "classification": "dto",
@@ -66094,6 +66833,12 @@
       "label": "Meridian.Contracts.SecurityMaster.CashFlowLegRateKind"
     },
     {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.ClassificationLabelReader",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.ClassificationLabelReader"
+    },
+    {
       "classification": "record",
       "id": "contract:Meridian.Contracts.SecurityMaster.CommitmentLot",
       "kind": "contract-type",
@@ -66998,6 +67743,18 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorCatalog",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorCatalog"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelException",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelException"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelField",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelField"
     },
     {
       "classification": "request",
@@ -71237,6 +71994,12 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OperatingScopeValuesDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OperatingScopeValuesDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.OperationsAccountingRecordEvidenceCategoryDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.OperationsAccountingRecordEvidenceCategoryDto"
@@ -71660,6 +72423,24 @@
       "id": "contract:Meridian.Contracts.Workstation.OperatorInboxDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.OperatorInboxDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OperatorScopePreferenceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OperatorScopePreferenceDto"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Workstation.OperatorScopePreferenceSaveRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OperatorScopePreferenceSaveRequest"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OperatorSurfaceVisitDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OperatorSurfaceVisitDto"
     },
     {
       "classification": "dto",
@@ -73199,6 +73980,18 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.SecurityMasterCanonicalMergeOutcomeDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SecurityMasterCanonicalMergeOutcomeDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Workstation.SecurityMasterCanonicalMergeOutcomeKind",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SecurityMasterCanonicalMergeOutcomeKind"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.SecurityMasterChangeHistoryItemDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.SecurityMasterChangeHistoryItemDto"
@@ -74645,6 +75438,18 @@
     },
     {
       "classification": "record",
+      "id": "contract:Meridian.Contracts.Workstation.WorkstationCrossScreenCount",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.WorkstationCrossScreenCount"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.WorkstationCrossScreenCountsDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.WorkstationCrossScreenCountsDto"
+    },
+    {
+      "classification": "record",
       "id": "contract:Meridian.Contracts.Workstation.WorkstationDataBackfillRecord",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.WorkstationDataBackfillRecord"
@@ -74852,6 +75657,12 @@
       "id": "contract:Meridian.Contracts.Workstation.WorkstationPortfolioSummaryTelemetry",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.WorkstationPortfolioSummaryTelemetry"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Workstation.WorkstationProviderHealthCount",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.WorkstationProviderHealthCount"
     },
     {
       "classification": "dto",
@@ -79642,6 +80453,31 @@
       "label": "security_master.ck_corporate_actions_economic_fingerprint on security_master.corporate_actions"
     },
     {
+      "id": "database:security_master.ck_loan_index_fixing_index_name on security_master.loan_index_fixing",
+      "kind": "database-object",
+      "label": "security_master.ck_loan_index_fixing_index_name on security_master.loan_index_fixing"
+    },
+    {
+      "id": "database:security_master.ck_loan_index_fixing_revision on security_master.loan_index_fixing",
+      "kind": "database-object",
+      "label": "security_master.ck_loan_index_fixing_revision on security_master.loan_index_fixing"
+    },
+    {
+      "id": "database:security_master.ck_loan_index_fixing_unit on security_master.loan_index_fixing",
+      "kind": "database-object",
+      "label": "security_master.ck_loan_index_fixing_unit on security_master.loan_index_fixing"
+    },
+    {
+      "id": "database:security_master.ck_loan_pik_capitalization_projection_period on security_master.loan_pik_capitalization_projection",
+      "kind": "database-object",
+      "label": "security_master.ck_loan_pik_capitalization_projection_period on security_master.loan_pik_capitalization_projection"
+    },
+    {
+      "id": "database:security_master.ck_loan_rate_reset_projection_kind on security_master.loan_rate_reset_projection",
+      "kind": "database-object",
+      "label": "security_master.ck_loan_rate_reset_projection_kind on security_master.loan_rate_reset_projection"
+    },
+    {
       "id": "database:security_master.ck_operations_workflow_audit_event_type on security_master.operations_workflow_audit",
       "kind": "database-object",
       "label": "security_master.ck_operations_workflow_audit_event_type on security_master.operations_workflow_audit"
@@ -80251,6 +81087,62 @@
       "schema": "security_master"
     },
     {
+      "id": "database:security_master.custom_asset_profile_field_projection",
+      "kind": "database-table",
+      "label": "security_master.custom_asset_profile_field_projection",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.custom_asset_profile_field_projection.boolean_value",
+      "kind": "database-object",
+      "label": "security_master.custom_asset_profile_field_projection.boolean_value"
+    },
+    {
+      "id": "database:security_master.custom_asset_profile_field_projection.custom_profile_id",
+      "kind": "database-object",
+      "label": "security_master.custom_asset_profile_field_projection.custom_profile_id"
+    },
+    {
+      "id": "database:security_master.custom_asset_profile_field_projection.numeric_value",
+      "kind": "database-object",
+      "label": "security_master.custom_asset_profile_field_projection.numeric_value"
+    },
+    {
+      "id": "database:security_master.custom_asset_profile_field_projection.raw_value",
+      "kind": "database-object",
+      "label": "security_master.custom_asset_profile_field_projection.raw_value"
+    },
+    {
+      "id": "database:security_master.custom_asset_profile_field_projection.text_value",
+      "kind": "database-object",
+      "label": "security_master.custom_asset_profile_field_projection.text_value"
+    },
+    {
+      "id": "database:security_master.custom_asset_profile_field_projection.value_kind",
+      "kind": "database-object",
+      "label": "security_master.custom_asset_profile_field_projection.value_kind"
+    },
+    {
+      "id": "database:security_master.custom_asset_profile_field_projection_profile_id_check on security_master.custom_asset_profile_field_projection",
+      "kind": "database-object",
+      "label": "security_master.custom_asset_profile_field_projection_profile_id_check on security_master.custom_asset_profile_field_projection"
+    },
+    {
+      "id": "database:security_master.custom_asset_profile_field_projection_raw_kind_check on security_master.custom_asset_profile_field_projection",
+      "kind": "database-object",
+      "label": "security_master.custom_asset_profile_field_projection_raw_kind_check on security_master.custom_asset_profile_field_projection"
+    },
+    {
+      "id": "database:security_master.custom_asset_profile_field_projection_typed_value_check on security_master.custom_asset_profile_field_projection",
+      "kind": "database-object",
+      "label": "security_master.custom_asset_profile_field_projection_typed_value_check on security_master.custom_asset_profile_field_projection"
+    },
+    {
+      "id": "database:security_master.custom_asset_profile_field_projection_value_kind_check on security_master.custom_asset_profile_field_projection",
+      "kind": "database-object",
+      "label": "security_master.custom_asset_profile_field_projection_value_kind_check on security_master.custom_asset_profile_field_projection"
+    },
+    {
       "id": "database:security_master.data_vendor_entitlements",
       "kind": "database-table",
       "label": "security_master.data_vendor_entitlements",
@@ -80463,6 +81355,54 @@
       "kind": "database-sequence",
       "label": "security_master.loan_event_position_seq",
       "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.loan_index_fixing",
+      "kind": "database-table",
+      "label": "security_master.loan_index_fixing",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.loan_index_fixing.declared_unit",
+      "kind": "database-object",
+      "label": "security_master.loan_index_fixing.declared_unit"
+    },
+    {
+      "id": "database:security_master.loan_index_fixing.index_name",
+      "kind": "database-object",
+      "label": "security_master.loan_index_fixing.index_name"
+    },
+    {
+      "id": "database:security_master.loan_index_fixing.revision",
+      "kind": "database-object",
+      "label": "security_master.loan_index_fixing.revision"
+    },
+    {
+      "id": "database:security_master.loan_pik_capitalization_projection",
+      "kind": "database-table",
+      "label": "security_master.loan_pik_capitalization_projection",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.loan_pik_capitalization_projection.period_end",
+      "kind": "database-object",
+      "label": "security_master.loan_pik_capitalization_projection.period_end"
+    },
+    {
+      "id": "database:security_master.loan_pik_capitalization_projection.period_start",
+      "kind": "database-object",
+      "label": "security_master.loan_pik_capitalization_projection.period_start"
+    },
+    {
+      "id": "database:security_master.loan_rate_reset_projection",
+      "kind": "database-table",
+      "label": "security_master.loan_rate_reset_projection",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.loan_rate_reset_projection.reset_kind",
+      "kind": "database-object",
+      "label": "security_master.loan_rate_reset_projection.reset_kind"
     },
     {
       "id": "database:security_master.loan_servicing_projection",
@@ -81547,6 +82487,37 @@
       "label": "security_master.security_governance_events_stream_check on security_master.security_governance_events"
     },
     {
+      "id": "database:security_master.security_identifier_revisions",
+      "kind": "database-table",
+      "label": "security_master.security_identifier_revisions",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.security_identifier_revisions.change_kind",
+      "kind": "database-object",
+      "label": "security_master.security_identifier_revisions.change_kind"
+    },
+    {
+      "id": "database:security_master.security_identifier_revisions.revision",
+      "kind": "database-object",
+      "label": "security_master.security_identifier_revisions.revision"
+    },
+    {
+      "id": "database:security_master.security_identifier_revisions_change_kind_check on security_master.security_identifier_revisions",
+      "kind": "database-object",
+      "label": "security_master.security_identifier_revisions_change_kind_check on security_master.security_identifier_revisions"
+    },
+    {
+      "id": "database:security_master.security_identifier_revisions_revision_check on security_master.security_identifier_revisions",
+      "kind": "database-object",
+      "label": "security_master.security_identifier_revisions_revision_check on security_master.security_identifier_revisions"
+    },
+    {
+      "id": "database:security_master.security_identifier_revisions_security_id_fkey on security_master.security_identifier_revisions",
+      "kind": "database-object",
+      "label": "security_master.security_identifier_revisions_security_id_fkey on security_master.security_identifier_revisions"
+    },
+    {
       "id": "database:security_master.security_identifiers",
       "kind": "database-table",
       "label": "security_master.security_identifiers",
@@ -82059,11 +83030,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3595,
-    "contract_set_memberships": 4453,
-    "edges": 9315,
-    "foreign_keys": 155,
+    "contract_references": 3619,
+    "contract_set_memberships": 4508,
+    "edges": 9418,
+    "foreign_keys": 156,
     "logical_references": 6,
-    "nodes": 4508
+    "nodes": 4571
   }
 }

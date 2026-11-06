@@ -98,6 +98,7 @@ import type {
   UpsertClosePeriodPlanConfigurationRequest,
   AccountingCertificationState,
 } from "@/types";
+import { formatCount as formatCountValue } from "@/lib/format";
 
 const defaultAccountingCloseReportPackageServices: AccountingCloseReportPackageServices = {
   getClosePlan: (workflowId) => getLedgerCloseManagementPeriodPlan(workflowId),
@@ -973,7 +974,7 @@ export function buildAccountingWorkflowLaunchViewState({
       caption: "Investor evidence, allocation rules, statements, and audit support.",
       href: WORKSTATION_ROUTE_CATALOG.accountingCapitalAccounts,
       metricLabel: "Investor rows",
-      metricValue: data.manualJournalWorkbench?.privateCapitalActivity?.capitalAccountCount.toLocaleString() ?? "0",
+      metricValue: formatCountValue(data.manualJournalWorkbench?.privateCapitalActivity?.capitalAccountCount) ?? "0",
       statusLabel: (data.manualJournalWorkbench?.privateCapitalActivity?.capitalAccountCount ?? 0) > 0 ? "Evidence ready" : "No activity",
       tone: (data.manualJournalWorkbench?.privateCapitalActivity?.capitalAccountCount ?? 0) > 0 ? "success" : "warning",
       workstream

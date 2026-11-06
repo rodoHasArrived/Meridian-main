@@ -976,7 +976,8 @@ collections through `WorkspaceDecisionQueueControl`, preserving existing page ta
 `WorkspaceTone` queue-card and badge semantics for summary, approval, exception, and delivery
 decisions, including primary, secondary, and blocked cockpit actions.
 
-The Security Master edit view labels the `LoanX` and `Clip` identifier kinds, and the Strategy
+The Security Master edit view labels the `LoanX` and `Clip` identifier kinds and the regulatory
+derivatives kinds (`UTI`, `UPI`, `Markit RED entity (RED6)`, `Markit RED pair (RED9)`), and the Strategy
 feature module registers the canonical write scope next to the Security Master service.
 
 The desktop passport editor loads the asset-class registry definition and offers a term picker,
@@ -985,7 +986,7 @@ pre-check; the free-text field path remains available.
 
 ## Security Master governance controls (2026-11)
 
-- **Desktop honours governed term amendments.** The desktop binds the `SecurityMasterWorkbench` configuration section and registers `IGovernedTermAmendmentPolicy`. When `RequireGovernedTermAmendments` is on, `SecurityMasterEditViewModel` refuses a direct amendment with the shared guidance instead of bypassing the gate the web API enforces.
+- **Desktop honours governed term amendments.** The desktop binds the `SecurityMasterWorkbench` configuration section and registers `IGovernedTermAmendmentPolicy`. When `RequireGovernedTermAmendments` is on, `SecurityMasterEditViewModel` refuses a direct amendment with the shared guidance instead of bypassing the gate the web API enforces. The service enforces the setting too, and the editor reports that refusal, so a desktop composed without the policy still cannot write directly.
 - **Contract-multiplier requirement.** `SecurityMasterViewModel` uses `InstrumentTypeDescriptorCatalog.RequiresContractMultiplier` rather than matching "Option"/"Future"/"Derivative" in the asset-class name.
 
 See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D8) for status and open decisions.

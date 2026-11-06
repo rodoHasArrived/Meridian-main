@@ -232,7 +232,7 @@ public static partial class SecurityAssetPackRegistry
 
     // Legacy operational vocabulary stays scoped to readiness; broad labels such as "Debt" or
     // "SPV" must never classify securities in accounting, import, or canonical terms mapping.
-    private static readonly IReadOnlyDictionary<string, string> ReadinessAliases =
+    internal static readonly IReadOnlyDictionary<string, string> ReadinessAliases =
         new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             ["FixedIncome"] = "Bond",

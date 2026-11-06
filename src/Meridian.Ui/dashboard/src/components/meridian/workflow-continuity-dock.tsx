@@ -110,7 +110,9 @@ export function WorkflowContinuityDock({
           <ChevronDown className="workflow-continuity-disclosure-icon h-4 w-4" aria-hidden="true" />
         </summary>
         {operatorFlowOpen ? (
-          <>
+          // One container for the on-demand detail, so a host that places the dock in a narrow
+          // slot (the compact workspace header's breadcrumb row) can show it as a popover.
+          <div className="workflow-continuity-expanded">
             <p className="workflow-continuity-expanded-flow">
               <span>{viewModel.primaryOperatorFlowLabel}</span>
               <span>{viewModel.primaryOperatorFlowSummary}</span>
@@ -167,7 +169,7 @@ export function WorkflowContinuityDock({
                 </Link>
               ))}
             </nav>
-          </>
+          </div>
         ) : null}
       </details>
     </section>

@@ -1,4 +1,4 @@
-import type { ProductMaturity, SessionInfo, WorkspaceSummary } from "@/types";
+import type { SessionInfo, WorkspaceSummary } from "@/types";
 
 export type WorkspaceHeaderBadgeVariant =
   | "default"
@@ -46,6 +46,10 @@ export interface WorkspaceHeaderViewModel {
   title: string;
   description: string;
   badges: WorkspaceHeaderBadge[];
+  /** Shown in the About disclosure: the product maturity that used to be a page badge. */
+  maturityNote: string;
+  /** Tooltip for the About control. */
+  aboutTitle: string;
   metaItems: WorkspaceHeaderMetaItem[];
   sessionLabel: string;
   sessionRoleLabel: string | null;
@@ -80,14 +84,11 @@ export function buildWorkspaceHeaderViewModel({
     eyebrow: "Workspace",
     title: `${workspace.label} Workstation`,
     description: workspace.description,
-    badges: [
-      {
-        id: "workspace-maturity",
-        label: workspace.maturity,
-        variant: maturityVariant(workspace.maturity),
-        ariaLabel: `${workspace.label} product maturity ${workspace.maturity}`
-      }
-    ],
+    // Product maturity told an operator nothing about what is wrong or what to do as a page
+    // badge, so it lives in the About disclosure and its tooltip instead.
+    badges: [],
+    maturityNote: `Product maturity: ${workspace.maturity}.`,
+    aboutTitle: `About ${workspace.label} · ${workspace.maturity} product maturity`,
     metaItems: [],
     sessionLabel: session?.displayName ?? "Loading session",
     sessionRoleLabel: session?.role ?? null,
@@ -121,15 +122,4 @@ export function buildWorkspaceHeaderViewModel({
         }
       : null
   };
-}
-
-function maturityVariant(maturity: ProductMaturity): WorkspaceHeaderBadgeVariant {
-  switch (maturity) {
-    case "Preview":
-      return "warning";
-    case "Setup":
-      return "outline";
-    case "Available":
-      return "outline";
-  }
 }

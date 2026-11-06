@@ -771,6 +771,32 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
         fault.Should().BeSameAs(thrown);
     }
 
+    [Theory]
+    [InlineData(AmendRoute)]
+    [InlineData(TermBlockRoute)]
+    [InlineData(PreferredEquityTermsRoute)]
+    [InlineData(ConvertibleEquityTermsRoute)]
+    [InlineData(LegacyPreferredTermsRoute)]
+    public async Task DirectTermWriteRoute_ServiceGovernedRefusal_Returns403WithTheSharedGuidance(string route)
+    {
+        // The service enforces RequireGovernedTermAmendments itself (remediation slice 1). Its refusal
+        // answers the same 403 problem as the routes' own early check, even when this host's copy of the
+        // setting still read off when the route checked it.
+        var queryService = Substitute.For<ISecurityMasterQueryService>();
+        var service = Substitute.For<ISecurityMasterService>();
+        using var request = ArrangeServiceThrowing(
+            route, queryService, service, new Meridian.Application.SecurityMaster.GovernedTermAmendmentRequiredException());
+        await using var app = await CreateAppAsync(queryService, service);
+
+        using var response = await app.GetTestClient().SendAsync(request);
+
+        // The host's shared Problem Details writer titles every 403 "Access Denied"; the guidance is the detail.
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        using var problem = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        problem.RootElement.GetProperty("detail").GetString()
+            .Should().Be(Meridian.Application.SecurityMaster.GovernedTermAmendmentPolicy.RefusalDetail);
+    }
+
     private static async Task AssertRefusedAsync(HttpResponseMessage response, string expectedDetail)
     {
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);

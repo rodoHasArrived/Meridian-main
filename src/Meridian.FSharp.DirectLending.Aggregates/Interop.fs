@@ -36,3 +36,29 @@ module DirectLendingAggregateInterop =
 
     let ChargePrepaymentPenalty (servicing: LoanServicingStateDto) (terms: DirectLendingTermsDto) (request: ChargePrepaymentPenaltyRequest) =
         ServicingAggregate.chargePrepaymentPenalty servicing terms request.OutstandingPrincipal request.EffectiveDate
+
+    let ApplyScheduledRateReset (servicing: LoanServicingStateDto) (terms: DirectLendingTermsDto) (resetDate: DateOnly) (fixingObservationDate: DateOnly) (fixingRate: decimal) (sourceRef: string) =
+        ServicingAggregate.applyScheduledRateReset
+            servicing
+            terms
+            resetDate
+            { ObservationDate = fixingObservationDate
+              RateFraction = fixingRate
+              SourceRef = sourceRef
+              FixingId = Nullable()
+              FixingRevision = Nullable() }
+
+    /// Applies a scheduled reset from a stored fixing, retaining the fixing's identity and revision.
+    let ApplyScheduledRateResetFromFixing (servicing: LoanServicingStateDto) (terms: DirectLendingTermsDto) (resetDate: DateOnly) (fixing: DirectLendingIndexFixingDto) (sourceRef: string) =
+        ServicingAggregate.applyScheduledRateReset
+            servicing
+            terms
+            resetDate
+            { ObservationDate = fixing.ObservationDate
+              RateFraction = fixing.RateFraction
+              SourceRef = sourceRef
+              FixingId = Nullable fixing.FixingId
+              FixingRevision = Nullable fixing.Revision }
+
+    let CapitalizePik (servicing: LoanServicingStateDto) (terms: DirectLendingTermsDto) (request: CapitalizePikRequest) =
+        ServicingAggregate.capitalizePik servicing terms request.CapitalizationDate

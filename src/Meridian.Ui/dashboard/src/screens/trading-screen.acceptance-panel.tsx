@@ -1,4 +1,5 @@
 import { AlertTriangle, Network, RotateCcw, Settings, ShieldCheck } from "lucide-react";
+import { StatusBadge } from "@/design-system/status";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,6 +17,7 @@ import type {
   TradingReadinessWorkItemRow
 } from "@/screens/trading-screen.view-model";
 import type { TradingAcceptanceGate } from "@/types";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 export interface CockpitAcceptanceItem {
   label: string;
@@ -28,6 +30,13 @@ export const acceptanceTone: Record<AcceptanceLevel, string> = {
   ready: "border-success/30 bg-success/10 text-success",
   review: "border-warning/30 bg-warning/10 text-warning",
   atRisk: "border-danger/30 bg-danger/10 text-danger"
+};
+
+/** Acceptance levels as StatusBadge severities, matching the colours of `acceptanceTone`. */
+export const acceptanceSeverity: Record<AcceptanceLevel, "ready" | "action" | "blocked"> = {
+  ready: "ready",
+  review: "action",
+  atRisk: "blocked"
 };
 
 const acceptanceLabel: Record<AcceptanceLevel, string> = {
@@ -149,7 +158,7 @@ export function AcceptanceStatusCard({
 function ReadinessSummaryPill({ row }: { row: TradingReadinessSummaryRow }) {
   return (
     <div className={cn("data-grid-surface border border-l-[3px] px-3 py-2", acceptanceTone[row.level])} aria-label={row.ariaLabel}>
-      <p className="text-xs font-semibold uppercase tracking-[0.14em] opacity-80">{row.label}</p>
+      <p className={cn("text-xs font-semibold opacity-80", usesTrackedCaps(row.label) && "uppercase tracking-[0.14em]")}>{row.label}</p>
       <p className="mt-1 break-words font-mono text-xs font-semibold text-foreground">{row.label}: {row.value}</p>
     </div>
   );
@@ -160,7 +169,7 @@ function AcceptanceRow({ item }: { item: CockpitAcceptanceItem }) {
     <div className={cn("data-grid-surface border border-l-[3px] px-4 py-3", acceptanceTone[item.level])}>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] opacity-80">{item.label}</p>
+          <p className={cn("text-xs font-semibold opacity-80", usesTrackedCaps(item.label) && "uppercase tracking-[0.14em]")}>{item.label}</p>
           <p className="mt-1 font-mono text-sm font-semibold">{item.value}</p>
         </div>
         <SeverityBadge status={acceptanceStatus[item.level]} label={acceptanceLabel[item.level]} />
@@ -191,13 +200,11 @@ function OperatorWorkItemList({
     <div className="panel-surface p-4" role="region" aria-label={listLabel}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Operator work items</p>
+          <p className="text-xs font-semibold text-muted-foreground">Operator work items</p>
           <p className="mt-1 text-sm text-muted-foreground">{summaryText}</p>
         </div>
         {primaryKind && (
-          <span className="rounded-sm border border-border/70 px-3 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-            {primaryKind}
-          </span>
+          <StatusBadge status="info" dot={false} label={primaryKind} />
         )}
       </div>
 

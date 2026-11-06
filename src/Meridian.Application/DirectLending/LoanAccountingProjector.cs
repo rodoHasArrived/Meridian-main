@@ -91,9 +91,19 @@ public sealed class LoanAccountingProjector
                 var pikInterest = GetDecimal(root, "pikInterestAmount");
                 Add("AccruedInterestReceivable", LedgerAccountType.Asset, interest, 0m);
                 Add("InterestIncome", LedgerAccountType.Revenue, 0m, interest);
-                // PIK interest capitalizes into loan principal instead of a cash receivable.
-                Add("LoanPrincipal", LedgerAccountType.Asset, pikInterest, 0m);
-                Add("InterestIncome", LedgerAccountType.Revenue, 0m, pikInterest);
+                if (IsPikCapitalizationDeferred(root))
+                {
+                    // Capitalization policy: PIK is earned now but is neither cash nor principal
+                    // until a capitalization date moves it (loan.pik-capitalized).
+                    Add("PikInterestReceivable", LedgerAccountType.Asset, pikInterest, 0m);
+                    Add("PikInterestIncome", LedgerAccountType.Revenue, 0m, pikInterest);
+                }
+                else
+                {
+                    // Legacy PIK toggle: PIK interest capitalizes into loan principal the same day.
+                    Add("LoanPrincipal", LedgerAccountType.Asset, pikInterest, 0m);
+                    Add("InterestIncome", LedgerAccountType.Revenue, 0m, pikInterest);
+                }
                 Add("CommitmentFeeReceivable", LedgerAccountType.Asset, commitmentFee, 0m);
                 Add("CommitmentFeeIncome", LedgerAccountType.Revenue, 0m, commitmentFee);
                 Add("PenaltyReceivable", LedgerAccountType.Asset, penalty, 0m);
@@ -108,12 +118,27 @@ public sealed class LoanAccountingProjector
                 var reversedPikInterest = GetDecimal(root, "pikInterestAmount");
                 Add("InterestIncome", LedgerAccountType.Revenue, reversedInterest, 0m);
                 Add("AccruedInterestReceivable", LedgerAccountType.Asset, 0m, reversedInterest);
-                Add("InterestIncome", LedgerAccountType.Revenue, reversedPikInterest, 0m);
-                Add("LoanPrincipal", LedgerAccountType.Asset, 0m, reversedPikInterest);
+                if (IsPikCapitalizationDeferred(root))
+                {
+                    Add("PikInterestIncome", LedgerAccountType.Revenue, reversedPikInterest, 0m);
+                    Add("PikInterestReceivable", LedgerAccountType.Asset, 0m, reversedPikInterest);
+                }
+                else
+                {
+                    Add("InterestIncome", LedgerAccountType.Revenue, reversedPikInterest, 0m);
+                    Add("LoanPrincipal", LedgerAccountType.Asset, 0m, reversedPikInterest);
+                }
                 Add("CommitmentFeeIncome", LedgerAccountType.Revenue, reversedCommitmentFee, 0m);
                 Add("CommitmentFeeReceivable", LedgerAccountType.Asset, 0m, reversedCommitmentFee);
                 Add("PenaltyIncome", LedgerAccountType.Revenue, reversedPenalty, 0m);
                 Add("PenaltyReceivable", LedgerAccountType.Asset, 0m, reversedPenalty);
+                break;
+
+            case "loan.pik-capitalized":
+                description = "Loan PIK capitalization";
+                var capitalizedPik = GetDecimal(root, "amount");
+                Add("LoanPrincipal", LedgerAccountType.Asset, capitalizedPik, 0m);
+                Add("PikInterestReceivable", LedgerAccountType.Asset, 0m, capitalizedPik);
                 break;
 
             case "loan.principal-payment-applied":
@@ -463,6 +488,9 @@ public sealed class LoanAccountingProjector
 
     private static bool TokenMatches(string? value, string symbol) =>
         string.Equals(NormalizeSymbol(value), symbol, StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsPikCapitalizationDeferred(JsonElement root) =>
+        root.TryGetProperty("pikCapitalizationDeferred", out var value) && value.ValueKind == JsonValueKind.True;
 
     private static bool IsDirectLendingInstrumentAccount(string account) =>
         !string.Equals(account, "Cash", StringComparison.OrdinalIgnoreCase);

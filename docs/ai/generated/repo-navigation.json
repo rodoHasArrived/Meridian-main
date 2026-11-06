@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-10-21T15:53:39Z",
+  "generatedAt": "2026-11-06T13:31:54Z",
   "generatorVersion": "1.0",
-  "repositoryRoot": "Meridian-main",
+  "repositoryRoot": "agent-a6cc8e59dff3245bd",
   "subsystems": [
     {
       "id": "host-shell",
@@ -562,8 +562,8 @@
         "src/Meridian.Backtesting"
       ],
       "projectReferences": [
-        "Meridian.Application",
         "Meridian.Backtesting.Sdk",
+        "Meridian.Contracts",
         "Meridian.Instruments",
         "Meridian.Storage",
         "Meridian.Strategies"
@@ -710,7 +710,6 @@
         "src/Meridian.Execution/Interfaces/IOrderGateway.cs"
       ],
       "projectReferences": [
-        "Meridian.Application",
         "Meridian.Contracts",
         "Meridian.Core",
         "Meridian.Execution.Sdk",
@@ -2028,13 +2027,13 @@
     },
     {
       "from": "Meridian.Backtesting",
-      "to": "Meridian.Application",
-      "reason": "Meridian.Backtesting references Meridian.Application directly via project reference."
+      "to": "Meridian.Backtesting.Sdk",
+      "reason": "Meridian.Backtesting references Meridian.Backtesting.Sdk directly via project reference."
     },
     {
       "from": "Meridian.Backtesting",
-      "to": "Meridian.Backtesting.Sdk",
-      "reason": "Meridian.Backtesting references Meridian.Backtesting.Sdk directly via project reference."
+      "to": "Meridian.Contracts",
+      "reason": "Meridian.Backtesting references Meridian.Contracts directly via project reference."
     },
     {
       "from": "Meridian.Backtesting",
@@ -2080,11 +2079,6 @@
       "from": "Meridian.Domain",
       "to": "Meridian.ProviderSdk",
       "reason": "Meridian.Domain references Meridian.ProviderSdk directly via project reference."
-    },
-    {
-      "from": "Meridian.Execution",
-      "to": "Meridian.Application",
-      "reason": "Meridian.Execution references Meridian.Application directly via project reference."
     },
     {
       "from": "Meridian.Execution",
@@ -2444,324 +2438,324 @@
   ],
   "recentChanges": [
     {
-      "path": "src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-21T05:33:44Z",
-      "lastCommit": "468399d31",
-      "lastSummary": "feat(security-master): one lot model keyed on the lot unit, with a notional lot",
-      "touches": 10
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-21T05:33:44Z",
-      "lastCommit": "468399d31",
-      "lastSummary": "feat(security-master): one lot model keyed on the lot unit, with a notional lot",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Application/SecurityMaster/AlternativeAssetLotExtensions.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-21T05:33:44Z",
-      "lastCommit": "468399d31",
-      "lastSummary": "feat(security-master): one lot model keyed on the lot unit, with a notional lot",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Contracts/SecurityMaster/NotionalLot.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-21T05:33:44Z",
-      "lastCommit": "468399d31",
-      "lastSummary": "feat(security-master): one lot model keyed on the lot unit, with a notional lot",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-21T05:33:44Z",
-      "lastCommit": "468399d31",
-      "lastSummary": "feat(security-master): one lot model keyed on the lot unit, with a notional lot",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-20T20:28:18Z",
-      "lastCommit": "0bd7b0bc4",
-      "lastSummary": "Fifth review round: mapper-faithful term reads, multi-word labels, late capability gate",
-      "touches": 16
-    },
-    {
-      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterDataQualityService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-20T20:28:18Z",
-      "lastCommit": "0bd7b0bc4",
-      "lastSummary": "Fifth review round: mapper-faithful term reads, multi-word labels, late capability gate",
+      "path": "src/Meridian.Ui/dashboard/src/screens/reporting-income-comparison.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-06T01:48:45+00:00",
+      "lastCommit": "41d39ce1",
+      "lastSummary": "test(reporting): wait for the support read before asserting it is aborted",
       "touches": 7
     },
     {
-      "path": "src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.cs",
+      "path": "src/Meridian.Ui/dashboard/src/styles/ui-kit-primitives.css",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-20T20:28:18Z",
-      "lastCommit": "0bd7b0bc4",
-      "lastSummary": "Fifth review round: mapper-faithful term reads, multi-word labels, late capability gate",
-      "touches": 3
+      "lastModified": "2026-11-06T00:22:47+00:00",
+      "lastCommit": "8a10fa7a",
+      "lastSummary": "fix(workstation): keep virtualized tables within their fixed row height under spacious density",
+      "touches": 9
     },
     {
-      "path": "src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.CorporateActions.cs",
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/ui-kit-primitives.table-system.test.tsx",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-20T20:14:06Z",
-      "lastCommit": "7d276fc6d",
-      "lastSummary": "Fourth review round: exact term keys, deposit rate units, reconciliation-time classes",
-      "touches": 5
+      "lastModified": "2026-11-06T00:22:47+00:00",
+      "lastCommit": "8a10fa7a",
+      "lastSummary": "fix(workstation): keep virtualized tables within their fixed row height under spacious density",
+      "touches": 2
     },
     {
-      "path": "src/Meridian.Instruments/AssetOperations/AssetObligationProjectionService.cs",
+      "path": "src/Meridian.Ui/dashboard/README.md",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:05:27+00:00",
+      "lastCommit": "4071b030",
+      "lastSummary": "Phase 2 docs: design-system rules in the READMEs and regenerated docs",
+      "touches": 20
+    },
+    {
+      "path": "src/Meridian.Ui/README.md",
       "subsystem": "Unmapped",
-      "lastModified": "2026-10-20T20:14:06Z",
-      "lastCommit": "7d276fc6d",
-      "lastSummary": "Fourth review round: exact term keys, deposit rate units, reconciliation-time classes",
-      "touches": 2
+      "lastModified": "2026-11-05T23:05:27+00:00",
+      "lastCommit": "4071b030",
+      "lastSummary": "Phase 2 docs: design-system rules in the READMEs and regenerated docs",
+      "touches": 11
     },
     {
-      "path": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-20T20:14:06Z",
-      "lastCommit": "7d276fc6d",
-      "lastSummary": "Fourth review round: exact term keys, deposit rate units, reconciliation-time classes",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.SecurityCoverage.cs",
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.tsx",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-20T20:14:06Z",
-      "lastCommit": "7d276fc6d",
-      "lastSummary": "Fourth review round: exact term keys, deposit rate units, reconciliation-time classes",
-      "touches": 1
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 15
     },
     {
-      "path": "src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-20T19:34:19Z",
-      "lastCommit": "53223bf3b",
-      "lastSummary": "Tighten the registry-lookup rules on the second review round",
-      "touches": 2
+      "path": "src/Meridian.Ui/dashboard/src/screens/trading-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 11
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/portfolio-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 10
     },
     {
       "path": "src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-20T19:26:20Z",
-      "lastCommit": "0aa3eeb19",
-      "lastSummary": "Count and label the aggregate profile projection figures as declared",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/settings-screen.operations-control.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-20T19:26:20Z",
-      "lastCommit": "0aa3eeb19",
-      "lastSummary": "Count and label the aggregate profile projection figures as declared",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Wpf/Views/SettingsPage.xaml",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-20T19:26:20Z",
-      "lastCommit": "0aa3eeb19",
-      "lastSummary": "Count and label the aggregate profile projection figures as declared",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-20T17:45:32Z",
-      "lastCommit": "07233cb6e",
-      "lastSummary": "Move the Bond projection onto SecurityTermsProjectionRegistry satellites",
-      "touches": 15
-    },
-    {
-      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-20T17:45:32Z",
-      "lastCommit": "07233cb6e",
-      "lastSummary": "Move the Bond projection onto SecurityTermsProjectionRegistry satellites",
-      "touches": 13
-    },
-    {
-      "path": "src/Meridian.Storage/SecurityMaster/SecurityTermsProjectionRegistry.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-20T17:45:32Z",
-      "lastCommit": "07233cb6e",
-      "lastSummary": "Move the Bond projection onto SecurityTermsProjectionRegistry satellites",
-      "touches": 9
-    },
-    {
-      "path": "src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.TermsProjection.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-20T17:45:32Z",
-      "lastCommit": "07233cb6e",
-      "lastSummary": "Move the Bond projection onto SecurityTermsProjectionRegistry satellites",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Storage/SecurityMaster/PostgresBondReferenceProjectionStore.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-20T17:45:32Z",
-      "lastCommit": "07233cb6e",
-      "lastSummary": "Move the Bond projection onto SecurityTermsProjectionRegistry satellites",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-20T17:34:25Z",
-      "lastCommit": "ae83757a3",
-      "lastSummary": "Mark custom-profile IsProjected/IsSearchable as promotion intent, not live (A4)",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-20T17:34:25Z",
-      "lastCommit": "ae83757a3",
-      "lastSummary": "Mark custom-profile IsProjected/IsSearchable as promotion intent, not live (A4)",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.ReferenceData/SecurityMaster/SecurityAssetProfileCatalog.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-20T17:34:25Z",
-      "lastCommit": "ae83757a3",
-      "lastSummary": "Mark custom-profile IsProjected/IsSearchable as promotion intent, not live (A4)",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-20T17:34:25Z",
-      "lastCommit": "ae83757a3",
-      "lastSummary": "Mark custom-profile IsProjected/IsSearchable as promotion intent, not live (A4)",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-10-20T17:20:11Z",
-      "lastCommit": "408bf146f",
-      "lastSummary": "Replace asset-class name and substring checks with registry lookups (E5/E6)",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/README.md",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-20T16:05:10-07:00",
-      "lastCommit": "2ed48d5db",
-      "lastSummary": "refactor(storage): partition account cash continuity stores per scope (#3201)",
-      "touches": 60
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/README.md",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-20T16:05:10-07:00",
-      "lastCommit": "2ed48d5db",
-      "lastSummary": "refactor(storage): partition account cash continuity stores per scope (#3201)",
-      "touches": 22
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-20T16:05:10-07:00",
-      "lastCommit": "2ed48d5db",
-      "lastSummary": "refactor(storage): partition account cash continuity stores per scope (#3201)",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/FileAccountCashReconciliationStore.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-20T16:05:10-07:00",
-      "lastCommit": "2ed48d5db",
-      "lastSummary": "refactor(storage): partition account cash continuity stores per scope (#3201)",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Storage/AssetOperations/FileAccountCashForecastStore.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-20T16:05:10-07:00",
-      "lastCommit": "2ed48d5db",
-      "lastSummary": "refactor(storage): partition account cash continuity stores per scope (#3201)",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-20T16:05:10-07:00",
-      "lastCommit": "2ed48d5db",
-      "lastSummary": "refactor(storage): partition account cash continuity stores per scope (#3201)",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-20T15:38:53Z",
-      "lastCommit": "3b3e24a81",
-      "lastSummary": "Reject stale patch bases on Security Master term amends (E1)",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
       "touches": 10
     },
     {
-      "path": "src/Meridian.Application/README.md",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-20T08:15:36Z",
-      "lastCommit": "ebe59f45d",
-      "lastSummary": "Extract shared fund-structure query projections",
-      "touches": 21
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/reporting-hub.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 9
     },
     {
-      "path": "src/Meridian.Execution/README.md",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-10-20T08:15:36Z",
-      "lastCommit": "19d59dd7b",
-      "lastSummary": "Give OMS report intake and shutdown an explicit lifecycle",
-      "touches": 12
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/workspace-header.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 9
     },
     {
-      "path": "src/Meridian.Strategies/README.md",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-10-20T08:15:36Z",
-      "lastCommit": "19d59dd7b",
-      "lastSummary": "Give OMS report intake and shutdown an explicit lifecycle",
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.journal-entry-enhancements.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 9
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/strategy-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 9
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/historical-chart.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
       "touches": 8
     },
     {
-      "path": "src/Meridian.Execution/OrderManagementSystem.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-10-20T08:15:36Z",
-      "lastCommit": "19d59dd7b",
-      "lastSummary": "Give OMS report intake and shutdown an explicit lifecycle",
-      "touches": 4
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/ui-kit-primitives.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 8
     },
     {
-      "path": "src/Meridian.Strategies/Live/LiveTradingEngine.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-10-20T08:15:36Z",
-      "lastCommit": "19d59dd7b",
-      "lastSummary": "Give OMS report intake and shutdown an explicit lifecycle",
-      "touches": 4
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.capital-account-workbench-panel.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 8
     },
     {
-      "path": "src/Meridian.Execution/BrokerageServiceRegistration.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-10-20T08:15:36Z",
-      "lastCommit": "19d59dd7b",
-      "lastSummary": "Give OMS report intake and shutdown an explicit lifecycle",
-      "touches": 1
+      "path": "src/Meridian.Ui/dashboard/src/screens/asset-detail-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 8
     },
     {
-      "path": "src/Meridian.Execution/IOrderManagementLifecycle.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-10-20T08:15:36Z",
-      "lastCommit": "19d59dd7b",
-      "lastSummary": "Give OMS report intake and shutdown an explicit lifecycle",
-      "touches": 1
+      "path": "src/Meridian.Ui/dashboard/src/screens/data-screen-navigation-panels.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/data-screen.data-regions.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/data-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/family-office-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/reporting-screen.private-capital-readiness.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/reporting-screen.report-writer.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/strategy-designer-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/trading-screen.acceptance-panel.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/trading-screen.execution-blotter.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/watchlist-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/styles/index.css",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/accounting/ReconciliationComparisonPanel.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/command-palette.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/financial-record-explorer.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/lifecycle-control-panel.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/notification-center.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/proof-drawer.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/quant-notebook.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/reporting-period-switcher.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/security-details-tracker.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/stat-strip.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/strategy-formula-workbench.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 7
     }
   ],
   "recentChangesWindowDays": 14,
