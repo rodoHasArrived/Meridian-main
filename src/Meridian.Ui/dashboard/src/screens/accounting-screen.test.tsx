@@ -10,7 +10,7 @@ import * as markFreshnessApi from "@/lib/api/mark-freshness.api";
 import * as recurringJournalsApi from "@/lib/api/recurring-journals.api";
 import { AccountingScreen } from "@/screens/accounting-screen";
 import { resetSinceLastVisitCache } from "@/lib/since-last-visit";
-import { recordOperatorSurfaceVisit } from "@/lib/api/operator-workstation.api";
+import { getOperatorSurfaceVisit, recordOperatorSurfaceVisit } from "@/lib/api/operator-workstation.api";
 import { TestMemoryRouter, renderWithRouter, waitForAsyncEffects } from "@/test/render";
 import { buildSuccessfulVerifiedOperationOutcome } from "@/test/verified-operation-outcome";
 import type {
@@ -1614,7 +1614,8 @@ describe("AccountingScreen", () => {
     const baseline = "2025-12-31T00:00:00Z";
     resetSinceLastVisitCache();
     window.sessionStorage.clear();
-    vi.mocked(recordOperatorSurfaceVisit).mockResolvedValueOnce({ surface: "reconciliation-breaks", previousVisitAt: baseline, visitedAt: "2026-01-02T00:00:00Z" });
+    vi.mocked(getOperatorSurfaceVisit).mockResolvedValueOnce({ surface: "reconciliation-breaks", previousVisitAt: baseline, visitedAt: null });
+    vi.mocked(recordOperatorSurfaceVisit).mockClear();
     try {
       await renderAccountingScreen({
         ...data,
@@ -1624,6 +1625,8 @@ describe("AccountingScreen", () => {
       const strip = screen.getByLabelText("Accounting headline metrics");
       expect(await within(strip).findByText(`${expected} new since your last visit`)).toBeInTheDocument();
       expect(within(strip).queryByText("+1")).not.toBeInTheDocument();
+      // The Accounting landing reads the break-queue baseline; only opening the queue records a visit.
+      expect(recordOperatorSurfaceVisit).not.toHaveBeenCalled();
     } finally {
       window.sessionStorage.clear();
       resetSinceLastVisitCache();

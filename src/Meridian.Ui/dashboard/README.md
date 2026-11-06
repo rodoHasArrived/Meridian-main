@@ -318,7 +318,8 @@ not been recorded.
   rows, the break queue) counts it with the shared definition; Settings and the shell read the
   server's `/api/workstation/cross-screen-counts`, loaded on every route. Headline cards for these
   counts take the selector's value and drop their basis-less delta, and an unreadable count shows
-  "—". `lib/cross-screen-counts.screens.test.ts` asserts Trading, Settings, Data and Accounting
+  "—". Settings, which does not refresh the Data payload, prefers the shared provider count over
+  retained Data rows. `lib/cross-screen-counts.screens.test.ts` asserts Trading, Settings, Data and Accounting
   agree from one fixture set. Accounting takes open breaks from the payload's `workspace.openBreaks`,
   which the server counts over the whole queue even when it withholds `breakQueue` from a caller
   who may see the count but not the cases.
@@ -349,7 +350,7 @@ not been recorded.
   visit it replaces is the baseline: a break detected after it is marked New, a break whose
   activity (`lastUpdatedAt`) moved after it is marked Updated, and the queue states the counts and
   the baseline time. The Accounting open-breaks card reads the same baseline for its delta ("2 new
-  since your last visit"). When the visit cannot be recorded, nothing is marked. The tab cache
+  since your last visit") without recording a visit, so only opening the break queue advances it. When the visit cannot be recorded, nothing is marked. The tab cache
   keeps the baseline with the visit it recorded; because session storage outlives a sign-out, a
   later page load first reads the operator's last visit (`GET`, which records nothing) and reuses
   the cache only when that is still this tab's visit.

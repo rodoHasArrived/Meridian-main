@@ -1561,6 +1561,31 @@ describe("buildSettingsScreenViewModel", () => {
     expect(vm.systemItems.find((item) => item.label === "Providers healthy")?.value).toBe("2 / 3");
   });
 
+  it("keeps the refreshed shared provider count over retained Data rows", () => {
+    // Settings does not refresh the Data payload; a provider that degraded since it loaded must not
+    // read as healthy because the old rows say so.
+    const vm = buildSettingsScreenViewModel({
+      session: null,
+      overview,
+      crossScreenCounts: {
+        asOf: "2026-03-21T14:30:00Z",
+        openOrders: null,
+        providers: { healthy: 1, total: 2, definition: "Providers whose status is Healthy." },
+        openBreaks: null
+      },
+      data: { providers: [{ status: "Healthy" }, { status: "Healthy" }] } as never
+    });
+    expect(vm.systemItems.find((item) => item.label === "Providers healthy")?.value).toBe("1 / 2");
+
+    const withoutShared = buildSettingsScreenViewModel({
+      session: null,
+      overview,
+      crossScreenCounts: null,
+      data: { providers: [{ status: "Healthy" }, { status: "Degraded" }] } as never
+    });
+    expect(withoutShared.systemItems.find((item) => item.label === "Providers healthy")?.value).toBe("1 / 2");
+  });
+
   it("points system overview diagnostics at the mapped status endpoint", () => {
     const vm = buildSettingsScreenViewModel(session, overview);
     expect(vm.diagnosticLinks.find((link) => link.label === "System overview")?.href).toBe("/api/status");

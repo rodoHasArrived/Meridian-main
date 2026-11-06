@@ -67,14 +67,26 @@ function sameInstant(left: string | null | undefined, right: string | null | und
   return a !== null && a === parseTime(right);
 }
 
+export interface SinceLastVisitOptions {
+  /**
+   * False for a screen that shows the baseline without being the surface itself, such as the
+   * Accounting open-breaks card: it reads the operator's last visit and never records one, so only
+   * opening the break queue advances it. Defaults to true.
+   */
+  record?: boolean;
+}
+
 /** The surface's baseline for this tab: the visit the first load of the tab replaced. */
 export function loadSinceLastVisitBaseline(
   surface: string,
   services: Partial<SurfaceVisitServices> = {},
-  storage: Storage | null = sessionStore()
+  storage: Storage | null = sessionStore(),
+  options: SinceLastVisitOptions = {}
 ): Promise<string | null> {
   const key = `${SESSION_KEY_PREFIX}${surface}`;
-  const pending = inFlight.get(surface);
+  const recordKey = `${surface}:record`;
+  if (options.record === false) return readSinceLastVisitBaseline(surface, services, storage);
+  const pending = inFlight.get(recordKey);
   if (pending) return pending;
   // Resolved inside the chain, not as defaults, so a missing API fails into "unavailable".
   const record = () => (services.record ?? recordOperatorSurfaceVisit)(surface);
@@ -92,8 +104,32 @@ export function loadSinceLastVisitBaseline(
   const request = Promise.resolve().then(() => cached
     ? read().then((last) => sameInstant(last.previousVisitAt, cached.visitedAt) ? cached.baseline : recordAndCache())
     : recordAndCache());
-  inFlight.set(surface, request);
-  request.catch(() => inFlight.delete(surface));
+  inFlight.set(recordKey, request);
+  request.catch(() => inFlight.delete(recordKey));
+  return request;
+}
+
+/**
+ * The baseline without recording a visit: this tab's baseline when the tab already recorded one
+ * (and the server's last visit is still it), otherwise the operator's last recorded visit. A
+ * recording already in flight on this page wins, so a card beside the queue shows its baseline.
+ */
+function readSinceLastVisitBaseline(
+  surface: string,
+  services: Partial<SurfaceVisitServices>,
+  storage: Storage | null
+): Promise<string | null> {
+  const recording = inFlight.get(`${surface}:record`);
+  if (recording) return recording;
+  const readKey = `${surface}:read`;
+  const pending = inFlight.get(readKey);
+  if (pending) return pending;
+  const cached = readCachedVisit(storage, `${SESSION_KEY_PREFIX}${surface}`);
+  const request = Promise.resolve()
+    .then(() => (services.read ?? getOperatorSurfaceVisit)(surface))
+    .then((last) => cached && sameInstant(last.previousVisitAt, cached.visitedAt) ? cached.baseline : last.previousVisitAt ?? null);
+  inFlight.set(readKey, request);
+  request.catch(() => inFlight.delete(readKey));
   return request;
 }
 
@@ -102,17 +138,22 @@ export function resetSinceLastVisitCache() {
   inFlight.clear();
 }
 
-export function useSinceLastVisit(surface: string, services?: Partial<SurfaceVisitServices>): SinceLastVisitState {
+export function useSinceLastVisit(
+  surface: string,
+  services?: Partial<SurfaceVisitServices>,
+  options: SinceLastVisitOptions = {}
+): SinceLastVisitState {
   const [state, setState] = useState<SinceLastVisitState>({ status: "loading", baseline: null });
   const record = services?.record;
   const read = services?.read;
+  const recordsVisit = options.record !== false;
   useEffect(() => {
     let active = true;
-    loadSinceLastVisitBaseline(surface, { record, read })
+    loadSinceLastVisitBaseline(surface, { record, read }, undefined, { record: recordsVisit })
       .then((baseline) => { if (active) setState({ status: "ready", baseline }); })
       .catch(() => { if (active) setState({ status: "unavailable", baseline: null }); });
     return () => { active = false; };
-  }, [read, record, surface]);
+  }, [read, record, recordsVisit, surface]);
   return state;
 }
 

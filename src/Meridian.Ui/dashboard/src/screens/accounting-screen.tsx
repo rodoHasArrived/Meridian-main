@@ -1575,8 +1575,9 @@ function AccountingCaseWorkbench({
 export function AccountingScreen({ data, multiAssetCoverage, session = null }: AccountingScreenProps) {
   const { pathname, search, hash } = useLocation();
   const sharedCounts = useSharedCrossScreenCounts();
-  // The same per-tab baseline the break queue marks rows against (C3).
-  const breakQueueVisit = useSinceLastVisit(BREAK_QUEUE_VISIT_SURFACE);
+  // The same baseline the break queue marks rows against (C3), read without recording a visit:
+  // only opening the queue itself advances it, not any other Accounting route.
+  const breakQueueVisit = useSinceLastVisit(BREAK_QUEUE_VISIT_SURFACE, undefined, { record: false });
   const navigate = useNavigate();
   const operatorIdentity = session?.displayName.trim() || null;
   const workstream = resolveAccountingWorkstream(pathname);

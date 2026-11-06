@@ -74,6 +74,28 @@ describe("since your last visit (C3)", () => {
     expect(record).toHaveBeenCalledTimes(2);
   });
 
+  it("reads the baseline without recording a visit for a screen beside the queue", async () => {
+    const record = vi.fn();
+    const read = vi.fn().mockResolvedValue({ surface: BREAK_QUEUE_VISIT_SURFACE, previousVisitAt: baseline, visitedAt: null });
+    expect(await loadSinceLastVisitBaseline(BREAK_QUEUE_VISIT_SURFACE, { record, read }, undefined, { record: false })).toBe(baseline);
+    expect(record).not.toHaveBeenCalled();
+  });
+
+  it("shares a recording already in flight with a read-only load", async () => {
+    let release!: () => void;
+    const record = vi.fn(() => new Promise<{ surface: string; previousVisitAt: string; visitedAt: string }>((resolve) => {
+      release = () => resolve({ surface: BREAK_QUEUE_VISIT_SURFACE, previousVisitAt: baseline, visitedAt: "2026-11-06T09:00:00Z" });
+    }));
+    const read = vi.fn();
+    const recording = loadSinceLastVisitBaseline(BREAK_QUEUE_VISIT_SURFACE, { record, read });
+    const reading = loadSinceLastVisitBaseline(BREAK_QUEUE_VISIT_SURFACE, { record, read }, undefined, { record: false });
+    await Promise.resolve();
+    release();
+    expect(await reading).toBe(baseline);
+    expect(await recording).toBe(baseline);
+    expect(read).not.toHaveBeenCalled();
+  });
+
   it("tries again after a failed visit instead of caching the failure", async () => {
     const record = vi.fn()
       .mockRejectedValueOnce(new Error("offline"))

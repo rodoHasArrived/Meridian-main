@@ -106,6 +106,18 @@ export function countAccountingOpenBreaks(accounting: {
   return accounting.workspace?.openBreaks ?? countOpenBreaks(accounting.breakQueue ?? []) ?? 0;
 }
 
+/**
+ * Provider health for a screen that does not refresh the Data payload, such as Settings: the shell's
+ * shared count, which is refreshed on every route, and the Data rows only when that count is
+ * unavailable. Retained Data rows can be older than the shared count, so they never override it.
+ */
+export function selectSharedProviderHealth(
+  shared: WorkstationCrossScreenCounts | null | undefined,
+  providers: readonly { status?: string | null }[] | null | undefined
+): ProviderHealthCount | null {
+  return selectCrossScreenCounts({ shared }).providers ?? countProviderHealth(providers);
+}
+
 /** "2 of 4 healthy", or "—" when the count cannot be read. */
 export function formatProviderHealth(count: ProviderHealthCount | null): string {
   return count ? `${count.healthy} of ${count.total} healthy` : "—";

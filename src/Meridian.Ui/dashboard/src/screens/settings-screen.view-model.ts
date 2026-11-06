@@ -1,4 +1,4 @@
-import { selectCrossScreenCounts } from "@/lib/cross-screen-counts";
+import { selectSharedProviderHealth } from "@/lib/cross-screen-counts";
 import type { WorkstationCrossScreenCounts } from "@/types/cross-screen-counts";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { pluralizeCount } from "@/lib/format";
@@ -2832,8 +2832,9 @@ export function buildSettingsScreenViewModel(
       ]
     : [];
 
-  // One provider-health count, the same one Data and the trust strip show (A3).
-  const providerHealth = selectCrossScreenCounts({ shared: payload.crossScreenCounts, providers: payload.data?.providers }).providers;
+  // One provider-health count, the same one Data and the trust strip show (A3). Settings does not
+  // refresh the Data payload, so the shell's refreshed shared count wins over retained Data rows.
+  const providerHealth = selectSharedProviderHealth(payload.crossScreenCounts, payload.data?.providers);
   const systemItems: SettingsSystemItem[] = overview
     ? [
         { label: "Status", value: overview.systemStatus, tone: systemTone(overview.systemStatus) },

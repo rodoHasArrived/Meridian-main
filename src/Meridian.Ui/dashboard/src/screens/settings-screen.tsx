@@ -1,4 +1,4 @@
-import { selectCrossScreenCounts } from "@/lib/cross-screen-counts";
+import { selectSharedProviderHealth } from "@/lib/cross-screen-counts";
 import { useSharedCrossScreenCounts } from "@/lib/cross-screen-counts-context";
 import { OwnedProviderCredentialPanel } from "./settings-owned-provider-credentials";
 import { Activity, ArrowRight, ExternalLink, GitBranch, KeyRound, LoaderCircle, MonitorCheck, RefreshCcw, Save, Search, ShieldCheck, Trash2, User } from "lucide-react";
@@ -614,7 +614,7 @@ export function SettingsScreen({
 }: SettingsScreenProps) {
   const location = useLocation();
   const sharedCounts = useSharedCrossScreenCounts();
-  const providerHealth = selectCrossScreenCounts({ shared: sharedCounts, providers: data?.providers }).providers;
+  const providerHealth = selectSharedProviderHealth(sharedCounts, data?.providers);
   const vm = buildSettingsScreenViewModel({
     session,
     overview,
