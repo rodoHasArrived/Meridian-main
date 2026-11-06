@@ -8,6 +8,8 @@
 //   - a file losing occurrences passes, and the script asks for the baseline to be lowered
 //     with `--update-baseline` so the allowlist only ever shrinks.
 //
+// Test files (*.test.ts, *.test.tsx) are excluded: they hold fixture strings, not rendered UI.
+//
 // Usage:
 //   node scripts/check-typography-floor.mjs                   # check (used by `npm run lint`)
 //   node scripts/check-typography-floor.mjs --update-baseline # rewrite the baseline
@@ -28,6 +30,8 @@ const TAILWIND_SUB12 = new RegExp("text-" + "\\[(?:[0-9]|10|11)(?:\\.\\d+)?px\\]
 const CSS_SUB12 = /font-size\s*:\s*(?:[0-9]|10|11)(?:\.\d+)?px/g;
 
 const SOURCE_EXTENSIONS = new Set([".ts", ".tsx", ".css"]);
+// Test files hold fixture strings that exercise class detection; they are not rendered UI.
+const TEST_FILE = /\.test\.(?:ts|tsx)$/;
 const UPDATE = process.argv.includes("--update-baseline");
 
 async function listSourceFiles(dir) {
@@ -37,7 +41,7 @@ async function listSourceFiles(dir) {
     const full = join(dir, entry.name);
     if (entry.isDirectory()) {
       files.push(...(await listSourceFiles(full)));
-    } else if (SOURCE_EXTENSIONS.has(entry.name.slice(entry.name.lastIndexOf(".")))) {
+    } else if (SOURCE_EXTENSIONS.has(entry.name.slice(entry.name.lastIndexOf("."))) && !TEST_FILE.test(entry.name)) {
       files.push(full);
     }
   }
