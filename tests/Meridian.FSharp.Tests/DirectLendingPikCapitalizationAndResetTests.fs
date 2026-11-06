@@ -258,3 +258,14 @@ let ``capitalization dates follow the policy cadence and always include maturity
             null
     let paymentDates = DirectLendingServicingSchedule.CapitalizationDates(onPayment.PikCapitalization, onPayment)
     paymentDates[0..1] |> should equal [| DateOnly(2026, 4, 15); DateOnly(2026, 7, 15) |] // quarterly payment frequency
+
+[<Fact>]
+let ``PIK accrual and capitalization carry prepaid interest and unapplied cash through unchanged`` () =
+    let terms = buildTerms RateTypeKind.Fixed (monthlyPik PikElection.Always (DeclaredRate.Percent 25m)) null
+    let seeded = activeDrawnLoan terms |> DirectLendingTestBalances.withExcessBalances 50m 75m
+    let accrued = accrueThrough terms seeded (DateOnly(2026, 1, 16)) (DateOnly(2026, 2, 15))
+
+    let capitalized = DirectLendingAggregateInterop.CapitalizePik accrued terms (CapitalizePikRequest(DateOnly(2026, 2, 15)))
+
+    (accrued.Balances.PrepaidInterest, accrued.Balances.UnappliedCash) |> should equal (50m, 75m)
+    (capitalized.Servicing.Balances.PrepaidInterest, capitalized.Servicing.Balances.UnappliedCash) |> should equal (50m, 75m)
