@@ -52,7 +52,17 @@ public sealed class PaperTradingCostModel
     /// Observed quote midpoint in effect at fill time, when quotes were available; used to
     /// report the implicit spread cost.
     /// </param>
-    public PaperFillCostBreakdown Compute(decimal quantity, decimal fillPrice, decimal? midPrice)
+    /// <param name="contractMultiplier">
+    /// Value of one unit of <paramref name="quantity"/> per unit of <paramref name="fillPrice"/>
+    /// (100 for a standard equity option). Notional-based charges (basis-point commission, fees,
+    /// slippage) and the spread cost use the multiplied principal the paper book moves; per-share
+    /// and fixed per-order charges do not depend on it.
+    /// </param>
+    public PaperFillCostBreakdown Compute(
+        decimal quantity,
+        decimal fillPrice,
+        decimal? midPrice,
+        decimal contractMultiplier = 1m)
     {
         var absQuantity = Math.Abs(quantity);
         if (absQuantity == 0m || fillPrice <= 0m)
@@ -60,7 +70,8 @@ public sealed class PaperTradingCostModel
             return PaperFillCostBreakdown.Zero;
         }
 
-        var notional = absQuantity * fillPrice;
+        var multiplier = contractMultiplier > 0m ? contractMultiplier : 1m;
+        var notional = absQuantity * fillPrice * multiplier;
 
         var commission = _options.CommissionKind switch
         {
@@ -89,7 +100,7 @@ public sealed class PaperTradingCostModel
         var slippage = Math.Max(notional * _options.SlippageBasisPoints / 10_000m, 0m);
 
         var spread = midPrice is { } mid && mid > 0m
-            ? Math.Abs(fillPrice - mid) * absQuantity
+            ? Math.Abs(fillPrice - mid) * absQuantity * multiplier
             : 0m;
 
         return new PaperFillCostBreakdown(

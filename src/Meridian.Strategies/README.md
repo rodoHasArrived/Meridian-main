@@ -11,6 +11,10 @@ last_reviewed: 2026-08-03
 
 # src/Meridian.Strategies
 
+Live strategy-run cash flows scale the quoted fill price by the report's `LotMultiplier` (stamped by the
+OMS), so a run's retained cash-flow history reconciles with the paper portfolio for multiplied contracts;
+face-value fills keep their par scaling.
+
 SLA calculation anchors to OccurrenceFirstObservedAt, resolves named business and holiday calendars, retains fractional hours and resolves timezone boundaries separately for each date. Unknown names, missing coverage and ambiguous/nonexistent shift boundaries are refused. Source clearing leaves casework SLA and approval obligations intact.
 
 

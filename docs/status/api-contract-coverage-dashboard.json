@@ -3,12 +3,12 @@
   "title": "API Contract Coverage Dashboard",
   "generated_at": "1970-01-01T00:00:00+00:00",
   "score_percent": 20.0,
-  "endpoint_coverage_percent": 30.7,
+  "endpoint_coverage_percent": 30.6,
   "contract_coverage_percent": 4.0,
   "summary": {
-    "endpoint_count": 743,
-    "documented_endpoint_count": 228,
-    "undocumented_endpoint_count": 515,
+    "endpoint_count": 741,
+    "documented_endpoint_count": 227,
+    "undocumented_endpoint_count": 514,
     "workstation_contract_count": 971,
     "documented_workstation_contract_count": 39,
     "undocumented_workstation_contract_count": 932
@@ -701,8 +701,8 @@
     {
       "method": "POST",
       "path": "/api/dev/seed/bank-transactions",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs:311",
-      "documented": false
+      "source": "src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs:339",
+      "documented": true
     },
     {
       "method": "POST",
@@ -1835,43 +1835,31 @@
     {
       "method": "GET",
       "path": "/api/ingestion/jobs",
-      "source": "src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs:29",
+      "source": "src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs:30",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ingestion/jobs/{jobId}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs:51",
-      "documented": true
-    },
-    {
-      "method": "POST",
-      "path": "/api/ingestion/jobs/{jobId}/transition",
-      "source": "src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs:66",
+      "source": "src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs:56",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ingestion/jobs",
-      "source": "src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs:116",
+      "source": "src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs:82",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ingestion/jobs/resumable",
-      "source": "src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs:160",
+      "source": "src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs:131",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ingestion/summary",
-      "source": "src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs:171",
-      "documented": true
-    },
-    {
-      "method": "DELETE",
-      "path": "/api/ingestion/jobs/{jobId}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs:182",
+      "source": "src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs:146",
       "documented": true
     },
     {

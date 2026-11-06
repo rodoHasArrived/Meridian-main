@@ -109,6 +109,8 @@ Row classification, the WPF provenance composition and migration 062's independe
 **Evidence:** D1, D3, D4, D8, D9 and D11. Separate small changes by owner:
 
 - Replace the WPF multiplier substring rule with the same declared fact the workbench uses.
+  (Done before 2026-11-04. On 2026-11-06 the WPF conflict-routing substring rule also moved to
+  declared field names; see the D9 disposition in the review.)
 - Cover reverse instrument mapping and readiness projector mapping, including explicit ambiguity
   and outside-slice exceptions; retain conditional quality rules beside generic required terms.
 - Align identifier normalization/check digits at a dependency-safe seam, retaining provider and
