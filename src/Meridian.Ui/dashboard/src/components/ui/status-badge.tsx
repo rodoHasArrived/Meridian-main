@@ -29,8 +29,9 @@ const TONE_VARIANT: Record<StatusTone, BadgeProps["variant"]> = {
 const INFO_CLASSES = "border-primary/40 text-primary";
 const SOLID_INFO_CLASSES = "border-primary bg-primary text-primary-foreground";
 
-// The design-system semantic variants are deliberately unfilled. Solid emphasis fills them
-// with the same semantic token so a blocked, failed or warning state stands out.
+// Solid semantic tones are rendered as their own span, not through Badge. The design-system
+// semantic variants carry a text-success/warning/danger class that would fight a contrasting
+// foreground, and cn() does not resolve class conflicts.
 const SOLID_TONE_CLASSES: Partial<Record<StatusTone, string>> = {
   success: "border-success bg-success text-background",
   warning: "border-warning bg-warning text-background",
@@ -46,10 +47,21 @@ const SOLID_TONE_CLASSES: Partial<Record<StatusTone, string>> = {
  */
 export function StatusBadge({ tone = "neutral", emphasis = "subtle", dot = false, className, children }: StatusBadgeProps) {
   const solid = emphasis === "solid";
+  const solidTone = solid ? SOLID_TONE_CLASSES[tone] : undefined;
+  if (solidTone) {
+    return (
+      <span
+        className={["inline-flex items-center gap-1.5 rounded-[2px] border px-1.5 py-0.5 text-xs font-semibold leading-none", solidTone, className]
+          .filter(Boolean)
+          .join(" ")}
+      >
+        {dot ? <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-current" /> : null}
+        {children}
+      </span>
+    );
+  }
   const variant = solid && tone === "neutral" ? "default" : TONE_VARIANT[tone];
-  let toneClasses: string | undefined;
-  if (tone === "info") toneClasses = solid ? SOLID_INFO_CLASSES : INFO_CLASSES;
-  else if (solid) toneClasses = SOLID_TONE_CLASSES[tone];
+  const toneClasses = tone === "info" ? (solid ? SOLID_INFO_CLASSES : INFO_CLASSES) : undefined;
   return (
     <Badge variant={variant} dot={dot} className={[toneClasses, className].filter(Boolean).join(" ") || undefined}>
       {children}

@@ -49,6 +49,9 @@ describe("StatusBadge", () => {
 
       expect(solidClass).not.toBe(subtleClass);
       expect(solidClass).toContain(`bg-${tone}`);
+      // The solid label must use the contrasting foreground only; no competing semantic text colour.
+      expect(solidClass).toContain("text-background");
+      expect(solidClass).not.toContain(`text-${tone}`);
     }
   );
 });
