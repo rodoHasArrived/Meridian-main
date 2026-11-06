@@ -105,6 +105,16 @@
   --dense-cell-px: 0.625rem;
 }
 
+/* Virtualized tables window rows by a fixed pixel height (the trial balance uses 36px), so they
+   keep at most the default rhythm: spacious padding would make each row taller than the height
+   the window, spacer and keyboard-reveal math uses, and rows would drift out of place. */
+:where(body[data-theme-density="spacious"]) .dense-data-table-wrap-virtual .dense-data-table,
+.dense-data-table-wrap.dense-data-table-wrap-virtual[data-density="spacious"] .dense-data-table {
+  --dense-head-py: 0.4375rem;
+  --dense-cell-py: 0.4375rem;
+  --dense-cell-px: 0.75rem;
+}
+
 .dense-data-table thead {
   position: sticky;
   top: 0;
