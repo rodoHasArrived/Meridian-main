@@ -99,6 +99,11 @@ concurrent-write tests; history reconstructed with explicit valid/recorded cutof
 fixtures read unchanged; canonical event/projection/provenance commit atomically. Independent
 schema/storage review remains a gate for migrations and destructive-operation waivers.
 
+**Progress (2026-11-04):** identifier recorded history (migration 062) and versioned governance
+payloads with captured version-1 fixtures are implemented; see the
+[D7 slice-5 disposition](../../architecture/security-master-extensibility-review.md#d7--audit-history-and-serialization-distinguish-current-state-from-retained-evidence).
+Row classification, the WPF provenance composition and migration 062's independent review remain open.
+
 ## Slice 6 — Remaining catalog, identifier and consumer convergence
 
 **Evidence:** D1, D3, D4, D8, D9 and D11. Separate small changes by owner:

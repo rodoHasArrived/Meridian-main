@@ -804,7 +804,11 @@ Core workstation host. Do not introduce a second listener or independent monitor
   custom profile id, version, field-key, or field-value filters are supplied. Identifier fallback
   applies the same provider authority as the durable store: provider-bound
   identifiers and aliases require the exact normalized provider, while providerless legacy primary
-  fields remain eligible only when no matching authoritative identifier row exists. Profile
+  fields remain eligible only when no matching authoritative identifier row exists. Validation
+  warns with `SM_REGULATORY_IDENTIFIER_ASSET_CLASS_MISMATCH` when a UTI, UPI or Markit RED code sits
+  on an asset class `SecurityAssetClassCatalog.MayCarryIdentifierKind` does not admit, refuses a
+  shared-reference kind (UPI or RED) as primary with `SM_SHARED_IDENTIFIER_NOT_PRIMARY`, and treats
+  `Uti` as a canonical duplicate kind. Profile
   definitions are governed by `SecurityAssetProfileGovernanceService`, which merges seeded starter
   definitions
   with storage-root persisted drafts, approvals, rollback-created versions, and audit lineage.
@@ -1229,7 +1233,8 @@ this guard and keep their existing provider attribution. Verify this lane with
 Security Master canonical writes run under `ISecurityMasterCanonicalWriteScope`. With the
 PostgreSQL scope registered, create, amend and deactivate append the event, upsert the projection
 and record canonical field attribution in one transaction; a failed attribution rolls back the
-event and projection. Workbench restorations mark `RestoresPriorDecision`, the only override
+event, the projection and the identifier revisions the projection appended (migration 062). Storage
+composition registers `ISecurityIdentifierHistoryStore` for recorded identifier-history reads. Workbench restorations mark `RestoresPriorDecision`, the only override
 decision exempt from independent review. `FaceValueLotExtensions.ToLedgerTaxLot` emits `FaceValue`
 lots with multiplier 100. Writes reject non-canonical values for typed term conventions
 (day count, settlement method, option right).
@@ -1367,8 +1372,9 @@ direct-lending and amortization gates are ungated when no verifier is registered
 - **Independent profile approval.** `SecurityAssetProfileGovernanceService` refuses an asset-profile approval by any actor who drafted that version when `SecurityMasterWorkbench:RequireIndependentProfileApprover` is on. A drafter is identified by the recorded `DraftedBy`, by the drafted audit events for that version, or, for a legacy draft without `DraftedBy`, by its recorded author. The setting defaults to off and is read at approval time.
 - **Classification labels.** `SecurityEconomicDefinitionAdapter` stores asset-class, family and sub-type labels from the F# domain's explicit name functions rather than union `ToString()`, which would emit payload syntax such as `OtherFamily "x"` or `Some(...)`. Labels retained before that change are decoded at read time by `Meridian.Contracts.SecurityMaster.ClassificationLabelReader` (preferred-equity replay guard, workbench DTO mapping, accounting sub-type and certified-report rows). Each label is decoded once, where a stored record becomes a DTO or row; downstream consumers such as the WPF display, the passport summaries and the CSV/XLSX export use that decoded value; retained events are not rewritten. Create and terms amendment refuse an `OtherSecurity` `subType`/`category` that would read back differently (`None`, `Some(Equity)`, a quoted literal or a union payload) with `SecurityMasterWriteRefusedException` (`SecurityMasterService.ClassificationText.cs`).
 - **Removed prototype.** The unused Application-side `SecurityMaster/CashFlow/ScheduleSpecFactory` prototype was deleted; production uses `Meridian.Contracts.SecurityMaster.ScheduleSpecFactory`.
+- **Derived term-key spellings.** `SecurityMasterConflictDetection.ProfileFieldComparisonExclusions` and the data-quality maturity reads (`MA001`, `VC002`, `SecurityMasterDataQualityService.MaturitySpellings`) take their spelling pairs (`maturity`/`maturityDate`, `dayCount`/`dayCountConvention`, factor `factor`/`currentFactor`) from `SecurityAssetTermsSchema` aliases instead of restated lists. `SecurityMasterTermSpellingDerivationTests` pins each derived set to the one it replaced; the conditional quality rules are unchanged.
 
-See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D8) for status and open decisions.
+See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D9, slice 6 disposition) for status and open decisions.
 
 ## Diagrams
 

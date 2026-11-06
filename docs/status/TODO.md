@@ -72,8 +72,8 @@ Total items: **237**
 | `src/Meridian.Ui/dashboard/src/components/data/skeleton.tsx` | 5 | `NOTE` | ❌ | // NOTE: a second, Tailwind-based Skeleton family lives in `components/ui/skeleton.tsx` |
 | `src/Meridian.Ui/dashboard/src/components/meridian/security-details-tracker.test.tsx` | 23 | `NOTE` | ❌ | note: "Opening sleeve" |
 | `src/Meridian.Ui/dashboard/src/components/meridian/security-details-tracker.test.tsx` | 151 | `NOTE` | ❌ | note: "operator note" |
-| `src/Meridian.Ui/dashboard/src/components/meridian/security-details-tracker.tsx` | 598 | `NOTE` | ❌ | note: draftNote |
-| `src/Meridian.Ui/dashboard/src/components/meridian/security-details-tracker.tsx` | 615 | `NOTE` | ❌ | note: draftNote.trim() |
+| `src/Meridian.Ui/dashboard/src/components/meridian/security-details-tracker.tsx` | 599 | `NOTE` | ❌ | note: draftNote |
+| `src/Meridian.Ui/dashboard/src/components/meridian/security-details-tracker.tsx` | 616 | `NOTE` | ❌ | note: draftNote.trim() |
 | `src/Meridian.Ui/dashboard/src/components/meridian/security-details-tracker.view-model.test.ts` | 17 | `NOTE` | ❌ | note: "Opening sleeve" |
 | `src/Meridian.Ui/dashboard/src/components/meridian/security-details-tracker.view-model.test.ts` | 25 | `NOTE` | ❌ | note: "" |
 | `src/Meridian.Ui/dashboard/src/components/meridian/security-details-tracker.view-model.test.ts` | 40 | `NOTE` | ❌ | note: "Add-on" |
@@ -112,8 +112,8 @@ Total items: **237**
 | `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` | 528 | `NOTE` | ❌ | note: "Coupon posted." |
 | `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` | 548 | `NOTE` | ❌ | note: "Expected-versus-actual variance." |
 | `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` | 2205 | `NOTE` | ❌ | note: "Expected-versus-actual variance." |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 924 | `NOTE` | ❌ | note: string \| null; |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 6063 | `NOTE` | ❌ | note: event.sourceReason ?? (event.isCurrentProjection ? "Current schedule projection." : null) |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 925 | `NOTE` | ❌ | note: string \| null; |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 6064 | `NOTE` | ❌ | note: event.sourceReason ?? (event.isCurrentProjection ? "Current schedule projection." : null) |
 | `src/Meridian.Ui/dashboard/src/screens/covered-call-screen.view-model.ts` | 304 | `NOTE` | ❌ | note: string; |
 | `src/Meridian.Ui/dashboard/src/screens/covered-call-screen.view-model.ts` | 1111 | `NOTE` | ❌ | note: "Covered-call net curve requires the underlying cost basis which is not yet threaded through the API. The chart shows the short-call leg only." |
 | `src/Meridian.Ui/dashboard/src/screens/daily-control-tower-screen.test.tsx` | 76 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
@@ -132,8 +132,8 @@ Total items: **237**
 | `src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.test.ts` | 141 | `NOTE` | ❌ | note: "Configured with paper API keys.", |
 | `src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.test.ts` | 1570 | `NOTE` | ❌ | note: "Backfill pressure is elevated.", |
 | `src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.test.ts` | 2080 | `NOTE` | ❌ | note: "Checkpoint delay exceeded the review threshold.", |
-| `src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.ts` | 393 | `NOTE` | ❌ | note: string; |
-| `src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.ts` | 2385 | `NOTE` | ❌ | note: recommendedActionText ?? providerRecord?.note ?? "No operator action reported", |
+| `src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.ts` | 394 | `NOTE` | ❌ | note: string; |
+| `src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.ts` | 2386 | `NOTE` | ❌ | note: recommendedActionText ?? providerRecord?.note ?? "No operator action reported", |
 | `src/Meridian.Ui/dashboard/src/screens/margin-control-center-screen.test.tsx` | 109 | `NOTE` | ❌ | note: "Reviewed provider statement and position contributions.", |
 | `src/Meridian.Ui/dashboard/src/screens/margin-control-center-screen.test.tsx` | 135 | `NOTE` | ❌ | note: "Reviewed provider statement and position contributions." |
 | `src/Meridian.Ui/dashboard/src/screens/operations-record-release-screen.test.tsx` | 44 | `NOTE` | ❌ | note: "Ready" |
@@ -178,12 +178,12 @@ Total items: **237**
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4746 | `NOTE` | ❌ | note: "Board package.", |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4792 | `NOTE` | ❌ | note: "Board package.", |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4994 | `NOTE` | ❌ | note: "pricing-correction" |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | 2799 | `NOTE` | ❌ | note: note \|\| null |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | 2812 | `NOTE` | ❌ | note: draft.deliveryNote, |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | 2800 | `NOTE` | ❌ | note: note \|\| null |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | 2813 | `NOTE` | ❌ | note: draft.deliveryNote, |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.test.ts` | 203 | `NOTE` | ❌ | note: "pricing-correction" |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.test.ts` | 488 | `NOTE` | ❌ | note: "Starter target" |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.test.ts` | 619 | `NOTE` | ❌ | note: "Board package." |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.ts` | 530 | `NOTE` | ❌ | note: string \| null; |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.ts` | 531 | `NOTE` | ❌ | note: string \| null; |
 | `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 1670 | `NOTE` | ❌ | note: "Reviewed from the Settings Provider Connection Center runtime evidence panel." |
 | `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 1678 | `NOTE` | ❌ | note: "Marked from the Settings Provider Connection Center for replay after mapping changes." |
 | `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 1688 | `NOTE` | ❌ | note: "Ignored from the Settings Provider Connection Center after operator review." |

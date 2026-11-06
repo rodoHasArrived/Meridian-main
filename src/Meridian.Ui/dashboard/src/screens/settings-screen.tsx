@@ -2,7 +2,7 @@ import { OwnedProviderCredentialPanel } from "./settings-owned-provider-credenti
 import { Activity, ArrowRight, ExternalLink, GitBranch, KeyRound, LoaderCircle, MonitorCheck, RefreshCcw, Save, Search, ShieldCheck, Trash2, User } from "lucide-react";
 import { ProviderSetupPanel } from "@/components/data/provider-setup-panel";
 import { LifecycleControlPanel } from "@/components/meridian/lifecycle-control-panel";
-import { formatNumber as formatNumberAmount } from "@/lib/format";
+import { formatNumber as formatNumberAmount, formatUtcTimestamp } from "@/lib/format";
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { StatStrip } from "@/components/meridian/stat-strip";
@@ -169,6 +169,7 @@ import type {
   UserAccessAssignment,
   WorkspaceKey
 } from "@/types";
+import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
 
 interface SettingsScreenProps {
   session: SessionInfo | null;
@@ -411,7 +412,6 @@ function settingsStorageHealthTone(
   if (health === "Critical") return "danger";
   return "default";
 }
-
 
 const requirementToneClass = {
   success: "border-success/30 bg-success/10 text-success",
@@ -2429,7 +2429,7 @@ export function SettingsScreen({
           <CardHeader>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <div className="eyebrow-label">Profile and authentication</div>
+                <div className="eyebrow-label eyebrow-label--sentence">Profile and authentication</div>
                 <CardTitle className="mt-2 flex items-center gap-2">
                   <User className="h-5 w-5 text-primary" />
                   {vm.profileAuthenticationPanel.title}
@@ -2496,7 +2496,7 @@ export function SettingsScreen({
             </div>
 
             <div className="grid gap-2">
-              <h3 className="text-xs font-semibold uppercase text-muted-foreground">
+              <h3 className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(vm.profileAuthenticationPanel.stepsTitle) && "uppercase")}>
                 {vm.profileAuthenticationPanel.stepsTitle}
               </h3>
               <div role="list" aria-label={vm.profileAuthenticationPanel.stepsAriaLabel} className="grid gap-2">
@@ -4259,7 +4259,7 @@ export function SettingsScreen({
             ) : null}
             <div className="grid gap-2">
               <div className="min-w-0">
-                <h3 className="text-xs font-semibold uppercase text-muted-foreground">
+                <h3 className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(vm.alpacaConnectionPanel.setupChecklistTitle) && "uppercase")}>
                   {vm.alpacaConnectionPanel.setupChecklistTitle}
                 </h3>
                 <p className="mt-1 text-xs leading-5 text-muted-foreground">
@@ -4762,7 +4762,7 @@ function EndpointReference({
         <span className="mt-1 block break-all font-mono text-[10px] leading-4 text-muted-foreground">
           {endpoint.href}
         </span>
-        <span className="mt-1 inline-flex rounded-sm border border-border/60 px-1.5 py-0.5 text-[10px] uppercase text-muted-foreground">
+        <span className={cn("mt-1 inline-flex rounded-sm border border-border/60 px-1.5 py-0.5 text-[10px] text-muted-foreground", usesTrackedCaps(endpoint.interactionLabel) && "uppercase")}>
           {endpoint.interactionLabel}
         </span>
       </span>
@@ -4825,7 +4825,7 @@ function RecentEventDetailPanel({
           <div role="region" aria-label={detail.ariaLabel} className="space-y-3">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
-                <div className="eyebrow-label">{detail.eyebrow}</div>
+                <div className={eyebrowClassName(detail.eyebrow)}>{detail.eyebrow}</div>
                 <h3 className="mt-2 break-words text-sm font-semibold text-foreground">{detail.title}</h3>
                 <p className="mt-1 break-words font-mono text-xs text-muted-foreground">{detail.subtitle}</p>
               </div>
@@ -4839,7 +4839,7 @@ function RecentEventDetailPanel({
             <dl className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
               {detail.fields.map((field) => (
                 <div key={field.label} className="rounded-sm border border-border/60 bg-background/35 px-2.5 py-2">
-                  <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{field.label}</dt>
+                  <dt className={cn("text-[10px] text-muted-foreground", usesTrackedCaps(field.label) && "uppercase tracking-[0.14em]")}>{field.label}</dt>
                   <dd className={cn("mt-1 break-words font-mono text-xs", itemToneClass[field.tone])}>
                     {field.value}
                   </dd>
@@ -5859,7 +5859,7 @@ function ProviderIntegrationWorkbenchPanel({
     <section className="mt-3 rounded-md border border-border/60 bg-background/35 px-3 py-3" aria-label={`${row.displayName} guided provider integration workbench`}>
       <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <h6 className="text-xs font-semibold uppercase tracking-[0.12em] text-foreground">Manifest and activation workbench</h6>
+          <h6 className="text-xs font-semibold text-foreground">Manifest and activation workbench</h6>
           <p className="mt-1 text-[11px] leading-4 text-muted-foreground">Advanced template, dry-run, readiness, drift, and activation evidence stay on shared provider-integration endpoints.</p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -6052,7 +6052,7 @@ function ProviderOpenApiImportForm({
     >
       <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <h6 className="text-xs font-semibold uppercase tracking-[0.12em] text-foreground">OpenAPI import draft</h6>
+          <h6 className="text-xs font-semibold text-foreground">OpenAPI import draft</h6>
           <p className="mt-1 text-[11px] leading-4 text-muted-foreground">
             Seed a draft manifest through the shared import endpoint; readiness, mapping, and runtime evidence stay service-owned.
           </p>
@@ -6700,14 +6700,8 @@ function formatProviderRuntimeUtcMinute(value: string | Date | null | undefined,
     return unavailableLabel;
   }
 
-  return `${PROVIDER_RUNTIME_UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${padProviderRuntimeUtc(date.getUTCHours())}:${padProviderRuntimeUtc(date.getUTCMinutes())} UTC`;
+  return formatUtcTimestamp(date);
 }
-
-function padProviderRuntimeUtc(value: number): string {
-  return value.toString().padStart(2, "0");
-}
-
-const PROVIDER_RUNTIME_UTC_MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 const PROVIDER_OPEN_API_AUTH_OPTIONS: { value: ProviderIntegrationAuthType; label: string }[] = [
   { value: "OAuth2", label: "OAuth2" },

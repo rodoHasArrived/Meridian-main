@@ -6977,13 +6977,16 @@ Meridian-main
 │   │   │   │   ├── 057_terms_capability_floor.sql
 │   │   │   │   ├── 058_security_master_schedule_decimal_precision.sql
 │   │   │   │   ├── 059_security_events_append_only_guard.sql
-│   │   │   │   └── 060_security_master_revision_field_base.sql
+│   │   │   │   ├── 060_security_master_revision_field_base.sql
+│   │   │   │   ├── 062_security_master_identifier_revisions.sql
+│   │   │   │   └── 064_custom_asset_profile_field_projection.sql
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IBondReferenceProjectionStore.cs
 │   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs
 │   │   │   ├── ICommodityReferenceProjectionStore.cs
 │   │   │   ├── ICorporateActionOperationsStore.cs
 │   │   │   ├── ICryptoReferenceProjectionStore.cs
+│   │   │   ├── ICustomAssetProfileFieldProjectionStore.cs
 │   │   │   ├── IDataVendorEntitlementStore.cs
 │   │   │   ├── IDepositReferenceProjectionStore.cs
 │   │   │   ├── IDirectLoanReferenceProjectionStore.cs
@@ -6995,6 +6998,7 @@ Meridian-main
 │   │   │   ├── IOperatorOverridesStore.cs
 │   │   │   ├── IOptionReferenceProjectionStore.cs
 │   │   │   ├── ISecurityFieldProvenanceStore.cs
+│   │   │   ├── ISecurityIdentifierHistoryStore.cs
 │   │   │   ├── ISecurityMasterCashFlowStore.cs
 │   │   │   ├── ISecurityMasterEventStore.cs
 │   │   │   ├── ISecurityMasterPricingStore.cs
@@ -7013,6 +7017,7 @@ Meridian-main
 │   │   │   ├── PostgresCorporateActionOperationsStore.Cases.cs
 │   │   │   ├── PostgresCorporateActionOperationsStore.cs
 │   │   │   ├── PostgresCryptoReferenceProjectionStore.cs
+│   │   │   ├── PostgresCustomAssetProfileFieldProjectionStore.cs
 │   │   │   ├── PostgresDataVendorEntitlementStore.cs
 │   │   │   ├── PostgresDepositReferenceProjectionStore.cs
 │   │   │   ├── PostgresDirectLoanReferenceProjectionStore.cs
@@ -7037,7 +7042,9 @@ Meridian-main
 │   │   │   ├── PostgresSecurityMasterSnapshotStore.cs
 │   │   │   ├── PostgresSecurityMasterStore.Aliases.cs
 │   │   │   ├── PostgresSecurityMasterStore.cs
+│   │   │   ├── PostgresSecurityMasterStore.CustomAssetProfileFields.cs
 │   │   │   ├── PostgresSecurityMasterStore.IdentifierCandidates.cs
+│   │   │   ├── PostgresSecurityMasterStore.IdentifierHistory.cs
 │   │   │   ├── PostgresSecurityMasterStore.PostingAuthority.cs
 │   │   │   ├── PostgresSecurityMasterStore.TermsProjection.cs
 │   │   │   ├── PostgresSecurityMasterTermsCapabilityStore.cs
@@ -7046,6 +7053,7 @@ Meridian-main
 │   │   │   ├── PostgresSwapReferenceProjectionStore.cs
 │   │   │   ├── SecurityAliasSnapshot.cs
 │   │   │   ├── SecurityGovernanceEventLog.cs
+│   │   │   ├── SecurityGovernancePayloads.cs
 │   │   │   ├── SecurityMasterCanonicalWriteScope.cs
 │   │   │   ├── SecurityMasterDbMapper.cs
 │   │   │   ├── SecurityMasterMigrationRunner.cs
@@ -7204,6 +7212,9 @@ Meridian-main
 │   │   │   ├── scripts
 │   │   │   │   ├── eslint-rules
 │   │   │   │   │   └── kebab-filename.mjs
+│   │   │   │   ├── design-system-ratchets.baseline.json
+│   │   │   │   ├── design-system-ratchets.d.mts
+│   │   │   │   ├── design-system-ratchets.mjs
 │   │   │   │   ├── run-vitest-stable.mjs
 │   │   │   │   ├── smoke-workstation.mjs
 │   │   │   │   ├── vitest-evidence.mjs
@@ -7439,6 +7450,7 @@ Meridian-main
 │   │   │   │   │   │   ├── stat-strip.tsx
 │   │   │   │   │   │   ├── strategy-formula-workbench.test.tsx
 │   │   │   │   │   │   ├── strategy-formula-workbench.tsx
+│   │   │   │   │   │   ├── ui-kit-primitives.table-system.test.tsx
 │   │   │   │   │   │   ├── ui-kit-primitives.test.tsx
 │   │   │   │   │   │   ├── ui-kit-primitives.tsx
 │   │   │   │   │   │   ├── ui-kit-primitives.virtualization.test.tsx
@@ -7579,13 +7591,17 @@ Meridian-main
 │   │   │   │   │   ├── assets.ts
 │   │   │   │   │   ├── badge.tsx
 │   │   │   │   │   ├── button.tsx
+│   │   │   │   │   ├── design-system-ratchets.test.ts
+│   │   │   │   │   ├── label-case.ts
 │   │   │   │   │   ├── masthead.tsx
 │   │   │   │   │   ├── nav-rail.tsx
 │   │   │   │   │   ├── primitives.tsx
+│   │   │   │   │   ├── status-badge.test.tsx
 │   │   │   │   │   ├── status.test.ts
 │   │   │   │   │   ├── status.tsx
 │   │   │   │   │   ├── tokens.ts
-│   │   │   │   │   └── trust-strip.tsx
+│   │   │   │   │   ├── trust-strip.tsx
+│   │   │   │   │   └── type-scale.test.tsx
 │   │   │   │   ├── features
 │   │   │   │   │   ├── accounting
 │   │   │   │   │   │   └── accountingCloseModels.ts
@@ -8256,6 +8272,7 @@ Meridian-main
 │   │   │   │   │   ├── dense-row-detail-accessibility.css
 │   │   │   │   │   ├── index.css
 │   │   │   │   │   ├── reconciliation-workbench.css
+│   │   │   │   │   ├── status-badge.css
 │   │   │   │   │   ├── ui-kit-primitives.css
 │   │   │   │   │   ├── workflow-continuity-dock.css
 │   │   │   │   │   ├── workspace-nav.css
@@ -9896,6 +9913,8 @@ Meridian-main
 │   │   │   │   └── face-value-lot-constant-yield.json
 │   │   │   └── KNOWN-DEFECTS.md
 │   │   ├── security-master
+│   │   │   ├── governance-payloads
+│   │   │   │   └── v1-captured.json
 │   │   │   ├── schedule-validation
 │   │   │   │   ├── accepted.json
 │   │   │   │   ├── duplicate-properties.json
@@ -11836,6 +11855,8 @@ Meridian-main
 │   │   │   ├── CorporateActionTaxonomyPropertyTests.cs
 │   │   │   ├── CorporateActionTermsTests.cs
 │   │   │   ├── CorporateActionTypeDescriptorCatalogTests.cs
+│   │   │   ├── CustomAssetProfileFieldProjectionPostgresTests.cs
+│   │   │   ├── CustomAssetProfileFieldProjectionTests.cs
 │   │   │   ├── DataVendorEntitlementServiceTests.cs
 │   │   │   ├── DayCountConventionsTests.cs
 │   │   │   ├── DiscountedCashFlowValuationModelTests.cs
@@ -11877,6 +11898,7 @@ Meridian-main
 │   │   │   ├── QuotedPriceValuationModelTests.cs
 │   │   │   ├── RateUnitNormalizerTests.cs
 │   │   │   ├── RegistryMigratedProjectionGoldenTests.cs
+│   │   │   ├── RegulatoryDerivativeIdentifierKindTests.cs
 │   │   │   ├── ScheduleConventionsDecodeGoldenTests.cs
 │   │   │   ├── ScheduleTermsWriteRulesGapTests.cs
 │   │   │   ├── ScheduleTermsWriteRulesStrictWalkGapTests.cs
@@ -11894,6 +11916,7 @@ Meridian-main
 │   │   │   ├── SecurityAssetClassTermsUpgraderTests.cs
 │   │   │   ├── SecurityAssetClassTermsUpgradeWiringTests.cs
 │   │   │   ├── SecurityAssetPackAdmissionTests.cs
+│   │   │   ├── SecurityAssetPackReadinessMappingTests.cs
 │   │   │   ├── SecurityAssetProfileGovernanceServiceTests.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcasterChainTests.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcasterPipelineTests.cs
@@ -11918,6 +11941,10 @@ Meridian-main
 │   │   │   ├── SecurityEconomicTermsV2BridgeCoverageTests.cs
 │   │   │   ├── SecurityEconomicTypedFactorHistoryTests.cs
 │   │   │   ├── SecurityEnrichmentTests.cs
+│   │   │   ├── SecurityGovernancePayloadContractTests.cs
+│   │   │   ├── SecurityGovernancePayloadPostgresTests.cs
+│   │   │   ├── SecurityIdentifierHistoryPostgresTests.cs
+│   │   │   ├── SecurityIdentifierMigration016ParityTests.cs
 │   │   │   ├── SecurityIdentifierNormalizationParityTests.cs
 │   │   │   ├── SecurityIdentifierNormalizerTests.cs
 │   │   │   ├── SecurityIncomeCashFlowProjectorTests.cs
@@ -11988,6 +12015,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterSnapshotStoreTests.cs
 │   │   │   ├── SecurityMasterStructuredCreditReclassificationServiceTests.cs
 │   │   │   ├── SecurityMasterTermsCapabilityPostgresTests.cs
+│   │   │   ├── SecurityMasterTermSpellingDerivationTests.cs
 │   │   │   ├── SecurityMasterTickerChangeServiceTests.cs
 │   │   │   ├── SecurityReferenceTaxonomyCatalogTests.cs
 │   │   │   ├── SecurityScheduleAuthoringParityTests.cs

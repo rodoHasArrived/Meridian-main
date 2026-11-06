@@ -993,7 +993,7 @@ describe("accounting-screen close-cockpit view model", () => {
       statusLabel: "Ready for sign-off",
       dependencyLabel: expect.stringContaining("task-reconciliation"),
       signOffLabel: "1/1 required sign-offs approved",
-      signOffDetailLabel: "Approved by ops-user on Jun 2, 05:00 UTC | Controller retained NAV package sign-off.",
+      signOffDetailLabel: "Approved by ops-user on Jun 2, 2026, 05:00 UTC | Controller retained NAV package sign-off.",
       signOffRequirementLabel: "controller: 1/1",
       evidenceLabel: "2 evidence links",
       blockerLabel: "Controller sign-off pending."
@@ -1021,7 +1021,7 @@ describe("accounting-screen close-cockpit view model", () => {
         statusLabel: "Satisfied",
         statusTone: "success",
         evidenceRequirementLabel: "Controller NAV sign-off evidence",
-        latestSignOffLabel: "Approved by ops-user on Jun 2, 05:00 UTC | Controller retained NAV package sign-off."
+        latestSignOffLabel: "Approved by ops-user on Jun 2, 2026, 05:00 UTC | Controller retained NAV package sign-off."
       })
     ]);
     expect(result.current.operatingCoverageRows).toHaveLength(6);
@@ -1138,7 +1138,7 @@ describe("accounting-screen close-cockpit view model", () => {
     expect(result.current.lateAdjustments[0]).toMatchObject({
       journalEntryId: "manual-je-late-1",
       reason: "Late custodian fee accrual.",
-      decisionLabel: "Approved by ops-user on Jun 2, 04:00 UTC",
+      decisionLabel: "Approved by ops-user on Jun 2, 2026, 04:00 UTC",
       evidenceLabel: "2 evidence links",
       materialityLabel: "Within materiality: at or below $2,500 USD; controller review policy",
       materialityTone: "success"
@@ -2188,7 +2188,7 @@ describe("accounting-screen close-cockpit view model", () => {
         statusLabel: "Review retained",
         statusTone: "success",
         evidenceLabel: "2 review evidence links retained",
-        latestReviewLabel: "browser-accounting-controller on Jun 3, 13:15 UTC | Reviewed close blocker CLOSE_TASK_PENDING for task-nav from the Accounting close cockpit.",
+        latestReviewLabel: "browser-accounting-controller on Jun 3, 2026, 13:15 UTC | Reviewed close blocker CLOSE_TASK_PENDING for task-nav from the Accounting close cockpit.",
         reviewDisabledReason: "Close evidence review is already retained for this issue."
       })
     ]));
@@ -2281,7 +2281,7 @@ describe("accounting-screen close-cockpit view model", () => {
     expect(result.current.reviewLateAdjustmentStatusTone).toBe("success");
     expect(result.current.lateAdjustments[0]).toMatchObject({
       statusLabel: "Approved",
-      decisionLabel: "Approved by browser-accounting-controller on Jun 3, 12:45 UTC",
+      decisionLabel: "Approved by browser-accounting-controller on Jun 3, 2026, 12:45 UTC",
       reviewDisabledReason: "Late adjustment is already approved."
     });
     expect(result.current.closeWorkflowSteps).toEqual(expect.arrayContaining([
@@ -2502,7 +2502,7 @@ describe("accounting-screen close-cockpit view model", () => {
       ])
     }));
     expect(result.current.signOffStatusText).toBe("Rejected sign-off retained for Finalize NAV package.");
-    expect(result.current.tasks[0].signOffDetailLabel).toBe("Rejected by browser-accounting-controller on Jun 3, 12:30 UTC | Controller rejected NAV package pending retained evidence.");
+    expect(result.current.tasks[0].signOffDetailLabel).toBe("Rejected by browser-accounting-controller on Jun 3, 2026, 12:30 UTC | Controller rejected NAV package pending retained evidence.");
   });
 
   it("blocks browser close task sign-off when the selected role is not retained", async () => {

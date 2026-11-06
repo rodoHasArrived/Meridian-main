@@ -138,7 +138,8 @@ describe("ReportingHub", () => {
     render(<ReportingHub model={model} />);
 
     const familyHealth = screen.getByRole("region", { name: "Report family organizer" });
-    expect(within(familyHealth).getByRole("columnheader", { name: "Family" })).toBeInTheDocument();
+    // Family is sortable, so its header is named by the sort control ("Sort by Family").
+    expect(within(familyHealth).getByRole("columnheader", { name: /Family/ })).toBeInTheDocument();
     expect(within(familyHealth).getByText("Investor Statements")).toBeInTheDocument();
     expect(within(familyHealth).getByRole("link", { name: "Open latest output for Investor Statements" })).toHaveAttribute(
       "href",

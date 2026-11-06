@@ -1,5 +1,6 @@
 import { forwardRef, type ReactNode, type TextareaHTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 export interface TextAreaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: ReactNode;
@@ -37,7 +38,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
     return (
       <label className="block">
         {label ? (
-          <span className="mb-1.5 block font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          <span className={cn("mb-1.5 block text-[10px] font-semibold text-muted-foreground", usesTrackedCaps(label) && "font-mono uppercase tracking-[0.14em]")}>
             {label}
           </span>
         ) : null}

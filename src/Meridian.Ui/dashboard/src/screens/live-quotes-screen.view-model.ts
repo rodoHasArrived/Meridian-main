@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
-import { pluralizeCount } from "@/lib/format";
+import { formatCount as formatCountValue, pluralizeCount } from "@/lib/format";
 import { useQuotesStream } from "@/hooks/use-quotes-stream";
 import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import type { ApiRequestOptions } from "@/lib/api";
@@ -1538,7 +1538,7 @@ export function formatMarketSize(value: number | null | undefined): string {
   if (value === null || value === undefined || Number.isNaN(value)) {
     return LIVE_QUOTES_EMPTY_VALUE;
   }
-  return value.toLocaleString();
+  return formatCountValue(value);
 }
 
 function formatPriceSize(price: number | null | undefined, size: number | null | undefined): string {
@@ -1981,7 +1981,7 @@ function formatVolume(value: number): string {
   if (!Number.isFinite(value) || value <= 0) return LIVE_QUOTES_EMPTY_VALUE;
   if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(2)}M`;
   if (value >= 1_000) return `${(value / 1_000).toFixed(1)}K`;
-  return value.toLocaleString();
+  return formatCountValue(value);
 }
 
 function formatWindowSpan(startIso: string | null, endIso: string | null): string {

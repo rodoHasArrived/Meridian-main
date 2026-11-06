@@ -304,7 +304,10 @@ public static class SecurityAssetClassCatalog
             RequiresGovernedProfile: true,
             LotUnit: SecurityLotUnitKind.Units,
             CashFlowBehavior: SecurityCashFlowBehavior.None,
-            ProjectionKind: SecurityTermsProjectionKind.TermsJsonOnly,
+            // Profile-keyed: one custom_asset_profile_field_projection row per profileFields key
+            // (migration 064), written by a specialized store writer because the field set is
+            // governed per profile rather than fixed per class.
+            ProjectionKind: SecurityTermsProjectionKind.Specialized,
             SupportsBasicCreateWorkflow: true,
             PreferredIdentifierKinds:
             [
@@ -331,7 +334,9 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.InternalCode,
                 SecurityIdentifierKind.PermId,
                 SecurityIdentifierKind.Lei,
-                SecurityIdentifierKind.ProviderSymbol
+                SecurityIdentifierKind.ProviderSymbol,
+                SecurityIdentifierKind.Uti,
+                SecurityIdentifierKind.Upi
             ],
             RequiresMaturity: true,
             // Version 2 adds the optional scheduleConventions block to each leg; read ahead of write
@@ -517,7 +522,9 @@ public static class SecurityAssetClassCatalog
             [
                 SecurityIdentifierKind.InternalCode,
                 SecurityIdentifierKind.ProviderSymbol,
-                SecurityIdentifierKind.Ticker
+                SecurityIdentifierKind.Ticker,
+                SecurityIdentifierKind.Uti,
+                SecurityIdentifierKind.Upi
             ]) { AccountingOutsideSlice = true },
         new(
             AssetClass: "Warrant",
@@ -550,7 +557,9 @@ public static class SecurityAssetClassCatalog
             [
                 SecurityIdentifierKind.InternalCode,
                 SecurityIdentifierKind.ProviderSymbol,
-                SecurityIdentifierKind.Ric
+                SecurityIdentifierKind.Ric,
+                SecurityIdentifierKind.Uti,
+                SecurityIdentifierKind.Upi
             ]) { AccountingOutsideSlice = true },
         new(
             AssetClass: "NonDeliverableForward",
@@ -564,7 +573,9 @@ public static class SecurityAssetClassCatalog
             [
                 SecurityIdentifierKind.InternalCode,
                 SecurityIdentifierKind.ProviderSymbol,
-                SecurityIdentifierKind.Ric
+                SecurityIdentifierKind.Ric,
+                SecurityIdentifierKind.Uti,
+                SecurityIdentifierKind.Upi
             ]) { AccountingOutsideSlice = true },
         new(
             AssetClass: "CreditDefaultSwap",
@@ -579,7 +590,11 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.InternalCode,
                 SecurityIdentifierKind.PermId,
                 SecurityIdentifierKind.Lei,
-                SecurityIdentifierKind.ProviderSymbol
+                SecurityIdentifierKind.ProviderSymbol,
+                SecurityIdentifierKind.Uti,
+                SecurityIdentifierKind.Upi,
+                SecurityIdentifierKind.MarkitRedEntity,
+                SecurityIdentifierKind.MarkitRedPair
             ],
             RequiresMaturity: true) { SupportsCreditLifecycle = true, AccountingOutsideSlice = true },
         new(
@@ -594,7 +609,9 @@ public static class SecurityAssetClassCatalog
             [
                 SecurityIdentifierKind.InternalCode,
                 SecurityIdentifierKind.PermId,
-                SecurityIdentifierKind.ProviderSymbol
+                SecurityIdentifierKind.ProviderSymbol,
+                SecurityIdentifierKind.Uti,
+                SecurityIdentifierKind.Upi
             ]) { AccountingOutsideSlice = true },
         new(
             AssetClass: "CapFloor",
@@ -608,7 +625,9 @@ public static class SecurityAssetClassCatalog
             [
                 SecurityIdentifierKind.InternalCode,
                 SecurityIdentifierKind.PermId,
-                SecurityIdentifierKind.ProviderSymbol
+                SecurityIdentifierKind.ProviderSymbol,
+                SecurityIdentifierKind.Uti,
+                SecurityIdentifierKind.Upi
             ],
             RequiresMaturity: true) { AccountingOutsideSlice = true },
         new(
@@ -794,6 +813,48 @@ public static class SecurityAssetClassCatalog
 
     public static IReadOnlyList<SecurityIdentifierKind> GetPreferredIdentifierKinds(string? assetClass)
         => GetOrDefault(assetClass).PreferredIdentifierKinds;
+
+    /// <summary>
+    /// Asset classes permitted to carry each regulatory derivatives-reporting identifier kind.
+    /// UTI and UPI belong to the OTC derivative classes, where each security is one bilateral
+    /// contract and therefore one reportable trade; RED codes name CDS reference entities and
+    /// obligations. Repo (SFTR UTIs), listed options/futures (contract-level securities, not trades)
+    /// and credit-index swaptions (RED on the underlying index) are deliberately not admitted yet.
+    /// </summary>
+    private static readonly IReadOnlyDictionary<SecurityIdentifierKind, IReadOnlySet<string>> RestrictedIdentifierKindAssetClasses =
+        BuildRestrictedIdentifierKindAssetClasses();
+
+    private static Dictionary<SecurityIdentifierKind, IReadOnlySet<string>> BuildRestrictedIdentifierKindAssetClasses()
+    {
+        var otcDerivatives = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "Swap", "CreditDefaultSwap", "Swaption", "CapFloor", "FxForward", "NonDeliverableForward", "Cfd"
+        };
+        var creditDefaultSwaps = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "CreditDefaultSwap" };
+        return new Dictionary<SecurityIdentifierKind, IReadOnlySet<string>>
+        {
+            [SecurityIdentifierKind.Uti] = otcDerivatives,
+            [SecurityIdentifierKind.Upi] = otcDerivatives,
+            [SecurityIdentifierKind.MarkitRedEntity] = creditDefaultSwaps,
+            [SecurityIdentifierKind.MarkitRedPair] = creditDefaultSwaps
+        };
+    }
+
+    /// <summary>True when <paramref name="kind"/> has an asset-class restriction (the regulatory derivatives kinds).</summary>
+    public static bool IsAssetClassRestrictedIdentifierKind(SecurityIdentifierKind kind)
+        => RestrictedIdentifierKindAssetClasses.ContainsKey(kind);
+
+    /// <summary>
+    /// Whether a record of <paramref name="assetClass"/> may carry an identifier of
+    /// <paramref name="kind"/>. Every kind without a declared restriction is allowed everywhere.
+    /// </summary>
+    public static bool MayCarryIdentifierKind(string? assetClass, SecurityIdentifierKind kind)
+        => !RestrictedIdentifierKindAssetClasses.TryGetValue(kind, out var allowed)
+           || (TryGet(assetClass, out var descriptor) && allowed.Contains(descriptor.AssetClass));
+
+    /// <summary>The asset classes permitted to carry <paramref name="kind"/>, or <c>null</c> when it is unrestricted.</summary>
+    public static IReadOnlySet<string>? GetPermittedAssetClasses(SecurityIdentifierKind kind)
+        => RestrictedIdentifierKindAssetClasses.TryGetValue(kind, out var allowed) ? allowed : null;
 
     public static IReadOnlyList<string> GetAssetOperationsCapabilities(string? assetClass)
         => GetOrDefault(assetClass).AssetOperationsCapabilities ?? AssetOperationsCapabilitySet.IdentityOnly;

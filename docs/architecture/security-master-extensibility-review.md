@@ -2,8 +2,8 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-10-28
-**Review history:** slice-4 D3 decision 2026-11-05; slice-4 disposition 2026-11-04; consolidation pass 2026-10-28; resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
+**Reviewed:** 2026-11-04
+**Review history:** slice-4 D3 decision 2026-11-05; slice 6 disposition 2026-11-04; slice-4 disposition 2026-11-04; consolidation pass 2026-10-28; resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -279,12 +279,53 @@ stores use local reflection options. Define versioned payload types and compatib
 changing serialization. A naming-policy change or a blanket serializer ban without retained-payload
 fixtures could break audit reads; this review makes no source-generation compatibility claim.
 
+**Slice 5 disposition — 2026-11-04 (source base `2535d263`).** Two D7 items are implemented; the
+row-classification audit is not.
+
+- *Identifier recorded history.* Existing recorded history was checked first: the
+  `GetRecordedByIdentifierAsOfAsync` lookup already replays identifier values from append-only
+  `security_events` payloads plus alias revisions, so the economic valid-time identity was not lost.
+  Those payloads do not carry the `security_identifiers` row metadata (`source`, `confidence`,
+  `manual_override`) or projection-only writes such as rebuilds, and replacement reset that metadata
+  on every write. Migration `062_security_master_identifier_revisions.sql` adds
+  `security_identifier_revisions` on the migration-038 alias pattern rather than a second event
+  history: append-only (row update/delete and truncate triggers, SQL state 23514), written in the
+  replacement's transaction as `Added`/`Amended`/`Expired`/`Removed` per row identity, with
+  `Baseline` revisions for pre-existing rows that are unavailable before the migration boundary.
+  Replacement now carries `source`/`confidence`/`manual_override` forward for an unchanged identity.
+  `ISecurityIdentifierHistoryStore` reads revisions at an explicit recorded cutoff and the recorded
+  view with an optional valid-time filter. Recorded timestamps establish eligibility, not commit
+  visibility, as for aliases. Revisions name the projection-replacement actor, not an authenticated
+  caller; the event remains the actor record for event-sourced changes.
+- *Governance payloads.* Before callers changed, the version-1 JSON every
+  `PostgresSecurityGovernanceEventLog.AppendAsync` caller produced was captured from the reflective
+  serializer by running the Security Master PostgreSQL tests at the base revision
+  (`tests/fixtures/security-master/governance-payloads/v1-captured.json`; Disputed/Cancelled
+  margin-call entries are derived from the captured Agreed payload because one writer statement
+  produces all three). Each stream/event type now has a typed payload record serialized through the
+  source-generated `SecurityGovernanceJsonContext`; `AppendAsync<TPayload>` accepts only the declared
+  type and writes `payload_version` explicitly; `ReadPayload<T>`/`TryReadPayload<T>` dispatch on the
+  stored version and refuse undeclared types or unreadable versions. The fixtures read unchanged
+  (including after a jsonb round trip of rows inserted without `payload_version`), and new writes
+  reproduce them byte for byte, so the source-generation compatibility claim is now limited to these
+  pinned shapes. Other stores' local reflection options were not changed.
+- *Evidence:* `SecurityIdentifierHistoryPostgresTests` (append-only refusals, rollback leaves no rows
+  or history, concurrent replacements, recorded/valid cutoffs, baseline boundary, canonical
+  event/projection/history atomicity), `SecurityGovernancePayloadContractTests` and
+  `SecurityGovernancePayloadPostgresTests`, run against PostgreSQL 16.
+- *Still open:* classifying cash-flow-source, entitlement, field-provenance and conflict-resolution
+  rows as reconstructible state or retained evidence; the WPF provenance composition; append-only
+  protection design for other economic tables beyond `security_events`; override-expiry and
+  patch-version acceptance proof. Migration 062 and its truncate-trigger waiver still need the
+  repository's independent schema/storage review; this disposition grants no waiver.
+
 ### D8 — Identifier normalization and listing identity: still open, scoped carefully
 
 F# `SecurityIdentifier.normalizeValue` trims/upper-cases; the C# kind-aware normalizer also removes
 permitted punctuation. The F# duplicate and expiry checks now use a kind-aware
 `normalizeIdentifierValue` that mirrors the C# rules, pinned by a parity test over every shared
-kind; the two implementations are still separate copies.
+kind; the two implementations are still separate copies. *(2026-11-05: the F# normalizer now
+delegates to the C# one; see [the regulatory derivatives identifiers pass](#resolution-pass--2026-11-05-regulatory-derivatives-identifiers-uti-upi-and-markit-red).)*
 The unused F# `validateLei` rotates four characters before MOD 97, unlike ISO 17442's LEI order;
 no production caller was found in this pass. Consolidate authority at a dependency-safe seam and
 pin F#, C# and SQL compatibility, without introducing a project-reference cycle. Listing MIC,
@@ -330,13 +371,103 @@ bounded claims and their stated remaining gates. Earlier "no graph/OTC/curve/upg
 factor" statements are historical, not current blockers. Schedule writers, call/put behavior,
 consumer integration, regulatory trade identifiers (including UTI/UPI/RED), collateral scope and
 operator acceptance still need explicit coverage and retain the limitations stated
-in their owning resolution sections and ADRs.
+in their owning resolution sections and ADRs. *(2026-11-05: the UTI, UPI and Markit RED identifier
+kinds, with format checks and asset-class rules, landed in [the regulatory derivatives identifiers
+pass](#resolution-pass--2026-11-05-regulatory-derivatives-identifiers-uti-upi-and-markit-red);
+regulatory reporting itself remains uncovered.)*
 
 **Validation of this consolidation.** Static source and immutable-diff review only; no .NET tests
 were run for these documentation changes. Focused documentation checks and their results belong
 in the integrating PR. Existing test names and older hosted results are evidence references, not
 new execution claims. No roadmap status, policy default, schema, production code or acceptance
 criterion is changed by this consolidation.
+
+---
+
+## Slice 6 disposition — catalog, identifier and consumer convergence — 2026-11-04
+
+This records the implementation of slice 6 of the
+[remediation working plan](../engineering/plans/security-master-review-remediation-plan.md) against
+`origin/main` at `2535d263` (after #3385). It updates D1, D3, D8 and D9 below the line of their
+October 28 text; those sections stay as dated evidence. Ledger, NAV and risk consumer acceptance
+(D4) is out of this slice and remains open. No roadmap status or policy default changes here.
+
+**D8 — identifier normalization: consolidated at the dependency-safe seam.**
+`Meridian.FSharp` already references `Meridian.Contracts` and Contracts references neither, so the
+F# copy now delegates. `SecurityIdentifier.normalizeIdentifierValue` calls
+`SecurityIdentifierNormalizer.NormalizeValue` through the new `SecurityIdentifier.toContractKind`.
+`validateIsin`, `validateCusip` and `validateLei` keep their public F# signatures and call
+`TryValidateFormat`. They still refuse values containing punctuation the kind-aware normalizer would
+strip, so they do not silently clean input. No production caller of the three validators was found.
+Two results change and are intended: `validateLei` now takes ISO 7064 MOD 97-10 over the LEI in
+written order (the old four-character rotation rejected valid LEIs such as `529900T8BM49AURSDO55`).
+`validateCusip` no longer accepts `*`, `@` and `#`, which the C# normalizer strips, so the C# path
+could never accept them either. The parity test now also pins the kind translation and the three
+validators against `TryValidateFormat`; the SQL backfill character-class test is unchanged. Listing
+MIC, ListingId and venue identity are unchanged and remain open.
+
+**D3 — reverse mapping and readiness projectors: coverage now fails on omission.**
+`SecurityKindMappingTests` checks every `InstrumentType` value: it must map to a canonical class or
+appear in an explicit, reasoned unmapped list (empty today). The round-trip no longer skips
+unmapped values; `Index` → `OtherSecurity` is its one documented one-way mapping.
+`SecurityAssetPackReadinessMappingTests` pins the readiness-only aliases (now `internal`). Each
+alias must name a canonical class and stay reachable past catalog labels. Every catalog class must
+name `ReadinessProjectorsFor` projectors or appear in a reasoned fallback list (19 classes). The
+conditional quality rules (`MA001`, `MA002`, `VC002`) are retained beside the generic required-term
+rule. The WPF multiplier substring rule had already been replaced before this slice (8119b637 and
+1abdb08c): `SecurityMasterViewModel` asks `InstrumentTypeDescriptorCatalog.RequiresContractMultiplier`.
+No WPF change was needed.
+
+**D1 — CustomAsset projection: delivered as a profile-keyed table.** Migration
+`064_custom_asset_profile_field_projection.sql` creates `custom_asset_profile_field_projection`:
+one row per `profileFields` key, keyed by `(security_id, field_key)`, with `custom_profile_id`,
+`profile_version`, the record `version`, `value_kind` (`jsonb_typeof`) and `raw_value` (jsonb).
+`text_value`, `numeric_value` and `boolean_value` are derived from the raw value in SQL. A
+date-looking string stays a string, a number keeps full precision, and check constraints tie each
+typed column to its kind. The writer is a specialized `AssetProjectionWriter` in
+`PostgresSecurityMasterStore` running inside the existing fan-out and transaction. The catalog
+`ProjectionKind` is now `Specialized`, so every catalog class has a projection (32 of 32). A record
+without a complete envelope (a legacy or unmapped row, a blank profile id, a non-integer version, or
+non-object `profileFields`) projects no rows and keeps its terms JSON as the only copy. Leaving the
+class clears the rows. The Option writer now checks its catalog class explicitly, because it is no
+longer the only Specialized class. `ICustomAssetProfileFieldProjectionStore` reads rows by security,
+profile and version, or exact string value. Profile `IsProjected`/`IsSearchable` remain declared
+promotion intent (D9): this projection writes every field regardless of either flag, and no typed
+per-field column exists. **Migration 064 requires the repository's independent schema/storage
+review before merge.** The table is created empty; existing CustomAsset records populate on their
+next write or a class rebuild. Option's specialized projection and codec generation are unchanged.
+
+**D9 — term aliases and pack policy.** `SecurityAssetTermsSchema.DeclaredSpellings(key)` returns a
+top-level term's key and declared aliases; element fields are excluded. Conflict detection's
+`ProfileFieldComparisonExclusions` takes `maturity`/`maturityDate`, `dayCount`/`dayCountConvention`
+and the factor-schedule entry's `factor`/`currentFactor` from the schema. The other keys name typed
+comparators, not alias pairs, and stay literal. The data-quality maturity reads (`MA001`, `VC002`,
+`IsMaturityKey`) use the same derived pair. Tests pin both derived sets to the exact sets they
+replaced, so behavior is unchanged. Aliases that other classes declare (a CDS `frequency`, a
+note's `coupon`) are deliberately not pulled in. The resolver alias arrays in
+`StructuredCashFlowTermsResolver`, `KnownProfileAssetClasses` routing and cash-flow term roles were
+not changed and remain open. The asset-pack registry keeps its policy text as documented
+information: its doc comment now states that `AdmissionPolicy`, `LedgerExtensionPolicy` and
+`CapturePolicy` gate nothing, since they are read only for display and by `ValidateAll`'s
+self-checks. This is the plan's "documented informational purpose" choice; no consumer was removed.
+
+**Validation of this disposition.** Local, on the branch, with
+`MERIDIAN_SECURITY_MASTER_CONNECTION_STRING` pointing at a local PostgreSQL 16 (no Testcontainers):
+
+- `dotnet test tests/Meridian.FSharp.Tests -c Release`: 575 passed, 0 failed.
+- `dotnet test tests/Meridian.Tests -c Release` filtered to `Projection|Registry|CustomAsset|Golden|
+  BehaviorFacts|Migration|Identifier|SecurityKindMapping|ConflictDetection|DataQuality|AssetPack|
+  TermsSchema|TermSpelling|Readiness`: 3,125 passed, 50 skipped (non-Security-Master suites
+  that need other services), 5 failed. The 5 failures are UiServer composition tests in
+  `Meridian.Tests.Ui`, which fail only when the Security Master connection string is set. Without
+  it, those suites pass 10 of 10.
+- The Postgres fan-out tests (`CustomAssetProfileFieldProjectionPostgresTests`,
+  `ProjectionFanOutPostgresTests`) ran against PostgreSQL: 5 passed, 0 skipped.
+- `schema-control inventory`: 0 errors; manifests were refreshed with `snapshot`/`promote`.
+- The write golden changed in one value only, `registry.dtos[CustomAsset].ProjectionKind`
+  (`TermsJsonOnly` → `Specialized`).
+
+The full local `bash scripts/ci.sh` was not run; GitHub `Meridian CI / quality-gate` remains authoritative.
 
 ---
 
@@ -8017,3 +8148,68 @@ only a `StartupRefusedException` subclass.
 | Documentation checks (`check-ai-inventory`, ADR and link verification, `validate-doc-hashes`) | Pass |
 | Independent code review | Adversarial review: 4 confirmed findings (1 medium: a floor refusal on the ledger posting route answered 409; 3 low: amortization approval appended before the floor check, the R30 name check skipped on amends, the C5c text), all fixed with tests |
 | `Meridian CI / quality-gate` on the pull request | Reported on the pull request |
+
+## Resolution pass — 2026-11-05 (regulatory derivatives identifiers: UTI, UPI and Markit RED)
+
+This pass records the source on branch `claude/amazing-cray-x07r0a`, based on main at `5e1cfd09`.
+It changes no dated observation above. It closes the identifier part of D11's "regulatory trade
+identifiers (including UTI/UPI/RED)" gap and the D8 statement that the F# and C# normalizers are
+separate copies. It adds no regulatory reporting, submission or lifecycle-event workflow.
+
+**What landed.**
+
+| Item | Source |
+| --- | --- |
+| `SecurityIdentifierKind.Uti` (ISO 23897): 21-52 A-Z/0-9 characters whose first 20 are a valid ISO 17442 LEI (the existing MOD 97-10 check) | `SecurityIdentifiers.cs`, `SecurityIdentifierNormalizer.ValidateUti` |
+| `SecurityIdentifierKind.Upi` (ISO 4914): 12 characters, `QZ` prefix, digits and consonants without `Y`, ISO 7064 MOD 31,30 check character | `SecurityIdentifierNormalizer.ValidateUpi` |
+| `MarkitRedEntity` (RED6, 6 alphanumeric) and `MarkitRedPair` (RED9, 9 alphanumeric: entity code plus 3-character obligation suffix) | `SecurityIdentifierNormalizer.TryValidateFormat` |
+| All four normalize by stripping everything outside ASCII `A-Z0-9` | `SecurityIdentifierNormalizer.NormalizeValue` |
+| `IsSharedReferenceKind` (UPI and both RED kinds) joins `IsExcludedFromAmbiguityPairing`, so conflict detection and the candidate lookup skip them; `Uti` is a canonical duplicate kind | `SecurityIdentifierNormalizer`, `SecurityValidationService.CanonicalDuplicateIdentifierKinds` |
+| A UPI or RED code cannot be primary, because migration 032's normalized primary-identifier unique index would refuse the second contract sharing it. Create and amend commands refuse it (`primary_identifier_shared_reference`, added after Codex review on #3397 found the validation-service check alone did not gate writes); `SM_SHARED_IDENTIFIER_NOT_PRIMARY` (Error) reports it on stored records | `SecurityMasterCommands.validateActiveIdentifierSet`, `SecurityValidationService` |
+| Asset-class admission: `Uti`/`Upi` on Swap, CreditDefaultSwap, Swaption, CapFloor, FxForward, NonDeliverableForward and Cfd; RED kinds on CreditDefaultSwap only; every other kind unrestricted. A mismatch is the Warning `SM_REGULATORY_IDENTIFIER_ASSET_CLASS_MISMATCH`, following the `SM_OCC_SYMBOL_ASSET_CLASS_MISMATCH` precedent. The admitted classes also list the new kinds as preferred identifiers | `SecurityAssetClassCatalog.MayCarryIdentifierKind`, `GetPermittedAssetClasses` |
+| F# `IdentifierKind` gains the four cases; `SecurityIdentifier.toContractKind` maps every F# case exhaustively; `normalizeIdentifierValue` and `kindName` delegate to the Contracts normalizer and enum, and interop's persisted kind string reuses `kindName` | `src/Meridian.FSharp/Domain/SecurityIdentifiers.fs`, `Interop.SecurityMaster.fs` |
+| The C#-to-F# write mapping, the WPF identifier labels and the browser workstation's `SecurityIdentifierKind` union cover the new kinds | `SecurityMasterMapping.ToIdentifierKind`, `SecurityMasterEditViewModel`, `src/Meridian.Ui/dashboard/src/types/workstation-6.ts` |
+
+**Decisions and corrections.** The task brief described RED as 9-character entity and 6-character
+pair codes. Markit's convention is the reverse (RED6 entity, RED9 pair), and that is what is
+implemented, as two kinds because the entity and the pair are different reference objects. The
+UPI check character follows a secondary description of ISO 4914 Annex C and reproduces the published
+ANNA DSB example `QZRBG6ZTKS42`; it was not compared with the standard's text. RED publishes no check
+digit. ISO 23897 admits only A-Z and 0-9, so legacy UTIs that differ only by punctuation normalize
+to one identity, and a punctuated value draws `SM_IDENTIFIER_NORMALIZATION_RECOMMENDED`.
+
+**Asset-class rationale.** Each admitted class has `TradesAsBilateralContract`, so a security there
+is one contract and therefore one reportable trade, which is what a UTI names. Deliberately not
+admitted yet: `Repo` (SFTR UTIs need their own reporting regime), listed `Option` and `Future`
+(contract-level securities, not trades), and RED on credit-index swaptions (the index code belongs
+to the underlying).
+
+**Migration 016 and SQL parity.** Migration 016 is not edited. It is one-time and already applied,
+no stored row can carry the new kinds, and the store writes the C#-computed normalized value for
+every row (`PostgresSecurityMasterStore`), the same as for `LoanX` and `Clip`, which also postdate
+016. `SecurityIdentifierMigration016ParityTests` now ties the two statements together, which the
+2026-08-27 smaller note ("a new identifier kind needing stripping has no test tying the two
+statements together") said was missing. The test parses 016's three alphanumeric `case` lists and
+its Valoren arm, asserts that they match the C# normalizer, and requires every later stripping kind
+to be named on an explicit post-016 list. A new stripping kind therefore fails until someone decides
+whether existing rows need a backfill. The unused F# `validateLei` noted in D8 is unchanged.
+
+**Contracts manifest.** `database/manifest/contracts.json` is refreshed for the new enum members
+and shifted source lines. It was rendered with the schema-control contract builder over the
+committed catalog. Every other committed schema-control output reproduced byte-for-byte, and the
+hosted `schema-control.yml` verify step is authoritative.
+
+**Validation record.**
+
+| Check | Result |
+| --- | --- |
+| New and extended tests (`RegulatoryDerivativeIdentifierKindTests`, `SecurityIdentifierMigration016ParityTests`, `SecurityIdentifierNormalizationParityTests`, `LoanIdentifierKindTests`, `SecurityValidationServiceTests`) | 146 passed |
+| `Meridian.Tests` filtered to SecurityMaster, Identifier, AssetPack and AssetClass | 5844 passed, 177 skipped, 1 failed: the Docker-only `BondProjectionGoldenTests.Bond_KeysetPagesAreBounded...` (no Docker endpoint in this environment) |
+| `SecurityTermsWriteGoldenTests` | Golden `registry.dtos` refreshed. The diff was only the new preferred identifier kinds, checked by removing them and comparing equal. 51 passed |
+| `Meridian.FSharp.Tests` | 573 passed; 587 after merging main and adding the command-level refusal test |
+| `Meridian.Wpf` Release build (`EnableWindowsTargeting`) | Succeeded; WPF tests not run (Windows only) |
+| Browser workstation `tsc --noEmit`; `check-contract-type-parity.py` | Pass; pass |
+| `validate-doc-hashes.py` after reviewing and updating the Application, Contracts, F#, WPF, UI and dashboard READMEs | 0 errors, 0 warnings |
+| `schema-control.py inventory` | 0 errors |
+| `run-maintained-generation.py --docs-only` | Converged; only the optional Docker UML render failed |
+| `bash scripts/ci.sh` | Not run as a whole; `Meridian CI / quality-gate` on the pull request is authoritative |

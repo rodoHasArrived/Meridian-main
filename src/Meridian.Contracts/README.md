@@ -51,6 +51,19 @@ readiness row; classes without a specialized profile carry a persistent operatio
 requirement. Canonical aliases live in `SecurityAssetClassCatalog`; broad legacy vocabulary such as
 Debt and SPV is scoped to readiness so it cannot classify imports or accounting records. Securitized
 aliases resolve exclusively to StructuredCredit, and BankLoan resolves to DirectLoan.
+`SecurityAssetPackReadinessMappingTests` pins the readiness-only alias table (each alias must name a
+canonical class and stay reachable past catalog labels) and requires every catalog class to name
+readiness projectors or appear in a reasoned fallback list. The pack registry's policy text
+(`AdmissionPolicy`, `LedgerExtensionPolicy`, lifecycle `CapturePolicy`) is informational and gates
+nothing: it is read for display and by `ValidateAll`'s own self-checks only.
+
+`SecurityAssetTermsSchema.DeclaredSpellings(key)` returns a top-level term's key followed by every
+alias a class declares for it (element fields excluded). Readers that accept "either spelling" of a
+term derive the list from it rather than restating it.
+
+`SecurityIdentifierNormalizer` is the single identifier normalization and check-digit authority:
+the F# `SecurityIdentifier.normalizeIdentifierValue`, `validateIsin`, `validateCusip` and
+`validateLei` delegate to it.
 
 `ReportLedgerAmountBindingDtos` retains generated trial-balance amounts with exact accounting scope
 and journal/line identities. Generated amount source evidence additionally carries its original
@@ -1977,7 +1990,8 @@ W7 live-readiness gate.
 ### Security Master asset-class registry
 
 `SecurityAssetClassRegistry` composes, per asset class, the catalog entry (lot unit, cash-flow
-behaviour, projection kind, preferred identifiers, terms version, multiplier key), the term
+behaviour, projection kind, preferred identifiers, terms version, multiplier key; every class now has
+a projection, and CustomAsset's kind is `Specialized` for its profile-keyed table), the term
 schema, validators and editor hints. `SecurityAssetClassRegistryCoverageTests` fails when an F#
 `SecurityKind` case has no definition. The registry backs `/api/security-master/asset-classes`.
 The OTC derivative classes `FxForward` (deliverable forward: pair, notional, forward rate, trade
@@ -2027,6 +2041,43 @@ format-validated ISO 10383 market code (four letters or digits); `MicReference` 
 markets Meridian's providers and seed data use and maps unambiguous exchange names (`NYSE`,
 `Nasdaq`, `AMEX`, ...) to a MIC, leaving routing labels such as `SMART` unresolved; its `Codes` and
 `ExchangeNames` tables also drive the `securities.listing_mic` backfill.
+
+### Security Master regulatory derivatives identifiers
+
+`SecurityIdentifierKind` carries four regulatory derivatives-reporting kinds. All four normalize by
+trimming, upper-casing and stripping everything outside ASCII `A-Z0-9`
+(`SecurityIdentifierNormalizer.NormalizeValue`), and `TryValidateFormat` checks:
+
+| Kind | Standard | Format rule | Scope |
+|---|---|---|---|
+| `Uti` | ISO 23897 | 21-52 characters; the first 20 are a valid ISO 17442 LEI (MOD 97-10) | one trade |
+| `Upi` | ISO 4914 (ANNA DSB) | 12 characters: `QZ`, nine digits or consonants (no vowels, no `Y`), ISO 7064 MOD 31,30 check character | one OTC derivative product |
+| `MarkitRedEntity` | Markit RED6 | 6 alphanumeric characters | one CDS reference entity |
+| `MarkitRedPair` | Markit RED9 | 9 alphanumeric characters (entity code + 3-character obligation suffix) | one entity/obligation pair |
+
+The UPI check character is verified against the published ANNA DSB example `QZRBG6ZTKS42`, not
+against the ISO 4914 Annex C text itself. RED publishes no check digit, so RED validation is
+structural.
+
+`SecurityIdentifierNormalizer.IsSharedReferenceKind` marks `Upi`, `MarkitRedEntity` and
+`MarkitRedPair`: many contracts legitimately share them, so they are excluded from
+identifier-ambiguity pairing (`IsExcludedFromAmbiguityPairing`). They cannot be a primary identifier,
+because the normalized primary-identifier unique index would reject the second contract: create and
+amend commands refuse them in the F# command validation (`primary_identifier_shared_reference`), and
+`SecurityValidationService` reports `SM_SHARED_IDENTIFIER_NOT_PRIMARY` for records already stored. A `Uti` names one trade and is a
+canonical duplicate kind.
+
+`SecurityAssetClassCatalog.MayCarryIdentifierKind` restricts which asset classes may carry them.
+`Uti` and `Upi` are allowed on `Swap`, `CreditDefaultSwap`, `Swaption`, `CapFloor`, `FxForward`,
+`NonDeliverableForward` and `Cfd`. The RED kinds are allowed on `CreditDefaultSwap` only. Every other
+kind is unrestricted. A mismatch is the warning `SM_REGULATORY_IDENTIFIER_ASSET_CLASS_MISMATCH`.
+Repo (SFTR UTIs), listed options and futures, and RED on credit-index swaptions are not admitted
+yet.
+
+The F# `SecurityIdentifier.normalizeIdentifierValue` and `kindName` delegate to this normalizer
+through the exhaustive `toContractKind` mapping. Migration 016's SQL backfill predates `LoanX`,
+`Clip` and these four kinds; `SecurityIdentifierMigration016ParityTests` pins its kind lists to the
+C# rules.
 
 ### OTC contract model: exposure, collateral and margin calls
 

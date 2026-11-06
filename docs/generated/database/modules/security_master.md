@@ -2,9 +2,9 @@
 
 # `security_master` schema
 
-- Relations: 130
-- Functions/procedures: 12
-- Triggers: 25
+- Relations: 132
+- Functions/procedures: 13
+- Triggers: 27
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -456,6 +456,18 @@ erDiagram
         text quote_currency
         text network
         text primary_identifier_value
+        bigint version
+    }
+    security_master_custom_asset_profile_field_projection {
+        uuid security_id PK
+        text custom_profile_id
+        integer profile_version
+        text field_key PK
+        text value_kind
+        text text_value
+        numeric numeric_value
+        boolean boolean_value
+        jsonb raw_value
         bigint version
     }
     security_master_data_vendor_entitlements {
@@ -1336,6 +1348,25 @@ erDiagram
     security_master_security_governance_events_global_sequence_seq {
         text catalogued_object
     }
+    security_master_security_identifier_revisions {
+        uuid security_id PK,FK
+        text identifier_kind PK
+        text identifier_value PK
+        timestamp_with_time_zone valid_from PK
+        integer revision PK
+        text change_kind
+        text normalized_identifier_value
+        text provider
+        text normalized_provider
+        boolean is_primary
+        timestamp_with_time_zone valid_to
+        text source
+        numeric_5_4_ confidence
+        boolean manual_override
+        text recorded_by
+        timestamp_with_time_zone recorded_at
+        timestamp_with_time_zone history_available_from
+    }
     security_master_security_identifiers {
         uuid security_id PK,FK
         text identifier_kind PK
@@ -1804,6 +1835,7 @@ erDiagram
     security_master_securities ||--o{ security_master_security_alias_revisions : "security_alias_revisions_security_id_fkey"
     security_master_securities ||--o{ security_master_security_aliases : "security_aliases_security_id_fkey"
     security_master_securities ||--o{ security_master_security_cashflow_source_assignments : "security_cashflow_source_assignments_security_id_fkey"
+    security_master_securities ||--o{ security_master_security_identifier_revisions : "security_identifier_revisions_security_id_fkey"
     security_master_securities ||--o{ security_master_security_identifiers : "security_identifiers_security_id_fkey"
     security_master_securities ||--o{ security_master_security_operator_overrides : "security_operator_overrides_security_id_fkey"
     security_master_securities ||--o{ security_master_security_price_selection_receipts : "security_price_selection_receipts_security_id_fkey"
@@ -1856,6 +1888,7 @@ erDiagram
 | `corporate_actions` | table | 22 | `corp_act_id` | 2 | 5 | - |
 | `credit_default_swap_projection` | table | 19 | `security_id` | 0 | 3 | Relational projection of CreditDefaultSwap asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms. |
 | `crypto_projection` | table | 7 | `security_id` | 0 | 3 | - |
+| `custom_asset_profile_field_projection` | table | 10 | `security_id`, `field_key` | 0 | 3 | Profile-keyed projection of CustomAsset profileFields: one row per field key, keyed by (security_id, field_key). Additive read model over securities.asset_specific_terms. |
 | `data_vendor_entitlements` | table | 21 | `entitlement_id` | 0 | 4 | - |
 | `deposit_projection` | table | 11 | `security_id` | 0 | 3 | - |
 | `direct_lending_schema_migrations` | table | 3 | `filename` | 0 | 1 | - |
@@ -1925,6 +1958,7 @@ erDiagram
 | `security_field_provenance` | table | 10 | `security_id`, `field_path`, `origin` | 0 | 2 | - |
 | `security_governance_events` | table | 8 | `global_sequence` | 0 | 3 | Append-only log of Security Master governance writes (operator overrides, alias changes, projection rebuilds, declared underlying-graph links, stored curves, OTC exposure snapshots, collateral balances and margin calls), written in the same transaction as the state change. |
 | `security_governance_events_global_sequence_seq` | sequence | 0 | - | 0 | 0 | - |
+| `security_identifier_revisions` | table | 17 | `security_id`, `identifier_kind`, `identifier_value`, `valid_from`, `revision` | 1 | 2 | Append-only recorded history of security_identifiers rows. Each projection replacement appends Added/Amended/Expired/Removed revisions in the same transaction; recorded-as-of reads select the latest revision per row identity at or before the cutoff. Pre-migration rows are Baseline revisions available only from history_available_from. |
 | `security_identifiers` | table | 12 | `security_id`, `identifier_kind`, `identifier_value`, `valid_from` | 1 | 3 | - |
 | `security_master_conflicts` | table | 14 | `conflict_id` | 0 | 2 | - |
 | `security_master_quality_reports` | table | 3 | `id` | 0 | 2 | - |

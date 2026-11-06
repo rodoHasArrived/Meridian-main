@@ -304,7 +304,7 @@ function CaseWorkspace({ row, panel }: { row: CorporateActionInboxRowModel; pane
     >
       <div className="head">
         <div className="min-w-0">
-          <div className="eyebrow-label">Corporate action case</div>
+          <div className="eyebrow-label eyebrow-label--sentence">Corporate action case</div>
           <h3 className="mt-1 text-base font-semibold text-foreground">{row.actionType} · {row.ticker}</h3>
           <p className="mt-1 break-all font-mono text-xs text-muted-foreground">{row.caseIdLabel}</p>
         </div>
@@ -579,7 +579,7 @@ export function CorporateActionInboxRegion({ panel }: { panel: CorporateActionIn
                     selectedSourceLabel="No selected corporate action case"
                     className="row-detail-panel h-fit min-w-0"
                   >
-                    <div className="eyebrow-label">Corporate action case</div>
+                    <div className="eyebrow-label eyebrow-label--sentence">Corporate action case</div>
                     <h3 className="mt-2 text-sm font-semibold text-foreground">No case selected</h3>
                     <p className="mt-2 text-sm text-muted-foreground">Adjust the filters or select a queue row to inspect source facts and processing evidence.</p>
                   </DenseRowDetailPanel>
