@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-06T01:34:29Z",
+  "generatedAt": "2026-11-06T13:31:54Z",
   "generatorVersion": "1.0",
   "repositoryRoot": "agent-a6cc8e59dff3245bd",
   "subsystems": [
@@ -2438,324 +2438,324 @@
   ],
   "recentChanges": [
     {
-      "path": "src/Meridian.Contracts/README.md",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-05T22:37:53+00:00",
-      "lastCommit": "a87817c8",
-      "lastSummary": "fix(security-master): refuse shared-reference primaries on create and amend",
-      "touches": 30
+      "path": "src/Meridian.Ui/dashboard/src/screens/reporting-income-comparison.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-06T01:48:45+00:00",
+      "lastCommit": "41d39ce1",
+      "lastSummary": "test(reporting): wait for the support read before asserting it is aborted",
+      "touches": 7
     },
     {
-      "path": "src/Meridian.FSharp/README.md",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-11-05T22:37:53+00:00",
-      "lastCommit": "a87817c8",
-      "lastSummary": "fix(security-master): refuse shared-reference primaries on create and amend",
-      "touches": 14
-    },
-    {
-      "path": "src/Meridian.FSharp/Domain/SecurityMasterCommands.fs",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-11-05T22:37:53+00:00",
-      "lastCommit": "a87817c8",
-      "lastSummary": "fix(security-master): refuse shared-reference primaries on create and amend",
+      "path": "src/Meridian.Ui/dashboard/src/styles/ui-kit-primitives.css",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-06T00:22:47+00:00",
+      "lastCommit": "8a10fa7a",
+      "lastSummary": "fix(workstation): keep virtualized tables within their fixed row height under spacious density",
       "touches": 9
     },
     {
-      "path": "src/Meridian.Storage/SecurityMaster/Migrations/064_custom_asset_profile_field_projection.sql",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-11-05T22:34:11+00:00",
-      "lastCommit": "a26dab51",
-      "lastSummary": "Index CustomAsset text values by hash so long text cannot fail the projection write",
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/ui-kit-primitives.table-system.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-06T00:22:47+00:00",
+      "lastCommit": "8a10fa7a",
+      "lastSummary": "fix(workstation): keep virtualized tables within their fixed row height under spacious density",
       "touches": 2
     },
     {
-      "path": "src/Meridian.Storage/SecurityMaster/PostgresCustomAssetProfileFieldProjectionStore.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-11-05T22:34:11+00:00",
-      "lastCommit": "a26dab51",
-      "lastSummary": "Index CustomAsset text values by hash so long text cannot fail the projection write",
-      "touches": 2
+      "path": "src/Meridian.Ui/dashboard/README.md",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:05:27+00:00",
+      "lastCommit": "4071b030",
+      "lastSummary": "Phase 2 docs: design-system rules in the READMEs and regenerated docs",
+      "touches": 20
     },
     {
-      "path": "src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-11-05T22:11:28+00:00",
-      "lastCommit": "9ad456e9",
-      "lastSummary": "Select the option projection tables by descriptor fact, not by class name",
+      "path": "src/Meridian.Ui/README.md",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-11-05T23:05:27+00:00",
+      "lastCommit": "4071b030",
+      "lastSummary": "Phase 2 docs: design-system rules in the READMEs and regenerated docs",
+      "touches": 11
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 15
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/trading-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 11
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/portfolio-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
       "touches": 10
     },
     {
-      "path": "src/Meridian.Application/README.md",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-05T19:20:34+00:00",
-      "lastCommit": "e7d86c2b",
-      "lastSummary": "Refuse OtherSecurity classification text the label reader would misread",
-      "touches": 32
-    },
-    {
-      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-05T19:20:34+00:00",
-      "lastCommit": "e7d86c2b",
-      "lastSummary": "Refuse OtherSecurity classification text the label reader would misread",
-      "touches": 12
-    },
-    {
-      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterService.Creation.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-05T19:20:34+00:00",
-      "lastCommit": "e7d86c2b",
-      "lastSummary": "Refuse OtherSecurity classification text the label reader would misread",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-05T19:20:34+00:00",
-      "lastCommit": "e7d86c2b",
-      "lastSummary": "Refuse OtherSecurity classification text the label reader would misread",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterService.ClassificationText.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-05T19:20:34+00:00",
-      "lastCommit": "e7d86c2b",
-      "lastSummary": "Refuse OtherSecurity classification text the label reader would misread",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs",
+      "path": "src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-05T19:05:10+00:00",
-      "lastCommit": "1b819b69",
-      "lastSummary": "fix(security-master): decode each retained label exactly once",
-      "touches": 12
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-05T19:05:10+00:00",
-      "lastCommit": "1b819b69",
-      "lastSummary": "fix(security-master): decode each retained label exactly once",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-05T18:55:46+00:00",
-      "lastCommit": "4aa070c5",
-      "lastSummary": "fix(reporting): export trial-balance rows with their already-decoded labels",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.FSharp.DirectLending.Aggregates/ServicingSchedule.fs",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-11-05T17:51:10+00:00",
-      "lastCommit": "a3fba8db",
-      "lastSummary": "fix(direct-lending): roll servicing schedule dates on the schedule kernel",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
-      "touches": 12
-    },
-    {
-      "path": "src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
       "touches": 10
     },
     {
-      "path": "src/Meridian.FSharp.DirectLending.Aggregates/README.md",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
-      "touches": 9
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs",
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/reporting-hub.tsx",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
       "touches": 9
     },
     {
-      "path": "src/Meridian.Application/DirectLending/AccrualLedgerService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/workspace-header.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 9
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.journal-entry-enhancements.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 9
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/strategy-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 9
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/historical-chart.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
       "touches": 8
     },
     {
-      "path": "src/Meridian.Application/DirectLending/DirectLendingEventRebuilder.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/ui-kit-primitives.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
       "touches": 8
     },
     {
-      "path": "src/Meridian.Application/DirectLending/DirectLendingOutboxDispatcher.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.capital-account-workbench-panel.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
       "touches": 8
     },
     {
-      "path": "src/Meridian.Application/DirectLending/DirectLendingServiceSupport.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
+      "path": "src/Meridian.Ui/dashboard/src/screens/asset-detail-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
       "touches": 8
     },
     {
-      "path": "src/Meridian.Application/DirectLending/IAccrualLedgerService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
+      "path": "src/Meridian.Ui/dashboard/src/screens/data-screen-navigation-panels.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
       "touches": 8
     },
     {
-      "path": "src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
+      "path": "src/Meridian.Ui/dashboard/src/screens/data-screen.data-regions.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
       "touches": 8
     },
     {
-      "path": "src/Meridian.Application/DirectLending/IDirectLendingService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
+      "path": "src/Meridian.Ui/dashboard/src/screens/data-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
       "touches": 8
     },
     {
-      "path": "src/Meridian.Application/DirectLending/InMemoryDirectLendingService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
+      "path": "src/Meridian.Ui/dashboard/src/screens/family-office-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
       "touches": 8
     },
     {
-      "path": "src/Meridian.Application/DirectLending/LoanAccountingProjector.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
+      "path": "src/Meridian.Ui/dashboard/src/screens/reporting-screen.private-capital-readiness.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
       "touches": 8
     },
     {
-      "path": "src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
+      "path": "src/Meridian.Ui/dashboard/src/screens/reporting-screen.report-writer.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
       "touches": 8
     },
     {
-      "path": "src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
+      "path": "src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
       "touches": 8
     },
     {
-      "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
+      "path": "src/Meridian.Ui/dashboard/src/screens/strategy-designer-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
       "touches": 8
     },
     {
-      "path": "src/Meridian.FSharp.DirectLending.Aggregates/ContractAggregate.fs",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
+      "path": "src/Meridian.Ui/dashboard/src/screens/trading-screen.acceptance-panel.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
       "touches": 8
     },
     {
-      "path": "src/Meridian.FSharp.DirectLending.Aggregates/ServicingAggregate.fs",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
+      "path": "src/Meridian.Ui/dashboard/src/screens/trading-screen.execution-blotter.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
       "touches": 8
     },
     {
-      "path": "src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
+      "path": "src/Meridian.Ui/dashboard/src/screens/watchlist-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
       "touches": 8
     },
     {
-      "path": "src/Meridian.Storage/Ledger/LedgerPeriodPostingGuard.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
+      "path": "src/Meridian.Ui/dashboard/src/styles/index.css",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
       "touches": 8
     },
     {
-      "path": "src/Meridian.Application/DirectLending/DailyAccrualWorker.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
+      "path": "src/Meridian.Ui/dashboard/src/components/accounting/ReconciliationComparisonPanel.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
       "touches": 7
     },
     {
-      "path": "src/Meridian.FSharp.DirectLending.Aggregates/AggregateTypes.fs",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/command-palette.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
       "touches": 7
     },
     {
-      "path": "src/Meridian.FSharp.DirectLending.Aggregates/Interop.fs",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/financial-record-explorer.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
       "touches": 7
     },
     {
-      "path": "src/Meridian.FSharp.DirectLending.Aggregates/Meridian.FSharp.DirectLending.Aggregates.fsproj",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/lifecycle-control-panel.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
       "touches": 7
     },
     {
-      "path": "src/Meridian.Application/DirectLending/DirectLendingServicingPolicyValidator.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-05T15:47:57+00:00",
-      "lastCommit": "11f974e8",
-      "lastSummary": "feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling",
-      "touches": 1
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/notification-center.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/proof-drawer.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/quant-notebook.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/reporting-period-switcher.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/security-details-tracker.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/stat-strip.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/strategy-formula-workbench.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-05T23:03:54+00:00",
+      "lastCommit": "16bdb914",
+      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "touches": 7
     }
   ],
   "recentChangesWindowDays": 14,

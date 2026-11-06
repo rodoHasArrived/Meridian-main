@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-11-06T01:34:29Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-11-06T13:31:54Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -134,19 +134,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Contracts/README.md` | Host and Composition | `a87817c8` (2026-11-05T22:37:53+00:00) | 30 |
-| `src/Meridian.FSharp/README.md` | Domain, Ledger, and F# | `a87817c8` (2026-11-05T22:37:53+00:00) | 14 |
-| `src/Meridian.FSharp/Domain/SecurityMasterCommands.fs` | Domain, Ledger, and F# | `a87817c8` (2026-11-05T22:37:53+00:00) | 9 |
-| `src/Meridian.Storage/SecurityMaster/Migrations/064_custom_asset_profile_field_projection.sql` | Providers and Storage | `a26dab51` (2026-11-05T22:34:11+00:00) | 2 |
-| `src/Meridian.Storage/SecurityMaster/PostgresCustomAssetProfileFieldProjectionStore.cs` | Providers and Storage | `a26dab51` (2026-11-05T22:34:11+00:00) | 2 |
-| `src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs` | Providers and Storage | `9ad456e9` (2026-11-05T22:11:28+00:00) | 10 |
-| `src/Meridian.Application/README.md` | Host and Composition | `e7d86c2b` (2026-11-05T19:20:34+00:00) | 32 |
-| `src/Meridian.Application/SecurityMaster/SecurityMasterService.cs` | Host and Composition | `e7d86c2b` (2026-11-05T19:20:34+00:00) | 12 |
-| `src/Meridian.Application/SecurityMaster/SecurityMasterService.Creation.cs` | Host and Composition | `e7d86c2b` (2026-11-05T19:20:34+00:00) | 4 |
-| `src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs` | Host and Composition | `e7d86c2b` (2026-11-05T19:20:34+00:00) | 3 |
-| `src/Meridian.Application/SecurityMaster/SecurityMasterService.ClassificationText.cs` | Host and Composition | `e7d86c2b` (2026-11-05T19:20:34+00:00) | 1 |
-| `src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs` | Desktop and UI Workflows | `1b819b69` (2026-11-05T19:05:10+00:00) | 12 |
-| `src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs` | Desktop and UI Workflows | `1b819b69` (2026-11-05T19:05:10+00:00) | 8 |
-| `src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs` | Desktop and UI Workflows | `4aa070c5` (2026-11-05T18:55:46+00:00) | 8 |
-| `src/Meridian.FSharp.DirectLending.Aggregates/ServicingSchedule.fs` | Domain, Ledger, and F# | `a3fba8db` (2026-11-05T17:51:10+00:00) | 2 |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-income-comparison.test.tsx` | Desktop and UI Workflows | `41d39ce1` (2026-11-06T01:48:45+00:00) | 7 |
+| `src/Meridian.Ui/dashboard/src/styles/ui-kit-primitives.css` | Desktop and UI Workflows | `8a10fa7a` (2026-11-06T00:22:47+00:00) | 9 |
+| `src/Meridian.Ui/dashboard/src/components/meridian/ui-kit-primitives.table-system.test.tsx` | Desktop and UI Workflows | `8a10fa7a` (2026-11-06T00:22:47+00:00) | 2 |
+| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | `4071b030` (2026-11-05T23:05:27+00:00) | 20 |
+| `src/Meridian.Ui/README.md` | Unmapped | `4071b030` (2026-11-05T23:05:27+00:00) | 11 |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.tsx` | Desktop and UI Workflows | `16bdb914` (2026-11-05T23:03:54+00:00) | 15 |
+| `src/Meridian.Ui/dashboard/src/screens/trading-screen.tsx` | Desktop and UI Workflows | `16bdb914` (2026-11-05T23:03:54+00:00) | 11 |
+| `src/Meridian.Ui/dashboard/src/screens/portfolio-screen.tsx` | Desktop and UI Workflows | `16bdb914` (2026-11-05T23:03:54+00:00) | 10 |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx` | Desktop and UI Workflows | `16bdb914` (2026-11-05T23:03:54+00:00) | 10 |
+| `src/Meridian.Ui/dashboard/src/components/meridian/reporting-hub.tsx` | Desktop and UI Workflows | `16bdb914` (2026-11-05T23:03:54+00:00) | 9 |
+| `src/Meridian.Ui/dashboard/src/components/meridian/workspace-header.tsx` | Desktop and UI Workflows | `16bdb914` (2026-11-05T23:03:54+00:00) | 9 |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.journal-entry-enhancements.tsx` | Desktop and UI Workflows | `16bdb914` (2026-11-05T23:03:54+00:00) | 9 |
+| `src/Meridian.Ui/dashboard/src/screens/strategy-screen.tsx` | Desktop and UI Workflows | `16bdb914` (2026-11-05T23:03:54+00:00) | 9 |
+| `src/Meridian.Ui/dashboard/src/components/meridian/historical-chart.tsx` | Desktop and UI Workflows | `16bdb914` (2026-11-05T23:03:54+00:00) | 8 |
+| `src/Meridian.Ui/dashboard/src/components/meridian/ui-kit-primitives.tsx` | Desktop and UI Workflows | `16bdb914` (2026-11-05T23:03:54+00:00) | 8 |
 
