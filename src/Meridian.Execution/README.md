@@ -17,7 +17,10 @@ without class or lot metadata retain the existing share assumption. Contradictor
 position are refused before booking.
 Cash, realised and unrealised P&L, market value and ledger postings are scaled by the position's
 contract multiplier while lot prices and cost basis stay quoted per contract; a fill whose multiplier
-differs from the open position's is refused.
+differs from the open position's is refused. A new position takes the fill's exact multiplier, including
+values below 1. `TradeExecutedEvent` carries the same `ContractMultiplier`, so its `GrossValue` and the
+multiplied realized P&L reach the ledger handoff in the same money terms; events serialized before the
+member existed read as 1.
 
 OMS amendments resolve explicit broker/client identifiers, retain replacement broker aliases under
 the original client identity, and process cumulative fills through the shared fill funnel.

@@ -83,6 +83,22 @@ public sealed class PaperTradingPortfolioContractMultiplierTests
     }
 
     [Fact]
+    public void MultiplierBelowOne_CanOpenAndCloseThePosition()
+    {
+        // AttributeFill only ever raises the multiplier, so a new position must be seeded with the
+        // exact value; otherwise a 0.1 multiplier stays at 1 and every later fill is refused.
+        var portfolio = new PaperTradingPortfolio(10_000m);
+        portfolio.ApplyFill(Fill(OrderSide.Buy, 10m, 50m) with { LotMultiplier = 0.1m });
+
+        portfolio.Cash.Should().Be(9_950m, "10 × $50 × 0.1 = $50");
+
+        portfolio.ApplyFill(Fill(OrderSide.Sell, 10m, 60m) with { LotMultiplier = 0.1m });
+
+        portfolio.Cash.Should().Be(10_010m);
+        portfolio.RealisedPnl.Should().Be(10m);
+    }
+
+    [Fact]
     public void EquityFill_WithDefaultMultiplier_IsUnchanged()
     {
         var portfolio = new PaperTradingPortfolio(10_000m);

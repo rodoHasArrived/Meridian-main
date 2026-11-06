@@ -678,6 +678,10 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         if (!account.Positions.TryGetValue(symbol, out var pos))
         {
             pos = new PaperPosition(symbol, price) { LotUnit = lotUnit };
+            // Seed the exact multiplier: AttributeFill only ever raises it, so a valid
+            // multiplier below 1 would otherwise stay at the default and fail the
+            // equality check on the very next fill.
+            pos.InitializeContractMultiplier(contractMultiplier);
             account.Positions[symbol] = pos;
         }
         else if (pos.LotUnit != lotUnit)
@@ -1415,6 +1419,16 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
     /// The tallies always sum to <see cref="Quantity"/>: each is that fund's net signed
     /// contribution, so a fund that bought and sold the same size nets to zero.
     /// </summary>
+    /// <summary>Sets the multiplier of a newly opened position before its first fill is applied.</summary>
+    public void InitializeContractMultiplier(decimal contractMultiplier)
+    {
+        if (contractMultiplier <= 0m)
+            throw new ArgumentOutOfRangeException(nameof(contractMultiplier), "Contract multiplier must be positive.");
+        if (Quantity != 0m || _lots.Count > 0 || _ownerQuantities.Count > 0)
+            throw new InvalidOperationException("The contract multiplier can only be initialized on an empty position.");
+        ContractMultiplier = contractMultiplier;
+    }
+
     public void AttributeFill(string? ownerAccountId, decimal signedQuantity, decimal contractMultiplier)
     {
         if (contractMultiplier > ContractMultiplier)

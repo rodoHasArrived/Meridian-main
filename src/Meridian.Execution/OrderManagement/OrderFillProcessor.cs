@@ -234,7 +234,13 @@ internal sealed class OrderFillProcessor(
                         progress.RealizedPnl,
                         progress.NewCash,
                         ResolveFinancialAccountId(orderId),
-                        usesFaceValuePercentageOfPar);
+                        usesFaceValuePercentageOfPar,
+                        // Same resolution the paper portfolio uses, so GrossValue and the
+                        // multiplied RealizedPnl describe the same money.
+                        usesFaceValuePercentageOfPar
+                            ? 1m
+                            : fillIncrement.LotMultiplier
+                              ?? _context.GetContractMultiplier(fillIncrement.ClientOrderId ?? fillIncrement.OrderId));
                 }
 
                 if (_accounting.HasPublisher && progress.IsTrackedOrder)
@@ -366,7 +372,8 @@ internal sealed class OrderFillProcessor(
         decimal realizedPnl,
         decimal newCash,
         string? financialAccountId,
-        bool usesFaceValuePercentageOfPar)
+        bool usesFaceValuePercentageOfPar,
+        decimal contractMultiplier = 1m)
     {
         if (fillIncrement.FillPrice is not { } fillPrice)
         {
@@ -391,7 +398,8 @@ internal sealed class OrderFillProcessor(
             newCash,
             fillIncrement.Timestamp,
             financialAccountId,
-            usesFaceValuePercentageOfPar);
+            usesFaceValuePercentageOfPar,
+            contractMultiplier);
     }
 
     /// <summary>

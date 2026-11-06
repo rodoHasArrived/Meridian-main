@@ -149,6 +149,79 @@ public sealed class FixedIncomeFillBookingTests
     }
 
     [Fact]
+    public async Task OptionRoundTrip_PublishesGrossValueInTheSameMoneyTermsAsRealizedPnl()
+    {
+        // The portfolio books option cash and realized P&L with the contract multiplier, so the
+        // accounting handoff must too: otherwise a profitable sale publishes $50 realized P&L
+        // against $3 gross proceeds and the ledger derives a negative cost basis.
+        var portfolio = new PaperTradingPortfolio(10_000m);
+        var publisher = new RecordingTradeEventPublisher();
+        using var oms = new OrderManagementSystem(
+            new FaceValuePaperGateway(),
+            NullLogger<OrderManagementSystem>.Instance,
+            portfolioState: portfolio,
+            tradeEventPublisher: publisher);
+        await oms.StartAsync();
+        var contract = new OptionContractIdentity
+        {
+            UnderlyingSymbol = "AAPL",
+            ExpirationDate = new DateOnly(2026, 12, 18),
+            StrikePrice = 250m,
+            Right = "C"
+        };
+
+        (await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 1m,
+            LimitPrice = 2.50m,
+            ClientOrderId = "OPTION-BUY-1",
+            OptionContract = contract
+        })).Success.Should().BeTrue();
+        (await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Sell,
+            Type = OrderType.Limit,
+            Quantity = 1m,
+            LimitPrice = 3.00m,
+            ClientOrderId = "OPTION-SELL-1",
+            OptionContract = contract
+        })).Success.Should().BeTrue();
+
+        var events = publisher.AcceptedEvents.ToArray();
+        events.Should().HaveCount(2);
+        events[0].ContractMultiplier.Should().Be(100m);
+        events[0].GrossValue.Should().Be(250m);
+        var sale = events[1];
+        sale.ContractMultiplier.Should().Be(100m);
+        sale.GrossValue.Should().Be(300m);
+        sale.RealizedPnl.Should().Be(50m);
+        (sale.GrossValue - sale.RealizedPnl).Should().Be(250m,
+            "the ledger derives the relieved cost basis as gross proceeds minus realized P&L");
+        portfolio.Cash.Should().Be(10_050m);
+    }
+
+    [Fact]
+    public void TradeExecutedEvent_SerializedBeforeTheMultiplierExisted_ReadsAsOne()
+    {
+        var legacyJson = """
+            {"fillId":"0b6f1c9e-35b1-4d8e-9a42-5b1d7a3b2c11","orderId":"EQ-1","symbol":"AAPL","side":"Buy",
+             "filledQuantity":10,"fillPrice":150,"commission":0,"realizedPnl":0,"newCash":0,
+             "occurredAt":"2026-11-06T00:00:00+00:00"}
+            """;
+
+        var restored = System.Text.Json.JsonSerializer.Deserialize(
+            legacyJson,
+            Meridian.Execution.Serialization.ExecutionJsonContext.Default.TradeExecutedEvent)!;
+
+        restored.ContractMultiplier.Should().Be(1m);
+        restored.GrossValue.Should().Be(1_500m);
+    }
+
+    [Fact]
     public void ApplyFill_ReportCarriesTheFaceValueStamp_BooksParScaledWithoutACallerFlag()
     {
         // The replay shape: durable session records rehydrate stamped ExecutionReports and

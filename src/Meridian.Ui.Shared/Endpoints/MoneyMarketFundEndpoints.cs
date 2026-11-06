@@ -71,6 +71,7 @@ public static class MoneyMarketFundEndpoints
             return Results.Json(results, jsonOptions);
         })
         .WithName("SearchMoneyMarketFunds")
+        .DeclareNonMutating("Searches money market funds by filter criteria; the body carries the filter because it has several optional fields, and the handler only reads through IMoneyMarketFundService.SearchAsync.")
         .RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<MmfDetailDto>>(StatusCodes.Status200OK);
 

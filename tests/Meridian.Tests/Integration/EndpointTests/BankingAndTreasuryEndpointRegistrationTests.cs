@@ -91,6 +91,25 @@ public sealed class BankingAndTreasuryEndpointRegistrationTests : IClassFixture<
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
+    [Theory]
+    [InlineData("POST /api/ingestion/jobs/{jobId}/transition")]
+    [InlineData("DELETE /api/ingestion/jobs/{jobId}")]
+    public void RawIngestionStateChangeRoutes_AreNotMapped(string routeKey)
+    {
+        // Operator state changes go through the governed workstation action route, which
+        // validates the transition, requires a rationale and idempotency key, and retains evidence.
+        FindEndpoint(routeKey).Should().BeNull();
+    }
+
+    [Fact]
+    public void MoneyMarketFundSearch_IsDeclaredNonMutating()
+    {
+        // Read-only roles (Analysis, Executive) hold ViewSecurityMaster; the POST search must not be
+        // refused by the read-only-role mutation cap.
+        FindEndpoint("POST /api/security-master/money-market-funds/search")!
+            .Metadata.GetMetadata<EndpointNonMutatingMetadata>().Should().NotBeNull();
+    }
+
     [Fact]
     public async Task IngestionJobs_WithoutPermission_IsRejected()
     {

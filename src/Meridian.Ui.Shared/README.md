@@ -15,7 +15,8 @@ last_reviewed: 2026-10-31
 money-market-fund (`/api/security-master/money-market-funds/*`) groups. Every route declares its
 permission; the groups resolve their services per request (501 when unregistered); malformed banking
 and MMF search bodies return 400; `/api/dev/seed/bank-transactions` is mapped only in Development and
-Test hosts.
+Test hosts. The ingestion group exposes reads and Draft job creation only; job state changes stay on
+the governed workstation ingestion-operation action route.
 
 The existing bond analytics GET accepts optional `calculationVersion` and forwards it unchanged to
 `IBondAnalyticsService`. Omission retains v2; explicit v1/v2 fixed/zero and v3 floating requests use

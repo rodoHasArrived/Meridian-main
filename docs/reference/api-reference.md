@@ -700,12 +700,10 @@ and denying or withdrawing an entry also retires any approvals linked through it
 | GET | `/api/ingestion/jobs` | List all ingestion jobs |
 | POST | `/api/ingestion/jobs` | Create a new ingestion job (Draft state) |
 | GET | `/api/ingestion/jobs/{jobId}` | Get a specific ingestion job |
-| DELETE | `/api/ingestion/jobs/{jobId}` | Delete a terminal ingestion job |
-| POST | `/api/ingestion/jobs/{jobId}/transition` | Transition job state |
 | GET | `/api/ingestion/jobs/resumable` | List jobs eligible for resume (failed or paused with checkpoint) |
 | GET | `/api/ingestion/summary` | Summary of all jobs by state and workload type |
 
-Reads require `ViewHistoricalData` or `TriggerBackfill`; create, transition and delete require `TriggerBackfill`.
+Reads require `ViewHistoricalData` or `TriggerBackfill`; create requires `TriggerBackfill` and is rate limited. Raw state-transition and delete routes are not exposed: operator pause, resume, retry and cancel go through the governed workstation ingestion-operation action route, which requires a rationale and idempotency key, enforces tenant/company scope and retains action evidence.
 
 ### Banking (`/api/banking/*`)
 
