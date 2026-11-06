@@ -602,10 +602,12 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
 
     /// <summary>
     /// The money multiplier an open position in the default account was booked at, or
-    /// <see langword="null"/> when no position is open for <paramref name="symbol"/>. A fill that
+    /// <see langword="null"/> when nothing is held in <paramref name="symbol"/>. A fill that
     /// adds to or closes that position must use the same scale: a session restored from records
     /// written before premiums were scaled holds 1x positions, and continuing them at 1x until
-    /// they are flat keeps every lot, cash movement and replay consistent.
+    /// they are flat keeps every lot, cash movement and replay consistent. A flat entry kept only
+    /// for its fund attribution holds nothing, so it has no scale to continue: the next fill
+    /// opens at its own scale (see <see cref="PaperPosition.ResetMoneyScale"/>).
     /// </summary>
     internal decimal? GetOpenMoneyMultiplier(string symbol)
     {
@@ -613,6 +615,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         {
             return _accounts.TryGetValue(DefaultAccountId, out var account)
                 && account.Positions.TryGetValue(symbol, out var pos)
+                && pos.Quantity != 0m
                     ? pos.EconomicMultiplier
                     : null;
         }
@@ -831,8 +834,18 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         }
         else if (pos.EconomicMultiplier != economicMultiplier)
         {
-            // One book holds one money scale: blending 100x and 10x fills would misprice every lot.
-            throw new InvalidOperationException($"Fill multiplier {economicMultiplier} does not match the open position's multiplier {pos.EconomicMultiplier} for '{symbol}'.");
+            if (pos.IsFlatWithoutLots)
+            {
+                // Nothing is held, only fund attribution remains (for example an orphaned tally
+                // after a restored legacy 1x position was closed). The new holding opens at its
+                // own scale; the owner tallies are kept so real offsetting exposure survives.
+                pos.ResetMoneyScale(economicMultiplier);
+            }
+            else
+            {
+                // One book holds one money scale: blending 100x and 10x fills would misprice every lot.
+                throw new InvalidOperationException($"Fill multiplier {economicMultiplier} does not match the open position's multiplier {pos.EconomicMultiplier} for '{symbol}'.");
+            }
         }
 
         // Once a face-value fill touches the position, its cost basis and market price are
@@ -1333,7 +1346,26 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
     /// money amounts (<see cref="OpenCostBasis"/>, market value, P&amp;L, cash) are scaled.
     /// Distinct from <see cref="ContractMultiplier"/>, the exposure multiplier risk reads.
     /// </summary>
-    public decimal EconomicMultiplier { get; init; } = 1m;
+    public decimal EconomicMultiplier { get => _economicMultiplier; init => _economicMultiplier = value; }
+
+    private decimal _economicMultiplier = 1m;
+
+    /// <summary>True when the entry holds nothing: zero quantity and no open lots.</summary>
+    public bool IsFlatWithoutLots => Quantity == 0m && _lots.Count == 0;
+
+    /// <summary>
+    /// Re-bases the money scale of a flat entry that is kept only for its fund attribution, so
+    /// the next holding opens at its own scale. Refused while anything is held, because lots
+    /// and cost basis are priced on the existing scale.
+    /// </summary>
+    public void ResetMoneyScale(decimal economicMultiplier)
+    {
+        if (economicMultiplier <= 0m)
+            throw new ArgumentOutOfRangeException(nameof(economicMultiplier), "Money multiplier must be positive.");
+        if (!IsFlatWithoutLots)
+            throw new InvalidOperationException($"Cannot change the money scale of '{Symbol}' while it holds a position.");
+        _economicMultiplier = economicMultiplier;
+    }
 
     /// <summary>Money value of <paramref name="quantity"/> units at a per-unit <paramref name="price"/>.</summary>
     public decimal Money(decimal quantity, decimal price) => quantity * price * EconomicMultiplier;

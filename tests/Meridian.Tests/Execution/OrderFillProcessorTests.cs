@@ -176,6 +176,8 @@ public sealed class OrderFillProcessorTests
         await using var persistence = new PaperSessionPersistenceService(
             NullLogger<PaperSessionPersistenceService>.Instance, store);
         var session = await persistence.CreateSessionAsync(new CreatePaperSessionDto("legacy", null, 10_000m));
+        // The session's durable history holds the legacy open, as a restored session would.
+        await persistence.RecordFillAsync(session.SessionId, legacyOpen);
         var publisher = new RecordingPublisher();
         var processor = CreateProcessor(order, portfolio, publisher, persistence, out _);
 
@@ -195,6 +197,30 @@ public sealed class OrderFillProcessorTests
         var replayed = new PaperTradingPortfolio(10_000m);
         replayed.ApplyRecordedFill(legacyOpen);
         replayed.ApplyRecordedFill(stored);
+        Assert.Equal(portfolio.Cash, replayed.Cash);
+
+        // Reopening after the close must use the contract scale, not the flat entry's legacy 1x:
+        // the entry survives only for the orphaned owner tally and holds nothing.
+        var reopenOrder = CreateOrder("legacy-reopen") with
+        {
+            Quantity = 1m,
+            FilledQuantity = 1m,
+            ContractMultiplier = 100m
+        };
+        var reopenReport = CreateReport(reopenOrder.OrderId) with
+        {
+            OrderQuantity = 1m,
+            FilledQuantity = 1m,
+            FillPrice = 3m
+        };
+        var reopenProcessor = CreateProcessor(reopenOrder, portfolio, new RecordingPublisher(), persistence, out _);
+
+        await reopenProcessor.ProcessAsync(session.SessionId, reopenReport, 0m);
+
+        Assert.Equal(10_001m - 300m, portfolio.Cash);
+        var reopenStored = Assert.IsType<PaperSessionFillRecord>(store.StoredFill).Fill;
+        Assert.Equal(100m, reopenStored.BookedMoneyMultiplier);
+        replayed.ApplyRecordedFill(reopenStored);
         Assert.Equal(portfolio.Cash, replayed.Cash);
     }
 

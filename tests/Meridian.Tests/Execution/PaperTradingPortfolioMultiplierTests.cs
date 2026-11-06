@@ -196,6 +196,36 @@ public sealed class PaperTradingPortfolioMultiplierTests
     }
 
     [Fact]
+    public void FlatEntryKeptForAttribution_ReopensAtTheNewFillsScale()
+    {
+        // A legacy 1x open with no owner, closed by an owned fill at its booked 1x, leaves a
+        // flat entry carrying only the orphaned owner tally. A new holding must open at 100x.
+        var portfolio = new PaperTradingPortfolio(100_000m);
+        portfolio.ApplyRecordedFill(OptionFill(OrderSide.Buy, qty: 1m, price: 2m));
+        portfolio.ApplyFill(OptionFill(OrderSide.Sell, qty: 1m, price: 3m) with { BookedMoneyMultiplier = 1m },
+            ownerAccountId: "fund-a");
+        portfolio.Positions.Should().ContainKey(Option, "the orphaned owner tally keeps the flat entry");
+        portfolio.Cash.Should().Be(100_001m);
+
+        portfolio.ApplyFill(OptionFill(OrderSide.Buy, qty: 1m, price: 3m));
+
+        portfolio.Cash.Should().Be(100_001m - 300m);
+        portfolio.GetOpenMoneyMultiplier(Option).Should().Be(100m);
+    }
+
+    [Fact]
+    public void ResetMoneyScale_IsRefusedWhileAPositionIsHeld()
+    {
+        var portfolio = new PaperTradingPortfolio(100_000m);
+        portfolio.ApplyRecordedFill(OptionFill(OrderSide.Buy, qty: 1m, price: 2m));
+
+        var act = () => portfolio.ApplyFill(OptionFill(OrderSide.Buy, qty: 1m, price: 2m));
+
+        act.Should().Throw<InvalidOperationException>().WithMessage("*multiplier*");
+        portfolio.GetOpenMoneyMultiplier(Option).Should().Be(1m, "a held legacy position keeps its booked scale");
+    }
+
+    [Fact]
     public void PositionTracker_RecoversThePerUnitMarkForOptions()
     {
         var portfolio = new PaperTradingPortfolio(100_000m);
