@@ -4153,6 +4153,12 @@ export function useAccountingReconciliationViewModel(
     }
   }, [actionContextRevision, canActOnCurrentQueue, operatorIdentity, scopeRevision, services]);
 
+  // Bulk triage (C2) returns the committed cases from the governed bulk endpoint.
+  const applyBreakQueueItems = useCallback((items: ReconciliationBreakQueueItem[]) => {
+    if (items.length === 0) return;
+    setBreakQueue((current) => items.reduce((queue, item) => replaceBreakQueueItem(queue, item), current));
+  }, []);
+
   useEffect(() => {
     if (!selectionState?.replaceSelection || workstream !== "reconciliation"
       || breakQueueReadScope !== scopeRevision || statementRunsReadScope !== scopeRevision
@@ -4396,6 +4402,7 @@ export function useAccountingReconciliationViewModel(
     },
     assignBreak,
     resolveBreak,
+    applyBreakQueueItems,
     calibrationSummary,
     calibrationLoading,
     calibrationErrorText: calibrationError?.summary ?? null,

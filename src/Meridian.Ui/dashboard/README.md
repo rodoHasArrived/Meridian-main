@@ -334,6 +334,27 @@ not been recorded.
   those parameters, so restoring it restores the table, and the command palette offers each
   saved layout as "Open saved view …". `lib/shareable-view.test.ts` restores each table from a
   copied link with empty browser storage.
+- **Bulk break triage.** The break queue's row checkboxes build a bulk selection, limited to the
+  breaks the current filters show. Assign to me, Route to owner and Resolve with reason go through
+  the governed casework endpoints: a dry run checks the whole selection and lists each blocked
+  break with its reason, and the operator then confirms an execute of only the breaks that passed,
+  applied all or nothing. The server stamps the actor (Assign to me sets
+  `assignToCurrentOperator`, so it names the login user, not the display name) and writes an
+  audit entry for each case. Resolve takes a reason, a root cause and a resolution from the
+  taxonomy endpoint, plus an optional evidence reference.
+- **Queue keys.** `lib/queue-keyboard-map.ts` holds the break queue's key map; the handler, the
+  `?` shortcut sheet and this table come from it, and `lib/queue-keyboard-map.test.ts` checks the
+  table against the map. Keys work while focus is in the queue and not in a text field. The queue
+  claims them before a focused row's type-ahead, so other letters still jump to a matching row.
+
+  | Key | Action |
+  | --- | --- |
+  | `j` | Move to the next break |
+  | `k` | Move to the previous break |
+  | `x` | Add the current break to the bulk selection, or remove it |
+  | `a` | Assign to me: the bulk selection when there is one, otherwise the current break |
+  | `e` | Open the evidence drawer for the current break |
+  | `?` | Show these shortcuts |
 - **Type scale.** There are three tiers: `type-page-title` (the workspace header's h1),
   `type-section` (CardTitle and region headings) and `type-label`. A label of one or two words may
   add `type-label--caps`. Longer labels render in sentence case: `FormRow`,

@@ -550,6 +550,16 @@ through the snapshot store's atomic replace; values are trimmed, capped at 128 p
 and an empty scope clears the default. Both routes require an authenticated session and only ever
 read or write the caller's own record.
 
+## Bulk break triage
+
+The break queue's bulk assign, route and resolve actions use
+`POST /api/workstation/reconciliation/break-queue/bulk/dry-run` and `/bulk/execute`, which run each
+case as its own casework command (`{bulkActionId}:{breakId}`) and retain one audit entry per case.
+The endpoint stamps the actor and source from the session. When `AssignToCurrentOperator` is set on
+an Assign request, it also replaces the assignee with the authenticated operator, then clears the
+flag before the queue hashes the request. `WorkstationEndpointsTests.BulkCasework.cs` covers the
+dry run, the per-case audit and the session assignee.
+
 ## Portfolio cash-ladder currency evidence
 
 `PortfolioCashLadderReadService` requires currency evidence for every opening cash balance and
