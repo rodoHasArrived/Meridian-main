@@ -2,11 +2,26 @@
 
 # `security-master-contracts` data objects - page 5 of 7
 
-Objects 321-400 of 487. References crossing pages remain available in the dependency manifest.
+Objects 321-400 of 490. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityAssetTermFormModel["SecurityAssetTermFormModel"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityAssetTermRole["SecurityAssetTermRole"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityAssetTermUiHint["SecurityAssetTermUiHint"] {
+        +IReadOnlyList~string~ Choices
+        +SecurityAssetTermEditorKind Editor
+        +string FieldPath
+        +string Group
+        +string Key
+        +string Label
+        +int Order
+        +bool Required
+        +bool ScalarEditable
+    }
     class Meridian_Contracts_SecurityMaster_SecurityAssetTermVocabularyEscape["SecurityAssetTermVocabularyEscape"] {
         +IReadOnlyList~string~ DependentKeys
         +string LabelKey
@@ -424,12 +439,6 @@ classDiagram
         +SecurityMasterReportingResolutionMode ResolutionMode
     }
     class Meridian_Contracts_SecurityMaster_SecurityMasterReportingResolutionMode["SecurityMasterReportingResolutionMode"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterSchemaVersions["SecurityMasterSchemaVersions"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityOptionRight["SecurityOptionRight"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityOverrideApprovalStatusDto["SecurityOverrideApprovalStatusDto"] {
     }
     Meridian_Contracts_SecurityMaster_SecurityCashFlowCalculationReceipt --> Meridian_Contracts_SecurityMaster_SecurityCashFlowSourceDto
     Meridian_Contracts_SecurityMaster_SecurityCashFlowCalculationReceipt --> Meridian_Contracts_SecurityMaster_SecurityDetailDto

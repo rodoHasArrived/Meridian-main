@@ -69,6 +69,14 @@ cannot enter bond posting through an unintended taxonomy fallback.
 **Decisions:** canonical units/ranges, legacy rows and accounting treatment require domain-owner
 review. The October 20 blanket `[0,1]` rule and all-fraction design are not accepted defaults.
 
+**2026-11-05 partial input (direct lending only):** `RateUnitNormalizer`
+(`src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs`) is an explicit-unit normalizer
+(Fraction / Percent / BasisPoints, no unspecified unit, no magnitude inference, field-specific ranges
+allowing negative index, spread and floor). Only the new direct-lending
+[PIK capitalization and reset-schedule terms](../blueprints/direct-lending-pik-capitalization-and-rate-resets.md)
+use it. The Security Master cash-flow, accounting and preview readers are unchanged, so D10 and
+this slice remain open; the slice may adopt the type once canonical units are approved.
+
 ## Slice 5 — Audit evidence contracts before storage/serialization changes
 
 **Evidence:** D7. Classify each mutable row (cash-flow source, entitlement, field provenance and
@@ -81,6 +89,11 @@ Version governance payload types and keep compatible readers for stored JSON nam
 concurrent-write tests; history reconstructed with explicit valid/recorded cutoffs; old payload
 fixtures read unchanged; canonical event/projection/provenance commit atomically. Independent
 schema/storage review remains a gate for migrations and destructive-operation waivers.
+
+**Progress (2026-11-04):** identifier recorded history (migration 062) and versioned governance
+payloads with captured version-1 fixtures are implemented; see the
+[D7 slice-5 disposition](../../architecture/security-master-extensibility-review.md#d7--audit-history-and-serialization-distinguish-current-state-from-retained-evidence).
+Row classification, the WPF provenance composition and migration 062's independent review remain open.
 
 ## Slice 6 — Remaining catalog, identifier and consumer convergence
 

@@ -352,7 +352,7 @@ describe("CoveredCallScreen", () => {
 
     expect(historyTable).toBeInTheDocument();
     expect(historyRow).toHaveAttribute("tabindex", "0");
-    expect(screen.getByText("Jul 1, 14:05 UTC")).toBeInTheDocument();
+    expect(screen.getByText("Jul 1, 2024, 14:05 UTC")).toBeInTheDocument();
     expect(screen.getByText("12.3%")).toBeInTheDocument();
     expect(screen.getByText("1.42")).toBeInTheDocument();
 

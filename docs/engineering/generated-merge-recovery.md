@@ -62,10 +62,13 @@ disposable clone and raw output directory. Host runner credentials, caches, acti
 socket are excluded. Trusted host tooling exports only bounded regular files after the container
 exits. The local repair command above does not provide this container boundary.
 
-Main pushes, the daily 05:23 UTC scan and manual publisher dispatch discover same-repository PRs
-that need refreshing against a new base. Each scan requests at most ten new head/base pairs,
-skips previously requested pairs and reports the backlog. Daily/manual scans drain remaining work;
-API pagination stops with an explicit error at its 1,000-item bound.
+PR merges into `main`, main pushes, the daily 05:23 UTC scan and manual publisher dispatch
+discover every stale same-repository open PR, including drafts and conflicted PRs. Each scan reads
+the latest base, follows API pagination and queues all eligible head/base pairs, pacing dispatches
+one second apart. Unmerged PR closures do not request a refresh. Overlapping refresh scans are
+serialized and pending scans can coalesce; publication remains independent per source run.
+Active or successful trusted generation requests suppress duplicate pairs; failed or cancelled
+requests can be retried by a later scan. API failures are reported explicitly.
 
 Forks and missing App configuration retain artifact-only behavior. Source/handwritten conflicts,
 module review decisions, and generator/dependency/policy changes use contributor review. A failed

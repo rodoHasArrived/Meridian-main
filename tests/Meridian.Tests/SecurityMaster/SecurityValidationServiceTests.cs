@@ -595,6 +595,100 @@ public sealed class SecurityValidationServiceTests
             && issue.Severity == SecurityValidationSeverityDto.Warning);
     }
 
+    private const string SyntheticUti = "MERIDIANSYNTH0000183TRADE20261105SWAP0001";
+
+    [Fact]
+    public void Scenario_UtiOnEquity_ProducesRegulatoryIdentifierAssetClassMismatchWarning()
+    {
+        var record = CreateProjection(
+            Guid.NewGuid(),
+            "Equity",
+            [
+                CreateIdentifier(SecurityIdentifierKind.Isin, "US0378331005", isPrimary: true),
+                CreateIdentifier(SecurityIdentifierKind.Uti, SyntheticUti, isPrimary: false)
+            ]);
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(record, [record], Now);
+
+        report.Issues.Should().ContainSingle(issue =>
+            issue.Code == "SM_REGULATORY_IDENTIFIER_ASSET_CLASS_MISMATCH"
+            && issue.Severity == SecurityValidationSeverityDto.Warning
+            && issue.Message.Contains("Swap", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Scenario_UtiAndUpiOnSwap_ProduceNoAssetClassMismatch()
+    {
+        var record = CreateProjection(
+            Guid.NewGuid(),
+            "Swap",
+            [
+                CreateIdentifier(SecurityIdentifierKind.Uti, SyntheticUti, isPrimary: true),
+                CreateIdentifier(SecurityIdentifierKind.Upi, "QZRBG6ZTKS42", isPrimary: false)
+            ]);
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(record, [record], Now);
+
+        report.Issues.Should().NotContain(issue =>
+            issue.Code == "SM_REGULATORY_IDENTIFIER_ASSET_CLASS_MISMATCH"
+            || issue.Code == "SM_SHARED_IDENTIFIER_NOT_PRIMARY"
+            || issue.Code == "SM_IDENTIFIER_FORMAT_INVALID");
+    }
+
+    [Fact]
+    public void Scenario_UpiAsPrimaryIdentifier_IsRefused()
+    {
+        var record = CreateProjection(
+            Guid.NewGuid(),
+            "Swap",
+            [CreateIdentifier(SecurityIdentifierKind.Upi, "QZRBG6ZTKS42", isPrimary: true)]);
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(record, [record], Now);
+
+        report.Issues.Should().ContainSingle(issue =>
+            issue.Code == "SM_SHARED_IDENTIFIER_NOT_PRIMARY"
+            && issue.Severity == SecurityValidationSeverityDto.Error);
+    }
+
+    [Fact]
+    public void Scenario_TwoSwapsSharingAUpi_AreNotDuplicates_ButSharingAUtiIs()
+    {
+        var securityA = Guid.NewGuid();
+        var securityB = Guid.NewGuid();
+        var first = CreateProjection(
+            securityA,
+            "Swap",
+            [
+                CreateIdentifier(SecurityIdentifierKind.Uti, SyntheticUti, isPrimary: true),
+                CreateIdentifier(SecurityIdentifierKind.Upi, "QZRBG6ZTKS42", isPrimary: false)
+            ]);
+        var second = CreateProjection(
+            securityB,
+            "Swap",
+            [
+                CreateIdentifier(SecurityIdentifierKind.Uti, SyntheticUti, isPrimary: true),
+                CreateIdentifier(SecurityIdentifierKind.Upi, "QZRBG6ZTKS42", isPrimary: false)
+            ]);
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(first, [first, second], Now);
+
+        var duplicates = report.Issues.Where(static issue => issue.Code == "SM_DUPLICATE_CANONICAL_IDENTIFIER").ToArray();
+        duplicates.Should().ContainSingle();
+        duplicates[0].AffectedFields.Should().Contain("identifiers.Uti");
+    }
+
     [Fact]
     public void Scenario_NonCanonicalIsinFormatting_ProducesNormalizationWarning()
     {

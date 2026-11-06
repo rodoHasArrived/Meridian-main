@@ -2,8 +2,11 @@ import { describe, expect, it } from "vitest";
 import { buildAppShellViewState, type AppShellWorkspacePayload } from "@/app-shell.view-model";
 import {
   buildDailyControlTowerModel,
-  dailyControlTowerProofPassportLabels
+  buildWorkspaceAttentionCounts,
+  dailyControlTowerProofPassportLabels,
+  selectDailyControlTowerQueueItems
 } from "@/lib/daily-control-tower";
+import { normalizeWorkspacePath } from "@/lib/workspace";
 import type { DataWorkspaceResponse, TradingWorkspaceResponse } from "@/types";
 
 const payload: AppShellWorkspacePayload = {
@@ -179,5 +182,41 @@ describe("daily control tower model", () => {
       .toBe("No timestamped evidence");
     expect(row?.proofPassportItems.find((item) => item.label === "Evidence Packet")?.value)
       .toBe("No evidence packet linked");
+  });
+
+  it("derives sidebar attention counts from the exact queue the Control Tower lists", () => {
+    const shell = buildAppShellViewState({
+      pathname: "/",
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      payload
+    });
+
+    const model = buildDailyControlTowerModel(shell.workflowContinuity, shell.trustStrip);
+    const attention = buildWorkspaceAttentionCounts(shell.workflowContinuity);
+
+    expect(model.queueRows.length).toBeGreaterThan(0);
+    expect(attention.total).toBe(model.queueRows.length);
+    const expected: Record<string, number> = {};
+    for (const row of model.queueRows) {
+      const key = normalizeWorkspacePath(row.item.route.split(/[?#]/, 1)[0]);
+      expected[key] = (expected[key] ?? 0) + 1;
+    }
+    expect(attention.byWorkspace).toEqual(expected);
+    expect(selectDailyControlTowerQueueItems(shell.workflowContinuity).map((item) => item.id))
+      .toEqual(model.queueRows.map((row) => row.item.id));
+  });
+
+  it("falls back to the item's workspace label when its route has no workspace root", () => {
+    const shell = buildAppShellViewState({ pathname: "/", loading: false, error: null, workspaceErrors: {}, payload });
+    const item = { ...shell.workflowContinuity.operatorFocusCommandItems[0]!, route: "/?focus=1", workspaceLabel: "Accounting" };
+    const attention = buildWorkspaceAttentionCounts({
+      ...shell.workflowContinuity,
+      operatorFocusCommandItems: [item],
+      operatorFocusItems: []
+    });
+
+    expect(attention).toEqual({ total: 1, byWorkspace: { accounting: 1 } });
   });
 });

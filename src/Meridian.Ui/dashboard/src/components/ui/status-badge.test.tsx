@@ -36,4 +36,19 @@ describe("StatusBadge", () => {
     const { container } = render(<StatusBadge tone="success" dot>Ready</StatusBadge>);
     expect(container.querySelector(".mds-badge__dot")).not.toBeNull();
   });
+
+  it.each(["success", "warning", "danger"] as const)(
+    "renders %s solid differently from subtle, with a filled background",
+    (tone) => {
+      const { unmount } = render(<StatusBadge tone={tone} emphasis="subtle">Label</StatusBadge>);
+      const subtleClass = screen.getByText("Label").className;
+      unmount();
+
+      render(<StatusBadge tone={tone} emphasis="solid">Label</StatusBadge>);
+      const solidClass = screen.getByText("Label").className;
+
+      expect(solidClass).not.toBe(subtleClass);
+      expect(solidClass).toContain(`bg-${tone}`);
+    }
+  );
 });

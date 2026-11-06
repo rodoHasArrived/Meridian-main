@@ -318,15 +318,28 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
                 ToNullable(currentTerms.FloorRate),
                 ToNullable(currentTerms.CapRate));
 
+            var reset = new RateResetDto(
+                request.EffectiveDate,
+                currentTerms.InterestIndexName ?? "FloatingIndex",
+                request.ObservedRate,
+                spreadBps,
+                allInRate,
+                request.SourceRef);
+            if (currentTerms.RateResetSchedule is not null)
+            {
+                reset = reset with { ResetKind = RateResetKind.Manual };
+            }
+
             stored.Servicing = stored.Servicing with
             {
-                CurrentRateReset = new RateResetDto(
-                    request.EffectiveDate,
-                    currentTerms.InterestIndexName ?? "FloatingIndex",
-                    request.ObservedRate,
-                    spreadBps,
-                    allInRate,
-                    request.SourceRef)
+                CurrentRateReset = reset,
+                RateResetHistory = currentTerms.RateResetSchedule is null
+                    ? stored.Servicing.RateResetHistory
+                    : (stored.Servicing.RateResetHistory ?? [])
+                        .Where(item => item.EffectiveDate != reset.EffectiveDate)
+                        .Append(reset)
+                        .OrderBy(static item => item.EffectiveDate)
+                        .ToArray()
             };
 
             AppendRevision(stored, "InternalEvent", request.EffectiveDate, $"Rate reset applied at {allInRate:P4}.");
@@ -417,7 +430,8 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
             var annualRate = ResolveAnnualRate(terms, stored.Servicing.CurrentRateReset);
             // PIK posture: interest capitalizes into principal instead of accruing as a
             // cash receivable.
-            var isPikAccrual = stored.Servicing.IsPikToggled;
+            var policy = terms.PikCapitalization;
+            var isPikAccrual = policy is null && stored.Servicing.IsPikToggled;
             // Date-aware day count: Act/Act accrues against the actual year length of the
             // accrual date (366 in leap years); other conventions keep fixed denominators.
             var accruedInterest = isPikAccrual
@@ -431,8 +445,16 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
                     annualRate,
                     (int)terms.DayCountBasis,
                     request.AccrualDate);
-            var interestAmount = isPikAccrual ? 0m : accruedInterest;
-            var pikInterestAmount = isPikAccrual ? accruedInterest : 0m;
+            // Capitalization policy: the PIK share is deferred to the policy's capitalization dates.
+            var pikShare = policy is not null && (policy.Mode == PikElection.Always || stored.Servicing.IsPikToggled)
+                ? RateUnitNormalizer.ToFraction(policy.PikShare, DirectLendingRateField.PikShare)
+                : 0m;
+            var deferredPik = pikShare > 0m
+                ? Math.Round(accruedInterest * pikShare, 2, MidpointRounding.AwayFromZero)
+                : 0m;
+            var interestAmount = isPikAccrual ? 0m : accruedInterest - deferredPik;
+            var pikInterestAmount = isPikAccrual ? accruedInterest : deferredPik;
+            var capitalizedToday = isPikAccrual ? pikInterestAmount : 0m;
 
             var commitmentFeeAmount = terms.CommitmentFeeRate is { } feeRate && feeRate > 0m
                 ? DirectLendingInterop.CalculateDailyAccrualAmountForDate(
@@ -450,17 +472,19 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
                 0m,
                 annualRate,
                 DateTimeOffset.UtcNow,
-                pikInterestAmount);
+                pikInterestAmount,
+                deferredPik > 0m);
 
             stored.Servicing.AccrualEntries.Add(entry);
             stored.Servicing = stored.Servicing with
             {
                 Balances = stored.Servicing.Balances with
                 {
-                    PrincipalOutstanding = stored.Servicing.Balances.PrincipalOutstanding + pikInterestAmount,
+                    PrincipalOutstanding = stored.Servicing.Balances.PrincipalOutstanding + capitalizedToday,
                     InterestAccruedUnpaid = stored.Servicing.Balances.InterestAccruedUnpaid + interestAmount,
                     CommitmentFeeAccruedUnpaid = stored.Servicing.Balances.CommitmentFeeAccruedUnpaid + commitmentFeeAmount
                 },
+                PikInterestAccruedUnpaid = stored.Servicing.PikInterestAccruedUnpaid + deferredPik,
                 LastAccrualDate = request.AccrualDate
             };
 
@@ -471,17 +495,30 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
                 isPikAccrual
                     ? $"Daily PIK accrual capitalized at annual rate {annualRate:P4}."
                     : $"Daily accrual posted at annual rate {annualRate:P4}.");
-            AppendEvent(stored, "loan.daily-accrual-posted", request.AccrualDate, new
-            {
-                loanId,
-                entry.AccrualEntryId,
-                request.AccrualDate,
-                entry.InterestAmount,
-                entry.CommitmentFeeAmount,
-                entry.PenaltyAmount,
-                entry.AnnualRateApplied,
-                entry.PikInterestAmount
-            }, metadata);
+            AppendEvent(stored, "loan.daily-accrual-posted", request.AccrualDate, entry.PikCapitalizationDeferred
+                ? new
+                {
+                    loanId,
+                    entry.AccrualEntryId,
+                    request.AccrualDate,
+                    entry.InterestAmount,
+                    entry.CommitmentFeeAmount,
+                    entry.PenaltyAmount,
+                    entry.AnnualRateApplied,
+                    entry.PikInterestAmount,
+                    entry.PikCapitalizationDeferred
+                }
+                : (object)new
+                {
+                    loanId,
+                    entry.AccrualEntryId,
+                    request.AccrualDate,
+                    entry.InterestAmount,
+                    entry.CommitmentFeeAmount,
+                    entry.PenaltyAmount,
+                    entry.AnnualRateApplied,
+                    entry.PikInterestAmount
+                }, metadata);
             return Task.FromResult<DailyAccrualEntryDto?>(entry);
         }
     }
@@ -521,6 +558,11 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
         if (terms.EffectiveRateFloor is { } floor && terms.EffectiveRateCap is { } cap && cap < floor)
         {
             throw new DirectLendingCommandException(new DirectLendingCommandError(DirectLendingErrorCode.Validation, "Effective rate cap must be greater than or equal to the effective rate floor."));
+        }
+
+        if (DirectLendingServicingPolicyValidator.Validate(terms) is { } policyError)
+        {
+            throw new DirectLendingCommandException(new DirectLendingCommandError(DirectLendingErrorCode.Validation, policyError));
         }
     }
 
@@ -860,7 +902,11 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
             servicing.Collateral?.AsReadOnly(),
             servicing.UnamortizedDiscount,
             servicing.UnamortizedPremium,
-            servicing.IsPikToggled);
+            servicing.IsPikToggled,
+            servicing.PikInterestAccruedUnpaid,
+            servicing.LastPikCapitalizationDate,
+            servicing.RateResetHistory,
+            servicing.PikCapitalizations);
     }
 
     private static System.Nullable<decimal> ToNullable(decimal? value) =>
@@ -933,5 +979,9 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
         List<CollateralDto>? Collateral = null,
         decimal UnamortizedDiscount = 0m,
         decimal UnamortizedPremium = 0m,
-        bool IsPikToggled = false);
+        bool IsPikToggled = false,
+        decimal PikInterestAccruedUnpaid = 0m,
+        DateOnly? LastPikCapitalizationDate = null,
+        IReadOnlyList<RateResetDto>? RateResetHistory = null,
+        IReadOnlyList<PikCapitalizationDto>? PikCapitalizations = null);
 }

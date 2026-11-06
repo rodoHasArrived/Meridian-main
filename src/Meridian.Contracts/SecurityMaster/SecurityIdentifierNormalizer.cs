@@ -40,7 +40,19 @@ public static class SecurityIdentifierNormalizer
     /// claims participate.
     /// </summary>
     public static bool IsExcludedFromAmbiguityPairing(SecurityIdentifierKind kind)
-        => kind is SecurityIdentifierKind.Unknown || IsIssuerScopedKind(kind);
+        => kind is SecurityIdentifierKind.Unknown || IsIssuerScopedKind(kind) || IsSharedReferenceKind(kind);
+
+    /// <summary>
+    /// Kinds that name shared reference data rather than one security: a UPI names an OTC derivative
+    /// product and a RED code names a CDS reference entity or entity/obligation pair, so many
+    /// contracts legitimately carry the same value. Like the issuer-scoped kinds they never pair as
+    /// identifier ambiguities, and they cannot be a record's primary identifier — the normalized
+    /// primary-identifier unique index (migration 032) would refuse the second contract.
+    /// </summary>
+    public static bool IsSharedReferenceKind(SecurityIdentifierKind kind)
+        => kind is SecurityIdentifierKind.Upi
+            or SecurityIdentifierKind.MarkitRedEntity
+            or SecurityIdentifierKind.MarkitRedPair;
 
     /// <summary>
     /// Returns the normalized namespace that participates in identifier identity. Provider data on
@@ -74,6 +86,10 @@ public static class SecurityIdentifierNormalizer
             or SecurityIdentifierKind.Cik
             or SecurityIdentifierKind.LoanX
             or SecurityIdentifierKind.Clip
+            or SecurityIdentifierKind.Uti
+            or SecurityIdentifierKind.Upi
+            or SecurityIdentifierKind.MarkitRedEntity
+            or SecurityIdentifierKind.MarkitRedPair
                 => StripNonAlphanumeric(trimmed),
             SecurityIdentifierKind.Valoren => StripNonDigit(trimmed),
             _ => trimmed
@@ -128,6 +144,10 @@ public static class SecurityIdentifierNormalizer
             SecurityIdentifierKind.LoanX => normalized.Length == 8 && normalized.StartsWith("LX", StringComparison.Ordinal) && IsDigitsOnly(normalized[2..]),
             SecurityIdentifierKind.Clip => normalized.Length == 9 && IsAlphaNumeric(normalized),
             SecurityIdentifierKind.ListingId => Domain.ListingId.TryParse(normalized, out _),
+            SecurityIdentifierKind.Uti => ValidateUti(normalized),
+            SecurityIdentifierKind.Upi => ValidateUpi(normalized),
+            SecurityIdentifierKind.MarkitRedEntity => normalized.Length == 6 && IsAsciiAlphaNumeric(normalized),
+            SecurityIdentifierKind.MarkitRedPair => normalized.Length == 9 && IsAsciiAlphaNumeric(normalized),
             _ => true
         };
 
@@ -146,6 +166,10 @@ public static class SecurityIdentifierNormalizer
             SecurityIdentifierKind.LoanX => "LoanX ID must be 'LX' followed by six digits.",
             SecurityIdentifierKind.Clip => "CLIP must be a 9-character alphanumeric loan identifier.",
             SecurityIdentifierKind.ListingId => "Listing id must be TICKER:MIC with a four-character ISO 10383 MIC (for example AAPL:XNAS).",
+            SecurityIdentifierKind.Uti => "UTI must be 21-52 alphanumeric characters (ISO 23897) beginning with the generating entity's valid 20-character LEI.",
+            SecurityIdentifierKind.Upi => "UPI must be a 12-character ISO 4914 code: 'QZ', nine digits or consonants (no vowels or Y), and a valid ISO 7064 MOD 31,30 check character.",
+            SecurityIdentifierKind.MarkitRedEntity => "Markit RED entity code must be a 6-character alphanumeric code (RED6).",
+            SecurityIdentifierKind.MarkitRedPair => "Markit RED pair code must be a 9-character alphanumeric code (RED9: 6-character entity code plus 3-character obligation suffix).",
             _ => "Identifier format is invalid."
         };
 
@@ -377,8 +401,7 @@ public static class SecurityIdentifierNormalizer
 
         // ISO 17442 carries an ISO 7064 MOD 97-10 checksum in the last two digits. Expanding
         // letters to two-digit values (A=10 .. Z=35) and taking the whole 20-character code
-        // modulo 97 yields 1 for a valid LEI. See also the reference algorithm in
-        // src/Meridian.FSharp/Domain/SecurityIdentifiers.fs.
+        // modulo 97 yields 1 for a valid LEI. The F# SecurityIdentifier.validateLei delegates here.
         return Mod97(normalized) == 1;
     }
 
@@ -439,6 +462,59 @@ public static class SecurityIdentifierNormalizer
         }
 
         return hasAlphaNumeric;
+    }
+
+    private static bool IsAsciiAlphaNumeric(string value)
+        => value.All(static character => character is (>= 'A' and <= 'Z') or (>= '0' and <= '9'));
+
+    private static bool ValidateUti(string normalized)
+    {
+        // ISO 23897: at most 52 characters, A-Z/0-9 only, starting with the LEI of the entity that
+        // generated the UTI followed by a non-empty unique value.
+        return normalized.Length is >= 21 and <= 52
+            && IsAsciiAlphaNumeric(normalized)
+            && ValidateLei(normalized[..20]);
+    }
+
+    // ISO 4914 UPI alphabet: digits plus upper-case consonants other than Y (30 symbols).
+    private const string UpiAlphabet = "0123456789BCDFGHJKLMNPQRSTVWXZ";
+
+    private static bool ValidateUpi(string normalized)
+    {
+        if (normalized.Length != 12 || !normalized.StartsWith("QZ", StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        foreach (var character in normalized)
+        {
+            if (UpiAlphabet.IndexOf(character) < 0)
+            {
+                return false;
+            }
+        }
+
+        return UpiCheckCharacter(normalized.AsSpan(0, 11)) == normalized[11];
+    }
+
+    private static char UpiCheckCharacter(ReadOnlySpan<char> body)
+    {
+        // ISO 7064 hybrid MOD (M+1, M) system with M = 30 over the UPI alphabet. Verified against
+        // the published ANNA DSB example QZRBG6ZTKS42.
+        const int modulus = 30;
+        var product = modulus;
+        foreach (var character in body)
+        {
+            var sum = (product + UpiAlphabet.IndexOf(character)) % modulus;
+            if (sum == 0)
+            {
+                sum = modulus;
+            }
+
+            product = (2 * sum) % (modulus + 1);
+        }
+
+        return UpiAlphabet[(modulus + 1 - product) % modulus];
     }
 
     private static bool IsVowel(char character)

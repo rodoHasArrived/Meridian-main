@@ -19,6 +19,7 @@ public sealed class SecurityMasterRebuildOrchestrator
     private readonly SecurityMasterOptions _options;
     private readonly ILogger<SecurityMasterRebuildOrchestrator> _logger;
     private readonly ISecurityMasterConflictService? _conflictService;
+    private readonly ISecurityMasterTermsCapabilityVerifier _termsCapabilityVerifier;
     // A committed batch can be followed by a failed/cancelled readback. Its checkpoint must not
     // make a later invocation skip reconciliation of a nonempty cache left on the previous set.
     private int _cacheReadbackPending;
@@ -32,7 +33,8 @@ public sealed class SecurityMasterRebuildOrchestrator
         SecurityMasterProjectionService projectionService,
         SecurityMasterOptions options,
         ILogger<SecurityMasterRebuildOrchestrator> logger,
-        ISecurityMasterConflictService? conflictService = null)
+        ISecurityMasterConflictService? conflictService = null,
+        ISecurityMasterTermsCapabilityVerifier? termsCapabilityVerifier = null)
     {
         _eventStore = eventStore;
         _store = store;
@@ -42,6 +44,9 @@ public sealed class SecurityMasterRebuildOrchestrator
         _options = options;
         _logger = logger;
         _conflictService = conflictService;
+        // As on the command boundary: a configured writer cannot bypass the floor by omitting the
+        // optional dependency, and an unconfigured graph does no persistence work.
+        _termsCapabilityVerifier = termsCapabilityVerifier ?? new SecurityMasterTermsCapabilityVerifier(options, logger);
     }
 
     public async Task RebuildAsync(CancellationToken ct = default)
@@ -76,6 +81,9 @@ public sealed class SecurityMasterRebuildOrchestrator
             // the checkpoint-current path and never revisits these records. The replacement
             // capture opens before the durable read, so a local write upserted during the read,
             // rebuild or persist is replayed into the swap instead of being dropped.
+            // A rebuild persists terms-carrying projections, so the terms capability floor is
+            // verified first, before any connection or capture opens (ADR-025).
+            await _termsCapabilityVerifier.VerifyAsync(ct).ConfigureAwait(false);
             var rebuiltRecords = await _cache.ReplaceAllAsync(
                 async token =>
                 {
@@ -128,6 +136,8 @@ public sealed class SecurityMasterRebuildOrchestrator
                 cursor = Math.Max(cursor, @event.GlobalSequence ?? cursor);
             }
 
+            // A fresh floor check per persisted batch, before the batch's own connection opens.
+            await _termsCapabilityVerifier.VerifyAsync(ct).ConfigureAwait(false);
             Interlocked.Exchange(ref _cacheReadbackPending, 1);
             await _store.PersistProjectionBatchAsync(ProjectionName, cursor, rebuiltRecords, ct).ConfigureAwait(false);
             var persistedRecords = await ReadBackProjectionsAsync(rebuiltRecords, ct).ConfigureAwait(false);
@@ -192,6 +202,8 @@ public sealed class SecurityMasterRebuildOrchestrator
             }
         }
 
+        // The scoped rebuild upserts terms-carrying projections: verify the floor before the first write.
+        await _termsCapabilityVerifier.VerifyAsync(ct).ConfigureAwait(false);
         var readbackWasPending = Interlocked.Exchange(ref _cacheReadbackPending, 1);
         foreach (var rebuilt in rebuiltRecords)
         {

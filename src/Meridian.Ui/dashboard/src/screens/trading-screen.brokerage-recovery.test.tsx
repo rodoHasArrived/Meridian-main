@@ -2,6 +2,7 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { describe, expect, it, vi } from "vitest";
+import { ScopePickerOpenerProvider } from "@/lib/operating-scope/scope-picker-context";
 import { BrokerageRecoveryPanel } from "./trading-screen.brokerage-recovery";
 import type { TradingBrokerageRecovery, TradingOperatorReadiness } from "@/types";
 
@@ -79,10 +80,29 @@ describe("BrokerageRecoveryPanel", () => {
     expect(screen.getByRole("status")).toHaveTextContent("Current account recovery evidence is unavailable");
     expect(screen.queryByText("$1,250.00 (USD)")).not.toBeInTheDocument();
     expect(screen.queryByText(/PA-404/)).not.toBeInTheDocument();
+    // No evidence for the selected account: no grid of "Unavailable" facts, one next step.
+    expect(screen.queryByText("Unavailable")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Synchronize and reconcile" })).toBeEnabled();
     rerender(panel(null, { fundAccountId: undefined }));
-    expect(screen.getByRole("button", { name: "Synchronize and reconcile" })).toBeDisabled();
+    expect(screen.queryByRole("button", { name: "Synchronize and reconcile" })).not.toBeInTheDocument();
+    expect(screen.getByText("Choose a fund account")).toBeInTheDocument();
     rerender(panel(readiness({ brokerageRecovery: { ...recovery, fundAccountId: null } })));
     expect(screen.getByRole("status")).toHaveTextContent("Current account recovery evidence is unavailable");
+  });
+
+  it("offers choosing an account as the single next step when none is in scope", async () => {
+    const openScopePicker = vi.fn();
+    const { container } = render(
+      <ScopePickerOpenerProvider open={openScopePicker}>{panel(null, { fundAccountId: undefined })}</ScopePickerOpenerProvider>
+    );
+    // Live trading stays announced as blocked.
+    expect(screen.getByRole("status")).toHaveTextContent("Live trading blocked");
+    expect(screen.queryByText("Unavailable")).not.toBeInTheDocument();
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+    expect(screen.getAllByRole("button")).toHaveLength(1);
+    await userEvent.setup().click(screen.getByRole("button", { name: "Choose account" }));
+    expect(openScopePicker).toHaveBeenCalledTimes(1);
+    expect((await axe(container)).violations).toEqual([]);
   });
 
   it("requests recovery once with a keyboard-operable command and clears blockage only after reconciled evidence arrives", async () => {

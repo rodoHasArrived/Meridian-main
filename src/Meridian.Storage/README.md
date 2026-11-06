@@ -269,7 +269,8 @@ remaining unprojected classes (CommercialPaper, TreasuryBill, Repo, CashSweep, O
 Warrant, InvestmentFund, PrivateFundInterest, PrivateCompanyEquity, RealEstateHolding,
 CommitmentGuarantee) a relational projection written by the same declarative
 `SecurityTermsProjectionRegistry` descriptor path, so every catalog class except the
-profile-governed CustomAsset is now projected (25 of 26). Guid-typed terms project as `uuid`
+profile-governed CustomAsset was then projected (25 of 26; migration 064 below closes CustomAsset).
+Guid-typed terms project as `uuid`
 columns. The tables are created empty; an existing database populates them through
 `SecurityMasterRebuildOrchestrator.RebuildAssetClassAsync` per class.
 
@@ -282,6 +283,19 @@ the contract marks Required; the tables are created empty and populate as record
 Migration `047_rate_option_and_note_terms_projections.sql` does the same for `swaption_projection`,
 `cap_floor_projection` and `structured_note_projection` (31 of 32 classes projected); strike and
 rate columns are signed because negative strikes are valid in negative-rate currencies.
+
+Migration `064_custom_asset_profile_field_projection.sql` closes the last gap (32 of 32).
+CustomAsset fields are governed per profile, so `custom_asset_profile_field_projection` holds one
+row per `profileFields` key, keyed by `(security_id, field_key)`, with `custom_profile_id`,
+`profile_version` and the record `version`. `raw_value` (jsonb) keeps the stored value; `value_kind`
+is its `jsonb_typeof`, and `text_value`/`numeric_value`/`boolean_value` are derived from it in SQL,
+so a date-looking string stays a string and a number keeps full precision. A specialized
+`AssetProjectionWriter` (catalog `ProjectionKind.Specialized`, beside Option) replaces the rows on
+every write and clears them when the record has no complete envelope (a legacy or unmapped row) or
+leaves the class. `ICustomAssetProfileFieldProjectionStore`
+(`PostgresCustomAssetProfileFieldProjectionStore`) reads them by security, profile (and version) or
+exact string value. The table is created empty and populates as CustomAsset records are persisted
+or rebuilt. Migration 064 still needs the repository's independent schema/storage review.
 
 Security Master migration `050_otc_contracts.sql` creates the OTC contract model (master
 agreements, collateral agreements, netting sets, bilateral contracts) written by
@@ -356,6 +370,37 @@ availability timestamps can precede commit. They do not certify historical trans
 and the same timestamp-cutoff query can change after a pending transaction commits.
 Fresh-install and populated through-036 and through-037 upgrade tests cover rollback, retry and
 restart receipts, retaining the previously applied migration checksums and close-price evidence.
+
+Migration `062_security_master_identifier_revisions.sql` adds the append-only
+`security_identifier_revisions` table; row triggers refuse update and delete and a statement
+trigger refuses truncate (SQL state 23514). `security_identifiers` stays the reconstructible
+current-state projection, and projection replacement still replaces its rows, but in the same
+transaction it now appends one revision per changed row identity (kind, value, valid-from):
+`Added`, `Amended`, `Expired` (valid-to first set) or `Removed`; an unchanged replay appends
+nothing. Replacement keeps the stored `source`, `confidence` and `manual_override` of an identity it
+already held instead of resetting them to `SecurityMaster`/null/false; new rows still get those
+defaults. Pre-existing rows become `Baseline` revisions available only from the migration
+(`history_available_from`), so earlier cutoffs report unknown history, not an absence.
+`ISecurityIdentifierHistoryStore` (implemented by `PostgresSecurityMasterStore`) reads every
+revision at a recorded cutoff and the recorded view of held identifiers with an optional
+valid-time filter. Recorded timestamps are transaction-start times kept monotonic per identity;
+like alias revisions they establish eligibility, not commit visibility. The economic identifier
+values were already retained in `security_events` payloads and replayed by the recorded
+identifier lookup; this table adds the row-level metadata and projection-only writes those
+payloads do not carry. Revisions name the projection-replacement actor; the authenticated actor of
+an event-sourced change remains on its event. The migration requires the repository's independent
+schema/storage review before merge.
+
+Governance payloads are typed. Each stream/event type declares a version-1 payload record in
+`SecurityGovernancePayloads.cs`, serialized through the source-generated
+`SecurityGovernanceJsonContext`; `PostgresSecurityGovernanceEventLog.AppendAsync<TPayload>` accepts
+only the declared type and writes `payload_version` explicitly. `SecurityGovernanceEvent.ReadPayload<T>`
+and `TryReadPayload<T>` dispatch on the stored version and refuse undeclared event types or
+versions this node cannot read; the raw `Payload` element remains available. Every retained row is
+version 1. Fixtures captured from the earlier reflective writers
+(`tests/fixtures/security-master/governance-payloads/v1-captured.json`) pin that those rows read
+unchanged and that new writes reproduce them byte for byte, including the PascalCase rebuild
+record entries. A shape change needs a new version and a reader for the old one.
 
 Symbol registry reconciliation persists canonical ownership for new Security Master entries, follows
 primary ticker changes, and withdraws names whose remaining authority is exclusively Security Master.
@@ -843,7 +888,8 @@ lookup paths, and evidence trails those layers rely on.
   read once at host start in ordinal file-name order through the strict source-generated
   `BusinessDayCalendarFileJsonContext` (camelCase, unknown and repeated members refused) beside the
   built-in `WEEKENDS`. A file is refused, with a Warning naming it and the reason, for malformed or
-  missing members, a version below 1, an id outside `^[A-Z][A-Z0-9]{1,15}$` or not equal to its
+  missing members, a version below 1, an id outside `^[A-Z][A-Z0-9]{1,15}$`
+  (`BusinessDayCalendars.IsCanonicalCalendarId` in `Meridian.Contracts`) or not equal to its
   file stem, the reserved `WEEKENDS`, a weekend day that is not an exact English day name, no
   working day, inverted coverage or an id another file that passes these checks also defines (both
   are refused). A refused file loads nothing, and its Warning says whether each id it names (its

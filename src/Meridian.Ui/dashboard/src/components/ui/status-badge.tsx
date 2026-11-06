@@ -29,6 +29,14 @@ const TONE_VARIANT: Record<StatusTone, BadgeProps["variant"]> = {
 const INFO_CLASSES = "border-primary/40 text-primary";
 const SOLID_INFO_CLASSES = "border-primary bg-primary text-primary-foreground";
 
+// The design-system semantic variants are deliberately unfilled. Solid emphasis fills them
+// with the same semantic token so a blocked, failed or warning state stands out.
+const SOLID_TONE_CLASSES: Partial<Record<StatusTone, string>> = {
+  success: "border-success bg-success text-background",
+  warning: "border-warning bg-warning text-background",
+  danger: "border-danger bg-danger text-background"
+};
+
 /**
  * The one status pill for workstation screens. Built on {@link Badge} so the existing
  * design-system styling applies. Screen-specific chips should be re-pointed here.
@@ -37,10 +45,13 @@ const SOLID_INFO_CLASSES = "border-primary bg-primary text-primary-foreground";
  * <StatusBadge tone="warning">Review required</StatusBadge>
  */
 export function StatusBadge({ tone = "neutral", emphasis = "subtle", dot = false, className, children }: StatusBadgeProps) {
-  const variant = emphasis === "solid" && tone === "neutral" ? "default" : TONE_VARIANT[tone];
-  const infoClasses = tone === "info" ? (emphasis === "solid" ? SOLID_INFO_CLASSES : INFO_CLASSES) : undefined;
+  const solid = emphasis === "solid";
+  const variant = solid && tone === "neutral" ? "default" : TONE_VARIANT[tone];
+  let toneClasses: string | undefined;
+  if (tone === "info") toneClasses = solid ? SOLID_INFO_CLASSES : INFO_CLASSES;
+  else if (solid) toneClasses = SOLID_TONE_CLASSES[tone];
   return (
-    <Badge variant={variant} dot={dot} className={[infoClasses, className].filter(Boolean).join(" ") || undefined}>
+    <Badge variant={variant} dot={dot} className={[toneClasses, className].filter(Boolean).join(" ") || undefined}>
       {children}
     </Badge>
   );

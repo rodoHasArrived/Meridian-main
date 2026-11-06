@@ -230,4 +230,33 @@ describe("ScopePicker", () => {
     expect(screen.queryByRole("option", { name: /MSFT/ })).not.toBeInTheDocument();
     expect(screen.getByRole("option", { name: /AAPL/ })).toBeInTheDocument();
   });
+
+  it("loads a recent scope into the draft; Apply is still what changes scope (C1)", () => {
+    const { onApply } = renderPicker({ recentScopes: [{ symbol: "MSFT", fundAccountId: "fund-b" }] });
+    fireEvent.click(screen.getByRole("button", { name: /Use recent scope MSFT/ }));
+    expect(onApply).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Apply scope" }));
+    expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ symbol: "MSFT", fundAccountId: "fund-b" }));
+  });
+
+  it("saves the draft as the operator's default, and clears it", async () => {
+    const onSaveDefault = vi.fn().mockResolvedValue(undefined);
+    renderPicker({ scope: { symbol: "AAPL" }, defaultScope: { provider: "alpaca" }, onSaveDefault });
+
+    expect(screen.getByText(/alpaca\. Applied when you open the workstation/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Save as my default" }));
+    await waitFor(() => expect(onSaveDefault).toHaveBeenCalledWith(expect.objectContaining({ symbol: "AAPL" })));
+    expect(await screen.findByText("Saved as your default scope.")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Clear default" }));
+    await waitFor(() => expect(onSaveDefault).toHaveBeenLastCalledWith(null));
+  });
+
+  it("reports a failed default save without changing scope", async () => {
+    const onSaveDefault = vi.fn().mockRejectedValue(new Error("offline"));
+    const { onApply } = renderPicker({ scope: { symbol: "AAPL" }, onSaveDefault });
+    fireEvent.click(screen.getByRole("button", { name: "Save as my default" }));
+    expect(await screen.findByText(/could not be saved/)).toBeInTheDocument();
+    expect(onApply).not.toHaveBeenCalled();
+  });
 });

@@ -96,4 +96,25 @@ describe("ActivationHeaderProgress", () => {
 
     expect(screen.getByText("SAMPLE · PAPER")).toBeInTheDocument();
   });
+
+  it("hides the trigger once every step is done but keeps the workspace badge and desktop launch", () => {
+    renderWithRouter(<ActivationHeaderProgress status={status({
+      workspace: {
+        id: "sample",
+        name: "Meridian Sample Workspace",
+        isSample: true,
+        badge: "SAMPLE · PAPER",
+        safetyMessage: "Sample data only. No live trading or production accounting.",
+        samplePackVersion: "2026.1"
+      },
+      outcomes: [
+        { key: "workspace-opened", label: "Open or create a workspace", actionLabel: "Open workspace", route: "/portfolio", isComplete: true, completedAtUtc: "2026-08-01T10:00:00Z" },
+        { key: "data-imported", label: "Import sample or real data", actionLabel: "Import data", route: "/accounting/statement-import", isComplete: true, completedAtUtc: "2026-08-01T10:05:00Z" }
+      ]
+    })} />);
+
+    expect(screen.queryByRole("button", { name: /Getting started/ })).not.toBeInTheDocument();
+    expect(screen.getByText("SAMPLE · PAPER")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Open desktop workstation" })).toBeInTheDocument();
+  });
 });

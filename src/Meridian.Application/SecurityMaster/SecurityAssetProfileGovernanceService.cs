@@ -212,7 +212,8 @@ public sealed class SecurityAssetProfileGovernanceService : ISecurityAssetProfil
                 EffectiveTo: null,
                 ApprovedBy: resolvedActor,
                 ApprovedAtUtc: now,
-                ChangeReason: rationale);
+                ChangeReason: rationale,
+                DraftedBy: resolvedActor);
             ValidateProfileDefinition(draft);
 
             UpsertProfile(profiles, draft);
@@ -263,9 +264,7 @@ public sealed class SecurityAssetProfileGovernanceService : ISecurityAssetProfil
                 throw new ArgumentException("A matching draft profile version is required before approval.", nameof(request));
             }
 
-            // A draft records its author in ApprovedBy until it is approved.
-            if (_requireIndependentApprover()
-                && string.Equals(draft.ApprovedBy?.Trim(), resolvedActor, StringComparison.OrdinalIgnoreCase))
+            if (_requireIndependentApprover() && IsMakerOf(draft, snapshot.AuditEvents, resolvedActor))
             {
                 throw new ArgumentException(
                     "A profile version must be approved by someone other than the actor who drafted it.",
@@ -509,6 +508,32 @@ public sealed class SecurityAssetProfileGovernanceService : ISecurityAssetProfil
                 EffectiveTo = effectiveFrom.AddDays(-1)
             };
         }
+    }
+
+    /// <summary>
+    /// True when <paramref name="actor"/> drafted this version: the recorded <c>DraftedBy</c>, the
+    /// author a legacy draft (no <c>DraftedBy</c>) still records in <c>ApprovedBy</c>, or any earlier
+    /// "drafted" audit event for the same profile version, so an actor who drafted a version that
+    /// someone else last edited cannot approve it either.
+    /// </summary>
+    private static bool IsMakerOf(
+        SecurityAssetProfileDefinitionDto draft,
+        IReadOnlyList<SecurityAssetProfileGovernanceAuditEventDto> auditEvents,
+        string actor)
+    {
+        static bool Same(string? left, string right)
+            => string.Equals(left?.Trim(), right.Trim(), StringComparison.OrdinalIgnoreCase);
+
+        if (Same(draft.DraftedBy ?? draft.ApprovedBy, actor))
+        {
+            return true;
+        }
+
+        return auditEvents.Any(audit =>
+            string.Equals(audit.EventType, "security-asset-profile-drafted", StringComparison.Ordinal)
+            && string.Equals(audit.ProfileId, draft.ProfileId, StringComparison.OrdinalIgnoreCase)
+            && audit.Version == draft.Version
+            && Same(audit.Actor, actor));
     }
 
     private static SecurityAssetProfileGovernanceAuditEventDto BuildAuditEvent(
