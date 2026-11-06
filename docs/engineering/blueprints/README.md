@@ -66,6 +66,7 @@ remains in the [roadmap registry](../../roadmap/README.md) and
 | [God-File Burn-Down Plan](../plans/god-file-burn-down-plan.md) | `docs/engineering/plans/` | Engineering hygiene | Active; the size ceilings it burns down are checked by `build/scripts/ci/check-file-size.py` |
 | [Bond Capability Expansion](../plans/bond-capability-expansion.md) | `docs/engineering/plans/` | Fixed income | User-approved implementation and reviewed-cutover acceptance criteria |
 | [Web-UI Improvements Implementation Plan (2026-07)](../plans/web-ui-improvements-implementation-plan-2026-07.md) | `docs/engineering/plans/` | Browser workstation | Proposed |
+| [Browser Workstation UX Review and Improvement Plan (2026-11)](../plans/web-workstation-ux-review-plan-2026-11.md) | `docs/engineering/plans/` | Browser workstation | Proposed |
 | [Security Remediation Backlog](../../security/security-remediation-backlog.md) | `docs/security/` | Security | Domain-owned backlog; cited from source |
 | [SOC 2 Roadmap](../../security/compliance/soc2-roadmap.md) | `docs/security/compliance/` | Compliance | Domain-owned roadmap |
 
