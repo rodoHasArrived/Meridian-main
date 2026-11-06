@@ -10,6 +10,7 @@ import type {
   ProviderSetupInstitutionSearchState,
   ProviderSetupPlaidLinkTokenPhase,
 } from "./data-screen.view-model";
+import { formatDateTime } from "@/lib/format";
 
 export function buildPlaidInstitutionSearchState({
   form,
@@ -184,9 +185,6 @@ function formatOptionalDateTime(value: string | null): string | null {
     return value;
   }
 
-  return date.toLocaleString(undefined, {
-    dateStyle: "medium",
-    timeStyle: "short"
-  });
+  return formatDateTime(date, { dateStyle: "medium", timeStyle: "short" });
 }
 

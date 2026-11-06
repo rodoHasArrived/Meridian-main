@@ -15,7 +15,7 @@ import {
 import type { CoverageGapsViewModel } from "@/screens/data-screen.coverage-gaps.view-model";
 import type { DataQualityPanelViewModel } from "@/screens/data-screen.data-quality.view-model";
 import { qualityToneBadgeVariant, resultToneClass } from "@/screens/data-screen.tone-styles";
-import { formatCount } from "@/lib/format";
+import { formatCount, formatLocalDateTime } from "@/lib/format";
 import { usesTrackedCaps } from "@/design-system/label-case";
 
 /** Reveal the provider capability matrix region in response to a contextual "compare" action. */
@@ -274,7 +274,7 @@ export function DataQualityRegion({
                                     <li key={provider.provider} className="flex justify-between gap-3">
                                       <span className="font-mono">{provider.provider}</span>
                                       <span className="text-muted-foreground">
-                                        {provider.status} · {provider.lastEventAt ? new Date(provider.lastEventAt).toLocaleString() : "unmeasured"}
+                                        {provider.status} · {provider.lastEventAt ? formatLocalDateTime(new Date(provider.lastEventAt)) : "unmeasured"}
                                       </span>
                                     </li>
                                   ))}
@@ -318,7 +318,7 @@ export function DataQualityRegion({
                                           {" · "}{gap.provider ?? "Default provider"}
                                         </span>
                                         <span className="min-w-0 flex-1 text-muted-foreground">
-                                          {new Date(gap.from).toLocaleString()} – {new Date(gap.to).toLocaleString()} ·{" "}
+                                          {formatLocalDateTime(new Date(gap.from))} – {formatLocalDateTime(new Date(gap.to))} ·{" "}
                                           {formatCount(gap.estimatedMissingEvents)} estimated missing
                                         </span>
                                         <Button

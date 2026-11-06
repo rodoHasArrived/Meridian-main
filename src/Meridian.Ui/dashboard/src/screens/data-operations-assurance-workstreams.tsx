@@ -25,6 +25,7 @@ import type {
 } from "@/types/data-operations-assurance";
 import { cn } from "@/lib/utils";
 import { usesTrackedCaps } from "@/design-system/label-case";
+import { formatLocalDateTime } from "@/lib/format";
 
 export function IngestionOperationsWorkstream() {
   const [snapshot, setSnapshot] = useState<IngestionOperationsSnapshot | null>(null);
@@ -206,5 +207,5 @@ function formatBytes(value: number): string {
   return `${current.toFixed(1)} ${units[index]}`;
 }
 
-function formatDate(value: string): string { return new Date(value).toLocaleString(); }
+function formatDate(value: string): string { return formatLocalDateTime(new Date(value)); }
 function errorMessage(reason: unknown): string { return reason instanceof Error ? reason.message : "The operation could not be completed."; }
