@@ -35,6 +35,7 @@ import {
   presentReportingAsOfDate
 } from "@/screens/reporting-screen.schedule-view-model";
 import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary, ReportWriterAggregateFunction, ReportWriterFilterOperator, ReportingRunStatusProjection, ReportingStarterKit, ReportingStarterSeedSchedule, ReportingTemplateGridMetadata, ReportingTemplateMetadata, ReportingWorkflowChangedLine, ReportingWorkflowEvidenceLink, ReportingWorkflowLineProvenance, ReportingWorkflowRecord } from "@/types";
+import { formatCount } from "@/lib/format";
 
 export type ReportingProfileBadgeTone = "primary" | "success" | "warning" | "muted";
 export type ReportingBadgeVariant = "default" | "success" | "warning" | "outline";
@@ -2700,7 +2701,7 @@ function buildExportResultFields(requestedProfileId: string, result: ExportAnaly
     buildReportingDetailField("Symbols", symbolsLabel, result.symbols?.length ? "default" : "muted"),
     buildReportingDetailField("Output", result.outputDirectory ?? "Unavailable", result.outputDirectory ? "default" : "muted"),
     buildReportingDetailField("Files", String(result.filesGenerated), result.filesGenerated > 0 ? "success" : "warning"),
-    buildReportingDetailField("Records", result.totalRecords.toLocaleString(), result.totalRecords > 0 ? "default" : "muted"),
+    buildReportingDetailField("Records", formatCount(result.totalRecords), result.totalRecords > 0 ? "default" : "muted"),
     buildReportingDetailField("Bytes", byteLabel, result.totalBytes > 0 ? "default" : "muted"),
     buildReportingDetailField("Duration", durationLabel, "muted"),
     buildReportingDetailField("Timestamp", result.timestamp, "muted")
@@ -2720,7 +2721,7 @@ function buildExportArtifactFields(result: ExportAnalysisResult): ReportingDetai
   return (result.files ?? []).map((file) =>
     buildReportingDetailField(
       file.symbol ? `${file.symbol} ${file.format ?? "file"}` : file.format ?? "File",
-      `${file.path} · ${file.recordCount.toLocaleString()} records · ${formatBytes(file.sizeBytes)}`,
+      `${file.path} · ${formatCount(file.recordCount)} records · ${formatBytes(file.sizeBytes)}`,
       file.recordCount > 0 ? "default" : "warning"
     )
   );

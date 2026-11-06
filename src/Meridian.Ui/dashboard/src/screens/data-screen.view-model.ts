@@ -85,6 +85,7 @@ import type {
   ProviderSetupResult
 } from "@/types";
 
+import { formatCount } from "@/lib/format";
 export {
   DATA_BACKFILL_ROUTE_FOCUS_CARD_ID,
   buildDataLoadingState,
@@ -2080,7 +2081,7 @@ export function buildDataUploadPanelState(
       : error
         ? error.summary
         : preview
-          ? `${preview.parsedRowCount.toLocaleString()} rows parsed from ${preview.fileName}. ${preview.nextAction}`
+          ? `${formatCount(preview.parsedRowCount)} rows parsed from ${preview.fileName}. ${preview.nextAction}`
           : selectedTemplate
             ? `${selectedTemplate.label} accepts ${resolvedCatalog.acceptedFileExtensions.join(", ")} files up to ${formatDataUploadFileSize(resolvedCatalog.maxFileBytes)}.`
             : "No upload templates are available.",
@@ -3800,11 +3801,11 @@ export function buildBackfillResultCardState(
     ? ((result as BackfillPreviewResult).symbols.map((entry) => entry.symbol).join(", ") || "No symbols reported")
     : ((result as BackfillTriggerResult).symbols.join(", ") || "No symbols reported");
   const barsText = isPreview
-    ? (result as BackfillPreviewResult).symbols.reduce((total, entry) => total + entry.estimatedBars, 0).toLocaleString()
-    : (result as BackfillTriggerResult).barsWritten.toLocaleString();
+    ? formatCount((result as BackfillPreviewResult).symbols.reduce((total, entry) => total + entry.estimatedBars, 0))
+    : formatCount((result as BackfillTriggerResult).barsWritten);
   const rangeText = formatBackfillRange(result.from, result.to);
   const timingText = isPreview
-    ? `${(result as BackfillPreviewResult).estimatedDurationSeconds.toLocaleString()} sec est.`
+    ? `${formatCount((result as BackfillPreviewResult).estimatedDurationSeconds)} sec est.`
     : formatBackfillTiming((result as BackfillTriggerResult).startedUtc, (result as BackfillTriggerResult).completedUtc);
   const tone = isPreview ? "warning" : resolveBackfillResultTone(result as BackfillTriggerResult, kind);
   const statusLabel = isPreview ? "Preview only" : resolveBackfillResultStatusLabel(result as BackfillTriggerResult, kind);
@@ -3867,7 +3868,7 @@ export function buildBackfillLiveProgressState(
       formatBackfillRange(attempt.rangeStart, attempt.rangeEnd),
       `attempt ${attempt.providerAttempt}${attempt.retryRound > 0 ? `, retry ${attempt.retryRound}` : ""}`,
       attempt.status ?? attempt.operation ?? "provider update",
-      `${attempt.barsDownloaded.toLocaleString()} bars`,
+      `${formatCount(attempt.barsDownloaded)} bars`,
       attempt.error
     ].filter(Boolean).join(" · "),
     tone: attempt.error
@@ -3889,7 +3890,7 @@ export function buildBackfillLiveProgressState(
     symbols,
     recentAttempts,
     droppedNotificationWarning: snapshot.droppedProviderNotifications > 0
-      ? `${snapshot.droppedProviderNotifications.toLocaleString()} older provider notification${snapshot.droppedProviderNotifications === 1 ? " was" : "s were"} dropped from the bounded live stream; the latest per-symbol state remains authoritative.`
+      ? `${formatCount(snapshot.droppedProviderNotifications)} older provider notification${snapshot.droppedProviderNotifications === 1 ? " was" : "s were"} dropped from the bounded live stream; the latest per-symbol state remains authoritative.`
       : null,
     observedAt
   };

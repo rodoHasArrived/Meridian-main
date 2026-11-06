@@ -112,7 +112,9 @@ export function WorkspaceNav({
                   to={item.route}
                   aria-current={item.ariaCurrent}
                   aria-label={item.ariaLabel}
-                  title={item.label}
+                  // Product maturity moved from a rail pill into the tooltip; the link's name
+                  // already states it.
+                  title={`${item.label} · ${item.maturity} product maturity`}
                   className={cn(
                     designSystemNavRailClasses.item,
                     FOCUS_VISIBLE_RING_CLASS,
@@ -123,12 +125,6 @@ export function WorkspaceNav({
                 >
                   <img className={designSystemNavRailClasses.itemIcon} src={iconSrc} width="16" height="16" alt="" aria-hidden="true" />
                   <span className="operator-nav-label truncate font-medium">{item.label}</span>
-                  {!compact ? (
-                    <span className={cn(designSystemNavRailClasses.status, designSystemNavRailClasses.statusTone(item.maturityTone))}>
-                      <span className={designSystemNavRailClasses.statusDot} aria-hidden="true" />
-                      {item.maturityLabel}
-                    </span>
-                  ) : null}
                 </Link>
                 <AttentionCount count={item.attentionCount} />
                 {item.subItems.length > 0 ? (

@@ -17,6 +17,7 @@ import {
   badgeVariantToSeverityStatus,
   readinessToneToSeverityStatus
 } from "@/lib/shared-tone-mappings";
+import { eyebrowClassName } from "@/design-system/label-case";
 
 export interface DailyControlTowerScreenProps {
   viewModel: AppShellWorkflowContinuityViewModel;
@@ -235,14 +236,14 @@ export function DailyControlTowerScreen({
                 className="space-y-3 border-l border-border bg-background/50 p-4"
               >
                 <div>
-                  <p className="eyebrow-label">Selected queue evidence</p>
+                  <p className="eyebrow-label eyebrow-label--sentence">Selected queue evidence</p>
                   <h3 className="text-sm font-semibold text-foreground">{selectedQueueRow.item.label}</h3>
                   <p className="mt-1 text-sm leading-6 text-muted-foreground">{selectedQueueRow.proofPassportSummary}</p>
                 </div>
                 <dl className="grid gap-2">
                   {selectedQueueRow.proofPassportItems.slice(0, 4).map((passportItem) => (
                     <div key={passportItem.id} className="rounded border border-border bg-card p-2">
-                      <dt className="eyebrow-label">{passportItem.label}</dt>
+                      <dt className={eyebrowClassName(passportItem.label)}>{passportItem.label}</dt>
                       <dd className="mt-1 text-xs font-medium leading-5 text-foreground">{passportItem.value}</dd>
                       <dd className="mt-1 text-xs leading-5 text-muted-foreground">{passportItem.detail}</dd>
                     </div>
@@ -256,7 +257,7 @@ export function DailyControlTowerScreen({
                     <dl className="grid gap-2">
                       {selectedQueueRow.proofPassportItems.slice(4).map((passportItem) => (
                         <div key={passportItem.id} className="rounded border border-border bg-card p-2">
-                          <dt className="eyebrow-label">{passportItem.label}</dt>
+                          <dt className={eyebrowClassName(passportItem.label)}>{passportItem.label}</dt>
                           <dd className="mt-1 text-xs font-medium leading-5 text-foreground">{passportItem.value}</dd>
                           <dd className="mt-1 text-xs leading-5 text-muted-foreground">{passportItem.detail}</dd>
                         </div>

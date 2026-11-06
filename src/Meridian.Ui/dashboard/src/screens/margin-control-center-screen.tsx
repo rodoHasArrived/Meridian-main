@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { PanelSurface } from "@/components/ui/panel-surface";
 import { certifyMarginSnapshot, getMarginControlCenter } from "@/lib/api";
 import type { MarginControlAccount, MarginControlCenter } from "@/types";
+import { cn } from "@/lib/utils";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 export function MarginControlCenterScreen() {
   const [data, setData] = useState<MarginControlCenter | null>(null);
@@ -86,7 +88,7 @@ function SummaryCards({ data, loading }: { data: MarginControlCenter | null; loa
       {items.map(([label, value]) => (
         <Card key={label}>
           <CardContent className="p-4">
-            <p className="text-[0.6875rem] font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
+            <p className={cn("text-[0.6875rem] font-medium text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-wide")}>{label}</p>
             <p className="mt-2 font-mono text-xl font-semibold tabular-nums">{loading ? "—" : value ?? 0}</p>
           </CardContent>
         </Card>
@@ -237,7 +239,7 @@ function Comparison({ label, initial, maintenance, excess, currency }: { label: 
   return <div className="rounded-[2px] border border-border p-3"><p className="text-xs font-semibold">{label}</p><dl className="mt-2 grid grid-cols-3 gap-2 text-xs"><div><dt className="text-muted-foreground">Initial</dt><dd className="mt-1 font-mono">{money(initial, currency)}</dd></div><div><dt className="text-muted-foreground">Maintenance</dt><dd className="mt-1 font-mono">{money(maintenance, currency)}</dd></div><div><dt className="text-muted-foreground">Excess</dt><dd className="mt-1 font-mono">{money(excess, currency)}</dd></div></dl></div>;
 }
 
-function Metric({ label, value }: { label: string; value: string }) { return <div><p className="text-[0.6875rem] uppercase tracking-wide text-muted-foreground">{label}</p><p className="mt-1 font-mono text-sm font-semibold tabular-nums">{value}</p></div>; }
+function Metric({ label, value }: { label: string; value: string }) { return <div><p className={cn("text-[0.6875rem] text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-wide")}>{label}</p><p className="mt-1 font-mono text-sm font-semibold tabular-nums">{value}</p></div>; }
 function Th(props: React.ThHTMLAttributes<HTMLTableCellElement>) { return <th className="px-3 py-2 font-medium" {...props} />; }
 function Td({ className = "", ...props }: React.TdHTMLAttributes<HTMLTableCellElement>) { return <td className={`px-3 py-2 ${className}`} {...props} />; }
 function number(value: number) { return new Intl.NumberFormat(undefined, { maximumFractionDigits: 4 }).format(value); }

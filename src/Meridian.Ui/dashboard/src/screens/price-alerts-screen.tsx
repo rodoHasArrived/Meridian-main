@@ -34,6 +34,8 @@ import {
   type PriceAlertRowViewModel,
   type PriceAlertTriggerRowViewModel
 } from "@/screens/price-alerts-screen.view-model";
+import { cn } from "@/lib/utils";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 /** Map a metric snapshot tone onto the ScreenLayout focus-signal accent. */
 const metricFocusTone: Record<MetricSnapshot["tone"], FocusSignalTone> = {
@@ -552,7 +554,7 @@ function PriceAlertDetailPanel({
 function PriceAlertDetailFieldRow({ field }: { field: PriceAlertDetailField }) {
   return (
     <div className="rounded-md border border-border/70 bg-background/45 px-3 py-2">
-      <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{field.label}</dt>
+      <dt className={cn("text-[10px] text-muted-foreground", usesTrackedCaps(field.label) && "font-mono uppercase tracking-[0.14em]")}>{field.label}</dt>
       <dd className={`mt-1 break-words font-mono text-xs ${detailFieldToneClass[field.tone]}`}>{field.value}</dd>
     </div>
   );
@@ -691,7 +693,7 @@ interface FormFieldProps {
 function FormField({ label, htmlFor, helperId, helperText, error, errorId, children, className }: FormFieldProps) {
   return (
     <div className={`flex flex-col gap-1 ${className ?? ""}`}>
-      <label htmlFor={htmlFor} className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+      <label htmlFor={htmlFor} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-wide")}>
         {label}
       </label>
       {children}

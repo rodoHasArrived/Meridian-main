@@ -74,7 +74,7 @@ export function StrategyFormulaWorkbench({
     <section className="space-y-4" aria-labelledby="strategy-formula-workbench-title" data-testid="strategy-formula-workbench">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0">
-          <div className="eyebrow-label">Design system component</div>
+          <div className="eyebrow-label eyebrow-label--sentence">Design system component</div>
           <h1 id="strategy-formula-workbench-title" className="flex items-center gap-2 text-2xl font-semibold tracking-normal text-foreground">
             <FunctionSquare className="h-6 w-6 text-primary" aria-hidden="true" />
             {title}

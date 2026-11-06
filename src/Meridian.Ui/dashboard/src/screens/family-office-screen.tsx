@@ -25,6 +25,7 @@ import {
   type FamilyOfficePanelViewModel,
   type FamilyOfficeTone
 } from "@/screens/family-office-screen.view-model";
+import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
 
 const panelIconMap: Record<string, typeof Landmark> = {
   "total-family-net-worth": Landmark,
@@ -378,7 +379,7 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
               <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <div className="eyebrow-label">{vm.ownershipGraph.selectedNode.type}</div>
+                    <div className={eyebrowClassName(vm.ownershipGraph.selectedNode.type)}>{vm.ownershipGraph.selectedNode.type}</div>
                     {vm.ownershipGraph.selectedNode.tone !== "default" ? (
                       <SeverityBadge status={readinessToneToSeverityStatus(vm.ownershipGraph.selectedNode.tone)} />
                     ) : null}
@@ -452,7 +453,7 @@ function OwnershipNodeButton({
       onClick={() => onSelect(node.id)}
       onKeyDown={onKeyDown}
     >
-      <span className="block text-[10px] font-semibold uppercase tracking-[0.2em] opacity-80">{node.type}</span>
+      <span className={cn("block text-[10px] font-semibold opacity-80", usesTrackedCaps(node.type) && "uppercase tracking-[0.2em]")}>{node.type}</span>
       <span className="mt-2 block text-sm font-semibold text-foreground">{node.label}</span>
       <span className="mt-3 flex items-center justify-between gap-3 font-mono text-xs tabular-nums">
         <span>{node.value}</span>

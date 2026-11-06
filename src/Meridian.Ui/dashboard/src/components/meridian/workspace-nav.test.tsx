@@ -40,7 +40,10 @@ describe("WorkspaceNav", () => {
       "Data",
       "Settings"
     ].forEach((label) => expect(screen.getByText(label)).toBeInTheDocument());
-    expect(screen.getByText("Available · Current")).toBeInTheDocument();
+    // Product maturity is a tooltip now, not a rail pill.
+    expect(screen.queryByText("Available · Current")).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /^Trading workspace, current route/ }))
+      .toHaveAttribute("title", "Trading · Available product maturity");
   });
 
   it("announces the current workspace route", () => {
@@ -50,7 +53,7 @@ describe("WorkspaceNav", () => {
     expect(screen.queryByLabelText("Current workspace: Accounting, Available product maturity")).not.toBeInTheDocument();
     expect(screen.getByLabelText("Accounting workspace, active section, Available product maturity")).not.toHaveAttribute("aria-current");
     expect(screen.getByLabelText("Casework, current page")).toHaveAttribute("aria-current", "page");
-    expect(screen.getByText("Available · Current")).toBeInTheDocument();
+    expect(screen.queryByText("Available · Current")).not.toBeInTheDocument();
     expect(screen.queryByText("Available product maturity")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Canonical route /accounting")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Open command palette with Control K")).not.toBeInTheDocument();
@@ -87,7 +90,7 @@ describe("WorkspaceNav", () => {
     expect(screen.getByLabelText("Open Storage assurance")).toHaveAttribute("href", "/data/assurance");
   });
 
-  it("renders exactly the seven root workspaces and shows maturity pills only in detailed mode", () => {
+  it("renders exactly the seven root workspaces with product maturity in tooltips, not pills", () => {
     const detailed = renderWithRouter(<WorkspaceNav />, { initialEntries: ["/trading"] });
 
     const detailedItems = detailed.container.querySelectorAll(WORKSPACE_ITEM);
@@ -96,8 +99,8 @@ describe("WorkspaceNav", () => {
     expect(new Set(labels)).toEqual(
       new Set(["Trading", "Portfolio", "Accounting", "Reporting", "Strategy", "Data", "Settings"])
     );
-    // Detailed rail surfaces the per-workspace product-maturity pill.
-    expect(detailed.container.querySelectorAll(".operator-nav-status").length).toBeGreaterThan(0);
+    // Neither rail shows maturity pills: maturity is in each link's tooltip and accessible name.
+    expect(detailed.container.querySelectorAll(".operator-nav-status")).toHaveLength(0);
 
     detailed.unmount();
 
@@ -190,7 +193,7 @@ describe("WorkspaceNav", () => {
     expect(destination).toHaveFocus();
     await user.keyboard("{Enter}");
     expect(screen.getByRole("link", { name: "Ingestion operations, current page" })).toHaveAttribute("aria-current", "page");
-    expect(screen.getByRole("link", { name: /Open Trading workspace/ })).toHaveAttribute("title", "Trading");
+    expect(screen.getByRole("link", { name: /Open Trading workspace/ })).toHaveAttribute("title", "Trading · Available product maturity");
   });
 
 });

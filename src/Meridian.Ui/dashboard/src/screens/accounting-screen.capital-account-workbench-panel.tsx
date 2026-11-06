@@ -11,6 +11,8 @@ import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { accountingToolingBadgeVariant, accountingToolingBorderClass } from "@/screens/accounting-screen.styles";
 import { AccountingChip } from "@/screens/accounting-screen.workbench-context";
 import type { CapitalAccountWorkbenchViewModel } from "@/screens/accounting-screen.view-model";
+import { formatCount } from "@/lib/format";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWorkbenchViewModel }) {
   if (!view.available) {
@@ -100,7 +102,7 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
           <section className="space-y-2" aria-labelledby="capital-account-fund-event-command-heading">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h4 id="capital-account-fund-event-command-heading" className="text-sm font-semibold text-foreground">Fund-event command centers</h4>
-              <Badge variant="outline">{view.fundEventCommandRows.length.toLocaleString()} events</Badge>
+              <Badge variant="outline">{formatCount(view.fundEventCommandRows.length)} events</Badge>
             </div>
             <div className="overflow-x-auto rounded-md border border-border/70">
               <table className="w-full min-w-[940px] text-sm" aria-label="Capital-account fund-event command centers">
@@ -173,7 +175,7 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
           <section className="min-w-0 space-y-2" aria-labelledby="capital-account-investor-heading">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h4 id="capital-account-investor-heading" className="text-sm font-semibold text-foreground">Investor capital accounts</h4>
-              <Badge variant="outline">{view.investorAccounts.length.toLocaleString()} rows</Badge>
+              <Badge variant="outline">{formatCount(view.investorAccounts.length)} rows</Badge>
             </div>
             <div className="overflow-x-auto rounded-md border border-border/70">
               <table className="w-full min-w-[880px] text-sm">
@@ -224,7 +226,7 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
           <section className="min-w-0 space-y-2" aria-labelledby="capital-account-allocation-heading">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h4 id="capital-account-allocation-heading" className="text-sm font-semibold text-foreground">Allocation rules</h4>
-              <Badge variant="outline">{view.allocationRules.length.toLocaleString()} checks</Badge>
+              <Badge variant="outline">{formatCount(view.allocationRules.length)} checks</Badge>
             </div>
             <div className="grid gap-2">
               {view.allocationRules.map((row) => (
@@ -264,7 +266,7 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
           <section className="space-y-2" aria-labelledby="capital-account-statement-heading">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h4 id="capital-account-statement-heading" className="text-sm font-semibold text-foreground">Statement lineage</h4>
-              <Badge variant="outline">{view.statementLineage.length.toLocaleString()} statements</Badge>
+              <Badge variant="outline">{formatCount(view.statementLineage.length)} statements</Badge>
             </div>
             <div className="grid gap-2">
               {view.statementLineage.map((row) => (
@@ -304,7 +306,7 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
           <section className="space-y-2" aria-labelledby="capital-account-audit-heading">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h4 id="capital-account-audit-heading" className="text-sm font-semibold text-foreground">Audit drill-through</h4>
-              <Badge variant="outline">{view.auditDrillThroughs.length.toLocaleString()} targets</Badge>
+              <Badge variant="outline">{formatCount(view.auditDrillThroughs.length)} targets</Badge>
             </div>
             <div className="grid gap-2">
               {view.auditDrillThroughs.map((row) => (
@@ -312,7 +314,7 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="min-w-0">
                       <div className="font-semibold text-foreground">{row.title}</div>
-                      <div className="mt-1 text-xs uppercase text-muted-foreground">{row.kind}</div>
+                      <div className={cn("mt-1 text-xs text-muted-foreground", usesTrackedCaps(row.kind) && "uppercase")}>{row.kind}</div>
                     </div>
                     <Badge variant={accountingToolingBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
                   </div>
@@ -334,7 +336,7 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
 
         <div className="grid gap-3 md:grid-cols-2">
           <div className="rounded-md border border-success/30 bg-success/10 px-3 py-3">
-            <div className="text-xs font-semibold uppercase text-success">Live in v0.18 slice</div>
+            <div className="text-xs font-semibold text-success">Live in v0.18 slice</div>
             <ul className="mt-2 grid gap-1 text-sm text-foreground">
               {view.liveCapabilities.map((item) => <li key={item}>{item}</li>)}
             </ul>
