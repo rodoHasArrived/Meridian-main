@@ -26,6 +26,8 @@ report before booking, so session projection and restart replay apply the same m
 book.
 Reg T and portfolio margin models value positions at quantity × multiplier × price, the same money
 terms the paper book uses for cash and margin borrowing.
+Paper notional-based costs (basis-point commission, fees, slippage) and the spread cost use the same
+multiplied principal; per-share and fixed per-order charges are unchanged.
 
 OMS amendments resolve explicit broker/client identifiers, retain replacement broker aliases under
 the original client identity, and process cumulative fills through the shared fill funnel.
