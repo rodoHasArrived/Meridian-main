@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-11-06T16:57:16Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-11-06T17:51:12Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -134,19 +134,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Ui/dashboard/src/screens/reporting-income-comparison.test.tsx` | Desktop and UI Workflows | `41d39ce1` (2026-11-06T01:48:45+00:00) | 7 |
-| `src/Meridian.Ui/dashboard/src/styles/ui-kit-primitives.css` | Desktop and UI Workflows | `8a10fa7a` (2026-11-06T00:22:47+00:00) | 9 |
-| `src/Meridian.Ui/dashboard/src/components/meridian/ui-kit-primitives.table-system.test.tsx` | Desktop and UI Workflows | `8a10fa7a` (2026-11-06T00:22:47+00:00) | 2 |
-| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | `4071b030` (2026-11-05T23:05:27+00:00) | 20 |
-| `src/Meridian.Ui/README.md` | Unmapped | `4071b030` (2026-11-05T23:05:27+00:00) | 11 |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.tsx` | Desktop and UI Workflows | `16bdb914` (2026-11-05T23:03:54+00:00) | 15 |
-| `src/Meridian.Ui/dashboard/src/screens/trading-screen.tsx` | Desktop and UI Workflows | `16bdb914` (2026-11-05T23:03:54+00:00) | 11 |
-| `src/Meridian.Ui/dashboard/src/screens/portfolio-screen.tsx` | Desktop and UI Workflows | `16bdb914` (2026-11-05T23:03:54+00:00) | 10 |
-| `src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx` | Desktop and UI Workflows | `16bdb914` (2026-11-05T23:03:54+00:00) | 10 |
-| `src/Meridian.Ui/dashboard/src/components/meridian/reporting-hub.tsx` | Desktop and UI Workflows | `16bdb914` (2026-11-05T23:03:54+00:00) | 9 |
-| `src/Meridian.Ui/dashboard/src/components/meridian/workspace-header.tsx` | Desktop and UI Workflows | `16bdb914` (2026-11-05T23:03:54+00:00) | 9 |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.journal-entry-enhancements.tsx` | Desktop and UI Workflows | `16bdb914` (2026-11-05T23:03:54+00:00) | 9 |
-| `src/Meridian.Ui/dashboard/src/screens/strategy-screen.tsx` | Desktop and UI Workflows | `16bdb914` (2026-11-05T23:03:54+00:00) | 9 |
-| `src/Meridian.Ui/dashboard/src/components/meridian/historical-chart.tsx` | Desktop and UI Workflows | `16bdb914` (2026-11-05T23:03:54+00:00) | 8 |
-| `src/Meridian.Ui/dashboard/src/components/meridian/ui-kit-primitives.tsx` | Desktop and UI Workflows | `16bdb914` (2026-11-05T23:03:54+00:00) | 8 |
+| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | `2f930f77` (2026-11-06T16:27:46+00:00) | 27 |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.tsx` | Desktop and UI Workflows | `2f930f77` (2026-11-06T16:27:46+00:00) | 19 |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.test.tsx` | Desktop and UI Workflows | `2f930f77` (2026-11-06T16:27:46+00:00) | 12 |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx` | Desktop and UI Workflows | `2f930f77` (2026-11-06T16:27:46+00:00) | 12 |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.view-model.test.ts` | Desktop and UI Workflows | `2f930f77` (2026-11-06T16:27:46+00:00) | 9 |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.view-model.ts` | Desktop and UI Workflows | `2f930f77` (2026-11-06T16:27:46+00:00) | 8 |
+| `src/Meridian.Ui/dashboard/src/lib/cross-screen-counts.ts` | Desktop and UI Workflows | `2f930f77` (2026-11-06T16:27:46+00:00) | 4 |
+| `src/Meridian.Ui/dashboard/src/lib/since-last-visit.ts` | Desktop and UI Workflows | `2f930f77` (2026-11-06T16:27:46+00:00) | 4 |
+| `src/Meridian.Ui/dashboard/src/lib/since-last-visit.test.ts` | Desktop and UI Workflows | `2f930f77` (2026-11-06T16:27:46+00:00) | 3 |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.reconciliation-workbench.test.tsx` | Desktop and UI Workflows | `3b276d86` (2026-11-06T16:08:02+00:00) | 7 |
+| `src/Meridian.Ui/dashboard/src/screens/reconciliation-bulk-triage-bar.tsx` | Desktop and UI Workflows | `3b276d86` (2026-11-06T16:08:02+00:00) | 4 |
+| `src/Meridian.Ui/dashboard/src/app.tsx` | Desktop and UI Workflows | `180e9667` (2026-11-06T16:00:29+00:00) | 16 |
+| `src/Meridian.Ui/dashboard/src/app.test.tsx` | Desktop and UI Workflows | `180e9667` (2026-11-06T16:00:29+00:00) | 12 |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | Desktop and UI Workflows | `180e9667` (2026-11-06T16:00:29+00:00) | 12 |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.reconciliation-workbench.tsx` | Desktop and UI Workflows | `180e9667` (2026-11-06T16:00:29+00:00) | 10 |
 
