@@ -4,6 +4,7 @@ import {
   quantContextToParameters,
   quantDataIntervalMinutes,
 } from "./quant-api-mappers";
+import type { WorkstationCrossScreenCounts } from "@/types/cross-screen-counts";
 import type { ApprovePromotionRequest, RejectPromotionRequest } from "./api/promotion.contracts";
 
 export { PAPER_PROMOTION_APPROVAL_CHECKLIST } from "./api/promotion.contracts";
@@ -484,6 +485,7 @@ import {
   workstationFinancialRecordExplorerSavedViewsEndpoint,
   workstationFinancialOperationsCommandCenterEndpoint,
   workstationOperatorInboxEndpoint,
+  workstationCrossScreenCountsEndpoint,
   workstationOperationsContinuityApprovalApproveEndpoint,
   workstationOperationsContinuityApprovalRejectEndpoint,
   workstationOperationsContinuityApprovalSubmitEndpoint,
@@ -1142,6 +1144,11 @@ export function synchronizeTradingBrokerage(fundAccountId: string, options: ApiR
 
 export function getOperatorInbox(fundAccountId?: string, options: ApiRequestOptions = {}) {
   return getJson<OperatorInbox>(workstationOperatorInboxEndpoint(fundAccountId), options);
+}
+
+/** Open orders, provider health and open breaks, counted once for every screen (A3). */
+export function getCrossScreenCounts(fundAccountId?: string, options: ApiRequestOptions = {}) {
+  return getJson<WorkstationCrossScreenCounts>(workstationCrossScreenCountsEndpoint(fundAccountId), options);
 }
 
 export function getWorkstationWorkflowSummary(options: ApiRequestOptions & {

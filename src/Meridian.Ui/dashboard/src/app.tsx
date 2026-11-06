@@ -43,6 +43,7 @@ import { setOpenCompanionPaneIds } from "@/lib/companion-pane/open-registry";
 import { broadcastCompanionState } from "@/lib/companion-pane/opener-broadcast";
 import { applyDensity, writeStoredDensity } from "@/lib/density";
 import { ScopePickerOpenerProvider } from "@/lib/operating-scope/scope-picker-context";
+import { CrossScreenCountsProvider } from "@/lib/cross-screen-counts-context";
 import type { LayoutRestorePlan } from "@/lib/saved-layouts";
 import { WorkspaceNav } from "@/components/meridian/workspace-nav";
 import { Skeleton } from "@/components/data/skeleton";
@@ -367,6 +368,7 @@ function AppShell({
   const {
     session,
     overview,
+    crossScreenCounts,
     strategy,
     trading,
     portfolio,
@@ -561,6 +563,7 @@ function AppShell({
     payload: {
       session,
       overview,
+      crossScreenCounts,
       strategy,
       trading,
       portfolio,
@@ -584,6 +587,7 @@ function AppShell({
     dataProvenance,
     session,
     overview,
+    crossScreenCounts,
     strategy,
     trading,
     portfolio,
@@ -705,6 +709,7 @@ function AppShell({
 
   return (
     <ScopePickerOpenerProvider open={openScopePicker}>
+    <CrossScreenCountsProvider counts={crossScreenCounts}>
     <div className="workstation-frame">
       <a className="skip-link" href="#workbench-content">Skip to workbench</a>
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
@@ -947,6 +952,7 @@ function AppShell({
         </SheetContent>
       </Sheet>
     </div>
+    </CrossScreenCountsProvider>
     </ScopePickerOpenerProvider>
   );
 }

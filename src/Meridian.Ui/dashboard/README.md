@@ -311,6 +311,13 @@ not been recorded.
   figures (trading and portfolio positions, orders) sort on their text columns, and the
   reconciliation queue keeps its own sort control. The `rawTables` ratchet counts hand-built
   tables.
+- **Cross-screen counts.** Open orders, provider health and open breaks come from one selector,
+  `lib/cross-screen-counts.ts`. A screen holding the source list (the blotter, the Data provider
+  rows, the break queue) counts it with the shared definition; Settings and the shell read the
+  server's `/api/workstation/cross-screen-counts`, loaded on every route. Headline cards for these
+  counts take the selector's value and drop their basis-less delta, and an unreadable count shows
+  "—". `lib/cross-screen-counts.screens.test.ts` asserts Trading, Settings, Data and Accounting
+  agree from one fixture set.
 - **Type scale.** There are three tiers: `type-page-title` (the workspace header's h1),
   `type-section` (CardTitle and region headings) and `type-label`. A label of one or two words may
   add `type-label--caps`. Longer labels render in sentence case: `FormRow`,

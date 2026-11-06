@@ -59,6 +59,7 @@ function mockWorkstationData(overrides: Partial<WorkstationDataSnapshot>) {
   mockedUseWorkstationData.mockReturnValue({
     session: null,
     overview: null,
+    crossScreenCounts: null,
     strategy: null,
     trading: null,
     portfolio: null,

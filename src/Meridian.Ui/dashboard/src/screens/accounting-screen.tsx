@@ -158,6 +158,8 @@ import {
   splitApprovalWords
 } from "@/screens/accounting-screen.approvals";
 import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
+import { applyCrossScreenCounts, selectCrossScreenCounts } from "@/lib/cross-screen-counts";
+import { useSharedCrossScreenCounts } from "@/lib/cross-screen-counts-context";
 
 interface AccountingScreenProps {
   data: AccountingWorkspaceResponse | null;
@@ -1571,6 +1573,7 @@ function AccountingCaseWorkbench({
 
 export function AccountingScreen({ data, multiAssetCoverage, session = null }: AccountingScreenProps) {
   const { pathname, search, hash } = useLocation();
+  const sharedCounts = useSharedCrossScreenCounts();
   const navigate = useNavigate();
   const operatorIdentity = session?.displayName.trim() || null;
   const workstream = resolveAccountingWorkstream(pathname);
@@ -2160,7 +2163,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
         taskMode={taskMode}
       />
 
-      <StatStrip metrics={data.metrics} label="Accounting headline metrics" />
+      <StatStrip metrics={applyCrossScreenCounts(data.metrics, selectCrossScreenCounts({ shared: sharedCounts, breakQueue: data.breakQueue }))} label="Accounting headline metrics" />
       {currentDailyValuationSchedule && (sectionVisibility.showCloseCockpitLanding || sectionVisibility.showWorkflowDetails) ? <ValuationMarkPreviewPanel preview={valuationMarkPreview} /> : null}
 
       {workstream === "reconciliation" ? (

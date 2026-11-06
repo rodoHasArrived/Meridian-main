@@ -1,3 +1,5 @@
+import { selectCrossScreenCounts } from "@/lib/cross-screen-counts";
+import { useSharedCrossScreenCounts } from "@/lib/cross-screen-counts-context";
 import { OwnedProviderCredentialPanel } from "./settings-owned-provider-credentials";
 import { Activity, ArrowRight, ExternalLink, GitBranch, KeyRound, LoaderCircle, MonitorCheck, RefreshCcw, Save, Search, ShieldCheck, Trash2, User } from "lucide-react";
 import { ProviderSetupPanel } from "@/components/data/provider-setup-panel";
@@ -611,9 +613,12 @@ export function SettingsScreen({
   workspaceErrors = {}
 }: SettingsScreenProps) {
   const location = useLocation();
+  const sharedCounts = useSharedCrossScreenCounts();
+  const providerHealth = selectCrossScreenCounts({ shared: sharedCounts, providers: data?.providers }).providers;
   const vm = buildSettingsScreenViewModel({
     session,
     overview,
+    crossScreenCounts: sharedCounts,
     strategy,
     trading,
     portfolio,
@@ -882,13 +887,13 @@ export function SettingsScreen({
   const routeCopy = SETTINGS_ROUTE_VIEW_COPY[activeTaskView];
   const settingsStatMetrics = [
     {
-      id: "providers-online",
-      label: "Providers online",
-      value: overview ? `${overview.providersOnline} / ${overview.providersTotal}` : "—",
+      id: "providers-healthy",
+      label: "Providers healthy",
+      value: providerHealth ? `${providerHealth.healthy} / ${providerHealth.total}` : "—",
       delta: "",
-      tone: overview
-        ? overview.providersOnline === overview.providersTotal ? "success" as const : "warning" as const
-        : "default" as const
+      tone: !providerHealth
+        ? "default" as const
+        : providerHealth.total > 0 && providerHealth.healthy === providerHealth.total ? "success" as const : "warning" as const
     },
     { id: "active-runs", label: "Active runs", value: overview ? String(overview.activeRuns) : "—", delta: "", tone: "default" as const },
     { id: "open-positions", label: "Open positions", value: overview ? String(overview.openPositions) : "—", delta: "", tone: "default" as const },
@@ -2527,7 +2532,7 @@ export function SettingsScreen({
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex flex-wrap gap-2">
-              <SettingsChip label="Providers" value={overview ? `${overview.providersOnline} / ${overview.providersTotal}` : "—"} />
+              <SettingsChip label="Providers healthy" value={providerHealth ? `${providerHealth.healthy} / ${providerHealth.total}` : "—"} />
               <SettingsChip label="Runs" value={overview ? String(overview.activeRuns) : "—"} />
               <SettingsChip label="Positions" value={overview ? String(overview.openPositions) : "—"} />
               <SettingsChip label="Storage" value={overview?.storageHealth ?? "—"} />

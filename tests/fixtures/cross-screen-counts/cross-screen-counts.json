@@ -1,0 +1,32 @@
+{
+  "description": "Expected values for the cross-screen count definitions (A3). Read by tests/Meridian.Tests/Ui/CrossScreenCountDefinitionsTests.cs (C#, CrossScreenCountDefinitions) and src/Meridian.Ui/dashboard/src/lib/cross-screen-counts.test.ts (TypeScript, lib/cross-screen-counts.ts), so the server, WPF and the browser count with one definition. Add a case here before changing either implementation.",
+  "providerHealth": [
+    { "name": "no providers listed", "statuses": [], "healthy": 0, "total": 0 },
+    { "name": "every provider healthy", "statuses": ["Healthy", "Healthy"], "healthy": 2, "total": 2 },
+    {
+      "name": "warning, degraded and blocked rows are listed but not healthy",
+      "statuses": ["Healthy", "Warning", "Degraded", "Blocked", "Healthy"],
+      "healthy": 2,
+      "total": 5
+    },
+    { "name": "status matching ignores case and surrounding space", "statuses": [" healthy ", "HEALTHY", "Unknown"], "healthy": 2, "total": 3 }
+  ],
+  "openBreaks": [
+    { "name": "empty queue", "statuses": [], "open": 0 },
+    { "name": "open and in review are open", "statuses": ["Open", "InReview"], "open": 2 },
+    { "name": "resolved, dismissed and signed off are closed", "statuses": ["Resolved", "Dismissed", "SignedOff"], "open": 0 },
+    {
+      "name": "each break counted once across a mixed queue",
+      "statuses": ["Open", "Resolved", "InReview", "SignedOff", "Open", "Dismissed"],
+      "open": 3
+    }
+  ],
+  "openOrders": [
+    { "name": "no open orders", "statuses": [], "open": 0 },
+    {
+      "name": "every order the order manager reports open counts, whatever its working state",
+      "statuses": ["Working", "Partially Filled", "Pending Routing"],
+      "open": 3
+    }
+  ]
+}

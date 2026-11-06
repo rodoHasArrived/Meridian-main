@@ -1,3 +1,4 @@
+import { isOpenBreakStatus } from "@/lib/cross-screen-counts";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getOperatorInbox, getTradingReadiness, type ApiRequestOptions } from "@/lib/api";
 import { formatCurrency, pluralizeCount } from "@/lib/format";
@@ -840,7 +841,7 @@ function buildBrokerageTrustRow(status: WorkstationBrokerageSyncStatus): Readine
 
 function buildReconciliationRows(accounting: AccountingWorkspaceResponse | null): ReadinessConsoleRowBase[] {
   const directBreaks = (accounting?.breakQueue ?? [])
-    .filter((item) => item.status === "Open" || item.status === "InReview")
+    .filter((item) => isOpenBreakStatus(item.status))
     .slice(0, 5)
     .map(buildBreakQueueRow);
 

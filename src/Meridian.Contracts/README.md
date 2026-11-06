@@ -216,6 +216,10 @@ require a fresh preview. Unknown calculation versions are refused.
 `Etl/IEtlStagingStore.cs` lets source adapters retain imported streams through an injected
 persistence port without referencing the Storage implementation.
 
+`Workstation/CrossScreenCountsDtos.cs` carries the counts more than one screen shows (open orders,
+provider health and open breaks) with the definition each was counted with. A count the caller may
+not read, or whose source is not registered, is null, so clients show "—" rather than a substitute.
+
 `Workstation/RecurringJournalDtos.cs` publishes one exact-scope occurrence projection for browser
 and WPF Accounting queues. It carries retained schedule/template versions, source evidence
 references, authoritative draft approval status, blockers, lock owner and governed reopen path.

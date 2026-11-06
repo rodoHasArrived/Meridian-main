@@ -1,3 +1,5 @@
+import { countOpenBreaks } from "@/lib/cross-screen-counts";
+import { pluralizeCount } from "@/lib/format";
 import type { WorkflowContinuityStepStatus } from "@/app-shell.workflow-continuity";
 import type {
   AccountingWorkspaceResponse,
@@ -57,11 +59,10 @@ export function buildAccountingReconciliationContinuityStatus(
     return { label: "Waiting", tone: "pending" };
   }
 
-  const breakCount = (accounting.breakQueue ?? []).filter((item) => item.status === "Open" || item.status === "InReview").length;
-  const runBreakCount = (accounting.reconciliationQueue ?? []).reduce((total, row) => total + row.openBreakCount, 0);
-  const attentionCount = Math.max(breakCount, runBreakCount);
+  // One count, from the break queue (A3); it used to take the larger of two different tallies.
+  const attentionCount = countOpenBreaks(accounting.breakQueue ?? []) ?? 0;
   return attentionCount > 0
-    ? { label: `${attentionCount} breaks`, tone: "review" }
+    ? { label: pluralizeCount(attentionCount, "open break"), tone: "review" }
     : { label: "Balanced", tone: "ready" };
 }
 

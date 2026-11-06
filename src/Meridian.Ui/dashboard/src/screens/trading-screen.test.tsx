@@ -1060,7 +1060,7 @@ describe("TradingScreen", () => {
 
     expect(screen.getByRole("button", { name: /cancel order po-1/i })).toHaveClass("text-danger");
     expect(screen.getByRole("button", { name: /cancel all .* open orders/i })).toHaveClass("text-danger");
-    expect(screen.getByLabelText("Trading data confidence")).toHaveTextContent("positions");
+    expect(screen.getByLabelText("Trading data confidence")).toHaveTextContent(/\d+ positions?/);
     expect(screen.getByLabelText("Trading data confidence")).toHaveTextContent("Latest brokerage heartbeat");
   });
 

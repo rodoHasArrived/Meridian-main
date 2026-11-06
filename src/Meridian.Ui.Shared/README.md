@@ -529,6 +529,18 @@ Provider setup passes the server-resolved actor into credential persistence. Pla
 require an authenticated actor and never fall back to a request identity; signed webhook authentication
 remains independent of operator sessions.
 
+## Cross-screen counts
+
+`Services/CrossScreenCountDefinitions.cs` is the one definition of each count several screens show:
+open orders are the orders the OMS reports open for the fund account in scope; provider health is
+rows with status Healthy out of every provider the Data workspace lists; open breaks are break-queue
+items not resolved, dismissed or signed off. The Trading, Data and Accounting headline cards count
+with it (the Data card previously read the metrics store's own tally, which could disagree with its
+list), and `GET /api/workstation/cross-screen-counts` returns all three for Settings, the shell and
+WPF. Each count is gated by the permission of the route that owns its source, and is null when the
+caller may not read it. `tests/fixtures/cross-screen-counts/cross-screen-counts.json` holds this
+class and the browser's `lib/cross-screen-counts.ts` to the same expected values.
+
 ## Portfolio cash-ladder currency evidence
 
 `PortfolioCashLadderReadService` requires currency evidence for every opening cash balance and

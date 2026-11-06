@@ -81,6 +81,9 @@ import { BrokerageRecoveryPanel } from "@/screens/trading-screen.brokerage-recov
 import { LIVE_GOVERNED_APPROVAL_SERVICES, useGovernedApprovalsViewModel } from "@/screens/trading-screen.governed-approvals";
 import type { ExecutionAuditEntry, ExecutionControlSnapshot, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
 import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
+import { applyCrossScreenCounts, selectCrossScreenCounts } from "@/lib/cross-screen-counts";
+import { pluralizeCount } from "@/lib/format";
+import { useSharedCrossScreenCounts } from "@/lib/cross-screen-counts-context";
 
 interface TradingScreenProps {
   data: TradingWorkspaceResponse | null;
@@ -438,6 +441,10 @@ function TradingLoadingPanel({ state }: { state: TradingLoadingState }) {
 
 export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: TradingScreenProps) {
   const { pathname, search } = useLocation();
+  const sharedCounts = useSharedCrossScreenCounts();
+  // One open-order count for the headline card, the completeness card and every other screen.
+  const crossCounts = selectCrossScreenCounts({ shared: sharedCounts, openOrders: data?.openOrders });
+  const headlineMetrics = applyCrossScreenCounts(data?.metrics ?? [], crossCounts);
   const shellVm = useTradingScreenShellViewModel({ pathname, data });
   const blotterVm = useTradingBlotterViewModel(data);
   const fundAccountId = normalizeFundAccountGuid(operatingFundAccountId)
@@ -579,7 +586,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
         </p>
       </section>
 
-      <StatStrip metrics={data.metrics} label="Trading headline metrics" />
+      <StatStrip metrics={headlineMetrics} label="Trading headline metrics" />
 
       <OperationalTrustSummary
         label="Trading data confidence"
@@ -602,7 +609,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
           tone: hasRecoveryProjection ? recoveryPortfolio?.isFresh === false ? "blocked" : recoveryUnavailable ? "unknown" : recoveryPortfolio?.isFresh ? "ready" : "blocked" : sourceTone
         }}
         completeness={{
-          value: hasRecoveryProjection ? recoveryPortfolio ? `${recoveryPortfolio.positionCount} positions · ${reconciliation?.matchedOpenOrderCount ?? "Unknown"} matched open orders` : "Unavailable" : `${data.positions.length} positions · ${data.openOrders.length} orders · ${data.fills.length} fills`,
+          value: hasRecoveryProjection ? recoveryPortfolio ? `${recoveryPortfolio.positionCount} positions · ${reconciliation?.matchedOpenOrderCount ?? "Unknown"} matched open orders` : "Unavailable" : `${pluralizeCount(data.positions.length, "position")} · ${pluralizeCount(crossCounts.openOrders ?? 0, "open order")} · ${pluralizeCount(data.fills.length, "fill")}`,
           detail: hasRecoveryProjection ? recoveryUnavailable ? "Current account evidence unverified" : recoveryPortfolio?.isComplete && recoveryPortfolio.isConsistent ? "Complete and consistent broker evidence" : "Incomplete or inconsistent broker evidence" : `${completenessCount} execution records loaded`,
           tone: hasRecoveryProjection ? recoveryUnavailable ? "unknown" : recoveryPortfolio?.isComplete && recoveryPortfolio.isConsistent ? "ready" : "blocked" : completenessCount > 0 ? "ready" : "review"
         }}

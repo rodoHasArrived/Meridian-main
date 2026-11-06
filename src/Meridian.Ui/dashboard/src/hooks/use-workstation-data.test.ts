@@ -51,6 +51,8 @@ vi.mock("@/lib/api", () => ({
   getSession: vi.fn(),
   getStrategyWorkspace: vi.fn(),
   getSystemStatus: vi.fn(),
+  // Bootstrap counts (A3) resolve at once with nothing counted; these tests drive the other lanes.
+  getCrossScreenCounts: vi.fn(() => Promise.resolve(null)),
   getTradingWorkspace: vi.fn(),
   getWorkstationWorkflowSummary: vi.fn(),
   getWorkflowLibrary: vi.fn(),
@@ -988,6 +990,7 @@ describe("useWorkstationData", () => {
     const lastSucceededAt = result.current.refreshStatus.lastSucceededAt;
 
     vi.mocked(api.getWorkstationWorkflowSummary).mockRejectedValueOnce(new Error("Workflow summary failed."));
+    vi.mocked(api.getCrossScreenCounts).mockRejectedValueOnce(new Error("Cross-screen counts failed."));
     let failedRefresh!: Promise<void>;
     act(() => {
       failedRefresh = result.current.refreshWorkspace("trading");

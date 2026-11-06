@@ -1541,7 +1541,24 @@ describe("buildSettingsScreenViewModel", () => {
   it("builds system summary label", () => {
     const vm = buildSettingsScreenViewModel(null, overview);
     expect(vm.systemSummary).toContain("Healthy");
-    expect(vm.systemSummary).toContain("3/3");
+    // Provider health comes from the shared cross-screen counts (A3), not the overview's own
+    // "online" tally; without them Settings says so instead of showing a second number.
+    expect(vm.systemSummary).toContain("provider health unavailable");
+  });
+
+  it("states the same provider health as Data from the shared cross-screen counts", () => {
+    const vm = buildSettingsScreenViewModel({
+      session: null,
+      overview,
+      crossScreenCounts: {
+        asOf: "2026-03-21T14:30:00Z",
+        openOrders: null,
+        providers: { healthy: 2, total: 3, definition: "Providers whose status is Healthy." },
+        openBreaks: null
+      }
+    });
+    expect(vm.systemSummary).toContain("2/3 providers healthy");
+    expect(vm.systemItems.find((item) => item.label === "Providers healthy")?.value).toBe("2 / 3");
   });
 
   it("points system overview diagnostics at the mapped status endpoint", () => {

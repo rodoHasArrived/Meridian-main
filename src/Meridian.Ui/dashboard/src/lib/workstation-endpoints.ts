@@ -13,6 +13,7 @@ export const WORKSTATION_API_ENDPOINTS = {
   tradingReadiness: UI_API_ROUTES.WorkstationTradingReadiness,
   tradingBrokerageRecovery: UI_API_ROUTES.WorkstationTradingBrokerageRecovery,
   operatorInbox: UI_API_ROUTES.WorkstationOperatorInbox,
+  crossScreenCounts: UI_API_ROUTES.WorkstationCrossScreenCounts,
   portfolio: UI_API_ROUTES.WorkstationPortfolio,
   portfolioSummary: UI_API_ROUTES.WorkstationPortfolioSummary,
   portfolioMultiAssetCoverage: UI_API_ROUTES.WorkstationPortfolioMultiAssetCoverage,
@@ -891,6 +892,12 @@ export function workstationOperatorInboxEndpoint(fundAccountId?: string): string
   return fundAccountId
     ? `${WORKSTATION_API_ENDPOINTS.operatorInbox}${queryString({ fundAccountId })}`
     : WORKSTATION_API_ENDPOINTS.operatorInbox;
+}
+
+export function workstationCrossScreenCountsEndpoint(fundAccountId?: string): string {
+  return fundAccountId
+    ? `${WORKSTATION_API_ENDPOINTS.crossScreenCounts}${queryString({ fundAccountId })}`
+    : WORKSTATION_API_ENDPOINTS.crossScreenCounts;
 }
 
 export function riskRuleEndpoint(ruleName: string): string {
