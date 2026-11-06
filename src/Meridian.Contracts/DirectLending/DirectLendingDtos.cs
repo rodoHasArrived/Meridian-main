@@ -224,12 +224,20 @@ public sealed record LoanAggregateSnapshotDto(
     LoanContractDetailDto Contract,
     LoanServicingStateDto Servicing);
 
+/// <summary>
+/// Servicing balances for a loan. The first five members are receivables owed by the borrower.
+/// <see cref="PrepaidInterest"/> and <see cref="UnappliedCash"/> (PRD-115) are amounts owed
+/// <em>to</em> the borrower, so read models must not add them to outstanding exposure. Both
+/// default to 0, so state persisted before PRD-115 deserializes unchanged.
+/// </summary>
 public sealed record OutstandingBalancesDto(
     decimal PrincipalOutstanding,
     decimal InterestAccruedUnpaid,
     decimal CommitmentFeeAccruedUnpaid,
     decimal FeesAccruedUnpaid,
-    decimal PenaltyAccruedUnpaid);
+    decimal PenaltyAccruedUnpaid,
+    decimal PrepaidInterest = 0m,
+    decimal UnappliedCash = 0m);
 
 public sealed record DrawdownLotDto(
     Guid LotId,

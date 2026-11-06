@@ -1,11 +1,11 @@
 {
   "total_files": 798,
-  "total_lines": 183038,
+  "total_lines": 183481,
   "orphaned_count": 259,
   "no_heading_count": 157,
   "stale_count": 0,
   "todo_count": 328,
-  "average_lines": 229.4,
+  "average_lines": 229.9,
   "health_score": 83,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2367,7 +2367,7 @@
     },
     {
       "path": "docs/engineering/blueprints/direct-lending-excess-payment-application.md",
-      "line_count": 217,
+      "line_count": 219,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2399,7 +2399,7 @@
     },
     {
       "path": "docs/engineering/blueprints/README.md",
-      "line_count": 245,
+      "line_count": 244,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2719,7 +2719,7 @@
     },
     {
       "path": "docs/generated/database/contracts/direct-lending-contracts-page-01.md",
-      "line_count": 662,
+      "line_count": 664,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2983,7 +2983,7 @@
     },
     {
       "path": "docs/generated/database/modules/security_master.md",
-      "line_count": 1992,
+      "line_count": 1994,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3047,7 +3047,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 12869,
+      "line_count": 13313,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6255,7 +6255,7 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 1458,
+      "line_count": 1456,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6279,7 +6279,7 @@
     },
     {
       "path": "src/Meridian.Backtesting/README.md",
-      "line_count": 250,
+      "line_count": 248,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6359,7 +6359,7 @@
     },
     {
       "path": "src/Meridian.FSharp.DirectLending.Aggregates/README.md",
-      "line_count": 88,
+      "line_count": 89,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6407,7 +6407,7 @@
     },
     {
       "path": "src/Meridian.Infrastructure/README.md",
-      "line_count": 547,
+      "line_count": 545,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6431,7 +6431,7 @@
     },
     {
       "path": "src/Meridian.Ledger/README.md",
-      "line_count": 399,
+      "line_count": 397,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6503,7 +6503,7 @@
     },
     {
       "path": "src/Meridian.Risk/README.md",
-      "line_count": 201,
+      "line_count": 199,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6519,7 +6519,7 @@
     },
     {
       "path": "src/Meridian.Storage/README.md",
-      "line_count": 1559,
+      "line_count": 1566,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6543,7 +6543,7 @@
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
-      "line_count": 3089,
+      "line_count": 3087,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6599,7 +6599,7 @@
     },
     {
       "path": "src/Meridian.Wpf/README.md",
-      "line_count": 1098,
+      "line_count": 1096,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
