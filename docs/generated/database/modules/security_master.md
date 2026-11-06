@@ -737,6 +737,8 @@ erDiagram
         date last_payment_date
         bigint servicing_revision
         timestamp_with_time_zone updated_at
+        numeric_24_2_ prepaid_interest
+        numeric_24_2_ unapplied_cash
         numeric_24_8_ pik_interest_accrued_unpaid
         date last_pik_capitalization_date
     }
@@ -1911,7 +1913,7 @@ erDiagram
 | `loan_index_fixing` | table | 10 | `fixing_id` | 0 | 2 | Observed benchmark fixings for scheduled direct-lending rate resets; insert-only, highest revision per (index_name, observation_date) is effective. |
 | `loan_pik_capitalization_projection` | table | 6 | `loan_id`, `capitalization_date` | 0 | 1 | PIK capitalizations moving accrued PIK interest into direct-loan principal; rebuilt from loan_state servicing on every save. |
 | `loan_rate_reset_projection` | table | 11 | `loan_id`, `effective_date` | 0 | 1 | Applied manual and scheduled rate resets for direct loans with a reset schedule; rebuilt from loan_state servicing on every save. |
-| `loan_servicing_projection` | table | 18 | `loan_id` | 0 | 1 | - |
+| `loan_servicing_projection` | table | 20 | `loan_id` | 0 | 1 | - |
 | `loan_snapshot` | table | 5 | `loan_id`, `aggregate_version` | 0 | 2 | - |
 | `loan_state` | table | 6 | `loan_id` | 0 | 1 | - |
 | `loan_terms_version` | table | 30 | `loan_id`, `terms_version` | 0 | 2 | - |
