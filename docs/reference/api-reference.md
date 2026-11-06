@@ -705,6 +705,41 @@ and denying or withdrawing an entry also retires any approvals linked through it
 | GET | `/api/ingestion/jobs/resumable` | List jobs eligible for resume (failed or paused with checkpoint) |
 | GET | `/api/ingestion/summary` | Summary of all jobs by state and workload type |
 
+Reads require `ViewHistoricalData` or `TriggerBackfill`; create, transition and delete require `TriggerBackfill`.
+
+### Banking (`/api/banking/*`)
+
+All routes except the transaction list take a required `entityId` query parameter. Reads require
+`ViewDirectLending`; payment initiation, approval, rejection, currency remediation and bank-evidence
+recording require `ManageDirectLending`. Malformed request bodies return `400`.
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| POST | `/api/banking/payments` | Initiate a pending payment |
+| GET | `/api/banking/payments/pending` | Pending payments for an entity (payment-approvals screen) |
+| POST | `/api/banking/payments/{pendingPaymentId}/approve` | Approve a pending payment |
+| POST | `/api/banking/payments/{pendingPaymentId}/reject` | Reject a pending payment |
+| POST | `/api/banking/payments/{pendingPaymentId}/currency-remediation` | Remediate a payment's currency |
+| POST | `/api/banking/payments/{pendingPaymentId}/bank-evidence` | Record bank evidence for a payment |
+| GET | `/api/banking/transactions` | Bank transaction records, optionally filtered by `entityId` |
+| POST | `/api/dev/seed/bank-transactions` | Seed synthetic bank transactions; mapped only in Development and Test hosts, requires `AdminMaintenance` |
+
+### Money market funds (`/api/security-master/money-market-funds/*`)
+
+Reads (including `POST .../search`) require `ViewSecurityMaster` or `ModifySecurityMaster`;
+`POST .../{securityId}/rebuild` requires `ModifySecurityMaster`.
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| GET | `/api/security-master/money-market-funds/{securityId}` | MMF reference record |
+| POST | `/api/security-master/money-market-funds/search` | Search MMFs by filter criteria |
+| GET | `/api/security-master/money-market-funds/{securityId}/liquidity` | Liquidity projection for one MMF |
+| GET | `/api/security-master/money-market-funds/liquidity/liquid` | All active MMFs in the Liquid state |
+| GET | `/api/security-master/money-market-funds/{securityId}/sweep-profile` | Sweep-eligibility and liquidity-fee profile |
+| GET | `/api/security-master/money-market-funds/family/{familyName}` | Fund-family projection |
+| POST | `/api/security-master/money-market-funds/{securityId}/rebuild` | Rebuild projections for one MMF |
+| GET | `/api/security-master/money-market-funds/rebuild/checkpoints` | Projection rebuild checkpoints |
+
 ### Packaging (`/api/packaging/*`)
 
 | Method | Route | Description |

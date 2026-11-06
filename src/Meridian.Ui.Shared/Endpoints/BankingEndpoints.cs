@@ -5,6 +5,7 @@ using Meridian.Contracts.Banking;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -29,7 +30,11 @@ public static class BankingEndpoints
                 return ServiceUnavailable();
             }
 
-            var request = JsonSerializer.Deserialize<InitiatePaymentRequest>(body.GetRawText(), jsonOptions);
+            if (!TryDeserialize<InitiatePaymentRequest>(body, jsonOptions, out var request, out var parseError))
+            {
+                return parseError!;
+            }
+
             if (request is null)
             {
                 return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
@@ -52,6 +57,7 @@ public static class BankingEndpoints
             }
         })
         .WithName("InitiatePayment")
+        .RequirePermission(UserPermission.ManageDirectLending)
         .Produces<PendingPaymentDto>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status400BadRequest);
 
@@ -68,15 +74,11 @@ public static class BankingEndpoints
                 return entityError!;
             }
 
-            if (!HasPermission(context, UserPermission.ViewDirectLending))
-            {
-                return Results.Problem("Forbidden.", statusCode: StatusCodes.Status403Forbidden);
-            }
-
             var results = await service.GetPendingPaymentsAsync(entityId, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(results, jsonOptions);
         })
         .WithName("GetPendingPayments")
+        .RequirePermission(UserPermission.ViewDirectLending)
         .Produces<IReadOnlyList<PendingPaymentDto>>(StatusCodes.Status200OK);
 
         group.MapPost("/payments/{pendingPaymentId:guid}/currency-remediation", async (Guid pendingPaymentId, JsonElement body, HttpContext context) =>
@@ -88,8 +90,6 @@ public static class BankingEndpoints
                 return entityError!;
             if (!TryGetCurrentUsername(context, out var currentUser))
                 return Results.Problem("Unauthorized.", statusCode: StatusCodes.Status401Unauthorized);
-            if (!HasPermission(context, UserPermission.ManageDirectLending))
-                return Results.Problem("Forbidden.", statusCode: StatusCodes.Status403Forbidden);
 
             var payment = await service.GetPaymentAsync(
                 pendingPaymentId,
@@ -97,9 +97,8 @@ public static class BankingEndpoints
             if (payment is null || payment.EntityId != entityId)
                 return Results.NotFound();
 
-            var request = JsonSerializer.Deserialize<RemediatePaymentCurrencyRequest>(
-                body.GetRawText(),
-                jsonOptions);
+            if (!TryDeserialize<RemediatePaymentCurrencyRequest>(body, jsonOptions, out var request, out var parseError))
+                return parseError!;
             if (request is null)
             {
                 return Results.Problem(
@@ -122,6 +121,7 @@ public static class BankingEndpoints
             }
         })
         .WithName("RemediatePaymentCurrency")
+        .RequirePermission(UserPermission.ManageDirectLending)
         .Produces<PendingPaymentDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status401Unauthorized)
@@ -148,19 +148,18 @@ public static class BankingEndpoints
                 return Results.Problem("Unauthorized.", statusCode: StatusCodes.Status401Unauthorized);
             }
 
-            if (!HasPermission(context, UserPermission.ManageDirectLending))
-            {
-                return Results.Problem("Forbidden.", statusCode: StatusCodes.Status403Forbidden);
-            }
-
             var payment = await service.GetPaymentAsync(pendingPaymentId, context.RequestAborted).ConfigureAwait(false);
             if (payment is null || payment.EntityId != entityId)
             {
                 return Results.NotFound();
             }
 
-            var request = JsonSerializer.Deserialize<ApprovePaymentRequest>(body.GetRawText(), jsonOptions)
-                          ?? new ApprovePaymentRequest(ReviewNotes: null, ReviewedBy: null);
+            if (!TryDeserialize<ApprovePaymentRequest>(body, jsonOptions, out var parsedApproval, out var parseError))
+            {
+                return parseError!;
+            }
+
+            var request = parsedApproval ?? new ApprovePaymentRequest(ReviewNotes: null, ReviewedBy: null);
             var serverRequest = request with { ReviewedBy = currentUser };
 
             try
@@ -174,6 +173,7 @@ public static class BankingEndpoints
             }
         })
         .WithName("ApprovePayment")
+        .RequirePermission(UserPermission.ManageDirectLending)
         .Produces<PendingPaymentDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status409Conflict)
@@ -197,18 +197,17 @@ public static class BankingEndpoints
                 return Results.Problem("Unauthorized.", statusCode: StatusCodes.Status401Unauthorized);
             }
 
-            if (!HasPermission(context, UserPermission.ManageDirectLending))
-            {
-                return Results.Problem("Forbidden.", statusCode: StatusCodes.Status403Forbidden);
-            }
-
             var payment = await service.GetPaymentAsync(pendingPaymentId, context.RequestAborted).ConfigureAwait(false);
             if (payment is null || payment.EntityId != entityId)
             {
                 return Results.NotFound();
             }
 
-            var request = JsonSerializer.Deserialize<RejectPaymentRequest>(body.GetRawText(), jsonOptions);
+            if (!TryDeserialize<RejectPaymentRequest>(body, jsonOptions, out var request, out var parseError))
+            {
+                return parseError!;
+            }
+
             if (request is null)
             {
                 return Results.Problem("Rejection request body is required.", statusCode: StatusCodes.Status400BadRequest);
@@ -227,6 +226,7 @@ public static class BankingEndpoints
             }
         })
         .WithName("RejectPayment")
+        .RequirePermission(UserPermission.ManageDirectLending)
         .Produces<PendingPaymentDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status409Conflict)
@@ -250,18 +250,17 @@ public static class BankingEndpoints
                 return Results.Problem("Unauthorized.", statusCode: StatusCodes.Status401Unauthorized);
             }
 
-            if (!HasPermission(context, UserPermission.ManageDirectLending))
-            {
-                return Results.Problem("Forbidden.", statusCode: StatusCodes.Status403Forbidden);
-            }
-
             var payment = await service.GetPaymentAsync(pendingPaymentId, context.RequestAborted).ConfigureAwait(false);
             if (payment is null || payment.EntityId != entityId)
             {
                 return Results.NotFound();
             }
 
-            var request = JsonSerializer.Deserialize<RecordPaymentBankEvidenceRequest>(body.GetRawText(), jsonOptions);
+            if (!TryDeserialize<RecordPaymentBankEvidenceRequest>(body, jsonOptions, out var request, out var parseError))
+            {
+                return parseError!;
+            }
+
             if (request is null)
             {
                 return Results.Problem("Bank evidence request body is required.", statusCode: StatusCodes.Status400BadRequest);
@@ -280,6 +279,7 @@ public static class BankingEndpoints
             }
         })
         .WithName("RecordPaymentBankEvidence")
+        .RequirePermission(UserPermission.ManageDirectLending)
         .Produces<BankTransactionDto>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status409Conflict)
@@ -302,11 +302,20 @@ public static class BankingEndpoints
             return Results.Json(results, jsonOptions);
         })
         .WithName("GetBankTransactions")
+        .RequirePermission(UserPermission.ViewDirectLending)
         .Produces<IReadOnlyList<BankTransactionDto>>(StatusCodes.Status200OK);
 
         // -------------------------------------------------------------------
         // Bank transaction seeding (development / demo / integration-test only)
         // -------------------------------------------------------------------
+
+        // The seed route writes synthetic bank activity into whatever banking store is registered,
+        // so it is only mapped in Development and Test hosts. Every other host (Staging,
+        // Production, packaged builds) never exposes it.
+        if (!IsSeedEnvironment(app.Environment))
+        {
+            return;
+        }
 
         app.MapPost("/api/dev/seed/bank-transactions", async (JsonElement body, HttpContext context) =>
         {
@@ -316,7 +325,11 @@ public static class BankingEndpoints
                 return ServiceUnavailable();
             }
 
-            var request = JsonSerializer.Deserialize<BankTransactionSeedRequest>(body.GetRawText(), jsonOptions);
+            if (!TryDeserialize<BankTransactionSeedRequest>(body, jsonOptions, out var request, out var parseError))
+            {
+                return parseError!;
+            }
+
             if (request is null)
             {
                 return Results.Problem("Seed request body is required.", statusCode: StatusCodes.Status400BadRequest);
@@ -333,6 +346,7 @@ public static class BankingEndpoints
             }
         })
         .WithName("SeedBankTransactions")
+        .RequirePermission(UserPermission.AdminMaintenance)
         .Produces<BankTransactionSeedResultDto>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status400BadRequest);
     }
@@ -356,14 +370,34 @@ public static class BankingEndpoints
         return !string.IsNullOrWhiteSpace(username);
     }
 
-    private static bool HasPermission(HttpContext context, UserPermission requiredPermission)
+    internal static bool IsSeedEnvironment(IHostEnvironment environment) =>
+        environment.IsDevelopment() || environment.IsEnvironment("Test");
+
+    /// <summary>
+    /// Deserializes a request body, converting malformed or type-mismatched JSON into a 400
+    /// problem response instead of letting <see cref="JsonException"/> escape as a 500.
+    /// </summary>
+    private static bool TryDeserialize<T>(
+        JsonElement body,
+        JsonSerializerOptions jsonOptions,
+        out T? value,
+        out IResult? error)
+        where T : class
     {
-        if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is not UserPermission permissions)
+        try
         {
+            value = JsonSerializer.Deserialize<T>(body.GetRawText(), jsonOptions);
+            error = null;
+            return true;
+        }
+        catch (Exception ex) when (ex is JsonException or NotSupportedException or ArgumentException)
+        {
+            value = null;
+            error = Results.Problem(
+                "Request body is not valid for this operation.",
+                statusCode: StatusCodes.Status400BadRequest);
             return false;
         }
-
-        return (permissions & requiredPermission) == requiredPermission;
     }
 
     private static IBankingService? ResolveService(HttpContext context) =>
