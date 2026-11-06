@@ -451,6 +451,22 @@ information: its doc comment now states that `AdmissionPolicy`, `LedgerExtension
 `CapturePolicy` gate nothing, since they are read only for display and by `ValidateAll`'s
 self-checks. This is the plan's "documented informational purpose" choice; no consumer was removed.
 
+**2026-11-06 — WPF conflict routing reads declared field names.** Separate from the multiplier rule
+closed above, the WPF `SecurityMasterViewModel.AssessConflict` routed each conflict by substrings of
+its lowercased field path and kind. A seeded profile field, `ProfileFields.transferRestrictions`,
+contained "ric" and was routed as a Critical identifier conflict; any key containing "lot", "type"
+or "name" was misread the same way. `SecurityMasterConflictFieldCategories`
+(`src/Meridian.Contracts/SecurityMaster/`) now classifies by whole path segments against declared
+names: identifier kinds from `SecurityIdentifierKind`, trading-parameter names from
+`TradingParametersDto`, plus explicit lifecycle, corporate-action, classification, currency and
+display names. `IdentifierAmbiguity` is always an identifier conflict. Every path conflict
+detection emits keeps its previous routing; `transferRestrictions` and substring look-alikes take
+the default review route. The pack registry's wording self-checks were left as they are, under the
+informational disposition above. Validation: `dotnet test tests/Meridian.Contracts.UnitTests -c
+Release --filter FullyQualifiedName~SecurityMasterConflictFieldCategoriesTests` passed 35 of 35.
+The WPF view model compiles only on Windows, so the hosted Windows lane is its compile and test
+gate.
+
 **Validation of this disposition.** Local, on the branch, with
 `MERIDIAN_SECURITY_MASTER_CONNECTION_STRING` pointing at a local PostgreSQL 16 (no Testcontainers):
 
