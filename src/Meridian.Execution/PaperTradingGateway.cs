@@ -2,6 +2,7 @@ using Meridian.Execution.Logging;
 using System.Runtime.CompilerServices;
 using System.Collections.Concurrent;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Execution.OrderManagement;
 using Meridian.Execution.PaperMatching;
 using Meridian.Execution.Sdk;
 using Meridian.Core.Pipeline;
@@ -475,11 +476,17 @@ public sealed class PaperTradingGateway :
         fillPrice = await _tradingParameters.ResolveFillPriceAsync(request, fillPrice, observation, ct)
             .ConfigureAwait(false);
 
-        var costs = _costModel.Compute(request.Quantity, fillPrice, observation.MidPrice);
+        // Resolve the lot convention first so notional-based costs use the same multiplied
+        // principal the paper book will move. Face value keeps its existing raw sizing here;
+        // without a convention the OMS's own resolution (100 for an option) applies.
+        var lotConvention = await _tradingParameters.ResolveLotConventionAsync(request.Symbol, ct).ConfigureAwait(false);
+        var costMultiplier = lotConvention is { } resolved
+            ? (resolved.UnitKind == SecurityLotUnitKind.FaceValue ? 1m : resolved.Multiplier)
+            : OrderRiskSizingPolicy.ResolveContractMultiplier(request);
+        var costs = _costModel.Compute(request.Quantity, fillPrice, observation.MidPrice, costMultiplier);
 
         var report = BuildReport(request, orderId, gatewayOrderId, ExecutionReportType.Fill,
             OrderStatus.Filled, filledQuantity: request.Quantity, fillPrice, costs, rejectReason: null);
-        var lotConvention = await _tradingParameters.ResolveLotConventionAsync(request.Symbol, ct).ConfigureAwait(false);
         if (lotConvention is { } convention)
         {
             report = report with

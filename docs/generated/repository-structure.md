@@ -11284,6 +11284,7 @@ Meridian-main
 │   │   │   ├── PaperTradingCostModelTests.cs
 │   │   │   ├── PaperTradingGatewayTests.cs
 │   │   │   ├── PaperTradingPortfolioBasisParityTests.cs
+│   │   │   ├── PaperTradingPortfolioContractMultiplierTests.cs
 │   │   │   ├── PaperTradingPortfolioLotSelectionTests.cs
 │   │   │   ├── PaperTradingPortfolioLotSnapshotTests.cs
 │   │   │   ├── PaperTradingPortfolioTests.cs
@@ -11566,6 +11567,8 @@ Meridian-main
 │   │   │   │   ├── AdminEndpointPermissionTests.cs
 │   │   │   │   ├── AuthEndpointTests.cs
 │   │   │   │   ├── BackfillEndpointTests.cs
+│   │   │   │   ├── BankingActionOriginTests.cs
+│   │   │   │   ├── BankingAndTreasuryEndpointRegistrationTests.cs
 │   │   │   │   ├── CatalogEndpointTests.cs
 │   │   │   │   ├── CheckpointEndpointTests.cs
 │   │   │   │   ├── ConfigDirectLendingAuthorizationTests.cs

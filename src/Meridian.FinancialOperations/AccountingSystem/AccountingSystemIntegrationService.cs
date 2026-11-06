@@ -430,6 +430,12 @@ public sealed partial class AccountingSystemIntegrationService
         return detail;
     }
 
+    /// <summary>
+    /// Returns the latest persisted import for the scope. When none has been persisted, an
+    /// unpersisted preview is computed and returned instead. The preview is never cached: this
+    /// method backs HTTP GET routes, which must stay free of side effects, and caching it would
+    /// make a read silently record (possibly fixture) evidence as the scope's latest import.
+    /// </summary>
     public async Task<AccountingSystemImportDetailDto> GetLatestImportAsync(
         string? providerId = null,
         string? fundProfileId = null,
@@ -453,7 +459,7 @@ public sealed partial class AccountingSystemIntegrationService
                 normalizedProviderId,
                 normalizedFundProfileId,
                 ledgerBookId,
-                PersistPreview: true,
+                PersistPreview: false,
                 TenantId: normalizedTenantId,
                 CompanyId: normalizedCompanyId),
             ct).ConfigureAwait(false);
