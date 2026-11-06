@@ -301,7 +301,9 @@ not been recorded.
     largest-first, text A–Z, missing values last) or owned by the caller through `sort` and
     `onToggleSort`;
   - `numeric` columns, right-aligned with tabular figures;
-  - `hideable` and `defaultHidden` columns behind a Columns menu, remembered per `tableId`;
+  - `hideable` and `defaultHidden` columns behind a Columns menu, remembered per `tableId`, or
+    owned by the caller through `hiddenColumnIds` and `onHiddenColumnIdsChange` when a link or
+    saved view must carry them;
   - a per-table `density` override. Otherwise rows follow the operator density chosen in
     Settings, which `main.tsx` re-applies at startup.
 
@@ -311,6 +313,60 @@ not been recorded.
   figures (trading and portfolio positions, orders) sort on their text columns, and the
   reconciliation queue keeps its own sort control. The `rawTables` ratchet counts hand-built
   tables.
+- **Cross-screen counts.** Open orders, provider health and open breaks come from one selector,
+  `lib/cross-screen-counts.ts`. A screen holding the source list (the blotter, the Data provider
+  rows, the break queue) counts it with the shared definition; Settings and the shell read the
+  server's `/api/workstation/cross-screen-counts`, loaded on every route. Headline cards for these
+  counts take the selector's value and drop their basis-less delta, and an unreadable count shows
+  "—". Settings, which does not refresh the Data payload, prefers the shared provider count over
+  retained Data rows. `lib/cross-screen-counts.screens.test.ts` asserts Trading, Settings, Data and Accounting
+  agree from one fixture set. Accounting takes open breaks from the payload's `workspace.openBreaks`,
+  which the server counts over the whole queue even when it withholds `breakQueue` from a caller
+  who may see the count but not the cases.
+- **Operating scope.** Copy link appends every scope dimension the current route did not write
+  into its URL (`buildShareableLink`), so a link from any screen restores the sender's scope in a
+  fresh browser. The scope picker offers the last five applied scopes (per browser) and the
+  operator's default scope from `/api/workstation/operator/scope-preference`; choosing either only
+  loads the draft, and Apply stays the one action that changes scope. The default is applied only
+  when a session opens with no scope in its link or browser. The continuity dock shows each
+  dimension as a chip on every workspace, marked applied or retained.
+- **Saved views.** The positions, break queue and ledger tables keep their filters, sort and
+  hidden columns in the URL: positions in the `view` envelope, breaks in `reconciliationSearch`,
+  `reconciliationStatus`, `reconciliationSort` and `reconciliationColumns`, the ledger in
+  `ledgerSearch` and `ledgerSort` (`columnId:direction`). A saved layout captures the route with
+  those parameters, so restoring it restores the table, and the command palette offers each
+  saved layout as "Open saved view …". `lib/shareable-view.test.ts` restores each table from a
+  copied link with empty browser storage.
+- **Bulk break triage.** The break queue's row checkboxes build a bulk selection, limited to the
+  breaks the current filters show. Assign to me, Route to owner and Resolve with reason go through
+  the governed casework endpoints: a dry run checks the whole selection and lists each blocked
+  break with its reason, and the operator then confirms an execute of only the breaks that passed,
+  applied all or nothing. The server stamps the actor (Assign to me sets
+  `assignToCurrentOperator`, so it names the login user, not the display name) and writes an
+  audit entry for each case. Resolve takes a reason, a root cause and a resolution from the
+  taxonomy endpoint, plus an optional evidence reference.
+- **Since your last visit.** `lib/since-last-visit.ts` records the operator's visit to the break
+  queue (`POST /api/workstation/operator/visits/reconciliation-breaks`) once per browser tab. The
+  visit it replaces is the baseline: a break detected after it is marked New, a break whose
+  activity (`lastUpdatedAt`) moved after it is marked Updated, and the queue states the counts and
+  the baseline time. The Accounting open-breaks card reads the same baseline for its delta ("2 new
+  since your last visit") without recording a visit, so only opening the break queue advances it. When the visit cannot be recorded, nothing is marked. The tab cache
+  keeps the baseline with the visit it recorded; because session storage outlives a sign-out, a
+  later page load first reads the operator's last visit (`GET`, which records nothing) and reuses
+  the cache only when that is still this tab's visit.
+- **Queue keys.** `lib/queue-keyboard-map.ts` holds the break queue's key map; the handler, the
+  `?` shortcut sheet and this table come from it, and `lib/queue-keyboard-map.test.ts` checks the
+  table against the map. Keys work while focus is in the queue and not in a text field. The queue
+  claims them before a focused row's type-ahead, so other letters still jump to a matching row.
+
+  | Key | Action |
+  | --- | --- |
+  | `j` | Move to the next break |
+  | `k` | Move to the previous break |
+  | `x` | Add the current break to the bulk selection, or remove it |
+  | `a` | Assign to me: the bulk selection when there is one, otherwise the current break |
+  | `e` | Open the evidence drawer for the current break |
+  | `?` | Show these shortcuts |
 - **Type scale.** There are three tiers: `type-page-title` (the workspace header's h1),
   `type-section` (CardTitle and region headings) and `type-label`. A label of one or two words may
   add `type-label--caps`. Longer labels render in sentence case: `FormRow`,
