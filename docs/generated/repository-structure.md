@@ -7663,6 +7663,7 @@ Meridian-main
 │   │   │   │   │   │   ├── factor-paydown.api.ts
 │   │   │   │   │   │   ├── family-office.api.ts
 │   │   │   │   │   │   ├── mark-freshness.api.ts
+│   │   │   │   │   │   ├── operator-workstation.api.ts
 │   │   │   │   │   │   ├── portfolio-cash-ladder.api.ts
 │   │   │   │   │   │   ├── promotion.contracts.ts
 │   │   │   │   │   │   ├── provider-modules.api.test.ts

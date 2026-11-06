@@ -63,7 +63,8 @@ import {
 import { StatusBanner } from "@/components/ui/status-banner";
 import { ToastProvider } from "@/components/ui/toast";
 import { useWorkstationData } from "@/hooks/use-workstation-data";
-import { getOperatorScopePreference, markWorkflowPresetUsed, pinWorkflowPreset, saveOperatorScopePreference } from "@/lib/api";
+import { markWorkflowPresetUsed, pinWorkflowPreset } from "@/lib/api";
+import { getOperatorScopePreference, saveOperatorScopePreference } from "@/lib/api/operator-workstation.api";
 import {
   useCommandPaletteActions,
   type CommandPaletteActionItem

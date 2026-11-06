@@ -14,7 +14,6 @@ export const WORKSTATION_API_ENDPOINTS = {
   tradingBrokerageRecovery: UI_API_ROUTES.WorkstationTradingBrokerageRecovery,
   operatorInbox: UI_API_ROUTES.WorkstationOperatorInbox,
   crossScreenCounts: UI_API_ROUTES.WorkstationCrossScreenCounts,
-  operatorScopePreference: UI_API_ROUTES.WorkstationOperatorScopePreference,
   portfolio: UI_API_ROUTES.WorkstationPortfolio,
   portfolioSummary: UI_API_ROUTES.WorkstationPortfolioSummary,
   portfolioMultiAssetCoverage: UI_API_ROUTES.WorkstationPortfolioMultiAssetCoverage,
@@ -112,11 +111,6 @@ export const WORKSTATION_API_ENDPOINTS = {
   evidenceVaultDocuments: UI_API_ROUTES.WorkstationEvidenceVaultDocuments,
   evidenceTemplates: UI_API_ROUTES.WorkstationEvidenceTemplates
 } as const;
-
-/** The signed-in operator's visits to one workstation surface (C3). */
-export function workstationOperatorSurfaceVisitEndpoint(surface: string): string {
-  return UI_API_ROUTES.WorkstationOperatorSurfaceVisit.replace("{surface}", encodeURIComponent(surface));
-}
 
 export function workstationIngestionOperationEndpoint(jobId: string): string {
   return routeWithParam(WORKSTATION_API_ENDPOINTS.ingestionOperation, "jobId", jobId);
@@ -898,12 +892,6 @@ export function workstationOperatorInboxEndpoint(fundAccountId?: string): string
   return fundAccountId
     ? `${WORKSTATION_API_ENDPOINTS.operatorInbox}${queryString({ fundAccountId })}`
     : WORKSTATION_API_ENDPOINTS.operatorInbox;
-}
-
-export function workstationCrossScreenCountsEndpoint(fundAccountId?: string): string {
-  return fundAccountId
-    ? `${WORKSTATION_API_ENDPOINTS.crossScreenCounts}${queryString({ fundAccountId })}`
-    : WORKSTATION_API_ENDPOINTS.crossScreenCounts;
 }
 
 export function riskRuleEndpoint(ruleName: string): string {

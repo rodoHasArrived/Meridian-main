@@ -6,7 +6,7 @@
 // updated. The baseline is fetched once per surface per browser tab and reused, so it does not
 // move while the operator works or when a screen re-mounts.
 import { useEffect, useState } from "react";
-import { recordOperatorSurfaceVisit } from "@/lib/api";
+import { recordOperatorSurfaceVisit } from "@/lib/api/operator-workstation.api";
 import { formatUtcTimestamp } from "@/lib/format";
 import type { OperatorSurfaceVisit } from "@/types/operator-surface-visit";
 

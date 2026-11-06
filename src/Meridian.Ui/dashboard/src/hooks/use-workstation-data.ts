@@ -6,7 +6,6 @@ import {
 } from "@/hooks/use-request-lifecycle";
 import {
   getBrokerageHouseholdPortfolio,
-  getCrossScreenCounts,
   getDataWorkspace,
   getAccountingWorkspace,
   getAlpacaConnectionStatus,
@@ -36,6 +35,7 @@ import {
   getSecurityAssetProfiles,
   setFeatureCapability
 } from "@/lib/api";
+import { getCrossScreenCounts } from "@/lib/api/operator-workstation.api";
 import { describeApiError } from "@/lib/api-errors";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 import type {
