@@ -418,7 +418,7 @@ describe("buildSettingsScreenViewModel", () => {
     expect(vm.systemItems.some((i) => i.label === "Status" && i.value === "Healthy")).toBe(true);
     expect(vm.systemItems.some((i) => i.label === "Active runs" && i.value === "2")).toBe(true);
     expect(vm.systemItems.some((i) => i.label === "Symbols monitored" && i.value === "120")).toBe(true);
-    expect(vm.systemItems.some((i) => i.label === "Last heartbeat" && i.value === "Stale · May 1, 00:00 UTC" && i.tone === "danger")).toBe(true);
+    expect(vm.systemItems.some((i) => i.label === "Last heartbeat" && i.value === "Stale · May 1, 2026, 00:00 UTC" && i.tone === "danger")).toBe(true);
     expect(vm.systemTone).toBe("warning");
   });
 
@@ -428,7 +428,7 @@ describe("buildSettingsScreenViewModel", () => {
     expect(buildSettingsFreshnessViewModel("2026-07-13T11:50:00Z", evaluatedAt)).toMatchObject({
       status: "current",
       tone: "success",
-      label: "Current · Jul 13, 11:50 UTC"
+      label: "Current · Jul 13, 2026, 11:50 UTC"
     });
     expect(buildSettingsFreshnessViewModel("2026-07-13T02:00:00Z", evaluatedAt)).toMatchObject({
       status: "delayed",
@@ -689,8 +689,8 @@ describe("buildSettingsScreenViewModel", () => {
       statusCode: "INFO",
       badgeVariant: "default",
       tone: "default",
-      timestamp: "May 1, 00:00 UTC",
-      ariaLabel: "INFO event from DataPipeline at May 1, 00:00 UTC. Backfill completed."
+      timestamp: "May 1, 2026, 00:00 UTC",
+      ariaLabel: "INFO event from DataPipeline at May 1, 2026, 00:00 UTC. Backfill completed."
     });
   });
 
@@ -710,7 +710,7 @@ describe("buildSettingsScreenViewModel", () => {
     expect(eventsVm.rows[1]).toMatchObject({
       detailPanelId: "settings-recent-event-detail",
       expanded: true,
-      selectAriaLabel: "Select event e1. CRIT event from Storage at May 1, 00:05 UTC. Storage heartbeat missed."
+      selectAriaLabel: "Select event e1. CRIT event from Storage at May 1, 2026, 00:05 UTC. Storage heartbeat missed."
     });
     expect(eventsVm.selectedDetail).toMatchObject({
       title: "Storage heartbeat missed.",
@@ -803,7 +803,7 @@ describe("buildSettingsScreenViewModel", () => {
       { label: "Environment", value: "PAPER" },
       { label: "Workspace", value: "settings" },
       { label: "Diagnostics", value: "All reachable" },
-      { label: "Heartbeat", value: "Current · May 1, 00:00 UTC" }
+      { label: "Heartbeat", value: "Current · May 1, 2026, 00:00 UTC" }
     ]);
     expect(vm.diagnosticCounts).toMatchObject({
       loaded: 7,
@@ -868,8 +868,8 @@ describe("buildSettingsScreenViewModel", () => {
       canConnect: false,
       canDisconnect: true
     });
-    expect(vm.robinhoodConnectionPanel.connectedAtLabel).toBe("May 7, 11:50 UTC");
-    expect(vm.robinhoodConnectionPanel.expiresAtLabel).toBe("Jun 7, 11:50 UTC");
+    expect(vm.robinhoodConnectionPanel.connectedAtLabel).toBe("May 7, 2026, 11:50 UTC");
+    expect(vm.robinhoodConnectionPanel.expiresAtLabel).toBe("Jun 7, 2026, 11:50 UTC");
     expect(vm.robinhoodConnectionPanel.statusDetail).toContain("Robinhood account RH-987");
     expect(vm.robinhoodConnectionPanel.statusDetail).not.toContain("Alpaca");
     expect(vm.robinhoodConnectionPanel.statusDetail).not.toContain("/v2/account");

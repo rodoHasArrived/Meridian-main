@@ -833,7 +833,7 @@ describe("trading readiness view model", () => {
       expect.objectContaining({ id: "paper", label: "Paper", value: "Not paper ready", level: "review" }),
       expect.objectContaining({ id: "live", label: "Live", value: "Not live ready", level: "review", ariaLabel: "Live operation readiness: Not live ready" }),
       expect.objectContaining({ id: "brokerage", label: "Brokerage", value: "Failed stale", level: "atRisk" }),
-      expect.objectContaining({ id: "as-of", label: "As of", value: "Apr 26, 16:05 UTC", level: "review", ariaLabel: "Readiness snapshot timestamp: Apr 26, 16:05 UTC" })
+      expect.objectContaining({ id: "as-of", label: "As of", value: "Apr 26, 2026, 16:05 UTC", level: "review", ariaLabel: "Readiness snapshot timestamp: Apr 26, 2026, 16:05 UTC" })
     ]);
     expect(state.workItems).toHaveLength(1);
     expect(state.warnings).toEqual(["Portfolio snapshot failed."]);
@@ -868,7 +868,7 @@ describe("trading readiness view model", () => {
         ariaLabel: "Trading readiness warning: Portfolio snapshot failed."
       }
     ]);
-    expect(state.statusAnnouncement).toBe("Trading readiness blocked as of Apr 26, 16:05 UTC.");
+    expect(state.statusAnnouncement).toBe("Trading readiness blocked as of Apr 26, 2026, 16:05 UTC.");
   });
 
   it("surfaces explicit live-readiness blockers in summary rows", () => {
@@ -1052,7 +1052,7 @@ describe("trading readiness view model", () => {
     });
 
     expect(result.current.readiness?.asOf).toBe("2026-04-26T16:10:00Z");
-    expect(result.current.statusAnnouncement).toBe("Trading readiness review required as of Apr 26, 16:10 UTC.");
+    expect(result.current.statusAnnouncement).toBe("Trading readiness review required as of Apr 26, 2026, 16:10 UTC.");
   });
 
   it("aborts and discards old account recovery when scope changes without a new workspace payload", async () => {

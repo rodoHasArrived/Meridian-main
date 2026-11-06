@@ -479,7 +479,7 @@ describe("PortfolioScreen", () => {
     const scope = screen.getByLabelText("Explorer scope");
     expect(scope).toHaveTextContent("Demo portfolio data");
     expect(scope).toHaveTextContent("Mean Reversion");
-    expect(scope).toHaveTextContent("Apr 28, 18:14 UTC");
+    expect(scope).toHaveTextContent("Apr 28, 2026, 18:14 UTC");
     const filters = screen.getByLabelText("Applied explorer filters");
     expect(filters).toHaveTextContent("Demo portfolio data");
     expect(filters).toHaveTextContent("Mean Reversion");
@@ -630,7 +630,7 @@ describe("PortfolioScreen", () => {
     expect(screen.getAllByText(/live brokerage portfolio/i).length).toBeGreaterThan(0);
     const trustSnapshot = screen.getByRole("region", { name: /alpaca paper brokerage sync snapshot/i });
     expect(within(trustSnapshot).getByText(/household synced/i)).toBeInTheDocument();
-    expect(within(trustSnapshot).getAllByText("May 7, 12:00 UTC").length).toBeGreaterThan(0);
+    expect(within(trustSnapshot).getAllByText("May 7, 2026, 12:00 UTC").length).toBeGreaterThan(0);
     expect(within(trustSnapshot).getAllByText("$375,000").length).toBeGreaterThan(0);
     expect(within(trustSnapshot).getByText("2 accounts")).toBeInTheDocument();
     expect(within(trustSnapshot).getByText("2 positions")).toBeInTheDocument();

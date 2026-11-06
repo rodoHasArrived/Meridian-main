@@ -27,6 +27,7 @@ import {
 } from "@/screens/accounting-screen.posted-ledger.view-model";
 import { buildTrialBalanceAccountTreeNodes, trialBalanceAccountTreeCode } from "@/screens/trial-balance-screen.view-model";
 import type { AccountingLedgerJournalEvidenceViewState } from "@/screens/accounting-screen.view-model";
+import { formatMoney } from "@/lib/format";
 
 type TrialBalanceViewMode = "table" | "hierarchy";
 
@@ -184,10 +185,8 @@ export function TrialBalanceScreen() {
   // Posted balances are in the book's own base currency. The simulation screen this was adapted
   // from assumed USD; a EUR book's imbalance must not be labelled with a dollar sign.
   const postedCurrency = postedLedger.view.baseCurrency;
-  const formatPostedAmount = (value: number) =>
-    postedCurrency
-      ? new Intl.NumberFormat("en-US", { style: "currency", currency: postedCurrency }).format(value)
-      : new Intl.NumberFormat("en-US", { maximumFractionDigits: 2, minimumFractionDigits: 2 }).format(value);
+  // Accounting convention: the currency's minor units, negatives in parentheses.
+  const formatPostedAmount = (value: number) => formatMoney(value, { context: "accounting", currency: postedCurrency || null });
 
   // The selected book names the fund-structure node it belongs to. Hard-coding "All entities"
   // presented an entity-scoped governed balance as an all-entity one.

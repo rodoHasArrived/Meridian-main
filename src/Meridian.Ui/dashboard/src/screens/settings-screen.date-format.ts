@@ -1,3 +1,5 @@
+import { formatUtcTimestamp } from "@/lib/format";
+
 export function formatSettingsUtcMinute(
   value: string | Date | null | undefined,
   unavailableLabel = "Unavailable"
@@ -11,7 +13,7 @@ export function formatSettingsUtcMinute(
     return unavailableLabel;
   }
 
-  return `${UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${padUtc(date.getUTCHours())}:${padUtc(date.getUTCMinutes())} UTC`;
+  return formatUtcTimestamp(date);
 }
 
 export function formatSettingsDateOnly(value: string | null | undefined, unavailableLabel = "No date"): string {
@@ -29,6 +31,3 @@ export function formatSettingsDateOnly(value: string | null | undefined, unavail
 
 const UTC_MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-function padUtc(value: number): string {
-  return String(value).padStart(2, "0");
-}

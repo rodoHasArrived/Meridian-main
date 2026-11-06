@@ -7207,6 +7207,9 @@ Meridian-main
 │   │   │   ├── scripts
 │   │   │   │   ├── eslint-rules
 │   │   │   │   │   └── kebab-filename.mjs
+│   │   │   │   ├── design-system-ratchets.baseline.json
+│   │   │   │   ├── design-system-ratchets.d.mts
+│   │   │   │   ├── design-system-ratchets.mjs
 │   │   │   │   ├── run-vitest-stable.mjs
 │   │   │   │   ├── smoke-workstation.mjs
 │   │   │   │   ├── vitest-evidence.mjs
@@ -7442,6 +7445,7 @@ Meridian-main
 │   │   │   │   │   │   ├── stat-strip.tsx
 │   │   │   │   │   │   ├── strategy-formula-workbench.test.tsx
 │   │   │   │   │   │   ├── strategy-formula-workbench.tsx
+│   │   │   │   │   │   ├── ui-kit-primitives.table-system.test.tsx
 │   │   │   │   │   │   ├── ui-kit-primitives.test.tsx
 │   │   │   │   │   │   ├── ui-kit-primitives.tsx
 │   │   │   │   │   │   ├── ui-kit-primitives.virtualization.test.tsx
@@ -7582,13 +7586,17 @@ Meridian-main
 │   │   │   │   │   ├── assets.ts
 │   │   │   │   │   ├── badge.tsx
 │   │   │   │   │   ├── button.tsx
+│   │   │   │   │   ├── design-system-ratchets.test.ts
+│   │   │   │   │   ├── label-case.ts
 │   │   │   │   │   ├── masthead.tsx
 │   │   │   │   │   ├── nav-rail.tsx
 │   │   │   │   │   ├── primitives.tsx
+│   │   │   │   │   ├── status-badge.test.tsx
 │   │   │   │   │   ├── status.test.ts
 │   │   │   │   │   ├── status.tsx
 │   │   │   │   │   ├── tokens.ts
-│   │   │   │   │   └── trust-strip.tsx
+│   │   │   │   │   ├── trust-strip.tsx
+│   │   │   │   │   └── type-scale.test.tsx
 │   │   │   │   ├── features
 │   │   │   │   │   ├── accounting
 │   │   │   │   │   │   └── accountingCloseModels.ts
@@ -8259,6 +8267,7 @@ Meridian-main
 │   │   │   │   │   ├── dense-row-detail-accessibility.css
 │   │   │   │   │   ├── index.css
 │   │   │   │   │   ├── reconciliation-workbench.css
+│   │   │   │   │   ├── status-badge.css
 │   │   │   │   │   ├── ui-kit-primitives.css
 │   │   │   │   │   ├── workflow-continuity-dock.css
 │   │   │   │   │   ├── workspace-nav.css
