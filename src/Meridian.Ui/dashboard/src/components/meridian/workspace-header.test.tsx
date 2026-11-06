@@ -28,7 +28,10 @@ describe("WorkspaceHeader", () => {
     expect(screen.getByLabelText("Breadcrumb")).toHaveTextContent("Workstation");
     expect(screen.getByText("Trading")).toHaveAttribute("aria-current", "page");
     expect(screen.queryByLabelText("paper environment")).not.toBeInTheDocument();
-    expect(screen.getByLabelText("Trading product maturity Available")).toHaveTextContent("Available");
+    // Product maturity is no longer a page badge: it lives in the About disclosure and tooltip.
+    expect(screen.queryByLabelText("Trading product maturity Available")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("About Trading")).toHaveAttribute("title", "About Trading · Available product maturity");
+    expect(screen.getByText("Product maturity: Available.")).toBeInTheDocument();
     expect(screen.getByLabelText("Session Ops Desk, role Operator")).toHaveTextContent("Ops Desk");
     const refreshButton = screen.getByRole("button", { name: "Refreshing Trading workspace data" });
     expect(refreshButton).toBeDisabled();

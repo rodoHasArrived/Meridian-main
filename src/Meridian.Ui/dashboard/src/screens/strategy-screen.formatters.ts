@@ -1,4 +1,4 @@
-import { formatCurrency as formatCurrencyAmount } from "@/lib/format";
+import { formatCount as formatCountValue, formatCurrency as formatCurrencyAmount } from "@/lib/format";
 
 export function formatText(value: string | null | undefined): string {
   const trimmed = value?.trim();
@@ -71,7 +71,7 @@ export function formatSignedCount(value: number | null | undefined): string {
   }
 
   const sign = value > 0 ? "+" : "";
-  return `${sign}${value.toLocaleString()}`;
+  return `${sign}${formatCountValue(value)}`;
 }
 
 export function formatCount(value: number | null | undefined): string {
@@ -79,7 +79,7 @@ export function formatCount(value: number | null | undefined): string {
     return "Unavailable";
   }
 
-  return value.toLocaleString();
+  return formatCountValue(value);
 }
 
 /** Input is a fraction of 1 (0.425 -> "+42.50%"), not percent units. */

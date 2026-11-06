@@ -194,7 +194,9 @@ describe("dashboard design-system contract", () => {
     expect(button).toContain("export const DesignSystemButton");
     expect(badge).toContain("export function DesignSystemBadge");
     expect(badge).toContain("mds-badge__dot");
-    expect(status).toContain("export function DesignSystemStatus");
+    // StatusBadge is the one status implementation; DesignSystemStatus stays as its alias.
+    expect(status).toContain("export function StatusBadge");
+    expect(status).toContain("export const DesignSystemStatus = StatusBadge");
     expect(masthead).toContain("export function DesignSystemMasthead");
     expect(masthead).toContain("workstation-masthead mds-masthead ws-masthead");
     expect(navRail).toContain("export function DesignSystemNavRail");
@@ -708,7 +710,8 @@ describe("dashboard design-system contract", () => {
       "export interface DesignSystemButtonProps",
       "export function DesignSystemBadge",
       "export interface DesignSystemBadgeProps",
-      "export function DesignSystemStatus",
+      "export function StatusBadge",
+      "export const DesignSystemStatus = StatusBadge",
       "export function DesignSystemMasthead",
       "export function DesignSystemTrustStrip",
       "export interface DesignSystemMastheadProps",

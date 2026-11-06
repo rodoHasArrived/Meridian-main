@@ -154,7 +154,7 @@ export function ReportingIncomeComparisonPanel({ currentRunId = "" }: { currentR
   return (
     <Card className="panel-surface" id="income-comparison">
       <CardHeader>
-        <div className="eyebrow-label">Retained report comparison</div>
+        <div className="eyebrow-label eyebrow-label--sentence">Retained report comparison</div>
         <CardTitle>Explain investment-income movement</CardTitle>
         <CardDescription>Choose the baseline explicitly, including originally published or restated results. Movement is current minus baseline; inputs and supporting records are retained with the explanation.</CardDescription>
       </CardHeader>

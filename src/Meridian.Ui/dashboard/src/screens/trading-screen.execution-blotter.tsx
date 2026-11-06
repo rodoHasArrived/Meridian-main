@@ -9,6 +9,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Briefcase, RefreshCcw } from "lucide-react";
+import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -33,6 +34,8 @@ import type {
   ExecutionBlotterSnapshot,
   ExecutionGatewayHealth
 } from "@/types/execution-blotter.types";
+import { cn } from "@/lib/utils";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 /** The status these endpoints answer when their execution service is not registered. */
 const SERVICE_INACTIVE_STATUS = 503;
@@ -135,72 +138,76 @@ export function ExecutionBlotterPanel() {
         <div className="grid gap-2 md:grid-cols-4" aria-label="Execution gateway posture">
           {metrics.map((metric) => (
             <div key={metric.id} className="rounded-[2px] border border-border bg-secondary/20 p-3">
-              <div className="text-xs uppercase tracking-wide text-muted-foreground">{metric.label}</div>
+              <div className={cn("text-xs text-muted-foreground", usesTrackedCaps(metric.label) && "uppercase tracking-wide")}>{metric.label}</div>
               <div className={toneTextClassName(metric.tone)}>{metric.value}</div>
               <div className="mt-1 text-xs text-muted-foreground">{metric.detail}</div>
             </div>
           ))}
         </div>
 
-        <table className="w-full text-sm" aria-label="Execution blotter positions">
-          <thead>
-            <tr className="text-left text-xs uppercase tracking-wide text-muted-foreground">
-              <th className="py-2">Symbol</th>
-              <th>Side</th>
-              <th>Quantity</th>
-              <th>Avg cost</th>
-              <th>Mark</th>
-              <th>Market value</th>
-              <th>Unrealised</th>
-              <th className="sr-only">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.length === 0 ? (
-              <tr>
-                <td colSpan={8} className="py-4 text-center text-muted-foreground">
-                  {executionBlotterEmptyMessage(readState)}
-                </td>
-              </tr>
-            ) : rows.map((row) => (
-              <tr key={row.positionKey} className="border-t border-border/60" aria-label={row.ariaLabel}>
-                <td className="py-2">
+        <DenseDataTable
+          tableId="execution-blotter-positions"
+          ariaLabel="Execution blotter positions"
+          emptyText={executionBlotterEmptyMessage(readState)}
+          rows={rows}
+          getRowId={(row) => row.positionKey}
+          getRowAriaLabel={(row) => row.ariaLabel}
+          maxVisibleRows={null}
+          columns={[
+            {
+              id: "symbol",
+              label: "Symbol",
+              sortValue: (row) => row.symbol,
+              render: (row) => (
+                <>
                   <div className="font-mono text-xs">{row.symbol}</div>
                   <div className="text-xs text-muted-foreground">
                     {row.assetClass}{row.contractDetail ? ` · ${row.contractDetail}` : ""}
                   </div>
-                </td>
-                <td>{row.side}</td>
-                <td className="font-mono text-xs">{row.quantity}</td>
-                <td className="font-mono text-xs">{row.averageCostBasis}</td>
-                <td className="font-mono text-xs">{row.marketPrice}</td>
-                <td className="font-mono text-xs">{row.marketValue}</td>
-                <td className={`font-mono text-xs ${toneInlineClassName(row.unrealisedTone)}`}>{row.unrealisedPnl}</td>
-                <td className="text-right">
-                  {row.canUpsize ? (
-                    upsizeKey === row.positionKey ? (
-                      <span className="flex items-center justify-end gap-2">
-                        <Input
-                          aria-label={`Quantity to add to ${row.symbol}`}
-                          className="h-8 w-24"
-                          value={upsizeQuantity}
-                          onChange={(event) => setUpsizeQuantity(event.target.value)}
-                        />
-                        <Button size="sm" disabled={busy} onClick={() => void submitUpsize(row.positionKey)}>
-                          Confirm
-                        </Button>
-                      </span>
-                    ) : (
-                      <Button size="sm" variant="outline" onClick={() => { setUpsizeKey(row.positionKey); setUpsizeQuantity(""); }}>
-                        Upsize
-                      </Button>
-                    )
-                  ) : null}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                </>
+              )
+            },
+            { id: "side", label: "Side", hideable: true, sortValue: (row) => row.side, render: (row) => row.side },
+            { id: "quantity", label: "Quantity", numeric: true, hideable: true, className: "font-mono", sortValue: (row) => row.values.quantity, render: (row) => row.quantity },
+            { id: "averageCostBasis", label: "Avg cost", numeric: true, hideable: true, className: "font-mono", sortValue: (row) => row.values.averageCostBasis, render: (row) => row.averageCostBasis },
+            { id: "marketPrice", label: "Mark", numeric: true, hideable: true, className: "font-mono", sortValue: (row) => row.values.marketPrice, render: (row) => row.marketPrice },
+            { id: "marketValue", label: "Market value", numeric: true, hideable: true, className: "font-mono", sortValue: (row) => row.values.marketValue, render: (row) => row.marketValue },
+            {
+              id: "unrealisedPnl",
+              label: "Unrealised",
+              numeric: true,
+              hideable: true,
+              className: "font-mono",
+              sortValue: (row) => row.values.unrealisedPnl,
+              render: (row) => <span className={toneInlineClassName(row.unrealisedTone)}>{row.unrealisedPnl}</span>
+            },
+            {
+              id: "actions",
+              label: "",
+              srLabel: "Actions",
+              align: "right",
+              render: (row) => row.canUpsize ? (
+                upsizeKey === row.positionKey ? (
+                  <span className="flex items-center justify-end gap-2">
+                    <Input
+                      aria-label={`Quantity to add to ${row.symbol}`}
+                      className="h-8 w-24"
+                      value={upsizeQuantity}
+                      onChange={(event) => setUpsizeQuantity(event.target.value)}
+                    />
+                    <Button size="sm" disabled={busy} onClick={() => void submitUpsize(row.positionKey)}>
+                      Confirm
+                    </Button>
+                  </span>
+                ) : (
+                  <Button size="sm" variant="outline" onClick={() => { setUpsizeKey(row.positionKey); setUpsizeQuantity(""); }}>
+                    Upsize
+                  </Button>
+                )
+              ) : null
+            }
+          ]}
+        />
       </CardContent>
     </Card>
   );

@@ -192,6 +192,7 @@ import type {
   ValidateManualJournalEntryDraftRequest,
   CapitalAccountWorkbench
 } from "@/types";
+import { formatCount as formatCountValue } from "@/lib/format";
 
 export {
   buildCalibrationSummaryViewState
@@ -4501,7 +4502,7 @@ export function buildSecurityMasterPageViewState({
     : referenceDataLoading
       ? "Refreshing endpoint coverage for the selected record."
       : referenceDataCoverage
-        ? `${referenceRouteCounts.readyCount.toLocaleString()} ready · ${referenceRouteCounts.reviewCount.toLocaleString()} need review · ${referenceRouteCounts.deferredOrBlockedCount.toLocaleString()} deferred or blocked · ${referenceRouteCounts.totalCount.toLocaleString()} total.`
+        ? `${formatCountValue(referenceRouteCounts.readyCount)} ready · ${formatCountValue(referenceRouteCounts.reviewCount)} need review · ${formatCountValue(referenceRouteCounts.deferredOrBlockedCount)} deferred or blocked · ${formatCountValue(referenceRouteCounts.totalCount)} total.`
         : selectedSecurityId
           ? "Reference coverage is queued for the selected record."
           : "Select a security to inspect source coverage.";
@@ -4650,7 +4651,7 @@ export function buildSecurityMasterPageViewState({
       {
         id: "conflicts",
         label: "Open conflicts",
-        value: conflictsLoading ? "Loading" : openConflictCount.toLocaleString(),
+        value: conflictsLoading ? "Loading" : formatCountValue(openConflictCount),
         detail: conflictsLoading
           ? "Refreshing provider conflict evidence."
           : openConflictCount > 0
@@ -5304,7 +5305,7 @@ function buildLedgerJournalEvidenceRow(
   const dimensionLabels = buildLedgerDimensionLabels(line);
   const money = (value: number) => (currency ? formatCurrencyForCode(value, currency) : formatCurrency(value));
   const amountLabel = `${money(line.totalDebits)} debit / ${money(line.totalCredits)} credit`;
-  const lineCountLabel = line.lineCount === 1 ? "1 line" : `${line.lineCount.toLocaleString()} lines`;
+  const lineCountLabel = line.lineCount === 1 ? "1 line" : `${formatCountValue(line.lineCount)} lines`;
 
   return {
     ...line,
@@ -5362,7 +5363,7 @@ function buildTrialBalanceRow(
   const policyLabel = `${line.accountingPolicyId}/${line.accountingPolicyVersion}`;
   // Posted balances are in the book's base currency; the bare formatter prefixes a dollar sign.
   const balanceLabel = currency ? formatCurrencyForCode(line.balance, currency) : formatCurrency(line.balance);
-  const entryCountLabel = line.entryCount.toLocaleString();
+  const entryCountLabel = formatCountValue(line.entryCount);
   const securityLabel = line.security?.primaryIdentifier?.trim() || line.symbol?.trim() || line.security?.displayName.trim() || null;
   const dimensionLabels = buildLedgerDimensionLabels(line);
   const dimensionLabel = dimensionLabels.summary;
@@ -5539,7 +5540,7 @@ function buildLedgerAccountFilteredCountLabel(
     return totalCount === 1 ? "1 GL account row" : `${totalCount} GL account rows`;
   }
 
-  return `${filteredCount.toLocaleString()} of ${totalCount.toLocaleString()} GL account rows`;
+  return `${formatCountValue(filteredCount)} of ${formatCountValue(totalCount)} GL account rows`;
 }
 
 function buildTrialBalanceDetail(
@@ -6533,30 +6534,30 @@ export function buildReferenceDataWorkbenchViewState({
       {
         id: "routes",
         label: "Mapped routes",
-        value: routeCounts.totalCount > 0 ? routeCounts.totalCount.toLocaleString() : "Pending",
+        value: routeCounts.totalCount > 0 ? formatCountValue(routeCounts.totalCount) : "Pending",
         detail: routeCounts.totalCount > 0
-          ? `${routeCounts.readyCount.toLocaleString()} ready · ${routeCounts.reviewCount.toLocaleString()} need review · ${routeCounts.deferredOrBlockedCount.toLocaleString()} deferred or blocked · ${routeCounts.totalCount.toLocaleString()} total.`
+          ? `${formatCountValue(routeCounts.readyCount)} ready · ${formatCountValue(routeCounts.reviewCount)} need review · ${formatCountValue(routeCounts.deferredOrBlockedCount)} deferred or blocked · ${formatCountValue(routeCounts.totalCount)} total.`
           : "Select a security to build reference data checks.",
         tone: routeCounts.totalCount > 0 ? "default" : "warning"
       },
       {
         id: "ready",
         label: "Ready data",
-        value: routeCounts.readyCount.toLocaleString(),
+        value: formatCountValue(routeCounts.readyCount),
         detail: routeCounts.readyCount > 0 ? `${formatCount(routeCounts.readyCount, "reference route")} returned data.` : "No reference route has returned data yet.",
         tone: routeCounts.readyCount > 0 ? "success" : "default"
       },
       {
         id: "review",
         label: "Needs review",
-        value: routeCounts.reviewCount.toLocaleString(),
+        value: formatCountValue(routeCounts.reviewCount),
         detail: routeCounts.reviewCount > 0 ? `${formatCount(routeCounts.reviewCount, "data source")} returned empty, missing, or error status.` : "No checked data source is flagged for review.",
         tone: routeCounts.reviewCount > 0 ? "warning" : "success"
       },
       {
         id: "deferred",
         label: "Deferred / blocked",
-        value: routeCounts.deferredOrBlockedCount.toLocaleString(),
+        value: formatCountValue(routeCounts.deferredOrBlockedCount),
         detail: routeCounts.deferredOrBlockedCount > 0
           ? [
               routeCounts.deferredCount > 0 ? `${formatCount(routeCounts.deferredCount, "write-capable source")} intentionally deferred.` : null,
@@ -6585,7 +6586,7 @@ export function buildReferenceDataWorkbenchViewState({
       : loading
         ? `Loading multi-asset reference data coverage for ${displaySecurityId}.`
         : rows.length > 0
-          ? `${formatCount(rows.length, "reference data source")} loaded for ${displaySecurityId}; ${routeCounts.readyCount.toLocaleString()} ready, ${routeCounts.reviewCount.toLocaleString()} need review, and ${routeCounts.deferredOrBlockedCount.toLocaleString()} deferred or blocked.`
+          ? `${formatCount(rows.length, "reference data source")} loaded for ${displaySecurityId}; ${formatCountValue(routeCounts.readyCount)} ready, ${formatCountValue(routeCounts.reviewCount)} need review, and ${formatCountValue(routeCounts.deferredOrBlockedCount)} deferred or blocked.`
           : ""
   };
 }

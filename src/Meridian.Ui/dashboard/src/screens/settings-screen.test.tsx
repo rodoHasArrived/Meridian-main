@@ -632,13 +632,13 @@ describe("SettingsScreen", () => {
     );
     const eventTable = screen.getByRole("treegrid", { name: "1 recent system event" });
     const eventRow = within(eventTable).getByRole("row", {
-      name: /Select event evt-1\. OBS event from Provider health at May 1, 00:00 UTC\. Brokerage sync delayed\./i
+      name: /Select event evt-1\. OBS event from Provider health at May 1, 2026, 00:00 UTC\. Brokerage sync delayed\./i
     });
     const eventDetail = screen.getByRole("complementary", { name: "Selected recent event detail" });
     const diagnosticsCard = document.querySelector("#diagnostic-endpoints");
 
     expect(diagnosticsCard).toBeInTheDocument();
-    expect(within(diagnosticsCard as HTMLElement).getByLabelText(/Heartbeat Stale · May 1, 00:00 UTC/)).toBeInTheDocument();
+    expect(within(diagnosticsCard as HTMLElement).getByLabelText(/Heartbeat Stale · May 1, 2026, 00:00 UTC/)).toBeInTheDocument();
     expect(within(diagnosticsCard as HTMLElement).getByText("Heartbeat details").closest("details")).not.toHaveAttribute("open");
     expect(within(diagnosticsCard as HTMLElement).getByText("2026-05-01T00:00:00Z")).not.toBeVisible();
     expect(eventRow).toHaveAttribute("aria-selected", "true");
@@ -1942,7 +1942,7 @@ describe("SettingsScreen", () => {
     });
     expect(await within(panel).findByText("Provider integration runtime evidence loaded.")).toBeInTheDocument();
     expect(within(panel).getByText("provider-reference")).toBeInTheDocument();
-    expect(within(panel).getByText("Jun 16, 12:30 UTC")).toBeInTheDocument();
+    expect(within(panel).getByText("Jun 16, 2026, 12:30 UTC")).toBeInTheDocument();
     expect(within(panel).getByText("2 / 4")).toBeInTheDocument();
     expect(within(panel).getByText("14 / 3")).toBeInTheDocument();
     expect(within(panel).getByText("1 critical / 1 warning")).toBeInTheDocument();
@@ -2020,7 +2020,7 @@ describe("SettingsScreen", () => {
         note: "Reviewed from the Settings Provider Connection Center runtime evidence panel."
       }));
     });
-    expect(await within(panel).findByText("Decision: Review by Andrew Rowden · Jun 16, 12:42 UTC")).toBeInTheDocument();
+    expect(await within(panel).findByText("Decision: Review by Andrew Rowden · Jun 16, 2026, 12:42 UTC")).toBeInTheDocument();
     expect(within(panel).getByText("Decision recorded")).toBeInTheDocument();
     expect(within(panel).queryByRole("button", {
       name: "Review quarantine record quarantine-position-1 for Polygon.io"
@@ -2071,7 +2071,7 @@ describe("SettingsScreen", () => {
         note: "Marked from the Settings Provider Connection Center for replay after mapping changes."
       }));
     });
-    expect(await within(panel).findByText("Decision: Replay after mapping change by Andrew Rowden · Jun 16, 12:43 UTC")).toBeInTheDocument();
+    expect(await within(panel).findByText("Decision: Replay after mapping change by Andrew Rowden · Jun 16, 2026, 12:43 UTC")).toBeInTheDocument();
     expect(within(panel).queryByRole("button", {
       name: "Mark quarantine record quarantine-position-2 as cash position for Polygon.io"
     })).not.toBeInTheDocument();
@@ -2092,7 +2092,7 @@ describe("SettingsScreen", () => {
         note: "Ignored from the Settings Provider Connection Center after operator review."
       }));
     });
-    expect(await within(panel).findByText("Decision: Ignore provider record by Andrew Rowden · Jun 16, 12:44 UTC")).toBeInTheDocument();
+    expect(await within(panel).findByText("Decision: Ignore provider record by Andrew Rowden · Jun 16, 2026, 12:44 UTC")).toBeInTheDocument();
 
     await user.click(within(panel).getByRole("button", { name: "Run due provider integration sync for Polygon.io" }));
     expect(apiMocks.runDueProviderIntegrationSync).not.toHaveBeenCalled();
@@ -2694,7 +2694,7 @@ describe("SettingsScreen", () => {
     );
 
     const storageRow = screen.getByRole("row", {
-      name: /Select event evt-2\. CRIT event from Storage at May 1, 00:04 UTC\. Storage heartbeat missed\./i
+      name: /Select event evt-2\. CRIT event from Storage at May 1, 2026, 00:04 UTC\. Storage heartbeat missed\./i
     });
 
     storageRow.focus();
