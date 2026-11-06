@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 5 of 7
 
-Objects 321-400 of 490. References crossing pages remain available in the dependency manifest.
+Objects 321-400 of 492. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -350,6 +350,10 @@ classDiagram
         +Guid SecurityId
         +string Status
     }
+    class Meridian_Contracts_SecurityMaster_SecurityMasterConflictFieldCategories["SecurityMasterConflictFieldCategories"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityMasterConflictFieldCategory["SecurityMasterConflictFieldCategory"] {
+    }
     class Meridian_Contracts_SecurityMaster_SecurityMasterConflictKinds["SecurityMasterConflictKinds"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAppendRequestDto["SecurityMasterCorporateActionAppendRequestDto"] {
@@ -429,17 +433,6 @@ classDiagram
         +int ViolationCount
         +IReadOnlyList~DataQualityRuleViolationDto~ Violations
     }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterReportingReference["SecurityMasterReportingReference"] {
-        +DateTimeOffset AsOfUtc
-        +SecurityDetailDto Detail
-        +SecurityEconomicDefinitionRecord? EconomicDefinition
-        +long? EventGlobalSequence
-        +long? EventStreamVersion
-        +DateTimeOffset? EventTimestamp
-        +SecurityMasterReportingResolutionMode ResolutionMode
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterReportingResolutionMode["SecurityMasterReportingResolutionMode"] {
-    }
     Meridian_Contracts_SecurityMaster_SecurityCashFlowCalculationReceipt --> Meridian_Contracts_SecurityMaster_SecurityCashFlowSourceDto
     Meridian_Contracts_SecurityMaster_SecurityCashFlowCalculationReceipt --> Meridian_Contracts_SecurityMaster_SecurityDetailDto
     Meridian_Contracts_SecurityMaster_SecurityCashFlowCalculationReceipt --> Meridian_Contracts_SecurityMaster_SecurityForwardCurve
@@ -469,7 +462,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityLotUnitDescriptor --> Meridian_Contracts_SecurityMaster_SecurityLotUnitKind
     Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAppendResultDto --> Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAuditDto
     Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAppendResultDto --> Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionRestatementDto
-    Meridian_Contracts_SecurityMaster_SecurityMasterReportingReference --> Meridian_Contracts_SecurityMaster_SecurityDetailDto
-    Meridian_Contracts_SecurityMaster_SecurityMasterReportingReference --> Meridian_Contracts_SecurityMaster_SecurityEconomicDefinitionRecord
-    Meridian_Contracts_SecurityMaster_SecurityMasterReportingReference --> Meridian_Contracts_SecurityMaster_SecurityMasterReportingResolutionMode
 ```

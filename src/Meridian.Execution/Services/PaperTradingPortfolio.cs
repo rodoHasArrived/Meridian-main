@@ -448,9 +448,10 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
 
     /// <summary>
     /// Applies a fill to the default account while recording the fund account that owns it
-    /// and the contract multiplier it carries. Cash and cost basis are unchanged; the
-    /// attribution lets a shared execution book be read per fund and keeps a derivative
-    /// position's exposure from being measured as if each contract were one share.
+    /// and the contract multiplier it carries. Lot prices and cost basis stay quoted per
+    /// contract, while cash, realised and unrealised P&amp;L, market value and ledger postings
+    /// are scaled by the multiplier: one option contract at 2.50 with multiplier 100 moves
+    /// $250, not $2.50. The attribution lets a shared execution book be read per fund.
     /// </summary>
     public void ApplyFill(
         ExecutionReport report,
@@ -677,11 +678,22 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         if (!account.Positions.TryGetValue(symbol, out var pos))
         {
             pos = new PaperPosition(symbol, price) { LotUnit = lotUnit };
+            // Seed the exact multiplier: AttributeFill only ever raises it, so a valid
+            // multiplier below 1 would otherwise stay at the default and fail the
+            // equality check on the very next fill.
+            pos.InitializeContractMultiplier(contractMultiplier);
             account.Positions[symbol] = pos;
         }
         else if (pos.LotUnit != lotUnit)
         {
             throw new InvalidOperationException($"Fill lot denomination {lotUnit} does not match the open {pos.LotUnit} position for '{symbol}'.");
+        }
+        else if (pos.ContractMultiplier != contractMultiplier)
+        {
+            // Cash and P&L are scaled by the position's single multiplier, so a fill carrying a
+            // different one cannot be folded into the same lot book without mis-stating money.
+            throw new InvalidOperationException(
+                $"Fill contract multiplier {contractMultiplier} does not match the open position multiplier {pos.ContractMultiplier} for '{symbol}'.");
         }
 
         // Once a face-value fill touches the position, its cost basis and market price are
@@ -747,7 +759,8 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         decimal commission,
         DateTimeOffset ts)
     {
-        var notional = qty * price;
+        // Lots hold the per-contract price; money moves by the contract multiplier.
+        var notional = qty * price * pos.ContractMultiplier;
         pos.AddLot(qty, price, ts);
         var newQty = pos.Quantity + qty;
         pos.CostBasis = newQty == 0m ? 0m : pos.OpenCostBasis / newQty;
@@ -807,8 +820,9 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         DateTimeOffset ts)
     {
         var coverQty = Math.Min(qty, Math.Abs(pos.Quantity));
-        var proceedsRemoved = pos.ConsumeLots(coverQty, _lotSelectionMethod, isCoveringShort: true);
-        var coverCost = coverQty * price;
+        var multiplier = pos.ContractMultiplier;
+        var proceedsRemoved = pos.ConsumeLots(coverQty, _lotSelectionMethod, isCoveringShort: true) * multiplier;
+        var coverCost = coverQty * price * multiplier;
         var realised = proceedsRemoved - coverCost;
 
         // Release proportional short margin collateral back to cash.
@@ -830,7 +844,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         account.RealisedPnl += realised;
 
         if (_ledger is not null)
-            PostCoverShortEntry(symbol, coverQty, price, proceedsRemoved, realised, ts);
+            PostCoverShortEntry(symbol, coverQty, price, coverCost, proceedsRemoved, realised, ts);
     }
 
     private void ApplySellLong(
@@ -843,8 +857,9 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         DateTimeOffset ts)
     {
         var closeQty = Math.Min(qty, pos.Quantity);
-        var costBasisRemoved = pos.ConsumeLots(closeQty, _lotSelectionMethod, isCoveringShort: false);
-        var proceeds = closeQty * price;
+        var multiplier = pos.ContractMultiplier;
+        var costBasisRemoved = pos.ConsumeLots(closeQty, _lotSelectionMethod, isCoveringShort: false) * multiplier;
+        var proceeds = closeQty * price * multiplier;
         var realised = proceeds - costBasisRemoved;
 
         // For margin positions, proportionally repay the broker loan before crediting cash.
@@ -865,7 +880,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         account.RealisedPnl += realised;
 
         if (_ledger is not null)
-            PostSellLongEntry(symbol, closeQty, price, costBasisRemoved, realised, loanRepaid, ts);
+            PostSellLongEntry(symbol, closeQty, price, proceeds, costBasisRemoved, realised, loanRepaid, ts);
     }
 
     private void ApplyShortSell(
@@ -877,7 +892,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         decimal commission,
         DateTimeOffset ts)
     {
-        var proceeds = qty * price;
+        var proceeds = qty * price * pos.ContractMultiplier;
         pos.AddLot(-qty, price, ts);
         var newQty = pos.Quantity - qty;
         pos.CostBasis = newQty == 0m
@@ -909,10 +924,9 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         ]);
     }
 
-    private void PostSellLongEntry(string symbol, decimal closeQty, decimal price,
+    private void PostSellLongEntry(string symbol, decimal closeQty, decimal price, decimal proceeds,
         decimal costBasisRemoved, decimal realised, decimal loanRepaid, DateTimeOffset ts)
     {
-        var proceeds = closeQty * price;
         var cashProceeds = proceeds - loanRepaid;
         var description = $"Sell {closeQty} {symbol} @ {price:F4}";
         var lines = new List<(LedgerAccount Account, decimal Debit, decimal Credit)>();
@@ -947,10 +961,9 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
             lines.Add((account, debit, credit));
     }
 
-    private void PostCoverShortEntry(string symbol, decimal coverQty, decimal price,
+    private void PostCoverShortEntry(string symbol, decimal coverQty, decimal price, decimal coverCost,
         decimal proceedsRemoved, decimal realised, DateTimeOffset ts)
     {
-        var coverCost = coverQty * price;
         var description = $"Cover {coverQty} {symbol} @ {price:F4}";
         if (realised > 0m)
             _ledger!.PostLines(ts, description,
@@ -1183,17 +1196,21 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
     /// <summary>The open lot book in the shared lot shape.</summary>
     public IReadOnlyList<IUnitizedLot> UnitizedLots => _lots;
 
-    /// <summary>Unsigned exposure magnitude (|qty| × price); use <see cref="SignedMarketValue"/> for equity math.</summary>
-    public decimal MarketValue => Math.Abs(Quantity) * MarketPrice;
+    /// <summary>
+    /// Unsigned exposure magnitude (|qty| × price × multiplier); use <see cref="SignedMarketValue"/>
+    /// for equity math. <see cref="MarketPrice"/> stays quoted per contract.
+    /// </summary>
+    public decimal MarketValue => Math.Abs(Quantity) * MarketPrice * ContractMultiplier;
 
     /// <summary>Signed market value: positive for longs, negative for shorts (a liability).</summary>
-    public decimal SignedMarketValue => Quantity * MarketPrice;
+    public decimal SignedMarketValue => Quantity * MarketPrice * ContractMultiplier;
 
     /// <summary>
     /// Unrealised P&amp;L uses exact retained basis; the display's weighted unit quote
-    /// cannot reconstruct the remaining basis after fractional relief.
+    /// cannot reconstruct the remaining basis after fractional relief. The retained basis is
+    /// held per contract, so it is scaled by the multiplier like market value.
     /// </summary>
-    public decimal UnrealisedPnl => Math.Sign(Quantity) * (MarketValue - OpenCostBasis);
+    public decimal UnrealisedPnl => Math.Sign(Quantity) * (MarketValue - OpenCostBasis * ContractMultiplier);
 
     public IReadOnlyList<PositionLotEntry> GetLots() => _lots
         .Select(static lot => new PositionLotEntry(
@@ -1380,8 +1397,9 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
     }
 
     /// <summary>
-    /// Contract multiplier for this position, taken from the fills that opened it. A
-    /// position mixing multipliers keeps the largest, which cannot under-measure exposure.
+    /// Contract multiplier for this position, taken from the fills that opened it. Cash,
+    /// P&amp;L and market value are scaled by it, so a fill with a different multiplier is
+    /// refused while the position is open (see <c>ApplyFillToAccount</c>).
     /// </summary>
     public decimal ContractMultiplier { get; private set; } = 1m;
 
@@ -1395,12 +1413,22 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
     public bool HasOwnerExposure => _ownerQuantities.Count > 0;
 
     /// <summary>
-    /// Records which fund a fill belonged to. Attribution only — the lot book, cost basis,
-    /// and realised P&amp;L are untouched, so cash and accounting stay exactly as before
-    /// while the read path gains the ownership the shared execution account cannot express.
+    /// Records which fund a fill belonged to and the contract multiplier the position's money
+    /// math uses. The lot book and per-contract cost basis are untouched; the read path gains
+    /// the ownership the shared execution account cannot express.
     /// The tallies always sum to <see cref="Quantity"/>: each is that fund's net signed
     /// contribution, so a fund that bought and sold the same size nets to zero.
     /// </summary>
+    /// <summary>Sets the multiplier of a newly opened position before its first fill is applied.</summary>
+    public void InitializeContractMultiplier(decimal contractMultiplier)
+    {
+        if (contractMultiplier <= 0m)
+            throw new ArgumentOutOfRangeException(nameof(contractMultiplier), "Contract multiplier must be positive.");
+        if (Quantity != 0m || _lots.Count > 0 || _ownerQuantities.Count > 0)
+            throw new InvalidOperationException("The contract multiplier can only be initialized on an empty position.");
+        ContractMultiplier = contractMultiplier;
+    }
+
     public void AttributeFill(string? ownerAccountId, decimal signedQuantity, decimal contractMultiplier)
     {
         if (contractMultiplier > ContractMultiplier)

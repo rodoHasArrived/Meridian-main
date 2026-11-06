@@ -2,11 +2,22 @@
 
 # `security-master-contracts` data objects - page 6 of 7
 
-Objects 401-480 of 490. References crossing pages remain available in the dependency manifest.
+Objects 401-480 of 492. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityMasterReportingReference["SecurityMasterReportingReference"] {
+        +DateTimeOffset AsOfUtc
+        +SecurityDetailDto Detail
+        +SecurityEconomicDefinitionRecord? EconomicDefinition
+        +long? EventGlobalSequence
+        +long? EventStreamVersion
+        +DateTimeOffset? EventTimestamp
+        +SecurityMasterReportingResolutionMode ResolutionMode
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityMasterReportingResolutionMode["SecurityMasterReportingResolutionMode"] {
+    }
     class Meridian_Contracts_SecurityMaster_SecurityMasterSchemaVersions["SecurityMasterSchemaVersions"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityOptionRight["SecurityOptionRight"] {
@@ -440,34 +451,7 @@ classDiagram
         +Guid? SuccessorSecurityId
         +decimal? UnitsPerRight
     }
-    class Meridian_Contracts_SecurityMaster_TradingParametersDto["TradingParametersDto"] {
-        +DateTimeOffset AsOf
-        +decimal? CircuitBreakerThresholdPct
-        +decimal? ContractMultiplier
-        +bool? IsEasyToBorrow
-        +bool? IsFractionable
-        +bool? IsMarginable
-        +bool? IsShortable
-        +decimal? LotSize
-        +decimal? MarginRequirementPct
-        +decimal? MinimumOrderSize
-        +decimal? MinimumTradeIncrement
-        +decimal? PriceIncrement
-    }
-    class Meridian_Contracts_SecurityMaster_TransitionCorporateActionCaseRequestDto["TransitionCorporateActionCaseRequestDto"] {
-        +string Actor
-        +string? AssignedTo
-        +CorporateActionCaseTransitionAuthorityDto? Authority
-        +string? BlockedReason
-        +Guid CaseId
-        +string CompanyId
-        +string? CorrelationId
-        +long ExpectedVersion
-        +string IdempotencyKey
-        +bool PolicyOverride
-        +string Reason
-        +CorporateActionCaseScopeDto? ScopeAssertion
-    }
+    Meridian_Contracts_SecurityMaster_SecurityMasterReportingReference --> Meridian_Contracts_SecurityMaster_SecurityMasterReportingResolutionMode
     Meridian_Contracts_SecurityMaster_SecurityOverrideAuditEntryDto --> Meridian_Contracts_SecurityMaster_SecurityOverrideApprovalStatusDto
     Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto --> Meridian_Contracts_SecurityMaster_SecurityPriceKind
     Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto --> Meridian_Contracts_SecurityMaster_SecurityPriceUnit

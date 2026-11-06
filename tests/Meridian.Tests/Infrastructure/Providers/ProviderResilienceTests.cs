@@ -90,9 +90,11 @@ public sealed class CompositeSinkCircuitBreakerTests
             maxConsecutiveFailures: 2);
         var evt = CreateEvent();
 
-        // Act – exhaust the failure threshold
-        await composite.AppendAsync(evt);
-        await composite.AppendAsync(evt);
+        // Act – exhaust the failure threshold. With no other sink, each append is rejected
+        // outright so the caller never treats the event as persisted.
+        var append = async () => await composite.AppendAsync(evt);
+        await append.Should().ThrowAsync<InvalidOperationException>();
+        await append.Should().ThrowAsync<InvalidOperationException>();
 
         // Assert – circuit is now open
         var report = composite.GetSinkHealthReport();
@@ -161,8 +163,10 @@ public sealed class CompositeSinkCircuitBreakerTests
         var evt = CreateEvent();
 
         // Open the circuit
-        await composite.AppendAsync(evt); // fail 1
-        await composite.AppendAsync(evt); // fail 2 → open
+        // A lone failing sink means nothing persisted, so each append is rejected.
+        var trip = async () => await composite.AppendAsync(evt);
+        await trip.Should().ThrowAsync<InvalidOperationException>(); // fail 1
+        await trip.Should().ThrowAsync<InvalidOperationException>(); // fail 2 → open
 
         // Wait for the reset timeout
         await Task.Delay(20);

@@ -4989,6 +4989,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterCashFlow.cs
 │   │   │   ├── SecurityMasterClosePrices.cs
 │   │   │   ├── SecurityMasterClosePricesJsonContext.cs
+│   │   │   ├── SecurityMasterConflictFieldCategories.cs
 │   │   │   ├── SecurityMasterCorporateActions.cs
 │   │   │   ├── SecurityMasterDataQuality.cs
 │   │   │   ├── SecurityMasterEnumReads.cs
@@ -10047,6 +10048,7 @@ Meridian-main
 │   │   │   ├── ProviderIntegrationManifestIdentityTests.cs
 │   │   │   └── VerifiedOperationOutcomeTests.cs
 │   │   ├── SecurityMaster
+│   │   │   ├── SecurityMasterConflictFieldCategoriesTests.cs
 │   │   │   └── StructuredCashFlowTermsResolverIntegrationTests.cs
 │   │   ├── ContractualCashFlowEngineTests.cs
 │   │   ├── ContractualCashFlowRunComparerTests.cs
@@ -11282,6 +11284,7 @@ Meridian-main
 │   │   │   ├── PaperTradingCostModelTests.cs
 │   │   │   ├── PaperTradingGatewayTests.cs
 │   │   │   ├── PaperTradingPortfolioBasisParityTests.cs
+│   │   │   ├── PaperTradingPortfolioContractMultiplierTests.cs
 │   │   │   ├── PaperTradingPortfolioLotSelectionTests.cs
 │   │   │   ├── PaperTradingPortfolioLotSnapshotTests.cs
 │   │   │   ├── PaperTradingPortfolioTests.cs
@@ -11564,6 +11567,8 @@ Meridian-main
 │   │   │   │   ├── AdminEndpointPermissionTests.cs
 │   │   │   │   ├── AuthEndpointTests.cs
 │   │   │   │   ├── BackfillEndpointTests.cs
+│   │   │   │   ├── BankingActionOriginTests.cs
+│   │   │   │   ├── BankingAndTreasuryEndpointRegistrationTests.cs
 │   │   │   │   ├── CatalogEndpointTests.cs
 │   │   │   │   ├── CheckpointEndpointTests.cs
 │   │   │   │   ├── ConfigDirectLendingAuthorizationTests.cs

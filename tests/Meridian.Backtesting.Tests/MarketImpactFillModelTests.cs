@@ -317,16 +317,37 @@ public sealed class MarketImpactFillModelTests
     }
 
     [Fact]
-    public void TryFill_ZeroVolumeBar_TreatsVolumeAsOne()
+    public void TryFill_ZeroVolumeBar_LeavesOrderWorking()
     {
-        // Edge case: bar with Volume = 0 should not cause divide-by-zero
+        // A zero-volume bar has no liquidity. It used to be treated as volume 1, which made a
+        // 200-share market sell take ~141% impact and fill at a negative price.
         var model = new MarketImpactFillModel(new FixedCommissionModel(0m));
-        var order = MakeMarketOrder("SPY", 1L);
+        var order = MakeMarketOrder("SPY", -200L);
         var evt = MakeBarEvent("SPY", 400m, 410m, 390m, 405m, volume: 0L);
 
-        var act = () => model.TryFill(order, evt);
+        var result = model.TryFill(order, evt);
 
-        act.Should().NotThrow("zero-volume bar must be handled gracefully");
+        result.Fills.Should().BeEmpty();
+        result.UpdatedOrder.Status.Should().Be(OrderStatus.Pending);
+        result.RemoveOrder.Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData(-200L)]
+    [InlineData(-10_000L)]
+    public void TryFill_ThinBarSell_ImpactIsBoundedAndPriceStaysPositive(long quantity)
+    {
+        var model = new MarketImpactFillModel(new FixedCommissionModel(0m), impactCoefficient: 0.1m, slippageBasisPoints: 0m);
+        var order = MakeMarketOrder("SPY", quantity);
+        var evt = MakeBarEvent("SPY", 400m, 410m, 390m, 405m, volume: 1L);
+
+        var result = model.TryFill(order, evt);
+
+        result.Fills.Should().NotBeEmpty();
+        // The base price can be no lower than the bar low (390); impact is capped below that.
+        result.Fills.Should().OnlyContain(
+            fill => fill.FillPrice >= 390m * (1m - MarketImpactFillModel.MaxImpactFraction),
+            "impact is capped at MaxImpactFraction, so a sell can never fill at or below zero");
     }
 
     // =========================================================================
