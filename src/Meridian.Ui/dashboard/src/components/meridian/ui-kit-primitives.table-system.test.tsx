@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { DenseDataTable, sortRowsByValue, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
@@ -143,6 +145,13 @@ describe("DenseDataTable table system", () => {
       <DenseDataTable density="compact" ariaLabel="Positions" emptyText="No positions" columns={columns.slice(0, 1)} rows={rows} getRowId={(row) => row.id} />
     );
     expect(container.querySelector(".dense-data-table-wrap")).toHaveAttribute("data-density", "compact");
+  });
+
+  it("keeps virtualized tables within their fixed row height when spacious density is chosen", () => {
+    // Windowing assumes every row is exactly rowHeight tall; spacious padding must not apply there.
+    const css = readFileSync(resolve(process.cwd(), "src/styles/ui-kit-primitives.css"), "utf8");
+    const rule = css.match(/:where\(body\[data-theme-density="spacious"\]\) \.dense-data-table-wrap-virtual \.dense-data-table,[^{]*\{([^}]*)\}/);
+    expect(rule?.[1]).toContain("--dense-cell-py: 0.4375rem");
   });
 
   it("keeps header caps for short labels and sentence case for longer ones", () => {
