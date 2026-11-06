@@ -45,7 +45,7 @@ import { applyDensity, writeStoredDensity } from "@/lib/density";
 import { ScopePickerOpenerProvider } from "@/lib/operating-scope/scope-picker-context";
 import { readRecentScopes, rememberRecentScope } from "@/lib/operating-scope/recent-scopes";
 import { CrossScreenCountsProvider } from "@/lib/cross-screen-counts-context";
-import type { LayoutRestorePlan } from "@/lib/saved-layouts";
+import { buildLayoutRestorePlan, readUserLayouts, type LayoutRestorePlan } from "@/lib/saved-layouts";
 import { WorkspaceNav } from "@/components/meridian/workspace-nav";
 import { Skeleton } from "@/components/data/skeleton";
 import type { BreadcrumbItem } from "@/components/ui/breadcrumb";
@@ -482,9 +482,24 @@ function AppShell({
     }),
     []
   );
+  // C4: saved views in the palette. A saved layout carries its route with every table's URL state
+  // (filters, sort, hidden columns), the operating scope and density, so opening one restores the
+  // whole view. Read when the palette opens so a view saved a moment ago is offered.
+  const savedViewActionItems = useMemo<CommandPaletteActionItem[]>(
+    () => (commandOpen ? readUserLayouts() : []).map((layout) => ({
+      id: `saved-view:${layout.id}`,
+      verbLabel: `Open saved view ${layout.name}`,
+      description: layout.description ?? "Restores its screen with filters, sort, columns, scope and density.",
+      keywords: ["saved view", "layout", layout.name],
+      run: async () => {
+        handleRestoreLayoutRef.current(buildLayoutRestorePlan(layout));
+      }
+    })),
+    [commandOpen]
+  );
   const paletteActionItems = useMemo(
-    () => [scopeActionItem, ...presetPinActionItems, ...screenActionItems],
-    [scopeActionItem, presetPinActionItems, screenActionItems]
+    () => [scopeActionItem, ...savedViewActionItems, ...presetPinActionItems, ...screenActionItems],
+    [scopeActionItem, savedViewActionItems, presetPinActionItems, screenActionItems]
   );
 
   useEffect(() => {
@@ -545,6 +560,8 @@ function AppShell({
 
     navigate(plan.route);
   };
+  const handleRestoreLayoutRef = useRef(handleRestoreLayout);
+  handleRestoreLayoutRef.current = handleRestoreLayout;
 
   const scopeFundAccountOptions = useMemo(() => collectScopeFundAccounts(brokeragePortfolio), [brokeragePortfolio]);
   const scopeDimensionsInEffect = useMemo(() => operatingScopeDimensionsForRoute(pathname), [pathname]);

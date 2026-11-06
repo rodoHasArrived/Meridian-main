@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fireEvent, render, screen, within } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { DenseDataTable, sortRowsByValue, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 
 interface PositionRow {
@@ -120,6 +120,44 @@ describe("DenseDataTable table system", () => {
     );
     expect(screen.queryByRole("columnheader", { name: /Quantity/ })).toBeNull();
     expect(screen.getByRole("columnheader", { name: /Cost basis source/ })).toBeInTheDocument();
+  });
+
+  it("lets the caller own hidden columns so a link or saved view can carry them (C4)", () => {
+    const onHiddenColumnIdsChange = vi.fn();
+    const { rerender } = render(
+      <DenseDataTable
+        tableId="owned-columns"
+        ariaLabel="Positions"
+        emptyText="No positions"
+        columns={columns}
+        rows={rows}
+        getRowId={(row) => row.id}
+        hiddenColumnIds={["quantity", "symbol"]}
+        onHiddenColumnIdsChange={onHiddenColumnIdsChange}
+      />
+    );
+    // Only hideable ids apply; the browser memory for this table id is not used.
+    expect(screen.queryByRole("columnheader", { name: /Quantity/ })).toBeNull();
+    expect(screen.getByRole("columnheader", { name: /Symbol/ })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: /Cost basis source/ })).toBeInTheDocument();
+
+    fireEvent.click(within(screen.getByRole("group", { name: "Show columns in Positions" })).getByRole("checkbox", { name: "Market value" }));
+    expect(onHiddenColumnIdsChange).toHaveBeenCalledWith(expect.arrayContaining(["quantity", "marketValue"]));
+    expect(window.localStorage.getItem("meridian.workstation.table-columns.v1:owned-columns")).toBeNull();
+
+    rerender(
+      <DenseDataTable
+        tableId="owned-columns"
+        ariaLabel="Positions"
+        emptyText="No positions"
+        columns={columns}
+        rows={rows}
+        getRowId={(row) => row.id}
+        hiddenColumnIds={[]}
+        onHiddenColumnIdsChange={onHiddenColumnIdsChange}
+      />
+    );
+    expect(screen.getByRole("columnheader", { name: /Quantity/ })).toBeInTheDocument();
   });
 
   it("renders no Columns menu when no column is hideable", () => {

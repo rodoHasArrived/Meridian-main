@@ -301,7 +301,9 @@ not been recorded.
     largest-first, text A–Z, missing values last) or owned by the caller through `sort` and
     `onToggleSort`;
   - `numeric` columns, right-aligned with tabular figures;
-  - `hideable` and `defaultHidden` columns behind a Columns menu, remembered per `tableId`;
+  - `hideable` and `defaultHidden` columns behind a Columns menu, remembered per `tableId`, or
+    owned by the caller through `hiddenColumnIds` and `onHiddenColumnIdsChange` when a link or
+    saved view must carry them;
   - a per-table `density` override. Otherwise rows follow the operator density chosen in
     Settings, which `main.tsx` re-applies at startup.
 
@@ -325,6 +327,13 @@ not been recorded.
   loads the draft, and Apply stays the one action that changes scope. The default is applied only
   when a session opens with no scope in its link or browser. The continuity dock shows each
   dimension as a chip on every workspace, marked applied or retained.
+- **Saved views.** The positions, break queue and ledger tables keep their filters, sort and
+  hidden columns in the URL: positions in the `view` envelope, breaks in `reconciliationSearch`,
+  `reconciliationStatus`, `reconciliationSort` and `reconciliationColumns`, the ledger in
+  `ledgerSearch` and `ledgerSort` (`columnId:direction`). A saved layout captures the route with
+  those parameters, so restoring it restores the table, and the command palette offers each
+  saved layout as "Open saved view …". `lib/shareable-view.test.ts` restores each table from a
+  copied link with empty browser storage.
 - **Type scale.** There are three tiers: `type-page-title` (the workspace header's h1),
   `type-section` (CardTitle and region headings) and `type-label`. A label of one or two words may
   add `type-label--caps`. Longer labels render in sentence case: `FormRow`,

@@ -54,6 +54,9 @@ export interface ReconciliationQueueControls {
   queueSearch: string;
   queueStatus: string;
   queueSort: string;
+  /** Hidden break-queue columns, kept in the link (C4). */
+  hiddenColumns?: string[];
+  setHiddenColumns?: (hiddenColumns: string[]) => void;
   setQueueSearch: (value: string) => void;
   setQueueStatus: (value: ReconciliationQueueStatus) => void;
   setQueueSort: (value: ReconciliationQueueSort) => void;
@@ -458,6 +461,8 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
             <div ref={queueRef} className="reconciliation-queue-scroll" onScroll={rememberQueueScroll}>
               <DenseDataTable
                 tableId="reconciliation-breaks"
+                hiddenColumnIds={controls.hiddenColumns}
+                onHiddenColumnIdsChange={controls.setHiddenColumns}
                 columns={reconciliationBreakColumns}
                 rows={visibleRows}
                 getRowId={(item) => item.breakId}

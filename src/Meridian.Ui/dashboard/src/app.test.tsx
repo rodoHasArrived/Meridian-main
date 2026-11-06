@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "@/app";
+import { captureLayoutState, upsertUserLayout } from "@/lib/saved-layouts";
 import { useWorkstationData } from "@/hooks/use-workstation-data";
 import { apiGetJson } from "@/lib/api";
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
@@ -449,6 +450,28 @@ describe("App", () => {
     // on screen above every workspace, alongside the trust-strip cell.
     const provenanceBanner = await screen.findByRole("region", { name: "Data provenance" });
     expect(within(provenanceBanner).getByTestId("data-provenance-seeded")).toBeInTheDocument();
+  });
+
+  it("offers saved views in the command palette (C4)", async () => {
+    upsertUserLayout({
+      id: "month-end-breaks",
+      name: "Month-end breaks",
+      description: null,
+      source: "user",
+      state: captureLayoutState({
+        route: "/accounting/reconciliation?reconciliationStatus=Open&reconciliationColumns=owner",
+        operatingScope: { fundAccountId: "fund-a" },
+        density: "compact",
+        panes: []
+      })
+    });
+    const user = userEvent.setup();
+    renderWithRouter(<App />, { initialEntries: ["/trading"] });
+
+    await user.keyboard("{Control>}k{/Control}");
+    const dialog = screen.getByRole("dialog", { name: "Open workstation command" });
+    expect(await within(dialog).findByText("Open saved view Month-end breaks")).toBeInTheDocument();
+    window.localStorage.removeItem("meridian.workstation.layouts.v1");
   });
 
   it("opens and closes the command palette with Control+K", async () => {

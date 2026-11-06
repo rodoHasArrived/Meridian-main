@@ -160,6 +160,13 @@ export interface DenseDataTableProps<T> {
    * pointer. Optional; when omitted rows carry no context-menu behaviour.
    */
   onRowContextMenu?: (row: T, event: ReactMouseEvent<HTMLTableRowElement>) => void;
+  /**
+   * Caller-owned hidden columns (C4), for a screen that keeps them in its URL view state so saved
+   * views and copied links carry them. Requires `onHiddenColumnIdsChange`; replaces the per-table
+   * browser memory used otherwise.
+   */
+  hiddenColumnIds?: readonly string[];
+  onHiddenColumnIdsChange?: (hiddenColumnIds: string[]) => void;
 }
 
 function DenseDataTableComponent<T>({
@@ -183,6 +190,8 @@ function DenseDataTableComponent<T>({
   virtualization = null,
   getRowTypeaheadText,
   onRowContextMenu,
+  hiddenColumnIds: controlledHiddenColumnIds,
+  onHiddenColumnIdsChange,
   rows: sourceRows,
   columns: allColumns
 }: DenseDataTableProps<T>) {
@@ -202,7 +211,20 @@ function DenseDataTableComponent<T>({
     [sourceRows, sortColumn, sort]
   );
 
-  const [hiddenColumnIds, setHiddenColumnIds] = useDenseColumnVisibility(allColumns, tableId);
+  const [storedHiddenColumnIds, setStoredHiddenColumnIds] = useDenseColumnVisibility(allColumns, tableId);
+  const ownsHiddenColumns = controlledHiddenColumnIds !== undefined && onHiddenColumnIdsChange !== undefined;
+  const controlledHiddenKey = controlledHiddenColumnIds?.join("\u0000") ?? "";
+  const hiddenColumnIds = useMemo<ReadonlySet<string>>(
+    () => ownsHiddenColumns
+      ? new Set((controlledHiddenColumnIds ?? []).filter((id) => allColumns.some((column) => column.id === id && isHideableColumn(column))))
+      : storedHiddenColumnIds,
+    // The key stands in for the caller's array identity, which may change every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [ownsHiddenColumns, controlledHiddenKey, storedHiddenColumnIds, allColumns]
+  );
+  const setHiddenColumnIds = ownsHiddenColumns
+    ? (next: Set<string>) => onHiddenColumnIdsChange?.([...next])
+    : setStoredHiddenColumnIds;
   const hideableColumns = allColumns.filter(isHideableColumn);
   const columns = hiddenColumnIds.size === 0 ? allColumns : allColumns.filter((column) => !hiddenColumnIds.has(column.id));
 
