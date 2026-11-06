@@ -68,7 +68,7 @@ function renderWorkbench(
     const [queueStatus, setQueueStatus] = useState("all");
     const [queueSort, setQueueSort] = useState("default");
     const state = buildReconciliationBreakQueueState({ breakQueue: breaks, selectedBreakId, loading: false, loadError: null, action: null, actionError: null });
-    const reconciliation = { ...state, selectBreak, assignBreak, applyBreakQueueItems, detailActions: null } as unknown as WorkbenchProps["reconciliation"];
+    const reconciliation = { ...state, selectBreak, assignBreak, beginBreakQueueUpdate: () => applyBreakQueueItems, detailActions: null } as unknown as WorkbenchProps["reconciliation"];
     const dialog = useReconciliationResolveDialogViewModel(resolveBreak);
     return <ReconciliationWorkbench reconciliation={reconciliation} resolveDialog={dialog} runSelector={runSelector} bulkServices={bulkServices} visitServices={visitServices} controls={{ queueSearch, queueStatus, queueSort, setQueueSearch, setQueueStatus, setQueueSort, clearQueueFilters: () => { setQueueSearch(""); setQueueStatus("all"); } }} />;
   }

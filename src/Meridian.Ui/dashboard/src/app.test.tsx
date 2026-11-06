@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from "@testing-library/react";
+import { act, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { StrictMode } from "react";
@@ -479,6 +479,26 @@ describe("App", () => {
     expect(vi.mocked(getOperatorScopePreference).mock.calls.length).toBeGreaterThanOrEqual(2);
     vi.mocked(getOperatorScopePreference).mockReset().mockResolvedValue({ defaultScope: null, updatedAt: null });
     window.localStorage.removeItem(OPERATING_CONTEXT_STORAGE_KEY);
+  });
+
+  it("keeps an operator's explicit empty scope when the default loads late (C1)", async () => {
+    window.localStorage.removeItem(OPERATING_CONTEXT_STORAGE_KEY);
+    let release!: () => void;
+    vi.mocked(getOperatorScopePreference).mockImplementation(() => new Promise((resolve) => {
+      release = () => resolve({ defaultScope: { symbol: "MSFT" }, updatedAt: "2026-11-06T09:00:00Z" });
+    }));
+    const user = userEvent.setup();
+    renderWithRouter(<App />, { initialEntries: ["/trading"] });
+
+    // The operator applies an empty scope while the default is still loading.
+    await user.click(screen.getByRole("button", { name: /(Set|Change) operating scope/ }));
+    await user.click(screen.getByRole("button", { name: "Clear scope" }));
+    await user.click(screen.getByRole("button", { name: "Apply scope" }));
+    await act(async () => release());
+
+    expect(window.localStorage.getItem(OPERATING_CONTEXT_STORAGE_KEY) ?? "").not.toContain("MSFT");
+    expect(screen.getByText("No scope selected")).toBeInTheDocument();
+    vi.mocked(getOperatorScopePreference).mockReset().mockResolvedValue({ defaultScope: null, updatedAt: null });
   });
 
   it("offers saved views in the command palette (C4)", async () => {

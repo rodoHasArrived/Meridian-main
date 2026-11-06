@@ -358,6 +358,9 @@ function AppShell({
   const [recentScopes, setRecentScopes] = useState(() => readRecentScopes());
   const [defaultScope, setDefaultScope] = useState<AppShellOperatingScopeInput | null>(null);
   const defaultScopeCheckedRef = useRef(false);
+  // Set once the operator applies or restores any scope, including an empty one, so a default that
+  // loads late never replaces a choice they made while it was loading.
+  const operatorChoseScopeRef = useRef(false);
   const onboardingTour = useOnboardingTour();
   const workbenchRef = useRef<HTMLElement | null>(null);
   const previousRouteKeyRef = useRef<string | null>(null);
@@ -386,8 +389,14 @@ function AppShell({
       defaultScopeCheckedRef.current = true;
       const saved = preference.defaultScope ? compactOperatingScope(preference.defaultScope) : null;
       setDefaultScope(saved && hasOperatingScopeValues(saved) ? saved : null);
-      if (openedUnscopedRef.current && !hasOperatingScopeValues(currentOperatingScopeRef.current) && saved && hasOperatingScopeValues(saved)) {
-        handleSetOperatingScopeRef.current(saved);
+      if (
+        openedUnscopedRef.current
+        && !operatorChoseScopeRef.current
+        && !hasOperatingScopeValues(currentOperatingScopeRef.current)
+        && saved
+        && hasOperatingScopeValues(saved)
+      ) {
+        applyOperatingScopeRef.current(saved);
       }
     }).catch(() => {
       // No session, an older host, or a failed read: no default, and the session stays as opened.
@@ -535,7 +544,7 @@ function AppShell({
   // Replace the operating scope from the picker: persist it and reflect the
   // applicable dimensions into the current route so URL-reading screens filter,
   // preserving any non-scope query params already on the route.
-  const handleSetOperatingScope = (next: AppShellOperatingScopeInput) => {
+  const applyOperatingScope = (next: AppShellOperatingScopeInput) => {
     const compacted = compactOperatingScope(next);
     scopeReplacementLocationRef.current = locationKey;
     writeStoredOperatingScope(compacted);
@@ -545,8 +554,12 @@ function AppShell({
     const scopeState = buildOperatingScopeFromSearch("", compacted);
     navigate(`${appendOperatingScopeToRoute(baseRoute, scopeState)}${hash}`, { replace: true });
   };
-  const handleSetOperatingScopeRef = useRef(handleSetOperatingScope);
-  handleSetOperatingScopeRef.current = handleSetOperatingScope;
+  const applyOperatingScopeRef = useRef(applyOperatingScope);
+  applyOperatingScopeRef.current = applyOperatingScope;
+  const handleSetOperatingScope = (next: AppShellOperatingScopeInput) => {
+    operatorChoseScopeRef.current = true;
+    applyOperatingScope(next);
+  };
 
   // Replay a saved layout: apply density and operating scope, re-open the recorded
   // companion panes, then navigate the captured route. Window placement across
@@ -558,6 +571,7 @@ function AppShell({
     applyDensity(plan.density);
 
     const compacted = compactOperatingScope(plan.operatingScope);
+    operatorChoseScopeRef.current = true;
     scopeReplacementLocationRef.current = locationKey;
     writeStoredOperatingScope(compacted);
     setStoredOperatingScope(compacted);

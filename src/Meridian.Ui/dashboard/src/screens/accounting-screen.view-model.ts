@@ -4153,10 +4153,15 @@ export function useAccountingReconciliationViewModel(
     }
   }, [actionContextRevision, canActOnCurrentQueue, operatorIdentity, scopeRevision, services]);
 
-  // Bulk triage (C2) returns the committed cases from the governed bulk endpoint.
-  const applyBreakQueueItems = useCallback((items: ReconciliationBreakQueueItem[]) => {
-    if (items.length === 0) return;
-    setBreakQueue((current) => items.reduce((queue, item) => replaceBreakQueueItem(queue, item), current));
+  // Bulk triage (C2) returns the committed cases from the governed bulk endpoint. Like the
+  // single-case handlers, the update is bound to the scope the action started in: a response that
+  // lands after the operator changed scope is not merged into (or prepended to) the new queue.
+  const beginBreakQueueUpdate = useCallback(() => {
+    const requestScope = activeScopeRef.current;
+    return (items: ReconciliationBreakQueueItem[]) => {
+      if (items.length === 0 || activeScopeRef.current !== requestScope) return;
+      setBreakQueue((current) => items.reduce((queue, item) => replaceBreakQueueItem(queue, item), current));
+    };
   }, []);
 
   useEffect(() => {
@@ -4402,7 +4407,7 @@ export function useAccountingReconciliationViewModel(
     },
     assignBreak,
     resolveBreak,
-    applyBreakQueueItems,
+    beginBreakQueueUpdate,
     calibrationSummary,
     calibrationLoading,
     calibrationErrorText: calibrationError?.summary ?? null,

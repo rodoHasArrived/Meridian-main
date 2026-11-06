@@ -45,7 +45,7 @@ type Reconciliation = Pick<ReconciliationViewModel,
   | "selectedDetail"
   | "selectBreak"
   | "assignBreak"
-  | "applyBreakQueueItems"
+  | "beginBreakQueueUpdate"
   | "detailPanelId"
   | "detailEmptyAriaLabel"
   | "detailEmptyTitle"
@@ -133,7 +133,7 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const triage = useReconciliationBulkTriage({
     visibleBreakIds: visibleRows.map((row) => row.breakId),
-    onItemsUpdated: reconciliation.applyBreakQueueItems,
+    beginItemsUpdate: reconciliation.beginBreakQueueUpdate,
     services: bulkServices
   });
   const { isSelected: isBulkSelected, toggle: toggleBulkSelected } = triage;

@@ -68,11 +68,12 @@ export interface ReconciliationBulkTriage {
 
 export function useReconciliationBulkTriage({
   visibleBreakIds,
-  onItemsUpdated,
+  beginItemsUpdate,
   services = defaultBulkTriageServices
 }: {
   visibleBreakIds: readonly string[];
-  onItemsUpdated?: (items: ReconciliationBreakQueueItem[]) => void;
+  /** Called as the execute starts; the returned function applies its committed cases, if still in scope. */
+  beginItemsUpdate?: () => (items: ReconciliationBreakQueueItem[]) => void;
   services?: BulkTriageServices;
 }): ReconciliationBulkTriage {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -176,6 +177,7 @@ export function useReconciliationBulkTriage({
   const execute = useCallback(async () => {
     if (!preview || !previewIsCurrent || preview.passedIds.length === 0) return;
     const checked = preview.draft;
+    const applyUpdate = beginItemsUpdate?.();
     setBusy("executing");
     setMessage(null);
     try {
@@ -185,7 +187,7 @@ export function useReconciliationBulkTriage({
         operator: null
       }));
       const outcome = summarizeBulkExecute(checked.kind, result);
-      if (outcome.updatedItems.length > 0) onItemsUpdated?.(outcome.updatedItems);
+      if (outcome.updatedItems.length > 0) applyUpdate?.(outcome.updatedItems);
       const changed = new Set(outcome.updatedItems.map((item) => item.breakId));
       setSelectedIds((current) => current.filter((id) => !changed.has(id)));
       setMessage({
@@ -201,7 +203,7 @@ export function useReconciliationBulkTriage({
     } finally {
       setBusy(null);
     }
-  }, [onItemsUpdated, preview, previewIsCurrent, services]);
+  }, [beginItemsUpdate, preview, previewIsCurrent, services]);
 
   const selectedSet = useMemo(() => new Set(selectedIds), [selectedIds]);
   const isSelected = useCallback((breakId: string) => selectedSet.has(breakId), [selectedSet]);
