@@ -572,8 +572,8 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
             throw new InvalidDataException($"Fill '{evt.FillId:D}' has non-positive price {evt.FillPrice}.");
         if (evt.Commission < 0m)
             throw new InvalidDataException($"Fill '{evt.FillId:D}' has negative commission {evt.Commission}.");
-        if (evt.MoneyMultiplier <= 0m)
-            throw new InvalidDataException($"Fill '{evt.FillId:D}' has non-positive money multiplier {evt.MoneyMultiplier}.");
+        if (evt.ContractMultiplier <= 0m)
+            throw new InvalidDataException($"Fill '{evt.FillId:D}' has non-positive contract multiplier {evt.ContractMultiplier}.");
 
         var journals = new List<JournalEntry>(evt.Commission > 0m ? 2 : 1)
         {
@@ -866,8 +866,8 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
         AppendCanonical(canonical, evt.OccurredAt.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture));
         AppendCanonical(canonical, NormalizeOptional(evt.FinancialAccountId));
         // Appended only when it scales the trade, so every 1x posting keeps its existing digest.
-        if (evt.MoneyMultiplier != 1m)
-            AppendCanonical(canonical, "moneyMultiplier=" + FormatDecimal(evt.MoneyMultiplier));
+        if (evt.ContractMultiplier != 1m)
+            AppendCanonical(canonical, "contractMultiplier=" + FormatDecimal(evt.ContractMultiplier));
         AppendCanonical(canonical, securityId.ToString("D"));
         AppendCanonical(canonical, activityType);
         foreach (var line in lines)

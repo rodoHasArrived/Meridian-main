@@ -8,6 +8,15 @@ namespace Meridian.Execution.Margin;
 internal static class MarginPricing
 {
     /// <summary>
+    /// Position size in price units: quantity × contract multiplier. Prices are quoted per
+    /// contract while the paper book moves cash by the multiplier, so a margin notional that
+    /// ignored it would value one 100-multiplier option at a hundredth of the cash paid for it
+    /// and report false margin calls.
+    /// </summary>
+    public static decimal EconomicQuantity(ExecutionPosition position)
+        => position.ExactQuantity * (position.ContractMultiplier > 0m ? position.ContractMultiplier : 1m);
+
+    /// <summary>
     /// Fails closed when an open position has no current price. Skipping the position would
     /// drop its requirement (and, for shorts, its liability) from the result, so a stale or
     /// partial price feed would understate margin risk instead of surfacing it.

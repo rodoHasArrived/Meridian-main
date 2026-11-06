@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "fecf2ff4d0413b550a745b53d731abb98c74d70d7111da946933f828e957f8c2",
+      "fingerprint": "01030426ea39a3f5962205f0bcf14df8c1d6af337b2fc29410636d5d18731090",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -2051,6 +2051,8 @@
         "Meridian.Contracts.SecurityMaster.SecurityLotUnitKind",
         "Meridian.Contracts.SecurityMaster.SecurityMasterClosePricesJsonContext",
         "Meridian.Contracts.SecurityMaster.SecurityMasterConflict",
+        "Meridian.Contracts.SecurityMaster.SecurityMasterConflictFieldCategories",
+        "Meridian.Contracts.SecurityMaster.SecurityMasterConflictFieldCategory",
         "Meridian.Contracts.SecurityMaster.SecurityMasterConflictKinds",
         "Meridian.Contracts.SecurityMaster.SecurityMasterCorporateActionAppendRequestDto",
         "Meridian.Contracts.SecurityMaster.SecurityMasterCorporateActionAppendResultDto",
@@ -4168,7 +4170,7 @@
       "directories": [
         "src/Meridian.Contracts/SecurityMaster"
       ],
-      "fingerprint": "6acd90adb2e02f0ba3c405ff5836b7cb9b3098a12c279085fa4b376f22ab8611",
+      "fingerprint": "be164491a31f940134ab29f435a12db8169000e8ce9931bf931ec8687fbbe874",
       "id": "security-master-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts.SecurityMaster"
@@ -4559,6 +4561,8 @@
         "Meridian.Contracts.SecurityMaster.SecurityLotUnitKind",
         "Meridian.Contracts.SecurityMaster.SecurityMasterClosePricesJsonContext",
         "Meridian.Contracts.SecurityMaster.SecurityMasterConflict",
+        "Meridian.Contracts.SecurityMaster.SecurityMasterConflictFieldCategories",
+        "Meridian.Contracts.SecurityMaster.SecurityMasterConflictFieldCategory",
         "Meridian.Contracts.SecurityMaster.SecurityMasterConflictKinds",
         "Meridian.Contracts.SecurityMaster.SecurityMasterCorporateActionAppendRequestDto",
         "Meridian.Contracts.SecurityMaster.SecurityMasterCorporateActionAppendResultDto",
@@ -4670,7 +4674,7 @@
       ]
     }
   ],
-  "fingerprint": "e49fe8e8968828d143cdd59e2b9968580bfd9facc476562628943917cfb7114d",
+  "fingerprint": "2d4b78bd2c26afbdaefb77976d2678735faeafd3482c3e565a6979a3648183a4",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -6842,7 +6846,7 @@
         "all-contracts",
         "security-master-contracts"
       ],
-      "fingerprint": "45f1504059dd1f95afc97fbc26a37c154e3447a172c174b3546af68301d163ca",
+      "fingerprint": "9e8a92afd26b9fcdd09c0d42ae00c2dde3bc8b33a18f93374cfb729005e2608b",
       "mapped_schemas": [
         "security_master"
       ],
@@ -7213,6 +7217,8 @@
         "Meridian.Contracts.SecurityMaster.SecurityLotUnitKind",
         "Meridian.Contracts.SecurityMaster.SecurityMasterClosePricesJsonContext",
         "Meridian.Contracts.SecurityMaster.SecurityMasterConflict",
+        "Meridian.Contracts.SecurityMaster.SecurityMasterConflictFieldCategories",
+        "Meridian.Contracts.SecurityMaster.SecurityMasterConflictFieldCategory",
         "Meridian.Contracts.SecurityMaster.SecurityMasterConflictKinds",
         "Meridian.Contracts.SecurityMaster.SecurityMasterCorporateActionAppendRequestDto",
         "Meridian.Contracts.SecurityMaster.SecurityMasterCorporateActionAppendResultDto",
@@ -272641,6 +272647,131 @@
         {
           "line": 45,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "36fd786973147213c55850858e386316399e598ced1180898c6442347e5af236",
+      "full_name": "Meridian.Contracts.SecurityMaster.SecurityMasterConflictFieldCategories",
+      "id": "Meridian.Contracts.SecurityMaster.SecurityMasterConflictFieldCategories",
+      "kind": "class",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [],
+      "name": "SecurityMasterConflictFieldCategories",
+      "namespace": "Meridian.Contracts.SecurityMaster",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityMasterConflictFieldCategories",
+      "references": [],
+      "source": {
+        "line": 36,
+        "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs"
+      },
+      "sources": [
+        {
+          "line": 36,
+          "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "enum",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [
+        {
+          "explicit_value": true,
+          "name": "None",
+          "source_line": 11,
+          "value": "0"
+        },
+        {
+          "explicit_value": true,
+          "name": "Identifier",
+          "source_line": 12,
+          "value": "1<<0"
+        },
+        {
+          "explicit_value": true,
+          "name": "Lifecycle",
+          "source_line": 13,
+          "value": "1<<1"
+        },
+        {
+          "explicit_value": true,
+          "name": "TradingParameter",
+          "source_line": 14,
+          "value": "1<<2"
+        },
+        {
+          "explicit_value": true,
+          "name": "CorporateAction",
+          "source_line": 15,
+          "value": "1<<3"
+        },
+        {
+          "explicit_value": true,
+          "name": "Classification",
+          "source_line": 16,
+          "value": "1<<4"
+        },
+        {
+          "explicit_value": true,
+          "name": "Currency",
+          "source_line": 17,
+          "value": "1<<5"
+        },
+        {
+          "explicit_value": true,
+          "name": "Display",
+          "source_line": 18,
+          "value": "1<<6"
+        }
+      ],
+      "fingerprint": "2fb86fd0d69f2ffb78de74bf9794c3a2d6cdf54bd5d653332587a0e3c214787a",
+      "full_name": "Meridian.Contracts.SecurityMaster.SecurityMasterConflictFieldCategory",
+      "id": "Meridian.Contracts.SecurityMaster.SecurityMasterConflictFieldCategory",
+      "kind": "enum",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [],
+      "name": "SecurityMasterConflictFieldCategory",
+      "namespace": "Meridian.Contracts.SecurityMaster",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityMasterConflictFieldCategory",
+      "references": [],
+      "source": {
+        "line": 9,
+        "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs"
+      },
+      "sources": [
+        {
+          "line": 9,
+          "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs"
         }
       ],
       "type_parameters": []

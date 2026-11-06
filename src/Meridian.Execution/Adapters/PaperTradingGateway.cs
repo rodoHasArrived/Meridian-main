@@ -2,6 +2,7 @@ using Meridian.Execution.Logging;
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Execution.OrderManagement;
 using Meridian.Execution.Exceptions;
 using Meridian.Execution.Models;
 using Meridian.Execution.PaperMatching;
@@ -443,7 +444,13 @@ public sealed class PaperTradingGateway : IOrderGateway, Interfaces.IPaperFillEv
         }
 
         var quantity = decimal.Abs(request.Quantity);
-        var costs = _costModel.Compute(quantity, fillPrice, observation.MidPrice);
+        // Notional-based costs use the multiplied principal, matching the OMS's multiplier
+        // resolution (100 for an option contract without an explicit multiplier).
+        var costs = _costModel.Compute(
+            quantity,
+            fillPrice,
+            observation.MidPrice,
+            OrderRiskSizingPolicy.ResolveContractMultiplier(request));
 
         var fill = new OrderStatusUpdate(
             OrderId: orderId,

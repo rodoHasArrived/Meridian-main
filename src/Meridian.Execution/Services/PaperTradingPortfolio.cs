@@ -358,14 +358,13 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
             var effectiveCash = account.Cash - marginBorrowed;
             var executionPositions = account.Positions.ToDictionary(
                 kv => kv.Key,
-                kv => kv.Value.ToExecutionPosition(),
+                // The margin models size a position as quantity × ContractMultiplier. Cash, loan
+                // and collateral here move at the position's money scale (the contract multiplier
+                // for premium contracts, 1 for futures and legacy 1x positions), so the margin view
+                // carries that scale; otherwise a 100x option loan would be measured against a 1x
+                // holding, or a 1x futures holding against a 50x requirement.
+                kv => kv.Value.ToExecutionPosition() with { ContractMultiplier = kv.Value.EconomicMultiplier },
                 StringComparer.OrdinalIgnoreCase);
-
-            // The margin models value a position as quantity × price. Cash, loan and collateral
-            // in this book are already money-scaled for premium contracts, so the quote handed to
-            // the model is scaled the same way; otherwise a 100× option loan would be measured
-            // against a 1× holding and report a margin call that PortfolioValue does not show.
-            prices = ToMoneyPrices(account, prices);
 
             // Computed first so a missing price fails closed before any per-position result.
             var portfolioReq = account.MarginModel.CalculatePortfolioRequirement(
@@ -396,23 +395,6 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         }
     }
 
-    private static IReadOnlyDictionary<string, decimal> ToMoneyPrices(
-        AccountState account,
-        IReadOnlyDictionary<string, decimal> prices)
-    {
-        if (account.Positions.Values.All(static p => p.EconomicMultiplier == 1m))
-            return prices;
-
-        var scaled = new Dictionary<string, decimal>(prices.Count, StringComparer.OrdinalIgnoreCase);
-        foreach (var (symbol, price) in prices)
-        {
-            scaled[symbol] = account.Positions.TryGetValue(symbol, out var pos)
-                ? price * pos.EconomicMultiplier
-                : price;
-        }
-
-        return scaled;
-    }
 
     /// <summary>
     /// Returns the portfolio-level <see cref="MarginRequirement"/> for the specified account.
@@ -826,6 +808,10 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         if (!account.Positions.TryGetValue(symbol, out var pos))
         {
             pos = new PaperPosition(symbol, price) { LotUnit = lotUnit, EconomicMultiplier = economicMultiplier };
+            // Seed the exact attribution multiplier: AttributeFill only ever raises it, so a valid
+            // multiplier below 1 would otherwise stay at the default and fail the equality check
+            // on the very next fill.
+            pos.InitializeContractMultiplier(contractMultiplier);
             account.Positions[symbol] = pos;
         }
         else if (pos.LotUnit != lotUnit)
@@ -846,6 +832,13 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
                 // One book holds one money scale: blending 100x and 10x fills would misprice every lot.
                 throw new InvalidOperationException($"Fill multiplier {economicMultiplier} does not match the open position's multiplier {pos.EconomicMultiplier} for '{symbol}'.");
             }
+        }
+        else if (pos.ContractMultiplier != contractMultiplier)
+        {
+            // Exposure and fund attribution read the position's single contract multiplier, so a
+            // fill carrying a different one cannot be folded into the same lot book.
+            throw new InvalidOperationException(
+                $"Fill contract multiplier {contractMultiplier} does not match the open position multiplier {pos.ContractMultiplier} for '{symbol}'.");
         }
 
         // Once a face-value fill touches the position, its cost basis and market price are
@@ -1387,7 +1380,8 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
 
     /// <summary>
     /// Unrealised P&amp;L uses exact retained basis; the display's weighted unit quote
-    /// cannot reconstruct the remaining basis after fractional relief.
+    /// cannot reconstruct the remaining basis after fractional relief. The retained basis is
+    /// held per contract, so it is scaled by the multiplier like market value.
     /// </summary>
     public decimal UnrealisedPnl => Math.Sign(Quantity) * (MarketValue - OpenCostBasis);
 
@@ -1576,8 +1570,9 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
     }
 
     /// <summary>
-    /// Contract multiplier for this position, taken from the fills that opened it. A
-    /// position mixing multipliers keeps the largest, which cannot under-measure exposure.
+    /// Contract multiplier for this position, taken from the fills that opened it. Cash,
+    /// P&amp;L and market value are scaled by it, so a fill with a different multiplier is
+    /// refused while the position is open (see <c>ApplyFillToAccount</c>).
     /// </summary>
     public decimal ContractMultiplier { get; private set; } = 1m;
 
@@ -1598,6 +1593,16 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
     /// The tallies always sum to <see cref="Quantity"/>: each is that fund's net signed
     /// contribution, so a fund that bought and sold the same size nets to zero.
     /// </summary>
+    /// <summary>Sets the multiplier of a newly opened position before its first fill is applied.</summary>
+    public void InitializeContractMultiplier(decimal contractMultiplier)
+    {
+        if (contractMultiplier <= 0m)
+            throw new ArgumentOutOfRangeException(nameof(contractMultiplier), "Contract multiplier must be positive.");
+        if (Quantity != 0m || _lots.Count > 0 || _ownerQuantities.Count > 0)
+            throw new InvalidOperationException("The contract multiplier can only be initialized on an empty position.");
+        ContractMultiplier = contractMultiplier;
+    }
+
     public void AttributeFill(string? ownerAccountId, decimal signedQuantity, decimal contractMultiplier)
     {
         if (contractMultiplier > ContractMultiplier)

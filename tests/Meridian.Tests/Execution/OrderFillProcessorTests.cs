@@ -132,7 +132,7 @@ public sealed class OrderFillProcessorTests
         await processor.ProcessAsync(null, report, previousFilledQuantity: 0m);
 
         var trade = Assert.Single(publisher.Events);
-        Assert.Equal(100m, trade.MoneyMultiplier);
+        Assert.Equal(100m, trade.ContractMultiplier);
         Assert.Equal(100m, trade.RealizedPnl);
         Assert.Equal(300m, trade.GrossValue);
         Assert.Equal(200m, trade.GrossValue - trade.RealizedPnl);
@@ -191,7 +191,7 @@ public sealed class OrderFillProcessorTests
         var stored = Assert.IsType<PaperSessionFillRecord>(store.StoredFill).Fill;
         Assert.Equal(1m, stored.BookedMoneyMultiplier);
         var trade = Assert.Single(publisher.Events);
-        Assert.Equal(1m, trade.MoneyMultiplier);
+        Assert.Equal(1m, trade.ContractMultiplier);
         Assert.Equal(3m, trade.GrossValue);
 
         var replayed = new PaperTradingPortfolio(10_000m);

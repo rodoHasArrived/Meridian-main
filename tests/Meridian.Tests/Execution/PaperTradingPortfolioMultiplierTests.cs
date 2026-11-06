@@ -265,6 +265,31 @@ public sealed class PaperTradingPortfolioMultiplierTests
     }
 
     [Fact]
+    public void RegTFuture_MarginCheck_UsesTheOneTimesMoneyScaleNotTheContractMultiplier()
+    {
+        // Futures cash moves at 1x until variation margin is modelled, so the margin view must
+        // not size the holding at 50x: $3,000 cash buying one 6,000 contract on 50 % margin
+        // leaves cash $0 and a $3,000 loan against a $6,000 holding, not a $300,000 one.
+        var portfolio = new PaperTradingPortfolio(
+        [
+            new AccountDefinition("margin-1", "Reg T Margin", AccountKind.Brokerage, 3_000m,
+                MarginType: MarginAccountType.RegT),
+        ]);
+        portfolio.ApplyFill("margin-1", Fill("ESZ6", OrderSide.Buy, qty: 1m, price: 6_000m) with
+        {
+            AssetClass = "Future",
+            LotUnitKind = SecurityLotUnitKind.Contracts,
+            LotMultiplier = 50m
+        });
+
+        var status = portfolio.CheckMarginStatus("margin-1", new Dictionary<string, decimal> { ["ESZ6"] = 6_000m });
+
+        status.PortfolioRequirement.NotionalValue.Should().Be(6_000m);
+        status.IsMarginCall.Should().BeFalse("equity is $3,000, matching PortfolioValue");
+        portfolio.PortfolioValue.Should().Be(3_000m);
+    }
+
+    [Fact]
     public void RecordedFill_WithoutBookedStamp_ReplaysAtTheOneTimesScaleItWasBookedAt()
     {
         // A session written before this book scaled premiums already carried the Security
