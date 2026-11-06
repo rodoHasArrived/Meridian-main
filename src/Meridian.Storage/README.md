@@ -11,6 +11,11 @@ last_reviewed: 2026-10-31
 
 # src/Meridian.Storage
 
+`CompositeSink` tolerates individual sink failures under `ContinueOnPartialFailure` only while at least
+one sink accepts the write. When no sink accepts an append, or no sink can be flushed because every
+circuit is open, it throws, so the pipeline never treats an unpersisted event as durable or truncates
+the WAL holding it.
+
 Governed short opening/cover now binds explicit direction to the authoritative Short/Liability
 position and liability carrying account. Opening debits cash and credits retained proceeds;
 cover debits relieved proceeds, credits execution cash cost, and books the exact realized result.

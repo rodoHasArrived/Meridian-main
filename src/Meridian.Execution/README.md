@@ -15,6 +15,9 @@ Paper fills retain security-definition lot units and multipliers in execution re
 and contracts with multiplier one preserve their denomination after session replay. Legacy reports
 without class or lot metadata retain the existing share assumption. Contradictory units on an open
 position are refused before booking.
+Cash, realised and unrealised P&L, market value and ledger postings are scaled by the position's
+contract multiplier while lot prices and cost basis stay quoted per contract; a fill whose multiplier
+differs from the open position's is refused.
 
 OMS amendments resolve explicit broker/client identifiers, retain replacement broker aliases under
 the original client identity, and process cumulative fills through the shared fill funnel.
