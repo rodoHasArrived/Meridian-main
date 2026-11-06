@@ -4089,8 +4089,6 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
 
     private static SecurityConflictAssessment AssessConflict(SecurityMasterConflict conflict)
     {
-        // Declared path-segment names, not substrings: "transferRestrictions" must not read as a
-        // RIC identifier, nor "slotCount" as a lot size.
         var category = SecurityMasterConflictFieldCategories.For(conflict);
         var touchesIdentifier = category.HasFlag(SecurityMasterConflictFieldCategory.Identifier);
         var touchesLifecycle = category.HasFlag(SecurityMasterConflictFieldCategory.Lifecycle);
