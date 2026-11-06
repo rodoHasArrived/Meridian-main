@@ -38,11 +38,11 @@ public sealed partial class WorkstationEndpointsTests
         dryRun.Results.Should().OnlyContain(result => result.WouldSucceed && !result.Succeeded);
         (await repository.GetByIdAsync(TestReconciliationQueueScope, "break-bulk-a"))!.AssignedTo.Should().BeNull("a dry run changes nothing");
 
-        var executeResponse = await client.PostAsJsonAsync(
-            UiApiRoutes.ReconciliationBreakBulkExecute,
-            BulkRequest("bulk-assign:execute", ReconciliationCaseworkAction.Assign, ["break-bulk-a", "break-bulk-b"], dryRun: false)
-                with { AssignToCurrentOperator = true },
-            ServerJsonOptions);
+        var executeRequest = BulkRequest("bulk-assign:execute", ReconciliationCaseworkAction.Assign, ["break-bulk-a", "break-bulk-b"], dryRun: false) with
+        {
+            AssignToCurrentOperator = true
+        };
+        var executeResponse = await client.PostAsJsonAsync(UiApiRoutes.ReconciliationBreakBulkExecute, executeRequest, ServerJsonOptions);
         executeResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var executed = await executeResponse.Content.ReadFromJsonAsync<ReconciliationBulkCaseworkResult>(ServerJsonOptions);
         executed!.SucceededCount.Should().Be(2);
@@ -68,11 +68,12 @@ public sealed partial class WorkstationEndpointsTests
         await repository.CreateIfMissingAsync(TestReconciliationQueueScope, BuildBreakQueueItem("break-route-a", null));
         var client = app.GetTestClient();
 
-        var routeResponse = await client.PostAsJsonAsync(
-            UiApiRoutes.ReconciliationBreakBulkExecute,
-            BulkRequest("bulk-route:execute", ReconciliationCaseworkAction.Assign, ["break-route-a"], dryRun: false)
-                with { Assignee = "custody-desk", Note = "Custodian owns the position lag." },
-            ServerJsonOptions);
+        var routeRequest = BulkRequest("bulk-route:execute", ReconciliationCaseworkAction.Assign, ["break-route-a"], dryRun: false) with
+        {
+            Assignee = "custody-desk",
+            Note = "Custodian owns the position lag."
+        };
+        var routeResponse = await client.PostAsJsonAsync(UiApiRoutes.ReconciliationBreakBulkExecute, routeRequest, ServerJsonOptions);
         var routed = await routeResponse.Content.ReadFromJsonAsync<ReconciliationBulkCaseworkResult>(ServerJsonOptions);
         routed!.Results.Should().ContainSingle(result => result.Succeeded && result.Item!.AssignedTo == "custody-desk");
 
