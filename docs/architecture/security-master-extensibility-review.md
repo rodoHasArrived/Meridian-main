@@ -8028,3 +8028,30 @@ hosted `schema-control.yml` verify step is authoritative.
 | `schema-control.py inventory` | 0 errors |
 | `run-maintained-generation.py --docs-only` | Converged; only the optional Docker UML render failed |
 | `bash scripts/ci.sh` | Not run as a whole; `Meridian CI / quality-gate` on the pull request is authoritative |
+
+### UPI checksum verification follow-up
+
+[ISO 4914:2021](https://www.iso.org/standard/80506.html) §4 requires `QZ`, nine ASCII digits or
+uppercase consonants excluding `Y`, and one check character from the same 30-symbol alphabet.
+Annex C Table C.1 assigns values in the order `0123456789BCDFGHJKLMNPQRSTVWXZ`. The MOD 31,30
+calculation starts at 30 and processes all 11 characters before the check character, including
+`QZ`. At each step it adds the character value, reduces modulo 30 with zero mapped to 30, doubles
+the result, and reduces modulo 31. The check value makes the final sum congruent to 1 modulo 30.
+The merged implementation matches these steps. The Annex C worked example ends at 17, giving check
+value 14 (`G`) for `QZNX2JD91QCG`. Annex E of [JR/T 0294.1–2024](https://www.csrc.gov.cn/csrc/c106431/c7513047/7513047/files/%E9%99%84%E4%BB%B61%EF%BC%9A%E9%87%91%E8%9E%8D%E5%B8%82%E5%9C%BA%E4%BA%A4%E6%98%93%E6%8A%A5%E5%91%8A%E6%95%B0%E6%8D%AE%E8%A6%81%E7%B4%A0%E6%8C%87%E5%8D%97%20%E7%AC%AC1%E9%83%A8%E5%88%86%EF%BC%9A%E5%85%A8%E7%90%83%E5%94%AF%E4%B8%80%E4%BA%A7%E5%93%81%E8%AF%86%E5%88%AB%E7%A0%81.pdf)
+reproduces the calculation and worked example.
+
+| Published example | Source |
+| --- | --- |
+| `QZNX2JD91QCG` | ISO 4914:2021 Annex C worked example |
+| `QZRBG6ZTKS42` | [ANNA DSB search and create guide](https://www.anna-dsb.com/wp-content/uploads/2023/10/The-UPI-How-to-search-for-and-create-a-UPI.pdf), figure 10. Exercises the zero-to-30 substitution. |
+| `QZVLFS6FH9VZ` | [ANNA DSB-2771](https://www.anna-dsb.com/download/dsb-2771-upi-eq-sw-total-return-swap-single-name-template-definition/), Identifier Section |
+| `QZFTFRVB9S17` | [ANNA DSB-2772](https://www.anna-dsb.com/download/dsb-2772-upi-eq-sw-total-return-swap-single-index-template-definition/), Identifier Section |
+
+The canonical ISO code contains no separators. Meridian's format check applies to the normalized
+candidate after the shared C#/F# import normalizer uppercases the input and strips characters
+outside ASCII `A-Z0-9`. The raw identifier is retained separately. The regressions cover published
+check characters and reject mutations with an incorrect check character, forbidden letters, or an
+incorrect length or prefix. This is an offline format and checksum check. Verifying issuance,
+record status, or product attributes requires a DSB reference data lookup. Meridian treats a UPI
+as shared product reference data and a UTI as transaction-specific.
