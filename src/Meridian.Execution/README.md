@@ -24,6 +24,8 @@ member existed read as 1.
 When the gateway supplies no lot multiplier, the OMS stamps its resolved multiplier onto the fill
 report before booking, so session projection and restart replay apply the same multiplier as the live
 book.
+Reg T and portfolio margin models value positions at quantity × multiplier × price, the same money
+terms the paper book uses for cash and margin borrowing.
 
 OMS amendments resolve explicit broker/client identifiers, retain replacement broker aliases under
 the original client identity, and process cumulative fills through the shared fill funnel.

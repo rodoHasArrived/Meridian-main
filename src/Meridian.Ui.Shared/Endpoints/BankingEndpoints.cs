@@ -106,7 +106,14 @@ public static class BankingEndpoints
                     statusCode: StatusCodes.Status400BadRequest);
             }
 
-            var serverRequest = request with { RemediatedBy = currentUser };
+            var serverRequest = request with
+            {
+                RemediatedBy = currentUser,
+                // The body's HumanOperator default is not proof of a human caller; derive the
+                // origin from the authenticated principal so API keys cannot pass the
+                // service's human-only gate.
+                ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
+            };
             try
             {
                 var result = await service.RemediatePaymentCurrencyAsync(
@@ -160,7 +167,11 @@ public static class BankingEndpoints
             }
 
             var request = parsedApproval ?? new ApprovePaymentRequest(ReviewNotes: null, ReviewedBy: null);
-            var serverRequest = request with { ReviewedBy = currentUser };
+            var serverRequest = request with
+            {
+                ReviewedBy = currentUser,
+                ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
+            };
 
             try
             {
@@ -213,7 +224,11 @@ public static class BankingEndpoints
                 return Results.Problem("Rejection request body is required.", statusCode: StatusCodes.Status400BadRequest);
             }
 
-            var serverRequest = request with { ReviewedBy = currentUser };
+            var serverRequest = request with
+            {
+                ReviewedBy = currentUser,
+                ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
+            };
 
             try
             {
@@ -266,7 +281,11 @@ public static class BankingEndpoints
                 return Results.Problem("Bank evidence request body is required.", statusCode: StatusCodes.Status400BadRequest);
             }
 
-            var serverRequest = request with { RecordedBy = currentUser };
+            var serverRequest = request with
+            {
+                RecordedBy = currentUser,
+                ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
+            };
 
             try
             {

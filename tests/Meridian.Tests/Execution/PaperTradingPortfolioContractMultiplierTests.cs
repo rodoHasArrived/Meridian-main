@@ -1,4 +1,6 @@
 using FluentAssertions;
+using Meridian.Execution.Margin;
+using AccountKind = Meridian.Execution.Models.AccountKind;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
 using Xunit;
@@ -96,6 +98,27 @@ public sealed class PaperTradingPortfolioContractMultiplierTests
 
         portfolio.Cash.Should().Be(10_010m);
         portfolio.RealisedPnl.Should().Be(10m);
+    }
+
+    [Fact]
+    public void RegTMarginCheck_ValuesMultipliedPositionsInTheSameMoneyTermsAsCash()
+    {
+        // $600 Reg T account buys 1 contract at $10 with multiplier 100: $1,000 notional, so cash
+        // drops to $100 and $500 is borrowed. The margin check must value the position at $1,000,
+        // not $10, or it reports negative equity and a false margin call.
+        var portfolio = new PaperTradingPortfolio(
+        [
+            new AccountDefinition("margin-1", "Reg T Margin", AccountKind.Brokerage, 600m,
+                MarginType: MarginAccountType.RegT),
+        ]);
+        portfolio.ApplyFill("margin-1", Fill(OrderSide.Buy, 1m, 10m), ownerAccountId: null, contractMultiplier: 100m);
+
+        var status = portfolio.CheckMarginStatus("margin-1", new Dictionary<string, decimal> { [Symbol] = 10m });
+
+        status.PortfolioRequirement.NotionalValue.Should().Be(1_000m);
+        status.PortfolioRequirement.MaintenanceMargin.Should().Be(250m, "25% of the $1,000 notional");
+        status.PortfolioRequirement.ExcessLiquidity.Should().Be(350m, "$600 equity less $250 maintenance");
+        status.IsMarginCall.Should().BeFalse();
     }
 
     [Fact]

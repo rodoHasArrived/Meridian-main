@@ -11535,6 +11535,7 @@ Meridian-main
 │   │   │   │   ├── AdminEndpointPermissionTests.cs
 │   │   │   │   ├── AuthEndpointTests.cs
 │   │   │   │   ├── BackfillEndpointTests.cs
+│   │   │   │   ├── BankingActionOriginTests.cs
 │   │   │   │   ├── BankingAndTreasuryEndpointRegistrationTests.cs
 │   │   │   │   ├── CatalogEndpointTests.cs
 │   │   │   │   ├── CheckpointEndpointTests.cs

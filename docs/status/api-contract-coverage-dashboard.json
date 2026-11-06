@@ -701,7 +701,7 @@
     {
       "method": "POST",
       "path": "/api/dev/seed/bank-transactions",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs:320",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs:339",
       "documented": true
     },
     {
