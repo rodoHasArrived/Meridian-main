@@ -169,6 +169,20 @@ internal sealed class OrderFillProcessor(
                 fillIncrement = fillIncrement with { UsesFaceValuePercentageOfPar = true };
             }
 
+            // Likewise stamp the OMS-resolved contract multiplier when the gateway supplied none
+            // (for example an option with no security-master lot convention). Session projection
+            // and restart replay apply the persisted report without this context, so without the
+            // stamp they would book one contract at 2.50 as $2.50 while the live book moved $250.
+            // LotMultiplier is not part of the canonical fill identity either.
+            if (!string.IsNullOrWhiteSpace(orderId)
+                && !fillIncrement.UsesFaceValuePercentageOfPar
+                && fillIncrement.LotMultiplier is null
+                && _context.GetContractMultiplier(orderId) is var resolvedMultiplier
+                && resolvedMultiplier != 1m)
+            {
+                fillIncrement = fillIncrement with { LotMultiplier = resolvedMultiplier };
+            }
+
             progress = _fillProcessing.GetOrAdd(
                 report,
                 _ => new FillProcessingProgress(
@@ -234,7 +248,13 @@ internal sealed class OrderFillProcessor(
                         progress.RealizedPnl,
                         progress.NewCash,
                         ResolveFinancialAccountId(orderId),
-                        usesFaceValuePercentageOfPar);
+                        usesFaceValuePercentageOfPar,
+                        // Same resolution the paper portfolio uses, so GrossValue and the
+                        // multiplied RealizedPnl describe the same money.
+                        usesFaceValuePercentageOfPar
+                            ? 1m
+                            : fillIncrement.LotMultiplier
+                              ?? _context.GetContractMultiplier(fillIncrement.ClientOrderId ?? fillIncrement.OrderId));
                 }
 
                 if (_accounting.HasPublisher && progress.IsTrackedOrder)
@@ -366,7 +386,8 @@ internal sealed class OrderFillProcessor(
         decimal realizedPnl,
         decimal newCash,
         string? financialAccountId,
-        bool usesFaceValuePercentageOfPar)
+        bool usesFaceValuePercentageOfPar,
+        decimal contractMultiplier = 1m)
     {
         if (fillIncrement.FillPrice is not { } fillPrice)
         {
@@ -391,7 +412,8 @@ internal sealed class OrderFillProcessor(
             newCash,
             fillIncrement.Timestamp,
             financialAccountId,
-            usesFaceValuePercentageOfPar);
+            usesFaceValuePercentageOfPar,
+            contractMultiplier);
     }
 
     /// <summary>

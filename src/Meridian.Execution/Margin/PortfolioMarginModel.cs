@@ -52,7 +52,7 @@ public sealed class PortfolioMarginModel : IMarginModel
     {
         ArgumentNullException.ThrowIfNull(position);
 
-        var quantity = position.ExactQuantity;
+        var quantity = MarginPricing.EconomicQuantity(position);
         var notional = quantity * lastPrice;
         var stressedUp = quantity * (lastPrice * (1m + _stressUpPercent));
         var stressedDown = quantity * (lastPrice * (1m - _stressDownPercent));
@@ -89,9 +89,9 @@ public sealed class PortfolioMarginModel : IMarginModel
 
         foreach (var (symbol, position) in positions)
         {
-            var quantity = position.ExactQuantity;
-            if (quantity == 0m)
+            if (position.ExactQuantity == 0m)
                 continue;
+            var quantity = MarginPricing.EconomicQuantity(position);
 
             var price = prices[symbol];
             var notional = quantity * price;
