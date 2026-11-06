@@ -126,7 +126,10 @@ public sealed class JsonIBDurableResultStore : IBDurableResultStore
             }
             catch
             {
-                try { File.Delete(temporary); } catch (IOException) { } catch (UnauthorizedAccessException) { }
+                try
+                { File.Delete(temporary); }
+                catch (IOException) { }
+                catch (UnauthorizedAccessException) { }
                 throw;
             }
 
