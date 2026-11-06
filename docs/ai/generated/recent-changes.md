@@ -1,13 +1,13 @@
 # Meridian AI Recent Changes
 
-> Auto-generated on 2026-11-06T21:28:52Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-11-06T22:07:36Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 Rolling source-file activity for the last 14 days.
 
 | File | Subsystem | Last modified | Commit | Summary | Touches |
 |---|---|---|---|---|---|
 | `src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs` | Desktop and UI Workflows | 2026-11-06T19:11:01+00:00 | `4e6151df` | fix(wpf): keep SecurityMasterViewModel within its file-size cap | 14 |
-| `src/Meridian.Contracts/README.md` | Host and Composition | 2026-11-06T18:32:01+00:00 | `8b0e25ea` | docs(source): document conflict categories and refresh reviewed hashes | 37 |
+| `src/Meridian.Contracts/README.md` | Host and Composition | 2026-11-06T18:32:01+00:00 | `8b0e25ea` | docs(source): document conflict categories and refresh reviewed hashes | 38 |
 | `src/Meridian.Wpf/README.md` | Desktop and UI Workflows | 2026-11-06T18:32:01+00:00 | `8b0e25ea` | docs(source): document conflict categories and refresh reviewed hashes | 19 |
 | `src/Meridian.Execution/README.md` | Execution, Risk, and Strategies | 2026-11-06T18:25:31+00:00 | `4cf61eca` | Compute session TCA commission rates on the multiplied principal | 17 |
 | `src/Meridian.Execution/Services/SessionTcaReporter.cs` | Execution, Risk, and Strategies | 2026-11-06T18:25:31+00:00 | `4cf61eca` | Compute session TCA commission rates on the multiplied principal | 7 |
@@ -18,7 +18,7 @@ Rolling source-file activity for the last 14 days.
 | `src/Meridian.Strategies/Live/LiveRunMetricsTracker.cs` | Execution, Risk, and Strategies | 2026-11-06T17:56:13+00:00 | `dcece77e` | Scale strategy-run cash flows by the booked contract multiplier | 7 |
 | `src/Meridian.Strategies/Live/LiveStrategyRunSession.cs` | Execution, Risk, and Strategies | 2026-11-06T17:56:13+00:00 | `dcece77e` | Scale strategy-run cash flows by the booked contract multiplier | 7 |
 | `src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs` | Host and Composition | 2026-11-06T17:56:07+00:00 | `6400667a` | fix(wpf): route Security Master conflicts by declared field names | 1 |
-| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | 2026-11-06T17:45:03+00:00 | `2025b3f5` | Derive banking action origin from the principal; multiply margin notionals | 27 |
+| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | 2026-11-06T17:45:03+00:00 | `2025b3f5` | Derive banking action origin from the principal; multiply margin notionals | 28 |
 | `src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs` | Desktop and UI Workflows | 2026-11-06T17:45:03+00:00 | `2025b3f5` | Derive banking action origin from the principal; multiply margin notionals | 9 |
 | `src/Meridian.Execution/Margin/PortfolioMarginModel.cs` | Execution, Risk, and Strategies | 2026-11-06T17:45:03+00:00 | `2025b3f5` | Derive banking action origin from the principal; multiply margin notionals | 8 |
 | `src/Meridian.Execution/Margin/RegTMarginModel.cs` | Execution, Risk, and Strategies | 2026-11-06T17:45:03+00:00 | `2025b3f5` | Derive banking action origin from the principal; multiply margin notionals | 8 |

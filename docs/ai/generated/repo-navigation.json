@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-06T21:28:52Z",
+  "generatedAt": "2026-11-06T22:07:36Z",
   "generatorVersion": "1.0",
   "repositoryRoot": "agent-a6be291a2d62b6341",
   "subsystems": [
@@ -2451,7 +2451,7 @@
       "lastModified": "2026-11-06T18:32:01+00:00",
       "lastCommit": "8b0e25ea",
       "lastSummary": "docs(source): document conflict categories and refresh reviewed hashes",
-      "touches": 37
+      "touches": 38
     },
     {
       "path": "src/Meridian.Wpf/README.md",
@@ -2539,7 +2539,7 @@
       "lastModified": "2026-11-06T17:45:03+00:00",
       "lastCommit": "2025b3f5",
       "lastSummary": "Derive banking action origin from the principal; multiply margin notionals",
-      "touches": 27
+      "touches": 28
     },
     {
       "path": "src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs",
