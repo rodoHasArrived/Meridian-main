@@ -487,6 +487,7 @@ public static class UiApiRoutes
     public const string ReferenceDataBondIssuerLadder = "/api/reference-data/bonds/issuer-ladder";
     public const string ReferenceDataBondMaturityLadder = "/api/reference-data/bonds/maturity-ladder";
     public const string ReferenceDataBondAnalytics = "/api/reference-data/bonds/{securityId:guid}/analytics";
+    public const string ReferenceDataBondExerciseNotices = "/api/reference-data/bonds/{securityId:guid}/exercise-notices";
     public const string ReferenceDataBondSettlementConsideration = "/api/reference-data/bonds/settlement-consideration";
     public const string ReferenceDataBondIssuerLadderPage = "/api/reference-data/bonds/issuer-ladder/page";
     public const string ReferenceDataBondMaturityLadderPage = "/api/reference-data/bonds/maturity-ladder/page";

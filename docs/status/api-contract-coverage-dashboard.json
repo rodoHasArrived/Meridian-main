@@ -6,9 +6,9 @@
   "endpoint_coverage_percent": 30.6,
   "contract_coverage_percent": 4.0,
   "summary": {
-    "endpoint_count": 741,
+    "endpoint_count": 742,
     "documented_endpoint_count": 227,
-    "undocumented_endpoint_count": 514,
+    "undocumented_endpoint_count": 515,
     "workstation_contract_count": 971,
     "documented_workstation_contract_count": 39,
     "undocumented_workstation_contract_count": 932
@@ -707,13 +707,19 @@
     {
       "method": "POST",
       "path": "/api/reference-data/bonds/settlement-consideration",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:19",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:20",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/reference-data/bonds/{securityId:guid}/analytics",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:29",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:30",
+      "documented": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/reference-data/bonds/{securityId:guid}/exercise-notices",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:77",
       "documented": false
     },
     {
