@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-06T22:07:36Z",
+  "generatedAt": "2026-11-07T01:52:55Z",
   "generatorVersion": "1.0",
   "repositoryRoot": "agent-a6be291a2d62b6341",
   "subsystems": [
@@ -2438,20 +2438,68 @@
   ],
   "recentChanges": [
     {
+      "path": "src/Meridian.Contracts/README.md",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-06T21:21:21+00:00",
+      "lastCommit": "a970ac12",
+      "lastSummary": "PRD-115 increment 2: prepaid-interest and unapplied-cash balances",
+      "touches": 39
+    },
+    {
+      "path": "src/Meridian.Storage/README.md",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-06T21:21:21+00:00",
+      "lastCommit": "a970ac12",
+      "lastSummary": "PRD-115 increment 2: prepaid-interest and unapplied-cash balances",
+      "touches": 20
+    },
+    {
+      "path": "src/Meridian.FSharp.DirectLending.Aggregates/README.md",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-11-06T21:21:21+00:00",
+      "lastCommit": "a970ac12",
+      "lastSummary": "PRD-115 increment 2: prepaid-interest and unapplied-cash balances",
+      "touches": 10
+    },
+    {
+      "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-06T21:21:21+00:00",
+      "lastCommit": "a970ac12",
+      "lastSummary": "PRD-115 increment 2: prepaid-interest and unapplied-cash balances",
+      "touches": 9
+    },
+    {
+      "path": "src/Meridian.FSharp.DirectLending.Aggregates/ServicingAggregate.fs",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-11-06T21:21:21+00:00",
+      "lastCommit": "a970ac12",
+      "lastSummary": "PRD-115 increment 2: prepaid-interest and unapplied-cash balances",
+      "touches": 9
+    },
+    {
+      "path": "src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-06T21:21:21+00:00",
+      "lastCommit": "a970ac12",
+      "lastSummary": "PRD-115 increment 2: prepaid-interest and unapplied-cash balances",
+      "touches": 9
+    },
+    {
+      "path": "src/Meridian.Storage/DirectLending/Migrations/010_direct_lending_excess_payment_balances.sql",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-06T21:21:21+00:00",
+      "lastCommit": "a970ac12",
+      "lastSummary": "PRD-115 increment 2: prepaid-interest and unapplied-cash balances",
+      "touches": 1
+    },
+    {
       "path": "src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs",
       "subsystem": "Desktop and UI Workflows",
       "lastModified": "2026-11-06T19:11:01+00:00",
       "lastCommit": "4e6151df",
       "lastSummary": "fix(wpf): keep SecurityMasterViewModel within its file-size cap",
       "touches": 14
-    },
-    {
-      "path": "src/Meridian.Contracts/README.md",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-06T18:32:01+00:00",
-      "lastCommit": "8b0e25ea",
-      "lastSummary": "docs(source): document conflict categories and refresh reviewed hashes",
-      "touches": 38
     },
     {
       "path": "src/Meridian.Wpf/README.md",
@@ -2708,54 +2756,6 @@
       "lastCommit": "180e9667",
       "lastSummary": "Address review: scope-bound bulk updates and late default scopes",
       "touches": 16
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/app.test.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-06T16:00:29+00:00",
-      "lastCommit": "180e9667",
-      "lastSummary": "Address review: scope-bound bulk updates and late default scopes",
-      "touches": 12
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-06T16:00:29+00:00",
-      "lastCommit": "180e9667",
-      "lastSummary": "Address review: scope-bound bulk updates and late default scopes",
-      "touches": 12
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.reconciliation-workbench.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-06T16:00:29+00:00",
-      "lastCommit": "180e9667",
-      "lastSummary": "Address review: scope-bound bulk updates and late default scopes",
-      "touches": 10
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.reconciliation-continuity.test.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-06T16:00:29+00:00",
-      "lastCommit": "180e9667",
-      "lastSummary": "Address review: scope-bound bulk updates and late default scopes",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.linked-context.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-06T15:47:17+00:00",
-      "lastCommit": "a28de56c",
-      "lastSummary": "Address review: withheld break counts, StrictMode default scope, stale dry runs, shared-tab visits",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.workflow-continuity.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-06T15:47:17+00:00",
-      "lastCommit": "a28de56c",
-      "lastSummary": "Address review: withheld break counts, StrictMode default scope, stale dry runs, shared-tab visits",
-      "touches": 8
     }
   ],
   "recentChangesWindowDays": 14,

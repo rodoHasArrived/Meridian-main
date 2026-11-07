@@ -1,13 +1,19 @@
 # Meridian AI Recent Changes
 
-> Auto-generated on 2026-11-06T22:07:36Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-11-07T01:52:55Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 Rolling source-file activity for the last 14 days.
 
 | File | Subsystem | Last modified | Commit | Summary | Touches |
 |---|---|---|---|---|---|
+| `src/Meridian.Contracts/README.md` | Host and Composition | 2026-11-06T21:21:21+00:00 | `a970ac12` | PRD-115 increment 2: prepaid-interest and unapplied-cash balances | 39 |
+| `src/Meridian.Storage/README.md` | Providers and Storage | 2026-11-06T21:21:21+00:00 | `a970ac12` | PRD-115 increment 2: prepaid-interest and unapplied-cash balances | 20 |
+| `src/Meridian.FSharp.DirectLending.Aggregates/README.md` | Domain, Ledger, and F# | 2026-11-06T21:21:21+00:00 | `a970ac12` | PRD-115 increment 2: prepaid-interest and unapplied-cash balances | 10 |
+| `src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs` | Host and Composition | 2026-11-06T21:21:21+00:00 | `a970ac12` | PRD-115 increment 2: prepaid-interest and unapplied-cash balances | 9 |
+| `src/Meridian.FSharp.DirectLending.Aggregates/ServicingAggregate.fs` | Domain, Ledger, and F# | 2026-11-06T21:21:21+00:00 | `a970ac12` | PRD-115 increment 2: prepaid-interest and unapplied-cash balances | 9 |
+| `src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.cs` | Providers and Storage | 2026-11-06T21:21:21+00:00 | `a970ac12` | PRD-115 increment 2: prepaid-interest and unapplied-cash balances | 9 |
+| `src/Meridian.Storage/DirectLending/Migrations/010_direct_lending_excess_payment_balances.sql` | Providers and Storage | 2026-11-06T21:21:21+00:00 | `a970ac12` | PRD-115 increment 2: prepaid-interest and unapplied-cash balances | 1 |
 | `src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs` | Desktop and UI Workflows | 2026-11-06T19:11:01+00:00 | `4e6151df` | fix(wpf): keep SecurityMasterViewModel within its file-size cap | 14 |
-| `src/Meridian.Contracts/README.md` | Host and Composition | 2026-11-06T18:32:01+00:00 | `8b0e25ea` | docs(source): document conflict categories and refresh reviewed hashes | 38 |
 | `src/Meridian.Wpf/README.md` | Desktop and UI Workflows | 2026-11-06T18:32:01+00:00 | `8b0e25ea` | docs(source): document conflict categories and refresh reviewed hashes | 19 |
 | `src/Meridian.Execution/README.md` | Execution, Risk, and Strategies | 2026-11-06T18:25:31+00:00 | `4cf61eca` | Compute session TCA commission rates on the multiplied principal | 17 |
 | `src/Meridian.Execution/Services/SessionTcaReporter.cs` | Execution, Risk, and Strategies | 2026-11-06T18:25:31+00:00 | `4cf61eca` | Compute session TCA commission rates on the multiplied principal | 7 |
@@ -40,10 +46,4 @@ Rolling source-file activity for the last 14 days.
 | `src/Meridian.Ui/dashboard/src/screens/accounting-screen.reconciliation-workbench.test.tsx` | Desktop and UI Workflows | 2026-11-06T16:08:02+00:00 | `3b276d86` | Address review: one bulk action at a time, from the keyboard too | 7 |
 | `src/Meridian.Ui/dashboard/src/screens/reconciliation-bulk-triage-bar.tsx` | Desktop and UI Workflows | 2026-11-06T16:08:02+00:00 | `3b276d86` | Address review: one bulk action at a time, from the keyboard too | 4 |
 | `src/Meridian.Ui/dashboard/src/app.tsx` | Desktop and UI Workflows | 2026-11-06T16:00:29+00:00 | `180e9667` | Address review: scope-bound bulk updates and late default scopes | 16 |
-| `src/Meridian.Ui/dashboard/src/app.test.tsx` | Desktop and UI Workflows | 2026-11-06T16:00:29+00:00 | `180e9667` | Address review: scope-bound bulk updates and late default scopes | 12 |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | Desktop and UI Workflows | 2026-11-06T16:00:29+00:00 | `180e9667` | Address review: scope-bound bulk updates and late default scopes | 12 |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.reconciliation-workbench.tsx` | Desktop and UI Workflows | 2026-11-06T16:00:29+00:00 | `180e9667` | Address review: scope-bound bulk updates and late default scopes | 10 |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.reconciliation-continuity.test.ts` | Desktop and UI Workflows | 2026-11-06T16:00:29+00:00 | `180e9667` | Address review: scope-bound bulk updates and late default scopes | 4 |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.linked-context.ts` | Desktop and UI Workflows | 2026-11-06T15:47:17+00:00 | `a28de56c` | Address review: withheld break counts, StrictMode default scope, stale dry runs, shared-tab visits | 8 |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.workflow-continuity.ts` | Desktop and UI Workflows | 2026-11-06T15:47:17+00:00 | `a28de56c` | Address review: withheld break counts, StrictMode default scope, stale dry runs, shared-tab visits | 8 |
 
