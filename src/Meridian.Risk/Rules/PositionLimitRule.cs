@@ -141,6 +141,12 @@ public sealed class PositionLimitRule : IRiskRule
             if (request.ClientOrderId is { Length: > 0 } clientOrderId &&
                 string.Equals(order.OrderId, clientOrderId, StringComparison.Ordinal))
                 continue;
+            // A broker-native notional order routes dollars: its Quantity is a placeholder, not
+            // units, so adding it to a share position would reject on a dollar amount. The rule
+            // has no price to convert it, and the notional-based rules already reserve it by
+            // value, so it is left out of the unit projection rather than mis-measured.
+            if (order.RoutedNotional is > 0m)
+                continue;
 
             var remaining = Math.Abs(order.Quantity) - Math.Abs(order.FilledQuantity);
             if (remaining > 0m)

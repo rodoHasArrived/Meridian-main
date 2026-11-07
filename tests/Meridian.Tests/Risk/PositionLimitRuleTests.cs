@@ -264,6 +264,19 @@ public sealed class PositionLimitRuleTests
     }
 
     [Fact]
+    public async Task EvaluateAsync_BrokerNotionalWorkingOrder_IsNotCountedAsShares()
+    {
+        // A resting $500 buy is stored with a placeholder Quantity of 500 and RoutedNotional 500.
+        // Counting it as 500 shares would reject a 60-share buy against a 100-share limit.
+        var notionalOrder = WorkingOrder("o-1", OrderSide.Buy, 500m) with { RoutedNotional = 500m };
+        var sut = CreateSutWithBook(notionalOrder);
+
+        var result = await sut.EvaluateAsync(CreateBuyOrder(60m));
+
+        result.IsApproved.Should().BeTrue("a dollar-sized working order has no unit quantity to project");
+    }
+
+    [Fact]
     public async Task EvaluateAsync_AmendmentProbe_DoesNotCountTheOrderBeingAmended()
     {
         var sut = CreateSutWithBook(WorkingOrder("o-1", OrderSide.Buy, 60m));
