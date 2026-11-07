@@ -11,6 +11,8 @@ last_reviewed: 2026-10-31
 
 # src/Meridian.Contracts
 
+`LedgerCurrencyRounding.RoundCurrency(amount, currency)` rounds to the currency's minor units via `CurrencyMinorUnits` (0 for JPY, 3 for KWD/BHD, 2 otherwise).
+
 `BondAnalyticsCashFlow.FloatingCoupon` carries v3-only reset evidence: reset date, observed/forecast
 status, named index, index and effective coupon annual fractions, spread in basis points, and source.
 The optional field and `BondAnalyticsResult.SpreadDv01` are omitted from fixed/zero v1/v2 JSON.
