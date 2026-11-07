@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-06T13:31:54Z",
+  "generatedAt": "2026-11-07T01:52:55Z",
   "generatorVersion": "1.0",
-  "repositoryRoot": "agent-a6cc8e59dff3245bd",
+  "repositoryRoot": "agent-a6be291a2d62b6341",
   "subsystems": [
     {
       "id": "host-shell",
@@ -2438,324 +2438,324 @@
   ],
   "recentChanges": [
     {
-      "path": "src/Meridian.Ui/dashboard/src/screens/reporting-income-comparison.test.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-06T01:48:45+00:00",
-      "lastCommit": "41d39ce1",
-      "lastSummary": "test(reporting): wait for the support read before asserting it is aborted",
-      "touches": 7
+      "path": "src/Meridian.Contracts/README.md",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-06T21:21:21+00:00",
+      "lastCommit": "a970ac12",
+      "lastSummary": "PRD-115 increment 2: prepaid-interest and unapplied-cash balances",
+      "touches": 39
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/styles/ui-kit-primitives.css",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-06T00:22:47+00:00",
-      "lastCommit": "8a10fa7a",
-      "lastSummary": "fix(workstation): keep virtualized tables within their fixed row height under spacious density",
+      "path": "src/Meridian.Storage/README.md",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-06T21:21:21+00:00",
+      "lastCommit": "a970ac12",
+      "lastSummary": "PRD-115 increment 2: prepaid-interest and unapplied-cash balances",
+      "touches": 20
+    },
+    {
+      "path": "src/Meridian.FSharp.DirectLending.Aggregates/README.md",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-11-06T21:21:21+00:00",
+      "lastCommit": "a970ac12",
+      "lastSummary": "PRD-115 increment 2: prepaid-interest and unapplied-cash balances",
+      "touches": 10
+    },
+    {
+      "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-06T21:21:21+00:00",
+      "lastCommit": "a970ac12",
+      "lastSummary": "PRD-115 increment 2: prepaid-interest and unapplied-cash balances",
       "touches": 9
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/components/meridian/ui-kit-primitives.table-system.test.tsx",
+      "path": "src/Meridian.FSharp.DirectLending.Aggregates/ServicingAggregate.fs",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-11-06T21:21:21+00:00",
+      "lastCommit": "a970ac12",
+      "lastSummary": "PRD-115 increment 2: prepaid-interest and unapplied-cash balances",
+      "touches": 9
+    },
+    {
+      "path": "src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-06T21:21:21+00:00",
+      "lastCommit": "a970ac12",
+      "lastSummary": "PRD-115 increment 2: prepaid-interest and unapplied-cash balances",
+      "touches": 9
+    },
+    {
+      "path": "src/Meridian.Storage/DirectLending/Migrations/010_direct_lending_excess_payment_balances.sql",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-06T21:21:21+00:00",
+      "lastCommit": "a970ac12",
+      "lastSummary": "PRD-115 increment 2: prepaid-interest and unapplied-cash balances",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-06T00:22:47+00:00",
-      "lastCommit": "8a10fa7a",
-      "lastSummary": "fix(workstation): keep virtualized tables within their fixed row height under spacious density",
+      "lastModified": "2026-11-06T19:11:01+00:00",
+      "lastCommit": "4e6151df",
+      "lastSummary": "fix(wpf): keep SecurityMasterViewModel within its file-size cap",
+      "touches": 14
+    },
+    {
+      "path": "src/Meridian.Wpf/README.md",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-06T18:32:01+00:00",
+      "lastCommit": "8b0e25ea",
+      "lastSummary": "docs(source): document conflict categories and refresh reviewed hashes",
+      "touches": 19
+    },
+    {
+      "path": "src/Meridian.Execution/README.md",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-06T18:25:31+00:00",
+      "lastCommit": "4cf61eca",
+      "lastSummary": "Compute session TCA commission rates on the multiplied principal",
+      "touches": 17
+    },
+    {
+      "path": "src/Meridian.Execution/Services/SessionTcaReporter.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-06T18:25:31+00:00",
+      "lastCommit": "4cf61eca",
+      "lastSummary": "Compute session TCA commission rates on the multiplied principal",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.Execution/PaperTradingGateway.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-06T18:11:29+00:00",
+      "lastCommit": "cd0070f4",
+      "lastSummary": "Scale paper notional-based costs by the resolved contract multiplier",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.Execution/Adapters/PaperTradingGateway.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-06T18:11:29+00:00",
+      "lastCommit": "cd0070f4",
+      "lastSummary": "Scale paper notional-based costs by the resolved contract multiplier",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.Execution/PaperMatching/PaperTradingCostModel.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-06T18:11:29+00:00",
+      "lastCommit": "cd0070f4",
+      "lastSummary": "Scale paper notional-based costs by the resolved contract multiplier",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.Strategies/README.md",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-06T17:56:13+00:00",
+      "lastCommit": "dcece77e",
+      "lastSummary": "Scale strategy-run cash flows by the booked contract multiplier",
+      "touches": 9
+    },
+    {
+      "path": "src/Meridian.Strategies/Live/LiveRunMetricsTracker.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-06T17:56:13+00:00",
+      "lastCommit": "dcece77e",
+      "lastSummary": "Scale strategy-run cash flows by the booked contract multiplier",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.Strategies/Live/LiveStrategyRunSession.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-06T17:56:13+00:00",
+      "lastCommit": "dcece77e",
+      "lastSummary": "Scale strategy-run cash flows by the booked contract multiplier",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-06T17:56:07+00:00",
+      "lastCommit": "6400667a",
+      "lastSummary": "fix(wpf): route Security Master conflicts by declared field names",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/README.md",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-06T17:45:03+00:00",
+      "lastCommit": "2025b3f5",
+      "lastSummary": "Derive banking action origin from the principal; multiply margin notionals",
+      "touches": 28
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-06T17:45:03+00:00",
+      "lastCommit": "2025b3f5",
+      "lastSummary": "Derive banking action origin from the principal; multiply margin notionals",
+      "touches": 9
+    },
+    {
+      "path": "src/Meridian.Execution/Margin/PortfolioMarginModel.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-06T17:45:03+00:00",
+      "lastCommit": "2025b3f5",
+      "lastSummary": "Derive banking action origin from the principal; multiply margin notionals",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.Execution/Margin/RegTMarginModel.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-06T17:45:03+00:00",
+      "lastCommit": "2025b3f5",
+      "lastSummary": "Derive banking action origin from the principal; multiply margin notionals",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.Execution/Margin/MarginPricing.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-06T17:45:03+00:00",
+      "lastCommit": "2025b3f5",
+      "lastSummary": "Derive banking action origin from the principal; multiply margin notionals",
       "touches": 2
+    },
+    {
+      "path": "src/Meridian.Execution/OrderManagement/OrderFillProcessor.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-06T17:28:43+00:00",
+      "lastCommit": "057d0ef4",
+      "lastSummary": "Stamp the OMS-resolved contract multiplier on the replayable fill report",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.Execution/Services/PaperTradingPortfolio.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-06T17:11:01+00:00",
+      "lastCommit": "dfc72366",
+      "lastSummary": "Address review: multiplier handoff, sub-1 multipliers, MMF search, ingestion transitions",
+      "touches": 11
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-06T17:11:01+00:00",
+      "lastCommit": "dfc72366",
+      "lastSummary": "Address review: multiplier handoff, sub-1 multipliers, MMF search, ingestion transitions",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-06T17:11:01+00:00",
+      "lastCommit": "dfc72366",
+      "lastSummary": "Address review: multiplier handoff, sub-1 multipliers, MMF search, ingestion transitions",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.Execution/Events/TradeExecutedEvent.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-06T17:11:01+00:00",
+      "lastCommit": "dfc72366",
+      "lastSummary": "Address review: multiplier handoff, sub-1 multipliers, MMF search, ingestion transitions",
+      "touches": 7
     },
     {
       "path": "src/Meridian.Ui/dashboard/README.md",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-05T23:05:27+00:00",
-      "lastCommit": "4071b030",
-      "lastSummary": "Phase 2 docs: design-system rules in the READMEs and regenerated docs",
-      "touches": 20
-    },
-    {
-      "path": "src/Meridian.Ui/README.md",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-11-05T23:05:27+00:00",
-      "lastCommit": "4071b030",
-      "lastSummary": "Phase 2 docs: design-system rules in the READMEs and regenerated docs",
-      "touches": 11
+      "lastModified": "2026-11-06T16:27:46+00:00",
+      "lastCommit": "2f930f77",
+      "lastSummary": "Address review: record queue visits only from the queue; Settings keeps fresh provider counts",
+      "touches": 27
     },
     {
       "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.tsx",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-05T23:03:54+00:00",
-      "lastCommit": "16bdb914",
-      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
-      "touches": 15
+      "lastModified": "2026-11-06T16:27:46+00:00",
+      "lastCommit": "2f930f77",
+      "lastSummary": "Address review: record queue visits only from the queue; Settings keeps fresh provider counts",
+      "touches": 19
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/screens/trading-screen.tsx",
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.test.tsx",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-05T23:03:54+00:00",
-      "lastCommit": "16bdb914",
-      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
-      "touches": 11
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/portfolio-screen.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-05T23:03:54+00:00",
-      "lastCommit": "16bdb914",
-      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
-      "touches": 10
+      "lastModified": "2026-11-06T16:27:46+00:00",
+      "lastCommit": "2f930f77",
+      "lastSummary": "Address review: record queue visits only from the queue; Settings keeps fresh provider counts",
+      "touches": 12
     },
     {
       "path": "src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-05T23:03:54+00:00",
-      "lastCommit": "16bdb914",
-      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
-      "touches": 10
+      "lastModified": "2026-11-06T16:27:46+00:00",
+      "lastCommit": "2f930f77",
+      "lastSummary": "Address review: record queue visits only from the queue; Settings keeps fresh provider counts",
+      "touches": 12
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/components/meridian/reporting-hub.tsx",
+      "path": "src/Meridian.Ui/dashboard/src/screens/settings-screen.view-model.test.ts",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-05T23:03:54+00:00",
-      "lastCommit": "16bdb914",
-      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "lastModified": "2026-11-06T16:27:46+00:00",
+      "lastCommit": "2f930f77",
+      "lastSummary": "Address review: record queue visits only from the queue; Settings keeps fresh provider counts",
       "touches": 9
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/components/meridian/workspace-header.tsx",
+      "path": "src/Meridian.Ui/dashboard/src/screens/settings-screen.view-model.ts",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-05T23:03:54+00:00",
-      "lastCommit": "16bdb914",
-      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
-      "touches": 9
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.journal-entry-enhancements.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-05T23:03:54+00:00",
-      "lastCommit": "16bdb914",
-      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
-      "touches": 9
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/strategy-screen.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-05T23:03:54+00:00",
-      "lastCommit": "16bdb914",
-      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
-      "touches": 9
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/components/meridian/historical-chart.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-05T23:03:54+00:00",
-      "lastCommit": "16bdb914",
-      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "lastModified": "2026-11-06T16:27:46+00:00",
+      "lastCommit": "2f930f77",
+      "lastSummary": "Address review: record queue visits only from the queue; Settings keeps fresh provider counts",
       "touches": 8
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/components/meridian/ui-kit-primitives.tsx",
+      "path": "src/Meridian.Ui/dashboard/src/lib/cross-screen-counts.ts",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-05T23:03:54+00:00",
-      "lastCommit": "16bdb914",
-      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
-      "touches": 8
+      "lastModified": "2026-11-06T16:27:46+00:00",
+      "lastCommit": "2f930f77",
+      "lastSummary": "Address review: record queue visits only from the queue; Settings keeps fresh provider counts",
+      "touches": 4
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.capital-account-workbench-panel.tsx",
+      "path": "src/Meridian.Ui/dashboard/src/lib/since-last-visit.ts",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-05T23:03:54+00:00",
-      "lastCommit": "16bdb914",
-      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
-      "touches": 8
+      "lastModified": "2026-11-06T16:27:46+00:00",
+      "lastCommit": "2f930f77",
+      "lastSummary": "Address review: record queue visits only from the queue; Settings keeps fresh provider counts",
+      "touches": 4
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/screens/asset-detail-screen.tsx",
+      "path": "src/Meridian.Ui/dashboard/src/lib/since-last-visit.test.ts",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-05T23:03:54+00:00",
-      "lastCommit": "16bdb914",
-      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
-      "touches": 8
+      "lastModified": "2026-11-06T16:27:46+00:00",
+      "lastCommit": "2f930f77",
+      "lastSummary": "Address review: record queue visits only from the queue; Settings keeps fresh provider counts",
+      "touches": 3
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/screens/data-screen-navigation-panels.tsx",
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.reconciliation-workbench.test.tsx",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-05T23:03:54+00:00",
-      "lastCommit": "16bdb914",
-      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/data-screen.data-regions.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-05T23:03:54+00:00",
-      "lastCommit": "16bdb914",
-      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/data-screen.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-05T23:03:54+00:00",
-      "lastCommit": "16bdb914",
-      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/family-office-screen.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-05T23:03:54+00:00",
-      "lastCommit": "16bdb914",
-      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/reporting-screen.private-capital-readiness.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-05T23:03:54+00:00",
-      "lastCommit": "16bdb914",
-      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/reporting-screen.report-writer.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-05T23:03:54+00:00",
-      "lastCommit": "16bdb914",
-      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-05T23:03:54+00:00",
-      "lastCommit": "16bdb914",
-      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/strategy-designer-screen.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-05T23:03:54+00:00",
-      "lastCommit": "16bdb914",
-      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/trading-screen.acceptance-panel.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-05T23:03:54+00:00",
-      "lastCommit": "16bdb914",
-      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/trading-screen.execution-blotter.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-05T23:03:54+00:00",
-      "lastCommit": "16bdb914",
-      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/watchlist-screen.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-05T23:03:54+00:00",
-      "lastCommit": "16bdb914",
-      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/styles/index.css",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-05T23:03:54+00:00",
-      "lastCommit": "16bdb914",
-      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/components/accounting/ReconciliationComparisonPanel.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-05T23:03:54+00:00",
-      "lastCommit": "16bdb914",
-      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
+      "lastModified": "2026-11-06T16:08:02+00:00",
+      "lastCommit": "3b276d86",
+      "lastSummary": "Address review: one bulk action at a time, from the keyboard too",
       "touches": 7
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/components/meridian/command-palette.tsx",
+      "path": "src/Meridian.Ui/dashboard/src/screens/reconciliation-bulk-triage-bar.tsx",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-05T23:03:54+00:00",
-      "lastCommit": "16bdb914",
-      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
-      "touches": 7
+      "lastModified": "2026-11-06T16:08:02+00:00",
+      "lastCommit": "3b276d86",
+      "lastSummary": "Address review: one bulk action at a time, from the keyboard too",
+      "touches": 4
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/components/meridian/financial-record-explorer.tsx",
+      "path": "src/Meridian.Ui/dashboard/src/app.tsx",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-05T23:03:54+00:00",
-      "lastCommit": "16bdb914",
-      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
-      "touches": 7
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/components/meridian/lifecycle-control-panel.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-05T23:03:54+00:00",
-      "lastCommit": "16bdb914",
-      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
-      "touches": 7
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/components/meridian/notification-center.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-05T23:03:54+00:00",
-      "lastCommit": "16bdb914",
-      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
-      "touches": 7
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/components/meridian/proof-drawer.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-05T23:03:54+00:00",
-      "lastCommit": "16bdb914",
-      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
-      "touches": 7
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/components/meridian/quant-notebook.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-05T23:03:54+00:00",
-      "lastCommit": "16bdb914",
-      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
-      "touches": 7
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/components/meridian/reporting-period-switcher.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-05T23:03:54+00:00",
-      "lastCommit": "16bdb914",
-      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
-      "touches": 7
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/components/meridian/security-details-tracker.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-05T23:03:54+00:00",
-      "lastCommit": "16bdb914",
-      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
-      "touches": 7
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/components/meridian/stat-strip.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-05T23:03:54+00:00",
-      "lastCommit": "16bdb914",
-      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
-      "touches": 7
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/components/meridian/strategy-formula-workbench.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-05T23:03:54+00:00",
-      "lastCommit": "16bdb914",
-      "lastSummary": "B4: three-tier type scale, sentence-case labels past two words, prose in the body face",
-      "touches": 7
+      "lastModified": "2026-11-06T16:00:29+00:00",
+      "lastCommit": "180e9667",
+      "lastSummary": "Address review: scope-bound bulk updates and late default scopes",
+      "touches": 16
     }
   ],
   "recentChangesWindowDays": 14,

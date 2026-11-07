@@ -8,16 +8,16 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 1130 |
+| Total code blocks | 1131 |
 | Valid | 634 |
 | Invalid | 0 |
-| Skipped | 496 |
+| Skipped | 497 |
 
 ## Summary by Language
 
 | Language | Total | Valid | Invalid | Skipped |
 |----------|------:|------:|--------:|--------:|
-| `(none)` | 118 | 0 | 0 | 118 |
+| `(none)` | 119 | 0 | 0 | 119 |
 | `bash` | 265 | 265 | 0 | 0 |
 | `cpp` | 1 | 0 | 0 | 1 |
 | `csharp` | 269 | 269 | 0 | 0 |

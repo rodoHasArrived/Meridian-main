@@ -1312,6 +1312,19 @@ dormant in production. Verify
 this lane with the declared-conventions partial of `SecurityMasterCashFlowServiceTests`,
 `ScheduleSpecFactoryTests` and `SecurityMasterCashFlowProjectionShapeTests`.
 
+Rate units (review D10, slice 4, 2026-11-04): `SecurityMasterCashFlowService` (legacy coupon walk,
+legacy leg walk, declared projection and declared floating bond leg) and
+`ContractualCashFlowPreviewService` read every coupon, fixed-leg rate, fixing, cap, floor and step
+rate through `Meridian.Contracts.SecurityMaster.RateUnitNormalizer`. The retired heuristic read a
+value at or below 1 as a fraction and divided anything larger by 100. A rate with no declared unit
+(no `couponRateUnit` and no field default in `SecurityRateFieldUnits`) now blocks: the projection
+carries a `BlockedReason` quoting the raw value, and the preview returns a `RateUnitUndeclared`
+blocker (`RateOutsideDeclaredRange` for a declared value outside the field's range or sign policy).
+Zero needs no unit, forward-curve rates stay fractions, and `*Bps` spreads stay basis points. The
+undeclared-legacy policy is decided (D3, 2026-11-05: undeclared non-zero rates block); swap legs
+cannot declare a per-leg unit yet, so their non-zero rates block too. Verify with
+`DeclaredRateUnitParityTests`, `RateUnitNormalizerTests` and the cash-flow suites.
+
 `AddSecurityMasterTermsCapability(services, dataRoot)` (in `Meridian.Application.Composition`)
 registers `FileBusinessDayCalendarSource` over `<dataRoot>/calendars` with `TryAddSingleton` and
 the internal `SecurityMasterTermsCapabilityHostedService`. `StorageFeatureRegistration` calls it

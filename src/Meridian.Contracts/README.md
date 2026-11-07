@@ -531,6 +531,19 @@ accepts older numeric status payloads; persisted queue records already use text 
   `DayCountConventions` is the single day-count engine; its `TryFraction`/`Fraction` overloads
   that take a `DayCountPeriodContext` (ICMA reference periods and frequency, termination date,
   business-day predicate) refuse when a convention's context is missing instead of degrading.
+  `RateUnitNormalizer` is the single reader of stored rate units (review D10, slice 4): a record's
+  declared unit (`scheduleConventions.couponRateUnit`, or a leg's unit) wins for the fields it
+  governs, then the field default declared in `SecurityRateFieldUnits`, and otherwise the value is
+  `RateUnitResolution.Undeclared` and is flagged, never converted. Magnitude never selects a unit;
+  zero resolves as unit-invariant. `SecurityRateFieldUnits` inventories each rate field's meaning,
+  default unit (Fraction, Percent or BasisPoints), fraction range and negative-rate policy. Only
+  `*Bps` fields (BasisPoints) and Deposit/CashSweep rates (Fraction) declare a default; fields
+  stored both ways declare none. D3 (decided 2026-11-05): undeclared non-zero rates block; no field
+  default is added.
+  Every `SecurityAssetClassCatalog` descriptor also declares an accounting disposition: an
+  `AccountingInstrumentClass` or `AccountingOutsideSlice` (StructuredNote is outside the slice).
+  `ResolveAccountingInstrumentClass` returns null for a catalogued outside-slice name before the
+  `FixedIncome` taxonomy fallback, which remains only for names the catalog does not model.
 - `SecurityMaster/Schedules/` - the contractual schedule kernel (`ScheduleGenerator`, kernel
   version `contractual-schedule-kernel-v1`). A pure, deterministic `ScheduleSpec` →
   `ScheduleGenerationResult` generator: anchored or compounded grids, forward or backward

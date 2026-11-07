@@ -69,13 +69,22 @@ cannot enter bond posting through an unintended taxonomy fallback.
 **Decisions:** canonical units/ranges, legacy rows and accounting treatment require domain-owner
 review. The October 20 blanket `[0,1]` rule and all-fraction design are not accepted defaults.
 
+**Implementation note (2026-11-04):** a local implementation adds `RateUnitNormalizer`,
+`SecurityRateFieldUnits` and explicit catalog accounting dispositions. See the
+[slice-4 disposition](../../architecture/security-master-extensibility-review.md#slice-4-disposition--2026-11-04-d10).
+D3 decided 2026-11-05: undeclared non-zero rates block. Legacy fixed-income rows stop projecting
+until they declare a unit, Security Master engine swaps cannot declare per-leg units yet, and readers
+still treat negative rates differently. Canonical units and ranges, the repair path, the negative-rate
+policy and StructuredNote accounting remain open. The legacy-fixture tests now assert the decision.
+
 **2026-11-05 partial input (direct lending only):** `RateUnitNormalizer`
 (`src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs`) is an explicit-unit normalizer
 (Fraction / Percent / BasisPoints, no unspecified unit, no magnitude inference, field-specific ranges
 allowing negative index, spread and floor). Only the new direct-lending
 [PIK capitalization and reset-schedule terms](../blueprints/direct-lending-pik-capitalization-and-rate-resets.md)
-use it. The Security Master cash-flow, accounting and preview readers are unchanged, so D10 and
-this slice remain open; the slice may adopt the type once canonical units are approved.
+use it. It is separate from the Security Master `RateUnitNormalizer`
+(`src/Meridian.Contracts/SecurityMaster/RateUnitNormalizer.cs`) in the implementation note above; the
+two may converge once canonical units are approved.
 
 ## Slice 5 — Audit evidence contracts before storage/serialization changes
 

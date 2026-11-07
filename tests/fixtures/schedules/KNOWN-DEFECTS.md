@@ -24,6 +24,14 @@ dotnet test tests/Meridian.FundStructure.Tests -c Release /p:EnableWindowsTarget
 `T0` below is the first day of the month after the test runs (UTC). The Security Master service
 reads the wall clock for its as-of date, so its pins anchor on `T0` rather than a fixed date.
 
+**Review D10, slice 4 (2026-11-04).** The Security Master engine no longer infers a coupon unit from
+its magnitude (SCH-DEF-003's heuristic is retired): an undeclared Bond, CertificateOfDeposit, Swap,
+DirectLoan, Repo or StructuredCredit rate blocks the projection. The undeclared-walk pins for
+SCH-DEF-001, SCH-DEF-004 and SCH-DEF-010 therefore run on a Deposit row whose `interestRate` declares
+Fraction (`SecurityRateFieldUnits`), with the same walk and the same amounts (`interestRate` 0.05 for
+coupon 5). SCH-DEF-003's undeclared pin now asserts the block
+(`ScheduleCharacterization_UndeclaredBondCoupon_IsBlockedNotReadByMagnitude_SCH_DEF_003`).
+
 | ID | Location | Current behavior (pinned) | Target behavior | Owning increment | Pinned by |
 |----|----------|---------------------------|-----------------|------------------|-----------|
 | SCH-DEF-001 | `src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs` (`LegacyCouponPaymentsPerYear`), the one cadence reader `SecurityMasterCashFlowService` and `AssetOperationsReadService` share since increment 3 merged their two private copies | `AtMaturity` has no months-per-period, so the cadence reader falls through to its default of 1 payment a year. Security Master: issue `T0`, maturity `T0`+36M, par 1000, coupon 5, 30/360 projects 3 rows at `T0`+12M, +24M and +36M, each with interest 50.0000, and principal 1000 on the last. Asset operations: issue 2026-01-15, maturity 2029-01-15, 5%, par 100, 30/360 projects coupons of 5.0000 on 2027-01-15, 2028-01-15 and 2029-01-15 | One Term period. Security Master: one row at `T0`+36M with interest 150.0000. Asset operations: one coupon of 15.0000 | 5 (Security Master engine) and 6 (asset operations), for declaring records only; undeclared records wait on the default-flip decision. Target reached for declaring records in the Security Master engine (increment 5a; reachable through a write path from 5b-2), pinned by the declared twins in the declared-conventions partial of `SecurityMasterCashFlowServiceTests`; the undeclared pins are unchanged. | `SecurityMasterCashFlowServiceTests` (schedule characterization partial), `AssetOperationsBondScheduleCharacterizationTests` |
