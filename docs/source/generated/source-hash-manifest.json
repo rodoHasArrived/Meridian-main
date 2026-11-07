@@ -9,8 +9,8 @@
       "id": "SRC-APP",
       "path": "src/Meridian.Application",
       "readme": "src/Meridian.Application/README.md",
-      "readme_hash": "284560bf058d5cb55c80b3cbbeccce1f65a1a9ca5f756082c96117327863a8ea",
-      "source_hash": "c63989761085062eaadafd2b685bae7817211051a935c07526d49711fd974644"
+      "readme_hash": "a9580f69a533d45b5a9e0e006b475ab30d10e5eb967e734be2323c6c4d5223f6",
+      "source_hash": "22038d7ce7a3bc49720294b09356b21c68ba135706e8673818aa317f5646110f"
     },
     {
       "id": "SRC-BACKTESTING",
@@ -30,8 +30,8 @@
       "id": "SRC-CONTRACTS",
       "path": "src/Meridian.Contracts",
       "readme": "src/Meridian.Contracts/README.md",
-      "readme_hash": "ba8e3dbe3575432025f9fec02f6fb5bfae44d616b0f7aeff5c8b4617b5a71bfd",
-      "source_hash": "dbc8bdea49fb75f911a565fd28ed243b9b5840bc4677415aeb480f01f09fae60"
+      "readme_hash": "a246f25a43009b144bf61484d7a7b696fc1530679ea8a60f08d184b636be6e1b",
+      "source_hash": "c8ece6fd2491dc373ecb1a10277a41d28df5ce7d0fb00c2dc4b44d21c715cc03"
     },
     {
       "id": "SRC-CORE",
@@ -86,8 +86,8 @@
       "id": "SRC-DESIGN-INSTRUMENTS",
       "path": "src/Meridian.Instruments",
       "readme": "src/Meridian.Instruments/README.md",
-      "readme_hash": "2259c8b72602e21d47a3c9b19345e43c9fcb5047ba8c73166cd7a796ee93e99a",
-      "source_hash": "bbbee53e41016199d8c39a5e1a1db953004a76c2f25eab6d01130e3f10519813"
+      "readme_hash": "bc15b7625f90f4553362da15628ec284f70fed702f3fe8d4cfc7047b42fa7cfe",
+      "source_hash": "80f120d866b3a49c01bbf7a65ad3236344316a562c2fc88432fd18c9785da34e"
     },
     {
       "id": "SRC-DESIGN-PLATFORM",
@@ -254,8 +254,8 @@
       "id": "SRC-STRATEGIES",
       "path": "src/Meridian.Strategies",
       "readme": "src/Meridian.Strategies/README.md",
-      "readme_hash": "23f27f012525888271365d65fe8e3c0391d719c76715799a7cec64aad4c0856a",
-      "source_hash": "0d2ec9751a5d31fbf4104baf3d8a9578cc25ce59a3bff676d48e070c64d2d516"
+      "readme_hash": "b42c4b9c2cb3250b8c560ac0d53316bee34d87368dc78f04c97487143c0b3276",
+      "source_hash": "9cfadbde0a9f1833c432ef1931bc186184f7549998c3636880d861c0e65140c6"
     },
     {
       "id": "SRC-UI",

@@ -35,9 +35,8 @@ public sealed partial class SecurityMasterCashFlowService
     private const string DeclaredInterestReason = "Declared schedule interest could not be computed: ";
 
     // The block's closed vocabularies, which ScheduleSpecFactory has already checked exactly against
-    // the block schema; an absent member keeps the legacy reading.
-    private const string PercentCouponRateUnit = "Percent";
-    private const string FractionCouponRateUnit = "Fraction";
+    // the block schema; an absent member keeps the legacy reading (couponRateUnit is read by
+    // RateUnitNormalizer).
     private const string LevelCouponCashBasis = "Level";
 
     // The evidence purpose of the calendar Business/252 counts business days on, which the kernel does
@@ -70,15 +69,19 @@ public sealed partial class SecurityMasterCashFlowService
             return Empty(DeclaredContractualPrincipalReason + "dated amounts require a retained principal basis; normalized 100 is not contractual face.");
         }
 
-        // 2. A declared coupon unit replaces the legacy heuristic that reads a coupon at or below 1 as a
-        // fraction (SCH-DEF-003); without one the heuristic stays.
+        // 2. The coupon reads through the shared normalizer: the declared couponRateUnit, then the
+        // field's declared default (SCH-DEF-003, review D10 slice 4). Without either the projection is
+        // blocked; the retired heuristic read a coupon at or below 1 as a fraction.
         var coupon = terms.CouponRate.GetValueOrDefault();
-        var annualRate = block.CouponRateUnit switch
+        var couponField = SecurityRateFieldUnits.CouponFieldKey(security.AssetClass);
+        var couponRead = RateUnitNormalizer.Normalize(security.AssetClass, couponField, coupon,
+            RateUnitNormalizer.ParseCouponRateUnit(block.CouponRateUnit));
+        if (!couponRead.TryGetFraction(out var couponFraction))
         {
-            PercentCouponRateUnit => coupon / 100m,
-            FractionCouponRateUnit => coupon,
-            _ => NormalizeAnnualRate(coupon)
-        } + ScenarioRateShift(scenario);
+            return Empty(RateUnitNormalizer.DescribeRefusal(couponRead, security.AssetClass, couponField));
+        }
+
+        var annualRate = couponFraction + ScenarioRateShift(scenario);
         if (annualRate < 0m)
         {
             annualRate = 0m;
