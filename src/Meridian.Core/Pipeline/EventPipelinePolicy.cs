@@ -119,6 +119,19 @@ public sealed record EventPipelinePolicy(
     }
 
     /// <summary>
+    /// Creates a bounded channel with this policy's configuration and a callback invoked for every
+    /// item the channel itself discards when full (<see cref="BoundedChannelFullMode.DropOldest"/>,
+    /// <see cref="BoundedChannelFullMode.DropNewest"/> and <see cref="BoundedChannelFullMode.DropWrite"/>).
+    /// Use it when evictions must be counted: a successful write in an evicting mode otherwise
+    /// gives the producer no signal that an earlier item was lost.
+    /// </summary>
+    public Channel<T> CreateChannel<T>(Action<T> itemDropped, bool singleReader = true, bool singleWriter = false)
+    {
+        ArgumentNullException.ThrowIfNull(itemDropped);
+        return Channel.CreateBounded(ToBoundedOptions(singleReader, singleWriter), itemDropped);
+    }
+
+    /// <summary>
     /// Creates a <see cref="BoundedChannelOptions"/> instance from this policy.
     /// Use this when you need to further customize channel options before creation.
     /// </summary>

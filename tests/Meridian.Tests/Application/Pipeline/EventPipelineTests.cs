@@ -298,10 +298,13 @@ public class EventPipelineTests : IAsyncLifetime
         }
         await pipeline.FlushAsync();
 
-        // Assert - With DropOldest mode, all TryPublish calls succeed, so DroppedCount is 0
-        // But sink should receive approximately capacity worth of events (latest ones)
-        pipeline.DroppedCount.Should().Be(0, "DropOldest mode succeeds on TryPublish and doesn't increment DroppedCount");
+        // Assert - With DropOldest mode every TryPublish call succeeds, but the channel evicts
+        // already-queued events to make room. Those evictions are lost data and must be counted:
+        // every published event is either delivered to the sink or reported as dropped.
         sink.ReceivedEvents.Count.Should().BeLessThan(100, "some events should have been dropped by the channel");
+        pipeline.DroppedCount.Should().BeGreaterThan(0, "evicted events are dropped events");
+        (pipeline.DroppedCount + sink.ReceivedEvents.Count).Should().Be(100,
+            "an event the channel evicted must be accounted for in DroppedCount");
 
         // The events received should be the latest ones (high symbol numbers)
         // because oldest were dropped
