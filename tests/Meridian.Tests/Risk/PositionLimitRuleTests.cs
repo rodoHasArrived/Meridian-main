@@ -211,16 +211,16 @@ public sealed class PositionLimitRuleTests
     private static OrderState Working(
         string orderId, OrderSide side, decimal quantity, decimal filled = 0m,
         string symbol = DefaultSymbol, string? parentOrderId = null) => new()
-    {
-        OrderId = orderId,
-        Symbol = symbol,
-        Side = side,
-        Type = OrderType.Limit,
-        Quantity = quantity,
-        FilledQuantity = filled,
-        Status = filled > 0m ? OrderStatus.PartiallyFilled : OrderStatus.Accepted,
-        ParentOrderId = parentOrderId,
-    };
+        {
+            OrderId = orderId,
+            Symbol = symbol,
+            Side = side,
+            Type = OrderType.Limit,
+            Quantity = quantity,
+            FilledQuantity = filled,
+            Status = filled > 0m ? OrderStatus.PartiallyFilled : OrderStatus.Accepted,
+            ParentOrderId = parentOrderId,
+        };
 
     private static PositionLimitRule CreateSutWithWorkingOrders(
         decimal filledPosition, params OrderState[] workingOrders)
