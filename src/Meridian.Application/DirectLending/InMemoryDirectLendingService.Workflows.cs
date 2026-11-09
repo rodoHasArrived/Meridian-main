@@ -196,6 +196,11 @@ public sealed partial class InMemoryDirectLendingService
             EnsureActive(stored);
             ThrowIfInvalid(DirectLendingServiceSupport.ValidateUnappliedCashAmount(request.Amount, stored.Servicing.Balances.UnappliedCash, "refund"));
             ThrowIfInvalid(string.IsNullOrWhiteSpace(request.ExternalRef) ? "A refund needs an external reference for the outgoing payment." : null);
+            var duplicate = DirectLendingServiceSupport.FindDuplicateRefund(GetList(_cashTransactions, loanId), request.ExternalRef);
+            if (duplicate is not null)
+            {
+                throw new DirectLendingCommandException(new DirectLendingCommandError(DirectLendingErrorCode.Conflict, duplicate));
+            }
 
             stored.Servicing = stored.Servicing with
             {
@@ -204,7 +209,7 @@ public sealed partial class InMemoryDirectLendingService
             AppendRevision(stored, "InternalEvent", request.EffectiveDate, $"Unapplied cash refunded for {request.Amount:0.00}.");
             AppendEvent(stored, "loan.unapplied-cash-refunded", request.EffectiveDate, new { loanId, request.Amount, request.EffectiveDate, request.ExternalRef }, metadata);
             GetList(_cashTransactions, loanId).Add(new CashTransactionDto(
-                Guid.NewGuid(), loanId, "UnappliedCashRefund", request.EffectiveDate, request.EffectiveDate, request.EffectiveDate,
+                Guid.NewGuid(), loanId, DirectLendingServiceSupport.UnappliedCashRefundTransactionType, request.EffectiveDate, request.EffectiveDate, request.EffectiveDate,
                 request.Amount, stored.TermsVersions[^1].Terms.BaseCurrency, request.ExternalRef, stored.History[^1].EventId, DateTimeOffset.UtcNow, false));
             return Task.FromResult<LoanServicingStateDto?>(ToServicingState(stored));
         }
@@ -347,7 +352,8 @@ public sealed partial class InMemoryDirectLendingService
 
             foreach (var flow in flows)
             {
-                var cash = cashTransactions.FirstOrDefault(x => x.SettlementDate == flow.DueDate && x.Amount == flow.Amount);
+                var cash = cashTransactions.FirstOrDefault(x =>
+                    DirectLendingServiceSupport.IsIncomingReceipt(x) && x.SettlementDate == flow.DueDate && x.Amount == flow.Amount);
                 var result = new ReconciliationResultDto(
                     Guid.NewGuid(),
                     runId,

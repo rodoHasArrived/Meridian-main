@@ -353,6 +353,39 @@ public sealed partial class PostgresDirectLendingCommandServiceTests
     }
 
     [Fact]
+    public async Task RefundUnappliedCashAsync_RetryUnderARecordedExternalReference_IsRefusedWithoutSaving()
+    {
+        // PRD-115: a refund whose response was lost is retried with a fresh command id. The cash
+        // transaction write would be skipped as a duplicate, but the state, event and journal would not.
+        var loanId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var servicing = BuildServicing(loanId);
+        servicing = servicing with { Balances = servicing.Balances with { UnappliedCash = 2_000m } };
+        var stateStore = Substitute.For<IDirectLendingStateStore>();
+        var queryService = Substitute.For<IDirectLendingQueryService>();
+        queryService.LoadAggregateAsync(loanId, Arg.Any<CancellationToken>())
+            .Returns(new PersistedDirectLendingState(loanId, 7, BuildContract(loanId), servicing));
+        var operations = Substitute.For<IDirectLendingOperationsStore>();
+        operations.GetCashTransactionsAsync(loanId, Arg.Any<CancellationToken>()).Returns(
+        [
+            new CashTransactionDto(Guid.NewGuid(), loanId, "UnappliedCashRefund", new DateOnly(2026, 4, 1), new DateOnly(2026, 4, 1),
+                new DateOnly(2026, 4, 1), 500m, CurrencyCode.USD, "wire-out-1", Guid.NewGuid(), DateTimeOffset.UtcNow, false)
+        ]);
+        var service = new PostgresDirectLendingCommandService(
+            stateStore,
+            operations,
+            queryService,
+            new LoanAccountingProjector(null, new AccountingPolicyService(), BuildSecurityMasterQueryService()),
+            new DirectLendingOptions { CurrentEventSchemaVersion = 3 });
+
+        var result = await service.RefundUnappliedCashAsync(loanId, new RefundUnappliedCashRequest(500m, new DateOnly(2026, 4, 1), "wire-out-1"));
+
+        result.IsSuccess.Should().BeFalse();
+        result.Error!.Code.Should().Be(DirectLendingErrorCode.Conflict);
+        await stateStore.DidNotReceiveWithAnyArgs().SaveAsync(
+            default, default, default, default!, default!, default!, default, default, default!, default!, default, default, default, default);
+    }
+
+    [Fact]
     public async Task AddCollateralAsync_PersistsServicingStateInsteadOfReturningPostgresNoOp()
     {
         var loanId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");

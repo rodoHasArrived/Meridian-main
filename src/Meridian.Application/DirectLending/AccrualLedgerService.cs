@@ -60,8 +60,11 @@ public sealed class AccrualLedgerService : IAccrualLedgerService
         Guid sourceEventId,
         DirectLendingEventWriteMetadata metadata,
         CancellationToken ct = default,
-        LedgerAdjustmentApprovalMetadataDto? adjustmentApproval = null)
+        LedgerAdjustmentApprovalMetadataDto? adjustmentApproval = null,
+        decimal prepaidInterestConsumed = 0m)
     {
+        // PRD-115: pass the accrual's prepaidInterestConsumed (from its loan.daily-accrual-posted payload)
+        // so the reversal restores the prepaid liability rather than the receivable.
         using var payload = DirectLendingServiceSupport.CreatePayloadDocument(new
         {
             loanId,
@@ -72,7 +75,8 @@ public sealed class AccrualLedgerService : IAccrualLedgerService
             accrual.PenaltyAmount,
             accrual.AnnualRateApplied,
             accrual.PikInterestAmount,
-            accrual.PikCapitalizationDeferred
+            accrual.PikCapitalizationDeferred,
+            PrepaidInterestConsumed = prepaidInterestConsumed
         });
 
         return _projector.ProjectAsync(

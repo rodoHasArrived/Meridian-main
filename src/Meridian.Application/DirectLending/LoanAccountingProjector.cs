@@ -115,12 +115,15 @@ public sealed class LoanAccountingProjector
 
             case "loan.daily-accrual-reversed":
                 description = "Loan daily accrual reversal";
-                var reversedInterest = GetDecimal(root, "interestAmount");
                 var reversedCommitmentFee = GetDecimal(root, "commitmentFeeAmount");
                 var reversedPenalty = GetDecimal(root, "penaltyAmount");
                 var reversedPikInterest = GetDecimal(root, "pikInterestAmount");
-                Add("InterestIncome", LedgerAccountType.Revenue, reversedInterest, 0m);
-                Add("AccruedInterestReceivable", LedgerAccountType.Asset, 0m, reversedInterest);
+                // PRD-115: the exact inverse of the posting, so interest that consumed prepaid interest
+                // restores PrepaidInterestLiability instead of crediting a receivable never debited.
+                foreach (var line in DirectLendingJournalLines.ForAccruedInterest(root))
+                {
+                    Add(line.Account, line.AccountType, line.Credit, line.Debit);
+                }
                 if (IsPikCapitalizationDeferred(root))
                 {
                     Add("PikInterestIncome", LedgerAccountType.Revenue, reversedPikInterest, 0m);
@@ -135,6 +138,23 @@ public sealed class LoanAccountingProjector
                 Add("CommitmentFeeReceivable", LedgerAccountType.Asset, 0m, reversedCommitmentFee);
                 Add("PenaltyIncome", LedgerAccountType.Revenue, reversedPenalty, 0m);
                 Add("PenaltyReceivable", LedgerAccountType.Asset, 0m, reversedPenalty);
+                break;
+
+            // PRD-115: payments now settle FeeReceivable and PenaltyReceivable directly, so the
+            // assessments that create those receivables must reach the authoritative ledger too
+            // (the same pairs the outbox dispatcher drafts), or settlement would drive them negative.
+            case "loan.fee-assessed":
+                description = "Loan fee assessment";
+                var assessedFee = GetDecimal(root, "amount", "Amount");
+                Add("FeeReceivable", LedgerAccountType.Asset, assessedFee, 0m);
+                Add("FeeIncome", LedgerAccountType.Revenue, 0m, assessedFee);
+                break;
+
+            case "loan.prepayment-penalty-charged":
+                description = "Loan prepayment penalty";
+                var chargedPenalty = GetDecimal(root, "penaltyAmount", "PenaltyAmount");
+                Add("PenaltyReceivable", LedgerAccountType.Asset, chargedPenalty, 0m);
+                Add("PenaltyIncome", LedgerAccountType.Revenue, 0m, chargedPenalty);
                 break;
 
             case "loan.pik-capitalized":

@@ -74,6 +74,31 @@ public sealed class DirectLendingUnappliedCashCommandTests
     }
 
     [Fact]
+    public async Task Refund_RetriedUnderTheSameExternalReference_IsRefusedAndMovesNothing()
+    {
+        var service = new InMemoryDirectLendingService();
+        var loanId = await LoanHoldingUnappliedCashAsync(service, Terms(), 2_000m);
+        await service.RefundUnappliedCashAsync(loanId, new RefundUnappliedCashRequest(500m, PaymentDate, "wire-out-1"));
+
+        var retry = () => service.RefundUnappliedCashAsync(loanId, new RefundUnappliedCashRequest(500m, PaymentDate, " wire-out-1 "));
+
+        (await retry.Should().ThrowAsync<DirectLendingCommandException>()).Which.Error.Code.Should().Be(DirectLendingErrorCode.Conflict);
+        (await service.GetServicingStateAsync(loanId))!.Balances.UnappliedCash.Should().Be(1_500m);
+        (await service.GetCashTransactionsAsync(loanId)).Should().ContainSingle(item => item.TransactionType == "UnappliedCashRefund");
+    }
+
+    [Fact]
+    public void Reconciliation_TreatsRefundsAsOutgoing()
+    {
+        static CashTransactionDto Cash(string type)
+            => new(Guid.NewGuid(), Guid.NewGuid(), type, PaymentDate, PaymentDate, PaymentDate, 100m, CurrencyCode.USD, "ref", Guid.NewGuid(), DateTimeOffset.UtcNow, false);
+
+        DirectLendingServiceSupport.IsIncomingReceipt(Cash("MixedPayment")).Should().BeTrue();
+        DirectLendingServiceSupport.IsIncomingReceipt(Cash("UnappliedCashRefund")).Should().BeFalse(
+            "a refund paid out on a due date must not satisfy the receipt expected that day");
+    }
+
+    [Fact]
     public void JournalLines_ForApplyAndRefund_Balance()
     {
         using var applied = JsonDocument.Parse("""{"amount":1500,"appliedAmount":1200,"breakdown":{"toInterest":1000,"toCommitmentFee":0,"toFees":0,"toPenalty":0,"toPrincipal":200}}""");

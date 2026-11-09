@@ -740,6 +740,13 @@ public sealed class DirectLendingViewModel : BindableBase
         try
         {
             var response = await _apiClient.PostWithResponseAsync<LoanServicingStateDto>(path, body, ct).ConfigureAwait(false);
+            if (!IsStillSelected(loan))
+            {
+                // The operator moved to another loan while this ran. Reloading the submitted loan now
+                // would set IsDetailLoading for the new selection and never clear it.
+                return;
+            }
+
             UnappliedCashResultText = BuildUnappliedCashResultText(isRefund, amount, SelectedServicing, response.Success, response.Data, response.ErrorMessage);
             if (response.Success)
             {
@@ -756,6 +763,8 @@ public sealed class DirectLendingViewModel : BindableBase
             IsSubmittingUnappliedCash = false;
         }
     }
+
+    private bool IsStillSelected(LoanSummaryDto submitted) => SelectedLoan?.LoanId == submitted.LoanId;
 
     /// <summary>
     /// PRD-115: why Apply or Refund unapplied cash cannot run yet, or null when it can. Mirrors the

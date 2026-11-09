@@ -132,6 +132,28 @@ internal static class DirectLendingServiceSupport
             ReplayFlag: metadata?.ReplayFlag ?? false);
     }
 
+    /// <summary>Cash transaction type for an outgoing refund of unapplied cash (PRD-115).</summary>
+    public const string UnappliedCashRefundTransactionType = "UnappliedCashRefund";
+
+    /// <summary>
+    /// True for cash the loan received. Reconciliation matches expected receipts only against these,
+    /// so an outgoing refund can never satisfy a projected payment.
+    /// </summary>
+    public static bool IsIncomingReceipt(CashTransactionDto transaction)
+        => !string.Equals(transaction.TransactionType, UnappliedCashRefundTransactionType, StringComparison.Ordinal);
+
+    /// <summary>
+    /// PRD-115: a refund's external reference identifies the outgoing payment, so a second refund under
+    /// the same reference is a retry, not a new refund. Refusing it keeps a lost response from moving
+    /// held cash and posting Cash twice. Returns the conflict message, or null when the reference is new.
+    /// </summary>
+    public static string? FindDuplicateRefund(IEnumerable<CashTransactionDto> existing, string externalRef)
+        => existing.Any(transaction =>
+                string.Equals(transaction.TransactionType, UnappliedCashRefundTransactionType, StringComparison.Ordinal) &&
+                string.Equals(transaction.ExternalRef?.Trim(), externalRef.Trim(), StringComparison.Ordinal))
+            ? $"A refund under external reference '{externalRef.Trim()}' is already recorded for this loan."
+            : null;
+
     /// <summary>
     /// PRD-115: the amount to apply or refund must be positive and no more than the loan's unapplied
     /// cash. Returns the validation message, or null when the amount is acceptable.

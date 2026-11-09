@@ -253,6 +253,54 @@ public sealed class AccrualLedgerServiceTests
         entry.Lines.Should().ContainSingle(line => line.Account.Name == "InterestIncome" && line.Credit == accrual.InterestAmount);
     }
 
+    [Fact]
+    public async Task ReverseAccrualAsync_OfInterestSettledFromPrepaidInterest_IsTheExactInverseOfThePosting()
+    {
+        var service = CreateService(BuildOpenPeriod());
+        var loanId = Guid.NewGuid();
+        var accrual = BuildAccrualEntry();
+
+        var posted = (await service.AccrueAsync(
+            loanId, BuildContract(loanId), new PostDailyAccrualRequest(accrual.AccrualDate), accrual, Guid.NewGuid(), BuildMetadata(),
+            prepaidInterestConsumed: 10m)).Should().ContainSingle().Subject.Entry;
+        var reversed = (await service.ReverseAccrualAsync(
+            loanId, BuildContract(loanId), accrual, Guid.NewGuid(), BuildMetadata(),
+            prepaidInterestConsumed: 10m)).Should().ContainSingle().Subject.Entry;
+
+        reversed.IsBalanced.Should().BeTrue();
+        static Dictionary<string, decimal> Net(JournalEntry entry)
+            => entry.Lines.GroupBy(line => line.Account.Name).ToDictionary(group => group.Key, group => group.Sum(line => line.Debit - line.Credit));
+        var postedNet = Net(posted);
+        var reversedNet = Net(reversed);
+        reversedNet.Keys.Should().BeEquivalentTo(postedNet.Keys);
+        foreach (var (account, net) in postedNet)
+        {
+            reversedNet[account].Should().Be(-net, $"the reversal undoes {account} exactly");
+        }
+
+        reversedNet["PrepaidInterestLiability"].Should().Be(-10m, "the prepaid liability is restored");
+    }
+
+    [Fact]
+    public async Task Projector_FeeAssessed_PostsTheReceivableAndIncome()
+    {
+        var entry = await ProjectSingleAsync("loan.fee-assessed", """{"feeType":1,"amount":250,"effectiveDate":"2026-03-24"}""");
+
+        entry.IsBalanced.Should().BeTrue();
+        entry.Lines.Select(line => (line.Account.Name, line.Debit, line.Credit))
+            .Should().BeEquivalentTo(new[] { ("FeeReceivable", 250m, 0m), ("FeeIncome", 0m, 250m) });
+    }
+
+    [Fact]
+    public async Task Projector_PrepaymentPenaltyCharged_PostsTheReceivableAndIncome()
+    {
+        var entry = await ProjectSingleAsync("loan.prepayment-penalty-charged", """{"outstandingPrincipal":100000,"penaltyAmount":2000,"effectiveDate":"2026-03-24"}""");
+
+        entry.IsBalanced.Should().BeTrue();
+        entry.Lines.Select(line => (line.Account.Name, line.Debit, line.Credit))
+            .Should().BeEquivalentTo(new[] { ("PenaltyReceivable", 2_000m, 0m), ("PenaltyIncome", 0m, 2_000m) });
+    }
+
     private async Task<JournalEntry> ProjectSingleAsync(string eventType, string payloadJson)
     {
         var loanId = Guid.NewGuid();

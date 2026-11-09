@@ -676,7 +676,8 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
 
         foreach (var flow in flows)
         {
-            var cash = cashTransactions.FirstOrDefault(x => x.SettlementDate == flow.DueDate && x.Amount == flow.Amount);
+            var cash = cashTransactions.FirstOrDefault(x =>
+                DirectLendingServiceSupport.IsIncomingReceipt(x) && x.SettlementDate == flow.DueDate && x.Amount == flow.Amount);
             var matchStatus = cash is null ? "MissingCash" : "Matched";
             var variance = cash is null ? flow.Amount : 0m;
             var result = new ReconciliationResultDto(
@@ -934,6 +935,15 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
             return DirectLendingCommandResult<LoanServicingStateDto>.Failure(DirectLendingErrorCode.Validation, amountError);
         }
 
+        // A retry after a lost response must not refund twice. The aggregate's expected-version check
+        // on save rejects a concurrent duplicate; this rejects a sequential one.
+        var duplicate = DirectLendingServiceSupport.FindDuplicateRefund(
+            await _operationsStore.GetCashTransactionsAsync(loanId, ct).ConfigureAwait(false), request.ExternalRef);
+        if (duplicate is not null)
+        {
+            return DirectLendingCommandResult<LoanServicingStateDto>.Failure(DirectLendingErrorCode.Conflict, duplicate);
+        }
+
         var decision = DirectLendingAggregateInterop.RefundUnappliedCash(stored.Servicing, request);
         using var payload = DirectLendingServiceSupport.CreatePayloadDocument(new
         {
@@ -958,7 +968,7 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
                 [
                     new DirectLendingCashTransactionWrite(
                         Guid.NewGuid(),
-                        "UnappliedCashRefund",
+                        DirectLendingServiceSupport.UnappliedCashRefundTransactionType,
                         request.EffectiveDate,
                         request.EffectiveDate,
                         request.EffectiveDate,

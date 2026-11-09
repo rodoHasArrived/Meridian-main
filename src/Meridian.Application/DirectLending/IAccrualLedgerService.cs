@@ -27,7 +27,8 @@ public interface IAccrualLedgerService
         Guid sourceEventId,
         DirectLendingEventWriteMetadata metadata,
         CancellationToken ct = default,
-        LedgerAdjustmentApprovalMetadataDto? adjustmentApproval = null);
+        LedgerAdjustmentApprovalMetadataDto? adjustmentApproval = null,
+        decimal prepaidInterestConsumed = 0m);
 
     /// <summary>Projects a PIK capitalization: Dr LoanPrincipal / Cr PikInterestReceivable.</summary>
     Task<IReadOnlyList<LedgerJournalEntryWrite>> CapitalizePikAsync(
