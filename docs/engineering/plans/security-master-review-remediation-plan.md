@@ -371,8 +371,17 @@ carry a reviewed golden diff. Planned increments, each corpus-gated:
   rebuild — the decode's permanent read-only legacy-upcaster role. Byte-neutrality is pinned by
   `RecordAwareDerivation_IsByteIdenticalToTheProjectionDecode` over every declared class twin,
   plus the corpus and write goldens.
-- **S2-B4 — term-block and approved-merge paths** move onto the definition (the
-  `ToRecord(...).Kind` seam in the workbench command service).
+- **S2-B4 — term-block and approved-merge paths (verified complete 2026-11-09, pin only).**
+  Source comparison shows the planned move already happened through composition: the workbench
+  term-block and profile-field edit validations call
+  `SecurityMasterCommandFacade.ValidateKindInvariants`, which since S2-B2 delegates every
+  ledgered code to the definition surface; and the approved-merge handler
+  (`ApprovedFieldEditCanonicalMergeHandler`) publishes through the ordinary amend route, which
+  S2-B2 validates on the definition and S2-B3 derives from the typed record. The remaining
+  `ToRecord(...).Kind` at the edit-validation sites is the flat → kind decode of the staged
+  document — the codec boundary itself, which stage 3 (S3-D) shrinks, not a command seam. A new
+  pin asserts the ledgered code (`structured_credit_current_factor_invalid`) surfaces through
+  the workbench route, proving the term-block path shares the canonical amend's authority.
 
 ### Slice 12 — ADR-027 stage 3: the schema-generated flat codec (planned 2026-11-09)
 

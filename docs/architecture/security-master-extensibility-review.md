@@ -774,6 +774,22 @@ Validation (local, .NET SDK 10.0.403): `dotnet test tests/Meridian.Tests -c Rele
 active-plus-inactive gauge, and the zero case. The full local `bash scripts/ci.sh` was not run;
 GitHub `Meridian CI / quality-gate` remains authoritative.
 
+### ADR-027 stage-2 S2-B4 — term-block and merge paths verified on the definition — 2026-11-09
+
+The last stage-2 increment needed no plumbing: the workbench term-block and profile-field edit
+validations already flow through `ValidateKindInvariants`, which the S2-B2 recomposition made
+definition-authoritative for every ledgered code, and the approved-merge handler publishes
+through the ordinary amend route — S2-B2's validation and S2-B3's typed-record derivation both
+apply. The one seam those sites keep, `ToRecord(...).Kind` over the staged effective document,
+is the flat → kind codec decode itself (fail-closed, with its own refusal path for documents
+the strict mapping cannot reconstruct) — the boundary stage 3's S3-D shrinks, not a command
+seam. Pinned by extending the workbench invariant test to assert the ledgered
+`structured_credit_current_factor_invalid` code surfaces through the term-block route. With
+this, ADR-027 stage 2 is complete: commands and validation live on `SecurityEconomicDefinition`,
+and `SecurityMasterLegacyUpgrade` is on the write path only as the typed-record projection
+(`modulesFromKind`, `toEconomicDefinition`) — the flat decode remains confined to the codec
+boundary and legacy replay.
+
 ### ADR-027 stage-2 S2-B3 — events derived from the typed record — 2026-11-09
 
 The create, amend and deactivate services stop re-decoding the document they just encoded: with
