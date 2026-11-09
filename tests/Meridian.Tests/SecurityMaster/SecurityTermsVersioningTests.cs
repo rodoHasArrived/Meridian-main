@@ -871,8 +871,9 @@ public sealed class SecurityTermsVersioningTests
         var recovered = SecurityEconomicDefinitionAdapter.ToProjection(olderEvent);
         recovered.AssetSpecificTerms.GetProperty("callSchedule").GetArrayLength().Should().Be(1);
         recovered.AssetSpecificTerms.GetProperty("callSchedule")[0].GetProperty("callPrice").GetDecimal().Should().Be(102.0m);
-        recovered.AssetSpecificTerms.GetProperty("callSchedule")[0].GetProperty("exerciseStyle").ValueKind
-            .Should().Be(JsonValueKind.Null, "'Discrete' names no frozen exercise style");
+        recovered.AssetSpecificTerms.GetProperty("callSchedule")[0].GetProperty("exerciseStyle").GetString()
+            .Should().Be("Discrete", "an undeclared label rides back verbatim: the flat field preserves undeclared "
+                + "exercise styles (WithVerbatimUndeclaredValue) and the economic upgrade copies them into callType unchanged");
         SecurityTermsEnvelope.TryGetRetainedEconomicTerms(recovered.AssetSpecificTerms, out _).Should().BeTrue();
         // Ordinary scalar economics remain recoverable and retain unexpressible scalar/redemption
         // fields.

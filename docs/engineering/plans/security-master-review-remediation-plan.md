@@ -247,7 +247,11 @@ module's lists into those arrays in the frozen ADR-024 entry form, stamped at th
 version, instead of refusing economic-only replay. Declared conversion semantics, pinned by
 `SecurityEconomicCallScheduleFlatteningTests`: `callPx` is a percentage of par; a par call
 without a price writes 100 at `PercentOfPar`; `callType` "MakeWhole" is a price type carrying
-the module-level spread; "European"/"American"/"Bermudan" are exercise styles; members the
+the module-level spread; every other label is an exercise style carried back verbatim — the
+flat field preserves undeclared style strings (`WithVerbatimUndeclaredValue`) and the economic
+upgrade copies them into `callType` unchanged, so the recovery keeps them (a 2026-11-09 Codex
+review finding caught the first cut nulling undeclared labels, silently losing them on the
+round-trip); members the
 economic family never carried stay null under ADR-025's declared read defaults. Refusals narrow,
 never vanish: accrual conventions refuse everywhere; schedule lists still refuse on the
 class-independent route and for classes without the declared arrays; malformed lists and
@@ -276,10 +280,25 @@ entirely, and the remaining module members (`leiCode`, `ultimateParentName`, `is
 `creditEnhancementPct`) are constant `None` in the fill — no flat key feeds them, so there is
 nothing to invert and they correctly persist only through `retainedEconomicTerms`.
 
+**Increment 4 — the structured-product factor schedule (implemented 2026-11-09).** For the one
+class that declares the typed `factorScheduleEntries` array (StructuredCredit, Since 1, so the
+stamp floor of 2 governs), the class-aware flattening recovers the economic
+`structuredProduct.factorScheduleEntries` list into the flat array in the frozen two-member
+entry form (`asOfDate`, `factor`), preserving stored order — closing a silent drop: before this
+increment the dated schedule survived only inside `retainedEconomicTerms` while the flat row and
+every projection built from it lost it, with no refusal recording the loss. Recovery is
+fail-closed under the flat side's own invariants
+(`SecurityMasterCommands.fs` `structured_credit_factor_schedule_*`): each entry needs the
+canonical `asOfDate` (decodable ISO `yyyy-MM-dd`) and `factor` (number in `[0,1]`); dates must
+be distinct and, ordered by date, factors non-increasing; null/all-null entries are unset and
+skipped; non-array lists, non-object entries, members the serializer never writes, and
+case-variant module or key spellings that declare content refuse
+(`SecurityEconomicCallScheduleFlatteningTests`, `SecurityEconomicScheduleReplayRefusalTests`).
+The cross-module `structured_credit_factor_after_maturity` rule stays with domain validation,
+as increments 1–2 left notice/window rules. Non-declaring classes and the class-independent
+route keep the pre-existing silent-retain behavior unchanged.
+
 **Remaining increments (ordered, each with its own round-trip proof):**
-4. The structured-product detail the `StructuredCredit` mappings do not yet carry: the typed
-   `factorScheduleEntries` list (flat-declared at Since 1, serialized into the economic module,
-   currently dropped from the recovered flat row and surviving only in the retained document).
 5. The 11 unserialized modules: extend the economic serializer so the economic family stops
    depending on flat for them (prerequisite for stage 2), with the serializer's module ledger
    updated in step.

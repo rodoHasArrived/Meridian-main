@@ -774,6 +774,35 @@ Validation (local, .NET SDK 10.0.403): `dotnet test tests/Meridian.Tests -c Rele
 active-plus-inactive gauge, and the zero case. The full local `bash scripts/ci.sh` was not run;
 GitHub `Meridian CI / quality-gate` remains authoritative.
 
+### ADR-027 stage-1 increment 4 — structured-credit factor schedule recovers — 2026-11-09
+
+The fourth slice-10 increment (increment 3 was verified already complete, no code) recovers the
+economic `structuredProduct.factorScheduleEntries` list into the flat `factorScheduleEntries`
+array for the one class that declares it (StructuredCredit, Since 1, so the stamp floor of 2
+governs), in the frozen two-member entry form (`asOfDate`, `factor`) and in stored order. This
+closes a silent drop rather than lifting a refusal: no guard ever covered the factor schedule,
+so economic-only replay previously kept it alive only inside `retainedEconomicTerms` while the
+flat row — and the amortization/projection readers built from it — lost the dated schedule
+without a trace. Recovery is fail-closed under the flat side's own domain invariants
+(`structured_credit_factor_schedule_*` in `SecurityMasterCommands.fs`): canonical spellings
+only, decodable ISO dates, factors in `[0,1]`, distinct dates, non-increasing in date order;
+anything else that declares content refuses with a factor-specific message, while non-declaring
+classes and the class-independent route keep their pre-existing silent-retain behavior
+unchanged (pinned in `SecurityEconomicCallScheduleFlatteningTests` and
+`SecurityEconomicScheduleReplayRefusalTests`; the cross-module factor-after-maturity rule stays
+with domain validation, as increments 1–2 left notice/window rules).
+
+Shipped alongside, a confirmed Codex review finding on increment 1's recovery: undeclared
+`callType` labels (anything outside "MakeWhole"/"European"/"American"/"Bermudan") were nulled
+in the recovered `exerciseStyle`, silently losing them on the flat → economic → flat
+round-trip even though the flat entry field preserves undeclared style strings
+(`WithVerbatimUndeclaredValue`) and `SecurityMasterLegacyUpgrade.economicCalls` copies them
+into `callType` verbatim. The recovery now carries every non-MakeWhole label back into
+`exerciseStyle` unchanged — the exact inverse of the economic writer — with comparisons still
+ordinal, so a case-variant "makewhole" is a verbatim label, not a price type (pinned in
+`SecurityEconomicCallScheduleFlatteningTests` and the `SecurityTermsVersioningTests` replay
+pin, which moved from null-on-unknown to verbatim).
+
 ### ADR-027 stage-1 increment 2 — accrual conventions recover — 2026-11-09
 
 The second slice-10 increment lifts the accrual refusal for classes that declare the
