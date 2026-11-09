@@ -564,6 +564,19 @@ WPF. Each count is gated by the permission of the route that owns its source, an
 caller may not read it. `tests/fixtures/cross-screen-counts/cross-screen-counts.json` holds this
 class and the browser's `lib/cross-screen-counts.ts` to the same expected values.
 
+## Paper futures daily settlement
+
+`Services/PaperFuturesSettlementService.cs` settles the daily variation margin of every open paper
+futures position once per NYSE trading day, after the regular close. Each pass walks the active
+paper sessions and, for each variation-margin position, settles every closed trading day after its
+last settlement and after it opened, oldest first (at most `MaxCatchUpTradingDays`, default 5), at
+that day's `IMarkPriceSource` mark; the close stands in for the exchange settlement price. A day
+with no price is skipped with a warning, never settled on a stale price. Settlements go through
+`PaperSessionPersistenceService.RecordSettlementAsync`, which persists before applying and ignores
+a day already settled, so repeated passes are safe. The job is off unless
+`PaperTrading:FuturesSettlement:Enabled` is true, and stays idle without a registered mark price
+source. `AddPaperFuturesSettlement` registers it; the host calls it next to the paper sessions.
+
 ## Operator default scope
 
 `GET`/`PUT /api/workstation/operator/scope-preference` read and save the signed-in operator's
@@ -2514,7 +2527,14 @@ targets for Security Master passport/profile, provider evidence, reconciliation 
 mapping/evidence, Asset Operations detail, and close readiness so clients can navigate without
 maintaining local routing rules. `/api/workstation/assets/{securityId}/operations` returns the
 shared Security Master-keyed operations detail for loans, bonds, and later asset classes instead of
-surface-specific read models. Missing retained provider inputs remain review-required or blocked rows; clients must not
+surface-specific read models. Evidence that names no resolved security is classified by
+`MultiAssetEvidenceClassRouter` (remediation slice 8): exact-token routes over the produced
+candidate-type and ledger-effect vocabulary, unresolved outside it, replacing the substring
+inference that read any "factor"-containing shape as `Bond`. The workstation sub-type
+(`SecurityMasterSecurityReferenceLookup.DeriveSubType`, shared with `WorkstationEndpoints`) reads
+the F# asset-class registry for every catalog class, keeping three pinned legacy spellings
+("Bond", "Deposit", "MoneyMarket") and declaring Equity sub-type-ambiguous;
+`WorkstationSecuritySubTypeCoverageTests` pins the full table. Missing retained provider inputs remain review-required or blocked rows; clients must not
 mark asset classes ready with UI-local checks. The shared read model treats private-credit
 commitments, unfunded commitments, paydowns, covenant notices, and obligation schedules as
 `DirectLoan` provider evidence. Structured credit, private fund interests, private company equity,

@@ -300,6 +300,9 @@ public sealed class UiServer : IAsyncDisposable
                         : paperSessionBaseDirectory,
                     sp.GetRequiredService<ILogger<JsonlFilePaperSessionStore>>()));
             builder.Services.AddSingleton<PaperSessionPersistenceService>();
+            // Daily variation-margin settlement of paper futures; off unless
+            // "PaperTrading:FuturesSettlement:Enabled" is true and a mark price source is registered.
+            builder.Services.AddPaperFuturesSettlement(builder.Configuration);
             builder.Services.AddSingleton<StrategyLifecycleManager>();
             builder.Services.AddSingleton<ICompliancePolicyEngine, CompliancePolicyEngine>();
             // Durable, tamper-evident compliance audit log — persisted so events survive a restart

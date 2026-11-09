@@ -32,6 +32,10 @@ public sealed class SecurityAssetClassBehaviorFactsTests
         => Classes(static d => d.UsesOccOptionSymbols).Should().BeEquivalentTo(["Option", "Warrant"]);
 
     [Fact]
+    public void SettlesDailyVariationMargin_IsFutureOnly()
+        => Classes(static d => d.SettlesDailyVariationMargin).Should().Equal("Future");
+
+    [Fact]
     public void QuotesRatesAsFractions_IsDepositOnly()
         => Classes(static d => d.QuotesRatesAsFractions).Should().Equal("Deposit");
 
