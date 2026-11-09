@@ -110,6 +110,18 @@ public static class FormatHelpers
         => value is { } timestamp ? FormatUtcTimestamp(timestamp) : fallback;
 
     /// <summary>
+    /// Reads back a label written by <see cref="FormatUtcTimestamp(DateTimeOffset)"/>, e.g.
+    /// "2026-07-05 12:00 UTC", to minute precision. Returns false for any other text.
+    /// </summary>
+    public static bool TryParseUtcTimestamp(string? text, out DateTimeOffset value)
+        => DateTimeOffset.TryParseExact(
+            text,
+            UtcTimestampFormat,
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
+            out value);
+
+    /// <summary>
     /// The UTC instant of a <see cref="DateTime"/>. A local value is converted. A value with no
     /// kind is read as UTC, because the API's timestamps are UTC and a JSON value without an
     /// offset carries no local meaning.

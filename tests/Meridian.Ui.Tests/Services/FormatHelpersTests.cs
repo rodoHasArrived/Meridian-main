@@ -38,6 +38,17 @@ public sealed class FormatHelpersTests
     }
 
     [Fact]
+    public void TryParseUtcTimestamp_ReadsBackItsOwnLabelOnly()
+    {
+        var label = FormatHelpers.FormatUtcTimestamp(new DateTimeOffset(2026, 7, 5, 8, 0, 0, TimeSpan.FromHours(-4)));
+
+        FormatHelpers.TryParseUtcTimestamp(label, out var parsed).Should().BeTrue();
+        parsed.Should().Be(new DateTimeOffset(2026, 7, 5, 12, 0, 0, TimeSpan.Zero));
+        FormatHelpers.TryParseUtcTimestamp("-", out _).Should().BeFalse();
+        FormatHelpers.TryParseUtcTimestamp(null, out _).Should().BeFalse();
+    }
+
+    [Fact]
     public void FormatUtcTimestamp_ReturnsTheFallbackForAMissingValue()
     {
         FormatHelpers.FormatUtcTimestamp((DateTimeOffset?)null, "Never").Should().Be("Never");

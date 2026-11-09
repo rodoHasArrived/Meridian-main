@@ -3207,18 +3207,19 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
             return fallback;
         }
 
-        if (!DateTime.TryParse(timestampText, out var parsedTimestamp))
+        // The timestamp text is a UTC label written by FormatHelpers.FormatUtcTimestamp.
+        if (!UtcFormat.TryParseUtcTimestamp(timestampText, out var parsedTimestamp))
         {
             return fallback;
         }
 
-        var age = DateTime.Now - parsedTimestamp;
+        var age = DateTimeOffset.UtcNow - parsedTimestamp;
         if (age > TimeSpan.FromMinutes(30))
         {
             return $"Snapshot may be stale ({Math.Round(age.TotalMinutes):N0} minute(s) old). {fallback}";
         }
 
-        return $"Snapshot confirmed at {parsedTimestamp:g}. Refresh again before sign-off if desk activity or ledger posture has changed.";
+        return $"Snapshot confirmed at {timestampText}. Refresh again before sign-off if desk activity or ledger posture has changed.";
     }
 
     private string? ResolveRoutedPageTag(FundOperationsNavigationContext? context)
