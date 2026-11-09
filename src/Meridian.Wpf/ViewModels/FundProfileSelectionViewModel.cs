@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using Meridian.Contracts.Workstation;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
+using UtcFormat = Meridian.Ui.Services.FormatHelpers;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -90,7 +91,7 @@ public sealed class FundProfileSelectionViewModel : BindableBase
     public string SelectedContextLastOpenedText =>
         SelectedOperatingContext?.LastOpenedAt is null
             ? "No previous session"
-            : $"Last opened {SelectedOperatingContext.LastOpenedAt.Value.LocalDateTime:g}";
+            : $"Last opened {UtcFormat.FormatUtcTimestamp(SelectedOperatingContext.LastOpenedAt.Value)}";
 
     public string SelectedContextScopeText =>
         SelectedOperatingContext is null ? "-" : SelectedOperatingContext.ScopeKind.ToDisplayName();
@@ -130,7 +131,7 @@ public sealed class FundProfileSelectionViewModel : BindableBase
     public string SelectedProfileLastOpenedText =>
         SelectedProfile?.LastOpenedAt is null
             ? "No previous session"
-            : $"Last opened {SelectedProfile.LastOpenedAt.Value.LocalDateTime:g}";
+            : $"Last opened {UtcFormat.FormatUtcTimestamp(SelectedProfile.LastOpenedAt.Value)}";
 
     public string NewProfileName
     {
