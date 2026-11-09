@@ -351,9 +351,15 @@ carry a reviewed golden diff. Planned increments, each corpus-gated:
   the ledger's complement, shrinking as modules gain homes. The kind → modules projection is now
   a first-class seam (`SecurityMasterLegacyUpgrade.modulesFromKind`) for S2-B2 to derive the
   definition at mapping time. Nothing on the write path calls the new surface yet.
-- **S2-B2 — commands carry the definition.** `CreateSecurity`/`AmendTerms` gain the economic
-  definition at mapping time; validation switches to `validateDefinitionTerms`;
-  `SecurityKind` remains as codec payload. Write-golden and corpus prove no byte drift.
+- **S2-B2 — validation recomposed onto the definition surface (implemented 2026-11-09).**
+  `validateKindTerms` is now a composition: `validateDefinitionTerms` over
+  `modulesFromKind`, authoritative for all 54 ledgered codes on every write path (create,
+  amend, record validation, the facade's standalone checks — the workbench term-block and
+  profile-field validation sites inherit it through `ValidateKindInvariants`), plus
+  `validateCodecOnlyKindTerms`, which keeps exactly the ledger's complement — the rules whose
+  data has no module home. Nothing is checked twice and nothing dropped: the equivalence
+  suite's mutation table pins the partition, and the switch changed zero verdicts (596 F# +
+  5,593 C# SecurityMaster tests green, corpus and write goldens byte-identical).
 - **S2-B3 — events built from the definition.** `ToEconomicRecord` stops round-tripping through
   `ToRecord → toEconomicDefinition`; `SecurityMasterLegacyUpgrade` leaves the write path and
   becomes the permanent read-only legacy replay upcaster (ADR-024 item 5).
