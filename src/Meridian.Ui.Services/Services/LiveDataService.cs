@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Meridian.Contracts.Api;
 
 namespace Meridian.Ui.Services;
 
@@ -20,15 +23,25 @@ public sealed class LiveDataService
     /// </summary>
     public async Task<List<TradeEvent>?> GetRecentTradesAsync(string symbol, int limit = 100, CancellationToken ct = default)
     {
-        return (await ApiClientService.Instance.GetWithResponseAsync<List<TradeEvent>>($"/api/data/trades/{symbol}?limit={limit}", ct).ConfigureAwait(false)).DataOrLoggedNull("Get recent trades");
+        // The server answers with a TradesResponse envelope, not a bare array.
+        var endpoint = UiApiRoutes.WithQuery(
+            UiApiRoutes.WithParam(UiApiRoutes.DataTrades, "symbol", symbol),
+            "limit=" + limit.ToString(CultureInfo.InvariantCulture));
+        var response = (await ApiClientService.Instance.GetWithResponseAsync<TradesResponse>(endpoint, ct).ConfigureAwait(false)).DataOrLoggedNull("Get recent trades");
+        return response is null ? null : MapTrades(response);
     }
 
     /// <summary>
-    /// Gets recent quotes for a symbol.
+    /// Gets the latest quote for a symbol. The server keeps only the current quote, so the list
+    /// holds at most one entry and is empty until a quote has been observed.
     /// </summary>
     public async Task<List<QuoteEvent>?> GetRecentQuotesAsync(string symbol, int limit = 100, CancellationToken ct = default)
     {
-        return (await ApiClientService.Instance.GetWithResponseAsync<List<QuoteEvent>>($"/api/data/quotes/{symbol}?limit={limit}", ct).ConfigureAwait(false)).DataOrLoggedNull("Get recent quotes");
+        // The server answers with a QuotesResponse envelope carrying one nullable quote; it has
+        // no quote history, so the limit only bounds the (at most one) result.
+        var endpoint = UiApiRoutes.WithParam(UiApiRoutes.DataQuotes, "symbol", symbol);
+        var response = (await ApiClientService.Instance.GetWithResponseAsync<QuotesResponse>(endpoint, ct).ConfigureAwait(false)).DataOrLoggedNull("Get recent quotes");
+        return response is null ? null : MapQuotes(response, limit);
     }
 
     /// <summary>
@@ -36,7 +49,85 @@ public sealed class LiveDataService
     /// </summary>
     public async Task<OrderBookSnapshot?> GetOrderBookAsync(string symbol, int levels = 10, CancellationToken ct = default)
     {
-        return (await ApiClientService.Instance.GetWithResponseAsync<OrderBookSnapshot>($"/api/data/orderbook/{symbol}?levels={levels}", ct).ConfigureAwait(false)).DataOrLoggedNull("Get order book snapshot");
+        var endpoint = UiApiRoutes.WithQuery(
+            UiApiRoutes.WithParam(UiApiRoutes.DataOrderbook, "symbol", symbol),
+            "levels=" + levels.ToString(CultureInfo.InvariantCulture));
+        var response = (await ApiClientService.Instance.GetWithResponseAsync<OrderBookResponse>(endpoint, ct).ConfigureAwait(false)).DataOrLoggedNull("Get order book snapshot");
+        return response is null ? null : MapOrderBook(response);
+    }
+
+    internal static List<TradeEvent> MapTrades(TradesResponse response)
+        => (response.Trades ?? [])
+            .Select(trade => new TradeEvent
+            {
+                Symbol = trade.Symbol,
+                Price = trade.Price,
+                Size = trade.Size,
+                Timestamp = trade.Timestamp.UtcDateTime,
+                Exchange = trade.Venue ?? string.Empty,
+                SequenceNumber = trade.SequenceNumber,
+                Side = trade.Aggressor ?? string.Empty
+            })
+            .ToList();
+
+    internal static List<QuoteEvent> MapQuotes(QuotesResponse response, int limit)
+    {
+        if (response.Quote is not { } quote || limit <= 0)
+            return [];
+
+        var venue = quote.Venue ?? string.Empty;
+        return
+        [
+            new QuoteEvent
+            {
+                Symbol = quote.Symbol,
+                BidPrice = quote.BidPrice,
+                BidSize = quote.BidSize,
+                AskPrice = quote.AskPrice,
+                AskSize = quote.AskSize,
+                Timestamp = quote.Timestamp.UtcDateTime,
+                BidExchange = venue,
+                AskExchange = venue,
+                Spread = quote.Spread ?? 0m,
+                MidPrice = quote.MidPrice ?? 0m
+            }
+        ];
+    }
+
+    internal static OrderBookSnapshot MapOrderBook(OrderBookResponse response)
+    {
+        var venue = response.Venue ?? string.Empty;
+        List<OrderBookLevel> MapLevels(IReadOnlyList<Meridian.Contracts.Api.OrderBookLevelDto>? levels)
+            => (levels ?? [])
+                .Select(level => new OrderBookLevel
+                {
+                    Price = level.Price,
+                    Size = level.Size,
+                    Exchange = level.MarketMaker ?? venue
+                })
+                .ToList();
+
+        var bids = MapLevels(response.Bids);
+        var asks = MapLevels(response.Asks);
+        // The envelope carries levels, mid and imbalance; the top-of-book and volume totals the
+        // snapshot exposes are derived from the levels (bids best-first, asks best-first).
+        var bestBid = bids.Count > 0 ? bids.Max(level => level.Price) : 0m;
+        var bestAsk = asks.Count > 0 ? asks.Min(level => level.Price) : 0m;
+        var hasBothSides = bids.Count > 0 && asks.Count > 0;
+        return new OrderBookSnapshot
+        {
+            Symbol = response.Symbol,
+            Timestamp = response.Timestamp.UtcDateTime,
+            Bids = bids,
+            Asks = asks,
+            BestBid = bestBid,
+            BestAsk = bestAsk,
+            Spread = hasBothSides ? bestAsk - bestBid : 0m,
+            MidPrice = response.MidPrice ?? (hasBothSides ? (bestBid + bestAsk) / 2m : 0m),
+            TotalBidVolume = bids.Sum(level => level.Size),
+            TotalAskVolume = asks.Sum(level => level.Size),
+            Imbalance = response.Imbalance ?? 0m
+        };
     }
 
     /// <summary>
