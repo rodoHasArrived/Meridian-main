@@ -444,5 +444,10 @@ and S2-B4 (codec single-purpose) land. Planned increments:
   externally (sweeps, write
   goldens, corpus — behavior-neutral by the full namespace sweep). Bespoke arms remain for the
   structural decodes (coupon structures, schedules, swap legs, profile envelopes).
-- **S3-E — shrink `SecurityKind`'s per-class records** to what the interpreter needs —
-  explicitly decision-gated: it alters domain types, and the domain owner sequences it.
+- **S3-E — shrink `SecurityKind`'s per-class records (scoped by census 2026-11-09).** The
+  consumer census shows the precondition nearly holds already: outside the codec and domain
+  spine, only four call sites touch any per-class record (`BondTerms` ×2,
+  `StructuredCreditTerms` ×2); everything else is codec-and-spine only. The remaining
+  dependency is module homes for the codec-only field complement (strikes, currency pairs,
+  notionals, envelopes) — field-by-field expand/contract the owner sequences, in a successor
+  PR, with the census as its starting evidence.

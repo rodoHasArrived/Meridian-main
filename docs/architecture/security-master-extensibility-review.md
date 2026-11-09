@@ -774,6 +774,27 @@ Validation (local, .NET SDK 10.0.403): `dotnet test tests/Meridian.Tests -c Rele
 active-plus-inactive gauge, and the zero case. The full local `bash scripts/ci.sh` was not run;
 GitHub `Meridian CI / quality-gate` remains authoritative.
 
+### ADR-027 stage-3 S3-D complete; S3-E scoped by census — 2026-11-09
+
+S3-D closed with 28 of 32 classes' scalar decodes schema-bound (`SchemaBoundDecodeClasses`);
+the remainder is structural by design (Equity and Bond read through bespoke
+classification/coupon-structure builders, InvestmentFund through fund-profile reads, CustomAsset
+is the profile-envelope exclusion), with their schema conformance asserted externally by the
+sweep suites.
+
+S3-E opened with the consumer census its precondition demands, and the result is far narrower
+than the audit feared: outside the codec and the domain spine (commands, legacy upgrade,
+modules), the per-class term records have exactly four consumers — `BondTerms` in
+`SecurityMasterService` and the asset-class validator registry, and `StructuredCreditTerms` in
+the accounting-event service and the structured-credit reclassification service. Every other
+record type (SwapTerms, CapFloorTerms, DepositTerms, OptionTerms, …) is already codec-and-spine
+only, and no F# file outside the spine touches any of them. The remaining S3-E dependency is
+therefore not consumer migration but module homes: the codec-only field complement (strikes,
+currency pairs, notionals, envelopes) must gain `SecurityTermModules` homes before record
+fields can move, mirroring how the stage-2 validation ledger shrinks. That is domain-shaping
+work in its own right — field-by-field expand/contract with the owner sequencing it — and it
+belongs to a successor PR; this one carries the census as its starting evidence.
+
 ### ADR-027 stage-3 S3-C — the encode-arm sweeps — 2026-11-09
 
 `SecurityAssetTermsSchemaEncodeSweepTests` closes the audit's encode-side backlog with 124
