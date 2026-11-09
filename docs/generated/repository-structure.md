@@ -11295,6 +11295,7 @@ Meridian-main
 │   │   │   ├── PaperTradingPortfolioContractMultiplierTests.cs
 │   │   │   ├── PaperTradingPortfolioLotSelectionTests.cs
 │   │   │   ├── PaperTradingPortfolioLotSnapshotTests.cs
+│   │   │   ├── PaperTradingPortfolioMultiplierTests.cs
 │   │   │   ├── PaperTradingPortfolioTests.cs
 │   │   │   ├── PortfolioStatePositionTrackerTests.cs
 │   │   │   ├── PositionLotSelectorTests.cs
