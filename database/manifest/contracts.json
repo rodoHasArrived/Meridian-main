@@ -4698,7 +4698,7 @@
       ]
     }
   ],
-  "fingerprint": "18b33b459cc32a4a5cfcd3ba35449d03f23157663576c8c70493e2019d88d05a",
+  "fingerprint": "df2743a258fb73abf95bfcbaf3857e1a57a2e877f13da41b0a124b922cf72047",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -4709,7 +4709,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "360aa712ef7febc5c7e5dcdf7ca839dddcd530d0df1fec8c7871619f30c8e429",
+      "fingerprint": "d6425451a527d0243bec44d6ad8bf219fe402702e08aaa17636e3bf82cc38976",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Accounting.Lots",
       "object_ids": [
@@ -12271,7 +12271,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "1051870fedebad14210484c7ada670c329fb0314caae3f502741f55c8a532a51",
+      "fingerprint": "75c1bd7fa65f78e8f8ae06e7167ee58f86370fc5d4b7dc97ae8557baeafa4f31",
       "full_name": "Meridian.Contracts.Accounting.Lots.OpenLotValidation",
       "id": "Meridian.Contracts.Accounting.Lots.OpenLotValidation",
       "kind": "class",
@@ -12283,12 +12283,12 @@
       "qualified_name": "Meridian.Contracts.Accounting.Lots.OpenLotValidation",
       "references": [],
       "source": {
-        "line": 9,
+        "line": 10,
         "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotValidation.cs"
       },
       "sources": [
         {
-          "line": 9,
+          "line": 10,
           "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotValidation.cs"
         }
       ],
