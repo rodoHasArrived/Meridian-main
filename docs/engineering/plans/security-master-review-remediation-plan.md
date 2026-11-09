@@ -318,10 +318,21 @@ modules do. Recovering their flat homes on economic-only replay (CapFloor
 `multiplier`, Cfd `leverage` — the last needs a bespoke reciprocal transform) belongs to
 increment 6's per-module identity work.
 
-**Remaining increments (ordered, each with its own round-trip proof):**
-6. Close-out: assert economic → flat → economic identity for every module (including the flat
-   homes of the newly serialized `floatingRate`/`tradingParameters` values); stop writing
-   `retainedEconomicTerms` on new writes; keep fold-on-read for retained history.
+**Increment 6 — the identity gate ends the retained carry where it adds nothing (implemented
+2026-11-09; stage 1 complete).** The class flattenings gained the inverses for the newly
+serialized modules (CapFloor `referenceIndex`/`capStrike`/`floorStrike`/`resetFrequency` from
+`floatingRate`; Warrant `multiplier` from `tradingParameters.contractMultiplier`), and
+economic-only replay now runs a byte-identity gate: after flattening, the candidate (carry
+removed) is rebuilt into its next economic document, and when that reproduces the source
+byte-for-byte the carry is dropped — the flat row IS the document. Byte equality is the
+strictest possible test, failing closed to keeping the carry on any difference or exception:
+image documents written by the current serializer shed it (CertificateOfDeposit and
+StructuredCredit twins do today; Bond's floating-coupon twin does not yet and keeps it);
+historical shapes and hand-written documents keep it with fold-on-read, and refusals refuse
+unchanged. No stored payload is rewritten. Pinned by the derived-verdict gate theory over every
+declared class, the class-aware retained pins (now per-class facts), and the regenerated corpus
+golden whose diff is exactly the increment: the CD image sheds its carry on the rebuild and
+amend-cycle paths, and the CapFloor/Warrant rebuilds recover their flat keys.
 
 ### Slice 11 — ADR-027 stage 2: commands and validation onto the economic definition
 

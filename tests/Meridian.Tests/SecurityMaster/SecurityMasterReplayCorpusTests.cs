@@ -191,6 +191,46 @@ public sealed class SecurityMasterReplayCorpusTests
 
     [Theory]
     [MemberData(nameof(DeclaredAssetClasses))]
+    public void IdentityGate_StripsRetainedExactlyWhereTheCandidateRebuildsTheSource(string assetClass)
+    {
+        // ADR-027 stage 1 increment 6: economic-only replay sheds retainedEconomicTerms when the
+        // flattened candidate rebuilds the source document byte-for-byte, and keeps it (with the
+        // fold-on-read) everywhere else — including every class whose replay refuses. The gate's
+        // verdict is derived here rather than hard-coded, so a class whose codec gains or loses
+        // losslessness shows up as a corpus/golden diff, never as a silent flip.
+        var original = SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain(
+            assetClass, SecurityAssetTermsSchemaRoundTripTests.FullPayloads[assetClass]);
+        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(assetClass, original));
+
+        SecurityProjectionRecord recovered;
+        try
+        {
+            recovered = SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null });
+        }
+        catch (InvalidOperationException)
+        {
+            return; // Refusing classes (Equity) keep their refusal; the corpus pins the message.
+        }
+
+        var carriesRetained = SecurityTermsEnvelope.TryGetRetainedEconomicTerms(recovered.AssetSpecificTerms, out var retained);
+        if (!carriesRetained)
+        {
+            // Stripped: the rebuilt next event must reproduce the source exactly — the flat row
+            // holds the whole document, which is what ending the carry means.
+            SecurityEconomicDefinitionAdapter.ToEconomicRecord(recovered).EconomicTerms.GetRawText()
+                .Should().Be(economic.EconomicTerms.GetRawText(),
+                    $"a {assetClass} replay without the carry must lose nothing");
+        }
+        else
+        {
+            retained.GetRawText().Should().Be(economic.EconomicTerms.GetRawText(),
+                $"a {assetClass} replay that keeps the carry must keep the source verbatim");
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(DeclaredAssetClasses))]
     public void RecordAwareDerivation_IsByteIdenticalToTheProjectionDecode(string assetClass)
     {
         // ADR-027 stage 2 (S2-B3): the command services derive the economic record from the typed

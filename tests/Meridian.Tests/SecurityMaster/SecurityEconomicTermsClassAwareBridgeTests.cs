@@ -110,6 +110,13 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
     [InlineData("Swap", "maturityDate")]
     [InlineData("CreditDefaultSwap", "maturityDate")]
     [InlineData("Option", "expiry")]
+    // ADR-027 stage 1 increment 6: the floatingRate and tradingParameters modules (serialized
+    // since increment 5) recover the flat keys termsFromKind feeds them from.
+    [InlineData("CapFloor", "referenceIndex")]
+    [InlineData("CapFloor", "capStrike")]
+    [InlineData("CapFloor", "floorStrike")]
+    [InlineData("CapFloor", "resetFrequency")]
+    [InlineData("Warrant", "multiplier")]
     public void ReplayWithoutLegacyTerms_RecoversPreviouslyDroppedTerms(string assetClass, string flatKey)
     {
         var original = SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain(
@@ -422,7 +429,14 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
             .Should().Be(accrual.GetProperty("businessDayConvention").GetString(), "the verbatim spelling is kept");
         string.Join("+", block.GetProperty("paymentCalendars").EnumerateArray().Select(static calendar => calendar.GetString()))
             .Should().Be(accrual.GetProperty("holidayCalendar").GetString(), "the joint calendar id splits back into its parts");
-        SecurityTermsEnvelope.TryGetRetainedEconomicTerms(recovered.AssetSpecificTerms, out _).Should().BeTrue();
+        // Since ADR-027 stage 1 increment 6, a replay whose flattened candidate rebuilds the
+        // source document byte-for-byte sheds the retained carry — the flat row IS the document.
+        // The CertificateOfDeposit and StructuredCredit twins round-trip completely; the Bond
+        // twin does not yet rebuild byte-identically (its floating-coupon structure loses detail
+        // on the flat candidate), so it keeps the carry and the fold-on-read.
+        SecurityTermsEnvelope.TryGetRetainedEconomicTerms(recovered.AssetSpecificTerms, out _)
+            .Should().Be(assetClass == "Bond",
+                "the retained carry survives exactly where the flattened candidate cannot rebuild the source byte-for-byte");
 
         SecurityEconomicDefinitionAdapter.ToProjection(economic).AssetSpecificTerms.GetRawText().Should().Be(twin.GetRawText(),
             "the established retained-flat path preserves the complete declaration");
