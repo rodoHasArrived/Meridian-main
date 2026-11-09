@@ -429,14 +429,19 @@ and S2-B4 (codec single-purpose) land. Planned increments:
   The extraction's shape, bounded by the typed-record boundary: every scalar read runs through
   the `SchemaBoundTerms` reader, which verifies against the schema table that the key is
   declared and read as its declared type — codec/schema drift throws with a named field instead
-  of reading past the table; record construction stays per-class until S3-E. Cohorts 1–3 (FxSpot,
+  of reading past the table; record construction stays per-class until S3-E. Cohorts 1–4 (FxSpot,
   Deposit, MoneyMarketFund, Commodity, CryptoCurrency, Cfd; CertificateOfDeposit,
   CommercialPaper, TreasuryBill, Repo, CashSweep, OtherSecurity, Warrant; Option, Future,
-  FxForward, NonDeliverableForward, CreditDefaultSwap, Swaption, CapFloor, StructuredNote —
-  21 of 32 classes)
+  FxForward, NonDeliverableForward, CreditDefaultSwap, Swaption, CapFloor, StructuredNote;
+  DirectLoan, StructuredCredit, PrivateFundInterest, PrivateCompanyEquity, RealEstateHolding,
+  CommitmentGuarantee, Swap — 28 of 32 classes)
   are migrated and ledgered
   (`SchemaBoundDecodeClasses`), each class's fully-populated twin exercising every bound read in
-  the sweep suite; remaining classes migrate cohort by cohort under the same net (sweeps, write
+  the sweep suite; remainder is structural by design: Equity and Bond read through their
+  bespoke classification/coupon-structure builders, InvestmentFund through its fund-profile
+  reads, and CustomAsset stays the profile-envelope exclusion — their scalar portions bind when
+  those builders are touched, and the sweep suite already asserts their schema conformance
+  externally (sweeps, write
   goldens, corpus — behavior-neutral by the full namespace sweep). Bespoke arms remain for the
   structural decodes (coupon structures, schedules, swap legs, profile envelopes).
 - **S3-E — shrink `SecurityKind`'s per-class records** to what the interpreter needs —

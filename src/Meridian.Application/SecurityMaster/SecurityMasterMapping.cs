@@ -334,6 +334,9 @@ internal static class SecurityMasterMapping
         // S3-D: the schema-bound view the migrated classes (SchemaBoundDecodeClasses) read
         // through; every bound read verifies its key is declared with the type it is read as.
         var bound = new SchemaBoundTerms(assetClass, json, mode);
+        // The profile-resolved sub-document some classes read their flat fields from; the schema
+        // declares the same keys wherever the bag lives.
+        var boundTerms = new SchemaBoundTerms(assetClass, terms, mode);
         var kind = assetClass switch
         {
             "Equity" => SecurityKind.NewEquity(new EquityTerms(
@@ -424,28 +427,28 @@ internal static class SecurityMasterMapping
                 ToOption(bound.OptionalString("settlementType")))),
             "CustomAsset" => ToCustomAssetKind(json, mode),
             "Swap" => SecurityKind.NewSwap(new SwapTerms(
-                GetRequiredDateOnly(json, "effectiveDate"),
-                GetRequiredDateOnly(json, "maturityDate"),
+                bound.RequiredDateOnly("effectiveDate"),
+                bound.RequiredDateOnly("maturityDate"),
                 ToFSharpList(GetSwapLegItems(json).Select(leg => ToSwapLeg(leg, ReadLegScheduleConventions(leg, assetClass, versionedTerms), mode))))),
             "DirectLoan" => SecurityKind.NewDirectLoan(new DirectLoanTerms(
-                GetRequiredString(json, "borrower"),
-                ToOption(GetOptionalDateOnly(json, "maturity")),
+                bound.RequiredString("borrower"),
+                ToOption(bound.OptionalDateOnly("maturity")),
                 ToFSharpList(GetRequiredArray(json, "covenants").EnumerateArray().Select(ToCovenant)),
-                ToOption(GetOptionalString(json, "referenceIndex")),
-                ToOption(GetOptionalDecimal(json, "spreadBps")),
-                ToOption(GetOptionalDecimal(json, "currentCouponRate")),
-                ToOption(GetOptionalString(json, "resetFrequency")),
+                ToOption(bound.OptionalString("referenceIndex")),
+                ToOption(bound.OptionalDecimal("spreadBps")),
+                ToOption(bound.OptionalDecimal("currentCouponRate")),
+                ToOption(bound.OptionalString("resetFrequency")),
                 ToFSharpList(economicSchedules!.PrincipalSchedule.SourceEntries.Select(static entry =>
                     new PrincipalPaymentEntry(entry.PaymentDate, entry.Amount))),
                 ToOption(GetOptionalString(json, "pricingSource")))),
             "StructuredCredit" => SecurityKind.NewStructuredCredit(new StructuredCreditTerms(
-                GetRequiredString(terms, "tranche"),
-                ToOption(GetOptionalString(terms, "poolId")),
-                GetRequiredString(terms, "collateralType"),
-                GetRequiredDecimal(terms, "originalFace"),
-                ToOption(GetOptionalDecimal(terms, "currentFactor")),
-                GetRequiredString(terms, "couponOrIndex"),
-                ToOption(GetOptionalString(terms, "factorSchedule")),
+                boundTerms.RequiredString("tranche"),
+                ToOption(boundTerms.OptionalString("poolId")),
+                boundTerms.RequiredString("collateralType"),
+                boundTerms.RequiredDecimal("originalFace"),
+                ToOption(boundTerms.OptionalDecimal("currentFactor")),
+                boundTerms.RequiredString("couponOrIndex"),
+                ToOption(boundTerms.OptionalString("factorSchedule")),
                 ToFSharpList(economicSchedules!.FactorSchedule.SourceEntries.Select(static entry =>
                     new FactorScheduleEntry(entry.AsOfDate, entry.Factor))),
                 ToOption(GetOptionalDateOnly(terms, "maturity")),
@@ -453,53 +456,53 @@ internal static class SecurityMasterMapping
                 // value as absent: persisting null for a numeric kind, "1.5" months or an unparseable
                 // date would silently discard caller input. Reads stay tolerant so stored rows remain
                 // loadable.
-                ToStructuredCreditKindOption(GetOptionalString(terms, "structuredCreditKind", mode)),
-                ToOption(GetOptionalString(terms, "seniority", mode)),
-                ToOption(GetOptionalDecimal(terms, "attachmentPoint", mode)),
-                ToOption(GetOptionalDecimal(terms, "detachmentPoint", mode)),
-                ToOption(GetOptionalDecimal(terms, "weightedAverageCoupon", mode)),
-                ToOption(GetOptionalInt(terms, "weightedAverageMaturityMonths", mode)),
-                ToOption(GetOptionalInt(terms, "weightedAverageLoanAgeMonths", mode)),
-                ToOption(GetOptionalDateOnly(terms, "reinvestmentPeriodEnd", mode)),
-                ToOption(GetOptionalDateOnly(terms, "nonCallPeriodEnd", mode)),
+                ToStructuredCreditKindOption(boundTerms.OptionalConventionString("structuredCreditKind")),
+                ToOption(boundTerms.OptionalConventionString("seniority")),
+                ToOption(boundTerms.OptionalStrictDecimal("attachmentPoint")),
+                ToOption(boundTerms.OptionalStrictDecimal("detachmentPoint")),
+                ToOption(boundTerms.OptionalStrictDecimal("weightedAverageCoupon")),
+                ToOption(boundTerms.OptionalStrictInt("weightedAverageMaturityMonths")),
+                ToOption(boundTerms.OptionalStrictInt("weightedAverageLoanAgeMonths")),
+                ToOption(boundTerms.OptionalStrictDateOnly("reinvestmentPeriodEnd")),
+                ToOption(boundTerms.OptionalStrictDateOnly("nonCallPeriodEnd")),
                 // From the root: a profile envelope decodes no versioned container, so its
                 // profileFields never reach the block or the schedules.
                 ReadScheduleConventions(json, assetClass, versionedTerms),
                 ReadCallPutSchedules(json, assetClass, versionedTerms))),
             "PrivateFundInterest" => SecurityKind.NewPrivateFundInterest(new PrivateFundInterestTerms(
-                GetRequiredString(terms, "gpSponsor"),
-                GetRequiredString(terms, "strategy"),
-                GetRequiredInt(terms, "vintage"),
-                GetRequiredDecimal(terms, "commitment"),
-                ToOption(GetOptionalDecimal(terms, "fundedAmount")),
-                ToOption(GetOptionalDecimal(terms, "unfundedAmount")),
-                GetRequiredDateOnly(terms, "navDate"),
-                ToOption(GetOptionalString(terms, "lockup")))),
+                boundTerms.RequiredString("gpSponsor"),
+                boundTerms.RequiredString("strategy"),
+                boundTerms.RequiredInt("vintage"),
+                boundTerms.RequiredDecimal("commitment"),
+                ToOption(boundTerms.OptionalDecimal("fundedAmount")),
+                ToOption(boundTerms.OptionalDecimal("unfundedAmount")),
+                boundTerms.RequiredDateOnly("navDate"),
+                ToOption(boundTerms.OptionalString("lockup")))),
             "PrivateCompanyEquity" => SecurityKind.NewPrivateCompanyEquity(new PrivateCompanyEquityTerms(
-                GetRequiredString(terms, "issuer"),
-                GetRequiredString(terms, "shareClass"),
-                GetRequiredString(terms, "round"),
-                ToOption(GetOptionalDecimal(terms, "ownershipPercent")),
-                GetRequiredDecimal(terms, "costBasis"),
-                ToOption(GetOptionalDecimal(terms, "latestValuation")),
-                ToOption(GetOptionalString(terms, "transferRestrictions")))),
+                boundTerms.RequiredString("issuer"),
+                boundTerms.RequiredString("shareClass"),
+                boundTerms.RequiredString("round"),
+                ToOption(boundTerms.OptionalDecimal("ownershipPercent")),
+                boundTerms.RequiredDecimal("costBasis"),
+                ToOption(boundTerms.OptionalDecimal("latestValuation")),
+                ToOption(boundTerms.OptionalString("transferRestrictions")))),
             "RealEstateHolding" => SecurityKind.NewRealEstateHolding(new RealEstateHoldingTerms(
-                GetRequiredString(terms, "propertyType"),
-                GetRequiredString(terms, "addressOrMarket"),
-                GetRequiredDecimal(terms, "ownershipPercent"),
-                GetRequiredDecimal(terms, "appraisalValue"),
-                GetRequiredDateOnly(terms, "valuationDate"),
-                ToOption(GetOptionalString(terms, "debtStack")),
-                ToOption(GetOptionalString(terms, "sponsor")))),
+                boundTerms.RequiredString("propertyType"),
+                boundTerms.RequiredString("addressOrMarket"),
+                boundTerms.RequiredDecimal("ownershipPercent"),
+                boundTerms.RequiredDecimal("appraisalValue"),
+                boundTerms.RequiredDateOnly("valuationDate"),
+                ToOption(boundTerms.OptionalString("debtStack")),
+                ToOption(boundTerms.OptionalString("sponsor")))),
             "CommitmentGuarantee" => SecurityKind.NewCommitmentGuarantee(new CommitmentGuaranteeTerms(
-                GetRequiredString(terms, "counterparty"),
-                ToOption(GetOptionalString(terms, "beneficiary")),
-                GetRequiredDecimal(terms, "committedAmount"),
-                ToOption(GetOptionalDecimal(terms, "unfundedAmount")),
-                GetRequiredDateOnly(terms, "effectiveDate"),
-                ToOption(GetOptionalDateOnly(terms, "expiryDate")),
-                ToOption(GetOptionalDecimal(terms, "feeRate")),
-                ToOption(GetOptionalString(terms, "collateral")),
+                boundTerms.RequiredString("counterparty"),
+                ToOption(boundTerms.OptionalString("beneficiary")),
+                boundTerms.RequiredDecimal("committedAmount"),
+                ToOption(boundTerms.OptionalDecimal("unfundedAmount")),
+                boundTerms.RequiredDateOnly("effectiveDate"),
+                ToOption(boundTerms.OptionalDateOnly("expiryDate")),
+                ToOption(boundTerms.OptionalDecimal("feeRate")),
+                ToOption(boundTerms.OptionalString("collateral")),
                 ToFSharpList(GetOptionalArrayItems(terms, "covenants").Select(ToCovenant)))),
             "Commodity" => SecurityKind.NewCommodity(new CommodityTerms(
                 bound.RequiredString("commodityType"),
@@ -1419,7 +1422,8 @@ internal static class SecurityMasterMapping
     public static IReadOnlyList<string> SchemaBoundDecodeClasses { get; } =
         ["FxSpot", "Deposit", "MoneyMarketFund", "Commodity", "CryptoCurrency", "Cfd",
          "CertificateOfDeposit", "CommercialPaper", "TreasuryBill", "Repo", "CashSweep", "OtherSecurity", "Warrant",
-         "Option", "Future", "FxForward", "NonDeliverableForward", "CreditDefaultSwap", "Swaption", "CapFloor", "StructuredNote"];
+         "Option", "Future", "FxForward", "NonDeliverableForward", "CreditDefaultSwap", "Swaption", "CapFloor", "StructuredNote",
+         "DirectLoan", "StructuredCredit", "PrivateFundInterest", "PrivateCompanyEquity", "RealEstateHolding", "CommitmentGuarantee", "Swap"];
 
     /// <summary>
     /// The schema-bound view of a submitted or stored terms document for one asset class: each
@@ -1451,9 +1455,13 @@ internal static class SecurityMasterMapping
 
         public decimal RequiredDecimal(string key) => GetRequiredDecimal(json, Declared(key, SecurityAssetTermFieldType.Decimal));
 
+        public int RequiredInt(string key) => GetRequiredInt(json, Declared(key, SecurityAssetTermFieldType.Integer));
+
         public decimal? OptionalStrictDecimal(string key) => GetOptionalDecimal(json, Declared(key, SecurityAssetTermFieldType.Decimal), mode);
 
         public DateOnly? OptionalStrictDateOnly(string key) => GetOptionalDateOnly(json, Declared(key, SecurityAssetTermFieldType.Date), mode);
+
+        public int? OptionalStrictInt(string key) => GetOptionalInt(json, Declared(key, SecurityAssetTermFieldType.Integer), mode);
 
         private string Declared(string key, SecurityAssetTermFieldType readAs)
         {
