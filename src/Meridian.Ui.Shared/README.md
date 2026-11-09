@@ -2521,7 +2521,14 @@ targets for Security Master passport/profile, provider evidence, reconciliation 
 mapping/evidence, Asset Operations detail, and close readiness so clients can navigate without
 maintaining local routing rules. `/api/workstation/assets/{securityId}/operations` returns the
 shared Security Master-keyed operations detail for loans, bonds, and later asset classes instead of
-surface-specific read models. Missing retained provider inputs remain review-required or blocked rows; clients must not
+surface-specific read models. Evidence that names no resolved security is classified by
+`MultiAssetEvidenceClassRouter` (remediation slice 8): exact-token routes over the produced
+candidate-type and ledger-effect vocabulary, unresolved outside it, replacing the substring
+inference that read any "factor"-containing shape as `Bond`. The workstation sub-type
+(`SecurityMasterSecurityReferenceLookup.DeriveSubType`, shared with `WorkstationEndpoints`) reads
+the F# asset-class registry for every catalog class, keeping three pinned legacy spellings
+("Bond", "Deposit", "MoneyMarket") and declaring Equity sub-type-ambiguous;
+`WorkstationSecuritySubTypeCoverageTests` pins the full table. Missing retained provider inputs remain review-required or blocked rows; clients must not
 mark asset classes ready with UI-local checks. The shared read model treats private-credit
 commitments, unfunded commitments, paydowns, covenant notices, and obligation schedules as
 `DirectLoan` provider evidence. Structured credit, private fund interests, private company equity,

@@ -12496,6 +12496,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityQuoteConvention"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityRateFieldDeclaration"
     },
     {
@@ -26752,6 +26758,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityQuoteConvention"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityRateFieldDeclaration"
     },
     {
@@ -39455,6 +39467,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassDescriptor",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityLotUnitKind"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassDescriptor",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityQuoteConvention"
     },
     {
       "kind": "contract-reference",
@@ -56939,7 +56957,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "e21f6b959519428b716715c3f13784b2d002bbf1eec1bb47f301616747966d43",
+  "fingerprint": "c41545248ff85795f2314af0d66980a2b25ed988f3423f8bc56c8a9101f6cff1",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -69483,6 +69501,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityProjectionRecordExtensions",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityProjectionRecordExtensions"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityQuoteConvention",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityQuoteConvention"
     },
     {
       "classification": "record",
@@ -83390,11 +83414,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3632,
-    "contract_set_memberships": 4538,
-    "edges": 9461,
+    "contract_references": 3633,
+    "contract_set_memberships": 4540,
+    "edges": 9464,
     "foreign_keys": 156,
     "logical_references": 6,
-    "nodes": 4588
+    "nodes": 4589
   }
 }
