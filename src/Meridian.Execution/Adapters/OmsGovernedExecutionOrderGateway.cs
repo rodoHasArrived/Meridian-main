@@ -87,9 +87,12 @@ public sealed class OmsGovernedExecutionOrderGateway : IOrderGateway
             "Order cancellation must go through IOrderManager so authoritative OMS state cannot be bypassed.");
 
     /// <summary>
-    /// Order updates from an independent OMS report subscription. This is an observer: if it
-    /// falls behind its bounded inbox, the excess updates are dropped for this stream only and
-    /// the OMS fill path is unaffected.
+    /// Fill updates from an independent OMS report subscription, as cumulative order snapshots.
+    /// This is an observer: if it falls behind its bounded inbox, the excess updates are dropped
+    /// for this stream only and the OMS fill path is unaffected. Totals cover the fills seen since
+    /// the stream subscribed. The OMS publishes fills only, so
+    /// acceptance, cancellation and rejection without a fill are not reported here; read those
+    /// from <see cref="IOrderManager"/>.
     /// </summary>
     public async IAsyncEnumerable<OrderStatusUpdate> StreamOrderUpdatesAsync(
         [EnumeratorCancellation] CancellationToken ct = default)
@@ -100,15 +103,32 @@ public sealed class OmsGovernedExecutionOrderGateway : IOrderGateway
         await using var subscription = oms.SubscribeLosslessExecutionReports(
             ObserverSubscriberName,
             static (_, _, _) => ValueTask.CompletedTask);
+        // The OMS publishes each fill as an increment (quantity and execution price of that
+        // fill only). Status updates are cumulative snapshots, so totals and the average price
+        // are accumulated per order from the fills this stream has seen. Reading the OMS order
+        // state instead would race ahead of the report being emitted.
+        var totals = new Dictionary<string, (decimal Quantity, decimal Notional)>(StringComparer.Ordinal);
         await foreach (var report in subscription.Reports.ReadAllAsync(ct).ConfigureAwait(false))
         {
+            totals.TryGetValue(report.OrderId, out var running);
+            if (report.FilledQuantity > 0m)
+            {
+                running = (
+                    running.Quantity + report.FilledQuantity,
+                    running.Notional + report.FilledQuantity * (report.FillPrice ?? 0m));
+                totals[report.OrderId] = running;
+            }
+
+            var filled = running.Quantity;
+            decimal? averagePrice = filled > 0m ? running.Notional / filled : report.FillPrice;
+
             yield return new OrderStatusUpdate(
                 report.OrderId,
                 report.ClientOrderId ?? report.OrderId,
                 report.Symbol,
                 MapStatus(report.OrderStatus),
-                report.FilledQuantity,
-                report.FillPrice,
+                filled,
+                averagePrice,
                 report.RejectReason,
                 report.Timestamp);
         }

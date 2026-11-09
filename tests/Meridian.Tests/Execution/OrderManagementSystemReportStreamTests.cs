@@ -157,6 +157,47 @@ public sealed class OrderManagementSystemReportStreamTests
     }
 
     [Fact]
+    public async Task GovernedOrderGatewayStream_ReportsCumulativeFillTotalsAndAveragePrice()
+    {
+        // The OMS publishes fill increments; the IOrderGateway status stream must present them as
+        // cumulative order snapshots: 4 @ 100 then 6 @ 110 is 10 filled at an average of 106.
+        var gateway = new StreamingGateway
+        {
+            SubmitAck = BuildReport("pending", OrderStatus.Accepted, ExecutionReportType.New, filledQty: 0m, fillPrice: null)
+        };
+        using var oms = new OrderManagementSystem(
+            gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            portfolioState: new PaperTradingPortfolio(100_000m));
+        await oms.StartAsync();
+        var view = new Meridian.Execution.Adapters.OmsGovernedExecutionOrderGateway(gateway, () => oms);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        await using var updates = view.StreamOrderUpdatesAsync(cts.Token).GetAsyncEnumerator(cts.Token);
+        var first = updates.MoveNextAsync();
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10,
+            LimitPrice = 120m
+        });
+        await gateway.PublishAsync(
+            BuildReport(result.OrderId, OrderStatus.PartiallyFilled, ExecutionReportType.PartialFill, filledQty: 4m, fillPrice: 100m));
+        await gateway.PublishAsync(
+            BuildReport(result.OrderId, OrderStatus.Filled, ExecutionReportType.Fill, filledQty: 10m, fillPrice: 110m));
+
+        (await first).Should().BeTrue();
+        updates.Current.FilledQuantity.Should().Be(4m);
+        updates.Current.AverageFillPrice.Should().Be(100m);
+        (await updates.MoveNextAsync()).Should().BeTrue();
+        updates.Current.Status.Should().Be(Meridian.Execution.Models.OrderStatus.Filled);
+        updates.Current.FilledQuantity.Should().Be(10m);
+        updates.Current.AverageFillPrice.Should().Be(106m);
+    }
+
+    [Fact]
     public async Task OutOfOrderCumulativeFill_DoesNotRegressStateOrRepublishToAccounting()
     {
         var portfolio = new PaperTradingPortfolio(100_000m);
