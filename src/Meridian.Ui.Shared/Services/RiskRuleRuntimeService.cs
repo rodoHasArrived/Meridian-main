@@ -304,8 +304,10 @@ public sealed class RiskRuleRuntimeService
         var portfolio = Resolve<IPortfolioState>();
         if (portfolio is null)
         {
-            // Execution state not yet wired — the drawdown circuit breaker cannot trip.
-            return RiskValidationResult.Approved();
+            // Fail closed: without portfolio state the drawdown can't be measured, so the
+            // breaker must not silently approve. Hosts register IPortfolioState on every path.
+            return RiskValidationResult.Rejected(
+                "Drawdown circuit breaker: portfolio state unavailable; drawdown cannot be measured.");
         }
 
         var portfolioValue = portfolio.PortfolioValue;

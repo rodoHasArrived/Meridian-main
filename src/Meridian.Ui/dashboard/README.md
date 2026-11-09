@@ -1873,6 +1873,12 @@ The passport editor builds its term picker from `GET /api/security-master/asset-
 (`security-master-schema.api.ts`): scalar-editable terms grouped as the registry declares them,
 a value control per editor kind, and a client pre-check
 (`security-passport-schema-fields.view-model.ts`). The free-text field path stays as a fallback.
+The pre-check mirrors the shared `SecurityAssetTermFormModel` and is pinned to it by a parity
+contract: `SecurityAssetTermFormParityFixtureTests` (tests/Meridian.Tests) generates
+`src/test/fixtures/security-asset-term-form-parity.json` from the registry and form model, and
+`security-passport-schema-fields.parity.test.ts` replays it through the mirror — field sets in
+declared order, value choices, and every validation verdict over a fixed corpus. The server-side
+governed validator remains authoritative.
 
 ## Security Master publish outcome
 

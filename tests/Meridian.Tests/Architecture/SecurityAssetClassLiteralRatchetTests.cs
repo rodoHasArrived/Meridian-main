@@ -49,7 +49,9 @@ public sealed class SecurityAssetClassLiteralRatchetTests
         "src/Meridian.FSharp/Domain/SecurityMaster.fs",
         "src/Meridian.ReferenceData/SecurityMaster/SecurityKindMapping.cs",
         "src/Meridian.Storage/SecurityMaster/SecurityTermsProjectionRegistry.cs",
-        "src/Meridian.Ui.Shared/Services/SecurityMasterSecurityReferenceLookup.cs",
+        // SecurityMasterSecurityReferenceLookup left the list in remediation slice 8: its sub-type
+        // switch now reads the F# AssetClassRegistry, keeping only three pinned legacy spellings
+        // and one declared ambiguous class (WorkstationSecuritySubTypeCoverageTests).
     ];
 
     private static readonly string[] SkippedPathSegments = ["/bin/", "/obj/", "/node_modules/", "/wwwroot/"];
