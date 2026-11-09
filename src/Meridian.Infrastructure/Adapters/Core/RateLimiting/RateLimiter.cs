@@ -17,6 +17,11 @@ public sealed class RateLimiter : IDisposable
     private readonly TimeSpan _minDelay;
     private readonly ILogger _log;
     private readonly TimeProvider _timeProvider;
+    // Guards the timestamp queue and _lastRequest. RecordRequest and GetStatus run outside the
+    // slot semaphore, and the peek-then-dequeue cleanup is not atomic on its own: two concurrent
+    // cleanups could both peek the same expired entry and the second would dequeue a live one,
+    // under-counting the window and letting requests through over the limit.
+    private readonly object _timestampLock = new();
     private DateTimeOffset _lastRequest = DateTimeOffset.MinValue;
     private bool _disposed;
 
@@ -69,7 +74,13 @@ public sealed class RateLimiter : IDisposable
             }
 
             // Enforce minimum delay between requests
-            var timeSinceLastRequest = _timeProvider.GetUtcNow() - _lastRequest;
+            DateTimeOffset lastRequest;
+            lock (_timestampLock)
+            {
+                lastRequest = _lastRequest;
+            }
+
+            var timeSinceLastRequest = _timeProvider.GetUtcNow() - lastRequest;
             if (timeSinceLastRequest < _minDelay)
             {
                 var delayNeeded = _minDelay - timeSinceLastRequest;
@@ -79,8 +90,11 @@ public sealed class RateLimiter : IDisposable
 
             // Record this request
             var now = _timeProvider.GetUtcNow();
-            _requestTimestamps.Enqueue(now);
-            _lastRequest = now;
+            lock (_timestampLock)
+            {
+                _requestTimestamps.Enqueue(now);
+                _lastRequest = now;
+            }
 
             return now - waitStart;
         }
@@ -97,8 +111,11 @@ public sealed class RateLimiter : IDisposable
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         var now = _timeProvider.GetUtcNow();
-        _requestTimestamps.Enqueue(now);
-        _lastRequest = now;
+        lock (_timestampLock)
+        {
+            _requestTimestamps.Enqueue(now);
+            _lastRequest = now;
+        }
     }
 
     /// <summary>
@@ -122,9 +139,12 @@ public sealed class RateLimiter : IDisposable
     private void CleanupOldTimestamps()
     {
         var cutoff = _timeProvider.GetUtcNow() - _window;
-        while (_requestTimestamps.TryPeek(out var oldest) && oldest < cutoff)
+        lock (_timestampLock)
         {
-            _requestTimestamps.TryDequeue(out _);
+            while (_requestTimestamps.TryPeek(out var oldest) && oldest < cutoff)
+            {
+                _requestTimestamps.TryDequeue(out _);
+            }
         }
     }
 
