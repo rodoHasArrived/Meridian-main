@@ -423,7 +423,7 @@ Use the dashboards below as the canonical generated status surfaces for readines
 - Treat dated evidence as **stale** when it predates the latest related workflow run, packet, or replay audit.
 - For stale evidence, rerun the narrowest supporting workflow first (provider validation, replay verification, reconciliation export, or contract check) and then regenerate docs automation summaries.
 - Do not claim readiness from a dashboard whose `.md` and `.json` sidecars disagree; rerun automation and resolve drift before sign-off.
-- The CI dashboard-delta gate only fails on new severe blocker or contract-drift counts when the previous dashboard baseline is readable; if the push baseline is unavailable, the run records that gap and skips the severe-regression failure instead of comparing against an all-zero baseline.
+- The CI dashboard-delta gate in `documentation.yml` fails when the documentation `health_score` in `docs/status/doc-health-dashboard.json` drops by more than 10 points from the `HEAD~1` dashboard. It also fails when the regenerated dashboard has no numeric `health_score`, so a renamed key cannot silently disable it. If the baseline is missing or has no readable score, the run records that gap in `artifacts/docs/dashboard-delta.json` and skips the severe-regression failure instead of comparing against an all-zero baseline.
 - When a dashboard remains blocked after rerun, escalate with the failing command, artifact path, and owning lane in the summary report.
 
 ### Artifact Generation Commands (Full + Targeted)
