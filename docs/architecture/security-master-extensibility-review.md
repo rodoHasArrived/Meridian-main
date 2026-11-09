@@ -774,6 +774,44 @@ Validation (local, .NET SDK 10.0.403): `dotnet test tests/Meridian.Tests -c Rele
 active-plus-inactive gauge, and the zero case. The full local `bash scripts/ci.sh` was not run;
 GitHub `Meridian CI / quality-gate` remains authoritative.
 
+### ADR-027 stage-3 S3-A — codec-arm gap audit — 2026-11-09
+
+What the schema-driven guard (`SecurityAssetTermsSchemaRoundTripTests` and companions) already
+proves, per arm:
+
+- **Encode:** every class's serialized key set equals the declared schema field set; the
+  envelope declares its format and asset-class terms version; fully-populated payloads
+  round-trip byte-stably through both codecs (plus Bond coupon-structure variants and the
+  legacy Equity classification read); discriminants use declared values; the write goldens pin
+  the written bytes per class and report surface.
+- **Fixture discipline:** `FullPayloads` cover exactly the declared classes, and each declares
+  every schema field, so schema growth forces the fixtures to grow.
+- **Vocabularies and conventions (hand-picked):** write refusals for Swap leg conventions, Bond
+  `couponType` (undeclared, non-string, explicit-null default), Option `exerciseStyle`,
+  StructuredCredit malformed optional tranche terms and kind-label canonicalization, and the
+  field-edit validator's discriminant handling.
+
+What remains unproven — the S3-B/S3-C backlog, in priority order:
+
+1. **Per-alias acceptance (decode).** The schema declares read aliases
+   (`asOfDate` ← `factorDate`/`effectiveDate`/`date`, `notional` ← `notionalAmount`, …); no test
+   sweeps them. An alias the decoder forgot reads as an absent field today.
+2. **Per-field missing-Req refusal (decode).** A required field absent must refuse naming the
+   field; only incidental coverage exists.
+3. **Per-field type-mismatch refusal (decode).** Hand-picked cases only; no sweep of
+   string-where-decimal, number-where-date, etc. across the declared types.
+4. **Systematic `OneOf` sweep (decode).** Every `ReqOneOf`/`OptOneOf` field, enforcing or
+   escaping exactly per `WithVerbatimUndeclaredValue`, rather than today's named examples.
+5. **`WithConvention` parsing sweep (decode).** Only Swap legs are pinned; the other fields
+   carrying a convention kind are not.
+6. **Canonical written forms (encode).** Value formatting per type, the null/absent policy per
+   `Opt` field, and array stored-order rules are proven only transitively, through one full
+   payload's byte-stable round trip per class — form rules are not asserted as rules.
+
+S3-B/S3-C generate these sweeps from `SecurityAssetTermsSchema` itself, so a field added to the
+schema is swept without a test edit; S3-D (the table-driven extraction) stays gated on stage-1
+increment 6 per the ADR's safety ordering.
+
 ### ADR-027 stage-2 S2-B4 — term-block and merge paths verified on the definition — 2026-11-09
 
 The last stage-2 increment needed no plumbing: the workbench term-block and profile-field edit
