@@ -1,4 +1,4 @@
-import { formatCompactCurrency, formatCurrency } from "@/lib/format";
+import { formatCurrency, formatUtcDate } from "@/lib/format";
 import type {
   PortfolioCashLadder,
   PortfolioCashLadderBucket,
@@ -28,12 +28,7 @@ export function formatCashLadderDate(value: string): string {
     : new Date(normalized);
   return Number.isNaN(date.getTime())
     ? normalized
-    : date.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-        timeZone: "UTC"
-      });
+    : formatUtcDate(date);
 }
 
 function formatLadderSigned(value: number, currency: string): string {
@@ -45,16 +40,7 @@ function formatLadderSigned(value: number, currency: string): string {
 }
 
 function formatLadderCompact(value: number, currency: string): string {
-  try {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency,
-      notation: "compact",
-      maximumFractionDigits: 1
-    }).format(value);
-  } catch {
-    return formatCompactCurrency(value);
-  }
+  return formatCurrency(value, { currency, notation: "compact", maximumFractionDigits: 1 });
 }
 
 export const CASH_LADDER_CHART_WIDTH = 960;

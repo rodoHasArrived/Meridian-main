@@ -146,16 +146,16 @@ Total items: **239**
 | `src/Meridian.Ui/dashboard/src/screens/price-alerts-screen.view-model.test.ts` | 182 | `NOTE` | ❌ | note: null |
 | `src/Meridian.Ui/dashboard/src/screens/price-alerts-screen.view-model.test.ts` | 358 | `NOTE` | ❌ | note: null, |
 | `src/Meridian.Ui/dashboard/src/screens/price-alerts-screen.view-model.test.ts` | 380 | `NOTE` | ❌ | note: null, |
-| `src/Meridian.Ui/dashboard/src/screens/price-alerts-screen.view-model.ts` | 14 | `NOTE` | ❌ | note: string; |
-| `src/Meridian.Ui/dashboard/src/screens/price-alerts-screen.view-model.ts` | 22 | `NOTE` | ❌ | note: "" |
-| `src/Meridian.Ui/dashboard/src/screens/price-alerts-screen.view-model.ts` | 62 | `NOTE` | ❌ | note: PriceAlertStaticFormFieldViewModel; |
-| `src/Meridian.Ui/dashboard/src/screens/price-alerts-screen.view-model.ts` | 511 | `NOTE` | ❌ | note: buildPriceAlertStaticFormField(PRICE_ALERT_STATIC_FIELD_CONFIG.note) |
-| `src/Meridian.Ui/dashboard/src/screens/price-alerts-screen.view-model.ts` | 529 | `NOTE` | ❌ | note: form.note.trim() \|\| null |
-| `src/Meridian.Ui/dashboard/src/screens/price-alerts-screen.view-model.ts` | 601 | `NOTE` | ❌ | note: { |
+| `src/Meridian.Ui/dashboard/src/screens/price-alerts-screen.view-model.ts` | 15 | `NOTE` | ❌ | note: string; |
+| `src/Meridian.Ui/dashboard/src/screens/price-alerts-screen.view-model.ts` | 23 | `NOTE` | ❌ | note: "" |
+| `src/Meridian.Ui/dashboard/src/screens/price-alerts-screen.view-model.ts` | 63 | `NOTE` | ❌ | note: PriceAlertStaticFormFieldViewModel; |
+| `src/Meridian.Ui/dashboard/src/screens/price-alerts-screen.view-model.ts` | 512 | `NOTE` | ❌ | note: buildPriceAlertStaticFormField(PRICE_ALERT_STATIC_FIELD_CONFIG.note) |
+| `src/Meridian.Ui/dashboard/src/screens/price-alerts-screen.view-model.ts` | 530 | `NOTE` | ❌ | note: form.note.trim() \|\| null |
+| `src/Meridian.Ui/dashboard/src/screens/price-alerts-screen.view-model.ts` | 602 | `NOTE` | ❌ | note: { |
 | `src/Meridian.Ui/dashboard/src/screens/reconciliation-bulk-triage.test.ts` | 55 | `NOTE` | ❌ | note: "Journal posted.", |
 | `src/Meridian.Ui/dashboard/src/screens/reconciliation-bulk-triage.ts` | 81 | `NOTE` | ❌ | note: reason, |
 | `src/Meridian.Ui/dashboard/src/screens/report-run-governance-screen.test.tsx` | 538 | `NOTE` | ❌ | note: "Certified run created.", |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.schedule-view-model.ts` | 205 | `NOTE` | ❌ | note: plan.note, |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.schedule-view-model.ts` | 199 | `NOTE` | ❌ | note: plan.note, |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 731 | `NOTE` | ❌ | note: "Built-in template catalog" |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 739 | `NOTE` | ❌ | note: "Controller approved investor statement baseline." |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 825 | `NOTE` | ❌ | note: "Starter target" |

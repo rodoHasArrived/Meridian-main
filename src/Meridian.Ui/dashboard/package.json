@@ -9,7 +9,7 @@
     "build": "tsc --noEmit && vite build",
     "screenshots": "node ../../../scripts/dev/capture-web-screenshots.mjs",
     "smoke:workstation": "node scripts/smoke-workstation.mjs",
-    "lint": "eslint src && node scripts/check-typography.mjs",
+    "lint": "eslint src && node scripts/check-typography-floor.mjs",
     "typecheck:strict": "tsc --noEmit -p tsconfig.strict.json",
     "test": "node --max-old-space-size=4096 ./scripts/run-vitest-stable.mjs",
     "test:vitest": "vitest run",

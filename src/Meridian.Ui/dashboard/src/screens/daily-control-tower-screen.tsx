@@ -18,6 +18,7 @@ import {
   readinessToneToSeverityStatus
 } from "@/lib/shared-tone-mappings";
 import { eyebrowClassName } from "@/design-system/label-case";
+import { formatUtcTimestamp } from "@/lib/format";
 
 export interface DailyControlTowerScreenProps {
   viewModel: AppShellWorkflowContinuityViewModel;
@@ -296,16 +297,7 @@ function buildTowerFreshness(
   }
 
   const observedAt = new Date(observedAtMs);
-  const timestampLabel = new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-    timeZone: "UTC",
-    timeZoneName: "short"
-  }).format(observedAt).replace("24:", "00:");
+  const timestampLabel = formatUtcTimestamp(observedAt);
   const stale = nowMs - observedAtMs > TOWER_FRESHNESS_WINDOW_MS;
 
   return {

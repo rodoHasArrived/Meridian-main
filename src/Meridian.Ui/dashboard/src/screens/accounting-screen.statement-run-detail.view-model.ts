@@ -23,6 +23,7 @@ import {
   type StatementRunValidation,
   type StatementValidationIssue
 } from "@/types/statement-run-detail.types";
+import { formatNumber } from "@/lib/format";
 
 export type StatementRunDetailTone = "default" | "success" | "warning" | "danger";
 
@@ -286,7 +287,7 @@ function resolveOrdinalLabel(
 }
 
 function formatAmount(value: number): string {
-  return value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return formatNumber(value, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function formatSignedAmount(value: number): string {
