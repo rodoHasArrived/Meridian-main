@@ -360,7 +360,7 @@ public sealed class LiveDataViewerViewModel : BindableBase, IPageActivationLifet
             CancelAndDispose(previousCts);
 
             var response = await _httpClient.GetAsync(
-                $"{_baseUrl}/api/live/{Uri.EscapeDataString(_selectedSymbol)}/recent?limit=50",
+                $"{_baseUrl}{WpfServices.LiveDataApiPayloads.TradesRoute(_selectedSymbol, 50)}",
                 liveDataCts.Token);
 
             if (response.IsSuccessStatusCode)
@@ -368,10 +368,12 @@ public sealed class LiveDataViewerViewModel : BindableBase, IPageActivationLifet
                 var json = await response.Content.ReadAsStringAsync(liveDataCts.Token);
                 var data = JsonSerializer.Deserialize<JsonElement>(json);
 
-                if (data.ValueKind == JsonValueKind.Array)
+                // GET /api/data/trades/{symbol} returns a TradesResponse envelope; the tape rows
+                // are its "trades" array.
+                if (data.ValueKind == JsonValueKind.Object)
                 {
                     var newEvents = new List<LiveDataEventModel>();
-                    foreach (var item in data.EnumerateArray())
+                    foreach (var item in WpfServices.LiveDataApiPayloads.EnumerateTrades(data))
                     {
                         var eventModel = ParseLiveEvent(item);
                         if (eventModel != null)
@@ -425,22 +427,23 @@ public sealed class LiveDataViewerViewModel : BindableBase, IPageActivationLifet
         try
         {
             var response = await _httpClient.GetAsync(
-                $"{_baseUrl}/api/live/{Uri.EscapeDataString(_selectedSymbol)}/quote",
+                $"{_baseUrl}{WpfServices.LiveDataApiPayloads.QuoteRoute(_selectedSymbol)}",
                 ct);
 
             if (response.IsSuccessStatusCode)
             {
                 var json = await response.Content.ReadAsStringAsync(ct);
-                var quote = JsonSerializer.Deserialize<JsonElement>(json);
+                var payload = JsonSerializer.Deserialize<JsonElement>(json);
 
-                if (quote.TryGetProperty("bid", out var b))
-                    _bidPrice = b.GetDecimal();
-                if (quote.TryGetProperty("ask", out var a))
-                    _askPrice = a.GetDecimal();
-                if (quote.TryGetProperty("bidSize", out var bs))
-                    _bidSize = bs.GetInt32();
-                if (quote.TryGetProperty("askSize", out var as2))
-                    _askSize = as2.GetInt32();
+                // The quotes endpoint answers 200 with a null quote until the collector has a
+                // BBO; keep the last displayed values in that case, as before.
+                if (WpfServices.LiveDataApiPayloads.TryReadQuote(payload, out var quote))
+                {
+                    _bidPrice = quote.Bid;
+                    _askPrice = quote.Ask;
+                    _bidSize = quote.BidSize;
+                    _askSize = quote.AskSize;
+                }
 
                 UpdateQuoteDisplay();
             }
@@ -465,19 +468,27 @@ public sealed class LiveDataViewerViewModel : BindableBase, IPageActivationLifet
             var type = item.TryGetProperty("type", out var tp) ? tp.GetString() ?? "TRADE" : "TRADE";
             var symbol = item.TryGetProperty("symbol", out var sp) ? sp.GetString() ?? "" : "";
             var price = item.TryGetProperty("price", out var pp) ? pp.GetDecimal() : 0m;
-            var size = item.TryGetProperty("size", out var szp) ? szp.GetInt32() :
+            var size = item.TryGetProperty("size", out _) ? WpfServices.LiveDataApiPayloads.ReadSize(item, "size") :
                        item.TryGetProperty("volume", out var vp) ? vp.GetInt32() : 0;
-            var exchange = item.TryGetProperty("exchange", out var ep) ? ep.GetString() ?? "" : "";
+            // Trade rows from /api/data/trades carry the venue as "venue" (nullable).
+            var exchange = item.TryGetProperty("exchange", out var ep) ? ep.GetString() ?? "" :
+                           item.TryGetProperty("venue", out var vn) && vn.ValueKind == JsonValueKind.String ? vn.GetString() ?? "" : "";
             // The receipt-time fallback keeps ordering and id generation working when a payload
             // omits its timestamp, but it is not an observation. Track which one this is so
             // observation-time surfaces can say "unknown" rather than showing the local clock.
             var hasObservedTimestamp = item.TryGetProperty("timestamp", out var tsp);
             var timestamp = hasObservedTimestamp ? tsp.GetDateTime() : DateTime.UtcNow;
+            // Trade rows carry no "id"; the per-stream sequence number keeps two prints at the
+            // same timestamp and price from collapsing into one tape row.
             var id = item.TryGetProperty("id", out var idp) ? idp.GetString() ?? "" :
-                     $"{timestamp:HHmmssfffff}_{type}_{price}";
+                     item.TryGetProperty("sequenceNumber", out var seq) && seq.ValueKind == JsonValueKind.Number
+                         ? $"{timestamp:HHmmssfffff}_{type}_{price}_{seq.GetInt64()}"
+                         : $"{timestamp:HHmmssfffff}_{type}_{price}";
+            // Trade rows express direction as "aggressor" (Buy/Sell/Unknown).
             var isBuy = type.Equals("TRADE", StringComparison.OrdinalIgnoreCase) &&
-                        item.TryGetProperty("side", out var side) &&
-                        side.GetString()?.Equals("buy", StringComparison.OrdinalIgnoreCase) == true;
+                        (WpfServices.LiveDataApiPayloads.IsBuyAggressor(item) ||
+                         (item.TryGetProperty("side", out var side) &&
+                          side.GetString()?.Equals("buy", StringComparison.OrdinalIgnoreCase) == true));
 
             return new LiveDataEventModel
             {

@@ -331,7 +331,7 @@ public sealed class OrderBookViewModel : BindableBase, IPageActivationLifetime, 
             CancelAndDispose(previousCts);
 
             var response = await _httpClient.GetAsync(
-                $"{_baseUrl}/api/orderbook/{Uri.EscapeDataString(_selectedSymbol)}?levels={_depthLevels}",
+                $"{_baseUrl}{WpfServices.LiveDataApiPayloads.OrderBookRoute(_selectedSymbol, _depthLevels)}",
                 refreshCts.Token);
 
             if (response.IsSuccessStatusCode)
@@ -383,7 +383,8 @@ public sealed class OrderBookViewModel : BindableBase, IPageActivationLifetime, 
             foreach (var bid in bids.EnumerateArray().Take(_depthLevels))
             {
                 var price = bid.TryGetProperty("price", out var p) ? p.GetDecimal() : 0;
-                var size = bid.TryGetProperty("size", out var s) ? s.GetInt32() : 0;
+                // Order book level sizes are decimal on the wire (OrderBookLevelDto.Size).
+                var size = WpfServices.LiveDataApiPayloads.ReadSize(bid, "size");
                 runningTotal += size;
                 newBids.Add(new OrderBookDisplayLevel
                 {
@@ -406,7 +407,7 @@ public sealed class OrderBookViewModel : BindableBase, IPageActivationLifetime, 
             foreach (var ask in asks.EnumerateArray().Take(_depthLevels))
             {
                 var price = ask.TryGetProperty("price", out var p) ? p.GetDecimal() : 0;
-                var size = ask.TryGetProperty("size", out var s) ? s.GetInt32() : 0;
+                var size = WpfServices.LiveDataApiPayloads.ReadSize(ask, "size");
                 runningTotal += size;
                 newAsks.Add(new OrderBookDisplayLevel
                 {
@@ -625,7 +626,7 @@ public sealed class OrderBookViewModel : BindableBase, IPageActivationLifetime, 
         try
         {
             var response = await _httpClient.GetAsync(
-                $"{_baseUrl}/api/live/{Uri.EscapeDataString(_selectedSymbol)}/trades?limit=15",
+                $"{_baseUrl}{WpfServices.LiveDataApiPayloads.TradesRoute(_selectedSymbol, 15)}",
                 _cts!.Token);
 
             if (response.IsSuccessStatusCode)
@@ -633,19 +634,20 @@ public sealed class OrderBookViewModel : BindableBase, IPageActivationLifetime, 
                 var json = await response.Content.ReadAsStringAsync(_cts.Token);
                 var data = JsonSerializer.Deserialize<JsonElement>(json);
 
-                if (data.ValueKind == JsonValueKind.Array)
+                // GET /api/data/trades/{symbol} returns a TradesResponse envelope; the tape rows
+                // are its "trades" array and direction is the "aggressor" field.
+                if (data.ValueKind == JsonValueKind.Object)
                 {
                     RecentTrades.Clear();
                     long buyVolume = 0;
                     long sellVolume = 0;
 
-                    foreach (var trade in data.EnumerateArray())
+                    foreach (var trade in WpfServices.LiveDataApiPayloads.EnumerateTrades(data))
                     {
                         var price = trade.TryGetProperty("price", out var p) ? p.GetDecimal() : 0;
-                        var size = trade.TryGetProperty("size", out var s) ? s.GetInt32() : 0;
+                        var size = WpfServices.LiveDataApiPayloads.ReadSize(trade, "size");
                         var timestamp = trade.TryGetProperty("timestamp", out var ts) ? ts.GetDateTime() : DateTime.UtcNow;
-                        var side = trade.TryGetProperty("side", out var sd) ? sd.GetString() ?? "" : "";
-                        var isBuy = side.Equals("buy", StringComparison.OrdinalIgnoreCase);
+                        var isBuy = WpfServices.LiveDataApiPayloads.IsBuyAggressor(trade);
 
                         if (isBuy)
                             buyVolume += size;

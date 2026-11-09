@@ -3690,8 +3690,13 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
                 SubscriptionPricePerShare: null,
                 RightsPerShare: null);
 
+            // POST /api/security-master/{securityId:guid}/corporate-actions answers with the
+            // append result envelope (corporate action + audit), not the bare action DTO.
             var result = (await ApiClientService.Instance
-                .PostWithResponseAsync<CorporateActionDto>($"/api/workstation/security-master/securities/{securityId}/corporate-actions", dto, ct)
+                .PostWithResponseAsync<SecurityMasterCorporateActionAppendResultDto>(
+                    UiApiRoutes.WithParam(UiApiRoutes.SecurityMasterCorporateActions, "securityId", securityId.ToString()),
+                    dto,
+                    ct)
                 .ConfigureAwait(false)).DataOrLoggedNull("Record corporate action");
 
             if (result is not null)
