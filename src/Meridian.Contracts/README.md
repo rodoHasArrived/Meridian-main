@@ -1588,7 +1588,9 @@ existed keeps its terms hash. Setting a rule is a material term and changes the 
 and F# lanes pin that value identically. `OutstandingBalancesDto` also carries `PrepaidInterest`
 and `UnappliedCash`, appended with 0 defaults so earlier positional constructions and persisted JSON
 are unchanged. Both are owed *to* the borrower, so read models must not add them to outstanding
-exposure. Nothing sets them yet; routing and journals follow in later PRD-115 increments; see the
+exposure. `LoanSummaryDto` carries both per loan for the browser and WPF loan books, appended with 0
+defaults; `LoanPortfolioSummaryDto` totals still exclude them. Nothing sets them yet on `main`;
+routing and journals follow in later PRD-115 increments; see the
 [excess payment application blueprint](../../docs/engineering/blueprints/direct-lending-excess-payment-application.md).
 
 Accounting reconciliation casework contracts are shared here: break queue items carry assignee, priority, SLA policy/state/timestamps, age band, versioned taxonomy, threaded comments with mention/evidence/hash metadata, evidence counts, sign-off/reopen metadata, source-origin metadata, and optimistic concurrency versions. Resolve/dismiss, casework command, and bulk casework request payloads carry `ActionOrigin` so reviewed automation can draft triage but cannot resolve, sign off, dismiss, or reopen accounting exceptions. Casework command, bulk-triage, taxonomy, SLA policy, validation-problem, and sequenced audit-event payloads must remain additive so browser and WPF workstation clients use the same Accounting workflow. `ReconciliationBulkCaseworkRequest.AssignToCurrentOperator` (init-only, omitted from JSON when false) asks the server to assign the selected cases to the authenticated operator. `OperatorSurfaceVisitDto` carries an operator's previous and current visit to a workstation surface, the shared baseline for "since your last visit" markers.

@@ -71,6 +71,21 @@ describe("LoanBookScreen", () => {
     expect(await screen.findByRole("group", { name: "Collateral value (EUR): €600,000.00" })).toBeInTheDocument();
   });
 
+  it("shows prepaid interest and unapplied cash columns with the host's values (PRD-115)", async () => {
+    const base = summary();
+    api.getLoanPortfolioSummary.mockResolvedValue({
+      ...base,
+      loans: [{ ...base.loans[0], prepaidInterest: 600, unappliedCash: 99_000 }]
+    });
+
+    render(<LoanBookScreen />);
+
+    expect(await screen.findByRole("columnheader", { name: "Prepaid interest" })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: "Unapplied cash" })).toBeInTheDocument();
+    expect(screen.getByText("$600.00")).toBeInTheDocument();
+    expect(screen.getByText("$99,000.00")).toBeInTheDocument();
+  });
+
   it("renders the loan book from the portfolio read", async () => {
     api.getLoanPortfolioSummary.mockResolvedValue(summary());
 
