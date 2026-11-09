@@ -109,7 +109,7 @@ public sealed partial class AssetObligationProjectionService
             projectionRunId,
             security.SecurityId,
             projectionAsOf,
-            calculatedProjection?.ScheduleEvidence is null ? EngineVersion : "asset-obligation-declared-v3",
+            calculatedProjection?.ScheduleEvidence is null ? EngineVersion : AssetOperationsEngineVersions.DeclaredObligation,
             blockedReason is null ? "Completed" : "Blocked",
             generatedAt,
             SecurityMasterSourceDomain,

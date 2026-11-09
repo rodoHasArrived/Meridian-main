@@ -205,8 +205,6 @@ public sealed class AssetOperationsProjectionCommandService : IAssetOperationsCo
 /// </summary>
 public static partial class AssetOperationsProjectionBuilder
 {
-    private const string TimelineEngineVersion = "asset-terms-obligations-timeline-v1";
-    private const string FixedIncomeCashFlowEngineVersion = "fixed-income-cash-flow-projection-v1";
     private const decimal DefaultPrincipalBasis = 100m;
 
     public static AssetOperationsProjectionDto FromDirectLending(
@@ -612,7 +610,7 @@ public static partial class AssetOperationsProjectionBuilder
         return new AssetTermsObligationsTimelineDto(
             subject.SecurityId,
             projectionAsOf,
-            latestRun is null ? TimelineEngineVersion : $"{latestRun.EngineVersion}+{TimelineEngineVersion}",
+            latestRun is null ? AssetOperationsEngineVersions.ObligationTimeline : $"{latestRun.EngineVersion}+{AssetOperationsEngineVersions.ObligationTimeline}",
             warnings.Count == 0 ? "Ready" : "ReviewRequired",
             events.OrderBy(static row => row.EffectiveDate).ThenBy(static row => row.EventKind).ToArray(),
             warnings,

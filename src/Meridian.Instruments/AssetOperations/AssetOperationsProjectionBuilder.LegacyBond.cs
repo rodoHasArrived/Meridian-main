@@ -48,7 +48,7 @@ public static partial class AssetOperationsProjectionBuilder
             projectionRunId,
             subject.SecurityId,
             asOfDate,
-            FixedIncomeCashFlowEngineVersion,
+            AssetOperationsEngineVersions.LegacyBondCashFlow,
             "Completed",
             context.AsOf,
             "SecurityMaster",
@@ -346,7 +346,7 @@ public static partial class AssetOperationsProjectionBuilder
         => JsonSerializer.SerializeToElement(new
         {
             formula,
-            engineVersion = FixedIncomeCashFlowEngineVersion,
+            engineVersion = AssetOperationsEngineVersions.LegacyBondCashFlow,
             dayCountConvention = bond.AccrualConvention?.DayCountConvention,
             paymentFrequencyPerYear = paymentFrequency,
             principalBasis,
