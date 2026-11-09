@@ -11,6 +11,9 @@ last_reviewed: 2026-10-31
 
 # src/Meridian.Application
 
+Backfill runs publish into an `EventPipeline` with `BoundedChannelFullMode.Wait`, so a
+provider that outpaces the JSONL sink is back-pressured instead of silently evicting queued bars.
+
 Bond cash-flow context receipts now use `bond-cash-flow-context-v2`, sharing declared fixed-coupon economics and retaining floating reset evidence. Replay dispatches v1 through its original arithmetic. Declared observed rates must match the exact supported period reset; an explicit missing or empty fixing schedule cannot revive an older observation. A scalar current rate requires its reset date and source. Future resets use retained forward inputs; other instrument families keep their existing fixing behavior.
 
 `ContractualCashFlowPreviewService` resolves retained Security Master/direct-lending facts and pinned curves for the shared calculation engine. Swap leg conventions are decoded only at or above their declared terms version, preserving inert residue on earlier rows. Currency and convention lookup follow the shared resolver's source and alias ordering; malformed leg rows block calculation before raw and typed rows are paired. Invalid retained economic schedules produce a structured `ContractInputsUnavailable` blocker before calculation or run persistence; unrelated storage and runtime failures still propagate. `FileContractualCashFlowRunStore` publishes write-once, verifiable replay packets under the data root; replay uses the packet's normalized contract without rerunning current source mapping. Missing historical balance/notice evidence and assigned provider schedules block rather than falling back. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).
@@ -223,6 +226,11 @@ Unspecified (`Other`) and undefined currency values leave monetary totals unavai
 
 Direct-lending outbox deliveries with unsupported topics or missing journal source evidence
 remain failed and retryable; they are never silently acknowledged as processed.
+
+Direct-lending storage falls back to the Security Master connection string, so it can compose
+without a ledger database. `LoanAccountingProjector` therefore resolves the ledger journal store
+optionally and fails closed on every ledger-impacting event when none is composed; no substitute
+ledger store is registered. Proof is in `StorageFeatureRegistrationTests`.
 
 
 Direct-lending projection and reconciliation endpoints preserve `X-Command-Id` through the
@@ -1303,6 +1311,19 @@ bullet, sinker and asserted-bullet principal rules, a block for contractual prin
 dormant in production. Verify
 this lane with the declared-conventions partial of `SecurityMasterCashFlowServiceTests`,
 `ScheduleSpecFactoryTests` and `SecurityMasterCashFlowProjectionShapeTests`.
+
+Rate units (review D10, slice 4, 2026-11-04): `SecurityMasterCashFlowService` (legacy coupon walk,
+legacy leg walk, declared projection and declared floating bond leg) and
+`ContractualCashFlowPreviewService` read every coupon, fixed-leg rate, fixing, cap, floor and step
+rate through `Meridian.Contracts.SecurityMaster.RateUnitNormalizer`. The retired heuristic read a
+value at or below 1 as a fraction and divided anything larger by 100. A rate with no declared unit
+(no `couponRateUnit` and no field default in `SecurityRateFieldUnits`) now blocks: the projection
+carries a `BlockedReason` quoting the raw value, and the preview returns a `RateUnitUndeclared`
+blocker (`RateOutsideDeclaredRange` for a declared value outside the field's range or sign policy).
+Zero needs no unit, forward-curve rates stay fractions, and `*Bps` spreads stay basis points. The
+undeclared-legacy policy is decided (D3, 2026-11-05: undeclared non-zero rates block); swap legs
+cannot declare a per-leg unit yet, so their non-zero rates block too. Verify with
+`DeclaredRateUnitParityTests`, `RateUnitNormalizerTests` and the cash-flow suites.
 
 `AddSecurityMasterTermsCapability(services, dataRoot)` (in `Meridian.Application.Composition`)
 registers `FileBusinessDayCalendarSource` over `<dataRoot>/calendars` with `TryAddSingleton` and

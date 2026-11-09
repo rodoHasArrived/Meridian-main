@@ -11,10 +11,27 @@ last_reviewed: 2026-10-31
 
 # src/Meridian.Ui.Shared
 
+`MapUiEndpoints` registers the banking (`/api/banking/*`), ingestion-job (`/api/ingestion/*`) and
+money-market-fund (`/api/security-master/money-market-funds/*`) groups. Every route declares its
+permission; the groups resolve their services per request (501 when unregistered); malformed banking
+and MMF search bodies return 400; `/api/dev/seed/bank-transactions` is mapped only in Development and
+Test hosts. The ingestion group exposes reads and Draft job creation only; job state changes stay on
+the governed workstation ingestion-operation action route.
+Banking approve, reject, currency-remediation and bank-evidence routes derive the action origin from
+the authenticated principal (`ResolveTrustedActionOrigin`), so API-key callers cannot pass the
+banking services' human-only gate with the body's default `HumanOperator` origin.
+
 The existing bond analytics GET accepts optional `calculationVersion` and forwards it unchanged to
 `IBondAnalyticsService`. Omission retains v2; explicit v1/v2 fixed/zero and v3 floating requests use
 the service's model admission and typed refusals. The route retains tenant and view-permission
 requirements. Endpoint tests exercise actual SOFR pricing, fixing/curve refusals and legacy JSON.
+
+`GET /api/reference-data/bonds/{securityId}/exercise-notices?asOf=…&horizonDays=…&knownAt=…` is the
+read-only notice-date watch. `BondExerciseNoticeReadService` loads the retained row the way analytics
+does, then `BondExerciseNoticeWatch` lists each declared call or put window as `Upcoming`, `Open`,
+`DeadlineElapsed` or `NotStated` within a 1–366 day horizon (default 90). The route has the same tenant
+scope and `ViewSecurityMaster`/`ModifySecurityMaster` permission as analytics. Windows record no notice
+and grant no exercise authority; an elapsed deadline needs retained notice evidence.
 
 Portfolio cash-ladder composition supplies the configured business-day calendars to the shared Instruments scenario engine. Declared issuer-call and holder-put scenarios use retained projection terms and calendar hashes; floating shocks consume retained per-reset inputs. Scenario blockers remain visible through the existing decision-readiness response; no new approval or payment authority is introduced. The optional `engineVersion` query selects explicit `portfolio-cash-ladder-v1` replay; an unknown version returns a blocked ladder with no contributions that names the unsupported version rather than falling back silently.
 
