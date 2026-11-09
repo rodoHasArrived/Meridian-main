@@ -1929,8 +1929,13 @@ npm --prefix src/Meridian.Ui/dashboard run smoke:workstation
 Linting is a correctness-only ESLint flat-config baseline (`eslint.config.mjs`): typescript-eslint
 recommended, react-hooks rules, and a local kebab-case filename rule with grandfathered
 PascalCase/camelCase directories (`components/accounting`, `components/charts`,
-`features/accounting`). No stylistic or formatting rules are enforced. `react-hooks/exhaustive-deps`
-stays a warning; treat new warnings in touched files as part of the change. Screen-level
+`features/accounting`). No stylistic or formatting ESLint rules are enforced. `react-hooks/exhaustive-deps`
+stays a warning; treat new warnings in touched files as part of the change. After ESLint,
+`npm run lint` runs `scripts/check-typography-floor.mjs`, a ratchet on the 12px type floor. It
+counts sub-12px text per file: Tailwind `text-[Npx]` arbitrary sizes and CSS `font-size` below
+12px, excluding `*.test.ts(x)` fixtures. A file that gains occurrences, or a new file with any,
+fails against `scripts/typography-floor-baseline.json`. Run the script with `--update-baseline`
+after a reduction; it refuses any increase, so the baseline only shrinks. Screen-level
 accessibility is exercised by the `src/screens/*.a11y.test.tsx` suites plus axe assertions embedded
 in the larger screen tests; keep new screens covered by at least one axe render.
 
