@@ -1368,6 +1368,65 @@ public sealed class BrokeragePortfolioSyncServiceTests
             DeleteTempRoot(root);
         }
     }
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task RunSyncAsync_FailedOrPartialSyncKeepsLastGoodPositionsAndSuccessTimestamp(
+        bool portfolioFails, bool activityFails)
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            var fundAccountId = Guid.NewGuid();
+            var request = new WorkstationBrokerageSyncRunRequestDto("alpaca", "PA-KEEP", "ops-review");
+            var (goodService, goodProvider) = CreateService(
+                root,
+                new FixedPortfolioAdapter("alpaca"),
+                new FixedActivityAdapter("alpaca"),
+                includeSecurityLookup: true);
+            await goodProvider.GetRequiredService<IFundAccountService>().CreateAccountAsync(new CreateAccountRequest(
+                fundAccountId,
+                AccountTypeDto.Brokerage,
+                "BRK-KEEP",
+                "Keep last good brokerage",
+                "USD",
+                DateTimeOffset.UtcNow.AddDays(-10),
+                "tests"));
+            var good = await goodService.RunSyncAsync(fundAccountId, request);
+            var goodPositions = await goodService.GetPositionsAsync(fundAccountId);
+            goodPositions.Should().NotBeEmpty();
+            good.LastSuccessfulSyncAt.Should().NotBeNull();
+
+            var (failingService, _) = CreateService(
+                root,
+                portfolioFails ? new ThrowingPortfolioAdapter("alpaca", "portfolio unavailable") : new FixedPortfolioAdapter("alpaca"),
+                activityFails ? new ThrowingActivityAdapter("alpaca", "activity unavailable") : new FixedActivityAdapter("alpaca"),
+                includeSecurityLookup: true);
+            var status = await failingService.RunSyncAsync(fundAccountId, request);
+
+            status.Health.Should().Be(activityFails
+                ? WorkstationBrokerageSyncHealth.Failed
+                : WorkstationBrokerageSyncHealth.Degraded);
+            var view = await failingService.GetViewAsync(fundAccountId);
+            view!.Positions.Select(static position => position.Symbol)
+                .Should().Equal(goodPositions.Select(static position => position.Symbol),
+                    "a failed portfolio fetch is not evidence that the account holds nothing");
+            view.Balance.Should().NotBeNull();
+            status.PositionCount.Should().Be(goodPositions.Count);
+            status.Warnings.Should().Contain(warning => warning.Contains("carried forward", StringComparison.OrdinalIgnoreCase));
+            if (activityFails)
+            {
+                status.LastSuccessfulSyncAt.Should().Be(good.LastSuccessfulSyncAt,
+                    "a fully failed attempt must not erase when the account last synced");
+                view.Fills.Should().NotBeEmpty();
+            }
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
     private static (BrokeragePortfolioSyncService Service, ServiceProvider Provider) CreateService(
         string root,
         IBrokeragePortfolioSync portfolioAdapter,

@@ -306,6 +306,11 @@ public sealed class BrokeragePortfolioSyncService
             activity,
             warnings,
             ct).ConfigureAwait(false);
+        projection = CarryForwardLastGoodState(
+            projection,
+            await TryLoadPriorProjectionAsync(fundAccountId, ct).ConfigureAwait(false),
+            portfolioMissing: portfolio is null,
+            activityMissing: activity is null);
 
         await PersistProjectionAsync(projection, ct).ConfigureAwait(false);
 
@@ -348,7 +353,13 @@ public sealed class BrokeragePortfolioSyncService
             rawPath,
             projection.ProjectionPath,
             ct).ConfigureAwait(false);
-        await EnrichSharedReadServicesAsync(fundAccountId, attemptedAt, projection, ct).ConfigureAwait(false);
+        if (portfolio is not null)
+        {
+            // Only a balance fetched in this attempt may be recorded as a balance snapshot; a
+            // balance carried forward from an earlier sync is not a new observation.
+            await EnrichSharedReadServicesAsync(fundAccountId, attemptedAt, projection, ct).ConfigureAwait(false);
+        }
+
         return projection.Status;
     }
 
@@ -880,8 +891,102 @@ public sealed class BrokeragePortfolioSyncService
             SyncedAt: attemptedAt,
             RawSnapshotPath: string.Empty,
             ProjectionPath: projectionPath);
+        projection = CarryForwardLastGoodState(
+            projection,
+            await TryLoadPriorProjectionAsync(fundAccountId, ct).ConfigureAwait(false),
+            portfolioMissing: true,
+            activityMissing: true);
 
         await PersistProjectionAsync(projection, ct).ConfigureAwait(false);
+    }
+
+    private async Task<FundAccountBrokerageSyncActivityDto?> TryLoadPriorProjectionAsync(
+        Guid fundAccountId,
+        CancellationToken ct)
+    {
+        try
+        {
+            return await LoadProjectionAsync(fundAccountId, ct).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException)
+        {
+            // An unreadable prior projection must not block recording the current attempt.
+            _logger.LogWarning(
+                ex,
+                "Prior brokerage projection for fund account {FundAccountId} could not be read; nothing is carried forward.",
+                fundAccountId);
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Keeps the last successfully synced state for whichever half of the sync produced no
+    /// snapshot this attempt. A failed provider call is not evidence that the account is empty,
+    /// so it must not overwrite the last good positions, balance, or activity with nothing, and
+    /// a fully failed attempt must not erase when the account last synced successfully.
+    /// </summary>
+    internal static FundAccountBrokerageSyncActivityDto CarryForwardLastGoodState(
+        FundAccountBrokerageSyncActivityDto current,
+        FundAccountBrokerageSyncActivityDto? prior,
+        bool portfolioMissing,
+        bool activityMissing)
+    {
+        if (prior is null || (!portfolioMissing && !activityMissing))
+        {
+            return current;
+        }
+
+        // State synced for a different provider account is not this link's last good state.
+        if (prior.FundAccountId != current.FundAccountId
+            || !string.Equals(prior.Link.ProviderId, current.Link.ProviderId, StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(prior.Link.ExternalAccountId, current.Link.ExternalAccountId, StringComparison.Ordinal))
+        {
+            return current;
+        }
+
+        var priorSuccess = prior.Status.LastSuccessfulSyncAt;
+        var asOf = priorSuccess?.ToString("O", System.Globalization.CultureInfo.InvariantCulture) ?? "an earlier attempt";
+        var warnings = new List<string>(current.Status.Warnings);
+        var status = current.Status;
+        var result = current;
+
+        if (portfolioMissing && (prior.Balance is not null || prior.Positions.Count > 0))
+        {
+            result = result with { Balance = prior.Balance, Positions = prior.Positions };
+            status = status with
+            {
+                PositionCount = prior.Positions.Count,
+                SecurityMissingCount = prior.Status.SecurityMissingCount
+            };
+            warnings.Add($"Positions and balance are carried forward from the last successful sync ({asOf}); this attempt returned no portfolio snapshot.");
+        }
+
+        if (activityMissing
+            && (prior.Orders.Count > 0 || prior.Fills.Count > 0 || prior.CashTransactions.Count > 0
+                || prior.CorporateActions is { Count: > 0 }))
+        {
+            result = result with
+            {
+                Orders = prior.Orders,
+                Fills = prior.Fills,
+                CashTransactions = prior.CashTransactions,
+                CorporateActions = prior.CorporateActions
+            };
+            status = status with
+            {
+                OpenOrderCount = prior.Status.OpenOrderCount,
+                FillCount = prior.Fills.Count,
+                CashTransactionCount = prior.CashTransactions.Count
+            };
+            warnings.Add($"Orders, fills, and cash activity are carried forward from the last successful sync ({asOf}); this attempt returned no activity snapshot.");
+        }
+
+        if (portfolioMissing && activityMissing)
+        {
+            status = status with { LastSuccessfulSyncAt = priorSuccess };
+        }
+
+        return result with { Status = status with { Warnings = warnings } };
     }
 
     private async Task PersistProjectionAsync(FundAccountBrokerageSyncActivityDto projection, CancellationToken ct)

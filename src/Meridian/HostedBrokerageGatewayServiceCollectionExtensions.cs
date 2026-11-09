@@ -109,9 +109,10 @@ internal static class HostedBrokerageGatewayServiceCollectionExtensions
         services.TryAddSingleton(sp => new StockSharpBrokerageGatewayAccessor(sp, gatewayType));
         services.TryAddSingleton(sp =>
             new StockSharpBrokerageSyncAdapter(sp.GetRequiredService<StockSharpBrokerageGatewayAccessor>()));
+        // Only the account catalog is registered. StockSharp has no portfolio or activity sync
+        // implementation, and registering an adapter that throws would make the runtime catalog
+        // advertise a capability every sync run then fails on.
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokerageAccountCatalog, StockSharpBrokerageSyncAdapter>());
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokeragePortfolioSync, StockSharpBrokerageSyncAdapter>());
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokerageActivitySync, StockSharpBrokerageSyncAdapter>());
     }
 
     private sealed class AlpacaBrokerageSyncAdapter(AlpacaBrokerageGateway gateway) :
@@ -185,14 +186,10 @@ internal static class HostedBrokerageGatewayServiceCollectionExtensions
     }
 
     private sealed class StockSharpBrokerageSyncAdapter(StockSharpBrokerageGatewayAccessor gatewayAccessor) :
-        IBrokerageAccountCatalog,
-        IBrokeragePortfolioSync,
-        IBrokerageActivitySync
+        IBrokerageAccountCatalog
     {
         public string ProviderId => "stocksharp";
         public string ProviderDisplayName => gatewayAccessor.GetGateway().BrokerDisplayName;
         public Task<IReadOnlyList<BrokerageExternalAccountDto>> GetAccountsAsync(CancellationToken ct) => Task.FromResult<IReadOnlyList<BrokerageExternalAccountDto>>([]);
-        public Task<BrokeragePortfolioSnapshotDto> GetPortfolioSnapshotAsync(string externalAccountId, CancellationToken ct) => throw new NotSupportedException();
-        public Task<BrokerageActivitySnapshotDto> GetActivitySnapshotAsync(string externalAccountId, DateTimeOffset? since, CancellationToken ct) => throw new NotSupportedException();
     }
 }

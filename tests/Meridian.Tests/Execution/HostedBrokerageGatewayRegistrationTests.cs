@@ -129,7 +129,7 @@ public sealed class HostedBrokerageGatewayRegistrationTests
     }
 
     [Fact]
-    public async Task RegisterOptionalStockSharpGateway_WhenRuntimeTypeExists_RegistersKeyedGatewayAndSyncAdapters()
+    public async Task RegisterOptionalStockSharpGateway_WhenRuntimeTypeExists_RegistersKeyedGatewayWithoutThrowingSyncAdapters()
     {
         var services = CreateServices();
 
@@ -145,14 +145,16 @@ public sealed class HostedBrokerageGatewayRegistrationTests
             .Select(catalog => catalog.ProviderId)
             .Should()
             .Contain("stocksharp");
+        // StockSharp has no portfolio/activity sync implementation; it must not be registered
+        // as one, or the catalog would advertise a capability that throws on every sync run.
         provider.GetServices<IBrokeragePortfolioSync>()
             .Select(sync => sync.ProviderId)
             .Should()
-            .Contain("stocksharp");
+            .NotContain("stocksharp");
         provider.GetServices<IBrokerageActivitySync>()
             .Select(sync => sync.ProviderId)
             .Should()
-            .Contain("stocksharp");
+            .NotContain("stocksharp");
 
         var surfaces = HostedBrokerageGatewayRuntimeSurfaceCatalog.Build(provider);
         surfaces.Should().Contain(surface =>
@@ -162,9 +164,9 @@ public sealed class HostedBrokerageGatewayRegistrationTests
             surface.GatewayType == typeof(FakeStockSharpBrokerageGateway).FullName &&
             surface.GatewayIdMatchesRuntimeKey &&
             surface.SupportsAccountCatalog &&
-            surface.SupportsPortfolioSync &&
-            surface.SupportsActivitySync &&
-            surface.ValidationIssues.Count == 0);
+            !surface.SupportsPortfolioSync &&
+            !surface.SupportsActivitySync &&
+            surface.ValidationIssues.Contains("portfolio-sync-missing"));
     }
 
     [Fact]
