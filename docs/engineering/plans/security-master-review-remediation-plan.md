@@ -417,9 +417,14 @@ and S2-B4 (codec single-purpose) land. Planned increments:
   arm's real contract is now ledgered where it diverges from a naive schema reading: two-sided
   vocabulary enforcement, `ToleratedAbsenceDefaults` (eight Required booleans plus Bond
   subclass), `ToleratedMistypes` (the legacy factorSchedule pointer). See the review record.
-- **S3-C — fully assert the encode arm.** The same per-field discipline for the F# writer:
-  canonical value forms, null/absent policy, array stored-order rules, envelope stamping,
-  asserted from schema metadata.
+- **S3-C — the encode-arm sweeps (implemented 2026-11-09).** 124 schema-generated cases:
+  every written value carries its field's declared JSON kind (dates ISO, guids parseable);
+  a minimal required-only submission writes every required key and invents no optional value
+  beyond two committed ledgers (`WrittenOptionalDefaults` — ADR-025's Bond coupon pair — and
+  `ConditionallyRequiredOptionals` — CapFloor's type-conditional strikes, the S2-B1 codec-only
+  rule made visible); the written form is a fixed point of the codec for minimal rows as well
+  as the full twins (the property S3-D must preserve per class); and the envelope rules hold on
+  minimal rows, not only the fully-populated fixtures.
 - **S3-D — table-driven codec extraction.** With both arms fully asserted, replace hand-written
   scalar handling with a schema-table interpreter class by class (bespoke arms remain for the
   structural decodes: coupon structures, schedules, swap legs, profile envelopes); each class's

@@ -774,6 +774,22 @@ Validation (local, .NET SDK 10.0.403): `dotnet test tests/Meridian.Tests -c Rele
 active-plus-inactive gauge, and the zero case. The full local `bash scripts/ci.sh` was not run;
 GitHub `Meridian CI / quality-gate` remains authoritative.
 
+### ADR-027 stage-3 S3-C — the encode-arm sweeps — 2026-11-09
+
+`SecurityAssetTermsSchemaEncodeSweepTests` closes the audit's encode-side backlog with 124
+schema-generated cases, all assertions: every written value carries its field's declared JSON
+kind (dates as ISO calendar dates, guids parseable, numbers for decimal and integer fields); a
+minimal required-only submission writes every required key and invents no optional value —
+beyond two committed ledgers: `WrittenOptionalDefaults` (ADR-025's Bond coupon pair: an absent
+coupon writes `couponType: "Fixed"`, `couponRate: 0` by declaration) and
+`ConditionallyRequiredOptionals` (the CapFloor twin's Collar must keep both strikes, the S2-B1
+codec-only rule made visible in the sweep); the written form is a fixed point of the codec for
+minimal rows as well as the fully-populated twins — the per-class property S3-D's table-driven
+extraction must preserve; and the envelope rules (declared format, stamp describing the
+document) hold on minimal rows too. With S3-B and S3-C in place, both codec arms are asserted
+from the schema table, which is the "fully assert" arm of the ADR's stage-3 decision; S3-D can
+now replace hand-written scalar handling class by class under a complete net.
+
 ### ADR-027 stage-3 S3-B — the decode-arm sweeps, and their first catch — 2026-11-09
 
 `SecurityAssetTermsSchemaDecodeSweepTests` generates the S3-A backlog from the schema itself
