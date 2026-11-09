@@ -11,6 +11,11 @@ last_reviewed: 2026-10-31
 
 # src/Meridian.Storage
 
+`CompositeSink` tolerates individual sink failures under `ContinueOnPartialFailure` only while at least
+one sink accepts the write. When no sink accepts an append, or no sink can be flushed because every
+circuit is open, it throws, so the pipeline never treats an unpersisted event as durable or truncates
+the WAL holding it.
+
 Governed short opening/cover now binds explicit direction to the authoritative Short/Liability
 position and liability carrying account. Opening debits cash and credits retained proceeds;
 cover debits relieved proceeds, credits execution cash cost, and books the exact realized result.
@@ -269,7 +274,8 @@ remaining unprojected classes (CommercialPaper, TreasuryBill, Repo, CashSweep, O
 Warrant, InvestmentFund, PrivateFundInterest, PrivateCompanyEquity, RealEstateHolding,
 CommitmentGuarantee) a relational projection written by the same declarative
 `SecurityTermsProjectionRegistry` descriptor path, so every catalog class except the
-profile-governed CustomAsset is now projected (25 of 26). Guid-typed terms project as `uuid`
+profile-governed CustomAsset was then projected (25 of 26; migration 064 below closes CustomAsset).
+Guid-typed terms project as `uuid`
 columns. The tables are created empty; an existing database populates them through
 `SecurityMasterRebuildOrchestrator.RebuildAssetClassAsync` per class.
 
@@ -282,6 +288,19 @@ the contract marks Required; the tables are created empty and populate as record
 Migration `047_rate_option_and_note_terms_projections.sql` does the same for `swaption_projection`,
 `cap_floor_projection` and `structured_note_projection` (31 of 32 classes projected); strike and
 rate columns are signed because negative strikes are valid in negative-rate currencies.
+
+Migration `064_custom_asset_profile_field_projection.sql` closes the last gap (32 of 32).
+CustomAsset fields are governed per profile, so `custom_asset_profile_field_projection` holds one
+row per `profileFields` key, keyed by `(security_id, field_key)`, with `custom_profile_id`,
+`profile_version` and the record `version`. `raw_value` (jsonb) keeps the stored value; `value_kind`
+is its `jsonb_typeof`, and `text_value`/`numeric_value`/`boolean_value` are derived from it in SQL,
+so a date-looking string stays a string and a number keeps full precision. A specialized
+`AssetProjectionWriter` (catalog `ProjectionKind.Specialized`, beside Option) replaces the rows on
+every write and clears them when the record has no complete envelope (a legacy or unmapped row) or
+leaves the class. `ICustomAssetProfileFieldProjectionStore`
+(`PostgresCustomAssetProfileFieldProjectionStore`) reads them by security, profile (and version) or
+exact string value. The table is created empty and populates as CustomAsset records are persisted
+or rebuilt. Migration 064 still needs the repository's independent schema/storage review.
 
 Security Master migration `050_otc_contracts.sql` creates the OTC contract model (master
 agreements, collateral agreements, netting sets, bilateral contracts) written by
@@ -665,6 +684,13 @@ migration and the transaction writer; reconciliation exercises that persisted re
 Migration 009 reconciles the historical `projected_flow_id` column with the cash-flow
 identity name consumed by the store. It adds and backfills the current column names while retaining legacy IDs and foreign keys.
 A trigger synchronizes writes through either name and rejects conflicting IDs during rollout.
+
+Migration 010 (PRD-115) adds `prepaid_interest` and `unapplied_cash` to `loan_servicing_projection`
+as `numeric(24,2) not null default 0`, so existing loans read as 0. They are balances owed to the
+borrower, not receivables. The store reads and writes both; the `loan_state` JSON and snapshots
+carry them as `OutstandingBalancesDto` members, and state saved before them deserializes to 0. It
+is numbered below 011 because 010 was reserved for this blueprint; both are additive and
+independent, so their apply order does not matter.
 
 
 Direct-lending projection and reconciliation persistence serializes matching run identities with

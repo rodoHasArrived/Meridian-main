@@ -2,6 +2,7 @@ import { useRef, useState, type Ref } from "react";
 import { AmountCell } from "./AmountCell";
 import { SeverityBadge } from "@/components/operations";
 import { cn } from "@/lib/utils";
+import { usesTrackedCaps } from "@/design-system/label-case";
 import type {
   ReconciliationComparisonViewState,
   ReconciliationLineItemViewModel
@@ -141,7 +142,7 @@ export function ReconciliationComparisonPanel({ view }: { view: ReconciliationCo
     <section className="accounting-reference-panel" data-appearance="light" aria-label={view.ariaLabel}>
       <div className="accounting-reference-heading">
         <div className="min-w-0">
-          <p className="accounting-reference-kicker">{view.title}</p>
+          <p className={usesTrackedCaps(view.title) ? "accounting-reference-kicker" : "accounting-reference-kicker accounting-reference-kicker--sentence"}>{view.title}</p>
           <p className="accounting-reference-subtitle">{view.subtitle}</p>
         </div>
         <div className="accounting-reference-badges" aria-label="Reconciliation match status">

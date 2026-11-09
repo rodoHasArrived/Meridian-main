@@ -49,6 +49,15 @@ in the trust pill, a provenance banner that becomes a stripe once seen, a two-ro
 route-first workspace screens with the sidebar as the only sub-navigation, and a pinned Today entry
 with Control Tower attention counts. No shared contract changed.
 
+The host-served bundle carries the design-system consolidation. It includes one status
+component; one formatting module (year-bearing UTC timestamps; accounting negatives in
+parentheses); and one table system with sorting, sticky headers, operator density and column
+visibility on positions, orders, the ledger, breaks, the execution blotter and report families.
+It also adds a three-tier type scale with sentence-case labels past two words and prose in the
+body face. Ratchets in `dashboard/scripts/design-system-ratchets.mjs` keep legacy uses from
+growing. No shared contract changed; positions and orders still arrive as preformatted strings,
+so those tables sort on their text columns until a shared seam carries raw figures.
+
 The host-served bundle carries the browser presentation correctness fixes: font stacks that end
 in a generic family (no serif fallback for data text), Ledger Explorer amounts at currency
 precision with journal-ID links, no invented Strategy metrics, and a masthead activation chip that

@@ -1,4 +1,13 @@
 import { accountingPayload as fixtureAccountingWorkspace } from "../scenarios/accounting-payload";
+import {
+  countOpenBreaks,
+  countOpenOrders,
+  countProviderHealth,
+  OPEN_BREAKS_DEFINITION,
+  OPEN_ORDERS_DEFINITION,
+  PROVIDERS_DEFINITION
+} from "./cross-screen-counts";
+import type { WorkstationCrossScreenCounts } from "../types/cross-screen-counts";
 import { fixtureTradingRisk } from "./dev-fixtures.trading-risk";
 import type {
   CoveredCallChainPreview,
@@ -5830,8 +5839,18 @@ function createFixtureFinancialRecordExplorer(seed: FixtureFinancialRecordExplor
   };
 }
 
+// Counted from the same fixtures the Trading, Data and Accounting screens read, with the same
+// definitions, as the server counts its own sources (A3).
+const fixtureCrossScreenCounts: WorkstationCrossScreenCounts = {
+  asOf: "2026-03-21T14:30:00Z",
+  openOrders: { count: countOpenOrders(fixtureTradingWorkspace.openOrders) ?? 0, definition: OPEN_ORDERS_DEFINITION },
+  providers: { ...(countProviderHealth(fixtureDataWorkspace.providers) ?? { healthy: 0, total: 0 }), definition: PROVIDERS_DEFINITION },
+  openBreaks: { count: countOpenBreaks(fixtureAccountingWorkspace.breakQueue) ?? 0, definition: OPEN_BREAKS_DEFINITION }
+};
+
 const fixtures = {
   [WORKSTATION_API_ENDPOINTS.systemStatus]: fixtureSystemOverview,
+  [WORKSTATION_API_ENDPOINTS.crossScreenCounts]: fixtureCrossScreenCounts,
   [WORKSTATION_API_ENDPOINTS.session]: fixtureSession,
   [WORKSTATION_API_ENDPOINTS.strategy]: fixtureStrategyWorkspace,
   [WORKSTATION_API_ENDPOINTS.strategyBriefing]: fixtureStrategyBriefing,

@@ -20,6 +20,7 @@ import {
   type HistoricalChartStatTile,
   type IndicatorToggleOption
 } from "@/components/meridian/historical-chart.view-model";
+import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
 
 export {
   HISTORICAL_CHART_TIMEFRAMES,
@@ -48,7 +49,7 @@ export function HistoricalChartCard({ symbol, className }: HistoricalChartCardPr
       <CardHeader>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <div className="eyebrow-label">{vm.eyebrow}</div>
+            <div className={eyebrowClassName(vm.eyebrow)}>{vm.eyebrow}</div>
             <CardTitle className="flex items-center gap-2 text-base">
               <LineChart className="h-4 w-4 text-primary" aria-hidden="true" />
               {vm.title}
@@ -511,7 +512,7 @@ function BarChartSparkline({ viewModel }: { viewModel: HistoricalChartSparklineV
 function ChartStat({ stat }: { stat: HistoricalChartStatTile }) {
   return (
     <div className="rounded-md border border-border/60 bg-secondary/25 px-2.5 py-1.5">
-      <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{stat.label}</div>
+      <div className={cn("text-[10px] text-muted-foreground", usesTrackedCaps(stat.label) && "uppercase tracking-wide")}>{stat.label}</div>
       <div className="mt-0.5 font-mono text-sm text-foreground">{stat.value}</div>
     </div>
   );
@@ -959,7 +960,7 @@ function HistoricalChartHoverPanel({ detail }: { detail: CandlestickHoverDetail 
 function HoverField({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-baseline gap-1">
-      <dt className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</dt>
+      <dt className={cn("text-[10px] text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-wide")}>{label}</dt>
       <dd className="text-foreground">{value}</dd>
     </div>
   );

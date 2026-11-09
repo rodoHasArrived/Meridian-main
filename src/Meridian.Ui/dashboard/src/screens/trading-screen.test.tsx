@@ -414,7 +414,9 @@ describe("TradingScreen", () => {
     await renderTradingScreen(data, "/trading?symbol=MSFT");
 
     const recovery = screen.getByRole("region", { name: "Brokerage recovery" });
-    expect(within(recovery).getByRole("button", { name: /synchronize and reconcile/i })).toBeInTheDocument();
+    // No fund account is in scope here, so the full panel's one next step is choosing one.
+    expect(within(recovery).getByRole("heading", { name: "Brokerage recovery" })).toBeInTheDocument();
+    expect(within(recovery).getByText("Choose a fund account")).toBeInTheDocument();
     expect(within(recovery).queryByRole("link", { name: "Review brokerage recovery" })).not.toBeInTheDocument();
   });
 
@@ -626,7 +628,7 @@ describe("TradingScreen", () => {
     expect(screen.getByText("Overall: Blocked")).toBeInTheDocument();
     expect(screen.getByText("Paper: Not paper ready")).toBeInTheDocument();
     expect(screen.getByText("Brokerage: No account sync")).toBeInTheDocument();
-    expect(screen.getByText("As of: Apr 26, 16:00 UTC")).toBeInTheDocument();
+    expect(screen.getByText("As of: Apr 26, 2026, 16:00 UTC")).toBeInTheDocument();
     expect(screen.getByText("Replay verified")).toBeInTheDocument();
     expect(screen.getAllByText("Blocked").length).toBeGreaterThan(0);
     expect(screen.getByText("Replay mismatch in server gate.")).toBeInTheDocument();
@@ -715,7 +717,7 @@ describe("TradingScreen", () => {
     await waitFor(() => expect(api.getTradingReadiness).toHaveBeenCalledTimes(1));
     expect(screen.getByText("Overall: Review required")).toBeInTheDocument();
     expect(screen.getByText("Brokerage: Failed stale")).toBeInTheDocument();
-    expect(screen.getByText("As of: Apr 26, 16:05 UTC")).toBeInTheDocument();
+    expect(screen.getByText("As of: Apr 26, 2026, 16:05 UTC")).toBeInTheDocument();
     expect(screen.getByText("Brokerage sync failed")).toBeInTheDocument();
     expect(screen.getByText("Sync broker credentials before paper operation.")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /open provider setup for brokerage sync failed/i }))
@@ -1058,7 +1060,7 @@ describe("TradingScreen", () => {
 
     expect(screen.getByRole("button", { name: /cancel order po-1/i })).toHaveClass("text-danger");
     expect(screen.getByRole("button", { name: /cancel all .* open orders/i })).toHaveClass("text-danger");
-    expect(screen.getByLabelText("Trading data confidence")).toHaveTextContent("positions");
+    expect(screen.getByLabelText("Trading data confidence")).toHaveTextContent(/\d+ positions?/);
     expect(screen.getByLabelText("Trading data confidence")).toHaveTextContent("Latest brokerage heartbeat");
   });
 

@@ -33,6 +33,8 @@ import {
   type QuantTemplateRow
 } from "@/screens/quant-lab-screen.view-model";
 import type { QuantDiagnostic } from "@/types";
+import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
+import { cn } from "@/lib/utils";
 
 const quantTradeColumns: DenseDataTableColumn<QuantTradeRowViewModel>[] = [
   { id: "timestamp", label: "Timestamp", render: (row) => <span className="font-mono">{row.timestamp}</span> },
@@ -364,7 +366,7 @@ function TradeLedgerPanel({
               role="region"
               aria-label={ledger.detailEmptyTitle}
             >
-              <div className="eyebrow-label">{ledger.detailEmptyTitle}</div>
+              <div className={eyebrowClassName(ledger.detailEmptyTitle)}>{ledger.detailEmptyTitle}</div>
               <p className="mt-2">{ledger.detailEmptyText}</p>
             </aside>
           )}
@@ -413,7 +415,7 @@ function DiagnosticsBlock({
       <ul className="space-y-1 text-xs">
         {entries.map((entry, idx) => (
           <li key={idx} className={`font-mono ${toneClass}`}>
-            <span className="mr-1.5 uppercase tracking-wide opacity-70">{entry.severity}</span>
+            <span className={cn("mr-1.5 opacity-70", usesTrackedCaps(entry.severity) && "uppercase tracking-wide")}>{entry.severity}</span>
             <span className="opacity-70">[{entry.line}:{entry.column}]</span>
             <span className="ml-1.5 text-foreground">{entry.message}</span>
           </li>

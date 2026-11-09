@@ -5860,6 +5860,30 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FixedIncome.BondExerciseNoticeStatus"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FixedIncome.BondExerciseNoticeWatch"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FixedIncome.BondExerciseNoticeWatchResult"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FixedIncome.BondExerciseNoticeWindow"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.FixedIncome.BondExerciseYield"
     },
     {
@@ -11416,6 +11440,48 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnit"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnitNormalizer"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution.OutOfRange"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution.Resolved"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution.Undeclared"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnitSource"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.RecordCorporateActionConflictRequestDto"
     },
     {
@@ -11603,6 +11669,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleTenorUnit"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAccountingDisposition"
     },
     {
       "kind": "contract-set-member",
@@ -12244,6 +12316,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterConflictFieldCategories"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterConflictFieldCategory"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterConflictKinds"
     },
     {
@@ -12401,6 +12485,18 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityProjectionRecordExtensions"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityRateFieldDeclaration"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityRateFieldUnits"
     },
     {
       "kind": "contract-set-member",
@@ -15262,6 +15358,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OperatingScopeValuesDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.OperationsAccountingRecordEvidenceCategoryDto"
     },
     {
@@ -15683,6 +15785,24 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.OperatorInboxDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OperatorScopePreferenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OperatorScopePreferenceSaveRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OperatorSurfaceVisitDto"
     },
     {
       "kind": "contract-set-member",
@@ -18682,6 +18802,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationCrossScreenCount"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationCrossScreenCountsDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.WorkstationDataBackfillRecord"
     },
     {
@@ -18887,6 +19019,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.WorkstationPortfolioSummaryTelemetry"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationProviderHealthCount"
     },
     {
       "kind": "contract-set-member",
@@ -25552,6 +25690,48 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnit"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnitNormalizer"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution.OutOfRange"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution.Resolved"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution.Undeclared"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnitSource"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.RecordCorporateActionConflictRequestDto"
     },
     {
@@ -25739,6 +25919,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleTenorUnit"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAccountingDisposition"
     },
     {
       "kind": "contract-set-member",
@@ -26380,6 +26566,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterConflictFieldCategories"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterConflictFieldCategory"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterConflictKinds"
     },
     {
@@ -26537,6 +26735,18 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityProjectionRecordExtensions"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityRateFieldDeclaration"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityRateFieldUnits"
     },
     {
       "kind": "contract-set-member",
@@ -32405,6 +32615,24 @@
       "label": "",
       "source": "contract:Meridian.Contracts.FixedIncome.BondCalculationContext",
       "target": "contract:Meridian.Contracts.FixedIncome.BondPinnedCurveInput"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FixedIncome.BondExerciseNoticeWatchResult",
+      "target": "contract:Meridian.Contracts.FixedIncome.BondAnalyticsBlocker"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FixedIncome.BondExerciseNoticeWatchResult",
+      "target": "contract:Meridian.Contracts.FixedIncome.BondExerciseNoticeWindow"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FixedIncome.BondExerciseNoticeWindow",
+      "target": "contract:Meridian.Contracts.FixedIncome.BondExerciseNoticeStatus"
     },
     {
       "kind": "contract-reference",
@@ -38925,6 +39153,48 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution.OutOfRange",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnit"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution.OutOfRange",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution.OutOfRange",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnitSource"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution.Resolved",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnit"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution.Resolved",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution.Resolved",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnitSource"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution.Undeclared",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.RecordCorporateActionConflictRequestDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseScopeDto"
     },
@@ -39833,6 +40103,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityRateFieldDeclaration",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnit"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityRateFieldUnits",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityRateFieldDeclaration"
     },
     {
       "kind": "contract-reference",
@@ -43923,6 +44205,18 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OperatorScopePreferenceDto",
+      "target": "contract:Meridian.Contracts.Workstation.OperatingScopeValuesDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OperatorScopePreferenceSaveRequest",
+      "target": "contract:Meridian.Contracts.Workstation.OperatingScopeValuesDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.OperatorWorkItemDto",
       "target": "contract:Meridian.Contracts.Workstation.OperatorWorkItemKindDto"
     },
@@ -47855,6 +48149,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.WorkstationBrokerageSyncStatusDto",
       "target": "contract:Meridian.Contracts.Workstation.WorkstationBrokerageSyncHealth"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.WorkstationCrossScreenCountsDto",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationCrossScreenCount"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.WorkstationCrossScreenCountsDto",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationProviderHealthCount"
     },
     {
       "kind": "contract-reference",
@@ -53228,6 +53534,54 @@
       "target": "database:security_master.securities_pkey"
     },
     {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.custom_asset_profile_field_projection_profile_id_check on security_master.custom_asset_profile_field_projection",
+      "target": "database:security_master.custom_asset_profile_field_projection.custom_profile_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.custom_asset_profile_field_projection_raw_kind_check on security_master.custom_asset_profile_field_projection",
+      "target": "database:security_master.custom_asset_profile_field_projection.raw_value"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.custom_asset_profile_field_projection_raw_kind_check on security_master.custom_asset_profile_field_projection",
+      "target": "database:security_master.custom_asset_profile_field_projection.value_kind"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.custom_asset_profile_field_projection_typed_value_check on security_master.custom_asset_profile_field_projection",
+      "target": "database:security_master.custom_asset_profile_field_projection.boolean_value"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.custom_asset_profile_field_projection_typed_value_check on security_master.custom_asset_profile_field_projection",
+      "target": "database:security_master.custom_asset_profile_field_projection.numeric_value"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.custom_asset_profile_field_projection_typed_value_check on security_master.custom_asset_profile_field_projection",
+      "target": "database:security_master.custom_asset_profile_field_projection.text_value"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.custom_asset_profile_field_projection_typed_value_check on security_master.custom_asset_profile_field_projection",
+      "target": "database:security_master.custom_asset_profile_field_projection.value_kind"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.custom_asset_profile_field_projection_value_kind_check on security_master.custom_asset_profile_field_projection",
+      "target": "database:security_master.custom_asset_profile_field_projection.value_kind"
+    },
+    {
       "constraint": "direct_loan_covenant_projection_security_id_fkey",
       "kind": "foreign-key",
       "label": "security_id",
@@ -55939,6 +56293,12 @@
       "kind": "contains",
       "label": "",
       "source": "schema:security_master",
+      "target": "database:security_master.custom_asset_profile_field_projection"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
       "target": "database:security_master.data_vendor_entitlements"
     },
     {
@@ -56561,7 +56921,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "70c46a2dc162ccb1e0d255751771d95d074d96a0ba8073d6bfdbf85f630579b5",
+  "fingerprint": "74301a9915ddde263846ae5aa664d0a264d3470144e9365d72d3b5627d0e5c33",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -62471,6 +62831,30 @@
       "label": "Meridian.Contracts.FixedIncome.BondExerciseEconomics"
     },
     {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.FixedIncome.BondExerciseNoticeStatus",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FixedIncome.BondExerciseNoticeStatus"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.FixedIncome.BondExerciseNoticeWatch",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FixedIncome.BondExerciseNoticeWatch"
+    },
+    {
+      "classification": "result",
+      "id": "contract:Meridian.Contracts.FixedIncome.BondExerciseNoticeWatchResult",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FixedIncome.BondExerciseNoticeWatchResult"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.FixedIncome.BondExerciseNoticeWindow",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FixedIncome.BondExerciseNoticeWindow"
+    },
+    {
       "classification": "record",
       "id": "contract:Meridian.Contracts.FixedIncome.BondExerciseYield",
       "kind": "contract-type",
@@ -68027,6 +68411,48 @@
       "label": "Meridian.Contracts.SecurityMaster.PublishSecurityCurveVersionRequest"
     },
     {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.RateUnit",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.RateUnit"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.RateUnitNormalizer",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.RateUnitNormalizer"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.RateUnitResolution"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution.OutOfRange",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.RateUnitResolution.OutOfRange"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution.Resolved",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.RateUnitResolution.Resolved"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.RateUnitResolution.Undeclared",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.RateUnitResolution.Undeclared"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.RateUnitSource",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.RateUnitSource"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.SecurityMaster.RecordCorporateActionConflictRequestDto",
       "kind": "contract-type",
@@ -68217,6 +68643,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleTenorUnit",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleTenorUnit"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityAccountingDisposition",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityAccountingDisposition"
     },
     {
       "classification": "class",
@@ -68856,6 +69288,18 @@
     },
     {
       "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterConflictFieldCategories",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityMasterConflictFieldCategories"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterConflictFieldCategory",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityMasterConflictFieldCategory"
+    },
+    {
+      "classification": "class",
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterConflictKinds",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityMasterConflictKinds"
@@ -69015,6 +69459,18 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityProjectionRecordExtensions",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityProjectionRecordExtensions"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityRateFieldDeclaration",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityRateFieldDeclaration"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityRateFieldUnits",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityRateFieldUnits"
     },
     {
       "classification": "dto",
@@ -71874,6 +72330,12 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OperatingScopeValuesDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OperatingScopeValuesDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.OperationsAccountingRecordEvidenceCategoryDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.OperationsAccountingRecordEvidenceCategoryDto"
@@ -72297,6 +72759,24 @@
       "id": "contract:Meridian.Contracts.Workstation.OperatorInboxDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.OperatorInboxDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OperatorScopePreferenceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OperatorScopePreferenceDto"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Workstation.OperatorScopePreferenceSaveRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OperatorScopePreferenceSaveRequest"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OperatorSurfaceVisitDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OperatorSurfaceVisitDto"
     },
     {
       "classification": "dto",
@@ -75294,6 +75774,18 @@
     },
     {
       "classification": "record",
+      "id": "contract:Meridian.Contracts.Workstation.WorkstationCrossScreenCount",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.WorkstationCrossScreenCount"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.WorkstationCrossScreenCountsDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.WorkstationCrossScreenCountsDto"
+    },
+    {
+      "classification": "record",
       "id": "contract:Meridian.Contracts.Workstation.WorkstationDataBackfillRecord",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.WorkstationDataBackfillRecord"
@@ -75501,6 +75993,12 @@
       "id": "contract:Meridian.Contracts.Workstation.WorkstationPortfolioSummaryTelemetry",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.WorkstationPortfolioSummaryTelemetry"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Workstation.WorkstationProviderHealthCount",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.WorkstationProviderHealthCount"
     },
     {
       "classification": "dto",
@@ -80925,6 +81423,62 @@
       "schema": "security_master"
     },
     {
+      "id": "database:security_master.custom_asset_profile_field_projection",
+      "kind": "database-table",
+      "label": "security_master.custom_asset_profile_field_projection",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.custom_asset_profile_field_projection.boolean_value",
+      "kind": "database-object",
+      "label": "security_master.custom_asset_profile_field_projection.boolean_value"
+    },
+    {
+      "id": "database:security_master.custom_asset_profile_field_projection.custom_profile_id",
+      "kind": "database-object",
+      "label": "security_master.custom_asset_profile_field_projection.custom_profile_id"
+    },
+    {
+      "id": "database:security_master.custom_asset_profile_field_projection.numeric_value",
+      "kind": "database-object",
+      "label": "security_master.custom_asset_profile_field_projection.numeric_value"
+    },
+    {
+      "id": "database:security_master.custom_asset_profile_field_projection.raw_value",
+      "kind": "database-object",
+      "label": "security_master.custom_asset_profile_field_projection.raw_value"
+    },
+    {
+      "id": "database:security_master.custom_asset_profile_field_projection.text_value",
+      "kind": "database-object",
+      "label": "security_master.custom_asset_profile_field_projection.text_value"
+    },
+    {
+      "id": "database:security_master.custom_asset_profile_field_projection.value_kind",
+      "kind": "database-object",
+      "label": "security_master.custom_asset_profile_field_projection.value_kind"
+    },
+    {
+      "id": "database:security_master.custom_asset_profile_field_projection_profile_id_check on security_master.custom_asset_profile_field_projection",
+      "kind": "database-object",
+      "label": "security_master.custom_asset_profile_field_projection_profile_id_check on security_master.custom_asset_profile_field_projection"
+    },
+    {
+      "id": "database:security_master.custom_asset_profile_field_projection_raw_kind_check on security_master.custom_asset_profile_field_projection",
+      "kind": "database-object",
+      "label": "security_master.custom_asset_profile_field_projection_raw_kind_check on security_master.custom_asset_profile_field_projection"
+    },
+    {
+      "id": "database:security_master.custom_asset_profile_field_projection_typed_value_check on security_master.custom_asset_profile_field_projection",
+      "kind": "database-object",
+      "label": "security_master.custom_asset_profile_field_projection_typed_value_check on security_master.custom_asset_profile_field_projection"
+    },
+    {
+      "id": "database:security_master.custom_asset_profile_field_projection_value_kind_check on security_master.custom_asset_profile_field_projection",
+      "kind": "database-object",
+      "label": "security_master.custom_asset_profile_field_projection_value_kind_check on security_master.custom_asset_profile_field_projection"
+    },
+    {
       "id": "database:security_master.data_vendor_entitlements",
       "kind": "database-table",
       "label": "security_master.data_vendor_entitlements",
@@ -82812,11 +83366,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3615,
-    "contract_set_memberships": 4501,
-    "edges": 9398,
+    "contract_references": 3631,
+    "contract_set_memberships": 4536,
+    "edges": 9458,
     "foreign_keys": 156,
     "logical_references": 6,
-    "nodes": 4553
+    "nodes": 4587
   }
 }

@@ -40,6 +40,12 @@
   text-transform: uppercase;
 }
 
+/* A kicker longer than two words is a phrase: sentence case. */
+.accounting-reference-kicker.accounting-reference-kicker--sentence {
+  letter-spacing: 0.01em;
+  text-transform: none;
+}
+
 .accounting-reference-subtitle {
   margin: 0.25rem 0 0;
   color: var(--ws-text-muted, #5E666F);

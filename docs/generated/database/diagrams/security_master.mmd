@@ -446,6 +446,18 @@ erDiagram
         text primary_identifier_value
         bigint version
     }
+    security_master_custom_asset_profile_field_projection {
+        uuid security_id PK
+        text custom_profile_id
+        integer profile_version
+        text field_key PK
+        text value_kind
+        text text_value
+        numeric numeric_value
+        boolean boolean_value
+        jsonb raw_value
+        bigint version
+    }
     security_master_data_vendor_entitlements {
         uuid entitlement_id PK
         text vendor_name
@@ -713,6 +725,8 @@ erDiagram
         date last_payment_date
         bigint servicing_revision
         timestamp_with_time_zone updated_at
+        numeric_24_2_ prepaid_interest
+        numeric_24_2_ unapplied_cash
         numeric_24_8_ pik_interest_accrued_unpaid
         date last_pik_capitalization_date
     }

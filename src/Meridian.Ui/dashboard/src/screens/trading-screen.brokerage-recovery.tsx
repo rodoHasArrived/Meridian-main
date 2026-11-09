@@ -4,6 +4,8 @@ import { AlertTriangle, ArrowRight, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBanner } from "@/components/ui/status-banner";
+import { EmptyState } from "@/components/data/empty-state";
+import { useOpenScopePicker } from "@/lib/operating-scope/scope-picker-context";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { formatCurrency } from "@/lib/format";
 import type { TradingBrokerageRecoveryRun, TradingExecutionReconciliationBreak, TradingOperatorReadiness } from "@/types";
@@ -44,6 +46,7 @@ export function BrokerageRecoveryPanel({ readiness, fundAccountId, busy, error, 
   /** Where the row's Review link opens the full panel. Required for the row variant. */
   reviewHref?: string;
 }) {
+  const openScopePicker = useOpenScopePicker();
   const suppliedRecovery = readiness?.brokerageRecovery;
   const scopeMatches = Boolean(fundAccountId && suppliedRecovery?.fundAccountId?.toLowerCase() === fundAccountId.toLowerCase());
   const recovery = scopeMatches ? suppliedRecovery : null;
@@ -105,10 +108,13 @@ export function BrokerageRecoveryPanel({ readiness, fundAccountId, busy, error, 
             <CardTitle>Brokerage recovery</CardTitle>
             <CardDescription className="mt-1">Account portfolio and retained execution evidence from shared reconciliation.</CardDescription>
           </div>
-          <Button size="sm" variant="outline" disabled={busy || !fundAccountId} onClick={() => void onRecover()}>
-            <RotateCcw aria-hidden="true" className="mr-2 h-3.5 w-3.5" />
-            {busy ? "Reconciling…" : "Synchronize and reconcile"}
-          </Button>
+          {/* With no account there is nothing to synchronize: the one next step is choosing it. */}
+          {fundAccountId ? (
+            <Button size="sm" variant="outline" disabled={busy} onClick={() => void onRecover()}>
+              <RotateCcw aria-hidden="true" className="mr-2 h-3.5 w-3.5" />
+              {busy ? "Reconciling…" : "Synchronize and reconcile"}
+            </Button>
+          ) : null}
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -116,6 +122,17 @@ export function BrokerageRecoveryPanel({ readiness, fundAccountId, busy, error, 
           title={blocked ? "Live trading blocked — recovery required" : "Brokerage evidence reconciled"}
           detail={blockedDetail} />
         {reasons.length > 0 ? <ul aria-label="Recovery blockers" className="list-disc space-y-1 pl-5 text-xs text-danger">{reasons.map((reason) => <li key={reason}>{reason}</li>)}</ul> : null}
+        {!fundAccountId ? (
+          // One explanation and one next step, instead of a grid of "Unavailable" facts.
+          <EmptyState
+            icon="inbox"
+            title="Choose a fund account"
+            detail="Recovery evidence is per account: its broker portfolio, retained orders and affected strategy runs load once a fund account is in scope."
+            action={openScopePicker ? "Choose account" : undefined}
+            onAction={openScopePicker ?? undefined}
+            compact
+          />
+        ) : !recovery && !busy && !error ? null : (
         <TechnicalDetails label="Brokerage recovery evidence">
         <dl className="grid gap-x-5 gap-y-3 text-xs sm:grid-cols-2 xl:grid-cols-4">
           <RecoveryFact label="Fund account" value={fundAccountId ?? "Not selected"} />
@@ -145,6 +162,7 @@ export function BrokerageRecoveryPanel({ readiness, fundAccountId, busy, error, 
         </div>
         <p className="text-xs text-muted-foreground">Synchronization checks broker truth and retained orders. It does not resubmit orders or resume strategy runs. Live operation also requires all trading readiness gates.</p>
         </TechnicalDetails>
+        )}
       </CardContent>
     </Card>
   );

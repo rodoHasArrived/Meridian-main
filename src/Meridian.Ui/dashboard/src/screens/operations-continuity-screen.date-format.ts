@@ -1,3 +1,5 @@
+import { formatUtcDate, formatUtcTimestamp } from "@/lib/format";
+
 /** Operations Continuity's retained UTC timestamp and due-date display formats. */
 export function formatDate(value: string | null | undefined): string {
   if (!value) {
@@ -9,11 +11,7 @@ export function formatDate(value: string | null | undefined): string {
     return value;
   }
 
-  const month = date.toLocaleString("en-US", { month: "short", timeZone: "UTC" });
-  const day = date.getUTCDate().toString().padStart(2, "0");
-  const hour = date.getUTCHours().toString().padStart(2, "0");
-  const minute = date.getUTCMinutes().toString().padStart(2, "0");
-  return `${month} ${day}, ${hour}:${minute} UTC`;
+  return formatUtcTimestamp(date);
 }
 
 export function formatDateOnly(value: string | null | undefined): string {
@@ -26,8 +24,5 @@ export function formatDateOnly(value: string | null | undefined): string {
     return value;
   }
 
-  const month = date.toLocaleString("en-US", { month: "short", timeZone: "UTC" });
-  const day = date.getUTCDate().toString().padStart(2, "0");
-  const year = date.getUTCFullYear();
-  return `${month} ${day}, ${year}`;
+  return formatUtcDate(date);
 }

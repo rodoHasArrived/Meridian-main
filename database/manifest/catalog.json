@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "126c75cabc15a9e53c0e9499773cce9c8ede170f0a3a8a594d020d66cc014745",
+  "database_fingerprint": "011293342bda63d0261768b5f11b9de0ba5b4e53ba9409fa80efe9b7025d26b0",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -7787,6 +7787,102 @@
       "target": "security_master.securities_pkey",
       "target_kind": "index",
       "target_name": "securities_pkey",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "7c409aad94ca192bed1730b54178e7bfbd4b9e98f2971f02c1f657234494365b",
+      "kind": "normal",
+      "source": "security_master.custom_asset_profile_field_projection_profile_id_check on security_master.custom_asset_profile_field_projection",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.custom_asset_profile_field_projection.custom_profile_id",
+      "target_kind": "table column",
+      "target_name": "custom_asset_profile_field_projection",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "8928e84f1ad146c93cca1d06667b7c8e9fbab6b38e94c6a0b9ce4d9949dfaaeb",
+      "kind": "normal",
+      "source": "security_master.custom_asset_profile_field_projection_raw_kind_check on security_master.custom_asset_profile_field_projection",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.custom_asset_profile_field_projection.raw_value",
+      "target_kind": "table column",
+      "target_name": "custom_asset_profile_field_projection",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "5e7fb92111115fb537f381861307d006cc8328ddf8f94aff3c2174054cb66203",
+      "kind": "normal",
+      "source": "security_master.custom_asset_profile_field_projection_raw_kind_check on security_master.custom_asset_profile_field_projection",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.custom_asset_profile_field_projection.value_kind",
+      "target_kind": "table column",
+      "target_name": "custom_asset_profile_field_projection",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "10fd4110f3b32199844796c4752292f52a3d238bd45a127335c270147a5193c0",
+      "kind": "normal",
+      "source": "security_master.custom_asset_profile_field_projection_typed_value_check on security_master.custom_asset_profile_field_projection",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.custom_asset_profile_field_projection.boolean_value",
+      "target_kind": "table column",
+      "target_name": "custom_asset_profile_field_projection",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "7932fbeadb9bc73f4d0fdbd7c2592ba726f530ecd59101466d17222aa80c3793",
+      "kind": "normal",
+      "source": "security_master.custom_asset_profile_field_projection_typed_value_check on security_master.custom_asset_profile_field_projection",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.custom_asset_profile_field_projection.numeric_value",
+      "target_kind": "table column",
+      "target_name": "custom_asset_profile_field_projection",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "21b346a634b0c8c1df892c538c52a24cd0807d819917c77f0a4085d3bf0c6da7",
+      "kind": "normal",
+      "source": "security_master.custom_asset_profile_field_projection_typed_value_check on security_master.custom_asset_profile_field_projection",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.custom_asset_profile_field_projection.text_value",
+      "target_kind": "table column",
+      "target_name": "custom_asset_profile_field_projection",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "5e85c28adfdfb2419835567e8d2666b78c351b9a2eebdc8905a5bcaa2570da91",
+      "kind": "normal",
+      "source": "security_master.custom_asset_profile_field_projection_typed_value_check on security_master.custom_asset_profile_field_projection",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.custom_asset_profile_field_projection.value_kind",
+      "target_kind": "table column",
+      "target_name": "custom_asset_profile_field_projection",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "45fca4705610cdfe46b0b8aeaa80df96fd4ad6fc86417804c9780d35cb3d661c",
+      "kind": "normal",
+      "source": "security_master.custom_asset_profile_field_projection_value_kind_check on security_master.custom_asset_profile_field_projection",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.custom_asset_profile_field_projection.value_kind",
+      "target_kind": "table column",
+      "target_name": "custom_asset_profile_field_projection",
       "target_schema": "security_master"
     },
     {
@@ -16661,6 +16757,46 @@
       "object": "column:security_master.crypto_projection.version"
     },
     {
+      "fingerprint": "183530ea11feb8a49d69c6213fa70748b1a5c0bf6e367ff582df9a4be5babe76",
+      "object": "column:security_master.custom_asset_profile_field_projection.boolean_value"
+    },
+    {
+      "fingerprint": "1f0047cc03d43a160ad16b2b5bc03a0b51f3ff59fca380a84449fb99f00ac323",
+      "object": "column:security_master.custom_asset_profile_field_projection.custom_profile_id"
+    },
+    {
+      "fingerprint": "5774e800f7d8e26f547a8d4b92c9b262365b033a6ce1959cfc249c1ab12dcc39",
+      "object": "column:security_master.custom_asset_profile_field_projection.field_key"
+    },
+    {
+      "fingerprint": "80f1af0bc68d6b8da56c0a850610b1e6f20b08ec85668f4771f196beed33ee1b",
+      "object": "column:security_master.custom_asset_profile_field_projection.numeric_value"
+    },
+    {
+      "fingerprint": "dedae059d95a69d8830d18f805d5412b4424e674f2b022c0f45eaf861d49b14a",
+      "object": "column:security_master.custom_asset_profile_field_projection.profile_version"
+    },
+    {
+      "fingerprint": "7a4d52ea90894fea13858f06c9d9faa6ea3682cb24c3eb2625300ab8926b8526",
+      "object": "column:security_master.custom_asset_profile_field_projection.raw_value"
+    },
+    {
+      "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+      "object": "column:security_master.custom_asset_profile_field_projection.security_id"
+    },
+    {
+      "fingerprint": "1064ff2b6c9ca9e54bc341681273a8b9175874fe3aba537d2a5be800c38b01b2",
+      "object": "column:security_master.custom_asset_profile_field_projection.text_value"
+    },
+    {
+      "fingerprint": "a401c28e0696a8203dd6075270cbf11903eab3d7cc1754866f9f36e99ea9c655",
+      "object": "column:security_master.custom_asset_profile_field_projection.value_kind"
+    },
+    {
+      "fingerprint": "d488f5777035217fcb84062d4a0dc1ee80ffdacbcf1b512865d0bdd2870e6d07",
+      "object": "column:security_master.custom_asset_profile_field_projection.version"
+    },
+    {
       "fingerprint": "924b144abf22f9308db3f4a2720f2b23dfa519af26ca2820b8910449f2b258bd",
       "object": "column:security_master.data_vendor_entitlements.account_id"
     },
@@ -17513,7 +17649,7 @@
       "object": "column:security_master.loan_servicing_projection.last_payment_date"
     },
     {
-      "fingerprint": "04a6fdb14430e0f75957975dcba6d16320e62023e2e66545bcf83e02a1836fd2",
+      "fingerprint": "6e5f5b168076cfc4f5a3796fbc5f49d693c5e85cab17d519ce2ac316003c8417",
       "object": "column:security_master.loan_servicing_projection.last_pik_capitalization_date"
     },
     {
@@ -17525,8 +17661,12 @@
       "object": "column:security_master.loan_servicing_projection.penalty_accrued_unpaid"
     },
     {
-      "fingerprint": "6e292068d30350cf23a422e10f87d43c51e876e97a046ee09884c4ce0165777c",
+      "fingerprint": "92ac5beced1307c737fc026808d3a06154f8c16fd4d625b780d3ac83003ab832",
       "object": "column:security_master.loan_servicing_projection.pik_interest_accrued_unpaid"
+    },
+    {
+      "fingerprint": "49216283dddd766108998ba174e2fa0ceb5eb43981eb2dc34fbbc08a845b78d9",
+      "object": "column:security_master.loan_servicing_projection.prepaid_interest"
     },
     {
       "fingerprint": "9d3128294325f16138dc6ac2f3338661bfe3affdf2d0216a3791d987474c2c18",
@@ -17543,6 +17683,10 @@
     {
       "fingerprint": "76fccd5af368ee9855e79ed10684c32b8804a3627b94097a3b37152e598a7e1c",
       "object": "column:security_master.loan_servicing_projection.total_drawn"
+    },
+    {
+      "fingerprint": "78f9d240b3d66281c0659dbd08a69aa567c219b005fefb8a53f2a5479b6eb581",
+      "object": "column:security_master.loan_servicing_projection.unapplied_cash"
     },
     {
       "fingerprint": "80854d226356951b163ab7f1c4960b7cf6591f97f3ddaf2ecda7c65a48e4aa62",
@@ -21073,6 +21217,10 @@
       "object": "comment:table:security_master.credit_default_swap_projection"
     },
     {
+      "fingerprint": "966053ce8746e5421bcf325fa90bdfb4d1a02f32bdb6f7df97bab08057527c47",
+      "object": "comment:table:security_master.custom_asset_profile_field_projection"
+    },
+    {
       "fingerprint": "d399b9d84a3b9df22253a6932e06bf3f5cb85a9d5bc820d539fe64449dd0c441",
       "object": "comment:table:security_master.direct_loan_covenant_projection"
     },
@@ -23307,6 +23455,26 @@
     {
       "fingerprint": "d464ef37a90ef424374a0a54324f5a76cdbbbc36cb43d53cced1b4ae965ec724",
       "object": "constraint:security_master.crypto_projection.crypto_projection_pkey"
+    },
+    {
+      "fingerprint": "28652e8a2636f72a71bbaade1efacbebf9a2b81494a90e919a45ec758792419b",
+      "object": "constraint:security_master.custom_asset_profile_field_projection.custom_asset_profile_field_projection_pkey"
+    },
+    {
+      "fingerprint": "7eb446cbe33fb1d24d28a512d79495beac5da0298616a77b36c0af2add0268b4",
+      "object": "constraint:security_master.custom_asset_profile_field_projection.custom_asset_profile_field_projection_profile_id_check"
+    },
+    {
+      "fingerprint": "3ab0ad4f371fc77a4eb3d7bf8eb993e72fbc9e6be27dc908fd8975e40a2033fc",
+      "object": "constraint:security_master.custom_asset_profile_field_projection.custom_asset_profile_field_projection_raw_kind_check"
+    },
+    {
+      "fingerprint": "0700b26ab0146a1f9351c386e9fcb5654ca6e551612c465c569bc1a01dbabee8",
+      "object": "constraint:security_master.custom_asset_profile_field_projection.custom_asset_profile_field_projection_typed_value_check"
+    },
+    {
+      "fingerprint": "32f161bc2366212a1defe805a28e5c8bee7a9337b4b4d7cd82bf33c587f64ffa",
+      "object": "constraint:security_master.custom_asset_profile_field_projection.custom_asset_profile_field_projection_value_kind_check"
     },
     {
       "fingerprint": "b04d9aaa8e6c0724d1bc5c1aaf6e02c8658779bb81521191d78ab84a7d3c4fb7",
@@ -26849,6 +27017,38 @@
       "object": "dependency:security_master.corporate_actions_security_id_fkey on security_master.corporate_actions->security_master.securities_pkey:normal"
     },
     {
+      "fingerprint": "7c409aad94ca192bed1730b54178e7bfbd4b9e98f2971f02c1f657234494365b",
+      "object": "dependency:security_master.custom_asset_profile_field_projection_profile_id_check on security_master.custom_asset_profile_field_projection->security_master.custom_asset_profile_field_projection.custom_profile_id:normal"
+    },
+    {
+      "fingerprint": "8928e84f1ad146c93cca1d06667b7c8e9fbab6b38e94c6a0b9ce4d9949dfaaeb",
+      "object": "dependency:security_master.custom_asset_profile_field_projection_raw_kind_check on security_master.custom_asset_profile_field_projection->security_master.custom_asset_profile_field_projection.raw_value:normal"
+    },
+    {
+      "fingerprint": "5e7fb92111115fb537f381861307d006cc8328ddf8f94aff3c2174054cb66203",
+      "object": "dependency:security_master.custom_asset_profile_field_projection_raw_kind_check on security_master.custom_asset_profile_field_projection->security_master.custom_asset_profile_field_projection.value_kind:normal"
+    },
+    {
+      "fingerprint": "10fd4110f3b32199844796c4752292f52a3d238bd45a127335c270147a5193c0",
+      "object": "dependency:security_master.custom_asset_profile_field_projection_typed_value_check on security_master.custom_asset_profile_field_projection->security_master.custom_asset_profile_field_projection.boolean_value:normal"
+    },
+    {
+      "fingerprint": "7932fbeadb9bc73f4d0fdbd7c2592ba726f530ecd59101466d17222aa80c3793",
+      "object": "dependency:security_master.custom_asset_profile_field_projection_typed_value_check on security_master.custom_asset_profile_field_projection->security_master.custom_asset_profile_field_projection.numeric_value:normal"
+    },
+    {
+      "fingerprint": "21b346a634b0c8c1df892c538c52a24cd0807d819917c77f0a4085d3bf0c6da7",
+      "object": "dependency:security_master.custom_asset_profile_field_projection_typed_value_check on security_master.custom_asset_profile_field_projection->security_master.custom_asset_profile_field_projection.text_value:normal"
+    },
+    {
+      "fingerprint": "5e85c28adfdfb2419835567e8d2666b78c351b9a2eebdc8905a5bcaa2570da91",
+      "object": "dependency:security_master.custom_asset_profile_field_projection_typed_value_check on security_master.custom_asset_profile_field_projection->security_master.custom_asset_profile_field_projection.value_kind:normal"
+    },
+    {
+      "fingerprint": "45fca4705610cdfe46b0b8aeaa80df96fd4ad6fc86417804c9780d35cb3d661c",
+      "object": "dependency:security_master.custom_asset_profile_field_projection_value_kind_check on security_master.custom_asset_profile_field_projection->security_master.custom_asset_profile_field_projection.value_kind:normal"
+    },
+    {
       "fingerprint": "2f43ecb512a93cba6e8f61b1f91ab6b3224eaefe1abb2adc5eebf11d5b585da9",
       "object": "dependency:security_master.direct_loan_covenant_projection_security_id_fkey on security_master.direct_loan_covenant_projection->security_master.direct_loan_projection.security_id:normal"
     },
@@ -29217,6 +29417,18 @@
       "object": "index:security_master.crypto_projection_pkey"
     },
     {
+      "fingerprint": "566890a5c9453adad53ca1a84c9caed69d8341bde77fb8a8bad59f4d2bfff200",
+      "object": "index:security_master.custom_asset_profile_field_projection_field_text_idx"
+    },
+    {
+      "fingerprint": "7557ac825e1cfe6047f33addab5b6c6ec7d164e389fe62e79446f6e2760b06a0",
+      "object": "index:security_master.custom_asset_profile_field_projection_pkey"
+    },
+    {
+      "fingerprint": "f2665a6b845066f3281d97979d7bdf0da0f2c7cf03e4823550841e369041578d",
+      "object": "index:security_master.custom_asset_profile_field_projection_profile_idx"
+    },
+    {
       "fingerprint": "3363f68e51a7c814b0b9a4059973cc145777ed567c99c89d4dfb9861b02e1b10",
       "object": "index:security_master.data_vendor_entitlements_pkey"
     },
@@ -30825,6 +31037,10 @@
       "object": "rls:security_master.crypto_projection"
     },
     {
+      "fingerprint": "fa08319307b61c7c4cd9c32421592f8553b93923ae9b7c51e0876abe85174da5",
+      "object": "rls:security_master.custom_asset_profile_field_projection"
+    },
+    {
       "fingerprint": "b5d079dd25cf8e6b9799dfdb8e6deea422389f5d1befed44d77c4cf650919849",
       "object": "rls:security_master.data_vendor_entitlements"
     },
@@ -31245,7 +31461,7 @@
       "object": "schema:reporting"
     },
     {
-      "fingerprint": "18079a2b273847548fe04f133d8cadf0e35aad087bcef95bd8723c52b41e1157",
+      "fingerprint": "ce11387c92bc0d630a305de2db610ee13e0f9917c46322002626b604c98f4234",
       "object": "schema:security_master"
     },
     {
@@ -31817,6 +32033,10 @@
       "object": "table:security_master.crypto_projection"
     },
     {
+      "fingerprint": "a56b6478e53466ec985e70de761b70a6c4e7a1ac627de9f8bb25633a0011a978",
+      "object": "table:security_master.custom_asset_profile_field_projection"
+    },
+    {
       "fingerprint": "11214b6af052d86ef0e49ed9f608db235e3c083b80af6a49d0796cd38c6a6edd",
       "object": "table:security_master.data_vendor_entitlements"
     },
@@ -31897,7 +32117,7 @@
       "object": "table:security_master.loan_rate_reset_projection"
     },
     {
-      "fingerprint": "b79057d5128e23a70938fecaa5971430d99528f77955cf55c2400b1db1c10758",
+      "fingerprint": "d92f3df958a0fff27d71fc9b361629604427dedbc6f527dff2e28ada03598b2f",
       "object": "table:security_master.loan_servicing_projection"
     },
     {
@@ -127678,6 +127898,12 @@
           "object_type": "table"
         },
         {
+          "comment": "Profile-keyed projection of CustomAsset profileFields: one row per field key, keyed by (security_id, field_key). Additive read model over securities.asset_specific_terms.",
+          "fingerprint": "966053ce8746e5421bcf325fa90bdfb4d1a02f32bdb6f7df97bab08057527c47",
+          "object": "security_master.custom_asset_profile_field_projection",
+          "object_type": "table"
+        },
+        {
           "comment": "Covenants declared by a projected direct loan, in terms-document order (ordinal). Threshold is text because the canonical covenant term is written prose (\"4.5x\"), not a number.",
           "fingerprint": "d399b9d84a3b9df22253a6932e06bf3f5cb85a9d5bc820d539fe64449dd0c441",
           "object": "security_master.direct_loan_covenant_projection",
@@ -129592,6 +129818,102 @@
           "target": "security_master.securities_pkey",
           "target_kind": "index",
           "target_name": "securities_pkey",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "7c409aad94ca192bed1730b54178e7bfbd4b9e98f2971f02c1f657234494365b",
+          "kind": "normal",
+          "source": "security_master.custom_asset_profile_field_projection_profile_id_check on security_master.custom_asset_profile_field_projection",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.custom_asset_profile_field_projection.custom_profile_id",
+          "target_kind": "table column",
+          "target_name": "custom_asset_profile_field_projection",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "8928e84f1ad146c93cca1d06667b7c8e9fbab6b38e94c6a0b9ce4d9949dfaaeb",
+          "kind": "normal",
+          "source": "security_master.custom_asset_profile_field_projection_raw_kind_check on security_master.custom_asset_profile_field_projection",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.custom_asset_profile_field_projection.raw_value",
+          "target_kind": "table column",
+          "target_name": "custom_asset_profile_field_projection",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "5e7fb92111115fb537f381861307d006cc8328ddf8f94aff3c2174054cb66203",
+          "kind": "normal",
+          "source": "security_master.custom_asset_profile_field_projection_raw_kind_check on security_master.custom_asset_profile_field_projection",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.custom_asset_profile_field_projection.value_kind",
+          "target_kind": "table column",
+          "target_name": "custom_asset_profile_field_projection",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "10fd4110f3b32199844796c4752292f52a3d238bd45a127335c270147a5193c0",
+          "kind": "normal",
+          "source": "security_master.custom_asset_profile_field_projection_typed_value_check on security_master.custom_asset_profile_field_projection",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.custom_asset_profile_field_projection.boolean_value",
+          "target_kind": "table column",
+          "target_name": "custom_asset_profile_field_projection",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "7932fbeadb9bc73f4d0fdbd7c2592ba726f530ecd59101466d17222aa80c3793",
+          "kind": "normal",
+          "source": "security_master.custom_asset_profile_field_projection_typed_value_check on security_master.custom_asset_profile_field_projection",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.custom_asset_profile_field_projection.numeric_value",
+          "target_kind": "table column",
+          "target_name": "custom_asset_profile_field_projection",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "21b346a634b0c8c1df892c538c52a24cd0807d819917c77f0a4085d3bf0c6da7",
+          "kind": "normal",
+          "source": "security_master.custom_asset_profile_field_projection_typed_value_check on security_master.custom_asset_profile_field_projection",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.custom_asset_profile_field_projection.text_value",
+          "target_kind": "table column",
+          "target_name": "custom_asset_profile_field_projection",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "5e85c28adfdfb2419835567e8d2666b78c351b9a2eebdc8905a5bcaa2570da91",
+          "kind": "normal",
+          "source": "security_master.custom_asset_profile_field_projection_typed_value_check on security_master.custom_asset_profile_field_projection",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.custom_asset_profile_field_projection.value_kind",
+          "target_kind": "table column",
+          "target_name": "custom_asset_profile_field_projection",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "45fca4705610cdfe46b0b8aeaa80df96fd4ad6fc86417804c9780d35cb3d661c",
+          "kind": "normal",
+          "source": "security_master.custom_asset_profile_field_projection_value_kind_check on security_master.custom_asset_profile_field_projection",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.custom_asset_profile_field_projection.value_kind",
+          "target_kind": "table column",
+          "target_name": "custom_asset_profile_field_projection",
           "target_schema": "security_master"
         },
         {
@@ -132143,7 +132465,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "18079a2b273847548fe04f133d8cadf0e35aad087bcef95bd8723c52b41e1157",
+      "fingerprint": "ce11387c92bc0d630a305de2db610ee13e0f9917c46322002626b604c98f4234",
       "foreign_tables": [],
       "functions": [
         {
@@ -144937,6 +145259,413 @@
               "collation": null,
               "comment": null,
               "data_type": "uuid",
+              "default": null,
+              "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "security_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "1f0047cc03d43a160ad16b2b5bc03a0b51f3ff59fca380a84449fb99f00ac323",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "custom_profile_id",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "integer",
+              "default": null,
+              "fingerprint": "dedae059d95a69d8830d18f805d5412b4424e674f2b022c0f45eaf861d49b14a",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "profile_version",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "int4",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "5774e800f7d8e26f547a8d4b92c9b262365b033a6ce1959cfc249c1ab12dcc39",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "field_key",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "a401c28e0696a8203dd6075270cbf11903eab3d7cc1754866f9f36e99ea9c655",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "value_kind",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "1064ff2b6c9ca9e54bc341681273a8b9175874fe3aba537d2a5be800c38b01b2",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "text_value",
+              "nullable": true,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric",
+              "default": null,
+              "fingerprint": "80f1af0bc68d6b8da56c0a850610b1e6f20b08ec85668f4771f196beed33ee1b",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "numeric_value",
+              "nullable": true,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "boolean",
+              "default": null,
+              "fingerprint": "183530ea11feb8a49d69c6213fa70748b1a5c0bf6e367ff582df9a4be5babe76",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "boolean_value",
+              "nullable": true,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "bool",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "7a4d52ea90894fea13858f06c9d9faa6ea3682cb24c3eb2625300ab8926b8526",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "raw_value",
+              "nullable": false,
+              "ordinal_position": 9,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "d488f5777035217fcb84062d4a0dc1ee80ffdacbcf1b512865d0bdd2870e6d07",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "version",
+              "nullable": false,
+              "ordinal_position": 10,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": "Profile-keyed projection of CustomAsset profileFields: one row per field key, keyed by (security_id, field_key). Additive read model over securities.asset_specific_terms.",
+          "constraints": [
+            {
+              "columns": [
+                "custom_profile_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (btrim(custom_profile_id) <> ''::text)",
+              "delete_action": null,
+              "fingerprint": "7eb446cbe33fb1d24d28a512d79495beac5da0298616a77b36c0af2add0268b4",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "custom_asset_profile_field_projection_profile_id_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "raw_value",
+                "value_kind"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (jsonb_typeof(raw_value) = value_kind)",
+              "delete_action": null,
+              "fingerprint": "3ab0ad4f371fc77a4eb3d7bf8eb993e72fbc9e6be27dc908fd8975e40a2033fc",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "custom_asset_profile_field_projection_raw_kind_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "text_value",
+                "value_kind",
+                "numeric_value",
+                "boolean_value"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK ((text_value IS NOT NULL) = (value_kind = 'string'::text) AND (numeric_value IS NOT NULL) = (value_kind = 'number'::text) AND (boolean_value IS NOT NULL) = (value_kind = 'boolean'::text))",
+              "delete_action": null,
+              "fingerprint": "0700b26ab0146a1f9351c386e9fcb5654ca6e551612c465c569bc1a01dbabee8",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "custom_asset_profile_field_projection_typed_value_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "value_kind"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (value_kind = ANY (ARRAY['string'::text, 'number'::text, 'boolean'::text, 'null'::text, 'object'::text, 'array'::text]))",
+              "delete_action": null,
+              "fingerprint": "32f161bc2366212a1defe805a28e5c8bee7a9337b4b4d7cd82bf33c587f64ffa",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "custom_asset_profile_field_projection_value_kind_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "security_id",
+                "field_key"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (security_id, field_key)",
+              "delete_action": null,
+              "fingerprint": "28652e8a2636f72a71bbaade1efacbebf9a2b81494a90e919a45ec758792419b",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "custom_asset_profile_field_projection_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "a56b6478e53466ec985e70de761b70a6c4e7a1ac627de9f8bb25633a0011a978",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX custom_asset_profile_field_projection_field_text_idx ON security_master.custom_asset_profile_field_projection USING btree (custom_profile_id, field_key, md5(text_value))",
+              "expression": "md5(text_value)",
+              "fingerprint": "566890a5c9453adad53ca1a84c9caed69d8341bde77fb8a8bad59f4d2bfff200",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "custom_profile_id",
+                "field_key",
+                "md5(text_value)"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "custom_asset_profile_field_projection_field_text_idx",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX custom_asset_profile_field_projection_pkey ON security_master.custom_asset_profile_field_projection USING btree (security_id, field_key)",
+              "expression": null,
+              "fingerprint": "7557ac825e1cfe6047f33addab5b6c6ec7d164e389fe62e79446f6e2760b06a0",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "security_id",
+                "field_key"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "custom_asset_profile_field_projection_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX custom_asset_profile_field_projection_profile_idx ON security_master.custom_asset_profile_field_projection USING btree (custom_profile_id, profile_version)",
+              "expression": null,
+              "fingerprint": "f2665a6b845066f3281d97979d7bdf0da0f2c7cf03e4823550841e369041578d",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "custom_profile_id",
+                "profile_version"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "custom_asset_profile_field_projection_profile_idx",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "custom_asset_profile_field_projection",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "security_master",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
               "default": "gen_random_uuid()",
               "fingerprint": "ea056e9506c480e18de7f02e8f25af0cf556c675c3e18c7a0845f36f58e3ba78",
               "generated": null,
@@ -151936,13 +152665,13 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(24,8)",
+              "data_type": "numeric(24,2)",
               "default": "0",
-              "fingerprint": "6e292068d30350cf23a422e10f87d43c51e876e97a046ee09884c4ce0165777c",
+              "fingerprint": "49216283dddd766108998ba174e2fa0ceb5eb43981eb2dc34fbbc08a845b78d9",
               "generated": null,
               "generated_expression": null,
               "identity": null,
-              "name": "pik_interest_accrued_unpaid",
+              "name": "prepaid_interest",
               "nullable": false,
               "ordinal_position": 17,
               "security_labels": [],
@@ -151952,15 +152681,47 @@
             {
               "collation": null,
               "comment": null,
+              "data_type": "numeric(24,2)",
+              "default": "0",
+              "fingerprint": "78f9d240b3d66281c0659dbd08a69aa567c219b005fefb8a53f2a5479b6eb581",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "unapplied_cash",
+              "nullable": false,
+              "ordinal_position": 18,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(24,8)",
+              "default": "0",
+              "fingerprint": "92ac5beced1307c737fc026808d3a06154f8c16fd4d625b780d3ac83003ab832",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "pik_interest_accrued_unpaid",
+              "nullable": false,
+              "ordinal_position": 19,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
               "data_type": "date",
               "default": null,
-              "fingerprint": "04a6fdb14430e0f75957975dcba6d16320e62023e2e66545bcf83e02a1836fd2",
+              "fingerprint": "6e5f5b168076cfc4f5a3796fbc5f49d693c5e85cab17d519ce2ac316003c8417",
               "generated": null,
               "generated_expression": null,
               "identity": null,
               "name": "last_pik_capitalization_date",
               "nullable": true,
-              "ordinal_position": 18,
+              "ordinal_position": 20,
               "security_labels": [],
               "type_name": "date",
               "type_schema": "pg_catalog"
@@ -151991,7 +152752,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "b79057d5128e23a70938fecaa5971430d99528f77955cf55c2400b1db1c10758",
+          "fingerprint": "d92f3df958a0fff27d71fc9b361629604427dedbc6f527dff2e28ada03598b2f",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -180197,6 +180958,14 @@
         },
         {
           "enabled": false,
+          "fingerprint": "fa08319307b61c7c4cd9c32421592f8553b93923ae9b7c51e0876abe85174da5",
+          "forced": false,
+          "policies": [],
+          "relation": "custom_asset_profile_field_projection",
+          "schema": "security_master"
+        },
+        {
+          "enabled": false,
           "fingerprint": "b5d079dd25cf8e6b9799dfdb8e6deea422389f5d1befed44d77c4cf650919849",
           "forced": false,
           "policies": [],
@@ -193609,6 +194378,413 @@
               "collation": null,
               "comment": null,
               "data_type": "uuid",
+              "default": null,
+              "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "security_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "1f0047cc03d43a160ad16b2b5bc03a0b51f3ff59fca380a84449fb99f00ac323",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "custom_profile_id",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "integer",
+              "default": null,
+              "fingerprint": "dedae059d95a69d8830d18f805d5412b4424e674f2b022c0f45eaf861d49b14a",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "profile_version",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "int4",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "5774e800f7d8e26f547a8d4b92c9b262365b033a6ce1959cfc249c1ab12dcc39",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "field_key",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "a401c28e0696a8203dd6075270cbf11903eab3d7cc1754866f9f36e99ea9c655",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "value_kind",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "1064ff2b6c9ca9e54bc341681273a8b9175874fe3aba537d2a5be800c38b01b2",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "text_value",
+              "nullable": true,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric",
+              "default": null,
+              "fingerprint": "80f1af0bc68d6b8da56c0a850610b1e6f20b08ec85668f4771f196beed33ee1b",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "numeric_value",
+              "nullable": true,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "boolean",
+              "default": null,
+              "fingerprint": "183530ea11feb8a49d69c6213fa70748b1a5c0bf6e367ff582df9a4be5babe76",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "boolean_value",
+              "nullable": true,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "bool",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "7a4d52ea90894fea13858f06c9d9faa6ea3682cb24c3eb2625300ab8926b8526",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "raw_value",
+              "nullable": false,
+              "ordinal_position": 9,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "d488f5777035217fcb84062d4a0dc1ee80ffdacbcf1b512865d0bdd2870e6d07",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "version",
+              "nullable": false,
+              "ordinal_position": 10,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": "Profile-keyed projection of CustomAsset profileFields: one row per field key, keyed by (security_id, field_key). Additive read model over securities.asset_specific_terms.",
+          "constraints": [
+            {
+              "columns": [
+                "custom_profile_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (btrim(custom_profile_id) <> ''::text)",
+              "delete_action": null,
+              "fingerprint": "7eb446cbe33fb1d24d28a512d79495beac5da0298616a77b36c0af2add0268b4",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "custom_asset_profile_field_projection_profile_id_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "raw_value",
+                "value_kind"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (jsonb_typeof(raw_value) = value_kind)",
+              "delete_action": null,
+              "fingerprint": "3ab0ad4f371fc77a4eb3d7bf8eb993e72fbc9e6be27dc908fd8975e40a2033fc",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "custom_asset_profile_field_projection_raw_kind_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "text_value",
+                "value_kind",
+                "numeric_value",
+                "boolean_value"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK ((text_value IS NOT NULL) = (value_kind = 'string'::text) AND (numeric_value IS NOT NULL) = (value_kind = 'number'::text) AND (boolean_value IS NOT NULL) = (value_kind = 'boolean'::text))",
+              "delete_action": null,
+              "fingerprint": "0700b26ab0146a1f9351c386e9fcb5654ca6e551612c465c569bc1a01dbabee8",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "custom_asset_profile_field_projection_typed_value_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "value_kind"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (value_kind = ANY (ARRAY['string'::text, 'number'::text, 'boolean'::text, 'null'::text, 'object'::text, 'array'::text]))",
+              "delete_action": null,
+              "fingerprint": "32f161bc2366212a1defe805a28e5c8bee7a9337b4b4d7cd82bf33c587f64ffa",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "custom_asset_profile_field_projection_value_kind_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "security_id",
+                "field_key"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (security_id, field_key)",
+              "delete_action": null,
+              "fingerprint": "28652e8a2636f72a71bbaade1efacbebf9a2b81494a90e919a45ec758792419b",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "custom_asset_profile_field_projection_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "a56b6478e53466ec985e70de761b70a6c4e7a1ac627de9f8bb25633a0011a978",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX custom_asset_profile_field_projection_field_text_idx ON security_master.custom_asset_profile_field_projection USING btree (custom_profile_id, field_key, md5(text_value))",
+              "expression": "md5(text_value)",
+              "fingerprint": "566890a5c9453adad53ca1a84c9caed69d8341bde77fb8a8bad59f4d2bfff200",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "custom_profile_id",
+                "field_key",
+                "md5(text_value)"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "custom_asset_profile_field_projection_field_text_idx",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX custom_asset_profile_field_projection_pkey ON security_master.custom_asset_profile_field_projection USING btree (security_id, field_key)",
+              "expression": null,
+              "fingerprint": "7557ac825e1cfe6047f33addab5b6c6ec7d164e389fe62e79446f6e2760b06a0",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "security_id",
+                "field_key"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "custom_asset_profile_field_projection_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX custom_asset_profile_field_projection_profile_idx ON security_master.custom_asset_profile_field_projection USING btree (custom_profile_id, profile_version)",
+              "expression": null,
+              "fingerprint": "f2665a6b845066f3281d97979d7bdf0da0f2c7cf03e4823550841e369041578d",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "custom_profile_id",
+                "profile_version"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "custom_asset_profile_field_projection_profile_idx",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "custom_asset_profile_field_projection",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "security_master",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
               "default": "gen_random_uuid()",
               "fingerprint": "ea056e9506c480e18de7f02e8f25af0cf556c675c3e18c7a0845f36f58e3ba78",
               "generated": null,
@@ -200502,13 +201678,13 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(24,8)",
+              "data_type": "numeric(24,2)",
               "default": "0",
-              "fingerprint": "6e292068d30350cf23a422e10f87d43c51e876e97a046ee09884c4ce0165777c",
+              "fingerprint": "49216283dddd766108998ba174e2fa0ceb5eb43981eb2dc34fbbc08a845b78d9",
               "generated": null,
               "generated_expression": null,
               "identity": null,
-              "name": "pik_interest_accrued_unpaid",
+              "name": "prepaid_interest",
               "nullable": false,
               "ordinal_position": 17,
               "security_labels": [],
@@ -200518,15 +201694,47 @@
             {
               "collation": null,
               "comment": null,
+              "data_type": "numeric(24,2)",
+              "default": "0",
+              "fingerprint": "78f9d240b3d66281c0659dbd08a69aa567c219b005fefb8a53f2a5479b6eb581",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "unapplied_cash",
+              "nullable": false,
+              "ordinal_position": 18,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(24,8)",
+              "default": "0",
+              "fingerprint": "92ac5beced1307c737fc026808d3a06154f8c16fd4d625b780d3ac83003ab832",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "pik_interest_accrued_unpaid",
+              "nullable": false,
+              "ordinal_position": 19,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
               "data_type": "date",
               "default": null,
-              "fingerprint": "04a6fdb14430e0f75957975dcba6d16320e62023e2e66545bcf83e02a1836fd2",
+              "fingerprint": "6e5f5b168076cfc4f5a3796fbc5f49d693c5e85cab17d519ce2ac316003c8417",
               "generated": null,
               "generated_expression": null,
               "identity": null,
               "name": "last_pik_capitalization_date",
               "nullable": true,
-              "ordinal_position": 18,
+              "ordinal_position": 20,
               "security_labels": [],
               "type_name": "date",
               "type_schema": "pg_catalog"
@@ -200557,7 +201765,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "b79057d5128e23a70938fecaa5971430d99528f77955cf55c2400b1db1c10758",
+          "fingerprint": "d92f3df958a0fff27d71fc9b361629604427dedbc6f527dff2e28ada03598b2f",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [

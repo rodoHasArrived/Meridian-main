@@ -66,6 +66,7 @@ remains in the [roadmap registry](../../roadmap/README.md) and
 | [God-File Burn-Down Plan](../plans/god-file-burn-down-plan.md) | `docs/engineering/plans/` | Engineering hygiene | Active; the size ceilings it burns down are checked by `build/scripts/ci/check-file-size.py` |
 | [Bond Capability Expansion](../plans/bond-capability-expansion.md) | `docs/engineering/plans/` | Fixed income | User-approved implementation and reviewed-cutover acceptance criteria |
 | [Web-UI Improvements Implementation Plan (2026-07)](../plans/web-ui-improvements-implementation-plan-2026-07.md) | `docs/engineering/plans/` | Browser workstation | Proposed |
+| [Browser Workstation UX Review and Improvement Plan (2026-11)](../plans/web-workstation-ux-review-plan-2026-11.md) | `docs/engineering/plans/` | Browser workstation | Proposed |
 | [Security Remediation Backlog](../../security/security-remediation-backlog.md) | `docs/security/` | Security | Domain-owned backlog; cited from source |
 | [SOC 2 Roadmap](../../security/compliance/soc2-roadmap.md) | `docs/security/compliance/` | Compliance | Domain-owned roadmap |
 
@@ -110,7 +111,6 @@ Historical Ledger ordinal `008` is shared by `V_ledger_008__closing_entry_postin
 
 | Migration set | Reserved ordinal | Proposed filename | Blueprint / purpose |
 |---|---:|---|---|
-| `direct-lending` | `010` | `010_direct_lending_excess_payment_balances.sql` | [Prepaid-interest and unapplied-cash servicing balances](direct-lending-excess-payment-application.md) |
 | `ledger` | `044` | `V_ledger_044__equalization_policy.sql` | [Equalization policy](accounting/equalization-and-series-accounting.md) |
 | `ledger` | `045` | `V_ledger_045__equalization_subscription_lots.sql` | [Equalization subscription lots](accounting/equalization-and-series-accounting.md) |
 | `ledger` | `046` | `V_ledger_046__fund_series.sql` | [Fund series](accounting/equalization-and-series-accounting.md) |

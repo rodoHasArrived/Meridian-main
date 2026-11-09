@@ -1,49 +1,49 @@
 # Meridian AI Recent Changes
 
-> Auto-generated on 2026-11-05T21:50:27Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-11-07T01:52:55Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 Rolling source-file activity for the last 14 days.
 
 | File | Subsystem | Last modified | Commit | Summary | Touches |
 |---|---|---|---|---|---|
-| `src/Meridian.Application/README.md` | Host and Composition | 2026-11-05T19:20:34+00:00 | `e7d86c2b` | Refuse OtherSecurity classification text the label reader would misread | 30 |
-| `src/Meridian.Contracts/README.md` | Host and Composition | 2026-11-05T19:20:34+00:00 | `e7d86c2b` | Refuse OtherSecurity classification text the label reader would misread | 27 |
-| `src/Meridian.Application/SecurityMaster/SecurityMasterService.cs` | Host and Composition | 2026-11-05T19:20:34+00:00 | `e7d86c2b` | Refuse OtherSecurity classification text the label reader would misread | 12 |
-| `src/Meridian.Application/SecurityMaster/SecurityMasterService.Creation.cs` | Host and Composition | 2026-11-05T19:20:34+00:00 | `e7d86c2b` | Refuse OtherSecurity classification text the label reader would misread | 4 |
-| `src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs` | Host and Composition | 2026-11-05T19:20:34+00:00 | `e7d86c2b` | Refuse OtherSecurity classification text the label reader would misread | 3 |
-| `src/Meridian.Application/SecurityMaster/SecurityMasterService.ClassificationText.cs` | Host and Composition | 2026-11-05T19:20:34+00:00 | `e7d86c2b` | Refuse OtherSecurity classification text the label reader would misread | 1 |
-| `src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs` | Desktop and UI Workflows | 2026-11-05T19:05:10+00:00 | `1b819b69` | fix(security-master): decode each retained label exactly once | 12 |
-| `src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs` | Desktop and UI Workflows | 2026-11-05T19:05:10+00:00 | `1b819b69` | fix(security-master): decode each retained label exactly once | 8 |
-| `src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs` | Desktop and UI Workflows | 2026-11-05T18:55:46+00:00 | `4aa070c5` | fix(reporting): export trial-balance rows with their already-decoded labels | 8 |
-| `src/Meridian.FSharp.DirectLending.Aggregates/ServicingSchedule.fs` | Domain, Ledger, and F# | 2026-11-05T17:51:10+00:00 | `a3fba8db` | fix(direct-lending): roll servicing schedule dates on the schedule kernel | 2 |
-| `src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs` | Host and Composition | 2026-11-05T15:47:57+00:00 | `11f974e8` | feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling | 11 |
-| `src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs` | Host and Composition | 2026-11-05T15:47:57+00:00 | `11f974e8` | feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling | 10 |
-| `src/Meridian.FSharp.DirectLending.Aggregates/README.md` | Domain, Ledger, and F# | 2026-11-05T15:47:57+00:00 | `11f974e8` | feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling | 9 |
-| `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs` | Desktop and UI Workflows | 2026-11-05T15:47:57+00:00 | `11f974e8` | feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling | 9 |
-| `src/Meridian.Application/DirectLending/AccrualLedgerService.cs` | Host and Composition | 2026-11-05T15:47:57+00:00 | `11f974e8` | feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling | 8 |
-| `src/Meridian.Application/DirectLending/DirectLendingEventRebuilder.cs` | Host and Composition | 2026-11-05T15:47:57+00:00 | `11f974e8` | feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling | 8 |
-| `src/Meridian.Application/DirectLending/DirectLendingOutboxDispatcher.cs` | Host and Composition | 2026-11-05T15:47:57+00:00 | `11f974e8` | feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling | 8 |
-| `src/Meridian.Application/DirectLending/DirectLendingServiceSupport.cs` | Host and Composition | 2026-11-05T15:47:57+00:00 | `11f974e8` | feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling | 8 |
-| `src/Meridian.Application/DirectLending/IAccrualLedgerService.cs` | Host and Composition | 2026-11-05T15:47:57+00:00 | `11f974e8` | feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling | 8 |
-| `src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs` | Host and Composition | 2026-11-05T15:47:57+00:00 | `11f974e8` | feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling | 8 |
-| `src/Meridian.Application/DirectLending/IDirectLendingService.cs` | Host and Composition | 2026-11-05T15:47:57+00:00 | `11f974e8` | feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling | 8 |
-| `src/Meridian.Application/DirectLending/InMemoryDirectLendingService.cs` | Host and Composition | 2026-11-05T15:47:57+00:00 | `11f974e8` | feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling | 8 |
-| `src/Meridian.Application/DirectLending/LoanAccountingProjector.cs` | Host and Composition | 2026-11-05T15:47:57+00:00 | `11f974e8` | feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling | 8 |
-| `src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs` | Host and Composition | 2026-11-05T15:47:57+00:00 | `11f974e8` | feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling | 8 |
-| `src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs` | Host and Composition | 2026-11-05T15:47:57+00:00 | `11f974e8` | feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling | 8 |
-| `src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs` | Host and Composition | 2026-11-05T15:47:57+00:00 | `11f974e8` | feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling | 8 |
-| `src/Meridian.FSharp.DirectLending.Aggregates/ContractAggregate.fs` | Domain, Ledger, and F# | 2026-11-05T15:47:57+00:00 | `11f974e8` | feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling | 8 |
-| `src/Meridian.FSharp.DirectLending.Aggregates/ServicingAggregate.fs` | Domain, Ledger, and F# | 2026-11-05T15:47:57+00:00 | `11f974e8` | feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling | 8 |
-| `src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.cs` | Providers and Storage | 2026-11-05T15:47:57+00:00 | `11f974e8` | feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling | 8 |
-| `src/Meridian.Storage/Ledger/LedgerPeriodPostingGuard.cs` | Providers and Storage | 2026-11-05T15:47:57+00:00 | `11f974e8` | feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling | 8 |
-| `src/Meridian.Application/DirectLending/DailyAccrualWorker.cs` | Host and Composition | 2026-11-05T15:47:57+00:00 | `11f974e8` | feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling | 7 |
-| `src/Meridian.FSharp.DirectLending.Aggregates/AggregateTypes.fs` | Domain, Ledger, and F# | 2026-11-05T15:47:57+00:00 | `11f974e8` | feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling | 7 |
-| `src/Meridian.FSharp.DirectLending.Aggregates/Interop.fs` | Domain, Ledger, and F# | 2026-11-05T15:47:57+00:00 | `11f974e8` | feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling | 7 |
-| `src/Meridian.FSharp.DirectLending.Aggregates/Meridian.FSharp.DirectLending.Aggregates.fsproj` | Domain, Ledger, and F# | 2026-11-05T15:47:57+00:00 | `11f974e8` | feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling | 7 |
-| `src/Meridian.Application/DirectLending/DirectLendingServicingPolicyValidator.cs` | Host and Composition | 2026-11-05T15:47:57+00:00 | `11f974e8` | feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling | 1 |
-| `src/Meridian.Application/DirectLending/DirectLendingServicingScheduleSupport.cs` | Host and Composition | 2026-11-05T15:47:57+00:00 | `11f974e8` | feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling | 1 |
-| `src/Meridian.Application/DirectLending/InMemoryDirectLendingService.ServicingSchedules.cs` | Host and Composition | 2026-11-05T15:47:57+00:00 | `11f974e8` | feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling | 1 |
-| `src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.ServicingSchedules.cs` | Host and Composition | 2026-11-05T15:47:57+00:00 | `11f974e8` | feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling | 1 |
-| `src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs` | Host and Composition | 2026-11-05T15:47:57+00:00 | `11f974e8` | feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling | 1 |
-| `src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs` | Host and Composition | 2026-11-05T15:47:57+00:00 | `11f974e8` | feat(direct-lending): PIK capitalization policy and floating-rate reset scheduling | 1 |
+| `src/Meridian.Contracts/README.md` | Host and Composition | 2026-11-06T21:21:21+00:00 | `a970ac12` | PRD-115 increment 2: prepaid-interest and unapplied-cash balances | 39 |
+| `src/Meridian.Storage/README.md` | Providers and Storage | 2026-11-06T21:21:21+00:00 | `a970ac12` | PRD-115 increment 2: prepaid-interest and unapplied-cash balances | 20 |
+| `src/Meridian.FSharp.DirectLending.Aggregates/README.md` | Domain, Ledger, and F# | 2026-11-06T21:21:21+00:00 | `a970ac12` | PRD-115 increment 2: prepaid-interest and unapplied-cash balances | 10 |
+| `src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs` | Host and Composition | 2026-11-06T21:21:21+00:00 | `a970ac12` | PRD-115 increment 2: prepaid-interest and unapplied-cash balances | 9 |
+| `src/Meridian.FSharp.DirectLending.Aggregates/ServicingAggregate.fs` | Domain, Ledger, and F# | 2026-11-06T21:21:21+00:00 | `a970ac12` | PRD-115 increment 2: prepaid-interest and unapplied-cash balances | 9 |
+| `src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.cs` | Providers and Storage | 2026-11-06T21:21:21+00:00 | `a970ac12` | PRD-115 increment 2: prepaid-interest and unapplied-cash balances | 9 |
+| `src/Meridian.Storage/DirectLending/Migrations/010_direct_lending_excess_payment_balances.sql` | Providers and Storage | 2026-11-06T21:21:21+00:00 | `a970ac12` | PRD-115 increment 2: prepaid-interest and unapplied-cash balances | 1 |
+| `src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs` | Desktop and UI Workflows | 2026-11-06T19:11:01+00:00 | `4e6151df` | fix(wpf): keep SecurityMasterViewModel within its file-size cap | 14 |
+| `src/Meridian.Wpf/README.md` | Desktop and UI Workflows | 2026-11-06T18:32:01+00:00 | `8b0e25ea` | docs(source): document conflict categories and refresh reviewed hashes | 19 |
+| `src/Meridian.Execution/README.md` | Execution, Risk, and Strategies | 2026-11-06T18:25:31+00:00 | `4cf61eca` | Compute session TCA commission rates on the multiplied principal | 17 |
+| `src/Meridian.Execution/Services/SessionTcaReporter.cs` | Execution, Risk, and Strategies | 2026-11-06T18:25:31+00:00 | `4cf61eca` | Compute session TCA commission rates on the multiplied principal | 7 |
+| `src/Meridian.Execution/PaperTradingGateway.cs` | Execution, Risk, and Strategies | 2026-11-06T18:11:29+00:00 | `cd0070f4` | Scale paper notional-based costs by the resolved contract multiplier | 8 |
+| `src/Meridian.Execution/Adapters/PaperTradingGateway.cs` | Execution, Risk, and Strategies | 2026-11-06T18:11:29+00:00 | `cd0070f4` | Scale paper notional-based costs by the resolved contract multiplier | 7 |
+| `src/Meridian.Execution/PaperMatching/PaperTradingCostModel.cs` | Execution, Risk, and Strategies | 2026-11-06T18:11:29+00:00 | `cd0070f4` | Scale paper notional-based costs by the resolved contract multiplier | 7 |
+| `src/Meridian.Strategies/README.md` | Execution, Risk, and Strategies | 2026-11-06T17:56:13+00:00 | `dcece77e` | Scale strategy-run cash flows by the booked contract multiplier | 9 |
+| `src/Meridian.Strategies/Live/LiveRunMetricsTracker.cs` | Execution, Risk, and Strategies | 2026-11-06T17:56:13+00:00 | `dcece77e` | Scale strategy-run cash flows by the booked contract multiplier | 7 |
+| `src/Meridian.Strategies/Live/LiveStrategyRunSession.cs` | Execution, Risk, and Strategies | 2026-11-06T17:56:13+00:00 | `dcece77e` | Scale strategy-run cash flows by the booked contract multiplier | 7 |
+| `src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs` | Host and Composition | 2026-11-06T17:56:07+00:00 | `6400667a` | fix(wpf): route Security Master conflicts by declared field names | 1 |
+| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | 2026-11-06T17:45:03+00:00 | `2025b3f5` | Derive banking action origin from the principal; multiply margin notionals | 28 |
+| `src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs` | Desktop and UI Workflows | 2026-11-06T17:45:03+00:00 | `2025b3f5` | Derive banking action origin from the principal; multiply margin notionals | 9 |
+| `src/Meridian.Execution/Margin/PortfolioMarginModel.cs` | Execution, Risk, and Strategies | 2026-11-06T17:45:03+00:00 | `2025b3f5` | Derive banking action origin from the principal; multiply margin notionals | 8 |
+| `src/Meridian.Execution/Margin/RegTMarginModel.cs` | Execution, Risk, and Strategies | 2026-11-06T17:45:03+00:00 | `2025b3f5` | Derive banking action origin from the principal; multiply margin notionals | 8 |
+| `src/Meridian.Execution/Margin/MarginPricing.cs` | Execution, Risk, and Strategies | 2026-11-06T17:45:03+00:00 | `2025b3f5` | Derive banking action origin from the principal; multiply margin notionals | 2 |
+| `src/Meridian.Execution/OrderManagement/OrderFillProcessor.cs` | Execution, Risk, and Strategies | 2026-11-06T17:28:43+00:00 | `057d0ef4` | Stamp the OMS-resolved contract multiplier on the replayable fill report | 8 |
+| `src/Meridian.Execution/Services/PaperTradingPortfolio.cs` | Execution, Risk, and Strategies | 2026-11-06T17:11:01+00:00 | `dfc72366` | Address review: multiplier handoff, sub-1 multipliers, MMF search, ingestion transitions | 11 |
+| `src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs` | Desktop and UI Workflows | 2026-11-06T17:11:01+00:00 | `dfc72366` | Address review: multiplier handoff, sub-1 multipliers, MMF search, ingestion transitions | 8 |
+| `src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundEndpoints.cs` | Desktop and UI Workflows | 2026-11-06T17:11:01+00:00 | `dfc72366` | Address review: multiplier handoff, sub-1 multipliers, MMF search, ingestion transitions | 8 |
+| `src/Meridian.Execution/Events/TradeExecutedEvent.cs` | Execution, Risk, and Strategies | 2026-11-06T17:11:01+00:00 | `dfc72366` | Address review: multiplier handoff, sub-1 multipliers, MMF search, ingestion transitions | 7 |
+| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | 2026-11-06T16:27:46+00:00 | `2f930f77` | Address review: record queue visits only from the queue; Settings keeps fresh provider counts | 27 |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.tsx` | Desktop and UI Workflows | 2026-11-06T16:27:46+00:00 | `2f930f77` | Address review: record queue visits only from the queue; Settings keeps fresh provider counts | 19 |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.test.tsx` | Desktop and UI Workflows | 2026-11-06T16:27:46+00:00 | `2f930f77` | Address review: record queue visits only from the queue; Settings keeps fresh provider counts | 12 |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx` | Desktop and UI Workflows | 2026-11-06T16:27:46+00:00 | `2f930f77` | Address review: record queue visits only from the queue; Settings keeps fresh provider counts | 12 |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.view-model.test.ts` | Desktop and UI Workflows | 2026-11-06T16:27:46+00:00 | `2f930f77` | Address review: record queue visits only from the queue; Settings keeps fresh provider counts | 9 |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.view-model.ts` | Desktop and UI Workflows | 2026-11-06T16:27:46+00:00 | `2f930f77` | Address review: record queue visits only from the queue; Settings keeps fresh provider counts | 8 |
+| `src/Meridian.Ui/dashboard/src/lib/cross-screen-counts.ts` | Desktop and UI Workflows | 2026-11-06T16:27:46+00:00 | `2f930f77` | Address review: record queue visits only from the queue; Settings keeps fresh provider counts | 4 |
+| `src/Meridian.Ui/dashboard/src/lib/since-last-visit.ts` | Desktop and UI Workflows | 2026-11-06T16:27:46+00:00 | `2f930f77` | Address review: record queue visits only from the queue; Settings keeps fresh provider counts | 4 |
+| `src/Meridian.Ui/dashboard/src/lib/since-last-visit.test.ts` | Desktop and UI Workflows | 2026-11-06T16:27:46+00:00 | `2f930f77` | Address review: record queue visits only from the queue; Settings keeps fresh provider counts | 3 |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.reconciliation-workbench.test.tsx` | Desktop and UI Workflows | 2026-11-06T16:08:02+00:00 | `3b276d86` | Address review: one bulk action at a time, from the keyboard too | 7 |
+| `src/Meridian.Ui/dashboard/src/screens/reconciliation-bulk-triage-bar.tsx` | Desktop and UI Workflows | 2026-11-06T16:08:02+00:00 | `3b276d86` | Address review: one bulk action at a time, from the keyboard too | 4 |
+| `src/Meridian.Ui/dashboard/src/app.tsx` | Desktop and UI Workflows | 2026-11-06T16:00:29+00:00 | `180e9667` | Address review: scope-bound bulk updates and late default scopes | 16 |
 

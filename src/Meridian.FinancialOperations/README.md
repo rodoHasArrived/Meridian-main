@@ -11,6 +11,10 @@ last_reviewed: 2026-10-14
 
 # src/Meridian.FinancialOperations
 
+`AccountingSystemIntegrationService.GetLatestImportAsync` returns the latest persisted import; when
+none exists it returns an unpersisted `Previewed` result and does not cache it, so the GET-backed
+latest-import and latest-reconciliation reads have no side effects.
+
 Accounting provider discovery translates the typed ownership-required refusal into an explicit disabled
 row while retaining unrelated provider rows. Configuration and storage failures remain errors. Default
 QuickBooks, Xero and NetSuite imports cannot consume owned credentials until their runtime selects an

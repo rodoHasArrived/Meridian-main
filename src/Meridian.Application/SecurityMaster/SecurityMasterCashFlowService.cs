@@ -439,7 +439,16 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
                 hasAssertedPrincipalSchedule && inWindowContractual.Length == 0, unifiedEconomics);
         }
 
-        var annualRate = NormalizeAnnualRate(terms.CouponRate.Value) + ScenarioRateShift(scenario);
+        // The coupon's unit is the field's declared default (the record declares none on this legacy
+        // path); without one the projection is blocked rather than guessing from the magnitude.
+        var couponField = SecurityRateFieldUnits.CouponFieldKey(security.AssetClass);
+        var coupon = RateUnitNormalizer.Normalize(security.AssetClass, couponField, terms.CouponRate.Value);
+        if (!coupon.TryGetFraction(out var couponFraction))
+        {
+            return Empty(RateUnitNormalizer.DescribeRefusal(coupon, security.AssetClass, couponField));
+        }
+
+        var annualRate = couponFraction + ScenarioRateShift(scenario);
         if (annualRate < 0m)
         {
             annualRate = 0m;
@@ -618,13 +627,24 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         var legs = terms.Legs!;
         var missingLegRate = legs.Any(leg => IsLegRateMissing(leg, ResolveCurve(leg, forwardCurves)));
         var legSchedules = new List<StructuredCashFlowLegSchedule>(legs.Count);
-        foreach (var leg in legs)
+        try
         {
-            var curve = ResolveCurve(leg, forwardCurves);
-            legSchedules.Add(new StructuredCashFlowLegSchedule(
-                leg.LegId, leg.RateKind, leg.Direction,
-                BuildLegSchedule(leg, terms, scenario, issueDate, maturity, asOfDate, curve),
-                DescribeRateSource(leg, curve)));
+            foreach (var leg in legs)
+            {
+                var curve = ResolveCurve(leg, forwardCurves);
+                legSchedules.Add(new StructuredCashFlowLegSchedule(
+                    leg.LegId, leg.RateKind, leg.Direction,
+                    BuildLegSchedule(security.AssetClass, leg, terms, scenario, issueDate, maturity, asOfDate, curve),
+                    DescribeRateSource(leg, curve)));
+            }
+        }
+        catch (RateUnitUnavailableException ex)
+        {
+            // A retained rate without a declared unit blocks every leg: a partial net schedule would
+            // post one side of the structure.
+            return new StructuredCashFlowProjectionDto(
+                security.SecurityId, sourceKind, scenario, asOf, [], staleness,
+                sourceLastUpdatedUtc, factorSchedule, terms, BlockedReason: ex.Message);
         }
 
         // Net receive-minus-pay only when every leg's direction is known (a single directionless
@@ -664,6 +684,7 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
             : curve is not null ? curve.Describe() : "flatForward:lastFixing";
 
     private static IReadOnlyList<StructuredCashFlowScheduleEntry> BuildLegSchedule(
+        string assetClass,
         StructuredCashFlowLeg leg,
         StructuredCashFlowTerms terms,
         StructuredCashFlowScenario scenario,
@@ -698,7 +719,7 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
             // An amortizing or accreting leg accrues on the notional in effect at the period start;
             // without a schedule this is the leg notional for every period, as before.
             var periodNotional = leg.NotionalOn(accrualStart, notional);
-            var annualRate = ResolveLegAnnualRate(leg, scenario, curve, accrualStart, asOfDate);
+            var annualRate = ResolveLegAnnualRate(assetClass, leg, scenario, curve, accrualStart, asOfDate);
             var interest = annualRate > 0m
                 ? RoundCash(periodNotional * annualRate * DayCountConventions.Fraction(dayCount, accrualStart, date))
                 : 0m;
@@ -721,6 +742,7 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
     }
 
     private static decimal ResolveLegAnnualRate(
+        string assetClass,
         StructuredCashFlowLeg leg,
         StructuredCashFlowScenario scenario,
         SecurityForwardCurve? curve,
@@ -734,7 +756,7 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         // the last fixing (flat forward).
         if (leg.RateKind == CashFlowLegRateKind.Fixed)
         {
-            var fixedRate = NormalizeAnnualRate(leg.FixedRate ?? 0m);
+            var fixedRate = LegRateFraction(assetClass, leg, "fixedRate", leg.FixedRate ?? 0m);
             return fixedRate < 0m ? 0m : fixedRate;
         }
 
@@ -747,14 +769,15 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
                 ? projected
                 : leg.CurrentIndexRate ?? curve?.RateAt(accrualStart) ?? 0m);
         var forecastRate = recordedFixing is null && !hasReset && curve?.RateAt(accrualStart) is not null;
+        // A forward-curve rate is a fraction by the curve contract. A retained fixing or current index
+        // rate reads through the leg's declared unit, then the field default; otherwise it blocks.
         var indexFraction = forecastRate ? index
-            : leg.RateUnit == SecurityCouponRateUnit.Percent ? index / 100m
-            : leg.RateUnit == SecurityCouponRateUnit.Fraction ? index : NormalizeAnnualRate(index);
+            : LegRateFraction(assetClass, leg, recordedFixing is not null ? "resetSchedule.fixingRate" : "currentIndexRate", index);
         var rate = indexFraction + ((leg.SpreadBps ?? 0m) / 10_000m) + ScenarioRateShift(scenario);
         if (leg.CapRate is { } cap)
-            rate = Math.Min(rate, leg.RateUnit == SecurityCouponRateUnit.Percent ? cap / 100m : cap);
+            rate = Math.Min(rate, LegRateFraction(assetClass, leg, "capRate", cap));
         if (leg.FloorRate is { } floor)
-            rate = Math.Max(rate, leg.RateUnit == SecurityCouponRateUnit.Percent ? floor / 100m : floor);
+            rate = Math.Max(rate, LegRateFraction(assetClass, leg, "floorRate", floor));
         return rate < 0m ? 0m : rate;
     }
 
@@ -825,8 +848,24 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         return schedule.Periods.Select(static period => (period.AccrualStart, period.PaymentDate));
     }
 
-    private static decimal NormalizeAnnualRate(decimal coupon)
-        => coupon > 1m ? coupon / 100m : coupon;
+    /// <summary>
+    /// Reads one leg rate member through <see cref="RateUnitNormalizer"/>: the leg's declared unit, then
+    /// the field's declared default. Swap legs key their members under <c>legs.</c>; a bond's synthetic
+    /// coupon leg keys them flat. A rate without a declared unit throws
+    /// <see cref="RateUnitUnavailableException"/>, which blocks the projection with its reason.
+    /// </summary>
+    private static decimal LegRateFraction(string assetClass, StructuredCashFlowLeg leg, string member, decimal value)
+    {
+        var key = SecurityAssetClassCatalog.GetOrDefault(assetClass).CashFlowBehavior == SecurityCashFlowBehavior.SwapLegs
+            ? "legs." + member
+            : member;
+        var resolution = RateUnitNormalizer.Normalize(assetClass, key, value, RateUnitNormalizer.FromCouponRateUnit(leg.RateUnit));
+        return resolution.TryGetFraction(out var fraction)
+            ? fraction
+            : throw new RateUnitUnavailableException(RateUnitNormalizer.DescribeRefusal(resolution, assetClass, key));
+    }
+
+    private sealed class RateUnitUnavailableException(string message) : Exception(message);
 
     private static decimal ScenarioRateShift(StructuredCashFlowScenario scenario)
         => scenario switch

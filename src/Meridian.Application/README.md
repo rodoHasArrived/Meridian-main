@@ -11,6 +11,9 @@ last_reviewed: 2026-10-31
 
 # src/Meridian.Application
 
+Backfill runs publish into an `EventPipeline` with `BoundedChannelFullMode.Wait`, so a
+provider that outpaces the JSONL sink is back-pressured instead of silently evicting queued bars.
+
 Bond cash-flow context receipts now use `bond-cash-flow-context-v2`, sharing declared fixed-coupon economics and retaining floating reset evidence. Replay dispatches v1 through its original arithmetic. Declared observed rates must match the exact supported period reset; an explicit missing or empty fixing schedule cannot revive an older observation. A scalar current rate requires its reset date and source. Future resets use retained forward inputs; other instrument families keep their existing fixing behavior.
 
 `ContractualCashFlowPreviewService` resolves retained Security Master/direct-lending facts and pinned curves for the shared calculation engine. Swap leg conventions are decoded only at or above their declared terms version, preserving inert residue on earlier rows. Currency and convention lookup follow the shared resolver's source and alias ordering; malformed leg rows block calculation before raw and typed rows are paired. Invalid retained economic schedules produce a structured `ContractInputsUnavailable` blocker before calculation or run persistence; unrelated storage and runtime failures still propagate. `FileContractualCashFlowRunStore` publishes write-once, verifiable replay packets under the data root; replay uses the packet's normalized contract without rerunning current source mapping. Missing historical balance/notice evidence and assigned provider schedules block rather than falling back. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).
@@ -224,6 +227,11 @@ Unspecified (`Other`) and undefined currency values leave monetary totals unavai
 Direct-lending outbox deliveries with unsupported topics or missing journal source evidence
 remain failed and retryable; they are never silently acknowledged as processed.
 
+Direct-lending storage falls back to the Security Master connection string, so it can compose
+without a ledger database. `LoanAccountingProjector` therefore resolves the ledger journal store
+optionally and fails closed on every ledger-impacting event when none is composed; no substitute
+ledger store is registered. Proof is in `StorageFeatureRegistrationTests`.
+
 
 Direct-lending projection and reconciliation endpoints preserve `X-Command-Id` through the
 shared service into committed run identity handling. Repeating a command on the same loan
@@ -254,7 +262,12 @@ failover, symbol, subscription and provider-extended endpoints; the subscription
 module setup) uses `ConfigStore.UpdateAsync`, which loads the document inside that lock, applies the
 synchronous mutator and writes atomically, so concurrent writers editing different sections cannot drop
 each other's change (PRD-002 "concurrent configuration writes"). An edit through `UpdateAsync` fails
-closed on a corrupt or JSON-null file instead of replacing it with defaults. `ConfigStore.SaveAsync`
+closed on a corrupt or JSON-null file instead of replacing it with defaults. Read-only loads
+(`ConfigStore.Load` / `LoadConfig`, and environment overlays applied by `ConfigurationPipeline` and
+`ConfigurationService.LoadAndPrepareConfig`) also fail closed: a missing file yields defaults with a
+logged warning for first-run hosts, but an existing file that is malformed, JSON-null or unreadable
+throws `InvalidDataException` naming the path. Load diagnostics go through Serilog, not the console.
+The write lock waits through `Core.IO.ExclusiveFileLock` with jittered backoff. `ConfigStore.SaveAsync`
 remains whole-document replacement, last writer wins, reserved for callers that own the entire document:
 the CLI `SaveConfigAsync` path and the setup wizard's generated output. Capability override writes take
 the same lock, and so does the WPF shell: `ConfigServiceBase` runs every section-level mutation through a
@@ -1299,6 +1312,19 @@ dormant in production. Verify
 this lane with the declared-conventions partial of `SecurityMasterCashFlowServiceTests`,
 `ScheduleSpecFactoryTests` and `SecurityMasterCashFlowProjectionShapeTests`.
 
+Rate units (review D10, slice 4, 2026-11-04): `SecurityMasterCashFlowService` (legacy coupon walk,
+legacy leg walk, declared projection and declared floating bond leg) and
+`ContractualCashFlowPreviewService` read every coupon, fixed-leg rate, fixing, cap, floor and step
+rate through `Meridian.Contracts.SecurityMaster.RateUnitNormalizer`. The retired heuristic read a
+value at or below 1 as a fraction and divided anything larger by 100. A rate with no declared unit
+(no `couponRateUnit` and no field default in `SecurityRateFieldUnits`) now blocks: the projection
+carries a `BlockedReason` quoting the raw value, and the preview returns a `RateUnitUndeclared`
+blocker (`RateOutsideDeclaredRange` for a declared value outside the field's range or sign policy).
+Zero needs no unit, forward-curve rates stay fractions, and `*Bps` spreads stay basis points. The
+undeclared-legacy policy is decided (D3, 2026-11-05: undeclared non-zero rates block); swap legs
+cannot declare a per-leg unit yet, so their non-zero rates block too. Verify with
+`DeclaredRateUnitParityTests`, `RateUnitNormalizerTests` and the cash-flow suites.
+
 `AddSecurityMasterTermsCapability(services, dataRoot)` (in `Meridian.Application.Composition`)
 registers `FileBusinessDayCalendarSource` over `<dataRoot>/calendars` with `TryAddSingleton` and
 the internal `SecurityMasterTermsCapabilityHostedService`. `StorageFeatureRegistration` calls it
@@ -1359,8 +1385,9 @@ direct-lending and amortization gates are ungated when no verifier is registered
 - **Independent profile approval.** `SecurityAssetProfileGovernanceService` refuses an asset-profile approval by any actor who drafted that version when `SecurityMasterWorkbench:RequireIndependentProfileApprover` is on. A drafter is identified by the recorded `DraftedBy`, by the drafted audit events for that version, or, for a legacy draft without `DraftedBy`, by its recorded author. The setting defaults to off and is read at approval time.
 - **Classification labels.** `SecurityEconomicDefinitionAdapter` stores asset-class, family and sub-type labels from the F# domain's explicit name functions rather than union `ToString()`, which would emit payload syntax such as `OtherFamily "x"` or `Some(...)`. Labels retained before that change are decoded at read time by `Meridian.Contracts.SecurityMaster.ClassificationLabelReader` (preferred-equity replay guard, workbench DTO mapping, accounting sub-type and certified-report rows). Each label is decoded once, where a stored record becomes a DTO or row; downstream consumers such as the WPF display, the passport summaries and the CSV/XLSX export use that decoded value; retained events are not rewritten. Create and terms amendment refuse an `OtherSecurity` `subType`/`category` that would read back differently (`None`, `Some(Equity)`, a quoted literal or a union payload) with `SecurityMasterWriteRefusedException` (`SecurityMasterService.ClassificationText.cs`).
 - **Removed prototype.** The unused Application-side `SecurityMaster/CashFlow/ScheduleSpecFactory` prototype was deleted; production uses `Meridian.Contracts.SecurityMaster.ScheduleSpecFactory`.
+- **Derived term-key spellings.** `SecurityMasterConflictDetection.ProfileFieldComparisonExclusions` and the data-quality maturity reads (`MA001`, `VC002`, `SecurityMasterDataQualityService.MaturitySpellings`) take their spelling pairs (`maturity`/`maturityDate`, `dayCount`/`dayCountConvention`, factor `factor`/`currentFactor`) from `SecurityAssetTermsSchema` aliases instead of restated lists. `SecurityMasterTermSpellingDerivationTests` pins each derived set to the one it replaced; the conditional quality rules are unchanged.
 
-See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D8) for status and open decisions.
+See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D9, slice 6 disposition) for status and open decisions.
 
 ## Diagrams
 

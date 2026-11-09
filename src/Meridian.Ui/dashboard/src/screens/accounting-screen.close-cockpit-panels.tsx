@@ -17,6 +17,7 @@ import type {
   AccountingWorkflowLaunchViewState,
   CloseCommandCenterViewState
 } from "@/screens/accounting-screen.view-model";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 export const CLOSE_COCKPIT_FRESHNESS_BUDGET_MS = 15 * 60_000;
 
@@ -185,7 +186,7 @@ export function CloseCommandCenterPanel({
               const body = (
                 <div className={cn("h-full rounded-md border bg-secondary/20 px-3 py-3", accountingToolingBorderClass(metric.tone))}>
                   <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0 text-xs font-semibold uppercase text-muted-foreground">{metric.label}</div>
+                    <div className={cn("min-w-0 text-xs font-semibold text-muted-foreground", usesTrackedCaps(metric.label) && "uppercase")}>{metric.label}</div>
                     <Badge variant={accountingToolingBadgeVariant(metric.tone)}>{metric.value}</Badge>
                   </div>
                   <p className="mt-2 text-xs leading-5 text-muted-foreground">{metric.detail}</p>
@@ -204,7 +205,7 @@ export function CloseCommandCenterPanel({
 
           <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_20rem]">
             <div className="rounded-md border border-border/70 bg-secondary/15 px-3 py-3">
-              <div className="text-xs font-semibold uppercase text-muted-foreground">Blocking and at-risk items</div>
+              <div className="text-xs font-semibold text-muted-foreground">Blocking and at-risk items</div>
               {view.blockerRows.length > 0 ? (
                 <div role="list" className="mt-3 space-y-2" aria-label="Close command center blockers">
                   {view.blockerRows.map((item) => (
@@ -592,7 +593,7 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
 
           <div className="rounded-md border border-border/70 bg-secondary/15 px-3 py-3" aria-label="End-to-end close workflow controls">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="text-xs font-semibold uppercase text-muted-foreground">Close workflow control</div>
+              <div className="text-xs font-semibold text-muted-foreground">Close workflow control</div>
               <Badge variant="outline">{view.closeWorkflowSteps.length} steps</Badge>
             </div>
             <div role="list" className="mt-3 grid gap-2 lg:grid-cols-2 xl:grid-cols-4">
@@ -632,7 +633,7 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
             {view.metrics.map((metric) => (
               <div key={metric.id} className={cn("rounded-md border bg-secondary/20 px-3 py-3", accountingToolingBorderClass(metric.tone))}>
                 <div className="flex items-start justify-between gap-2">
-                  <div className="text-xs font-semibold uppercase text-muted-foreground">{metric.label}</div>
+                  <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(metric.label) && "uppercase")}>{metric.label}</div>
                   <Badge variant={accountingToolingBadgeVariant(metric.tone)}>{metric.value}</Badge>
                 </div>
                 <p className="mt-2 text-xs leading-5 text-muted-foreground">{metric.detail}</p>
@@ -643,7 +644,7 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
           <div className="rounded-md border border-border/70 bg-secondary/15 px-3 py-3" role="region" aria-label="Post closing entries gate">
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div>
-                <div className="text-xs font-semibold uppercase text-muted-foreground">Post closing entries</div>
+                <div className="text-xs font-semibold text-muted-foreground">Post closing entries</div>
                 <p className="mt-1 text-sm text-muted-foreground">
                   Shared close-service projection of the scoped temporary-account roll before period lock.
                 </p>
@@ -1024,7 +1025,7 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
                   </label>
                 </div>
                 <div className="space-y-2" aria-label="Close setup sign-off role candidates">
-                  <div className="text-xs font-semibold uppercase text-muted-foreground">Sign-off role candidates</div>
+                  <div className="text-xs font-semibold text-muted-foreground">Sign-off role candidates</div>
                   {view.closeSetupSignOffRoleOptions.length > 0 ? (
                     <div role="list" className="grid gap-2 md:grid-cols-2">
                       {view.closeSetupSignOffRoleOptions.map((role) => (
@@ -1103,7 +1104,7 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
                   )}
                 </div>
                 <label className="space-y-1 text-sm">
-                  <span className="text-xs font-semibold uppercase text-muted-foreground">Depends on task ids</span>
+                  <span className="text-xs font-semibold text-muted-foreground">Depends on task ids</span>
                   <Input
                     value={view.closeSetupDraft.taskDependsOnTaskIds}
                     onChange={(event) => view.updateCloseSetupDraft({ taskDependsOnTaskIds: event.target.value })}
@@ -1407,7 +1408,7 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
 
             <div className="rounded-md border border-border/70 bg-secondary/15 px-3 py-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="text-xs font-semibold uppercase text-muted-foreground">Evidence and blockers</div>
+                <div className="text-xs font-semibold text-muted-foreground">Evidence and blockers</div>
                 <Badge variant={view.evidenceReviewRows.length > 0 ? "outline" : "success"}>{view.evidenceReviewRows.length}</Badge>
               </div>
               {view.evidenceReviewRows.length > 0 ? (

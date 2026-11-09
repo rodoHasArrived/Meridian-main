@@ -5,6 +5,7 @@ import { useQuotesStream } from "@/hooks/use-quotes-stream";
 import { formatRelativeAge as formatRelative } from "@/lib/time";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import type { MetricSnapshot, QuotesSnapshotItem, QuotesSnapshotResponse, SymbolRecord, SymbolStatistics } from "@/types";
+import { formatCount as formatCountValue, formatNumber } from "@/lib/format";
 
 export type WatchlistBadgeVariant = "default" | "outline" | "success" | "warning" | "danger" | "paper" | "live" | "research";
 export type WatchlistListState = "loading" | "error" | "empty" | "ready";
@@ -1354,7 +1355,7 @@ function stableSymbolId(value: string): string {
 }
 
 function formatCount(value: number): string {
-  return value.toLocaleString();
+  return formatCountValue(value);
 }
 
 function formatPrice(value: number | null | undefined): string {
@@ -1362,10 +1363,7 @@ function formatPrice(value: number | null | undefined): string {
     return WATCHLIST_EMPTY_VALUE;
   }
 
-  return value.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 4
-  });
+  return formatNumber(value, { minimumFractionDigits: 2, maximumFractionDigits: 4 });
 }
 
 function formatSize(value: number | null | undefined): string {
@@ -1373,7 +1371,7 @@ function formatSize(value: number | null | undefined): string {
     return WATCHLIST_EMPTY_VALUE;
   }
 
-  return value.toLocaleString();
+  return formatCountValue(value);
 }
 
 function formatPriceSize(price: number | null | undefined, size: number | null | undefined): string {
@@ -1399,7 +1397,7 @@ function formatChange(value: number | null | undefined): string {
   }
 
   const sign = value > 0 ? "+" : "";
-  return `${sign}${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}`;
+  return `${sign}${formatNumber(value, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}`;
 }
 
 function formatChangePercent(value: number | null | undefined): string {
@@ -1408,7 +1406,7 @@ function formatChangePercent(value: number | null | undefined): string {
   }
 
   const sign = value > 0 ? "+" : "";
-  return `${sign}${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
+  return `${sign}${formatNumber(value, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
 }
 
 function formatDayRange(high: number | null | undefined, low: number | null | undefined): string {

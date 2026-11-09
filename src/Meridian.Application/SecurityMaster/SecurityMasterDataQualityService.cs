@@ -110,11 +110,10 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
         if (requiresMaturity)
         {
             // The canonical Security Master mapper stores maturity under "maturity" for
-            // Bond/CD/CP/TBill and "maturityDate" for swaps; accept either spelling.
-            var maturity = TryReadDateField(security.AssetSpecificTerms, "maturity")
-                ?? TryReadDateField(security.AssetSpecificTerms, "maturityDate")
-                ?? TryReadDateField(security.CommonTerms, "maturity")
-                ?? TryReadDateField(security.CommonTerms, "maturityDate");
+            // Bond/CD/CP/TBill and "maturityDate" for swaps; accept every spelling the schema
+            // declares for the term (MaturitySpellings), asset-specific terms first.
+            var maturity = TryReadFirstDateField(security.AssetSpecificTerms, MaturitySpellings)
+                ?? TryReadFirstDateField(security.CommonTerms, MaturitySpellings);
 
             if (maturity is null)
             {
@@ -222,8 +221,7 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
         {
             var issueDate = TryReadDateField(security.AssetSpecificTerms, "issueDate")
                 ?? TryReadDateField(security.CommonTerms, "issueDate");
-            var maturity = TryReadDateField(security.AssetSpecificTerms, "maturity")
-                ?? TryReadDateField(security.AssetSpecificTerms, "maturityDate");
+            var maturity = TryReadFirstDateField(security.AssetSpecificTerms, MaturitySpellings);
 
             if (issueDate.HasValue && maturity.HasValue && maturity.Value <= issueDate.Value)
             {
@@ -355,9 +353,15 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
         => field.Type == SecurityAssetTermFieldType.Date
            && (IsMaturityKey(field.Key) || field.Aliases.Any(IsMaturityKey));
 
+    /// <summary>
+    /// The maturity term's declared spellings (key first, then schema aliases): today
+    /// <c>maturity</c>, <c>maturityDate</c>. Pinned by
+    /// <c>MaturitySpellings_DeriveTheRetainedPair</c> so a new schema alias is a deliberate change.
+    /// </summary>
+    internal static readonly IReadOnlyList<string> MaturitySpellings = SecurityAssetTermsSchema.DeclaredSpellings("maturity");
+
     private static bool IsMaturityKey(string key)
-        => string.Equals(key, "maturity", StringComparison.OrdinalIgnoreCase)
-           || string.Equals(key, "maturityDate", StringComparison.OrdinalIgnoreCase);
+        => MaturitySpellings.Contains(key, StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Whether the terms carry a value of the declared kind under the field's key or one of its
@@ -473,6 +477,19 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
         return DateOnly.TryParse(value.GetString(), System.Globalization.CultureInfo.InvariantCulture, out var date)
             ? new DateTimeOffset(date.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero)
             : null;
+    }
+
+    private static DateTimeOffset? TryReadFirstDateField(JsonElement element, IReadOnlyList<string> fieldNames)
+    {
+        foreach (var fieldName in fieldNames)
+        {
+            if (TryReadDateField(element, fieldName) is { } value)
+            {
+                return value;
+            }
+        }
+
+        return null;
     }
 
     private static DateTimeOffset? TryReadDateField(JsonElement element, string fieldName)

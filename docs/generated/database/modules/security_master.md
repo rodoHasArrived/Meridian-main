@@ -2,7 +2,7 @@
 
 # `security_master` schema
 
-- Relations: 131
+- Relations: 132
 - Functions/procedures: 13
 - Triggers: 27
 - Row-level security policies: 0
@@ -458,6 +458,18 @@ erDiagram
         text primary_identifier_value
         bigint version
     }
+    security_master_custom_asset_profile_field_projection {
+        uuid security_id PK
+        text custom_profile_id
+        integer profile_version
+        text field_key PK
+        text value_kind
+        text text_value
+        numeric numeric_value
+        boolean boolean_value
+        jsonb raw_value
+        bigint version
+    }
     security_master_data_vendor_entitlements {
         uuid entitlement_id PK
         text vendor_name
@@ -725,6 +737,8 @@ erDiagram
         date last_payment_date
         bigint servicing_revision
         timestamp_with_time_zone updated_at
+        numeric_24_2_ prepaid_interest
+        numeric_24_2_ unapplied_cash
         numeric_24_8_ pik_interest_accrued_unpaid
         date last_pik_capitalization_date
     }
@@ -1876,6 +1890,7 @@ erDiagram
 | `corporate_actions` | table | 22 | `corp_act_id` | 2 | 5 | - |
 | `credit_default_swap_projection` | table | 19 | `security_id` | 0 | 3 | Relational projection of CreditDefaultSwap asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms. |
 | `crypto_projection` | table | 7 | `security_id` | 0 | 3 | - |
+| `custom_asset_profile_field_projection` | table | 10 | `security_id`, `field_key` | 0 | 3 | Profile-keyed projection of CustomAsset profileFields: one row per field key, keyed by (security_id, field_key). Additive read model over securities.asset_specific_terms. |
 | `data_vendor_entitlements` | table | 21 | `entitlement_id` | 0 | 4 | - |
 | `deposit_projection` | table | 11 | `security_id` | 0 | 3 | - |
 | `direct_lending_schema_migrations` | table | 3 | `filename` | 0 | 1 | - |
@@ -1898,7 +1913,7 @@ erDiagram
 | `loan_index_fixing` | table | 10 | `fixing_id` | 0 | 2 | Observed benchmark fixings for scheduled direct-lending rate resets; insert-only, highest revision per (index_name, observation_date) is effective. |
 | `loan_pik_capitalization_projection` | table | 6 | `loan_id`, `capitalization_date` | 0 | 1 | PIK capitalizations moving accrued PIK interest into direct-loan principal; rebuilt from loan_state servicing on every save. |
 | `loan_rate_reset_projection` | table | 11 | `loan_id`, `effective_date` | 0 | 1 | Applied manual and scheduled rate resets for direct loans with a reset schedule; rebuilt from loan_state servicing on every save. |
-| `loan_servicing_projection` | table | 18 | `loan_id` | 0 | 1 | - |
+| `loan_servicing_projection` | table | 20 | `loan_id` | 0 | 1 | - |
 | `loan_snapshot` | table | 5 | `loan_id`, `aggregate_version` | 0 | 2 | - |
 | `loan_state` | table | 6 | `loan_id` | 0 | 1 | - |
 | `loan_terms_version` | table | 30 | `loan_id`, `terms_version` | 0 | 2 | - |
