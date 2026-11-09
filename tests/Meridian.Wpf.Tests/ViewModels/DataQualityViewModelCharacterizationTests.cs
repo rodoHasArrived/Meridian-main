@@ -308,7 +308,7 @@ public sealed class DataQualityViewModelCharacterizationTests
         apiClient.AcknowledgeAnomalyAsync("alert-ok", Arg.Any<CancellationToken>()).Returns(true);
         apiClient.AcknowledgeAnomalyAsync("alert-refused", Arg.Any<CancellationToken>()).Returns(false);
         apiClient.AcknowledgeAnomalyAsync("alert-throws", Arg.Any<CancellationToken>())
-            .Returns<Task<bool>>(_ => throw new HttpRequestException("boom"));
+            .Returns<Task<bool>>(_ => throw new System.Net.Http.HttpRequestException("boom"));
         using var viewModel = new DataQualityViewModel(
             StatusService.Instance,
             LoggingService.Instance,
