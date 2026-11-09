@@ -62,10 +62,13 @@ disposable clone and raw output directory. Host runner credentials, caches, acti
 socket are excluded. Trusted host tooling exports only bounded regular files after the container
 exits. The local repair command above does not provide this container boundary.
 
-Main pushes, the daily 05:23 UTC scan and manual publisher dispatch discover same-repository PRs
-that need refreshing against a new base. Each scan requests at most ten new head/base pairs,
-skips previously requested pairs and reports the backlog. Daily/manual scans drain remaining work;
-API pagination stops with an explicit error at its 1,000-item bound.
+PR merges into `main`, main pushes, the daily 05:23 UTC scan and manual publisher dispatch
+discover every stale same-repository open PR, including drafts and conflicted PRs. Each scan reads
+the latest base, follows API pagination and queues all eligible head/base pairs, pacing dispatches
+one second apart. Unmerged PR closures do not request a refresh. Overlapping refresh scans are
+serialized and pending scans can coalesce; publication remains independent per source run.
+Active or successful trusted generation requests suppress duplicate pairs; failed or cancelled
+requests can be retried by a later scan. API failures are reported explicitly.
 
 Forks and missing App configuration retain artifact-only behavior. Source/handwritten conflicts,
 module review decisions, and generator/dependency/policy changes use contributor review. A failed
@@ -192,6 +195,16 @@ an administrator's review of one-PR groups. Per-PR repair does not eliminate thi
 
 A custom `.gitattributes` merge driver depends on local Git configuration and does not configure
 GitHub's merge environment. It also cannot prove that a parent's assets match the merged source.
+
+The documentation health dashboard avoids that dependency by tracking only merge-stable signals.
+`docs/status/doc-health-dashboard.{json,md}` omit Markdown line counts, which every Markdown edit
+changes. Two PRs that edit different Markdown files therefore merge cleanly, and the merged
+dashboard stays current. The JSON's `signal_digest` line still conflicts when both sides change
+tracked signals differently, for example when each adds a file. Without it, both sides would write
+the same `total_files` value and Git would merge an undercount without reporting a conflict. The
+health score uses line counts only through its average-size and marker-density terms. At the repository's
+current size, those terms do not change for ordinary edits. A rare combined change that does move
+the score is still caught by the regular and merge-group freshness checks.
 The explicit command makes local conflict resolution repeatable and leaves regeneration and the
 existing freshness checks mandatory. See the
 [automation design constraints](docs-regeneration-automation-design.md) for the trust boundary and

@@ -180,6 +180,35 @@ public sealed class FileComplianceApprovalStoreTests : TempDirectoryTestBase
         act.Should().Throw<InvalidOperationException>().WithMessage("*cannot approve their own*");
     }
 
+    [Theory]
+    [InlineData(" requester-1 ")]
+    [InlineData("requester-1 ")]
+    [InlineData("\trequester-1")]
+    public void RecordDecision_RequesterPaddedWithWhitespace_CannotSelfApprove(string paddedRequester)
+    {
+        var store = new FileComplianceApprovalStore(StorePath(), new FixedClock(Now));
+        var request = store.CreateRequest(Actor("requester-1"), Command());
+
+        var act = () => store.RecordDecision(request.ApprovalRequestId, Actor(paddedRequester), approved: true);
+
+        act.Should().Throw<InvalidOperationException>().WithMessage("*cannot approve their own*");
+        store.Resolve(request.ApprovalRequestId)!.Decisions.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void RecordDecision_PaddedApproverFlippingVerdict_IsRejected()
+    {
+        var store = new FileComplianceApprovalStore(StorePath(), new FixedClock(Now));
+        var request = store.CreateRequest(Actor("requester-1"), Command());
+        store.RecordDecision(request.ApprovalRequestId, Actor("approver-2"), approved: true);
+
+        var act = () => store.RecordDecision(request.ApprovalRequestId, Actor("approver-2 "), approved: false);
+
+        act.Should().Throw<InvalidOperationException>().WithMessage("*cannot replace*");
+        store.Resolve(request.ApprovalRequestId)!.Decisions.Should().ContainSingle()
+            .Which.Approved.Should().BeTrue();
+    }
+
     [Fact]
     public void RecordDecision_SameActorSameVerdictTwice_IsIdempotent()
     {

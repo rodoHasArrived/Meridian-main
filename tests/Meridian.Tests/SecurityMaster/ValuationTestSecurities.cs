@@ -17,6 +17,13 @@ internal static class ValuationTestSecurities
 
     public static readonly DateTimeOffset AsOf = new(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
+    // D3 (decided 2026-11-05): an undeclared non-zero rate blocks, so the golden bonds declare the
+    // Percent their 5 coupon was written in, at the Bond scheduleConventions stamp the reader honors.
+    // A declared schedule anchors on the schema's own 'maturity' key, so the bonds store it there.
+    private const int DeclaredTermsVersion = 2;
+
+    private static readonly object PercentCouponConventions = new { accrualAdjusted = false, couponRateUnit = "Percent" };
+
     /// <summary>
     /// Par 1,000,000, 5% annual on 30/360, issued 2026-01-01, maturing 2028-01-01: two coupons of
     /// 50,000 and principal at maturity.
@@ -24,11 +31,13 @@ internal static class ValuationTestSecurities
     public static object BondTerms(DateOnly? maturity = null) => new
     {
         issueDate = AsOfDate,
-        maturityDate = maturity ?? new DateOnly(2028, 1, 1),
+        maturity = maturity ?? new DateOnly(2028, 1, 1),
         par = 1_000_000m,
         couponRate = 5m,
         paymentFrequency = "Annual",
-        dayCountConvention = "30/360"
+        dayCountConvention = "30/360",
+        assetClassTermsVersion = DeclaredTermsVersion,
+        scheduleConventions = PercentCouponConventions
     };
 
     public static SecurityDetailDto Bond(Guid? securityId = null, string currency = "USD", DateOnly? maturity = null)
@@ -43,11 +52,13 @@ internal static class ValuationTestSecurities
         => Detail(securityId ?? Guid.NewGuid(), "Bond", "Paid-down bond", "USD", new
         {
             issueDate = AsOfDate,
-            maturityDate = new DateOnly(2028, 1, 1),
+            maturity = new DateOnly(2028, 1, 1),
             par = 1_000_000m,
             couponRate = 5m,
             paymentFrequency = "Annual",
             dayCountConvention = "30/360",
+            assetClassTermsVersion = DeclaredTermsVersion,
+            scheduleConventions = PercentCouponConventions,
             currentFactor
         }, new SecurityIdentifierDto(SecurityIdentifierKind.Cusip, "123456780", true, AsOf.AddYears(-1)));
 
@@ -59,11 +70,13 @@ internal static class ValuationTestSecurities
         => Detail(securityId ?? Guid.NewGuid(), "Bond", "Dated-factor bond", "USD", new
         {
             issueDate = AsOfDate,
-            maturityDate = new DateOnly(2028, 1, 1),
+            maturity = new DateOnly(2028, 1, 1),
             par = 1_000_000m,
             couponRate = 5m,
             paymentFrequency = "Annual",
             dayCountConvention = "30/360",
+            assetClassTermsVersion = DeclaredTermsVersion,
+            scheduleConventions = PercentCouponConventions,
             currentFactor,
             factorDate
         }, new SecurityIdentifierDto(SecurityIdentifierKind.Cusip, "123456782", true, AsOf.AddYears(-1)));
@@ -77,11 +90,13 @@ internal static class ValuationTestSecurities
         => Detail(securityId ?? Guid.NewGuid(), "Bond", "Factor-scheduled bond", "USD", new
         {
             issueDate = AsOfDate,
-            maturityDate = new DateOnly(2028, 1, 1),
+            maturity = new DateOnly(2028, 1, 1),
             par = 1_000_000m,
             couponRate = 5m,
             paymentFrequency = "Annual",
             dayCountConvention = "30/360",
+            assetClassTermsVersion = DeclaredTermsVersion,
+            scheduleConventions = PercentCouponConventions,
             currentFactor = 0.8m,
             factorScheduleEntries = new object[]
             {

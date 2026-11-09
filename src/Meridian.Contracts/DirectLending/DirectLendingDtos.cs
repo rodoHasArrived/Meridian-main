@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Meridian.Contracts.DirectLending;
 
 public enum CurrencyCode : byte
@@ -73,6 +75,22 @@ public enum AmortizationType : byte
     CustomSchedule = 3
 }
 
+/// <summary>
+/// Where the part of a payment left after every amount owed is settled goes. See the PRD-115
+/// blueprint (<c>docs/engineering/blueprints/direct-lending-excess-payment-application.md</c>).
+/// </summary>
+public enum ExcessPaymentApplication : byte
+{
+    /// <summary>Credit unapplied cash; the operator applies or refunds it later. The default.</summary>
+    HoldUnapplied = 0,
+
+    /// <summary>Apply to outstanding principal, subject to the loan's prepayment terms.</summary>
+    PrincipalPrepayment = 1,
+
+    /// <summary>Carry as prepaid interest, consumed by later daily accruals.</summary>
+    PrepaidInterest = 2
+}
+
 public sealed record CollateralDto(
     Guid CollateralId,
     CollateralType CollateralType,
@@ -121,7 +139,42 @@ public sealed record DirectLendingTermsDto(
     decimal? EffectiveRateCap = null,
     decimal? PrepaymentPenaltyRate = null,
     decimal? PurchasePrice = null,
-    DirectLendingSecurityMasterReferenceDto? SecurityMasterReference = null);
+    DirectLendingSecurityMasterReferenceDto? SecurityMasterReference = null)
+{
+    /// <summary>
+    /// How payment excess is applied; <see langword="null"/> (not specified) behaves as
+    /// <see cref="DirectLending.ExcessPaymentApplication.HoldUnapplied"/>.
+    /// </summary>
+    /// <remarks>
+    /// Expand-only member of a hashed record. The terms hash is the SHA-256 of this record's JSON, so
+    /// the property is an <c>init</c> member omitted from JSON while null: every terms version
+    /// recorded before it existed keeps its hash, and setting a rule (a material term) changes it.
+    /// Pinned by <c>DirectLendingTermsHashCharacterizationTests</c> and its F# counterpart.
+    /// </remarks>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public ExcessPaymentApplication? ExcessPaymentApplication { get; init; }
+
+    /// <summary>The rule in force, treating "not specified" as <see cref="DirectLending.ExcessPaymentApplication.HoldUnapplied"/>.</summary>
+    [JsonIgnore]
+    public ExcessPaymentApplication EffectiveExcessPaymentApplication
+        => ExcessPaymentApplication ?? DirectLending.ExcessPaymentApplication.HoldUnapplied;
+
+    /// <summary>
+    /// Contractual PIK capitalization rule; <see langword="null"/> keeps the legacy PIK toggle,
+    /// which capitalizes the whole day's interest into principal on each accrual day.
+    /// </summary>
+    /// <remarks>Expand-only, hash-stable member: omitted from JSON (and the terms hash) while null.</remarks>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public PikCapitalizationPolicy? PikCapitalization { get; init; }
+
+    /// <summary>
+    /// Floating-rate reset schedule executed by the daily accrual worker; <see langword="null"/>
+    /// keeps manual resets only.
+    /// </summary>
+    /// <remarks>Expand-only, hash-stable member: omitted from JSON (and the terms hash) while null.</remarks>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public FloatingRateResetSchedule? RateResetSchedule { get; init; }
+}
 
 public sealed record DirectLendingSecurityMasterReferenceDto(
     Guid SecurityId,
@@ -171,12 +224,20 @@ public sealed record LoanAggregateSnapshotDto(
     LoanContractDetailDto Contract,
     LoanServicingStateDto Servicing);
 
+/// <summary>
+/// Servicing balances for a loan. The first five members are receivables owed by the borrower.
+/// <see cref="PrepaidInterest"/> and <see cref="UnappliedCash"/> (PRD-115) are amounts owed
+/// <em>to</em> the borrower, so read models must not add them to outstanding exposure. Both
+/// default to 0, so state persisted before PRD-115 deserializes unchanged.
+/// </summary>
 public sealed record OutstandingBalancesDto(
     decimal PrincipalOutstanding,
     decimal InterestAccruedUnpaid,
     decimal CommitmentFeeAccruedUnpaid,
     decimal FeesAccruedUnpaid,
-    decimal PenaltyAccruedUnpaid);
+    decimal PenaltyAccruedUnpaid,
+    decimal PrepaidInterest = 0m,
+    decimal UnappliedCash = 0m);
 
 public sealed record DrawdownLotDto(
     Guid LotId,
@@ -192,7 +253,24 @@ public sealed record RateResetDto(
     decimal ObservedRate,
     decimal SpreadBps,
     decimal AllInRate,
-    string? SourceRef);
+    string? SourceRef)
+{
+    /// <summary>Manual (operator request) or Scheduled (reset schedule); null on resets recorded before schedules existed.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public RateResetKind? ResetKind { get; init; }
+
+    /// <summary>The date the applied fixing was observed (reset date minus lookback) for a scheduled reset.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public DateOnly? FixingObservationDate { get; init; }
+
+    /// <summary>The stored fixing a scheduled reset applied, so a later fixing revision cannot obscure which one was used.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? FixingId { get; init; }
+
+    /// <summary>The revision of <see cref="FixingId"/>'s (index, observation date) that was applied.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? FixingRevision { get; init; }
+}
 
 public sealed record ServicingRevisionDto(
     long RevisionNumber,
@@ -209,7 +287,8 @@ public sealed record DailyAccrualEntryDto(
     decimal PenaltyAmount,
     decimal AnnualRateApplied,
     DateTimeOffset RecordedAt,
-    decimal PikInterestAmount = 0m);
+    decimal PikInterestAmount = 0m,
+    bool PikCapitalizationDeferred = false);
 
 public sealed record LoanServicingStateDto(
     Guid LoanId,
@@ -228,7 +307,11 @@ public sealed record LoanServicingStateDto(
     IReadOnlyList<CollateralDto>? Collateral = null,
     decimal UnamortizedDiscount = 0m,
     decimal UnamortizedPremium = 0m,
-    bool IsPikToggled = false);
+    bool IsPikToggled = false,
+    decimal PikInterestAccruedUnpaid = 0m,
+    DateOnly? LastPikCapitalizationDate = null,
+    IReadOnlyList<RateResetDto>? RateResetHistory = null,
+    IReadOnlyList<PikCapitalizationDto>? PikCapitalizations = null);
 
 public sealed record CreateLoanRequest(
     Guid? LoanId,

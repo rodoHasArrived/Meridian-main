@@ -18,10 +18,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { StatStrip } from "@/components/meridian/stat-strip";
 import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 import type { DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
-import {
-  WorkspaceInspectorHost,
-  WorkspaceTabStrip
-} from "@/components/meridian/workspace-primitives";
+import { WorkspaceInspectorHost } from "@/components/meridian/workspace-primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -57,7 +54,7 @@ import { CoverageGapsRegion, DataQualityRegion } from "@/screens/data-screen.dat
 import { DataOverviewHub, RouteFocusCard } from "@/screens/data-screen-navigation-panels";
 import { CanonicalSymbolRegistryRegion } from "@/screens/data-screen.canonical-symbols";
 import { ProviderAccountingRegion } from "@/screens/data-screen.provider-accounting";
-import { DATA_ROUTE_TABS, DATA_ROUTE_VIEW_COPY } from "@/screens/data-screen.route-state";
+import { DATA_ROUTE_VIEW_COPY } from "@/screens/data-screen.route-state";
 import { resultToneClass } from "@/screens/data-screen.tone-styles";
 import { DataBackfillWorkstream, DataExportWorkstream, DataQueryWorkstream } from "@/screens/data-screen.workstreams";
 import { IngestionOperationsWorkstream, StorageAssuranceWorkstream } from "@/screens/data-operations-assurance-workstreams";
@@ -89,6 +86,9 @@ import type {
   ProviderRoutingTrustSnapshot,
   SessionInfo
 } from "@/types";
+import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
+import { applyCrossScreenCounts, selectCrossScreenCounts } from "@/lib/cross-screen-counts";
+import { useSharedCrossScreenCounts } from "@/lib/cross-screen-counts-context";
 
 interface DataScreenProps {
   data: DataWorkspaceResponse | null;
@@ -179,6 +179,7 @@ export function DataScreen({
   onProviderSetupConfigured,
   onProviderRoutingRefresh
 }: DataScreenProps) {
+  const sharedCounts = useSharedCrossScreenCounts();
   const { pathname, search } = useLocation();
   const navigate = useNavigate();
   const providerSetupLifecycle = useMemo(
@@ -225,11 +226,6 @@ export function DataScreen({
   }
 
   const routeCopy = DATA_ROUTE_VIEW_COPY[activeWorkstream];
-  const routeTabs = DATA_ROUTE_TABS.map((tab) => ({
-    id: tab.id,
-    label: tab.label,
-    selected: tab.workstream === activeWorkstream
-  }));
   const analyticsDegraded = buildDataAnalyticsDegradedViewModel([
     { id: "data-quality", label: "Data quality", error: qualityPanel.error, loading: qualityPanel.loading, refresh: qualityPanel.refresh },
     { id: "capability-matrix", label: "Provider capability matrix", error: capabilityMatrixPanel.error, loading: capabilityMatrixPanel.loading, refresh: capabilityMatrixPanel.refresh },
@@ -240,8 +236,8 @@ export function DataScreen({
 
   return (
     <div className="workspace-screen data-workspace-screen">
-      <StatStrip metrics={data.metrics} label="Data headline metrics" />
-
+      {/* Route heading first; workspace-wide metrics follow. The sidebar is the only
+          sub-route navigation (no in-page tab strip). */}
       <section
         role="region"
         aria-label="Data workspace context"
@@ -256,18 +252,6 @@ export function DataScreen({
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <WorkspaceTabStrip
-            label="Data routes"
-            tabs={routeTabs}
-            onSelect={(id) => {
-              const tab = DATA_ROUTE_TABS.find((candidate) => candidate.id === id);
-              if (tab) {
-                // Preserve the querystring: the operating scope is threaded
-                // through search params across the shell.
-                navigate({ pathname: tab.route, search });
-              }
-            }}
-          />
           <Button
             type="button"
             size="sm"
@@ -291,6 +275,8 @@ export function DataScreen({
           </Button>
         </div>
       </section>
+
+      <StatStrip metrics={applyCrossScreenCounts(data.metrics, selectCrossScreenCounts({ shared: sharedCounts, providers: data.providers }))} label="Data headline metrics" />
 
       {showHealthMonitoring ? (
         <div className="space-y-4">
@@ -509,7 +495,7 @@ function ProviderSummaryCard({ card }: { card: DataOperationsProviderSummaryCard
 
   return (
     <div className={cn("min-w-[9rem] flex-1 rounded border px-2.5 py-2", toneClass)}>
-      <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{card.label}</div>
+      <div className={cn("text-[10px] text-muted-foreground", usesTrackedCaps(card.label) && "font-mono uppercase tracking-[0.14em]")}>{card.label}</div>
       <div className="mt-1 break-words text-sm font-semibold leading-5 text-foreground">{card.value}</div>
       <p className="mt-0.5 break-words text-xs leading-5 text-muted-foreground">{card.detail}</p>
     </div>
@@ -681,7 +667,7 @@ function DataUploadIntakePanel({
                 {state.selectedTemplateFields.map((field) => (
                   <div key={field.id} className="rounded-md border border-border/60 bg-background/45 px-2.5 py-2">
                     <div className="flex items-center justify-between gap-2">
-                      <div className="eyebrow-label">{field.label}</div>
+                      <div className={eyebrowClassName(field.label)}>{field.label}</div>
                       <Badge variant={field.required ? "warning" : "outline"}>{field.requiredLabel}</Badge>
                     </div>
                     <div className="mt-1 truncate font-mono text-xs text-foreground" title={field.name}>{field.name}</div>
@@ -1192,7 +1178,7 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
               role="region"
               aria-label={vm.providerSetupDialogState.successPanel.ariaLabel}
             >
-              <div className="eyebrow-label">{vm.providerSetupDialogState.successPanel.title}</div>
+              <div className={eyebrowClassName(vm.providerSetupDialogState.successPanel.title)}>{vm.providerSetupDialogState.successPanel.title}</div>
               <div className="mt-3 grid gap-2 sm:grid-cols-2">
                 {vm.providerSetupDialogState.successActions.map((action) => (
                   <ProviderSetupNextAction
@@ -1632,7 +1618,7 @@ function ProviderSetupWorkflowSteps({ steps }: { steps: ProviderSetupWorkflowSte
       role="region"
       aria-label="Data integration workflow"
     >
-      <div className="eyebrow-label">Data integration flow</div>
+      <div className="eyebrow-label eyebrow-label--sentence">Data integration flow</div>
       <ol className="mt-3 grid gap-2 sm:grid-cols-2">
         {steps.map((step) => (
           <li
@@ -1717,7 +1703,7 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
         <dl className="mt-5 grid gap-2 rounded-lg border border-border/80 bg-secondary/20 p-3 sm:grid-cols-3">
           {vm.dialogState.summaryItems.map((item) => (
             <div key={item.id} className="min-w-0">
-              <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{item.label}</dt>
+              <dt className={cn("text-[10px] text-muted-foreground", usesTrackedCaps(item.label) && "font-mono uppercase tracking-[0.14em]")}>{item.label}</dt>
               <dd className={cn("mt-1 truncate font-mono text-xs", item.tone === "warning" ? "text-warning" : "text-foreground")}>
                 {item.value}
               </dd>
@@ -1769,7 +1755,7 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
                   onClick={() => vm.updateBackfillForm("provider", provider.value)}
                 >
                   <span className="font-semibold">{provider.label}</span>{" "}
-                  <span className="ml-2 font-mono text-[10px] uppercase tracking-[0.12em] text-primary">{provider.badge}</span>
+                  <span className={cn("ml-2 text-[10px] text-primary", usesTrackedCaps(provider.badge) && "font-mono uppercase tracking-[0.12em]")}>{provider.badge}</span>
                 </button>
               ))}
             </div>
@@ -1897,7 +1883,7 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
 function FieldTile({ field }: { field: { id: string; label: string; value: string } }) {
   return (
     <div className="rounded-md border border-border/60 bg-background/45 px-2.5 py-2">
-      <div className="eyebrow-label">{field.label}</div>
+      <div className={eyebrowClassName(field.label)}>{field.label}</div>
       <div className="mt-1 truncate font-mono text-xs text-foreground">{field.value}</div>
     </div>
   );
@@ -1980,7 +1966,7 @@ function BackfillLiveProgress({ state }: { state: BackfillLiveProgressState }) {
 
       {state.recentAttempts.length > 0 ? (
         <div>
-          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Recent fallback attempts</div>
+          <div className="text-xs font-semibold text-muted-foreground">Recent fallback attempts</div>
           <ul className="mt-2 space-y-1.5">
             {state.recentAttempts.map((attempt) => (
               <li

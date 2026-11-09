@@ -31,6 +31,7 @@ import type {
 import type {
   CapitalAccountWorkbench,
 } from "@/types";
+import { formatCount } from "@/lib/format";
 
 const defaultCapitalAccountWorkbenchServices: CapitalAccountWorkbenchServices = {
   getWorkbench: (query) => getCapitalAccountWorkbench(query)
@@ -149,29 +150,29 @@ function buildCapitalAccountWorkbenchView(workbench: CapitalAccountWorkbench | n
       {
         id: "investor-accounts",
         label: "Investor accounts",
-        value: workbench.investorAccountCount.toLocaleString(),
+        value: formatCount(workbench.investorAccountCount),
         detail: `${formatCurrencyWithCode(workbench.netCapitalActivity, workbench.currency, true)} net activity`,
         tone: workbench.investorAccountCount > 0 ? "success" : "warning"
       },
       {
         id: "allocation-rules",
         label: "Allocation rules",
-        value: workbench.allocationRules.length.toLocaleString(),
-        detail: `${workbench.allocationRules.filter((item) => item.isSatisfied).length.toLocaleString()} satisfied`,
+        value: formatCount(workbench.allocationRules.length),
+        detail: `${formatCount(workbench.allocationRules.filter((item) => item.isSatisfied).length)} satisfied`,
         tone: workbench.allocationRules.length > 0 && workbench.allocationRules.every((item) => item.isSatisfied) ? "success" : "warning"
       },
       {
         id: "statements",
         label: "Statements",
-        value: workbench.statementCount.toLocaleString(),
-        detail: `${workbench.restatementLineageCount.toLocaleString()} restatement lineage`,
+        value: formatCount(workbench.statementCount),
+        detail: `${formatCount(workbench.restatementLineageCount)} restatement lineage`,
         tone: workbench.statementCount > 0 ? "success" : "warning"
       },
       {
         id: "audit-drill-throughs",
         label: "Audit drill-throughs",
-        value: workbench.auditDrillThroughCount.toLocaleString(),
-        detail: `${workbench.auditDrillThroughs.filter((item) => item.isAvailable).length.toLocaleString()} available`,
+        value: formatCount(workbench.auditDrillThroughCount),
+        detail: `${formatCount(workbench.auditDrillThroughs.filter((item) => item.isAvailable).length)} available`,
         tone: workbench.auditDrillThroughs.length > 0 && workbench.auditDrillThroughs.every((item) => item.isAvailable) ? "success" : "warning"
       }
     ],
@@ -242,8 +243,8 @@ function buildCapitalAccountInvestorAccountRow(
       `Redemptions ${formatCurrencyWithCode(account.redemptions, account.currency)}`,
       `Fees ${formatCurrencyWithCode(account.managementFees, account.currency)}`
     ].join(" / "),
-    evidenceLabel: `${account.evidenceLinkCount.toLocaleString()} evidence / ${account.evidenceCategorySummary}`,
-    eventLabel: `${account.fundEventCount.toLocaleString()} fund event(s) / ${account.postedFundEventCount.toLocaleString()} posted / ${account.publishedReportOutputCount.toLocaleString()} published`,
+    evidenceLabel: `${formatCount(account.evidenceLinkCount)} evidence / ${account.evidenceCategorySummary}`,
+    eventLabel: `${formatCount(account.fundEventCount)} fund event(s) / ${formatCount(account.postedFundEventCount)} posted / ${formatCount(account.publishedReportOutputCount)} published`,
     paymentEvidenceLabel: paymentEvidence.label,
     paymentEvidenceTone: paymentEvidence.tone,
     paymentEvidenceSummaryLabel: paymentEvidence.summary,
@@ -265,7 +266,7 @@ function buildCapitalAccountAllocationRuleRow(
     statusTone: rule.isSatisfied ? "success" : "warning",
     reason: rule.reason,
     basis: rule.basis,
-    evidenceLabel: `${rule.evidenceLinkCount.toLocaleString()} evidence`,
+    evidenceLabel: `${formatCount(rule.evidenceLinkCount)} evidence`,
     routeLabel: rule.route ?? "No route",
     requiredLabel: rule.requiredEvidence.length > 0 ? rule.requiredEvidence.join(" / ") : "No explicit evidence requirement",
     policyLabel: rule.ruleVersion ?? "No policy version",
@@ -296,9 +297,9 @@ function buildCapitalAccountStatementLineageRow(
       lineage.publishedBy ? `by ${lineage.publishedBy}` : null,
       lineage.publishedAtUtc ? formatDateTimeLabel(lineage.publishedAtUtc) : null
     ].filter(Boolean).join(" / "),
-    provenanceLabel: `${lineage.reportLineProvenanceCount.toLocaleString()} provenance line(s)`,
+    provenanceLabel: `${formatCount(lineage.reportLineProvenanceCount)} provenance line(s)`,
     restatementLabel: lineage.hasRestatementLineage
-      ? `${lineage.restatementReasonCode ?? "Restated"} / ${lineage.restatementChangedLineCount.toLocaleString()} changed line(s) / ${lineage.restatementEvidenceLinkCount.toLocaleString()} evidence`
+      ? `${lineage.restatementReasonCode ?? "Restated"} / ${formatCount(lineage.restatementChangedLineCount)} changed line(s) / ${formatCount(lineage.restatementEvidenceLinkCount)} evidence`
       : lineage.restatementStatus,
     manifestLabel: [lineage.publicationManifestId, lineage.retainedManifestPath, lineage.publicationEvidenceHash].filter(Boolean).join(" / ") || "No retained manifest metadata",
     routeLabel: lineage.reportOutputRoute ?? lineage.reportRoute,
@@ -313,7 +314,7 @@ function buildCapitalAccountRestatementChangedLineRow(
     id: line.lineKey,
     lineKey: line.lineKey,
     valueLabel: `${line.previousValue} -> ${line.currentValue}`,
-    evidenceLabel: `${line.evidenceLinkCount.toLocaleString()} changed-line evidence`
+    evidenceLabel: `${formatCount(line.evidenceLinkCount)} changed-line evidence`
   };
 }
 
@@ -349,7 +350,7 @@ function formatAllocationInputSummary(
   const remaining = inputs.length > preview.length
     ? ` + ${inputs.length - preview.length} more`
     : "";
-  return `${inputs.length.toLocaleString()} input(s): ${preview.join(" / ")}${remaining}`;
+  return `${formatCount(inputs.length)} input(s): ${preview.join(" / ")}${remaining}`;
 }
 
 function buildCapitalAccountAuditDrillThroughRow(
@@ -362,7 +363,7 @@ function buildCapitalAccountAuditDrillThroughRow(
     summary: drill.summary,
     statusLabel: drill.isAvailable ? "Available" : "Missing route",
     statusTone: drill.isAvailable ? "success" : "warning",
-    evidenceLabel: `${drill.evidenceLinkCount.toLocaleString()} evidence`,
+    evidenceLabel: `${formatCount(drill.evidenceLinkCount)} evidence`,
     routeLabel: drill.route ?? "No route",
     relatedLabel: drill.relatedIds.length > 0
       ? `${drill.relatedIds.length} related record${drill.relatedIds.length === 1 ? "" : "s"}`

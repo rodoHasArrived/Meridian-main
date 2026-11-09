@@ -14,7 +14,7 @@ import {
 } from "@/components/meridian/reporting-hub.selection";
 import { cn } from "@/lib/utils";
 import { badgeVariantToSeverityStatus, semanticToneToTextClass } from "@/lib/shared-tone-mappings";
-import type { ReportingHubDailyWorkItem, ReportingHubModel, ReportingHubTone } from "@/lib/reporting-hub";
+import type { ReportingHubCard, ReportingHubDailyWorkItem, ReportingHubModel, ReportingHubTone } from "@/lib/reporting-hub";
 
 export interface ReportingHubProps {
   model: ReportingHubModel;
@@ -40,6 +40,58 @@ const reportingWorkColumns: DenseDataTableColumn<ReportingHubDailyWorkItem>[] = 
   },
   { id: "owner", label: "Owner", render: (item) => <span className="text-xs text-muted-foreground">{item.owner}</span> },
   { id: "due", label: "Due", render: (item) => <span className="text-xs text-muted-foreground">{item.dueLabel ?? "Not supplied"}</span> }
+];
+
+const reportFamilyColumns: DenseDataTableColumn<ReportingHubCard>[] = [
+  {
+    id: "family",
+    label: "Family",
+    sortValue: (card) => card.family,
+    render: (card) => <span className="font-semibold text-foreground">{card.family}</span>
+  },
+  {
+    id: "readiness",
+    label: "Readiness",
+    // Families that need attention come first in ascending order.
+    sortValue: (card) => `${card.needsAttention ? 0 : 1} ${card.statusLabel}`,
+    render: (card) => <SeverityBadge status={badgeVariantToSeverityStatus(card.badgeVariant)} label={card.statusLabel} />
+  },
+  {
+    id: "approved",
+    label: "Latest approved",
+    hideable: true,
+    render: (card) => <span className={cn("text-xs", semanticToneToTextClass(card.statusTone))}>{card.approvedAsOfLabel}</span>
+  },
+  {
+    id: "activity",
+    label: "Activity",
+    hideable: true,
+    sortValue: (card) => card.runCount,
+    render: (card) => (
+      <span className="text-xs text-muted-foreground">
+        {card.detail}
+        {card.latestRunId ? (
+          <>
+            {" · latest "}
+            <span className="font-mono">{card.latestAsOfLabel}</span>
+          </>
+        ) : null}
+      </span>
+    )
+  },
+  {
+    id: "action",
+    label: "Action",
+    render: (card) => (
+      <Button asChild variant="outline" size="sm">
+        <a href={card.nextActionHref} aria-label={`${card.nextActionLabel} for ${card.family}`}>
+          <FileText className="h-4 w-4" aria-hidden="true" />
+          {card.nextActionLabel}
+          <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
+        </a>
+      </Button>
+    )
+  }
 ];
 
 /**
@@ -257,48 +309,16 @@ function ReportingHubContent({
                 </div>
                 <Badge variant="outline">{model.summaryLabel}</Badge>
               </div>
-              <div className="overflow-x-auto">
-                <table className="min-w-full text-sm">
-                  <thead className="bg-secondary/30 text-xs uppercase text-muted-foreground">
-                    <tr>
-                      <th className="px-3 py-2 text-left">Family</th>
-                      <th className="px-3 py-2 text-left">Readiness</th>
-                      <th className="px-3 py-2 text-left">Latest approved</th>
-                      <th className="px-3 py-2 text-left">Activity</th>
-                      <th className="px-3 py-2 text-left">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {model.cards.map((card) => (
-                      <tr key={card.familyKey} aria-label={card.ariaLabel} className="border-t border-border/70">
-                        <td className="px-3 py-2 font-semibold text-foreground">{card.family}</td>
-                        <td className="px-3 py-2">
-                          <SeverityBadge status={badgeVariantToSeverityStatus(card.badgeVariant)} label={card.statusLabel} />
-                        </td>
-                        <td className={cn("px-3 py-2 text-xs", semanticToneToTextClass(card.statusTone))}>{card.approvedAsOfLabel}</td>
-                        <td className="px-3 py-2 text-xs text-muted-foreground">
-                          {card.detail}
-                          {card.latestRunId ? (
-                            <>
-                              {" · latest "}
-                              <span className="font-mono">{card.latestAsOfLabel}</span>
-                            </>
-                          ) : null}
-                        </td>
-                        <td className="px-3 py-2">
-                          <Button asChild variant={card.needsAttention ? "default" : "outline"} size="sm">
-                            <a href={card.nextActionHref} aria-label={`${card.nextActionLabel} for ${card.family}`}>
-                              <FileText className="h-4 w-4" aria-hidden="true" />
-                              {card.nextActionLabel}
-                              <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
-                            </a>
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <DenseDataTable
+                tableId="report-family-organizer"
+                columns={reportFamilyColumns}
+                rows={model.cards}
+                getRowId={(card) => card.familyKey}
+                getRowAriaLabel={(card) => card.ariaLabel}
+                emptyText="No report families are configured."
+                ariaLabel="Report families"
+                maxVisibleRows={null}
+              />
             </section>
           ) : null}
         </div>

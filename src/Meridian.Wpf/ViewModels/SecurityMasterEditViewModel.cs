@@ -24,6 +24,7 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
     private readonly ISecurityMasterService _service;
     private readonly WpfServices.IDesktopAuthorizationSource? _operatorContext;
     private readonly WpfServices.IDesktopMutationAuthorization? _mutationAuthorization;
+    private readonly Meridian.Application.SecurityMaster.IGovernedTermAmendmentPolicy? _governedTermAmendmentPolicy;
     private JsonElement _assetSpecificTerms;
 
     private static readonly IReadOnlyList<string> AssetClassesList = SecurityAssetClassCatalog.AssetClasses;
@@ -48,7 +49,11 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
             [SecurityIdentifierKind.Cik] = "CIK",
             [SecurityIdentifierKind.LoanX] = "LoanX ID",
             [SecurityIdentifierKind.Clip] = "CLIP",
-            [SecurityIdentifierKind.ListingId] = "Listing (Ticker:MIC)"
+            [SecurityIdentifierKind.ListingId] = "Listing (Ticker:MIC)",
+            [SecurityIdentifierKind.Uti] = "UTI",
+            [SecurityIdentifierKind.Upi] = "UPI",
+            [SecurityIdentifierKind.MarkitRedEntity] = "Markit RED entity (RED6)",
+            [SecurityIdentifierKind.MarkitRedPair] = "Markit RED pair (RED9)"
         };
     private static readonly IReadOnlyDictionary<string, SecurityIdentifierKind> IdentifierKindLookup =
         IdentifierKindDisplayNames.ToDictionary(static pair => pair.Value, static pair => pair.Key, StringComparer.OrdinalIgnoreCase);
@@ -98,13 +103,15 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
         WpfServices.NotificationService notificationService,
         ISecurityMasterService service,
         WpfServices.IDesktopAuthorizationSource? operatorContext = null,
-        WpfServices.IDesktopMutationAuthorization? mutationAuthorization = null)
+        WpfServices.IDesktopMutationAuthorization? mutationAuthorization = null,
+        Meridian.Application.SecurityMaster.IGovernedTermAmendmentPolicy? governedTermAmendmentPolicy = null)
     {
         _loggingService = loggingService;
         _notificationService = notificationService;
         _service = service;
         _operatorContext = operatorContext;
         _mutationAuthorization = mutationAuthorization;
+        _governedTermAmendmentPolicy = governedTermAmendmentPolicy;
         _assetSpecificTerms = CreateAssetSpecificTermsTemplate("Equity");
 
         CancelCommand = new RelayCommand(() => CancelRequested?.Invoke());
@@ -163,9 +170,10 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
         WpfServices.NotificationService notificationService,
         ISecurityMasterService service,
         WpfServices.IDesktopAuthorizationSource? operatorContext = null,
-        WpfServices.IDesktopMutationAuthorization? mutationAuthorization = null)
+        WpfServices.IDesktopMutationAuthorization? mutationAuthorization = null,
+        Meridian.Application.SecurityMaster.IGovernedTermAmendmentPolicy? governedTermAmendmentPolicy = null)
     {
-        return new SecurityMasterEditViewModel(loggingService, notificationService, service, operatorContext, mutationAuthorization)
+        return new SecurityMasterEditViewModel(loggingService, notificationService, service, operatorContext, mutationAuthorization, governedTermAmendmentPolicy)
         {
             IsEditMode = false,
             Currency = "USD",
@@ -308,6 +316,16 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
 
     private async Task<SecurityDetailDto?> AmendSecurityAsync(CancellationToken ct)
     {
+        // A direct amendment bypasses maker-checker. Honour the same deployment switch the web API
+        // enforces: when it is on, the edit must be staged through the governed workbench instead.
+        if (_governedTermAmendmentPolicy?.RefusalReason is { } governedRefusal)
+        {
+            StatusText = governedRefusal;
+            _notificationService.ShowNotification("Security Master", governedRefusal, NotificationType.Error);
+            _loggingService.LogWarning("Security Master direct amendment refused: RequireGovernedTermAmendments is enabled.");
+            return null;
+        }
+
         if (!TryAuthorizeMutation(out var actor))
         {
             ReportUnauthorizedWrite();
@@ -327,7 +345,19 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
             SourceRecordId: null,
             Reason: "Amended via WPF UI");
 
-        return await _service.AmendTermsAsync(request, ct).ConfigureAwait(false);
+        try
+        {
+            return await _service.AmendTermsAsync(request, ct).ConfigureAwait(false);
+        }
+        catch (Meridian.Application.SecurityMaster.GovernedTermAmendmentRequiredException refusal)
+        {
+            // The service enforces the same setting itself, so a desktop composed without the policy
+            // (or whose setting changed after the check above) still cannot write directly.
+            StatusText = refusal.Message;
+            _notificationService.ShowNotification("Security Master", refusal.Message, NotificationType.Error);
+            _loggingService.LogWarning("Security Master direct amendment refused by the service: RequireGovernedTermAmendments is enabled.");
+            return null;
+        }
     }
 
     partial void OnAssetClassChanged(string value)

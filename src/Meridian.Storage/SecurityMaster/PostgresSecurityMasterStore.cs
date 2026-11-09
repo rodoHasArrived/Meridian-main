@@ -22,16 +22,20 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         Func<PostgresSecurityMasterStore, NpgsqlConnection, NpgsqlTransaction, SecurityProjectionRecord, CancellationToken, Task> WriteAsync);
 
     /// <summary>
-    /// The projection writers that predate <see cref="SecurityTermsProjectionRegistry"/> and have
-    /// not moved onto it. Every other class — including Bond, whose three sibling tables are now
-    /// registry satellites — is a descriptor. Option stays here because its tables are keyed by
-    /// contract symbol rather than security, its alias table fans out from the record's aliases, its
+    /// The projection writers the declarative <see cref="SecurityTermsProjectionRegistry"/> cannot
+    /// express. Every other class — including Bond, whose three sibling tables are now registry
+    /// satellites — is a descriptor. Option stays here because its tables are keyed by contract
+    /// symbol rather than security, its alias table fans out from the record's aliases, its
     /// lifecycle row has an insert-only <c>listed_at</c>, and
     /// <see cref="PostgresOptionReferenceProjectionStore"/> writes the same tables from quotes.
+    /// CustomAsset is here because its fields are governed per profile and have no fixed column
+    /// set: it projects one row per <c>profileFields</c> key (migration 064), keyed by security and
+    /// field rather than a column per term.
     /// </summary>
     private static readonly IReadOnlyList<AssetProjectionWriter> HandWrittenProjectionWriters =
     [
         new("Option", static (store, c, t, r, ct) => store.UpsertOptionProjectionTablesAsync(c, t, r, ct)),
+        new(CustomAssetAssetClass, static (store, c, t, r, ct) => store.UpsertCustomAssetProfileFieldProjectionAsync(c, t, r, ct)),
     ];
 
     /// <summary>
@@ -184,12 +188,10 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
                 "ProjectionBatchRebuilt",
                 "security-master.rebuild",
                 DateTimeOffset.UtcNow,
-                new
-                {
+                new ProjectionBatchRebuiltPayload(
                     projectionName,
                     lastGlobalSequence,
-                    records = acceptedRecords.Select(static record => new { record.SecurityId, record.Version }).ToArray()
-                },
+                    acceptedRecords.Select(static record => new ProjectionBatchRebuiltRecord(record.SecurityId, record.Version)).ToArray()),
                 ct).ConfigureAwait(false);
         }
 
@@ -579,7 +581,12 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         SecurityProjectionRecord record,
         CancellationToken ct)
     {
-        if (SecurityAssetClassCatalog.GetOrDefault(record.AssetClass).ProjectionKind != SecurityTermsProjectionKind.Specialized ||
+        // Option is no longer the only Specialized class (CustomAsset is too), so the option tables
+        // also require the OCC-symbol fact: a record that moved from Option to CustomAsset must clear
+        // them. Option is the only Specialized class keyed by OCC contract symbols.
+        var descriptor = SecurityAssetClassCatalog.GetOrDefault(record.AssetClass);
+        if (!descriptor.UsesOccOptionSymbols ||
+            descriptor.ProjectionKind != SecurityTermsProjectionKind.Specialized ||
             !TryBuildOptionProjection(record, out var projection))
         {
             await DeleteOptionProjectionTablesAsync(connection, transaction, record.SecurityId, ct).ConfigureAwait(false);
@@ -590,52 +597,6 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         await UpsertOptionSeriesProjectionAsync(connection, transaction, projection, ct).ConfigureAwait(false);
         await UpsertOptionLifecycleProjectionAsync(connection, transaction, projection, ct).ConfigureAwait(false);
         await UpsertOptionAliasProjectionAsync(connection, transaction, projection, record.Aliases, ct).ConfigureAwait(false);
-    }
-
-    private async Task ReplaceIdentifiersAsync(
-        NpgsqlConnection connection,
-        NpgsqlTransaction transaction,
-        Guid securityId,
-        IReadOnlyList<SecurityIdentifierDto> identifiers,
-        CancellationToken ct)
-    {
-        await using (var delete = connection.CreateCommand())
-        {
-            delete.Transaction = transaction;
-            delete.CommandText = $"delete from {Qualified("security_identifiers")} where security_id = @security_id;";
-            delete.Parameters.AddWithValue("security_id", securityId);
-            await delete.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-        }
-
-        foreach (var identifier in identifiers)
-        {
-            await using var insert = connection.CreateCommand();
-            insert.Transaction = transaction;
-            insert.CommandText =
-                $"""
-                insert into {Qualified("security_identifiers")} (
-                    security_id, identifier_kind, identifier_value, normalized_identifier_value,
-                    provider, normalized_provider, is_primary,
-                    valid_from, valid_to, source, confidence, manual_override)
-                values (
-                    @security_id, @identifier_kind, @identifier_value, @normalized_identifier_value,
-                    @provider, @normalized_provider, @is_primary,
-                    @valid_from, @valid_to, @source, @confidence, @manual_override);
-                """;
-            insert.Parameters.AddWithValue("security_id", securityId);
-            insert.Parameters.AddWithValue("identifier_kind", identifier.Kind.ToString());
-            insert.Parameters.AddWithValue("identifier_value", identifier.Value);
-            insert.Parameters.AddWithValue("normalized_identifier_value", SecurityIdentifierNormalizer.GetOrComputeNormalizedValue(identifier));
-            insert.Parameters.AddWithValue("provider", (object?)identifier.Provider ?? DBNull.Value);
-            insert.Parameters.AddWithValue("normalized_provider", ToDbNullable(SecurityIdentifierNormalizer.GetOrComputeNormalizedProvider(identifier)));
-            insert.Parameters.AddWithValue("is_primary", identifier.IsPrimary);
-            insert.Parameters.AddWithValue("valid_from", identifier.ValidFrom.UtcDateTime);
-            insert.Parameters.AddWithValue("valid_to", (object?)identifier.ValidTo?.UtcDateTime ?? DBNull.Value);
-            insert.Parameters.AddWithValue("source", "SecurityMaster");
-            insert.Parameters.AddWithValue("confidence", DBNull.Value);
-            insert.Parameters.AddWithValue("manual_override", false);
-            await insert.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-        }
     }
 
     private async Task SaveCheckpointCoreAsync(

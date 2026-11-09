@@ -12,6 +12,7 @@ import stat
 import subprocess
 import tempfile
 import unittest
+import urllib.parse
 import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
@@ -280,6 +281,9 @@ class GitBoundaryTests(unittest.TestCase):
 
 class PublishTests(unittest.TestCase):
     def setUp(self):
+        pause = mock.patch("time.sleep")
+        self.sleep = pause.start()
+        self.addCleanup(pause.stop)
         self.api = mock.Mock(repository=REPOSITORY, token="app-secret")
         self.pr = pull()
         self.api.get.side_effect = lambda path: copy.deepcopy(self.pr)
@@ -366,37 +370,115 @@ class PublishTests(unittest.TestCase):
         self.assertEqual(result["status"], "retry")
         self.assertEqual(result["request"]["head_sha"], "6" * 40)
 
-    def test_refresh_bounded_fanout_and_duplicate_pair_suppression(self):
+    def configure_refresh(self, pulls, runs=(), current_heads=()):
+        def get(path):
+            if path.startswith("/branches/"):
+                return {"commit": {"sha": BASE}}
+            if path.startswith("/actions/") or path.startswith("/pulls?"):
+                query = urllib.parse.parse_qs(urllib.parse.urlsplit(path).query)
+                page = int(query["page"][0])
+                size = int(query["per_page"][0])
+                values = runs if path.startswith("/actions/") else pulls
+                batch = values[(page - 1) * size:page * size]
+                return {"workflow_runs": batch} if path.startswith("/actions/") else batch
+            if path.startswith("/compare/"):
+                head = path.split("...")[1]
+                return {"merge_base_commit": {"sha": BASE if head in current_heads else "7" * 40}}
+            self.fail(f"Unexpected refresh API request: {path}")
+        self.api.get.side_effect = get
+
+    def test_refresh_dispatches_all_stale_pairs_without_ten_pr_cap(self):
         pulls = []
         for number in range(1, 14):
             pr = pull(number=number, created_at="2020-01-01T00:00:00Z")
             pulls.append(pr)
         existing = source_run(display_title=run_title(pr_number=1))
-        def get(path):
-            if path.startswith("/branches/"):
-                return {"commit": {"sha": BASE}}
-            if path.startswith("/actions/"):
-                return {"workflow_runs": [existing]}
-            if path.startswith("/pulls?"):
-                return pulls
-            return {"merge_base_commit": {"sha": "7" * 40}}
-        self.api.get.side_effect = get
+        self.configure_refresh(pulls, [existing])
         with mock.patch.object(repair, "datetime") as clock:
             clock.now.return_value = datetime(2026, 10, 20, 12, 34, 56, tzinfo=timezone.utc)
             result = repair.refresh(self.api, "main")
             clock.now.assert_called_once_with(timezone.utc)
-        self.assertEqual(result["dispatched"], 10)
-        self.assertEqual(result["backlog"], 2)
+        self.assertEqual(result["dispatched"], 12)
+        self.assertEqual(result["backlog"], 0)
         numbers = [call.args[2]["inputs"]["pr_number"] for call in self.api.request.call_args_list]
         self.assertNotIn("1", numbers)
-        self.assertEqual(len(numbers), 10)
+        self.assertEqual(numbers, [str(number) for number in range(2, 14)])
+        self.assertEqual(self.sleep.call_args_list, [mock.call(1)] * 11)
         self.assertEqual(result["observed_at"], "2026-10-20T12:34:56Z")
-        self.assertEqual(result["waiting_requests"], [
-            {"pr_number": number, "head_sha": HEAD, "base_sha": BASE} for number in (12, 13)])
+        self.assertEqual(result["waiting_requests"], [])
         self.assertEqual(result["backlog"], len(result["waiting_requests"]))
         self.assertNotIn("created_at", json.dumps(result))
         for call in self.api.request.call_args_list:
             self.assertEqual(set(call.args[2]["inputs"]), set(repair.DISPATCH_INPUTS))
+
+    def test_refresh_dispatches_all_pr_pages_after_first_hundred(self):
+        self.configure_refresh([pull(number=number) for number in range(1, 106)])
+        result = repair.refresh(self.api, "main")
+        self.assertEqual(result["dispatched"], 105)
+        self.assertEqual(result["backlog"], 0)
+        sent = [call.args[2]["inputs"]["pr_number"] for call in self.api.request.call_args_list]
+        self.assertEqual(sent, [str(number) for number in range(1, 106)])
+        pull_pages = [call.args[0] for call in self.api.get.call_args_list if call.args[0].startswith("/pulls?")]
+        self.assertEqual([urllib.parse.parse_qs(urllib.parse.urlsplit(path).query)["page"] for path in pull_pages],
+                         [["1"], ["2"]])
+        self.assertEqual(self.sleep.call_count, 104)
+
+    def test_refresh_skips_forks_deleted_repositories_default_and_current_branches(self):
+        fork, deleted, default, current = [pull(number=n) for n in range(1, 5)]
+        fork["head"]["repo"]["full_name"] = "contributor/fork"
+        deleted["head"]["repo"] = None
+        default["head"]["ref"] = "main"
+        current["head"]["sha"] = NEW
+        conflicted = pull(number=5, mergeable=False, mergeable_state="dirty")
+        draft = pull(number=6, draft=True)
+        self.configure_refresh([fork, deleted, default, current, conflicted, draft], current_heads={NEW})
+        result = repair.refresh(self.api, "main")
+        self.assertEqual(result["dispatched"], 2)
+        self.assertEqual([call.args[2]["inputs"]["pr_number"] for call in self.api.request.call_args_list], ["5", "6"])
+        for call in self.api.request.call_args_list:
+            self.assertEqual(call.args[2]["ref"], "main")
+            self.assertEqual(call.args[2]["inputs"]["base_sha"], BASE)
+
+    def test_refresh_deduplicates_only_trusted_active_or_successful_dispatches(self):
+        variants = [
+            ({"status": "queued", "conclusion": None}, True),
+            ({"status": "in_progress", "conclusion": None}, True),
+            ({"status": "waiting", "conclusion": None}, True),
+            ({"status": "completed", "conclusion": "success"}, True),
+            ({"status": "completed", "conclusion": "failure"}, False),
+            ({"status": "completed", "conclusion": "cancelled"}, False),
+            ({"event": "pull_request_target"}, False),
+            ({"head_sha": NEW}, False),
+            ({"display_title": run_title(workflow_sha=NEW)}, False),
+            ({"display_title": run_title(execution_ref="refs/heads/topic")}, False),
+            ({"display_title": run_title(base_sha=NEW)}, False),
+            ({"display_title": "unrelated workflow title"}, False),
+        ]
+        for updates, suppressed in variants:
+            with self.subTest(updates=updates):
+                self.api.reset_mock()
+                self.configure_refresh([pull()], [source_run(**updates)])
+                result = repair.refresh(self.api, "main")
+                self.assertEqual(result["dispatched"], 0 if suppressed else 1)
+                self.assertEqual(self.api.request.call_count, 0 if suppressed else 1)
+
+    def test_refresh_deduplication_reads_every_run_page(self):
+        runs = [source_run(display_title="unrelated") for _ in range(100)] + [source_run()]
+        self.configure_refresh([pull()], runs)
+        result = repair.refresh(self.api, "main")
+        self.assertEqual(result["dispatched"], 0)
+        self.api.request.assert_not_called()
+        run_pages = [call.args[0] for call in self.api.get.call_args_list if call.args[0].startswith("/actions/")]
+        self.assertEqual([urllib.parse.parse_qs(urllib.parse.urlsplit(path).query)["page"] for path in run_pages],
+                         [["1"], ["2"]])
+
+    def test_refresh_has_no_thousand_pr_pagination_cutoff(self):
+        self.configure_refresh([pull(number=number) for number in range(1, 1002)])
+        result = repair.refresh(self.api, "main")
+        self.assertEqual(result["dispatched"], 1001)
+        self.assertEqual(result["backlog"], 0)
+        self.assertEqual(self.api.request.call_args_list[-1].args[2]["inputs"]["pr_number"], "1001")
+        self.assertEqual(self.sleep.call_count, 1000)
 
     def test_refresh_empty_backlog_has_no_waiting_requests(self):
         def get(path):

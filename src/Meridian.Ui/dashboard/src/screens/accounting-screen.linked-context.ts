@@ -1,3 +1,4 @@
+import { countAccountingOpenBreaks } from "@/lib/cross-screen-counts";
 import {
   appendLinkedContextSearchValue,
   buildLinkedContextItem,
@@ -24,9 +25,8 @@ export function buildAccountingLinkedContextItem(
     });
   }
 
-  const breakCount = (accounting.breakQueue ?? []).filter((item) => item.status === "Open" || item.status === "InReview").length;
-  const runBreakCount = (accounting.reconciliationQueue ?? []).reduce((total, row) => total + row.openBreakCount, 0);
-  const attentionCount = Math.max(breakCount, runBreakCount);
+  // One count (A3): the server's total, which a withheld break queue cannot undercount.
+  const attentionCount = countAccountingOpenBreaks(accounting);
   return buildLinkedContextItem({
     id: "accounting-reconciliation",
     label: "Reconciliation",

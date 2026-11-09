@@ -53,15 +53,27 @@ public sealed partial class SecurityMasterCashFlowService
                 return Blocked(alreadyReset
                 ? "An observed fixing is missing for a floating bond period that has already reset."
                 : "A retained forward curve is required for future floating bond resets.");
-            var indexFraction = curve is not null && !alreadyReset ? index.Value
-                : leg.RateUnit == SecurityCouponRateUnit.Percent ? index.Value / 100m
-                : leg.RateUnit == SecurityCouponRateUnit.Fraction ? index.Value
-                : NormalizeAnnualRate(index.Value);
+            // A forward-curve rate is a fraction by the curve contract; a retained fixing, cap and floor
+            // read through the leg's declared unit (review D10, slice 4) and otherwise block.
+            decimal indexFraction, capFraction = 0m, floorFraction = 0m;
+            try
+            {
+                indexFraction = curve is not null && !alreadyReset ? index.Value
+                    : LegRateFraction(security.AssetClass, leg, exactReset is not null ? "resetSchedule.fixingRate" : "currentIndexRate", index.Value);
+                if (leg.CapRate is { } capValue)
+                    capFraction = LegRateFraction(security.AssetClass, leg, "capRate", capValue);
+                if (leg.FloorRate is { } floorValue)
+                    floorFraction = LegRateFraction(security.AssetClass, leg, "floorRate", floorValue);
+            }
+            catch (RateUnitUnavailableException ex)
+            {
+                return Blocked(ex.Message);
+            }
             var rate = indexFraction + leg.SpreadBps.GetValueOrDefault() / 10_000m + (alreadyReset ? 0m : ScenarioRateShift(scenario));
-            if (leg.CapRate is { } cap)
-                rate = Math.Min(rate, leg.RateUnit == SecurityCouponRateUnit.Percent ? cap / 100m : cap);
-            if (leg.FloorRate is { } floor)
-                rate = Math.Max(rate, leg.RateUnit == SecurityCouponRateUnit.Percent ? floor / 100m : floor);
+            if (leg.CapRate is not null)
+                rate = Math.Min(rate, capFraction);
+            if (leg.FloorRate is not null)
+                rate = Math.Max(rate, floorFraction);
             if (rate < 0m)
                 return Blocked("Negative floating coupon cash flows require a separately supported signed-interest model.");
             if (!ScheduleDayCount.TryPeriodFraction(dayCount, period, schedule, out var fraction, out var refusal))
@@ -76,8 +88,8 @@ public sealed partial class SecurityMasterCashFlowService
                         System.Text.Json.JsonSerializer.Serialize(curve));
                 rateEvidence = new(period.AccrualStart, alreadyReset, leg.IndexName ?? string.Empty,
                     indexFraction, leg.SpreadBps.GetValueOrDefault() / 10_000m,
-                    leg.CapRate is { } c ? leg.RateUnit == SecurityCouponRateUnit.Percent ? c / 100m : c : null,
-                    leg.FloorRate is { } f ? leg.RateUnit == SecurityCouponRateUnit.Percent ? f / 100m : f : null,
+                    leg.CapRate is not null ? capFraction : null,
+                    leg.FloorRate is not null ? floorFraction : null,
                     notional.Value, fraction, leg.RateUnit, source);
                 if (!rateEvidence.TryCoupon(ScenarioRateShift(scenario), out _, out var evidenceRefusal))
                     return Blocked(evidenceRefusal!);

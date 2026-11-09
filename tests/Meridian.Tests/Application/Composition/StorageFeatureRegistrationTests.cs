@@ -462,6 +462,33 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
     }
 
     [Fact]
+    public void Register_ComposesLoanAccountingProjectorWithoutLedger_WhenOnlySecurityMasterConnectionIsConfigured()
+    {
+        ConfigureInMemoryGovernanceFixture();
+        ClearGovernancePersistenceEnvironment();
+        ClearPostgresBackedStorageEnvironment();
+        Environment.SetEnvironmentVariable(SecurityMasterStartup.ConnectionStringVariable, "Host=sm-db;Port=5432;Database=security;Username=postgres;Password=secret");
+
+        var services = new ServiceCollection();
+
+        new StorageFeatureRegistration().Register(services, CompositionOptions.WebDashboard);
+
+        // Direct lending still falls back to the Security Master database, but the ledger stays absent.
+        services.Should().ContainSingle(sd => sd.ServiceType == typeof(DirectLendingOptions));
+        services.Should().ContainSingle(sd => sd.ServiceType == typeof(IDirectLendingService));
+        services.Should().NotContain(sd => sd.ServiceType == typeof(ILedgerJournalStore));
+
+        var descriptor = services.Should().ContainSingle(sd => sd.ServiceType == typeof(LoanAccountingProjector)).Subject;
+        descriptor.ImplementationFactory.Should().NotBeNull(
+            "the projector must compose with an optional ledger store instead of requiring one");
+
+        using var minimal = new ServiceCollection()
+            .AddSingleton(Substitute.For<IAccountingPolicyService>())
+            .BuildServiceProvider();
+        descriptor.ImplementationFactory!(minimal).Should().BeOfType<LoanAccountingProjector>();
+    }
+
+    [Fact]
     public void Register_Throws_WhenProductionGovernancePersistenceIsMissing()
     {
         ClearPostgresBackedStorageEnvironment();

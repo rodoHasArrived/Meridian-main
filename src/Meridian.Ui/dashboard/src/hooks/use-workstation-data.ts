@@ -35,6 +35,7 @@ import {
   getSecurityAssetProfiles,
   setFeatureCapability
 } from "@/lib/api";
+import { getCrossScreenCounts } from "@/lib/api/operator-workstation.api";
 import { describeApiError } from "@/lib/api-errors";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 import type {
@@ -66,12 +67,14 @@ import type {
   WorkflowPresetLibrary,
   WorkspaceKey
 } from "@/types";
+import type { WorkstationCrossScreenCounts } from "@/types/cross-screen-counts";
 
 type WorkspaceErrorMap = Partial<Record<WorkspaceKey, string>>;
 type RefreshCategory = "bootstrap" | "workspace" | "workflow";
 type RefreshDataKey =
   | "session"
   | "overview"
+  | "crossScreenCounts"
   | "strategy"
   | "trading"
   | "portfolio"
@@ -123,6 +126,8 @@ export interface UseWorkstationDataOptions {
 interface WorkstationDataState {
   session: SessionInfo | null;
   overview: SystemOverviewResponse | null;
+  /** Open orders, provider health and open breaks, counted once for every screen (A3). */
+  crossScreenCounts: WorkstationCrossScreenCounts | null;
   strategy: StrategyWorkspaceResponse | null;
   trading: TradingWorkspaceResponse | null;
   portfolio: PortfolioWorkspaceResponse | null;
@@ -162,6 +167,7 @@ interface WorkstationDataState {
 const initialState: WorkstationDataState = {
   session: null,
   overview: null,
+  crossScreenCounts: null,
   strategy: null,
   trading: null,
   portfolio: null,
@@ -748,6 +754,9 @@ function createRefreshEntries(
   return [
     { key: "session", category: "bootstrap", start: (requestOptions) => getSession(requestOptions) },
     { key: "overview", category: "bootstrap", start: (requestOptions) => getSystemStatus(requestOptions) },
+    // Loaded on every route, like the overview, so Settings and the shell show the same counts as
+    // the workspaces that hold the source lists.
+    { key: "crossScreenCounts", category: "bootstrap", start: (requestOptions) => getCrossScreenCounts(tradingFundAccountId, requestOptions) },
     { key: "strategy", category: "workspace", workspaceKeys: ["strategy"], start: (requestOptions) => getStrategyWorkspace(requestOptions) },
     {
       key: "trading",
@@ -937,6 +946,9 @@ function assignRefreshValue(state: WorkstationDataState, key: RefreshDataKey, va
       break;
     case "overview":
       state.overview = value as SystemOverviewResponse;
+      break;
+    case "crossScreenCounts":
+      state.crossScreenCounts = value as WorkstationCrossScreenCounts;
       break;
     case "strategy":
       state.strategy = value as StrategyWorkspaceResponse;

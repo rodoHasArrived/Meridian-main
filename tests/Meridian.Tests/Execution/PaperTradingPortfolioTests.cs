@@ -928,7 +928,7 @@ public sealed class PaperTradingPortfolioMarginRulesTests
     }
 
     [Fact]
-    public void AccrueMarginInterest_OneDay_DeductsInterestFromCashAndAddsToLoan()
+    public void AccrueMarginInterest_OneDay_DeductsInterestFromCashOnly()
     {
         // $100 000 cash, buy $20 000 notional on 50 % margin → $10 000 borrowed.
         // Annual rate 7.3 % → daily = 7.3 / 365 = 0.02 %.
@@ -941,7 +941,8 @@ public sealed class PaperTradingPortfolioMarginRulesTests
 
         var expectedInterest = 10_000m * (0.073m / 365m);
         portfolio.Cash.Should().BeApproximately(90_000m - expectedInterest, precision: 0.0001m);
-        portfolio.MarginBalance.Should().BeApproximately(10_000m + expectedInterest, precision: 0.0001m);
+        portfolio.MarginBalance.Should().Be(10_000m,
+            because: "interest is paid from cash; growing the loan too would charge it twice");
     }
 
     [Fact]
@@ -953,8 +954,59 @@ public sealed class PaperTradingPortfolioMarginRulesTests
         portfolio.AccrueMarginInterest(annualRate: 0.073m, days: 30);
 
         var expectedInterest = 10_000m * (0.073m / 365m) * 30m;
-        portfolio.MarginBalance.Should().BeApproximately(10_000m + expectedInterest, precision: 0.001m);
+        portfolio.MarginBalance.Should().Be(10_000m);
         portfolio.Cash.Should().BeApproximately(90_000m - expectedInterest, precision: 0.001m);
+    }
+
+    [Fact]
+    public void AccrueMarginInterest_ReducesPortfolioValueByExactlyTheInterest()
+    {
+        var portfolio = BuildRegTPortfolio(100_000m);
+        portfolio.ApplyFill("margin-1", BuildFill("AAPL", OrderSide.Buy, qty: 100, price: 200m));
+        var valueBefore = portfolio.PortfolioValue;
+
+        portfolio.AccrueMarginInterest(annualRate: 0.073m, days: 30);
+
+        var expectedInterest = 10_000m * (0.073m / 365m) * 30m;
+        portfolio.PortfolioValue.Should().BeApproximately(valueBefore - expectedInterest, precision: 0.0001m);
+    }
+
+    [Fact]
+    public void AccrueMarginInterest_ThenSellingRepaysOnlyThePrincipal()
+    {
+        var portfolio = BuildRegTPortfolio(100_000m);
+        portfolio.ApplyFill("margin-1", BuildFill("AAPL", OrderSide.Buy, qty: 100, price: 200m));
+        portfolio.AccrueMarginInterest(annualRate: 0.073m, days: 30);
+
+        portfolio.ApplyFill("margin-1", BuildFill("AAPL", OrderSide.Sell, qty: 100, price: 200m));
+
+        // $20 000 proceeds less the $10 000 principal returns $10 000; the interest is
+        // charged once, at accrual, and not again through the loan repayment.
+        var expectedInterest = 10_000m * (0.073m / 365m) * 30m;
+        portfolio.Cash.Should().BeApproximately(100_000m - expectedInterest, precision: 0.0001m);
+        portfolio.MarginBalance.Should().Be(0m);
+    }
+
+    [Fact]
+    public void AccrueMarginInterest_WithLedger_PostsBalancedExpenseEntry()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        var portfolio = new PaperTradingPortfolio(
+        [
+            new AccountDefinition("margin-1", "Reg T Margin", AccountKind.Brokerage, 100_000m,
+                MarginType: MarginAccountType.RegT),
+        ], ledger);
+        portfolio.ApplyFill("margin-1", BuildFill("AAPL", OrderSide.Buy, qty: 100, price: 200m));
+        var asOf = new DateTimeOffset(2026, 11, 5, 21, 0, 0, TimeSpan.Zero);
+
+        portfolio.AccrueMarginInterest(annualRate: 0.073m, days: 1, asOf: asOf);
+
+        var expectedInterest = 10_000m * (0.073m / 365m);
+        var entry = ledger.Journal.Single(e => e.Description.Contains("Margin interest"));
+        entry.Timestamp.Should().Be(asOf);
+        entry.Lines.Should().HaveCount(2);
+        entry.Lines.Single(l => l.Account == LedgerAccounts.MarginInterestExpense).Debit.Should().Be(expectedInterest);
+        entry.Lines.Single(l => l.Account == LedgerAccounts.Cash).Credit.Should().Be(expectedInterest);
     }
 
     [Fact]

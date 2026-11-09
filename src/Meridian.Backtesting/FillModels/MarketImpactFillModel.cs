@@ -19,6 +19,14 @@ internal sealed class MarketImpactFillModel(
     decimal maxParticipationRate = 0m,
     FillConservatism conservatism = FillConservatism.Conservative) : IFillModel
 {
+    /// <summary>
+    /// Upper bound on the square-root impact fraction. Without a bound, a thin bar (for example
+    /// 200 shares against a volume of 2) yields impact of 100% or more, which drives a sell fill
+    /// price to zero or below and corrupts cash and P&amp;L. Half the base price is already far
+    /// beyond any realistic single-bar impact, so the cap only guards degenerate inputs.
+    /// </summary>
+    internal const decimal MaxImpactFraction = 0.5m;
+
     private readonly decimal _maxParticipationRate = Math.Clamp(maxParticipationRate, 0m, 1m);
 
     public OrderFillResult TryFill(Order order, MarketEvent evt)
@@ -53,6 +61,19 @@ internal sealed class MarketImpactFillModel(
                 WasTriggered: triggered && !order.IsTriggered);
         }
 
+        // A zero-volume bar has no traded liquidity to fill against. Treating it as volume 1
+        // turned any order into a huge participation rate (and unbounded impact), so leave the
+        // order working until a bar with volume arrives — the same outcome the participation cap
+        // already produces for such bars.
+        if (bar.Volume <= 0)
+        {
+            return new OrderFillResult(
+                order with { IsTriggered = triggered },
+                [],
+                RemoveOrder: false,
+                WasTriggered: triggered && !order.IsTriggered);
+        }
+
         var remainingAbsolute = order.RemainingQuantity;
         var fillableAbsolute = ComputeFillableQuantity(remainingAbsolute, bar.Volume);
 
@@ -78,9 +99,10 @@ internal sealed class MarketImpactFillModel(
         }
 
         // Calculate participation rate and market impact
-        var barVolume = bar.Volume > 0 ? bar.Volume : 1L;
-        var participationRate = (decimal)fillableAbsolute / barVolume;
-        var impactFraction = impactCoefficient * (decimal)Math.Sqrt((double)participationRate);
+        var participationRate = (decimal)fillableAbsolute / bar.Volume;
+        var impactFraction = Math.Min(
+            MaxImpactFraction,
+            impactCoefficient * (decimal)Math.Sqrt((double)participationRate));
 
         // Determine number of partial fills based on order size vs. bar volume
         var numFills = participationRate > 0.05m

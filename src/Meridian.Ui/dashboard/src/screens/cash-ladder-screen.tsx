@@ -25,6 +25,7 @@ import {
   type CashLadderDrillRow
 } from "@/screens/cash-ladder-screen.view-model";
 import type { PortfolioCashLadder } from "@/types/portfolio-cash-ladder.types";
+import { formatNumber } from "@/lib/format";
 
 const SOURCE_PALETTE = [
   "var(--chart-series-1, #3A7A56)",
@@ -397,7 +398,7 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
                           fill={SOURCE_PALETTE[segment.paletteIndex]}
                           opacity={selectedBucket === null || selectedBucket === bar.index ? 0.85 : 0.35}
                         >
-                          <title>{`${bar.label} · ${segment.source}: ${segment.amount.toLocaleString("en-US")}`}</title>
+                          <title>{`${bar.label} · ${segment.source}: ${formatNumber(segment.amount, { maximumFractionDigits: 3 })}`}</title>
                         </rect>
                       ))}
                       {bar.breachesMinimumBalance ? (
