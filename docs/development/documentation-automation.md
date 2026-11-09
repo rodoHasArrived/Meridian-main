@@ -176,8 +176,16 @@ Generates a documentation health score and metrics dashboard.
 ```bash
 python3 build/scripts/docs/generate-health-dashboard.py \
   --output docs/status/doc-health-dashboard.md \
-  --json-output docs-health.json
+  --json-output docs-health.json \
+  --volatile-json-output artifacts/docs/doc-health-line-metrics.json
 ```
+
+The tracked JSON and Markdown omit line counts, which change on every Markdown edit. This keeps
+unrelated Markdown PRs from conflicting on the dashboard. The tracked JSON adds a
+`signal_digest`, so concurrent changes to the tracked signals still conflict. The untracked
+`--volatile-json-output` payload keeps `total_lines`, `average_lines` and per-file `line_count`.
+The core profile writes it under `artifacts/docs/`, which the Documentation Automation workflow
+uploads as evidence.
 
 #### `repair-links.py`
 
@@ -415,7 +423,7 @@ Use the dashboards below as the canonical generated status surfaces for readines
 - Treat dated evidence as **stale** when it predates the latest related workflow run, packet, or replay audit.
 - For stale evidence, rerun the narrowest supporting workflow first (provider validation, replay verification, reconciliation export, or contract check) and then regenerate docs automation summaries.
 - Do not claim readiness from a dashboard whose `.md` and `.json` sidecars disagree; rerun automation and resolve drift before sign-off.
-- The CI dashboard-delta gate only fails on new severe blocker or contract-drift counts when the previous dashboard baseline is readable; if the push baseline is unavailable, the run records that gap and skips the severe-regression failure instead of comparing against an all-zero baseline.
+- The CI dashboard-delta gate in `documentation.yml` fails when the documentation `health_score` in `docs/status/doc-health-dashboard.json` drops by more than 10 points from the `HEAD~1` dashboard. It also fails when the regenerated dashboard has no numeric `health_score`, so a renamed key cannot silently disable it. If the baseline is missing or has no readable score, the run records that gap in `artifacts/docs/dashboard-delta.json` and skips the severe-regression failure instead of comparing against an all-zero baseline.
 - When a dashboard remains blocked after rerun, escalate with the failing command, artifact path, and owning lane in the summary report.
 
 ### Artifact Generation Commands (Full + Targeted)
@@ -459,7 +467,7 @@ Documentation rules are defined in `build/rules/doc-rules.yaml`. See [Adding Cus
 | `docs/status/todo-scan-results.json` | scan-todos.py | Machine-readable TODO scan results used for auto issue creation |
 | `docs/status/todo-issue-creation-summary.json` | create-todo-issues.py | Machine-readable issue creation summary with status counts and issue numbers |
 | `docs/status/doc-health-dashboard.md` | generate-health-dashboard.py | Health metrics rendered from canonical JSON |
-| `docs/status/doc-health-dashboard.json` | generate-health-dashboard.py | Canonical health dashboard payload |
+| `docs/status/doc-health-dashboard.json` | generate-health-dashboard.py | Canonical, merge-stable health dashboard payload (no line counts; see `--volatile-json-output`) |
 | `docs/status/wpf-screen-development-tracker.md` | npm run generate-wpf-screen-tracker | WPF screen Gantt chart and automated per-screen TODO checklist |
 | `docs/status/wpf-screen-development-tracker.json` | npm run generate-wpf-screen-tracker | Machine-readable WPF screen tracker payload |
 | `docs/status/link-repair-report.md` | repair-links.py | Broken link report |
