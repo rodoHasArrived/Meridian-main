@@ -474,29 +474,24 @@ public sealed class SecurityMasterDataQualityServiceTests
     }
 
     [Fact]
-    public async Task RunQualityChecksAsync_CountsUntaggedPayloads_AcrossActiveAndInactiveRows()
+    public async Task RunQualityChecksAsync_ReportsTheStoreGateCount_BesideTheActiveRowRule()
     {
         var (sut, store) = BuildSut();
-        var taggedTerms = JsonDocument.Parse(SecurityTermsEnvelope.StampFlat(
+        var tagged = JsonDocument.Parse(SecurityTermsEnvelope.StampFlat(
             """{"maturity":"2030-01-01"}""", "Bond")).RootElement.Clone();
-        var tagged = MakeSecurity(Guid.NewGuid(), "Bond", currency: "USD") with { AssetSpecificTerms = taggedTerms };
+        var taggedSecurity = MakeSecurity(Guid.NewGuid(), "Bond", currency: "USD") with { AssetSpecificTerms = tagged };
         var untaggedActive = MakeSecurity(Guid.NewGuid(), "Equity", currency: "USD");
-        var untaggedInactive = MakeSecurity(Guid.NewGuid(), "Bond", currency: "USD",
-            assetSpecificTerms: new { maturity = "2028-06-30" }) with
-        {
-            Status = SecurityStatusDto.Inactive
-        };
-        store.LoadActiveAsync(Arg.Any<CancellationToken>()).Returns(new[] { tagged, untaggedActive });
-        store.LoadAllAsync(Arg.Any<CancellationToken>())
-            .Returns(new[] { tagged, untaggedActive, untaggedInactive });
+        store.LoadActiveAsync(Arg.Any<CancellationToken>()).Returns(new[] { taggedSecurity, untaggedActive });
+        // The gauge is the store's single aggregate (ADR-024 decision 5), never a projection load:
+        // it covers inactive rows the active scan skips, so it can exceed the scan's own findings.
+        store.CountUntaggedAssetSpecificTermsAsync(Arg.Any<CancellationToken>()).Returns(2);
 
         var report = await sut.RunQualityChecksAsync();
 
-        // The gauge mirrors the ADR-024 retirement-gate SQL: inactive rows count, tagged rows do not.
         report.UntaggedTermsPayloadCount.Should().Be(2);
-        // The per-record rule names only active records; the inactive row is gauge-only.
         report.Violations.Where(v => v.RuleId == "TX003").Should()
             .ContainSingle(v => v.SecurityId == untaggedActive.SecurityId);
+        await store.DidNotReceive().LoadAllAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -507,11 +502,12 @@ public sealed class SecurityMasterDataQualityServiceTests
             """{"maturity":"2030-01-01"}""", "Bond")).RootElement.Clone();
         var tagged = MakeSecurity(Guid.NewGuid(), "Bond", currency: "USD") with { AssetSpecificTerms = taggedTerms };
         store.LoadActiveAsync(Arg.Any<CancellationToken>()).Returns(new[] { tagged });
-        store.LoadAllAsync(Arg.Any<CancellationToken>()).Returns(new[] { tagged });
+        store.CountUntaggedAssetSpecificTermsAsync(Arg.Any<CancellationToken>()).Returns(0);
 
         var report = await sut.RunQualityChecksAsync();
 
         report.UntaggedTermsPayloadCount.Should().Be(0);
+        report.Violations.Should().NotContain(v => v.RuleId == "TX003");
     }
 
     private static SecurityProjectionRecord MakeStaleSecurityTerms(Guid securityId)

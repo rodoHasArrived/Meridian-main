@@ -289,15 +289,13 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
     }
 
     /// <summary>
-    /// The ADR-024 decision-5 retirement-gate count over every stored row, active and inactive,
-    /// mirroring <c>select count(*) from securities where asset_specific_terms-&gt;&gt;'termsFormat'
-    /// is null</c> through the same declared-format reader every consumer uses.
+    /// The ADR-024 decision-5 retirement-gate count over every stored row, active and inactive:
+    /// one store-level aggregate (<see cref="ISecurityMasterStore.CountUntaggedAssetSpecificTermsAsync"/>)
+    /// with the same semantics as <c>SecurityTermsEnvelope.GetDeclaredFormat</c>, so the gauge
+    /// never loads full projections just to count.
     /// </summary>
-    private async Task<int> CountUntaggedTermsPayloadsAsync(CancellationToken ct)
-    {
-        var rows = await _securityStore.LoadAllAsync(ct).ConfigureAwait(false);
-        return rows?.Count(static row => SecurityTermsEnvelope.GetDeclaredFormat(row.AssetSpecificTerms) is null) ?? 0;
-    }
+    private Task<int> CountUntaggedTermsPayloadsAsync(CancellationToken ct)
+        => _securityStore.CountUntaggedAssetSpecificTermsAsync(ct);
 
     // ── StalenessMonitor rules ──────────────────────────────────────────────
 

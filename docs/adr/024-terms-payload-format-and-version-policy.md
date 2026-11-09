@@ -133,8 +133,10 @@ evidence described above. *2026-11-09 (remediation slice 9):* the gate count is 
 deployment — the data-quality scan reports rule `TX003` for each active untagged record, naming
 the family the shape rule infers, and
 `SecurityMasterQualityReportDto.UntaggedTermsPayloadCount` mirrors the decision-5 SQL over every
-stored row, inactive included, through `SecurityTermsEnvelope.GetDeclaredFormat`. The population
-drains through stamped writes; no stored payload is rewritten.
+stored row, inactive included, as one store-level aggregate
+(`ISecurityMasterStore.CountUntaggedAssetSpecificTermsAsync`) pinned row by row to the
+`SecurityTermsEnvelope.GetDeclaredFormat` verdict. The population drains through stamped writes;
+no stored payload is rewritten.
 
 ## Rationale
 

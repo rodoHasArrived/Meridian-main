@@ -757,8 +757,12 @@ Implemented: the data-quality scan raises rule `TX003` ("Untagged Terms Payload 
 TaxonomyCheck, Warning) for each active record whose asset-specific terms declare no
 `termsFormat`, naming the family the shape rule infers; and
 `SecurityMasterQualityReportDto.UntaggedTermsPayloadCount` gauges the whole stored population —
-inactive rows included — mirroring the decision-5 SQL through the same
-`SecurityTermsEnvelope.GetDeclaredFormat` every consumer uses. The quality-report endpoint
+inactive rows included — through the store's single aggregate
+(`ISecurityMasterStore.CountUntaggedAssetSpecificTermsAsync`, never a projection load; a Codex
+review finding on the first cut, which counted by loading every projection, was confirmed
+against `LoadAllAsync`'s per-row reads and fixed), with the SQL pinned to the
+`SecurityTermsEnvelope.GetDeclaredFormat` verdict row by row by
+`SecurityMasterPostgresRoundTripTests`. The quality-report endpoint
 already serves both workstations, so each deployment's backlog is readable evidence; the count
 only falls, because every write stamps. No stored payload is rewritten, and the shape rule
 stays load-bearing exactly as decision 5 requires until the evidence reads zero everywhere; its
