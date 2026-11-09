@@ -156,7 +156,7 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
                 }
 
                 var fillSnapshot = CloneExecutionReport(fillRecord.Fill);
-                portfolio.ApplyFill(fillSnapshot);
+                portfolio.ApplyRecordedFill(fillSnapshot);
                 fillHistory.Add(fillSnapshot);
                 if (!fillRecord.IsApplied)
                 {
@@ -808,7 +808,7 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
             var fills = await _store.LoadFillRecordsAsync(sessionId, ct).ConfigureAwait(false);
             var portfolio = new PaperTradingPortfolio(session.InitialCash);
             foreach (var fill in fills)
-                portfolio.ApplyFill(CloneExecutionReport(fill.Fill));
+                portfolio.ApplyRecordedFill(CloneExecutionReport(fill.Fill));
 
             return CreatePortfolioSnapshot(portfolio);
         }
@@ -1178,7 +1178,7 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
         var ledger = new Meridian.Ledger.Ledger();
         var portfolio = new PaperTradingPortfolio(session.InitialCash, ledger);
         foreach (var fill in fills)
-            portfolio.ApplyFill(fill);
+            portfolio.ApplyRecordedFill(fill);
         return portfolio;
     }
 

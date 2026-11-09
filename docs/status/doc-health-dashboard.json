@@ -1,6 +1,6 @@
 {
   "total_files": 798,
-  "total_lines": 183693,
+  "total_lines": 183717,
   "orphaned_count": 259,
   "no_heading_count": 157,
   "stale_count": 0,
@@ -3047,7 +3047,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 13317,
+      "line_count": 13318,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6335,7 +6335,7 @@
     },
     {
       "path": "src/Meridian.Execution.Sdk/README.md",
-      "line_count": 167,
+      "line_count": 171,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6343,7 +6343,7 @@
     },
     {
       "path": "src/Meridian.Execution/README.md",
-      "line_count": 487,
+      "line_count": 504,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6543,7 +6543,7 @@
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
-      "line_count": 3087,
+      "line_count": 3089,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
