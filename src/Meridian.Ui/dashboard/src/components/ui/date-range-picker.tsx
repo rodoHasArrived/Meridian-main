@@ -1,6 +1,7 @@
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { monthGrid, toIsoDate } from "@/components/ui/date-picker";
 import { cn } from "@/lib/utils";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 export interface DateRange {
   start: string | null;
@@ -131,7 +132,7 @@ export function DateRangePicker({ start, end, onChange, label, disabled = false,
   return (
     <div ref={rootRef} className={cn("relative w-full", className)}>
       {label ? (
-        <span className="mb-1.5 block font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        <span className={cn("mb-1.5 block text-[10px] font-semibold text-muted-foreground", usesTrackedCaps(label) && "font-mono uppercase tracking-[0.14em]")}>
           {label}
         </span>
       ) : null}

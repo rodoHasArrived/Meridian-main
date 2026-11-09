@@ -67,6 +67,7 @@ public sealed class CorporateActionLedgerKnownDefectTests
         var queryService = Substitute.For<ISecurityMasterQueryService>();
         queryService.GetCorporateActionsAsync(scenario.SecurityId, Arg.Any<CancellationToken>())
             .Returns(scenario.Actions);
+        LedgerBridgeTestRecords.StubSecurityRecord(queryService);
 
         var bridge = new SecurityMasterLedgerBridge(queryService, NullLogger<SecurityMasterLedgerBridge>.Instance);
         var ledger = new DomainLedger();

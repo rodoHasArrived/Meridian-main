@@ -16,7 +16,7 @@ status, named index, index and effective coupon annual fractions, spread in basi
 The optional field and `BondAnalyticsResult.SpreadDv01` are omitted from fixed/zero v1/v2 JSON.
 These are calculation display contracts; they do not introduce discount margin or posting authority.
 
-`BondContractualEconomics` owns declared per-100 coupon cash, reference-period stub fractions, accrued interest and discounting time. `BondExerciseEconomics` shares fixed-price whole-redemption dates and cash across analytics and cash forecasts. `BondFloatingRateEvidence` freezes each observed or forecast reset with explicit units, source, spread, cap/floor, principal and accrual fraction. New declared lot previews use `canonical-lot-amortization-v5`; v1–v3 retain their original arithmetic and dispatch. The interim v4 declared model was removed before any instruction was produced and is refused as an unsupported version.
+`BondContractualEconomics` owns declared per-100 coupon cash, reference-period stub fractions, accrued interest and discounting time. `BondExerciseEconomics` shares fixed-price whole-redemption dates and cash across analytics and cash forecasts. `BondExerciseNoticeWatch` reads the same scenarios' notice bounds into dated notice windows for the workstation notice watch, refusing every structure fixed analytics refuses. `BondFloatingRateEvidence` freezes each observed or forecast reset with explicit units, source, spread, cap/floor, principal and accrual fraction. New declared lot previews use `canonical-lot-amortization-v5`; v1–v3 retain their original arithmetic and dispatch. The interim v4 declared model was removed before any instruction was produced and is refused as an unsupported version.
 
 `CashFlows/` owns the versioned calculation-only cash-flow contracts, exercise/notice resolution, standard make-whole formulas, structured coupon/principal walks, deterministic CPR/SMM/PSA prepayments, and replay verification. The `cashFlowContract` companion reads ahead of existing write ceilings; undeclared terms and existing call/put element shapes remain unchanged. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).
 
@@ -51,6 +51,19 @@ readiness row; classes without a specialized profile carry a persistent operatio
 requirement. Canonical aliases live in `SecurityAssetClassCatalog`; broad legacy vocabulary such as
 Debt and SPV is scoped to readiness so it cannot classify imports or accounting records. Securitized
 aliases resolve exclusively to StructuredCredit, and BankLoan resolves to DirectLoan.
+`SecurityAssetPackReadinessMappingTests` pins the readiness-only alias table (each alias must name a
+canonical class and stay reachable past catalog labels) and requires every catalog class to name
+readiness projectors or appear in a reasoned fallback list. The pack registry's policy text
+(`AdmissionPolicy`, `LedgerExtensionPolicy`, lifecycle `CapturePolicy`) is informational and gates
+nothing: it is read for display and by `ValidateAll`'s own self-checks only.
+
+`SecurityAssetTermsSchema.DeclaredSpellings(key)` returns a top-level term's key followed by every
+alias a class declares for it (element fields excluded). Readers that accept "either spelling" of a
+term derive the list from it rather than restating it.
+
+`SecurityIdentifierNormalizer` is the single identifier normalization and check-digit authority:
+the F# `SecurityIdentifier.normalizeIdentifierValue`, `validateIsin`, `validateCusip` and
+`validateLei` delegate to it.
 
 `ReportLedgerAmountBindingDtos` retains generated trial-balance amounts with exact accounting scope
 and journal/line identities. Generated amount source evidence additionally carries its original
@@ -215,6 +228,14 @@ require a fresh preview. Unknown calculation versions are refused.
 
 `Etl/IEtlStagingStore.cs` lets source adapters retain imported streams through an injected
 persistence port without referencing the Storage implementation.
+
+`Workstation/CrossScreenCountsDtos.cs` carries the counts more than one screen shows (open orders,
+provider health and open breaks) with the definition each was counted with. A count the caller may
+not read, or whose source is not registered, is null, so clients show "—" rather than a substitute.
+
+`Workstation/OperatorScopePreferenceDtos.cs` carries the signed-in operator's default operating
+scope (symbol, fund account, run, provider and date dimensions), which browser and WPF apply when a
+session opens with no scope in its link or local storage.
 
 `Workstation/RecurringJournalDtos.cs` publishes one exact-scope occurrence projection for browser
 and WPF Accounting queues. It carries retained schedule/template versions, source evidence
@@ -417,7 +438,10 @@ twelve-member call entry and nine-member put entry under six paths: `callSchedul
 registry, term blocks and field edits offer) now includes these top-level containers at the raised
 Bond/CD/StructuredCredit ceilings; swap-leg conventions remain readable ahead. `PopulatedTermsAbove`
 still guards containers introduced above a node's writable ceiling, and `ScheduleTermsWriteRules`
-checks populated declarations. The members of a container introduced above version 1 are frozen once readable:
+checks populated declarations. Its `Validate` and `ValidateDeclarations` overloads that take the
+retained terms apply the rules added on 2026-11-02 (E4, E7, E9a/b, E10d, C1a, C5c and the
+strict-walk checks) only to a root container the write introduces or changes; the overloads without
+them treat the write as a create (ADR-025, declared-schedule write-rule gaps). The members of a container introduced above version 1 are frozen once readable:
 `SecurityAssetClassTermsHistoryTests` compares each one with the committed
 `tests/fixtures/security-master/terms-element-shapes/versioned-containers.json` fixture, so a
 member added later needs a new container key at a new readable version.
@@ -487,8 +511,11 @@ accepts older numeric status payloads; persisted queue records already use text 
   absent, matching the `NormalizeOptional` convention used across the ledger surface.
 - `SecurityMaster/` - shared Security Master command/read payloads, including corporate-action
   append requests, append results, structured audit metadata, and the injectable command service
-  contract used by HTTP endpoints, imports, provider backfills, and workstation commands. The
-  contract-owned `InstrumentTypeDescriptorCatalog` carries additive provider-routing,
+  contract used by HTTP endpoints, imports, provider backfills, and workstation commands.
+  `SecurityMasterConflictFieldCategories` classifies a conflict by whole field-path segments
+  against declared names (`SecurityIdentifierKind` values, `TradingParametersDto` fields and
+  explicit lifecycle, corporate-action, classification, currency and display names), never by
+  substrings. The contract-owned `InstrumentTypeDescriptorCatalog` carries additive provider-routing,
   validation, lifecycle, ledger, and risk hints for existing `InstrumentType` values without
   changing enum wire values. Its sibling `CorporateActionTypeDescriptorCatalog` does the same
   for the canonical corporate-action vocabulary in `CorporateActionEventTypes`: per-type ISO
@@ -504,6 +531,19 @@ accepts older numeric status payloads; persisted queue records already use text 
   `DayCountConventions` is the single day-count engine; its `TryFraction`/`Fraction` overloads
   that take a `DayCountPeriodContext` (ICMA reference periods and frequency, termination date,
   business-day predicate) refuse when a convention's context is missing instead of degrading.
+  `RateUnitNormalizer` is the single reader of stored rate units (review D10, slice 4): a record's
+  declared unit (`scheduleConventions.couponRateUnit`, or a leg's unit) wins for the fields it
+  governs, then the field default declared in `SecurityRateFieldUnits`, and otherwise the value is
+  `RateUnitResolution.Undeclared` and is flagged, never converted. Magnitude never selects a unit;
+  zero resolves as unit-invariant. `SecurityRateFieldUnits` inventories each rate field's meaning,
+  default unit (Fraction, Percent or BasisPoints), fraction range and negative-rate policy. Only
+  `*Bps` fields (BasisPoints) and Deposit/CashSweep rates (Fraction) declare a default; fields
+  stored both ways declare none. D3 (decided 2026-11-05): undeclared non-zero rates block; no field
+  default is added.
+  Every `SecurityAssetClassCatalog` descriptor also declares an accounting disposition: an
+  `AccountingInstrumentClass` or `AccountingOutsideSlice` (StructuredNote is outside the slice).
+  `ResolveAccountingInstrumentClass` returns null for a catalogued outside-slice name before the
+  `FixedIncome` taxonomy fallback, which remains only for names the catalog does not model.
 - `SecurityMaster/Schedules/` - the contractual schedule kernel (`ScheduleGenerator`, kernel
   version `contractual-schedule-kernel-v1`). A pure, deterministic `ScheduleSpec` →
   `ScheduleGenerationResult` generator: anchored or compounded grids, forward or backward
@@ -527,7 +567,10 @@ accepts older numeric status payloads; persisted queue records already use text 
   SHA-256 content-hashed through `Sha256Digest`), `JointBusinessDayCalendar`, the built-in
   `BusinessDayCalendars.WeekendsOnly` (`WEEKENDS`) and the shared roll, add and count extensions,
   `BusinessDayConvention` with `BusinessDayAdjustment`, and `IBusinessDayCalendarSource` with the
-  in-memory `StaticBusinessDayCalendarSource`. A source never falls back to weekends-only for an
+  in-memory `StaticBusinessDayCalendarSource`. `BusinessDayCalendars.IsCanonicalCalendarId` (with
+  `MaxCalendarIdLength` and `CanonicalCalendarIdDescription`) owns the canonical id grammar, an
+  uppercase ASCII letter followed by 1 to 15 uppercase ASCII letters or digits, matched exactly;
+  calendar files and declared `paymentCalendars` share it. A source never falls back to weekends-only for an
   unknown id. Calendars are pure: no clock and no I/O. The file-backed source every host registers
   is `Meridian.Storage.Calendars.FileBusinessDayCalendarSource`.
 - `Backfill/` - shared historical backfill run-result and per-symbol completeness signal payloads
@@ -1537,7 +1580,18 @@ Direct lending command result codes distinguish validation failures, missing agg
 optimistic concurrency conflicts, and idempotency/command conflicts so persistence stores can return
 operator-safe failure reasons without parsing exception text.
 
-Accounting reconciliation casework contracts are shared here: break queue items carry assignee, priority, SLA policy/state/timestamps, age band, versioned taxonomy, threaded comments with mention/evidence/hash metadata, evidence counts, sign-off/reopen metadata, source-origin metadata, and optimistic concurrency versions. Resolve/dismiss, casework command, and bulk casework request payloads carry `ActionOrigin` so reviewed automation can draft triage but cannot resolve, sign off, dismiss, or reopen accounting exceptions. Casework command, bulk-triage, taxonomy, SLA policy, validation-problem, and sequenced audit-event payloads must remain additive so browser and WPF workstation clients use the same Accounting workflow.
+Direct lending terms carry an optional `ExcessPaymentApplication` rule (`HoldUnapplied`,
+`PrincipalPrepayment` or `PrepaidInterest`) for the part of a payment left after every amount owed
+is settled. A null rule behaves as `HoldUnapplied` (`EffectiveExcessPaymentApplication`). It is an
+expand-only `init` member, omitted from JSON while null, so every terms version recorded before it
+existed keeps its terms hash. Setting a rule is a material term and changes the hash, and the C#
+and F# lanes pin that value identically. `OutstandingBalancesDto` also carries `PrepaidInterest`
+and `UnappliedCash`, appended with 0 defaults so earlier positional constructions and persisted JSON
+are unchanged. Both are owed *to* the borrower, so read models must not add them to outstanding
+exposure. Nothing sets them yet; routing and journals follow in later PRD-115 increments; see the
+[excess payment application blueprint](../../docs/engineering/blueprints/direct-lending-excess-payment-application.md).
+
+Accounting reconciliation casework contracts are shared here: break queue items carry assignee, priority, SLA policy/state/timestamps, age band, versioned taxonomy, threaded comments with mention/evidence/hash metadata, evidence counts, sign-off/reopen metadata, source-origin metadata, and optimistic concurrency versions. Resolve/dismiss, casework command, and bulk casework request payloads carry `ActionOrigin` so reviewed automation can draft triage but cannot resolve, sign off, dismiss, or reopen accounting exceptions. Casework command, bulk-triage, taxonomy, SLA policy, validation-problem, and sequenced audit-event payloads must remain additive so browser and WPF workstation clients use the same Accounting workflow. `ReconciliationBulkCaseworkRequest.AssignToCurrentOperator` (init-only, omitted from JSON when false) asks the server to assign the selected cases to the authenticated operator. `OperatorSurfaceVisitDto` carries an operator's previous and current visit to a workstation surface, the shared baseline for "since your last visit" markers.
 
 Manual journal entry contracts include private-capital entry types for capital calls,
 distributions, subscriptions, redemptions, LP transfers, and management fees. `TreasuryLedgerContextDto`
@@ -1863,6 +1917,17 @@ payload keeps investor-level account evidence, allocation rules, statement/resta
 audit drill-throughs on shared DTOs while naming broader cap-table, LP portal, live-payment, and
 forecasting behavior as planned rather than live.
 
+## Security Master governance controls (2026-11)
+
+- **Contract-multiplier requirement.** `InstrumentTypeDescriptorCatalog.RequiresContractMultiplier(assetClass)` is true only when a descriptor whose *primary* asset class matches declares `multiplier` among its required economic terms (listed options and futures; not swaps, warrants or FX forwards). Compatible-class lists are deliberately ignored. Clients call this instead of matching asset-class names, so they cannot diverge.
+- **Canonical-merge outcome.** `SecurityMasterPublishResultDto.CanonicalMerge` (`SecurityMasterCanonicalMergeOutcomeDto`) reports `Merged`, `AlreadyCanonical`, `OverlayOnly` or `NotApplicable`. It is null when no handler reports.
+- **Profile drafter.** `SecurityAssetProfileDefinitionDto.DraftedBy` records who last drafted a profile version and is kept through approval, so maker-checker no longer reads the author from `ApprovedBy`. It is null on versions drafted before the field existed.
+- **System-ingest amender.** `ISecurityMasterAmender` is the system-ingest write path (provider backfill, EDGAR ingest, ticker changes). The governed-amendment setting does not block it, and its implementation refuses operator source systems.
+- **Stored classification labels.** `ClassificationLabelReader.Normalize` decodes labels retained before the F# name helpers (`Some(PreferredEquity)`, `OtherFamily "x"`, `Some(OtherSubType "x")`, `None`) at read, match and grouping seams. It removes at most one `Some(…)`, and only around a known case name (`KnownCaseNames`), a union payload or a quoted literal. A payload is returned verbatim, so `OtherSubType "Some(Nested)"` reads as `Some(Nested)`, and every current canonical label is returned unchanged. Stored events and projections are never rewritten. `IsAmbiguousFreeText` reports new free text the reader would change; the Security Master write path uses it to refuse such `OtherSecurity` subtypes and categories.
+- **Descriptor labels.** `InstrumentTypeDescriptorCatalog.DomainLabelExceptions` lists the descriptor `OtherFamily`/`OtherSubType` placeholders that are not F# domain labels, and `ApproximateDomainLabelMappings` records Warrant/FX spot/Deposit approximations. A coverage test fails when a descriptor label is neither a domain label nor listed. Descriptor values are unchanged.
+
+See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D8) for status and open decisions.
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
@@ -1938,7 +2003,8 @@ W7 live-readiness gate.
 ### Security Master asset-class registry
 
 `SecurityAssetClassRegistry` composes, per asset class, the catalog entry (lot unit, cash-flow
-behaviour, projection kind, preferred identifiers, terms version, multiplier key), the term
+behaviour, projection kind, preferred identifiers, terms version, multiplier key; every class now has
+a projection, and CustomAsset's kind is `Specialized` for its profile-keyed table), the term
 schema, validators and editor hints. `SecurityAssetClassRegistryCoverageTests` fails when an F#
 `SecurityKind` case has no definition. The registry backs `/api/security-master/asset-classes`.
 The OTC derivative classes `FxForward` (deliverable forward: pair, notional, forward rate, trade
@@ -1988,6 +2054,43 @@ format-validated ISO 10383 market code (four letters or digits); `MicReference` 
 markets Meridian's providers and seed data use and maps unambiguous exchange names (`NYSE`,
 `Nasdaq`, `AMEX`, ...) to a MIC, leaving routing labels such as `SMART` unresolved; its `Codes` and
 `ExchangeNames` tables also drive the `securities.listing_mic` backfill.
+
+### Security Master regulatory derivatives identifiers
+
+`SecurityIdentifierKind` carries four regulatory derivatives-reporting kinds. All four normalize by
+trimming, upper-casing and stripping everything outside ASCII `A-Z0-9`
+(`SecurityIdentifierNormalizer.NormalizeValue`), and `TryValidateFormat` checks:
+
+| Kind | Standard | Format rule | Scope |
+|---|---|---|---|
+| `Uti` | ISO 23897 | 21-52 characters; the first 20 are a valid ISO 17442 LEI (MOD 97-10) | one trade |
+| `Upi` | ISO 4914 (ANNA DSB) | 12 characters: `QZ`, nine digits or consonants (no vowels, no `Y`), ISO 7064 MOD 31,30 check character | one OTC derivative product |
+| `MarkitRedEntity` | Markit RED6 | 6 alphanumeric characters | one CDS reference entity |
+| `MarkitRedPair` | Markit RED9 | 9 alphanumeric characters (entity code + 3-character obligation suffix) | one entity/obligation pair |
+
+The UPI check character is verified against the published ANNA DSB example `QZRBG6ZTKS42`, not
+against the ISO 4914 Annex C text itself. RED publishes no check digit, so RED validation is
+structural.
+
+`SecurityIdentifierNormalizer.IsSharedReferenceKind` marks `Upi`, `MarkitRedEntity` and
+`MarkitRedPair`: many contracts legitimately share them, so they are excluded from
+identifier-ambiguity pairing (`IsExcludedFromAmbiguityPairing`). They cannot be a primary identifier,
+because the normalized primary-identifier unique index would reject the second contract: create and
+amend commands refuse them in the F# command validation (`primary_identifier_shared_reference`), and
+`SecurityValidationService` reports `SM_SHARED_IDENTIFIER_NOT_PRIMARY` for records already stored. A `Uti` names one trade and is a
+canonical duplicate kind.
+
+`SecurityAssetClassCatalog.MayCarryIdentifierKind` restricts which asset classes may carry them.
+`Uti` and `Upi` are allowed on `Swap`, `CreditDefaultSwap`, `Swaption`, `CapFloor`, `FxForward`,
+`NonDeliverableForward` and `Cfd`. The RED kinds are allowed on `CreditDefaultSwap` only. Every other
+kind is unrestricted. A mismatch is the warning `SM_REGULATORY_IDENTIFIER_ASSET_CLASS_MISMATCH`.
+Repo (SFTR UTIs), listed options and futures, and RED on credit-index swaptions are not admitted
+yet.
+
+The F# `SecurityIdentifier.normalizeIdentifierValue` and `kindName` delegate to this normalizer
+through the exhaustive `toContractKind` mapping. Migration 016's SQL backfill predates `LoanX`,
+`Clip` and these four kinds; `SecurityIdentifierMigration016ParityTests` pins its kind lists to the
+C# rules.
 
 ### OTC contract model: exposure, collateral and margin calls
 

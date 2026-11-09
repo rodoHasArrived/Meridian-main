@@ -10,7 +10,7 @@ namespace Meridian.Application.SecurityMaster;
 /// <summary>
 /// Published-revision side effect (<c>Order = 5</c>, runs before the projection rebuild): merges an
 /// approved <c>assetSpecificTerms.*</c> field edit into the CANONICAL security terms by emitting a
-/// complete economic-definition amendment through <see cref="ISecurityMasterAmender"/> — the current
+/// complete economic-definition amendment through <see cref="IGovernedPublicationAmender"/> — the current
 /// definition plus the one typed field change — so replay stays correct and the approved correction
 /// reaches cash-flow projection, amortization, pricing, and NAV instead of living only in the
 /// override overlay. Paths outside the asset-terms namespace stay overlay annotations by design
@@ -33,23 +33,24 @@ namespace Meridian.Application.SecurityMaster;
 ///
 /// <para>No-op in composition roots without a Security Master backend (no projection store).</para>
 /// </summary>
-public sealed class ApprovedFieldEditCanonicalMergeHandler : ISecurityMasterRevisionPublishedHandler
+public sealed class ApprovedFieldEditCanonicalMergeHandler : ISecurityMasterRevisionPublishedHandler, ISecurityMasterCanonicalMergeOutcomeReporter
 {
-    private const string OperatorSourceSystem = "operator-workbench";
+    private const string OperatorSourceSystem = SecurityMasterWriteAuthority.WorkbenchSourceSystem;
     private const string ProfileFieldsKey = "profileFields";
 
     private readonly ISecurityMasterRevisionStore _revisions;
     private readonly ILogger<ApprovedFieldEditCanonicalMergeHandler> _logger;
     private readonly ISecurityMasterStore? _projectionStore;
-    private readonly ISecurityMasterAmender? _amender;
+    private readonly IGovernedPublicationAmender? _amender;
     private readonly ISecurityMasterConflictService? _conflictService;
     private readonly Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? _assetProfileCatalog;
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, SecurityMasterCanonicalMergeOutcomeDto> _outcomes = new();
 
     public ApprovedFieldEditCanonicalMergeHandler(
         ISecurityMasterRevisionStore revisions,
         ILogger<ApprovedFieldEditCanonicalMergeHandler> logger,
         ISecurityMasterStore? projectionStore = null,
-        ISecurityMasterAmender? amender = null,
+        IGovernedPublicationAmender? amender = null,
         ISecurityMasterConflictService? conflictService = null,
         Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null)
     {
@@ -67,9 +68,14 @@ public sealed class ApprovedFieldEditCanonicalMergeHandler : ISecurityMasterRevi
     /// </summary>
     public int Order => 5;
 
+    /// <inheritdoc />
+    public SecurityMasterCanonicalMergeOutcomeDto? TakeOutcome(Guid revisionId)
+        => _outcomes.TryRemove(revisionId, out var outcome) ? outcome : null;
+
     public async Task HandleAsync(SecurityMasterRevisionPublishedEvent evt, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(evt);
+        _outcomes.TryRemove(evt.RevisionId, out _);
 
         if (_projectionStore is null || _amender is null)
         {
@@ -83,6 +89,8 @@ public sealed class ApprovedFieldEditCanonicalMergeHandler : ISecurityMasterRevi
         {
             // Annotation-surface paths stay overlay-only by design; lifecycle revisions without
             // field metadata have nothing to merge.
+            Record(evt, SecurityMasterCanonicalMergeOutcomeKind.NotApplicable,
+                "The revision changes no asset-specific term, so it stays an overlay annotation.");
             return;
         }
 
@@ -101,12 +109,16 @@ public sealed class ApprovedFieldEditCanonicalMergeHandler : ISecurityMasterRevi
             _logger.LogWarning(
                 "Revision {RevisionId} for {SecurityId} predates field-value persistence; its approved edit to {FieldPath} stays overlay-only.",
                 evt.RevisionId, evt.SecurityId, fieldPath);
+            Record(evt, SecurityMasterCanonicalMergeOutcomeKind.OverlayOnly,
+                "The revision predates field-value persistence, so its approved value stays overlay-only.");
             return;
         }
 
         if (revision.FieldValue is null)
         {
             // A CLEAR withdraws the overlay value and reveals the canonical one — nothing to merge.
+            Record(evt, SecurityMasterCanonicalMergeOutcomeKind.NotApplicable,
+                "The revision clears an overlay value, which reveals the canonical value; nothing is merged.");
             return;
         }
 
@@ -135,6 +147,8 @@ public sealed class ApprovedFieldEditCanonicalMergeHandler : ISecurityMasterRevi
             _logger.LogInformation(
                 "Approved edit to {FieldPath} on {SecurityId} nests deeper than the merge path models; it stays overlay-only.",
                 fieldPath, evt.SecurityId);
+            Record(evt, SecurityMasterCanonicalMergeOutcomeKind.OverlayOnly,
+                $"'{fieldPath}' nests deeper than the canonical merge models, so the approved value stays overlay-only.");
             return;
         }
 
@@ -163,8 +177,16 @@ public sealed class ApprovedFieldEditCanonicalMergeHandler : ISecurityMasterRevi
             _logger.LogInformation(
                 "Approved edit to {FieldPath} on {SecurityId} already matches the canonical terms; no amendment needed.",
                 fieldPath, evt.SecurityId);
+            Record(evt, SecurityMasterCanonicalMergeOutcomeKind.AlreadyCanonical,
+                "The canonical terms already hold the approved value.", projection.Version);
             return;
         }
+
+        // A proposal drafted against an older canonical value must not overwrite a newer one. The
+        // revision recorded the stored keys this merge overwrites; if they changed since the draft,
+        // refuse instead of merging. Changes to other fields leave the snapshot equal and still merge
+        // onto the fresh projection below. Revisions without a recorded base publish as before.
+        EnsureProposalIsNotStale(evt, revision, projection, fieldPath);
 
         var mergeStartedAt = DateTimeOffset.UtcNow;
         var amendRequest = new AmendSecurityTermsRequest(
@@ -182,13 +204,51 @@ public sealed class ApprovedFieldEditCanonicalMergeHandler : ISecurityMasterRevi
                 ? $"Approved workbench revision {revision.RevisionId:D} merged into canonical terms."
                 : revision.FieldJustification);
 
-        var detail = await _amender.AmendTermsAsync(amendRequest, ct).ConfigureAwait(false);
+        var detail = await _amender.AmendApprovedRevisionAsync(amendRequest, ct).ConfigureAwait(false);
 
         _logger.LogInformation(
             "Merged approved field edit {FieldPath} (revision {RevisionId}) into canonical terms for {SecurityId}; canonical version advanced to {Version}.",
             fieldPath, evt.RevisionId, evt.SecurityId, detail.Version);
+        Record(evt, SecurityMasterCanonicalMergeOutcomeKind.Merged,
+            $"The approved value was merged into the canonical terms at version {detail.Version}.", detail.Version);
 
         await TryResolveWorkbenchChallengerConflictsAsync(evt, fieldPath, mergeStartedAt).ConfigureAwait(false);
+    }
+
+    private void Record(
+        SecurityMasterRevisionPublishedEvent evt,
+        SecurityMasterCanonicalMergeOutcomeKind outcome,
+        string detail,
+        long? canonicalVersion = null)
+        => _outcomes[evt.RevisionId] = new SecurityMasterCanonicalMergeOutcomeDto(outcome, detail, canonicalVersion);
+
+    private void EnsureProposalIsNotStale(
+        SecurityMasterRevisionPublishedEvent evt,
+        SecurityMasterRevisionRecord revision,
+        SecurityProjectionRecord projection,
+        string fieldPath)
+    {
+        if (!revision.FieldBaseRecorded)
+        {
+            _logger.LogInformation(
+                "Revision {RevisionId} for {SecurityId} recorded no canonical base, so its approved edit to {FieldPath} merges without a stale-proposal check.",
+                evt.RevisionId, evt.SecurityId, fieldPath);
+            return;
+        }
+
+        if (projection.Version == revision.BaseVersion)
+        {
+            return;
+        }
+
+        var current = SecurityAssetTermsFieldSnapshot.Capture(projection.AssetClass, projection.AssetSpecificTerms, fieldPath);
+        if (string.Equals(current, revision.FieldBaseSnapshot, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        throw new StaleFieldProposalException(
+            evt.SecurityId, evt.RevisionId, fieldPath, revision.BaseVersion!.Value, projection.Version);
     }
 
     /// <summary>

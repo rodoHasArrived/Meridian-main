@@ -31,6 +31,31 @@ describe("OperationalTrustSummary", () => {
     expect((await axe(container)).violations).toEqual([]);
   });
 
+  it("collapses to one wrapping row that never truncates and keeps the card action visible", () => {
+    const { container } = render(
+      <OperationalTrustSummary
+        disclosure
+        source={{ value: "Interactive Brokers · paper", tone: "ready" }}
+        scope={{ value: "Paper Index Mean Reversion", tone: "ready" }}
+        freshness={{ value: "2s ago", tone: "ready" }}
+        completeness={{ value: "Accounting basis missing", tone: "review" }}
+        action={<button type="button">Synchronize</button>}
+      />
+    );
+
+    const summary = container.querySelector("summary")!;
+    const row = within(summary).getByText("Paper Index Mean Reversion").closest(".flex-wrap");
+    expect(row).not.toBeNull();
+    for (const text of ["Paper Index Mean Reversion", "Accounting basis missing"]) {
+      const value = within(summary).getByText(text);
+      expect(value).toHaveClass("break-words");
+      expect(value).not.toHaveClass("truncate");
+    }
+    // The card-level action sits beside the summary, not inside the collapsed detail.
+    const action = screen.getByRole("button", { name: "Synchronize" });
+    expect(container.querySelector("details")!.contains(action)).toBe(false);
+  });
+
   it("renders source, scope, freshness, completeness, blocker, and recovery action with text status", () => {
     render(
       <OperationalTrustSummary

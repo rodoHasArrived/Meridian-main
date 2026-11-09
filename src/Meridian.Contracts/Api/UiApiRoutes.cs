@@ -487,6 +487,7 @@ public static class UiApiRoutes
     public const string ReferenceDataBondIssuerLadder = "/api/reference-data/bonds/issuer-ladder";
     public const string ReferenceDataBondMaturityLadder = "/api/reference-data/bonds/maturity-ladder";
     public const string ReferenceDataBondAnalytics = "/api/reference-data/bonds/{securityId:guid}/analytics";
+    public const string ReferenceDataBondExerciseNotices = "/api/reference-data/bonds/{securityId:guid}/exercise-notices";
     public const string ReferenceDataBondSettlementConsideration = "/api/reference-data/bonds/settlement-consideration";
     public const string ReferenceDataBondIssuerLadderPage = "/api/reference-data/bonds/issuer-ladder/page";
     public const string ReferenceDataBondMaturityLadderPage = "/api/reference-data/bonds/maturity-ladder/page";
@@ -776,6 +777,15 @@ public static class UiApiRoutes
 
     public const string WorkstationTradingBrokerageRecovery = "/api/workstation/trading/brokerage-recovery";
     public const string WorkstationOperatorInbox = "/api/workstation/operator/inbox";
+
+    /// <summary>Open orders, provider health and open breaks, counted once for every screen (A3).</summary>
+    public const string WorkstationCrossScreenCounts = "/api/workstation/cross-screen-counts";
+
+    /// <summary>The signed-in operator's default operating scope (C1).</summary>
+    public const string WorkstationOperatorScopePreference = "/api/workstation/operator/scope-preference";
+
+    /// <summary>The signed-in operator's last visit to a workstation surface, for "since last visit" markers (C3).</summary>
+    public const string WorkstationOperatorSurfaceVisit = "/api/workstation/operator/visits/{surface}";
     public const string WorkstationEvidenceSubjects = "/api/workstation/evidence/subjects";
     public const string WorkstationEvidenceSubjectPacket = "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/packet";
     public const string WorkstationEvidenceSubjectGraph = "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/graph";

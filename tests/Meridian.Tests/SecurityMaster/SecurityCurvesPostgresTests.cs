@@ -142,8 +142,13 @@ public sealed class SecurityCurvesPostgresTests : IClassFixture<SecurityMasterDa
     }
 
     [SecurityMasterDatabaseFact]
-    public async Task ThePinnedSwap_ValuesToTheGoldenNumber_ThroughTheRealStoresAndProvider()
+    public async Task ThePinnedSwap_ThroughTheRealStoresAndProvider_IsBlockedUntilPerLegRateUnitsAreDeclarable()
     {
+        // D3 (decided 2026-11-05): undeclared non-zero rates block, and a Security Master swap leg can
+        // declare its unit only in a per-leg conventions block the engine refuses
+        // (LegConventionsNotFollowed). Blocked until per-leg units are declarable. Pinned before D3:
+        // NPV and market value -162.50, price -0.0001625 per unit, ObservableInputs, observed as of
+        // 2025-12-01, and the stored discount and forward curve versions named as inputs.
         var (service, query) = BuildSecurityMaster();
         var curveStore = new PostgresSecurityCurveStore(_fixture.Options);
         var cashFlowStore = new PostgresSecurityMasterCashFlowStore(_fixture.Options);
@@ -154,7 +159,7 @@ public sealed class SecurityCurvesPostgresTests : IClassFixture<SecurityMasterDa
         await curveStore.PublishVersionAsync(new PublishSecurityCurveVersionRequest(discount.CurveId, ValuationTestSecurities.AsOfDate,
             ValuationTestSecurities.SwapDiscountPoints.Select(static p => new SecurityCurvePointDto(p.Date, p.Value)).ToList(), "test", null, "casey"));
         var forward = await curveStore.DefineAsync(new DefineSecurityCurveRequest(UniqueKey("USD-SOFR-3M"), SecurityCurveKind.Forward, "USD", indexName, "3M", "ACT/360", SecurityCurveInterpolation.Linear, "test", null, "casey"));
-        var forwardVersion = await curveStore.PublishVersionAsync(new PublishSecurityCurveVersionRequest(forward.CurveId, ValuationTestSecurities.AsOfDate.AddMonths(-1),
+        await curveStore.PublishVersionAsync(new PublishSecurityCurveVersionRequest(forward.CurveId, ValuationTestSecurities.AsOfDate.AddMonths(-1),
             [new(ValuationTestSecurities.AsOfDate, 0.04m), new(ValuationTestSecurities.AsOfDate.AddYears(1), 0.04m)], "test", null, "casey"));
 
         var swapId = Guid.NewGuid();
@@ -183,17 +188,14 @@ public sealed class SecurityCurvesPostgresTests : IClassFixture<SecurityMasterDa
         var result = await valuation.ValueAsync(new SecurityValuationRequest(swapId, asOf, Quantity: 1_000_000m, Curves: [new SecurityValuationCurveInput("Discount", discount.CurveId)]));
 
         result.Should().NotBeNull();
-        result!.IsBlocked.Should().BeFalse(string.Join("; ", result.Blockers.Select(static b => b.Reason)));
-        result.Model.Should().Be(SecurityValuationModelKind.DiscountedCashFlow, "the catalog declares the swap's default model");
-        result.PresentValue.Should().Be(-162.50m);
-        result.Price.Should().Be(-0.0001625m);
-        result.PriceUnit.Should().Be(SecurityPriceUnit.CurrencyPerUnit);
-        result.MarketValue.Should().Be(-162.50m);
-        result.Observability.Should().Be(SecurityValuationObservability.ObservableInputs);
-        result.ObservedAsOf.Should().Be(new DateTimeOffset(2025, 12, 1, 0, 0, 0, TimeSpan.Zero), "the forward version dated 2025-12-01 is the oldest market input");
-        result.Inputs.Single(static i => i.Kind == "DiscountCurveVersion").Reference.Should().Be(discount.CurveKey);
-        result.Inputs.Single(static i => i.Kind == "ForwardCurve").Reference
-            .Should().Be($"forwardCurve:{indexName}@2025-12-01 ({forward.CurveKey} v1 {forwardVersion.ContentSha256[..12]})");
+        result!.Model.Should().Be(SecurityValuationModelKind.DiscountedCashFlow, "the catalog declares the swap's default model");
+        result.IsBlocked.Should().BeTrue();
+        result.PresentValue.Should().BeNull();
+        var blocker = result.Blockers.Should().ContainSingle().Subject;
+        blocker.Code.Should().Be("ProjectionBlocked");
+        blocker.Reason.Should().Contain(
+            "Rate legs.fixedRate = 0.04 on Swap has no declared unit (Fraction, Percent or BasisPoints). "
+            + "A legacy value is flagged rather than converted; its unit cannot be inferred from its magnitude.");
     }
 
     private static string UniqueKey(string prefix) => prefix + "-" + Guid.NewGuid().ToString("N")[..8].ToUpperInvariant();

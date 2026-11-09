@@ -407,6 +407,9 @@ account's balances or positions. Account-summary request correlation is register
 so synchronous vendor callbacks cannot arrive before the awaiting operation exists.
 Alpaca trade-update streaming accumulates complete WebSocket messages across fragmented frames,
 bounds each message before UTF-8 decoding, and reconnects after an incomplete oversized payload.
+The file-backed trade-update cursor store takes its cross-process lease through
+`Core.IO.ExclusiveFileLock`: only sharing/lock contention is retried, with jittered backoff, and any
+other I/O fault surfaces immediately instead of after the lease timeout.
 Alpaca order cancellation accepts a typed client-ID or broker-ID namespace. Client identifiers use
 only the provider's dedicated lookup route, so a UUID-shaped client ID cannot collide with an
 unrelated broker UUID; DELETE receives only the resolved broker ID. HTTP 204 is acceptance rather
@@ -495,6 +498,7 @@ paths and original file names remain provenance metadata, not duplicate-detectio
 ## Audit hardening (2026-11)
 
 - **Backfill failover on timeouts.** `CompositeHistoricalDataProvider` and `CrossProviderValidator` rethrow `OperationCanceledException` only when the caller's token is cancelled. A provider-side timeout, such as `HttpClient.Timeout` surfacing as `TaskCanceledException`, now fails over to the next provider instead of ending the request.
+- **Polygon trading-parameter backfill uses the system-ingest path.** `TradingParametersBackfillService` amends through `ISecurityMasterAmender` when the composed service exposes it. That keeps provider-sourced tick and lot sizes writable while `SecurityMasterWorkbench:RequireGovernedTermAmendments` refuses operator-direct amendments.
 
 ## Diagrams
 

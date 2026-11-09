@@ -2,6 +2,8 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using Meridian.Application.Backfill;
 using Meridian.Core.Config;
+using Meridian.Core.IO;
+using Meridian.Core.Logging;
 using Meridian.DataIntegration.Monitoring;
 using Meridian.Contracts.Configuration;
 using Meridian.Infrastructure.Contracts;
@@ -32,6 +34,10 @@ public sealed class ConfigStore
     /// Default path resolver that returns the nearest standard Meridian configuration path.
     /// </summary>
     public static Func<string> DefaultPathResolver { get; set; } = ResolveDefaultPath;
+
+    private static readonly TimeSpan WriteLockTimeout = TimeSpan.FromSeconds(30);
+    // Resolved per use so loads after logging bootstrap reach the configured sinks.
+    private static Serilog.ILogger Log => LoggingSetup.ForContext<ConfigStore>();
 
     /// <summary>
     /// Gets the path to the configuration file.
@@ -68,25 +74,33 @@ public sealed class ConfigStore
     /// Static method to load configuration from a path.
     /// Used by ConfigurationService.LoadAndPrepareConfig() for consolidated config loading.
     /// </summary>
+    /// <remarks>
+    /// A missing file yields the default configuration (with a logged warning) so first-run hosts can
+    /// start. A file that exists but cannot be read or parsed fails closed: substituting defaults for
+    /// an authoritative document the operator wrote would silently change trading behavior.
+    /// </remarks>
+    /// <exception cref="InvalidDataException">The file exists but could not be read or parsed.</exception>
     public static AppConfig LoadConfig(string path)
     {
+        if (!File.Exists(path))
+        {
+            Log.Warning(
+                "Configuration file not found at {ConfigPath}; using default configuration. Copy config/appsettings.sample.json to config/appsettings.json to customize",
+                path);
+            return CreateDefaultConfig(path);
+        }
+
         try
         {
-            if (!File.Exists(path))
-            {
-                Console.WriteLine($"[Warning] Configuration file not found: {path}");
-                Console.WriteLine("Using default configuration. Copy config/appsettings.sample.json to config/appsettings.json to customize.");
-                return CreateDefaultConfig(path);
-            }
-
             var json = File.ReadAllText(path);
-            var config = JsonSerializer.Deserialize<AppConfig>(json, AppConfigJsonOptions.Read);
+            var config = JsonSerializer.Deserialize<AppConfig>(json, AppConfigJsonOptions.Read)
+                ?? throw new InvalidDataException("Configuration document is JSON null.");
             return NormalizeLoadedConfig(path, json, config);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is JsonException or IOException or InvalidDataException or UnauthorizedAccessException or NotSupportedException)
         {
-            Console.WriteLine($"[Error] Failed to load configuration: {ex.Message}");
-            return CreateDefaultConfig(path);
+            Log.Error(ex, "Configuration file {ConfigPath} exists but could not be loaded; refusing to fall back to defaults", path);
+            throw new InvalidDataException($"Configuration file '{path}' exists but could not be loaded: {ex.Message}", ex);
         }
     }
 
@@ -161,34 +175,14 @@ public sealed class ConfigStore
 
     private async Task<FileStream> AcquireWriteLockAsync(CancellationToken ct)
     {
-        ct.ThrowIfCancellationRequested();
-        var directory = Path.GetDirectoryName(ConfigPath);
-        if (!string.IsNullOrEmpty(directory))
-            Directory.CreateDirectory(directory);
-        using var expiry = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        expiry.CancelAfter(TimeSpan.FromSeconds(30));
-        while (true)
+        try
         {
-            ct.ThrowIfCancellationRequested();
-            try
-            {
-                // Keep the sidecar: deleting it could allow two holders on different inodes.
-                return new FileStream(ConfigPath + ".lock", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
-            }
-            catch (IOException error) when (OperatingSystem.IsWindows()
-                ? (error.HResult & 0xffff) is 32 or 33
-                : error.HResult is 11 or 35)
-            {
-                try
-                {
-                    await Task.Delay(25, expiry.Token).ConfigureAwait(false);
-                }
-                catch (OperationCanceledException)
-                {
-                    ct.ThrowIfCancellationRequested();
-                    throw new TimeoutException("Timed out waiting for the configuration write lock.", error);
-                }
-            }
+            // Keep the sidecar: deleting it could allow two holders on different inodes.
+            return await ExclusiveFileLock.AcquireAsync(ConfigPath + ".lock", WriteLockTimeout, ct).ConfigureAwait(false);
+        }
+        catch (TimeoutException error)
+        {
+            throw new TimeoutException("Timed out waiting for the configuration write lock.", error.InnerException);
         }
     }
 

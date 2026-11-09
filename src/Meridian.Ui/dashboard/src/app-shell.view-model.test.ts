@@ -74,13 +74,17 @@ describe("app shell view model", () => {
     }
   });
 
-  it("holds the environment badge at full width while the rest of the session card gives way", () => {
+  it("holds the environment badge at full width while the rest of the trust pill gives way", () => {
     const shellStyles = readFileSync(resolve(process.cwd(), "src/styles/app-shell.css"), "utf8");
     const badgeRule =
-      shellStyles.match(/\.workstation-session-card\s*>\s*:first-child\s*\{(?<rule>[\s\S]*?)\}/)?.groups?.rule ?? "";
+      shellStyles.match(/\.workstation-trust-summary\s+\.workstation-trust-environment\s*\{(?<rule>[\s\S]*?)\}/)?.groups?.rule ?? "";
+    const valueRule =
+      shellStyles.match(/\.workstation-trust-summary\s+\.workstation-trust-value\s*\{(?<rule>[\s\S]*?)\}/)?.groups?.rule ?? "";
 
-    // PAPER vs LIVE is the one thing in this card an operator cannot afford to lose.
+    // PAPER vs LIVE is the one thing in the masthead an operator cannot afford to lose: it
+    // leads the trust pill and never shrinks, while provenance/provider text ellipsizes.
     expect(badgeRule).toContain("flex: none");
+    expect(valueRule).toContain("text-overflow: ellipsis");
   });
 
   it("keeps route-owned continuity builders outside shell internals", () => {
@@ -1146,15 +1150,16 @@ describe("app shell view model", () => {
     expect(state.workflowContinuity.nextActionLabel).toBe("Next: Resolve Exceptions");
     expect(state.workflowContinuity.summary).toContain("5 steps need operator attention.");
     expect(state.workflowContinuity.steps.map((step) => [step.id, step.statusLabel, step.statusTone])).toEqual([
-      ["receive-activity", "2 breaks", "review"],
-      ["match-records", "Current / 2 breaks", "review"],
-      ["resolve-exceptions", "Next / 2 breaks", "review"],
-      ["approve-results", "2 breaks", "review"],
+      // Counted once from the break queue (A3), not the larger of the queue and a run summary's tally.
+      ["receive-activity", "1 open break", "review"],
+      ["match-records", "Current / 1 open break", "review"],
+      ["resolve-exceptions", "Next / 1 open break", "review"],
+      ["approve-results", "1 open break", "review"],
       ["produce-evidence", "1 recipients", "ready"],
       ["close-support", "Review", "review"]
     ]);
     expect(state.workflowContinuity.steps.find((step) => step.id === "match-records")?.ariaLabel)
-      .toBe("Match Records, current workflow step, 2 breaks");
+      .toBe("Match Records, current workflow step, 1 open break");
   });
 
   it("uses source-backed financial operations summary for accounting closeout steps", () => {

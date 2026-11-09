@@ -7,6 +7,8 @@ import {
   statementIssueBadgeVariant
 } from "@/screens/statement-import-panel.view-model";
 import type { StatementImportPreview } from "@/types";
+import { usesTrackedCaps } from "@/design-system/label-case";
+import { formatMoney } from "@/lib/format";
 
 export interface StatementImportPreviewDetailsProps {
   onSelectKind: (kind: string) => void;
@@ -90,11 +92,11 @@ function StatementEvidenceSummary({ preview }: { preview: StatementImportPreview
 }
 
 function EvidenceMetric({ label, value }: { label: string; value: string }) {
-  return <div><p className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">{label}</p><p className="mt-1 font-mono">{value}</p></div>;
+  return <div><p className={cn("text-[10px] text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-[0.12em]")}>{label}</p><p className="mt-1 font-mono">{value}</p></div>;
 }
 
 function formatAmount(value: number | null, currency: string) {
-  return value == null ? "Not reported" : new Intl.NumberFormat(undefined, { style: "currency", currency }).format(value);
+  return formatMoney(value, { currency, fallback: "Not reported" });
 }
 
 function StatementColumnMappingTable({ preview }: { preview: StatementImportPreview }) {

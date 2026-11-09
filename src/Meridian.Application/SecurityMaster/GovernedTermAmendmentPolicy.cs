@@ -8,9 +8,12 @@ namespace Meridian.Application.SecurityMaster;
 /// WPF editor cannot disagree about <see cref="SecurityMasterWorkbenchOptions.RequireGovernedTermAmendments"/>.
 /// </summary>
 /// <remarks>
-/// This is consulted by client edit surfaces, not by <c>ISecurityMasterService.AmendTermsAsync</c>:
-/// that method is also the publish step of the governed lifecycle and the write path of provider
-/// ingest, which this policy must not block.
+/// <see cref="SecurityMasterService"/> enforces it on the operator-direct path
+/// (<c>ISecurityMasterService.AmendTermsAsync</c> and its siblings) by raising
+/// <see cref="GovernedTermAmendmentRequiredException"/>, so no in-process caller can bypass it. Client
+/// edit surfaces also consult it first so they can refuse before building a request. Governed
+/// publication (<see cref="IGovernedPublicationAmender"/>) and system ingest
+/// (<c>ISecurityMasterAmender</c>) are separate typed paths the policy does not block.
 /// </remarks>
 public interface IGovernedTermAmendmentPolicy
 {
@@ -40,4 +43,17 @@ public sealed class GovernedTermAmendmentPolicy : IGovernedTermAmendmentPolicy
     /// <inheritdoc />
     public string? RefusalReason
         => _options.CurrentValue.RequireGovernedTermAmendments ? $"{RefusalTitle} {RefusalDetail}" : null;
+}
+
+/// <summary>The policy used when none is composed: direct amendments stay permitted.</summary>
+internal sealed class PermissiveGovernedTermAmendmentPolicy : IGovernedTermAmendmentPolicy
+{
+    public static readonly PermissiveGovernedTermAmendmentPolicy Instance = new();
+
+    private PermissiveGovernedTermAmendmentPolicy()
+    {
+    }
+
+    /// <inheritdoc />
+    public string? RefusalReason => null;
 }

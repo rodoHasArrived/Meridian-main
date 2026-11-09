@@ -238,6 +238,21 @@ public sealed class ContainedProcessTests
         snapshot.HardLimitsApplied.Should().BeFalse("only Windows Job Objects enforce hard ceilings");
     }
 
+    [Fact]
+    public async Task GetResourceSnapshot_Linux_ExitedChildReportsNoActiveProcesses()
+    {
+        if (!OperatingSystem.IsLinux() || !HasPosixShell())
+            return;
+
+        await using var contained = ContainedProcess.Start(
+            ShellStartInfo("exit 0"),
+            new ContainedProcessLimits(256L * 1024 * 1024, TimeSpan.FromSeconds(30), 4));
+        await contained.Process.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(10));
+
+        contained.GetResourceSnapshot().ActiveProcessCount.Should().Be(0,
+            "a reaped child is no longer running even though the tree walk visited its pid");
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────────────
 
     private static bool HasPosixShell() => !OperatingSystem.IsWindows() && File.Exists(Shell);

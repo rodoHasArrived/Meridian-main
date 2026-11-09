@@ -53,8 +53,7 @@ public static partial class WorkstationEndpoints
                 ledgerBookId: requestedLedgerBookId,
                 ct: context.RequestAborted)
             .ConfigureAwait(false);
-        var scopedOpenBreaks = breakQueueItems.Count(static item =>
-            item.Status is ReconciliationBreakQueueStatus.Open or ReconciliationBreakQueueStatus.InReview);
+        var scopedOpenBreaks = CrossScreenCountDefinitions.CountOpenBreaks(breakQueueItems);
         var visibleBreakQueueItems = readScope.BreakQueue
             ? breakQueueItems
             : (IReadOnlyList<ReconciliationBreakQueueItem>)[];

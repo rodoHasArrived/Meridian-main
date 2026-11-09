@@ -62,6 +62,11 @@ internal static class DirectLendingServiceSupport
             return new DirectLendingCommandError(DirectLendingErrorCode.Validation, "Effective rate cap must be greater than or equal to the effective rate floor.");
         }
 
+        if (DirectLendingServicingPolicyValidator.Validate(terms) is { } policyError)
+        {
+            return new DirectLendingCommandError(DirectLendingErrorCode.Validation, policyError);
+        }
+
         return null;
     }
 
@@ -138,37 +143,25 @@ internal static class DirectLendingServiceSupport
 
         if (requestedBreakdown is not null)
         {
+            // A manual breakdown says where cash goes, but never more than is owed in a bucket:
+            // allocating 1,000 to interest when 10 is accrued would record 990 of income that
+            // does not exist. Each line is capped at the requested amount, the cash still
+            // unallocated, and the bucket's outstanding balance; any excess is reported as
+            // unapplied, as the automatic waterfall does.
+            var owed = servicing.Balances;
+            decimal Take(decimal requested, decimal outstanding)
+            {
+                var applied = Math.Min(remaining, Math.Min(Math.Max(0m, requested), Math.Max(0m, outstanding)));
+                remaining -= applied;
+                return applied;
+            }
+
             resolved = new PaymentBreakdownDto(
-                Math.Min(remaining, Math.Max(0m, requestedBreakdown.ToInterest)),
-                0m,
-                0m,
-                0m,
-                0m);
-            remaining -= resolved.ToInterest;
-
-            resolved = resolved with
-            {
-                ToCommitmentFee = Math.Min(remaining, Math.Max(0m, requestedBreakdown.ToCommitmentFee))
-            };
-            remaining -= resolved.ToCommitmentFee;
-
-            resolved = resolved with
-            {
-                ToFees = Math.Min(remaining, Math.Max(0m, requestedBreakdown.ToFees))
-            };
-            remaining -= resolved.ToFees;
-
-            resolved = resolved with
-            {
-                ToPenalty = Math.Min(remaining, Math.Max(0m, requestedBreakdown.ToPenalty))
-            };
-            remaining -= resolved.ToPenalty;
-
-            resolved = resolved with
-            {
-                ToPrincipal = Math.Min(remaining, Math.Max(0m, requestedBreakdown.ToPrincipal))
-            };
-            remaining -= resolved.ToPrincipal;
+                Take(requestedBreakdown.ToInterest, owed.InterestAccruedUnpaid),
+                Take(requestedBreakdown.ToCommitmentFee, owed.CommitmentFeeAccruedUnpaid),
+                Take(requestedBreakdown.ToFees, owed.FeesAccruedUnpaid),
+                Take(requestedBreakdown.ToPenalty, owed.PenaltyAccruedUnpaid),
+                Take(requestedBreakdown.ToPrincipal, owed.PrincipalOutstanding));
 
             return new MixedPaymentResolutionDto(resolved, "Manual", "v1", remaining);
         }

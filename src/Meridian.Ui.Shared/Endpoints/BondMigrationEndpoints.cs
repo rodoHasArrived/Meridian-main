@@ -94,7 +94,8 @@ public static class BondMigrationEndpoints
         {
             return Results.BadRequest(new { code = "BondMigrationRequestInvalid", error = EndpointHelpers.RefusalDetail(exception) });
         }
-        catch (InvalidOperationException exception)
+        // A terms capability floor refusal is the shared handler's 503, never this route's 409 (ADR-025).
+        catch (InvalidOperationException exception) when (exception is not SecurityMasterTermsCapabilityRefusedException)
         {
             return Results.Conflict(new { code = "BondMigrationStateConflict", error = EndpointHelpers.RefusalDetail(exception) });
         }
