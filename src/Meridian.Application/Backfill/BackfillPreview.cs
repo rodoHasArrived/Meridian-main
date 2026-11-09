@@ -54,8 +54,10 @@ internal static class BackfillPreviewPlanner
         string dataRoot,
         IProviderCatalog providerCatalog)
     {
-        var from = request.From ?? DateOnly.FromDateTime(DateTime.Today.AddYears(-1));
-        var to = request.To ?? DateOnly.FromDateTime(DateTime.Today);
+        // Default ranges use the UTC date, matching how the backfill itself dates bars.
+        var utcToday = DateTime.UtcNow.Date;
+        var from = request.From ?? DateOnly.FromDateTime(utcToday.AddYears(-1));
+        var to = request.To ?? DateOnly.FromDateTime(utcToday);
         var totalDays = to.DayNumber - from.DayNumber + 1;
         var tradingDays = EstimateTradingDays(from, to);
         var estimatedBarsPerSymbol = EstimateBarsPerSymbol(request.Granularity, tradingDays);

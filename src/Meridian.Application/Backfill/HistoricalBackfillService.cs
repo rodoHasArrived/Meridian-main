@@ -247,9 +247,13 @@ public sealed class HistoricalBackfillService
 
                 perSymbolBars[symbol] = symbolBars;
 
-                // Persist per-symbol checkpoint after successful completion.
+                // Persist the per-symbol checkpoint only after this symbol's bars are durable.
+                // PublishAsync merely queues events in memory, so a checkpoint written before a
+                // flush would let a resumed run skip dates that a crash prevented from ever
+                // reaching storage. A flush failure fails the symbol and leaves no checkpoint.
                 if (_checkpointStore is not null && lastBarDate.HasValue)
                 {
+                    await pipeline.FlushAsync(ct).ConfigureAwait(false);
                     await _checkpointStore.WriteSymbolCheckpointAsync(
                         symbol,
                         request.Granularity,
@@ -394,6 +398,9 @@ public sealed class HistoricalBackfillService
         var tasks = sortedSymbols.Select(s => ProcessSymbolAsync(s, ct)).ToArray();
         await Task.WhenAll(tasks).ConfigureAwait(false);
 
+        // A failed final flush means queued bars may never have reached storage, so the run
+        // must not report success even when every provider request succeeded.
+        string? flushError = null;
         try
         {
             await pipeline.FlushAsync(ct).ConfigureAwait(false);
@@ -401,14 +408,17 @@ public sealed class HistoricalBackfillService
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _log.Error(ex, "Pipeline flush failed after backfill");
+            flushError = $"Pipeline flush failed; backfilled bars may not be durable: {ex.Message}";
         }
 
         var completed = DateTimeOffset.UtcNow;
         var failedList = failedSymbols.ToArray();
-        var allSucceeded = failedList.Length == 0;
+        var allSucceeded = failedList.Length == 0 && flushError is null;
         var errorSummary = failedList.Length > 0
             ? $"Failed symbols ({failedList.Length}/{symbols.Length}): {string.Join("; ", errorMessages)}"
             : null;
+        if (flushError is not null)
+            errorSummary = errorSummary is null ? flushError : $"{errorSummary}; {flushError}";
 
         _log.Information("Backfill complete: {Count} bars written across {Total} symbols ({Failed} failed, {Skipped} skipped)",
             barsWritten, symbols.Length, failedList.Length, skippedSymbols.Count);
