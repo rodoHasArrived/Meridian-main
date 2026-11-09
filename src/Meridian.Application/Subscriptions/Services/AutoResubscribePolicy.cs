@@ -104,14 +104,14 @@ public sealed class AutoResubscribePolicy : IAsyncDisposable
     /// <param name="config">Current symbol configuration for resubscription.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>True if resubscription was triggered, false if skipped.</returns>
-    public Task<bool> OnIntegrityEventAsync(
+    public async Task<bool> OnIntegrityEventAsync(
         string symbol,
         IntegritySeverity severity,
         AppConfig config,
         CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(symbol))
-            return Task.FromResult(false);
+            return false;
 
         symbol = symbol.Trim();
 
@@ -120,7 +120,7 @@ public sealed class AutoResubscribePolicy : IAsyncDisposable
         {
             _log.Debug("Skipping resubscription for {Symbol}: severity {Severity} below threshold",
                 symbol, severity);
-            return Task.FromResult(false);
+            return false;
         }
 
         // Check global circuit breaker
@@ -128,7 +128,7 @@ public sealed class AutoResubscribePolicy : IAsyncDisposable
         {
             _log.Warning("Global circuit breaker OPEN. Skipping resubscription for {Symbol}", symbol);
             ResubscriptionMetrics.IncRateLimitedSkip();
-            return Task.FromResult(false);
+            return false;
         }
 
         // Get or create symbol state
@@ -141,7 +141,7 @@ public sealed class AutoResubscribePolicy : IAsyncDisposable
         {
             _log.Debug("Rate limited: skipping resubscription for {Symbol} (cooldown or interval)", symbol);
             ResubscriptionMetrics.IncRateLimitedSkip();
-            return Task.FromResult(false);
+            return false;
         }
 
         // Check per-symbol circuit breaker
@@ -149,7 +149,7 @@ public sealed class AutoResubscribePolicy : IAsyncDisposable
         {
             _log.Debug("Symbol circuit breaker OPEN for {Symbol}. Skipping resubscription.", symbol);
             ResubscriptionMetrics.IncRateLimitedSkip();
-            return Task.FromResult(false);
+            return false;
         }
 
         // Attempt resubscription
@@ -162,7 +162,7 @@ public sealed class AutoResubscribePolicy : IAsyncDisposable
             _log.Information("Triggering auto-resubscribe for {Symbol} due to integrity event", symbol);
 
             // Force unsubscribe and resubscribe through the manager
-            _subscriptionManager.Apply(config);
+            await _subscriptionManager.ApplyAsync(config, ct).ConfigureAwait(false);
 
             sw.Stop();
             var elapsedMs = sw.ElapsedMilliseconds;
@@ -178,7 +178,12 @@ public sealed class AutoResubscribePolicy : IAsyncDisposable
             }
 
             _log.Information("Auto-resubscribe succeeded for {Symbol} in {ElapsedMs}ms", symbol, elapsedMs);
-            return Task.FromResult(true);
+            return true;
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            // A cancelled resubscription is not a failed one: it must not trip the breakers.
+            throw;
         }
         catch (Exception ex)
         {
@@ -188,7 +193,7 @@ public sealed class AutoResubscribePolicy : IAsyncDisposable
             _globalBreaker.RecordFailure();
 
             _log.Error(ex, "Auto-resubscribe failed for {Symbol}", symbol);
-            return Task.FromResult(false);
+            return false;
         }
         finally
         {

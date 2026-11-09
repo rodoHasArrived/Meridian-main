@@ -77,16 +77,15 @@ public sealed class StoredProviderCredentialResolver : IProviderCredentialResolv
         // cannot reassign/remove the connection between authorization and secret resolution.
         // IProviderCredentialResolver.CreateContext is synchronous by contract (provider factories
         // construct adapters synchronously), and the configuration lease is an exclusive cross-process
-        // file lock with no shared-read mode, so this blocking acquisition is structural. Keep provider
+        // file lock with no shared-read mode, so the caller has to wait for it. Keep provider
         // construction off request threads rather than widening the lease here.
-        using var ownershipLease = _configStore?.AcquireWriteLeaseAsync().GetAwaiter().GetResult();
-        var scope = _scope ?? (_configStore is null ? null : ProviderRouting.ProviderRuntimeCredentialService.ResolveScope(
-            _configStore.LoadRequired(), providerId));
-        var stored = scope is null
-            ? _credentialStore.ReadForProviderAsync(providerId).GetAwaiter().GetResult()
-            : (_credentialStore as IScopedProviderCredentialStore
-                ?? throw new InvalidOperationException("Credential vault does not support scoped ownership."))
-                .ReadScopedAsync(providerId, scope).GetAwaiter().GetResult();
+        //
+        // The asynchronous chain runs as one unit on the thread pool and is waited on once. Its
+        // continuations therefore never need the caller's synchronization context, so a caller that
+        // owns one (a UI or legacy host thread) cannot deadlock against its own blocked thread, and
+        // the lease is acquired and released inside that unit, held across the vault read exactly
+        // as before.
+        var (scope, stored) = Task.Run(() => ReadStoredCredentialsAsync(providerId)).GetAwaiter().GetResult();
         var values = new Dictionary<string, string?>(StringComparer.Ordinal);
         if (stored is not null)
         {
@@ -94,6 +93,22 @@ public sealed class StoredProviderCredentialResolver : IProviderCredentialResolv
                 values[attribute.Name] = ResolveStoredValue(stored, descriptor, attribute.Name);
         }
         return new ResolvedCredentialContext(values, stored?.Environment ?? scope?.Environment);
+    }
+
+    private async Task<(ProviderCredentialScope? Scope, ProviderCredentialReadResult? Stored)> ReadStoredCredentialsAsync(
+        string providerId)
+    {
+        using var ownershipLease = _configStore is null
+            ? null
+            : await _configStore.AcquireWriteLeaseAsync().ConfigureAwait(false);
+        var scope = _scope ?? (_configStore is null ? null : ProviderRouting.ProviderRuntimeCredentialService.ResolveScope(
+            _configStore.LoadRequired(), providerId));
+        var stored = scope is null
+            ? await _credentialStore.ReadForProviderAsync(providerId).ConfigureAwait(false)
+            : await (_credentialStore as IScopedProviderCredentialStore
+                ?? throw new InvalidOperationException("Credential vault does not support scoped ownership."))
+                .ReadScopedAsync(providerId, scope).ConfigureAwait(false);
+        return (scope, stored);
     }
 
     private static string? ResolveStoredValue(
