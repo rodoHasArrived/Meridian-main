@@ -1085,7 +1085,8 @@ public static partial class SecurityMasterEndpoints
                     return Results.Conflict(ErrorResponse.Validation(
                         "The conflict was resolved concurrently by another operator."));
                 }
-                catch (InvalidOperationException ex)
+                // A terms capability floor refusal is the shared handler's 503, never this route's 409 (ADR-025).
+                catch (InvalidOperationException ex) when (ex is not AppSecurityMaster.SecurityMasterTermsCapabilityRefusedException)
                 {
                     // The transactional persisted-value guard superseded or refreshed the row.
                     return Results.Problem(
@@ -1579,10 +1580,8 @@ public static partial class SecurityMasterEndpoints
         => workbenchOptions.CurrentValue.RequireGovernedTermAmendments
             ? Results.Problem(
                 statusCode: StatusCodes.Status403Forbidden,
-                title: "Direct term amendments are disabled by governance policy.",
-                detail: "This deployment requires term corrections to pass maker-checker: stage the edit through the "
-                    + "Security Master workbench field-edit route and publish it through the governed "
-                    + "Draft → Submitted → Approved → Published lifecycle instead of amending terms directly.")
+                title: AppSecurityMaster.GovernedTermAmendmentPolicy.RefusalTitle,
+                detail: AppSecurityMaster.GovernedTermAmendmentPolicy.RefusalDetail)
             : null;
 
     private static SecurityMasterIngestStatusResponse ToIngestStatusResponse(

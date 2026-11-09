@@ -577,14 +577,28 @@ module SecurityMaster =
             activeIdentifiers
             |> List.countBy (fun identifier ->
                 SecurityIdentifier.kindName identifier,
-                SecurityIdentifier.normalizeValue identifier.Value,
+                SecurityIdentifier.normalizeIdentifierValue identifier.Kind identifier.Value,
                 identifier |> SecurityIdentifier.provider |> Option.defaultValue String.Empty |> SecurityIdentifier.normalizeValue)
             |> List.filter (fun (_, count) -> count > 1)
             |> List.length
 
+        // UPI and Markit RED codes name a product or reference entity shared by many contracts;
+        // as a primary identifier the normalized primary-identifier unique index (migration 032)
+        // would refuse the second contract, so creates and amends refuse it here.
+        let sharedReferencePrimary =
+            activeIdentifiers
+            |> List.exists (fun identifier ->
+                identifier.IsPrimary
+                && Meridian.Contracts.SecurityMaster.SecurityIdentifierNormalizer.IsSharedReferenceKind(
+                    SecurityIdentifier.toContractKind identifier.Kind))
+
         []
         @ require (primaryCount = 1)
             (error "primary_identifier_invalid" "Active security identifiers must contain exactly one primary identifier.")
+        @ require (not sharedReferencePrimary)
+            (error
+                "primary_identifier_shared_reference"
+                "A UPI or Markit RED code is shared by many contracts and cannot be the primary identifier; mark a contract-level identifier as primary.")
         @ require (duplicateCount = 0)
             (error "duplicate_identifier_active" "Active security identifiers must not contain duplicate kind/value/provider combinations.")
 

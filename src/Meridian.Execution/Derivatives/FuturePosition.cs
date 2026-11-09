@@ -56,9 +56,16 @@ public sealed class FuturePosition : IDerivativePosition
     /// <inheritdoc/>
     public decimal MarkPrice => LastSettlementPrice;
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// P&amp;L since entry that has not yet been cash-settled.
+    /// </summary>
+    /// <remarks>
+    /// Total P&amp;L since entry is <c>(LastSettlementPrice − entry) × contracts × multiplier</c>.
+    /// The part already settled to cash is in <see cref="RealizedPnl"/>, so it is subtracted
+    /// here; otherwise every daily settlement would be counted in both properties.
+    /// </remarks>
     public decimal UnrealizedPnl =>
-        (LastSettlementPrice - AverageCostBasis) * Contracts * Details.ContractMultiplier;
+        (LastSettlementPrice - AverageCostBasis) * Contracts * Details.ContractMultiplier - RealizedPnl;
 
     /// <inheritdoc/>
     public decimal RealizedPnl { get; private set; }

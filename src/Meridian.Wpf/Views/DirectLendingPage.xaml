@@ -447,6 +447,8 @@
                                         <CheckBox IsChecked="{Binding Include}" Content="{Binding Label}" VerticalAlignment="Center" Margin="0,0,8,0" />
                                         <ComboBox ItemsSource="{Binding Dates}" SelectedItem="{Binding ExerciseDate}" IsEditable="True" Text="{Binding ExerciseDate, UpdateSourceTrigger=PropertyChanged}" Width="130" Margin="0,0,8,0" IsEnabled="{Binding Include}" />
                                         <TextBox Text="{Binding Amount, UpdateSourceTrigger=PropertyChanged}" Width="120" Margin="0,0,8,0" IsEnabled="{Binding Include}" />
+                                        <TextBox Text="{Binding NoticeDate, UpdateSourceTrigger=PropertyChanged}" Width="110" Margin="0,0,8,0" IsEnabled="{Binding Include}" AutomationProperties.Name="Notice date" ToolTip="Notice date (yyyy-MM-dd); blank notices on the exercise date" />
+                                        <TextBox Text="{Binding NoticeEvidenceId, UpdateSourceTrigger=PropertyChanged}" Width="240" Margin="0,0,8,0" IsEnabled="{Binding Include}" AutomationProperties.Name="Notice evidence" ToolTip="Approved notice id (optional); when set the exercise is retained rather than hypothetical" />
                                         <TextBlock Text="{Binding CalendarText}" Opacity="0.7" VerticalAlignment="Center" />
                                     </WrapPanel>
                                 </DataTemplate>
@@ -474,6 +476,18 @@
                         </StackPanel>
                         <TextBlock Text="{Binding LoadedRunText}" FontFamily="Consolas" FontSize="11" Margin="0,6,0,0" TextWrapping="Wrap" />
                         <TextBlock Text="{Binding ReplayStatusText}" Margin="0,4,0,0" TextWrapping="Wrap" AutomationProperties.Name="Replay verification" />
+                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                            <StackPanel Width="320" Margin="0,0,8,0">
+                                <TextBlock Text="Compare with retained run" Opacity="0.8" />
+                                <TextBox Text="{Binding CompareRunIdText, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Comparison run identity" />
+                            </StackPanel>
+                            <Button Content="Compare runs" Command="{Binding CompareRunsCommand}" Padding="12,6" VerticalAlignment="Bottom" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding ComparisonText}" FontFamily="Consolas" FontSize="11" Margin="0,6,0,0" TextWrapping="Wrap" AutomationProperties.Name="Retained run comparison" />
+                        <ItemsControl ItemsSource="{Binding BlockerDeltas}" Margin="0,4,0,0" AutomationProperties.Name="Blocker differences" />
+                        <workstation:DenseDataGridControl Table="{Binding CashDeltasTable}" MaxHeight="240" Margin="0,4,0,0"
+                                                          GridAutomationId="DirectLendingScenarioCashDeltasGrid"
+                                                          AutomationProperties.Name="Net cash deltas by date" />
                         <TextBlock Text="{Binding StatusText}" Margin="0,8,0,0" Opacity="0.8" TextWrapping="Wrap" />
                     </StackPanel>
                 </Expander>

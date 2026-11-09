@@ -5,6 +5,8 @@ import { apiGetJson, apiPostJson } from "@/lib/api";
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import { Button } from "@/components/ui/button";
 import type { FirstRunStatus, SampleWorkspace } from "./types";
+import { cn } from "@/lib/utils";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 const goals = [
   ["monitor-investments", "Monitor investments"],
@@ -181,7 +183,7 @@ function SampleWorkspacePanel({ workspace, onOpen }: { workspace: SampleWorkspac
             onClick={() => onOpen(highlight.route)}
             className="rounded-xl border border-slate-700 bg-slate-900/50 p-4 text-left transition hover:border-cyan-400"
           >
-            <span className="text-xs uppercase tracking-wide text-slate-400">{highlight.label}</span>
+            <span className={cn("text-xs text-slate-400", usesTrackedCaps(highlight.label) && "uppercase tracking-wide")}>{highlight.label}</span>
             <strong className="mt-1 block text-lg text-slate-100">{highlight.value}</strong>
             <span className="mt-1 block text-xs text-slate-400">{highlight.detail}</span>
           </button>
@@ -248,13 +250,13 @@ function SampleWorkspacePanel({ workspace, onOpen }: { workspace: SampleWorkspac
 }
 
 function Stat({ label, value, tone = "text-slate-100" }: { label: string; value: string; tone?: string }) {
-  return <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-4"><span className="text-xs uppercase tracking-wide text-slate-400">{label}</span><strong className={`mt-1 block text-xl ${tone}`}>{value}</strong></div>;
+  return <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-4"><span className={cn("text-xs text-slate-400", usesTrackedCaps(label) && "uppercase tracking-wide")}>{label}</span><strong className={`mt-1 block text-xl ${tone}`}>{value}</strong></div>;
 }
 
 function ArtifactCard({ title, artifact, onOpen }: { title: string; artifact: SampleWorkspace["report"]; onOpen: (route: string) => void }) {
   return (
     <button type="button" onClick={() => onOpen(artifact.route)} className="rounded-xl border border-slate-800 bg-slate-900/40 p-3 text-left transition hover:border-cyan-400">
-      <span className="text-xs uppercase tracking-wide text-slate-400">{title}</span>
+      <span className={cn("text-xs text-slate-400", usesTrackedCaps(title) && "uppercase tracking-wide")}>{title}</span>
       <strong className="mt-1 block text-slate-100">{artifact.name}</strong>
       <span className="mt-1 block text-xs text-cyan-300">{artifact.status}</span>
       <span className="mt-1 block text-xs text-slate-400">{artifact.detail}</span>

@@ -69,6 +69,23 @@ cannot enter bond posting through an unintended taxonomy fallback.
 **Decisions:** canonical units/ranges, legacy rows and accounting treatment require domain-owner
 review. The October 20 blanket `[0,1]` rule and all-fraction design are not accepted defaults.
 
+**Implementation note (2026-11-04):** a local implementation adds `RateUnitNormalizer`,
+`SecurityRateFieldUnits` and explicit catalog accounting dispositions. See the
+[slice-4 disposition](../../architecture/security-master-extensibility-review.md#slice-4-disposition--2026-11-04-d10).
+D3 decided 2026-11-05: undeclared non-zero rates block. Legacy fixed-income rows stop projecting
+until they declare a unit, Security Master engine swaps cannot declare per-leg units yet, and readers
+still treat negative rates differently. Canonical units and ranges, the repair path, the negative-rate
+policy and StructuredNote accounting remain open. The legacy-fixture tests now assert the decision.
+
+**2026-11-05 partial input (direct lending only):** `RateUnitNormalizer`
+(`src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs`) is an explicit-unit normalizer
+(Fraction / Percent / BasisPoints, no unspecified unit, no magnitude inference, field-specific ranges
+allowing negative index, spread and floor). Only the new direct-lending
+[PIK capitalization and reset-schedule terms](../blueprints/direct-lending-pik-capitalization-and-rate-resets.md)
+use it. It is separate from the Security Master `RateUnitNormalizer`
+(`src/Meridian.Contracts/SecurityMaster/RateUnitNormalizer.cs`) in the implementation note above; the
+two may converge once canonical units are approved.
+
 ## Slice 5 — Audit evidence contracts before storage/serialization changes
 
 **Evidence:** D7. Classify each mutable row (cash-flow source, entitlement, field provenance and
@@ -82,11 +99,18 @@ concurrent-write tests; history reconstructed with explicit valid/recorded cutof
 fixtures read unchanged; canonical event/projection/provenance commit atomically. Independent
 schema/storage review remains a gate for migrations and destructive-operation waivers.
 
+**Progress (2026-11-04):** identifier recorded history (migration 062) and versioned governance
+payloads with captured version-1 fixtures are implemented; see the
+[D7 slice-5 disposition](../../architecture/security-master-extensibility-review.md#d7--audit-history-and-serialization-distinguish-current-state-from-retained-evidence).
+Row classification, the WPF provenance composition and migration 062's independent review remain open.
+
 ## Slice 6 — Remaining catalog, identifier and consumer convergence
 
 **Evidence:** D1, D3, D4, D8, D9 and D11. Separate small changes by owner:
 
 - Replace the WPF multiplier substring rule with the same declared fact the workbench uses.
+  (Done before 2026-11-04. On 2026-11-06 the WPF conflict-routing substring rule also moved to
+  declared field names; see the D9 disposition in the review.)
 - Cover reverse instrument mapping and readiness projector mapping, including explicit ambiguity
   and outside-slice exceptions; retain conditional quality rules beside generic required terms.
 - Align identifier normalization/check digits at a dependency-safe seam, retaining provider and

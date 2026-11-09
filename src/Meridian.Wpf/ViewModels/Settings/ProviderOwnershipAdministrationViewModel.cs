@@ -42,7 +42,8 @@ public sealed class ProviderOwnershipAdministrationViewModel : BindableBase
         CreateConnectionCommand = new AsyncRelayCommand(CreateConnectionAsync, () => !IsBusy && !string.IsNullOrWhiteSpace(ProviderId));
         PreviewMigrationCommand = new AsyncRelayCommand(PreviewMigrationAsync, () => !IsBusy && SelectedConnection is not null);
         MigrateCommand = new AsyncRelayCommand(MigrateAsync, () => !IsBusy && SelectedConnection is not null && ExpectedGeneration is not null);
-        RollbackCommand = new AsyncRelayCommand(RollbackAsync, () => !IsBusy && SelectedConnection is not null && _receipt is { RolledBack: false });
+        RollbackCommand = new AsyncRelayCommand(RollbackAsync, () => !IsBusy && SelectedConnection is not null && _receipt is { RolledBack: false, FinalizedAt: null });
+        FinalizeCommand = new AsyncRelayCommand(FinalizeAsync, () => !IsBusy && SelectedConnection is not null && _receipt is { RolledBack: false, FinalizedAt: null });
         BindCommand = new AsyncRelayCommand(BindAsync, () => !IsBusy && SelectedConnection is not null);
         CheckRuntimeCommand = new AsyncRelayCommand(CheckRuntimeAsync, () => !IsBusy && SelectedConnection is not null);
         ApplyRuntimeCommand = new AsyncRelayCommand(ApplyRuntimeAsync, () => !IsBusy && SelectedConnection is not null && _application is { PendingRestart: true });
@@ -55,6 +56,7 @@ public sealed class ProviderOwnershipAdministrationViewModel : BindableBase
     public IAsyncRelayCommand MigrateCommand { get; }
     public IAsyncRelayCommand RollbackCommand { get; }
     public IAsyncRelayCommand BindCommand { get; }
+    public IAsyncRelayCommand FinalizeCommand { get; }
     public IAsyncRelayCommand CheckRuntimeCommand { get; }
     public IAsyncRelayCommand ApplyRuntimeCommand { get; }
 
@@ -106,7 +108,7 @@ public sealed class ProviderOwnershipAdministrationViewModel : BindableBase
         : string.Empty;
 
     public string ReceiptText => _receipt is { } receipt
-        ? $"Receipt {receipt.MigrationId} · {(receipt.RolledBack ? "rolled back" : "migrated")} · generation {receipt.CredentialGeneration} · {receipt.Scope.ConnectionId} · {receipt.Actor}"
+        ? $"Receipt {receipt.MigrationId} · {(receipt.RolledBack ? "rolled back" : receipt.FinalizedAt is not null ? "finalized" : "migrated")} · generation {receipt.CredentialGeneration} · {receipt.Scope.ConnectionId} · {receipt.Actor}{(receipt.OAuthTokenTransferred ? " · OAuth token moved with the record" : string.Empty)}"
         : string.Empty;
 
     private async Task LoadConnectionsAsync()
@@ -200,6 +202,25 @@ public sealed class ProviderOwnershipAdministrationViewModel : BindableBase
         }
         catch (OperationCanceledException) { }
         catch (Exception ex) { if (generation == _generation) StatusText = $"The migration was refused: {ex.Message}"; }
+        finally { End(generation); }
+    }
+
+    private async Task FinalizeAsync()
+    {
+        if (SelectedConnection is not { } connection || _receipt is not { RolledBack: false, FinalizedAt: null } receipt) return;
+        var generation = Begin("Finalizing migration…");
+        try
+        {
+            var response = await _client.FinalizeAsync(connection.ConnectionId, new ProviderCredentialMigrationRequest(ProviderId.Trim(), receipt.MigrationId), _operation!.Token).ConfigureAwait(true);
+            if (generation != _generation) return;
+            if (!response.Success || response.Data is null) { StatusText = Refused("The migration could not be finalized", response); return; }
+            _receipt = response.Data;
+            RaisePropertyChanged(nameof(Receipt));
+            RaisePropertyChanged(nameof(ReceiptText));
+            StatusText = $"Migration {response.Data.MigrationId} finalized by {response.Data.FinalizedBy ?? "the server"}; rollback has ended and the provider-wide record is released. The receipt stays in the audit trail.";
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception ex) { if (generation == _generation) StatusText = $"The migration could not be finalized: {ex.Message}"; }
         finally { End(generation); }
     }
 
@@ -341,6 +362,7 @@ public sealed class ProviderOwnershipAdministrationViewModel : BindableBase
         PreviewMigrationCommand.NotifyCanExecuteChanged();
         MigrateCommand.NotifyCanExecuteChanged();
         RollbackCommand.NotifyCanExecuteChanged();
+        FinalizeCommand.NotifyCanExecuteChanged();
         BindCommand.NotifyCanExecuteChanged();
         CheckRuntimeCommand.NotifyCanExecuteChanged();
         ApplyRuntimeCommand.NotifyCanExecuteChanged();

@@ -9,6 +9,8 @@ import * as ledgerReportsApi from "@/lib/ledger-reports-api";
 import * as markFreshnessApi from "@/lib/api/mark-freshness.api";
 import * as recurringJournalsApi from "@/lib/api/recurring-journals.api";
 import { AccountingScreen } from "@/screens/accounting-screen";
+import { resetSinceLastVisitCache } from "@/lib/since-last-visit";
+import { getOperatorSurfaceVisit, recordOperatorSurfaceVisit } from "@/lib/api/operator-workstation.api";
 import { TestMemoryRouter, renderWithRouter, waitForAsyncEffects } from "@/test/render";
 import { buildSuccessfulVerifiedOperationOutcome } from "@/test/verified-operation-outcome";
 import type {
@@ -80,6 +82,14 @@ vi.mock("@/lib/ledger-reports-api", () => ({
 
 vi.mock("@/lib/api/recurring-journals.api", () => ({
   getRecurringJournalQueue: vi.fn(async (scope) => ({ ...scope, occurrences: [] }))
+}));
+
+vi.mock("@/lib/api/operator-workstation.api", () => ({
+  getCrossScreenCounts: vi.fn().mockResolvedValue(null),
+  getOperatorScopePreference: vi.fn().mockResolvedValue({ defaultScope: null, updatedAt: null }),
+  saveOperatorScopePreference: vi.fn().mockResolvedValue({ defaultScope: null, updatedAt: null }),
+  recordOperatorSurfaceVisit: vi.fn().mockRejectedValue(new Error("offline")),
+  getOperatorSurfaceVisit: vi.fn().mockRejectedValue(new Error("offline"))
 }));
 
 vi.mock("@/lib/api", async () => {
@@ -1597,6 +1607,29 @@ describe("AccountingScreen", () => {
     searchSecurities.mockReset();
     if (defaultSearchSecuritiesImplementation) {
       searchSecurities.mockImplementation(defaultSearchSecuritiesImplementation);
+    }
+  });
+
+  it("states on the open-breaks card how many breaks are new since the operator's last visit (C3)", async () => {
+    const baseline = "2025-12-31T00:00:00Z";
+    resetSinceLastVisitCache();
+    window.sessionStorage.clear();
+    vi.mocked(getOperatorSurfaceVisit).mockResolvedValueOnce({ surface: "reconciliation-breaks", previousVisitAt: baseline, visitedAt: null });
+    vi.mocked(recordOperatorSurfaceVisit).mockClear();
+    try {
+      await renderAccountingScreen({
+        ...data,
+        metrics: [{ id: "breaks", label: "Open breaks", value: "2", delta: "+1", tone: "warning" }, ...data.metrics.slice(1)]
+      });
+      const expected = data.breakQueue.filter((item) => Date.parse(item.detectedAt) > Date.parse(baseline)).length;
+      const strip = screen.getByLabelText("Accounting headline metrics");
+      expect(await within(strip).findByText(`${expected} new since your last visit`)).toBeInTheDocument();
+      expect(within(strip).queryByText("+1")).not.toBeInTheDocument();
+      // The Accounting landing reads the break-queue baseline; only opening the queue records a visit.
+      expect(recordOperatorSurfaceVisit).not.toHaveBeenCalled();
+    } finally {
+      window.sessionStorage.clear();
+      resetSinceLastVisitCache();
     }
   });
 
@@ -4436,7 +4469,7 @@ describe("AccountingScreen", () => {
     expect(screen.queryByRole("treegrid", { name: "Primary trial balance lines for the selected ledger run" })).not.toBeInTheDocument();
     const approvalQueue = screen.getByRole("region", { name: "Accounting approval queue" });
     expect(approvalQueue).toHaveTextContent("2026-05");
-    expect(approvalQueue).toHaveTextContent("Jun 1, 12:00 UTC");
+    expect(approvalQueue).toHaveTextContent("Jun 1, 2026, 12:00 UTC");
     expect(approvalQueue).not.toHaveTextContent("workflow-close-1");
     const workflowIdentifiers = screen.getByText("Workflow identifiers").closest("details");
     expect(workflowIdentifiers).not.toHaveAttribute("open");

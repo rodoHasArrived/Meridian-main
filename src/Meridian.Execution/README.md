@@ -15,6 +15,21 @@ Paper fills retain security-definition lot units and multipliers in execution re
 and contracts with multiplier one preserve their denomination after session replay. Legacy reports
 without class or lot metadata retain the existing share assumption. Contradictory units on an open
 position are refused before booking.
+Cash, realised and unrealised P&L, market value and ledger postings are scaled by the position's
+money multiplier while lot prices and cost basis stay quoted per contract (see the premium-contract
+section below for which fills scale). A new position takes the fill's exact contract multiplier,
+including values below 1, and a fill whose multiplier differs from the open position's is refused.
+`TradeExecutedEvent` carries the booked `ContractMultiplier`, so its `GrossValue` and the multiplied
+realized P&L reach the ledger handoff in the same money terms; events serialized before the member
+existed read as 1.
+When the gateway supplies no lot multiplier, the OMS stamps its resolved multiplier onto the fill
+report before booking, so session projection and restart replay apply the same multiplier as the live
+book.
+Reg T and portfolio margin models value positions at quantity × multiplier × price; the paper book
+hands them each position's money multiplier, the same terms it uses for cash and margin borrowing.
+Paper notional-based costs (basis-point commission, fees, slippage) and the spread cost use the same
+multiplied principal; per-share and fixed per-order charges are unchanged.
+Session TCA computes commission rates and notionals on the same multiplied principal.
 
 OMS amendments resolve explicit broker/client identifiers, retain replacement broker aliases under
 the original client identity, and process cumulative fills through the shared fill funnel.
@@ -171,6 +186,22 @@ exact aggregate remainder. An asynchronous adjustment cannot replace a lot book 
 fills, including close/reopen at the same quantity and price. Legacy custom adjusters retain their
 quantity/quote behavior and do not claim exact total-basis evidence. This calculation convergence
 does not supply canonical security/book identity, acquisition FX or production short-posting authority.
+
+Fills of listed premium contracts (options and warrants, whose catalog descriptor declares
+`UsesOccOptionSymbols`) pay their premium in full: paper cash, ledger amounts, lot basis, market
+value and P&L move at quote × quantity × contract multiplier, the same scale `OrderNotionalResolver`
+sizes the order at. Cost basis, lot entry prices and marks stay per-unit quotes, because readers
+apply the multiplier themselves; the aggregate position view carries the multiplier its P&L used,
+and `PortfolioStatePositionTracker` divides by it when recovering a mark. Face-value fills and every
+other asset class stay at 1×. Futures stay at 1× on purpose until the book models variation margin.
+A fill whose multiplier differs from the open position's is refused. The OMS stamps the multiplier
+on each fill increment, and stamps `BookedMoneyMultiplier` when the scale is not 1, so session
+replay reproduces the same cash; records written before that stamp replay at the 1× they were booked
+at. A fill that adds to or closes an open position takes that position's scale, so a restored 1×
+legacy option position continues at 1× until it is flat. Once flat, a new holding opens at its own scale, even if the entry stays listed for fund attribution. The accounting `TradeExecutedEvent` carries that booked scale as `ContractMultiplier`, so its gross
+value agrees with the realized P&L, and the margin check values holdings on that scale. Margin
+interest is paid from cash once, leaves the loan principal unchanged, and posts Margin Interest
+Expense against Cash.
 
 Both paper gateways resolve the final fill price through the shared trading-parameter helper.
 Tick-size rounding is best-effort: a rounded price is used only when it remains positive, stays
@@ -422,6 +453,15 @@ reservation, while withdrawing an escalation also retires any approvals linked t
 metadata chain. Broker-native notional metadata (`notional`, `alpaca:notional`) is honoured only
 for gateways implementing `INotionalOrderSizingGateway`; on any other gateway the order is refused
 rather than measured at a size the broker will not route.
+
+## Audit hardening (2026-11)
+
+- **Margin models.** `RegTMarginModel`'s short rates (150 % initial, 130 % maintenance) are credit-balance rates. Requirements are reported against net equity (long MV − short MV + cash) as `(rate − 1) × |short MV|`, so a compliant short no longer raises a false margin call. `PortfolioMarginModel` equity subtracts the short liability.
+- **Fail-closed pricing.** `CheckMarginStatus` evaluates portfolio and per-position equity at the same supplied prices, never the stored marks. Both models, and `PaperTradingPortfolio.CheckMarginStatus`, throw `MarginPriceUnavailableException` when an open position has no price, instead of skipping it. Flat positions need no price.
+- **Exact quantities.** Margin sizing, `PortfolioStatePositionTracker` and `PositionReconciliationService` use `ExactQuantity`, so fractional holdings are not rounded to whole shares.
+- **Broker cancels.** `BrokerageGatewayAdapter.CancelAsync` propagates caller cancellation instead of returning `false` ("broker refused").
+- **Futures P&L.** `FuturePosition.UnrealizedPnl` excludes mark-to-market already settled into `RealizedPnl`, so each daily settlement is counted once.
+- **Allocation weights.** `ProportionalAllocationEngine.Allocate` validates rule weights (non-empty, non-negative, non-zero sum) even for rules built with `AllocationRule`'s positional constructor.
 
 ## Diagrams
 

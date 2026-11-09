@@ -779,6 +779,28 @@ describe("strategy-screen view model", () => {
     expect(plotTool.workspace.statusBadgeLabel).not.toBe("RESEARCH");
   });
 
+  it("renders run-linked PlotTool metrics as Unavailable instead of inventing values when no run exists", () => {
+    const plotTool = buildPlotToolState({
+      metrics,
+      runs: [],
+      selectedRuns: [],
+      comparison: [],
+      runDiff: null
+    });
+
+    const moments = Object.fromEntries(plotTool.statistics.moments.map((row) => [row.id, row.value]));
+    expect(moments["net-pnl"]).toBe("Unavailable");
+    expect(moments.return).toBe("Unavailable");
+    expect(moments.sharpe).toBe("Unavailable");
+    expect(moments.drawdown).toBe("Unavailable");
+    expect(plotTool.statistics.moments.map((row) => row.value).join(" ")).not.toContain("3,200");
+
+    const sharpeTile = plotTool.statistics.summaryTiles.find((tile) => tile.id === "sharpe");
+    const drawdownTile = plotTool.statistics.summaryTiles.find((tile) => tile.id === "drawdown");
+    expect(sharpeTile).toMatchObject({ value: "Unavailable", tone: "default" });
+    expect(drawdownTile).toMatchObject({ value: "Unavailable", tone: "default" });
+  });
+
   it("builds PlotTool table states with explicit empty copy", () => {
     expect(buildPlotToolMomentsTable([])).toEqual({
       rows: [],

@@ -9,7 +9,7 @@ using NSubstitute;
 
 namespace Meridian.Tests.FixedIncome;
 
-public sealed class BondExerciseDelayedCouponTests
+public sealed partial class BondExerciseDelayedCouponTests
 {
     private static readonly DateTimeOffset AsOf = new(2026, 1, 15, 0, 0, 0, TimeSpan.Zero);
     private static readonly IBusinessDayCalendarSource Calendars =

@@ -54,9 +54,58 @@ public readonly record struct LotQuantity(decimal Amount, SecurityLotUnitKind Un
     /// </summary>
     public static (SecurityLotUnitKind UnitKind, decimal Multiplier) UnitFor(string? assetClass, JsonElement? assetSpecificTerms = null)
     {
+        if (!TryUnitFor(assetClass, assetSpecificTerms, out var unitKind, out var multiplier, out var error, out var parameterName))
+            throw new ArgumentException(error, parameterName);
+        return (unitKind, multiplier);
+    }
+
+    /// <summary>A quantity of <paramref name="amount"/> for an asset class, unitized from the registry.</summary>
+    public static LotQuantity For(string? assetClass, decimal amount, JsonElement? assetSpecificTerms = null)
+    {
+        var (unit, multiplier) = UnitFor(assetClass, assetSpecificTerms);
+        return new LotQuantity(amount, unit, multiplier);
+    }
+
+    /// <summary>
+    /// <see cref="For"/> without the exception: false, with the reason, when the class is not
+    /// registered or its contract multiplier term is missing or not positive. Callers that report
+    /// a skipped posting rather than fail (journal producers, ledger bridges) use this form.
+    /// </summary>
+    public static bool TryFor(
+        string? assetClass,
+        decimal amount,
+        JsonElement? assetSpecificTerms,
+        out LotQuantity quantity,
+        [System.Diagnostics.CodeAnalysis.NotNullWhen(false)] out string? error)
+    {
+        if (!TryUnitFor(assetClass, assetSpecificTerms, out var unitKind, out var multiplier, out error, out _))
+        {
+            quantity = default;
+            return false;
+        }
+
+        quantity = new LotQuantity(amount, unitKind, multiplier);
+        return true;
+    }
+
+    private static bool TryUnitFor(
+        string? assetClass,
+        JsonElement? assetSpecificTerms,
+        out SecurityLotUnitKind unitKind,
+        out decimal multiplier,
+        [System.Diagnostics.CodeAnalysis.NotNullWhen(false)] out string? error,
+        out string parameterName)
+    {
+        unitKind = default;
+        multiplier = 1m;
+        error = null;
+        parameterName = nameof(assetClass);
         if (!SecurityAssetClassCatalog.TryGet(assetClass, out var descriptor))
-            throw new ArgumentException("A registered asset class is required to determine lot units.", nameof(assetClass));
-        var multiplier = 1m;
+        {
+            error = "A registered asset class is required to determine lot units.";
+            return false;
+        }
+
         if (descriptor.LotMultiplierTermKey is { } key)
         {
             if (assetSpecificTerms is not { ValueKind: JsonValueKind.Object } terms
@@ -65,17 +114,14 @@ public readonly record struct LotQuantity(decimal Amount, SecurityLotUnitKind Un
                 || !value.TryGetDecimal(out multiplier)
                 || multiplier <= 0m)
             {
-                throw new ArgumentException($"Asset class '{descriptor.AssetClass}' requires a positive '{key}' term to open a lot.", nameof(assetSpecificTerms));
+                multiplier = 1m;
+                error = $"Asset class '{descriptor.AssetClass}' requires a positive '{key}' term to open a lot.";
+                parameterName = nameof(assetSpecificTerms);
+                return false;
             }
         }
 
-        return (descriptor.LotUnit, multiplier);
-    }
-
-    /// <summary>A quantity of <paramref name="amount"/> for an asset class, unitized from the registry.</summary>
-    public static LotQuantity For(string? assetClass, decimal amount, JsonElement? assetSpecificTerms = null)
-    {
-        var (unit, multiplier) = UnitFor(assetClass, assetSpecificTerms);
-        return new LotQuantity(amount, unit, multiplier);
+        unitKind = descriptor.LotUnit;
+        return true;
     }
 }

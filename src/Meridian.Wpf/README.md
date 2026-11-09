@@ -18,6 +18,15 @@ review for Bond/CD passports (`ViewModels/SecurityMaster/`): server-calculated, 
 analytics shown as exact decimals, and a hash-bound migration preview that stages an ordinary
 governed draft. The desktop never prices locally and resubmits digests, not displayed amounts.
 
+The analytics model selector defaults to `bond-analytics-v2` for fixed/zero-coupon bonds and retains
+legacy v1; explicitly select v3 for a typed floating bond with a named index. V3 shows projected-flow
+yield (not discount margin), yield DV01 and coupon-spread `SpreadDv01` separately, and a reset-evidence
+table with observed/forecast fixings, source, rates and spread units. Missing fixing/forward-curve
+refusals clear calculated values; no request falls back to another model. Model changes also discard
+pending or prior results. `BondAnalyticsViewModelTests`, `BondAnalyticsFloatingViewTests`, and
+`WorkstationBondAnalyticsApiClientTests` cover the selection, transport, display and refusal paths.
+Windows execution is required to verify the native WPF view.
+
 Credential management offers the browser's ownership administration (`ViewModels/Settings/
 ProviderOwnershipAdministrationViewModel` over `WorkstationProviderOwnershipApiClient`): create an
 owned connection, preview the non-secret vault status, migrate only with the previewed credential
@@ -36,6 +45,12 @@ over `WorkstationContractualCashFlowApiClient`): hypothetical valuation date, kn
 horizon, rate shock, eligibility-driven exercise selections and one prepayment assumption; the event
 ladder, blockers and evidence hashes as exact server decimals; retained runs under a client-generated
 identity that any edit renews; and replay verification of a loaded run by output hash.
+
+The Security Master conflict lane routes each open conflict by
+`SecurityMasterConflictFieldCategories` (Contracts): whole field-path segments are matched against
+declared identifier, trading-parameter, lifecycle, corporate-action, classification, currency and
+display names, so a profile field such as `transferRestrictions` is no longer misread as a RIC
+identifier conflict.
 
 The Security Master page's "Bond Ladders" tab (`ViewModels/SecurityMaster/BondReferenceLadderViewModel`)
 pages issuer and maturity ladders through the bounded keyset routes behind an explicit "Load more";
@@ -967,12 +982,20 @@ collections through `WorkspaceDecisionQueueControl`, preserving existing page ta
 `WorkspaceTone` queue-card and badge semantics for summary, approval, exception, and delivery
 decisions, including primary, secondary, and blocked cockpit actions.
 
-The Security Master edit view labels the `LoanX` and `Clip` identifier kinds, and the Strategy
+The Security Master edit view labels the `LoanX` and `Clip` identifier kinds and the regulatory
+derivatives kinds (`UTI`, `UPI`, `Markit RED entity (RED6)`, `Markit RED pair (RED9)`), and the Strategy
 feature module registers the canonical write scope next to the Security Master service.
 
 The desktop passport editor loads the asset-class registry definition and offers a term picker,
 a choice list for vocabulary and convention terms, and the shared `SecurityAssetTermFormModel`
 pre-check; the free-text field path remains available.
+
+## Security Master governance controls (2026-11)
+
+- **Desktop honours governed term amendments.** The desktop binds the `SecurityMasterWorkbench` configuration section and registers `IGovernedTermAmendmentPolicy`. When `RequireGovernedTermAmendments` is on, `SecurityMasterEditViewModel` refuses a direct amendment with the shared guidance instead of bypassing the gate the web API enforces. The service enforces the setting too, and the editor reports that refusal, so a desktop composed without the policy still cannot write directly.
+- **Contract-multiplier requirement.** `SecurityMasterViewModel` uses `InstrumentTypeDescriptorCatalog.RequiresContractMultiplier` rather than matching "Option"/"Future"/"Derivative" in the asset-class name.
+
+See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D8) for status and open decisions.
 
 ## Diagrams
 

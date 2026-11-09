@@ -14,6 +14,10 @@ namespace Meridian.Application.DirectLending;
 /// has not yet been processed. Each batch catches up every missing accrual date since the loan's
 /// last accrual, in strict date order, so worker downtime or a temporarily blocked accounting
 /// period does not silently under-accrue interest.
+/// For loans whose terms carry the opt-in servicing schedules, each date runs in a fixed order:
+/// apply the due scheduled rate reset, post the accrual, then capitalize PIK on a capitalization
+/// date. A missing index fixing stops that loan's catch-up and raises an operator work item (fail
+/// closed) instead of accruing at a stale or zero rate.
 /// </summary>
 public sealed class DailyAccrualWorker : BackgroundService
 {
@@ -135,6 +139,13 @@ public sealed class DailyAccrualWorker : BackgroundService
                         loanId, gapDays, startDate, endDate);
                 }
 
+                // The full aggregate carries the opt-in schedule terms; the projections do not need to.
+                var aggregate = await _queryService.LoadAggregateAsync(loanId, ct).ConfigureAwait(false);
+                var terms = aggregate?.Contract.CurrentTerms;
+                var currentServicing = aggregate?.Servicing;
+                var hasSchedules = terms is not null && currentServicing is not null
+                    && (terms.RateResetSchedule is not null || terms.PikCapitalization is not null);
+
                 for (var date = startDate; date <= endDate; date = date.AddDays(1))
                 {
                     if (ct.IsCancellationRequested)
@@ -154,6 +165,34 @@ public sealed class DailyAccrualWorker : BackgroundService
                         break;
                     }
 
+                    // Scheduled reset first, so the day accrues at the rate that governs it.
+                    if (hasSchedules &&
+                        DirectLendingServicingScheduleSupport.DueResetDate(terms!, currentServicing!, date) is { } dueResetDate)
+                    {
+                        var resetResult = await _commandService.ApplyScheduledRateResetAsync(
+                            loanId,
+                            new ApplyScheduledRateResetRequest(dueResetDate),
+                            ct: ct).ConfigureAwait(false);
+                        if (!resetResult.IsSuccess)
+                        {
+                            if (resetResult.Error?.Code == DirectLendingErrorCode.FixingMissing)
+                            {
+                                await RouteFixingMissingAsync(loanId, dueResetDate, resetResult.Error.Message, ct).ConfigureAwait(false);
+                            }
+                            else
+                            {
+                                _logger.LogWarning(
+                                    "DailyAccrualWorker: scheduled rate reset {ResetDate} rejected for loan {LoanId}: {Error}; halting catch-up for this loan until the next cycle.",
+                                    dueResetDate, loanId, resetResult.Error?.Message);
+                            }
+
+                            failed++;
+                            break;
+                        }
+
+                        currentServicing = resetResult.Value;
+                    }
+
                     var result = await _commandService.PostDailyAccrualAsync(
                         loanId,
                         new PostDailyAccrualRequest(date),
@@ -170,6 +209,25 @@ public sealed class DailyAccrualWorker : BackgroundService
                             loanId, date, result.Error?.Message);
                         failed++;
                         break;
+                    }
+
+                    // Capitalize after the day's accrual, so capitalized PIK compounds from tomorrow.
+                    if (hasSchedules && DirectLendingServicingScheduleSupport.IsCapitalizationDue(terms!, currentServicing!, date))
+                    {
+                        var capitalizationResult = await _commandService.CapitalizePikAsync(
+                            loanId,
+                            new CapitalizePikRequest(date),
+                            ct: ct).ConfigureAwait(false);
+                        if (!capitalizationResult.IsSuccess)
+                        {
+                            _logger.LogWarning(
+                                "DailyAccrualWorker: PIK capitalization rejected for loan {LoanId} on {Date}: {Error}; halting catch-up for this loan until the next cycle.",
+                                loanId, date, capitalizationResult.Error?.Message);
+                            failed++;
+                            break;
+                        }
+
+                        currentServicing = capitalizationResult.Value;
                     }
                 }
             }
@@ -258,6 +316,38 @@ public sealed class DailyAccrualWorker : BackgroundService
             TargetRoute: "/accounting/reconciliation",
             TargetPageTag: "FundReconciliation",
             Scope: "DirectLendingAccrual");
+
+        await _operatorInbox.UpsertItemAsync(workItem, ct).ConfigureAwait(false);
+    }
+
+    private async Task RouteFixingMissingAsync(Guid loanId, DateOnly resetDate, string reason, CancellationToken ct)
+    {
+        _logger.LogWarning(
+            "DailyAccrualWorker: accrual blocked for loan {LoanId}: scheduled reset {ResetDate} has no fixing: {Reason}",
+            loanId,
+            resetDate,
+            reason);
+
+        if (_operatorInbox is null)
+        {
+            return;
+        }
+
+        // No dedicated work-item kind exists for a missing benchmark fixing; it is a data-provider
+        // coverage gap, so it uses the provider trust-gate lane with its own scope.
+        var workItem = new OperatorWorkItemDto(
+            WorkItemId: $"direct-lending-fixing-missing:{loanId:D}:{resetDate:yyyyMMdd}",
+            Kind: OperatorWorkItemKindDto.ProviderTrustGate,
+            Label: "Direct lending accrual blocked by a missing rate fixing",
+            Detail: $"Loan {loanId:D} cannot apply its {resetDate:yyyy-MM-dd} rate reset: {reason} Record the fixing via POST /api/loans/index-fixings.",
+            Tone: OperatorWorkItemToneDto.Warning,
+            CreatedAt: DateTimeOffset.UtcNow,
+            RunId: loanId.ToString("D"),
+            AuditReference: $"fixing-missing:{resetDate:yyyyMMdd}",
+            Workspace: "Data",
+            TargetRoute: "/data",
+            TargetPageTag: "ProviderHealth",
+            Scope: "DirectLendingRateFixing");
 
         await _operatorInbox.UpsertItemAsync(workItem, ct).ConfigureAwait(false);
     }

@@ -46,6 +46,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
     private readonly ISmService _service;
     private readonly WpfServices.DesktopAuthenticationSession? _authenticationSession;
     private readonly WpfServices.IDesktopMutationAuthorization _mutationAuthorization;
+    private readonly Meridian.Application.SecurityMaster.IGovernedTermAmendmentPolicy? _governedTermAmendmentPolicy;
     private readonly bool _hasPolygonApiKey;
     private readonly object _selectedSecurityLoadGate = new();
     private bool _isRefreshingSearchWorkspaceFilters;
@@ -1543,10 +1544,12 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
         ISmQueryService queryService,
         ISmService service,
         WpfServices.DesktopAuthenticationSession? authenticationSession = null,
-        WpfServices.IWorkstationContractualCashFlowApiClient? cashFlowClient = null)
+        WpfServices.IWorkstationContractualCashFlowApiClient? cashFlowClient = null,
+        Meridian.Application.SecurityMaster.IGovernedTermAmendmentPolicy? governedTermAmendmentPolicy = null)
     {
         _loggingService = loggingService;
         _cashFlowClient = cashFlowClient;
+        _governedTermAmendmentPolicy = governedTermAmendmentPolicy;
         _notificationService = notificationService;
         _backfillService = backfillService;
         _importService = importService;
@@ -1673,7 +1676,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
         if (!TryAuthorizeSecurityMasterMutation("create a security", out _))
             return;
 
-        EditVm = SecurityMasterEditViewModel.CreateNew(_loggingService, _notificationService, _service, _authenticationSession, _mutationAuthorization);
+        EditVm = SecurityMasterEditViewModel.CreateNew(_loggingService, _notificationService, _service, _authenticationSession, _mutationAuthorization, _governedTermAmendmentPolicy);
         WireEditVmEvents();
         IsEditPanelVisible = true;
     }
@@ -1703,7 +1706,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
             {
                 await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    EditVm = new SecurityMasterEditViewModel(_loggingService, _notificationService, _service, _authenticationSession, _mutationAuthorization);
+                    EditVm = new SecurityMasterEditViewModel(_loggingService, _notificationService, _service, _authenticationSession, _mutationAuthorization, _governedTermAmendmentPolicy);
                     EditVm.LoadForEdit(detail);
                     WireEditVmEvents();
                     IsEditPanelVisible = true;
@@ -4056,7 +4059,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
             missingFields.Add("trading hours");
         }
 
-        if (RequiresContractMultiplier(SelectedAssetClass) &&
+        if (InstrumentTypeDescriptorCatalog.RequiresContractMultiplier(SelectedAssetClass) &&
             _selectedTradingParameters?.ContractMultiplier is null or <= 0)
         {
             missingFields.Add("contract multiplier");
@@ -4086,13 +4089,14 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
 
     private static SecurityConflictAssessment AssessConflict(SecurityMasterConflict conflict)
     {
-        var fieldKey = $"{conflict.FieldPath} {conflict.ConflictKind}".ToLowerInvariant();
-        var touchesIdentifier = fieldKey.Contains("identifier") || fieldKey.Contains("isin") || fieldKey.Contains("cusip") || fieldKey.Contains("figi") || fieldKey.Contains("ticker") || fieldKey.Contains("ric") || fieldKey.Contains("bbgid");
-        var touchesLifecycle = fieldKey.Contains("status") || fieldKey.Contains("effective") || fieldKey.Contains("lifecycle");
-        var touchesTradingParameters = fieldKey.Contains("tick") || fieldKey.Contains("lot") || fieldKey.Contains("margin") || fieldKey.Contains("multiplier") || fieldKey.Contains("tradinghour");
-        var touchesCorporateAction = fieldKey.Contains("dividend") || fieldKey.Contains("split") || fieldKey.Contains("rights") || fieldKey.Contains("distribution") || fieldKey.Contains("exdate") || fieldKey.Contains("paydate");
-        var touchesClassification = fieldKey.Contains("assetclass") || fieldKey.Contains("classification") || fieldKey.Contains("currency") || fieldKey.Contains("subtype") || fieldKey.Contains("issuer") || fieldKey.Contains("type");
-        var touchesDisplay = fieldKey.Contains("displayname") || fieldKey.Contains("name") || fieldKey.Contains("alias");
+        var category = SecurityMasterConflictFieldCategories.For(conflict);
+        var touchesIdentifier = category.HasFlag(SecurityMasterConflictFieldCategory.Identifier);
+        var touchesLifecycle = category.HasFlag(SecurityMasterConflictFieldCategory.Lifecycle);
+        var touchesTradingParameters = category.HasFlag(SecurityMasterConflictFieldCategory.TradingParameter);
+        var touchesCorporateAction = category.HasFlag(SecurityMasterConflictFieldCategory.CorporateAction);
+        var touchesClassification = category.HasFlag(SecurityMasterConflictFieldCategory.Classification);
+        var touchesCurrency = category.HasFlag(SecurityMasterConflictFieldCategory.Currency);
+        var touchesDisplay = category.HasFlag(SecurityMasterConflictFieldCategory.Display);
 
         var normalizedValueA = NormalizeConflictValue(conflict.ValueA);
         var normalizedValueB = NormalizeConflictValue(conflict.ValueB);
@@ -4112,7 +4116,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
         var severityTone = "Info";
         var impactDetail = "Review this mismatch before publishing the selected security into downstream Accounting and Reporting workflows.";
 
-        if (touchesIdentifier || touchesLifecycle || touchesTradingParameters || fieldKey.Contains("currency"))
+        if (touchesIdentifier || touchesLifecycle || touchesTradingParameters || touchesCurrency)
         {
             severityRank = 3;
             severityLabel = "Critical";
@@ -4130,7 +4134,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
             severityRank = 2;
             severityLabel = "Elevated";
             severityTone = "Warning";
-            routesToReconciliation = touchesCorporateAction || fieldKey.Contains("currency");
+            routesToReconciliation = touchesCorporateAction || touchesCurrency;
             routesToCashFlow = touchesCorporateAction;
             routesToReportPack = true;
             impactDetail = touchesCorporateAction
@@ -4266,11 +4270,6 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
 
         return normalized.Replace(".", " > ", StringComparison.Ordinal);
     }
-
-    private static bool RequiresContractMultiplier(string assetClass)
-        => assetClass.Contains("Option", StringComparison.OrdinalIgnoreCase) ||
-           assetClass.Contains("Future", StringComparison.OrdinalIgnoreCase) ||
-           assetClass.Contains("Derivative", StringComparison.OrdinalIgnoreCase);
 
     private static string NormalizeConflictValue(string value)
     {

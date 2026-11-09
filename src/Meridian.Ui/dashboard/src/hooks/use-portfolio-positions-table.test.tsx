@@ -46,14 +46,14 @@ describe("usePortfolioPositionsTable", () => {
     routeWithState({ positionsTable: { search: "foreign" } }, "trading-blotter")
   ])("defaults without rewriting old, malformed or foreign view URLs: %s", (initial) => {
     mount([initial]);
-    expect(state()).toEqual({ search: "", side: null, readiness: "all", sort: null });
+    expect(state()).toEqual({ search: "", side: null, readiness: "all", sort: null, hiddenColumns: [] });
     act(() => vi.advanceTimersByTime(1000));
     expect(url()).toBe(initial);
   });
 
   it("hydrates saved controls and normalizes invalid fields independently", () => {
     mount([routeWithState({ positionsTable: { search: "Aa", side: "Long", readiness: "bad", sort: { columnId: "exposure", direction: "desc" } } })]);
-    expect(state()).toEqual({ search: "Aa", side: "Long", readiness: "all", sort: null });
+    expect(state()).toEqual({ search: "Aa", side: "Long", readiness: "all", sort: null, hiddenColumns: [] });
   });
 
   it("updates search immediately, debounces URL replacement, and preserves scope/hash/selection metadata", () => {
@@ -91,9 +91,9 @@ describe("usePortfolioPositionsTable", () => {
     fireEvent.click(screen.getByRole("button", { name: "Sort symbol" }));
     expect(state().sort).toEqual({ columnId: "symbol", direction: "desc" });
     fireEvent.click(screen.getByRole("button", { name: "Clear filters" }));
-    expect(state()).toEqual({ search: "", side: null, readiness: "all", sort: { columnId: "symbol", direction: "desc" } });
+    expect(state()).toEqual({ search: "", side: null, readiness: "all", sort: { columnId: "symbol", direction: "desc" }, hiddenColumns: [] });
     fireEvent.click(screen.getByRole("button", { name: "Reset controls" }));
-    expect(state()).toEqual({ search: "", side: null, readiness: "all", sort: null });
+    expect(state()).toEqual({ search: "", side: null, readiness: "all", sort: null, hiddenColumns: [] });
     act(() => vi.advanceTimersByTime(1000));
     expect(viewState()?.positionsTable).toEqual(state());
   });
@@ -109,7 +109,7 @@ describe("usePortfolioPositionsTable", () => {
     search("pending");
     fireEvent.click(screen.getByRole("button", { name: "External" }));
     act(() => vi.advanceTimersByTime(1000));
-    expect(state()).toEqual({ search: "", side: null, readiness: "all", sort: null });
+    expect(state()).toEqual({ search: "", side: null, readiness: "all", sort: null, hiddenColumns: [] });
     expect(url()).toBe("/portfolio?symbol=IBM&external=1#new");
   });
 

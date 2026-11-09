@@ -10,6 +10,7 @@ import {
   type CanonicalSymbolRegistryFetcher,
   type CanonicalSymbolRegistryRow
 } from "@/screens/data-screen.canonical-symbols.view-model";
+import { formatCount, formatLocalDateTime } from "@/lib/format";
 
 const badgeVariantByTone: Record<CanonicalSymbolModeTone, BadgeProps["variant"]> = {
   success: "success",
@@ -26,7 +27,7 @@ const bannerToneByModeTone: Record<CanonicalSymbolModeTone, StatusBannerTone> = 
 };
 
 function formatTimestamp(value: string | null): string {
-  return value ? new Date(value).toLocaleString() : "No mismatch observed";
+  return value ? formatLocalDateTime(new Date(value)) : "No mismatch observed";
 }
 
 function symbolSubtitle(symbol: CanonicalSymbolRegistryRow): string {
@@ -146,15 +147,15 @@ export function CanonicalSymbolRegistryRegion({
                 </div>
                 <div className="rounded-md border p-3 text-sm" role="listitem">
                   <div className="text-xs uppercase tracking-wide text-muted-foreground">Canonical securities</div>
-                  <div className="mt-1 font-mono font-semibold">{model.symbols.length.toLocaleString()}</div>
+                  <div className="mt-1 font-mono font-semibold">{formatCount(model.symbols.length)}</div>
                 </div>
                 <div className="rounded-md border p-3 text-sm" role="listitem">
                   <div className="text-xs uppercase tracking-wide text-muted-foreground">Provider aliases</div>
-                  <div className="mt-1 font-mono font-semibold">{model.providerAliasCount.toLocaleString()}</div>
+                  <div className="mt-1 font-mono font-semibold">{formatCount(model.providerAliasCount)}</div>
                 </div>
                 <div className="rounded-md border p-3 text-sm" role="listitem">
                   <div className="text-xs uppercase tracking-wide text-muted-foreground">Compare mismatches</div>
-                  <div className="mt-1 font-mono font-semibold">{model.totalMismatchCount.toLocaleString()}</div>
+                  <div className="mt-1 font-mono font-semibold">{formatCount(model.totalMismatchCount)}</div>
                   <div className="mt-1 text-xs text-muted-foreground">{formatTimestamp(model.lastMismatchAt)}</div>
                 </div>
               </div>

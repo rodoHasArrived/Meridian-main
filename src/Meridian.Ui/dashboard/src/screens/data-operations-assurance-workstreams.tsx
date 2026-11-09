@@ -23,6 +23,9 @@ import type {
   StorageMaintenancePreview,
   StorageMaintenanceResult
 } from "@/types/data-operations-assurance";
+import { cn } from "@/lib/utils";
+import { usesTrackedCaps } from "@/design-system/label-case";
+import { formatLocalDateTime } from "@/lib/format";
 
 export function IngestionOperationsWorkstream() {
   const [snapshot, setSnapshot] = useState<IngestionOperationsSnapshot | null>(null);
@@ -184,7 +187,7 @@ function Metric({ label, value, tone, icon: Icon }: { label: string; value: stri
 }
 
 function Signal({ label, value, detail }: { label: string; value: string; detail: string }) {
-  return <div className="rounded-[2px] border border-border p-3"><div className="text-xs uppercase tracking-wide text-muted-foreground">{label}</div><div className="mt-1 font-mono text-lg font-semibold">{value}</div><div className="mt-1 text-xs text-muted-foreground">{detail}</div></div>;
+  return <div className="rounded-[2px] border border-border p-3"><div className={cn("text-xs text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-wide")}>{label}</div><div className="mt-1 font-mono text-lg font-semibold">{value}</div><div className="mt-1 text-xs text-muted-foreground">{detail}</div></div>;
 }
 
 function stateVariant(state: string): "default" | "success" | "warning" | "danger" | "outline" {
@@ -204,5 +207,5 @@ function formatBytes(value: number): string {
   return `${current.toFixed(1)} ${units[index]}`;
 }
 
-function formatDate(value: string): string { return new Date(value).toLocaleString(); }
+function formatDate(value: string): string { return formatLocalDateTime(new Date(value)); }
 function errorMessage(reason: unknown): string { return reason instanceof Error ? reason.message : "The operation could not be completed."; }

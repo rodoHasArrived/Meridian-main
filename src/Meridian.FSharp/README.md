@@ -124,8 +124,9 @@ Use this module for deterministic business-rule kernels shared by strategy, trad
   frozen declared mapping requires, even though version 3 is writable. Complete call/put schedules
   carry into the proposed version-4 terms when the target writer supports them, subject to full
   schedule validation. A blocked report retains their raw arrays for review.
-- `IdentifierKind` includes `LoanX` and `Clip` for syndicated-loan identifiers; interop maps
-  them to the matching C# `SecurityIdentifierKind` values.
+- `IdentifierKind` includes `LoanX` and `Clip` for syndicated-loan identifiers, and `Uti`, `Upi`,
+  `MarkitRedEntity` and `MarkitRedPair` for regulatory derivatives reporting; interop maps them to
+  the matching C# `SecurityIdentifierKind` values.
 - `SecurityTermModules` no longer carries `AccountingElections` or `Pci`. Amortization method,
   yield updates, cash-flow source and PCI designation are lot- and account-level accounting
   choices and live on the lot, not in security economics.
@@ -140,6 +141,17 @@ Use this module for deterministic business-rule kernels shared by strategy, trad
   Evidence summaries use the same status classification.
 - Stream-oriented helpers should receive ordered, bounded inputs. Page large storage/backfill batches before crossing into F#, and keep `mergeStreams` / `bufferByTime` on timestamp-ordered streams so they can avoid whole-batch sorting and grouping.
 - Sensitive-action policy evaluates explicit guardrails such as MFA, dual approval, privileged roles, and segregation-of-duties before C# services write audit or workflow state.
+
+## Audit hardening (2026-11)
+
+- **Position limit unwinds.** `RiskRules.positionLimit` always approves an order that shrinks a position on the same side of zero, or flattens it, even when the position is already over the limit. An order that crosses zero must still land within the limit.
+
+## Security Master governance controls (2026-11)
+
+- **Shared-reference primaries are refused.** Create and amend validation rejects a UPI or Markit RED code as the active primary identifier (`primary_identifier_shared_reference`), using `SecurityIdentifierNormalizer.IsSharedReferenceKind`.
+- **Kind-aware identifier normalization.** `SecurityIdentifier.normalizeIdentifierValue` delegates to `Meridian.Contracts.SecurityMaster.SecurityIdentifierNormalizer.NormalizeValue` through the exhaustive `SecurityIdentifier.toContractKind` mapping, and `kindName` is the mapped Contracts enum name (interop's persisted kind string reuses it). Duplicate and expiry checks use it, so the F# domain, the C# lookup and the stored normalized columns share one implementation. `SecurityIdentifierNormalizationParityTests` fails when a C# kind has no F# case. `validateIsin`, `validateCusip` and `validateLei` keep their signatures and delegate to `TryValidateFormat`, still rejecting values with punctuation the normalizer would strip. `validateLei` now applies ISO 17442 MOD 97-10 in written order (the former copy rotated four characters and rejected valid LEIs), and `validateCusip` no longer accepts the `*`, `@` and `#` private-placement characters, which the C# normalizer strips.
+
+See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D8) for status and open decisions.
 
 ## Diagrams
 

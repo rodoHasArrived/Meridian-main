@@ -85,7 +85,7 @@ export function PrepareNextPeriodPanel({ initialWorkflowId }: { initialWorkflowI
   return <section className="panel-surface space-y-4 p-4" aria-label="Prepare next period">
     <div className="flex flex-wrap items-center justify-between gap-3">
       <div><h3 className="workspace-section-title">Prepare next period</h3><p className="text-sm text-muted-foreground">Reuse a plan's tasks, dependencies and requirements with fresh evidence and sign-offs.</p></div>
-      <Button variant={open ? "outline" : "default"} aria-expanded={open} aria-controls="close-preparation-workflow" onClick={() => setOpen(current => !current)}>{open ? "Hide preparation" : "Prepare next period"}</Button>
+      <Button variant="outline" aria-expanded={open} aria-controls="close-preparation-workflow" onClick={() => setOpen(current => !current)}>{open ? "Hide preparation" : "Prepare next period"}</Button>
     </div>
     {open ? <div id="close-preparation-workflow"><ClosePreparationSources key={initialWorkflowId ?? "unselected"} initialWorkflowId={initialWorkflowId} /></div> : null}
   </section>;

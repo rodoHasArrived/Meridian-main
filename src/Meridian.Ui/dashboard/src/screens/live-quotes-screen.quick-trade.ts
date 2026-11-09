@@ -7,6 +7,7 @@ import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-re
 import { describeApiError } from "@/lib/api-errors";
 import { workflowTargetPath } from "@/lib/workspace";
 import type { OrderResult, OrderSubmitRequest } from "@/types";
+import { formatNumber } from "@/lib/format";
 
 export type QuickTicketPhase = "idle" | "seeded" | "submitting" | "submitted" | "parked" | "error";
 
@@ -512,11 +513,7 @@ function buildQuickTicketReviewAcknowledgement({
 
 export function formatTicketPrice(value: number): string {
   if (!Number.isFinite(value) || value <= 0) return "";
-  return value.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 4,
-    useGrouping: false
-  });
+  return formatNumber(value, { minimumFractionDigits: 2, maximumFractionDigits: 4, useGrouping: false });
 }
 
 function buildSubmitLabel(ticket: QuickTicketState, symbol: string): string {

@@ -102,12 +102,10 @@ public sealed class PostgresSecurityUnderlyingGraphStore : ISecurityUnderlyingGr
             previous is null ? SecurityUnderlyingLinkWriter.DeclaredEvent : SecurityUnderlyingLinkWriter.AmendedEvent,
             stored.CreatedBy,
             stored.CreatedAt,
-            new
-            {
-                link = SecurityUnderlyingLinkWriter.Describe(stored),
-                previous = previous is null ? null : SecurityUnderlyingLinkWriter.Describe(previous),
-                changes
-            },
+            new UnderlyingLinkDeclaredPayload(
+                SecurityUnderlyingLinkWriter.Describe(stored),
+                previous is null ? null : SecurityUnderlyingLinkWriter.Describe(previous),
+                changes),
             ct).ConfigureAwait(false);
         await transaction.CommitAsync(ct).ConfigureAwait(false);
         return stored;
@@ -153,7 +151,7 @@ public sealed class PostgresSecurityUnderlyingGraphStore : ISecurityUnderlyingGr
             SecurityUnderlyingLinkWriter.RemovedEvent,
             removedBy,
             DateTimeOffset.UtcNow,
-            new { link = SecurityUnderlyingLinkWriter.Describe(removed) },
+            new UnderlyingLinkRemovedPayload(SecurityUnderlyingLinkWriter.Describe(removed)),
             ct).ConfigureAwait(false);
         await transaction.CommitAsync(ct).ConfigureAwait(false);
         return true;
@@ -234,20 +232,18 @@ internal static class SecurityUnderlyingLinkWriter
     }
 
     /// <summary>The link as a governance payload records it.</summary>
-    public static object Describe(SecurityUnderlyingLinkDto link) => new
-    {
-        linkId = link.LinkId,
-        securityId = link.SecurityId,
-        role = link.Role.ToString(),
-        underlyingSecurityId = link.UnderlyingSecurityId,
-        reference = link.Reference,
-        weight = link.Weight,
-        validFrom = link.ValidFrom,
-        validTo = link.ValidTo,
-        notes = link.Notes,
-        declaredBy = link.CreatedBy,
-        declaredAt = link.CreatedAt
-    };
+    public static UnderlyingLinkPayload Describe(SecurityUnderlyingLinkDto link) => new(
+        link.LinkId,
+        link.SecurityId,
+        link.Role.ToString(),
+        link.UnderlyingSecurityId,
+        link.Reference,
+        link.Weight,
+        link.ValidFrom,
+        link.ValidTo,
+        link.Notes,
+        link.CreatedBy,
+        link.CreatedAt);
 
     private static decimal? RoundWeight(decimal? weight)
         => weight is { } value ? decimal.Round(value, 10, MidpointRounding.AwayFromZero) : null;

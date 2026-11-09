@@ -1,9 +1,4 @@
-import {
-  formatCurrency as formatCurrencyAmount,
-  formatPrefixedCurrency,
-  formatSignedCurrency as formatSignedCurrencyAmount,
-  pluralizeCount
-} from "@/lib/format";
+import { formatCurrency as formatCurrencyAmount, formatPrefixedCurrency, formatSignedCurrency as formatSignedCurrencyAmount, pluralizeCount, formatUtcTimestamp } from "@/lib/format";
 
 export function formatCount(count: number, singular: string): string {
   return pluralizeCount(count, singular);
@@ -58,19 +53,13 @@ export function formatDateTimeLabel(value: string | null | undefined): string {
     return value;
   }
 
-  return `${UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${padUtc(date.getUTCHours())}:${padUtc(date.getUTCMinutes())} UTC`;
+  return formatUtcTimestamp(date);
 }
 
 export function formatDateOnly(value: string): string {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? value : date.toISOString().slice(0, 10);
 }
-
-function padUtc(value: number): string {
-  return String(value).padStart(2, "0");
-}
-
-const UTC_MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 export function toDomId(value: string): string {
   const normalized = value.trim().toLowerCase().replace(/[^a-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "");

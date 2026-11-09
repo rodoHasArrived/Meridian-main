@@ -6,7 +6,6 @@ import {
   ArrowUp,
   BellPlus,
   CheckCircle2,
-  FileSpreadsheet,
   ListPlus,
   LineChart,
   Pause,
@@ -52,6 +51,7 @@ import {
   type LiveQuotesTradeRowViewModel,
   type QuickTradeTicketViewModel
 } from "@/screens/live-quotes-screen.view-model";
+import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
 
 export { computeIntradayMetrics };
 
@@ -194,7 +194,7 @@ export function LiveQuotesScreen() {
                 {badge.label}: {badge.value}
               </Badge>
             ))}
-            <span className="font-semibold text-foreground">{workspaceVm.symbolSetLabel}</span>
+            {workspaceVm.hasSymbols ? <span className="font-semibold text-foreground">{workspaceVm.symbolSetLabel}</span> : null}
             {marketVm.venueLabel ? <Badge variant="outline">{marketVm.venueLabel}</Badge> : null}
             {marketVm.stale ? <Badge variant="warning">Stale</Badge> : null}
             <FreshnessChip
@@ -209,11 +209,33 @@ export function LiveQuotesScreen() {
         </CardContent>
       </Card>
 
+      {!workspaceVm.hasSymbols && !activeSymbol ? (
+        // One explanation and one next step for an empty quote list, instead of "No symbols"
+        // repeated in the status strip, the matrix description, the panel message and the table.
+        <Card>
+          <CardContent className="pt-6">
+            <EmptyState
+              icon="search"
+              title="Start a quote list"
+              detail="Add symbols to monitor quotes, spreads, provider posture and latency here. Detail, order book, replay and ticket workflows open once a symbol is selected."
+              action="Add starter symbols"
+              onAction={workspaceVm.loadStarterSet}
+            />
+            <p className="mt-2 text-center text-xs text-muted-foreground">
+              Or{" "}
+              <Link className="text-primary underline underline-offset-2" to={marketDataDeskPath("watchlist")} aria-label="Import symbols from watchlist">
+                import your watchlist
+              </Link>
+              , or enter a symbol above.
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(20rem,0.75fr)]">
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Quote matrix</CardTitle>
-            <CardDescription>{workspaceVm.selectedSymbolSummary}</CardDescription>
+            {workspaceVm.selectedSymbolSummary ? <CardDescription>{workspaceVm.selectedSymbolSummary}</CardDescription> : null}
           </CardHeader>
           <CardContent>
             <PanelStateMessage state={workspaceVm.snapshotState} />
@@ -243,38 +265,18 @@ export function LiveQuotesScreen() {
         </Card>
         ) : (
         <Card>
-          <CardContent className="space-y-3 pt-6">
+          <CardContent className="pt-6">
             <EmptyState
               icon="search"
-              title="Start a quote list"
-              detail="Add symbols before opening detail, order book, replay, or ticket workflows."
+              title="Select a symbol"
+              detail="Select a row in the quote matrix to open its detail, order book, replay and ticket workflows."
               compact
             />
-            <div className="grid gap-2 sm:grid-cols-3">
-              <Button type="button" variant="default" size="sm" onClick={workspaceVm.loadStarterSet}>
-                <ListPlus className="h-4 w-4" aria-hidden="true" />
-                Add starter symbols
-              </Button>
-              <Button asChild variant="outline" size="sm">
-                <Link to={marketDataDeskPath("watchlist")} aria-label="Import symbols from watchlist">
-                  <FileSpreadsheet className="h-4 w-4" aria-hidden="true" />
-                  Import watchlist
-                </Link>
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => document.getElementById(symbolLookupVm.inputId)?.focus()}
-              >
-                <Search className="h-4 w-4" aria-hidden="true" />
-                Search symbol
-              </Button>
-            </div>
           </CardContent>
         </Card>
         )}
       </div>
+      )}
 
       {activeSymbol ? (
         <>
@@ -587,7 +589,7 @@ function SessionStatsBanner({ session }: { session: LiveQuotesSessionStatsViewMo
     >
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <div className="flex items-baseline gap-3">
-          <span className="text-xs uppercase tracking-wide text-muted-foreground">{session.periodLabel}</span>
+          <span className={cn("text-xs text-muted-foreground", usesTrackedCaps(session.periodLabel) && "uppercase tracking-wide")}>{session.periodLabel}</span>
           <span className={`font-mono text-base ${tone}`} aria-label={session.changeAriaLabel}>{session.changeLabel}</span>
         </div>
         <span className="text-[11px] text-muted-foreground">{session.dateLabel}</span>
@@ -611,7 +613,7 @@ const sessionStatsChangeClass = {
 function SessionStatCell({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-baseline justify-between sm:flex-col sm:items-start">
-      <span className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</span>
+      <span className={cn("text-[10px] text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-wide")}>{label}</span>
       <span className="text-foreground">{value}</span>
     </div>
   );
@@ -714,7 +716,7 @@ function DepthLadder({ ladder, onSeedBuy, onSeedSell }: DepthLadderProps) {
             className="panel-surface h-full min-h-40 rounded-lg border-border/70 p-4 text-sm text-muted-foreground"
             aria-label={ladder.detailEmptyTitle}
           >
-            <div className="eyebrow-label">{ladder.detailEmptyTitle}</div>
+            <div className={eyebrowClassName(ladder.detailEmptyTitle)}>{ladder.detailEmptyTitle}</div>
             <p className="mt-2">{ladder.detailEmptyText}</p>
           </section>
         )}
@@ -816,7 +818,7 @@ function QuickTradeCard({ symbol, vm }: QuickTradeCardProps) {
         <form onSubmit={vm.submitTicket} className="space-y-3" aria-label={vm.formLabel} aria-describedby={status.id}>
           <div className="grid gap-2 sm:grid-cols-2">
             <div className="flex flex-col gap-1">
-              <label htmlFor={fields.side.id} className="text-xs uppercase tracking-wide text-muted-foreground">{fields.side.label}</label>
+              <label htmlFor={fields.side.id} className={cn("text-xs text-muted-foreground", usesTrackedCaps(fields.side.label) && "uppercase tracking-wide")}>{fields.side.label}</label>
               <Select
                 id={fields.side.id}
                 value={ticket.side}
@@ -835,7 +837,7 @@ function QuickTradeCard({ symbol, vm }: QuickTradeCardProps) {
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label htmlFor={fields.type.id} className="text-xs uppercase tracking-wide text-muted-foreground">{fields.type.label}</label>
+              <label htmlFor={fields.type.id} className={cn("text-xs text-muted-foreground", usesTrackedCaps(fields.type.label) && "uppercase tracking-wide")}>{fields.type.label}</label>
               <Select
                 id={fields.type.id}
                 value={ticket.type}
@@ -856,7 +858,7 @@ function QuickTradeCard({ symbol, vm }: QuickTradeCardProps) {
 
           <div className="grid gap-2 sm:grid-cols-2">
             <div className="flex flex-col gap-1">
-              <label htmlFor={fields.quantity.id} className="text-xs uppercase tracking-wide text-muted-foreground">{fields.quantity.label}</label>
+              <label htmlFor={fields.quantity.id} className={cn("text-xs text-muted-foreground", usesTrackedCaps(fields.quantity.label) && "uppercase tracking-wide")}>{fields.quantity.label}</label>
               <Input
                 id={fields.quantity.id}
                 type="number"
@@ -879,7 +881,7 @@ function QuickTradeCard({ symbol, vm }: QuickTradeCardProps) {
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label htmlFor={fields.limitPrice.id} className="text-xs uppercase tracking-wide text-muted-foreground">
+              <label htmlFor={fields.limitPrice.id} className={cn("text-xs text-muted-foreground", usesTrackedCaps(fields.limitPrice.label) && "uppercase tracking-wide")}>
                 {fields.limitPrice.label}
               </label>
               <Input
@@ -1065,7 +1067,7 @@ function TradesTable({ market }: { market: LiveQuotesMarketDataViewModel }) {
             className="panel-surface h-full min-h-40 rounded-lg border-border/70 p-4 text-sm text-muted-foreground"
             aria-label={market.tradesDetailEmptyTitle}
           >
-            <div className="eyebrow-label">{market.tradesDetailEmptyTitle}</div>
+            <div className={eyebrowClassName(market.tradesDetailEmptyTitle)}>{market.tradesDetailEmptyTitle}</div>
             <p className="mt-2">{market.tradesDetailEmptyText}</p>
           </section>
         )}
@@ -1092,7 +1094,7 @@ function PriceChartCard({ viewModel }: PriceChartCardProps) {
       <CardHeader>
         <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <div className="eyebrow-label">Recent price action</div>
+            <div className="eyebrow-label eyebrow-label--sentence">Recent price action</div>
             <CardTitle className="flex items-center gap-2 text-base">
               <LineChart className="h-4 w-4 text-primary" aria-hidden="true" />
               {viewModel.title}
@@ -1140,7 +1142,7 @@ const chartChangeToneClass = {
 function ChartStat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-md border border-border/60 bg-secondary/25 px-2.5 py-1.5">
-      <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className={cn("text-[10px] text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-wide")}>{label}</div>
       <div className="mt-0.5 font-mono text-sm text-foreground">{value}</div>
     </div>
   );
