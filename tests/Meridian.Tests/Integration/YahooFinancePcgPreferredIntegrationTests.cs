@@ -21,8 +21,7 @@ namespace Meridian.Tests.Integration;
 /// These tests hit the live Yahoo Finance API and are marked with
 /// Trait("Category", "LiveProvider") so deterministic certification excludes them.
 /// Run with: dotnet test --filter "Category=Integration"
-/// When the Yahoo Finance API is unreachable (e.g. in offline CI sandboxes)
-/// each test is dynamically skipped rather than failing.
+/// When the Yahoo Finance API is unreachable the tests fail rather than passing as no-ops.
 /// </summary>
 [Trait("Category", "Integration")]
 [Trait("Category", "LiveProvider")]
@@ -56,19 +55,20 @@ public sealed class YahooFinancePcgPreferredIntegrationTests : IDisposable
     }
 
     /// <summary>
-    /// The tests only run when live provider tests are opted in (<see cref="LiveProviderFactAttribute"/>),
-    /// so an unreachable Yahoo Finance API is a failure here. It used to return <c>false</c> and let
-    /// every test pass as a no-op, which reported offline runs as green.
+    /// Deterministic runs exclude these tests through <c>Category=LiveProvider</c>, so a run that
+    /// invokes them expects the provider: an unreachable Yahoo Finance API is a failure here. It
+    /// used to return <c>false</c> and let every test pass as a no-op, which reported offline runs
+    /// as green.
     /// </summary>
     private async Task<bool> IsYahooOnlineAsync()
     {
         var available = await _yahooAvailable.Value.ConfigureAwait(false);
         available.Should().BeTrue(
-            "live provider tests were opted in, so Yahoo Finance must be reachable from this environment");
+            "live provider tests were invoked, so Yahoo Finance must be reachable from this environment");
         return true;
     }
 
-    [LiveProviderFact]
+    [Fact]
     public async Task YahooFinance_IsAvailable_ReturnsTrue()
     {
         if (!await IsYahooOnlineAsync())
@@ -81,7 +81,7 @@ public sealed class YahooFinancePcgPreferredIntegrationTests : IDisposable
         available.Should().BeTrue("Yahoo Finance API should be reachable");
     }
 
-    [LiveProviderTheory]
+    [Theory]
     [InlineData("PCG-PA", "6.00% First Preferred")]
     [InlineData("PCG-PB", "5.50% First Preferred")]
     [InlineData("PCG-PC", "5.00% First Preferred")]
@@ -135,7 +135,7 @@ public sealed class YahooFinancePcgPreferredIntegrationTests : IDisposable
         }
     }
 
-    [LiveProviderTheory]
+    [Theory]
     [InlineData("PCG-PA", "6.00% First Preferred")]
     [InlineData("PCG-PB", "5.50% First Preferred")]
     [InlineData("PCG-PC", "5.00% First Preferred")]
@@ -197,7 +197,7 @@ public sealed class YahooFinancePcgPreferredIntegrationTests : IDisposable
         }
     }
 
-    [LiveProviderFact]
+    [Fact]
     public async Task YahooFinance_GetAllPcgPreferredSeries_SummaryReport()
     {
         if (!await IsYahooOnlineAsync())
