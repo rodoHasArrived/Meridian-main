@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using Meridian.Execution.Interfaces;
 using Meridian.Execution.Models;
+using Meridian.Execution.OrderManagement;
 using Meridian.Execution.Sdk;
 using GatewayMode = Meridian.Execution.Models.ExecutionMode;
 using GatewayOrderStatus = Meridian.Execution.Models.OrderStatus;
@@ -121,6 +122,10 @@ public sealed class OmsGovernedExecutionOrderGateway : IOrderGateway
 
             var filled = running.Quantity;
             decimal? averagePrice = filled > 0m ? running.Notional / filled : report.FillPrice;
+            // A terminal order's id may be reused by a later submission (the OMS allows it), so
+            // a replacement order must start from zero rather than inherit these totals.
+            if (OrderStatusFacts.IsTerminal(report.OrderStatus))
+                totals.Remove(report.OrderId);
 
             yield return new OrderStatusUpdate(
                 report.OrderId,

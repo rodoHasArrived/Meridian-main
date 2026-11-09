@@ -198,6 +198,53 @@ public sealed class OrderManagementSystemReportStreamTests
     }
 
     [Fact]
+    public async Task GovernedOrderGatewayStream_ReusedClientOrderIdStartsFromZero()
+    {
+        // The OMS lets a terminal client order id be reused; the replacement order must not
+        // inherit the previous order's accumulated fill totals.
+        var gateway = new StreamingGateway
+        {
+            SubmitAck = BuildReport("pending", OrderStatus.Accepted, ExecutionReportType.New, filledQty: 0m, fillPrice: null)
+        };
+        using var oms = new OrderManagementSystem(
+            gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            portfolioState: new PaperTradingPortfolio(1_000_000m));
+        await oms.StartAsync();
+        var view = new Meridian.Execution.Adapters.OmsGovernedExecutionOrderGateway(gateway, () => oms);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        await using var updates = view.StreamOrderUpdatesAsync(cts.Token).GetAsyncEnumerator(cts.Token);
+        var first = updates.MoveNextAsync();
+        OrderRequest Request(decimal quantity, decimal limit) => new()
+        {
+            ClientOrderId = "reused-id",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = quantity,
+            LimitPrice = limit
+        };
+
+        var original = await oms.PlaceOrderAsync(Request(10m, 100m));
+        await gateway.PublishAsync(
+            BuildReport(original.OrderId, OrderStatus.Filled, ExecutionReportType.Fill, filledQty: 10m, fillPrice: 100m));
+        (await first).Should().BeTrue();
+        updates.Current.FilledQuantity.Should().Be(10m);
+        await WaitUntilAsync(() => oms.GetOrder(original.OrderId)!.Status == OrderStatus.Filled,
+            "the original order must be terminal before its id is reused");
+
+        var replacement = await oms.PlaceOrderAsync(Request(5m, 200m));
+        replacement.Success.Should().BeTrue();
+        replacement.OrderId.Should().Be(original.OrderId);
+        await gateway.PublishAsync(
+            BuildReport(replacement.OrderId, OrderStatus.Filled, ExecutionReportType.Fill, filledQty: 5m, fillPrice: 200m));
+
+        (await updates.MoveNextAsync()).Should().BeTrue();
+        updates.Current.FilledQuantity.Should().Be(5m);
+        updates.Current.AverageFillPrice.Should().Be(200m);
+    }
+
+    [Fact]
     public async Task OutOfOrderCumulativeFill_DoesNotRegressStateOrRepublishToAccounting()
     {
         var portfolio = new PaperTradingPortfolio(100_000m);
