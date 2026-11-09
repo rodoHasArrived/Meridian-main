@@ -774,6 +774,30 @@ Validation (local, .NET SDK 10.0.403): `dotnet test tests/Meridian.Tests -c Rele
 active-plus-inactive gauge, and the zero case. The full local `bash scripts/ci.sh` was not run;
 GitHub `Meridian CI / quality-gate` remains authoritative.
 
+### ADR-027 stage-3 S3-B — the decode-arm sweeps, and their first catch — 2026-11-09
+
+`SecurityAssetTermsSchemaDecodeSweepTests` generates the S3-A backlog from the schema itself
+(387 cases today, growing with the schema): per-alias write equivalence, per-field missing-Req
+refusal, per-field type-mismatch refusal, the full vocabulary sweep, and the convention sweep.
+The sweeps immediately earned their keep: the codec ignored the schema's declared read aliases
+for seven classes (CapFloor, CreditDefaultSwap, StructuredNote, Swaption, NonDeliverableForward,
+FxForward, and Bond's `dayCountConvention`) — a required field submitted under an advertised
+alias refused as missing, and an optional one was silently dropped, even though the registry
+DTOs, the field-edit canonicalizer and the day-count guard all advertise those spellings. The
+fix is schema-driven, in the stage-3 direction: write-mode decode now canonicalizes every
+declared alias once, from the schema table (`CanonicalizeDeclaredAliases`), before the per-class
+decode — and an ambiguous submission carrying two spellings of one field with different values
+refuses rather than letting key order decide. Read mode is untouched: stored rows are canonical.
+
+The sweeps also pinned the decode arm's real contract where it diverges from a naive reading of
+the schema, each divergence now a committed ledger instead of folklore: vocabulary enforcement
+is two-sided (a write may only assert declared values whatever the field's flags; the
+verbatim/escape flags govern reads of odd stored values); eight Required booleans and Bond's
+`subclass` absorb absence with written defaults (`ToleratedAbsenceDefaults` — Required remains
+true of every stored row); and StructuredCredit's legacy `factorSchedule` pointer reads a
+mistyped submission as unset, written null (`ToleratedMistypes`). Tightening any ledgered
+tolerance is an explicit S3-D decision.
+
 ### ADR-027 stage-1 increment 6 — the identity gate; stage 1 complete — 2026-11-09
 
 Stage 1's close-out landed: economic-only replay runs a byte-identity gate after the class-aware

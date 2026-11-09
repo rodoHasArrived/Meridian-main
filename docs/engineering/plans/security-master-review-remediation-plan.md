@@ -409,11 +409,14 @@ and S2-B4 (codec single-purpose) land. Planned increments:
   completeness and hand-picked vocabulary refusals; unproven are per-alias acceptance, per-field
   missing-Req and type-mismatch refusals, the systematic `OneOf` and `WithConvention` sweeps,
   and encode-side form rules — the S3-B/S3-C backlog, to be generated from the schema itself.
-- **S3-B — fully assert the decode arm.** Schema-driven theories over class × field, generated
-  from `SecurityAssetTermsSchema` itself: alias-substituted payloads decode identically; a
-  missing Req refuses naming the field; a type mismatch refuses; vocabularies enforce or escape
-  exactly per the field's declared flags. The schema becomes authoritative over the decoder
-  without generating code.
+- **S3-B — the decode-arm sweeps (implemented 2026-11-09).** 387 schema-generated cases:
+  per-alias write equivalence, missing-Req refusal, type-mismatch refusal, the vocabulary and
+  convention sweeps. First catch: seven classes' declared aliases were unimplemented in the
+  codec (silent optional drops under advertised spellings) — fixed schema-drivenly with
+  `CanonicalizeDeclaredAliases` in write mode, ambiguous double-spellings refusing. The decode
+  arm's real contract is now ledgered where it diverges from a naive schema reading: two-sided
+  vocabulary enforcement, `ToleratedAbsenceDefaults` (eight Required booleans plus Bond
+  subclass), `ToleratedMistypes` (the legacy factorSchedule pointer). See the review record.
 - **S3-C — fully assert the encode arm.** The same per-field discipline for the F# writer:
   canonical value forms, null/absent policy, array stored-order rules, envelope stamping,
   asserted from schema metadata.
