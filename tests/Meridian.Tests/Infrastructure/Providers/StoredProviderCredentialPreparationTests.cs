@@ -77,6 +77,34 @@ public sealed class StoredProviderCredentialPreparationTests : IDisposable
     }
 
     [Fact]
+    public async Task PreparedScope_WorkStartedInsideItStopsSeeingThePreparedReadOnceItEnds()
+    {
+        var store = new FileProviderCredentialStore(_root);
+        await store.SaveAsync(Alpaca("prepared-key", "prepared-secret"));
+        var resolver = new StoredProviderCredentialResolver(store, new EnvironmentCredentialResolver());
+        var prepared = await resolver.PrepareAsync();
+        var scopeEnded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        // A background task started inside the scope captures its execution flow, as a timer or
+        // a long-running worker created during provider construction would.
+        Task<string?> background;
+        using (prepared.Activate())
+        {
+            background = Task.Run(async () =>
+            {
+                await scopeEnded.Task;
+                return AlpacaKey(resolver);
+            });
+        }
+
+        await store.SaveAsync(Alpaca("rotated-key", "rotated-secret"));
+        scopeEnded.SetResult();
+
+        (await background).Should().Be("rotated-key",
+            "work that outlives the scope must read the vault, not credentials read at startup");
+    }
+
+    [Fact]
     public async Task PreparedScope_OnlyAppliesToTheResolverThatPreparedIt()
     {
         var store = new FileProviderCredentialStore(_root);

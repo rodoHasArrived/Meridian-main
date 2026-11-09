@@ -233,6 +233,34 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
         }
     }
 
+    /// <summary>
+    /// Resolves every registered capability that is not a streaming client, so that the
+    /// lazily constructed objects behind them exist. Call inside a prepared credential scope.
+    /// A capability that fails to construct is skipped; it fails again, as it would have, when
+    /// something asks for it.
+    /// </summary>
+    /// <returns>The capabilities that failed to construct.</returns>
+    internal IReadOnlyList<(string ProviderId, Type Contract, Exception Error)> ResolveRegisteredCapabilities()
+    {
+        var failures = new List<(string, Type, Exception)>();
+        foreach (var (key, factory) in _capabilityFactories.ToArray())
+        {
+            // Streaming clients are created per use, never held.
+            if (key.Contract == typeof(IMarketDataClient) || _disabledFamilies.ContainsKey(key.ProviderId))
+                continue;
+            try
+            {
+                factory();
+            }
+            catch (Exception ex)
+            {
+                failures.Add((key.ProviderId, key.Contract, ex));
+            }
+        }
+
+        return failures;
+    }
+
     /// <summary>Asynchronous counterpart of <see cref="CreateStreamingClient(DataSourceKind)"/>.</summary>
     public Task<IMarketDataClient> CreateStreamingClientAsync(DataSourceKind kind, CancellationToken ct = default)
         => CreateStreamingClientAsync(kind.ToString().ToLowerInvariant(), ct);

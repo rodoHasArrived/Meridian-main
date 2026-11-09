@@ -79,7 +79,8 @@ public sealed class StoredProviderCredentialResolver : IProviderCredentialResolv
         // Provider construction is synchronous, so this method cannot await the lease or the
         // vault. An asynchronous caller reads them first with PrepareAsync; inside that prepared
         // scope the record is already in hand and nothing here blocks.
-        var (scope, stored) = ActivePreparation.Value is { } prepared && prepared.Owner == this
+        var (scope, stored) = ActivePreparation.Value is { IsActive: true, Preparation: var prepared }
+            && prepared.Owner == this
             && prepared.TryGet(providerId, out var preparedRead)
             ? preparedRead.GetOrThrow()
             : ReadStoredCredentialsBlocking(providerId);
@@ -169,11 +170,17 @@ public sealed class StoredProviderCredentialResolver : IProviderCredentialResolv
     }
 
     /// <summary>
-    /// The preparation active on the current execution flow. Set only by
+    /// The prepared scope active on the current execution flow. Set only by
     /// <see cref="Preparation.Activate"/>, which is synchronous, so the value is visible to the
     /// construction that follows and restored when the scope is disposed.
     /// </summary>
-    private static readonly AsyncLocal<Preparation?> ActivePreparation = new();
+    /// <remarks>
+    /// The flow holds the scope, not the preparation, because work started inside the scope
+    /// (a timer, a background task) captures the flow and keeps it for as long as it runs. Once
+    /// the scope is disposed such work stops seeing the prepared reads and reads the vault
+    /// itself, so a long-lived task can never keep constructing from credentials read at startup.
+    /// </remarks>
+    private static readonly AsyncLocal<PreparedScope?> ActivePreparation = new();
 
     private readonly record struct PreparedRead(
         (ProviderCredentialScope? Scope, ProviderCredentialReadResult? Stored) Value,
@@ -196,22 +203,27 @@ public sealed class StoredProviderCredentialResolver : IProviderCredentialResolv
 
         public IDisposable Activate()
         {
-            var previous = ActivePreparation.Value;
-            ActivePreparation.Value = this;
-            return new Scope(previous);
+            var scope = new PreparedScope(this, ActivePreparation.Value);
+            ActivePreparation.Value = scope;
+            return scope;
         }
+    }
 
-        private sealed class Scope(Preparation? previous) : IDisposable
+    private sealed class PreparedScope(Preparation preparation, PreparedScope? previous) : IDisposable
+    {
+        private int _disposed;
+
+        public Preparation Preparation { get; } = preparation;
+
+        public bool IsActive => Volatile.Read(ref _disposed) == 0;
+
+        public void Dispose()
         {
-            private bool _disposed;
-
-            public void Dispose()
-            {
-                if (_disposed)
-                    return;
-                _disposed = true;
-                ActivePreparation.Value = previous;
-            }
+            if (Interlocked.Exchange(ref _disposed, 1) != 0)
+                return;
+            // Restores the disposing flow. Flows captured inside the scope keep this instance
+            // and are turned away by IsActive.
+            ActivePreparation.Value = previous;
         }
     }
 

@@ -1225,6 +1225,11 @@ public sealed class UiServer : IAsyncDisposable
             {
                 _applicationStartBegan = true;
                 await _app.StartAsync(ct);
+                // Providers are otherwise built by dependency-injection factories on first use,
+                // which cannot await and so wait on credential storage. Build them now, with the
+                // credentials read ahead. Runs after StartAsync so the vault's own startup work
+                // (audit replay) has completed, as it had before any first use.
+                await Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.WarmProvidersAsync(_app.Services, Serilog.Log.Logger, ct).ConfigureAwait(false);
                 if (_lifecycle is IRuntimeLifecycleControlPlane runtimeLifecycle)
                 {
                     runtimeLifecycle.TransitionTo(RuntimeLifecycleState.EvaluatingReadiness, "evaluating-readiness");

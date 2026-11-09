@@ -80,6 +80,56 @@ public static partial class ProviderServiceExtensions
     }
 
     /// <summary>
+    /// Builds the provider graph a long-running host will use, with its credentials read ahead:
+    /// the registry, the lazily constructed capability objects behind it (brokerage gateways,
+    /// options chains, corporate actions), and the options-chain candidate list. Each of these
+    /// is otherwise built by a dependency-injection factory on first use, which cannot await and
+    /// has to wait on credential storage. After this returns they exist, so first use reads
+    /// nothing.
+    /// </summary>
+    /// <remarks>
+    /// Never fails the host: a host without provider services does nothing, and a capability
+    /// that cannot be constructed is logged and left to fail where it is used, as before.
+    /// </remarks>
+    public static async Task WarmProvidersAsync(
+        this IServiceProvider serviceProvider,
+        ILogger? log = null,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(serviceProvider);
+        ct.ThrowIfCancellationRequested();
+        try
+        {
+            if (serviceProvider.GetService<ProviderFactory>() is not { } factory)
+                return;
+
+            var prepared = await factory.PrepareCredentialsAsync(ct).ConfigureAwait(false);
+            using (prepared.Activate())
+            {
+                var registry = serviceProvider.GetRequiredService<ProviderRegistry>();
+                foreach (var (providerId, contract, error) in registry.ResolveRegisteredCapabilities())
+                {
+                    log?.Debug(error, "Provider {Provider} capability {Capability} is not constructible at startup",
+                        providerId, contract.Name);
+                }
+
+                try
+                {
+                    _ = serviceProvider.GetService<IEnumerable<IOptionsChainProvider>>();
+                }
+                catch (Exception ex)
+                {
+                    log?.Debug(ex, "Options-chain providers are not constructible at startup");
+                }
+            }
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            log?.Warning(ex, "Provider warm-up failed; providers will be constructed on first use");
+        }
+    }
+
+    /// <summary>
     /// Registers all backfill providers, reading their credentials without blocking.
     /// </summary>
     public static async Task<IReadOnlyList<IHistoricalDataProvider>> RegisterBackfillProvidersAsync(

@@ -601,9 +601,20 @@ asynchronous caller awaits `IProviderCredentialResolver.PrepareAsync`, which rea
 vault records under one ownership lease, and then constructs providers inside
 `IPreparedProviderCredentials.Activate()`. `ProviderFactory.CreateAndRegisterAllAsync`,
 `InitializeProvidersAsync`, `ProviderRegistry.CreateStreamingClientAsync`, and the collector and
-backfill mode runners follow this order. A record that fails to read fails only its own provider,
-at construction. A synchronous resolution outside a prepared scope (a lazily resolved DI singleton,
-the web host's first registry resolution) still performs one blocking read on the thread pool.
+backfill mode runners follow this order, as do `BackfillCoordinator`'s asynchronous operations and
+the routing engine's streaming resolver. A record that fails to read fails only its own provider,
+at construction.
+
+The web host calls `WarmProvidersAsync` once `StartAsync` has completed. It builds the registry and
+the lazily constructed capability objects behind it (brokerage gateways, options chains, corporate
+actions) inside one prepared scope, so their first use reads nothing. A capability that cannot be
+constructed then is logged and fails where it is used, as before.
+
+A prepared read ends with its scope. Work started inside the scope that outlives it (a timer, a
+background task) reads the vault itself. A synchronous resolution outside any prepared scope still
+performs one blocking read on the thread pool: anything resolved while the host is starting, the
+synchronous `ProviderRegistry.CreateStreamingClient`, and `BackfillCoordinator`'s synchronous
+`DescribeProviders` and `ValidateRequest` when the registry holds no backfill providers.
 The credential store owns any permitted provider-wide environment fallback policy. Browser and WPF
 credential flows must not write process, user, or machine environment variables.
 
