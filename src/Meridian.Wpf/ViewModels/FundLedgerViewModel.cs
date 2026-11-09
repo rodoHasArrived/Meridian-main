@@ -1206,7 +1206,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
             return;
         }
 
-        AsOfText = summary.AsOf.LocalDateTime.ToString("g");
+        AsOfText = UtcFormat.FormatUtcTimestamp(summary.AsOf);
         JournalEntriesText = summary.JournalEntryCount.ToString("N0");
         LedgerEntriesText = summary.LedgerEntryCount.ToString("N0");
         AssetBalanceText = summary.AssetBalance.ToString("C2");
@@ -1633,7 +1633,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
             SecurityMissingCount: securityMissingCount,
             SecurityCoverageIssues: reconciliation.SecurityCoverageIssueCount);
 
-        WorkspaceAsOfText = summary.AsOf.LocalDateTime.ToString("g");
+        WorkspaceAsOfText = UtcFormat.FormatUtcTimestamp(summary.AsOf);
         TotalAccountsText = summary.TotalAccounts.ToString("N0");
         BankAccountsText = summary.BankAccountCount.ToString("N0");
         BrokerageAccountsText = summary.BrokerageAccountCount.ToString("N0");
@@ -1747,7 +1747,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
             : "No account links retained";
         var facts = new List<KeyValueFactModel>
         {
-            new("Timestamp", entry.Timestamp.LocalDateTime.ToString("g")),
+            new("Timestamp", UtcFormat.FormatUtcTimestamp(entry.Timestamp)),
             new("Debits", entry.TotalDebits.ToString("C2")),
             new("Credits", entry.TotalCredits.ToString("C2")),
             new("Lines", entry.LineCount.ToString("N0")),
@@ -2933,7 +2933,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     }
 
     private static string FormatCloseTimestamp(DateTimeOffset? timestamp)
-        => timestamp.HasValue ? timestamp.Value.LocalDateTime.ToString("g") : "Not decided";
+        => UtcFormat.FormatUtcTimestamp(timestamp, "Not decided");
 
     private static string MapPrivateCapitalCloseRouteTarget(string? route)
     {

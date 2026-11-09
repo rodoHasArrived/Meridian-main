@@ -98,6 +98,18 @@ public static class FormatHelpers
         => AsUtc(value).ToString(UtcTimestampFormat, CultureInfo.InvariantCulture);
 
     /// <summary>
+    /// Formats an optional timestamp in UTC, or returns <paramref name="fallback"/> when it is absent.
+    /// </summary>
+    public static string FormatUtcTimestamp(DateTimeOffset? value, string fallback)
+        => value is { } timestamp ? FormatUtcTimestamp(timestamp) : fallback;
+
+    /// <summary>
+    /// Formats an optional timestamp in UTC, or returns <paramref name="fallback"/> when it is absent.
+    /// </summary>
+    public static string FormatUtcTimestamp(DateTime? value, string fallback)
+        => value is { } timestamp ? FormatUtcTimestamp(timestamp) : fallback;
+
+    /// <summary>
     /// The UTC instant of a <see cref="DateTime"/>. A local value is converted. A value with no
     /// kind is read as UTC, because the API's timestamps are UTC and a JSON value without an
     /// offset carries no local meaning.

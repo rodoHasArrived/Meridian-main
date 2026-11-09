@@ -3,6 +3,7 @@ using System.Globalization;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Contracts.Ledger;
 using Meridian.Wpf.Services;
+using UtcFormat = Meridian.Ui.Services.FormatHelpers;
 
 namespace Meridian.Wpf.ViewModels.Accounting;
 
@@ -190,7 +191,7 @@ public sealed class AuditChainIntegrityViewModel : BindableBase
                 $"Every configured audit chain verified ({configured} of {report.Chains.Count}).");
         }
 
-        StatusText = $"Verification ran {report.VerifiedAtUtc.ToLocalTime().ToString("g", CultureInfo.CurrentCulture)}.";
+        StatusText = $"Verification ran {UtcFormat.FormatUtcTimestamp(report.VerifiedAtUtc)}.";
     }
 
     private static AccountingWorkbenchRow BuildRow(AuditChainIntegrityResultDto result) => new(

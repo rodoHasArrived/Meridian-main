@@ -1026,8 +1026,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
         ? "Packet unavailable"
         : $"SM-{SelectedTrustSnapshot.Security.SecurityId.ToString()[..8].ToUpperInvariant()}-V{SelectedTrustSnapshot.EconomicDefinition.Version}";
 
-    public string PrintGeneratedAtText => SelectedTrustSnapshot?.RetrievedAtUtc.LocalDateTime.ToString("g")
-        ?? "Not generated";
+    public string PrintGeneratedAtText => FormatHelpers.FormatUtcTimestamp(SelectedTrustSnapshot?.RetrievedAtUtc, "Not generated");
 
     public string PrintDistributionText => SelectedTrustSnapshot?.DownstreamImpact.IsScoped == true
         ? $"Deliver to {SelectedTrustSnapshot.DownstreamImpact.FundProfileId} packet queue"
@@ -1279,7 +1278,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
                 ? string.Empty
                 : $" - {reason}";
             var asOfText = asOf.HasValue
-                ? $" - {asOf.Value.LocalDateTime:g}"
+                ? $" - {FormatHelpers.FormatUtcTimestamp(asOf.Value)}"
                 : string.Empty;
 
             return $"Source {sourceSystem}{sourceRecordText} - updated by {updatedBy}{asOfText}{reasonText}";
@@ -1305,7 +1304,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
             {
                 return _selectedTradingParameters is null
                     ? "Trading-parameter coverage could not be confirmed."
-                    : $"Trading parameters complete as of {_selectedTradingParameters.AsOf.LocalDateTime:g}.";
+                    : $"Trading parameters complete as of {FormatHelpers.FormatUtcTimestamp(_selectedTradingParameters.AsOf)}.";
             }
 
             return $"Trading parameters incomplete: missing {string.Join(", ", missingTradingFields)}.";
@@ -1326,7 +1325,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
         {
             if (_latestHistoryEvent is not null)
             {
-                return $"{_latestHistoryEvent.EventType} - v{_latestHistoryEvent.StreamVersion} - {_latestHistoryEvent.EventTimestamp.LocalDateTime:g} by {_latestHistoryEvent.Actor}";
+                return $"{_latestHistoryEvent.EventType} - v{_latestHistoryEvent.StreamVersion} - {FormatHelpers.FormatUtcTimestamp(_latestHistoryEvent.EventTimestamp)} by {_latestHistoryEvent.Actor}";
             }
 
             if (string.IsNullOrWhiteSpace(HistoryText) || HistoryText == "(no history)")
@@ -1370,7 +1369,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
 
     public string SelectedConflictDetectedText => SelectedConflictEntry is null
         ? "Detection time appears after a conflict is selected."
-        : $"Detected {SelectedConflictEntry.Conflict.DetectedAt.LocalDateTime:g} - {SelectedConflictEntry.Conflict.ConflictKind}";
+        : $"Detected {FormatHelpers.FormatUtcTimestamp(SelectedConflictEntry.Conflict.DetectedAt)} - {SelectedConflictEntry.Conflict.ConflictKind}";
 
     public string AcceptPrimaryConflictLabel => SelectedConflictEntry is null
         ? "Accept A"
@@ -2783,7 +2782,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
             new SecurityMasterPresentationField("Primary provider", primaryProvider is null ? "Unavailable" : $"{primaryProvider.Provider} {primaryProvider.MappingKind} {primaryProvider.Symbol}"),
             new SecurityMasterPresentationField("Pricing", $"{passport.Pricing.Status}: {passport.Pricing.Summary}"),
             new SecurityMasterPresentationField("Usage", passport.Usage.Summary),
-            new SecurityMasterPresentationField("Retrieved", passport.RetrievedAtUtc.LocalDateTime.ToString("g"))
+            new SecurityMasterPresentationField("Retrieved", FormatHelpers.FormatUtcTimestamp(passport.RetrievedAtUtc))
         };
 
         if (passport.OperatingModel is { } operatingModel)
@@ -3210,7 +3209,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
             ? string.Empty
             : $" • record {economicDefinition.WinningSourceRecordId}";
         var asOfText = economicDefinition.WinningSourceAsOf.HasValue
-            ? $" • {economicDefinition.WinningSourceAsOf.Value.LocalDateTime:g}"
+            ? $" • {FormatHelpers.FormatUtcTimestamp(economicDefinition.WinningSourceAsOf.Value)}"
             : string.Empty;
 
         return $"{source}{recordIdText}{asOfText}";
@@ -3351,7 +3350,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
             new SecurityMasterPresentationField("Contract multiplier", FormatNullableDecimal(readModel.ContractMultiplier)),
             new SecurityMasterPresentationField("Current factor", FormatNullableDecimal(readModel.CurrentFactor)),
             new SecurityMasterPresentationField("Current factor date", FormatNullableDate(readModel.CurrentFactorDate)),
-            new SecurityMasterPresentationField("As of", readModel.AsOfUtc.LocalDateTime.ToString("g")),
+            new SecurityMasterPresentationField("As of", FormatHelpers.FormatUtcTimestamp(readModel.AsOfUtc)),
             new SecurityMasterPresentationField("Face value", readModel.UsesFaceValue ? "Uses face value" : "Quantity only"),
             new SecurityMasterPresentationField("Factor-adjusted exposure", readModel.SupportsFactorAdjustedExposure ? "Supported" : "Unavailable"),
             new SecurityMasterPresentationField("Resolved ID required", readModel.RequiresResolvedSecurityId ? "Required" : "Not required")

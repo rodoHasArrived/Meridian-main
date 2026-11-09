@@ -36,4 +36,13 @@ public sealed class FormatHelpersTests
         FormatHelpers.FormatUtcTimestamp(utc).Should().Be("2026-07-05 12:00 UTC");
         FormatHelpers.FormatUtcTimestamp(utc.ToLocalTime()).Should().Be("2026-07-05 12:00 UTC");
     }
+
+    [Fact]
+    public void FormatUtcTimestamp_ReturnsTheFallbackForAMissingValue()
+    {
+        FormatHelpers.FormatUtcTimestamp((DateTimeOffset?)null, "Never").Should().Be("Never");
+        FormatHelpers.FormatUtcTimestamp((DateTime?)null, "Not scheduled").Should().Be("Not scheduled");
+        FormatHelpers.FormatUtcTimestamp((DateTimeOffset?)new DateTimeOffset(2026, 7, 5, 14, 0, 0, TimeSpan.FromHours(2)), "Never")
+            .Should().Be("2026-07-05 12:00 UTC");
+    }
 }
