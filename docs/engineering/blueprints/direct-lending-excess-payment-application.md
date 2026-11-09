@@ -223,8 +223,13 @@ chose to keep these consistent on 2026-11-09.)
 external reference and records an `UnappliedCashRefund` cash transaction. Both refuse amounts that
 are not positive or exceed the held cash. Events `loan.unapplied-cash-applied` and
 `loan.unapplied-cash-refunded` are replayed by the rebuilder and journaled by
-`DirectLendingJournalLines` in both journal paths. Workstation screens for the two commands follow
-separately.
+`DirectLendingJournalLines` in both journal paths.
+
+**Workstations (owner decision, 2026-11-09):** loan servicing commands stay desktop-owned, as the
+browser's direct-lending API module already documents. The WPF Direct Lending page has an
+*Unapplied cash* panel (held balance, amount, external reference, Apply and Refund) that validates
+like the server; the browser loan book shows both balances read-only (increment 6). This replaces
+"commands available on both workstations" in the increment table.
 
 ## Decisions
 
@@ -254,7 +259,7 @@ The owner decided all four on 2026-11-02, each as recommended.
 | 4 | Accrual prepaid consumption | Consumption to zero, partial day, PIK unaffected | Balances match a hand-computed schedule |
 | 5 | Split mixed-payment and accrual journals in both journal paths | Every entry balances; account mapping resolves; reconciliation sees no clearing residue for new payments | Journal and reconciliation tests pass |
 | 6 | Read models + UI (browser and WPF parity) show prepaid and unapplied | Shared read model returns both; screens render them | Both workstations display the same values |
-| 7 | `ApplyUnappliedCash` / `RefundUnappliedCash` commands | Governance, idempotency, journals | Commands available on both workstations |
+| 7 | `ApplyUnappliedCash` / `RefundUnappliedCash` commands | Governance, idempotency, journals | Commands available on the WPF workstation (desktop-owned); balances visible on both |
 
 Increments 1–3 are worth shipping on their own: they make the excess visible and stop money from
 going untracked, before any journal change.

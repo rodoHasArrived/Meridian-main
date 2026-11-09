@@ -100,6 +100,7 @@ public sealed class DirectLendingViewModel : BindableBase
             if (SetProperty(ref _selectedServicing, value))
             {
                 UpdateLoanInspectors();
+                RaiseUnappliedCashStateChanged();
             }
         }
     }
@@ -179,6 +180,81 @@ public sealed class DirectLendingViewModel : BindableBase
         }
     }
 
+    // ── PRD-115: apply or refund unapplied cash (desktop-owned loan commands) ──
+
+    private bool _isSubmittingUnappliedCash;
+    public bool IsSubmittingUnappliedCash
+    {
+        get => _isSubmittingUnappliedCash;
+        private set
+        {
+            if (SetProperty(ref _isSubmittingUnappliedCash, value))
+            {
+                RaiseUnappliedCashStateChanged();
+            }
+        }
+    }
+
+    private string _unappliedCashAmountText = string.Empty;
+    public string UnappliedCashAmountText
+    {
+        get => _unappliedCashAmountText;
+        set
+        {
+            if (SetProperty(ref _unappliedCashAmountText, value ?? string.Empty))
+            {
+                RaiseUnappliedCashStateChanged();
+            }
+        }
+    }
+
+    private string _unappliedCashExternalRef = string.Empty;
+    public string UnappliedCashExternalRef
+    {
+        get => _unappliedCashExternalRef;
+        set
+        {
+            if (SetProperty(ref _unappliedCashExternalRef, value ?? string.Empty))
+            {
+                RaiseUnappliedCashStateChanged();
+            }
+        }
+    }
+
+    private string _unappliedCashResultText = string.Empty;
+    public string UnappliedCashResultText
+    {
+        get => _unappliedCashResultText;
+        private set
+        {
+            if (SetProperty(ref _unappliedCashResultText, value))
+            {
+                OnPropertyChanged(nameof(UnappliedCashResultVisibility));
+            }
+        }
+    }
+
+    public Visibility UnappliedCashResultVisibility
+        => string.IsNullOrWhiteSpace(UnappliedCashResultText) ? Visibility.Collapsed : Visibility.Visible;
+
+    public string HeldUnappliedCashText => SelectedServicing is { } servicing
+        ? servicing.Balances.UnappliedCash.ToString("C2")
+        : "Select a loan";
+
+    public bool CanApplyUnappliedCash => ValidateUnappliedCashAction(
+        SelectedServicing, IsDetailLoading, IsSubmittingUnappliedCash, UnappliedCashAmountText, UnappliedCashExternalRef, isRefund: false, out _) is null;
+
+    public bool CanRefundUnappliedCash => ValidateUnappliedCashAction(
+        SelectedServicing, IsDetailLoading, IsSubmittingUnappliedCash, UnappliedCashAmountText, UnappliedCashExternalRef, isRefund: true, out _) is null;
+
+    public string ApplyUnappliedCashTooltip => ValidateUnappliedCashAction(
+            SelectedServicing, IsDetailLoading, IsSubmittingUnappliedCash, UnappliedCashAmountText, UnappliedCashExternalRef, isRefund: false, out _)
+        ?? "Apply this much of the held cash to amounts owed (interest, fees, penalty, then principal). Anything not owed stays held.";
+
+    public string RefundUnappliedCashTooltip => ValidateUnappliedCashAction(
+            SelectedServicing, IsDetailLoading, IsSubmittingUnappliedCash, UnappliedCashAmountText, UnappliedCashExternalRef, isRefund: true, out _)
+        ?? "Return this much of the held cash to the borrower under the external payment reference.";
+
     // ── Computed ─────────────────────────────────────────────────────────────
 
     public bool HasSelectedLoan => SelectedLoan is not null;
@@ -252,6 +328,8 @@ public sealed class DirectLendingViewModel : BindableBase
 
     public IAsyncRelayCommand RefreshCommand { get; }
     public IAsyncRelayCommand PostAccrualCommand { get; }
+    public IAsyncRelayCommand ApplyUnappliedCashCommand { get; }
+    public IAsyncRelayCommand RefundUnappliedCashCommand { get; }
 
     // ── Constructor ──────────────────────────────────────────────────────────
 
@@ -383,6 +461,8 @@ public sealed class DirectLendingViewModel : BindableBase
 
         RefreshCommand = new AsyncRelayCommand(() => RefreshAsync(), () => CanRefreshPortfolio);
         PostAccrualCommand = new AsyncRelayCommand(() => PostAccrualAsync(), () => CanPostAccrual);
+        ApplyUnappliedCashCommand = new AsyncRelayCommand(() => SubmitUnappliedCashAsync(isRefund: false), () => CanApplyUnappliedCash);
+        RefundUnappliedCashCommand = new AsyncRelayCommand(() => SubmitUnappliedCashAsync(isRefund: true), () => CanRefundUnappliedCash);
     }
 
     // ── Initialisation ───────────────────────────────────────────────────────
@@ -639,6 +719,134 @@ public sealed class DirectLendingViewModel : BindableBase
         }
     }
 
+    private async Task SubmitUnappliedCashAsync(bool isRefund, CancellationToken ct = default)
+    {
+        var loan = SelectedLoan;
+        var reason = ValidateUnappliedCashAction(
+            SelectedServicing, IsDetailLoading, IsSubmittingUnappliedCash, UnappliedCashAmountText, UnappliedCashExternalRef, isRefund, out var amount);
+        if (loan is null || reason is not null)
+        {
+            return;
+        }
+
+        IsSubmittingUnappliedCash = true;
+        var today = DateOnly.FromDateTime(DateTime.UtcNow).ToString("yyyy-MM-dd");
+        var externalRef = string.IsNullOrWhiteSpace(UnappliedCashExternalRef) ? null : UnappliedCashExternalRef.Trim();
+        var path = $"/api/loans/{loan.LoanId}/unapplied-cash/{(isRefund ? "refund" : "apply")}";
+        object body = isRefund
+            ? new { Amount = amount, EffectiveDate = today, ExternalRef = externalRef }
+            : new { Amount = amount, EffectiveDate = today, Breakdown = (object?)null, ExternalRef = externalRef };
+
+        try
+        {
+            var response = await _apiClient.PostWithResponseAsync<LoanServicingStateDto>(path, body, ct).ConfigureAwait(false);
+            UnappliedCashResultText = BuildUnappliedCashResultText(isRefund, amount, SelectedServicing, response.Success, response.Data, response.ErrorMessage);
+            if (response.Success)
+            {
+                UnappliedCashAmountText = string.Empty;
+                await LoadLoanDetailAsync(loan).ConfigureAwait(false);
+            }
+        }
+        catch (Exception ex)
+        {
+            UnappliedCashResultText = $"{(isRefund ? "Refund" : "Apply")} failed: {ex.Message}";
+        }
+        finally
+        {
+            IsSubmittingUnappliedCash = false;
+        }
+    }
+
+    /// <summary>
+    /// PRD-115: why Apply or Refund unapplied cash cannot run yet, or null when it can. Mirrors the
+    /// server's validation (positive, no more than held; a refund needs an external reference) so
+    /// the buttons explain themselves instead of failing on submit.
+    /// </summary>
+    public static string? ValidateUnappliedCashAction(
+        LoanServicingStateDto? servicing,
+        bool isDetailLoading,
+        bool isSubmitting,
+        string amountText,
+        string? externalRef,
+        bool isRefund,
+        out decimal amount)
+    {
+        amount = 0m;
+        if (servicing is null)
+        {
+            return "Select a loan and wait for its servicing detail to load.";
+        }
+
+        if (isDetailLoading)
+        {
+            return "Wait for the selected loan detail to finish loading.";
+        }
+
+        if (isSubmitting)
+        {
+            return "An unapplied cash request is already running.";
+        }
+
+        var held = servicing.Balances.UnappliedCash;
+        if (held <= 0m)
+        {
+            return "This loan holds no unapplied cash.";
+        }
+
+        if (!decimal.TryParse(amountText, System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.CurrentCulture, out amount) || amount <= 0m)
+        {
+            amount = 0m;
+            return "Enter a positive amount.";
+        }
+
+        if (amount > held)
+        {
+            return $"The amount exceeds the {held:C2} held.";
+        }
+
+        return isRefund && string.IsNullOrWhiteSpace(externalRef)
+            ? "Enter the external reference of the outgoing payment before refunding."
+            : null;
+    }
+
+    public static string BuildUnappliedCashResultText(
+        bool isRefund,
+        decimal requested,
+        LoanServicingStateDto? before,
+        bool success,
+        LoanServicingStateDto? after,
+        string? errorMessage)
+    {
+        var action = isRefund ? "Refund" : "Apply";
+        if (!success)
+        {
+            return string.IsNullOrWhiteSpace(errorMessage)
+                ? $"{action} failed — the workstation service rejected the request."
+                : $"{action} failed: {errorMessage}";
+        }
+
+        if (after is null || before is null)
+        {
+            return isRefund ? $"Refunded {requested:C2}." : "Unapplied cash applied.";
+        }
+
+        var moved = before.Balances.UnappliedCash - after.Balances.UnappliedCash;
+        return isRefund
+            ? $"Refunded {moved:C2}; {after.Balances.UnappliedCash:C2} still held."
+            : $"Applied {moved:C2} to amounts owed; {after.Balances.UnappliedCash:C2} still held.";
+    }
+
+    private void RaiseUnappliedCashStateChanged()
+    {
+        OnPropertyChanged(nameof(HeldUnappliedCashText));
+        OnPropertyChanged(nameof(CanApplyUnappliedCash));
+        OnPropertyChanged(nameof(CanRefundUnappliedCash));
+        OnPropertyChanged(nameof(ApplyUnappliedCashTooltip));
+        OnPropertyChanged(nameof(RefundUnappliedCashTooltip));
+        ApplyUnappliedCashCommand?.NotifyCanExecuteChanged();
+        RefundUnappliedCashCommand?.NotifyCanExecuteChanged();
+    }
+
     // ── Filtering ────────────────────────────────────────────────────────────
 
     private void ApplyFilter()
@@ -687,6 +895,7 @@ public sealed class DirectLendingViewModel : BindableBase
     {
         RefreshCommand.NotifyCanExecuteChanged();
         PostAccrualCommand.NotifyCanExecuteChanged();
+        RaiseUnappliedCashStateChanged();
     }
 
     private void RaiseSelectedLoanStateChanged()

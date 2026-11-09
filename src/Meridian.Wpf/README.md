@@ -510,6 +510,12 @@ anonymous roles use the shared `RolePermissions` mapping rather than inheriting 
 local-development access.
 
 The same page now loads the shared Instrument Passport endpoint for the selected security so desktop operators see provider-confidence, pricing, trust, downstream usage, operations-readiness, and handoff evidence in parity with the browser Accounting workstream.
+The Direct Lending page's *Unapplied cash* panel (PRD-115) applies or refunds the selected loan's held
+cash through `POST /api/loans/{loanId}/unapplied-cash/apply` and `/refund`. It reads the held balance
+from the loan's servicing detail and validates like the server (positive, no more than held; a refund
+needs an external reference), so the buttons explain themselves through their tooltips. Loan servicing
+commands stay desktop-owned; the browser shows the balances read-only.
+
 The Direct Lending page consumes the shared `DirectLendingOperationsReadModelDto` for servicer
 statement batches as well as collateral, status, exceptions, evidence, and close blockers. The WPF
 panel is read-only over imported position/remittance batches; preview, validation, evidence
