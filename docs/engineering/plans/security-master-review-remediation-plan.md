@@ -393,10 +393,11 @@ stage 3 still owes D1 is per-field semantics and the retirement of the two hand-
 Interop writer). Per the ADR, stage 3 starts only after stage-1 increment 6 (codec lossless)
 and S2-B4 (codec single-purpose) land. Planned increments:
 
-- **S3-A — codec-arm gap audit (no code).** A dated review-record table of what the round-trip
-  suite already proves per arm versus what remains unproven: per-alias acceptance, per-field
-  missing-Req refusals, per-field type-mismatch refusals, per-`OneOf` vocabulary enforcement
-  versus `WithVerbatimUndeclaredValue` escapes, convention parsing per `WithConvention` field.
+- **S3-A — codec-arm gap audit (completed 2026-11-09).** The dated gap table is in the review
+  record: the suite already eliminates key-set drift, pins byte-stable round trips, fixture
+  completeness and hand-picked vocabulary refusals; unproven are per-alias acceptance, per-field
+  missing-Req and type-mismatch refusals, the systematic `OneOf` and `WithConvention` sweeps,
+  and encode-side form rules — the S3-B/S3-C backlog, to be generated from the schema itself.
 - **S3-B — fully assert the decode arm.** Schema-driven theories over class × field, generated
   from `SecurityAssetTermsSchema` itself: alias-substituted payloads decode identically; a
   missing Req refuses naming the field; a type mismatch refuses; vocabularies enforce or escape
