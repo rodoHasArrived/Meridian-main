@@ -8586,9 +8586,9 @@ legacy bond loop's flow ids had been derived from `SchedulePeriodId` since `4f2e
 - *Unresolvable schedules.* Reported in three places the service already uses: the timeline's
   extension payload (typed), the timeline warnings (which set `ReviewRequired`) and the readiness
   warnings. No event of any option kind is raised.
-- *Policy gate.* The timeline follows `BondExerciseNoticeReadService`: the cutover policy blocks
-  first (`CalculationPolicyBlocked`), then terms that are not effective at the evaluation date
-  (`TermsNotEffective`), then the watch. One rule is added: a blocked projection run blocks the
+- *Policy gate.* The timeline follows `BondExerciseNoticeReadService`, in its order: terms that are
+  not effective at the evaluation date block first (`TermsNotEffective`), then the cutover policy
+  (`CalculationPolicyBlocked`), then the watch. One rule is added: a blocked projection run blocks the
   declared events as well (`ProjectionBlocked`). The read service delivers a policy block as a
   blocked projection, so a caller that evaluated the policy itself cannot expose exercise dates for
   a blocked bond.
@@ -8657,3 +8657,32 @@ legacy bond loop's flow ids had been derived from `SchedulePeriodId` since `4f2e
 | Guards (test-skip register, duplicate helpers, inline SHA-256, file size, warning suppressions, endpoint cancellation, contract-type parity) and `dotnet format whitespace --verify-no-changes` on the 14 changed C# files | Pass |
 | F# and dashboard suites | Not run: no F# or dashboard source changed |
 | Generated outputs, `bash scripts/ci.sh`, `Meridian CI / quality-gate` | Not run here; generated outputs are refreshed and the gate is reported on the pull request |
+
+**Recovered economic rows (added 2026-11-09, after main gained ADR-027 stage 1 increments 1 and 2).**
+The branch was merged with main at `a43c2d891`. Those increments recover an economic document's call
+and put lists into the flat arrays, stamp the row 3 and recover the scalar `callDate`. Such rows are
+therefore a declaring population on the timeline, and their scalar review is no longer shown. Built
+through the real conversion, every recovered shape is blocked today with `DeclaredScheduleRequired`
+and a warning: European with a price and no notice, no exercise style, `MakeWhole`, `American` and
+put-only, each with a null block (no Accrual module) or a partial one (a business-day convention and
+calendars, never `accrualAdjusted` or a coupon unit). Their legacy cash flows are unaffected. A
+recovered European entry resolves to an exercise-only event once a reviewed block is declared; the
+other three stay refused by the exercise rules. None faults and none resolves to nothing silently.
+
+**Review record (2026-11-09).** An independent review raised five findings. Each was checked against
+the code before it was changed.
+
+| Finding | Real | Disposition |
+| --- | --- | --- |
+| 1. `DeclaresExerciseSchedule` counted any non-empty array, so `callSchedule: [null]`, which a write admits as declaring nothing, resolved to zero scenarios and dropped the scalar review with no event and no warning | Yes | Declaring needs at least one entry that is not unset, by the write rules' own `ScheduleTermsWriteRules.IsUnsetScheduleEntry` (made public, not copied). An all-unset array stays on the scalar path and the v1 stamp |
+| 2. Rows recovered by ADR-027 increment 1 now count as declaring | Yes, as a population; no code defect | No shape throws or resolves silently, so no code changed. `AssetObligationRecoveredExerciseTimelineTests` pins each shape through the real conversion, and this section and ADR-025 record the population and what blocks |
+| 3. Event ids could collide, because exercise dates are business-day adjusted | Yes, reproduced with Saturday and Sunday entries rolled onto one Monday | A repeat of a kind and adjusted exercise date carries its occurrence in the watch's order (notice deadline, then declared date). The first occurrence keeps the plain key, and entries on other dates never change an id. The watch contract was not widened to carry the unadjusted date |
+| 4. The gate order differed from the read service's, and the comment said it matched | Yes | Effectiveness is now checked before the policy; a record failing both reports `TermsNotEffective` on both surfaces. A policy that throws while asked escapes `ProjectFromSecurityMasterAsync`; that is true at the base commit for every bond, so it is unchanged, and the sentences that said nothing throws now say what is caught |
+| 5. The explorer's "next timeline event" could be an elapsed notice deadline | Yes, reproduced. The scalar review did not behave this way: it is not raised for a past call date | The terms cell passes over a declared call or put notice deadline dated before the timeline's as-of. Open deadlines, undeclared bonds and past-due rows of other kinds lead as before; a test pins a past-due `BorrowerNotice` still leading |
+
+| Check after the review fixes | Result |
+| --- | --- |
+| Targeted filter on the merged tree before the fixes | 1,745 passed, 34 skipped, the same 1 Docker failure |
+| Targeted filter after the fixes | 1,775 passed, 34 skipped, the same 1 Docker failure; 30 tests added |
+| Mutation check of the fixes | 8 of 8 caught: the predicate reverted, the unset notion narrowed to null, the occurrence dropped from the id, the gate order reverted, and four mutations of the explorer rule |
+| Guards and `dotnet format whitespace --verify-no-changes` on the changed C# files | Pass |

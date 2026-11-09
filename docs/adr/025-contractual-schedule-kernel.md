@@ -866,10 +866,41 @@ This command verifies referenced files and directories exist; it does not valida
     horizon. The declared schedule is the authority for such a bond: the scalar `CallPutReview`
     probe is not consulted, so an exercise is not shown twice. A schedule that cannot be resolved
     is a blocked outcome with its code and reason in the timeline's extension payload and in the
-    timeline and readiness warnings; no option event is shown, the scalars are not used and nothing
-    throws. The gates are the notice-watch read service's: the cutover policy
-    (`CalculationPolicyBlocked`), terms effective at the evaluation date (`TermsNotEffective`),
-    then the watch. A blocked projection run blocks the events too (`ProjectionBlocked`).
+    timeline and readiness warnings; no option event is shown and the scalars are not used. The
+    watch turns a malformed retained schedule and a decimal overflow into blockers, so resolving
+    the schedule does not fault. One fault predates this entry and is unchanged: a cutover policy
+    that throws while it is asked (a `SecurityScheduleValidationException` on a malformed owned
+    schedule) is not caught by the asset-operations projection entry points, for any bond, where
+    the notice-watch read service converts it to a blocker. The gates are the notice-watch read
+    service's, in its order: terms effective at the evaluation date (`TermsNotEffective`), the
+    cutover policy (`CalculationPolicyBlocked`), then the watch. A blocked projection run blocks
+    the events too (`ProjectionBlocked`).
+  - **What counts as declaring.** A `callSchedule` or `putSchedule` the row's stamp decodes, with at
+    least one entry that is not unset in the write rules' sense
+    (`ScheduleTermsWriteRules.IsUnsetScheduleEntry`: JSON null, or an object with no populated
+    member). An array of unset entries passes a write as declaring nothing, so the timeline treats
+    it as declaring nothing and the bond keeps its scalar review and the v1 stamp.
+  - **Recovered economic rows are a declaring population.** ADR-027 stage 1 (increments 1 and 2)
+    recovers an economic document's call and put lists into the flat arrays, stamps the row 3 and
+    recovers the scalar `callDate` from the first call date. Such a row declares a schedule, so its
+    scalar review is no longer shown. Every recovered shape is blocked today with
+    `DeclaredScheduleRequired`, because the economic family never carried what the mapping needs:
+    with no Accrual module the recovered `scheduleConventions` is null, and with one the block
+    holds a business-day convention and calendars but no `accrualAdjusted` and no coupon unit. That
+    holds for European entries with a price, entries with no exercise style, `MakeWhole` and
+    `American` entries and put-only rows. Once an operator declares a reviewed block, a recovered
+    European entry resolves to an exercise event with no deadline (its notice members are null);
+    an entry with no exercise style, a `MakeWhole` entry and an `American` entry then stay refused
+    under the rules above. No recovered shape faults or resolves to nothing without a warning.
+  - **Event identity.** An event id is keyed on the terms version, the event kind, the adjusted
+    exercise date and the event's own date. Two scenarios can share an adjusted exercise date (two
+    weekend entries rolled onto one Monday, or a Bermudan grid date rolled onto the next entry's
+    date), so a repeat of a kind and exercise date carries its occurrence in the watch's order: by
+    notice deadline, then by declared date. Entries on other dates never change an id.
+  - **Explorer "next" row.** The financial record explorer's terms cell names the first timeline row
+    outside the Lifecycle lane. It passes over a declared notice deadline dated before the as-of,
+    because the scalar review it replaces was never raised for a past date. The elapsed deadline
+    stays on the timeline.
   - **Timeline stamp.** A timeline whose option events came from a declared schedule, resolved or
     blocked, is stamped `asset-terms-obligations-timeline-declared-v1`
     (`AssetOperationsEngineVersions.DeclaredObligationTimeline`). Every other timeline keeps
@@ -895,7 +926,8 @@ This command verifies referenced files and directories exist; it does not valida
     date, so its period ids change daily. The schedule book and workbench lifecycle (8b), a notice
     watch screen (8c), American windows and make-whole in bond analytics (8e) and
     CertificateOfDeposit and StructuredCredit consumers (8f) are not part of this entry.
-  - Tests: `AssetObligationDeclaredExerciseTimelineTests`, `AssetObligationTimelineGoldenTests`,
+  - Tests: `AssetObligationDeclaredExerciseTimelineTests`, `AssetObligationRecoveredExerciseTimelineTests`,
+    `FinancialRecordExplorerTermsObligationsDetailTests`, `AssetObligationTimelineGoldenTests`,
     `AssetOperationsEngineVersionStampTests`, `BondExerciseNoticeWatchTests` and the SCH-DEF-012 pin
     in `AssetObligationProjectionServiceTests`.
 

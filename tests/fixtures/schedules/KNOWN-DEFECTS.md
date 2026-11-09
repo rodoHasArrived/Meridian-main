@@ -77,8 +77,9 @@ legacy scalar mandatory-put/pre-refund probe is not used for declared bond scena
 
 ## Declared exercise events on the obligation timeline
 
-A Bond whose row decodes a `callSchedule` or `putSchedule` (stamped terms version 3 or later; the
-shared `SecurityVersionedTerms.Decoding` predicate) takes its option events from
+A Bond whose row decodes a `callSchedule` or `putSchedule` with at least one entry that is not unset
+(stamped terms version 3 or later; the shared `SecurityVersionedTerms.Decoding` predicate and the
+write rules' `IsUnsetScheduleEntry`) takes its option events from
 `BondExerciseNoticeWatch.EvaluateToMaturity`: `IssuerCallExercise` and `HolderPutExercise` on each
 remaining exercise date, with `IssuerCallNoticeDeadline` and `HolderPutNoticeDeadline` where the entry
 states notice bounds. The scalar probe is not consulted for such a bond, so SCH-DEF-012 does not apply
@@ -86,7 +87,11 @@ to it, and a schedule that cannot be resolved is a typed blocked outcome with no
 scalar fallback. Its timeline is stamped `asset-terms-obligations-timeline-declared-v1`.
 `AssetObligationDeclaredExerciseTimelineTests` covers these paths.
 
-SCH-DEF-012 remains pinned for every other record: bonds that declare no schedule, rows stamped below
+Rows recovered from economic terms (ADR-027 stage 1) are declaring rows and are blocked today, because
+their recovered conventions are null or partial; `AssetObligationRecoveredExerciseTimelineTests` pins
+that.
+
+SCH-DEF-012 remains pinned for every other record: bonds that declare no schedule or only unset entries, rows stamped below
 3 (a stray schedule is not decoded), published projections (their timeline is derived from the
 published terms), CertificateOfDeposit and StructuredCredit. `AssetObligationTimelineGoldenTests`
 freezes their whole serialized detail.
