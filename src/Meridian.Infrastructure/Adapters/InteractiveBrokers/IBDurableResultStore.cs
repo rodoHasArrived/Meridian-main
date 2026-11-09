@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Meridian.Core.IO;
 using Meridian.ProviderSdk;
 
 namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
@@ -69,7 +70,18 @@ public sealed class JsonIBDurableResultStore : IBDurableResultStore
     private readonly object _gate = new();
     private Dictionary<string, IBDurableResult>? _results;
 
-    public JsonIBDurableResultStore(string path) => _path = path ?? throw new ArgumentNullException(nameof(path));
+    private readonly IAtomicFileWriter? _atomicFileWriter;
+
+    /// <param name="path">Results file path.</param>
+    /// <param name="atomicFileWriter">
+    /// The host's atomic writer. When omitted the store falls back to its own
+    /// flush-to-disk-then-rename write, which is equally crash-safe for this single file.
+    /// </param>
+    public JsonIBDurableResultStore(string path, IAtomicFileWriter? atomicFileWriter = null)
+    {
+        _path = path ?? throw new ArgumentNullException(nameof(path));
+        _atomicFileWriter = atomicFileWriter;
+    }
 
     public void Upsert(
         IBDataRequestOwnership ownership,
@@ -105,12 +117,55 @@ public sealed class JsonIBDurableResultStore : IBDurableResultStore
         };
         lock (_gate)
         {
-            var results = Load();
-            results[CreateKey(durableResult)] = durableResult;
-            Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
-            var temporary = _path + ".tmp";
-            File.WriteAllText(temporary, JsonSerializer.Serialize(results.Values));
+            // Write a candidate copy durably first and only then publish it as the in-memory
+            // view, so a failed write can never leave readers seeing a result that is not on
+            // disk. The temp file is flushed to disk before the rename; a bare rename can
+            // survive a crash as a torn results file that fails every later load.
+            var candidate = new Dictionary<string, IBDurableResult>(Load(), StringComparer.Ordinal)
+            {
+                [CreateKey(durableResult)] = durableResult
+            };
+            var directory = Path.GetDirectoryName(Path.GetFullPath(_path));
+            if (!string.IsNullOrEmpty(directory))
+                Directory.CreateDirectory(directory);
+            WriteDurably(JsonSerializer.Serialize(candidate.Values));
+            _results = candidate;
+        }
+    }
+
+    private void WriteDurably(string json)
+    {
+        if (_atomicFileWriter is not null)
+        {
+            _atomicFileWriter.Write(_path, json);
+            return;
+        }
+
+        var temporary = _path + ".tmp";
+        try
+        {
+            using (var stream = new FileStream(temporary, FileMode.Create, FileAccess.Write, FileShare.None))
+            using (var writer = new StreamWriter(stream, new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false)))
+            {
+                writer.Write(json);
+                writer.Flush();
+                stream.Flush(flushToDisk: true);
+            }
+
             File.Move(temporary, _path, overwrite: true);
+        }
+        catch
+        {
+            try
+            {
+                File.Delete(temporary);
+            }
+            catch (IOException)
+            {
+                // Best effort: the next successful write recreates the temp file.
+            }
+
+            throw;
         }
     }
 

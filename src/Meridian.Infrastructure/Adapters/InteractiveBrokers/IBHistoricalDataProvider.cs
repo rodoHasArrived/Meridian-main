@@ -150,7 +150,7 @@ public sealed class IBHistoricalDataProvider : IHistoricalDataProvider, IRateLim
             // Request just 1 day of data as a health check
             var bars = await RequestHistoricalBarsWithPacingAsync(
                 cfg,
-                DateTime.UtcNow.ToString("yyyyMMdd-HH:mm:ss"),
+                DateTime.UtcNow.ToString("yyyyMMdd-HH:mm:ss", CultureInfo.InvariantCulture),
                 "1 D",
                 IBBarSizes.Day1,
                 IBWhatToShow.Trades,
@@ -207,7 +207,7 @@ public sealed class IBHistoricalDataProvider : IHistoricalDataProvider, IRateLim
         {
             var daysToFetch = Math.Min(maxDaysPerRequest, currentEnd.DayNumber - startDate.DayNumber + 1);
             var durationStr = $"{daysToFetch} D";
-            var endDateTime = currentEnd.ToDateTime(new TimeOnly(23, 59, 59)).ToString("yyyyMMdd-HH:mm:ss");
+            var endDateTime = currentEnd.ToDateTime(new TimeOnly(23, 59, 59)).ToString("yyyyMMdd-HH:mm:ss", CultureInfo.InvariantCulture);
 
             try
             {
@@ -383,7 +383,8 @@ public sealed class IBHistoricalDataProvider : IHistoricalDataProvider, IRateLim
 
             var duration = currentEnd - chunkStart;
             var durationStr = FormatDuration(duration);
-            var endDateTime = currentEnd.ToString("yyyyMMdd-HH:mm:ss");
+            // IB reads the dash-separated form as UTC; format the instant in UTC, not its own offset.
+            var endDateTime = currentEnd.UtcDateTime.ToString("yyyyMMdd-HH:mm:ss", CultureInfo.InvariantCulture);
 
             try
             {

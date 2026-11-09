@@ -811,7 +811,9 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
         bool useRTH = true,
         CancellationToken ct = default)
     {
-        var endDateTime = DateTime.Now.ToString("yyyyMMdd-HH:mm:ss");
+        // The dash-separated "yyyyMMdd-HH:mm:ss" form is IB's UTC notation, so the end time
+        // must be UTC; local time would end the request early by the host's UTC offset.
+        var endDateTime = DateTime.UtcNow.ToString("yyyyMMdd-HH:mm:ss", CultureInfo.InvariantCulture);
         return RequestHistoricalDataAsync(
             cfg,
             endDateTime,

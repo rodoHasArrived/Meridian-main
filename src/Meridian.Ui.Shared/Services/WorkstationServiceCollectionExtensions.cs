@@ -106,7 +106,9 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IBDurableResultStore>(sp =>
         {
             var root = sp.GetRequiredService<StorageOptions>().RootPath;
-            return new JsonIBDurableResultStore(Path.Combine(root, "providers", "interactive-brokers", "results.json"));
+            return new JsonIBDurableResultStore(
+                Path.Combine(root, "providers", "interactive-brokers", "results.json"),
+                sp.GetRequiredService<IAtomicFileWriter>());
         });
         services.TryAddSingleton<IBResultQueryService>();
 

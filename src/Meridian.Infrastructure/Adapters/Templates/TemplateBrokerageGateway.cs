@@ -58,8 +58,10 @@ public sealed class TemplateBrokerageGateway : IBrokerageGateway
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _options = options ?? throw new ArgumentNullException(nameof(options));
-        _reportChannel = EventPipelinePolicy.Default.CreateChannel<ExecutionReport>(
-            singleReader: false, singleWriter: false);
+        // Execution reports carry fills and terminal order states, so they must never be
+        // evicted: wait for the consumer instead of dropping the oldest report when full.
+        _reportChannel = (EventPipelinePolicy.Default with { FullMode = BoundedChannelFullMode.Wait })
+            .CreateChannel<ExecutionReport>(singleReader: false, singleWriter: false);
     }
 
     public string GatewayId => _options.GatewayId;

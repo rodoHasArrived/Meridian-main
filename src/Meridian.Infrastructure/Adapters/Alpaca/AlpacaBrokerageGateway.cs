@@ -126,8 +126,10 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
                 "Alpaca brokerage credentials are missing or incomplete; gateway will remain unavailable until valid credentials are provided.");
         }
 
-        _reportChannel = EventPipelinePolicy.Default.CreateChannel<ExecutionReport>(
-            singleReader: false, singleWriter: false);
+        // Execution reports carry fills and terminal order states, so they must never be
+        // evicted: wait for the consumer instead of dropping the oldest report when full.
+        _reportChannel = (EventPipelinePolicy.Default with { FullMode = BoundedChannelFullMode.Wait })
+            .CreateChannel<ExecutionReport>(singleReader: false, singleWriter: false);
     }
 
     /// <inheritdoc />
