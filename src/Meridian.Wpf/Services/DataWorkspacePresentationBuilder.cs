@@ -903,7 +903,7 @@ public static class DataWorkspacePresentationBuilder
         else if (data.LastBackfillStatus is { } lastBackfillStatus)
         {
             var timestamp = lastBackfillStatus.CompletedUtc ?? lastBackfillStatus.StartedUtc ?? data.RetrievedAt;
-            items.Add((timestamp, new WorkspaceRecentItem { Title = "Backfill result", Detail = $"{(lastBackfillStatus.Success ? "Completed" : "Failed")} via {lastBackfillStatus.Provider ?? "unknown provider"} after writing {lastBackfillStatus.BarsWritten:N0} bars.", Meta = $"{timestamp.LocalDateTime:g} · {(lastBackfillStatus.Success ? "Completed" : "Failed")}", Tone = lastBackfillStatus.Success ? WorkspaceTone.Info : WorkspaceTone.Warning, ActionId = "Backfill", ActionLabel = "Open Backfill" }));
+            items.Add((timestamp, new WorkspaceRecentItem { Title = "Backfill result", Detail = $"{(lastBackfillStatus.Success ? "Completed" : "Failed")} via {lastBackfillStatus.Provider ?? "unknown provider"} after writing {lastBackfillStatus.BarsWritten:N0} bars.", Meta = $"{FormatHelpers.FormatUtcTimestamp(timestamp)} · {(lastBackfillStatus.Success ? "Completed" : "Failed")}", Tone = lastBackfillStatus.Success ? WorkspaceTone.Info : WorkspaceTone.Warning, ActionId = "Backfill", ActionLabel = "Open Backfill" }));
         }
 
         if (latestExportJob is not null)
