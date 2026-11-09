@@ -13098,6 +13098,7 @@ Meridian-main
 │   │   ├── test_desktop_msix_packaging.py
 │   │   ├── test_desktop_screen_blueprint_checklist.py
 │   │   ├── test_direct_lending_outbox_claim_sql.py
+│   │   ├── test_doc_health_dashboard_merge.py
 │   │   ├── test_doc_render_determinism.py
 │   │   ├── test_doctor_profiles.py
 │   │   ├── test_documentation_workflow.py

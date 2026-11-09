@@ -129,7 +129,9 @@
         "--output",
         "docs/status/doc-health-dashboard.md",
         "--json-output",
-        "docs/status/doc-health-dashboard.json"
+        "docs/status/doc-health-dashboard.json",
+        "--volatile-json-output",
+        "artifacts/docs/doc-health-line-metrics.json"
       ],
       "return_code": 0,
       "duration_seconds": 0.0,
