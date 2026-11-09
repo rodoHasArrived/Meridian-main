@@ -300,6 +300,47 @@ public sealed class AssetObligationDeclaredExerciseTimelineTests
         outcome.Blockers.Should().ContainSingle().Which.Code.Should().Be("InvalidEconomicSchedule");
     }
 
+    [Theory]
+    [InlineData("[null]")]
+    [InlineData("[null, null]")]
+    [InlineData("[{}, null]")]
+    public async Task AllUnsetSchedule_DeclaresNothing_SoTheScalarReviewStays(string callScheduleJson)
+    {
+        // A write admits an array of unset entries as declaring nothing. Reading it as a declaration
+        // would resolve to zero scenarios and silently drop the bond's scalar review.
+        var security = BondExerciseNoticeWatchTests.Bond(extra: new()
+        {
+            [SecurityVersionedTerms.CallScheduleKey] = JsonSerializer.Deserialize<JsonElement>(callScheduleJson),
+            ["callDate"] = "2027-01-15",
+            ["isCallable"] = true
+        });
+
+        var detail = await ReadAsync(security, completed: false);
+
+        var timeline = detail.TermsObligationsTimeline!;
+        timeline.EngineVersion.Should().EndWith("+asset-terms-obligations-timeline-v1");
+        timeline.ExtensionPayload.Should().BeNull();
+        OptionEvents(timeline).Should().Equal(("CallPutReview", new DateOnly(2027, 1, 15)));
+    }
+
+    [Fact]
+    public async Task UnsetEntryBesideARealOne_IsIgnored_AndTheRealEntryResolves()
+    {
+        var security = BondExerciseNoticeWatchTests.Bond(extra: new()
+        {
+            [SecurityVersionedTerms.CallScheduleKey] = new object?[] { null, EuropeanCall(30, 60, "Calendar") },
+            ["callDate"] = "2027-01-15",
+            ["isCallable"] = true
+        });
+
+        var detail = await ReadAsync(security);
+
+        detail.TermsObligationsTimeline!.EngineVersion.Should().Be(DeclaredStamp);
+        OptionEvents(detail.TermsObligationsTimeline).Should().Equal(
+            ("IssuerCallNoticeDeadline", new DateOnly(2026, 12, 16)),
+            ("IssuerCallExercise", new DateOnly(2027, 1, 15)));
+    }
+
     [Fact]
     public async Task CutoverPolicyBlock_BlocksTheDeclaredExerciseEvents()
     {
@@ -439,6 +480,12 @@ public sealed class AssetObligationDeclaredExerciseTimelineTests
     [InlineData("Bond", 2, "callSchedule", "[{\"callDate\":\"2027-01-15\"}]", false)]
     [InlineData("Bond", 1, "putSchedule", "[{\"putDate\":\"2027-01-15\"}]", false)]
     [InlineData("Bond", 3, "callSchedule", "[]", false)]
+    [InlineData("Bond", 3, "callSchedule", "[null]", false)]
+    [InlineData("Bond", 3, "callSchedule", "[null, null]", false)]
+    [InlineData("Bond", 3, "callSchedule", "[{}]", false)]
+    [InlineData("Bond", 3, "putSchedule", "[null, {\"putDate\":null}]", false)]
+    [InlineData("Bond", 3, "callSchedule", "[null, {\"callDate\":\"2027-01-15\"}]", true)]
+    [InlineData("Bond", 3, "callSchedule", "[42]", true)]
     [InlineData("Bond", 3, "callSchedule", "null", false)]
     [InlineData("Bond", 3, "callSchedule", "{\"callDate\":\"2027-01-15\"}", false)]
     [InlineData("Bond", 3, "callDate", "\"2027-01-15\"", false)]

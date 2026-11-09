@@ -58,10 +58,13 @@ public sealed partial class AssetObligationProjectionService
     }
 
     /// <summary>
-    /// Whether a bond-coupon-structure record carries a non-empty <c>callSchedule</c> or
-    /// <c>putSchedule</c> that its own stamp decodes, through the shared versioned-terms predicate
-    /// (<see cref="SecurityVersionedTerms.Decoding"/>): never from a profile envelope and never from a
-    /// row stamped below the arrays' terms version.
+    /// Whether a bond-coupon-structure record carries a <c>callSchedule</c> or <c>putSchedule</c> with
+    /// at least one entry that is not unset, and that its own stamp decodes, through the shared
+    /// versioned-terms predicate (<see cref="SecurityVersionedTerms.Decoding"/>): never from a profile
+    /// envelope and never from a row stamped below the arrays' terms version. "Unset" is the write
+    /// rules' notion (<see cref="ScheduleTermsWriteRules.IsUnsetScheduleEntry"/>): an array of nulls
+    /// or empty objects passes a write as declaring nothing, so it declares nothing here and the
+    /// record keeps its scalar review.
     /// </summary>
     public static bool DeclaresExerciseSchedule(SecurityDetailDto security)
     {
@@ -81,7 +84,7 @@ public sealed partial class AssetObligationProjectionService
                && decoding.Decodes(field)
                && terms.TryGetProperty(key, out var rows)
                && rows.ValueKind == JsonValueKind.Array
-               && rows.GetArrayLength() > 0;
+               && rows.EnumerateArray().Any(static row => !ScheduleTermsWriteRules.IsUnsetScheduleEntry(row));
     }
 
     /// <summary>The warnings a declared exercise outcome adds to the timeline and to readiness.</summary>

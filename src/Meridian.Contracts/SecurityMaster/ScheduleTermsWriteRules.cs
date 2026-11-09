@@ -229,9 +229,14 @@ public static partial class ScheduleTermsWriteRules
         return rows.Length == 0 ? null : (rows[0].Path, rows[0].Start!.Value);
     }
 
-    // ADR-024's protocol-unset spellings are not entries and the tolerant codec drops them.
-    // This exception belongs only to the versioned call/put arrays, never ordinary item arrays.
-    private static bool IsUnsetScheduleEntry(JsonElement row)
+    /// <summary>
+    /// Whether an element of a versioned <c>callSchedule</c> or <c>putSchedule</c> array is unset: JSON
+    /// null, or an object with no populated member. ADR-024's protocol-unset spellings are not entries
+    /// and the tolerant codec drops them. This exception belongs only to the versioned call/put
+    /// arrays, never ordinary item arrays. Readers that ask "does this row declare a schedule" use it
+    /// so they agree with what a write admits as declaring nothing.
+    /// </summary>
+    public static bool IsUnsetScheduleEntry(JsonElement row)
         => row.ValueKind == JsonValueKind.Null
             || row.ValueKind == JsonValueKind.Object && !SecurityAssetTermsSchema.IsPopulatedTermValue(row);
 
