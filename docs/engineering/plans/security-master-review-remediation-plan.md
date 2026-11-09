@@ -373,3 +373,32 @@ carry a reviewed golden diff. Planned increments, each corpus-gated:
   plus the corpus and write goldens.
 - **S2-B4 — term-block and approved-merge paths** move onto the definition (the
   `ToRecord(...).Kind` seam in the workbench command service).
+
+### Slice 12 — ADR-027 stage 3: the schema-generated flat codec (planned 2026-11-09)
+
+Grounding: `SecurityAssetTermsSchemaRoundTripTests` already turned the schema table into a
+"drift eliminator" for the encode arm's key sets — every class's serialized key set must equal
+the declared schema field set, with byte-stable round trips over fully-populated payloads. What
+stage 3 still owes D1 is per-field semantics and the retirement of the two hand-written arms
+(the 32-class decode switch in `SecurityMasterMapping.ToSecurityKind` and the per-kind F#
+Interop writer). Per the ADR, stage 3 starts only after stage-1 increment 6 (codec lossless)
+and S2-B4 (codec single-purpose) land. Planned increments:
+
+- **S3-A — codec-arm gap audit (no code).** A dated review-record table of what the round-trip
+  suite already proves per arm versus what remains unproven: per-alias acceptance, per-field
+  missing-Req refusals, per-field type-mismatch refusals, per-`OneOf` vocabulary enforcement
+  versus `WithVerbatimUndeclaredValue` escapes, convention parsing per `WithConvention` field.
+- **S3-B — fully assert the decode arm.** Schema-driven theories over class × field, generated
+  from `SecurityAssetTermsSchema` itself: alias-substituted payloads decode identically; a
+  missing Req refuses naming the field; a type mismatch refuses; vocabularies enforce or escape
+  exactly per the field's declared flags. The schema becomes authoritative over the decoder
+  without generating code.
+- **S3-C — fully assert the encode arm.** The same per-field discipline for the F# writer:
+  canonical value forms, null/absent policy, array stored-order rules, envelope stamping,
+  asserted from schema metadata.
+- **S3-D — table-driven codec extraction.** With both arms fully asserted, replace hand-written
+  scalar handling with a schema-table interpreter class by class (bespoke arms remain for the
+  structural decodes: coupon structures, schedules, swap legs, profile envelopes); each class's
+  migration is proven byte-identical by the untouched write goldens and replay corpus.
+- **S3-E — shrink `SecurityKind`'s per-class records** to what the interpreter needs —
+  explicitly decision-gated: it alters domain types, and the domain owner sequences it.
