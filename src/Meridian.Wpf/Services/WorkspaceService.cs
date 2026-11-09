@@ -39,6 +39,10 @@ public sealed class WorkspaceService
     private readonly Dictionary<string, IServiceScope> _workspaceScopes = new(StringComparer.OrdinalIgnoreCase);
     private readonly WorkspaceStateTokenStore _workspaceStateTokenStore = new();
     private readonly SemaphoreSlim _stateGate = new(1, 1);
+    // File writes are serialized here, outside the state gate. Synchronous readers on the UI
+    // thread wait on the state gate, so it must only ever be held for in-memory work.
+    private readonly SemaphoreSlim _persistGate = new(1, 1);
+    private string? _pendingSaveJson;
     private IServiceScopeFactory? _serviceScopeFactory;
     private bool _isInitialized;
 
@@ -75,6 +79,9 @@ public sealed class WorkspaceService
         finally
         {
             _stateGate.Release();
+            // Persist whatever the action queued only after the state gate is free, but still
+            // before the operation completes, so callers keep "awaited means saved".
+            await FlushPendingSaveAsync().ConfigureAwait(false);
         }
     }
 
@@ -88,6 +95,49 @@ public sealed class WorkspaceService
         finally
         {
             _stateGate.Release();
+            await FlushPendingSaveAsync().ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
+    /// Writes the most recently queued workspace snapshot to disk. Runs outside the state gate
+    /// so a slow disk never blocks a synchronous reader; writers are serialized and always write
+    /// the latest snapshot, so the file ends as the newest state whatever order operations finish.
+    /// </summary>
+    private async Task FlushPendingSaveAsync()
+    {
+        if (Volatile.Read(ref _pendingSaveJson) is null)
+        {
+            return;
+        }
+
+        await _persistGate.WaitAsync().ConfigureAwait(false);
+        try
+        {
+            var json = Interlocked.Exchange(ref _pendingSaveJson, null);
+            if (json is null)
+            {
+                return;
+            }
+
+            // Write beside the target and rename, so an interrupted write cannot truncate the
+            // existing workspace file.
+            var filePath = GetSettingsFilePath();
+            var temporaryPath = filePath + ".tmp";
+            await File.WriteAllTextAsync(temporaryPath, json).ConfigureAwait(false);
+            File.Move(temporaryPath, filePath, overwrite: true);
+        }
+        catch (Exception ex)
+        {
+            // Workspace persistence is best-effort; disk failures must not crash the caller.
+            LoggingService.Instance.LogDebug(
+                "Failed to persist workspaces.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
+        }
+        finally
+        {
+            _persistGate.Release();
         }
     }
 
@@ -203,7 +253,7 @@ public sealed class WorkspaceService
             var filePath = GetSettingsFilePath();
             if (File.Exists(filePath))
             {
-                var json = await File.ReadAllTextAsync(filePath);
+                var json = await File.ReadAllTextAsync(filePath, ct).ConfigureAwait(false);
                 var data = JsonSerializer.Deserialize<WorkspaceData>(json, UiServices.DesktopJsonOptions.Compact);
 
                 if (data != null)
@@ -311,8 +361,9 @@ public sealed class WorkspaceService
                 DockLayouts = new Dictionary<string, string>(_dockLayouts, StringComparer.OrdinalIgnoreCase)
             };
 
-            var json = JsonSerializer.Serialize(data, UiServices.DesktopJsonOptions.PrettyPrint);
-            File.WriteAllText(GetSettingsFilePath(), json);
+            // Only the snapshot is taken here, under the state gate. The file write happens in
+            // FlushPendingSaveAsync once the gate is released.
+            Volatile.Write(ref _pendingSaveJson, JsonSerializer.Serialize(data, UiServices.DesktopJsonOptions.PrettyPrint));
         }
         catch (OperationCanceledException)
         {

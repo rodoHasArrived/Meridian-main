@@ -53,6 +53,54 @@ public sealed class FeatureCapabilityGateTests
             new CapabilityChangedEvent("desktop.test.optional", false));
     }
 
+    [Fact]
+    public async Task SetEnabledAsync_ShouldPersistOverrideAndDeliverChangeNotification()
+    {
+        using var scope = CreateGate();
+        var observer = new RecordingObserver();
+        using var subscription = scope.Gate.Changes.Subscribe(observer);
+
+        await scope.Gate.SetEnabledAsync("desktop.test.optional", false);
+
+        scope.Gate.IsEnabled("desktop.test.optional").Should().BeFalse();
+        ConfigStore.LoadConfig(scope.ConfigPath).FeatureCapabilities!.Overrides.Should()
+            .ContainKey("desktop.test.optional")
+            .WhoseValue.Should().BeFalse();
+        observer.Events.Should().ContainSingle().Which.Should().Be(
+            new CapabilityChangedEvent("desktop.test.optional", false));
+    }
+
+    [Fact]
+    public async Task SetEnabledAsync_AppliesTheOverrideInMemoryBeforeTheSaveCompletes()
+    {
+        using var scope = CreateGate();
+
+        var pending = scope.Gate.SetEnabledAsync("desktop.test.optional", false);
+
+        // The toggle must read back immediately, without waiting for the configuration file.
+        scope.Gate.IsEnabled("desktop.test.optional").Should().BeFalse();
+        await pending;
+    }
+
+    [Fact]
+    public async Task SetEnabledAsync_RapidToggles_LeaveTheLastValueOnDisk()
+    {
+        using var scope = CreateGate();
+
+        var saves = new List<Task>();
+        for (var i = 0; i < 20; i++)
+        {
+            saves.Add(scope.Gate.SetEnabledAsync("desktop.test.optional", i % 2 == 0));
+        }
+
+        await Task.WhenAll(saves);
+
+        // The last call (i = 19) disables it; an out-of-order save must not leave "enabled" behind.
+        scope.Gate.IsEnabled("desktop.test.optional").Should().BeFalse();
+        ConfigStore.LoadConfig(scope.ConfigPath).FeatureCapabilities!.Overrides["desktop.test.optional"]
+            .Should().BeFalse();
+    }
+
     private static GateScope CreateGate(
         FeatureCapabilityOptions? options = null,
         string? configPath = null)
