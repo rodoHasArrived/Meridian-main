@@ -187,6 +187,29 @@ public sealed class SecurityMasterReplayCorpusTests
             : null;
     }
 
+    public static TheoryData<string> DeclaredAssetClasses() => SecurityAssetTermsSchemaRoundTripTests.DeclaredAssetClasses();
+
+    [Theory]
+    [MemberData(nameof(DeclaredAssetClasses))]
+    public void RecordAwareDerivation_IsByteIdenticalToTheProjectionDecode(string assetClass)
+    {
+        // ADR-027 stage 2 (S2-B3): the command services derive the economic record from the typed
+        // domain record when no profile-backed override applied, skipping the encode → re-decode
+        // seam. The two derivations must agree byte-for-byte on every declared class, or the seam
+        // removal changed an event payload.
+        var projection = SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(
+            assetClass,
+            SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain(
+                assetClass,
+                SecurityAssetTermsSchemaRoundTripTests.FullPayloads[assetClass]));
+        var record = SecurityMasterMapping.ToRecord(projection);
+
+        SecurityEconomicDefinitionAdapter.ToEconomicRecord(record, projection).EconomicTerms.GetRawText()
+            .Should().Be(
+                SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection).EconomicTerms.GetRawText(),
+                $"the record-aware route must emit the same {assetClass} economic bytes as the projection decode");
+    }
+
     private static IReadOnlyList<JsonElement> LoadCorpus()
     {
         var corpusPath = LocateFixture(CorpusFileName);

@@ -774,6 +774,19 @@ Validation (local, .NET SDK 10.0.403): `dotnet test tests/Meridian.Tests -c Rele
 active-plus-inactive gauge, and the zero case. The full local `bash scripts/ci.sh` was not run;
 GitHub `Meridian CI / quality-gate` remains authoritative.
 
+### ADR-027 stage-2 S2-B3 — events derived from the typed record — 2026-11-09
+
+The create, amend and deactivate services stop re-decoding the document they just encoded: with
+no profile-backed override in play, the economic record derives from the command result's typed
+`SecurityMasterRecord` through the new `ToEconomicRecord(record, projection)` overload (the
+projection still supplies the retained-terms fold), deleting the per-write
+`ToProjection → ToRecord` round trip the ADR names. Where an override replaces the class or
+terms after the domain command — CustomAsset profile resolution, envelope repinning — the
+overridden document remains authoritative and the projection-decode overload stays, exactly as
+it stays for event replay and aggregate rebuild, which is the decode's permanent read-only
+legacy-upcaster role. `RecordAwareDerivation_IsByteIdenticalToTheProjectionDecode` pins the two
+routes byte-identical over every declared class twin, alongside the corpus and write goldens.
+
 ### ADR-027 stage-2 S2-B2 — validation recomposed onto the definition — 2026-11-09
 
 The write path now validates through the definition surface. `validateKindTerms` became a
