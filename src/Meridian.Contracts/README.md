@@ -2046,7 +2046,12 @@ write version to a term's version, a flat payload that populates that term (the 
 `resetSchedule` (`{resetDate, fixingRate}`) arrays; `StructuredCashFlowLeg.NotionalOn` and `FixingOn`
 let the leg scheduler accrue on the scheduled notional (paying step-downs as principal when the leg
 exchanges principal) and use a recorded fixing for a period that has already reset. `LotQuantity`/`IUnitizedLot` give execution, backtesting, ledger and face-value lots
-one shape: decimal quantity, `SecurityLotUnitKind` and multiplier. `CommitmentLot` (commitment,
+one shape: decimal quantity, `SecurityLotUnitKind` and multiplier. How a raw quote scales into
+money is a declared catalog fact (remediation slice 8): `SecurityAssetClassDescriptor.QuoteConvention`
+(`PercentOfPar` for face-value paper, `PerUnit` otherwise, defaulting from the lot unit so no
+price changes), read by `LotQuantity.ValueAtPrice(price, convention)` and
+`LotQuantity.QuoteConventionFor(assetClass)`; the unit-kind overload keeps the legacy rule and
+`SecurityQuoteConventionCoverageTests` pins the two routes to agree for every catalogued class. `CommitmentLot` (commitment,
 funded and unfunded amounts, recallable distributions, `Draw`) and `FundUnitLot` (units at an
 acquisition NAV) are the `Commitment` and `Units` cases the registry assigns to private fund
 interests, guarantees and funds. `SecurityIdentifierKind` adds
