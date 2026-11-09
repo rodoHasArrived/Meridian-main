@@ -10,7 +10,8 @@ namespace Meridian.Instruments.AssetOperations;
 public static partial class AssetOperationsProjectionBuilder
 {
     public static AssetOperationsDetailDto FromBondReference(
-        BondReferenceDto bond, AssetOperationSubjectDto subject, BondCalculationContext? context = null)
+        BondReferenceDto bond, AssetOperationSubjectDto subject, BondCalculationContext? context = null,
+        BondExerciseNoticeWatchResult? declaredExercise = null)
     {
         context ??= new BondCalculationContext(DateTimeOffset.UtcNow);
         var asOfDate = DateOnly.FromDateTime(context.AsOf.UtcDateTime.Date);
@@ -78,7 +79,8 @@ public static partial class AssetOperationsProjectionBuilder
             subject.SecurityId.ToString("D"),
             additionalWarnings:
             [
-                "Bond terms, cash flows, and ledger support are Expected/Projected until reviewed retained evidence is attached and an Asset Operations projection is published."
+                "Bond terms, cash flows, and ledger support are Expected/Projected until reviewed retained evidence is attached and an Asset Operations projection is published.",
+                .. AssetObligationProjectionService.DeclaredExerciseWarnings(declaredExercise)
             ],
             allowReady: false,
             evaluatedAt: context.AsOf);
@@ -95,7 +97,7 @@ public static partial class AssetOperationsProjectionBuilder
             ledger,
             readiness,
             lifecycle);
-        return WithTermsObligationsTimeline(detail);
+        return WithTermsObligationsTimeline(detail, declaredExercise: declaredExercise);
     }
 
     internal static IReadOnlyList<AssetProjectedCashFlowDto> ProjectFixedIncomeCashFlows(

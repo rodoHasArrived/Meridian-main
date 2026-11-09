@@ -35,4 +35,12 @@ public static class AssetOperationsEngineVersions
     /// timeline with a projection run is stamped <c>{run stamp}+{this}</c>.
     /// </summary>
     public const string ObligationTimeline = "asset-terms-obligations-timeline-v1";
+
+    /// <summary>
+    /// The timeline of a bond whose declared call or put schedule was the authority for its option
+    /// events: issuer-call and holder-put events with notice deadlines from the bond exercise notice
+    /// watch, or its blocker, instead of the scalar <c>CallPutReview</c> probe. Composed with the run
+    /// stamp as <see cref="ObligationTimeline"/> is.
+    /// </summary>
+    public const string DeclaredObligationTimeline = "asset-terms-obligations-timeline-declared-v1";
 }

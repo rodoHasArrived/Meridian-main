@@ -28,6 +28,7 @@ public sealed class AssetOperationsEngineVersionStampTests
         AssetOperationsEngineVersions.DeclaredObligation.Should().Be("asset-obligation-declared-v3");
         AssetOperationsEngineVersions.DeclaredObligationWithoutRateEvidence.Should().Be("asset-obligation-declared-v2");
         AssetOperationsEngineVersions.ObligationTimeline.Should().Be("asset-terms-obligations-timeline-v1");
+        AssetOperationsEngineVersions.DeclaredObligationTimeline.Should().Be("asset-terms-obligations-timeline-declared-v1");
         AssetObligationProjectionService.EngineVersion.Should().Be("asset-obligation-projection-v1");
     }
 

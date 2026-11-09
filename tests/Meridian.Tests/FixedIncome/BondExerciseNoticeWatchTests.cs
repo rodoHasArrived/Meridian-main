@@ -345,6 +345,66 @@ public sealed class BondExerciseNoticeWatchTests
             .Windows.Should().ContainSingle();
     }
 
+    [Fact]
+    public void EvaluateToMaturity_KeepsEveryRemainingWindow_WithTheSameDatesAndClassification()
+    {
+        var security = Bond(Calls(new Dictionary<string, object?>
+        {
+            ["callDate"] = "2027-01-15",
+            ["callEndDate"] = "2029-01-15",
+            ["callPrice"] = 100m,
+            ["exerciseStyle"] = "Bermudan",
+            ["priceBasis"] = "PercentOfPar",
+            ["minimumNoticeDays"] = 30,
+            ["maximumNoticeDays"] = 60,
+            ["noticeDayType"] = "Calendar"
+        }));
+        var asOf = new DateOnly(2026, 12, 1);
+
+        var all = BondExerciseNoticeWatch.EvaluateToMaturity(security, Calendars, asOf);
+
+        all.Blockers.Should().BeEmpty();
+        all.HorizonDays.Should().Be(new DateOnly(2031, 1, 15).DayNumber - asOf.DayNumber, "the horizon reported is the days to maturity");
+        all.Windows.Select(static window => window.ExerciseDate).Should().Equal(
+            new DateOnly(2027, 1, 15), new DateOnly(2027, 7, 15), new DateOnly(2028, 1, 15),
+            new DateOnly(2028, 7, 15), new DateOnly(2029, 1, 15));
+        all.Windows.Select(static window => window.Status).Should().Equal(
+            BondExerciseNoticeStatus.Open, BondExerciseNoticeStatus.Upcoming, BondExerciseNoticeStatus.Upcoming,
+            BondExerciseNoticeStatus.Upcoming, BondExerciseNoticeStatus.Upcoming);
+        // The bounded watch is the same list cut at its horizon, and analytics resolves the same dates.
+        var bounded = BondExerciseNoticeWatch.Evaluate(security, Calendars, asOf, BondExerciseNoticeWatch.MaxHorizonDays);
+        // 2028-01-15's window opens 2027-11-16, inside 366 days; 2028-07-15's opens 2028-05-16, outside.
+        bounded.Windows.Should().HaveCount(3).And.Equal(all.Windows.Take(3));
+        all.Windows.Select(static window => (window.ExerciseDate, window.LatestNoticeDate, window.EarliestNoticeDate)).Should().Equal(
+            AnalyticsScenarios(security, asOf).Select(static item => (item.ExerciseDate, item.LatestNoticeDate, item.EarliestNoticeDate)));
+    }
+
+    [Fact]
+    public void EvaluateToMaturity_KeepsTheRefusals_AndNeverThrowsOnMalformedRows()
+    {
+        var asOf = new DateOnly(2026, 12, 1);
+
+        var noCalendar = BondExerciseNoticeWatch.EvaluateToMaturity(Bond(Calls(European(10, null, "Business"))), null, asOf);
+        noCalendar.IsBlocked.Should().BeTrue();
+        noCalendar.Windows.Should().BeEmpty();
+        noCalendar.HorizonDays.Should().Be(0, "a result blocked before the maturity is read reports no horizon");
+
+        var stray = BondExerciseNoticeWatch.EvaluateToMaturity(Bond(Calls(European(30, 60, "Calendar")), stamp: 2), Calendars, asOf);
+        stray.IsBlocked.Should().BeTrue("a stray schedule on a row stamped 2 is refused, not decoded");
+
+        var matured = BondExerciseNoticeWatch.EvaluateToMaturity(Bond(Calls(European(30, 60, "Calendar"))), Calendars, new DateOnly(2031, 1, 15));
+        matured.Blockers.Should().ContainSingle().Which.Code.Should().Be("EvaluationOutsideLife");
+
+        var overflow = Bond(extra: new()
+        {
+            [SecurityVersionedTerms.CallScheduleKey] = JsonSerializer.Deserialize<JsonElement>(
+                "[{\"callDate\":\"2027-01-15\",\"callPrice\":1e400,\"exerciseStyle\":\"European\"}]"),
+            ["isCallable"] = true
+        });
+        var act = () => BondExerciseNoticeWatch.EvaluateToMaturity(overflow, Calendars, asOf);
+        act.Should().NotThrow().Which.IsBlocked.Should().BeTrue();
+    }
+
     private static IReadOnlyList<BondRedemptionScenario> AnalyticsScenarios(SecurityDetailDto security, DateOnly asOf)
     {
         var terms = StructuredCashFlowTermsResolver.Resolve(security);
