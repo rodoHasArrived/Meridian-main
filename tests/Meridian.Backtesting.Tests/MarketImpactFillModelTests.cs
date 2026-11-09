@@ -51,6 +51,26 @@ public sealed class MarketImpactFillModelTests
     // =========================================================================
 
     [Fact]
+    public void TryFill_AllOrNoneLimit_WhenLaterSlicesCrossLimit_FillsNothing()
+    {
+        // A large limit buy is sliced; impact grows per slice, so later slices price above the
+        // limit and are dropped. With partial fills disallowed, the order must not fill at all.
+        var model = new MarketImpactFillModel(new FixedCommissionModel(0m), impactCoefficient: 0.1m, slippageBasisPoints: 0m);
+        var allOrNone = new Order(Guid.NewGuid(), "SPY", OrderType.Limit, 40_000L,
+            LimitPrice: 410m, StopPrice: null, DateTimeOffset.UtcNow, AllowPartialFills: false);
+        var partialAllowed = allOrNone with { OrderId = Guid.NewGuid(), AllowPartialFills = true };
+        var evt = MakeBarEvent("SPY", 400m, 402m, 399m, 400m, volume: 100_000L);
+
+        var partial = model.TryFill(partialAllowed, evt);
+        var aon = model.TryFill(allOrNone, evt);
+
+        partial.Fills.Sum(f => f.FilledQuantity).Should().BeInRange(1L, 39_999L,
+            "the scenario must drop some slices at the limit for the all-or-none case to matter");
+        aon.Fills.Should().BeEmpty("an all-or-none order fills completely or not at all");
+        aon.UpdatedOrder.FilledQuantity.Should().Be(0);
+    }
+
+    [Fact]
     public void TryFill_SmallMarketBuy_ProducesSingleFillAboveMidpoint()
     {
         // Order is tiny relative to bar volume → single fill

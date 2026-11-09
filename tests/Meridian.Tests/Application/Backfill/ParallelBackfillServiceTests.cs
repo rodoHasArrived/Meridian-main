@@ -1270,6 +1270,45 @@ public sealed class ParallelBackfillServiceTests : IAsyncLifetime
     /// delegates to a caller-supplied function, giving tests full control over timing and failures.
     /// Supports two delegate signatures: with or without explicit <c>from</c>/<c>to</c> parameters.
     /// </summary>
+    [Fact]
+    public async Task RunAsync_AfterRateLimit_RunsAtMostTheReducedConcurrency()
+    {
+        // The reduced concurrency after a rate limit used to be logged but never enforced: the
+        // semaphore still admitted maxConcurrent workers, so the throttled provider kept getting
+        // the full parallel load.
+        const int concurrency = 3;
+        int inFlight = 0;
+        int maxInFlight = 0;
+        var provider = new ControllableProvider("test", async (symbol, ct) =>
+        {
+            if (symbol == "RL")
+                throw new RateLimitException("Rate limited: RL");
+
+            var now = Interlocked.Increment(ref inFlight);
+            int observed;
+            do
+            {
+                observed = Volatile.Read(ref maxInFlight);
+                if (now <= observed)
+                    break;
+            }
+            while (Interlocked.CompareExchange(ref maxInFlight, now, observed) != observed);
+
+            await Task.Delay(200, ct);
+            Interlocked.Decrement(ref inFlight);
+            return new[] { MakeBar(symbol) };
+        });
+
+        var svc = new HistoricalBackfillService([provider]);
+        var request = new AppBackfillRequest("test", ["RL", "A", "B", "C", "D"], MaxConcurrentSymbols: concurrency);
+
+        var result = await svc.RunAsync(request, _pipeline, CancellationToken.None);
+
+        result.BarsWritten.Should().Be(4);
+        maxInFlight.Should().BeLessThanOrEqualTo(concurrency - 1,
+            "one rate limit lowers the concurrency from 3 to 2, and later symbols must respect it");
+    }
+
     private sealed class ControllableProvider : IHistoricalDataProvider
     {
         private readonly Func<string, DateOnly?, DateOnly?, CancellationToken, Task<IReadOnlyList<HistoricalBar>>> _fetch;

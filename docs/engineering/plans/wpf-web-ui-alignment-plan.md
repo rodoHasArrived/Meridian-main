@@ -69,6 +69,7 @@ are under `src/Meridian.Wpf/`. Assessment date: 2026-07-06; bond, cash-flow and 
 | evidence-workbench-screen (canonical mount `/reporting/evidence` per `W8-UX-CONSOL-001`; former `/accounting/evidence` and `/data/evidence` mounts redirect there) | `Views/EvidenceWorkbenchPage.xaml` + `ViewModels/EvidenceWorkbenchViewModel.cs` (Wave P1, delivered 2026-08-05) | Partial — subjects, packet completeness, proof chain, lineage, vault request lists/documents, validate, and manifest export ship over the shared evidence endpoints; document intake and reviewer accept/reject remain browser-first |
 | operator-readiness-console | `Views/OperatorReadinessConsolePage.xaml` + `ViewModels/OperatorReadinessConsoleViewModel.cs` (Wave P2, delivered 2026-08-05) | Partial — cross-lane gates, session/trust/promotion/run/break panels, and the prioritized operator work-item queue ship over the shared readiness, inbox, reconciliation, and run-summary seams; browser-only extras (per-endpoint API source strip, fund-account switcher, next-action hero) remain browser-first |
 | operations-record-release-screen | `Views/OperationsRecordReleasePage.xaml` + `ViewModels/OperationsRecordReleaseViewModel.cs` (Wave P3, delivered 2026-08-05) | Partial — the six-step release path composes the continuity workflow's gates, accounting-record summary, and close package with the browser's tone-combination gating; the source-data step and reporting recipients/distribution columns remain browser-first |
+| margin-control-center-screen (`/accounting/margin-control`; `GET /api/workstation/reconciliation/margin-control` plus snapshot certification) | none | **Gap** — no desktop surface for provider margin evidence, shadow-model comparison, or end-of-day margin certification |
 | covered-call-screen | `Views/OptionsPage.xaml` (chain viewer only) | **Gap** — no covered-call writing/roll workflow |
 | strategy-formula-workbench (withdrawn; `/strategy/quant-lab?view=formulas` now canonicalizes to the Script Lab) | `Views/QuantScriptPage.xaml` | Not a WPF parity gap, but for a different reason than before — the browser tab was a permanent "Formula catalog is not connected" placeholder and has been withdrawn, so neither lane ships the surface. Do not treat this row as delivered capability: the built `strategy-formula-workbench` component is still unmounted and still has no formula-catalog endpoint behind it. When that endpoint lands, the browser mounts first and this row becomes a real parity gap to schedule. |
 
@@ -81,7 +82,12 @@ are under `src/Meridian.Wpf/`. Assessment date: 2026-07-06; bond, cash-flow and 
    Ingestion Operations Center and Storage & Data Assurance. Consume
    `DataOperationsAssuranceDtos` and the shared workstation endpoints; do not reconstruct job
    transitions, maintenance permissions, preview fingerprints, or assurance summaries in WPF.
-3. **strategy-designer-screen** (borderline) — a visual strategy builder (cells, legs, payoff chart).
+3. **margin-control-center-screen** — a desktop view of the browser's Margin Control Center:
+   provider margin evidence, the shadow-model comparison, staleness alerts, and end-of-day
+   certification. Consume the shared `MarginControlCenterDtos` and the
+   `/api/workstation/reconciliation/margin-control` endpoints; do not recompute certification
+   eligibility or shadow margin in WPF.
+4. **strategy-designer-screen** (borderline) — a visual strategy builder (cells, legs, payoff chart).
    WPF covers authoring via `QuantScriptPage`/`BacktestPage` but has no designer canvas.
 
 Closed gaps: **evidence-workbench-screen** (Wave P1), **operator-readiness-console** (Wave P2), and **operations-continuity-screen** + **operations-record-release-screen** (Wave P3)

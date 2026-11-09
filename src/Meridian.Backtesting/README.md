@@ -11,6 +11,8 @@ last_reviewed: 2026-10-30
 
 # src/Meridian.Backtesting
 
+`MarketImpactFillModel` fills an all-or-none order completely or not at all; a limit order whose later slices cross the limit no longer returns a partial fill when partial fills are disallowed.
+
 XIRR is computed from investor-boundary flows only (initial capital out, terminal equity in); internal trade, commission and dividend flows are already inside equity. A loss of 100% or more reports an annualised return of -100% instead of aborting the metrics build.
 
 `MarketImpactFillModel` leaves an order working on a zero-volume bar (no traded liquidity) and caps

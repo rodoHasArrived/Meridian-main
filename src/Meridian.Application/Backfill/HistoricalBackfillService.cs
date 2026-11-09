@@ -27,6 +27,7 @@ public sealed class HistoricalBackfillService
     private readonly ILogger _log;
     private readonly IEventMetrics _metrics;
     private readonly BackfillJobsConfig _jobsConfig;
+    private static readonly TimeSpan AdaptiveConcurrencyRetryDelay = TimeSpan.FromMilliseconds(100);
     private readonly BackfillStatusStore? _checkpointStore;
     private readonly Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver? _symbolTimelineResolver;
 
@@ -144,10 +145,24 @@ public sealed class HistoricalBackfillService
         // Adaptive concurrency gate: starts at maxConcurrent, decrements by 1 on RateLimitException
         int currentConcurrency = maxConcurrent;
         var semaphore = new SemaphoreSlim(maxConcurrent, maxConcurrent);
+        // Workers currently past the admission gate. The semaphore caps them at maxConcurrent; the
+        // gate below also holds them at currentConcurrency, which shrinks after a rate limit. The
+        // reduced value used to be logged but never enforced, so a throttled provider kept getting
+        // the full parallel load.
+        int activeWorkers = 0;
 
         async Task ProcessSymbolAsync(string symbol, CancellationToken ct = default)
         {
             await semaphore.WaitAsync(ct).ConfigureAwait(false);
+            while (Interlocked.Increment(ref activeWorkers) > Volatile.Read(ref currentConcurrency))
+            {
+                // Over the adaptive limit: hand the slot back and retry shortly.
+                Interlocked.Decrement(ref activeWorkers);
+                semaphore.Release();
+                await Task.Delay(AdaptiveConcurrencyRetryDelay, ct).ConfigureAwait(false);
+                await semaphore.WaitAsync(ct).ConfigureAwait(false);
+            }
+
             try
             {
                 ct.ThrowIfCancellationRequested();
@@ -385,6 +400,7 @@ public sealed class HistoricalBackfillService
             }
             finally
             {
+                Interlocked.Decrement(ref activeWorkers);
                 semaphore.Release();
             }
         }

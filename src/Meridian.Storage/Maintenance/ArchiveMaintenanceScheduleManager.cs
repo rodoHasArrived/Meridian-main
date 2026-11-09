@@ -19,7 +19,6 @@ public sealed class ArchiveMaintenanceScheduleManager : IArchiveMaintenanceSched
         new(StringComparer.Ordinal);
     private readonly MaintenanceExecutionHistory _executionHistory;
     private readonly SemaphoreSlim _persistLock = new(1, 1);
-    private static readonly TimeSpan s_crossProcessLockRetryDelay = TimeSpan.FromMilliseconds(25);
 
     private static readonly JsonSerializerOptions s_jsonOptions = new()
     {
@@ -860,33 +859,8 @@ public sealed class ArchiveMaintenanceScheduleManager : IArchiveMaintenanceSched
         }
     }
 
-    private async Task<FileStream> AcquireCrossProcessLockAsync(CancellationToken ct)
-    {
-        while (true)
-        {
-            ct.ThrowIfCancellationRequested();
-            var lockDirectory = Path.GetDirectoryName(_schedulesLockPath)!;
-            if (!Directory.Exists(lockDirectory))
-            {
-                throw new DirectoryNotFoundException(
-                    $"Maintenance schedule directory '{lockDirectory}' does not exist.");
-            }
-            try
-            {
-                return new FileStream(
-                    _schedulesLockPath,
-                    FileMode.OpenOrCreate,
-                    FileAccess.ReadWrite,
-                    FileShare.None,
-                    bufferSize: 1,
-                    FileOptions.Asynchronous);
-            }
-            catch (IOException)
-            {
-                await Task.Delay(s_crossProcessLockRetryDelay, ct).ConfigureAwait(false);
-            }
-        }
-    }
+    private Task<FileStream> AcquireCrossProcessLockAsync(CancellationToken ct)
+        => MaintenanceFileLock.AcquireAsync(_schedulesLockPath, "Maintenance schedule", ct);
 
     private string QuarantineUnreadableScheduleFile()
     {
@@ -1480,38 +1454,77 @@ public sealed class MaintenanceExecutionHistory : IMaintenanceExecutionHistory
         await AtomicFileWriter.WriteAsync(_historyPath, json, ct).ConfigureAwait(false);
     }
 
-    private async Task<FileStream> AcquireCrossProcessLockAsync(CancellationToken ct)
-    {
-        while (true)
-        {
-            ct.ThrowIfCancellationRequested();
-            var lockDirectory = Path.GetDirectoryName(_historyLockPath)!;
-            if (!Directory.Exists(lockDirectory))
-            {
-                throw new DirectoryNotFoundException(
-                    $"Maintenance history directory '{lockDirectory}' does not exist.");
-            }
-            try
-            {
-                return new FileStream(
-                    _historyLockPath,
-                    FileMode.OpenOrCreate,
-                    FileAccess.ReadWrite,
-                    FileShare.None,
-                    bufferSize: 1,
-                    FileOptions.Asynchronous);
-            }
-            catch (IOException)
-            {
-                await Task.Delay(TimeSpan.FromMilliseconds(25), ct).ConfigureAwait(false);
-            }
-        }
-    }
+    private Task<FileStream> AcquireCrossProcessLockAsync(CancellationToken ct)
+        => MaintenanceFileLock.AcquireAsync(_historyLockPath, "Maintenance history", ct);
 
     private static MaintenanceExecution CloneExecution(MaintenanceExecution execution)
     {
         var json = JsonSerializer.Serialize(execution, s_jsonOptions);
         return JsonSerializer.Deserialize<MaintenanceExecution>(json, s_jsonOptions)
             ?? throw new JsonException("Maintenance execution serialization produced a null value.");
+    }
+}
+
+/// <summary>
+/// Cross-process file lock shared by the maintenance schedule and history stores.
+/// </summary>
+internal static class MaintenanceFileLock
+{
+    /// <summary>How long to keep retrying a held or failing lock file before giving up.</summary>
+    internal static readonly TimeSpan DefaultAcquireTimeout = TimeSpan.FromSeconds(30);
+
+    private static readonly TimeSpan RetryDelay = TimeSpan.FromMilliseconds(25);
+
+    /// <summary>
+    /// Opens <paramref name="lockPath"/> exclusively, retrying while another process holds it.
+    /// The retry is bounded: the stores' constructors call this with <see cref="CancellationToken.None"/>,
+    /// so an unbounded loop turned a read-only volume or an abandoned lock (both surface as
+    /// <see cref="IOException"/>) into a startup hang with no error. After
+    /// the timeout (default <see cref="DefaultAcquireTimeout"/>) a <see cref="TimeoutException"/>
+    /// names the lock and the last failure.
+    /// </summary>
+    internal static async Task<FileStream> AcquireAsync(
+        string lockPath,
+        string description,
+        CancellationToken ct,
+        TimeSpan? timeout = null)
+    {
+        var acquireTimeout = timeout ?? DefaultAcquireTimeout;
+        var deadline = DateTime.UtcNow + acquireTimeout;
+        IOException? lastFailure = null;
+        while (true)
+        {
+            ct.ThrowIfCancellationRequested();
+            var lockDirectory = Path.GetDirectoryName(lockPath)!;
+            if (!Directory.Exists(lockDirectory))
+            {
+                throw new DirectoryNotFoundException(
+                    $"{description} directory '{lockDirectory}' does not exist.");
+            }
+
+            try
+            {
+                return new FileStream(
+                    lockPath,
+                    FileMode.OpenOrCreate,
+                    FileAccess.ReadWrite,
+                    FileShare.None,
+                    bufferSize: 1,
+                    FileOptions.Asynchronous);
+            }
+            catch (IOException ex)
+            {
+                lastFailure = ex;
+            }
+
+            if (DateTime.UtcNow >= deadline)
+            {
+                throw new TimeoutException(
+                    $"{description} lock '{lockPath}' could not be acquired within {acquireTimeout.TotalSeconds:0.#} seconds: {lastFailure.Message}",
+                    lastFailure);
+            }
+
+            await Task.Delay(RetryDelay, ct).ConfigureAwait(false);
+        }
     }
 }
