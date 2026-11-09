@@ -522,6 +522,10 @@ public sealed class WorkstationServiceCollectionExtensionsTests
         // service writes its snapshot to the operator's real LocalApplicationData profile.
         var snapshotRoot = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
         services.AddSingleton(new RiskRuleRuntimeOptions(Path.Combine(snapshotRoot, "risk-rules.json")));
+        // The drawdown breaker fails closed without portfolio state, as the real host registers it.
+        services.AddSingleton(new Meridian.Execution.Services.PaperTradingPortfolio(100_000m));
+        services.AddSingleton<Meridian.Execution.Models.IPortfolioState>(sp =>
+            sp.GetRequiredService<Meridian.Execution.Services.PaperTradingPortfolio>());
 
         services.AddWorkstationSharedServices();
 

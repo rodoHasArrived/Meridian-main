@@ -318,16 +318,24 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
     }
 
     [Fact]
-    public void FullHistoricalScheduleFixture_RefusesEconomicOnlyConversionAndReplay()
+    public void FullHistoricalScheduleFixture_RefusesClassIndependently_AndRecoversOnTheClassAwareRoute()
     {
         FullEconomicTerms.GetProperty("accrual").GetProperty("businessDayConvention").GetString().Should().Be("ModifiedFollowing");
         FullEconomicTerms.GetProperty("call").GetProperty("callSchedule").GetArrayLength().Should().Be(1);
         FullEconomicTerms.GetProperty("call").GetProperty("putSchedule").GetArrayLength().Should().Be(1);
-        Action convert = () => SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(FullEconomicTerms);
-        Action replay = () => SecurityEconomicDefinitionAdapter.ToProjection(EconomicRecord(legacyAssetSpecificTerms: null));
 
+        // The class-independent bridge has no declared keys to map onto and keeps refusing.
+        Action convert = () => SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(FullEconomicTerms);
         convert.Should().Throw<InvalidOperationException>().WithMessage("*Declared schedule economic replay requires retained legacy*");
-        replay.Should().Throw<InvalidOperationException>().WithMessage("*Declared schedule economic replay requires retained legacy*");
+
+        // Since ADR-027 stage 1 increments 1 and 2, the class-aware replay recovers the declared
+        // conventions block and schedule arrays at the bond's terms versions, retaining the source.
+        var recovered = SecurityEconomicDefinitionAdapter.ToProjection(EconomicRecord(legacyAssetSpecificTerms: null));
+        recovered.AssetSpecificTerms.GetProperty(SecurityTermsEnvelope.AssetClassTermsVersionKey).GetInt32().Should().Be(3);
+        recovered.AssetSpecificTerms.GetProperty("scheduleConventions").GetProperty("businessDayConvention").GetString().Should().Be("ModifiedFollowing");
+        recovered.AssetSpecificTerms.GetProperty("callSchedule").GetArrayLength().Should().Be(1);
+        recovered.AssetSpecificTerms.GetProperty("putSchedule").GetArrayLength().Should().Be(1);
+        SecurityTermsEnvelope.TryGetRetainedEconomicTerms(recovered.AssetSpecificTerms, out _).Should().BeTrue();
     }
 
     [Theory]

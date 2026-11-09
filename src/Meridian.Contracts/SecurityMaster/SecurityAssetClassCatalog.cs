@@ -1232,6 +1232,19 @@ public sealed record SecurityAssetClassDescriptor(
     public bool UsesFaceValueLots => LotUnit == SecurityLotUnitKind.FaceValue;
 
     /// <summary>
+    /// How this class's raw quotes scale into money (remediation slice 8). The default derives
+    /// from <see cref="LotUnit"/> — face-value lots quote as a percentage of par, everything else
+    /// per unit — so nothing drifts while every catalogued class follows that rule; a class that
+    /// quotes differently overrides it here, and <c>SecurityQuoteConventionCoverageTests</c> pins
+    /// each class's declared value against the legacy unit-kind conversion so a divergence is a
+    /// visible decision, never a silent repricing.
+    /// </summary>
+    public SecurityQuoteConvention QuoteConvention { get; init; }
+        = LotUnit == SecurityLotUnitKind.FaceValue
+            ? SecurityQuoteConvention.PercentOfPar
+            : SecurityQuoteConvention.PerUnit;
+
+    /// <summary>
     /// Whether a calculated cash-flow schedule projection is expected by default. Derived from
     /// <see cref="CashFlowBehavior"/>: contractual, factor-amortizing, swap-leg and financing
     /// behaviour are calculated from terms; dividends, fund distributions and provider-supplied
