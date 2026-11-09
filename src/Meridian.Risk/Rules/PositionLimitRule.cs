@@ -14,12 +14,14 @@ public sealed class PositionLimitRule : IRiskRule
     private readonly IPositionTracker _positionTracker;
     private readonly Func<decimal?> _maxPositionSize;
     private readonly ILogger<PositionLimitRule> _logger;
+    private readonly Func<IReadOnlyList<OrderState>?>? _workingOrders;
 
     public PositionLimitRule(
         IPositionTracker positionTracker,
         decimal maxPositionSize,
-        ILogger<PositionLimitRule> logger)
-        : this(positionTracker, () => maxPositionSize, logger)
+        ILogger<PositionLimitRule> logger,
+        Func<IReadOnlyList<OrderState>?>? workingOrders = null)
+        : this(positionTracker, () => maxPositionSize, logger, workingOrders)
     {
     }
 
@@ -28,14 +30,88 @@ public sealed class PositionLimitRule : IRiskRule
     /// effect without rebuilding the rule. A <see langword="null"/> limit means no limit
     /// is configured and the rule approves.
     /// </summary>
+    /// <param name="positionTracker">Source of the filled position per symbol.</param>
+    /// <param name="maxPositionSize">The per-symbol position ceiling; <see langword="null"/> disarms the rule.</param>
+    /// <param name="logger">Logger.</param>
+    /// <param name="workingOrders">
+    /// Orders whose quantity is still working (normally
+    /// <see cref="IOrderManager.GetExposureReservingOrders"/>). The position tracker reports
+    /// filled quantity only, so without this two resting buys of 80 against a limit of 100 each
+    /// pass on their own and reach 160 when both fill. When supplied, the order is measured
+    /// against the worst case its own side can reach: a buy against the position plus every
+    /// working buy, a sell against the position less every working sell. Working orders on the
+    /// opposite side are deliberately not netted off, because nothing guarantees they fill.
+    /// </param>
     public PositionLimitRule(
         IPositionTracker positionTracker,
         Func<decimal?> maxPositionSize,
-        ILogger<PositionLimitRule> logger)
+        ILogger<PositionLimitRule> logger,
+        Func<IReadOnlyList<OrderState>?>? workingOrders = null)
     {
         _positionTracker = positionTracker ?? throw new ArgumentNullException(nameof(positionTracker));
         _maxPositionSize = maxPositionSize ?? throw new ArgumentNullException(nameof(maxPositionSize));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _workingOrders = workingOrders;
+    }
+
+    /// <summary>
+    /// Quantity still working on <paramref name="side"/> for the request's symbol, excluding the
+    /// order the request itself replaces: an amendment is revalidated under its original order
+    /// id and carries the full amended quantity, so counting the original too would charge the
+    /// same order twice. Broker-side exit legs of one parent are one-cancels-other, so each
+    /// parent contributes only its largest leg on the side.
+    /// </summary>
+    internal static decimal MeasureWorkingQuantity(
+        IReadOnlyList<OrderState>? workingOrders,
+        OrderRequest request,
+        OrderSide side)
+    {
+        if (workingOrders is not { Count: > 0 })
+        {
+            return 0m;
+        }
+
+        var total = 0m;
+        Dictionary<string, decimal>? largestLegByParent = null;
+        foreach (var order in workingOrders)
+        {
+            if (order is null
+                || order.Side != side
+                || !string.Equals(order.Symbol, request.Symbol, StringComparison.OrdinalIgnoreCase)
+                || (request.ClientOrderId is not null
+                    && string.Equals(order.OrderId, request.ClientOrderId, StringComparison.Ordinal)))
+            {
+                continue;
+            }
+
+            var remaining = Math.Abs(order.Quantity) - Math.Abs(order.FilledQuantity);
+            if (remaining <= 0m)
+            {
+                continue;
+            }
+
+            if (string.IsNullOrWhiteSpace(order.ParentOrderId))
+            {
+                total += remaining;
+                continue;
+            }
+
+            largestLegByParent ??= new Dictionary<string, decimal>(StringComparer.Ordinal);
+            if (!largestLegByParent.TryGetValue(order.ParentOrderId, out var largest) || remaining > largest)
+            {
+                largestLegByParent[order.ParentOrderId] = remaining;
+            }
+        }
+
+        if (largestLegByParent is not null)
+        {
+            foreach (var leg in largestLegByParent.Values)
+            {
+                total += leg;
+            }
+        }
+
+        return total;
     }
 
     /// <inheritdoc />
@@ -59,9 +135,20 @@ public sealed class PositionLimitRule : IRiskRule
         // The tracker contract returns an empty position for unknown symbols, but guard
         // against nullable-oblivious implementations so the pre-trade gate cannot crash.
         var currentPosition = _positionTracker.GetPosition(request.Symbol);
+        var filledQuantity = currentPosition?.Quantity ?? 0m;
+
+        // Worst case on the order's own side: every working order in the same direction fills.
+        var isSell = request.Side != OrderSide.Buy;
+        var workingSameSide = MeasureWorkingQuantity(
+            _workingOrders?.Invoke(),
+            request,
+            isSell ? OrderSide.Sell : OrderSide.Buy);
+        var effectiveQuantity = isSell
+            ? filledQuantity - workingSameSide
+            : filledQuantity + workingSameSide;
         var context = Interop.RiskInterop.CreateContext(
             request,
-            currentPosition?.Quantity ?? 0m,
+            effectiveQuantity,
             maxPositionSize.Value,
             portfolioValue: default,
             initialCapital: default,
@@ -76,6 +163,11 @@ public sealed class PositionLimitRule : IRiskRule
             var reason = decision.Reasons.Length > 0
                 ? string.Join(" ", decision.Reasons)
                 : "Position limit exceeded.";
+            if (workingSameSide > 0m)
+            {
+                reason += FormattableString.Invariant(
+                    $" Includes {workingSameSide} still working on the same side (filled position {filledQuantity}).");
+            }
             var escalated = string.Equals(decision.DecisionKind, "escalate", StringComparison.OrdinalIgnoreCase);
             _logger.LogWarning(
                 "Position limit rule rejected order for {Symbol}: {Reason}",
@@ -85,8 +177,8 @@ public sealed class PositionLimitRule : IRiskRule
             // Report the projected position the rule actually evaluated, not the current one.
             // A long 50 followed by a sell of 200 is rejected at -150 against a limit of 100;
             // recording 50 would make the evidence look like it was inside the limit.
-            var currentQuantity = currentPosition?.Quantity ?? 0m;
-            var signedOrderQuantity = request.Side == OrderSide.Sell
+            var currentQuantity = effectiveQuantity;
+            var signedOrderQuantity = isSell
                 ? -request.Quantity
                 : request.Quantity;
 

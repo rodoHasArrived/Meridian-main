@@ -339,6 +339,15 @@ public sealed record OrderState
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public string? BrokerAccountId { get; init; }
 
+    /// <summary>
+    /// The tracked order whose acknowledgement created this one, for a broker-side bracket/OCO
+    /// exit leg; <see langword="null"/> for an ordinary order. Sibling legs of one parent are
+    /// one-cancels-other, so at most one of them executes — a control that sums working orders
+    /// uses this to count the legs once rather than twice.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? ParentOrderId { get; init; }
+
     /// <summary>Strategy run that authorized this retained order, when supplied.</summary>
     public string? RunId { get; init; }
 

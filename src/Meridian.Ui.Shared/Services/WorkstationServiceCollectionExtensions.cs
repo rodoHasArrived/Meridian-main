@@ -547,7 +547,12 @@ public static class WorkstationServiceCollectionExtensions
                 rules.Add(new Meridian.Risk.Rules.PositionLimitRule(
                     positionTracker,
                     () => operatorControls?.GetSnapshot().DefaultMaxPositionSize,
-                    sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Risk.Rules.PositionLimitRule>>()));
+                    sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Risk.Rules.PositionLimitRule>>(),
+                    // Resolved per evaluation: the order manager depends on this validator, so
+                    // it cannot be captured while the rule set is being composed. The same
+                    // reserving book the exposure ceilings read, so both gates agree on what
+                    // is still working.
+                    workingOrders: () => sp.GetService<Meridian.Execution.Sdk.IOrderManager>()?.GetExposureReservingOrders()));
             }
 
             var exposureProvider = sp.GetRequiredService<Meridian.Risk.IPortfolioExposureProvider>();
