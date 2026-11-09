@@ -35,7 +35,7 @@ import {
   presentReportingAsOfDate
 } from "@/screens/reporting-screen.schedule-view-model";
 import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary, ReportWriterAggregateFunction, ReportWriterFilterOperator, ReportingRunStatusProjection, ReportingStarterKit, ReportingStarterSeedSchedule, ReportingTemplateGridMetadata, ReportingTemplateMetadata, ReportingWorkflowChangedLine, ReportingWorkflowEvidenceLink, ReportingWorkflowLineProvenance, ReportingWorkflowRecord } from "@/types";
-import { formatCount } from "@/lib/format";
+import { formatCount, formatNumber } from "@/lib/format";
 
 export type ReportingProfileBadgeTone = "primary" | "success" | "warning" | "muted";
 export type ReportingBadgeVariant = "default" | "success" | "warning" | "outline";
@@ -2690,7 +2690,7 @@ export function buildExportStatusFailure(profileName: string, error: unknown): R
 
 function buildExportResultFields(requestedProfileId: string, result: ExportAnalysisResult): ReportingDetailField[] {
   const byteLabel = formatBytes(result.totalBytes);
-  const durationLabel = `${result.durationSeconds.toLocaleString(undefined, { maximumFractionDigits: 2 })}s`;
+  const durationLabel = `${formatNumber(result.durationSeconds, { maximumFractionDigits: 2 })}s`;
   const symbolsLabel = result.symbols?.length ? result.symbols.join(", ") : "All configured symbols";
 
   return [

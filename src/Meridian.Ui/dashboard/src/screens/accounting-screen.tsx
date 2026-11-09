@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import "@/styles/accounting-screen.css";
 import { useAccountingCloseSources, type CloseWorkflowQuery } from "./accounting-screen.close-sources";
 import { useValuationMarkPreview, ValuationMarkPreviewPanel } from "./accounting-screen.mark-preview";
-import { formatCount, formatCurrency as formatCurrencyAmount } from "@/lib/format";
+import { formatCount, formatCurrency as formatCurrencyAmount, formatUtcDate, formatUtcTimestamp } from "@/lib/format";
 import { StatStrip } from "@/components/meridian/stat-strip";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
@@ -285,12 +285,7 @@ function formatExternalGlPeriodDate(value: string): string {
     return value;
   }
 
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    timeZone: "UTC"
-  }).format(date);
+  return formatUtcDate(date);
 }
 
 function formatExternalGlTimestamp(value: string | null | undefined): string {
@@ -303,16 +298,7 @@ function formatExternalGlTimestamp(value: string | null | undefined): string {
     return value;
   }
 
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-    timeZone: "UTC",
-    timeZoneName: "short"
-  }).format(date);
+  return formatUtcTimestamp(date);
 }
 
 function AccountingSystemReconciliationPanel({

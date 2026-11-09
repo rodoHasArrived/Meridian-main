@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { getSecurityMasterCoverageDraft, getSecurityMasterQualityReport } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
 import type { SecurityMasterDraftProposal, SecurityMasterQualityReport } from "@/types";
+import { formatLocalDateTime } from "@/lib/format";
 
 export type CoverageReportFetcher = typeof getSecurityMasterQualityReport;
 export type CoverageDraftFetcher = typeof getSecurityMasterCoverageDraft;
@@ -45,7 +46,7 @@ export function buildCoverageGapsModel(report: SecurityMasterQualityReport): Cov
     .sort((a, b) => a.symbol.localeCompare(b.symbol));
 
   return {
-    runAtLabel: new Date(report.runAt).toLocaleString(),
+    runAtLabel: formatLocalDateTime(new Date(report.runAt)),
     rows,
     summary:
       rows.length === 0

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatUtcDate } from "@/lib/format";
 import { LedgerTable, type LedgerRow } from "@/components/accounting/LedgerTable";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -483,5 +483,5 @@ function presentJournalDate(value: string): string {
   const date = new Date(value);
   return Number.isNaN(date.getTime())
     ? value
-    : date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+    : formatUtcDate(date);
 }
