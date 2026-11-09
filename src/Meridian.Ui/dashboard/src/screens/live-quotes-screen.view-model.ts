@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
-import { formatCount as formatCountValue, pluralizeCount } from "@/lib/format";
+import { formatCount as formatCountValue, formatNumber, pluralizeCount } from "@/lib/format";
 import { useQuotesStream } from "@/hooks/use-quotes-stream";
 import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import type { ApiRequestOptions } from "@/lib/api";
@@ -1531,10 +1531,7 @@ export function formatMarketPrice(value: number | null | undefined, fractionDigi
   if (value === null || value === undefined || Number.isNaN(value)) {
     return LIVE_QUOTES_EMPTY_VALUE;
   }
-  return value.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: fractionDigits
-  });
+  return formatNumber(value, { minimumFractionDigits: 2, maximumFractionDigits: fractionDigits, fallback: LIVE_QUOTES_EMPTY_VALUE });
 }
 
 export function formatMarketSize(value: number | null | undefined): string {
@@ -1971,13 +1968,13 @@ function formatUtcTimeWithMilliseconds(date: Date): string {
 function formatChange(value: number | null): string {
   if (value === null || !Number.isFinite(value)) return LIVE_QUOTES_EMPTY_VALUE;
   const sign = value > 0 ? "+" : value < 0 ? "" : "";
-  return `${sign}${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}`;
+  return `${sign}${formatNumber(value, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}`;
 }
 
 function formatChangePct(value: number | null): string {
   if (value === null || !Number.isFinite(value)) return LIVE_QUOTES_EMPTY_VALUE;
   const sign = value > 0 ? "+" : value < 0 ? "" : "";
-  return `${sign}${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
+  return `${sign}${formatNumber(value, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
 }
 
 function formatVolume(value: number): string {

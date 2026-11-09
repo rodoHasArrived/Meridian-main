@@ -31,8 +31,8 @@ class CentralPackageVersionTests(unittest.TestCase):
         approved_patch_overrides = {
             "Microsoft.Extensions.Configuration": "10.0.14",
             "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.14",
-            "Microsoft.Extensions.Hosting.Abstractions": "10.0.12",
-            "Microsoft.Extensions.Caching.Memory": "10.0.12",
+            "Microsoft.Extensions.Hosting.Abstractions": "10.0.14",
+            "Microsoft.Extensions.Caching.Memory": "10.0.14",
             "Microsoft.Extensions.Logging.Abstractions": "10.0.14",
             "Microsoft.Extensions.Options": "10.0.14",
         }
