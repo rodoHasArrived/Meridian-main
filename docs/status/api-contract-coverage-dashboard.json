@@ -2963,7 +2963,7 @@
     {
       "method": "GET",
       "path": "/api/packaging/download/{fileName}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/PackagingEndpoints.cs:287",
+      "source": "src/Meridian.Ui.Shared/Endpoints/PackagingEndpoints.cs:290",
       "documented": true
     },
     {

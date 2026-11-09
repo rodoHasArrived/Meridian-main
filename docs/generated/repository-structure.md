@@ -4514,6 +4514,7 @@ Meridian-main
 │   │   │   └── UniverseDiscovery.cs
 │   │   ├── FillModels
 │   │   │   ├── BarMidpointFillModel.cs
+│   │   │   ├── BarTimeInForce.cs
 │   │   │   ├── IFillModel.cs
 │   │   │   ├── MarketImpactFillModel.cs
 │   │   │   ├── OrderBookFillModel.cs
@@ -9335,6 +9336,7 @@ Meridian-main
 │   │   │   ├── KeyboardShortcutService.cs
 │   │   │   ├── LedgerReportsApiClient.cs
 │   │   │   ├── LifecycleControlClient.cs
+│   │   │   ├── LiveDataApiPayloads.cs
 │   │   │   ├── LoggingService.cs
 │   │   │   ├── MessagingService.cs
 │   │   │   ├── ModelRoutingPolicyValidator.cs
@@ -10002,6 +10004,7 @@ Meridian-main
 │   │   ├── BacktestPreflightServiceTests.cs
 │   │   ├── BacktestRequestConfigTests.cs
 │   │   ├── BacktestTrustworthinessTests.cs
+│   │   ├── BarFillModelTimeInForceTests.cs
 │   │   ├── BatchBacktestServiceTests.cs
 │   │   ├── BookedBacktestMetricsTests.cs
 │   │   ├── BracketOrderTests.cs
@@ -10778,6 +10781,7 @@ Meridian-main
 │   │   │   │   ├── CompositeHistoricalDataProviderTests.cs
 │   │   │   │   ├── CrossSourceBackfillReconciliationServiceTests.cs
 │   │   │   │   ├── GapBackfillServiceTests.cs
+│   │   │   │   ├── HistoricalBackfillDurabilityTests.cs
 │   │   │   │   ├── HistoricalBackfillEraSymbolTests.cs
 │   │   │   │   ├── HistoricalProviderContractTests.cs
 │   │   │   │   ├── ParallelBackfillServiceTests.cs
@@ -11226,6 +11230,7 @@ Meridian-main
 │   │   │   ├── Enhancements
 │   │   │   │   ├── AllocationEngineTests.cs
 │   │   │   │   ├── DerivativePositionTests.cs
+│   │   │   │   ├── EventDrivenDecouplingTests.BuyToCover.cs
 │   │   │   │   ├── EventDrivenDecouplingTests.CashFlow.cs
 │   │   │   │   ├── EventDrivenDecouplingTests.cs
 │   │   │   │   ├── EventDrivenDecouplingTests.LegacyCashFlowReplay.cs
@@ -11584,6 +11589,7 @@ Meridian-main
 │   │   │   │   ├── ConfigDirectLendingAuthorizationTests.cs
 │   │   │   │   ├── ConfigEndpointTests.cs
 │   │   │   │   ├── CoveredCallEndpointAuthorizationTests.cs
+│   │   │   │   ├── DesktopClientRouteContractTests.cs
 │   │   │   │   ├── DirectLendingEndpointMutationTests.cs
 │   │   │   │   ├── EndpointAuthorizationCoverageTests.cs
 │   │   │   │   ├── EndpointAuthorizationDeclarationTests.cs
@@ -12506,6 +12512,7 @@ Meridian-main
 │   │   │   ├── OperationsReportPackAuthorityCompositionTests.cs
 │   │   │   ├── OperatorApprovalFlowScenarioTests.cs
 │   │   │   ├── OptionReferenceEndpointsRoundtripTests.cs
+│   │   │   ├── PackagingEndpointsPathContainmentTests.cs
 │   │   │   ├── PlaidWebhookVerifierTests.cs
 │   │   │   ├── PlaidWorkstationServiceTests.cs
 │   │   │   ├── PortfolioLedgerWorkflowStatusServiceTests.cs
