@@ -2,9 +2,10 @@
 
 **Status:** draft
 **Owner:** core-team
-**Reviewed:** 2026-10-28
+**Reviewed:** 2026-11-09
 **Scope:** Engineering
-**Source evidence:** `6bcc7a0262ab0870cee32cb2cb344851e9da7e89`
+**Source evidence:** `6bcc7a0262ab0870cee32cb2cb344851e9da7e89` (slices 1–6);
+`fc848789e637f3e241698c84b5415a1a9e0ed32d` (slices 7–9 and the consolidation decision, 2026-11-09)
 
 This plan consumes the [October review consolidation](../../architecture/security-master-extensibility-review.md#consolidated-october-review-and-dispositions--2026-10-28),
 including the dated observations and corrected prescriptions from #3111, #3188, #3196, #3220,
@@ -128,3 +129,63 @@ Row classification, the WPF provenance composition and migration 062's independe
 and no unrelated operational override field disappears. Each implementation updates the rolling
 review with a dated disposition and exact validation evidence; it does not add another unchanged
 scheduled-review PR.
+
+## Slice 7 — Terms schema and form model served to the browser workstation (proposed 2026-11-09)
+
+**Evidence:** D9; the [2026-11-09 verification pass](../../architecture/security-master-extensibility-review.md#verification-pass--2026-11-09--dual-model-audit-reconciliation).
+`SecurityAssetTermsSchema` and `SecurityAssetTermFormModel` drive the WPF passport editor, but no
+`Meridian.Ui.Services` endpoint serves either, so the dashboard's term editing is limited to
+hand-built bond panels and new asset classes get desktop editors only. Serve the schema and the
+shared form model through the `Meridian.Ui.Services`/`Meridian.Ui.Shared` read-model seam and
+derive the browser editor from the same declared facts the WPF editor consumes. Define the D9
+parity contract between the browser form model and the shared term-form model at that seam, not
+as mirrored field lists.
+
+**Proof:** the browser editor renders every catalog class from the served schema; a schema field
+added to one class appears in both clients without a client-side code change; parity is asserted
+against the declared schema rather than a copied list; existing bond panels keep their behavior or
+are explicitly retired.
+
+## Slice 8 — Descriptor-owned consumer rules: sub-type, routing keywords, quote convention (proposed 2026-11-09)
+
+**Evidence:** D3, D9, D10; the 2026-11-09 verification pass. `DeriveSubType` maps 11 of 32 catalog
+classes in `Meridian.Ui.Shared`; `MultiAssetCoverageReadService` infers the asset class from
+keywords (any evidence shape containing "factor" reads as `Bond`); `LotQuantity.ValueAtPrice`
+hard-codes percent-of-par for every `FaceValue` lot. Move each rule onto declared descriptor
+facts, following the slice-6 pattern (`LotUnit`/`LotMultiplierTermKey`, conflict-field
+categories): derive the sub-type from the catalog, replace keyword inference with declared
+evidence routing or an explicit unresolved state, and add a declared quote-convention fact that
+the pricing conversion reads.
+
+**Proof:** sub-type coverage fails on an omitted class; no coverage routing depends on substring
+matching; the same face-value quote prices identically before and after for every retained
+fixture; a non-percent-of-par instrument can declare its convention without touching
+`LotQuantity` consumers.
+
+**Decision:** the quote-convention vocabulary (percent-of-par, per-unit, yield-quoted, …) needs
+domain-owner review; magnitude or class-name inference is not an accepted fallback.
+
+## Slice 9 — Tag stored legacy payloads, then retire shape detection (proposed 2026-11-09)
+
+**Evidence:** D1, ADR-024; the 2026-11-09 verification pass. Three payload families share one
+`schemaVersion` key, and untagged stored rows are classified by
+`SecurityTermsEnvelope.ResolveFormat`'s shape heuristic, which ADR-024 documents and guards.
+Backfill `termsFormat` onto stored rows using the same classification the readers already apply,
+verify that no untagged payloads remain, and only then narrow the readers to declared formats.
+The heuristic stays until the verification query returns zero.
+
+**Proof:** the backfill is idempotent and classifies exactly as the runtime heuristic; a
+verification query shows zero untagged rows; retained fixtures read identically before and after;
+after removal, a new untagged payload fails loudly rather than being guessed. The migration needs
+the repository's independent schema/storage review.
+
+## Decision — single economic model consolidation (recorded 2026-11-09, not an accepted slice)
+
+The 2026-11-09 pass records the proposal to make `SecurityTermModules` canonical, retire the
+`SecurityKind` bridge (`SecurityMasterLegacyUpgrade.fs`, `SecurityMasterMapping.cs`,
+`SecurityEconomicDefinitionAdapter`) and remove `retainedEconomicTerms`. This is a domain-owner
+decision, not a slice: it supersedes guarantees the rolling review currently pins (D1's retained
+economics and explicit refusals; slice 3's historical reads without rewriting retained terms) and
+needs a payload-upgrade design, replay-compatibility proof and an event-versioning ruling before
+any implementation starts. Slices 7–9 are deliberately shaped to stay useful under either
+outcome.

@@ -2,8 +2,8 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-11-06
-**Review history:** post-slice-6 source check 2026-11-06; slice-4 D3 decision 2026-11-05; slice 6 disposition 2026-11-04; slice-4 disposition 2026-11-04; consolidation pass 2026-10-28; resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
+**Reviewed:** 2026-11-09
+**Review history:** dual-model audit reconciliation 2026-11-09; post-slice-6 source check 2026-11-06; slice-4 D3 decision 2026-11-05; slice 6 disposition 2026-11-04; slice-4 disposition 2026-11-04; consolidation pass 2026-10-28; resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -585,6 +585,67 @@ when the ledger connection string is absent. `BondProjectionGoldenTests.Bond_Key
 the first pass's 45, needed only a reachable PostgreSQL; it is a plain `[Fact]` that uses the
 database fixture. `check-file-size.py` and `dotnet format whitespace --verify-no-changes` pass.
 Hosted checks were not run.
+
+---
+
+## Verification pass — 2026-11-09 — dual-model audit reconciliation
+
+A condensed external audit of the Security Master's dual economic model was submitted for
+reconciliation. This pass checks each of its claims against current source at
+`fc848789e637f3e241698c84b5415a1a9e0ed32d` (main after #3393) and routes its proposals.
+Documentation only: no code was changed by this pass; no tests were run.
+
+### Confirmed against current source
+
+| Claim | Evidence |
+| --- | --- |
+| Two economic models describe the same securities | `SecurityKind` (`src/Meridian.FSharp/Domain/SecurityMaster.fs:945`) carries per-class terms; `SecurityTermModules` (`src/Meridian.FSharp/Domain/SecurityTermModules.fs:439`) carries exactly 25 optional modules |
+| ~2,800 lines of upgrade/mapping bridge | `SecurityMasterLegacyUpgrade.fs` (1,120 lines) + `SecurityMasterMapping.cs` (1,692 lines) = 2,812, plus the 360-line `SecurityEconomicDefinitionAdapter.cs` |
+| Every write round-trips through the legacy model | `SecurityEconomicDefinitionAdapter.ToEconomicRecord` routes through `SecurityMasterLegacyUpgrade.toEconomicDefinition(SecurityMasterMapping.ToRecord(…))`; `CarryRetainedEconomicTerms` preserves fields the per-kind format cannot hold (`SecurityMasterService.cs` amendment paths) |
+| Call, covenant, coupon and dividend structures are defined in both models | `CallScheduleTerm`/`CallPutSchedules` (`SecurityMaster.fs:287/344`) vs `CallScheduleEntry`/`EconomicCallTerms` (`SecurityTermModules.fs:98/112`); `Covenant` (`SecurityMaster.fs:599`) vs `CovenantTerms`; `BondCouponStructure` (`SecurityMaster.fs:219`) vs `CouponTerms`/`FloatingRateTerms`; `DividendType` (`SecurityMaster.fs:55`) vs `DividendFrequency`/`DividendScheduleTerms` (`SecurityTermModules.fs:250/259`) |
+| `DeriveSubType` maps a fixed subset of the catalog | 11 arms (`src/Meridian.Ui.Shared/Services/SecurityMasterSecurityReferenceLookup.cs:176`) |
+| The coverage read model infers the class from keywords | `MultiAssetCoverageReadService.cs:441` returns `Bond` for any evidence shape containing "factor" |
+| Face-value quoting is hard-coded, and no descriptor declares a quote convention | `LotQuantity.ValueAtPrice` divides by 100 for every `FaceValue` lot (`src/Meridian.Contracts/SecurityMaster/LotQuantity.cs:35`); `AssetClassDescriptor` carries no quoting fact |
+| The terms schema reaches the desktop only | `SecurityAssetTermsSchema`/`SecurityAssetTermFormModel` are consumed by the WPF `SecurityPassportEditorViewModel`; no reference exists in `src/Meridian.Ui.Services/` or the dashboard, whose bond panels (`bond-analytics-panel.tsx`, `bond-reference-ladder-panel.tsx`) are hand-built |
+| Three payload families share one version key; untagged payloads are shape-detected | `SecurityTermsEnvelope.ResolveFormat` (`SecurityTermsEnvelope.cs:106`) classifies untagged documents by shape, as ADR-024 documents and guards |
+| Adding a class is code-heavy; `CustomAsset` is the only no-code route | `CapFloor` appears in 11 source files plus migration `047_rate_option_and_note_terms_projections.sql` and the schema manifests |
+
+### Corrections to the submitted audit
+
+- The catalog holds **32** asset classes, not 34 (`AssetClassRegistry` descriptors; the slice-6
+  disposition's "32 of 32" projection count). `DeriveSubType` therefore maps 11 of 32.
+- "No test lists everything a new asset class must implement" is **partly stale**: slice 6 landed
+  omission-failing coverage for reverse instrument mapping and readiness projectors, and
+  `SecurityAssetTermsSchemaRoundTripTests` walks every declared class. What remains missing is a
+  single new-class touchpoint checklist spanning codecs, projections, validators, lookups and UI
+  seams; the codec arms also remain hand-written (D1).
+
+### Disposition of the audit's five priorities
+
+1. **Merge into one economic model (modules canonical; retire the bridge and
+   `retainedEconomicTerms`).** Not accepted as a slice. This is the audit's largest proposal and it
+   supersedes guarantees this record already pins: D1 requires codec work to preserve retained
+   economic fields and explicit refusals, and slice 3 made historical reads compatible *without*
+   rewriting retained terms. Consolidation first needs a domain-owner decision, a payload-upgrade
+   and backfill design, and replay-compatibility proof. Recorded as the consolidation decision item
+   in the remediation plan.
+2. **Expose the terms schema and form model through the shared API; build the browser editors from
+   it.** Consistent with D9's open parity-contract gap. Proposed as remediation slice 7.
+3. **Move the sub-type lookup, keyword inference and quoting rule into the asset-class descriptors,
+   adding a quote-convention fact.** Extends D3/D9 and follows the pattern slice 6 used for
+   `LotUnit`/`LotMultiplierTermKey` and conflict-field categories. Proposed as remediation slice 8.
+4. **Generate per-class projections from the registry; add a touchpoint test.** Partly superseded:
+   the projection registry and the CustomAsset projection (migration 064) already cover 32 of 32,
+   and the slice-6 ratchet tests fail on omission. The remaining substance — generated or
+   schema-asserted codec arms and a single new-class checklist — stays under D1 and the slice-6
+   codec-generation caveats.
+5. **Tag the remaining untagged payloads; retire shape detection.** ADR-024 already guards the
+   formats; the shape heuristic stays load-bearing until stored rows are tagged. Proposed as
+   remediation slice 9; the backfill migration requires the independent schema/storage review.
+
+Proposed slices 7–9 and the consolidation decision item were added to the
+[remediation working plan](../engineering/plans/security-master-review-remediation-plan.md) by this
+pass.
 
 ---
 
