@@ -307,6 +307,19 @@ internal static class SecurityMasterMapping
         // The guard sees the stored or submitted payload; the decoder reads it at the class's current
         // terms version (ADR-024). Identity steps return the same element.
         json = SecurityAssetClassTermsUpgrader.UpgradeForRead(assetClass, json);
+        if (mode == SecurityKindMappingMode.Write)
+        {
+            // ADR-027 stage 3 (S3-B): the schema's declared read aliases are part of the submission
+            // contract — the registry DTOs, the field-edit canonicalizer and the day-count guard all
+            // advertise them — but the per-class decode below reads canonical spellings. Rewriting
+            // the submitted document once, from the schema table, makes every declared alias land on
+            // its canonical key for every class (the S3-B sweep found seven classes whose declared
+            // aliases the decode ignored, silently dropping optional values submitted under an
+            // advertised spelling). An ambiguous submission — the canonical key and an alias, or two
+            // aliases, carrying different values — refuses rather than letting key order decide.
+            // Read mode is untouched: stored rows are canonical by construction.
+            json = CanonicalizeDeclaredAliases(assetClass, json);
+        }
         var terms = ResolveAssetTermsJson(json);
         SecurityEconomicScheduleValidation? economicSchedules = null;
         if (assetClass is "Bond" or "DirectLoan" or "StructuredCredit")
@@ -1330,6 +1343,67 @@ internal static class SecurityMasterMapping
 
     private static bool SupportsProfileBackedTerms(string assetClass)
         => SecurityAssetClassCatalog.GetOrDefault(assetClass).SupportsProfileBackedTerms;
+
+    /// <summary>
+    /// Rewrites a submitted asset-terms document so every value lands on its schema-canonical key:
+    /// for each declared root field whose canonical key is absent, a value submitted under one of
+    /// the field's declared aliases moves to the canonical key. Two spellings of the same field
+    /// carrying different raw values refuse — an ambiguous submission must not be resolved by key
+    /// order; identical duplicates collapse to the canonical spelling. Undeclared keys pass
+    /// through untouched (the codec's existing posture), and a document that already uses only
+    /// canonical spellings comes back unchanged.
+    /// </summary>
+    private static JsonElement CanonicalizeDeclaredAliases(string assetClass, JsonElement json)
+    {
+        if (json.ValueKind != JsonValueKind.Object || !SecurityAssetTermsSchema.TryGetFields(assetClass, out var fields))
+        {
+            return json;
+        }
+
+        System.Text.Json.Nodes.JsonObject? rewritten = null;
+        foreach (var field in fields)
+        {
+            if (field.Aliases.Count == 0)
+            {
+                continue;
+            }
+
+            string? presentSpelling = json.TryGetProperty(field.Key, out _) ? field.Key : null;
+            foreach (var alias in field.Aliases)
+            {
+                if (!json.TryGetProperty(alias, out var aliasValue))
+                {
+                    continue;
+                }
+
+                if (presentSpelling is not null)
+                {
+                    var existing = (rewritten?[field.Key]?.ToJsonString())
+                        ?? (json.TryGetProperty(presentSpelling, out var presentValue) ? presentValue.GetRawText() : null);
+                    if (!string.Equals(NormalizeRawJson(existing), NormalizeRawJson(aliasValue.GetRawText()), StringComparison.Ordinal))
+                    {
+                        throw new InvalidOperationException(
+                            $"Ambiguous '{field.Key}' submission for asset class '{assetClass}': '{presentSpelling}' and " +
+                            $"'{alias}' carry different values. Submit one spelling of the field.");
+                    }
+
+                    rewritten ??= System.Text.Json.Nodes.JsonNode.Parse(json.GetRawText())!.AsObject();
+                    rewritten.Remove(alias);
+                    continue;
+                }
+
+                rewritten ??= System.Text.Json.Nodes.JsonNode.Parse(json.GetRawText())!.AsObject();
+                rewritten.Remove(alias);
+                rewritten[field.Key] = System.Text.Json.Nodes.JsonNode.Parse(aliasValue.GetRawText());
+                presentSpelling = alias;
+            }
+        }
+
+        return rewritten is null ? json : JsonSerializer.SerializeToElement(rewritten);
+    }
+
+    private static string? NormalizeRawJson(string? rawJson)
+        => rawJson is null ? null : System.Text.Json.Nodes.JsonNode.Parse(rawJson)?.ToJsonString();
 
     private static JsonElement ResolveAssetTermsJson(JsonElement json)
         => json.TryGetProperty("profileFields", out var profileFields) && profileFields.ValueKind == JsonValueKind.Object
