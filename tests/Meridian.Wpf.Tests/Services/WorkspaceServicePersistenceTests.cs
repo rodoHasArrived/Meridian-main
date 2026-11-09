@@ -137,4 +137,61 @@ public sealed class WorkspaceServicePersistenceTests : IDisposable
         created.Name.Should().Be("Desk A");
         service.Workspaces.Should().Contain(workspace => workspace.Name == "Desk A");
     }
+
+    [Fact]
+    public async Task SynchronousReaders_AreNotBlockedWhileTheWorkspaceFileIsBeingRead()
+    {
+        var service = (WorkspaceService)Activator.CreateInstance(typeof(WorkspaceService), nonPublic: true)!;
+        WorkspaceService.SetSettingsFilePathOverrideForTests(_settingsFilePath);
+        Directory.CreateDirectory(Path.GetDirectoryName(_settingsFilePath)!);
+        service.ResetForTests();
+
+        var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var release = new TaskCompletionSource<string?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        service.PersistReaderForTests = _ =>
+        {
+            started.TrySetResult();
+            return release.Task;
+        };
+
+        var load = service.LoadWorkspacesAsync();
+        await started.Task.WaitAsync(Patience);
+
+        // The initial read is in flight. A synchronous read must return now (nothing is loaded
+        // yet) instead of waiting for the disk.
+        var workspaces = await Task.Run(() => service.Workspaces).WaitAsync(Patience);
+        workspaces.Should().BeEmpty();
+        load.IsCompleted.Should().BeFalse();
+
+        release.SetResult(null);
+        await load.WaitAsync(Patience);
+        service.Workspaces.Should().NotBeEmpty("with no file, the load falls back to the built-in workspaces");
+    }
+
+    [Fact]
+    public async Task Load_ReadsBackWhatAnEarlierInstanceSaved()
+    {
+        var first = CreateService();
+        await first.CreateWorkspaceAsync("Desk A", "persisted", WorkspaceCategory.Custom);
+
+        var second = (WorkspaceService)Activator.CreateInstance(typeof(WorkspaceService), nonPublic: true)!;
+        second.ResetForTests();
+        await second.LoadWorkspacesAsync();
+
+        second.Workspaces.Should().Contain(workspace => workspace.Name == "Desk A");
+    }
+
+    [Fact]
+    public async Task FirstOperation_LoadsThePersistedStateWithoutAnExplicitLoad()
+    {
+        var first = CreateService();
+        await first.CreateWorkspaceAsync("Desk A", "persisted", WorkspaceCategory.Custom);
+
+        // No LoadWorkspacesAsync: the first gated operation must initialize from the file itself.
+        var second = (WorkspaceService)Activator.CreateInstance(typeof(WorkspaceService), nonPublic: true)!;
+        second.ResetForTests();
+        await second.CreateWorkspaceAsync("Desk B", "second instance", WorkspaceCategory.Custom);
+
+        second.Workspaces.Select(workspace => workspace.Name).Should().Contain(["Desk A", "Desk B"]);
+    }
 }
