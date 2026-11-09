@@ -129,7 +129,9 @@ public sealed class PositionLimitRule : IRiskRule
 
         var isBuy = request.Side == OrderSide.Buy;
         var working = 0m;
-        foreach (var order in orderManager.GetExposureReservingOrders())
+        // Unit reservations: a pending amendment counts as its larger-quantity outcome, since
+        // either may still execute and this rule measures shares, not value.
+        foreach (var order in orderManager.GetUnitReservingOrders())
         {
             if (!string.Equals(order.Symbol, request.Symbol, StringComparison.OrdinalIgnoreCase))
                 continue;

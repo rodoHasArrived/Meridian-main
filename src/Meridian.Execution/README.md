@@ -11,6 +11,8 @@ last_reviewed: 2026-10-28
 
 # src/Meridian.Execution
 
+`OrderManagementSystem.GetUnitReservingOrders` reserves the larger-quantity outcome of each pending amendment (the original order still executes if the amendment fails); `GetExposureReservingOrders` keeps the larger-value outcome.
+
 Paper fills retain security-definition lot units and multipliers in execution reports, so fund units
 and contracts with multiplier one preserve their denomination after session replay. Legacy reports
 without class or lot metadata retain the existing share assumption. Contradictory units on an open

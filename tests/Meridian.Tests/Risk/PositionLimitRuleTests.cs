@@ -221,7 +221,7 @@ public sealed class PositionLimitRuleTests
     private static PositionLimitRule CreateSutWithBook(params OrderState[] book)
     {
         var orderManager = new Mock<IOrderManager>();
-        orderManager.Setup(m => m.GetExposureReservingOrders()).Returns(book);
+        orderManager.Setup(m => m.GetUnitReservingOrders()).Returns(book);
         return new PositionLimitRule(
             new Mock<IPositionTracker>().Object,
             () => DefaultMaxPositionSize,
