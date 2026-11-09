@@ -981,13 +981,28 @@ public sealed class SecurityTermsVersioningTests
             sql.Should().Contain($"'{format}'", $"the backfill and check constraint must know the '{format}' family");
         }
 
-        foreach (var module in SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.EconomicTermsModules)
+        // The shape rule's vocabulary is frozen with the untagged population it classifies:
+        // modules the serializer learned after the termsFormat tag existed (ADR-027 stage 1
+        // increment 5) never appear untagged, so neither the rule nor this shipped migration
+        // consults them.
+        SecurityTermsVersioningTests_ShapeRuleIsFrozen();
+        foreach (var module in SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.ShapeRuleModules)
         {
             sql.Should().Contain($"'{module}'", $"an untagged v2 document carrying '{module}' is classified economic by ResolveFormat");
         }
 
         sql.Should().Contain($"'{SecurityTermsEnvelope.FormatKey}'");
         sql.Should().Contain($"= {EconomicTermsSchema.Current}", "only the reserved economic codec version routes untagged rows to the economic family");
+    }
+
+    private static void SecurityTermsVersioningTests_ShapeRuleIsFrozen()
+    {
+        // The frozen pre-tag inventory, pinned by count and by membership: a module can never be
+        // added to the shape rule (new modules are always tagged), and every shape-rule module is
+        // still part of the serializer's inventory.
+        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.ShapeRuleModules.Should().HaveCount(14);
+        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.ShapeRuleModules.Should().BeSubsetOf(
+            SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.EconomicTermsModules);
     }
 
     [Fact]

@@ -61,9 +61,15 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     /// The economic-terms modules the serializer emits that this conversion does not read. Listed
     /// here, rather than left implicit, so the loss is enumerated in code and in the coverage test
     /// (<c>SecurityEconomicTermsV2BridgeCoverageTests</c>) instead of discovered in a restatement.
+    /// The last eleven joined when ADR-027 stage 1 increment 5 taught the serializer to emit them;
+    /// the class-aware flattening recovers parts of some dropped modules into declared flat homes
+    /// (call schedules, accrual conventions, factor entries), and the rest ride in
+    /// <c>retainedEconomicTerms</c> until their own recovery step.
     /// </summary>
     public static IReadOnlyList<string> DroppedModules { get; } =
-        ["redemption", "call", "auction", "sweep", "financing", "issuer", "equityBehavior", "fund", "structuredProduct"];
+        ["redemption", "call", "auction", "sweep", "financing", "issuer", "equityBehavior", "fund", "structuredProduct",
+         "floatingRate", "tradingParameters", "creditRating", "depositaryReceipt", "dividendSchedule", "covenants",
+         "esg", "venue", "multiCalendar", "inflationLinked", "sinkingFund"];
 
     /// <summary>
     /// Every module key an economic-terms document can carry: the union of the bridged and dropped
@@ -72,6 +78,19 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     /// </summary>
     public static IReadOnlyList<string> EconomicTermsModules { get; } =
         [.. BridgedModules, .. DroppedModules];
+
+    /// <summary>
+    /// The module keys the historical shape rule consults: exactly the modules the economic
+    /// serializer wrote before <see cref="SecurityTermsEnvelope.FormatKey"/> existed. Untagged
+    /// payloads predate the tag, so only these keys can mark one as economic; modules serialized
+    /// later (ADR-027 stage 1 increment 5) never appear untagged and are deliberately not
+    /// consulted — the rule stays frozen with the population it classifies, as does migration
+    /// 042's SQL mirror of it. This list never grows; it retires with the shape rule itself
+    /// (ADR-024 decision 5).
+    /// </summary>
+    public static IReadOnlyList<string> ShapeRuleModules { get; } =
+        ["maturity", "coupon", "payment", "accrual", "discount",
+         "redemption", "call", "auction", "sweep", "financing", "issuer", "equityBehavior", "fund", "structuredProduct"];
 
     public int FromSchemaVersion => EconomicTermsSchema.Current;
 
@@ -109,7 +128,7 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     /// <summary>
     /// The historical shape rule for untagged payloads: an object stamped
     /// <see cref="EconomicTermsSchema.Current"/> that carries at least one of the
-    /// <see cref="EconomicTermsModules"/> keys. The two payload families share one
+    /// <see cref="ShapeRuleModules"/> keys. The two payload families share one
     /// <c>schemaVersion</c> key, so the integer alone cannot tell a v2 economic-terms document from
     /// a (reserved, never declared) flat v2; the module keys can, because the economic serializer
     /// always writes them and a flat document never does. Payloads written after
@@ -123,7 +142,7 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             return false;
         }
 
-        foreach (var module in EconomicTermsModules)
+        foreach (var module in ShapeRuleModules)
         {
             if (payload.TryGetProperty(module, out _))
             {
