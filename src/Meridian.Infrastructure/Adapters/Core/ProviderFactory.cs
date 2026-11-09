@@ -74,10 +74,27 @@ public sealed partial class ProviderFactory
         CancellationToken ct = default)
         => CreateAndRegisterAllAsync(registry, ct, includeModuleOwned: true);
 
-    internal Task<ProviderCreationResult> CreateAndRegisterAllAsync(
+    internal async Task<ProviderCreationResult> CreateAndRegisterAllAsync(
         ProviderRegistry registry,
         CancellationToken ct,
         bool includeModuleOwned)
+    {
+        ArgumentNullException.ThrowIfNull(registry);
+
+        // Read the credentials first, without blocking; construction below then uses them.
+        var prepared = await PrepareCredentialsAsync(ct).ConfigureAwait(false);
+        using (prepared.Activate())
+        {
+            return CreateAndRegisterAll(registry, includeModuleOwned);
+        }
+    }
+
+    /// <summary>
+    /// Synchronous construction and registration. It performs no credential storage I/O when the
+    /// caller is inside a scope prepared by <see cref="PrepareCredentialsAsync"/>; a
+    /// dependency-injection factory, which cannot await, calls this directly.
+    /// </summary>
+    internal ProviderCreationResult CreateAndRegisterAll(ProviderRegistry registry, bool includeModuleOwned)
     {
         ArgumentNullException.ThrowIfNull(registry);
 
@@ -109,8 +126,15 @@ public sealed partial class ProviderFactory
             result.BackfillProviders.Count,
             result.SymbolSearchProviders.Count);
 
-        return Task.FromResult(result);
+        return result;
     }
+
+    /// <summary>
+    /// Asynchronously reads the credentials provider construction will need. Await it at an
+    /// asynchronous entry point and construct inside <see cref="IPreparedProviderCredentials.Activate"/>.
+    /// </summary>
+    public ValueTask<IPreparedProviderCredentials> PrepareCredentialsAsync(CancellationToken ct = default)
+        => _credentialResolver.PrepareAsync(providerTypes: null, ct);
 
     /// <summary>
     /// Creates all configured backfill providers.
@@ -119,11 +143,35 @@ public sealed partial class ProviderFactory
         => CreateProviders<IHistoricalDataProvider>(static p => p.Priority, "backfill");
 
     /// <summary>
+    /// Creates all configured backfill providers, reading their credentials without blocking.
+    /// </summary>
+    public async Task<IReadOnlyList<IHistoricalDataProvider>> CreateBackfillProvidersAsync(CancellationToken ct = default)
+    {
+        var prepared = await PrepareCredentialsAsync(ct).ConfigureAwait(false);
+        using (prepared.Activate())
+        {
+            return CreateBackfillProviders();
+        }
+    }
+
+    /// <summary>
     /// Creates all configured symbol search providers.
     /// Symbol search uses the same credentials as backfill providers.
     /// </summary>
     public IReadOnlyList<ISymbolSearchProvider> CreateSymbolSearchProviders()
         => CreateProviders<ISymbolSearchProvider>(static p => p.Priority, "symbol search");
+
+    /// <summary>
+    /// Creates all configured symbol search providers, reading their credentials without blocking.
+    /// </summary>
+    public async Task<IReadOnlyList<ISymbolSearchProvider>> CreateSymbolSearchProvidersAsync(CancellationToken ct = default)
+    {
+        var prepared = await PrepareCredentialsAsync(ct).ConfigureAwait(false);
+        using (prepared.Activate())
+        {
+            return CreateSymbolSearchProviders();
+        }
+    }
 
     private IReadOnlyList<T> CreateProviders<T>(
         Func<T, int> priority,
@@ -482,7 +530,63 @@ public sealed class ProviderCreationResult
 /// </summary>
 public interface IProviderCredentialResolver
 {
+    /// <summary>
+    /// Builds the credential context a provider is constructed with. Provider construction is
+    /// synchronous (dependency-injection factories and adapter constructors cannot await), so
+    /// this never awaits. A resolver backed by storage serves it from credentials an enclosing
+    /// <see cref="PrepareAsync"/> read; with none prepared it has to wait for the read.
+    /// </summary>
     ICredentialContext CreateContext(Type providerType, IReadOnlyDictionary<string, string?>? configuredValues = null);
+
+    /// <summary>
+    /// Asynchronously reads everything <see cref="CreateContext"/> will need, so the synchronous
+    /// construction that follows does no storage I/O. Await this at an asynchronous entry point,
+    /// then construct providers inside <see cref="IPreparedProviderCredentials.Activate"/>:
+    /// <code>
+    /// var prepared = await resolver.PrepareAsync(ct: ct);
+    /// using (prepared.Activate())
+    /// {
+    ///     // synchronous provider construction
+    /// }
+    /// </code>
+    /// The prepared credentials are a point-in-time read and are only valid for the
+    /// construction that immediately follows; do not keep them.
+    /// </summary>
+    /// <param name="providerTypes">
+    /// Provider types about to be constructed, or <see langword="null"/> for every provider the
+    /// resolver manages.
+    /// </param>
+    /// <param name="ct">Cancellation token.</param>
+    ValueTask<IPreparedProviderCredentials> PrepareAsync(
+        IReadOnlyCollection<Type>? providerTypes = null,
+        CancellationToken ct = default)
+        => ValueTask.FromResult(PreparedProviderCredentials.None);
+}
+
+/// <summary>Credentials read ahead of a synchronous provider construction.</summary>
+public interface IPreparedProviderCredentials
+{
+    /// <summary>
+    /// Makes the prepared credentials visible to <see cref="IProviderCredentialResolver.CreateContext"/>
+    /// on the current execution flow until the returned scope is disposed.
+    /// </summary>
+    IDisposable Activate();
+}
+
+/// <summary>Shared no-op for resolvers that need no storage read.</summary>
+public static class PreparedProviderCredentials
+{
+    /// <summary>Nothing to prepare: <see cref="IPreparedProviderCredentials.Activate"/> does nothing.</summary>
+    public static IPreparedProviderCredentials None { get; } = new NoPreparedCredentials();
+
+    private sealed class NoPreparedCredentials : IPreparedProviderCredentials, IDisposable
+    {
+        public IDisposable Activate() => this;
+
+        public void Dispose()
+        {
+        }
+    }
 }
 
 /// <summary>

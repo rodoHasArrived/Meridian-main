@@ -52,12 +52,23 @@ public static partial class ProviderServiceExtensions
     /// <param name="serviceProvider">The built service provider.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>The provider creation result.</returns>
-    public static Task<ProviderCreationResult> InitializeProvidersAsync(
+    public static async Task<ProviderCreationResult> InitializeProvidersAsync(
         this IServiceProvider serviceProvider,
         CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
-        var registry = serviceProvider.GetRequiredService<ProviderRegistry>();
+
+        // Read provider credentials asynchronously, then resolve the registry inside the prepared
+        // scope. The registry is built by a dependency-injection factory, which cannot await; with
+        // the credentials already in hand its construction does no storage I/O.
+        var prepared = await serviceProvider.GetRequiredService<ProviderFactory>()
+            .PrepareCredentialsAsync(ct).ConfigureAwait(false);
+        ProviderRegistry registry;
+        using (prepared.Activate())
+        {
+            registry = serviceProvider.GetRequiredService<ProviderRegistry>();
+        }
+
         // Resolving the registry initializes it once. Repeated startup calls must not construct
         // and discard additional adapters with their own clients, timers, or connections.
         var result = new ProviderCreationResult();
@@ -65,7 +76,49 @@ public static partial class ProviderServiceExtensions
             .Select(provider => ProviderIdentity.NormalizeId(provider.ProviderId)));
         result.SymbolSearchProviders.AddRange(registry.GetProviders<ISymbolSearchProvider>()
             .Select(provider => ProviderIdentity.NormalizeId(provider.ProviderId)));
-        return Task.FromResult(result);
+        return result;
+    }
+
+    /// <summary>
+    /// Registers all backfill providers, reading their credentials without blocking.
+    /// </summary>
+    public static async Task<IReadOnlyList<IHistoricalDataProvider>> RegisterBackfillProvidersAsync(
+        this ProviderRegistry registry,
+        AppConfig config,
+        IProviderCredentialResolver credentialResolver,
+        ILogger? log = null,
+        CancellationToken ct = default)
+    {
+        var factory = new ProviderFactory(config, credentialResolver, log);
+        var providers = await factory.CreateBackfillProvidersAsync(ct).ConfigureAwait(false);
+
+        foreach (var provider in providers)
+        {
+            registry.Register(provider);
+        }
+
+        return providers;
+    }
+
+    /// <summary>
+    /// Registers all symbol search providers, reading their credentials without blocking.
+    /// </summary>
+    public static async Task<IReadOnlyList<ISymbolSearchProvider>> RegisterSymbolSearchProvidersAsync(
+        this ProviderRegistry registry,
+        AppConfig config,
+        IProviderCredentialResolver credentialResolver,
+        ILogger? log = null,
+        CancellationToken ct = default)
+    {
+        var factory = new ProviderFactory(config, credentialResolver, log);
+        var providers = await factory.CreateSymbolSearchProvidersAsync(ct).ConfigureAwait(false);
+
+        foreach (var provider in providers)
+        {
+            registry.Register(provider);
+        }
+
+        return providers;
     }
 
     /// <summary>

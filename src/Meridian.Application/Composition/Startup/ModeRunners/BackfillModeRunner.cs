@@ -87,7 +87,15 @@ public sealed class BackfillModeRunner
     {
         var backfillRequest = SharedStartupHelpers.BuildBackfillRequest(ctx.Config, ctx.CliArgs);
 
-        var backfillProviders = _providerFactory(backfillHost);
+        // The provider factory delegate is synchronous. Read the credentials first so the
+        // construction it performs does not wait on credential storage.
+        IReadOnlyList<IHistoricalDataProvider> backfillProviders;
+        var preparedCredentials = await backfillHost.PrepareProviderCredentialsAsync(ct).ConfigureAwait(false);
+        using (preparedCredentials.Activate())
+        {
+            backfillProviders = _providerFactory(backfillHost);
+        }
+
         var requestedProvider = backfillRequest.Provider?.Trim();
         var useCompositeProvider = (ctx.Config.Backfill?.EnableFallback ?? true)
             && (string.IsNullOrWhiteSpace(requestedProvider)

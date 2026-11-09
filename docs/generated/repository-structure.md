@@ -11549,6 +11549,7 @@ Meridian-main
 │   │   │   │   ├── PolygonSequenceIntegrityTests.cs
 │   │   │   │   ├── PolygonSubscriptionTests.cs
 │   │   │   │   ├── PolygonTimestampIntegrityTests.cs
+│   │   │   │   ├── ProviderCredentialPreparationWiringTests.cs
 │   │   │   │   ├── ProviderDataQualityValidatorTests.cs
 │   │   │   │   ├── ProviderFactoryCredentialContextTests.cs
 │   │   │   │   ├── ProviderFactoryCredentialIsolationTests.cs
@@ -11564,6 +11565,7 @@ Meridian-main
 │   │   │   │   ├── RobinhoodReadOnlyBrokerageSyncAdapterTests.cs
 │   │   │   │   ├── RobinhoodSymbolSearchProviderTests.cs
 │   │   │   │   ├── StooqHistoricalDataProviderTests.cs
+│   │   │   │   ├── StoredProviderCredentialPreparationTests.cs
 │   │   │   │   ├── StreamingFailoverServiceTests.cs
 │   │   │   │   ├── SyntheticHistoricalProviderContractTests.cs
 │   │   │   │   ├── SyntheticMarketDataProviderTests.cs

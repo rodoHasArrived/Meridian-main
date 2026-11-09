@@ -212,6 +212,32 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
     }
 
     /// <summary>
+    /// Reads provider credentials ahead of a synchronous construction. Set by the composition
+    /// that owns the provider factory; <see langword="null"/> when nothing needs reading.
+    /// </summary>
+    public Func<CancellationToken, ValueTask<IPreparedProviderCredentials>>? CredentialPreparer { get; set; }
+
+    /// <summary>
+    /// Creates a streaming client like <see cref="CreateStreamingClient(string)"/>, but reads the
+    /// provider's credentials asynchronously first, so the construction does not wait on
+    /// credential storage. Use this from asynchronous code.
+    /// </summary>
+    public async Task<IMarketDataClient> CreateStreamingClientAsync(string providerId, CancellationToken ct = default)
+    {
+        var prepared = CredentialPreparer is { } prepare
+            ? await prepare(ct).ConfigureAwait(false)
+            : PreparedProviderCredentials.None;
+        using (prepared.Activate())
+        {
+            return CreateStreamingClient(providerId);
+        }
+    }
+
+    /// <summary>Asynchronous counterpart of <see cref="CreateStreamingClient(DataSourceKind)"/>.</summary>
+    public Task<IMarketDataClient> CreateStreamingClientAsync(DataSourceKind kind, CancellationToken ct = default)
+        => CreateStreamingClientAsync(kind.ToString().ToLowerInvariant(), ct);
+
+    /// <summary>
     /// Backward-compatible shim. Converts <paramref name="kind"/> to its lower-case name and
     /// delegates to <see cref="CreateStreamingClient(string)"/>.
     /// </summary>

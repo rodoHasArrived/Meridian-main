@@ -595,6 +595,15 @@ Catalog-managed providers resolve one complete credential-store record; missing 
 failures do not fall through to configured values or the legacy resolver. Only unmanaged provider
 types use that legacy resolver. A scoped runtime requires a catalog-managed provider and never
 falls back to provider-wide, config, or environment credentials when its scoped record is missing.
+
+Provider construction is synchronous, so the resolver reads ahead instead of blocking. An
+asynchronous caller awaits `IProviderCredentialResolver.PrepareAsync`, which reads the selected
+vault records under one ownership lease, and then constructs providers inside
+`IPreparedProviderCredentials.Activate()`. `ProviderFactory.CreateAndRegisterAllAsync`,
+`InitializeProvidersAsync`, `ProviderRegistry.CreateStreamingClientAsync`, and the collector and
+backfill mode runners follow this order. A record that fails to read fails only its own provider,
+at construction. A synchronous resolution outside a prepared scope (a lazily resolved DI singleton,
+the web host's first registry resolution) still performs one blocking read on the thread pool.
 The credential store owns any permitted provider-wide environment fallback policy. Browser and WPF
 credential flows must not write process, user, or machine environment variables.
 
