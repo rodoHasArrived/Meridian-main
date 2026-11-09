@@ -1,6 +1,6 @@
 # Direct Lending: Term-Driven Excess Payment Application
 
-**Status:** Approved design (owner decisions recorded 2026-11-02). Implementation proceeds by [increment](#increments); increments 1 (terms rule), 2 (balances and migration 010) and 3 (excess routing) are implemented.
+**Status:** Approved design (owner decisions recorded 2026-11-02). Implementation proceeds by [increment](#increments); increments 1 (terms rule), 2 (balances and migration 010), 3 (excess routing) and 4 (accrual consumption) are implemented.
 **Owner:** Direct Lending + Ledger
 **Reviewed:** 2026-11-02
 **Registered in:** [`docs/engineering/blueprints/README.md`](README.md)
@@ -158,6 +158,16 @@ InterestAccruedUnpaid += dailyInterest - consumed
 
 The accrual event records `prepaidInterestConsumed`, and the journal reflects it (§5). PIK
 accrual is left unchanged: PIK interest does not consume prepaid interest ([Decision 4](#decisions)).
+
+**As implemented (increment 4):** `dailyInterest` is the day's *cash* interest (`InterestAmount`,
+after any PIK share), so a PIK capitalization policy's deferred share and the legacy PIK toggle
+consume nothing. The consumed amount is on the F# `DailyAccrualDecision` and the event payload
+(`prepaidInterestConsumed`), not on `DailyAccrualEntryDto`, which is also stored in
+`accrual_entry_projection` and would need a column. Entry income (`InterestAmount`) is unchanged.
+The rebuilder treats accrual events without the field as consuming nothing. The accrual journal
+still debits `AccruedInterestReceivable` for the full day until increment 5 splits it. The
+in-memory lane posts accruals unrounded where the F# aggregate rounds to cents, a pre-existing
+difference left to a separate change.
 
 ### 5. Journals
 

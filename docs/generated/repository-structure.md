@@ -10103,6 +10103,7 @@ Meridian-main
 │   │   ├── DirectLendingExcessRoutingTests.fs
 │   │   ├── DirectLendingInteropTests.fs
 │   │   ├── DirectLendingPikCapitalizationAndResetTests.fs
+│   │   ├── DirectLendingPrepaidInterestConsumptionTests.fs
 │   │   ├── DirectLendingScheduleCharacterizationTests.fs
 │   │   ├── DirectLendingTestBalances.fs
 │   │   ├── DomainTests.fs
@@ -10881,6 +10882,7 @@ Meridian-main
 │   │   │   │   ├── DirectLendingExcessRoutingParityTests.cs
 │   │   │   │   ├── DirectLendingOutboxDispatcherTests.cs
 │   │   │   │   ├── DirectLendingOutboxFailureTests.cs
+│   │   │   │   ├── DirectLendingPrepaidInterestConsumptionTests.cs
 │   │   │   │   ├── DirectLendingServicerStatementServiceTests.cs
 │   │   │   │   ├── DirectLendingServicingPolicyTermsHashTests.cs
 │   │   │   │   ├── DirectLendingServicingPolicyValidatorTests.cs

@@ -554,7 +554,8 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
                 entry.PenaltyAmount,
                 entry.AnnualRateApplied,
                 entry.PikInterestAmount,
-                entry.PikCapitalizationDeferred
+                entry.PikCapitalizationDeferred,
+                decision.PrepaidInterestConsumed
             })
             : DirectLendingServiceSupport.CreatePayloadDocument(new
             {
@@ -565,7 +566,8 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
                 entry.CommitmentFeeAmount,
                 entry.PenaltyAmount,
                 entry.AnnualRateApplied,
-                entry.PikInterestAmount
+                entry.PikInterestAmount,
+                decision.PrepaidInterestConsumed
             });
 
         await SaveAsync(

@@ -480,6 +480,10 @@ module internal ServicingAggregate =
         let pikInterestAmount = if isPikAccrual then accruedInterest else deferredPik
         let capitalizedToday = if isPikAccrual then pikInterestAmount else 0m
 
+        // PRD-115: the day's cash interest is settled from prepaid interest first; only the rest
+        // becomes a receivable. PIK interest never consumes prepaid interest.
+        let prepaidInterestConsumed = min (max 0m servicing.Balances.PrepaidInterest) (max 0m interestAmount)
+
         let commitmentFeeAmount =
             if terms.CommitmentFeeRate.HasValue then
                 Math.Round(
@@ -509,11 +513,11 @@ module internal ServicingAggregate =
         let balances =
             OutstandingBalancesDto(
                 servicing.Balances.PrincipalOutstanding + capitalizedToday,
-                servicing.Balances.InterestAccruedUnpaid + interestAmount,
+                servicing.Balances.InterestAccruedUnpaid + interestAmount - prepaidInterestConsumed,
                 servicing.Balances.CommitmentFeeAccruedUnpaid + commitmentFeeAmount,
                 servicing.Balances.FeesAccruedUnpaid,
                 servicing.Balances.PenaltyAccruedUnpaid,
-                PrepaidInterest = servicing.Balances.PrepaidInterest,
+                PrepaidInterest = servicing.Balances.PrepaidInterest - prepaidInterestConsumed,
                 UnappliedCash = servicing.Balances.UnappliedCash)
 
         let accrualEntries =
@@ -556,7 +560,9 @@ module internal ServicingAggregate =
                 RateResetHistory = servicing.RateResetHistory,
                 PikCapitalizations = servicing.PikCapitalizations)
 
-        { Servicing = updated; Entry = entry }
+        { Servicing = updated
+          Entry = entry
+          PrepaidInterestConsumed = prepaidInterestConsumed }
 
     /// Moves accrued PIK interest into principal on a capitalization date of the loan's policy.
     /// The day's accrual must already be posted, so capitalized PIK compounds from the next day.

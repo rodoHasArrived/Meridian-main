@@ -9,8 +9,8 @@
       "id": "SRC-APP",
       "path": "src/Meridian.Application",
       "readme": "src/Meridian.Application/README.md",
-      "readme_hash": "312bc3fffefdcd8a205e733efe1fad0ebd2716dac5cc3ecb1a831b565565bcf7",
-      "source_hash": "67a76a37e061c27ad86835c70920fcecdaac4320ee6d8e304af027bf005538dd"
+      "readme_hash": "845f93f64995e7d48c30a5f3df38d928f4d9b90db71d3babffe5cdef82f73080",
+      "source_hash": "1447476a7d690763bf4e77d14b661de762994ab2dd10545e48fb722e2ee30d1a"
     },
     {
       "id": "SRC-BACKTESTING",
@@ -156,8 +156,8 @@
       "id": "SRC-FSHARP-DIRECTLENDING",
       "path": "src/Meridian.FSharp.DirectLending.Aggregates",
       "readme": "src/Meridian.FSharp.DirectLending.Aggregates/README.md",
-      "readme_hash": "24439abc368c2b28130929943c3bd8141c937e6f299e1100f6becdc836dd1839",
-      "source_hash": "eb229016cf6616f8913efe2b7bf7f67ae305b952d74d53c0a194d742a3b082c8"
+      "readme_hash": "ef031e929b13fe2dff9347a836454f744b0f77db0fdb647b7bbe95daeeee9e5a",
+      "source_hash": "989e39c89050cf5a80884db2bb7e77d66916736de6c500e7cab7120de615f9b5"
     },
     {
       "id": "SRC-FSHARP-LEDGER",

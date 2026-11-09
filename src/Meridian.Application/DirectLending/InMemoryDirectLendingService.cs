@@ -455,6 +455,8 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
             var interestAmount = isPikAccrual ? 0m : accruedInterest - deferredPik;
             var pikInterestAmount = isPikAccrual ? accruedInterest : deferredPik;
             var capitalizedToday = isPikAccrual ? pikInterestAmount : 0m;
+            // PRD-115: the day's cash interest is settled from prepaid interest first; PIK never consumes it.
+            var prepaidInterestConsumed = Math.Min(Math.Max(0m, stored.Servicing.Balances.PrepaidInterest), Math.Max(0m, interestAmount));
 
             var commitmentFeeAmount = terms.CommitmentFeeRate is { } feeRate && feeRate > 0m
                 ? DirectLendingInterop.CalculateDailyAccrualAmountForDate(
@@ -481,8 +483,9 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
                 Balances = stored.Servicing.Balances with
                 {
                     PrincipalOutstanding = stored.Servicing.Balances.PrincipalOutstanding + capitalizedToday,
-                    InterestAccruedUnpaid = stored.Servicing.Balances.InterestAccruedUnpaid + interestAmount,
-                    CommitmentFeeAccruedUnpaid = stored.Servicing.Balances.CommitmentFeeAccruedUnpaid + commitmentFeeAmount
+                    InterestAccruedUnpaid = stored.Servicing.Balances.InterestAccruedUnpaid + interestAmount - prepaidInterestConsumed,
+                    CommitmentFeeAccruedUnpaid = stored.Servicing.Balances.CommitmentFeeAccruedUnpaid + commitmentFeeAmount,
+                    PrepaidInterest = stored.Servicing.Balances.PrepaidInterest - prepaidInterestConsumed
                 },
                 PikInterestAccruedUnpaid = stored.Servicing.PikInterestAccruedUnpaid + deferredPik,
                 LastAccrualDate = request.AccrualDate
@@ -506,7 +509,8 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
                     entry.PenaltyAmount,
                     entry.AnnualRateApplied,
                     entry.PikInterestAmount,
-                    entry.PikCapitalizationDeferred
+                    entry.PikCapitalizationDeferred,
+                    PrepaidInterestConsumed = prepaidInterestConsumed
                 }
                 : (object)new
                 {
@@ -517,7 +521,8 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
                     entry.CommitmentFeeAmount,
                     entry.PenaltyAmount,
                     entry.AnnualRateApplied,
-                    entry.PikInterestAmount
+                    entry.PikInterestAmount,
+                    PrepaidInterestConsumed = prepaidInterestConsumed
                 }, metadata);
             return Task.FromResult<DailyAccrualEntryDto?>(entry);
         }

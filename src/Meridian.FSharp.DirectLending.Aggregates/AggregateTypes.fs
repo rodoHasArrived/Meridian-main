@@ -51,7 +51,9 @@ type WriteOffDecision =
 
 type DailyAccrualDecision =
     { Servicing: LoanServicingStateDto
-      Entry: DailyAccrualEntryDto }
+      Entry: DailyAccrualEntryDto
+      /// PRD-115: the part of the day's cash interest settled from the prepaid-interest balance.
+      PrepaidInterestConsumed: decimal }
 
 type PrepaymentPenaltyDecision =
     { Servicing: LoanServicingStateDto

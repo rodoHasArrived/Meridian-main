@@ -332,6 +332,12 @@ public sealed class DirectLendingEventRebuilder
                         var pikDeferred =
                             root.TryGetProperty("pikCapitalizationDeferred", out var deferredElement) &&
                             deferredElement.ValueKind == JsonValueKind.True;
+                        // PRD-115: events recorded before prepaid-interest consumption carry none.
+                        var prepaidInterestConsumed =
+                            root.TryGetProperty("prepaidInterestConsumed", out var consumedElement) &&
+                            consumedElement.ValueKind == JsonValueKind.Number
+                                ? consumedElement.GetDecimal()
+                                : 0m;
                         var accrualEntry = new DailyAccrualEntryDto(
                             accrualEntryId,
                             accrualDate,
@@ -349,8 +355,9 @@ public sealed class DirectLendingEventRebuilder
                             Balances = servicing.Balances with
                             {
                                 PrincipalOutstanding = servicing.Balances.PrincipalOutstanding + (pikDeferred ? 0m : pikInterestAmount),
-                                InterestAccruedUnpaid = servicing.Balances.InterestAccruedUnpaid + interestAmount,
-                                CommitmentFeeAccruedUnpaid = servicing.Balances.CommitmentFeeAccruedUnpaid + commitmentFeeAmount
+                                InterestAccruedUnpaid = servicing.Balances.InterestAccruedUnpaid + interestAmount - prepaidInterestConsumed,
+                                CommitmentFeeAccruedUnpaid = servicing.Balances.CommitmentFeeAccruedUnpaid + commitmentFeeAmount,
+                                PrepaidInterest = servicing.Balances.PrepaidInterest - prepaidInterestConsumed
                             },
                             LastAccrualDate = accrualDate,
                             ServicingRevision = servicing.ServicingRevision + 1,

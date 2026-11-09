@@ -35,6 +35,7 @@
     <Compile Include="DirectLendingTestBalances.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'DirectLending'" />
     <Compile Include="DirectLendingAggregateServicingTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'DirectLending'" />
     <Compile Include="DirectLendingExcessRoutingTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'DirectLending'" />
+    <Compile Include="DirectLendingPrepaidInterestConsumptionTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'DirectLending'" />
     <Compile Include="DirectLendingPikCapitalizationAndResetTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'DirectLending'" />
   </ItemGroup>
 
