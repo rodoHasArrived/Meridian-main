@@ -348,8 +348,12 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
                         throw UnrecoverableSchedule();
                 }
             }
-            else if (!callSchedulesRecoverable && module.Name.Equals("call", StringComparison.OrdinalIgnoreCase))
+            else if (module.Name.Equals("call", StringComparison.OrdinalIgnoreCase)
+                     && (!callSchedulesRecoverable || !module.Name.Equals("call", StringComparison.Ordinal)))
             {
+                // Only the serializer's canonical `call` module is recoverable; a case-variant
+                // module is not the economic writer's shape, the conversion will not read it, and
+                // letting it pass would silently drop a declared schedule.
                 foreach (var member in module.Value.EnumerateObject())
                 {
                     if ((member.Name.Equals(SecurityVersionedTerms.CallScheduleKey, StringComparison.OrdinalIgnoreCase)
@@ -383,15 +387,36 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
         {
             if (member.Name.Equals(SecurityVersionedTerms.CallScheduleKey, StringComparison.OrdinalIgnoreCase))
             {
+                RefuseUnlessCanonicalSpelling(member, SecurityVersionedTerms.CallScheduleKey);
                 CollectDatedEntries(member.Value, "callDt", calls);
             }
             else if (member.Name.Equals(SecurityVersionedTerms.PutScheduleKey, StringComparison.OrdinalIgnoreCase))
             {
+                RefuseUnlessCanonicalSpelling(member, SecurityVersionedTerms.PutScheduleKey);
                 CollectDatedEntries(member.Value, "putDt", puts);
             }
         }
 
         return (calls, puts);
+    }
+
+    /// <summary>
+    /// A case-variant schedule key is not the economic serializer's shape: the conversion only
+    /// reads the canonical spelling, so a variant that declares content refuses — exactly the old
+    /// guard's rule — instead of passing while its schedule is silently ignored.
+    /// </summary>
+    private static void RefuseUnlessCanonicalSpelling(JsonProperty member, string canonicalKey)
+    {
+        if (member.Name.Equals(canonicalKey, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        if (member.Value.ValueKind != JsonValueKind.Null
+            && (member.Value.ValueKind != JsonValueKind.Array || member.Value.GetArrayLength() > 0))
+        {
+            throw UnrecoverableSchedule();
+        }
     }
 
     private static void CollectDatedEntries(JsonElement list, string dateField, List<JsonElement> entries)
@@ -418,7 +443,12 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
                 throw UnrecoverableSchedule();
             }
 
-            var hasDate = entry.TryGetProperty(dateField, out var date) && date.ValueKind == JsonValueKind.String;
+            // The date must decode under the flat reader's frozen semantics (ISO yyyy-MM-dd): an
+            // entry whose date string the flat side would drop is a populated schedule term that
+            // cannot be recovered, so it refuses below instead of being emitted and silently lost.
+            var hasDate = entry.TryGetProperty(dateField, out var date)
+                && date.ValueKind == JsonValueKind.String
+                && DateOnly.TryParseExact(date.GetString(), "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out _);
             if (hasDate)
             {
                 entries.Add(entry);

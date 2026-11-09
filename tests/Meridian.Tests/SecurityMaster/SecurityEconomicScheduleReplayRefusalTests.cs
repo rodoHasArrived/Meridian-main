@@ -65,6 +65,11 @@ public sealed class SecurityEconomicScheduleReplayRefusalTests
     [InlineData("{\"call\":{\"putSchedule\":\"not-an-array\"}}")]
     [InlineData("{\"call\":{\"callSchedule\":[\"not-an-entry\"]}}")]
     [InlineData("{\"call\":{\"callSchedule\":[{\"callPx\":102.5}]}}")] // populated but dateless
+    [InlineData("{\"call\":{\"callSchedule\":[{\"callDt\":\"\"}]}}")] // empty date is undecodable
+    [InlineData("{\"call\":{\"callSchedule\":[{\"callDt\":\"01/01/2027\"}]}}")] // not the frozen ISO form
+    [InlineData("{\"call\":{\"putSchedule\":[{\"putDt\":\"2027-13-40\"}]}}")] // not a calendar date
+    [InlineData("{\"Call\":{\"callSchedule\":[{\"callDt\":\"2027-01-01\"}]}}")] // case-variant module is not the serializer's shape
+    [InlineData("{\"call\":{\"callSchedule\":[],\"CALLSCHEDULE\":[{}]}}")] // case-variant key declaring content
     public void MalformedSchedules_RefuseEvenForDeclaringClasses(string json)
     {
         Action bond = () => SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(Json(json), "Bond");
@@ -73,7 +78,6 @@ public sealed class SecurityEconomicScheduleReplayRefusalTests
 
     [Theory]
     [InlineData("{\"call\":{\"callSchedule\":[null]}}")]
-    [InlineData("{\"call\":{\"callSchedule\":[],\"CALLSCHEDULE\":[{}]}}")]
     [InlineData("{\"call\":{\"callSchedule\":[{\"callDt\":null,\"callPx\":null}]}}")] // all-null entry is unset
     public void UnsetEntries_ConvertWithoutDeclaringSchedules_OnDeclaringClasses(string json)
     {

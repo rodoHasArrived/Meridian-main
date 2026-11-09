@@ -785,7 +785,9 @@ ADR-024 entry form, stamped at the arrays' version, instead of refusing economic
 Conversion semantics are declared and pinned (`SecurityEconomicCallScheduleFlatteningTests`);
 refusals narrow but never vanish (`SecurityEconomicScheduleReplayRefusalTests`: accrual
 conventions everywhere; schedule lists on the class-independent route and for non-declaring
-classes; malformed lists and populated-but-dateless entries on every route). The
+classes; malformed lists, populated-but-dateless entries, undecodable dates and case-variant
+module or key spellings on every route — the latter two added after a Codex review pass caught
+the first cut failing open where the old guard failed closed). The
 `SecurityTermsVersioningTests` economic-replay pin moved from refusal to recovery with the
 retained document still carried. Schema-control contract manifests were re-snapshot and promoted
 (`verify` reproduced CI's staleness locally and passes after promotion).
