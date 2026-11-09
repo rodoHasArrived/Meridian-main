@@ -188,11 +188,18 @@ public sealed class OrderManagementSystemReportStreamTests
         await gateway.PublishAsync(
             BuildReport(result.OrderId, OrderStatus.Filled, ExecutionReportType.Fill, filledQty: 10m, fillPrice: 110m));
 
+        // Snapshots come from OMS order state, so an intermediate one may already be ahead of
+        // the fill that triggered it; they never go backwards and the last is the full order.
         (await first).Should().BeTrue();
-        updates.Current.FilledQuantity.Should().Be(4m);
-        updates.Current.AverageFillPrice.Should().Be(100m);
-        (await updates.MoveNextAsync()).Should().BeTrue();
-        updates.Current.Status.Should().Be(Meridian.Execution.Models.OrderStatus.Filled);
+        var previous = updates.Current.FilledQuantity;
+        previous.Should().BeOneOf(4m, 10m);
+        while (updates.Current.Status != Meridian.Execution.Models.OrderStatus.Filled)
+        {
+            (await updates.MoveNextAsync()).Should().BeTrue();
+            updates.Current.FilledQuantity.Should().BeGreaterThanOrEqualTo(previous);
+            previous = updates.Current.FilledQuantity;
+        }
+
         updates.Current.FilledQuantity.Should().Be(10m);
         updates.Current.AverageFillPrice.Should().Be(106m);
     }
@@ -245,10 +252,11 @@ public sealed class OrderManagementSystemReportStreamTests
     }
 
     [Fact]
-    public async Task GovernedOrderGatewayStream_ResynchronisesTotalsAfterDroppedFills()
+    public async Task GovernedOrderGatewayStream_DroppedFillsNeverLeaveSnapshotsShort()
     {
         // A one-slot observer inbox: after the first fill is read, the second waits and the third
-        // overflows and is dropped. The next snapshot must not report the order short.
+        // overflows and is dropped. The next snapshot must not report the order short, and the
+        // buffered report must not be counted on top of state that already includes it.
         var gateway = new StreamingGateway
         {
             SubmitAck = BuildReport("pending", OrderStatus.Accepted, ExecutionReportType.New, filledQty: 0m, fillPrice: null)
@@ -275,7 +283,6 @@ public sealed class OrderManagementSystemReportStreamTests
         await gateway.PublishAsync(
             BuildReport(result.OrderId, OrderStatus.PartiallyFilled, ExecutionReportType.PartialFill, filledQty: 4m, fillPrice: 100m));
         (await first).Should().BeTrue();
-        updates.Current.FilledQuantity.Should().Be(4m);
         await gateway.PublishAsync(
             BuildReport(result.OrderId, OrderStatus.PartiallyFilled, ExecutionReportType.PartialFill, filledQty: 7m, fillPrice: 110m));
         await gateway.PublishAsync(

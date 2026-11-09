@@ -1,8 +1,6 @@
-using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using Meridian.Execution.Interfaces;
 using Meridian.Execution.Models;
-using Meridian.Execution.OrderManagement;
 using Meridian.Execution.Sdk;
 using GatewayMode = Meridian.Execution.Models.ExecutionMode;
 using GatewayOrderStatus = Meridian.Execution.Models.OrderStatus;
@@ -89,13 +87,13 @@ public sealed class OmsGovernedExecutionOrderGateway : IOrderGateway
             "Order cancellation must go through IOrderManager so authoritative OMS state cannot be bypassed.");
 
     /// <summary>
-    /// Fill updates from an independent OMS report subscription, as cumulative order snapshots.
-    /// This is an observer: if it falls behind its bounded inbox, the excess updates are dropped
-    /// for this stream only (the OMS fill path is unaffected) and the affected order's totals are
-    /// resynchronised from OMS order state before its next snapshot. Totals cover the fills seen since
-    /// the stream subscribed. The OMS publishes fills only, so
-    /// acceptance, cancellation and rejection without a fill are not reported here; read those
-    /// from <see cref="IOrderManager"/>.
+    /// Order snapshots (cumulative filled quantity, average price and status) taken from OMS
+    /// order state each time the OMS publishes a fill, via an independent report subscription.
+    /// This is an observer: reports that overflow its bounded inbox are dropped for this stream
+    /// only, and because every snapshot is read from OMS state, a dropped report never leaves a
+    /// later snapshot short. The OMS publishes fills only, so acceptance, cancellation and
+    /// rejection without a fill do not trigger a snapshot; read those from
+    /// <see cref="IOrderManager"/>.
     /// </summary>
     public async IAsyncEnumerable<OrderStatusUpdate> StreamOrderUpdatesAsync(
         [EnumeratorCancellation] CancellationToken ct = default)
@@ -103,57 +101,28 @@ public sealed class OmsGovernedExecutionOrderGateway : IOrderGateway
         if (_orderManagerAccessor?.Invoke() is not OrderManagementSystem oms)
             yield break;
 
-        // A slow observer must not block the OMS, so reports that overflow this subscription
-        // are dropped; the order is marked so its totals are resynchronised before the next
-        // snapshot instead of being reported short.
-        var gapped = new ConcurrentDictionary<string, byte>(StringComparer.Ordinal);
+        // A slow observer must not block the OMS: reports that overflow this subscription are
+        // dropped. Each published report is only a trigger; the update is built from the OMS's
+        // authoritative order state (cumulative filled quantity, average price and status), so a
+        // dropped, buffered or reused-id report can never make a snapshot short or double-count.
+        // A snapshot may be ahead of the report that triggered it, which is still a correct state.
         await using var subscription = oms.SubscribeLosslessExecutionReports(
             ObserverSubscriberName,
-            (dropped, _, _) =>
-            {
-                gapped[dropped.OrderId] = 0;
-                return ValueTask.CompletedTask;
-            });
-        // The OMS publishes each fill as an increment (quantity and execution price of that
-        // fill only). Status updates are cumulative snapshots, so totals and the average price
-        // are accumulated per order from the fills this stream has seen. OMS order state is read
-        // only to resynchronise an order with dropped fills: it can be ahead of the report being
-        // emitted, which is acceptable for recovery but not as the normal source.
-        var totals = new Dictionary<string, (decimal Quantity, decimal Notional)>(StringComparer.Ordinal);
+            static (_, _, _) => ValueTask.CompletedTask);
         await foreach (var report in subscription.Reports.ReadAllAsync(ct).ConfigureAwait(false))
         {
-            var status = report.OrderStatus;
-            totals.TryGetValue(report.OrderId, out var running);
-            if (gapped.TryRemove(report.OrderId, out _) && oms.GetOrder(report.OrderId) is { } state)
+            if (oms.GetOrder(report.OrderId) is { } state)
             {
-                running = (state.FilledQuantity, state.FilledQuantity * (state.AverageFillPrice ?? 0m));
-                status = state.Status;
-                totals[report.OrderId] = running;
+                yield return new OrderStatusUpdate(
+                    state.OrderId,
+                    report.ClientOrderId ?? state.OrderId,
+                    state.Symbol,
+                    MapStatus(state.Status),
+                    state.FilledQuantity,
+                    state.AverageFillPrice,
+                    report.RejectReason,
+                    report.Timestamp);
             }
-            else if (report.FilledQuantity > 0m)
-            {
-                running = (
-                    running.Quantity + report.FilledQuantity,
-                    running.Notional + report.FilledQuantity * (report.FillPrice ?? 0m));
-                totals[report.OrderId] = running;
-            }
-
-            var filled = running.Quantity;
-            decimal? averagePrice = filled > 0m ? running.Notional / filled : report.FillPrice;
-            // A terminal order's id may be reused by a later submission (the OMS allows it), so
-            // a replacement order must start from zero rather than inherit these totals.
-            if (OrderStatusFacts.IsTerminal(status))
-                totals.Remove(report.OrderId);
-
-            yield return new OrderStatusUpdate(
-                report.OrderId,
-                report.ClientOrderId ?? report.OrderId,
-                report.Symbol,
-                MapStatus(status),
-                filled,
-                averagePrice,
-                report.RejectReason,
-                report.Timestamp);
         }
     }
 
