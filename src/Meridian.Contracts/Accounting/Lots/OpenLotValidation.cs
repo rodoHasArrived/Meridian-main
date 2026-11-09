@@ -77,7 +77,8 @@ public static class OpenLotValidation
     private static decimal MinorUnit(string currency)
     {
         var unit = 1m;
-        for (var i = 0; i < CurrencyMinorUnits.GetPrecision(currency); i++) unit /= 10m;
+        for (var i = 0; i < CurrencyMinorUnits.GetPrecision(currency); i++)
+            unit /= 10m;
         return unit;
     }
 
