@@ -1,6 +1,6 @@
 # Direct Lending: Term-Driven Excess Payment Application
 
-**Status:** Approved design (owner decisions recorded 2026-11-02). Implementation proceeds by [increment](#increments); increments 1 (terms rule) and 2 (balances and migration 010) are implemented.
+**Status:** Approved design (owner decisions recorded 2026-11-02). Implementation proceeds by [increment](#increments); increments 1 (terms rule), 2 (balances and migration 010) and 3 (excess routing) are implemented.
 **Owner:** Direct Lending + Ledger
 **Reviewed:** 2026-11-02
 **Registered in:** [`docs/engineering/blueprints/README.md`](README.md)
@@ -95,9 +95,9 @@ public sealed record OutstandingBalancesDto(
   `numeric NOT NULL DEFAULT 0` to the servicing-state table and its snapshot. `PostgresDirectLendingStateStore`
   reads and writes both.
 - **Replay:** `DirectLendingEventRebuilder` derives both balances from events, so a rebuilt loan
-  matches the live one. Older events carry no excess payload, and their balances stay 0. The
-  rebuilder does not yet handle `loan.mixed-payment-applied` at all (it rejects unknown event
-  types), so increment 3 must add that case when it writes the excess payload.
+  matches the live one. Older events carry no excess payload, and their balances stay 0. Since
+  increment 3 the rebuilder replays `loan.mixed-payment-applied` from the recorded resolution;
+  before that it rejected the event, so any loan with a mixed payment could not be rebuilt.
 - **Loan value:** neither balance is a receivable. Both are amounts owed *to* the borrower, so
   read models must not add them to outstanding balance (see the `LoanPortfolioSummaryBuilder` review below).
 
@@ -121,11 +121,29 @@ UnappliedAmount`, so there is no separate field that could drift. The DTO adds:
 public decimal ExcessToPrincipal { get; init; }
 public decimal ExcessToPrepaidInterest { get; init; }
 public ExcessPaymentApplication? ExcessRuleApplied { get; init; }
-public string? ExcessRuleNote { get; init; }        // e.g. "prepayment not allowed; held unapplied"
+public string? ExcessRuleNote { get; init; }        // ExcessPaymentRuleNotes, shared by C# and F#
+public decimal PrepaymentPenaltyCharged { get; init; }
 ```
 
 These fields are written into the `loan.mixed-payment-applied` event payload, so replay and journals
 can read them.
+
+**As implemented (increment 3):**
+
+- **Interest-only period.** The automatic waterfall still pays no scheduled principal during the
+  interest-only period, but the rule still applies to the excess: a voluntary prepayment is allowed
+  then when `PrepaymentAllowed` is true. The C# resolver previously ignored the interest-only period
+  and paid principal; it now matches the F# aggregate.
+- **Allocation rows.** Routed excess gets its own `payment_allocation` rows (`PrincipalPrepayment`,
+  `PrepaidInterest`, `UnappliedCash`, rule `Excess<Rule>`), so allocations always sum to the cash
+  received. Principal reductions apply to drawdown lots earliest first in both services; the
+  in-memory service previously used booking order.
+- **Penalty in the same event.** The store saves one event per command, and its command-id
+  idempotency check rejects a second event under the same id. The penalty is therefore recorded on
+  the resolution (`PrepaymentPenaltyCharged`), added to `PenaltyAccruedUnpaid` in the same state
+  transition, and journaled in the mixed-payment entry (Dr `PenaltyReceivable` / Cr
+  `PenaltyIncome`) by `DirectLendingOutboxDispatcher`, the same lines `loan.prepayment-penalty-charged`
+  posts. `LoanAccountingProjector` journals neither penalty form today; that gap predates PRD-115.
 
 ### 4. Accrual consumes prepaid interest
 
@@ -185,7 +203,8 @@ The owner decided all four on 2026-11-02, each as recommended.
    excess goes to `UnappliedCash` and `ExcessRuleNote` records why. Cash posting never fails for
    this reason.
 3. **Prepayment penalty: charged automatically.** When excess is applied to principal, the same
-   command emits `loan.prepayment-penalty-charged` for `PrepaymentPenaltyRate × excess applied to
+   command charges it (recorded on the mixed-payment event, see §3 "As implemented"; originally
+   specified as a separate `loan.prepayment-penalty-charged` event) for `PrepaymentPenaltyRate × excess applied to
    principal`, journaled as today (Dr `PenaltyReceivable` / Cr `PenaltyIncome`). A zero or missing
    rate charges nothing.
 4. **Prepaid-interest consumption: by daily accruals, uncapped.** Each daily accrual is offset from

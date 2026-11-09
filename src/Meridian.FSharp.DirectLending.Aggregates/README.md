@@ -38,6 +38,7 @@ servicing, and accounting evidence can reconcile through the same instrument sou
 ## Audit hardening (2026-11)
 
 - **Manual payment breakdowns.** Each manual line is capped at the amount requested, the cash still unallocated, and the bucket's outstanding balance, so a breakdown can never book interest, fee, penalty or principal that is not owed. Excess is reported as `UnappliedAmount`, as in the automatic waterfall. Term-driven handling of that excess (principal prepayment, prepaid interest, tracked unapplied cash) is tracked as `PRD-115`.
+- **PRD-115 excess routing.** `applyMixedPayment` routes the cash left after allocation by the loan's `ExcessPaymentApplication` rule (`routeExcess`): unapplied cash by default; principal earliest lot first, with the prepayment penalty charged in the same event, or held with a note when prepayment is not allowed or principal is fully paid; or prepaid interest. Excess gets its own allocation rows. `DirectLendingExcessRoutingTests` covers the rule matrix.
 - **PRD-115 balances.** Every servicing command that rebuilds `OutstandingBalancesDto` passes `PrepaidInterest` and `UnappliedCash` through by name. A positional rebuild would silently reset them to the 0 default, which `Every servicing command carries prepaid interest and unapplied cash through unchanged` guards against.
 
 ## Diagrams

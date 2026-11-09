@@ -247,6 +247,50 @@ public sealed class DirectLendingEventRebuilder
                     }
 
 
+                case "loan.mixed-payment-applied":
+                    {
+                        // Replays the recorded resolution, not the resolver, so a later rule or
+                        // terms change cannot alter history. Events from before PRD-115 carry no
+                        // excess members, which read as 0; their unapplied amount was never
+                        // tracked, so it is not added to UnappliedCash on replay.
+                        EnsureInitialized(contract, servicing, entry.EventType);
+                        var effectiveDate = entry.EffectiveDate ?? Deserialize<DateOnly>(root, "effectiveDate");
+                        var amount = root.GetProperty("amount").GetDecimal();
+                        var resolution = Deserialize<MixedPaymentResolutionDto>(root, "resolution");
+                        var tracksExcess = resolution.ExcessRuleApplied is not null;
+                        var breakdown = resolution.Breakdown;
+                        var principalReduction = breakdown.ToPrincipal + resolution.ExcessToPrincipal;
+                        var balances = servicing!.Balances;
+                        var totalDrawnAfter = Math.Max(0m, servicing.TotalDrawn - principalReduction);
+
+                        servicing = servicing with
+                        {
+                            TotalDrawn = totalDrawnAfter,
+                            AvailableToDraw = DirectLendingInterop.CalculateAvailableToDraw(servicing.CurrentCommitment, totalDrawnAfter),
+                            Balances = balances with
+                            {
+                                PrincipalOutstanding = Math.Max(0m, balances.PrincipalOutstanding - principalReduction),
+                                InterestAccruedUnpaid = Math.Max(0m, balances.InterestAccruedUnpaid - breakdown.ToInterest),
+                                CommitmentFeeAccruedUnpaid = Math.Max(0m, balances.CommitmentFeeAccruedUnpaid - breakdown.ToCommitmentFee),
+                                FeesAccruedUnpaid = Math.Max(0m, balances.FeesAccruedUnpaid - breakdown.ToFees),
+                                PenaltyAccruedUnpaid = Math.Max(0m, balances.PenaltyAccruedUnpaid - breakdown.ToPenalty) + resolution.PrepaymentPenaltyCharged,
+                                PrepaidInterest = balances.PrepaidInterest + resolution.ExcessToPrepaidInterest,
+                                UnappliedCash = balances.UnappliedCash + (tracksExcess ? resolution.UnappliedAmount : 0m)
+                            },
+                            DrawdownLots = ApplyPaymentToLots(servicing.DrawdownLots, principalReduction),
+                            LastPaymentDate = effectiveDate,
+                            ServicingRevision = servicing.ServicingRevision + 1,
+                            RevisionHistory = PrependRevision(
+                                servicing.RevisionHistory,
+                                servicing.ServicingRevision + 1,
+                                "InternalEvent",
+                                effectiveDate,
+                                $"Mixed payment applied for {amount:0.00}.",
+                                entry.RecordedAt)
+                        };
+                        break;
+                    }
+
                 case "loan.prepayment-penalty-charged":
                     {
                         EnsureInitialized(contract, servicing, entry.EventType);

@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.DirectLending;
+using Meridian.FSharp.DirectLendingInterop;
 using Meridian.Storage.DirectLending;
 using Meridian.Contracts.Integrity;
 
@@ -131,24 +132,33 @@ internal static class DirectLendingServiceSupport
             ReplayFlag: metadata?.ReplayFlag ?? false);
     }
 
-    public static MixedPaymentResolutionDto ResolveMixedPayment(LoanServicingStateDto servicing, decimal amount, PaymentBreakdownDto? requestedBreakdown)
+    /// <summary>
+    /// Resolves a mixed payment exactly as the F# servicing aggregate does: allocate to amounts owed
+    /// (the automatic waterfall, or a manual breakdown capped at the amount owed), then route any
+    /// excess by the loan's <see cref="ExcessPaymentApplication"/> rule (PRD-115).
+    /// </summary>
+    public static MixedPaymentResolutionDto ResolveMixedPayment(
+        LoanServicingStateDto servicing,
+        DirectLendingTermsDto terms,
+        decimal amount,
+        PaymentBreakdownDto? requestedBreakdown,
+        DateOnly effectiveDate)
     {
+        ArgumentNullException.ThrowIfNull(servicing);
+        ArgumentNullException.ThrowIfNull(terms);
         if (amount <= 0m)
         {
             return new MixedPaymentResolutionDto(new PaymentBreakdownDto(0m, 0m, 0m, 0m, 0m), "Invalid", null, amount);
         }
 
         var remaining = amount;
-        PaymentBreakdownDto resolved;
-
+        var owed = servicing.Balances;
         if (requestedBreakdown is not null)
         {
             // A manual breakdown says where cash goes, but never more than is owed in a bucket:
             // allocating 1,000 to interest when 10 is accrued would record 990 of income that
             // does not exist. Each line is capped at the requested amount, the cash still
-            // unallocated, and the bucket's outstanding balance; any excess is reported as
-            // unapplied, as the automatic waterfall does.
-            var owed = servicing.Balances;
+            // unallocated, and the bucket's outstanding balance; any excess is then routed.
             decimal Take(decimal requested, decimal outstanding)
             {
                 var applied = Math.Min(remaining, Math.Min(Math.Max(0m, requested), Math.Max(0m, outstanding)));
@@ -156,33 +166,89 @@ internal static class DirectLendingServiceSupport
                 return applied;
             }
 
-            resolved = new PaymentBreakdownDto(
+            var manual = new PaymentBreakdownDto(
                 Take(requestedBreakdown.ToInterest, owed.InterestAccruedUnpaid),
                 Take(requestedBreakdown.ToCommitmentFee, owed.CommitmentFeeAccruedUnpaid),
                 Take(requestedBreakdown.ToFees, owed.FeesAccruedUnpaid),
                 Take(requestedBreakdown.ToPenalty, owed.PenaltyAccruedUnpaid),
                 Take(requestedBreakdown.ToPrincipal, owed.PrincipalOutstanding));
 
-            return new MixedPaymentResolutionDto(resolved, "Manual", "v1", remaining);
+            return RouteExcess(servicing, terms, new MixedPaymentResolutionDto(manual, "Manual", "manual-v1", remaining));
         }
 
-        var balances = servicing.Balances;
-        var toInterest = Math.Min(remaining, balances.InterestAccruedUnpaid);
-        remaining -= toInterest;
-        var toCommitmentFee = Math.Min(remaining, balances.CommitmentFeeAccruedUnpaid);
-        remaining -= toCommitmentFee;
-        var toFees = Math.Min(remaining, balances.FeesAccruedUnpaid);
-        remaining -= toFees;
-        var toPenalty = Math.Min(remaining, balances.PenaltyAccruedUnpaid);
-        remaining -= toPenalty;
-        var toPrincipal = Math.Min(remaining, balances.PrincipalOutstanding);
-        remaining -= toPrincipal;
+        decimal TakeAll(decimal outstanding)
+        {
+            var applied = remaining <= 0m || outstanding <= 0m ? 0m : Math.Min(remaining, outstanding);
+            remaining -= applied;
+            return applied;
+        }
 
-        return new MixedPaymentResolutionDto(
-            new PaymentBreakdownDto(toInterest, toCommitmentFee, toFees, toPenalty, toPrincipal),
-            "WaterfallAuto",
-            "v1",
-            remaining);
+        var toInterest = TakeAll(owed.InterestAccruedUnpaid);
+        var toCommitmentFee = TakeAll(owed.CommitmentFeeAccruedUnpaid);
+        var toFees = TakeAll(owed.FeesAccruedUnpaid);
+        var toPenalty = TakeAll(owed.PenaltyAccruedUnpaid);
+        // During the interest-only period scheduled principal is 0 in the automatic waterfall.
+        var toPrincipal = DirectLendingInterop.IsInterestOnlyPeriod(terms.OriginationDate, terms.InterestOnlyMonths, effectiveDate)
+            ? 0m
+            : TakeAll(owed.PrincipalOutstanding);
+
+        return RouteExcess(
+            servicing,
+            terms,
+            new MixedPaymentResolutionDto(
+                new PaymentBreakdownDto(toInterest, toCommitmentFee, toFees, toPenalty, toPrincipal),
+                "WaterfallAuto",
+                "waterfall-v1",
+                remaining));
+    }
+
+    /// <summary>
+    /// Routes the cash left after allocation (<see cref="MixedPaymentResolutionDto.UnappliedAmount"/> on
+    /// entry) by the loan's excess rule. Mirrors <c>ServicingAggregate.routeExcess</c> in F#.
+    /// </summary>
+    public static MixedPaymentResolutionDto RouteExcess(LoanServicingStateDto servicing, DirectLendingTermsDto terms, MixedPaymentResolutionDto allocated)
+    {
+        var excess = allocated.UnappliedAmount;
+        if (excess <= 0m)
+        {
+            return allocated;
+        }
+
+        var rule = terms.EffectiveExcessPaymentApplication;
+        MixedPaymentResolutionDto Routed(decimal held, decimal toPrincipal, decimal toPrepaid, decimal penalty, string? note)
+            => allocated with
+            {
+                UnappliedAmount = held,
+                ExcessToPrincipal = toPrincipal,
+                ExcessToPrepaidInterest = toPrepaid,
+                ExcessRuleApplied = rule,
+                ExcessRuleNote = note,
+                PrepaymentPenaltyCharged = penalty
+            };
+
+        switch (rule)
+        {
+            case ExcessPaymentApplication.PrincipalPrepayment when !terms.PrepaymentAllowed:
+                return Routed(excess, 0m, 0m, 0m, ExcessPaymentRuleNotes.PrepaymentNotAllowed);
+
+            case ExcessPaymentApplication.PrincipalPrepayment:
+                {
+                    var principalAfterAllocation = Math.Max(0m, servicing.Balances.PrincipalOutstanding - allocated.Breakdown.ToPrincipal);
+                    var toPrincipal = Math.Min(excess, principalAfterAllocation);
+                    var held = excess - toPrincipal;
+                    var rate = terms.PrepaymentPenaltyRate ?? 0m;
+                    var penalty = rate > 0m && toPrincipal > 0m
+                        ? Math.Round(toPrincipal * rate, 2, MidpointRounding.AwayFromZero)
+                        : 0m;
+                    return Routed(held, toPrincipal, 0m, penalty, held > 0m ? ExcessPaymentRuleNotes.ExceedsOutstandingPrincipal : null);
+                }
+
+            case ExcessPaymentApplication.PrepaidInterest:
+                return Routed(0m, 0m, excess, 0m, null);
+
+            default:
+                return Routed(excess, 0m, 0m, 0m, null);
+        }
     }
 
     public static DirectLendingPersistenceBatch WithOutbox(

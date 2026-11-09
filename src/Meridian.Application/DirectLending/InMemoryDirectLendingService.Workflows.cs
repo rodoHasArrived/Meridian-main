@@ -34,27 +34,32 @@ public sealed partial class InMemoryDirectLendingService
                 return Task.FromResult<LoanServicingStateDto?>(null);
             }
 
-            var resolution = DirectLendingServiceSupport.ResolveMixedPayment(ToServicingState(stored), request.Amount, request.Breakdown);
+            var terms = stored.TermsVersions[^1].Terms;
+            var resolution = DirectLendingServiceSupport.ResolveMixedPayment(ToServicingState(stored), terms, request.Amount, request.Breakdown, request.EffectiveDate);
             var breakdown = resolution.Breakdown;
-            ApplyPaymentToLots(stored.Servicing.DrawdownLots, breakdown.ToPrincipal);
+            var principalReduction = breakdown.ToPrincipal + resolution.ExcessToPrincipal;
+            ApplyPaymentToLots(stored.Servicing.DrawdownLots, principalReduction);
+            var balances = stored.Servicing.Balances;
             stored.Servicing = stored.Servicing with
             {
-                TotalDrawn = Math.Max(0m, stored.Servicing.TotalDrawn - breakdown.ToPrincipal),
-                AvailableToDraw = Meridian.FSharp.DirectLendingInterop.DirectLendingInterop.CalculateAvailableToDraw(stored.Servicing.CurrentCommitment, Math.Max(0m, stored.Servicing.TotalDrawn - breakdown.ToPrincipal)),
-                Balances = stored.Servicing.Balances with
+                TotalDrawn = Math.Max(0m, stored.Servicing.TotalDrawn - principalReduction),
+                AvailableToDraw = Meridian.FSharp.DirectLendingInterop.DirectLendingInterop.CalculateAvailableToDraw(stored.Servicing.CurrentCommitment, Math.Max(0m, stored.Servicing.TotalDrawn - principalReduction)),
+                Balances = balances with
                 {
-                    PrincipalOutstanding = Math.Max(0m, stored.Servicing.Balances.PrincipalOutstanding - breakdown.ToPrincipal),
-                    InterestAccruedUnpaid = Math.Max(0m, stored.Servicing.Balances.InterestAccruedUnpaid - breakdown.ToInterest),
-                    CommitmentFeeAccruedUnpaid = Math.Max(0m, stored.Servicing.Balances.CommitmentFeeAccruedUnpaid - breakdown.ToCommitmentFee),
-                    FeesAccruedUnpaid = Math.Max(0m, stored.Servicing.Balances.FeesAccruedUnpaid - breakdown.ToFees),
-                    PenaltyAccruedUnpaid = Math.Max(0m, stored.Servicing.Balances.PenaltyAccruedUnpaid - breakdown.ToPenalty)
+                    PrincipalOutstanding = Math.Max(0m, balances.PrincipalOutstanding - principalReduction),
+                    InterestAccruedUnpaid = Math.Max(0m, balances.InterestAccruedUnpaid - breakdown.ToInterest),
+                    CommitmentFeeAccruedUnpaid = Math.Max(0m, balances.CommitmentFeeAccruedUnpaid - breakdown.ToCommitmentFee),
+                    FeesAccruedUnpaid = Math.Max(0m, balances.FeesAccruedUnpaid - breakdown.ToFees),
+                    PenaltyAccruedUnpaid = Math.Max(0m, balances.PenaltyAccruedUnpaid - breakdown.ToPenalty) + resolution.PrepaymentPenaltyCharged,
+                    PrepaidInterest = balances.PrepaidInterest + resolution.ExcessToPrepaidInterest,
+                    UnappliedCash = balances.UnappliedCash + resolution.UnappliedAmount
                 },
                 LastPaymentDate = request.EffectiveDate
             };
             AppendRevision(stored, "InternalEvent", request.EffectiveDate, $"Mixed payment applied for {request.Amount:0.00}.");
             AppendEvent(stored, "loan.mixed-payment-applied", request.EffectiveDate, new { loanId, request.Amount, request.EffectiveDate, resolution }, metadata);
 
-            var cashTxn = new CashTransactionDto(Guid.NewGuid(), loanId, "MixedPayment", request.EffectiveDate, request.EffectiveDate, request.EffectiveDate, request.Amount, stored.TermsVersions[^1].Terms.BaseCurrency, request.ExternalRef, stored.History[^1].EventId, DateTimeOffset.UtcNow, false);
+            var cashTxn = new CashTransactionDto(Guid.NewGuid(), loanId, "MixedPayment", request.EffectiveDate, request.EffectiveDate, request.EffectiveDate, request.Amount, terms.BaseCurrency, request.ExternalRef, stored.History[^1].EventId, DateTimeOffset.UtcNow, false);
             GetList(_cashTransactions, loanId).Add(cashTxn);
             var allocations = GetList(_paymentAllocations, loanId);
             var seq = allocations.Count + 1;
@@ -63,6 +68,10 @@ public sealed partial class InMemoryDirectLendingService
             AddAllocation(breakdown.ToFees, "FeeBalance");
             AddAllocation(breakdown.ToPenalty, "PenaltyAccrued");
             AddAllocation(breakdown.ToPrincipal, "PrincipalOutstanding");
+            // PRD-115: routed excess gets its own rows, so allocations always sum to the cash received.
+            AddAllocation(resolution.ExcessToPrincipal, "PrincipalPrepayment");
+            AddAllocation(resolution.ExcessToPrepaidInterest, "PrepaidInterest");
+            AddAllocation(resolution.UnappliedAmount, "UnappliedCash");
             return Task.FromResult<LoanServicingStateDto?>(ToServicingState(stored));
 
             void AddAllocation(decimal amount, string targetType)

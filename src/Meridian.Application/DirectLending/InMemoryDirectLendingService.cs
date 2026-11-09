@@ -811,9 +811,17 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
 
     private static void ApplyPaymentToLots(List<DrawdownLotDto> lots, decimal appliedAmount)
     {
+        // Earliest drawdown first, as the F# aggregate and the event rebuilder apply it; lots are
+        // stored in booking order, which can differ from drawdown order.
         var remaining = appliedAmount;
-        for (var i = 0; i < lots.Count && remaining > 0m; i++)
+        var earliestFirst = Enumerable.Range(0, lots.Count).OrderBy(index => lots[index].DrawdownDate).ToArray();
+        foreach (var i in earliestFirst)
         {
+            if (remaining <= 0m)
+            {
+                break;
+            }
+
             var lot = lots[i];
             if (lot.RemainingPrincipal <= 0m)
             {

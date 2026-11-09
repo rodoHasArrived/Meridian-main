@@ -316,7 +316,10 @@ let ``Manual breakdown above the amount owed is capped and never books phantom i
     payment.Resolution.Breakdown.ToInterest |> should equal 10m
     payment.Resolution.UnappliedAmount |> should equal 990m
     payment.Servicing.Balances.InterestAccruedUnpaid |> should equal 0m
-    payment.Allocations |> Array.sumBy (fun a -> a.Amount) |> should equal 10m
+    // Only 10 is income; since PRD-115 the 990 excess is held as tracked unapplied cash (the
+    // default rule), so allocations sum to the cash received.
+    payment.Allocations |> Array.map (fun a -> a.TargetType, a.Amount) |> should equal [| "Interest", 10m; "UnappliedCash", 990m |]
+    payment.Servicing.Balances.UnappliedCash |> should equal 990m
 
 [<Fact>]
 let ``Manual breakdown smaller than the cash received leaves the excess unapplied`` () =

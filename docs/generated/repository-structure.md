@@ -10100,6 +10100,7 @@ Meridian-main
 │   │   ├── CashFlowProjectorTests.fs
 │   │   ├── DeterministicInvariantTests.fs
 │   │   ├── DirectLendingAggregateServicingTests.fs
+│   │   ├── DirectLendingExcessRoutingTests.fs
 │   │   ├── DirectLendingInteropTests.fs
 │   │   ├── DirectLendingPikCapitalizationAndResetTests.fs
 │   │   ├── DirectLendingScheduleCharacterizationTests.fs
@@ -10877,6 +10878,7 @@ Meridian-main
 │   │   │   │   ├── DailyAccrualWorkerTests.cs
 │   │   │   │   ├── DirectLendingEventRebuilderTests.cs
 │   │   │   │   ├── DirectLendingExcessBalancesCompatibilityTests.cs
+│   │   │   │   ├── DirectLendingExcessRoutingParityTests.cs
 │   │   │   │   ├── DirectLendingOutboxDispatcherTests.cs
 │   │   │   │   ├── DirectLendingOutboxFailureTests.cs
 │   │   │   │   ├── DirectLendingServicerStatementServiceTests.cs

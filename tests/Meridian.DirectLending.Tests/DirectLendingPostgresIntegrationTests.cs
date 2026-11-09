@@ -293,6 +293,48 @@ public sealed class DirectLendingPostgresIntegrationTests
     }
 
     [DirectLendingDatabaseFact]
+    public async Task MixedPayment_RoutesExcessByLoanRule_PersistsAllocationsAndRebuildsIdentically()
+    {
+        // PRD-115 increment 3 on the Postgres path (F# aggregate): during the interest-only period
+        // the waterfall leaves principal alone, so the excess follows the PrincipalPrepayment rule
+        // and charges the 2% penalty in the same command.
+        await using var db = await DirectLendingPostgresTestDatabase.CreateOrSkipAsync();
+        if (db is null)
+        {
+            return;
+        }
+
+        var request = BuildCreateRequest();
+        var created = await db.Service.CreateLoanAsync(request with
+        {
+            Terms = request.Terms with
+            {
+                InterestOnlyMonths = 12,
+                PrepaymentPenaltyRate = 0.02m,
+                ExcessPaymentApplication = ExcessPaymentApplication.PrincipalPrepayment
+            }
+        });
+        await db.Service.ActivateLoanAsync(created.LoanId, new ActivateLoanRequest(new DateOnly(2026, 3, 22)));
+        await db.Service.BookDrawdownAsync(created.LoanId, new BookDrawdownRequest(150_000m, new DateOnly(2026, 3, 22), new DateOnly(2026, 3, 22), "wire-routing"));
+
+        var live = await db.Service.ApplyMixedPaymentAsync(created.LoanId, new ApplyMixedPaymentRequest(50_000m, new DateOnly(2026, 4, 1), null, "pay-routing"));
+
+        live!.Balances.PrincipalOutstanding.Should().Be(100_000m);
+        live.Balances.PenaltyAccruedUnpaid.Should().Be(1_000m);
+        (live.Balances.PrepaidInterest, live.Balances.UnappliedCash).Should().Be((0m, 0m));
+        var allocations = await db.Service.GetPaymentAllocationsAsync(created.LoanId);
+        allocations.Select(allocation => (allocation.TargetType, allocation.AllocatedAmount, allocation.AllocationRule))
+            .Should().Equal(("PrincipalPrepayment", 50_000m, "ExcessPrincipalPrepayment"));
+
+        await db.DeleteLiveStateAsync(created.LoanId);
+        var rebuilt = (await db.QueryService.LoadAggregateAsync(created.LoanId))!.Servicing;
+
+        rebuilt.Balances.Should().Be(live.Balances);
+        rebuilt.TotalDrawn.Should().Be(live.TotalDrawn);
+        rebuilt.DrawdownLots.Select(lot => lot.RemainingPrincipal).Should().Equal(live.DrawdownLots.Select(lot => lot.RemainingPrincipal));
+    }
+
+    [DirectLendingDatabaseFact]
     public async Task QueryService_RebuildFromHistory_ShouldMatchLiveExcessBalances()
     {
         await using var db = await DirectLendingPostgresTestDatabase.CreateOrSkipAsync();

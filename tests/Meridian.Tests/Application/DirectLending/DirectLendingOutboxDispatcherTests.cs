@@ -131,6 +131,64 @@ public sealed class DirectLendingOutboxDispatcherTests
         savedEntry.Lines.Should().ContainSingle(line => line.AccountCode == "PenaltyIncome" && line.CreditAmount == 10_000m);
     }
 
+    [Theory]
+    [InlineData("""{"amount":10000,"effectiveDate":"2026-05-14","resolution":{"breakdown":{"toInterest":0,"toCommitmentFee":0,"toFees":0,"toPenalty":0,"toPrincipal":0},"resolutionBasis":"WaterfallAuto","ruleVersion":"waterfall-v1","unappliedAmount":0,"excessToPrincipal":10000,"excessToPrepaidInterest":0,"excessRuleApplied":1,"excessRuleNote":null,"prepaymentPenaltyCharged":200}}""", 200)]
+    [InlineData("""{"amount":10000,"effectiveDate":"2026-05-14","resolution":{"breakdown":{"toInterest":0,"toCommitmentFee":0,"toFees":0,"toPenalty":0,"toPrincipal":10000},"resolutionBasis":"WaterfallAuto","ruleVersion":"v1","unappliedAmount":0}}""", 0)]
+    public async Task ProcessJournalAsync_MixedPaymentJournalsPrepaymentPenaltyChargedOnExcess(string payloadJson, decimal expectedPenalty)
+    {
+        // PRD-115 decision 3: the penalty on excess applied to principal is charged by the payment
+        // command itself, so its journal lines ride the mixed-payment entry. Payloads from before
+        // PRD-115 carry no penalty and post only the cash/clearing pair.
+        var operationsStore = Substitute.For<IDirectLendingOperationsStore>();
+        var commandService = Substitute.For<IDirectLendingCommandService>();
+        var queryService = Substitute.For<IDirectLendingQueryService>();
+        var loanId = Guid.NewGuid();
+        var sourceEventId = Guid.NewGuid();
+        JournalEntryDto? savedEntry = null;
+        var dispatcher = new DirectLendingOutboxDispatcher(
+            operationsStore,
+            commandService,
+            queryService,
+            new DirectLendingOptions(),
+            NullLogger<DirectLendingOutboxDispatcher>.Instance);
+        var sourceEvent = new LoanEventLineageDto(
+            sourceEventId,
+            AggregateVersion: 4,
+            EventType: "loan.mixed-payment-applied",
+            EventSchemaVersion: 1,
+            EffectiveDate: new DateOnly(2026, 5, 14),
+            RecordedAt: DateTimeOffset.Parse("2026-05-14T12:00:00Z"),
+            PayloadJson: payloadJson,
+            CausationId: null,
+            CorrelationId: null,
+            CommandId: null,
+            SourceSystem: "test",
+            ReplayFlag: false);
+
+        queryService.GetHistoryAsync(loanId, Arg.Any<CancellationToken>()).Returns([sourceEvent]);
+        queryService.GetJournalsAsync(loanId, Arg.Any<CancellationToken>()).Returns([]);
+        queryService.GetLoanAsync(loanId, Arg.Any<CancellationToken>()).Returns(BuildLoanContract(loanId));
+        operationsStore
+            .SaveJournalEntryAsync(Arg.Do<JournalEntryDto>(entry => savedEntry = entry), Arg.Any<CancellationToken>())
+            .Returns(call => call.Arg<JournalEntryDto>());
+
+        await InvokeProcessAsync(dispatcher, BuildJournalMessage(loanId, sourceEventId, sourceEvent.EventType, sourceEvent.EffectiveDate));
+
+        savedEntry.Should().NotBeNull();
+        savedEntry!.Lines.Should().ContainSingle(line => line.AccountCode == "Cash" && line.DebitAmount == 10_000m);
+        savedEntry.Lines.Should().ContainSingle(line => line.AccountCode == "LoanAndAccrualsClearing" && line.CreditAmount == 10_000m);
+        savedEntry.Lines.Sum(line => line.DebitAmount).Should().Be(savedEntry.Lines.Sum(line => line.CreditAmount));
+        if (expectedPenalty > 0m)
+        {
+            savedEntry.Lines.Should().ContainSingle(line => line.AccountCode == "PenaltyReceivable" && line.DebitAmount == expectedPenalty);
+            savedEntry.Lines.Should().ContainSingle(line => line.AccountCode == "PenaltyIncome" && line.CreditAmount == expectedPenalty);
+        }
+        else
+        {
+            savedEntry.Lines.Should().HaveCount(2);
+        }
+    }
+
     [Fact]
     public async Task ProcessJournalAsync_SkipsPrepaymentPenaltyReplayWhenSourceEventAlreadyHasJournal()
     {
