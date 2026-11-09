@@ -429,9 +429,11 @@ and S2-B4 (codec single-purpose) land. Planned increments:
   The extraction's shape, bounded by the typed-record boundary: every scalar read runs through
   the `SchemaBoundTerms` reader, which verifies against the schema table that the key is
   declared and read as its declared type — codec/schema drift throws with a named field instead
-  of reading past the table; record construction stays per-class until S3-E. Cohorts 1–2 (FxSpot,
+  of reading past the table; record construction stays per-class until S3-E. Cohorts 1–3 (FxSpot,
   Deposit, MoneyMarketFund, Commodity, CryptoCurrency, Cfd; CertificateOfDeposit,
-  CommercialPaper, TreasuryBill, Repo, CashSweep, OtherSecurity, Warrant — 13 of 32 classes)
+  CommercialPaper, TreasuryBill, Repo, CashSweep, OtherSecurity, Warrant; Option, Future,
+  FxForward, NonDeliverableForward, CreditDefaultSwap, Swaption, CapFloor, StructuredNote —
+  21 of 32 classes)
   are migrated and ledgered
   (`SchemaBoundDecodeClasses`), each class's fully-populated twin exercising every bound read in
   the sweep suite; remaining classes migrate cohort by cohort under the same net (sweeps, write
