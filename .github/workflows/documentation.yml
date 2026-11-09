@@ -120,25 +120,28 @@ jobs:
           except subprocess.CalledProcessError:
               previous = ""
 
-          baseline_available = bool(previous.strip())
-          missing_previous = []
-          previous_dashboard = {}
-
-          if baseline_available:
-              previous_dashboard = json.loads(previous)
-          else:
-              missing_previous.append("docs/status/doc-health-dashboard.json")
-
+          # generate-health-dashboard.py writes a top-level snake_case "health_score".
+          # Reading any other key makes every score 0.0 and silently disables this gate.
           def extract_score(payload):
-              if isinstance(payload.get("healthScore"), (int, float)):
-                  return float(payload["healthScore"])
-              summary = payload.get("summary")
-              if isinstance(summary, dict) and isinstance(summary.get("healthScore"), (int, float)):
-                  return float(summary["healthScore"])
-              return 0.0
+              score = payload.get("health_score")
+              if isinstance(score, (int, float)) and not isinstance(score, bool):
+                  return float(score)
+              return None
 
           current_score = extract_score(current)
-          previous_score = extract_score(previous_dashboard) if baseline_available else current_score
+          if current_score is None:
+              raise SystemExit(f"{current_path} has no numeric health_score; the dashboard regression gate cannot run.")
+
+          baseline_available = bool(previous.strip())
+          previous_dashboard = json.loads(previous) if baseline_available else {}
+          previous_score = extract_score(previous_dashboard)
+          missing_previous = []
+          if previous_score is None:
+              # First commit, or a baseline without a readable score: record the gap.
+              baseline_available = False
+              missing_previous.append("docs/status/doc-health-dashboard.json")
+              previous_score = current_score
+
           delta = current_score - previous_score
           severe = baseline_available and (delta < -10.0)
 
