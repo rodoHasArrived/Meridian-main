@@ -212,6 +212,7 @@ describe("UTC date labels", () => {
   it("always carries the year so a ledger or evidence timestamp is unambiguous", () => {
     expect(formatUtcTimestamp(new Date("2026-06-30T18:05:00Z"))).toBe("Jun 30, 2026, 18:05 UTC");
     expect(formatUtcTimestamp(new Date("2025-01-01T00:00:00Z"))).toBe("Jan 1, 2025, 00:00 UTC");
+    expect(formatUtcTimestamp(new Date("not a time"))).toBe("Invalid Date");
     expect(formatUtcDate(new Date("2026-05-03T23:59:00Z"))).toBe("May 3, 2026");
   });
 });

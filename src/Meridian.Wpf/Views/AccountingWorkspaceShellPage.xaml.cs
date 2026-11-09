@@ -182,7 +182,7 @@ public partial class AccountingWorkspaceShellPage : AccountingWorkspaceShellPage
                 WorkspaceSubtitle = "Review operations, accounting, reconciliations, reporting, and approval gates without leaving the workstation shell.",
                 PrimaryScopeLabel = "Accounting Scope",
                 PrimaryScopeValue = operatingContext?.DisplayName ?? $"{profile.DisplayName} · {profile.BaseCurrency}",
-                AsOfValue = ledger?.AsOf.ToLocalTime().ToString("MMM dd yyyy HH:mm") ?? "Awaiting ledger snapshot",
+                AsOfValue = FormatHelpers.FormatUtcTimestamp(ledger?.AsOf, "Awaiting ledger snapshot"),
                 FreshnessValue = ledger is null ? "Fund data not loaded" : $"Ledger {ledger.JournalEntryCount} journals · {ledger.TrialBalance.Count} lines",
                 ReviewStateLabel = "Approval",
                 ReviewStateValue = reconciliation.OpenBreakCount > 0 ? $"{reconciliation.OpenBreakCount} break(s) require review" : "Unlocked",

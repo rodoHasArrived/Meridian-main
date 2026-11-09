@@ -293,7 +293,7 @@ not been recorded.
   `formatMoney` (`accounting` puts negatives in parentheses at the currency's minor units,
   `trading` uses a minus sign at instrument precision, `summary` shows whole units),
   `formatQuantity`, and `formatUtcTimestamp`/`formatUtcDate`/`formatUtcMonthYear`, which always
-  include the year. `formatLocalDateTime` is for times on the operator's own clock, and
+  include the year. Screens show times in UTC, not on the operator's local clock;
   `formatDateTime` covers any other date layout through a pinned-locale `Intl.DateTimeFormat`.
   ESLint blocks `Intl.*` and `toLocale*String` in every non-test file under `src/screens/`, and
   the `directIntlFormatting` baseline is empty.
@@ -1871,6 +1871,12 @@ The passport editor builds its term picker from `GET /api/security-master/asset-
 (`security-master-schema.api.ts`): scalar-editable terms grouped as the registry declares them,
 a value control per editor kind, and a client pre-check
 (`security-passport-schema-fields.view-model.ts`). The free-text field path stays as a fallback.
+The pre-check mirrors the shared `SecurityAssetTermFormModel` and is pinned to it by a parity
+contract: `SecurityAssetTermFormParityFixtureTests` (tests/Meridian.Tests) generates
+`src/test/fixtures/security-asset-term-form-parity.json` from the registry and form model, and
+`security-passport-schema-fields.parity.test.ts` replays it through the mirror — field sets in
+declared order, value choices, and every validation verdict over a fixed corpus. The server-side
+governed validator remains authoritative.
 
 ## Security Master publish outcome
 

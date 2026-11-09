@@ -9,7 +9,7 @@ import { certifyMarginSnapshot, getMarginControlCenter } from "@/lib/api";
 import type { MarginControlAccount, MarginControlCenter } from "@/types";
 import { cn } from "@/lib/utils";
 import { usesTrackedCaps } from "@/design-system/label-case";
-import { formatCurrency, formatLocalDateTime, formatNumber } from "@/lib/format";
+import { formatCurrency, formatNumber, formatUtcTimestamp } from "@/lib/format";
 
 export function MarginControlCenterScreen() {
   const [data, setData] = useState<MarginControlCenter | null>(null);
@@ -245,4 +245,4 @@ function Th(props: React.ThHTMLAttributes<HTMLTableCellElement>) { return <th cl
 function Td({ className = "", ...props }: React.TdHTMLAttributes<HTMLTableCellElement>) { return <td className={`px-3 py-2 ${className}`} {...props} />; }
 function number(value: number) { return formatNumber(value, { maximumFractionDigits: 4 }); }
 function money(value: number | null | undefined, currency = "USD") { return formatCurrency(value, { currency, maximumFractionDigits: 2 }); }
-function dateTime(value: string) { const parsed = new Date(value); return Number.isNaN(parsed.getTime()) ? value : formatLocalDateTime(parsed); }
+function dateTime(value: string) { const parsed = new Date(value); return Number.isNaN(parsed.getTime()) ? value : formatUtcTimestamp(parsed); }

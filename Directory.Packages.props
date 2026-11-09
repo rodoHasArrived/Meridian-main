@@ -156,7 +156,7 @@
     <PackageVersion Include="xunit.v3" Version="3.2.2" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
     <PackageVersion Include="FluentAssertions" Version="8.11.0" />
-    <PackageVersion Include="FsCheck.Xunit" Version="3.3.3" />
+    <PackageVersion Include="FsCheck.Xunit" Version="3.6.0" />
     <!-- Moq 4.21.0 pulls Castle.Core 5.2.1, breaking NSubstitute 5.3.0 default interface
          members (castleproject/Core#684). Retain the compatible proxy graph; see PR #3061. -->
     <PackageVersion Include="Moq" Version="4.20.72" />
