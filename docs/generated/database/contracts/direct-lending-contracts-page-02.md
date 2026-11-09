@@ -2,11 +2,25 @@
 
 # `direct-lending-contracts` data objects - page 2 of 2
 
-Objects 81-121 of 121. References crossing pages remain available in the dependency manifest.
+Objects 81-123 of 123. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% direct-lending-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_DirectLending_ProjectedCashFlowDto["ProjectedCashFlowDto"] {
+        +DateOnly? AccrualEndDate
+        +DateOnly? AccrualStartDate
+        +decimal Amount
+        +decimal? AnnualRate
+        +DateTimeOffset CreatedAt
+        +CurrencyCode Currency
+        +DateOnly DueDate
+        +int FlowSequenceNumber
+        +string FlowType
+        +string? FormulaTraceJson
+        +Guid LoanId
+        +decimal? PrincipalBasis
+    }
     class Meridian_Contracts_DirectLending_ProjectionRunDto["ProjectionRunDto"] {
         +string EngineVersion
         +DateTimeOffset GeneratedAt
@@ -98,6 +112,11 @@ classDiagram
         +DeclaredRate Rate
         +string? RecordedBy
         +string? SourceRef
+    }
+    class Meridian_Contracts_DirectLending_RefundUnappliedCashRequest["RefundUnappliedCashRequest"] {
+        +decimal Amount
+        +DateOnly EffectiveDate
+        +string ExternalRef
     }
     class Meridian_Contracts_DirectLending_RemoveCollateralRequest["RemoveCollateralRequest"] {
         +Guid CollateralId
