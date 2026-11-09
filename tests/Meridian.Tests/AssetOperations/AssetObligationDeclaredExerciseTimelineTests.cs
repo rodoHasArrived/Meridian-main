@@ -157,6 +157,39 @@ public sealed class AssetObligationDeclaredExerciseTimelineTests
     }
 
     [Fact]
+    public async Task TwoEntriesAdjustedOntoOneExerciseDate_KeepDistinctEventIdentities()
+    {
+        // Saturday 2027-01-16 and Sunday 2027-01-17 both roll Following to Monday 2027-01-18, with the
+        // same notice bounds: kind, adjusted exercise date and deadline are all equal.
+        var saturday = EuropeanCall(30, null, "Calendar");
+        saturday["callDate"] = "2027-01-16";
+        var sunday = EuropeanCall(30, null, "Calendar");
+        sunday["callDate"] = "2027-01-17";
+        sunday["callPrice"] = 100.5m;
+        var security = WithConventions(BondExerciseNoticeWatchTests.Bond([saturday, sunday]), new
+        {
+            accrualAdjusted = false,
+            businessDayConvention = "Following",
+            couponRateUnit = "Percent",
+            couponCashBasis = "Level",
+            paymentCalendars = new[] { "WEEKENDS" }
+        });
+
+        var detail = await ReadAsync(security);
+        var again = await ReadAsync(security);
+
+        var timeline = detail.TermsObligationsTimeline!;
+        OptionEvents(timeline).Should().Equal(
+            ("IssuerCallNoticeDeadline", new DateOnly(2026, 12, 19)),
+            ("IssuerCallNoticeDeadline", new DateOnly(2026, 12, 19)),
+            ("IssuerCallExercise", new DateOnly(2027, 1, 18)),
+            ("IssuerCallExercise", new DateOnly(2027, 1, 18)));
+        timeline.Events.Select(static row => row.TimelineEventId).Should().OnlyHaveUniqueItems();
+        again.TermsObligationsTimeline!.Events.Select(static row => row.TimelineEventId)
+            .Should().Equal(timeline.Events.Select(static row => row.TimelineEventId), "identities are deterministic across reads");
+    }
+
+    [Fact]
     public async Task BusinessDayNotice_UsesTheDeclaredCalendar()
     {
         var detail = await ReadAsync(BondExerciseNoticeWatchTests.Bond([EuropeanCall(10, null, "Business")]));
@@ -567,6 +600,13 @@ public sealed class AssetObligationDeclaredExerciseTimelineTests
     {
         var terms = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(security.AssetSpecificTerms)!;
         terms.Remove(SecurityVersionedTerms.ScheduleConventionsKey);
+        return security with { AssetSpecificTerms = JsonSerializer.SerializeToElement(terms) };
+    }
+
+    private static SecurityDetailDto WithConventions(SecurityDetailDto security, object block)
+    {
+        var terms = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(security.AssetSpecificTerms)!;
+        terms[SecurityVersionedTerms.ScheduleConventionsKey] = JsonSerializer.SerializeToElement(block);
         return security with { AssetSpecificTerms = JsonSerializer.SerializeToElement(terms) };
     }
 

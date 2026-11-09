@@ -131,13 +131,22 @@ public sealed partial class AssetObligationProjectionService
         string? ledgerReference,
         BondExerciseNoticeWatchResult declaredExercise)
     {
+        // Exercise dates are business-day adjusted, so two declared entries (or a Bermudan grid date and
+        // the next entry's start) can land on one date with the same kind. The occurrence of a
+        // (kind, exercise date) pair in the watch's order tells them apart. That order is by notice
+        // deadline and then by declared date, and entries on other dates never change it.
+        var occurrences = new Dictionary<(string Kind, DateOnly ExerciseDate), int>();
+
         // A blocked outcome carries no windows: the timeline reports the blocker and shows no option event.
         foreach (var window in declaredExercise.Windows)
         {
+            var pair = (window.Kind, window.ExerciseDate);
+            var occurrence = occurrences.GetValueOrDefault(pair) + 1;
+            occurrences[pair] = occurrence;
             var isCall = string.Equals(window.Kind, "Call", StringComparison.Ordinal);
             var price = window.RedemptionPrice.ToString("G29", CultureInfo.InvariantCulture);
             events.Add(BuildDeclaredExerciseEvent(
-                subject, term, projectionAsOf, window,
+                subject, term, projectionAsOf, window, occurrence,
                 isCall ? IssuerCallExerciseEventKind : HolderPutExerciseEventKind,
                 window.ExerciseDate,
                 currency,
@@ -157,7 +166,7 @@ public sealed partial class AssetObligationProjectionService
                 ? $" The notice window opens on {earliest:yyyy-MM-dd}."
                 : string.Empty;
             events.Add(BuildDeclaredExerciseEvent(
-                subject, term, projectionAsOf, window,
+                subject, term, projectionAsOf, window, occurrence,
                 isCall ? IssuerCallNoticeDeadlineEventKind : HolderPutNoticeDeadlineEventKind,
                 deadline,
                 currency,
@@ -173,6 +182,7 @@ public sealed partial class AssetObligationProjectionService
         AssetTermsVersionDto term,
         DateOnly projectionAsOf,
         BondExerciseNoticeWindow window,
+        int occurrence,
         string eventKind,
         DateOnly dueDate,
         string currency,
@@ -183,9 +193,11 @@ public sealed partial class AssetObligationProjectionService
     {
         var status = dueDate < projectionAsOf ? "MissingEvidence" : "Projected";
         return new AssetTermsObligationTimelineEventDto(
-            // Two exercise dates can share a notice deadline, so the exercise date is part of the identity.
+            // Two exercise dates can share a notice deadline, so the exercise date is part of the identity;
+            // two scenarios can share an adjusted exercise date, so a repeat carries its occurrence.
             AssetOperationsProjectionBuilder.BondIdentity(subject.SecurityId,
-                $"obligation:{term.TermsVersionId:N}:{eventKind}:{window.ExerciseDate:yyyy-MM-dd}:{dueDate:yyyy-MM-dd}"),
+                $"obligation:{term.TermsVersionId:N}:{eventKind}:{window.ExerciseDate:yyyy-MM-dd}:{dueDate:yyyy-MM-dd}"
+                + (occurrence == 1 ? string.Empty : $":{occurrence}")),
             subject.SecurityId,
             eventKind,
             "Obligations",
