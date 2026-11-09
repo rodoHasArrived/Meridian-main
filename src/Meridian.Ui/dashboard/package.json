@@ -9,12 +9,14 @@
     "build": "tsc --noEmit && vite build",
     "screenshots": "node ../../../scripts/dev/capture-web-screenshots.mjs",
     "smoke:workstation": "node scripts/smoke-workstation.mjs",
-    "lint": "eslint src",
+    "lint": "eslint src && node scripts/check-typography-floor.mjs",
     "typecheck:strict": "tsc --noEmit -p tsconfig.strict.json",
     "test": "node --max-old-space-size=4096 ./scripts/run-vitest-stable.mjs",
     "test:vitest": "vitest run",
     "test:watch": "vitest",
-    "test:w4": "vitest run src/screens/w4-acceptance-parity.test.ts src/screens/operations-continuity-screen.view-model.test.ts src/screens/reporting-screen.view-model.test.ts"
+    "test:w4": "vitest run src/screens/w4-acceptance-parity.test.ts src/screens/operations-continuity-screen.view-model.test.ts src/screens/reporting-screen.view-model.test.ts",
+    "ratchets": "node scripts/design-system-ratchets.mjs",
+    "ratchets:update": "node scripts/design-system-ratchets.mjs --write"
   },
   "dependencies": {
     "lucide-react": "1.65.0",

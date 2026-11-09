@@ -52,6 +52,7 @@ import {
   type OperationsContinuityWorkflowApprovalRow,
   type OperationsContinuityWorkflowRow
 } from "@/screens/operations-continuity-screen.view-model";
+import { eyebrowClassName } from "@/design-system/label-case";
 
 const workflowColumns: DenseDataTableColumn<OperationsContinuityWorkflowRow>[] = [
   {
@@ -359,7 +360,7 @@ const financialOperationsQueueColumns: DenseDataTableColumn<FinancialOperationsO
     label: "Work item",
     render: (row) => (
       <div className="min-w-0">
-        <span className="eyebrow-label">{row.kindLabel}</span>
+        <span className={eyebrowClassName(row.kindLabel)}>{row.kindLabel}</span>
         <span className="mt-1 block font-semibold text-foreground">{row.title}</span>
         <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.detail}</span>
         {row.technicalCode ? (
@@ -512,7 +513,7 @@ const reviewedAutomationArtifactColumns: DenseDataTableColumn<OperationsReviewed
     label: "Output",
     render: (row) => (
       <span className="block min-w-0">
-        <span className="eyebrow-label">{row.kindLabel}</span>
+        <span className={eyebrowClassName(row.kindLabel)}>{row.kindLabel}</span>
         <span className="mt-1 block font-semibold text-foreground">{row.title}</span>
         <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.sourceSummary}</span>
       </span>
@@ -1693,7 +1694,7 @@ export function OperationsContinuityScreen() {
                   <dl className="grid gap-3 text-xs leading-5 sm:grid-cols-2">
                     {selectedWorkflowTechnicalMetadata.map((field) => (
                       <div key={field.label}>
-                        <dt className="eyebrow-label">{field.label}</dt>
+                        <dt className={eyebrowClassName(field.label)}>{field.label}</dt>
                         <dd className="break-words font-mono text-foreground">{field.value}</dd>
                       </div>
                     ))}

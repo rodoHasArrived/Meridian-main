@@ -100,7 +100,11 @@ module internal ContractAggregate =
                 Collateral = servicing.Collateral,
                 UnamortizedDiscount = servicing.UnamortizedDiscount,
                 UnamortizedPremium = servicing.UnamortizedPremium,
-                IsPikToggled = servicing.IsPikToggled)
+                IsPikToggled = servicing.IsPikToggled,
+                PikInterestAccruedUnpaid = servicing.PikInterestAccruedUnpaid,
+                LastPikCapitalizationDate = servicing.LastPikCapitalizationDate,
+                RateResetHistory = servicing.RateResetHistory,
+                PikCapitalizations = servicing.PikCapitalizations)
 
         { Contract = updatedContract
           Servicing = updatedServicing
@@ -138,7 +142,11 @@ module internal ContractAggregate =
                 Collateral = servicing.Collateral,
                 UnamortizedDiscount = servicing.UnamortizedDiscount,
                 UnamortizedPremium = servicing.UnamortizedPremium,
-                IsPikToggled = servicing.IsPikToggled)
+                IsPikToggled = servicing.IsPikToggled,
+                PikInterestAccruedUnpaid = servicing.PikInterestAccruedUnpaid,
+                LastPikCapitalizationDate = servicing.LastPikCapitalizationDate,
+                RateResetHistory = servicing.RateResetHistory,
+                PikCapitalizations = servicing.PikCapitalizations)
 
         { Contract = updatedContract
           Servicing = updatedServicing }

@@ -217,7 +217,7 @@ describe("accounting-screen reconciliation view model", () => {
       matchCountLabel: "24",
       breakCountLabel: "2",
       caseCountLabel: "1",
-      importedAtLabel: "May 1, 00:04 UTC",
+      importedAtLabel: "May 1, 2026, 00:04 UTC",
       unavailableReason: null
     });
     expect(state.tabs.map((tab) => tab.label)).toEqual([
@@ -695,8 +695,8 @@ describe("accounting-screen reconciliation view model", () => {
       routingActionAriaLabel: "Open routing target for reconciliation break run-57:fees"
     });
     expect(state.selectedDetail?.fields).toEqual(expect.arrayContaining([
-      { label: "Detected", value: "Jan 2, 00:00 UTC" },
-      { label: "Updated", value: "Jan 2, 00:00 UTC" },
+      { label: "Detected", value: "Jan 2, 2026, 00:00 UTC" },
+      { label: "Updated", value: "Jan 2, 2026, 00:00 UTC" },
       { label: "Exception route", value: "fund-ops-review" },
       { label: "Tolerance profile", value: "fee-variance-ops" },
       { label: "Tolerance band", value: "$100" },

@@ -19,6 +19,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useVisibleInterval } from "@/hooks/use-visible-interval";
 import { cn } from "@/lib/utils";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 type PendingAction = "shutdown" | "restart";
 
@@ -164,7 +165,7 @@ export function LifecycleControlPanel() {
             )}
           </div>
           <div className="rounded-md border border-border/70 bg-background/35 px-4 py-3">
-            <div className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Last shutdown receipt</div>
+            <div className="text-xs font-semibold text-muted-foreground">Last shutdown receipt</div>
             {latestReceipt ? (
               <dl className="mt-3 grid gap-2 text-xs">
                 <ReceiptFact label="Outcome" value={latestReceipt.outcome} />
@@ -232,7 +233,7 @@ export function LifecycleControlPanel() {
 function LifecycleFact({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
   return (
     <div className="rounded-md border border-border/70 bg-background/35 px-3 py-2.5">
-      <div className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">{label}</div>
+      <div className={cn("text-[10px] text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-[0.12em]")}>{label}</div>
       <div className={cn("mt-1 truncate text-sm font-semibold text-foreground", mono && "font-mono text-xs")}>{value}</div>
     </div>
   );

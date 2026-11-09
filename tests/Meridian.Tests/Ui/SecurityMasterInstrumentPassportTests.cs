@@ -124,6 +124,28 @@ public sealed class SecurityMasterInstrumentPassportTests
     }
 
     [Fact]
+    public async Task GetInstrumentPassportAsync_LegacyUnionPayload_IsDecodedOnceAndShownVerbatim()
+    {
+        // A retained free-text payload is the label itself. The trust snapshot's economic definition
+        // decodes it once; the passport summaries and classification profile must use that decoded
+        // value rather than decode it again (which would blank "None" and unwrap "Some(Equity)").
+        var securityId = Guid.Parse("0C5B7E16-2F4D-4E9B-9C1A-6D3B2A8E4F10");
+        var queryService = new StubSecurityMasterQueryService(
+            securityId,
+            assetFamily: "Some(OtherFamily \"Some(Equity)\")",
+            subType: "OtherSubType \"None\"");
+        var service = CreateService(queryService);
+
+        var passport = await service.GetInstrumentPassportAsync(securityId, fundProfileId: null);
+        var snapshot = await service.GetTrustSnapshotAsync(securityId, fundProfileId: null);
+
+        snapshot!.EconomicDefinition.AssetFamily.Should().Be("Some(Equity)");
+        snapshot.EconomicDefinition.SubType.Should().Be("None");
+        passport!.ClassificationProfile!.AssetFamily.Should().Be("Some(Equity)");
+        passport.ClassificationProfile.SubType.Should().Be("None");
+    }
+
+    [Fact]
     public async Task GetTrustSnapshotAsync_AttachesInstrumentPassportForSharedClients()
     {
         var securityId = Guid.Parse("E59D43D7-A357-4D9F-9398-CE2707B81555");
@@ -518,7 +540,10 @@ public sealed class SecurityMasterInstrumentPassportTests
             tenancyRegistry,
             httpContextAccessor);
 
-    private sealed class StubSecurityMasterQueryService(Guid securityId)
+    private sealed class StubSecurityMasterQueryService(
+        Guid securityId,
+        string? assetFamily = "Public Equity",
+        string subType = "CommonShare")
         : ContractSecurityMasterQueryService
     {
         private readonly DateTimeOffset _effectiveFrom = new(2026, 1, 2, 0, 0, 0, TimeSpan.Zero);
@@ -590,8 +615,8 @@ public sealed class SecurityMasterInstrumentPassportTests
                 ? new SecurityEconomicDefinitionRecord(
                     SecurityId: securityId,
                     AssetClass: "Equity",
-                    AssetFamily: "Public Equity",
-                    SubType: "CommonShare",
+                    AssetFamily: assetFamily,
+                    SubType: subType,
                     TypeName: "Common Share",
                     IssuerType: "Corporate",
                     RiskCountry: "US",

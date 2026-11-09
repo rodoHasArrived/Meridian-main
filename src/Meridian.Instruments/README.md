@@ -16,7 +16,7 @@ in either workstation. Observed fixings and forecasts retain their distinct sour
 the effective coupon reflects contractual caps/floors. Fixed/zero v1/v2 remain explicitly selectable
 and keep their golden outputs. See the [bond capability plan](../../docs/engineering/plans/bond-capability-expansion.md#workstation-floating-analytics).
 
-Bond analytics v2 consumes the shared Contracts economics and exercise calculators. Explicit `bond-analytics-v1` dispatch preserves retained settlement verification by replaying through the same kernels in `BondEconomicsCompatibility.AnalyticsV1` mode; the two versions share one code path and are pinned by the `bond-analytics-versions` golden fixture. The cash ladder v2 uses projection-bound terms for declared call/put proceeds and per-reset evidence for floating shocks. Already-observed resets remain fixed; future index rates are shifted before contractual spread and cap/floor application. Missing evidence and unsupported signed coupon cash block the scenario. `LegacyPortfolioCashLadderEngine` retains v1 behavior for explicit historical replay, selected only by the exact `portfolio-cash-ladder-v1` engine version on the shared cash-ladder query and never by fallback; both engines are pinned by the `portfolio-cash-ladder-versions` golden fixture. Undeclared records keep their compatibility behavior.
+Bond analytics v2 consumes the shared Contracts economics and exercise calculators. Explicit `bond-analytics-v1` dispatch preserves retained settlement verification by replaying through the same kernels in `BondEconomicsCompatibility.AnalyticsV1` mode; the two versions share one code path and are pinned by the `bond-analytics-versions` golden fixture. The cash ladder v2 uses projection-bound terms for declared call/put proceeds and per-reset evidence for floating shocks. Already-observed resets remain fixed; future index rates are shifted before contractual spread and cap/floor application. Missing evidence and unsupported signed coupon cash block the scenario. `LegacyPortfolioCashLadderEngine` retains v1 behavior for explicit historical replay, selected only by the exact `portfolio-cash-ladder-v1` engine version on the shared cash-ladder query and never by fallback; both engines are pinned by the `portfolio-cash-ladder-versions` golden fixture. Undeclared records keep their compatibility behavior. The workstation notice-date watch (`BondExerciseNoticeWatch` in Contracts) uses the same scenario resolution, so its exercise and notice dates match analytics and the cash ladder.
 
 Both analytics versions return a blocked result when shared economic-schedule validation fails,
 retaining its source and row diagnostics and exposing no partial metrics. Unrelated query or storage
@@ -90,7 +90,11 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `AssetOperations/AssetObligationProjectionService.cs` - retained-term projection service for
   Security Master-keyed assets that emits V1 expected cash flows, non-cash obligations, formula
   traces, ledger-support references, and timeline variances without writing ledger facts, including
-  contractual bond principal schedules mapped into sinking-fund repayment projections.
+  contractual bond principal schedules mapped into sinking-fund repayment projections. A coupon
+  field that declares a default unit in `SecurityRateFieldUnits` (Deposit `interestRate`: Fraction)
+  is read through `RateUnitNormalizer`; a value outside its declared range (a legacy 4.5 written in
+  percentage points) yields no accrual convention instead of being reinterpreted by magnitude
+  (review D10, slice 4). Bond-family coupons keep this reader's percentage-point convention.
 - `AssetOperations/FactorPaydownProjectionService.cs` - deterministic MBS factor-paydown projector
   that validates retained evidence, held face, factor bounds, currency rounding, and optimistic
   position version before producing typed event, economic-state, and projection-lineage records.

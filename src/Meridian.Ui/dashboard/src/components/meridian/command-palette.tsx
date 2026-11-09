@@ -22,6 +22,7 @@ import type { AppShellOperatingScopeInput } from "@/app-shell.operating-scope";
 import { describeApiError } from "@/lib/api-errors";
 import { cn } from "@/lib/utils";
 import type { WorkflowLibrary, WorkflowPresetLibrary } from "@/types";
+import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
 
 /**
  * Full-screen command palette overlay for quick workspace navigation.
@@ -274,7 +275,7 @@ export function CommandPalette({
         />
         <nav className="command-palette-results mt-3 overflow-y-auto pr-1" aria-label={viewModel.commandListLabel}>
           <div className="flex items-center justify-between gap-3 pb-2">
-            <div className="eyebrow-label">{viewModel.itemCountLabel}</div>
+            <div className={eyebrowClassName(viewModel.itemCountLabel)}>{viewModel.itemCountLabel}</div>
             <div id="command-palette-filter-count" className="text-xs text-muted-foreground" aria-live="polite">
               {viewModel.filteredItemCountLabel}
             </div>
@@ -282,7 +283,7 @@ export function CommandPalette({
           {query.trim() === "" && viewModel.recommendedItems.length > 0 ? (
             <section className="mb-3 rounded-md border border-primary/25 bg-primary/5 px-3 py-3" aria-label={viewModel.recommendedItemsLabel}>
               <div className="mb-2 flex items-center justify-between gap-3">
-                <div className="eyebrow-label">{viewModel.recommendedItemsLabel}</div>
+                <div className={eyebrowClassName(viewModel.recommendedItemsLabel)}>{viewModel.recommendedItemsLabel}</div>
                 <div className="font-mono text-[10px] text-muted-foreground">{viewModel.recommendedItemsCountLabel}</div>
               </div>
               <div className="grid gap-1 sm:grid-cols-2">
@@ -325,7 +326,7 @@ export function CommandPalette({
             >
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0">
-                  <div className="inline-flex rounded-sm border border-border/70 bg-background/70 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                  <div className={cn("inline-flex rounded-sm border border-border/70 bg-background/70 px-2 py-1 text-[10px] text-muted-foreground", usesTrackedCaps(viewModel.emptyState.statusLabel) && "font-mono uppercase tracking-[0.12em]")}>
                     {viewModel.emptyState.statusLabel}
                   </div>
                   <div

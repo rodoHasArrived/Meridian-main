@@ -374,6 +374,11 @@ This table is intentionally **path-first** to support API documentation validati
 | `/api/loans/rebuild-all` | POST | Direct Lending | Triggers portfolio-wide loan snapshot rebuild. |
 | `/api/loans/rebuild-checkpoints` | GET | Direct Lending | Reads rebuild checkpoint posture before triggering rebuild mutation. |
 | `/api/loans/portfolio` | GET | Direct Lending | Reads aggregated direct-lending portfolio posture. |
+| `/api/loans/index-fixings` | POST | Direct Lending | Records or revises a benchmark fixing in a declared unit (insert-only revisions); requires ManageDirectLending, fund-scoped write tenant and mutation rate limiting. |
+| `/api/loans/index-fixings` | GET | Direct Lending | Lists effective fixings, filtered by `index`, `from`, `to`. |
+| `/api/loans/{loanId:guid}/rate-resets/scheduled` | POST | Direct Lending | Applies a scheduled floating-rate reset from the fixing store; returns 422 when the fixing is missing (fail closed). |
+| `/api/loans/{loanId:guid}/pik/capitalizations` | POST | Direct Lending | Capitalizes accrued PIK interest into principal on a policy date (Dr LoanPrincipal / Cr PikInterestReceivable). |
+| `/api/loans/{loanId:guid}/schedules/servicing` | GET | Direct Lending | Previews reset dates (with fixing availability) and PIK capitalization dates in a window of up to 3,660 days. |
 | `/api/security-master/corporate-actions/ingest` | POST | Security Master | Runs provider-backed corporate-action ingest across mastered tickers; requires Security Master mutation permission and returns retained ingest evidence. |
 
 ### Ledger account oversight (`/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/*`)
@@ -695,10 +700,43 @@ and denying or withdrawing an entry also retires any approvals linked through it
 | GET | `/api/ingestion/jobs` | List all ingestion jobs |
 | POST | `/api/ingestion/jobs` | Create a new ingestion job (Draft state) |
 | GET | `/api/ingestion/jobs/{jobId}` | Get a specific ingestion job |
-| DELETE | `/api/ingestion/jobs/{jobId}` | Delete a terminal ingestion job |
-| POST | `/api/ingestion/jobs/{jobId}/transition` | Transition job state |
 | GET | `/api/ingestion/jobs/resumable` | List jobs eligible for resume (failed or paused with checkpoint) |
 | GET | `/api/ingestion/summary` | Summary of all jobs by state and workload type |
+
+Reads require `ViewHistoricalData` or `TriggerBackfill`; create requires `TriggerBackfill` and is rate limited. Raw state-transition and delete routes are not exposed: operator pause, resume, retry and cancel go through the governed workstation ingestion-operation action route, which requires a rationale and idempotency key, enforces tenant/company scope and retains action evidence.
+
+### Banking (`/api/banking/*`)
+
+All routes except the transaction list take a required `entityId` query parameter. Reads require
+`ViewDirectLending`; payment initiation, approval, rejection, currency remediation and bank-evidence
+recording require `ManageDirectLending`. Malformed request bodies return `400`.
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| POST | `/api/banking/payments` | Initiate a pending payment |
+| GET | `/api/banking/payments/pending` | Pending payments for an entity (payment-approvals screen) |
+| POST | `/api/banking/payments/{pendingPaymentId}/approve` | Approve a pending payment |
+| POST | `/api/banking/payments/{pendingPaymentId}/reject` | Reject a pending payment |
+| POST | `/api/banking/payments/{pendingPaymentId}/currency-remediation` | Remediate a payment's currency |
+| POST | `/api/banking/payments/{pendingPaymentId}/bank-evidence` | Record bank evidence for a payment |
+| GET | `/api/banking/transactions` | Bank transaction records, optionally filtered by `entityId` |
+| POST | `/api/dev/seed/bank-transactions` | Seed synthetic bank transactions; mapped only in Development and Test hosts, requires `AdminMaintenance` |
+
+### Money market funds (`/api/security-master/money-market-funds/*`)
+
+Reads (including `POST .../search`) require `ViewSecurityMaster` or `ModifySecurityMaster`;
+`POST .../{securityId}/rebuild` requires `ModifySecurityMaster`.
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| GET | `/api/security-master/money-market-funds/{securityId}` | MMF reference record |
+| POST | `/api/security-master/money-market-funds/search` | Search MMFs by filter criteria |
+| GET | `/api/security-master/money-market-funds/{securityId}/liquidity` | Liquidity projection for one MMF |
+| GET | `/api/security-master/money-market-funds/liquidity/liquid` | All active MMFs in the Liquid state |
+| GET | `/api/security-master/money-market-funds/{securityId}/sweep-profile` | Sweep-eligibility and liquidity-fee profile |
+| GET | `/api/security-master/money-market-funds/family/{familyName}` | Fund-family projection |
+| POST | `/api/security-master/money-market-funds/{securityId}/rebuild` | Rebuild projections for one MMF |
+| GET | `/api/security-master/money-market-funds/rebuild/checkpoints` | Projection rebuild checkpoints |
 
 ### Packaging (`/api/packaging/*`)
 

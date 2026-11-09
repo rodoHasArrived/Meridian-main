@@ -93,6 +93,10 @@ scope so synchronization and durable recovery revoke evidence when the active co
 The OMS retains it in `OrderState.BrokerAccountId` for exact account-qualified restart recovery;
 it is distinct from internal `FundAccountId` and cannot be supplied through caller routing metadata.
 Both fields are omitted when null, so old recovery snapshots remain readable without inventing ownership.
+`ExecutionReport.BookedMoneyMultiplier` records the money scale a paper book applied to a fill (the
+contract multiplier for listed premium contracts); it is omitted when null, and an unstamped durable
+record replays at the 1× it was booked at. `PositionState.ContractMultiplier` (default 1) scales its
+`UnrealizedPnl` and `MarketValue`, while `AverageCostBasis` and `MarketPrice` stay per-unit quotes.
 Brokerage activity fill snapshots can carry explicit provider-reported realized P&L when a broker
 or custodian supplies it; callers should leave the field null rather than infer it from fill
 notional. Activity snapshots can also carry provider corporate-action/factor events such as

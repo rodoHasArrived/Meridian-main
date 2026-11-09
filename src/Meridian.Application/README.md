@@ -11,6 +11,9 @@ last_reviewed: 2026-10-31
 
 # src/Meridian.Application
 
+Backfill runs publish into an `EventPipeline` with `BoundedChannelFullMode.Wait`, so a
+provider that outpaces the JSONL sink is back-pressured instead of silently evicting queued bars.
+
 Bond cash-flow context receipts now use `bond-cash-flow-context-v2`, sharing declared fixed-coupon economics and retaining floating reset evidence. Replay dispatches v1 through its original arithmetic. Declared observed rates must match the exact supported period reset; an explicit missing or empty fixing schedule cannot revive an older observation. A scalar current rate requires its reset date and source. Future resets use retained forward inputs; other instrument families keep their existing fixing behavior.
 
 `ContractualCashFlowPreviewService` resolves retained Security Master/direct-lending facts and pinned curves for the shared calculation engine. Swap leg conventions are decoded only at or above their declared terms version, preserving inert residue on earlier rows. Currency and convention lookup follow the shared resolver's source and alias ordering; malformed leg rows block calculation before raw and typed rows are paired. Invalid retained economic schedules produce a structured `ContractInputsUnavailable` blocker before calculation or run persistence; unrelated storage and runtime failures still propagate. `FileContractualCashFlowRunStore` publishes write-once, verifiable replay packets under the data root; replay uses the packet's normalized contract without rerunning current source mapping. Missing historical balance/notice evidence and assigned provider schedules block rather than falling back. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).
@@ -224,6 +227,11 @@ Unspecified (`Other`) and undefined currency values leave monetary totals unavai
 Direct-lending outbox deliveries with unsupported topics or missing journal source evidence
 remain failed and retryable; they are never silently acknowledged as processed.
 
+Direct-lending storage falls back to the Security Master connection string, so it can compose
+without a ledger database. `LoanAccountingProjector` therefore resolves the ledger journal store
+optionally and fails closed on every ledger-impacting event when none is composed; no substitute
+ledger store is registered. Proof is in `StorageFeatureRegistrationTests`.
+
 
 Direct-lending projection and reconciliation endpoints preserve `X-Command-Id` through the
 shared service into committed run identity handling. Repeating a command on the same loan
@@ -254,7 +262,12 @@ failover, symbol, subscription and provider-extended endpoints; the subscription
 module setup) uses `ConfigStore.UpdateAsync`, which loads the document inside that lock, applies the
 synchronous mutator and writes atomically, so concurrent writers editing different sections cannot drop
 each other's change (PRD-002 "concurrent configuration writes"). An edit through `UpdateAsync` fails
-closed on a corrupt or JSON-null file instead of replacing it with defaults. `ConfigStore.SaveAsync`
+closed on a corrupt or JSON-null file instead of replacing it with defaults. Read-only loads
+(`ConfigStore.Load` / `LoadConfig`, and environment overlays applied by `ConfigurationPipeline` and
+`ConfigurationService.LoadAndPrepareConfig`) also fail closed: a missing file yields defaults with a
+logged warning for first-run hosts, but an existing file that is malformed, JSON-null or unreadable
+throws `InvalidDataException` naming the path. Load diagnostics go through Serilog, not the console.
+The write lock waits through `Core.IO.ExclusiveFileLock` with jittered backoff. `ConfigStore.SaveAsync`
 remains whole-document replacement, last writer wins, reserved for callers that own the entire document:
 the CLI `SaveConfigAsync` path and the setup wizard's generated output. Capability override writes take
 the same lock, and so does the WPF shell: `ConfigServiceBase` runs every section-level mutation through a
@@ -804,7 +817,11 @@ Core workstation host. Do not introduce a second listener or independent monitor
   custom profile id, version, field-key, or field-value filters are supplied. Identifier fallback
   applies the same provider authority as the durable store: provider-bound
   identifiers and aliases require the exact normalized provider, while providerless legacy primary
-  fields remain eligible only when no matching authoritative identifier row exists. Profile
+  fields remain eligible only when no matching authoritative identifier row exists. Validation
+  warns with `SM_REGULATORY_IDENTIFIER_ASSET_CLASS_MISMATCH` when a UTI, UPI or Markit RED code sits
+  on an asset class `SecurityAssetClassCatalog.MayCarryIdentifierKind` does not admit, refuses a
+  shared-reference kind (UPI or RED) as primary with `SM_SHARED_IDENTIFIER_NOT_PRIMARY`, and treats
+  `Uti` as a canonical duplicate kind. Profile
   definitions are governed by `SecurityAssetProfileGovernanceService`, which merges seeded starter
   definitions
   with storage-root persisted drafts, approvals, rollback-created versions, and audit lineage.
@@ -1229,7 +1246,8 @@ this guard and keep their existing provider attribution. Verify this lane with
 Security Master canonical writes run under `ISecurityMasterCanonicalWriteScope`. With the
 PostgreSQL scope registered, create, amend and deactivate append the event, upsert the projection
 and record canonical field attribution in one transaction; a failed attribution rolls back the
-event and projection. Workbench restorations mark `RestoresPriorDecision`, the only override
+event, the projection and the identifier revisions the projection appended (migration 062). Storage
+composition registers `ISecurityIdentifierHistoryStore` for recorded identifier-history reads. Workbench restorations mark `RestoresPriorDecision`, the only override
 decision exempt from independent review. `FaceValueLotExtensions.ToLedgerTaxLot` emits `FaceValue`
 lots with multiplier 100. Writes reject non-canonical values for typed term conventions
 (day count, settlement method, option right).
@@ -1294,6 +1312,19 @@ dormant in production. Verify
 this lane with the declared-conventions partial of `SecurityMasterCashFlowServiceTests`,
 `ScheduleSpecFactoryTests` and `SecurityMasterCashFlowProjectionShapeTests`.
 
+Rate units (review D10, slice 4, 2026-11-04): `SecurityMasterCashFlowService` (legacy coupon walk,
+legacy leg walk, declared projection and declared floating bond leg) and
+`ContractualCashFlowPreviewService` read every coupon, fixed-leg rate, fixing, cap, floor and step
+rate through `Meridian.Contracts.SecurityMaster.RateUnitNormalizer`. The retired heuristic read a
+value at or below 1 as a fraction and divided anything larger by 100. A rate with no declared unit
+(no `couponRateUnit` and no field default in `SecurityRateFieldUnits`) now blocks: the projection
+carries a `BlockedReason` quoting the raw value, and the preview returns a `RateUnitUndeclared`
+blocker (`RateOutsideDeclaredRange` for a declared value outside the field's range or sign policy).
+Zero needs no unit, forward-curve rates stay fractions, and `*Bps` spreads stay basis points. The
+undeclared-legacy policy is decided (D3, 2026-11-05: undeclared non-zero rates block); swap legs
+cannot declare a per-leg unit yet, so their non-zero rates block too. Verify with
+`DeclaredRateUnitParityTests`, `RateUnitNormalizerTests` and the cash-flow suites.
+
 `AddSecurityMasterTermsCapability(services, dataRoot)` (in `Meridian.Application.Composition`)
 registers `FileBusinessDayCalendarSource` over `<dataRoot>/calendars` with `TryAddSingleton` and
 the internal `SecurityMasterTermsCapabilityHostedService`. `StorageFeatureRegistration` calls it
@@ -1312,6 +1343,20 @@ workstation-mode host writes these lines to the same file. Verify it with
 `SecurityMasterTermsCapabilityStartupTests`, `BusinessDayCalendarSourceCompositionTests` and
 `UiServerLoggingTests`.
 
+`SecurityMasterTermsCapabilityVerifier` throws `SecurityMasterTermsCapabilityRefusedException`, a
+`StartupRefusedException`, at each of its refusal sites, with its fail-closed semantics unchanged:
+startup refuses as before, and a refused request answers 503 through the shared API exception
+handler. Besides canonical creates, amendments and deactivations, the verifier gates
+`SecurityMasterRebuildOrchestrator` before the warm persist, each replayed batch and the upserts
+of a scoped asset-class rebuild (built by `UflProjectionRebuilder`), the direct-lending Asset Operations publication in
+`PostgresDirectLendingCommandService`, whose refusal fails the outbox delivery so it retries, and,
+through `LedgerFeatureRegistration`, new amortization batches in Financial Operations. An omitted
+rebuild verifier falls back to the options-built one, as `SecurityMasterService` does; the
+direct-lending and amortization gates are ungated when no verifier is registered. Verify it with
+`SecurityMasterRebuildCapabilityFloorTests`, the `CapabilityFloor` partial of
+`PostgresDirectLendingCommandServiceTests` and `LedgerFeatureRegistrationCapabilityFloorTests`
+(`docs/operators/security-master-terms-contract-rollout.md`).
+
 ## API contract notes
 
 - Instruments-owned options-chain provider IDs are normalized with trim plus invariant lowercase
@@ -1326,6 +1371,23 @@ workstation-mode host writes these lines to the same file. Verify it with
 - **Backfill cancellation.** `HistoricalBackfillService` and `CrossSourceBackfillReconciliationService` rethrow `OperationCanceledException` only for caller cancellation. A provider timeout is recorded as a per-symbol or per-provider failure.
 - **Help text.** `HelpCommand` cites only repository paths that exist, which `HelpCommandTests.HelpText_CitedRepositoryPaths_AllExist` enforces.
 - **OAuth refresh start-up.** If `OAuthTokenRefreshService`'s first initialization fails (vault unavailable, transient I/O), the background loop retries with capped exponential backoff (30 s, doubling to 15 min) instead of exiting. Before, tokens stopped refreshing until the process restarted.
+- **Manual payment breakdowns (in-memory service).** `DirectLendingServiceSupport.ResolveMixedPayment` applies the same owed-balance cap as the F# servicing aggregate, so both service implementations allocate identically. Excess is reported as `UnappliedAmount` (see `PRD-115` for term-driven handling).
+
+## Security Master governance controls (2026-11)
+
+- **Governed term amendments.** `IGovernedTermAmendmentPolicy` (`GovernedTermAmendmentPolicy`) is the single source of the `SecurityMasterWorkbench:RequireGovernedTermAmendments` refusal. `SecurityMasterService` enforces it itself, so every in-process caller is covered: while it is on, `ISecurityMasterService.AmendTermsAsync` and the preferred, convertible and term-block amendments throw `GovernedTermAmendmentRequiredException`. Two other typed paths are not blocked by it:
+  - `ISecurityMasterAmender` is the system-ingest path, used by Polygon trading-parameter backfill, EDGAR ingest and ticker changes. It refuses operator source systems (`SecurityMasterWriteAuthority`).
+  - `IGovernedPublicationAmender` is the publication path, used only by `ApprovedFieldEditCanonicalMergeHandler`. It requires `SourceRecordId` to name a revision the revision store holds as Approved or Published for the same security. With no revision store composed, it refuses while governance is on.
+
+  The setting still defaults to off.
+- **Stale field proposals.** A staged `assetSpecificTerms.*` edit records its canonical base: the version plus a `SecurityAssetTermsFieldSnapshot` of the keys the merge overwrites (migration `060`). At publish, `ApprovedFieldEditCanonicalMergeHandler` refuses a proposal whose field changed since the draft by throwing `StaleFieldProposalException`; the revision stays Approved and must be re-staged. Changes to other fields still merge, a field already holding the value converges, and revisions without a base publish as before. The publish result's `CanonicalMerge` reports whether the golden record changed.
+- **Independent field-edit review.** With `SecurityMasterWorkbench:RequireIndependentReviewer` on, a governed field-edit revision cannot be submitted naming its drafter as reviewer, and cannot be approved by its submitter. The setting is read at each call. Its code default is now false, which keeps the previous behavior, since nothing read it before; the sample configuration turns it on.
+- **Independent profile approval.** `SecurityAssetProfileGovernanceService` refuses an asset-profile approval by any actor who drafted that version when `SecurityMasterWorkbench:RequireIndependentProfileApprover` is on. A drafter is identified by the recorded `DraftedBy`, by the drafted audit events for that version, or, for a legacy draft without `DraftedBy`, by its recorded author. The setting defaults to off and is read at approval time.
+- **Classification labels.** `SecurityEconomicDefinitionAdapter` stores asset-class, family and sub-type labels from the F# domain's explicit name functions rather than union `ToString()`, which would emit payload syntax such as `OtherFamily "x"` or `Some(...)`. Labels retained before that change are decoded at read time by `Meridian.Contracts.SecurityMaster.ClassificationLabelReader` (preferred-equity replay guard, workbench DTO mapping, accounting sub-type and certified-report rows). Each label is decoded once, where a stored record becomes a DTO or row; downstream consumers such as the WPF display, the passport summaries and the CSV/XLSX export use that decoded value; retained events are not rewritten. Create and terms amendment refuse an `OtherSecurity` `subType`/`category` that would read back differently (`None`, `Some(Equity)`, a quoted literal or a union payload) with `SecurityMasterWriteRefusedException` (`SecurityMasterService.ClassificationText.cs`).
+- **Removed prototype.** The unused Application-side `SecurityMaster/CashFlow/ScheduleSpecFactory` prototype was deleted; production uses `Meridian.Contracts.SecurityMaster.ScheduleSpecFactory`.
+- **Derived term-key spellings.** `SecurityMasterConflictDetection.ProfileFieldComparisonExclusions` and the data-quality maturity reads (`MA001`, `VC002`, `SecurityMasterDataQualityService.MaturitySpellings`) take their spelling pairs (`maturity`/`maturityDate`, `dayCount`/`dayCountConvention`, factor `factor`/`currentFactor`) from `SecurityAssetTermsSchema` aliases instead of restated lists. `SecurityMasterTermSpellingDerivationTests` pins each derived set to the one it replaced; the conditional quality rules are unchanged.
+
+See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D9, slice 6 disposition) for status and open decisions.
 
 ## Diagrams
 

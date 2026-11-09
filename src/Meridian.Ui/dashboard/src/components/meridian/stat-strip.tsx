@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import type { MetricSnapshot } from "@/types";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 const statToneClass: Record<MetricSnapshot["tone"], string> = {
   default: "text-foreground",
@@ -39,7 +40,7 @@ export function StatStrip({
     >
       {metrics.map((metric) => (
         <div key={metric.id} className={cn("flex min-w-0 gap-2", compact ? "flex-col gap-0.5" : "items-baseline")}>
-          <dt className="whitespace-nowrap text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
+          <dt className={cn("whitespace-nowrap text-[11px] font-medium text-muted-foreground", usesTrackedCaps(metric.label) && "uppercase tracking-[0.08em]")}>
             {metric.label}
           </dt>
           <dd className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
