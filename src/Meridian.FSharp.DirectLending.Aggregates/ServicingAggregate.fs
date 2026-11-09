@@ -150,7 +150,9 @@ module internal ServicingAggregate =
                 updatedTotalDrawn,
                 DirectLendingInterop.CalculateAvailableToDraw(servicing.CurrentCommitment, updatedTotalDrawn),
                 balances,
-                (servicing.DrawdownLots |> Seq.append [ lot ] |> Seq.sortBy _.DrawdownDate |> Seq.toArray),
+                // Append, then a stable sort: same-day lots stay in booking order, as in the
+                // in-memory service and the event rebuilder, so payments reduce the same lots.
+                (Seq.append servicing.DrawdownLots [ lot ] |> Seq.sortBy _.DrawdownDate |> Seq.toArray),
                 servicing.CurrentRateReset,
                 servicing.LastAccrualDate,
                 servicing.LastPaymentDate,
