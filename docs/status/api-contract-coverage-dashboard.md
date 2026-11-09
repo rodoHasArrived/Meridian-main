@@ -12,9 +12,9 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | Metric | Value |
 |---|---:|
 | Weighted score | 20.0% |
-| Endpoint coverage | 30.7% |
+| Endpoint coverage | 30.6% |
 | Workstation contract coverage | 4.0% |
-| Endpoints documented | 228 / 743 |
+| Endpoints documented | 227 / 742 |
 | Workstation contracts documented | 39 / 971 |
 
 ## Endpoint Coverage
@@ -182,7 +182,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/demo/market-data/{symbol}` | Gap | `src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:129` |
 | `GET` | `/api/demo/mode` | Gap | `src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:80` |
 | `GET` | `/api/demo/symbols` | Gap | `src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:113` |
-| `POST` | `/api/dev/seed/bank-transactions` | Gap | `src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs:311` |
+| `POST` | `/api/dev/seed/bank-transactions` | Documented | `src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs:339` |
 | `GET` | `/api/diagnostics/bundle` | Gap | `src/Meridian.Ui.Shared/Endpoints/DiagnosticsEndpoints.cs:150` |
 | `GET` | `/api/diagnostics/config` | Gap | `src/Meridian.Ui.Shared/Endpoints/DiagnosticsEndpoints.cs:124` |
 | `GET` | `/api/diagnostics/coordination` | Gap | `src/Meridian.Ui.Shared/Endpoints/DiagnosticsEndpoints.cs:502` |
@@ -231,13 +231,11 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/health/storage` | Gap | `src/Meridian.Ui.Shared/Endpoints/HealthEndpoints.cs:154` |
 | `GET` | `/api/health/summary` | Gap | `src/Meridian.Ui.Shared/Endpoints/HealthEndpoints.cs:29` |
 | `GET` | `/api/indices/{indexName}/constituents` | Gap | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:586` |
-| `GET` | `/api/ingestion/jobs` | Documented | `src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs:29` |
-| `POST` | `/api/ingestion/jobs` | Documented | `src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs:116` |
-| `GET` | `/api/ingestion/jobs/resumable` | Documented | `src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs:160` |
-| `DELETE` | `/api/ingestion/jobs/{jobId}` | Documented | `src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs:182` |
-| `GET` | `/api/ingestion/jobs/{jobId}` | Documented | `src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs:51` |
-| `POST` | `/api/ingestion/jobs/{jobId}/transition` | Documented | `src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs:66` |
-| `GET` | `/api/ingestion/summary` | Documented | `src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs:171` |
+| `GET` | `/api/ingestion/jobs` | Documented | `src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs:30` |
+| `POST` | `/api/ingestion/jobs` | Documented | `src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs:82` |
+| `GET` | `/api/ingestion/jobs/resumable` | Documented | `src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs:131` |
+| `GET` | `/api/ingestion/jobs/{jobId}` | Documented | `src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs:56` |
+| `GET` | `/api/ingestion/summary` | Documented | `src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs:146` |
 | `POST` | `/api/journals/{journalEntryId:guid}/post` | Documented | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1109` |
 | `GET` | `/api/lean/algorithms` | Gap | `src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:159` |
 | `GET` | `/api/lean/auto-export` | Gap | `src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:308` |
@@ -517,10 +515,11 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `POST` | `/api/reference-data/bonds/migration-preview` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:19` |
 | `POST` | `/api/reference-data/bonds/migration-preview/batch` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:26` |
 | `POST` | `/api/reference-data/bonds/migration-submit` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:46` |
-| `POST` | `/api/reference-data/bonds/settlement-consideration` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:19` |
+| `POST` | `/api/reference-data/bonds/settlement-consideration` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:20` |
 | `GET` | `/api/reference-data/bonds/{securityId:guid}` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:27` |
 | `GET` | `/api/reference-data/bonds/{securityId:guid}/accrual-convention` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:59` |
-| `GET` | `/api/reference-data/bonds/{securityId:guid}/analytics` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:29` |
+| `GET` | `/api/reference-data/bonds/{securityId:guid}/analytics` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:30` |
+| `GET` | `/api/reference-data/bonds/{securityId:guid}/exercise-notices` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:77` |
 | `GET` | `/api/reference-data/bonds/{securityId:guid}/lifecycle` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:43` |
 | `GET` | `/api/reference-data/certificates-of-deposit/by-issuer` | Gap | `src/Meridian.Ui.Shared/Endpoints/CertificateOfDepositReferenceEndpoints.cs:33` |
 | `GET` | `/api/reference-data/certificates-of-deposit/maturing-before` | Gap | `src/Meridian.Ui.Shared/Endpoints/CertificateOfDepositReferenceEndpoints.cs:44` |

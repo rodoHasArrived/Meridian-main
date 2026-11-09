@@ -1,4 +1,6 @@
 using System.Threading;
+using System.Threading.Channels;
+using Meridian.Core.Pipeline;
 using Meridian.Application.UI;
 using Meridian.Core.Config;
 using Meridian.Core.Logging;
@@ -237,7 +239,14 @@ public sealed class BackfillCoordinator : IDisposable
 
             var policy = new JsonlStoragePolicy(storageOpt);
             await using var sink = new JsonlStorageSink(storageOpt, policy);
-            await using var pipeline = new EventPipeline(sink, capacity: 20_000, enablePeriodicFlush: false, metrics: _metrics);
+            // Backfill is a persistence run, not a live feed: when the provider outpaces the sink the
+            // producer must wait rather than evict queued bars. DropOldest here silently left
+            // permanent gaps on disk while bar counts (and the run's Success flag) still included them.
+            await using var pipeline = new EventPipeline(
+                sink,
+                new EventPipelinePolicy(Capacity: 20_000, FullMode: BoundedChannelFullMode.Wait),
+                enablePeriodicFlush: false,
+                metrics: _metrics);
 
             // Keep pipeline counters scoped per run
             _metrics.Reset();

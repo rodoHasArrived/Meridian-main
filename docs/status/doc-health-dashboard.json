@@ -1,11 +1,11 @@
 {
   "total_files": 798,
-  "total_lines": 183268,
+  "total_lines": 183719,
   "orphaned_count": 259,
   "no_heading_count": 157,
   "stale_count": 0,
   "todo_count": 328,
-  "average_lines": 229.7,
+  "average_lines": 230.2,
   "health_score": 83,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1679,7 +1679,7 @@
     },
     {
       "path": "docs/architecture/security-master-extensibility-review.md",
-      "line_count": 8120,
+      "line_count": 8306,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2367,7 +2367,7 @@
     },
     {
       "path": "docs/engineering/blueprints/direct-lending-excess-payment-application.md",
-      "line_count": 217,
+      "line_count": 219,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2399,7 +2399,7 @@
     },
     {
       "path": "docs/engineering/blueprints/README.md",
-      "line_count": 245,
+      "line_count": 244,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2559,7 +2559,7 @@
     },
     {
       "path": "docs/engineering/plans/security-master-review-remediation-plan.md",
-      "line_count": 119,
+      "line_count": 130,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2719,7 +2719,7 @@
     },
     {
       "path": "docs/generated/database/contracts/direct-lending-contracts-page-01.md",
-      "line_count": 662,
+      "line_count": 664,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2863,7 +2863,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-04.md",
-      "line_count": 569,
+      "line_count": 554,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2871,7 +2871,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-05.md",
-      "line_count": 475,
+      "line_count": 472,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2879,7 +2879,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-06.md",
-      "line_count": 521,
+      "line_count": 493,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2887,7 +2887,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-07.md",
-      "line_count": 129,
+      "line_count": 226,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2983,7 +2983,7 @@
     },
     {
       "path": "docs/generated/database/modules/security_master.md",
-      "line_count": 1992,
+      "line_count": 1994,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3047,7 +3047,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 13305,
+      "line_count": 13322,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3783,7 +3783,7 @@
     },
     {
       "path": "docs/reference/api-reference.md",
-      "line_count": 861,
+      "line_count": 894,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6255,7 +6255,7 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 1448,
+      "line_count": 1469,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6279,7 +6279,7 @@
     },
     {
       "path": "src/Meridian.Backtesting/README.md",
-      "line_count": 244,
+      "line_count": 248,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6287,7 +6287,7 @@
     },
     {
       "path": "src/Meridian.Contracts/README.md",
-      "line_count": 2207,
+      "line_count": 2225,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6335,7 +6335,7 @@
     },
     {
       "path": "src/Meridian.Execution.Sdk/README.md",
-      "line_count": 167,
+      "line_count": 171,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6343,7 +6343,7 @@
     },
     {
       "path": "src/Meridian.Execution/README.md",
-      "line_count": 473,
+      "line_count": 504,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6351,7 +6351,7 @@
     },
     {
       "path": "src/Meridian.FinancialOperations/README.md",
-      "line_count": 1202,
+      "line_count": 1206,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6359,7 +6359,7 @@
     },
     {
       "path": "src/Meridian.FSharp.DirectLending.Aggregates/README.md",
-      "line_count": 88,
+      "line_count": 89,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6415,7 +6415,7 @@
     },
     {
       "path": "src/Meridian.Instruments/README.md",
-      "line_count": 247,
+      "line_count": 251,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6519,7 +6519,7 @@
     },
     {
       "path": "src/Meridian.Storage/README.md",
-      "line_count": 1554,
+      "line_count": 1566,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6527,7 +6527,7 @@
     },
     {
       "path": "src/Meridian.Strategies/README.md",
-      "line_count": 310,
+      "line_count": 326,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6543,7 +6543,7 @@
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
-      "line_count": 3070,
+      "line_count": 3089,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6599,7 +6599,7 @@
     },
     {
       "path": "src/Meridian.Wpf/README.md",
-      "line_count": 1090,
+      "line_count": 1096,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6639,7 +6639,7 @@
     },
     {
       "path": "tests/fixtures/schedules/KNOWN-DEFECTS.md",
-      "line_count": 67,
+      "line_count": 75,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

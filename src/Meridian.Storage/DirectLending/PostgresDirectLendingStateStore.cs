@@ -126,7 +126,9 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                    last_payment_date,
                    servicing_revision,
                    pik_interest_accrued_unpaid,
-                   last_pik_capitalization_date
+                   last_pik_capitalization_date,
+                   prepaid_interest,
+                   unapplied_cash
             from {Qualified("loan_servicing_projection")}
             where loan_id = @loan_id;
             """;
@@ -147,7 +149,9 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
             reader.GetDecimal(5),
             reader.GetDecimal(6),
             reader.GetDecimal(7),
-            reader.GetDecimal(8));
+            reader.GetDecimal(8),
+            PrepaidInterest: reader.GetDecimal(15),
+            UnappliedCash: reader.GetDecimal(16));
         var currentRateReset = ParseNullableJson<RateResetDto>(reader.IsDBNull(9) ? null : reader.GetString(9));
         DateOnly? lastAccrualDate = reader.IsDBNull(10) ? null : DateOnly.FromDateTime(reader.GetDateTime(10));
         DateOnly? lastPaymentDate = reader.IsDBNull(11) ? null : DateOnly.FromDateTime(reader.GetDateTime(11));
@@ -779,6 +783,8 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                 servicing_revision,
                 pik_interest_accrued_unpaid,
                 last_pik_capitalization_date,
+                prepaid_interest,
+                unapplied_cash,
                 updated_at)
             values (
                 @loan_id,
@@ -798,6 +804,8 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                 @servicing_revision,
                 @pik_interest_accrued_unpaid,
                 @last_pik_capitalization_date,
+                @prepaid_interest,
+                @unapplied_cash,
                 now())
             on conflict (loan_id) do update
             set aggregate_version = excluded.aggregate_version,
@@ -816,6 +824,8 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                 servicing_revision = excluded.servicing_revision,
                 pik_interest_accrued_unpaid = excluded.pik_interest_accrued_unpaid,
                 last_pik_capitalization_date = excluded.last_pik_capitalization_date,
+                prepaid_interest = excluded.prepaid_interest,
+                unapplied_cash = excluded.unapplied_cash,
                 updated_at = excluded.updated_at;
             """;
         command.Parameters.AddWithValue("loan_id", loanId);
@@ -829,6 +839,8 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
         command.Parameters.AddWithValue("commitment_fee_accrued_unpaid", servicing.Balances.CommitmentFeeAccruedUnpaid);
         command.Parameters.AddWithValue("fees_accrued_unpaid", servicing.Balances.FeesAccruedUnpaid);
         command.Parameters.AddWithValue("penalty_accrued_unpaid", servicing.Balances.PenaltyAccruedUnpaid);
+        command.Parameters.AddWithValue("prepaid_interest", servicing.Balances.PrepaidInterest);
+        command.Parameters.AddWithValue("unapplied_cash", servicing.Balances.UnappliedCash);
         command.Parameters.AddWithValue(
             "current_rate_reset_json",
             servicing.CurrentRateReset is null ? "null" : JsonSerializer.Serialize(servicing.CurrentRateReset, JsonOptions));

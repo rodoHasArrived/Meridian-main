@@ -16,7 +16,7 @@ status, named index, index and effective coupon annual fractions, spread in basi
 The optional field and `BondAnalyticsResult.SpreadDv01` are omitted from fixed/zero v1/v2 JSON.
 These are calculation display contracts; they do not introduce discount margin or posting authority.
 
-`BondContractualEconomics` owns declared per-100 coupon cash, reference-period stub fractions, accrued interest and discounting time. `BondExerciseEconomics` shares fixed-price whole-redemption dates and cash across analytics and cash forecasts. `BondFloatingRateEvidence` freezes each observed or forecast reset with explicit units, source, spread, cap/floor, principal and accrual fraction. New declared lot previews use `canonical-lot-amortization-v5`; v1–v3 retain their original arithmetic and dispatch. The interim v4 declared model was removed before any instruction was produced and is refused as an unsupported version.
+`BondContractualEconomics` owns declared per-100 coupon cash, reference-period stub fractions, accrued interest and discounting time. `BondExerciseEconomics` shares fixed-price whole-redemption dates and cash across analytics and cash forecasts. `BondExerciseNoticeWatch` reads the same scenarios' notice bounds into dated notice windows for the workstation notice watch, refusing every structure fixed analytics refuses. `BondFloatingRateEvidence` freezes each observed or forecast reset with explicit units, source, spread, cap/floor, principal and accrual fraction. New declared lot previews use `canonical-lot-amortization-v5`; v1–v3 retain their original arithmetic and dispatch. The interim v4 declared model was removed before any instruction was produced and is refused as an unsupported version.
 
 `CashFlows/` owns the versioned calculation-only cash-flow contracts, exercise/notice resolution, standard make-whole formulas, structured coupon/principal walks, deterministic CPR/SMM/PSA prepayments, and replay verification. The `cashFlowContract` companion reads ahead of existing write ceilings; undeclared terms and existing call/put element shapes remain unchanged. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).
 
@@ -511,8 +511,11 @@ accepts older numeric status payloads; persisted queue records already use text 
   absent, matching the `NormalizeOptional` convention used across the ledger surface.
 - `SecurityMaster/` - shared Security Master command/read payloads, including corporate-action
   append requests, append results, structured audit metadata, and the injectable command service
-  contract used by HTTP endpoints, imports, provider backfills, and workstation commands. The
-  contract-owned `InstrumentTypeDescriptorCatalog` carries additive provider-routing,
+  contract used by HTTP endpoints, imports, provider backfills, and workstation commands.
+  `SecurityMasterConflictFieldCategories` classifies a conflict by whole field-path segments
+  against declared names (`SecurityIdentifierKind` values, `TradingParametersDto` fields and
+  explicit lifecycle, corporate-action, classification, currency and display names), never by
+  substrings. The contract-owned `InstrumentTypeDescriptorCatalog` carries additive provider-routing,
   validation, lifecycle, ledger, and risk hints for existing `InstrumentType` values without
   changing enum wire values. Its sibling `CorporateActionTypeDescriptorCatalog` does the same
   for the canonical corporate-action vocabulary in `CorporateActionEventTypes`: per-type ISO
@@ -528,6 +531,19 @@ accepts older numeric status payloads; persisted queue records already use text 
   `DayCountConventions` is the single day-count engine; its `TryFraction`/`Fraction` overloads
   that take a `DayCountPeriodContext` (ICMA reference periods and frequency, termination date,
   business-day predicate) refuse when a convention's context is missing instead of degrading.
+  `RateUnitNormalizer` is the single reader of stored rate units (review D10, slice 4): a record's
+  declared unit (`scheduleConventions.couponRateUnit`, or a leg's unit) wins for the fields it
+  governs, then the field default declared in `SecurityRateFieldUnits`, and otherwise the value is
+  `RateUnitResolution.Undeclared` and is flagged, never converted. Magnitude never selects a unit;
+  zero resolves as unit-invariant. `SecurityRateFieldUnits` inventories each rate field's meaning,
+  default unit (Fraction, Percent or BasisPoints), fraction range and negative-rate policy. Only
+  `*Bps` fields (BasisPoints) and Deposit/CashSweep rates (Fraction) declare a default; fields
+  stored both ways declare none. D3 (decided 2026-11-05): undeclared non-zero rates block; no field
+  default is added.
+  Every `SecurityAssetClassCatalog` descriptor also declares an accounting disposition: an
+  `AccountingInstrumentClass` or `AccountingOutsideSlice` (StructuredNote is outside the slice).
+  `ResolveAccountingInstrumentClass` returns null for a catalogued outside-slice name before the
+  `FixedIncome` taxonomy fallback, which remains only for names the catalog does not model.
 - `SecurityMaster/Schedules/` - the contractual schedule kernel (`ScheduleGenerator`, kernel
   version `contractual-schedule-kernel-v1`). A pure, deterministic `ScheduleSpec` →
   `ScheduleGenerationResult` generator: anchored or compounded grids, forward or backward
@@ -1569,8 +1585,10 @@ Direct lending terms carry an optional `ExcessPaymentApplication` rule (`HoldUna
 is settled. A null rule behaves as `HoldUnapplied` (`EffectiveExcessPaymentApplication`). It is an
 expand-only `init` member, omitted from JSON while null, so every terms version recorded before it
 existed keeps its terms hash. Setting a rule is a material term and changes the hash, and the C#
-and F# lanes pin that value identically. Routing, balances and journals follow in later PRD-115
-increments; see the
+and F# lanes pin that value identically. `OutstandingBalancesDto` also carries `PrepaidInterest`
+and `UnappliedCash`, appended with 0 defaults so earlier positional constructions and persisted JSON
+are unchanged. Both are owed *to* the borrower, so read models must not add them to outstanding
+exposure. Nothing sets them yet; routing and journals follow in later PRD-115 increments; see the
 [excess payment application blueprint](../../docs/engineering/blueprints/direct-lending-excess-payment-application.md).
 
 Accounting reconciliation casework contracts are shared here: break queue items carry assignee, priority, SLA policy/state/timestamps, age band, versioned taxonomy, threaded comments with mention/evidence/hash metadata, evidence counts, sign-off/reopen metadata, source-origin metadata, and optimistic concurrency versions. Resolve/dismiss, casework command, and bulk casework request payloads carry `ActionOrigin` so reviewed automation can draft triage but cannot resolve, sign off, dismiss, or reopen accounting exceptions. Casework command, bulk-triage, taxonomy, SLA policy, validation-problem, and sequenced audit-event payloads must remain additive so browser and WPF workstation clients use the same Accounting workflow. `ReconciliationBulkCaseworkRequest.AssignToCurrentOperator` (init-only, omitted from JSON when false) asks the server to assign the selected cases to the authenticated operator. `OperatorSurfaceVisitDto` carries an operator's previous and current visit to a workstation surface, the shared baseline for "since your last visit" markers.
