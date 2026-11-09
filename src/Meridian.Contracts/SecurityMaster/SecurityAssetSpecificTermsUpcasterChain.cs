@@ -143,7 +143,7 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     /// </summary>
     public static SecurityAssetSpecificTerms Convert(JsonElement economicTerms)
     {
-        EnsureScheduleModulesRecoverable(economicTerms, callSchedulesRecoverable: false);
+        EnsureScheduleModulesRecoverable(economicTerms, callSchedulesRecoverable: false, accrualConventionsRecoverable: false);
         using var buffer = new MemoryStream();
         using (var writer = new Utf8JsonWriter(buffer))
         {
@@ -195,14 +195,15 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     /// an original v1 write for that class.
     /// <para>
     /// What remains lost is what the economic-terms document never carried: an option's strike and
-    /// put/call, a swap's legs, a bond's subclass, and the scheduleConventions block (whose
-    /// business-day convention and joint payment calendar the Accrual module carries). Since
-    /// ADR-027 stage 1 increment 1, the Call module's call and put lists land in the flat
-    /// callSchedule and putSchedule arrays for a class that declares them, stamped at the arrays'
-    /// terms version; the entry members the economic family never carried stay null and read under
-    /// ADR-025's declared defaults. Economic-only documents that declare the still-lost accrual
-    /// conventions — or schedule lists for a class without the declared arrays — are refused
-    /// instead of presenting their flattened projection as an undeclared bullet.
+    /// put/call, a swap's legs, and a bond's subclass. Since ADR-027 stage 1 increments 1 and 2,
+    /// the Call module's call and put lists land in the flat callSchedule and putSchedule arrays,
+    /// and the Accrual module's business-day convention and joint payment calendar land in the
+    /// scheduleConventions block, for a class that declares those homes — stamped at the held
+    /// terms' versions, with the members the economic family never carried left null under
+    /// ADR-025's declared read defaults. Economic-only documents that declare schedule content a
+    /// class has no home for, that the flat readers could not decode, or that use non-canonical
+    /// spellings are refused instead of presenting their flattened projection as an undeclared,
+    /// unadjusted bullet.
     /// Those keys are listed by
     /// <see cref="UnrecoverableKeys"/> and the result keeps the <see cref="FlattenedFromMarkerProperty"/>
     /// marker. When <paramref name="assetClass"/> is not a declared class (or is <see langword="null"/>)
@@ -227,13 +228,19 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
                 "the economic payload cannot reconstruct the complete classification and preferred/convertible terms.");
         }
 
-        // ADR-027 stage 1, increment 1: a class that declares the flat callSchedule/putSchedule
-        // arrays recovers the Call module's lists instead of refusing them. The entries carry what
-        // the economic family carried (date, price, par flag, call type); the window and notice
-        // members it never carried stay null and read under ADR-025's declared defaults, so the
-        // flattened record declares its calls rather than silently running a bullet.
+        // ADR-027 stage 1, increments 1 and 2: a class that declares the flat
+        // callSchedule/putSchedule arrays recovers the Call module's lists, and a class that
+        // declares the scheduleConventions block recovers the Accrual module's business-day
+        // convention and joint payment calendar, instead of refusing them. The entries and block
+        // carry what the economic family carried; everything it never carried stays null and
+        // reads under ADR-025's declared defaults, so the flattened record declares its calls and
+        // conventions rather than silently running an unadjusted bullet.
         var callScheduleSince = SecurityAssetTermsSchema.Field(assetClass!, SecurityVersionedTerms.CallScheduleKey)?.SinceTermsVersion;
-        EnsureScheduleModulesRecoverable(economicTerms, callSchedulesRecoverable: callScheduleSince is not null);
+        var conventionsSince = SecurityAssetTermsSchema.Field(assetClass!, SecurityVersionedTerms.ScheduleConventionsKey)?.SinceTermsVersion;
+        EnsureScheduleModulesRecoverable(
+            economicTerms,
+            callSchedulesRecoverable: callScheduleSince is not null,
+            accrualConventionsRecoverable: conventionsSince is not null);
 
         var callModule = GetObject(economicTerms, "call");
         IReadOnlyList<JsonElement> callEntries = [];
@@ -245,11 +252,36 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
 
         var writeSchedules = callEntries.Count > 0 || putEntries.Count > 0;
 
+        (string? BusinessDayConvention, IReadOnlyList<string> PaymentCalendars) conventions = (null, []);
+        if (conventionsSince is not null)
+        {
+            conventions = CollectAccrualConventions(GetObject(economicTerms, "accrual"));
+        }
+
+        var writeConventions = conventions.BusinessDayConvention is not null || conventions.PaymentCalendars.Count > 0;
+
         using var buffer = new MemoryStream();
         using (var writer = new Utf8JsonWriter(buffer))
         {
-            var stampFloor = SecurityAssetClassCatalog.GetStampFloor(assetClass);
-            WriteFlatEnvelope(writer, writeSchedules ? Math.Max(stampFloor, callScheduleSince!.Value) : stampFloor);
+            var stamp = SecurityAssetClassCatalog.GetStampFloor(assetClass);
+            if (writeSchedules)
+            {
+                stamp = Math.Max(stamp, callScheduleSince!.Value);
+            }
+
+            if (writeConventions)
+            {
+                stamp = Math.Max(stamp, conventionsSince!.Value);
+            }
+
+            WriteFlatEnvelope(writer, stamp);
+
+            // The frozen fill: at or above its Since the block key is present, null when nothing
+            // is declared; below it the key is absent (ADR-024 decision 3).
+            if (conventionsSince is not null && stamp >= conventionsSince.Value)
+            {
+                WriteScheduleConventions(writer, conventions);
+            }
 
             if (writeSchedules)
             {
@@ -326,11 +358,17 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     // lacks roll, unit, lag and accrual-adjustment terms; Call lists lack windows and notice terms.
     // Retaining those modules under an ignored key would let projection/amortization run a bullet.
     // Only conversion uses this guard. Retained flat rows keep their established replay path.
-    // Since ADR-027 stage 1 increment 1, a class whose schema declares the flat callSchedule and
-    // putSchedule arrays passes callSchedulesRecoverable: the Call module's lists land in those
-    // arrays instead of being refused, so only the accrual conventions remain unrecoverable. The
-    // class-independent route keeps refusing populated lists: it has no declared keys to map onto.
-    private static void EnsureScheduleModulesRecoverable(JsonElement economicTerms, bool callSchedulesRecoverable)
+    // Since ADR-027 stage 1 increments 1 and 2, a class whose schema declares the flat
+    // callSchedule and putSchedule arrays passes callSchedulesRecoverable, and one that declares
+    // the scheduleConventions block passes accrualConventionsRecoverable: the Call module's lists
+    // and the Accrual module's conventions land in those declared homes instead of being refused.
+    // Only the serializer's canonical module spellings are recoverable; case variants keep the old
+    // refusal, and the class-independent route keeps refusing everything: it has no declared keys
+    // to map onto.
+    private static void EnsureScheduleModulesRecoverable(
+        JsonElement economicTerms,
+        bool callSchedulesRecoverable,
+        bool accrualConventionsRecoverable)
     {
         if (economicTerms.ValueKind != JsonValueKind.Object)
             return;
@@ -338,7 +376,8 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
         {
             if (module.Value.ValueKind != JsonValueKind.Object)
                 continue;
-            if (module.Name.Equals("accrual", StringComparison.OrdinalIgnoreCase))
+            if (module.Name.Equals("accrual", StringComparison.OrdinalIgnoreCase)
+                && (!accrualConventionsRecoverable || !module.Name.Equals("accrual", StringComparison.Ordinal)))
             {
                 foreach (var member in module.Value.EnumerateObject())
                 {
@@ -398,6 +437,120 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
         }
 
         return (calls, puts);
+    }
+
+    /// <summary>
+    /// The Accrual module's recoverable conventions (ADR-027 stage 1, increment 2): the
+    /// business-day convention, which must decode under the flat reader's own parser
+    /// (<see cref="SecurityTermConventions.TryParseBusinessDayConvention"/>) and is kept in its
+    /// verbatim spelling, and the joint calendar id, which inverts
+    /// <c>BusinessDayCalendars.JointCalendarId</c> exactly: the <c>+</c>-joined parts become the
+    /// block's payment calendars (the forward rule already canonicalized trim, case-dedup and
+    /// order, so the inversion is lossless for the canonical form). A declared value the flat
+    /// side could not decode — a non-string, a blank calendar part, an unrecognized convention
+    /// spelling, or a case-variant member that declares content — refuses, exactly as the old
+    /// guard did, instead of being recovered as text the schedule kernel would later reject or a
+    /// variant the conversion would ignore.
+    /// </summary>
+    private static (string? BusinessDayConvention, IReadOnlyList<string> PaymentCalendars) CollectAccrualConventions(JsonElement? accrualModule)
+    {
+        if (accrualModule is not JsonElement module)
+        {
+            return (null, []);
+        }
+
+        string? businessDayConvention = null;
+        IReadOnlyList<string> paymentCalendars = [];
+        foreach (var member in module.EnumerateObject())
+        {
+            if (member.Name.Equals("businessDayConvention", StringComparison.OrdinalIgnoreCase))
+            {
+                RefuseUnlessCanonicalScalarSpelling(member, "businessDayConvention");
+                if (member.Value.ValueKind == JsonValueKind.Null)
+                {
+                    continue;
+                }
+
+                if (member.Value.ValueKind != JsonValueKind.String
+                    || !SecurityTermConventions.TryParseBusinessDayConvention(member.Value.GetString(), out _))
+                {
+                    throw UnrecoverableSchedule();
+                }
+
+                businessDayConvention = member.Value.GetString();
+            }
+            else if (member.Name.Equals("holidayCalendar", StringComparison.OrdinalIgnoreCase))
+            {
+                RefuseUnlessCanonicalScalarSpelling(member, "holidayCalendar");
+                if (member.Value.ValueKind == JsonValueKind.Null)
+                {
+                    continue;
+                }
+
+                if (member.Value.ValueKind != JsonValueKind.String)
+                {
+                    throw UnrecoverableSchedule();
+                }
+
+                var parts = member.Value.GetString()!.Split('+');
+                if (parts.Length == 0 || parts.Any(static part => string.IsNullOrWhiteSpace(part)))
+                {
+                    throw UnrecoverableSchedule();
+                }
+
+                paymentCalendars = parts.Select(static part => part.Trim()).ToArray();
+            }
+        }
+
+        return (businessDayConvention, paymentCalendars);
+    }
+
+    private static void RefuseUnlessCanonicalScalarSpelling(JsonProperty member, string canonicalKey)
+    {
+        if (!member.Name.Equals(canonicalKey, StringComparison.Ordinal)
+            && member.Value.ValueKind is not JsonValueKind.Null)
+        {
+            throw UnrecoverableSchedule();
+        }
+    }
+
+    /// <summary>
+    /// Writes the flat <c>scheduleConventions</c> block in the frozen ADR-024 form: null when
+    /// nothing is declared, otherwise all twelve members in alphabetical order with null or []
+    /// for an unset one. The economic family carried only the business-day convention and the
+    /// joint calendar; the schedule-build members it never carried stay null and read under
+    /// ADR-025's declared defaults.
+    /// </summary>
+    private static void WriteScheduleConventions(Utf8JsonWriter writer, (string? BusinessDayConvention, IReadOnlyList<string> PaymentCalendars) conventions)
+    {
+        writer.WritePropertyName(SecurityVersionedTerms.ScheduleConventionsKey);
+        if (conventions.BusinessDayConvention is null && conventions.PaymentCalendars.Count == 0)
+        {
+            writer.WriteNullValue();
+            return;
+        }
+
+        writer.WriteStartObject();
+        writer.WriteNull("accrualAdjusted");
+        WriteStringOrNull(writer, "businessDayConvention", conventions.BusinessDayConvention);
+        writer.WriteNull("couponCashBasis");
+        writer.WriteNull("couponRateUnit");
+        writer.WriteNull("direction");
+        writer.WriteNull("endOfMonthRule");
+        writer.WriteNull("firstRegularDate");
+        writer.WriteNull("lastRegularDate");
+        writer.WritePropertyName("paymentCalendars");
+        writer.WriteStartArray();
+        foreach (var calendar in conventions.PaymentCalendars)
+        {
+            writer.WriteStringValue(calendar);
+        }
+
+        writer.WriteEndArray();
+        writer.WriteNull("paymentLagBusinessDays");
+        writer.WriteNull("rollConvention");
+        writer.WriteNull("stubPolicy");
+        writer.WriteEndObject();
     }
 
     /// <summary>

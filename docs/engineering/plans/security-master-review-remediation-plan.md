@@ -254,11 +254,32 @@ class-independent route and for classes without the declared arrays; malformed l
 populated-but-dateless entries refuse on every route
 (`SecurityEconomicScheduleReplayRefusalTests`).
 
+**Increment 2 — the Accrual module's conventions (implemented 2026-11-09).** For a class that
+declares the `scheduleConventions` block (Bond and CertificateOfDeposit at terms version 2;
+StructuredCredit at 3 — the Since-2 entry near StructuredNote in the schema belongs to `Swap.legs`), the flattening recovers the economic Accrual module's
+business-day convention (verbatim, and only when
+`SecurityTermConventions.TryParseBusinessDayConvention` decodes it) and its joint calendar (as
+the block's one payment calendar) into the frozen twelve-member block, stamped at the held
+terms' versions; at or above the block's Since the key is always present, null when nothing is
+declared, per ADR-024's frozen fill. Unrecognized spellings, blank or non-string calendars, and
+case-variant modules or members refuse exactly as the old guard did; classes without the
+declared block (and the class-independent route) keep refusing.
+
+**Increment 3 — redemption, issuer and fund members (verified complete 2026-11-09, no code).**
+Source comparison against `SecurityMasterLegacyUpgrade.termsFromKind` shows the planned work does
+not exist: every issuer and fund member a flat key feeds is already inverted by the class-aware
+mappings (issuer name/program/institution across fifteen classes; all four fund fields on
+MoneyMarketFund; fund family on InvestmentFund and PrivateFundInterest), the Redemption module's
+only source is preferred-equity classification on the Equity route that refuses economic replay
+entirely, and the remaining module members (`leiCode`, `ultimateParentName`, `issuerSector`,
+`issuerCountry`, `factorDate`, `prepaymentAssumption`, `averageLifeYears`, `originator`,
+`creditEnhancementPct`) are constant `None` in the fill — no flat key feeds them, so there is
+nothing to invert and they correctly persist only through `retainedEconomicTerms`.
+
 **Remaining increments (ordered, each with its own round-trip proof):**
-2. `scheduleConventions` from the Accrual module's conventions (lifts the accrual refusal).
-3. Redemption, issuer and fund modules onto their declared per-class keys where scalars already
-   map, covering the member fields the scalar mappings skip.
-4. The structured-product detail the `StructuredCredit` mappings do not yet carry.
+4. The structured-product detail the `StructuredCredit` mappings do not yet carry: the typed
+   `factorScheduleEntries` list (flat-declared at Since 1, serialized into the economic module,
+   currently dropped from the recovered flat row and surviving only in the retained document).
 5. The 11 unserialized modules: extend the economic serializer so the economic family stops
    depending on flat for them (prerequisite for stage 2), with the serializer's module ledger
    updated in step.

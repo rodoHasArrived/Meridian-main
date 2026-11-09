@@ -109,6 +109,136 @@ public sealed class SecurityEconomicCallScheduleFlatteningTests
                 "the S2 stamp describes the document: re-stamping it would not change it");
     }
 
+    // ── Schedule conventions (ADR-027 stage 1, increment 2) ─────────────────
+
+    [Fact]
+    public void Bond_AccrualConventions_LandInTheFrozenBlock()
+    {
+        var flat = Convert("""
+            {"maturity":{"maturityDate":"2032-06-30"},
+             "accrual":{"businessDayConvention":"ModifiedFollowing","holidayCalendar":"USNY","dayCount":"Thirty360"}}
+            """, "Bond");
+
+        flat.GetProperty(SecurityTermsEnvelope.AssetClassTermsVersionKey).GetInt32()
+            .Should().Be(2, "the document holds the version-2 conventions block and no schedule arrays");
+
+        var block = flat.GetProperty("scheduleConventions");
+        AssertFrozenMembers(block, ["accrualAdjusted", "businessDayConvention", "couponCashBasis", "couponRateUnit",
+            "direction", "endOfMonthRule", "firstRegularDate", "lastRegularDate", "paymentCalendars",
+            "paymentLagBusinessDays", "rollConvention", "stubPolicy"]);
+        block.GetProperty("businessDayConvention").GetString().Should().Be("ModifiedFollowing", "the verbatim spelling the flat parser recognizes");
+        block.GetProperty("paymentCalendars").GetArrayLength().Should().Be(1);
+        block.GetProperty("paymentCalendars")[0].GetString().Should().Be("USNY", "a single joint calendar id is one payment calendar");
+        block.GetProperty("rollConvention").ValueKind.Should().Be(JsonValueKind.Null, "members the economic family never carried stay null");
+
+        flat.TryGetProperty("callSchedule", out _).Should().BeFalse("the stamp sits below the arrays' version, so their keys are absent");
+        flat.GetProperty("dayCount").GetString().Should().Be("Thirty360", "the scalar mappings are untouched");
+    }
+
+    [Fact]
+    public void JointCalendarId_SplitsBackIntoItsPaymentCalendars()
+    {
+        // The economic holidayCalendar is BusinessDayCalendars.JointCalendarId's +-joined form;
+        // the recovery inverts it exactly (the forward rule already canonicalized the parts).
+        var flat = Convert("""
+            {"accrual":{"holidayCalendar":"GBLO+USNY"}}
+            """, "Bond");
+
+        var calendars = flat.GetProperty("scheduleConventions").GetProperty("paymentCalendars");
+        calendars.GetArrayLength().Should().Be(2);
+        calendars[0].GetString().Should().Be("GBLO");
+        calendars[1].GetString().Should().Be("USNY");
+
+        var malformed = () => Convert("""
+            {"accrual":{"holidayCalendar":"GBLO++USNY"}}
+            """, "Bond");
+        malformed.Should().Throw<InvalidOperationException>().WithMessage("Declared schedule economic replay requires retained legacy asset-specific terms;*");
+    }
+
+    [Fact]
+    public void ConventionsAndSchedulesTogether_StampAtTheHigherVersion()
+    {
+        var flat = Convert("""
+            {"accrual":{"businessDayConvention":"Following"},
+             "call":{"callSchedule":[{"callDt":"2027-01-01","callPx":101.0,"isParCall":false,"callType":"European"}]}}
+            """, "Bond");
+
+        flat.GetProperty(SecurityTermsEnvelope.AssetClassTermsVersionKey).GetInt32().Should().Be(3);
+        flat.GetProperty("scheduleConventions").GetProperty("businessDayConvention").GetString().Should().Be("Following");
+        flat.GetProperty("callSchedule").GetArrayLength().Should().Be(1);
+    }
+
+    [Fact]
+    public void SchedulesOnly_CarryTheNullConventionsKey_PerTheFrozenFill()
+    {
+        var flat = Convert("""
+            {"call":{"callSchedule":[{"callDt":"2027-01-01","callPx":101.0,"isParCall":false,"callType":"European"}]}}
+            """, "Bond");
+
+        // Stamped at 3, at or above the block's Since 2: the key is present, null when nothing is
+        // declared (ADR-024 decision 3's frozen fill).
+        flat.GetProperty(SecurityTermsEnvelope.AssetClassTermsVersionKey).GetInt32().Should().Be(3);
+        flat.GetProperty("scheduleConventions").ValueKind.Should().Be(JsonValueKind.Null);
+    }
+
+    [Fact]
+    public void StructuredNote_DeclaresNeitherHome_SoBothStillRefuse()
+    {
+        // StructuredNote declares neither the scheduleConventions block nor the
+        // callSchedule/putSchedule arrays (the Since-2 block near its schema entry belongs to
+        // Swap.legs); declared schedule content keeps the pre-increment refusal.
+        var withConventions = () => Convert("""
+            {"accrual":{"holidayCalendar":"GBLO"}}
+            """, "StructuredNote");
+        withConventions.Should().Throw<InvalidOperationException>().WithMessage("Declared schedule economic replay requires retained legacy asset-specific terms;*");
+
+        var withCalls = () => Convert("""
+            {"call":{"callSchedule":[{"callDt":"2027-01-01"}]}}
+            """, "StructuredNote");
+        withCalls.Should().Throw<InvalidOperationException>().WithMessage("Declared schedule economic replay requires retained legacy asset-specific terms;*");
+    }
+
+    [Fact]
+    public void CertificateOfDeposit_RecoversConventions_AtItsBlockVersion()
+    {
+        var flat = Convert("""
+            {"accrual":{"holidayCalendar":"GBLO"}}
+            """, "CertificateOfDeposit");
+        flat.GetProperty(SecurityTermsEnvelope.AssetClassTermsVersionKey).GetInt32().Should().Be(2);
+        flat.GetProperty("scheduleConventions").GetProperty("paymentCalendars")[0].GetString().Should().Be("GBLO");
+    }
+
+    [Fact]
+    public void StructuredCredit_ConventionsStampAtThree_SchedulesPushToFour()
+    {
+        var conventionsOnly = Convert("""
+            {"accrual":{"businessDayConvention":"ModifiedFollowing"}}
+            """, "StructuredCredit");
+        conventionsOnly.GetProperty(SecurityTermsEnvelope.AssetClassTermsVersionKey).GetInt32().Should().Be(3);
+        conventionsOnly.TryGetProperty("callSchedule", out _).Should().BeFalse();
+
+        var both = Convert("""
+            {"accrual":{"businessDayConvention":"ModifiedFollowing"},
+             "call":{"callSchedule":[{"callDt":"2027-01-01","callPx":101.0,"isParCall":false,"callType":"European"}]}}
+            """, "StructuredCredit");
+        both.GetProperty(SecurityTermsEnvelope.AssetClassTermsVersionKey).GetInt32().Should().Be(4);
+        both.GetProperty("scheduleConventions").GetProperty("businessDayConvention").GetString().Should().Be("ModifiedFollowing");
+    }
+
+    [Fact]
+    public void ConventionsDocument_ReadsBackAndItsStampDescribesItsContent()
+    {
+        var flat = Convert("""
+            {"maturity":{"maturityDate":"2032-06-30"},
+             "accrual":{"businessDayConvention":"ModifiedFollowing","holidayCalendar":"USNY"}}
+            """, "Bond");
+
+        var readable = () => SecurityTermsEnvelope.EnsureReadableAsAssetSpecificTerms("Bond", flat);
+        readable.Should().NotThrow();
+        SecurityTermsEnvelope.GetDocumentStampVersion("Bond", flat)
+            .Should().Be(flat.GetProperty(SecurityTermsEnvelope.AssetClassTermsVersionKey).GetInt32());
+    }
+
     private static JsonElement Convert(string economicJson, string assetClass)
         => SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster
             .Convert(JsonSerializer.Deserialize<JsonElement>(economicJson), assetClass)

@@ -774,6 +774,22 @@ Validation (local, .NET SDK 10.0.403): `dotnet test tests/Meridian.Tests -c Rele
 active-plus-inactive gauge, and the zero case. The full local `bash scripts/ci.sh` was not run;
 GitHub `Meridian CI / quality-gate` remains authoritative.
 
+### ADR-027 stage-1 increment 2 — accrual conventions recover — 2026-11-09
+
+The second slice-10 increment lifts the accrual refusal for classes that declare the
+`scheduleConventions` block (Bond and CertificateOfDeposit at terms version 2; StructuredCredit
+at 3): the economic Accrual module's business-day convention — kept verbatim
+and recovered only when the flat reader's own parser decodes the spelling — and its joint
+calendar, as the block's one payment calendar, land in the frozen twelve-member block, with the
+members the economic family never carried left null under ADR-025's read defaults. The frozen
+fill now holds on recovered documents: at or above the block's Since the key is present, null
+when nothing is declared, so a schedules-only document stamped at 3 carries
+`scheduleConventions: null`. Refusals keep the increment-1 discipline: unrecognized spellings,
+blank or non-string calendars, and case-variant module or member spellings refuse on every
+route, and classes without the declared block refuse as before
+(`SecurityEconomicScheduleReplayRefusalTests`; the recovery is pinned by the conventions cases
+in `SecurityEconomicCallScheduleFlatteningTests`).
+
 ### ADR-027 accepted; stage-1 increment 1 — call schedules recover — 2026-11-09
 
 The domain owner accepted [ADR-027](../adr/027-single-economic-model-consolidation.md) (single

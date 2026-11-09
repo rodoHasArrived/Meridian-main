@@ -15,19 +15,35 @@ namespace Meridian.Tests.SecurityMaster;
 /// </summary>
 public sealed class SecurityEconomicScheduleReplayRefusalTests
 {
-    public static IEnumerable<object[]> AccrualSchedules()
+    public static IEnumerable<object[]> DecodableAccrualConventions()
     {
         yield return ["{\"accrual\":{\"businessDayConvention\":\"Following\"}}"];
         yield return ["{\"accrual\":{\"businessDayConvention\":\"Unadjusted\"}}"];
-        yield return ["{\"accrual\":{\"businessDayConvention\":\"\"}}"];
         yield return ["{\"accrual\":{\"holidayCalendar\":\"USNY\"}}"];
-        yield return ["{\"accrual\":{\"holidayCalendar\":{}}}"];
-        yield return ["{\"accrual\":{\"holidayCalendar\":null},\"Accrual\":{\"HOLIDAYCALENDAR\":\"USNY\"}}"];
     }
 
     [Theory]
-    [MemberData(nameof(AccrualSchedules))]
-    public void AccrualConventions_RefuseOnEveryRoute(string json)
+    [MemberData(nameof(DecodableAccrualConventions))]
+    public void AccrualConventions_StillRefuse_WithoutTheDeclaredBlock(string json)
+    {
+        var terms = Json(json);
+        Action generic = () => SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(terms);
+        // Deposit has a class flattening but declares no scheduleConventions block.
+        Action deposit = () => SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(terms, "Deposit");
+        Action unknown = () => SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(terms, "UnknownClass");
+
+        foreach (var convert in new[] { generic, deposit, unknown })
+            convert.Should().Throw<InvalidOperationException>().WithMessage("Declared schedule economic replay requires retained legacy asset-specific terms;*");
+    }
+
+    [Theory]
+    [InlineData("{\"accrual\":{\"businessDayConvention\":\"\"}}")] // not a recognized spelling
+    [InlineData("{\"accrual\":{\"businessDayConvention\":\"SomeDay\"}}")] // the flat parser cannot decode it
+    [InlineData("{\"accrual\":{\"holidayCalendar\":{}}}")] // not a calendar id
+    [InlineData("{\"accrual\":{\"holidayCalendar\":\"  \"}}")] // blank calendar id
+    [InlineData("{\"accrual\":{\"holidayCalendar\":null},\"Accrual\":{\"HOLIDAYCALENDAR\":\"USNY\"}}")] // case-variant module
+    [InlineData("{\"accrual\":{\"BUSINESSDAYCONVENTION\":\"Following\"}}")] // case-variant member
+    public void UndecodableAccrualConventions_RefuseEvenForDeclaringClasses(string json)
     {
         var terms = Json(json);
         Action generic = () => SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(terms);
