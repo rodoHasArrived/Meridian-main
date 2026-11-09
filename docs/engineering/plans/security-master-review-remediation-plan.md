@@ -172,6 +172,17 @@ fixture; a non-percent-of-par instrument can declare its convention without touc
 **Decision:** the quote-convention vocabulary (percent-of-par, per-unit, yield-quoted, …) needs
 domain-owner review; magnitude or class-name inference is not an accepted fallback.
 
+**Implementation (2026-11-09):** the sub-type derivation reads the F# `AssetClassRegistry`
+(three pinned legacy workstation spellings, Equity declared sub-type-ambiguous);
+`MultiAssetEvidenceClassRouter` replaces the coverage read model's substring inference with
+exact-token routes over the produced evidence vocabulary, unresolved outside it; the catalog
+descriptor declares `QuoteConvention` (defaulting from the lot unit so no price changes), and
+`LotQuantity` gains the convention-aware overload plus `QuoteConventionFor`. See the
+[slice-8 disposition](../../architecture/security-master-extensibility-review.md#slice-8-disposition--descriptor-owned-consumer-rules--2026-11-09).
+Open from this slice: moving class-aware pricing callers onto the convention overload when a
+class first declares a non-default convention, and the quote-convention vocabulary decision
+above.
+
 ## Slice 9 — Tag stored legacy payloads, then retire shape detection (proposed 2026-11-09)
 
 **Evidence:** D1, ADR-024; the 2026-11-09 verification pass. Three payload families share one

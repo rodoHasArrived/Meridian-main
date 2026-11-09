@@ -687,6 +687,55 @@ generated fixture (and fails as designed when the fixture is absent or stale). D
 `security-passport-editor.view-model.test.ts` — 23 passed. The full local `bash scripts/ci.sh` was
 not run; GitHub `Meridian CI / quality-gate` remains authoritative.
 
+### Slice 8 disposition — descriptor-owned consumer rules — 2026-11-09
+
+The three catalog-external rules this pass confirmed now read declared facts.
+
+**Sub-type derivation.** `SecurityMasterSecurityReferenceLookup.DeriveSubType` (shared by
+`WorkstationEndpoints`) reads the F# `AssetClassRegistry` sub-type for every catalog class instead
+of an 11-arm switch. Three legacy workstation spellings stay pinned exceptions — "Bond", "Deposit",
+"MoneyMarket" are the deliberately generic labels reconciliation lines already carry — and Equity
+is declared sub-type-ambiguous (a record may be common, preferred, an ADR or an MLP unit), keeping
+the existing null. The 18 previously-unmapped determinate classes (StructuredCredit, CapFloor,
+CustomAsset, …) and the three previously-null echo classes (FxSpot, CashSweep, OtherSecurity) now
+derive their registry labels: an additive enrichment of workstation reads, with the existing 11
+mappings byte-identical. `WorkstationSecuritySubTypeCoverageTests` pins the full 32-class table
+omission-failing; the file left `SecurityAssetClassLiteralRatchetTests.KnownDispatchSites`, which
+only ever shrinks. The known-divergence pins in `SecurityAssetClassSurfaceParityTests` are
+unchanged.
+
+**Evidence-class routing.** `MultiAssetEvidenceClassRouter` replaces
+`MultiAssetCoverageReadService`'s substring inference: exact-token routes (candidate type, then
+ledger-effect kind with candidate-type fallback) over the closed vocabulary
+`ProviderLedgerReconciliationService.CorporateActions` produces, preserving every in-repo outcome
+(factor, amortization and principal-return evidence reads as Bond; loan schedules as DirectLoan;
+distributions as PrivateFundInterest; equity corporate-action, dividend, interest and plain
+provider evidence stays unresolved). Evidence outside the declared vocabulary is now explicitly
+unresolved instead of substring-guessed — the "mbs/structured/nav/covenant" token groups were
+unreachable with the produced vocabulary and are gone; securitized evidence routes to
+StructuredCredit (ADR-022) by declaring its token when a producer lands.
+`MultiAssetEvidenceClassRouterTests` pins the full vocabulary's routes and that every target is a
+catalog class.
+
+**Quote convention.** `SecurityAssetClassDescriptor.QuoteConvention` declares how a class's raw
+quotes scale into money (`PercentOfPar` / `PerUnit`), defaulting from the lot unit so every
+catalogued class prices identically; `LotQuantity` gains `ValueAtPrice(price, convention)` and
+`QuoteConventionFor(assetClass)`, and the unit-kind overload keeps the legacy rule.
+`SecurityQuoteConventionCoverageTests` pins the declared convention to the legacy conversion for
+every class and both pricing routes to agree, so a future non-percent-of-par class is a visible
+pin change that moves class-aware callers onto the convention overload, never a silent repricing.
+The quote-convention vocabulary itself remains the open domain-owner decision recorded in the
+remediation plan; existing `ValueAtPrice` consumers are deliberately untouched.
+
+Validation (local, .NET SDK 10.0.403, `dotnet test tests/Meridian.Tests -c Release --no-build`
+filtered): the three new suites — 100 passed; `SecurityMasterReferenceLookupTests`,
+`SecurityAssetClassSurfaceParityTests`, `SecurityAssetClassLiteralRatchetTests`,
+`WorkstationMultiAssetCoverageEndpointsTests` and `LotQuantity` suites — 77 passed;
+`SecurityAssetClassRegistryCoverageTests`, behavior-facts, `SecurityKindMappingTests` and
+asset-pack suites — 74 passed; `SecurityTermsWriteGoldenTests` — 51 passed, write golden
+unchanged. The full local `bash scripts/ci.sh` was not run; GitHub `Meridian CI / quality-gate`
+remains authoritative.
+
 ---
 
 ## Purpose
