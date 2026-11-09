@@ -13,7 +13,7 @@ last_reviewed: 2026-08-11
 
 `DrawdownCircuitBreaker` is not composed by any host; the enforced drawdown guardrail is `Meridian.Ui.Shared.Services.DrawdownGuardrailRule`.
 
-`PositionLimitRule` optionally measures the limit against the filled position plus same-side working orders (via an `IOrderManager` accessor), excluding the order being amended.
+`PositionLimitRule` optionally measures the limit against the filled position plus same-side working orders (via an `IOrderManager` accessor), excluding the order being amended. A pending amendment counts as its larger-quantity outcome (`IOrderManager.GetUnitReservingOrders`).
 
 `BrokeragePortfolioStateRule` requires a current, complete and reconciled account snapshot before
 live admission, independently of configurable exposure ceilings. Scoped exposure uses broker

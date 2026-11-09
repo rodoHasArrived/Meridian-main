@@ -126,6 +126,6 @@ public sealed partial class OrderManagementSystem
         return transition.ResolvedAmendment;
     }
 
-    private IReadOnlyList<OrderState> GetAmendmentExposureReservations() =>
-        _amendmentBook.GetExposureReservations();
+    private IReadOnlyList<OrderState> GetAmendmentExposureReservations(bool largestQuantity = false) =>
+        _amendmentBook.GetExposureReservations(largestQuantity);
 }

@@ -120,10 +120,15 @@ public sealed partial class OrderManagementSystem
     }
 
     /// <inheritdoc />
-    public IReadOnlyList<OrderState> GetExposureReservingOrders()
+    public IReadOnlyList<OrderState> GetExposureReservingOrders() => GetReservingOrders(largestQuantity: false);
+
+    /// <inheritdoc />
+    public IReadOnlyList<OrderState> GetUnitReservingOrders() => GetReservingOrders(largestQuantity: true);
+
+    private List<OrderState> GetReservingOrders(bool largestQuantity)
     {
         var reserving = new List<OrderState>(GetOpenOrders());
-        var amendments = GetAmendmentExposureReservations();
+        var amendments = GetAmendmentExposureReservations(largestQuantity);
         reserving.RemoveAll(order => _amendmentBook.Contains(order.OrderId));
         reserving.AddRange(amendments);
 
