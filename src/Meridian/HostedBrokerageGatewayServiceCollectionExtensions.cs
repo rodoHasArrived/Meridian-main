@@ -106,12 +106,9 @@ internal static class HostedBrokerageGatewayServiceCollectionExtensions
 
         services.TryAddSingleton(gatewayType);
         services.AddBrokerageGateway("stocksharp", sp => (IBrokerageGateway)sp.GetRequiredService(gatewayType));
-        services.TryAddSingleton(sp => new StockSharpBrokerageGatewayAccessor(sp, gatewayType));
-        services.TryAddSingleton(sp =>
-            new StockSharpBrokerageSyncAdapter(sp.GetRequiredService<StockSharpBrokerageGatewayAccessor>()));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokerageAccountCatalog, StockSharpBrokerageSyncAdapter>());
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokeragePortfolioSync, StockSharpBrokerageSyncAdapter>());
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokerageActivitySync, StockSharpBrokerageSyncAdapter>());
+        // No account catalog, portfolio or activity sync is registered: the StockSharp gateway has
+        // none. A placeholder adapter used to advertise all three while returning no accounts and
+        // throwing NotSupportedException, so the runtime surface reported sync it could not do.
     }
 
     private sealed class AlpacaBrokerageSyncAdapter(AlpacaBrokerageGateway gateway) :
@@ -177,22 +174,5 @@ internal static class HostedBrokerageGatewayServiceCollectionExtensions
             DateTimeOffset? since,
             CancellationToken ct)
             => _activitySync.GetActivitySnapshotAsync(externalAccountId, since, ct);
-    }
-
-    private sealed class StockSharpBrokerageGatewayAccessor(IServiceProvider services, Type gatewayType)
-    {
-        public IBrokerageGateway GetGateway() => (IBrokerageGateway)services.GetRequiredService(gatewayType);
-    }
-
-    private sealed class StockSharpBrokerageSyncAdapter(StockSharpBrokerageGatewayAccessor gatewayAccessor) :
-        IBrokerageAccountCatalog,
-        IBrokeragePortfolioSync,
-        IBrokerageActivitySync
-    {
-        public string ProviderId => "stocksharp";
-        public string ProviderDisplayName => gatewayAccessor.GetGateway().BrokerDisplayName;
-        public Task<IReadOnlyList<BrokerageExternalAccountDto>> GetAccountsAsync(CancellationToken ct) => Task.FromResult<IReadOnlyList<BrokerageExternalAccountDto>>([]);
-        public Task<BrokeragePortfolioSnapshotDto> GetPortfolioSnapshotAsync(string externalAccountId, CancellationToken ct) => throw new NotSupportedException();
-        public Task<BrokerageActivitySnapshotDto> GetActivitySnapshotAsync(string externalAccountId, DateTimeOffset? since, CancellationToken ct) => throw new NotSupportedException();
     }
 }

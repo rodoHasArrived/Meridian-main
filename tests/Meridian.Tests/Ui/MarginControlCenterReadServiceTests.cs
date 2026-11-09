@@ -97,6 +97,35 @@ public sealed class MarginControlCenterReadServiceTests : IDisposable
         await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*stale*");
     }
 
+    [Fact]
+    public async Task GetAndCertify_WithVisibilityFilter_HidesOtherTenantsAccounts()
+    {
+        // Retained evidence carries no owner; the endpoint passes the caller's bound account ids.
+        var asOf = new DateTimeOffset(DateTimeOffset.UtcNow.UtcDateTime.Date.AddDays(-1), TimeSpan.Zero);
+        await WriteArtifactAsync("ib", Artifact(
+            "ib-flex", "U1", asOf, providerMaintenance: 10000m, providerExcess: 40000m,
+            positions: [Position("U1", "AAPL", 100m, 10000m)]));
+        await WriteArtifactAsync("alpaca", Artifact(
+            "alpaca", "A1", asOf, providerMaintenance: 2500m, providerExcess: 20000m,
+            positions: [Position("A1", "MSFT", 25m, 10000m)]));
+        var service = CreateService();
+        Func<string, string, bool> onlyA1 = (_, accountId) => accountId == "A1";
+
+        var center = await service.GetAsync(onlyA1);
+
+        center.Accounts.Should().ContainSingle().Which.AccountId.Should().Be("A1");
+        center.PrimeSummaries.Should().ContainSingle().Which.ProviderId.Should().Be("alpaca");
+        center.Alerts.Should().OnlyContain(alert => alert.AccountId == "A1");
+
+        var hidden = (await service.GetAsync()).Accounts.Single(item => item.AccountId == "U1");
+        var act = () => service.CertifyAsync(
+            new Meridian.Contracts.Workstation.MarginCertificationRequestDto(
+                hidden.ProviderId, hidden.AccountId, hidden.AsOf, hidden.EvidencePath, "Reviewed."),
+            "fund-controller",
+            onlyA1);
+        await act.Should().ThrowAsync<KeyNotFoundException>();
+    }
+
     private MarginControlCenterReadService CreateService()
         => new(new StatementCanonicalEvidenceReader(_root), new MarginCertificationStore(_root));
 

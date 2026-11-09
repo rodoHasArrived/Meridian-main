@@ -75,6 +75,38 @@ public sealed class LiveRunMetricsTrackerTests
             "Calmar must be derived from the same drawdown fraction the tracker reports");
     }
 
+    /// <summary>
+    /// Live and backtest runs emit the same <see cref="BacktestMetrics"/> record, so the tracker uses
+    /// the BacktestMetricsEngine formulas: geometric annualisation over calendar days, sample standard
+    /// deviation for Sharpe, and downside deviation over losing days only for Sortino.
+    /// </summary>
+    [Fact]
+    public void Build_RatioFormulas_MatchTheBacktestMetricsEngine()
+    {
+        var metrics = BuildMetricsFor([1_100m, 950m, 1_050m], initialEquity: 1_000m, finalEquity: 1_050m);
+
+        double[] returns = [0.1, (950.0 - 1_100.0) / 1_100.0, (1_050.0 - 950.0) / 950.0];
+        var mean = returns.Average();
+        var sampleStd = Math.Sqrt(returns.Sum(r => (r - mean) * (r - mean)) / (returns.Length - 1));
+        var downside = returns.Where(r => r < 0).ToArray();
+        var downsideDev = Math.Sqrt(downside.Average(r => r * r));
+        var years = 2.0 / 365.0; // first to last snapshot date
+
+        metrics.SharpeRatio.Should().BeApproximately(mean / sampleStd * Math.Sqrt(252.0), 1e-9);
+        metrics.SortinoRatio.Should().BeApproximately(mean / downsideDev * Math.Sqrt(252.0), 1e-9);
+        ((double)metrics.AnnualizedReturn).Should().BeApproximately(Math.Pow(1.05, 1.0 / years) - 1.0, 1e-6);
+    }
+
+    [Fact]
+    public void Build_TotalLoss_ReportsMinusOneAnnualisedReturnAndFiniteRatios()
+    {
+        var metrics = BuildMetricsFor([500m, 0m], initialEquity: 1_000m, finalEquity: 0m);
+
+        metrics.AnnualizedReturn.Should().Be(-1m);
+        double.IsFinite(metrics.SharpeRatio).Should().BeTrue();
+        double.IsFinite(metrics.SortinoRatio).Should().BeTrue();
+    }
+
     [Fact]
     public void Build_WhenEquityOnlyRises_ReportsZeroDrawdownAndZeroCalmar()
     {

@@ -14,7 +14,14 @@ public sealed class MarginControlCenterReadService(
 {
     private static readonly TimeSpan MaximumCertificationAge = TimeSpan.FromHours(72);
 
-    public async Task<MarginControlCenterDto> GetAsync(CancellationToken ct = default)
+    /// <param name="isAccountVisible">
+    /// Restricts the view to provider accounts the caller may see (provider id, external account
+    /// id). Retained evidence carries no owner, so endpoints pass the tenant's bound accounts;
+    /// <c>null</c> shows every retained account and is for trusted in-process callers only.
+    /// </param>
+    public async Task<MarginControlCenterDto> GetAsync(
+        Func<string, string, bool>? isAccountVisible = null,
+        CancellationToken ct = default)
     {
         var now = DateTimeOffset.UtcNow;
         var artifacts = await evidenceReader.ListAsync(ct).ConfigureAwait(false);
@@ -22,6 +29,8 @@ public sealed class MarginControlCenterReadService(
         var latestAccounts = artifacts
             .SelectMany(envelope => (envelope.Artifact.AccountSnapshots ?? [])
                 .Select(snapshot => new AccountEvidence(envelope, snapshot)))
+            .Where(item => isAccountVisible is null
+                || isAccountVisible(item.Snapshot.ProviderId, item.Snapshot.AccountId))
             .GroupBy(static item => $"{item.Snapshot.ProviderId}\u001f{item.Snapshot.AccountId}", StringComparer.OrdinalIgnoreCase)
             .Select(static group => group.OrderByDescending(item => item.Envelope.Artifact.RetainedAtUtc).First())
             .OrderBy(static item => item.Snapshot.ProviderId, StringComparer.OrdinalIgnoreCase)
@@ -66,6 +75,7 @@ public sealed class MarginControlCenterReadService(
     public async Task<MarginCertificationResultDto> CertifyAsync(
         MarginCertificationRequestDto request,
         string actor,
+        Func<string, string, bool>? isAccountVisible = null,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -76,7 +86,7 @@ public sealed class MarginControlCenterReadService(
         if (string.IsNullOrWhiteSpace(request.Note))
             throw new InvalidDataException("A certification note is required.");
 
-        var center = await GetAsync(ct).ConfigureAwait(false);
+        var center = await GetAsync(isAccountVisible, ct).ConfigureAwait(false);
         var account = center.Accounts.FirstOrDefault(item =>
             string.Equals(item.ProviderId, request.ProviderId, StringComparison.OrdinalIgnoreCase) &&
             string.Equals(item.AccountId, request.AccountId, StringComparison.OrdinalIgnoreCase));

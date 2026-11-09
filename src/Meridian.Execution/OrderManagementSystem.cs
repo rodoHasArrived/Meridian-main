@@ -142,7 +142,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
         // of the order already working under that id.
         if (request.ClientOrderId is not null
             && (_recoveryJournal.IsDispatched(orderId)
-                || (_orders.TryGetValue(orderId, out var existingOrder) && !IsTerminalStatus(existingOrder.Status))
+                || (_orders.TryGetValue(orderId, out var existingOrder) && !OrderStatusFacts.IsTerminal(existingOrder.Status))
                 || IsReservedByLiveEscalation(orderId, request)))
         {
             return await RejectDuplicateClientOrderIdAsync(
@@ -788,13 +788,6 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
     private void MarkTerminalReportPumpFailure(Exception failure, string message)
         => _executionFailureState.Mark(failure, message);
 
-    /// <summary>
-    /// Terminal statuses whose order ids may be reclaimed by a later submission. Excludes
-    /// <see cref="OrderStatus.PendingCancel"/>: an order awaiting cancel confirmation is still
-    /// working at the broker and its id must not be reused.
-    /// </summary>
-    private static bool IsTerminalStatus(OrderStatus status)
-        => status is OrderStatus.Filled or OrderStatus.Cancelled or OrderStatus.Rejected or OrderStatus.Expired;
 
     /// <summary>
     /// Atomically claims <paramref name="orderId"/> in the order table. A terminal entry may be
@@ -812,7 +805,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
                 continue; // Entry was trimmed between TryAdd and TryGetValue; retry.
             }
 
-            if (!IsTerminalStatus(existing.Status) || _recoveryJournal.IsDispatched(orderId))
+            if (!OrderStatusFacts.IsTerminal(existing.Status) || _recoveryJournal.IsDispatched(orderId))
             {
                 return false;
             }
@@ -833,8 +826,6 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
         return true;
     }
 
-    private static bool IsTerminal(OrderStatus status) =>
-        status is OrderStatus.Filled or OrderStatus.Cancelled or OrderStatus.Rejected or OrderStatus.Expired;
 
 
     /// <summary>

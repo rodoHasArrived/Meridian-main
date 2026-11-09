@@ -11,6 +11,8 @@ last_reviewed: 2026-10-28
 
 # src/Meridian.Execution
 
+Paper mode has one paper book: the DI-resolved `IOrderGateway` is `OmsGovernedExecutionOrderGateway`, a read-only view over the OMS's own paper `IExecutionGateway`, so direct submit/cancel through `IOrderGateway` is refused in paper as well as live mode. Terminal order-status checks share `OrderManagement.OrderStatusFacts.IsTerminal`.
+
 Reg T short sales post the collateral the broker holds (proceeds × the short initial rate) from `Cash` to `Short Sale Collateral Receivable`, and covering releases it back, so ledger cash equals the account's free cash while a short is open.
 
 Paper fills retain security-definition lot units and multipliers in execution reports, so fund units

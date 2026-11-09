@@ -114,6 +114,25 @@ public sealed class BrokerageExecutionRegistrationRecoveryTests
         oms.GetOpenOrders().Should().ContainSingle(order => order.OrderId == result.OrderId);
     }
 
+    [Fact]
+    public async Task PaperExecution_OrderGatewayIsAReadOnlyViewOverTheOmsPaperBook()
+    {
+        // A second, submittable paper simulator used to back IOrderGateway: orders placed there
+        // never reached the OMS book, portfolio or risk rules. Paper mode now has one book.
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddBrokerageExecution(config =>
+            config.BrokerFlows["paper"] = new BrokerFlowFlags { PaperOrderFlowEnabled = true });
+        await using var provider = services.BuildServiceProvider();
+
+        var orderGateway = provider.GetRequiredService<Meridian.Execution.Interfaces.IOrderGateway>();
+
+        orderGateway.Should().BeOfType<Meridian.Execution.Adapters.OmsGovernedExecutionOrderGateway>();
+        orderGateway.BrokerName.Should().Be(provider.GetRequiredService<IExecutionGateway>().GatewayId);
+        var submit = () => orderGateway.SubmitAsync(Request("direct-paper-submit"));
+        await submit.Should().ThrowAsync<InvalidOperationException>().WithMessage("*IOrderManager*");
+    }
+
     private static ServiceCollection SandboxServices(BrokerageFixture gateway)
     {
         var services = new ServiceCollection();

@@ -349,24 +349,20 @@ public sealed class UiServer : IAsyncDisposable
             builder.Services.AddHostedBrokerageGateways();
             if (usesPaperGateway)
             {
+                // One paper book: IOrderGateway is a read-only view over the OMS's own paper
+                // IExecutionGateway (registered below), not a second simulator. A separate
+                // submittable paper gateway kept its own orders outside the OMS book, portfolio
+                // and risk gates, so strategy code could place paper orders the OMS never saw.
                 builder.Services.AddSingleton<IOrderGateway>(sp =>
-                    new Meridian.Execution.Adapters.PaperTradingGateway(
-                        sp.GetRequiredService<ILogger<Meridian.Execution.Adapters.PaperTradingGateway>>(),
-                        securityMaster: null,
-                        options: sp.GetRequiredService<Meridian.Execution.Adapters.PaperTradingGatewayOptions>(),
-                        liveFeed: sp.GetService<Meridian.Execution.Adapters.LiveMarketDataCache>(),
-                        costOptions: sp.GetRequiredService<Meridian.Execution.PaperMatching.PaperTradingCostOptions>()));
-                // Resting limit/stop orders re-evaluate when the market event tap records
-                // fresh data for their symbol (W9-PAPER-003 matching loop).
-                builder.Services.AddSingleton<Meridian.Execution.Interfaces.IPaperFillEvaluationTrigger>(sp =>
-                    (Meridian.Execution.Adapters.PaperTradingGateway)sp.GetRequiredService<IOrderGateway>());
+                    new Meridian.Execution.Adapters.OmsGovernedExecutionOrderGateway(
+                        sp.GetRequiredService<IExecutionGateway>()));
             }
             if (usesPaperGateway)
             {
                 builder.Services.AddSingleton<PaperTradingPortfolio>(_ => new PaperTradingPortfolio(100_000m));
                 builder.Services.AddSingleton<IPortfolioState>(sp => sp.GetRequiredService<PaperTradingPortfolio>());
                 // Production IPositionTracker projection over the live portfolio state. Gives the
-                // safety-critical risk rules (PositionLimitRule, DrawdownCircuitBreaker) a real backing
+                // safety-critical risk rules (PositionLimitRule and other IPositionTracker consumers) a real backing
                 // instead of leaving IPositionTracker without any non-test implementation.
                 builder.Services.AddSingleton<IPositionTracker>(sp =>
                     new PortfolioStatePositionTracker(sp.GetRequiredService<IPortfolioState>()));
@@ -417,6 +413,8 @@ public sealed class UiServer : IAsyncDisposable
                         sp.GetRequiredService<Meridian.Execution.Adapters.PaperTradingGatewayOptions>(),
                         sp.GetService<Meridian.Execution.Adapters.LiveMarketDataCache>(),
                         sp.GetRequiredService<Meridian.Execution.PaperMatching.PaperTradingCostOptions>()));
+                // Resting limit/stop orders re-evaluate when the market event tap records
+                // fresh data for their symbol (W9-PAPER-003 matching loop).
                 builder.Services.AddSingleton<Meridian.Execution.Interfaces.IPaperFillEvaluationTrigger>(sp =>
                     (Meridian.Execution.PaperTradingGateway)sp.GetRequiredService<IExecutionGateway>());
             }

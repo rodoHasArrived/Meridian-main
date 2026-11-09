@@ -111,7 +111,7 @@ internal sealed class OrderAmendmentBook(IReadOnlyDictionary<string, OrderState>
             && (report.ReplacesOrderId == pending.OriginalBrokerOrderId || brokerId == pending.CandidateBrokerOrderId);
         if (brokerId == pending.OriginalBrokerOrderId
             && (pending.CandidateBrokerOrderId is not null || pending.CandidateClientOrderId is not null)
-            && IsTerminal(report.OrderStatus)
+            && OrderStatusFacts.IsTerminal(report.OrderStatus)
             && report.ReportType is not ExecutionReportType.ModificationRejected)
             throw new InvalidDataException("A terminal predecessor does not establish the candidate replacement outcome.");
         if (locallyConfirmed && report.ReportType is ExecutionReportType.Modified)
@@ -164,7 +164,7 @@ internal sealed class OrderAmendmentBook(IReadOnlyDictionary<string, OrderState>
         if (report.ReportType is ExecutionReportType.ModificationPending)
         {
             var status = current.Status;
-            if (!IsTerminal(status) && report.FillPrice is > 0m && report.FilledQuantity > current.FilledQuantity)
+            if (!OrderStatusFacts.IsTerminal(status) && report.FillPrice is > 0m && report.FilledQuantity > current.FilledQuantity)
                 status = report.FilledQuantity >= Math.Max(pending.Original.Quantity, pending.Proposed.Quantity)
                     ? OrderStatus.Filled : OrderStatus.PartiallyFilled;
             report = report with { OrderStatus = status, OrderQuantity = current.Quantity };
@@ -189,8 +189,8 @@ internal sealed class OrderAmendmentBook(IReadOnlyDictionary<string, OrderState>
         }
         // A late working acknowledgement cannot reopen or resize a terminal order. Its
         // still-possible exposure remains separately reserved until authoritative recovery.
-        if (IsTerminal(current.Status)
-            && (!IsTerminal(report.OrderStatus) || terms.Quantity != current.Quantity))
+        if (OrderStatusFacts.IsTerminal(current.Status)
+            && (!OrderStatusFacts.IsTerminal(report.OrderStatus) || terms.Quantity != current.Quantity))
         {
             report = report with
             {
@@ -253,8 +253,6 @@ internal sealed class OrderAmendmentBook(IReadOnlyDictionary<string, OrderState>
         return proposed.Value > original.Value ? pending.Proposed : pending.Original;
     }
 
-    private static bool IsTerminal(OrderStatus status) =>
-        status is OrderStatus.Filled or OrderStatus.Cancelled or OrderStatus.Rejected or OrderStatus.Expired;
 }
 
 /// <summary>

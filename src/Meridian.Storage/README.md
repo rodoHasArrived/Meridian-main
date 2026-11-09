@@ -11,6 +11,8 @@ last_reviewed: 2026-10-31
 
 # src/Meridian.Storage
 
+`SharedStorageCoordinationStore` accepts an optional `TimeProvider` for lease expiry and takeover decisions (system clock by default).
+
 Maintenance schedule and history stores bound their cross-process lock acquisition (default 30 seconds) and throw a `TimeoutException` naming the lock, instead of retrying forever during construction.
 
 Archive maintenance status counts today's executions from the start of the UTC day rather than a host-offset-shifted midnight.

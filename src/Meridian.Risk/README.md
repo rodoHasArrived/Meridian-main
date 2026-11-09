@@ -11,6 +11,8 @@ last_reviewed: 2026-08-11
 
 # src/Meridian.Risk
 
+`DrawdownCircuitBreaker` is not composed by any host; the enforced drawdown guardrail is `Meridian.Ui.Shared.Services.DrawdownGuardrailRule`.
+
 `PositionLimitRule` optionally measures the limit against the filled position plus same-side working orders (via an `IOrderManager` accessor), excluding the order being amended.
 
 `BrokeragePortfolioStateRule` requires a current, complete and reconciled account snapshot before

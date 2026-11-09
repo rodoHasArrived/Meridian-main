@@ -489,9 +489,10 @@ public static class WorkstationServiceCollectionExtensions
                 // triggers. Against a live broker no matcher decides the fill, and the feed cache
                 // keeps prints indefinitely, so preferring a print there can measure a trigger
                 // against a price the market left hours ago.
+                // The OMS routes through IExecutionGateway; IOrderGateway is only a read-only view.
                 paperMatchingIsAuthoritative: () =>
-                    sp.GetService<Meridian.Execution.Interfaces.IOrderGateway>()
-                        is Meridian.Execution.Adapters.PaperTradingGateway,
+                    sp.GetService<Meridian.Execution.Sdk.IExecutionGateway>()
+                        is Meridian.Execution.PaperTradingGateway,
                 livePortfolioAccessor: sp.GetService<LiveBrokeragePortfolioSyncService>));
         // Governed-approval queue for escalated orders (severity outcome: Escalate parks).
         // Queue transitions persist atomically so parked approvals survive restarts.

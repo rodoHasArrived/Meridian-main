@@ -11,6 +11,8 @@ last_reviewed: 2026-10-31
 
 # src/Meridian.Ui.Shared
 
+Margin Control Center reads and certifications are tenant-scoped: `GET /api/workstation/reconciliation/margin-control` and the certification POST require tenant and company scope and show only provider accounts whose external account id is bound to an active fund account owned by the caller's tenant and company (fail closed).
+
 Sampling endpoints bound `sampleSize` to 1..100,000, reject confidence or margin-of-error values outside (0, 1), keep at most 50 saved samples in memory, report `no_data` instead of inventing a population of 100,000, honour cancellation while counting, and no longer echo the storage root.
 
 Lean results ingest and auto-export reconfiguration confine request-supplied paths to the configured roots (`LEAN_RESULTS_PATH`/`LEAN_PATH` and `LEAN_DATA_PATH`/`LEAN_PATH`) and no longer echo paths in errors. `MarginCertificationStore` refuses to upsert over an unreadable evidence file. The workstation position-limit rule counts working orders.
