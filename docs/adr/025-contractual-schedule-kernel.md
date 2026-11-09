@@ -154,17 +154,25 @@ increment that edits that call site.
 | Asset-operations bond projection (`BuildBondProjectedCashFlows`) | `CompoundedForward`; the closing grid date is re-evaluated at the start of the closing period to keep SCH-DEF-010 | Increment 3 | 1, removed |
 | Obligation timeline (`NextMonthlyDate`, `NextQuarterDate`, `NextFrequencyDate`, `AdvanceAfter`) | `ScheduleTenor.Advance`; the statement cadence compounds from its anchor | Increment 3 | 4, removed |
 | Fund-structure projected dates (`RollProjectedScheduleDates`) | `ScheduleTenor.Advance`, compounded, behind the forecast's own spellings and 256-date guard | Increment 3 | 4, removed |
-| Direct lending, PostgreSQL (`BuildProjectedFlows`) | Its own loop; planned for increment 10 | — | 1 |
-| Direct lending, in memory (`BuildFlows`) | Its own loop; planned for increment 10 | — | 1 |
+| Direct lending, PostgreSQL (`BuildProjectedFlows`) | `DirectLendingSchedulePeriods.LegacyCompounded`, the kernel's compounded grid, with SCH-DEF-005 pinned; opt-in `dl-engine-v2` is still increment 10 | Legacy-parity move (2026-10-28) | 1, removed |
+| Direct lending, in memory (`BuildFlows`) | `DirectLendingSchedulePeriods.LegacyCompounded`, as above | Legacy-parity move (2026-10-28) | 1, removed |
 | `FaceValueLot` regular and backward coupon dates | Their own loops; planned for increment 12 | — | 2 |
 
 Increment 5a implements decision 7 for the Security Master calculated projection and the
 `ScheduleSpecFactory` of decision 8. It registers the file-backed calendar source on every host,
 and the projection's declared branch is the first production caller of the context day-count
 overload, through `ScheduleDayCount`. No write path can store a declaring block before increment
-5b-2, so the declared branch stays dormant in production until then. Nothing in production consumes
-`SchedulePeriodId` yet. The remaining moves are proposed; their sequence is recorded in the
-extensibility review's resolution passes from 2026-10-23 on.
+5b-2, so the declared branch stays dormant in production until then.
+
+Status on 2026-11-09 (it supersedes the two statements this paragraph used to end with). Declaring
+writes are live, so the declared branch is no longer dormant. `SchedulePeriodId` is consumed in
+production: the asset-operations legacy bond loop and the declared bond mapping derive
+projected-cash-flow ids from it (`AssetOperationsProjectionBuilder.LegacyBond.cs`,
+`AssetOperationsProjectionBuilder.BondCashFlows.cs`), and bond analytics derives its cash-flow ids
+from it (`BondContractualEconomics`, `BondAnalyticsService`). Both direct-lending projection loops run
+on the kernel's compounded grid, and the rolling ratchet (`SchedulePeriodRollingRatchetTests`) allows
+one legacy site, `FaceValueLot.cs` with 2 calls. The remaining moves are proposed; their sequence is
+recorded in the extensibility review's resolution passes from 2026-10-23 on.
 
 ## Rationale
 
@@ -306,7 +314,9 @@ can converge later.
 
 - Increments 1 and 3 change no persisted shape, API shape, term schema, terms version,
   engine-version string (`fixed-income-cash-flow-projection-v1` and
-  `asset-obligation-projection-v1` included) or DI registration. Increment 3 adds one public
+  `asset-obligation-projection-v1` included) or DI registration. (The legacy bond loop's stamp
+  became `fixed-income-cash-flow-projection-v2` on 2026-11-09; see the increment 8a entry under
+  Applications.) Increment 3 adds one public
   Contracts method, `SecurityTermConventions.LegacyCouponPaymentsPerYear`.
 - Increment 5a registers `FileBusinessDayCalendarSource`, which holds its calendars in a
   `StaticBusinessDayCalendarSource`, on every host. A node with no calendar files resolves only
@@ -522,7 +532,8 @@ This command verifies referenced files and directories exist; it does not valida
     accreted-value or an unrecognized spelling). The retained economic-terms fold is unchanged: a
     declared, non-empty list replaces the retained one, and an empty list is still filled from it.
   - **Proposed for increment 8, not frozen (the roll and calendar parts are amended by the
-    increment 5a entry below).** Increment 8 adopts or amends these when it generates
+    increment 5a entry below; the increment 8a entry of 2026-11-09 records what was adopted).**
+    Increment 8 adopts or amends these when it generates
     exercise and notice dates: Bermudan dates from a `ScheduleSpec` generated `Forward`, with
     `Roll` from the block's `rollConvention` (falling back to `AnchorDay`), `Short` stubs and the
     same business-day adjustment as payment dates; the calendar for American windows and for
@@ -785,7 +796,9 @@ This command verifies referenced files and directories exist; it does not valida
     `rollConvention` alone. American windows and `Business` notice counts use the block's
     `paymentCalendars`, with no fallback to `commonTerms.holidayCalendarId` or `WEEKENDS`, and
     increment 5b-1 requires block calendars on every American entry and on `Business` notice. The
-    rest of the proposal stands for increment 8 to adopt or amend.
+    rest of the proposal stands for increment 8 to adopt or amend. (Disposed of by the increment 8a
+    entry of 2026-11-09 below: the Bermudan roll written here was not what the consumers
+    implemented.)
 
 - **Declared contractual principal integration (2026-10-28).** A nonempty in-term
   `principalSchedule` with retained face now joins the declared coupon grid. Each principal row
@@ -807,6 +820,84 @@ This command verifies referenced files and directories exist; it does not valida
   Zero-rate coupons bypass day-count computation as before. Business/252 records every segment and
   full-period window it queries in existing calendar/coverage evidence, and the declared ledger
   gate remains in force.
+
+- **Declared call and put consumers: the adopted rules, the obligation timeline and the legacy
+  stamp (increment 8a) (2026-11-09).** The increment-8 proposals above are closed here. The rules
+  below are the ones `BondExerciseEconomics.TryResolveScenarios` already applies on main for bond
+  analytics, the cash ladder and the notice watch. This entry adopts them as written in code; it
+  changes none of them. Each consumer reads only a Bond row whose own stamp decodes the arrays
+  (terms version 3 or later) and resolves the row under the rules it was stored under.
+  - **Exercise dates.** A `European` entry is its start date. A `Bermudan` entry is its start date
+    followed by the ends of the regular periods of a grid generated forward from that start date to
+    its end date (`callEndDate` or `putEndDate`, else the day before the next entry of the same
+    kind, else maturity), in anchored mode on the anchor-day roll of the start date with a short
+    stub. The tenor is the entry's `exerciseFrequency`, else the coupon frequency. A final stub's end
+    is not an exercise date. **This is not the roll the amended proposal named**: the grid does not
+    take the block's `rollConvention` or `endOfMonthRule`. Anchored generation places each date at
+    the start date plus k tenors, so month-end clamping does not accumulate. Changing the roll
+    changes governed output and needs its own versioned decision.
+  - **Adjustment of exercise dates.** Each exercise date is adjusted on the declared payment
+    calendar under the declared payment convention when the block declares a payment adjustment,
+    and is left unadjusted otherwise. A date on or before the settlement date the consumer passes,
+    or after the last period's payment date, is dropped. The notice watch and the timeline pass the
+    day before the evaluation date, so an exercise on the evaluation date stays visible.
+  - **Notice dates.** Notice bounds are counted back from the adjusted exercise date. `Calendar`
+    notice counts calendar days and the result is not adjusted. `Business` notice counts business
+    days on the block's `paymentCalendars`, resolved through the host's calendar source; with no
+    declared calendars, or no source, the schedule is refused. There is no fallback to
+    `commonTerms.holidayCalendarId` or `WEEKENDS`. `minimumNoticeDays` gives the latest notice
+    date (0 when only a maximum is stated) and `maximumNoticeDays` the earliest. Bounds without a
+    `noticeDayType`, negative bounds and a minimum above the maximum are refused. An elapsed
+    notice deadline does not remove the scenario: analytics, the notice watch and the timeline keep
+    it and report the deadline, and the cash ladder refuses to assume the exercise without retained
+    notice evidence.
+  - **What stays refused.** `American` and any other continuous exercise style; a `priceType` other
+    than `Fixed` (make-whole, accreted value); a `priceBasis` other than `PercentOfPar`; a
+    `partialRedemption` other than `WholeOnly`; a row with `isCallable` and no declared calls; a row
+    that also carries a scalar `mandatoryPutDate` or `preRefundDate`; an exercise that falls between
+    a coupon's accrual end and its lagged payment date; more than 1,200 scenarios. Make-whole and
+    American windows exist only in the calculation-only `cashFlowContract` engine (the 2026-10-29
+    entry below). Bond analytics, the cash ladder, the notice watch and the obligation timeline
+    refuse them; none of them warns and continues.
+  - **Obligation timeline.** A Bond that declares a call or put schedule gets `IssuerCallExercise`
+    and `HolderPutExercise` events on every remaining exercise date, and `IssuerCallNoticeDeadline`
+    and `HolderPutNoticeDeadline` events on the latest notice date where an entry states bounds.
+    They come from `BondExerciseNoticeWatch.EvaluateToMaturity`, the notice watch without its
+    horizon. The declared schedule is the authority for such a bond: the scalar `CallPutReview`
+    probe is not consulted, so an exercise is not shown twice. A schedule that cannot be resolved
+    is a blocked outcome with its code and reason in the timeline's extension payload and in the
+    timeline and readiness warnings; no option event is shown, the scalars are not used and nothing
+    throws. The gates are the notice-watch read service's: the cutover policy
+    (`CalculationPolicyBlocked`), terms effective at the evaluation date (`TermsNotEffective`),
+    then the watch. A blocked projection run blocks the events too (`ProjectionBlocked`).
+  - **Timeline stamp.** A timeline whose option events came from a declared schedule, resolved or
+    blocked, is stamped `asset-terms-obligations-timeline-declared-v1`
+    (`AssetOperationsEngineVersions.DeclaredObligationTimeline`). Every other timeline keeps
+    `asset-terms-obligations-timeline-v1` and its output byte for byte: bonds that declare no
+    schedule, rows stamped below 3, published projections (their timeline is derived from the
+    published terms), CertificateOfDeposit and StructuredCredit. The scalar probe's conflation of
+    `callDate`, `mandatoryPutDate` and `preRefundDate` is registered as SCH-DEF-012 and stays
+    pinned for them.
+  - **Legacy bond stamp.** The legacy asset-operations bond loop is stamped
+    `fixed-income-cash-flow-projection-v2` (`AssetOperationsEngineVersions.LegacyBondCashFlow`) on
+    its run and in each flow payload. Its flow ids have been derived from `SchedulePeriodId` since
+    commit `4f2e63245` (2026-10-29), which did not change the stamp. **A run stamped
+    `fixed-income-cash-flow-projection-v1` and generated between 2026-10-29 and this change already
+    carries the new ids**, so `-v1` alone does not say which id derivation a stored run used; its
+    generation time does. Stored runs are not restamped. No reader branches on the stamp: the cash
+    ladder, the account cash forecast and the timeline pass it through as evidence, so `-v1`
+    stays readable. The declared stamps keep their values and are now named constants:
+    `asset-obligation-declared-v3` on a declared run and on a flow with rate evidence, and
+    `asset-obligation-declared-v2` on a flow without it.
+  - **Still open.** Two id instabilities are not fixed and nothing marks the affected ids: a
+    canonical entry with no unadjusted period is keyed on a running ordinal that shifts as earlier
+    rows fall out of the projection, and a legacy bond with no issue date is anchored on the as-of
+    date, so its period ids change daily. The schedule book and workbench lifecycle (8b), a notice
+    watch screen (8c), American windows and make-whole in bond analytics (8e) and
+    CertificateOfDeposit and StructuredCredit consumers (8f) are not part of this entry.
+  - Tests: `AssetObligationDeclaredExerciseTimelineTests`, `AssetObligationTimelineGoldenTests`,
+    `AssetOperationsEngineVersionStampTests`, `BondExerciseNoticeWatchTests` and the SCH-DEF-012 pin
+    in `AssetObligationProjectionServiceTests`.
 
 ## Calculation-only contractual companion — 2026-10-29
 

@@ -2,8 +2,8 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-11-06
-**Review history:** post-slice-6 source check 2026-11-06; slice-4 D3 decision 2026-11-05; slice 6 disposition 2026-11-04; slice-4 disposition 2026-11-04; consolidation pass 2026-10-28; resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
+**Reviewed:** 2026-11-09
+**Review history:** increment 8a resolution pass 2026-11-09; post-slice-6 source check 2026-11-06; slice-4 D3 decision 2026-11-05; slice 6 disposition 2026-11-04; slice-4 disposition 2026-11-04; consolidation pass 2026-10-28; resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -8304,3 +8304,127 @@ business-day adjustment) remain open.
 | `Route`, `OpenApi`, `Architecture`, `ServiceRegistration` and `Composition` filters | 1070 passed, 1 skipped |
 | `generate-ui-api-routes-ts.py` | One new route constant |
 | `bash scripts/ci.sh` | Not run as a whole; `Meridian CI / quality-gate` on the pull request is authoritative |
+
+## Resolution pass — 2026-11-09 (priority 5, increment 8a: declared call and put events on the obligation timeline; the increment-6 stamp)
+
+This pass records source on branch `codex/obligation-timeline-declared-call-put`, based on main at
+`53ac1724d`. It changes no dated observation above and establishes no deployment, term write or
+fleet state. It is read-side only: no terms version, write version, stamp floor, declared mapping
+version, migration or route changes.
+
+**What main had.** Analytics, the cash ladder and the notice watch already read declared call and
+put schedules (the consumer pass of 2026-11-05). The asset-operations obligation timeline did not:
+`AssetObligationProjectionService.AddFixedIncomeObligations` raised one `CallPutReview` from the
+first of the scalars `callDate`, `mandatoryPutDate` and `preRefundDate`, so a bond that declared a
+schedule and no scalar had no option event, and the notice watch had no consumer. Separately, the
+legacy bond loop's flow ids had been derived from `SchedulePeriodId` since `4f2e63245`
+(2026-10-29) under an unchanged `fixed-income-cash-flow-projection-v1` stamp.
+
+**What landed.**
+
+| Area | What landed |
+| --- | --- |
+| Declared events on the timeline | A Bond whose row decodes a `callSchedule` or `putSchedule` (terms version 3 or later, through `SecurityVersionedTerms.Decoding`) gets `IssuerCallExercise` and `HolderPutExercise` on every remaining exercise date and `IssuerCallNoticeDeadline` and `HolderPutNoticeDeadline` on the latest notice date where the entry states bounds. Each event's payload carries the price, both notice dates, the window status and the days to the deadline |
+| Source of the dates | `BondExerciseNoticeWatch.EvaluateToMaturity`, a new entry point that is the notice watch without its horizon bound or filter. It runs the same preconditions and `BondExerciseEconomics.TryResolveScenarios`, so the timeline adds no date arithmetic: business-day adjustment, notice bounds, retained-declaration rules and calendars are the watch's |
+| Blocked schedules | The watch's blocked result is carried as it is: the timeline's `ExtensionPayload` holds `declaredExercise` with `status`, `blockers` (code and reason) and `diagnostics`; the timeline and readiness warnings name the code and reason; no option event is raised. An elapsed notice deadline keeps its event, marked `MissingEvidence`, and adds the watch's elapsed diagnostic as a warning |
+| Timeline stamp | `asset-terms-obligations-timeline-declared-v1` when a declared schedule was the authority, resolved or blocked; `asset-terms-obligations-timeline-v1` otherwise |
+| Legacy bond stamp | The legacy loop's run and flow payloads are stamped `fixed-income-cash-flow-projection-v2`. `AssetOperationsEngineVersions` names that stamp, the retained `-v1` value, the declared run and flow stamps (values unchanged) and both timeline stamps |
+| Defect registry | SCH-DEF-012 registers the timeline's scalar conflation, the SCH-DEF-009 shape at a second site, with a `KnownDefect` pin. It stays in force for every record that declares no schedule |
+| Calendars | `AssetObligationProjectionService` and `AssetOperationsReadService` take the host's `IBusinessDayCalendarSource` as an optional constructor argument, resolved from the container that already registers it |
+
+**Owner decisions (2026-11-09).**
+
+- Scope is 8a and the increment-6 stamp only.
+- Records that declare no schedule keep their output byte for byte, the
+  `asset-terms-obligations-timeline-v1` stamp and the scalar behaviour. The conflation is not fixed;
+  it is registered.
+- A declaring bond that also has scalar dates shows each exercise once, and the declared schedule
+  is the authority.
+- A declaring bond whose schedule cannot be resolved is a typed blocked outcome. It never falls back
+  to the scalars and never fails the request.
+- A timeline that used a declared schedule has its own stamp, one named constant.
+- Legacy runs are stamped `fixed-income-cash-flow-projection-v2` from now on; readers keep
+  accepting `-v1` on stored evidence.
+- CertificateOfDeposit and StructuredCredit stay out; consumers gate on
+  `CarriesBondCouponStructure`.
+
+**Choices made inside those decisions.**
+
+- *Duplicates.* When a declared schedule is present the scalar probe is not run at all, so a
+  scalar `callDate` stored beside the schedule raises no second event. A scalar
+  `mandatoryPutDate` or `preRefundDate` beside a declared schedule is refused by the shared resolver,
+  so that bond is blocked, not shown from the scalar.
+- *Unresolvable schedules.* Reported in three places the service already uses: the timeline's
+  extension payload (typed), the timeline warnings (which set `ReviewRequired`) and the readiness
+  warnings. No event of any option kind is raised.
+- *Policy gate.* The timeline follows `BondExerciseNoticeReadService`: the cutover policy blocks
+  first (`CalculationPolicyBlocked`), then terms that are not effective at the evaluation date
+  (`TermsNotEffective`), then the watch. One rule is added: a blocked projection run blocks the
+  declared events as well (`ProjectionBlocked`). The read service delivers a policy block as a
+  blocked projection, so a caller that evaluated the policy itself cannot expose exercise dates for
+  a blocked bond.
+- *Horizon.* None. The scalar event showed a call date however far away it was, so the declared
+  events cover every exercise date to maturity. The notice watch route keeps its 1 to 366 day
+  horizon.
+- *Stamp name.* `asset-terms-obligations-timeline-declared-v1`, after the
+  `asset-obligation-declared-v3` family.
+- *The v2 stamp reaches further than bond-reference runs.* The legacy loop also projects the flows
+  of bonds read without a bond reference and of CertificateOfDeposit and StructuredCredit rows.
+  Their run stays `asset-obligation-projection-v1`, and each flow payload now says `-v2`, because
+  the same loop derives their ids.
+
+**Deliberately left out.**
+
+- 8b, the schedule book and workbench lifecycle. `BuildScheduleBook` still raises a Call event only
+  from the economic `call.firstCallDate`, and `SecurityMasterWorkbenchQueryServiceCallScheduleTests`
+  still pins that, so the schedule book and the timeline now disagree about a declaring bond.
+- 8c, a notice-watch screen in either workstation, the join to `FileBondExerciseNoticeStore`
+  evidence and a portfolio sweep.
+- 8e, American windows and make-whole in bond analytics and the cash ladder. The timeline refuses
+  them as the watch does.
+- 8f, CertificateOfDeposit and StructuredCredit consumers.
+- The two id instabilities: a canonical entry with no unadjusted period is keyed on a running
+  ordinal (`AssetOperationsProjectionBuilder.BondCashFlows.cs`), and a legacy bond with no issue
+  date is anchored on the as-of date. Neither is fixed or marked.
+- Published projections. A stored publication is read back as stored, and a timeline derived for it
+  on read comes from its published terms payload and keeps the v1 stamp, so a declaring bond with a
+  publication still shows the scalar `CallPutReview`.
+- Restamping stored `-v1` runs.
+
+**Deviations.**
+
+- ADR-025's amended proposal said Bermudan dates take the roll the schedule factory resolves. The
+  code on main does not: `BondExerciseEconomics.TryExerciseDates` generates an anchored grid on the
+  anchor-day roll of the entry's own start date. The ADR now records that rule as the adopted one
+  and says it differs from the proposal. No code changed.
+- The golden fixture written before the change showed that the legacy stamp sits in the flow
+  payloads of synthesized bonds, CertificateOfDeposit and StructuredCredit as well as in
+  bond-reference runs, so 39 flow payloads changed where the plan counted two call sites.
+
+**Open risks.**
+
+- A declaring bond whose schedule the watch refuses (floating or step coupon, factored principal, a
+  scalar mandatory put beside the schedule, an evaluation date outside the bond's life) loses the
+  scalar `CallPutReview` it had and shows a blocked warning. That is the decision, but it is a
+  visible change for those bonds.
+- A matured or not-yet-issued declaring bond reports `EvaluationOutsideLife` as a blocked warning.
+- Event kinds are open text and neither client branches on them; a client that later filters on
+  `CallPutReview` would miss declaring bonds.
+- The stamp cannot distinguish a `-v1` run generated before 2026-10-29 from one generated between
+  then and this change. ADR-025 records that the generation time decides.
+- WPF tests were not run (they need Windows). No WPF or dashboard source changed.
+
+**Validation record.**
+
+| Check | Result |
+| --- | --- |
+| Baseline at `53ac1724d`, targeted filter on `Meridian.Tests` (AssetObligation, AssetOperations, BondExercise, BondAnalytics, BondCanonicalProjection, BondConsistency, BondProjectionGolden, PortfolioCashLadder, AccountCashForecast, LegacyOracleFidelity, Ratchet, FinancialRecordExplorer, ServiceRegistration, Composition, and `Category=KnownDefect`) | 1,687 passed, 34 skipped, 1 failed: `BondProjectionGoldenTests.Bond_KeysetPagesAreBounded_AndRetainCanonicalStructures`, which needs Docker and fails at the base commit in this environment |
+| Characterization committed before any product change (whole-detail golden of 10 undeclared records, 2 pins of the declaring bond's old output, 5 SCH-DEF-012 rows) | 1,695 passed with the same single Docker failure |
+| Same filter after the change | 1,745 passed, 34 skipped, the same 1 Docker failure; 58 tests added, none removed |
+| Undeclared output | `AssetObligationTimelineGoldenTests` is green against the fixture committed before the timeline change. The stamp change regenerated 43 lines of it, all of them the stamp: 2 run stamps, 2 composed timeline stamps and 39 flow payloads |
+| Declaring bond's old output | The 2 pins were flipped in the change that added the events |
+| Mutation check | 37 of 37 mutations fail a named test: 36 on the first pass, and 1 survivor (the to-maturity read skipping the watch's exception guard) after two tests were added. The 5 constant mutations used a non-incremental build |
+| Broader regression filter (SecurityMaster, FixedIncome, AssetOperations, Architecture, Schedule, Workstation, Endpoint, Contract, OpenApi) | 10,205 passed, 297 skipped, and the same 1 Docker failure (run after the change only; no baseline was taken for this filter) |
+| Guards (test-skip register, duplicate helpers, inline SHA-256, file size, warning suppressions, endpoint cancellation, contract-type parity) and `dotnet format whitespace --verify-no-changes` on the 14 changed C# files | Pass |
+| F# and dashboard suites | Not run: no F# or dashboard source changed |
+| Generated outputs, `bash scripts/ci.sh`, `Meridian CI / quality-gate` | Not run here; generated outputs are refreshed and the gate is reported on the pull request |

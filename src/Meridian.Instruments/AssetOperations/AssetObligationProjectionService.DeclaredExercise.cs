@@ -29,6 +29,8 @@ public sealed partial class AssetObligationProjectionService
     /// (<c>CalculationPolicyBlocked</c>), terms effective at the evaluation date
     /// (<c>TermsNotEffective</c>), then <see cref="BondExerciseNoticeWatch.EvaluateToMaturity"/>.
     /// </remarks>
+    /// <param name="security">The retained row the projection is built from.</param>
+    /// <param name="context">The calculation context; its as-of is the evaluation date.</param>
     /// <param name="policyBlocker">The cutover policy's blocker for this record, when the caller evaluated one.</param>
     public BondExerciseNoticeWatchResult? ResolveDeclaredExercise(
         SecurityDetailDto security, BondCalculationContext context, string? policyBlocker = null)
