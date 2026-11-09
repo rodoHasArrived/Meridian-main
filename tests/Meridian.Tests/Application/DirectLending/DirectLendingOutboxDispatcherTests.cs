@@ -132,13 +132,46 @@ public sealed class DirectLendingOutboxDispatcherTests
     }
 
     [Theory]
-    [InlineData("""{"amount":10000,"effectiveDate":"2026-05-14","resolution":{"breakdown":{"toInterest":0,"toCommitmentFee":0,"toFees":0,"toPenalty":0,"toPrincipal":0},"resolutionBasis":"WaterfallAuto","ruleVersion":"waterfall-v1","unappliedAmount":0,"excessToPrincipal":10000,"excessToPrepaidInterest":0,"excessRuleApplied":1,"excessRuleNote":null,"prepaymentPenaltyCharged":200}}""", 200)]
-    [InlineData("""{"amount":10000,"effectiveDate":"2026-05-14","resolution":{"breakdown":{"toInterest":0,"toCommitmentFee":0,"toFees":0,"toPenalty":0,"toPrincipal":10000},"resolutionBasis":"WaterfallAuto","ruleVersion":"v1","unappliedAmount":0}}""", 0)]
-    public async Task ProcessJournalAsync_MixedPaymentJournalsPrepaymentPenaltyChargedOnExcess(string payloadJson, decimal expectedPenalty)
+    [InlineData("""{"amount":10000,"effectiveDate":"2026-05-14","resolution":{"breakdown":{"toInterest":0,"toCommitmentFee":0,"toFees":0,"toPenalty":0,"toPrincipal":0},"resolutionBasis":"WaterfallAuto","ruleVersion":"waterfall-v1","unappliedAmount":0,"excessToPrincipal":10000,"excessToPrepaidInterest":0,"excessRuleApplied":1,"excessRuleNote":null,"prepaymentPenaltyCharged":200}}""", true)]
+    [InlineData("""{"amount":10000,"effectiveDate":"2026-05-14","resolution":{"breakdown":{"toInterest":0,"toCommitmentFee":0,"toFees":0,"toPenalty":0,"toPrincipal":10000},"resolutionBasis":"WaterfallAuto","ruleVersion":"v1","unappliedAmount":0}}""", false)]
+    public async Task ProcessJournalAsync_MixedPayment_SplitsByAllocation_OrKeepsClearingForPaymentsBeforePrd115(string payloadJson, bool split)
     {
-        // PRD-115 decision 3: the penalty on excess applied to principal is charged by the payment
-        // command itself, so its journal lines ride the mixed-payment entry. Payloads from before
-        // PRD-115 carry no penalty and post only the cash/clearing pair.
+        // PRD-115 increment 5: the dispatcher posts the same split as LoanAccountingProjector
+        // (DirectLendingJournalLines). Payments recorded before PRD-115 keep Dr Cash / Cr clearing.
+        var savedEntry = await ProcessSingleAsync("loan.mixed-payment-applied", payloadJson);
+
+        savedEntry.Lines.Sum(line => line.DebitAmount).Should().Be(savedEntry.Lines.Sum(line => line.CreditAmount));
+        savedEntry.Lines.Should().ContainSingle(line => line.AccountCode == "Cash" && line.DebitAmount == 10_000m);
+        if (split)
+        {
+            savedEntry.Lines.Select(line => (line.AccountCode, line.DebitAmount, line.CreditAmount)).Should().Equal(
+                ("Cash", 10_000m, 0m),
+                ("LoanPrincipal", 0m, 10_000m),
+                ("PenaltyReceivable", 200m, 0m),
+                ("PenaltyIncome", 0m, 200m));
+        }
+        else
+        {
+            savedEntry.Lines.Select(line => (line.AccountCode, line.DebitAmount, line.CreditAmount))
+                .Should().Equal(("Cash", 10_000m, 0m), ("LoanAndAccrualsClearing", 0m, 10_000m));
+        }
+    }
+
+    [Fact]
+    public async Task ProcessJournalAsync_DailyAccrual_SettlesInterestFromPrepaidInterestFirst()
+    {
+        var savedEntry = await ProcessSingleAsync(
+            "loan.daily-accrual-posted",
+            """{"accrualEntryId":"7c9d4a1e-0000-4000-8000-000000000001","accrualDate":"2026-05-14","interestAmount":200,"commitmentFeeAmount":0,"penaltyAmount":0,"annualRateApplied":0.08,"pikInterestAmount":0,"prepaidInterestConsumed":150}""");
+
+        savedEntry.Lines.Select(line => (line.AccountCode, line.DebitAmount, line.CreditAmount)).Should().Equal(
+            ("PrepaidInterestLiability", 150m, 0m),
+            ("AccruedInterestReceivable", 50m, 0m),
+            ("InterestIncome", 0m, 200m));
+    }
+
+    private static async Task<JournalEntryDto> ProcessSingleAsync(string eventType, string payloadJson)
+    {
         var operationsStore = Substitute.For<IDirectLendingOperationsStore>();
         var commandService = Substitute.For<IDirectLendingCommandService>();
         var queryService = Substitute.For<IDirectLendingQueryService>();
@@ -154,7 +187,7 @@ public sealed class DirectLendingOutboxDispatcherTests
         var sourceEvent = new LoanEventLineageDto(
             sourceEventId,
             AggregateVersion: 4,
-            EventType: "loan.mixed-payment-applied",
+            EventType: eventType,
             EventSchemaVersion: 1,
             EffectiveDate: new DateOnly(2026, 5, 14),
             RecordedAt: DateTimeOffset.Parse("2026-05-14T12:00:00Z"),
@@ -174,19 +207,7 @@ public sealed class DirectLendingOutboxDispatcherTests
 
         await InvokeProcessAsync(dispatcher, BuildJournalMessage(loanId, sourceEventId, sourceEvent.EventType, sourceEvent.EffectiveDate));
 
-        savedEntry.Should().NotBeNull();
-        savedEntry!.Lines.Should().ContainSingle(line => line.AccountCode == "Cash" && line.DebitAmount == 10_000m);
-        savedEntry.Lines.Should().ContainSingle(line => line.AccountCode == "LoanAndAccrualsClearing" && line.CreditAmount == 10_000m);
-        savedEntry.Lines.Sum(line => line.DebitAmount).Should().Be(savedEntry.Lines.Sum(line => line.CreditAmount));
-        if (expectedPenalty > 0m)
-        {
-            savedEntry.Lines.Should().ContainSingle(line => line.AccountCode == "PenaltyReceivable" && line.DebitAmount == expectedPenalty);
-            savedEntry.Lines.Should().ContainSingle(line => line.AccountCode == "PenaltyIncome" && line.CreditAmount == expectedPenalty);
-        }
-        else
-        {
-            savedEntry.Lines.Should().HaveCount(2);
-        }
+        return savedEntry ?? throw new InvalidOperationException("No journal entry was saved.");
     }
 
     [Fact]

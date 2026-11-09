@@ -17,7 +17,8 @@ public interface IAccrualLedgerService
         DailyAccrualEntryDto accrual,
         Guid sourceEventId,
         DirectLendingEventWriteMetadata metadata,
-        CancellationToken ct = default);
+        CancellationToken ct = default,
+        decimal prepaidInterestConsumed = 0m);
 
     Task<IReadOnlyList<LedgerJournalEntryWrite>> ReverseAccrualAsync(
         Guid loanId,

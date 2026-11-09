@@ -185,14 +185,91 @@ public sealed class AccrualLedgerServiceTests
         entry.Lines.Should().Contain(line => line.Account.Name == "PikInterestReceivable" && line.Credit == 1_333.44m);
     }
 
-    private static AccrualLedgerService CreateService(LedgerAccountingPeriod period)
+    // ── PRD-115 increment 5: split journals ─────────────────────────────────
+
+    private const string SplitPaymentJson = """
+        {"amount":257000,"effectiveDate":"2026-03-24","resolution":{"breakdown":{"toInterest":1000,"toCommitmentFee":200,"toFees":300,"toPenalty":400,"toPrincipal":500},
+         "resolutionBasis":"WaterfallAuto","ruleVersion":"waterfall-v1","unappliedAmount":1600,"excessToPrincipal":250000,"excessToPrepaidInterest":3000,
+         "excessRuleApplied":1,"excessRuleNote":null,"prepaymentPenaltyCharged":5000}}
+        """;
+
+    [Fact]
+    public async Task Projector_MixedPayment_SplitsByAllocationAndBalances()
     {
-        var projector = new LoanAccountingProjector(
+        // The amounts are illustrative: one payment touching every line the split can post.
+        var entry = await ProjectSingleAsync("loan.mixed-payment-applied", SplitPaymentJson);
+
+        entry.IsBalanced.Should().BeTrue();
+        entry.Lines.Select(line => (line.Account.Name, line.Debit, line.Credit)).Should().BeEquivalentTo(new[]
+        {
+            ("Cash", 257_000m, 0m),
+            ("AccruedInterestReceivable", 0m, 1_000m),
+            ("CommitmentFeeReceivable", 0m, 200m),
+            ("FeeReceivable", 0m, 300m),
+            ("PenaltyReceivable", 0m, 400m),
+            ("LoanPrincipal", 0m, 250_500m),
+            ("PrepaidInterestLiability", 0m, 3_000m),
+            ("UnappliedCashLiability", 0m, 1_600m),
+            ("PenaltyReceivable", 5_000m, 0m),
+            ("PenaltyIncome", 0m, 5_000m),
+        });
+        entry.Lines.Single(line => line.Account.Name == "PrepaidInterestLiability").Account.AccountType.Should().Be(LedgerAccountType.Liability);
+        entry.Lines.Single(line => line.Account.Name == "UnappliedCashLiability").Account.AccountType.Should().Be(LedgerAccountType.Liability);
+    }
+
+    [Fact]
+    public async Task Projector_MixedPayment_RecordedBeforePrd115_KeepsTheClearingPosting()
+    {
+        var entry = await ProjectSingleAsync(
+            "loan.mixed-payment-applied",
+            """{"amount":5000,"resolution":{"breakdown":{"toInterest":100,"toCommitmentFee":0,"toFees":0,"toPenalty":0,"toPrincipal":4900},"resolutionBasis":"Manual","ruleVersion":"v1","unappliedAmount":0}}""");
+
+        entry.Lines.Select(line => (line.Account.Name, line.Debit, line.Credit))
+            .Should().Equal(("Cash", 5_000m, 0m), ("LoanAndAccrualsClearing", 0m, 5_000m));
+    }
+
+    [Fact]
+    public async Task Projector_MixedPayment_WhoseResolutionDoesNotSumToTheReceipt_IsRejected()
+    {
+        var act = () => ProjectSingleAsync("loan.mixed-payment-applied", SplitPaymentJson.Replace("\"amount\":257000", "\"amount\":257001", StringComparison.Ordinal));
+
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*would not balance*");
+    }
+
+    [Fact]
+    public async Task AccrueAsync_SettlesInterestFromPrepaidInterestFirst()
+    {
+        var service = CreateService(BuildOpenPeriod());
+        var loanId = Guid.NewGuid();
+        var accrual = BuildAccrualEntry();
+
+        var entry = (await service.AccrueAsync(
+            loanId, BuildContract(loanId), new PostDailyAccrualRequest(accrual.AccrualDate), accrual, Guid.NewGuid(), BuildMetadata(),
+            prepaidInterestConsumed: 10m)).Should().ContainSingle().Subject.Entry;
+
+        entry.IsBalanced.Should().BeTrue();
+        entry.Lines.Should().ContainSingle(line => line.Account.Name == "PrepaidInterestLiability" && line.Debit == 10m);
+        entry.Lines.Should().ContainSingle(line => line.Account.Name == "AccruedInterestReceivable" && line.Debit == accrual.InterestAmount - 10m);
+        entry.Lines.Should().ContainSingle(line => line.Account.Name == "InterestIncome" && line.Credit == accrual.InterestAmount);
+    }
+
+    private async Task<JournalEntry> ProjectSingleAsync(string eventType, string payloadJson)
+    {
+        var loanId = Guid.NewGuid();
+        using var payload = JsonDocument.Parse(payloadJson);
+        var writes = await CreateProjector(BuildOpenPeriod()).ProjectAsync(
+            loanId, BuildContract(loanId), eventType, new DateOnly(2026, 3, 24), payload, Guid.NewGuid(), BuildMetadata(), CancellationToken.None);
+        return writes.Should().ContainSingle().Subject.Entry;
+    }
+
+    private static LoanAccountingProjector CreateProjector(LedgerAccountingPeriod period)
+        => new(
             new PeriodOnlyLedgerJournalStore(period),
             new AccountingPolicyService(),
             BuildSecurityMasterQueryService());
-        return new AccrualLedgerService(projector);
-    }
+
+    private static AccrualLedgerService CreateService(LedgerAccountingPeriod period)
+        => new(CreateProjector(period));
 
     private static Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService BuildSecurityMasterQueryService()
     {

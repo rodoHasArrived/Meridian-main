@@ -1,6 +1,6 @@
 {
   "total_files": 798,
-  "total_lines": 183767,
+  "total_lines": 183784,
   "orphaned_count": 259,
   "no_heading_count": 157,
   "stale_count": 0,
@@ -2367,7 +2367,7 @@
     },
     {
       "path": "docs/engineering/blueprints/direct-lending-excess-payment-application.md",
-      "line_count": 248,
+      "line_count": 259,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3047,7 +3047,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 13322,
+      "line_count": 13323,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6255,7 +6255,7 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 1471,
+      "line_count": 1472,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6519,7 +6519,7 @@
     },
     {
       "path": "src/Meridian.Storage/README.md",
-      "line_count": 1566,
+      "line_count": 1570,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

@@ -85,12 +85,15 @@ public sealed class LoanAccountingProjector
 
             case "loan.daily-accrual-posted":
                 description = "Loan daily accrual";
-                var interest = GetDecimal(root, "interestAmount");
                 var commitmentFee = GetDecimal(root, "commitmentFeeAmount");
                 var penalty = GetDecimal(root, "penaltyAmount");
                 var pikInterest = GetDecimal(root, "pikInterestAmount");
-                Add("AccruedInterestReceivable", LedgerAccountType.Asset, interest, 0m);
-                Add("InterestIncome", LedgerAccountType.Revenue, 0m, interest);
+                // PRD-115: interest settled from prepaid interest first (shared with DirectLendingOutboxDispatcher).
+                foreach (var line in DirectLendingJournalLines.ForAccruedInterest(root))
+                {
+                    Add(line.Account, line.AccountType, line.Debit, line.Credit);
+                }
+
                 if (IsPikCapitalizationDeferred(root))
                 {
                     // Capitalization policy: PIK is earned now but is neither cash nor principal
@@ -150,9 +153,11 @@ public sealed class LoanAccountingProjector
 
             case "loan.mixed-payment-applied":
                 description = "Loan cash receipt";
-                var paymentAmount = GetDecimal(root, "amount");
-                Add("Cash", LedgerAccountType.Asset, paymentAmount, 0m);
-                Add("LoanAndAccrualsClearing", LedgerAccountType.Asset, 0m, paymentAmount);
+                // PRD-115: split by allocation (shared with DirectLendingOutboxDispatcher).
+                foreach (var line in DirectLendingJournalLines.ForMixedPayment(root))
+                {
+                    Add(line.Account, line.AccountType, line.Debit, line.Credit);
+                }
                 break;
 
             case "loan.write-off-applied":

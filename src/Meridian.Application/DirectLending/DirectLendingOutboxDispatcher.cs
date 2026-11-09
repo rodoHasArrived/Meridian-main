@@ -192,15 +192,15 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
                 break;
 
             case "loan.daily-accrual-posted":
-                var interest = GetRequiredDecimal(payload.RootElement, "interestAmount", "InterestAmount");
+                GetRequiredDecimal(payload.RootElement, "interestAmount", "InterestAmount");
                 var commitmentFee = GetRequiredDecimal(payload.RootElement, "commitmentFeeAmount", "CommitmentFeeAmount");
                 var penalty = GetDecimal(payload.RootElement, "penaltyAmount", "PenaltyAmount");
                 var pikInterest = GetDecimal(payload.RootElement, "pikInterestAmount", "PikInterestAmount");
                 description = "Daily accrual";
-                if (interest > 0m)
+                // PRD-115: interest settled from prepaid interest first (shared with LoanAccountingProjector).
+                foreach (var line in DirectLendingJournalLines.ForAccruedInterest(payload.RootElement))
                 {
-                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "AccruedInterestReceivable", interest, 0m, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
-                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "InterestIncome", 0m, interest, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
+                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, line.Account, line.Debit, line.Credit, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
                 }
 
                 // Capitalization policy: PIK waits in a PIK receivable until a capitalization date.
@@ -234,17 +234,12 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
                 break;
 
             case "loan.mixed-payment-applied":
-                var paymentAmount = GetRequiredDecimal(payload.RootElement, "amount", "Amount");
+                GetRequiredDecimal(payload.RootElement, "amount", "Amount");
                 description = "Mixed payment";
-                lines.Add(new JournalLineDto(Guid.NewGuid(), 1, "Cash", paymentAmount, 0m, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
-                lines.Add(new JournalLineDto(Guid.NewGuid(), 2, "LoanAndAccrualsClearing", 0m, paymentAmount, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
-                // PRD-115 decision 3: excess applied to principal charges the prepayment penalty in the
-                // same command, journaled exactly as loan.prepayment-penalty-charged is.
-                var excessPenalty = GetOptionalResolutionDecimal(payload.RootElement, "prepaymentPenaltyCharged");
-                if (excessPenalty > 0m)
+                // PRD-115: split by allocation (shared with LoanAccountingProjector).
+                foreach (var line in DirectLendingJournalLines.ForMixedPayment(payload.RootElement))
                 {
-                    lines.Add(new JournalLineDto(Guid.NewGuid(), 3, "PenaltyReceivable", excessPenalty, 0m, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
-                    lines.Add(new JournalLineDto(Guid.NewGuid(), 4, "PenaltyIncome", 0m, excessPenalty, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
+                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, line.Account, line.Debit, line.Credit, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
                 }
                 break;
 
@@ -319,20 +314,6 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
         }
 
         throw new InvalidOperationException($"Direct lending outbox payload is missing numeric property '{propertyNames[0]}'.");
-    }
-
-    /// <summary>Reads a numeric member of the payload's <c>resolution</c> object; 0 when absent (events before PRD-115).</summary>
-    private static decimal GetOptionalResolutionDecimal(JsonElement root, string propertyName)
-    {
-        if ((root.TryGetProperty("resolution", out var resolution) || root.TryGetProperty("Resolution", out resolution))
-            && resolution.ValueKind == JsonValueKind.Object
-            && resolution.TryGetProperty(propertyName, out var value)
-            && value.ValueKind == JsonValueKind.Number)
-        {
-            return value.GetDecimal();
-        }
-
-        return 0m;
     }
 
     private sealed record DirectLendingOutboxEnvelope(

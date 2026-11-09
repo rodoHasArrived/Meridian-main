@@ -24,8 +24,10 @@ public sealed class AccrualLedgerService : IAccrualLedgerService
         DailyAccrualEntryDto accrual,
         Guid sourceEventId,
         DirectLendingEventWriteMetadata metadata,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        decimal prepaidInterestConsumed = 0m)
     {
+        // PRD-115: interest settled from prepaid interest posts Dr PrepaidInterestLiability, not a receivable.
         using var payload = DirectLendingServiceSupport.CreatePayloadDocument(new
         {
             loanId,
@@ -36,7 +38,8 @@ public sealed class AccrualLedgerService : IAccrualLedgerService
             accrual.PenaltyAmount,
             accrual.AnnualRateApplied,
             accrual.PikInterestAmount,
-            accrual.PikCapitalizationDeferred
+            accrual.PikCapitalizationDeferred,
+            PrepaidInterestConsumed = prepaidInterestConsumed
         });
 
         return _projector.ProjectAsync(

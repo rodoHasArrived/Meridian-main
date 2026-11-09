@@ -1,6 +1,6 @@
 # Direct Lending: Term-Driven Excess Payment Application
 
-**Status:** Approved design (owner decisions recorded 2026-11-02). Implementation proceeds by [increment](#increments); increments 1 (terms rule), 2 (balances and migration 010), 3 (excess routing) and 4 (accrual consumption) are implemented.
+**Status:** Approved design (owner decisions recorded 2026-11-02). Implementation proceeds by [increment](#increments); increments 1 (terms rule), 2 (balances and migration 010), 3 (excess routing), 4 (accrual consumption) and 5 (split journals) are implemented.
 **Owner:** Direct Lending + Ledger
 **Reviewed:** 2026-11-02
 **Registered in:** [`docs/engineering/blueprints/README.md`](README.md)
@@ -189,6 +189,17 @@ they already exist.
 
 **Accrual with prepaid consumption.** Dr `PrepaidInterestLiability` for `consumed`; Dr
 `AccruedInterestReceivable` for the rest; Cr `InterestIncome` for the full day.
+
+**As implemented (increment 5):** `DirectLendingJournalLines` builds both entries and is shared by
+`LoanAccountingProjector` (in the command transaction) and `DirectLendingOutboxDispatcher`, so the
+two journal paths cannot post differently. The mixed-payment entry also carries the prepayment
+penalty charged on excess (Dr `PenaltyReceivable` / Cr `PenaltyIncome`). A payment counts as
+"new" when its resolution carries the PRD-115 excess members; older payments keep Dr `Cash` / Cr
+`LoanAndAccrualsClearing`. A resolution that does not sum to the receipt is rejected rather than
+posted unbalanced. `PrepaidInterestLiability` and `UnappliedCashLiability` are liability accounts
+and are on `LedgerPeriodPostingGuard`'s instrument-account list, so they need Security Master
+evidence like the other loan accounts. `AccrualLedgerService.AccrueAsync` takes the consumed amount
+as an optional argument.
 
 **Migration of the clearing account.** Historical `LoanAndAccrualsClearing` postings are not
 rewritten. A one-off reconciliation report lists the residual clearing balance per loan, so the
