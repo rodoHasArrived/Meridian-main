@@ -118,7 +118,7 @@ public sealed class WorkspaceAttentionRibbonViewModel : BindableBase
 
     public DateTimeOffset Timestamp { get; }
 
-    public string TimestampText => Timestamp.ToLocalTime().ToString("MMM d, HH:mm", CultureInfo.InvariantCulture);
+    public string TimestampText => FormatHelpers.FormatUtcTimestamp(Timestamp);
 
     public string SummaryWithTimestamp => $"{SummaryText} Updated {TimestampText}.";
 
