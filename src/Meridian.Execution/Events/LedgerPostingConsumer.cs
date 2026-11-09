@@ -575,10 +575,13 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
         if (evt.ContractMultiplier <= 0m)
             throw new InvalidDataException($"Fill '{evt.FillId:D}' has non-positive contract multiplier {evt.ContractMultiplier}.");
 
-        var journals = new List<JournalEntry>(evt.Commission > 0m ? 2 : 1)
-        {
-            BuildTradeJournal(evt, securityGate)
-        };
+        var journals = new List<JournalEntry>(evt.Commission > 0m ? 2 : 1);
+        if (!evt.SettlesVariationMargin)
+            journals.Add(BuildTradeJournal(evt, securityGate));
+        else if (evt.RealizedPnl != 0m)
+            journals.Add(BuildVariationMarginJournal(evt, securityGate));
+        // A variation-margin open moves no cash (no notional changes hands), so it posts only
+        // its commission, if any.
         if (evt.Commission > 0m)
             journals.Add(BuildCommissionJournal(evt, securityGate));
 
@@ -638,6 +641,29 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
             lines.Add((securitiesAccount, 0m, evt.GrossValue));
         }
 
+        return CreateJournal(evt, securityGate, activityType, journalId, description, lines);
+    }
+
+    /// <summary>
+    /// The cash a variation-margin fill moved: the change since the last settlement on the
+    /// contracts it reduced or closed, which the paper book also posts against the futures
+    /// settlement account. No securities are bought or sold at notional.
+    /// </summary>
+    private JournalEntry BuildVariationMarginJournal(
+        TradeExecutedEvent evt,
+        LedgerPostingSecurityGateResult securityGate)
+    {
+        const string activityType = "trade-variation-margin";
+        var journalId = CreateDeterministicGuid(evt.FillId, activityType, "journal");
+        var description = FormattableString.Invariant(
+            $"Variation margin on {evt.Side} {evt.FilledQuantity} {evt.Symbol} @ {evt.FillPrice:F4}");
+        var accountId = NormalizeOptional(evt.FinancialAccountId);
+        var cashAccount = accountId is null ? LedgerAccounts.Cash : LedgerAccounts.CashAccount(accountId);
+        var settlementAccount = LedgerAccounts.FuturesMtmSettlement(evt.Symbol, accountId);
+        var amount = Math.Abs(evt.RealizedPnl);
+        IReadOnlyList<(LedgerAccount Account, decimal Debit, decimal Credit)> lines = evt.RealizedPnl > 0m
+            ? [(cashAccount, amount, 0m), (settlementAccount, 0m, amount)]
+            : [(settlementAccount, amount, 0m), (cashAccount, 0m, amount)];
         return CreateJournal(evt, securityGate, activityType, journalId, description, lines);
     }
 
