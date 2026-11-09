@@ -564,6 +564,86 @@ public sealed class WorkstationServiceCollectionExtensionsTests
         }
     }
 
+    /// <summary>
+    /// The position limit has to see working orders through the order manager the host actually
+    /// composes. The rule resolves <c>IOrderManager</c> lazily (the order manager depends on the
+    /// validator, so it cannot be injected), which makes the wiring easy to break silently: a rule
+    /// that never reaches the open book approves every resting order on its own.
+    /// <para>
+    /// Proven end to end through a real order manager: with the book flat and a limit of 100, one
+    /// resting buy of 80 is admitted, a second buy of 80 is refused by the position limit because
+    /// the two would reach 160 once filled, and a buy that still fits is admitted.
+    /// </para>
+    /// </summary>
+    [Fact]
+    public async Task AddWorkstationSharedServices_PositionLimitCountsOrdersRestingInTheComposedOrderManager()
+    {
+        using var environment = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            "ASPNETCORE_ENVIRONMENT",
+            "Test");
+        var services = CreateMinimalWorkstationServices();
+        var snapshotRoot = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
+        services.AddSingleton(new RiskRuleRuntimeOptions(Path.Combine(snapshotRoot, "risk-rules.json")));
+
+        // A flat paper book behind the production position tracker, and an order manager whose
+        // paper gateway accepts limit orders without filling them, so they rest as working orders.
+        var operatorControls = new ExecutionOperatorControlService();
+        await operatorControls.SetDefaultPositionLimitAsync(100m, changedBy: "test", reason: "composition check");
+        services.AddSingleton(operatorControls);
+        services.AddSingleton(new Meridian.Execution.Services.PaperTradingPortfolio(100_000m));
+        services.AddSingleton<Meridian.Execution.Models.IPortfolioState>(sp =>
+            sp.GetRequiredService<Meridian.Execution.Services.PaperTradingPortfolio>());
+        services.AddSingleton<Meridian.Execution.Sdk.IPositionTracker>(sp =>
+            new PortfolioStatePositionTracker(sp.GetRequiredService<Meridian.Execution.Models.IPortfolioState>()));
+        services.AddSingleton<Meridian.Execution.Sdk.IOrderManager>(sp =>
+            new Meridian.Execution.OrderManagementSystem(
+                new Meridian.Execution.PaperTradingGateway(
+                    Microsoft.Extensions.Logging.Abstractions.NullLogger<Meridian.Execution.PaperTradingGateway>.Instance),
+                Microsoft.Extensions.Logging.Abstractions.NullLogger<Meridian.Execution.OrderManagementSystem>.Instance,
+                riskValidator: sp.GetRequiredService<Meridian.Execution.IRiskValidator>()));
+
+        services.AddWorkstationSharedServices();
+
+        try
+        {
+            await using var provider = services.BuildServiceProvider();
+            var orderManager = (Meridian.Execution.OrderManagementSystem)provider
+                .GetRequiredService<Meridian.Execution.Sdk.IOrderManager>();
+            await orderManager.StartAsync();
+
+            static Meridian.Execution.Sdk.OrderRequest RestingBuy(decimal quantity) => new()
+            {
+                Symbol = "AAPL",
+                Side = Meridian.Execution.Sdk.OrderSide.Buy,
+                Type = Meridian.Execution.Sdk.OrderType.Limit,
+                Quantity = quantity,
+                LimitPrice = 150m
+            };
+
+            var first = await orderManager.PlaceOrderAsync(RestingBuy(80m));
+            first.Success.Should().BeTrue(first.ErrorMessage);
+            orderManager.GetOpenOrders().Should().ContainSingle("the first buy must be resting, not filled");
+
+            var second = await orderManager.PlaceOrderAsync(RestingBuy(80m));
+            second.Success.Should().BeFalse("80 working plus 80 more would reach 160 against a limit of 100");
+            second.RiskDecision!.Violations.Should().Contain(violation => violation.RuleName == "PositionLimit");
+
+            var fits = await orderManager.PlaceOrderAsync(RestingBuy(20m));
+            fits.Success.Should().BeTrue(fits.ErrorMessage);
+        }
+        finally
+        {
+            try
+            {
+                Directory.Delete(snapshotRoot, recursive: true);
+            }
+            catch (IOException)
+            {
+                // A leftover temp directory must not fail the test run.
+            }
+        }
+    }
+
     private static ServiceCollection CreateMinimalWorkstationServices()
     {
         var root = Path.Combine(
