@@ -42,7 +42,13 @@ let drawdownCircuitBreaker (ctx: RiskContext) : RiskDecision =
             Reject (sprintf "Drawdown circuit breaker: %.2f%% drawdown exceeds %.2f%% threshold" (float drawdownPercent) (float maxDrawdownPercent))
         else
             Approve
-    | _ -> Approve
+    // No threshold configured: the breaker is switched off on purpose.
+    | _, _, None -> Approve
+    // A threshold is configured but the drawdown cannot be measured (no portfolio value, or a
+    // missing or non-positive initial capital). Approving here would switch the breaker off
+    // silently through a misconfiguration, so fail closed and say why.
+    | _ ->
+        Reject "Drawdown circuit breaker cannot be evaluated: a drawdown threshold is configured but portfolio value or a positive initial capital is missing."
 
 /// Projected gross exposure of the order's symbol after the order executes.
 /// Direction-aware: the current contribution-level gross is preserved and only the net
