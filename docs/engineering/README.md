@@ -318,8 +318,9 @@ npm --prefix src/Meridian.Ui/dashboard run build
 ```
 
 Tests that call real external market-data providers (`Category=LiveProvider`, such as the Yahoo
-Finance integration tests) are reported as skipped unless `MERIDIAN_RUN_LIVE_PROVIDER_TESTS=true`.
-Once opted in, an unreachable provider fails the test instead of passing silently.
+Finance integration tests) are excluded from deterministic runs by their `Category` filters
+(`Category!=Integration`, `Category!=LiveProvider`). When a run invokes them, an unreachable
+provider fails the test instead of passing silently.
 
 ### Python automation environment
 
