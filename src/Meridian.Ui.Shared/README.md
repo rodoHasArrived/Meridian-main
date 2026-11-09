@@ -11,10 +11,27 @@ last_reviewed: 2026-10-31
 
 # src/Meridian.Ui.Shared
 
+`MapUiEndpoints` registers the banking (`/api/banking/*`), ingestion-job (`/api/ingestion/*`) and
+money-market-fund (`/api/security-master/money-market-funds/*`) groups. Every route declares its
+permission; the groups resolve their services per request (501 when unregistered); malformed banking
+and MMF search bodies return 400; `/api/dev/seed/bank-transactions` is mapped only in Development and
+Test hosts. The ingestion group exposes reads and Draft job creation only; job state changes stay on
+the governed workstation ingestion-operation action route.
+Banking approve, reject, currency-remediation and bank-evidence routes derive the action origin from
+the authenticated principal (`ResolveTrustedActionOrigin`), so API-key callers cannot pass the
+banking services' human-only gate with the body's default `HumanOperator` origin.
+
 The existing bond analytics GET accepts optional `calculationVersion` and forwards it unchanged to
 `IBondAnalyticsService`. Omission retains v2; explicit v1/v2 fixed/zero and v3 floating requests use
 the service's model admission and typed refusals. The route retains tenant and view-permission
 requirements. Endpoint tests exercise actual SOFR pricing, fixing/curve refusals and legacy JSON.
+
+`GET /api/reference-data/bonds/{securityId}/exercise-notices?asOf=…&horizonDays=…&knownAt=…` is the
+read-only notice-date watch. `BondExerciseNoticeReadService` loads the retained row the way analytics
+does, then `BondExerciseNoticeWatch` lists each declared call or put window as `Upcoming`, `Open`,
+`DeadlineElapsed` or `NotStated` within a 1–366 day horizon (default 90). The route has the same tenant
+scope and `ViewSecurityMaster`/`ModifySecurityMaster` permission as analytics. Windows record no notice
+and grant no exercise authority; an elapsed deadline needs retained notice evidence.
 
 Portfolio cash-ladder composition supplies the configured business-day calendars to the shared Instruments scenario engine. Declared issuer-call and holder-put scenarios use retained projection terms and calendar hashes; floating shocks consume retained per-reset inputs. Scenario blockers remain visible through the existing decision-readiness response; no new approval or payment authority is introduced. The optional `engineVersion` query selects explicit `portfolio-cash-ladder-v1` replay; an unknown version returns a blocked ladder with no contributions that names the unsupported version rather than falling back silently.
 
@@ -528,6 +545,47 @@ The Alpaca brokerage connect/revoke routes apply the same identity and verificat
 Provider setup passes the server-resolved actor into credential persistence. Plaid operator mutations
 require an authenticated actor and never fall back to a request identity; signed webhook authentication
 remains independent of operator sessions.
+
+## Cross-screen counts
+
+`Services/CrossScreenCountDefinitions.cs` is the one definition of each count several screens show:
+open orders are the orders the OMS reports open for the fund account in scope; provider health is
+rows with status Healthy out of every provider the Data workspace lists; open breaks are break-queue
+items not resolved, dismissed or signed off. The Trading, Data and Accounting headline cards count
+with it (the Data card previously read the metrics store's own tally, which could disagree with its
+list), and `GET /api/workstation/cross-screen-counts` returns all three for Settings, the shell and
+WPF. Each count is gated by the permission of the route that owns its source, and is null when the
+caller may not read it. `tests/fixtures/cross-screen-counts/cross-screen-counts.json` holds this
+class and the browser's `lib/cross-screen-counts.ts` to the same expected values.
+
+## Operator default scope
+
+`GET`/`PUT /api/workstation/operator/scope-preference` read and save the signed-in operator's
+default operating scope. `Workflows/FileOperatorScopePreferenceStore.cs` keeps one record per
+tenant, company and user under the data root (`workstation/operators/scope-preferences.json`)
+through the snapshot store's atomic replace; values are trimmed, capped at 128 printable characters,
+and an empty scope clears the default. Both routes require an authenticated session and only ever
+read or write the caller's own record.
+
+## Operator surface visits
+
+`GET`/`POST /api/workstation/operator/visits/{surface}` read and record the signed-in operator's
+last visit to a workstation surface, the baseline for "since your last visit" markers.
+`Workflows/FileOperatorSurfaceVisitStore.cs` keeps one record per tenant, company, user and surface
+(`workstation/operators/surface-visits.json`) through the snapshot store's atomic replace. Recording
+returns the visit it replaced as `previousVisitAt`; reading records nothing. A surface id is a
+lowercase slug of at most 64 characters. Both routes require an authenticated session and only
+touch the caller's own records.
+
+## Bulk break triage
+
+The break queue's bulk assign, route and resolve actions use
+`POST /api/workstation/reconciliation/break-queue/bulk/dry-run` and `/bulk/execute`, which run each
+case as its own casework command (`{bulkActionId}:{breakId}`) and retain one audit entry per case.
+The endpoint stamps the actor and source from the session. When `AssignToCurrentOperator` is set on
+an Assign request, it also replaces the assignee with the authenticated operator, then clears the
+flag before the queue hashes the request. `WorkstationEndpointsTests.BulkCasework.cs` covers the
+dry run, the per-case audit and the session assignee.
 
 ## Portfolio cash-ladder currency evidence
 
@@ -2877,7 +2935,9 @@ read a park as a failure and resubmit — each resubmission mints a new client o
 `AggregatePortfolioExposureProvider` feeds the portfolio-aware rules from the same aggregated
 cross-run positions the Portfolio workspace reports, valuing them at live marks only while those
 marks are fresh, reserving accepted-but-unfilled orders, and reporting option reference prices per
-contract while keeping the contract multiplier in exposure totals.
+contract while keeping the contract multiplier in exposure totals. `BrokeragePortfolioState` puts the
+same observed option multiplier on the `PositionState` it projects, so that view's P&L and market
+value are in dollars rather than quote × contracts.
 
 `/api/security-master/asset-classes` and `/api/security-master/asset-classes/{assetClass}`
 return the Security Master asset-class registry (fields, validation, projection, lot and

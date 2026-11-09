@@ -437,6 +437,16 @@ const LEDGER_EXPLORER_COLUMNS: LedgerExplorerColumn[] = [
   { id: "status", label: "Status" }
 ];
 
+const LEDGER_SEARCH_PARAM = "ledgerSearch";
+const LEDGER_SORT_PARAM = "ledgerSort";
+
+/** "debit:desc" back to a sort state; unknown columns or directions read as no sort. */
+export function parseLedgerSort(value: string | null): DenseDataTableSortState | null {
+  const [columnId, direction] = (value ?? "").split(":");
+  const column = LEDGER_EXPLORER_COLUMNS.find((candidate) => candidate.id === columnId && candidate.sortValue);
+  return column && (direction === "asc" || direction === "desc") ? { columnId: column.id, direction } : null;
+}
+
 function timestampSortValue(timestamp: string | null | undefined): number | null {
   const time = timestamp ? Date.parse(timestamp) : Number.NaN;
   return Number.isNaN(time) ? null : time;
@@ -491,8 +501,21 @@ export function LedgerExplorerScreen(_props: FinanceStandardScreenProps) {
 /** The Ledger tab's own body, so its requests belong to the tab that renders them. */
 function PostedLedgerJournalTab({ active }: { active: boolean }) {
   const [selectedAmount, setSelectedAmount] = useState<LedgerAmountSelection | null>(null);
-  const [searchText, setSearchText] = useState("");
-  const [tabSearchParams] = useSearchParams();
+  // Search and sort live in the link (C4), so Copy link, saved views and saved layouts carry them.
+  const [tabSearchParams, setTabSearchParams] = useSearchParams();
+  const searchText = tabSearchParams.get(LEDGER_SEARCH_PARAM) ?? "";
+  const ledgerSort = parseLedgerSort(tabSearchParams.get(LEDGER_SORT_PARAM));
+  const writeLedgerParam = (key: string, value: string | null) => {
+    const next = new URLSearchParams(tabSearchParams);
+    if (value) next.set(key, value);
+    else next.delete(key);
+    setTabSearchParams(next, { replace: true });
+  };
+  const setSearchText = (value: string) => writeLedgerParam(LEDGER_SEARCH_PARAM, value || null);
+  const setLedgerSort = (update: (current: DenseDataTableSortState | null) => DenseDataTableSortState | null) => {
+    const next = update(ledgerSort);
+    writeLedgerParam(LEDGER_SORT_PARAM, next ? `${next.columnId}:${next.direction}` : null);
+  };
   const postedLedger = useAccountingPostedLedgerViewModel(
     "ledger",
     undefined,
@@ -552,7 +575,6 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
       String(line.totalCredits)
     ].some((value) => String(value ?? "").toLowerCase().includes(needle)));
   }, [journalLines, searchText]);
-  const [ledgerSort, setLedgerSort] = useState<DenseDataTableSortState | null>(null);
   const sortedRows = useMemo(() => {
     const sortValue = ledgerSort ? LEDGER_EXPLORER_COLUMNS.find((column) => column.id === ledgerSort.columnId)?.sortValue : undefined;
     return ledgerSort && sortValue ? sortRowsByValue(filteredRows, sortValue, ledgerSort.direction) : filteredRows;

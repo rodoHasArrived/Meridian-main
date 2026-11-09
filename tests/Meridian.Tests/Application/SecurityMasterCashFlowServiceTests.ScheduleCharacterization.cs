@@ -1,6 +1,8 @@
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Contracts.SecurityMaster;
+using NSubstitute;
+using SecurityMasterQueryContract = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 
 namespace Meridian.Tests.Application;
 
@@ -36,7 +38,7 @@ public sealed partial class SecurityMasterCashFlowServiceTests
                 issueDate = t0,
                 maturityDate = t0.AddMonths(36),
                 par = 1000m,
-                couponRate = 5m,
+                interestRate = 0.05m,
                 paymentFrequency = "AtMaturity",
                 dayCountConvention = "30/360"
             });
@@ -48,28 +50,34 @@ public sealed partial class SecurityMasterCashFlowServiceTests
         projection.Schedule.Select(static row => row.PrincipalAmount).Should().Equal(0m, 0m, 1000m);
     }
 
-    [Fact]
-    [Trait("Category", "KnownDefect")]
-    public async Task ScheduleCharacterization_SubOneCoupon_CurrentBehavior_ReadAsFraction_SCH_DEF_003()
+    [Theory]
+    [InlineData(0.5)]
+    [InlineData(5.0)]
+    public async Task ScheduleCharacterization_UndeclaredBondCoupon_IsBlockedNotReadByMagnitude_SCH_DEF_003(double coupon)
     {
-        // SCH-DEF-003. TARGET: a declared coupon unit reads 0.5 as half a percent, so each 30/360
-        // quarter on par 100 pays 0.1250 (100 x 0.005 x 0.25).
+        // SCH-DEF-003, retired for undeclared records by review D10 slice 4. The heuristic read a
+        // coupon at or below 1 as a fraction (0.5 paid 12.5000 a quarter, 50%) and divided a larger one
+        // by 100. Bond couponRate declares no default unit, so an undeclared legacy coupon is now
+        // blocked with its raw value; a declaring record reaches the target (0.1250 a quarter) in the
+        // declared-conventions partial.
         var t0 = ScheduleCharacterizationT0();
-        var projection = await ProjectCalculatedBulletAsync(
-            Guid.Parse("5c4ed003-0000-4000-8000-000000000003"),
-            new
+        var securityId = Guid.Parse("5c4ed003-0000-4000-8000-000000000003");
+        var service = BuildService(
+            StoreWith(securityId, StructuredCashFlowSourceKind.CalculatedBullet),
+            QueryWith(securityId, JsonSerializer.SerializeToElement(new
             {
                 issueDate = t0,
                 maturityDate = t0.AddMonths(12),
                 par = 100m,
-                couponRate = 0.5m,
+                couponRate = (decimal)coupon,
                 paymentFrequency = "Quarterly",
                 dayCountConvention = "30/360"
-            });
+            })));
 
-        projection.Schedule.Should().HaveCount(4);
-        projection.Schedule.Should().OnlyContain(static row => row.InterestAmount == 12.5000m,
-            "CURRENT defective behavior: NormalizeAnnualRate reads a coupon at or below 1 as a fraction (50%)");
+        var projection = await service.GetProjectionAsync(securityId, StructuredCashFlowScenario.Base);
+
+        projection!.Schedule.Should().BeEmpty();
+        projection.BlockedReason.Should().StartWith($"Rate couponRate = {(decimal)coupon} on Bond has no declared unit");
     }
 
     [Fact]
@@ -86,7 +94,7 @@ public sealed partial class SecurityMasterCashFlowServiceTests
                 issueDate = issue,
                 maturityDate = issue.AddMonths(12),
                 par = 100m,
-                couponRate = 5m,
+                interestRate = 0.05m,
                 paymentFrequency = "SemiAnnual",
                 dayCountConvention = "ACT/ACT ICMA"
             });
@@ -112,7 +120,7 @@ public sealed partial class SecurityMasterCashFlowServiceTests
                 issueDate = t0,
                 maturityDate = t0.AddMonths(12),
                 par = 100m,
-                couponRate = 5m,
+                interestRate = 0.05m,
                 paymentFrequency = "SemiAnnual",
                 dayCountConvention = "BUS/252"
             });
@@ -138,7 +146,7 @@ public sealed partial class SecurityMasterCashFlowServiceTests
                 issueDate = issue,
                 maturityDate = maturity,
                 par = 100m,
-                couponRate = 4m,
+                interestRate = 0.04m,
                 paymentFrequency = "Quarterly",
                 dayCountConvention = "30/360"
             });
@@ -158,12 +166,12 @@ public sealed partial class SecurityMasterCashFlowServiceTests
         var securityId = Guid.Parse("5c4ed010-0000-4000-8000-000000000010");
         var service = BuildService(
             StoreWith(securityId, StructuredCashFlowSourceKind.CalculatedBullet),
-            QueryWith(securityId, JsonSerializer.SerializeToElement(new
+            DepositQueryWith(securityId, JsonSerializer.SerializeToElement(new
             {
                 issueDate = t0,
                 maturityDate = new DateOnly(9999, 12, 31),
                 par = 100m,
-                couponRate = 4m,
+                interestRate = 0.04m,
                 paymentFrequency = "Quarterly",
                 dayCountConvention = "30/360"
             })));
@@ -175,17 +183,28 @@ public sealed partial class SecurityMasterCashFlowServiceTests
                 "CURRENT defective behavior: the issue-anchored roll evaluates the closing grid date, which is out of range");
     }
 
+    // The legacy coupon walk's pins run on a Deposit row: Deposit interestRate declares Fraction
+    // (SecurityRateFieldUnits), so the undeclared walk is still reachable and pinned there, with the
+    // same amounts the Bond rows' percentage-point coupons produced before review D10 slice 4.
     private static async Task<StructuredCashFlowProjectionDto> ProjectCalculatedBulletAsync(Guid securityId, object terms)
     {
         var service = BuildService(
             StoreWith(securityId, StructuredCashFlowSourceKind.CalculatedBullet),
-            QueryWith(securityId, JsonSerializer.SerializeToElement(terms)));
+            DepositQueryWith(securityId, JsonSerializer.SerializeToElement(terms)));
 
         var projection = await service.GetProjectionAsync(securityId, StructuredCashFlowScenario.Base);
 
         projection.Should().NotBeNull();
         projection!.BlockedReason.Should().BeNull();
         return projection;
+    }
+
+    private static SecurityMasterQueryContract DepositQueryWith(Guid securityId, JsonElement assetSpecificTerms)
+    {
+        var query = Substitute.For<SecurityMasterQueryContract>();
+        query.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(BuildSecurity(securityId, assetSpecificTerms) with { AssetClass = "Deposit" });
+        return query;
     }
 
     /// <summary>T0: the first day of next month (UTC), so every period lies after the service's as-of.</summary>

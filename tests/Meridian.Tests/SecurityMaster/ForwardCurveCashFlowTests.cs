@@ -47,9 +47,20 @@ public sealed class ForwardCurveCashFlowTests
         (await provider.GetForwardCurveAsync("EURIBOR", new DateOnly(2026, 3, 1))).Should().BeNull();
     }
 
+    // D3 (decided 2026-11-05): undeclared non-zero rates block. A Security Master swap leg can declare
+    // its rate unit only in a per-leg conventions block, which the engine refuses
+    // (LegConventionsNotFollowed), so every projecting swap below is blocked on its undeclared fixed
+    // rate until per-leg units are declarable. The amounts each test pinned before D3 are kept in its
+    // comment so the coverage can be restored when that write path exists.
+    private const string UndeclaredFixedLegReason =
+        "Rate legs.fixedRate = 0.04 on Swap has no declared unit (Fraction, Percent or BasisPoints). "
+        + "A legacy value is flagged rather than converted; its unit cannot be inferred from its magnitude.";
+
     [Fact]
-    public async Task FloatingLeg_ResetsFutureperiodsFromTheCurve_AndKeepsTheCurrentFixing()
+    public async Task FloatingLeg_ResetsFutureperiodsFromTheCurve_IsBlockedUntilPerLegRateUnitsAreDeclarable()
     {
+        // D3: blocked until per-leg units are declarable. Pinned before D3: the first quarter reset at
+        // 3.00% + 25bp, later quarters at the 4.00% curve + 25bp: 8,125, 10,625, 10,625, 10,625.
         var (security, effectiveDate) = FloatingSwap(currentIndexRate: 0.03m);
         var curves = new InMemorySecurityForwardCurveProvider();
         curves.Publish(new SecurityForwardCurve("SOFR", effectiveDate.AddMonths(-1),
@@ -57,29 +68,26 @@ public sealed class ForwardCurveCashFlowTests
 
         var projection = await Project(security, curves);
 
-        projection.BlockedReason.Should().BeNull();
-        var floating = projection.LegSchedules!.Single(static leg => leg.LegId == "pay-floating");
-        floating.RateSource.Should().Be($"forwardCurve:SOFR@{effectiveDate.AddMonths(-1):yyyy-MM-dd} (test-curve)");
-        // First quarter already reset at 3.00% + 25bp; later quarters reset at the 4.00% curve + 25bp.
-        floating.Schedule.Select(static payment => payment.InterestAmount).Should().Equal(8_125m, 10_625m, 10_625m, 10_625m);
-        projection.LegSchedules!.Single(static leg => leg.LegId == "receive-fixed").RateSource.Should().Be("fixed");
+        ShouldBeBlockedOnTheUndeclaredFixedLeg(projection);
     }
 
     [Fact]
-    public async Task FloatingLeg_WithoutACurve_StaysFlatForward()
+    public async Task FloatingLeg_WithoutACurve_IsBlockedUntilPerLegRateUnitsAreDeclarable()
     {
+        // D3: blocked until per-leg units are declarable. Pinned before D3: flat forward at the last
+        // fixing ("flatForward:lastFixing"), 8,125 a quarter.
         var (security, _) = FloatingSwap(currentIndexRate: 0.03m);
 
         var projection = await Project(security, new InMemorySecurityForwardCurveProvider());
 
-        var floating = projection.LegSchedules!.Single(static leg => leg.LegId == "pay-floating");
-        floating.RateSource.Should().Be("flatForward:lastFixing");
-        floating.Schedule.Should().OnlyContain(static payment => payment.InterestAmount == 8_125m);
+        ShouldBeBlockedOnTheUndeclaredFixedLeg(projection);
     }
 
     [Fact]
-    public async Task FloatingLeg_WithACurveButNoFixing_ProjectsInsteadOfBlocking()
+    public async Task FloatingLeg_WithACurveButNoFixing_IsBlockedUntilPerLegRateUnitsAreDeclarable()
     {
+        // D3: blocked until per-leg units are declarable. Pinned before D3: with the curve, four
+        // quarters of 10,625; without it, blocked for the missing index fixing.
         var (security, effectiveDate) = FloatingSwap(currentIndexRate: null);
         var curves = new InMemorySecurityForwardCurveProvider();
         curves.Publish(new SecurityForwardCurve("SOFR", effectiveDate.AddMonths(-1),
@@ -88,15 +96,15 @@ public sealed class ForwardCurveCashFlowTests
         var withCurve = await Project(security, curves);
         var withoutCurve = await Project(security, new InMemorySecurityForwardCurveProvider());
 
-        withCurve.BlockedReason.Should().BeNull();
-        withCurve.LegSchedules!.Single(static leg => leg.LegId == "pay-floating").Schedule
-            .Should().HaveCount(4).And.OnlyContain(static payment => payment.InterestAmount == 10_625m);
-        withoutCurve.BlockedReason.Should().Contain("index fixing");
+        ShouldBeBlockedOnTheUndeclaredFixedLeg(withCurve);
+        ShouldBeBlockedOnTheUndeclaredFixedLeg(withoutCurve);
     }
 
     [Fact]
-    public async Task FloatingLeg_UsesTheRecordedResetFixing_ForThePeriodAlreadyReset()
+    public async Task FloatingLeg_UsesTheRecordedResetFixing_IsBlockedUntilPerLegRateUnitsAreDeclarable()
     {
+        // D3: blocked until per-leg units are declarable. Pinned before D3: the first quarter reset at
+        // the recorded 3.50% + 25bp, later quarters flat forward at 3.00% + 25bp: 9,375, 8,125, 8,125, 8,125.
         var (security, _) = FloatingSwap(
             currentIndexRate: 0.03m,
             configureFloating: (leg, effectiveDate) => leg["resetSchedule"] = new object[]
@@ -106,14 +114,14 @@ public sealed class ForwardCurveCashFlowTests
 
         var projection = await Project(security, new InMemorySecurityForwardCurveProvider());
 
-        var floating = projection.LegSchedules!.Single(static leg => leg.LegId == "pay-floating");
-        // The first quarter reset at the recorded 3.50% + 25bp; later quarters stay flat forward at 3.00% + 25bp.
-        floating.Schedule.Select(static payment => payment.InterestAmount).Should().Equal(9_375m, 8_125m, 8_125m, 8_125m);
+        ShouldBeBlockedOnTheUndeclaredFixedLeg(projection);
     }
 
     [Fact]
-    public async Task AmortizingLeg_AccruesOnTheScheduledNotional_AndPaysTheStepDownAsPrincipal()
+    public async Task AmortizingLeg_OnTheScheduledNotional_IsBlockedUntilPerLegRateUnitsAreDeclarable()
     {
+        // D3: blocked until per-leg units are declarable. Pinned before D3: the fixed leg accrued 20,000
+        // then 10,000 on the stepped-down notional and paid 500,000 of principal twice.
         var (security, _) = FloatingSwap(
             currentIndexRate: 0.03m,
             configureFixed: (leg, effectiveDate) =>
@@ -127,9 +135,7 @@ public sealed class ForwardCurveCashFlowTests
 
         var projection = await Project(security, new InMemorySecurityForwardCurveProvider());
 
-        var fixedLeg = projection.LegSchedules!.Single(static leg => leg.LegId == "receive-fixed");
-        fixedLeg.Schedule.Select(static payment => payment.InterestAmount).Should().Equal(20_000m, 10_000m);
-        fixedLeg.Schedule.Select(static payment => payment.PrincipalAmount).Should().Equal(500_000m, 500_000m);
+        ShouldBeBlockedOnTheUndeclaredFixedLeg(projection);
     }
 
     [Fact]
@@ -170,8 +176,11 @@ public sealed class ForwardCurveCashFlowTests
     }
 
     [Fact]
-    public async Task RateSource_CarriesCurveKeyVersionAndHash()
+    public async Task RateSource_CarriesCurveKeyVersionAndHash_IsBlockedUntilPerLegRateUnitsAreDeclarable()
     {
+        // D3: blocked until per-leg units are declarable. Pinned before D3: the floating leg's rate
+        // source named the stored curve key, version and hash, and paid 8,125, 10,625, 10,625, 10,625.
+        // The stored curve is still looked up before the leg walk blocks.
         var (security, effectiveDate) = FloatingSwap(currentIndexRate: 0.03m);
         var sofr = ValuationTestSecurities.ForwardDefinition("USD-SOFR-3M", "SOFR");
         var version = ValuationTestSecurities.Version(sofr, effectiveDate.AddMonths(-1), (effectiveDate, 0.04m), (effectiveDate.AddYears(1), 0.04m)) with { Version = 7 };
@@ -181,10 +190,15 @@ public sealed class ForwardCurveCashFlowTests
 
         var projection = await Project(security, new StoredSecurityForwardCurveProvider(store, NullLogger<StoredSecurityForwardCurveProvider>.Instance));
 
-        projection.BlockedReason.Should().BeNull();
-        var floating = projection.LegSchedules!.Single(static leg => leg.LegId == "pay-floating");
-        floating.RateSource.Should().Be($"forwardCurve:SOFR@{effectiveDate.AddMonths(-1):yyyy-MM-dd} (USD-SOFR-3M v7 {version.ContentSha256[..12]})");
-        floating.Schedule.Select(static payment => payment.InterestAmount).Should().Equal(8_125m, 10_625m, 10_625m, 10_625m);
+        ShouldBeBlockedOnTheUndeclaredFixedLeg(projection);
+        await store.Received(1).GetLatestVersionAsOfAsync(sofr.CurveId, Arg.Any<DateOnly>(), null, Arg.Any<CancellationToken>());
+    }
+
+    private static void ShouldBeBlockedOnTheUndeclaredFixedLeg(StructuredCashFlowProjectionDto projection)
+    {
+        projection.BlockedReason.Should().Be(UndeclaredFixedLegReason);
+        projection.Schedule.Should().BeEmpty();
+        projection.LegSchedules.Should().BeNull();
     }
 
     private static async Task<StructuredCashFlowProjectionDto> Project(SecurityDetailDto security, ISecurityForwardCurveProvider curves)

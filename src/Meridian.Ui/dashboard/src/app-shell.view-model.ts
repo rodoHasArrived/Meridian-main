@@ -24,6 +24,7 @@ import type { DataProvenanceKind } from "@/app-shell.data-provenance-badge";
 import { buildWorkflowContinuityViewModel } from "@/app-shell.workflow-continuity-view-model";
 import type { AppShellOperatingScopeInput } from "@/app-shell.operating-scope";
 import type { AppShellWorkflowContinuityViewModel } from "@/app-shell.workflow-continuity-types";
+import type { WorkstationCrossScreenCounts } from "@/types/cross-screen-counts";
 import type {
   DataWorkspaceResponse,
   AccountingWorkspaceResponse,
@@ -104,6 +105,7 @@ export type AppShellLocation =
 export interface AppShellWorkspacePayload {
   session: SessionInfo | null;
   overview: SystemOverviewResponse | null;
+  crossScreenCounts?: WorkstationCrossScreenCounts | null;
   strategy: StrategyWorkspaceResponse | null;
   trading: TradingWorkspaceResponse | null;
   portfolio: PortfolioWorkspaceResponse | null;
@@ -180,7 +182,8 @@ export function buildAppShellViewState({
       dataProvenance,
       workspaceErrors,
       session: payload.session,
-      data: payload.data
+      data: payload.data,
+      crossScreenCounts: payload.crossScreenCounts ?? null
     }),
     workflowContinuity: buildWorkflowContinuityViewModel(
       pathname,

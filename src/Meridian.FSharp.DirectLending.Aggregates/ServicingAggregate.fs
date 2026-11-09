@@ -99,7 +99,9 @@ module internal ServicingAggregate =
                 servicing.Balances.InterestAccruedUnpaid,
                 servicing.Balances.CommitmentFeeAccruedUnpaid,
                 servicing.Balances.FeesAccruedUnpaid,
-                servicing.Balances.PenaltyAccruedUnpaid)
+                servicing.Balances.PenaltyAccruedUnpaid,
+                PrepaidInterest = servicing.Balances.PrepaidInterest,
+                UnappliedCash = servicing.Balances.UnappliedCash)
 
         let updated =
             LoanServicingStateDto(
@@ -189,7 +191,9 @@ module internal ServicingAggregate =
                 servicing.Balances.InterestAccruedUnpaid,
                 servicing.Balances.CommitmentFeeAccruedUnpaid,
                 servicing.Balances.FeesAccruedUnpaid,
-                servicing.Balances.PenaltyAccruedUnpaid)
+                servicing.Balances.PenaltyAccruedUnpaid,
+                PrepaidInterest = servicing.Balances.PrepaidInterest,
+                UnappliedCash = servicing.Balances.UnappliedCash)
 
         let updated =
             LoanServicingStateDto(
@@ -229,7 +233,9 @@ module internal ServicingAggregate =
                 max 0m (servicing.Balances.InterestAccruedUnpaid - resolution.Breakdown.ToInterest),
                 max 0m (servicing.Balances.CommitmentFeeAccruedUnpaid - resolution.Breakdown.ToCommitmentFee),
                 max 0m (servicing.Balances.FeesAccruedUnpaid - resolution.Breakdown.ToFees),
-                max 0m (servicing.Balances.PenaltyAccruedUnpaid - resolution.Breakdown.ToPenalty))
+                max 0m (servicing.Balances.PenaltyAccruedUnpaid - resolution.Breakdown.ToPenalty),
+                PrepaidInterest = servicing.Balances.PrepaidInterest,
+                UnappliedCash = servicing.Balances.UnappliedCash)
 
         let totalDrawnAfter = max 0m (servicing.TotalDrawn - resolution.Breakdown.ToPrincipal)
         let nextRevision = servicing.ServicingRevision + 1L
@@ -291,7 +297,9 @@ module internal ServicingAggregate =
                 servicing.Balances.InterestAccruedUnpaid,
                 servicing.Balances.CommitmentFeeAccruedUnpaid,
                 servicing.Balances.FeesAccruedUnpaid + amount,
-                servicing.Balances.PenaltyAccruedUnpaid)
+                servicing.Balances.PenaltyAccruedUnpaid,
+                PrepaidInterest = servicing.Balances.PrepaidInterest,
+                UnappliedCash = servicing.Balances.UnappliedCash)
 
         let updated =
             LoanServicingStateDto(
@@ -329,7 +337,9 @@ module internal ServicingAggregate =
                 servicing.Balances.InterestAccruedUnpaid,
                 servicing.Balances.CommitmentFeeAccruedUnpaid,
                 servicing.Balances.FeesAccruedUnpaid,
-                servicing.Balances.PenaltyAccruedUnpaid)
+                servicing.Balances.PenaltyAccruedUnpaid,
+                PrepaidInterest = servicing.Balances.PrepaidInterest,
+                UnappliedCash = servicing.Balances.UnappliedCash)
 
         let updated =
             LoanServicingStateDto(
@@ -452,7 +462,9 @@ module internal ServicingAggregate =
                 servicing.Balances.InterestAccruedUnpaid + interestAmount,
                 servicing.Balances.CommitmentFeeAccruedUnpaid + commitmentFeeAmount,
                 servicing.Balances.FeesAccruedUnpaid,
-                servicing.Balances.PenaltyAccruedUnpaid)
+                servicing.Balances.PenaltyAccruedUnpaid,
+                PrepaidInterest = servicing.Balances.PrepaidInterest,
+                UnappliedCash = servicing.Balances.UnappliedCash)
 
         let accrualEntries =
             servicing.AccrualEntries
@@ -529,7 +541,9 @@ module internal ServicingAggregate =
                 servicing.Balances.InterestAccruedUnpaid,
                 servicing.Balances.CommitmentFeeAccruedUnpaid,
                 servicing.Balances.FeesAccruedUnpaid,
-                servicing.Balances.PenaltyAccruedUnpaid)
+                servicing.Balances.PenaltyAccruedUnpaid,
+                PrepaidInterest = servicing.Balances.PrepaidInterest,
+                UnappliedCash = servicing.Balances.UnappliedCash)
 
         let updated =
             LoanServicingStateDto(
@@ -643,7 +657,9 @@ module internal ServicingAggregate =
                 servicing.Balances.InterestAccruedUnpaid,
                 servicing.Balances.CommitmentFeeAccruedUnpaid,
                 servicing.Balances.FeesAccruedUnpaid,
-                servicing.Balances.PenaltyAccruedUnpaid + penaltyAmount)
+                servicing.Balances.PenaltyAccruedUnpaid + penaltyAmount,
+                PrepaidInterest = servicing.Balances.PrepaidInterest,
+                UnappliedCash = servicing.Balances.UnappliedCash)
 
         let updated =
             LoanServicingStateDto(

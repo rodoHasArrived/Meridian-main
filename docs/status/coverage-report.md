@@ -5,25 +5,25 @@
 
 ## Overall Coverage
 
-**1737 / 10064** items documented (**17.3%**) &mdash; Grade: **F**
+**1764 / 10096** items documented (**17.5%**) &mdash; Grade: **F**
 
 ```text
-[===-----------------] 17.3%
+[===-----------------] 17.5%
 ```
 
 ## Coverage by Category
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 1644 | 9561 | 17.2% | F |
-| API Endpoints | 92 | 349 | 26.4% | F |
+| Public Classes / Interfaces | 1655 | 9593 | 17.3% | F |
+| API Endpoints | 108 | 349 | 30.9% | F |
 | Configuration Options | 1 | 143 | 0.7% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
 | ADR Implementations | 0 | 11 | 0.0% | F |
 
 ## Undocumented Items
 
-### Public Classes / Interfaces (7917 undocumented)
+### Public Classes / Interfaces (7938 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -57,7 +57,7 @@
 | `BackfillRemediationSlaPolicy` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:195` |
 | `QualityAlertRemediationSignal` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:277` |
 | `AutoGapRemediationService` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:300` |
-| `BackfillCoordinator` | `src/Meridian.Application/Backfill/BackfillCoordinator.cs:34` |
+| `BackfillCoordinator` | `src/Meridian.Application/Backfill/BackfillCoordinator.cs:36` |
 | `BackfillCoordinatorExecutionGateway` | `src/Meridian.Application/Backfill/BackfillCoordinatorExecutionGateway.cs:8` |
 | `BackfillCostEstimator` | `src/Meridian.Application/Backfill/BackfillCostEstimator.cs:12` |
 | `BackfillCostRequest` | `src/Meridian.Application/Backfill/BackfillCostEstimator.cs:237` |
@@ -77,20 +77,12 @@
 | `CrossSourceBackfillClosureDecision` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:533` |
 | `CrossSourceBackfillDiscrepancy` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:605` |
 | `CrossSourceBackfillProviderError` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:618` |
-| ... and 7867 more | |
+| ... and 7888 more | |
 
-### API Endpoints (257 undocumented)
+### API Endpoints (241 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
-| `/api/banking/payments` | `src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs:24` |
-| `/api/banking/payments/pending` | `src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs:58` |
-| `/api/banking/payments/{pendingPaymentId}/currency-remediation` | `src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs:82` |
-| `/api/banking/payments/{pendingPaymentId}/approve` | `src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs:133` |
-| `/api/banking/payments/{pendingPaymentId}/reject` | `src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs:182` |
-| `/api/banking/payments/{pendingPaymentId}/bank-evidence` | `src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs:235` |
-| `/api/banking/transactions` | `src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs:292` |
-| `/api/dev/seed/bank-transactions` | `src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs:311` |
 | `/api/brokerage-connections/robinhood/connect` | `src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs:21` |
 | `/api/brokerage-connections/robinhood/status` | `src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs:37` |
 | `/api/brokerage-connections/robinhood/callback` | `src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs:53` |
@@ -133,7 +125,15 @@
 | `/api/loans/operations` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:514` |
 | `/api/loans/servicer-statements/preview` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:527` |
 | `/api/loans/servicer-statements/import` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:551` |
-| ... and 207 more | |
+| `/api/loans/servicer-statements/{batchId}` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:575` |
+| `/api/loans/servicer-statements/{batchId}/rows` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:585` |
+| `/api/loans/servicer-statements/{batchId}/apply` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:595` |
+| `/api/loans/{loanId}/collateral` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:619` |
+| `/api/loans/{loanId}/collateral/remove` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:659` |
+| `/api/loans/{loanId}/collateral/value` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:689` |
+| `/api/loans/{loanId}/status-transitions` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:719` |
+| `/api/loans/{loanId}/pik` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:749` |
+| ... and 191 more | |
 
 ### Configuration Options (142 undocumented)
 
@@ -195,7 +195,7 @@
 
 | Item | Location |
 | ------ | ---------- |
-| `ADR-001` | `src/Meridian.Application/Backfill/BackfillCoordinator.cs:34` |
+| `ADR-001` | `src/Meridian.Application/Backfill/BackfillCoordinator.cs:36` |
 | `ADR-007` | `src/Meridian.Application/Pipeline/DeadLetterSink.cs:26` |
 | `ADR-010` | `src/Meridian.Application/Services/ConnectivityProbeService.cs:16` |
 | `ADR-006` | `src/Meridian.Domain/Collectors/OptionDataCollector.cs:15` |
@@ -209,8 +209,8 @@
 
 ## Recommendations
 
-1. **Public Classes / Interfaces**: 7917 undocumented types. Add reference entries under `docs/reference/` for the types that carry contracts. Running DocFX does not move this metric: it emits browsable output from XML doc comments into `docs/docfx/api/*.yml`, which is gitignored and so is not part of the scanned corpus.
-2. **API Endpoints**: 257 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
+1. **Public Classes / Interfaces**: 7938 undocumented types. Add reference entries under `docs/reference/` for the types that carry contracts. Running DocFX does not move this metric: it emits browsable output from XML doc comments into `docs/docfx/api/*.yml`, which is gitignored and so is not part of the scanned corpus.
+2. **API Endpoints**: 241 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
 3. **Configuration Options**: 142 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
 4. **ADR Implementations**: Referenced ADR(s) ADR-001, ADR-007, ADR-010, ADR-006, ADR-015, ADR-013, ADR-004, ADR-005, ADR-014, ADR-002, ADR-016 have no corresponding file in `docs/adr/`. Create the missing ADR document(s) using `docs/adr/_template.md`.
 

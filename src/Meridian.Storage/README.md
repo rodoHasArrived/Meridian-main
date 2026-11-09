@@ -11,6 +11,11 @@ last_reviewed: 2026-10-31
 
 # src/Meridian.Storage
 
+`CompositeSink` tolerates individual sink failures under `ContinueOnPartialFailure` only while at least
+one sink accepts the write. When no sink accepts an append, or no sink can be flushed because every
+circuit is open, it throws, so the pipeline never treats an unpersisted event as durable or truncates
+the WAL holding it.
+
 Governed short opening/cover now binds explicit direction to the authoritative Short/Liability
 position and liability carrying account. Opening debits cash and credits retained proceeds;
 cover debits relieved proceeds, credits execution cash cost, and books the exact realized result.
@@ -679,6 +684,13 @@ migration and the transaction writer; reconciliation exercises that persisted re
 Migration 009 reconciles the historical `projected_flow_id` column with the cash-flow
 identity name consumed by the store. It adds and backfills the current column names while retaining legacy IDs and foreign keys.
 A trigger synchronizes writes through either name and rejects conflicting IDs during rollout.
+
+Migration 010 (PRD-115) adds `prepaid_interest` and `unapplied_cash` to `loan_servicing_projection`
+as `numeric(24,2) not null default 0`, so existing loans read as 0. They are balances owed to the
+borrower, not receivables. The store reads and writes both; the `loan_state` JSON and snapshots
+carry them as `OutstandingBalancesDto` members, and state saved before them deserializes to 0. It
+is numbered below 011 because 010 was reserved for this blueprint; both are additive and
+independent, so their apply order does not matter.
 
 
 Direct-lending projection and reconciliation persistence serializes matching run identities with

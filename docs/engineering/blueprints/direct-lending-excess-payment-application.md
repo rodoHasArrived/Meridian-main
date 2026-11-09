@@ -1,6 +1,6 @@
 # Direct Lending: Term-Driven Excess Payment Application
 
-**Status:** Approved design (owner decisions recorded 2026-11-02). Implementation proceeds by [increment](#increments).
+**Status:** Approved design (owner decisions recorded 2026-11-02). Implementation proceeds by [increment](#increments); increments 1 (terms rule) and 2 (balances and migration 010) are implemented.
 **Owner:** Direct Lending + Ledger
 **Reviewed:** 2026-11-02
 **Registered in:** [`docs/engineering/blueprints/README.md`](README.md)
@@ -95,7 +95,9 @@ public sealed record OutstandingBalancesDto(
   `numeric NOT NULL DEFAULT 0` to the servicing-state table and its snapshot. `PostgresDirectLendingStateStore`
   reads and writes both.
 - **Replay:** `DirectLendingEventRebuilder` derives both balances from events, so a rebuilt loan
-  matches the live one. Older events carry no excess payload, and their balances stay 0.
+  matches the live one. Older events carry no excess payload, and their balances stay 0. The
+  rebuilder does not yet handle `loan.mixed-payment-applied` at all (it rejects unknown event
+  types), so increment 3 must add that case when it writes the excess payload.
 - **Loan value:** neither balance is a receivable. Both are amounts owed *to* the borrower, so
   read models must not add them to outstanding balance (see the `LoanPortfolioSummaryBuilder` review below).
 

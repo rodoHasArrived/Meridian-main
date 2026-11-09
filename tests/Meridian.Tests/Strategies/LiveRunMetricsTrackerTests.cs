@@ -124,6 +124,23 @@ public sealed class LiveRunMetricsTrackerTests
     }
 
     [Fact]
+    public void RecordFill_MultipliedContract_BooksTheSameCashTheBookMoved()
+    {
+        // The paper portfolio debits 1 contract × $2.50 × 100 = $250; the run's retained cash-flow
+        // history must reconcile with it rather than record a $2.50 outflow.
+        var tracker = new LiveRunMetricsTracker(initialEquity: 10_000m, StartedAt);
+
+        tracker.RecordFill(
+            CreateFill(symbol: "AAPL261218C00250000", quantity: 1, price: 2.50m),
+            StartedAt,
+            usesFaceValuePercentageOfPar: false,
+            contractMultiplier: 100m);
+
+        BuildCashFlows(tracker).Should().ContainSingle()
+            .Which.Amount.Should().Be(-250m);
+    }
+
+    [Fact]
     public void RecordFill_EquityFill_StillBooksRawQuantityTimesPrice()
     {
         var tracker = new LiveRunMetricsTracker(initialEquity: 1_000_000m, StartedAt);
