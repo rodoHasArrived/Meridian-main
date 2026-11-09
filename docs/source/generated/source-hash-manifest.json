@@ -276,21 +276,21 @@
       "path": "src/Meridian.Ui.Services",
       "readme": "src/Meridian.Ui.Services/README.md",
       "readme_hash": "6703555ab1bb89fcdb7512cf2f997908d5424270a9ccd07a56f5fa6ed337bafd",
-      "source_hash": "5c0a969859e95dd89674d93c141043f8ea45e8e3613dbd644d261343faa0e642"
+      "source_hash": "d4ad22cedb5e03dd06d7bdca84adad364cc0af47d1c2d978de2e9fa78e544b54"
     },
     {
       "id": "SRC-UI-SHARED",
       "path": "src/Meridian.Ui.Shared",
       "readme": "src/Meridian.Ui.Shared/README.md",
       "readme_hash": "4e44add05a32f9329527b33e7ac4f297871294a68c8429c1f949ba2eb3e83632",
-      "source_hash": "09a71d1eaed0350624b074fc08373e5abb44e3d1e29d91848a4dfc6ff9e901ff"
+      "source_hash": "b34a2531e3138ef5fff63279a4b8a2c7ddef9ebb6226a530d17bf1dd8f668e90"
     },
     {
       "id": "SRC-WPF",
       "path": "src/Meridian.Wpf",
       "readme": "src/Meridian.Wpf/README.md",
       "readme_hash": "207831c633953ebce5ab8fe6594cc42969b1b012961429b26205f86dc7f96ddd",
-      "source_hash": "ad992723b083bc46bd1b60d746c90ef453c83332e9ce5d9c478b17bc009e41f2"
+      "source_hash": "4ef4c821b56ddcc98988acd024db434d27457f6a2f4c76b0384b77bc66ae1fbd"
     }
   ],
   "schema": {

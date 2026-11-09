@@ -159,7 +159,7 @@ public sealed class HomeWorkspaceViewModel : BindableBase
     private void ApplySummary(OperatorWorkflowHomeSummary summary)
     {
         SummaryText = $"{summary.OperatingContextLabel} • {summary.FundDisplayName} • {summary.AssuranceScore.Status} ({summary.AssuranceScore.Score}/100)";
-        GeneratedAtText = $"Updated {summary.GeneratedAt.LocalDateTime:g}";
+        GeneratedAtText = $"Updated {FormatHelpers.FormatUtcTimestamp(summary.GeneratedAt)}";
 
         _sections.Clear();
         foreach (var section in BuildSections(summary.Workspaces))
