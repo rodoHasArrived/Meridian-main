@@ -605,7 +605,32 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
         var securitiesAccount = LedgerAccounts.Securities(evt.Symbol, accountId);
         var lines = new List<(LedgerAccount Account, decimal Debit, decimal Credit)>();
 
-        if (evt.Side == Sdk.OrderSide.Buy)
+        if (evt.Side == Sdk.OrderSide.Buy && evt.RealizedPnl > 0m)
+        {
+            // Buy-to-cover at a gain: the short was opened with Cr Securities at the sale
+            // proceeds, so the cover must debit Securities by those proceeds (cash paid plus the
+            // gain) for a flat position to leave a zero Securities balance.
+            var gainAccount = accountId is null
+                ? LedgerAccounts.RealizedGain
+                : LedgerAccounts.RealizedGainFor(accountId);
+            lines.Add((securitiesAccount, evt.GrossValue + evt.RealizedPnl, 0m));
+            lines.Add((cashAccount, 0m, evt.GrossValue));
+            lines.Add((gainAccount, 0m, evt.RealizedPnl));
+        }
+        else if (evt.Side == Sdk.OrderSide.Buy && evt.RealizedPnl < 0m)
+        {
+            // Buy-to-cover at a loss: cash paid exceeds the short-sale proceeds being relieved.
+            var lossAccount = accountId is null
+                ? LedgerAccounts.RealizedLoss
+                : LedgerAccounts.RealizedLossFor(accountId);
+            var relievedProceeds = evt.GrossValue + evt.RealizedPnl;
+            if (relievedProceeds <= 0m)
+                throw new InvalidDataException($"Fill '{evt.FillId:D}' has non-positive buy-to-cover proceeds basis {relievedProceeds}.");
+            lines.Add((securitiesAccount, relievedProceeds, 0m));
+            lines.Add((lossAccount, -evt.RealizedPnl, 0m));
+            lines.Add((cashAccount, 0m, evt.GrossValue));
+        }
+        else if (evt.Side == Sdk.OrderSide.Buy)
         {
             lines.Add((securitiesAccount, evt.GrossValue, 0m));
             lines.Add((cashAccount, 0m, evt.GrossValue));
