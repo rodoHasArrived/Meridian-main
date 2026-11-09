@@ -11981,6 +11981,7 @@ Meridian-main
 │   │   │   ├── SecurityCurvesMigrationTests.cs
 │   │   │   ├── SecurityCurvesPostgresTests.cs
 │   │   │   ├── SecurityDayCountTermTests.cs
+│   │   │   ├── SecurityEconomicCallScheduleFlatteningTests.cs
 │   │   │   ├── SecurityEconomicScheduleFixtureCorpus.cs
 │   │   │   ├── SecurityEconomicScheduleMappingTests.cs
 │   │   │   ├── SecurityEconomicSchedulePostgresTests.cs
