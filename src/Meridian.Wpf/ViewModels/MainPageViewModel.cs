@@ -1831,7 +1831,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             WorkspaceTitle = CurrentPageTitle,
             WorkspaceSubtitle = CurrentPageSubtitle,
             PrimaryScopeLabel = "Operating Context",
-            AsOfValue = _shellLastUpdatedAt.ToLocalTime().ToString("MMM dd yyyy HH:mm"),
+            AsOfValue = FormatHelpers.FormatUtcTimestamp(_shellLastUpdatedAt),
             ReviewStateLabel = "Layout",
             ReviewStateValue = CurrentModeName,
             ReviewStateTone = SelectedWindowMode == BoundedWindowMode.WorkbenchPreset
@@ -1969,7 +1969,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             return $"Updated {(int)Math.Max(1, Math.Floor(age.TotalMinutes))}m ago";
         }
 
-        return $"Updated {updatedAt.ToLocalTime():MMM dd HH:mm}";
+        return $"Updated {FormatHelpers.FormatUtcTimestamp(updatedAt)}";
     }
 
     private static OperatorWorkItemDto? GetPrimaryOperatorWorkItem(OperatorInboxDto? inbox)
