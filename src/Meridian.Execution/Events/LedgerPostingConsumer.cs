@@ -572,6 +572,8 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
             throw new InvalidDataException($"Fill '{evt.FillId:D}' has non-positive price {evt.FillPrice}.");
         if (evt.Commission < 0m)
             throw new InvalidDataException($"Fill '{evt.FillId:D}' has negative commission {evt.Commission}.");
+        if (evt.ContractMultiplier <= 0m)
+            throw new InvalidDataException($"Fill '{evt.FillId:D}' has non-positive contract multiplier {evt.ContractMultiplier}.");
 
         var journals = new List<JournalEntry>(evt.Commission > 0m ? 2 : 1)
         {

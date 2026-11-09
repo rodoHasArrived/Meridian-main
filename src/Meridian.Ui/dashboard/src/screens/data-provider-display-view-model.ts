@@ -6,6 +6,7 @@ import type {
   ProviderRoutingConnection,
   ProviderRoutingTrustSnapshot
 } from "@/types";
+import { formatDateTime } from "@/lib/format";
 
 export function joinProviderDetailSentences(...values: Array<string | null | undefined>): string {
   const sentences = values
@@ -253,14 +254,14 @@ export function formatProviderUtcMinute(value: string | null | undefined): strin
     return value;
   }
 
-  return new Intl.DateTimeFormat("en", {
+  return formatDateTime(date, {
     month: "short",
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
     timeZone: "UTC",
     timeZoneName: "short"
-  }).format(date);
+  });
 }
 
 export function normalizeProviderToken(value: string | null | undefined): string {

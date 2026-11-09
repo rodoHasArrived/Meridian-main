@@ -183,6 +183,27 @@ internal sealed class OrderFillProcessor(
                 fillIncrement = fillIncrement with { LotMultiplier = resolvedMultiplier };
             }
 
+            // Record the money scale the paper book books this fill at, so a replayed session
+            // reproduces it exactly and the accounting event's gross value agrees with the
+            // realized P&L the book reports. A fill that adds to or closes an open position
+            // takes that position's scale: a session restored from pre-stamp records holds 1x
+            // option positions, and they continue at 1x until flat instead of being refused.
+            // Only a scale that differs from what an unstamped record would replay or resolve
+            // to is stamped, so ordinary 1x reports stay identical to what arrived.
+            if (_portfolioState is PaperTradingPortfolio paperBook
+                && fillIncrement.BookedMoneyMultiplier is null
+                && !string.IsNullOrWhiteSpace(orderId)
+                && _context.ContainsOrder(orderId))
+            {
+                var resolvedMoneyMultiplier = PaperTradingPortfolio.ResolveMoneyMultiplier(
+                    fillIncrement,
+                    _context.GetContractMultiplier(orderId),
+                    fillIncrement.UsesFaceValuePercentageOfPar);
+                var bookedMultiplier = paperBook.GetOpenMoneyMultiplier(fillIncrement.Symbol) ?? resolvedMoneyMultiplier;
+                if (bookedMultiplier != 1m || bookedMultiplier != resolvedMoneyMultiplier)
+                    fillIncrement = fillIncrement with { BookedMoneyMultiplier = bookedMultiplier };
+            }
+
             progress = _fillProcessing.GetOrAdd(
                 report,
                 _ => new FillProcessingProgress(
@@ -249,12 +270,17 @@ internal sealed class OrderFillProcessor(
                         progress.NewCash,
                         ResolveFinancialAccountId(orderId),
                         usesFaceValuePercentageOfPar,
-                        // Same resolution the paper portfolio uses, so GrossValue and the
-                        // multiplied RealizedPnl describe the same money.
+                        // The scale the realized P&L was booked at, so GrossValue and RealizedPnl
+                        // describe the same money. A paper book records it as the booked stamp
+                        // (unstamped means 1x: futures and legacy positions); other portfolios
+                        // keep the OMS-resolved contract multiplier.
                         usesFaceValuePercentageOfPar
                             ? 1m
-                            : fillIncrement.LotMultiplier
-                              ?? _context.GetContractMultiplier(fillIncrement.ClientOrderId ?? fillIncrement.OrderId));
+                            : fillIncrement.BookedMoneyMultiplier
+                              ?? (_portfolioState is PaperTradingPortfolio
+                                  ? 1m
+                                  : fillIncrement.LotMultiplier
+                                    ?? _context.GetContractMultiplier(fillIncrement.ClientOrderId ?? fillIncrement.OrderId)));
                 }
 
                 if (_accounting.HasPublisher && progress.IsTrackedOrder)
