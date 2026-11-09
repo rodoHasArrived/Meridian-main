@@ -21,6 +21,7 @@ describe("design-system ratchets", () => {
   it("counts direct Intl formatting calls", () => {
     const source = "new Intl.NumberFormat('en-US').format(1); value.toLocaleString(); d.toLocaleDateString();";
     expect(RATCHETS.directIntlFormatting.count(source)).toBe(3);
+    expect(RATCHETS.directIntlFormatting.count("const options: Intl.DateTimeFormatOptions = { timeZone: \"UTC\" };")).toBe(0);
   });
 
   it("counts raw tables but not table-system tables", () => {

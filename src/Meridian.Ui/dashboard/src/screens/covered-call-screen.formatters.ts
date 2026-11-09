@@ -1,4 +1,4 @@
-import { formatUtcTimestamp } from "@/lib/format";
+import { formatCount as formatCountShared, formatPrefixedCurrency, formatUtcTimestamp } from "@/lib/format";
 
 export function formatPrice(value: number): string {
   if (!Number.isFinite(value)) return "—";
@@ -24,13 +24,12 @@ export function formatRatioAsPercent(value: number): string {
 
 export function formatCount(value: number): string {
   if (!Number.isFinite(value)) return "—";
-  return Math.trunc(value).toLocaleString("en-US");
+  return formatCountShared(Math.trunc(value));
 }
 
 export function formatSignedMoney(value: number): string {
   if (!Number.isFinite(value)) return "—";
-  const sign = value < 0 ? "-$" : "$";
-  return `${sign}${Math.abs(value).toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
+  return formatPrefixedCurrency(value, { maximumFractionDigits: 2 });
 }
 
 export function formatExitReason(value: string): string {

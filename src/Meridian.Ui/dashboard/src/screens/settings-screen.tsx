@@ -4,7 +4,7 @@ import { OwnedProviderCredentialPanel } from "./settings-owned-provider-credenti
 import { Activity, ArrowRight, ExternalLink, GitBranch, KeyRound, LoaderCircle, MonitorCheck, RefreshCcw, Save, Search, ShieldCheck, Trash2, User } from "lucide-react";
 import { ProviderSetupPanel } from "@/components/data/provider-setup-panel";
 import { LifecycleControlPanel } from "@/components/meridian/lifecycle-control-panel";
-import { formatNumber as formatNumberAmount, formatUtcTimestamp } from "@/lib/format";
+import { formatCount, formatNumber as formatNumberAmount, formatUtcDate, formatUtcTimestamp } from "@/lib/format";
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { StatStrip } from "@/components/meridian/stat-strip";
@@ -5101,12 +5101,7 @@ function formatScopedAccessDate(value?: string | null): string | null {
     return value;
   }
 
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    timeZone: "UTC"
-  }).format(parsed);
+  return formatUtcDate(parsed);
 }
 
 function FilterSelect({
@@ -6692,7 +6687,7 @@ function providerRuntimePromotionVariant(status: string): "outline" | "success" 
 }
 
 function formatProviderRuntimeNumber(value: number): string {
-  return value.toLocaleString("en-US");
+  return formatCount(value);
 }
 
 function formatProviderRuntimeUtcMinute(value: string | Date | null | undefined, unavailableLabel = "Not synced"): string {
