@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using Meridian.Execution.Interfaces;
 using Meridian.Execution.Models;
@@ -90,7 +91,8 @@ public sealed class OmsGovernedExecutionOrderGateway : IOrderGateway
     /// <summary>
     /// Fill updates from an independent OMS report subscription, as cumulative order snapshots.
     /// This is an observer: if it falls behind its bounded inbox, the excess updates are dropped
-    /// for this stream only and the OMS fill path is unaffected. Totals cover the fills seen since
+    /// for this stream only (the OMS fill path is unaffected) and the affected order's totals are
+    /// resynchronised from OMS order state before its next snapshot. Totals cover the fills seen since
     /// the stream subscribed. The OMS publishes fills only, so
     /// acceptance, cancellation and rejection without a fill are not reported here; read those
     /// from <see cref="IOrderManager"/>.
@@ -101,18 +103,34 @@ public sealed class OmsGovernedExecutionOrderGateway : IOrderGateway
         if (_orderManagerAccessor?.Invoke() is not OrderManagementSystem oms)
             yield break;
 
+        // A slow observer must not block the OMS, so reports that overflow this subscription
+        // are dropped; the order is marked so its totals are resynchronised before the next
+        // snapshot instead of being reported short.
+        var gapped = new ConcurrentDictionary<string, byte>(StringComparer.Ordinal);
         await using var subscription = oms.SubscribeLosslessExecutionReports(
             ObserverSubscriberName,
-            static (_, _, _) => ValueTask.CompletedTask);
+            (dropped, _, _) =>
+            {
+                gapped[dropped.OrderId] = 0;
+                return ValueTask.CompletedTask;
+            });
         // The OMS publishes each fill as an increment (quantity and execution price of that
         // fill only). Status updates are cumulative snapshots, so totals and the average price
-        // are accumulated per order from the fills this stream has seen. Reading the OMS order
-        // state instead would race ahead of the report being emitted.
+        // are accumulated per order from the fills this stream has seen. OMS order state is read
+        // only to resynchronise an order with dropped fills: it can be ahead of the report being
+        // emitted, which is acceptable for recovery but not as the normal source.
         var totals = new Dictionary<string, (decimal Quantity, decimal Notional)>(StringComparer.Ordinal);
         await foreach (var report in subscription.Reports.ReadAllAsync(ct).ConfigureAwait(false))
         {
+            var status = report.OrderStatus;
             totals.TryGetValue(report.OrderId, out var running);
-            if (report.FilledQuantity > 0m)
+            if (gapped.TryRemove(report.OrderId, out _) && oms.GetOrder(report.OrderId) is { } state)
+            {
+                running = (state.FilledQuantity, state.FilledQuantity * (state.AverageFillPrice ?? 0m));
+                status = state.Status;
+                totals[report.OrderId] = running;
+            }
+            else if (report.FilledQuantity > 0m)
             {
                 running = (
                     running.Quantity + report.FilledQuantity,
@@ -124,14 +142,14 @@ public sealed class OmsGovernedExecutionOrderGateway : IOrderGateway
             decimal? averagePrice = filled > 0m ? running.Notional / filled : report.FillPrice;
             // A terminal order's id may be reused by a later submission (the OMS allows it), so
             // a replacement order must start from zero rather than inherit these totals.
-            if (OrderStatusFacts.IsTerminal(report.OrderStatus))
+            if (OrderStatusFacts.IsTerminal(status))
                 totals.Remove(report.OrderId);
 
             yield return new OrderStatusUpdate(
                 report.OrderId,
                 report.ClientOrderId ?? report.OrderId,
                 report.Symbol,
-                MapStatus(report.OrderStatus),
+                MapStatus(status),
                 filled,
                 averagePrice,
                 report.RejectReason,

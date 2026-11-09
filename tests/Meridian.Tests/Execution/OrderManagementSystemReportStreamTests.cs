@@ -245,6 +245,51 @@ public sealed class OrderManagementSystemReportStreamTests
     }
 
     [Fact]
+    public async Task GovernedOrderGatewayStream_ResynchronisesTotalsAfterDroppedFills()
+    {
+        // A one-slot observer inbox: after the first fill is read, the second waits and the third
+        // overflows and is dropped. The next snapshot must not report the order short.
+        var gateway = new StreamingGateway
+        {
+            SubmitAck = BuildReport("pending", OrderStatus.Accepted, ExecutionReportType.New, filledQty: 0m, fillPrice: null)
+        };
+        using var oms = new OrderManagementSystem(
+            gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            portfolioState: new PaperTradingPortfolio(100_000m),
+            options: new OrderManagementSystemOptions { ExecutionChannelCapacity = 1 });
+        await oms.StartAsync();
+        var view = new Meridian.Execution.Adapters.OmsGovernedExecutionOrderGateway(gateway, () => oms);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        await using var updates = view.StreamOrderUpdatesAsync(cts.Token).GetAsyncEnumerator(cts.Token);
+        var first = updates.MoveNextAsync();
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10,
+            LimitPrice = 130m
+        });
+
+        await gateway.PublishAsync(
+            BuildReport(result.OrderId, OrderStatus.PartiallyFilled, ExecutionReportType.PartialFill, filledQty: 4m, fillPrice: 100m));
+        (await first).Should().BeTrue();
+        updates.Current.FilledQuantity.Should().Be(4m);
+        await gateway.PublishAsync(
+            BuildReport(result.OrderId, OrderStatus.PartiallyFilled, ExecutionReportType.PartialFill, filledQty: 7m, fillPrice: 110m));
+        await gateway.PublishAsync(
+            BuildReport(result.OrderId, OrderStatus.Filled, ExecutionReportType.Fill, filledQty: 10m, fillPrice: 120m));
+        await WaitUntilAsync(() => oms.GetOrder(result.OrderId)!.Status == OrderStatus.Filled,
+            "all three fills must reach the OMS even though the observer is behind");
+
+        (await updates.MoveNextAsync()).Should().BeTrue();
+        updates.Current.Status.Should().Be(Meridian.Execution.Models.OrderStatus.Filled);
+        updates.Current.FilledQuantity.Should().Be(10m);
+        updates.Current.AverageFillPrice.Should().Be(oms.GetOrder(result.OrderId)!.AverageFillPrice);
+    }
+
+    [Fact]
     public async Task OutOfOrderCumulativeFill_DoesNotRegressStateOrRepublishToAccounting()
     {
         var portfolio = new PaperTradingPortfolio(100_000m);
