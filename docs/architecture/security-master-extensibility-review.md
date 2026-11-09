@@ -3,7 +3,7 @@
 **Status:** active
 **Owner:** core-team
 **Reviewed:** 2026-11-06
-**Review history:** post-slice-6 source check 2026-11-06; slice 6 disposition 2026-11-04; consolidation pass 2026-10-28; resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
+**Review history:** post-slice-6 source check 2026-11-06; slice-4 D3 decision 2026-11-05; slice 6 disposition 2026-11-04; slice-4 disposition 2026-11-04; consolidation pass 2026-10-28; resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -487,6 +487,104 @@ gate.
   (`TermsJsonOnly` → `Specialized`).
 
 The full local `bash scripts/ci.sh` was not run; GitHub `Meridian CI / quality-gate` remains authoritative.
+
+---
+
+## Slice 4 disposition — 2026-11-04 (D10)
+
+Remediation-plan slice 4, implemented on a local branch from `origin/main` at `2535d263`. It narrows
+D10. **D3 decided 2026-11-05: undeclared non-zero rates block.** The domain owner kept the blocking
+behavior this slice implements. No magnitude guess is reintroduced and no field default is added.
+
+**Rate units.** `Meridian.Contracts.SecurityMaster.RateUnitNormalizer` is now the single reader of
+stored rate units. It returns `Resolved(fraction, unit, source)`, `Undeclared(raw)` or
+`OutOfRange(...)`. Precedence: the record's declared unit (`scheduleConventions.couponRateUnit`, or a
+leg's unit) for the fields it governs, then the field default in `SecurityRateFieldUnits`, and
+otherwise Undeclared. Zero resolves as unit-invariant. Magnitude never selects a unit.
+`SecurityRateFieldUnits` lists every rate field from `SecurityMaster.fs` with its meaning, default
+unit, fraction range and negative-rate policy. FX forward rates are prices and are excluded. Only
+`*Bps` fields (BasisPoints) and Deposit `interestRate` / CashSweep `yieldRate` (Fraction, the catalog's
+`QuotesRatesAsFractions` convention, negatives permitted) declare a default. Every field whose stored
+data is written both ways declares none, including Bond, CD, Swap leg, DirectLoan, Repo and
+StructuredCredit coupons, caps, floors and fixings.
+
+These readers now use the normalizer, and the magnitude heuristic is removed from each:
+
+- `ContractualCashFlowPreviewService.Rate` returns a `RateUnitUndeclared` or
+  `RateOutsideDeclaredRange` blocker.
+- `SecurityMasterCashFlowService.NormalizeAnnualRate` (legacy coupon, legacy leg fixed, fixing, cap
+  and floor), the declared projection and the declared floating bond leg set a `BlockedReason` that
+  quotes the raw value.
+- `SecurityMasterAccountingEventService.NormalizeRate` raises a High `SM_COUPON_RATE_UNIT_UNDECLARED`
+  or `SM_COUPON_RATE_OUT_OF_RANGE` issue, and no accrual or coupon receipt is posted. The source
+  adapter carries the retained `couponRateUnit` and the terms' catalog class.
+- `AssetObligationProjectionService` reads Deposit through the declared Fraction. A legacy 4.5 is now
+  out of range and yields no accrual convention; before, it was kept as percentage points.
+  Bond-family classes keep that reader's percentage-point convention.
+
+**Accounting disposition.** Every catalog descriptor declares an `AccountingInstrumentClass` or
+`AccountingOutsideSlice`. StructuredNote is outside the slice. `ResolveAccountingInstrumentClass` keeps
+its first pass, where any in-slice name wins. It then returns null for a catalogued outside-slice name
+before the `FixedIncome` → Bond taxonomy fallback, which now applies only to names the catalog does not
+model. A coverage test fails for a catalogued class without a disposition. StructuredNote is the only
+catalogued class with a `FixedIncome` taxonomy and no accounting class, so it is the only caller result
+that changes.
+
+**Consequences of D3 (decided 2026-11-05).** Writing `couponRateUnit` is still gated by ADR-024
+increment 4a and the bond cutover path. Because undeclared non-zero rates block, the decision has
+these consequences:
+
+- Legacy fixed-income rows stop projecting until they declare a unit. The legacy Security Master
+  projection, the preview, accounting accruals and discounted-cash-flow valuation block for every
+  non-zero undeclared Bond, CD, DirectLoan, Repo and StructuredCredit coupon. A floating bond's
+  undeclared cap, floor or retained fixing blocks the same way.
+- Security Master engine swaps cannot declare per-leg units yet. A swap leg (or a leg on a Bond row)
+  can declare its unit only in a per-leg conventions block, and the engine refuses those
+  (`LegConventionsNotFollowed`). Every swap leg with a non-zero fixed rate or retained fixing
+  therefore blocks, and so does its valuation.
+- Readers still treat negative rates differently. The legacy projection floors a negative annual rate
+  at zero, the contractual preview pays signed interest, accounting posts nothing at or below zero,
+  and the declared floating bond leg blocks.
+
+Still open for the domain owner: canonical units and ranges per field, the governed repair path for
+undeclared legacy rows, a negative-rate and signed-interest model, and StructuredNote's accounting
+treatment.
+
+**Tests under D3.** The 45 legacy-fixture tests that the first pass left failing now assert D3:
+
+- Amount tests declare the unit their data was written in, at the Bond `scheduleConventions` stamp
+  the reader honors: the discounted-cash-flow golden bonds (`ValuationTestSecurities`, which now
+  store `maturity` and declare `couponRateUnit: Percent`) and the declared shape golden. Their
+  expected amounts are unchanged.
+- Swap-leg cases cannot declare a unit, so they assert the exact block and keep the pre-D3 amounts
+  in a comment until per-leg units are declarable: `ForwardCurveCashFlowTests` (6), the swap and
+  leg tests in `SecurityMasterCashFlowServiceTests` (4), `GetProjectionAsOfAsync…` (its as-of and
+  curve-lookup assertions are kept), `SwapLegRoundTripTests` (1), the discounted-cash-flow swap tests
+  (3), and `SecurityCurvesPostgresTests`' pinned swap (1).
+- "Declares nothing" twins assert that both sides block with the same reason.
+- The undeclared projection-shape goldens pin each case's exact block reason. New zero-rate bond and
+  swap cases keep the undeclared row shapes pinned, because zero needs no unit.
+- The canonical floating bond with an undeclared cap of 8 expects the flag.
+
+**Validation.** Run on a Linux container:
+
+```
+dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTargeting=true -m:2 --filter "<CashFlow|AccountingInstrumentClass|AccountingEvent|AssetObligation|ScheduleConventions|RateUnit|Reconciliation|Bond|Swap|Schedule|Valuation|LedgerBridge|AssetOperations|Passport|SecurityMaster>"
+```
+
+First pass (2026-11-04): 9,067 passed, 45 failed, 237 skipped (Docker-backed). The 45 failures were
+legacy-path fixtures whose rates have no declared unit.
+
+D3 pass (2026-11-05, local PostgreSQL 16 through `MERIDIAN_SECURITY_MASTER_CONNECTION_STRING`):
+9,348 passed,
+1 failed, 62 skipped. The one failure,
+`BrokerageConnectionEndpointsTests.UiServer_ResolvesReconciliationServices_FromCompositionRoot`, is
+not caused by this slice. It fails only while the Security Master connection string is set (it passes
+without it): the composition registers `LoanAccountingProjector` without an `ILedgerJournalStore`
+when the ledger connection string is absent. `BondProjectionGoldenTests.Bond_KeysetPages…`, one of
+the first pass's 45, needed only a reachable PostgreSQL; it is a plain `[Fact]` that uses the
+database fixture. `check-file-size.py` and `dotnet format whitespace --verify-no-changes` pass.
+Hosted checks were not run.
 
 ---
 
@@ -8133,4 +8231,76 @@ hosted `schema-control.yml` verify step is authoritative.
 | `validate-doc-hashes.py` after reviewing and updating the Application, Contracts, F#, WPF, UI and dashboard READMEs | 0 errors, 0 warnings |
 | `schema-control.py inventory` | 0 errors |
 | `run-maintained-generation.py --docs-only` | Converged; only the optional Docker UML render failed |
+| `bash scripts/ci.sh` | Not run as a whole; `Meridian CI / quality-gate` on the pull request is authoritative |
+
+## Consumer pass — 2026-11-05 (call/put notice-date watch)
+
+This pass records source on branch `claude/charming-heisenberg-f1a4pl`, based on main at
+`bf253e67`. It leaves every dated observation above unchanged. It establishes no deployment, no term
+write and no fleet state.
+
+**What the earlier "nothing consumes" boundary missed.** The 2026-10-28 source disposition says
+"call/put scenario and notice-date consumers remain increment-8 work". On current main that is true
+only of notice dates:
+
+| Candidate consumer | Status on main | Source evidence |
+| --- | --- | --- |
+| Yield-to-worst / call-adjusted analytics | Already consumed | `BondAnalyticsService` calls `BondExerciseEconomics.TryCalculate` and takes YTW over issuer calls only. Bermudan windows landed in D4 (`1c126afd`). `OpenLotYieldToWorst` reuses `TryExerciseDates`. The browser `bond-analytics-panel.tsx` and WPF `BondAnalyticsViewModel` show each scenario's latest notice date |
+| Exercise-scenario cash flows | Already consumed | `PortfolioCashLadderEngine.DeclaredBonds` resolves the declared scenarios and redemption cash. `ContractualCashFlowEngine.Exercise` checks a notice selection against the window |
+| Upcoming notice-date alert | **Not consumed** | No read model listed notice windows that are opening, open or near their deadline. A notice date appeared only inside a priced analytics run for a security the operator had already chosen |
+
+**What landed.** One consumer, the notice-date watch:
+
+- `BondExerciseNoticeWatch` (Contracts, `FixedIncome`) runs the cash ladder's precondition sequence
+  and then `BondExerciseEconomics.TryResolveScenarios`. Its exercise and notice dates are therefore
+  those analytics and the cash ladder use. That covers the stamp gate (version 3 or later), the
+  retained-declaration rules, business-day adjustment and business-day notice through the declared
+  payment calendars.
+- Each window is classified as `NotStated`, `Upcoming`, `Open` or `DeadlineElapsed`, with
+  `DaysToDeadline`. A window is kept when its anchor (earliest notice, else latest, else the
+  exercise date) falls on or before the horizon end, or when its deadline has elapsed but its
+  exercise date is still ahead.
+- `BondExerciseNoticeReadService` (Ui.Shared) loads the current or recorded row as analytics does and
+  refuses non-effective terms.
+- `GET /api/reference-data/bonds/{securityId}/exercise-notices` serves the result with analytics'
+  tenant scope and permissions.
+
+**Review fixes (2026-11-05).** Three findings from the automated review are fixed, each with a
+regression test:
+
+- A retained row with a malformed owned schedule, or one that overflows decimal bounds, is now a
+  blocked result (`InvalidEconomicSchedule` or `CalculationBoundsExceeded`) instead of an HTTP 500,
+  as in analytics.
+- An exercise on the evaluation date stays visible. Scenario selection alone starts from the day
+  before, so a zero-minimum or maximum-only window is `Open` with `DaysToDeadline` 0 on its deadline
+  day. Cash flows, and with them the delayed-payment entitlement check, stay anchored to the
+  evaluation date, so evaluating on a lagged coupon's payment date does not block every window.
+- The read service asks the retained `IBondCalculationPolicy` cutover gate before evaluating, so
+  a blocked or unreadable cutover receipt blocks this surface too (`CalculationPolicyBlocked`).
+
+**Readable before writable.** The watch only reads retained rows; no write path is touched and no
+term is written. A stray schedule on a Bond stamped 2 is refused, not decoded. Call/put entries are
+never decoded from a profile envelope or from a row stamped below the arrays' version, as
+increments 4b and 5a require.
+
+**Deliberately left out.**
+
+- Joining `FileBondExerciseNoticeStore` evidence to mark a window as noticed.
+- A portfolio-wide sweep or operator-inbox item.
+- Any browser or WPF surface.
+- CertificateOfDeposit and StructuredCredit rows, which carry no bond coupon structure.
+- Floating, step, factored, make-whole, continuous and partial exercise, which keep fixed analytics'
+  refusals.
+
+The ADR-025 increment-8 proposals (Bermudan parameters, American-window calendars, notice-date
+business-day adjustment) remain open.
+
+**Validation record.**
+
+| Check | Result |
+| --- | --- |
+| New scenario suites `BondExerciseNoticeWatchTests` and `BondExerciseNoticeEndpointsTests` | 35 passed; 43 after the review fixes |
+| Regression filter: `BondExercise`, `BondAnalytics`, `VersionedContainerKeyLiteralRatchet`, `EndpointStubDetection`, `PortfolioCashLadder` and route-wiring tests | 201 passed |
+| `Route`, `OpenApi`, `Architecture`, `ServiceRegistration` and `Composition` filters | 1070 passed, 1 skipped |
+| `generate-ui-api-routes-ts.py` | One new route constant |
 | `bash scripts/ci.sh` | Not run as a whole; `Meridian CI / quality-gate` on the pull request is authoritative |

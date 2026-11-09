@@ -667,6 +667,15 @@
       "sha256": "ecf4860c90bdc362b06f70b1c7a7f33779174d35e04ba83d337e5963d30ff506"
     },
     {
+      "filename": "010_direct_lending_excess_payment_balances.sql",
+      "immutable": true,
+      "migration_set_id": "direct-lending",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/DirectLending/Migrations/010_direct_lending_excess_payment_balances.sql",
+      "schema": "security_master",
+      "sha256": "76df552080e6800a943811ca1c970880710a1383601affce5151a040a55f4328"
+    },
+    {
       "filename": "011_direct_lending_pik_capitalization_and_rate_resets.sql",
       "immutable": true,
       "migration_set_id": "direct-lending",
@@ -1442,7 +1451,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "70deff101c524488d53392e7df0c4031fa62c8daf76c11a73d42077f04a87e89",
+  "fingerprint": "f3f95c78754949a093b82b0c37614409a15c20efb40b4b113ca89f5df78e2996",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1680,7 +1689,7 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 160,
+    "files": 161,
     "migration_sets": 10,
     "waivers": 29,
     "warnings": 0

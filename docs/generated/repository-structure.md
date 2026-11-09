@@ -4808,6 +4808,7 @@ Meridian-main
 │   │   │   ├── BondContractualEconomics.cs
 │   │   │   ├── BondEconomicsCompatibility.cs
 │   │   │   ├── BondExerciseEconomics.cs
+│   │   │   ├── BondExerciseNoticeWatch.cs
 │   │   │   ├── BondFloatingRateEvidence.cs
 │   │   │   ├── BondMigrationApiRequests.cs
 │   │   │   ├── BondMigrationDtos.cs
@@ -4954,6 +4955,7 @@ Meridian-main
 │   │   │   ├── OtcContractLifecycle.cs
 │   │   │   ├── OtcContracts.cs
 │   │   │   ├── OtcExposure.cs
+│   │   │   ├── RateUnitNormalizer.cs
 │   │   │   ├── ScheduleConventionTerms.cs
 │   │   │   ├── ScheduleSpecFactory.cs
 │   │   │   ├── ScheduleTermsWriteRules.cs
@@ -5000,6 +5002,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterStructuredCreditReclassification.cs
 │   │   │   ├── SecurityProjectionRecordExtensions.cs
 │   │   │   ├── SecurityQueries.cs
+│   │   │   ├── SecurityRateFieldUnits.cs
 │   │   │   ├── SecurityScheduleDecimal.cs
 │   │   │   ├── SecurityTermBlocks.cs
 │   │   │   ├── SecurityTermConventions.cs
@@ -6658,6 +6661,7 @@ Meridian-main
 │   │   │   │   ├── 007_direct_lending_command_idempotency.sql
 │   │   │   │   ├── 008_direct_lending_pik_accrual.sql
 │   │   │   │   ├── 009_direct_lending_cash_flow_identity.sql
+│   │   │   │   ├── 010_direct_lending_excess_payment_balances.sql
 │   │   │   │   └── 011_direct_lending_pik_capitalization_and_rate_resets.sql
 │   │   │   ├── DirectLendingMigrationRunner.cs
 │   │   │   ├── DirectLendingPersistenceBatch.cs
@@ -8830,6 +8834,7 @@ Meridian-main
 │   │   │   ├── BackfillCoordinator.cs
 │   │   │   ├── BackfillExecutionContractProjection.cs
 │   │   │   ├── BankFeedTransportService.cs
+│   │   │   ├── BondExerciseNoticeReadService.cs
 │   │   │   ├── BrokerageConnectionService.cs
 │   │   │   ├── BrokeragePortfolioState.cs
 │   │   │   ├── BrokeragePortfolioSyncService.cs
@@ -10098,6 +10103,7 @@ Meridian-main
 │   │   ├── DirectLendingInteropTests.fs
 │   │   ├── DirectLendingPikCapitalizationAndResetTests.fs
 │   │   ├── DirectLendingScheduleCharacterizationTests.fs
+│   │   ├── DirectLendingTestBalances.fs
 │   │   ├── DomainTests.fs
 │   │   ├── FundEconomicsTests.fs
 │   │   ├── LedgerKernelTests.fs
@@ -10870,6 +10876,7 @@ Meridian-main
 │   │   │   │   ├── DailyAccrualWorkerServicingScheduleTests.cs
 │   │   │   │   ├── DailyAccrualWorkerTests.cs
 │   │   │   │   ├── DirectLendingEventRebuilderTests.cs
+│   │   │   │   ├── DirectLendingExcessBalancesCompatibilityTests.cs
 │   │   │   │   ├── DirectLendingOutboxDispatcherTests.cs
 │   │   │   │   ├── DirectLendingOutboxFailureTests.cs
 │   │   │   │   ├── DirectLendingServicerStatementServiceTests.cs
@@ -11008,6 +11015,7 @@ Meridian-main
 │   │   │   ├── BondExerciseNoticeStoreTests.cs
 │   │   │   ├── ContractualCashFlowPreviewTests.cs
 │   │   │   ├── ContractualCashFlowScheduleRefusalTests.cs
+│   │   │   ├── DeclaredRateUnitParityTests.cs
 │   │   │   ├── DirectLendingSchedulePeriodsTests.cs
 │   │   │   ├── DirectLendingServiceTests.cs
 │   │   │   ├── FileReconciliationRunRepositoryTests.cs
@@ -11377,6 +11385,7 @@ Meridian-main
 │   │   │   ├── BondConsistencyTests.cs
 │   │   │   ├── BondExerciseDelayedCouponTests.cs
 │   │   │   ├── BondExerciseDelayedCouponTests.RetainedDeclarations.cs
+│   │   │   ├── BondExerciseNoticeWatchTests.cs
 │   │   │   ├── BondMigrationServiceTests.cs
 │   │   │   ├── BondProjectionServiceTests.cs
 │   │   │   └── BondReferenceExpansionTests.cs
@@ -11930,6 +11939,7 @@ Meridian-main
 │   │   │   ├── ProjectionFanOutPostgresTests.cs
 │   │   │   ├── ProjectionFanOutTests.cs
 │   │   │   ├── QuotedPriceValuationModelTests.cs
+│   │   │   ├── RateUnitNormalizerTests.cs
 │   │   │   ├── RegistryMigratedProjectionGoldenTests.cs
 │   │   │   ├── RegulatoryDerivativeIdentifierKindTests.cs
 │   │   │   ├── ScheduleConventionsDecodeGoldenTests.cs
@@ -12418,6 +12428,7 @@ Meridian-main
 │   │   │   ├── BankFeedTransportServiceTests.cs
 │   │   │   ├── BankStatementCsvImportAuthorityTests.cs
 │   │   │   ├── BondAnalyticsEndpointsTests.cs
+│   │   │   ├── BondExerciseNoticeEndpointsTests.cs
 │   │   │   ├── BondMigrationEndpointsTests.cs
 │   │   │   ├── BondReferenceEndpointsTests.cs
 │   │   │   ├── BrokerageConnectionEndpointsTests.cs

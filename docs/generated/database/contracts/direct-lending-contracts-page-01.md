@@ -522,7 +522,9 @@ classDiagram
         +decimal FeesAccruedUnpaid
         +decimal InterestAccruedUnpaid
         +decimal PenaltyAccruedUnpaid
+        +decimal PrepaidInterest
         +decimal PrincipalOutstanding
+        +decimal UnappliedCash
     }
     class Meridian_Contracts_DirectLending_PaymentAllocationDto["PaymentAllocationDto"] {
         +decimal AllocatedAmount

@@ -372,11 +372,12 @@ public sealed class AssetObligationProjectionServiceTests
     }
 
     [Fact]
-    public void ProjectFromSecurityMaster_Deposit_ReadsAFractionalInterestRateAsPercentagePoints()
+    public void ProjectFromSecurityMaster_Deposit_ReadsItsDeclaredFractionAndRefusesAnOutOfRangeLegacyValue()
     {
-        // Deposit interestRate is written both as a fraction (0.045) and as percentage points (4.5);
-        // the bond projector expects percentage points, so the two spellings must project the same
-        // interest flows instead of the fraction producing a coupon a hundred times too small.
+        // Deposit interestRate declares Fraction (SecurityRateFieldUnits, review D10 slice 4). The
+        // fraction projects interest in the bond projector's percentage points; a legacy 4.5 written in
+        // percentage points is outside the declared range and is not reinterpreted by its magnitude
+        // (the retired heuristic converted it), so it projects no interest flows.
         static SecurityDetailDto Deposit(decimal interestRate) => MakeSecurity("Deposit", "Meridian 12M Term Deposit", new
         {
             depositType = "Term",
@@ -391,10 +392,9 @@ public sealed class AssetObligationProjectionServiceTests
         var percentagePoints = new AssetObligationProjectionService().ProjectFromSecurityMaster(Deposit(4.5m));
 
         var interestFlows = fraction.ProjectedCashFlows.Where(static flow => flow.FlowType != "Maturity").ToList();
-        interestFlows.Should().NotBeEmpty("a term deposit with a rate accrues interest flows");
-        interestFlows.Select(static flow => (flow.FlowType, flow.DueDate, flow.Amount))
-            .Should().Equal(percentagePoints.ProjectedCashFlows.Where(static flow => flow.FlowType != "Maturity")
-                .Select(static flow => (flow.FlowType, flow.DueDate, flow.Amount)));
+        interestFlows.Should().NotBeEmpty("a term deposit with a declared fractional rate accrues interest flows");
+        percentagePoints.ProjectedCashFlows.Where(static flow => flow.FlowType != "Maturity")
+            .Should().BeEmpty("an out-of-range legacy rate is flagged by the shared normalizer, not converted");
     }
 
     [Fact]
