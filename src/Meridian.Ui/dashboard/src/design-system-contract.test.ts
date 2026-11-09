@@ -194,7 +194,9 @@ describe("dashboard design-system contract", () => {
     expect(button).toContain("export const DesignSystemButton");
     expect(badge).toContain("export function DesignSystemBadge");
     expect(badge).toContain("mds-badge__dot");
-    expect(status).toContain("export function DesignSystemStatus");
+    // StatusBadge is the one status implementation; DesignSystemStatus stays as its alias.
+    expect(status).toContain("export function StatusBadge");
+    expect(status).toContain("export const DesignSystemStatus = StatusBadge");
     expect(masthead).toContain("export function DesignSystemMasthead");
     expect(masthead).toContain("workstation-masthead mds-masthead ws-masthead");
     expect(navRail).toContain("export function DesignSystemNavRail");
@@ -520,6 +522,23 @@ describe("dashboard design-system contract", () => {
     expect(tailwindConfig).toContain("\"JetBrains Mono\"");
   });
 
+  it("ends every Tailwind font stack in a generic family so missing faces never fall back to serif", () => {
+    const tailwindConfig = readTailwindConfig();
+
+    // Chromium does not resolve ui-monospace / ui-sans-serif; without a CSS
+    // generic tail a machine lacking the named faces renders Times.
+    expect(tailwindConfig).toMatch(/sans:\s*\[[^\]]*"sans-serif"\s*\]/);
+    expect(tailwindConfig).toMatch(/mono:\s*\[[^\]]*"monospace"\s*\]/);
+    expect(tailwindConfig).toMatch(/display:\s*\[[^\]]*"sans-serif"\s*\]/);
+  });
+
+  it("imports Tailwind exactly once from the dashboard entry stylesheet", () => {
+    const entryStyles = readDashboardStyles();
+
+    expect(entryStyles.match(/@import\s+"tailwindcss"/g)).toHaveLength(1);
+    expect(entryStyles.match(/@config\s+"/g)).toHaveLength(1);
+  });
+
   it("declares local Segoe/Cascadia faces and fetches no external fonts", () => {
     const styles = readDashboardStyles();
 
@@ -691,7 +710,8 @@ describe("dashboard design-system contract", () => {
       "export interface DesignSystemButtonProps",
       "export function DesignSystemBadge",
       "export interface DesignSystemBadgeProps",
-      "export function DesignSystemStatus",
+      "export function StatusBadge",
+      "export const DesignSystemStatus = StatusBadge",
       "export function DesignSystemMasthead",
       "export function DesignSystemTrustStrip",
       "export interface DesignSystemMastheadProps",

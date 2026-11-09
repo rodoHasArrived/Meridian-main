@@ -107,7 +107,7 @@ public sealed class RegTMarginModel : IMarginModel
         decimal portfolioEquity)
     {
         ArgumentNullException.ThrowIfNull(position);
-        var notional = position.ExactQuantity * lastPrice;
+        var notional = MarginPricing.EconomicQuantity(position) * lastPrice;
         var (initialMargin, maintenanceMargin) = EquityBasisRequirement(notional);
 
         return new MarginRequirement(
@@ -138,7 +138,7 @@ public sealed class RegTMarginModel : IMarginModel
             if (position.ExactQuantity == 0m)
                 continue;
 
-            var notional = position.ExactQuantity * prices[symbol];
+            var notional = MarginPricing.EconomicQuantity(position) * prices[symbol];
             totalNotional += notional;
 
             var (initial, maintenance) = EquityBasisRequirement(notional);

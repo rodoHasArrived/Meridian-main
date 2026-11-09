@@ -20,6 +20,7 @@ import type {
   FinancialRecordExplorerSavedViewSaveRequestDto,
   FinancialRecordExplorerTone
 } from "@/types";
+import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
 
 export interface FinancialRecordExplorerScopeItem {
   id: string;
@@ -237,7 +238,7 @@ export function FinancialRecordExplorerShell({
     <section className={cn("workspace-section-band", className)} aria-labelledby={titleId}>
       <div className="workspace-section-subheader">
         <div className="min-w-0">
-          <p className="eyebrow-label">{explorerLabel}</p>
+          <p className={eyebrowClassName(explorerLabel)}>{explorerLabel}</p>
           <h2 id={titleId} className="workspace-section-title">{headerTitle}</h2>
           <p className="workspace-section-summary">{headerDescription}</p>
           {dtoMode ? (
@@ -344,7 +345,7 @@ function ExplorerScopeBar({ items }: { items: FinancialRecordExplorerScopeItem[]
     <dl className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4" aria-label="Explorer scope">
       {items.map((item) => (
         <div key={item.id} className="rounded-md border border-border/70 bg-background/60 px-3 py-2">
-          <dt className="text-[11px] font-semibold uppercase text-muted-foreground">{item.label}</dt>
+          <dt className={cn("text-[11px] font-semibold text-muted-foreground", usesTrackedCaps(item.label) && "uppercase")}>{item.label}</dt>
           <dd className="mt-1 truncate font-mono text-sm text-foreground">{item.value}</dd>
         </div>
       ))}
@@ -390,7 +391,7 @@ function ExplorerSummaryStrip({ items }: { items: FinancialRecordExplorerSummary
     <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4" aria-label="Explorer summary">
       {items.map((item) => (
         <div key={item.id} className={cn("rounded-md border px-3 py-2", summaryToneClass(item.tone))}>
-          <div className="text-[11px] font-semibold uppercase text-muted-foreground">{item.label}</div>
+          <div className={cn("text-[11px] font-semibold text-muted-foreground", usesTrackedCaps(item.label) && "uppercase")}>{item.label}</div>
           <div className="mt-1 font-mono text-lg font-semibold">{item.value}</div>
         </div>
       ))}

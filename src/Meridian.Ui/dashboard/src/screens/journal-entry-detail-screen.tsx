@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatUtcDate } from "@/lib/format";
 import { LedgerTable, type LedgerRow } from "@/components/accounting/LedgerTable";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,8 @@ import {
   type JournalEntryDetailSourceKind
 } from "@/screens/journal-entry-detail-screen.view-model";
 import type { LedgerJournalLine, LedgerPostedJournalEntry, ManualJournalEntryDraft } from "@/types";
+import { cn } from "@/lib/utils";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 const JOURNAL_ENTRY_SOURCE_LABELS: Record<JournalEntryDetailSourceKind, string> = {
   "manual-draft": "Manual journal workbench",
@@ -267,7 +269,7 @@ export function JournalEntryDetailScreen() {
               <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {operationalSummaryFields.map((field) => (
                   <div key={field.label}>
-                    <dt className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{field.label}</dt>
+                    <dt className={cn("text-[10px] font-semibold text-muted-foreground", usesTrackedCaps(field.label) && "font-mono uppercase tracking-[0.14em]")}>{field.label}</dt>
                     <dd className="mt-1 text-sm text-foreground">{field.label === "Accounting date" ? presentJournalDate(field.value) : field.label === "Posted at" ? formatDateTimeLabel(field.value) : field.value}</dd>
                   </div>
                 ))}
@@ -467,7 +469,7 @@ export function JournalEntryDetailScreen() {
 function JournalEntryFact({ label, value }: { label: string; value: string }) {
   return (
     <div className="grid grid-cols-[minmax(0,0.65fr)_minmax(0,1fr)] items-start gap-3 rounded-md border border-border/70 bg-secondary/15 px-3 py-2">
-      <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{label}</dt>
+      <dt className={cn("text-[10px] text-muted-foreground", usesTrackedCaps(label) && "font-mono uppercase tracking-[0.14em]")}>{label}</dt>
       <dd className="break-words text-right text-sm text-foreground">{value}</dd>
     </div>
   );
@@ -481,5 +483,5 @@ function presentJournalDate(value: string): string {
   const date = new Date(value);
   return Number.isNaN(date.getTime())
     ? value
-    : date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+    : formatUtcDate(date);
 }

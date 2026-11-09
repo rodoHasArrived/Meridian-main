@@ -11,6 +11,10 @@ last_reviewed: 2026-10-30
 
 # src/Meridian.Backtesting
 
+`MarketImpactFillModel` leaves an order working on a zero-volume bar (no traded liquidity) and caps
+square-root impact at `MaxImpactFraction` (50%), so a thin bar can no longer drive a sell fill price
+to zero or below.
+
 ## Purpose
 
 Multi-symbol replay compares full UTC ticks and preserves requested-symbol order for equal instants,

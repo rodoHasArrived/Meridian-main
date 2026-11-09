@@ -19,6 +19,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { categoricalVariantToSeverityStatus } from "@/lib/shared-tone-mappings";
+import { formatPrefixedCurrency } from "@/lib/format";
 
 const chainPreviewColumns: DenseDataTableColumn<CoveredCallChainPreviewRowViewModel>[] = [
   {
@@ -865,6 +866,5 @@ function fmtPct(value: number): string {
 
 function fmtMoney(value: number): string {
   if (!Number.isFinite(value)) return "—";
-  const sign = value < 0 ? "-$" : "$";
-  return `${sign}${Math.abs(value).toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
+  return formatPrefixedCurrency(value, { maximumFractionDigits: 2 });
 }

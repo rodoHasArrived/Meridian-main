@@ -68,6 +68,7 @@ public sealed partial class WorkstationEndpointsTests
         string currentUserName = "ops-user",
         bool? mapLedgerApi = null,
         string? currentUserTenantId = null,
+        bool useApiExceptionHandler = false,
         [System.Runtime.CompilerServices.CallerFilePath] string callerFilePath = "")
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
@@ -76,6 +77,11 @@ public sealed partial class WorkstationEndpointsTests
         });
         builder.WebHost.UseTestServer();
         configureServices?.Invoke(builder.Services);
+        if (useApiExceptionHandler)
+        {
+            // The deployed host's Problem Details writer and shared exception handler.
+            builder.Services.AddMeridianApiProblemDetails();
+        }
         builder.Services.TryAddSingleton<IFundProfileTenancyRegistry>(
             new TestCurrentScopeFundProfileTenancyRegistry(
                 currentUserTenantId ?? currentUserCompanyId,
@@ -89,6 +95,10 @@ public sealed partial class WorkstationEndpointsTests
                 NullLogger<FileReconciliationBreakQueueRepository>.Instance));
 
         var app = builder.Build();
+        if (useApiExceptionHandler)
+        {
+            app.UseExceptionHandler();
+        }
         app.Use(async (context, next) =>
         {
             var actor = context.Request.Headers.TryGetValue("X-Meridian-Test-User", out var testActor) &&

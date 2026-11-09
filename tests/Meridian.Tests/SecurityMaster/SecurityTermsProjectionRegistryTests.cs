@@ -1017,7 +1017,7 @@ public sealed class SecurityTermsProjectionRegistryTests
         => SecurityTermsProjectionRegistry.Descriptors.Single(descriptor =>
             string.Equals(descriptor.AssetClass, assetClass, StringComparison.Ordinal));
 
-    /// <summary>The classes migration 044 projected for the first time (every catalog class but CustomAsset is now projected).</summary>
+    /// <summary>The classes migration 044 projected for the first time.</summary>
     private static readonly string[] Migration044Classes =
     [
         "CommercialPaper", "TreasuryBill", "Repo", "CashSweep", "OtherSecurity", "Cfd", "Warrant",
@@ -1031,14 +1031,17 @@ public sealed class SecurityTermsProjectionRegistryTests
     private static readonly string[] Migration047Classes = ["Swaption", "CapFloor", "StructuredNote"];
 
     [Fact]
-    public void Registry_ProjectsEveryCatalogClassExceptCustomAsset()
+    public void Registry_ProjectsEveryCatalogClassWithoutASpecializedWriter()
     {
         var expected = SecurityAssetClassCatalog.AssetClasses
-            .Except(PostgresSecurityMasterStore.SpecializedProjectionAssetClasses, StringComparer.Ordinal)
-            .Except(new[] { "CustomAsset" }, StringComparer.Ordinal);
+            .Except(PostgresSecurityMasterStore.SpecializedProjectionAssetClasses, StringComparer.Ordinal);
 
         SecurityTermsProjectionRegistry.AssetClasses.Should().BeEquivalentTo(expected,
-            "CustomAsset is the one deliberate gap: its fields are governed per profile and have no fixed column set");
+            "every catalog class has a projection: a registry descriptor, or a specialized writer");
+        PostgresSecurityMasterStore.SpecializedProjectionAssetClasses.Should().BeEquivalentTo(["Option", "CustomAsset"],
+            "CustomAsset's profile-governed fields have no fixed column set, so it projects one row per field through a specialized writer (migration 064)");
+        PostgresSecurityMasterStore.ProjectedAssetClasses.Should().BeEquivalentTo(SecurityAssetClassCatalog.AssetClasses,
+            "no catalog class is left terms-JSON-only");
         Migration044Classes.Should().BeSubsetOf(SecurityTermsProjectionRegistry.AssetClasses);
         Migration046Classes.Should().BeSubsetOf(SecurityTermsProjectionRegistry.AssetClasses);
         Migration047Classes.Should().BeSubsetOf(SecurityTermsProjectionRegistry.AssetClasses);

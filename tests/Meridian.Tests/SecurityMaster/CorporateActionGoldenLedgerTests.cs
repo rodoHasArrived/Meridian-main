@@ -146,6 +146,7 @@ public sealed class CorporateActionGoldenLedgerTests
     private static (SecurityMasterLedgerBridge Bridge, ISecurityMasterQueryService QueryService) CreateBridge()
     {
         var queryService = Substitute.For<ISecurityMasterQueryService>();
+        LedgerBridgeTestRecords.StubSecurityRecord(queryService);
         var bridge = new SecurityMasterLedgerBridge(queryService, NullLogger<SecurityMasterLedgerBridge>.Instance);
         return (bridge, queryService);
     }

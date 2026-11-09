@@ -37,6 +37,8 @@ remains in the [roadmap registry](../../roadmap/README.md) and
 | Blueprint | Home | Lane | Design scope |
 |---|---|---|---|
 | [Repo Engine, Depreciation Schedule, and Borrower-Side Debt](financing-liabilities-depreciation-blueprint.md) | `docs/engineering/blueprints/` | Ledger / financing | Repo agreements, fixed-asset depreciation, and borrower-side debt workflows |
+| [Direct Lending: Term-Driven Excess Payment Application](direct-lending-excess-payment-application.md) | `docs/engineering/blueprints/` | Direct lending / ledger | Excess-payment rule on loan terms, prepaid-interest and unapplied-cash balances, split payment journals (`PRD-115`) |
+| [Direct Lending: PIK Capitalization Policy and Floating-Rate Reset Scheduling](direct-lending-pik-capitalization-and-rate-resets.md) | `docs/engineering/blueprints/` | Direct lending / ledger | Declared-unit PIK capitalization policy and reset schedule on loan terms, index-fixing store, worker ordering, PIK receivable journals (direct-lending migration 011) |
 | [Fail-Closed Mark Freshness and Mark-Age Surfacing](w10-mark-001-fail-closed-marks.md) | `docs/engineering/blueprints/` | Ledger / valuation | Mark freshness policies, override evidence, and mark-age surfacing (`W10-MARK-001`) |
 | [Risk Engine: Severity-Aware Evaluation and Pre-Trade Decision Journal](risk-engine-severity-and-decision-journal-blueprint.md) | `docs/engineering/blueprints/` | Execution / pre-trade risk | Severity-aware pre-trade decisions and durable decision evidence |
 | [Full Incentive-Fee Mechanics](accounting/incentive-fee-mechanics.md) | `docs/engineering/blueprints/accounting/` | Ledger / fund accounting | Hurdles, crystallization, high-water marks, and loss carryforward |
@@ -64,6 +66,7 @@ remains in the [roadmap registry](../../roadmap/README.md) and
 | [God-File Burn-Down Plan](../plans/god-file-burn-down-plan.md) | `docs/engineering/plans/` | Engineering hygiene | Active; the size ceilings it burns down are checked by `build/scripts/ci/check-file-size.py` |
 | [Bond Capability Expansion](../plans/bond-capability-expansion.md) | `docs/engineering/plans/` | Fixed income | User-approved implementation and reviewed-cutover acceptance criteria |
 | [Web-UI Improvements Implementation Plan (2026-07)](../plans/web-ui-improvements-implementation-plan-2026-07.md) | `docs/engineering/plans/` | Browser workstation | Proposed |
+| [Browser Workstation UX Review and Improvement Plan (2026-11)](../plans/web-workstation-ux-review-plan-2026-11.md) | `docs/engineering/plans/` | Browser workstation | Proposed |
 | [Security Remediation Backlog](../../security/security-remediation-backlog.md) | `docs/security/` | Security | Domain-owned backlog; cited from source |
 | [SOC 2 Roadmap](../../security/compliance/soc2-roadmap.md) | `docs/security/compliance/` | Compliance | Domain-owned roadmap |
 

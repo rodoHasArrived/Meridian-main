@@ -100,7 +100,9 @@ public static class BondExerciseEconomics
         }
         try
         {
-            ScheduleTermsWriteRules.ValidateDeclarations(security.AssetClass, payload, termsVersion);
+            // A stored row read back is its own retained declaration: analytics apply the rules it was
+            // stored under, not the write-time gap rules (ADR-025).
+            ScheduleTermsWriteRules.ValidateDeclarations(security.AssetClass, payload, termsVersion, retained: payload);
             foreach (var (kind, rows) in new[] { ("Call", calls), ("Put", puts) })
             {
                 var ordered = rows.Where(static row => row.ValueKind == JsonValueKind.Object)

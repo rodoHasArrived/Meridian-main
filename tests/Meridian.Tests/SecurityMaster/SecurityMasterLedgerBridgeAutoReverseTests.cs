@@ -44,6 +44,7 @@ public sealed class SecurityMasterLedgerBridgeAutoReverseTests
     private static (SecurityMasterLedgerBridge Bridge, ISecurityMasterQueryService QueryService) CreateBridge()
     {
         var queryService = Substitute.For<ISecurityMasterQueryService>();
+        LedgerBridgeTestRecords.StubSecurityRecord(queryService);
         var bridge = new SecurityMasterLedgerBridge(queryService, NullLogger<SecurityMasterLedgerBridge>.Instance);
         return (bridge, queryService);
     }
@@ -100,6 +101,30 @@ public sealed class SecurityMasterLedgerBridgeAutoReverseTests
         // Original terms fully reversed, so the receivable nets flat and only the amended income remains.
         ledger.GetBalance(LedgerAccounts.DividendReceivable(Ticker)).Should().Be(0m);
         ledger.Journal.Should().OnlyContain(entry => entry.IsBalanced);
+    }
+
+    [Fact]
+    public async Task AutoReverse_AmendmentWhoseTermsCannotPost_LeavesTheOriginalInPlace()
+    {
+        var (bridge, queryService) = CreateBridge();
+        var ledger = new DomainLedger();
+        var context = new CorporateActionLedgerPostingContext(PositionQuantity: 100m, AutoReverseSupersededPostings: true);
+        var original = MakeDividend(0.25m);
+
+        queryService.GetCorporateActionsAsync(SecurityId, Arg.Any<CancellationToken>()).Returns(new[] { original });
+        await bridge.PostCorporateActionsAsync(SecurityId, Ticker, ledger, context);
+        var afterFirstSync = ledger.JournalEntryCount;
+        var incomeBefore = ledger.GetBalance(LedgerAccounts.DividendIncome);
+
+        // The record is unavailable when the amendment arrives, so its replacement cannot be
+        // unitized. Reversing first would leave an amended (not cancelled) dividend with no effect.
+        queryService.GetByIdAsync(SecurityId, Arg.Any<CancellationToken>()).Returns((SecurityDetailDto?)null);
+        var amendment = MakeDividend(0.30m) with { SupersedesCorpActId = original.CorpActId };
+        queryService.GetCorporateActionsAsync(SecurityId, Arg.Any<CancellationToken>()).Returns(new[] { original, amendment });
+        await bridge.PostCorporateActionsAsync(SecurityId, Ticker, ledger, context);
+
+        ledger.JournalEntryCount.Should().Be(afterFirstSync, "nothing is reversed until the amended terms can be rebooked");
+        ledger.GetBalance(LedgerAccounts.DividendIncome).Should().Be(incomeBefore);
     }
 
     [Fact]
