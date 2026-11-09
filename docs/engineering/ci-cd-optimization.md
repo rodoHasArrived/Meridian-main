@@ -502,11 +502,15 @@ requeues. Repair commit markers suppress self-triggered loops only for an alread
 later base advances can repair the branch again. Publisher concurrency is scoped to each source
 run so an unrelated PR cannot evict pending repair work from a global group.
 
-On main pushes, daily at 05:23 UTC and on manual dispatch, the publisher also scans open
-same-repository PRs for a stale base. It dispatches at most ten new head/base pairs per run,
-deduplicates already requested pairs and reports the remaining backlog. Daily/manual scans continue
-remaining work. API pagination is bounded to 1,000 items and fails explicitly if that limit is
-reached. This is separate from each repair's two stale-ref retries.
+On PR merges into `main`, main pushes, daily at 05:23 UTC and on manual dispatch, the publisher
+scans all open same-repository PRs for a stale base, including drafts and conflicted PRs. Unmerged
+closures are excluded. Each scan reads the latest base, follows API pagination and dispatches every
+eligible head/base pair, pacing writes one second apart instead of leaving a daily backlog.
+Overlapping refresh jobs are serialized; pending scans can coalesce because each scans the latest
+base and all open PRs. Candidate publication retains independent per-source-run concurrency.
+Only active or successful trusted default-branch generation requests suppress duplicates; failed
+or cancelled requests remain eligible for a later scan. API failures are explicit. This discovery
+is separate from each repair's two stale-ref retries.
 
 Without App configuration, PR repair provides artifacts only. Forks, source/handwritten conflicts,
 uncertain reviewed module hashes, and changes to generators/dependencies/automation policy retain

@@ -303,6 +303,22 @@ let ``Manual breakdown is honoured in waterfall order and caps at the cash recei
     payment.Allocations |> Array.forall (fun a -> a.AllocationRule = "Manual") |> should equal true
 
 [<Fact>]
+let ``Manual breakdown above the amount owed is capped and never books phantom income`` () =
+    let contract, servicing = loanWithTwoLots (fixedTerms ())
+    let owing = servicing |> withBalances 10m 0m 0m 0m
+
+    let payment =
+        DirectLendingAggregateInterop.ApplyMixedPayment
+            owing
+            contract.CurrentTerms
+            (ApplyMixedPaymentRequest(1_000m, DateOnly(2026, 4, 1), PaymentBreakdownDto(1_000m, 0m, 0m, 0m, 0m), "pay-over"))
+
+    payment.Resolution.Breakdown.ToInterest |> should equal 10m
+    payment.Resolution.UnappliedAmount |> should equal 990m
+    payment.Servicing.Balances.InterestAccruedUnpaid |> should equal 0m
+    payment.Allocations |> Array.sumBy (fun a -> a.Amount) |> should equal 10m
+
+[<Fact>]
 let ``Manual breakdown smaller than the cash received leaves the excess unapplied`` () =
     let contract, servicing = loanWithTwoLots (fixedTerms ())
 
@@ -382,3 +398,42 @@ let ``Prepayment penalty without a configured rate charges nothing but still rec
 
     charged.PenaltyAmount |> should equal 0m
     charged.Servicing.ServicingRevision |> should equal (servicing.ServicingRevision + 1L)
+
+// ── PRD-115 balances owed to the borrower ───────────────────────────────────
+
+[<Fact>]
+let ``Every servicing command carries prepaid interest and unapplied cash through unchanged`` () =
+    // Each command rebuilds OutstandingBalancesDto; a positional rebuild would silently reset the
+    // two PRD-115 balances to their 0 default. No command changes them until excess routing lands.
+    let loanTerms = fixedTerms ()
+    let _, drawn = loanWithTwoLots loanTerms
+    let seeded = drawn |> DirectLendingTestBalances.withExcessBalances 123.45m 678.90m
+    let effective = DateOnly(2026, 4, 1)
+
+    let commands: (string * (LoanServicingStateDto -> LoanServicingStateDto)) list =
+        [ "BookDrawdown",
+          fun s -> (DirectLendingAggregateInterop.BookDrawdown s (BookDrawdownRequest(10_000m, effective, effective, "wire-x"))).Servicing
+          "ApplyPrincipalPayment",
+          fun s -> (DirectLendingAggregateInterop.ApplyPrincipalPayment s (ApplyPrincipalPaymentRequest(1_000m, effective, "pp-x"))).Servicing
+          "ApplyMixedPayment",
+          fun s -> (DirectLendingAggregateInterop.ApplyMixedPayment s loanTerms (ApplyMixedPaymentRequest(1_000m, effective, null, "mix-x"))).Servicing
+          "AssessFee",
+          fun s -> (DirectLendingAggregateInterop.AssessFee s (AssessFeeRequest("Amendment", 500m, effective, null))).Servicing
+          "ApplyWriteOff",
+          fun s -> (DirectLendingAggregateInterop.ApplyWriteOff s (ApplyWriteOffRequest(1_000m, effective, "test write-off"))).Servicing
+          "PostDailyAccrual",
+          fun s -> (DirectLendingAggregateInterop.PostDailyAccrual s loanTerms (PostDailyAccrualRequest(effective))).Servicing
+          "ChargePrepaymentPenalty",
+          fun s -> (DirectLendingAggregateInterop.ChargePrepaymentPenalty s loanTerms (ChargePrepaymentPenaltyRequest(100_000m, effective, "pen-x"))).Servicing ]
+
+    for name, command in commands do
+        let after = command seeded
+        (name, after.Balances.PrepaidInterest, after.Balances.UnappliedCash)
+        |> should equal (name, 123.45m, 678.90m)
+
+[<Fact>]
+let ``Loans created before PRD-115 start with zero prepaid interest and unapplied cash`` () =
+    let created = createLoan (fixedTerms ())
+
+    created.Servicing.Balances.PrepaidInterest |> should equal 0m
+    created.Servicing.Balances.UnappliedCash |> should equal 0m

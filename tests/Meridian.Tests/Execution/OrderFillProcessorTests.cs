@@ -73,6 +73,158 @@ public sealed class OrderFillProcessorTests
     }
 
     [Fact]
+    public async Task OptionFill_StampsTheMultiplierSoReplayRestoresTheSameCash()
+    {
+        var order = CreateOrder("option-replay") with { ContractMultiplier = 100m };
+        var report = CreateReport(order.OrderId) with { OrderQuantity = 2m, FilledQuantity = 2m, FillPrice = 1.50m };
+        var portfolio = new PaperTradingPortfolio(10_000m);
+        var store = new RecordingSessionStore();
+        await using var persistence = new PaperSessionPersistenceService(
+            NullLogger<PaperSessionPersistenceService>.Instance, store);
+        var session = await persistence.CreateSessionAsync(new CreatePaperSessionDto("option-replay", null, 10_000m));
+        var processor = CreateProcessor(order with { Quantity = 2m, FilledQuantity = 2m }, portfolio, new RecordingPublisher(), persistence, out _);
+
+        await processor.ProcessAsync(session.SessionId, report, 0m);
+
+        // 2 contracts x $1.50 premium x 100 = $300 paid.
+        Assert.Equal(9_700m, portfolio.Cash);
+        var stored = Assert.IsType<PaperSessionFillRecord>(store.StoredFill).Fill;
+        Assert.Equal(100m, stored.LotMultiplier);
+        Assert.Equal(100m, stored.BookedMoneyMultiplier);
+
+        // A replay has no OMS sidecar: the stamped report alone must reproduce the economics.
+        var replayed = new PaperTradingPortfolio(10_000m);
+        replayed.ApplyFill(stored);
+        Assert.Equal(portfolio.Cash, replayed.Cash);
+    }
+
+    [Fact]
+    public async Task ProfitableOptionClose_PublishesGrossValueOnTheSameScaleAsRealizedPnl()
+    {
+        // Buy 1 contract at $2 (already on the book), then the OMS closes it at $3 on a 100
+        // multiplier: $100 realized on $300 proceeds, so the ledger's cost basis is $200. With
+        // an unscaled gross value the consumer would compute -$97 and refuse the posting.
+        var portfolio = new PaperTradingPortfolio(10_000m);
+        portfolio.ApplyFill(CreateReport("opening-buy") with
+        {
+            OrderQuantity = 1m,
+            FilledQuantity = 1m,
+            FillPrice = 2m
+        }, ownerAccountId: null, contractMultiplier: 100m);
+
+        var order = CreateOrder("option-close") with
+        {
+            Side = OrderSide.Sell,
+            Quantity = 1m,
+            FilledQuantity = 1m,
+            ContractMultiplier = 100m
+        };
+        var report = CreateReport(order.OrderId) with
+        {
+            Side = OrderSide.Sell,
+            OrderQuantity = 1m,
+            FilledQuantity = 1m,
+            FillPrice = 3m
+        };
+        var publisher = new RecordingPublisher();
+        var processor = CreateProcessor(order, portfolio, publisher, null, out _);
+
+        await processor.ProcessAsync(null, report, previousFilledQuantity: 0m);
+
+        var trade = Assert.Single(publisher.Events);
+        Assert.Equal(100m, trade.ContractMultiplier);
+        Assert.Equal(100m, trade.RealizedPnl);
+        Assert.Equal(300m, trade.GrossValue);
+        Assert.Equal(200m, trade.GrossValue - trade.RealizedPnl);
+    }
+
+    [Fact]
+    public async Task LegacyOneTimesOptionPosition_ClosesAtItsBookedScale_AndReplaysTheSame()
+    {
+        // A session restored from records written before premiums were scaled holds the
+        // option at 1x even though its report carries the Security Master multiplier. The OMS
+        // close must continue at that scale rather than be refused as a multiplier mismatch
+        // (which would also leave an unreplayable record behind).
+        var legacyOpen = CreateReport("legacy-open") with
+        {
+            OrderQuantity = 1m,
+            FilledQuantity = 1m,
+            FillPrice = 2m,
+            AssetClass = "Option",
+            LotUnitKind = Meridian.Contracts.SecurityMaster.SecurityLotUnitKind.Contracts,
+            LotMultiplier = 100m
+        };
+        var portfolio = new PaperTradingPortfolio(10_000m);
+        portfolio.ApplyRecordedFill(legacyOpen);
+        Assert.Equal(9_998m, portfolio.Cash);
+
+        var order = CreateOrder("legacy-close") with
+        {
+            Side = OrderSide.Sell,
+            Quantity = 1m,
+            FilledQuantity = 1m,
+            ContractMultiplier = 100m
+        };
+        var report = CreateReport(order.OrderId) with
+        {
+            Side = OrderSide.Sell,
+            OrderQuantity = 1m,
+            FilledQuantity = 1m,
+            FillPrice = 3m
+        };
+        var store = new RecordingSessionStore();
+        await using var persistence = new PaperSessionPersistenceService(
+            NullLogger<PaperSessionPersistenceService>.Instance, store);
+        var session = await persistence.CreateSessionAsync(new CreatePaperSessionDto("legacy", null, 10_000m));
+        // The session's durable history holds the legacy open, as a restored session would.
+        await persistence.RecordFillAsync(session.SessionId, legacyOpen);
+        var publisher = new RecordingPublisher();
+        var processor = CreateProcessor(order, portfolio, publisher, persistence, out _);
+
+        await processor.ProcessAsync(session.SessionId, report, 0m);
+
+        Assert.Equal(10_001m, portfolio.Cash);
+        Assert.Equal(1m, portfolio.RealisedPnl);
+        // Flat; the entry can remain listed because the close is attributed to the order's
+        // fund while the legacy open had no owner, which is existing attribution behaviour.
+        Assert.All(portfolio.Positions.Values, position => Assert.Equal(0m, position.ExactQuantity));
+        var stored = Assert.IsType<PaperSessionFillRecord>(store.StoredFill).Fill;
+        Assert.Equal(1m, stored.BookedMoneyMultiplier);
+        var trade = Assert.Single(publisher.Events);
+        Assert.Equal(1m, trade.ContractMultiplier);
+        Assert.Equal(3m, trade.GrossValue);
+
+        var replayed = new PaperTradingPortfolio(10_000m);
+        replayed.ApplyRecordedFill(legacyOpen);
+        replayed.ApplyRecordedFill(stored);
+        Assert.Equal(portfolio.Cash, replayed.Cash);
+
+        // Reopening after the close must use the contract scale, not the flat entry's legacy 1x:
+        // the entry survives only for the orphaned owner tally and holds nothing.
+        var reopenOrder = CreateOrder("legacy-reopen") with
+        {
+            Quantity = 1m,
+            FilledQuantity = 1m,
+            ContractMultiplier = 100m
+        };
+        var reopenReport = CreateReport(reopenOrder.OrderId) with
+        {
+            OrderQuantity = 1m,
+            FilledQuantity = 1m,
+            FillPrice = 3m
+        };
+        var reopenProcessor = CreateProcessor(reopenOrder, portfolio, new RecordingPublisher(), persistence, out _);
+
+        await reopenProcessor.ProcessAsync(session.SessionId, reopenReport, 0m);
+
+        Assert.Equal(10_001m - 300m, portfolio.Cash);
+        var reopenStored = Assert.IsType<PaperSessionFillRecord>(store.StoredFill).Fill;
+        Assert.Equal(100m, reopenStored.BookedMoneyMultiplier);
+        replayed.ApplyRecordedFill(reopenStored);
+        Assert.Equal(portfolio.Cash, replayed.Cash);
+    }
+
+    [Fact]
     public async Task Retry_AfterSessionAndSubscriberFailures_DoesNotRepeatCompletedStages()
     {
         var order = CreateOrder("staged-retry");
@@ -306,6 +458,7 @@ public sealed class OrderFillProcessorTests
         public int ClaimAttempts { get; private set; }
         public int Acknowledgments { get; private set; }
         private PaperSessionFillRecord? _fill;
+        public PaperSessionFillRecord? StoredFill => _fill;
 
         public Task<PaperSessionFillAppendResult> TryAppendFillAsync(
             string sessionId, PaperSessionFillRecord record, CancellationToken ct = default)

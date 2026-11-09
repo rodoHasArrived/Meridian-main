@@ -1,9 +1,14 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { LedgerAmountProofDrawer } from "@/components/meridian/proof-drawer";
+import {
+  DenseDataTableHeaderCell,
+  nextDenseSort,
+  sortRowsByValue,
+  type DenseDataTableSortState
+} from "@/components/meridian/ui-kit-primitives";
 import type { LedgerAmountSelection } from "@/types/ledger-amount-proof";
 import { Link, useSearchParams } from "react-router-dom";
-import { formatCurrency } from "@/lib/format";
-import { formatCurrencyForCode } from "@/screens/accounting-screen.formatting";
+import { formatCurrency, formatMoney, formatUtcDate, formatUtcMonthYear } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,7 +29,7 @@ import { financeBreakLabel } from "@/screens/accounting-screen.reconciliation.vi
 import { formatDateTimeLabel } from "@/screens/accounting-screen.formatting";
 import { ReportRunGovernanceScreen } from "@/screens/report-run-governance-screen";
 import { TrialBalanceScreen } from "@/screens/trial-balance-screen";
-import { useAccountingPostedLedgerViewModel } from "@/screens/accounting-screen.posted-ledger.view-model";
+import { useAccountingPostedLedgerViewModel, type PostedLedgerJournalLine } from "@/screens/accounting-screen.posted-ledger.view-model";
 import { usePostedLedgerRouteScope } from "@/screens/posted-ledger-route-scope";
 import { ConsolidationPanel } from "@/screens/accounting-screen.consolidation-panel";
 import { FactorPaydownPanel } from "@/screens/accounting-screen.factor-paydown-panel";
@@ -412,6 +417,41 @@ const LEDGER_EXPLORER_TABS = [
   { id: "trial-balance", label: "Trial balance" }
 ];
 
+interface LedgerExplorerColumn {
+  id: string;
+  label: string;
+  numeric?: boolean;
+  /** Orders whole journal entries; their posting lines travel with them. */
+  sortValue?: (line: PostedLedgerJournalLine) => string | number | null | undefined;
+}
+
+const LEDGER_EXPLORER_COLUMNS: LedgerExplorerColumn[] = [
+  { id: "date", label: "Date", sortValue: (line) => timestampSortValue(line.timestamp) },
+  { id: "journalEntryId", label: "Journal ID", sortValue: (line) => line.journalEntryId },
+  { id: "account", label: "Account", sortValue: (line) => line.accountScopeDisplayName },
+  { id: "debit", label: "Debit", numeric: true, sortValue: (line) => line.totalDebits },
+  { id: "credit", label: "Credit", numeric: true, sortValue: (line) => line.totalCredits },
+  { id: "entity", label: "Entity", sortValue: (line) => line.entityScopeDisplayName },
+  { id: "source", label: "Source", sortValue: (line) => line.description },
+  // Every row is posted, so status has nothing to order by.
+  { id: "status", label: "Status" }
+];
+
+const LEDGER_SEARCH_PARAM = "ledgerSearch";
+const LEDGER_SORT_PARAM = "ledgerSort";
+
+/** "debit:desc" back to a sort state; unknown columns or directions read as no sort. */
+export function parseLedgerSort(value: string | null): DenseDataTableSortState | null {
+  const [columnId, direction] = (value ?? "").split(":");
+  const column = LEDGER_EXPLORER_COLUMNS.find((candidate) => candidate.id === columnId && candidate.sortValue);
+  return column && (direction === "asc" || direction === "desc") ? { columnId: column.id, direction } : null;
+}
+
+function timestampSortValue(timestamp: string | null | undefined): number | null {
+  const time = timestamp ? Date.parse(timestamp) : Number.NaN;
+  return Number.isNaN(time) ? null : time;
+}
+
 /**
  * Accounting's canonical ledger surface.
  *
@@ -461,8 +501,21 @@ export function LedgerExplorerScreen(_props: FinanceStandardScreenProps) {
 /** The Ledger tab's own body, so its requests belong to the tab that renders them. */
 function PostedLedgerJournalTab({ active }: { active: boolean }) {
   const [selectedAmount, setSelectedAmount] = useState<LedgerAmountSelection | null>(null);
-  const [searchText, setSearchText] = useState("");
-  const [tabSearchParams] = useSearchParams();
+  // Search and sort live in the link (C4), so Copy link, saved views and saved layouts carry them.
+  const [tabSearchParams, setTabSearchParams] = useSearchParams();
+  const searchText = tabSearchParams.get(LEDGER_SEARCH_PARAM) ?? "";
+  const ledgerSort = parseLedgerSort(tabSearchParams.get(LEDGER_SORT_PARAM));
+  const writeLedgerParam = (key: string, value: string | null) => {
+    const next = new URLSearchParams(tabSearchParams);
+    if (value) next.set(key, value);
+    else next.delete(key);
+    setTabSearchParams(next, { replace: true });
+  };
+  const setSearchText = (value: string) => writeLedgerParam(LEDGER_SEARCH_PARAM, value || null);
+  const setLedgerSort = (update: (current: DenseDataTableSortState | null) => DenseDataTableSortState | null) => {
+    const next = update(ledgerSort);
+    writeLedgerParam(LEDGER_SORT_PARAM, next ? `${next.columnId}:${next.direction}` : null);
+  };
   const postedLedger = useAccountingPostedLedgerViewModel(
     "ledger",
     undefined,
@@ -499,8 +552,9 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
 
   // The trial balance on the sibling tab is labelled in the book's base currency; these are the
   // same governed debits and credits, so they carry it too rather than defaulting to dollars.
-  const postedMoney = (value: number) =>
-    (baseCurrency ? formatCurrencyForCode(value, baseCurrency) : formatCurrency(value));
+  // Ledger amounts keep the currency's full minor-unit precision ($500.00, not $500): Intl's
+  // currency default supplies 2 decimals for USD/EUR and 0 for JPY.
+  const postedMoney = (value: number) => formatMoney(value, { context: "accounting", currency: baseCurrency || "USD" });
 
   const filteredRows = useMemo(() => {
     const needle = searchText.trim().toLowerCase();
@@ -521,6 +575,10 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
       String(line.totalCredits)
     ].some((value) => String(value ?? "").toLowerCase().includes(needle)));
   }, [journalLines, searchText]);
+  const sortedRows = useMemo(() => {
+    const sortValue = ledgerSort ? LEDGER_EXPLORER_COLUMNS.find((column) => column.id === ledgerSort.columnId)?.sortValue : undefined;
+    return ledgerSort && sortValue ? sortRowsByValue(filteredRows, sortValue, ledgerSort.direction) : filteredRows;
+  }, [filteredRows, ledgerSort]);
 
   if (!active) {
     return null;
@@ -533,7 +591,9 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
           <CardTitle>Ledger Explorer</CardTitle>
           <CardDescription>Search journal activity by account, amount, journal ID, source, security, or entity.</CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-3 lg:grid-cols-2 xl:grid-cols-[minmax(0,1.25fr)_minmax(15rem,0.7fr)_minmax(9rem,0.45fr)_minmax(10rem,0.5fr)]">
+        {/* Three fields, three tracks: a fourth, unused track used to squeeze the period select
+            to 9rem and truncate labels such as "June 2026 · Hard closed". */}
+        <CardContent className="grid gap-3 lg:grid-cols-2 xl:grid-cols-[minmax(0,1.25fr)_minmax(15rem,0.7fr)_minmax(15rem,0.7fr)]">
           <FormRow label="Search by account, amount, journal ID, source, security, entity" labelFor="ledger-search">
             <Input
               id="ledger-search"
@@ -586,55 +646,62 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
                 ? "Loading the posted journal."
                 : postedLedger.journalErrorText
                   ? postedLedger.journalErrorText
-                  : `${filteredRows.length} posted entry(ies)${postedLedger.selectedPeriodLabel ? ` for ${postedLedger.selectedPeriodLabel}` : ""}.`}
+                  : `${filteredRows.length} posted entry(ies)${postedLedger.selectedPeriodLabel ? ` for ${postedLedger.selectedPeriodLabel}` : ""}.${filteredRows.length > 0 ? " Select a posting amount to open its proof." : ""}`}
             </CardDescription>
           </div>
           <Badge variant={filteredRows.length > 0 ? "success" : "outline"}>{filteredRows.length}</Badge>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto rounded-md border border-border/70">
-            <table className="min-w-full text-sm" aria-label="Ledger Explorer results">
-              <thead className="bg-secondary/30 text-left text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+          {/* The table system's wrap and header cells (sticky header, density, sort with
+              aria-sort, numeric alignment). Rows stay hand-rendered because each entry is followed
+              by its posting lines, which span columns; sorting orders whole entries. */}
+          <div className="dense-data-table-wrap">
+            <table className="dense-data-table" aria-label="Ledger Explorer results">
+              <thead>
                 <tr>
-                  <th className="px-3 py-2" scope="col">Date</th>
-                  <th className="px-3 py-2" scope="col">Journal ID</th>
-                  <th className="px-3 py-2" scope="col">Account</th>
-                  <th className="px-3 py-2 text-right" scope="col">Debit</th>
-                  <th className="px-3 py-2 text-right" scope="col">Credit</th>
-                  <th className="px-3 py-2" scope="col">Entity</th>
-                  <th className="px-3 py-2" scope="col">Source</th>
-                  <th className="px-3 py-2" scope="col">Status</th>
+                  {LEDGER_EXPLORER_COLUMNS.map((column) => (
+                    <DenseDataTableHeaderCell
+                      key={column.id}
+                      column={column}
+                      sort={column.sortValue ? ledgerSort : undefined}
+                      onToggleSort={column.sortValue ? () => setLedgerSort((current) => nextDenseSort(current, column)) : undefined}
+                    />
+                  ))}
                 </tr>
               </thead>
               <tbody>
-                {filteredRows.length > 0 ? filteredRows.map((line) => (
+                {sortedRows.length > 0 ? sortedRows.map((line) => (
                   <Fragment key={line.journalEntryId}>
-                  <tr className="border-t border-border/70">
-                    <td className="px-3 py-2 text-xs">{formatDateTimeLabel(line.timestamp)}</td>
-                    <td className="px-3 py-2">
+                  <tr>
+                    <td className="dense-data-table-numeric">{formatDateTimeLabel(line.timestamp)}</td>
+                    <td>
+                      {/* The column is the journal ID, so the link shows the ID; the accessible
+                          name keeps the visible text and states the destination. */}
                       <Link
-                        className="font-semibold text-primary underline-offset-2 hover:underline"
+                        className="break-all font-mono text-xs font-semibold text-primary underline-offset-2 hover:underline"
+                        aria-label={`Open journal ${line.journalEntryId}`}
+                        title="Open journal detail"
                         to={workstationRouteWithQuery("accountingJournalEntryDetail", {
                           journalEntryId: line.journalEntryId,
                           periodId: postedLedger.selectedPeriodId
                         })}
                       >
-                        Open journal detail
+                        {line.journalEntryId}
                       </Link>
                     </td>
-                    <td className="px-3 py-2">{line.accountScopeDisplayName ?? "Multiple accounts"}</td>
-                    <td className="px-3 py-2 text-right font-mono">{postedMoney(line.totalDebits)}</td>
-                    <td className="px-3 py-2 text-right font-mono">{postedMoney(line.totalCredits)}</td>
-                    <td className="px-3 py-2">{line.entityScopeDisplayName ?? "Not scoped to one entity"}</td>
-                    <td className="px-3 py-2">{line.description || "Ledger posting"}</td>
-                    <td className="px-3 py-2">Posted</td>
+                    <td>{line.accountScopeDisplayName ?? "Multiple accounts"}</td>
+                    <td className="dense-data-table-numeric text-right font-mono">{postedMoney(line.totalDebits)}</td>
+                    <td className="dense-data-table-numeric text-right font-mono">{postedMoney(line.totalCredits)}</td>
+                    <td>{line.entityScopeDisplayName ?? "Not scoped to one entity"}</td>
+                    <td>{line.description || "Ledger posting"}</td>
+                    <td>Posted</td>
                   </tr>
                   {(line.postedLines ?? []).map((posting) => (
-                    <tr key={posting.entryId} className="border-t border-border/40 bg-secondary/10">
-                      <td className="px-3 py-2 text-xs" colSpan={2}>Posting amount</td>
-                      <td className="px-3 py-2">{posting.accountName}{posting.symbol ? ` - ${posting.symbol}` : ""}</td>
+                    <tr key={posting.entryId} className="dense-data-table-child-row">
+                      <td className="text-muted-foreground" colSpan={2}>Posting amount</td>
+                      <td>{posting.accountName}{posting.symbol ? ` - ${posting.symbol}` : ""}</td>
                       {(["debit", "credit"] as const).map((side) => (
-                        <td key={side} className="px-3 py-2 text-right font-mono">
+                        <td key={side} className="dense-data-table-numeric text-right font-mono">
                           {posting[side] !== 0 ? (
                             <button
                               type="button"
@@ -653,15 +720,17 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
                           ) : postedMoney(0)}
                         </td>
                       ))}
-                      <td className="px-3 py-2">{posting.dimensions?.entityId ?? "Not scoped to one entity"}</td>
-                      <td className="px-3 py-2">{posting.description || "Retained posting line"}</td>
-                      <td className="px-3 py-2 text-xs">Select amount for proof</td>
+                      <td>{posting.dimensions?.entityId ?? "Not scoped to one entity"}</td>
+                      <td>{posting.description || "Retained posting line"}</td>
+                      {/* Posting lines carry their entry's status; the proof hint lives in the
+                          card description rather than masquerading as a status value. */}
+                      <td />
                     </tr>
                   ))}
                   </Fragment>
                 )) : (
                   <tr>
-                    <td className="px-3 py-4 text-muted-foreground" colSpan={8}>
+                    <td className="dense-data-table-empty" colSpan={LEDGER_EXPLORER_COLUMNS.length}>
                       {/* "Create a ledger book and period" is an instruction, and it must not be
                           given during an outage: the selector above reports the API error, so
                           hard-coding emptiness here told the operator to create accounting data
@@ -1018,14 +1087,14 @@ function presentFinancePeriod(value: string): string {
   }
 
   const date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, 1));
-  return date.toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
+  return formatUtcMonthYear(date);
 }
 
 function presentFinanceDate(value: string): string {
   const date = new Date(value);
   return Number.isNaN(date.getTime())
     ? value
-    : date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+    : formatUtcDate(date);
 }
 
 function approvalStatusVariant(status: string): "outline" | "warning" | "danger" | "success" {

@@ -280,6 +280,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IFactorPaydownProjectionService, FactorPaydownProjectionService>();
         services.TryAddSingleton<IPortfolioCashBalanceProvider, PortfolioLedgerCashBalanceProvider>();
         services.TryAddSingleton<IPortfolioCashLadderQueryService, PortfolioCashLadderReadService>();
+        services.TryAddSingleton<BondExerciseNoticeReadService>();
         // Durable account forecast state is explicitly provisioned by operations, never on reads or capture.
         services.TryAddSingleton<FileAccountCashForecastStore>(sp =>
             new FileAccountCashForecastStore(sp.GetRequiredService<StorageOptions>().RootPath));
@@ -615,6 +616,11 @@ public static class WorkstationServiceCollectionExtensions
         services
             .AddOptions<Meridian.Application.SecurityMaster.SecurityMasterWorkbenchOptions>()
             .BindConfiguration(Meridian.Application.SecurityMaster.SecurityMasterWorkbenchOptions.SectionName);
+        // SecurityMasterService enforces this policy on its operator-direct amendment path; the routes
+        // also consult the same options so they can refuse before reading the request's security.
+        services.TryAddSingleton<
+            Meridian.Application.SecurityMaster.IGovernedTermAmendmentPolicy,
+            Meridian.Application.SecurityMaster.GovernedTermAmendmentPolicy>();
         // Phase 3 period-aware propagation: the ledger accounting-period status is the lock
         // authority (default-deny → HardClosed when indeterminate). The restatement resolver routes a
         // closed-period edit into a governed restatement proposal rather than a silent mutation; the

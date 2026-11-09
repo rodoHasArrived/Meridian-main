@@ -752,10 +752,13 @@ public sealed partial class AssetObligationProjectionService
 
     /// <summary>
     /// The bond projector's accrual convention carries the coupon in percentage points (4.5 for
-    /// 4.5%). Deposit terms declare <c>interestRate</c> without a unit convention and are written
-    /// both ways (0.045 and 4.5), so they are normalised the way the Security Master cash-flow
-    /// service already does: a value at or below 1 is a fraction. Bond-family classes keep their
-    /// percentage-point convention untouched (a 0.5 coupon is half a percent).
+    /// 4.5%). A class whose coupon field declares a default unit in <see cref="SecurityRateFieldUnits"/>
+    /// (Deposit <c>interestRate</c>: Fraction) reads through <see cref="RateUnitNormalizer"/> and is
+    /// converted to percentage points; a value outside the declared range (a legacy 4.5 written in
+    /// percentage points) yields no accrual convention instead of being reinterpreted by its magnitude
+    /// (review D10, slice 4). Bond-family classes declare no default, and this reader keeps its
+    /// percentage-point convention for them untouched (a 0.5 coupon is half a percent); declared bonds
+    /// read the shared Security Master projection instead.
     /// </summary>
     private static decimal? NormalizeCouponRatePercent(string? assetClass, decimal? couponRate)
     {
@@ -764,10 +767,15 @@ public sealed partial class AssetObligationProjectionService
             return null;
         }
 
-        return SecurityAssetClassCatalog.GetOrDefault(assetClass).QuotesRatesAsFractions
-               && rate <= 1m
-            ? rate * 100m
-            : rate;
+        var field = SecurityRateFieldUnits.Find(assetClass, SecurityRateFieldUnits.CouponFieldKey(assetClass));
+        if (field?.DefaultUnit is null)
+        {
+            return rate;
+        }
+
+        return RateUnitNormalizer.Normalize(field, rate).TryGetFraction(out var fraction)
+            ? fraction * 100m
+            : null;
     }
 
     private static bool IsFactorAmortizing(string? assetClass)

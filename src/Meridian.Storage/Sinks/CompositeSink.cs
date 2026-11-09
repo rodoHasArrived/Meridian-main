@@ -139,25 +139,70 @@ public sealed class CompositeSink : IStorageSink
         }
     }
 
+    /// <summary>
+    /// Appends the event to every child sink whose circuit is not open.
+    /// <para>
+    /// Under <see cref="FailurePolicy.ContinueOnPartialFailure"/> individual sink failures are
+    /// tolerated only while at least one sink accepts the write. When no sink accepts it (every
+    /// sink failed or had its circuit open) this method throws, so callers such as the
+    /// <c>EventPipeline</c> never treat an unpersisted event as durable and commit or truncate
+    /// the write-ahead log that is still holding it.
+    /// </para>
+    /// </summary>
+    /// <exception cref="InvalidOperationException">No child sink accepted the event.</exception>
     public async ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default)
     {
         if (_sinks.Count == 1)
         {
             // Fast path: single sink — skip Task.WhenAll overhead.
-            await AppendToSinkAsync(0, evt, ct).ConfigureAwait(false);
+            var outcome = await AppendToSinkAsync(0, evt, ct).ConfigureAwait(false);
+            if (!outcome.Accepted)
+                throw NoSinkAccepted("append", evt.Symbol, outcome.Failure is null ? [] : [outcome.Failure]);
             return;
         }
 
         // Multi-sink: fan out in parallel. Independent sinks are written concurrently so that
         // total append latency equals max(sink latencies) rather than sum(sink latencies).
-        var tasks = new Task[_sinks.Count];
+        var tasks = new Task<SinkWriteOutcome>[_sinks.Count];
         for (var i = 0; i < _sinks.Count; i++)
             tasks[i] = AppendToSinkAsync(i, evt, ct);
 
-        await Task.WhenAll(tasks).ConfigureAwait(false);
+        var outcomes = await Task.WhenAll(tasks).ConfigureAwait(false);
+        for (var i = 0; i < outcomes.Length; i++)
+        {
+            if (outcomes[i].Accepted)
+                return;
+        }
+
+        throw NoSinkAccepted(
+            "append",
+            evt.Symbol,
+            outcomes.Where(static o => o.Failure is not null).Select(static o => o.Failure!).ToList());
     }
 
-    private async Task AppendToSinkAsync(int i, MarketEvent evt, CancellationToken ct)
+    private InvalidOperationException NoSinkAccepted(string operation, string? symbol, IReadOnlyList<Exception> failures)
+    {
+        _logger.LogError(
+            "No storage sink accepted {SinkOperation} for {Symbol}: {FailedSinkCount} of {SinkCount} sinks failed and the rest have open circuits",
+            operation, symbol, failures.Count, _sinks.Count);
+
+        var message = $"No storage sink accepted the {operation} ({_sinks.Count} sink(s): every sink failed or has an open circuit breaker).";
+        return failures.Count switch
+        {
+            0 => new InvalidOperationException(message),
+            1 => new InvalidOperationException(message, failures[0]),
+            _ => new InvalidOperationException(message, new AggregateException(failures)),
+        };
+    }
+
+    private readonly record struct SinkWriteOutcome(bool Accepted, Exception? Failure)
+    {
+        public static SinkWriteOutcome Success => new(true, null);
+        public static SinkWriteOutcome Skipped => new(false, null);
+        public static SinkWriteOutcome Failed(Exception ex) => new(false, ex);
+    }
+
+    private async Task<SinkWriteOutcome> AppendToSinkAsync(int i, MarketEvent evt, CancellationToken ct)
     {
         var breaker = _breakers[i];
         var status = breaker.Status;
@@ -168,7 +213,7 @@ public sealed class CompositeSink : IStorageSink
             _logger.LogDebug(
                 "Skipping sink {SinkIndex}/{SinkCount} ({SinkType}) — circuit breaker open until {CircuitResetTime}",
                 i + 1, _sinks.Count, _sinkTypeNames[i], breaker.OpenUntil);
-            return;
+            return SinkWriteOutcome.Skipped;
         }
 
         var isHalfOpen = status == CircuitStatus.HalfOpen;
@@ -189,6 +234,8 @@ public sealed class CompositeSink : IStorageSink
 
                 breaker.RecordSuccess();
             }
+
+            return SinkWriteOutcome.Success;
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -217,12 +264,20 @@ public sealed class CompositeSink : IStorageSink
                 throw new InvalidOperationException(
                     $"Sink {_sinkTypeNames[i]} failed and FailurePolicy is FailOnAnyFailure.", ex);
             }
+
+            return SinkWriteOutcome.Failed(ex);
         }
     }
 
+    /// <summary>
+    /// Flushes every child sink whose circuit is not open. Throws when any attempted flush fails,
+    /// and also when no sink was flushed at all because every circuit is open: a flush that
+    /// persisted nothing must not let callers treat buffered events as durable.
+    /// </summary>
     public async Task FlushAsync(CancellationToken ct = default)
     {
         List<Exception>? exceptions = null;
+        var flushed = 0;
 
         for (var i = 0; i < _sinks.Count; i++)
         {
@@ -237,6 +292,7 @@ public sealed class CompositeSink : IStorageSink
             try
             {
                 await _sinks[i].FlushAsync(ct).ConfigureAwait(false);
+                flushed++;
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
@@ -250,6 +306,11 @@ public sealed class CompositeSink : IStorageSink
         if (exceptions is { Count: > 0 })
         {
             throw new AggregateException("One or more sinks failed to flush.", exceptions);
+        }
+
+        if (flushed == 0)
+        {
+            throw NoSinkAccepted("flush", symbol: null, failures: []);
         }
     }
 

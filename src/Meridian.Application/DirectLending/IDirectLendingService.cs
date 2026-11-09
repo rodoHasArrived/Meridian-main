@@ -108,5 +108,14 @@ public interface IDirectLendingService
 
     // Discount / premium amortization
     Task<LoanServicingStateDto?> AmortizeDiscountPremiumAsync(Guid loanId, AmortizeDiscountPremiumRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);
-}
 
+    Task<DirectLendingIndexFixingDto?> RecordIndexFixingAsync(RecordIndexFixingRequest request, CancellationToken ct = default);
+
+    Task<IReadOnlyList<DirectLendingIndexFixingDto>> GetIndexFixingsAsync(string? indexName = null, DateOnly? from = null, DateOnly? to = null, CancellationToken ct = default);
+
+    Task<LoanServicingStateDto?> ApplyScheduledRateResetAsync(Guid loanId, ApplyScheduledRateResetRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);
+
+    Task<LoanServicingStateDto?> CapitalizePikAsync(Guid loanId, CapitalizePikRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);
+
+    Task<LoanServicingSchedulePreviewDto?> GetServicingSchedulePreviewAsync(Guid loanId, DateOnly from, DateOnly to, CancellationToken ct = default);
+}

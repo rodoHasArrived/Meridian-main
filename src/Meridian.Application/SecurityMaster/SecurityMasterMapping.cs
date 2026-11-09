@@ -26,10 +26,10 @@ internal static class SecurityMasterMapping
         if (request.AssetSpecificTermsPatch is JsonElement assetSpecific)
         {
             kind = FSharpOption<SecurityKind>.Some(ToSecurityKind(current.AssetClass, assetSpecific,
-                request.CommonTerms ?? current.CommonTerms, SecurityKindMappingMode.Write));
+                request.CommonTerms ?? current.CommonTerms, SecurityKindMappingMode.Write, current.AssetSpecificTerms));
         }
         else if (request.CommonTerms is JsonElement submittedCommon
-            && current.AssetClass is "Bond" or "DirectLoan" or "StructuredCredit")
+            && SecurityAssetClassCatalog.Canonicalize(current.AssetClass) is "Bond" or "DirectLoan" or "StructuredCredit")
         {
             var assetTerms = SecurityAssetClassTermsUpgrader.UpgradeForRead(current.AssetClass, current.AssetSpecificTerms);
             var schedules = SecurityEconomicScheduleParser.Parse(assetTerms, submittedCommon);
@@ -238,6 +238,10 @@ internal static class SecurityMasterMapping
             SecurityIdentifierKind.LoanX => IdentifierKind.LoanX,
             SecurityIdentifierKind.Clip => IdentifierKind.Clip,
             SecurityIdentifierKind.ListingId => IdentifierKind.ListingId,
+            SecurityIdentifierKind.Uti => IdentifierKind.Uti,
+            SecurityIdentifierKind.Upi => IdentifierKind.Upi,
+            SecurityIdentifierKind.MarkitRedEntity => IdentifierKind.MarkitRedEntity,
+            SecurityIdentifierKind.MarkitRedPair => IdentifierKind.MarkitRedPair,
             _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unsupported security identifier kind.")
         };
 
@@ -285,11 +289,15 @@ internal static class SecurityMasterMapping
     }
 
     private static SecurityKind ToSecurityKind(string assetClass, JsonElement json, JsonElement commonTerms,
-        SecurityKindMappingMode mode = SecurityKindMappingMode.Read)
+        SecurityKindMappingMode mode = SecurityKindMappingMode.Read, JsonElement? retainedTerms = null)
     {
+        // The switch below and every per-class rule it consults are keyed by canonical names; a
+        // registered alias ("Loan", "MBS", "PrivateFund") is the class it names, not an unknown
+        // class to refuse on write or to degrade to OtherSecurity on read.
+        assetClass = SecurityAssetClassCatalog.Canonicalize(assetClass);
         EnsureSupportedAssetSchemaVersion(assetClass, json, mode);
         if (mode == SecurityKindMappingMode.Write)
-            SecurityAssetPackAdmission.EnsureSubmittedFields(assetClass, json);
+            SecurityAssetPackAdmission.EnsureSubmittedFields(assetClass, json, retainedTerms);
         // Which versioned containers (the scheduleConventions block, the call and put schedules) this
         // payload decodes, through the one predicate the validator and the cash-flow engine share: a
         // read decodes those at or below the row's own stamp, a write those at or below the class's

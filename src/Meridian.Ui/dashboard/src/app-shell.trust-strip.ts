@@ -6,6 +6,8 @@ import {
   type DataProvenanceKind
 } from "@/app-shell.data-provenance-badge";
 import type { DataWorkspaceResponse, SessionInfo } from "@/types";
+import { countProviderHealth } from "@/lib/cross-screen-counts";
+import type { WorkstationCrossScreenCounts, WorkstationProviderHealthCount } from "@/types/cross-screen-counts";
 
 export type AppShellTrustStripTone = "ready" | "review" | "blocked" | "pending";
 
@@ -20,9 +22,33 @@ export interface AppShellTrustStripItem {
   actionLabel: string | null;
 }
 
+/**
+ * The session environment as the masthead pill's leading segment. PAPER vs LIVE is the one
+ * fact an operator cannot afford to lose, so it carries its own variant (LIVE uses the
+ * alarm-red `--live-env` token) and never shrinks, whatever else the pill truncates.
+ */
+export interface AppShellTrustStripEnvironment {
+  label: string;
+  variant: "live" | "paper" | "research" | "default";
+}
+
 export interface AppShellTrustStripState {
   ariaLabel: string;
+  environment: AppShellTrustStripEnvironment;
   items: AppShellTrustStripItem[];
+}
+
+function buildTrustStripEnvironment(session: SessionInfo | null, loading: boolean): AppShellTrustStripEnvironment {
+  switch (session?.environment) {
+    case "live":
+      return { label: "LIVE", variant: "live" };
+    case "paper":
+      return { label: "PAPER", variant: "paper" };
+    case "research":
+      return { label: "DEMO", variant: "research" };
+    default:
+      return loading ? { label: "LOADING", variant: "default" } : { label: "DEMO", variant: "research" };
+  }
 }
 
 export function buildTrustStripState({
@@ -32,7 +58,8 @@ export function buildTrustStripState({
   dataProvenance,
   workspaceErrors,
   session,
-  data
+  data,
+  crossScreenCounts = null
 }: {
   loading: boolean;
   bootstrapFailed: boolean;
@@ -41,9 +68,12 @@ export function buildTrustStripState({
   workspaceErrors: AppShellWorkspaceErrorMap;
   session: SessionInfo | null;
   data: DataWorkspaceResponse | null;
+  /** The shell's cross-screen counts; used for provider health on routes without the Data workspace. */
+  crossScreenCounts?: WorkstationCrossScreenCounts | null;
 }): AppShellTrustStripState {
   const providerPosture = buildProviderTrustStripItem({
     data,
+    sharedProviders: crossScreenCounts?.providers ?? null,
     loading,
     bootstrapFailed,
     dataWorkspaceError: workspaceErrors.data
@@ -93,6 +123,10 @@ export function buildTrustStripState({
 
   return {
     ariaLabel: "Workstation build, environment, provenance, and provider posture",
+    // Follows the session itself, not the workspace bootstrap: the session card this badge
+    // replaced showed PAPER/LIVE as soon as the session resolved, so a known environment is
+    // never hidden behind LOADING while workspace data is still arriving.
+    environment: buildTrustStripEnvironment(session, loading),
     items: [
       {
         id: "build",
@@ -133,15 +167,33 @@ export function buildTrustStripState({
 
 function buildProviderTrustStripItem({
   data,
+  sharedProviders,
   loading,
   bootstrapFailed,
   dataWorkspaceError
 }: {
   data: DataWorkspaceResponse | null;
+  sharedProviders: WorkstationProviderHealthCount | null;
   loading: boolean;
   bootstrapFailed: boolean;
   dataWorkspaceError?: string;
 }): AppShellTrustStripItem {
+  if (!data && sharedProviders) {
+    // Routes that do not load the Data workspace show the same count the Data screen shows.
+    const value = `${sharedProviders.healthy}/${sharedProviders.total} healthy`;
+    const detail = `${formatCount(sharedProviders.healthy, "provider")} healthy of ${sharedProviders.total} listed in Data provider posture.`;
+    return {
+      id: "providers",
+      label: "Providers",
+      value,
+      detail,
+      tone: sharedProviders.total > 0 && sharedProviders.healthy === sharedProviders.total ? "ready" : "review",
+      ariaLabel: `Providers ${value}. ${detail}`,
+      href: WORKSTATION_ROUTE_CATALOG.dataProviders,
+      actionLabel: "Open provider posture"
+    };
+  }
+
   if (!data) {
     if (loading) {
       return {
@@ -193,7 +245,7 @@ function buildProviderTrustStripItem({
   const blocked = providers.filter((provider) => provider.status === "Blocked").length;
   const degraded = providers.filter((provider) => provider.status === "Degraded").length;
   const warning = providers.filter((provider) => provider.status === "Warning").length;
-  const healthy = providers.filter((provider) => provider.status === "Healthy").length;
+  const healthy = countProviderHealth(providers)?.healthy ?? 0;
   const value = blocked > 0
     ? `${blocked} blocked`
     : degraded > 0

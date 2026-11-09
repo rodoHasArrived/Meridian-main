@@ -2730,6 +2730,8 @@ items:
     evidence:
       - type: reference
         path: docs/product/meridian-design-document.md
+      - type: reference
+        path: docs/engineering/blueprints/direct-lending-pik-capitalization-and-rate-resets.md
     last_reviewed: 2026-10-17
 
   - id: W13-STRAT-001

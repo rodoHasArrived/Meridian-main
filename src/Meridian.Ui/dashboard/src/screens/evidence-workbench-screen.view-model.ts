@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { pluralizeCount } from "@/lib/format";
+import { formatCount as formatCountValue, pluralizeCount } from "@/lib/format";
 import {
   exportEvidenceManifest,
   getEvidencePacket,
@@ -2011,7 +2011,7 @@ function buildIntakeResultLabel(result: EvidenceVaultIntakeResponse | null): str
     return null;
   }
 
-  const sizeLabel = `${result.sizeBytes.toLocaleString()} bytes`;
+  const sizeLabel = `${formatCountValue(result.sizeBytes)} bytes`;
   return `Retained ${result.fileName} as ${result.intakeId}; ${sizeLabel}; ${result.contentHashSha256}.`;
 }
 

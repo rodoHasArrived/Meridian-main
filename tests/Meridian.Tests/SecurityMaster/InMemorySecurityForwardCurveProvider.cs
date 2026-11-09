@@ -36,5 +36,17 @@ public sealed class InMemorySecurityForwardCurveProvider : ISecurityForwardCurve
             .FirstOrDefault());
     }
 
+    /// <summary>A <c>Forward:&lt;index&gt;</c> pin selects the published curve whose retained version identity matches; other pins are ignored here.</summary>
+    public Task<SecurityForwardCurve?> GetForwardCurveAsync(string indexName, Meridian.Contracts.FixedIncome.BondCalculationContext context, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        var pins = context.Curves?.Where(pin => string.Equals(pin.Role, "Forward:" + indexName.Trim(), StringComparison.OrdinalIgnoreCase)).ToArray() ?? [];
+        if (pins.Length == 0)
+            return GetForwardCurveAsync(indexName, DateOnly.FromDateTime(context.AsOf.UtcDateTime), ct);
+        if (pins.Length > 1 || string.IsNullOrWhiteSpace(indexName) || !_curves.TryGetValue(indexName.Trim(), out var set))
+            return Task.FromResult<SecurityForwardCurve?>(null);
+        return Task.FromResult(set.Curves.SingleOrDefault(curve => curve.RetainedInput?.VersionId == pins[0].CurveVersionId));
+    }
+
     private sealed record ImmutableCurveSet(IReadOnlyList<SecurityForwardCurve> Curves);
 }

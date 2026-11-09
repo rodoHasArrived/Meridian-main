@@ -27,10 +27,10 @@ public sealed class SecurityAssetTermsSchemaTests
     // catalog-vs-projection gap is a conscious decision instead of silent drift.
     private static readonly string[] IntentionallyUnprojectedAssetClasses =
     [
-        // The profile-governed class: its fields vary per approved profile, so there is no fixed
-        // column set to project. Every other catalog class is projected (migration 044 closed the
-        // last eight declared gaps and the whole ops-capable backlog).
-        "CustomAsset"
+        // Empty: every catalog class is projected. Migration 044 closed the last eight declared
+        // gaps and the whole ops-capable backlog; migration 064 gave the profile-governed
+        // CustomAsset, whose fields vary per approved profile, a profile-keyed projection with one
+        // row per profile field instead of a fixed column set.
     ];
 
     // The Asset Operations classes still waiting for a relational terms projection. These are NOT
@@ -133,7 +133,9 @@ public sealed class SecurityAssetTermsSchemaTests
         projected.Should().NotIntersectWith(OpsCapableProjectionBacklog,
             "a class is either projected or on the backlog, never both");
 
-        IntentionallyUnprojectedAssetClasses.Should().NotIntersectWith(OpsCapableProjectionBacklog,
+        // Intersect rather than NotIntersectWith: both lists are empty today and share the cached
+        // empty-array instance, which NotIntersectWith rejects as the same object.
+        IntentionallyUnprojectedAssetClasses.Intersect(OpsCapableProjectionBacklog, StringComparer.Ordinal).Should().BeEmpty(
             "a missing projection is either a decision or a backlog item, and the two carry different obligations");
 
         projected

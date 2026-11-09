@@ -11,6 +11,7 @@
  */
 
 import type { BankTransaction, PendingPayment } from "@/types/banking-payments.types";
+import { formatNumber } from "@/lib/format";
 
 export type PaymentApprovalTone = "default" | "success" | "warning" | "danger";
 
@@ -136,5 +137,5 @@ function summarizePendingValue(pending: readonly PendingPayment[]): string {
 }
 
 function formatAmount(value: number): string {
-  return value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return formatNumber(value, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
