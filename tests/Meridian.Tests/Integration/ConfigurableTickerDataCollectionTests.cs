@@ -129,7 +129,7 @@ public sealed class ConfigurableTickerDataCollectionTests : IDisposable
         await File.WriteAllTextAsync(path, string.Join("\n", csvLines));
     }
 
-    [Fact]
+    [LiveProviderFact]
     public async Task FetchAndExport_ConfigurableTickerData()
     {
         // Check if Yahoo Finance is available before proceeding
@@ -165,7 +165,9 @@ public sealed class ConfigurableTickerDataCollectionTests : IDisposable
             await File.WriteAllTextAsync(skipSummaryPath, string.Join("\n", skipSummary));
             _output.WriteLine($"Summary written to: {skipSummaryPath}");
 
-            // Skip the test instead of failing
+            // Live provider tests are opt-in (LiveProviderFact). Once opted in, an unreachable
+            // provider is a failure: returning here used to report the run as passing.
+            isAvailable.Should().BeTrue("live provider tests were opted in, so Yahoo Finance must be reachable");
             return;
         }
 

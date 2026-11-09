@@ -641,6 +641,34 @@ public sealed class PaperTradingPortfolioMarginRulesTests
     }
 
     [Fact]
+    public void RegTAccount_ShortLifecycle_LedgerCashTracksAccountCash()
+    {
+        // The ledger used to book the full short proceeds into Cash while the account's cash fell
+        // by the posted margin, so the two disagreed by the whole $30 000 collateral until cover.
+        var ledger = new Meridian.Ledger.Ledger();
+        var portfolio = new PaperTradingPortfolio(
+        [
+            new AccountDefinition("margin-1", "Reg T Margin", AccountKind.Brokerage, 100_000m,
+                MarginType: MarginAccountType.RegT),
+        ], ledger);
+        var openingLedgerCash = ledger.GetBalance(LedgerAccounts.Cash);
+
+        portfolio.ApplyFill("margin-1", BuildFill("AAPL", OrderSide.Sell, qty: 100, price: 200m));
+        (ledger.GetBalance(LedgerAccounts.Cash) - openingLedgerCash).Should().Be(portfolio.Cash - 100_000m,
+            "ledger cash must fall by the posted margin exactly as account cash does");
+        ledger.GetBalance(LedgerAccounts.ShortSaleCollateralReceivable).Should().Be(30_000m);
+
+        portfolio.ApplyFill("margin-1", BuildFill("AAPL", OrderSide.Buy, qty: 50, price: 200m));
+        (ledger.GetBalance(LedgerAccounts.Cash) - openingLedgerCash).Should().Be(portfolio.Cash - 100_000m);
+        ledger.GetBalance(LedgerAccounts.ShortSaleCollateralReceivable).Should().Be(15_000m);
+
+        portfolio.ApplyFill("margin-1", BuildFill("AAPL", OrderSide.Buy, qty: 50, price: 180m));
+        (ledger.GetBalance(LedgerAccounts.Cash) - openingLedgerCash).Should().Be(portfolio.Cash - 100_000m);
+        ledger.GetBalance(LedgerAccounts.ShortSaleCollateralReceivable).Should().Be(0m,
+            "all collateral returns to cash once the short is fully covered");
+    }
+
+    [Fact]
     public void RegTAccount_PartialCoverShort_ReleasesProportionalCollateral()
     {
         // Arrange: short 100 @ $200

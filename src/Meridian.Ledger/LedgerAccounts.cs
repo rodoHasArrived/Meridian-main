@@ -316,6 +316,15 @@ public static class LedgerAccounts
     public static readonly LedgerAccount MarginLoanPayable =
         new("Margin Loan Payable", LedgerAccountType.Liability);
 
+    /// <summary>
+    /// Collateral the broker holds against open Reg T short sales — the retained short proceeds
+    /// plus the additional margin the trader posted. An asset: it returns to cash as the short
+    /// is covered. Booking it here keeps ledger cash equal to the account's free cash while the
+    /// short is open, instead of showing the retained proceeds as spendable cash.
+    /// </summary>
+    public static readonly LedgerAccount ShortSaleCollateralReceivable =
+        new("Short Sale Collateral Receivable", LedgerAccountType.Asset);
+
     /// <summary>Borrow fee expense charged daily on short-sold securities.</summary>
     public static readonly LedgerAccount StockBorrowFeeExpense =
         new("Stock Borrow Fee Expense", LedgerAccountType.Expense);
