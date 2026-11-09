@@ -8,6 +8,7 @@ import {
 } from "@/screens/statement-import-panel.view-model";
 import type { StatementImportPreview } from "@/types";
 import { usesTrackedCaps } from "@/design-system/label-case";
+import { formatMoney } from "@/lib/format";
 
 export interface StatementImportPreviewDetailsProps {
   onSelectKind: (kind: string) => void;
@@ -95,7 +96,7 @@ function EvidenceMetric({ label, value }: { label: string; value: string }) {
 }
 
 function formatAmount(value: number | null, currency: string) {
-  return value == null ? "Not reported" : new Intl.NumberFormat(undefined, { style: "currency", currency }).format(value);
+  return formatMoney(value, { currency, fallback: "Not reported" });
 }
 
 function StatementColumnMappingTable({ preview }: { preview: StatementImportPreview }) {

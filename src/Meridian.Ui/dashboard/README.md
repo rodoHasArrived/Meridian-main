@@ -292,9 +292,11 @@ not been recorded.
 - **Formatting.** `@/lib/format` is the only module that calls Intl. It provides `formatCount`,
   `formatMoney` (`accounting` puts negatives in parentheses at the currency's minor units,
   `trading` uses a minus sign at instrument precision, `summary` shows whole units),
-  `formatQuantity`, and `formatUtcTimestamp`/`formatUtcDate`, which always include the year.
-  ESLint blocks `Intl.*` and `toLocale*String` in `src/screens/`, except in files still listed in
-  the `directIntlFormatting` baseline.
+  `formatQuantity`, and `formatUtcTimestamp`/`formatUtcDate`/`formatUtcMonthYear`, which always
+  include the year. `formatLocalDateTime` is for times on the operator's own clock, and
+  `formatDateTime` covers any other date layout through a pinned-locale `Intl.DateTimeFormat`.
+  ESLint blocks `Intl.*` and `toLocale*String` in every non-test file under `src/screens/`, and
+  the `directIntlFormatting` baseline is empty.
 - **Tables.** `DenseDataTable` (`components/meridian/ui-kit-primitives.tsx`) provides:
   - a sticky header inside a bounded scroll area;
   - `aria-sort` sorting, either built in from a column's `sortValue` (numbers start
