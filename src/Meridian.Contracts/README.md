@@ -544,6 +544,8 @@ accepts older numeric status payloads; persisted queue records already use text 
   `AccountingInstrumentClass` or `AccountingOutsideSlice` (StructuredNote is outside the slice).
   `ResolveAccountingInstrumentClass` returns null for a catalogued outside-slice name before the
   `FixedIncome` taxonomy fallback, which remains only for names the catalog does not model.
+  `SettlesDailyVariationMargin` (Future only) declares that positions settle the daily price change
+  in cash instead of exchanging notional; the paper book reads it to book futures on variation margin.
 - `SecurityMaster/Schedules/` - the contractual schedule kernel (`ScheduleGenerator`, kernel
   version `contractual-schedule-kernel-v1`). A pure, deterministic `ScheduleSpec` →
   `ScheduleGenerationResult` generator: anchored or compounded grids, forward or backward
@@ -2044,7 +2046,12 @@ write version to a term's version, a flat payload that populates that term (the 
 `resetSchedule` (`{resetDate, fixingRate}`) arrays; `StructuredCashFlowLeg.NotionalOn` and `FixingOn`
 let the leg scheduler accrue on the scheduled notional (paying step-downs as principal when the leg
 exchanges principal) and use a recorded fixing for a period that has already reset. `LotQuantity`/`IUnitizedLot` give execution, backtesting, ledger and face-value lots
-one shape: decimal quantity, `SecurityLotUnitKind` and multiplier. `CommitmentLot` (commitment,
+one shape: decimal quantity, `SecurityLotUnitKind` and multiplier. How a raw quote scales into
+money is a declared catalog fact (remediation slice 8): `SecurityAssetClassDescriptor.QuoteConvention`
+(`PercentOfPar` for face-value paper, `PerUnit` otherwise, defaulting from the lot unit so no
+price changes), read by `LotQuantity.ValueAtPrice(price, convention)` and
+`LotQuantity.QuoteConventionFor(assetClass)`; the unit-kind overload keeps the legacy rule and
+`SecurityQuoteConventionCoverageTests` pins the two routes to agree for every catalogued class. `CommitmentLot` (commitment,
 funded and unfunded amounts, recallable distributions, `Draw`) and `FundUnitLot` (units at an
 acquisition NAV) are the `Commitment` and `Units` cases the registry assigns to private fund
 interests, guarantees and funds. `SecurityIdentifierKind` adds
