@@ -137,6 +137,26 @@ public sealed class AssetObligationDeclaredExerciseTimelineTests
     }
 
     [Fact]
+    public async Task TwoExercisesSharingANoticeDeadline_KeepSeparateDeadlineEvents()
+    {
+        // 30 days before 2027-01-15 and 40 days before 2027-01-25 are both 2026-12-16.
+        var later = EuropeanCall(40, null, "Calendar");
+        later["callDate"] = "2027-01-25";
+        var detail = await ReadAsync(BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, null, "Calendar"), later]));
+
+        var timeline = detail.TermsObligationsTimeline!;
+        OptionEvents(timeline).Should().Equal(
+            ("IssuerCallNoticeDeadline", new DateOnly(2026, 12, 16)),
+            ("IssuerCallNoticeDeadline", new DateOnly(2026, 12, 16)),
+            ("IssuerCallExercise", new DateOnly(2027, 1, 15)),
+            ("IssuerCallExercise", new DateOnly(2027, 1, 25)));
+        timeline.Events.Select(static row => row.TimelineEventId).Should().OnlyHaveUniqueItems();
+        timeline.Events.Where(static row => row.EventKind == "IssuerCallNoticeDeadline")
+            .Select(static row => row.ExtensionPayload!.Value.GetProperty("exerciseDate").GetString())
+            .Should().BeEquivalentTo("2027-01-15", "2027-01-25");
+    }
+
+    [Fact]
     public async Task BusinessDayNotice_UsesTheDeclaredCalendar()
     {
         var detail = await ReadAsync(BondExerciseNoticeWatchTests.Bond([EuropeanCall(10, null, "Business")]));
@@ -261,6 +281,26 @@ public sealed class AssetObligationDeclaredExerciseTimelineTests
     }
 
     [Fact]
+    public void RetainedScheduleTheSharedResolverRejects_IsBlocked_NotAFault()
+    {
+        // The shared terms resolver throws for this owned schedule; the watch turns it into a blocker.
+        var security = BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, 60, "Calendar")], extra: new()
+        {
+            ["profileFields"] = new Dictionary<string, object?>
+            {
+                ["principalSchedule"] = JsonSerializer.Deserialize<JsonElement>("[{\"paymentDate\":\"2027-01-15\",\"amount\":0}]")
+            },
+            ["principalSchedule"] = Array.Empty<object>()
+        });
+        var service = new AssetObligationProjectionService(calendars: Calendars);
+
+        var outcome = service.ResolveDeclaredExercise(security, new BondCalculationContext(AsOf));
+
+        outcome!.Windows.Should().BeEmpty();
+        outcome.Blockers.Should().ContainSingle().Which.Code.Should().Be("InvalidEconomicSchedule");
+    }
+
+    [Fact]
     public async Task CutoverPolicyBlock_BlocksTheDeclaredExerciseEvents()
     {
         var security = BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, 60, "Calendar")]);
@@ -328,10 +368,17 @@ public sealed class AssetObligationDeclaredExerciseTimelineTests
         AssertBlocked(detail, "TermsNotEffective", "the notice-watch read service refuses terms that are not effective at the evaluation date");
     }
 
-    [Fact]
-    public async Task TermsEffectiveUntilAfterTheEvaluationDate_Resolve()
+    [Theory]
+    [InlineData(0, null)]
+    [InlineData(-30, 1)]
+    public async Task TermsEffectiveAtTheEvaluationDate_Resolve(int effectiveFromOffsetDays, int? effectiveToOffsetDays)
     {
-        var security = BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, 60, "Calendar")]) with { EffectiveTo = AsOf.AddDays(1) };
+        // Effective from the evaluation instant itself, or until any instant after it.
+        var security = BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, 60, "Calendar")]) with
+        {
+            EffectiveFrom = AsOf.AddDays(effectiveFromOffsetDays),
+            EffectiveTo = effectiveToOffsetDays is { } offset ? AsOf.AddDays(offset) : null
+        };
 
         var detail = await new AssetObligationProjectionService(calendars: Calendars)
             .ProjectFromSecurityMasterAsync(security, new BondCalculationContext(AsOf), CompletedProjection(security));

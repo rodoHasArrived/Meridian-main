@@ -395,14 +395,17 @@ public sealed class BondExerciseNoticeWatchTests
         var matured = BondExerciseNoticeWatch.EvaluateToMaturity(Bond(Calls(European(30, 60, "Calendar"))), Calendars, new DateOnly(2031, 1, 15));
         matured.Blockers.Should().ContainSingle().Which.Code.Should().Be("EvaluationOutsideLife");
 
-        var overflow = Bond(extra: new()
+        // A malformed owned schedule makes the shared resolver throw; the to-maturity read blocks as Evaluate does.
+        var malformed = Bond(Calls(European(30, 60, "Calendar")), extra: new()
         {
-            [SecurityVersionedTerms.CallScheduleKey] = JsonSerializer.Deserialize<JsonElement>(
-                "[{\"callDate\":\"2027-01-15\",\"callPrice\":1e400,\"exerciseStyle\":\"European\"}]"),
-            ["isCallable"] = true
+            ["profileFields"] = new Dictionary<string, object?>
+            {
+                ["principalSchedule"] = JsonSerializer.Deserialize<JsonElement>("[{\"paymentDate\":\"2027-01-15\",\"amount\":0}]")
+            },
+            ["principalSchedule"] = Array.Empty<object>()
         });
-        var act = () => BondExerciseNoticeWatch.EvaluateToMaturity(overflow, Calendars, asOf);
-        act.Should().NotThrow().Which.IsBlocked.Should().BeTrue();
+        var act = () => BondExerciseNoticeWatch.EvaluateToMaturity(malformed, Calendars, asOf);
+        act.Should().NotThrow().Which.Blockers.Should().ContainSingle().Which.Code.Should().Be("InvalidEconomicSchedule");
     }
 
     private static IReadOnlyList<BondRedemptionScenario> AnalyticsScenarios(SecurityDetailDto security, DateOnly asOf)
