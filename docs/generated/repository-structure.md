@@ -1390,6 +1390,7 @@ Meridian-main
 │   │   ├── 024-terms-payload-format-and-version-policy.md
 │   │   ├── 025-contractual-schedule-kernel.md
 │   │   ├── 026-stored-curves-and-valuation-seam.md
+│   │   ├── 027-single-economic-model-consolidation.md
 │   │   ├── _template.md
 │   │   └── README.md
 │   ├── ai
