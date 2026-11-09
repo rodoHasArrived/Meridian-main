@@ -293,7 +293,7 @@ not been recorded.
   `formatMoney` (`accounting` puts negatives in parentheses at the currency's minor units,
   `trading` uses a minus sign at instrument precision, `summary` shows whole units),
   `formatQuantity`, and `formatUtcTimestamp`/`formatUtcDate`/`formatUtcMonthYear`, which always
-  include the year. `formatLocalDateTime` is for times on the operator's own clock, and
+  include the year. Screens show times in UTC, not on the operator's local clock;
   `formatDateTime` covers any other date layout through a pinned-locale `Intl.DateTimeFormat`.
   ESLint blocks `Intl.*` and `toLocale*String` in every non-test file under `src/screens/`, and
   the `directIntlFormatting` baseline is empty.
