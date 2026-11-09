@@ -172,6 +172,11 @@ See the [expanded objectives](../../docs/product/implementation-todo-list.md#exp
 - `BacktestRequest.MaxParticipationRate` caps per-bar participation for bar-midpoint and
   market-impact fills. A value of `0` preserves the historical full-fill behavior; positive values
   leave oversized market-impact orders working across bars when partial fills are allowed.
+- The bar-based fill models honour time-in-force the same way the order-book model does. An
+  `ImmediateOrCancel` or `FillOrKill` order is resolved on the first bar it is executable: IOC keeps
+  what filled and cancels the remainder, FOK fills completely or is cancelled with no fill, and
+  neither stays working on later bars. An order with `AllowPartialFills = false` never ends
+  partially filled, including when market-impact slices are skipped for crossing the limit price.
 - `MeridianNativeBacktestStudioEngine` stamps native engine output through
   `CanonicalBacktestResultNormalizer.FromNative`, matching the metadata contract used by
   QuantConnect Lean imports.
