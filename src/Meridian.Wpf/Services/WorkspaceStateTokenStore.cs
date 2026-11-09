@@ -27,10 +27,19 @@ public sealed class WorkspaceStateTokenStore
         FilePathOverride.Value = filePath;
     }
 
+    /// <summary>
+    /// Awaited before this instance touches the token file (save, load and restore), so tests can
+    /// hold the store's I/O open and observe what its caller does meanwhile.
+    /// </summary>
+    internal Func<Task>? BeforeIoForTests { get; set; }
+
+    private Task WaitForIoHookAsync() => BeforeIoForTests?.Invoke() ?? Task.CompletedTask;
+
     public async Task SaveAsync(IWorkspaceStateToken token, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(token);
 
+        await WaitForIoHookAsync().ConfigureAwait(false);
         var mutable = await LoadEnvelopeAsync(ct).ConfigureAwait(false);
         mutable.Tokens.RemoveAll(existing =>
             string.Equals(existing.WorkspaceId, token.WorkspaceId, StringComparison.OrdinalIgnoreCase) &&
@@ -44,6 +53,7 @@ public sealed class WorkspaceStateTokenStore
 
     public async Task<WorkspaceStateToken?> LoadAsync(string workspaceId, string pageTag, CancellationToken ct = default)
     {
+        await WaitForIoHookAsync().ConfigureAwait(false);
         var envelope = await LoadEnvelopeAsync(ct).ConfigureAwait(false);
         return envelope.Tokens
             .Where(token => string.Equals(token.WorkspaceId, workspaceId, StringComparison.OrdinalIgnoreCase))

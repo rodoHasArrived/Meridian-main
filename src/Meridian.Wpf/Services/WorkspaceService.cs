@@ -1251,6 +1251,10 @@ public sealed class WorkspaceService
         SettingsFilePathOverride.Value = filePath;
     }
 
+    /// <summary>Sets the state-token store's I/O hook; see <see cref="WorkspaceStateTokenStore.BeforeIoForTests"/>.</summary>
+    internal void SetStateTokenStoreIoHookForTests(Func<Task>? hook)
+        => _workspaceStateTokenStore.BeforeIoForTests = hook;
+
     internal static void SetWorkspaceStateFilePathOverrideForTests(string? filePath)
         => WorkspaceStateTokenStore.SetFilePathOverrideForTests(filePath);
 

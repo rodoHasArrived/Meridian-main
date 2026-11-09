@@ -23,6 +23,7 @@ public sealed class WorkspaceServicePersistenceTests : IDisposable
     public void Dispose()
     {
         WorkspaceService.SetSettingsFilePathOverrideForTests(null);
+        WorkspaceService.SetWorkspaceStateFilePathOverrideForTests(null);
         var directory = Path.GetDirectoryName(_settingsFilePath);
         if (directory is not null && Directory.Exists(directory))
         {
@@ -37,10 +38,37 @@ public sealed class WorkspaceServicePersistenceTests : IDisposable
     {
         var service = (WorkspaceService)Activator.CreateInstance(typeof(WorkspaceService), nonPublic: true)!;
         WorkspaceService.SetSettingsFilePathOverrideForTests(_settingsFilePath);
+        WorkspaceService.SetWorkspaceStateFilePathOverrideForTests(_settingsFilePath + ".state.json");
         Directory.CreateDirectory(Path.GetDirectoryName(_settingsFilePath)!);
         service.ResetForTests();
         service.LoadWorkspacesAsync().GetAwaiter().GetResult();
         return service;
+    }
+
+    /// <summary>Token-store I/O that reports when it is reached and then waits to be released.</summary>
+    private sealed class HeldTokenStoreIo
+    {
+        private readonly TaskCompletionSource _started = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _release = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public Task Started => _started.Task;
+
+        public void Release() => _release.TrySetResult();
+
+        public Task WaitAsync()
+        {
+            _started.TrySetResult();
+            return _release.Task;
+        }
+    }
+
+    /// <summary>A session on a built-in workspace and one of its pages, whatever the catalog holds.</summary>
+    private static SessionState SessionOn(WorkspaceService service, out string workspaceId, out string pageTag)
+    {
+        var workspace = service.Workspaces.First(candidate => candidate.IsBuiltIn && candidate.Pages.Count > 0);
+        workspaceId = workspace.Id;
+        pageTag = workspace.Pages[0].PageTag;
+        return new SessionState { ActiveWorkspaceId = workspaceId, ActivePageTag = pageTag };
     }
 
     /// <summary>A write that reports when it starts and then stays open until released.</summary>
@@ -193,5 +221,50 @@ public sealed class WorkspaceServicePersistenceTests : IDisposable
         await second.CreateWorkspaceAsync("Desk B", "second instance", WorkspaceCategory.Custom);
 
         second.Workspaces.Select(workspace => workspace.Name).Should().Contain(["Desk A", "Desk B"]);
+    }
+
+    [Fact]
+    public async Task SynchronousReaders_AreNotBlockedWhileAStateTokenIsBeingSaved()
+    {
+        var service = CreateService();
+        var session = SessionOn(service, out _, out _);
+        var storeIo = new HeldTokenStoreIo();
+        service.SetStateTokenStoreIoHookForTests(storeIo.WaitAsync);
+
+        var save = service.SaveSessionStateAsync(session, "alpha");
+        await storeIo.Started.WaitAsync(Patience);
+
+        // The token store write is in flight. The saved session must already be readable.
+        var lastSession = await Task.Run(() => service.LastSession).WaitAsync(Patience);
+        lastSession.Should().BeSameAs(session);
+        save.IsCompleted.Should().BeFalse("an awaited save completes only once the token is stored");
+
+        storeIo.Release();
+        await save.WaitAsync(Patience);
+    }
+
+    [Fact]
+    public async Task SynchronousReaders_AreNotBlockedWhileAStateTokenIsBeingRestored()
+    {
+        var service = CreateService();
+        var session = SessionOn(service, out var workspaceId, out var pageTag);
+        await service.SaveSessionStateAsync(session, "alpha");
+
+        var storeIo = new HeldTokenStoreIo();
+        service.SetStateTokenStoreIoHookForTests(storeIo.WaitAsync);
+
+        var restore = service.RestoreWorkspaceStateTokenAsync(workspaceId, pageTag);
+        await storeIo.Started.WaitAsync(Patience);
+
+        // The token store read is in flight; a synchronous read must not wait for it.
+        var workspaces = await Task.Run(() => service.Workspaces).WaitAsync(Patience);
+        workspaces.Should().NotBeEmpty();
+        restore.IsCompleted.Should().BeFalse();
+
+        storeIo.Release();
+        var restored = await restore.WaitAsync(Patience);
+        restored.Should().NotBeNull();
+        restored!.Token.WorkspaceId.Should().Be(workspaceId);
+        restored.Token.PageTag.Should().Be(pageTag);
     }
 }
