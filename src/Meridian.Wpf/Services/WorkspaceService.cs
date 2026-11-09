@@ -123,6 +123,12 @@ public sealed class WorkspaceService
             // Write beside the target and rename, so an interrupted write cannot truncate the
             // existing workspace file.
             var filePath = GetSettingsFilePath();
+            if (PersistWriterForTests is { } writer)
+            {
+                await writer(filePath, json).ConfigureAwait(false);
+                return;
+            }
+
             var temporaryPath = filePath + ".tmp";
             await File.WriteAllTextAsync(temporaryPath, json).ConfigureAwait(false);
             File.Move(temporaryPath, filePath, overwrite: true);
@@ -1129,6 +1135,12 @@ public sealed class WorkspaceService
 
         return session;
     }
+
+    /// <summary>
+    /// Replaces the workspace file write, so tests can hold a write open and observe what the
+    /// service does meanwhile. Receives the target path and the JSON to persist.
+    /// </summary>
+    internal Func<string, string, Task>? PersistWriterForTests { get; set; }
 
     internal static void SetSettingsFilePathOverrideForTests(string? filePath)
     {

@@ -1,0 +1,140 @@
+using System.IO;
+using System.Text.Json;
+using Meridian.Ui.Services;
+using Meridian.Wpf.Services;
+
+namespace Meridian.Wpf.Tests.Services;
+
+/// <summary>
+/// The workspace file must be written outside the state gate. Synchronous members such as
+/// <see cref="WorkspaceService.Workspaces"/> are read on the UI thread and wait on that gate, so a
+/// write performed while holding it freezes the UI for as long as the disk takes.
+/// </summary>
+public sealed class WorkspaceServicePersistenceTests : IDisposable
+{
+    private static readonly TimeSpan Patience = TimeSpan.FromSeconds(10);
+
+    private readonly string _settingsFilePath = Path.Combine(
+        Path.GetTempPath(),
+        "Meridian.Wpf.Tests",
+        "workspace-service-persistence-tests",
+        $"{Guid.NewGuid():N}.workspace-data.json");
+
+    public void Dispose()
+    {
+        WorkspaceService.SetSettingsFilePathOverrideForTests(null);
+        var directory = Path.GetDirectoryName(_settingsFilePath);
+        if (directory is not null && Directory.Exists(directory))
+        {
+            foreach (var file in Directory.GetFiles(directory, Path.GetFileName(_settingsFilePath) + "*"))
+            {
+                File.Delete(file);
+            }
+        }
+    }
+
+    private WorkspaceService CreateService()
+    {
+        var service = (WorkspaceService)Activator.CreateInstance(typeof(WorkspaceService), nonPublic: true)!;
+        WorkspaceService.SetSettingsFilePathOverrideForTests(_settingsFilePath);
+        Directory.CreateDirectory(Path.GetDirectoryName(_settingsFilePath)!);
+        service.ResetForTests();
+        service.LoadWorkspacesAsync().GetAwaiter().GetResult();
+        return service;
+    }
+
+    /// <summary>A write that reports when it starts and then stays open until released.</summary>
+    private sealed class HeldWrite
+    {
+        private readonly TaskCompletionSource _started = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _release = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public List<string> Written { get; } = [];
+
+        public Task Started => _started.Task;
+
+        public void Release() => _release.TrySetResult();
+
+        public async Task WriteAsync(string path, string json)
+        {
+            _started.TrySetResult();
+            await _release.Task.ConfigureAwait(false);
+            lock (Written)
+            {
+                Written.Add(json);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task SynchronousReaders_AreNotBlockedWhileTheWorkspaceFileIsBeingWritten()
+    {
+        var service = CreateService();
+        var write = new HeldWrite();
+        service.PersistWriterForTests = write.WriteAsync;
+
+        var create = service.CreateWorkspaceAsync("Desk A", "held write", WorkspaceCategory.Custom);
+        await write.Started.WaitAsync(Patience);
+
+        // The write is in flight. A UI-thread style synchronous read must return now, with the
+        // new workspace already visible, rather than waiting for the disk.
+        var read = Task.Run(() => service.Workspaces);
+        var workspaces = await read.WaitAsync(Patience);
+        workspaces.Should().Contain(workspace => workspace.Name == "Desk A");
+
+        create.IsCompleted.Should().BeFalse("an awaited operation completes only once its state is saved");
+
+        write.Release();
+        (await create.WaitAsync(Patience)).Name.Should().Be("Desk A");
+        write.Written.Should().ContainSingle().Which.Should().Contain("Desk A");
+    }
+
+    [Fact]
+    public async Task OverlappingOperations_EndWithTheNewestStateWritten()
+    {
+        var service = CreateService();
+        var write = new HeldWrite();
+        service.PersistWriterForTests = write.WriteAsync;
+
+        var first = service.CreateWorkspaceAsync("Desk A", "first", WorkspaceCategory.Custom);
+        await write.Started.WaitAsync(Patience);
+
+        // The second operation changes state while the first write is still open.
+        var second = service.CreateWorkspaceAsync("Desk B", "second", WorkspaceCategory.Custom);
+        await Task.Run(() => service.Workspaces.Should().Contain(workspace => workspace.Name == "Desk B"))
+            .WaitAsync(Patience);
+
+        write.Release();
+        await Task.WhenAll(first, second).WaitAsync(Patience);
+
+        write.Written.Should().NotBeEmpty();
+        write.Written[^1].Should().Contain("Desk A").And.Contain("Desk B",
+            "whatever order the writes finish in, the last one must carry the newest state");
+    }
+
+    [Fact]
+    public async Task Save_WritesACompleteFileAndLeavesNoTemporaryFileBehind()
+    {
+        var service = CreateService();
+
+        await service.CreateWorkspaceAsync("Desk A", "real write", WorkspaceCategory.Custom);
+
+        File.Exists(_settingsFilePath).Should().BeTrue();
+        File.Exists(_settingsFilePath + ".tmp").Should().BeFalse();
+        using var document = JsonDocument.Parse(await File.ReadAllTextAsync(_settingsFilePath));
+        document.RootElement.ValueKind.Should().Be(JsonValueKind.Object);
+        (await File.ReadAllTextAsync(_settingsFilePath)).Should().Contain("Desk A");
+    }
+
+    [Fact]
+    public async Task Save_WhenTheWriteFails_DoesNotFailTheOperationOrLoseInMemoryState()
+    {
+        var service = CreateService();
+        service.PersistWriterForTests = static (_, _) => throw new IOException("disk full");
+
+        var created = await service.CreateWorkspaceAsync("Desk A", "failing write", WorkspaceCategory.Custom);
+
+        created.Name.Should().Be("Desk A");
+        service.Workspaces.Should().Contain(workspace => workspace.Name == "Desk A");
+    }
+}

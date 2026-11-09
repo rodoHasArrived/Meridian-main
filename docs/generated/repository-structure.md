@@ -12858,6 +12858,7 @@ Meridian-main
 │   │   │   ├── ViewModelViewResolverTests.cs
 │   │   │   ├── WatchlistServiceTests.cs
 │   │   │   ├── WorkspaceLayoutManagerTests.cs
+│   │   │   ├── WorkspaceServicePersistenceTests.cs
 │   │   │   ├── WorkspaceServiceTests.cs
 │   │   │   ├── WorkspaceShellContextServiceTests.cs
 │   │   │   ├── WorkspaceStateTokenTests.cs
