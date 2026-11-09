@@ -129,7 +129,14 @@ and its expand step is implemented for the `scheduleConventions` block and the `
 `putSchedule` arrays (2026-10-25), with one decode predicate for them (2026-10-28). Decision 1's
 S2 amendment takes effect with the contract step.
 Item 5 (retiring the shape rule and the reserved value) is proposed and waits on the backfill
-evidence described above.
+evidence described above. *2026-11-09 (remediation slice 9):* the gate count is now measured per
+deployment — the data-quality scan reports rule `TX003` for each active untagged record, naming
+the family the shape rule infers, and
+`SecurityMasterQualityReportDto.UntaggedTermsPayloadCount` mirrors the decision-5 SQL over every
+stored row, inactive included, as one store-level aggregate
+(`ISecurityMasterStore.CountUntaggedAssetSpecificTermsAsync`) pinned row by row to the
+`SecurityTermsEnvelope.GetDeclaredFormat` verdict. The population drains through stamped writes;
+no stored payload is rewritten.
 
 ## Rationale
 
