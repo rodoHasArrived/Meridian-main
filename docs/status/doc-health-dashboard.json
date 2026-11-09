@@ -1,11 +1,11 @@
 {
   "total_files": 798,
-  "total_lines": 183505,
+  "total_lines": 183715,
   "orphaned_count": 259,
   "no_heading_count": 157,
   "stale_count": 0,
   "todo_count": 328,
-  "average_lines": 230.0,
+  "average_lines": 230.2,
   "health_score": 83,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1679,7 +1679,7 @@
     },
     {
       "path": "docs/architecture/security-master-extensibility-review.md",
-      "line_count": 8208,
+      "line_count": 8306,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2559,7 +2559,7 @@
     },
     {
       "path": "docs/engineering/plans/security-master-review-remediation-plan.md",
-      "line_count": 121,
+      "line_count": 130,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2863,7 +2863,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-04.md",
-      "line_count": 569,
+      "line_count": 554,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2871,7 +2871,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-05.md",
-      "line_count": 465,
+      "line_count": 472,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2879,7 +2879,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-06.md",
-      "line_count": 505,
+      "line_count": 493,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2887,7 +2887,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-07.md",
-      "line_count": 157,
+      "line_count": 226,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3047,7 +3047,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 13314,
+      "line_count": 13318,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6255,7 +6255,7 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 1456,
+      "line_count": 1469,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6287,7 +6287,7 @@
     },
     {
       "path": "src/Meridian.Contracts/README.md",
-      "line_count": 2212,
+      "line_count": 2225,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6415,7 +6415,7 @@
     },
     {
       "path": "src/Meridian.Instruments/README.md",
-      "line_count": 247,
+      "line_count": 251,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6527,7 +6527,7 @@
     },
     {
       "path": "src/Meridian.Strategies/README.md",
-      "line_count": 314,
+      "line_count": 326,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6639,7 +6639,7 @@
     },
     {
       "path": "tests/fixtures/schedules/KNOWN-DEFECTS.md",
-      "line_count": 67,
+      "line_count": 75,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

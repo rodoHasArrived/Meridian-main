@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-11-06T13:31:54Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-11-07T01:52:55Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -134,19 +134,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Ui/dashboard/src/screens/reporting-income-comparison.test.tsx` | Desktop and UI Workflows | `41d39ce1` (2026-11-06T01:48:45+00:00) | 7 |
-| `src/Meridian.Ui/dashboard/src/styles/ui-kit-primitives.css` | Desktop and UI Workflows | `8a10fa7a` (2026-11-06T00:22:47+00:00) | 9 |
-| `src/Meridian.Ui/dashboard/src/components/meridian/ui-kit-primitives.table-system.test.tsx` | Desktop and UI Workflows | `8a10fa7a` (2026-11-06T00:22:47+00:00) | 2 |
-| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | `4071b030` (2026-11-05T23:05:27+00:00) | 20 |
-| `src/Meridian.Ui/README.md` | Unmapped | `4071b030` (2026-11-05T23:05:27+00:00) | 11 |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.tsx` | Desktop and UI Workflows | `16bdb914` (2026-11-05T23:03:54+00:00) | 15 |
-| `src/Meridian.Ui/dashboard/src/screens/trading-screen.tsx` | Desktop and UI Workflows | `16bdb914` (2026-11-05T23:03:54+00:00) | 11 |
-| `src/Meridian.Ui/dashboard/src/screens/portfolio-screen.tsx` | Desktop and UI Workflows | `16bdb914` (2026-11-05T23:03:54+00:00) | 10 |
-| `src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx` | Desktop and UI Workflows | `16bdb914` (2026-11-05T23:03:54+00:00) | 10 |
-| `src/Meridian.Ui/dashboard/src/components/meridian/reporting-hub.tsx` | Desktop and UI Workflows | `16bdb914` (2026-11-05T23:03:54+00:00) | 9 |
-| `src/Meridian.Ui/dashboard/src/components/meridian/workspace-header.tsx` | Desktop and UI Workflows | `16bdb914` (2026-11-05T23:03:54+00:00) | 9 |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.journal-entry-enhancements.tsx` | Desktop and UI Workflows | `16bdb914` (2026-11-05T23:03:54+00:00) | 9 |
-| `src/Meridian.Ui/dashboard/src/screens/strategy-screen.tsx` | Desktop and UI Workflows | `16bdb914` (2026-11-05T23:03:54+00:00) | 9 |
-| `src/Meridian.Ui/dashboard/src/components/meridian/historical-chart.tsx` | Desktop and UI Workflows | `16bdb914` (2026-11-05T23:03:54+00:00) | 8 |
-| `src/Meridian.Ui/dashboard/src/components/meridian/ui-kit-primitives.tsx` | Desktop and UI Workflows | `16bdb914` (2026-11-05T23:03:54+00:00) | 8 |
+| `src/Meridian.Contracts/README.md` | Host and Composition | `a970ac12` (2026-11-06T21:21:21+00:00) | 39 |
+| `src/Meridian.Storage/README.md` | Providers and Storage | `a970ac12` (2026-11-06T21:21:21+00:00) | 20 |
+| `src/Meridian.FSharp.DirectLending.Aggregates/README.md` | Domain, Ledger, and F# | `a970ac12` (2026-11-06T21:21:21+00:00) | 10 |
+| `src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs` | Host and Composition | `a970ac12` (2026-11-06T21:21:21+00:00) | 9 |
+| `src/Meridian.FSharp.DirectLending.Aggregates/ServicingAggregate.fs` | Domain, Ledger, and F# | `a970ac12` (2026-11-06T21:21:21+00:00) | 9 |
+| `src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.cs` | Providers and Storage | `a970ac12` (2026-11-06T21:21:21+00:00) | 9 |
+| `src/Meridian.Storage/DirectLending/Migrations/010_direct_lending_excess_payment_balances.sql` | Providers and Storage | `a970ac12` (2026-11-06T21:21:21+00:00) | 1 |
+| `src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs` | Desktop and UI Workflows | `4e6151df` (2026-11-06T19:11:01+00:00) | 14 |
+| `src/Meridian.Wpf/README.md` | Desktop and UI Workflows | `8b0e25ea` (2026-11-06T18:32:01+00:00) | 19 |
+| `src/Meridian.Execution/README.md` | Execution, Risk, and Strategies | `4cf61eca` (2026-11-06T18:25:31+00:00) | 17 |
+| `src/Meridian.Execution/Services/SessionTcaReporter.cs` | Execution, Risk, and Strategies | `4cf61eca` (2026-11-06T18:25:31+00:00) | 7 |
+| `src/Meridian.Execution/PaperTradingGateway.cs` | Execution, Risk, and Strategies | `cd0070f4` (2026-11-06T18:11:29+00:00) | 8 |
+| `src/Meridian.Execution/Adapters/PaperTradingGateway.cs` | Execution, Risk, and Strategies | `cd0070f4` (2026-11-06T18:11:29+00:00) | 7 |
+| `src/Meridian.Execution/PaperMatching/PaperTradingCostModel.cs` | Execution, Risk, and Strategies | `cd0070f4` (2026-11-06T18:11:29+00:00) | 7 |
+| `src/Meridian.Strategies/README.md` | Execution, Risk, and Strategies | `dcece77e` (2026-11-06T17:56:13+00:00) | 9 |
 

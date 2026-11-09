@@ -90,7 +90,11 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `AssetOperations/AssetObligationProjectionService.cs` - retained-term projection service for
   Security Master-keyed assets that emits V1 expected cash flows, non-cash obligations, formula
   traces, ledger-support references, and timeline variances without writing ledger facts, including
-  contractual bond principal schedules mapped into sinking-fund repayment projections.
+  contractual bond principal schedules mapped into sinking-fund repayment projections. A coupon
+  field that declares a default unit in `SecurityRateFieldUnits` (Deposit `interestRate`: Fraction)
+  is read through `RateUnitNormalizer`; a value outside its declared range (a legacy 4.5 written in
+  percentage points) yields no accrual convention instead of being reinterpreted by magnitude
+  (review D10, slice 4). Bond-family coupons keep this reader's percentage-point convention.
 - `AssetOperations/FactorPaydownProjectionService.cs` - deterministic MBS factor-paydown projector
   that validates retained evidence, held face, factor bounds, currency rounding, and optimistic
   position version before producing typed event, economic-state, and projection-lineage records.

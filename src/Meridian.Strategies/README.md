@@ -34,6 +34,18 @@ an Application dependency through Execution.
 
 Portfolio position read models carry shared mark-freshness assessments. A position snapshot timestamp is not a mark observation date: when historical mark provenance is absent, the projection reports review required rather than treating the snapshot as current valuation evidence.
 
+## Security Master accounting rate units and disposition
+
+`SecurityMasterAccountingEventService` reads a fixed coupon through the shared
+`RateUnitNormalizer` (review D10, slice 4, 2026-11-04): the record's declared
+`scheduleConventions.couponRateUnit`, carried on `SecurityFixedIncomeTerms.CouponRateUnit` by
+`SecurityMasterAccountingEventSourceAdapter`, then the coupon field's default for
+`SecurityFixedIncomeTerms.TermsAssetClass`. An undeclared rate raises a High
+`SM_COUPON_RATE_UNIT_UNDECLARED` issue (`SM_COUPON_RATE_OUT_OF_RANGE` outside the declared range or
+sign policy) and no accrual or coupon receipt is generated; the retired `> 1 means percent` guess is
+gone. Accounting-slice membership comes from the catalog's explicit disposition, so StructuredNote,
+which is outside the slice, cannot reach bond posting through its `FixedIncome` taxonomy.
+
 ## Reconciliation source lineage
 
 The durable break queue retains successful complete statement comparisons separately from governed
