@@ -2,9 +2,10 @@
 
 **Status:** draft
 **Owner:** core-team
-**Reviewed:** 2026-10-28
+**Reviewed:** 2026-11-09
 **Scope:** Engineering
-**Source evidence:** `6bcc7a0262ab0870cee32cb2cb344851e9da7e89`
+**Source evidence:** `6bcc7a0262ab0870cee32cb2cb344851e9da7e89` (slices 1–6);
+`fc848789e637f3e241698c84b5415a1a9e0ed32d` (slices 7–9 and the consolidation decision, 2026-11-09)
 
 This plan consumes the [October review consolidation](../../architecture/security-master-extensibility-review.md#consolidated-october-review-and-dispositions--2026-10-28),
 including the dated observations and corrected prescriptions from #3111, #3188, #3196, #3220,
@@ -128,3 +129,159 @@ Row classification, the WPF provenance composition and migration 062's independe
 and no unrelated operational override field disappears. Each implementation updates the rolling
 review with a dated disposition and exact validation evidence; it does not add another unchanged
 scheduled-review PR.
+
+## Slice 7 — Term-form parity contract between the shared model and the browser mirror (2026-11-09)
+
+**Evidence:** D9; the [2026-11-09 verification pass](../../architecture/security-master-extensibility-review.md#verification-pass--2026-11-09--dual-model-audit-reconciliation).
+The registry schema is already served (`/api/security-master/asset-classes[/{assetClass}]`) and
+the dashboard passport editor already builds its term fields from it; the original "serve the
+schema to the browser" scope was stale. What D9 still named open: the browser mirrors
+`SecurityAssetTermFormModel`'s grouping, choice and validation rules by hand
+(`security-passport-schema-fields.view-model.ts`), with nothing asserting the two lanes agree.
+Pin the parity as a generated contract: a .NET golden test emits a fixture from
+`SecurityAssetClassRegistry` + `SecurityAssetTermFormModel` (every class's served fields, pickable
+keys in form order, closed value choices, and each editor kind's validation verdict over a fixed
+input corpus), and a dashboard test replays the same fixture through the TypeScript mirror.
+
+**Proof:** the fixture regenerates deterministically and the .NET test fails on any schema or
+form-rule drift from the committed copy; the dashboard parity suite fails until the mirror
+matches the regenerated fixture; the mirror's number, integer and date rules match the shared
+model's invariant parsing on the corpus (sign and group separators, `long` range, real calendar
+dates). Known out-of-corpus host-parsing esoterica (misplaced group separators, beyond-`decimal`
+magnitudes) stay with the authoritative server validator and are documented in the test.
+
+**Scope note:** which screens launch the schema-driven editor, and retiring the pre-schema bond
+panels, stay with the web/WPF parity lane (`W8-WPF-PARITY-001`), not this slice.
+
+## Slice 8 — Descriptor-owned consumer rules: sub-type, routing keywords, quote convention (proposed 2026-11-09)
+
+**Evidence:** D3, D9, D10; the 2026-11-09 verification pass. `DeriveSubType` maps 11 of 32 catalog
+classes in `Meridian.Ui.Shared`; `MultiAssetCoverageReadService` infers the asset class from
+keywords (any evidence shape containing "factor" reads as `Bond`); `LotQuantity.ValueAtPrice`
+hard-codes percent-of-par for every `FaceValue` lot. Move each rule onto declared descriptor
+facts, following the slice-6 pattern (`LotUnit`/`LotMultiplierTermKey`, conflict-field
+categories): derive the sub-type from the catalog, replace keyword inference with declared
+evidence routing or an explicit unresolved state, and add a declared quote-convention fact that
+the pricing conversion reads.
+
+**Proof:** sub-type coverage fails on an omitted class; no coverage routing depends on substring
+matching; the same face-value quote prices identically before and after for every retained
+fixture; a non-percent-of-par instrument can declare its convention without touching
+`LotQuantity` consumers.
+
+**Decision:** the quote-convention vocabulary (percent-of-par, per-unit, yield-quoted, …) needs
+domain-owner review; magnitude or class-name inference is not an accepted fallback.
+
+**Implementation (2026-11-09):** the sub-type derivation reads the F# `AssetClassRegistry`
+(three pinned legacy workstation spellings, Equity declared sub-type-ambiguous);
+`MultiAssetEvidenceClassRouter` replaces the coverage read model's substring inference with
+exact-token routes over the produced evidence vocabulary, unresolved outside it; the catalog
+descriptor declares `QuoteConvention` (defaulting from the lot unit so no price changes), and
+`LotQuantity` gains the convention-aware overload plus `QuoteConventionFor`. See the
+[slice-8 disposition](../../architecture/security-master-extensibility-review.md#slice-8-disposition--descriptor-owned-consumer-rules--2026-11-09).
+Open from this slice: moving class-aware pricing callers onto the convention overload when a
+class first declares a non-default convention, and the quote-convention vocabulary decision
+above.
+
+## Slice 9 — Measure the ADR-024 retirement gate; drain through stamped writes (2026-11-09)
+
+**Evidence:** D1, ADR-024 decision 5; the 2026-11-09 verification pass. The originally proposed
+remedy — a migration backfilling `termsFormat` into stored payloads — is the alternative ADR-024
+explicitly rejected (rewriting stored blobs mutates event-sourced history and makes a
+misclassification permanent), so this slice was re-scoped to what the accepted design still
+lacked: the decision-5 gate count was not measurable anywhere. Every write already stamps the
+tag, migration 042 already records the classification in the non-destructive `terms_format`
+column, and the population drains organically as records are rewritten by ordinary writes.
+
+**Implementation (2026-11-09):** the data-quality scan reports rule `TX003` for each active
+record whose terms declare no `termsFormat` (naming the family the shape rule infers), and
+`SecurityMasterQualityReportDto.UntaggedTermsPayloadCount` gauges the whole stored population,
+inactive rows included, mirroring the decision-5 SQL through the same
+`SecurityTermsEnvelope.GetDeclaredFormat` reader every consumer uses. The quality-report
+endpoint already serves both workstations, so each governed deployment's backlog is readable
+evidence.
+
+**Proof:** an untagged row raises TX003 naming its inferred family; a stamped row raises none;
+the gauge counts inactive rows a scan skips; a fully stamped population reports zero.
+
+**Open (the ADR's separate, later change):** when every governed deployment reports zero, retire
+the shape rule and the reserved-2 routing behind a replay-only legacy upcaster, so a new untagged
+payload fails with a precise error instead of being inferred. That change re-reads ADR-024
+decision 5 and is not implementable from this repository alone — it needs the deployment
+evidence this slice makes visible.
+
+## Decision — single economic model consolidation (recorded 2026-11-09, not an accepted slice)
+
+The 2026-11-09 pass records the proposal to make `SecurityTermModules` canonical, retire the
+`SecurityKind` bridge (`SecurityMasterLegacyUpgrade.fs`, `SecurityMasterMapping.cs`,
+`SecurityEconomicDefinitionAdapter`) and remove `retainedEconomicTerms`. This is a domain-owner
+decision, not a slice: it supersedes guarantees the rolling review currently pins (D1's retained
+economics and explicit refusals; slice 3's historical reads without rewriting retained terms) and
+needs a payload-upgrade design, replay-compatibility proof and an event-versioning ruling before
+any implementation starts. Slices 7–9 are deliberately shaped to stay useful under either
+outcome.
+
+*2026-11-09:* the decision writeup is
+[ADR-027](../../adr/027-single-economic-model-consolidation.md). Its evidence reframes the
+question — the event store already writes the economic definition on every command path, the
+economic serializer covers 14 of the 25 modules so flat is the silent system of record for the
+rest, and the duality lives in the write-path round trip and the projection codec. It defines
+three gated stages (lossless flat codec ending `retainedEconomicTerms` for new writes; commands
+onto `SecurityEconomicDefinition`; schema-generated codec arms) with the three preconditions
+above mapped onto them. **Accepted by the domain owner 2026-11-09**; stage 1 proceeds as slice 10
+below, and stages 2–3 start only after it completes.
+
+## Slice 10 — ADR-027 stage 1: a lossless flat codec (in progress 2026-11-09)
+
+**Evidence:** ADR-027 stage 1; the upcaster's own loss ledger
+(`SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.DroppedModules`, the
+`EnsureScheduleModulesRecoverable` refusals, and `retainedEconomicTerms`). Each increment makes
+one lost module class recoverable through declared flat homes, never by rewriting a stored
+payload; `retainedEconomicTerms` keeps riding beside the flat keys until the last increment,
+then stops being written for new writes while fold-on-read keeps serving retained history.
+
+**Increment 1 — the Call module's schedule lists (implemented 2026-11-09).** For a class that
+declares the flat `callSchedule`/`putSchedule` arrays (Bond, CertificateOfDeposit at terms
+version 3; StructuredCredit at 4), the class-aware flattening recovers the economic Call
+module's lists into those arrays in the frozen ADR-024 entry form, stamped at the arrays'
+version, instead of refusing economic-only replay. Declared conversion semantics, pinned by
+`SecurityEconomicCallScheduleFlatteningTests`: `callPx` is a percentage of par; a par call
+without a price writes 100 at `PercentOfPar`; `callType` "MakeWhole" is a price type carrying
+the module-level spread; "European"/"American"/"Bermudan" are exercise styles; members the
+economic family never carried stay null under ADR-025's declared read defaults. Refusals narrow,
+never vanish: accrual conventions refuse everywhere; schedule lists still refuse on the
+class-independent route and for classes without the declared arrays; malformed lists and
+populated-but-dateless entries refuse on every route
+(`SecurityEconomicScheduleReplayRefusalTests`).
+
+**Increment 2 — the Accrual module's conventions (implemented 2026-11-09).** For a class that
+declares the `scheduleConventions` block (Bond and CertificateOfDeposit at terms version 2;
+StructuredCredit at 3 — the Since-2 entry near StructuredNote in the schema belongs to `Swap.legs`), the flattening recovers the economic Accrual module's
+business-day convention (verbatim, and only when
+`SecurityTermConventions.TryParseBusinessDayConvention` decodes it) and its joint calendar (as
+the block's one payment calendar) into the frozen twelve-member block, stamped at the held
+terms' versions; at or above the block's Since the key is always present, null when nothing is
+declared, per ADR-024's frozen fill. Unrecognized spellings, blank or non-string calendars, and
+case-variant modules or members refuse exactly as the old guard did; classes without the
+declared block (and the class-independent route) keep refusing.
+
+**Increment 3 — redemption, issuer and fund members (verified complete 2026-11-09, no code).**
+Source comparison against `SecurityMasterLegacyUpgrade.termsFromKind` shows the planned work does
+not exist: every issuer and fund member a flat key feeds is already inverted by the class-aware
+mappings (issuer name/program/institution across fifteen classes; all four fund fields on
+MoneyMarketFund; fund family on InvestmentFund and PrivateFundInterest), the Redemption module's
+only source is preferred-equity classification on the Equity route that refuses economic replay
+entirely, and the remaining module members (`leiCode`, `ultimateParentName`, `issuerSector`,
+`issuerCountry`, `factorDate`, `prepaymentAssumption`, `averageLifeYears`, `originator`,
+`creditEnhancementPct`) are constant `None` in the fill — no flat key feeds them, so there is
+nothing to invert and they correctly persist only through `retainedEconomicTerms`.
+
+**Remaining increments (ordered, each with its own round-trip proof):**
+4. The structured-product detail the `StructuredCredit` mappings do not yet carry: the typed
+   `factorScheduleEntries` list (flat-declared at Since 1, serialized into the economic module,
+   currently dropped from the recovered flat row and surviving only in the retained document).
+5. The 11 unserialized modules: extend the economic serializer so the economic family stops
+   depending on flat for them (prerequisite for stage 2), with the serializer's module ledger
+   updated in step.
+6. Close-out: assert economic → flat → economic identity for every module; stop writing
+   `retainedEconomicTerms` on new writes; keep fold-on-read for retained history.

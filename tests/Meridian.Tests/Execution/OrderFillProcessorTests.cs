@@ -99,6 +99,91 @@ public sealed class OrderFillProcessorTests
     }
 
     [Fact]
+    public async Task FutureFill_IsStampedAsVariationMargin_SoReplayMovesNoNotional()
+    {
+        var order = CreateOrder("future-open") with { Symbol = "ESZ6", Quantity = 1m, FilledQuantity = 1m };
+        var report = CreateReport(order.OrderId) with
+        {
+            Symbol = "ESZ6",
+            OrderQuantity = 1m,
+            FilledQuantity = 1m,
+            FillPrice = 6_000m,
+            AssetClass = "Future",
+            LotUnitKind = Meridian.Contracts.SecurityMaster.SecurityLotUnitKind.Contracts,
+            LotMultiplier = 50m
+        };
+        var portfolio = new PaperTradingPortfolio(10_000m);
+        var store = new RecordingSessionStore();
+        await using var persistence = new PaperSessionPersistenceService(
+            NullLogger<PaperSessionPersistenceService>.Instance, store);
+        var session = await persistence.CreateSessionAsync(new CreatePaperSessionDto("future", null, 10_000m));
+        var publisher = new RecordingPublisher();
+        var processor = CreateProcessor(order, portfolio, publisher, persistence, out _);
+
+        await processor.ProcessAsync(session.SessionId, report, 0m);
+
+        Assert.Equal(10_000m, portfolio.Cash);
+        var stored = Assert.IsType<PaperSessionFillRecord>(store.StoredFill).Fill;
+        Assert.True(stored.BookedVariationMargin);
+        Assert.Equal(50m, stored.BookedMoneyMultiplier);
+        var trade = Assert.Single(publisher.Events);
+        Assert.True(trade.SettlesVariationMargin);
+        Assert.Equal(0m, trade.RealizedPnl);
+
+        var replayed = new PaperTradingPortfolio(10_000m);
+        replayed.ApplyRecordedFill(stored);
+        Assert.Equal(portfolio.Cash, replayed.Cash);
+        Assert.True(replayed.GetOpenVariationMargin("ESZ6"));
+    }
+
+    [Fact]
+    public async Task LegacyFuturePosition_ClosesOnItsNotionalModel_AndIsStampedSo()
+    {
+        var legacyOpen = CreateReport("legacy-future-open") with
+        {
+            Symbol = "ESZ6",
+            OrderQuantity = 1m,
+            FilledQuantity = 1m,
+            FillPrice = 6_000m,
+            AssetClass = "Future",
+            LotUnitKind = Meridian.Contracts.SecurityMaster.SecurityLotUnitKind.Contracts,
+            LotMultiplier = 50m
+        };
+        var portfolio = new PaperTradingPortfolio(10_000m);
+        portfolio.ApplyRecordedFill(legacyOpen);
+        Assert.Equal(4_000m, portfolio.Cash);
+
+        var order = CreateOrder("legacy-future-close") with
+        {
+            Symbol = "ESZ6",
+            Side = OrderSide.Sell,
+            Quantity = 1m,
+            FilledQuantity = 1m
+        };
+        var report = legacyOpen with
+        {
+            OrderId = order.OrderId,
+            ClientOrderId = order.OrderId,
+            Side = OrderSide.Sell,
+            FillPrice = 6_010m
+        };
+        var store = new RecordingSessionStore();
+        await using var persistence = new PaperSessionPersistenceService(
+            NullLogger<PaperSessionPersistenceService>.Instance, store);
+        var session = await persistence.CreateSessionAsync(new CreatePaperSessionDto("legacy-future", null, 10_000m));
+        await persistence.RecordFillAsync(session.SessionId, legacyOpen);
+        var publisher = new RecordingPublisher();
+        var processor = CreateProcessor(order, portfolio, publisher, persistence, out _);
+
+        await processor.ProcessAsync(session.SessionId, report, 0m);
+
+        Assert.Equal(10_010m, portfolio.Cash);
+        var stored = Assert.IsType<PaperSessionFillRecord>(store.StoredFill).Fill;
+        Assert.False(stored.BookedVariationMargin);
+        Assert.False(Assert.Single(publisher.Events).SettlesVariationMargin);
+    }
+
+    [Fact]
     public async Task ProfitableOptionClose_PublishesGrossValueOnTheSameScaleAsRealizedPnl()
     {
         // Buy 1 contract at $2 (already on the book), then the OMS closes it at $3 on a 100
