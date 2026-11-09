@@ -331,6 +331,9 @@ internal static class SecurityMasterMapping
         // same-date principal payments. Sorting/aggregation belongs to calculated and relational
         // views, not to reconstructing a retained record or emitting its next domain snapshot.
 
+        // S3-D: the schema-bound view the migrated classes (SchemaBoundDecodeClasses) read
+        // through; every bound read verifies its key is declared with the type it is read as.
+        var bound = new SchemaBoundTerms(assetClass, json, mode);
         var kind = assetClass switch
         {
             "Equity" => SecurityKind.NewEquity(new EquityTerms(
@@ -367,20 +370,20 @@ internal static class SecurityMasterMapping
                 ReadScheduleConventions(json, assetClass, versionedTerms),
                 ReadCallPutSchedules(json, assetClass, versionedTerms))),
             "FxSpot" => SecurityKind.NewFxSpot(new FxSpotTerms(
-                GetRequiredString(json, "baseCurrency"),
-                GetRequiredString(json, "quoteCurrency"))),
+                bound.RequiredString("baseCurrency"),
+                bound.RequiredString("quoteCurrency"))),
             "Deposit" => SecurityKind.NewDeposit(new DepositTerms(
-                GetRequiredString(json, "depositType"),
-                GetRequiredString(json, "institutionName"),
-                ToOption(GetOptionalDateOnly(json, "maturity")),
-                ToOption(GetOptionalDecimal(json, "interestRate")),
-                ToDayCountOption(GetOptionalString(json, "dayCount", mode), mode),
-                GetOptionalBoolean(json, "isCallable") ?? false)),
+                bound.RequiredString("depositType"),
+                bound.RequiredString("institutionName"),
+                ToOption(bound.OptionalDateOnly("maturity")),
+                ToOption(bound.OptionalDecimal("interestRate")),
+                ToDayCountOption(bound.OptionalConventionString("dayCount"), mode),
+                bound.OptionalBoolean("isCallable") ?? false)),
             "MoneyMarketFund" => SecurityKind.NewMoneyMarketFund(new MoneyMarketFundTerms(
-                ToOption(GetOptionalString(json, "fundFamily")),
-                GetOptionalBoolean(json, "sweepEligible") ?? false,
-                ToOption(GetOptionalInt(json, "weightedAverageMaturityDays")),
-                GetOptionalBoolean(json, "liquidityFeeEligible") ?? false)),
+                ToOption(bound.OptionalString("fundFamily")),
+                bound.OptionalBoolean("sweepEligible") ?? false,
+                ToOption(bound.OptionalInt("weightedAverageMaturityDays")),
+                bound.OptionalBoolean("liquidityFeeEligible") ?? false)),
             "CertificateOfDeposit" => SecurityKind.NewCertificateOfDeposit(new CertificateOfDepositTerms(
                 GetRequiredString(json, "issuerName"),
                 GetRequiredDateOnly(json, "maturity"),
@@ -499,17 +502,17 @@ internal static class SecurityMasterMapping
                 ToOption(GetOptionalString(terms, "collateral")),
                 ToFSharpList(GetOptionalArrayItems(terms, "covenants").Select(ToCovenant)))),
             "Commodity" => SecurityKind.NewCommodity(new CommodityTerms(
-                GetRequiredString(json, "commodityType"),
-                ToOption(GetOptionalString(json, "denomination")),
-                ToOption(GetOptionalDecimal(json, "contractSize")))),
+                bound.RequiredString("commodityType"),
+                ToOption(bound.OptionalString("denomination")),
+                ToOption(bound.OptionalDecimal("contractSize")))),
             "CryptoCurrency" => SecurityKind.NewCryptoCurrency(new CryptoTerms(
-                GetRequiredString(json, "baseCurrency"),
-                GetRequiredString(json, "quoteCurrency"),
-                ToOption(GetOptionalString(json, "network")))),
+                bound.RequiredString("baseCurrency"),
+                bound.RequiredString("quoteCurrency"),
+                ToOption(bound.OptionalString("network")))),
             "Cfd" => SecurityKind.NewCfd(new CfdTerms(
-                GetRequiredString(json, "underlyingAssetClass"),
-                ToOption(GetOptionalString(json, "underlyingDescription")),
-                ToOption(GetOptionalDecimal(json, "leverage")))),
+                bound.RequiredString("underlyingAssetClass"),
+                ToOption(bound.OptionalString("underlyingDescription")),
+                ToOption(bound.OptionalDecimal("leverage")))),
             "Warrant" => SecurityKind.NewWarrant(new WarrantTerms(
                 SecurityId.NewSecurityId(GetRequiredGuid(json, "underlyingId")),
                 GetRequiredString(json, "warrantType"),
@@ -1404,6 +1407,56 @@ internal static class SecurityMasterMapping
 
     private static string? NormalizeRawJson(string? rawJson)
         => rawJson is null ? null : System.Text.Json.Nodes.JsonNode.Parse(rawJson)?.ToJsonString();
+
+    /// <summary>
+    /// ADR-027 stage 3 (S3-D): classes whose scalar decode reads run through the schema-bound
+    /// reader, so every key the codec reads is verified declared with the type it is read as —
+    /// codec/schema drift throws instead of silently reading past the table. Classes migrate
+    /// cohort by cohort; each migration is behavior-neutral by the decode/encode sweeps, the
+    /// write goldens and the replay corpus, and the sweep suite exercises every bound read
+    /// through the fully-populated twins.
+    /// </summary>
+    public static IReadOnlyList<string> SchemaBoundDecodeClasses { get; } =
+        ["FxSpot", "Deposit", "MoneyMarketFund", "Commodity", "CryptoCurrency", "Cfd"];
+
+    /// <summary>
+    /// The schema-bound view of a submitted or stored terms document for one asset class: each
+    /// read verifies, against <see cref="SecurityAssetTermsSchema"/>, that the key is declared
+    /// and that its declared type matches the type the codec reads it as. Requiredness stays the
+    /// codec's call — the tolerated absence defaults are ledgered in the S3-B sweep — so this
+    /// binds exactly the facts whose drift would corrupt a decode.
+    /// </summary>
+    private readonly struct SchemaBoundTerms(string assetClass, JsonElement json, SecurityKindMappingMode mode)
+    {
+        public string RequiredString(string key) => GetRequiredString(json, Declared(key, SecurityAssetTermFieldType.String));
+
+        public string? OptionalString(string key) => GetOptionalString(json, Declared(key, SecurityAssetTermFieldType.String));
+
+        public string? OptionalConventionString(string key)
+            => GetOptionalString(json, Declared(key, SecurityAssetTermFieldType.String), mode);
+
+        public decimal? OptionalDecimal(string key) => GetOptionalDecimal(json, Declared(key, SecurityAssetTermFieldType.Decimal));
+
+        public int? OptionalInt(string key) => GetOptionalInt(json, Declared(key, SecurityAssetTermFieldType.Integer));
+
+        public bool? OptionalBoolean(string key) => GetOptionalBoolean(json, Declared(key, SecurityAssetTermFieldType.Boolean));
+
+        public DateOnly? OptionalDateOnly(string key) => GetOptionalDateOnly(json, Declared(key, SecurityAssetTermFieldType.Date));
+
+        private string Declared(string key, SecurityAssetTermFieldType readAs)
+        {
+            var field = SecurityAssetTermsSchema.Field(assetClass, key)
+                ?? throw new InvalidOperationException(
+                    $"Codec/schema drift: the codec reads '{assetClass}.{key}', which the schema does not declare.");
+            if (field.Type != readAs)
+            {
+                throw new InvalidOperationException(
+                    $"Codec/schema drift: '{assetClass}.{key}' is declared {field.Type} but the codec reads it as {readAs}.");
+            }
+
+            return field.Key;
+        }
+    }
 
     private static JsonElement ResolveAssetTermsJson(JsonElement json)
         => json.TryGetProperty("profileFields", out var profileFields) && profileFields.ValueKind == JsonValueKind.Object

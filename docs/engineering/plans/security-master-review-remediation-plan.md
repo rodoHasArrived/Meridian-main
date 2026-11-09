@@ -425,9 +425,15 @@ and S2-B4 (codec single-purpose) land. Planned increments:
   rule made visible); the written form is a fixed point of the codec for minimal rows as well
   as the full twins (the property S3-D must preserve per class); and the envelope rules hold on
   minimal rows, not only the fully-populated fixtures.
-- **S3-D — table-driven codec extraction.** With both arms fully asserted, replace hand-written
-  scalar handling with a schema-table interpreter class by class (bespoke arms remain for the
-  structural decodes: coupon structures, schedules, swap legs, profile envelopes); each class's
-  migration is proven byte-identical by the untouched write goldens and replay corpus.
+- **S3-D — schema-bound codec extraction (cohort 1 implemented 2026-11-09; continuing).**
+  The extraction's shape, bounded by the typed-record boundary: every scalar read runs through
+  the `SchemaBoundTerms` reader, which verifies against the schema table that the key is
+  declared and read as its declared type — codec/schema drift throws with a named field instead
+  of reading past the table; record construction stays per-class until S3-E. Cohort 1 (FxSpot,
+  Deposit, MoneyMarketFund, Commodity, CryptoCurrency, Cfd) is migrated and ledgered
+  (`SchemaBoundDecodeClasses`), each class's fully-populated twin exercising every bound read in
+  the sweep suite; remaining classes migrate cohort by cohort under the same net (sweeps, write
+  goldens, corpus — behavior-neutral by the full namespace sweep). Bespoke arms remain for the
+  structural decodes (coupon structures, schedules, swap legs, profile envelopes).
 - **S3-E — shrink `SecurityKind`'s per-class records** to what the interpreter needs —
   explicitly decision-gated: it alters domain types, and the domain owner sequences it.

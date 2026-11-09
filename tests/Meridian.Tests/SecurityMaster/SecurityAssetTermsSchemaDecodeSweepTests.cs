@@ -331,6 +331,24 @@ public sealed partial class SecurityAssetTermsSchemaDecodeSweepTests
             $"{assetClass}.{key} carries the {field.Convention} convention, and an unparseable label would persist as text the schedule kernel later rejects");
     }
 
+    // ── S3-D: the schema-bound decode cohort ────────────────────────────────────────────────────
+
+    [Fact]
+    public void SchemaBoundDecodeClasses_AreDeclared_AndTheirTwinsDecodeThroughTheBoundReader()
+    {
+        // Every migrated class's fully-populated twin exercises each bound read, so a
+        // codec/schema drift (an undeclared key, a type read differently than declared) fails
+        // here the moment it is introduced rather than surfacing as a decode bug.
+        SecurityMasterMapping.SchemaBoundDecodeClasses.Should().NotBeEmpty();
+        foreach (var assetClass in SecurityMasterMapping.SchemaBoundDecodeClasses)
+        {
+            SecurityAssetTermsSchema.AssetClasses.Should().Contain(assetClass,
+                "the migration ledger may only name declared classes");
+            var decode = () => ReadBytes(assetClass, MutableTwin(assetClass));
+            decode.Should().NotThrow($"the {assetClass} twin must decode through the schema-bound reader");
+        }
+    }
+
     // ── The exclusion tables stay honest ────────────────────────────────────────────────────────
 
     [Fact]
