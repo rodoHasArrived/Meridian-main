@@ -11,6 +11,10 @@ last_reviewed: 2026-10-14
 
 # src/Meridian.FinancialOperations
 
+`AccountingSystemIntegrationService.GetLatestImportAsync` returns the latest persisted import; when
+none exists it returns an unpersisted `Previewed` result and does not cache it, so the GET-backed
+latest-import and latest-reconciliation reads have no side effects.
+
 Accounting provider discovery translates the typed ownership-required refusal into an explicit disabled
 row while retaining unrelated provider rows. Configuration and storage failures remain errors. Default
 QuickBooks, Xero and NetSuite imports cannot consume owned credentials until their runtime selects an
@@ -1029,6 +1033,11 @@ matches that ledger book, and a period owned by that book before calling the jou
 for the same `(ledger book aggregate, source event)` return the existing journal, while the same
 economic event may still produce separate GAAP, cash, tax, statutory, or primary postings because
 each basis uses its own ledger-book aggregate.
+A new amortization batch, reversals included, also awaits the optional `termsCapabilityCheck`
+before the Approved lifecycle stage is appended and its posting transaction opens; `LedgerFeatureRegistration` (Application) passes the Security
+Master terms capability verifier's `VerifyAsync` when one is registered, because this layer cannot
+reference it. An exact replay of a retained amortization journal is still served, and other intents
+are not gated.
 Canonical asset acquisition and disposal candidates additionally require the Postgres atomic
 tax-lot journal store. Acquisition creates the new lot in the journal transaction; disposal consumes
 explicit selected lot ids under exact expected-version/open-quantity CAS. Both paths retain the
@@ -1115,6 +1124,11 @@ suggestion, journal draft, report commentary, audit request list, missing-suppor
 summary review stages. These artifacts are review rows backed by retained workflow evidence; they
 do not create a path for assistant-origin posting, approval, payment release, report publication, or
 evidence deletion.
+
+## Audit hardening (2026-11)
+
+- **Statement reconciliation cancellation.** `StatementReconciliationOrchestrator` rethrows caller cancellation instead of writing a durable `Failed` checkpoint. The checkpoint stays at its last completed stage, so the run can resume.
+- **Daily reconciliation runs.** `ReconciliationRunOrchestrator` keys runs as `recon:<yyyy-MM-dd>:<CCY>`, so runs for different base currencies never share a cached result. Capture is serialized per key: concurrent first runs capture once, and a slow capture for one key never blocks cached lookups or captures for another.
 
 ## Diagrams
 

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -36,6 +37,60 @@ public static partial class SecurityMasterEndpoints
         .RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .Produces<ContractualCashFlowResult>().Produces(StatusCodes.Status400BadRequest).Produces(StatusCodes.Status404NotFound);
+
+        // Governed exercise-notice evidence: record (write-once), decide (once, by another actor), list.
+        group.MapGet(UiApiRoutes.SecurityMasterExerciseNotices, async (Guid securityId, HttpContext context, CancellationToken ct) =>
+        {
+            var store = context.RequestServices.GetService<IBondExerciseNoticeStore>();
+            if (store is null)
+                return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
+            if (await context.RequestServices.GetRequiredService<ISecurityMasterQueryService>().GetByIdAsync(securityId, ct).ConfigureAwait(false) is null)
+                return Results.NotFound();
+            return Results.Json(await store.ListAsync(securityId, ct).ConfigureAwait(false), jsonOptions);
+        })
+        .WithName("ListBondExerciseNotices")
+        .RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster);
+
+        group.MapPost(UiApiRoutes.SecurityMasterExerciseNotices, async (Guid securityId, RecordBondExerciseNoticeRequest? request, HttpContext context, CancellationToken ct) =>
+        {
+            if (request is null)
+                return Results.BadRequest("An exercise notice is required.");
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+                return Results.Unauthorized();
+            var store = context.RequestServices.GetService<IBondExerciseNoticeStore>();
+            if (store is null)
+                return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
+            if (await context.RequestServices.GetRequiredService<ISecurityMasterQueryService>().GetByIdAsync(securityId, ct).ConfigureAwait(false) is null)
+                return Results.NotFound();
+            var notice = new BondExerciseNoticeDto(request.NoticeId, securityId, request.StreamId, request.Side, request.NoticeDate, request.ExerciseDate,
+                request.Price, request.Amount, request.SourceDocumentSha256, request.ReceivedDate, request.SourceReference, actor,
+                context.RequestServices.GetService<TimeProvider>()?.GetUtcNow() ?? DateTimeOffset.UtcNow);
+            try
+            { return Results.Json(await store.RecordAsync(notice, ct).ConfigureAwait(false), jsonOptions); }
+            catch (ArgumentException ex) { return Results.ValidationProblem(new Dictionary<string, string[]> { ["notice"] = [EndpointHelpers.RefusalDetail(ex)] }); }
+            catch (InvalidOperationException) { return Results.Conflict(new { code = "ExerciseNoticeIdentityConflict", error = "Notice identity is already bound to different evidence." }); }
+        })
+        .WithName("RecordBondExerciseNotice")
+        .RequirePermission(UserPermission.ModifySecurityMaster)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        group.MapPost(UiApiRoutes.SecurityMasterExerciseNoticeDecision, async (Guid securityId, Guid noticeId, ExerciseNoticeDecisionRequest? request, HttpContext context, CancellationToken ct) =>
+        {
+            if (request is null)
+                return Results.BadRequest("A decision is required.");
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+                return Results.Unauthorized();
+            var store = context.RequestServices.GetService<IBondExerciseNoticeStore>();
+            if (store is null)
+                return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
+            try
+            { return Results.Json(await store.DecideAsync(securityId, noticeId, request.Approve, actor, request.Reason, ct).ConfigureAwait(false), jsonOptions); }
+            catch (ArgumentException ex) { return Results.ValidationProblem(new Dictionary<string, string[]> { ["decision"] = [EndpointHelpers.RefusalDetail(ex)] }); }
+            catch (InvalidOperationException ex) { return Results.Conflict(new { code = "ExerciseNoticeDecisionRefused", error = EndpointHelpers.RefusalDetail(ex) }); }
+        })
+        .WithName("DecideBondExerciseNotice")
+        .RequirePermission(UserPermission.ModifySecurityMaster)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
     }
     // ── Cash Flow Source Assignments ─────────────────────────────────────────
 

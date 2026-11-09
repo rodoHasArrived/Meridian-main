@@ -51,7 +51,7 @@ public static class SecurityAssetClassCatalog
             ],
             // Every Equity asset-specific term is optional, so a name/currency/identifier row
             // carries the whole contract.
-            SupportsIdentifierOnlyImport: true),
+            SupportsIdentifierOnlyImport: true) { AccountingOutsideSlice = true },
         new(
             AssetClass: "Option",
             UsesOccOptionSymbols: true,
@@ -69,7 +69,7 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Figi,
                 SecurityIdentifierKind.ProviderSymbol,
                 SecurityIdentifierKind.InternalCode
-            ]),
+            ]) { AccountingOutsideSlice = true },
         new(
             AssetClass: "Future",
             AssetPackIds: ["derivatives-fx"],
@@ -86,7 +86,7 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Ric,
                 SecurityIdentifierKind.ProviderSymbol,
                 SecurityIdentifierKind.InternalCode
-            ]),
+            ]) { AccountingOutsideSlice = true },
         new(
             AssetClass: "Bond",
             CarriesBondCouponStructure: true,
@@ -143,7 +143,7 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Ric,
                 SecurityIdentifierKind.ProviderSymbol,
                 SecurityIdentifierKind.InternalCode
-            ]),
+            ]) { AccountingOutsideSlice = true },
         new(
             AssetClass: "Deposit",
             QuotesRatesAsFractions: true,
@@ -159,7 +159,7 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.ProviderSymbol,
                 SecurityIdentifierKind.Isin,
                 SecurityIdentifierKind.Cusip
-            ]),
+            ]) { AccountingOutsideSlice = true },
         new(
             AssetClass: "MoneyMarketFund",
             AssetPackIds: ["cash-bank"],
@@ -176,7 +176,7 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Figi,
                 SecurityIdentifierKind.ProviderSymbol,
                 SecurityIdentifierKind.InternalCode
-            ]),
+            ]) { AccountingOutsideSlice = true },
         new(
             AssetClass: "CertificateOfDeposit",
             AssetPackIds: ["fixed-income"],
@@ -266,7 +266,7 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.ProviderSymbol,
                 SecurityIdentifierKind.Isin,
                 SecurityIdentifierKind.Cusip
-            ]),
+            ]) { AccountingOutsideSlice = true },
         new(
             AssetClass: "CashSweep",
             AssetPackIds: ["cash-bank"],
@@ -280,7 +280,7 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.InternalCode,
                 SecurityIdentifierKind.ProviderSymbol,
                 SecurityIdentifierKind.Ticker
-            ]),
+            ]) { AccountingOutsideSlice = true },
         new(
             AssetClass: "OtherSecurity",
             AssetPackIds: ["controlled-other-asset"],
@@ -296,7 +296,7 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Ticker,
                 SecurityIdentifierKind.Figi
             ],
-            SupportsProfileBackedTerms: true),
+            SupportsProfileBackedTerms: true) { AccountingOutsideSlice = true },
         new(
             AssetClass: "CustomAsset",
             RequiresProfileReference: true,
@@ -304,7 +304,10 @@ public static class SecurityAssetClassCatalog
             RequiresGovernedProfile: true,
             LotUnit: SecurityLotUnitKind.Units,
             CashFlowBehavior: SecurityCashFlowBehavior.None,
-            ProjectionKind: SecurityTermsProjectionKind.TermsJsonOnly,
+            // Profile-keyed: one custom_asset_profile_field_projection row per profileFields key
+            // (migration 064), written by a specialized store writer because the field set is
+            // governed per profile rather than fixed per class.
+            ProjectionKind: SecurityTermsProjectionKind.Specialized,
             SupportsBasicCreateWorkflow: true,
             PreferredIdentifierKinds:
             [
@@ -315,7 +318,7 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.ProviderSymbol,
                 SecurityIdentifierKind.Lei
             ],
-            SupportsProfileBackedTerms: true),
+            SupportsProfileBackedTerms: true) { AccountingOutsideSlice = true },
         new(
             AssetClass: "Swap",
             TradesAsBilateralContract: true,
@@ -331,7 +334,9 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.InternalCode,
                 SecurityIdentifierKind.PermId,
                 SecurityIdentifierKind.Lei,
-                SecurityIdentifierKind.ProviderSymbol
+                SecurityIdentifierKind.ProviderSymbol,
+                SecurityIdentifierKind.Uti,
+                SecurityIdentifierKind.Upi
             ],
             RequiresMaturity: true,
             // Version 2 adds the optional scheduleConventions block to each leg; read ahead of write
@@ -343,7 +348,7 @@ public static class SecurityAssetClassCatalog
                     rationale: "Version 2 adds the optional scheduleConventions block to each leg and changes no version-1 term, so a version-1 payload reads it as unset on every leg (ADR-024, 2026-10-25)."),
                 SecurityAssetClassTermsUpgrade.Identity(fromVersion: 2, rationale: "Version 3 adds the optional calculation-only cashFlowContract companion without changing earlier terms (ADR-024/025, 2026-10-29).")
             ],
-            ReadableTermsVersion: 3),
+            ReadableTermsVersion: 3) { AccountingOutsideSlice = true },
         new(
             AssetClass: "DirectLoan",
             AssetPackIds: ["private-loan-credit", "mortgage-facility-intercompany"],
@@ -365,7 +370,7 @@ public static class SecurityAssetClassCatalog
             AmortizesTowardPar: true,
             Aliases: ["Loan", "AmortizingLoan", "BankLoan"],
             TermsUpgrades: [SecurityAssetClassTermsUpgrade.Identity(fromVersion: 1, rationale: "Version 2 adds the optional calculation-only cashFlowContract companion without changing earlier terms (ADR-024/025, 2026-10-29).")],
-            ReadableTermsVersion: 2),
+            ReadableTermsVersion: 2) { AccountingOutsideSlice = true },
         new(
             AssetClass: "StructuredCredit",
             AssetPackIds: ["fixed-income"],
@@ -426,7 +431,7 @@ public static class SecurityAssetClassCatalog
             SupportsProfileBackedTerms: true,
             // Spellings the private-fund pack planned and Asset Operations used to accept by name;
             // existing subjects carrying them keep resolving to this class.
-            Aliases: ["PrivateFund", "PartnershipInterest", "LimitedPartnershipInterest"]),
+            Aliases: ["PrivateFund", "PartnershipInterest", "LimitedPartnershipInterest"]) { AccountingOutsideSlice = true },
         new(
             AssetClass: "PrivateCompanyEquity",
             AssetPackIds: ["private-fund-partnership"],
@@ -442,7 +447,7 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.ProviderSymbol
             ],
             AssetOperationsCapabilities: AssetOperationsCapabilitySet.AlternativeAssetOperations,
-            SupportsProfileBackedTerms: true),
+            SupportsProfileBackedTerms: true) { AccountingOutsideSlice = true },
         new(
             AssetClass: "RealEstateHolding",
             AssetPackIds: ["real-estate"],
@@ -457,7 +462,7 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.ProviderSymbol
             ],
             AssetOperationsCapabilities: AssetOperationsCapabilitySet.AlternativeAssetOperations,
-            SupportsProfileBackedTerms: true),
+            SupportsProfileBackedTerms: true) { AccountingOutsideSlice = true },
         new(
             AssetClass: "CommitmentGuarantee",
             AssetPackIds: ["commitment-guarantee"],
@@ -472,7 +477,7 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.ProviderSymbol
             ],
             AssetOperationsCapabilities: AssetOperationsCapabilitySet.AlternativeAssetOperations,
-            SupportsProfileBackedTerms: true),
+            SupportsProfileBackedTerms: true) { AccountingOutsideSlice = true },
         new(
             AssetClass: "Commodity",
             AssetPackIds: ["controlled-other-asset"],
@@ -488,7 +493,7 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Figi,
                 SecurityIdentifierKind.ProviderSymbol,
                 SecurityIdentifierKind.InternalCode
-            ]),
+            ]) { AccountingOutsideSlice = true },
         new(
             AssetClass: "CryptoCurrency",
             AssetPackIds: ["controlled-other-asset"],
@@ -503,7 +508,7 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Ric,
                 SecurityIdentifierKind.ProviderSymbol,
                 SecurityIdentifierKind.InternalCode
-            ]),
+            ]) { AccountingOutsideSlice = true },
         new(
             AssetClass: "Cfd",
             TradesAsBilateralContract: true,
@@ -517,8 +522,10 @@ public static class SecurityAssetClassCatalog
             [
                 SecurityIdentifierKind.InternalCode,
                 SecurityIdentifierKind.ProviderSymbol,
-                SecurityIdentifierKind.Ticker
-            ]),
+                SecurityIdentifierKind.Ticker,
+                SecurityIdentifierKind.Uti,
+                SecurityIdentifierKind.Upi
+            ]) { AccountingOutsideSlice = true },
         new(
             AssetClass: "Warrant",
             UsesOccOptionSymbols: true,
@@ -537,7 +544,7 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Figi,
                 SecurityIdentifierKind.ProviderSymbol,
                 SecurityIdentifierKind.InternalCode
-            ]),
+            ]) { AccountingOutsideSlice = true },
         new(
             AssetClass: "FxForward",
             TradesAsBilateralContract: true,
@@ -550,8 +557,10 @@ public static class SecurityAssetClassCatalog
             [
                 SecurityIdentifierKind.InternalCode,
                 SecurityIdentifierKind.ProviderSymbol,
-                SecurityIdentifierKind.Ric
-            ]),
+                SecurityIdentifierKind.Ric,
+                SecurityIdentifierKind.Uti,
+                SecurityIdentifierKind.Upi
+            ]) { AccountingOutsideSlice = true },
         new(
             AssetClass: "NonDeliverableForward",
             TradesAsBilateralContract: true,
@@ -564,8 +573,10 @@ public static class SecurityAssetClassCatalog
             [
                 SecurityIdentifierKind.InternalCode,
                 SecurityIdentifierKind.ProviderSymbol,
-                SecurityIdentifierKind.Ric
-            ]),
+                SecurityIdentifierKind.Ric,
+                SecurityIdentifierKind.Uti,
+                SecurityIdentifierKind.Upi
+            ]) { AccountingOutsideSlice = true },
         new(
             AssetClass: "CreditDefaultSwap",
             TradesAsBilateralContract: true,
@@ -579,9 +590,13 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.InternalCode,
                 SecurityIdentifierKind.PermId,
                 SecurityIdentifierKind.Lei,
-                SecurityIdentifierKind.ProviderSymbol
+                SecurityIdentifierKind.ProviderSymbol,
+                SecurityIdentifierKind.Uti,
+                SecurityIdentifierKind.Upi,
+                SecurityIdentifierKind.MarkitRedEntity,
+                SecurityIdentifierKind.MarkitRedPair
             ],
-            RequiresMaturity: true) { SupportsCreditLifecycle = true },
+            RequiresMaturity: true) { SupportsCreditLifecycle = true, AccountingOutsideSlice = true },
         new(
             AssetClass: "Swaption",
             TradesAsBilateralContract: true,
@@ -594,8 +609,10 @@ public static class SecurityAssetClassCatalog
             [
                 SecurityIdentifierKind.InternalCode,
                 SecurityIdentifierKind.PermId,
-                SecurityIdentifierKind.ProviderSymbol
-            ]),
+                SecurityIdentifierKind.ProviderSymbol,
+                SecurityIdentifierKind.Uti,
+                SecurityIdentifierKind.Upi
+            ]) { AccountingOutsideSlice = true },
         new(
             AssetClass: "CapFloor",
             TradesAsBilateralContract: true,
@@ -608,9 +625,11 @@ public static class SecurityAssetClassCatalog
             [
                 SecurityIdentifierKind.InternalCode,
                 SecurityIdentifierKind.PermId,
-                SecurityIdentifierKind.ProviderSymbol
+                SecurityIdentifierKind.ProviderSymbol,
+                SecurityIdentifierKind.Uti,
+                SecurityIdentifierKind.Upi
             ],
-            RequiresMaturity: true),
+            RequiresMaturity: true) { AccountingOutsideSlice = true },
         new(
             AssetClass: "StructuredNote",
             AssetPackIds: ["fixed-income"],
@@ -624,7 +643,10 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Cusip,
                 SecurityIdentifierKind.InternalCode
             ],
-            RequiresMaturity: true),
+            // Outside the accounting slice by explicit disposition (review D10, slice 4): the note's
+            // FixedIncome taxonomy must not route it into bond posting. Its accounting treatment is an
+            // open domain-owner decision (D3); no bond treatment is assigned here.
+            RequiresMaturity: true) { AccountingOutsideSlice = true },
         new(
             AssetClass: "InvestmentFund",
             AssetPackIds: ["public-equity-etf"],
@@ -642,7 +664,7 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.InternalCode
             ],
             // Every InvestmentFund asset-specific term is optional; see Equity above.
-            SupportsIdentifierOnlyImport: true)
+            SupportsIdentifierOnlyImport: true) { AccountingOutsideSlice = true }
     ];
 
     /// <summary>
@@ -706,6 +728,15 @@ public static class SecurityAssetClassCatalog
         descriptor = null;
         return assetClass is not null && ByAssetClass.TryGetValue(assetClass.Trim(), out descriptor);
     }
+
+    /// <summary>
+    /// The canonical class name for a catalog name or registered alias, in any casing ("Loan" and
+    /// "directloan" are DirectLoan); any other spelling is returned unchanged so callers that refuse
+    /// or tolerate unknown classes still see what was submitted. The F# codec switches on the
+    /// canonical name, so a class must pass through here before it is mapped.
+    /// </summary>
+    public static string Canonicalize(string assetClass)
+        => TryGet(assetClass, out var descriptor) ? descriptor.AssetClass : assetClass;
 
     /// <summary>
     /// Resolves a free-text asset-class label — the kind a brokerage or custodian stamps on a
@@ -783,6 +814,48 @@ public static class SecurityAssetClassCatalog
     public static IReadOnlyList<SecurityIdentifierKind> GetPreferredIdentifierKinds(string? assetClass)
         => GetOrDefault(assetClass).PreferredIdentifierKinds;
 
+    /// <summary>
+    /// Asset classes permitted to carry each regulatory derivatives-reporting identifier kind.
+    /// UTI and UPI belong to the OTC derivative classes, where each security is one bilateral
+    /// contract and therefore one reportable trade; RED codes name CDS reference entities and
+    /// obligations. Repo (SFTR UTIs), listed options/futures (contract-level securities, not trades)
+    /// and credit-index swaptions (RED on the underlying index) are deliberately not admitted yet.
+    /// </summary>
+    private static readonly IReadOnlyDictionary<SecurityIdentifierKind, IReadOnlySet<string>> RestrictedIdentifierKindAssetClasses =
+        BuildRestrictedIdentifierKindAssetClasses();
+
+    private static Dictionary<SecurityIdentifierKind, IReadOnlySet<string>> BuildRestrictedIdentifierKindAssetClasses()
+    {
+        var otcDerivatives = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "Swap", "CreditDefaultSwap", "Swaption", "CapFloor", "FxForward", "NonDeliverableForward", "Cfd"
+        };
+        var creditDefaultSwaps = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "CreditDefaultSwap" };
+        return new Dictionary<SecurityIdentifierKind, IReadOnlySet<string>>
+        {
+            [SecurityIdentifierKind.Uti] = otcDerivatives,
+            [SecurityIdentifierKind.Upi] = otcDerivatives,
+            [SecurityIdentifierKind.MarkitRedEntity] = creditDefaultSwaps,
+            [SecurityIdentifierKind.MarkitRedPair] = creditDefaultSwaps
+        };
+    }
+
+    /// <summary>True when <paramref name="kind"/> has an asset-class restriction (the regulatory derivatives kinds).</summary>
+    public static bool IsAssetClassRestrictedIdentifierKind(SecurityIdentifierKind kind)
+        => RestrictedIdentifierKindAssetClasses.ContainsKey(kind);
+
+    /// <summary>
+    /// Whether a record of <paramref name="assetClass"/> may carry an identifier of
+    /// <paramref name="kind"/>. Every kind without a declared restriction is allowed everywhere.
+    /// </summary>
+    public static bool MayCarryIdentifierKind(string? assetClass, SecurityIdentifierKind kind)
+        => !RestrictedIdentifierKindAssetClasses.TryGetValue(kind, out var allowed)
+           || (TryGet(assetClass, out var descriptor) && allowed.Contains(descriptor.AssetClass));
+
+    /// <summary>The asset classes permitted to carry <paramref name="kind"/>, or <c>null</c> when it is unrestricted.</summary>
+    public static IReadOnlySet<string>? GetPermittedAssetClasses(SecurityIdentifierKind kind)
+        => RestrictedIdentifierKindAssetClasses.TryGetValue(kind, out var allowed) ? allowed : null;
+
     public static IReadOnlyList<string> GetAssetOperationsCapabilities(string? assetClass)
         => GetOrDefault(assetClass).AssetOperationsCapabilities ?? AssetOperationsCapabilitySet.IdentityOnly;
 
@@ -844,6 +917,14 @@ public static class SecurityAssetClassCatalog
     /// cash sweeps into the securitized fixed-income slice, because <c>CashSweep</c> and
     /// <c>StructuredCredit</c> once shared an asset-family label.
     /// </para>
+    /// <para>
+    /// Precedence (review D10, slice 4): (1) any declared name whose catalog class is in the slice
+    /// wins, exactly as before; (2) otherwise a declared name the catalog models with an explicit
+    /// <see cref="SecurityAccountingDisposition.OutsideSlice"/> disposition (StructuredNote, Deposit,
+    /// DirectLoan and the other non-slice classes) returns <see langword="null"/> before any taxonomy
+    /// fallback; (3) only when no declared name is catalogued does the coarse taxonomy map apply
+    /// (<c>FixedIncome</c> to Bond), for external names the catalog does not model.
+    /// </para>
     /// </summary>
     /// <param name="declaredClassNames">
     /// Declared class names in precedence order. Blank entries are skipped; entries that name no
@@ -859,6 +940,17 @@ public static class SecurityAssetClassCatalog
                 GetOrDefault(declaredClassName).AccountingInstrumentClass is { } accountingInstrumentClass)
             {
                 return accountingInstrumentClass;
+            }
+        }
+
+        // A catalogued class with an explicit outside-slice disposition stops the walk before the
+        // taxonomy fallback: StructuredNote's FixedIncome taxonomy must not post it as a bond.
+        foreach (var declaredClassName in declaredClassNames)
+        {
+            if (TryGet(declaredClassName, out var catalogued)
+                && catalogued.AccountingDisposition == SecurityAccountingDisposition.OutsideSlice)
+            {
+                return null;
             }
         }
 
@@ -1026,7 +1118,11 @@ public enum SecurityAssetClassLabelResolution
 /// Whether the terms carry the bond coupon structure and bullet amortization conventions.
 /// </param>
 /// <param name="UsesOccOptionSymbols">Whether OCC option symbols are a valid identifier for the class.</param>
-/// <param name="QuotesRatesAsFractions">Whether a rate at or below one is a fraction, not a percent.</param>
+/// <param name="QuotesRatesAsFractions">
+/// Whether the class quotes its rates as fractions. The per-field unit, range and sign policy that
+/// readers apply is declared in <see cref="SecurityRateFieldUnits"/> (review D10, slice 4); magnitude
+/// never selects a unit.
+/// </param>
 /// <param name="TradesAsBilateralContract">
 /// Whether positions are bilateral contracts against a counterparty under a master agreement, so the
 /// instrument carries <c>OtcContractDto</c> records rather than exchange-traded lots.
@@ -1084,6 +1180,24 @@ public sealed record SecurityAssetClassDescriptor(
     public bool SupportsCreditLifecycle { get; init; }
 
     /// <summary>
+    /// Declares the class intentionally outside the Security Master accounting slice. Every catalogued
+    /// class states its accounting disposition, an <see cref="AccountingInstrumentClass"/> or this
+    /// marker (review D10, slice 4), so an outside-slice class is distinguishable from a missing mapping.
+    /// </summary>
+    public bool AccountingOutsideSlice { get; init; }
+
+    /// <summary>
+    /// The declared accounting disposition: <see cref="SecurityAccountingDisposition.InSlice"/> when the
+    /// class names an <see cref="AccountingInstrumentClass"/>, <see cref="SecurityAccountingDisposition.OutsideSlice"/>
+    /// when it carries <see cref="AccountingOutsideSlice"/>, and <see cref="SecurityAccountingDisposition.Undeclared"/>
+    /// otherwise (only the uncatalogued Unknown descriptor; a coverage test fails for any catalogued class).
+    /// </summary>
+    public SecurityAccountingDisposition AccountingDisposition
+        => AccountingInstrumentClass is not null ? SecurityAccountingDisposition.InSlice
+            : AccountingOutsideSlice ? SecurityAccountingDisposition.OutsideSlice
+            : SecurityAccountingDisposition.Undeclared;
+
+    /// <summary>
     /// The catalog facts below replace per-site asset-class name checks. Each is a declared
     /// behaviour one or more classes opt into, so a consumer asks the descriptor instead of
     /// spelling a class name: <see cref="RequiresProfileReference"/> (the record must pin an
@@ -1091,8 +1205,8 @@ public sealed record SecurityAssetClassDescriptor(
     /// equity <c>classification</c> discriminant with preferred and convertible blocks),
     /// <see cref="CarriesBondCouponStructure"/> (terms carry the bond coupon structure and bullet
     /// amortization conventions), <see cref="UsesOccOptionSymbols"/> (OCC option symbols are a
-    /// valid identifier) and <see cref="QuotesRatesAsFractions"/> (a rate at or below one is a
-    /// fraction, not a percent), <see cref="TradesAsBilateralContract"/> (positions are
+    /// valid identifier) and <see cref="QuotesRatesAsFractions"/> (the class quotes rates as
+    /// fractions; per-field units live in <see cref="SecurityRateFieldUnits"/>), <see cref="TradesAsBilateralContract"/> (positions are
     /// bilateral contracts against a counterparty under a master agreement, so the instrument
     /// carries <c>OtcContractDto</c> records rather than exchange-traded lots) and a
     /// <see cref="DefaultValuationModel"/> other than the quoted price (the class is valued from its
@@ -1115,6 +1229,19 @@ public sealed record SecurityAssetClassDescriptor(
     /// flows are not.
     /// </summary>
     public bool SupportsCashflowScheduleByDefault => CashFlowBehavior.IsCalculatedFromTerms();
+}
+
+/// <summary>Whether, and how, an asset class takes part in the Security Master accounting slice.</summary>
+public enum SecurityAccountingDisposition
+{
+    /// <summary>No disposition is declared: a missing mapping, not a decision.</summary>
+    Undeclared,
+
+    /// <summary>The class posts as its declared <see cref="SecurityAssetClassDescriptor.AccountingInstrumentClass"/>.</summary>
+    InSlice,
+
+    /// <summary>The class is intentionally outside the slice and must not reach any posting by fallback.</summary>
+    OutsideSlice
 }
 
 /// <summary>

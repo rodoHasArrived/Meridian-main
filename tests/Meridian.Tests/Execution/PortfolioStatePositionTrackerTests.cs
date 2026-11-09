@@ -117,6 +117,36 @@ public sealed class PortfolioStatePositionTrackerTests
         tracker.GetUnrealizedPnl().Should().Be(-1_000m);
     }
 
+    [Fact]
+    public void GetPosition_FractionalHolding_ProjectsExactQuantityAndMark()
+    {
+        var portfolio = new PaperTradingPortfolio(100_000m);
+        portfolio.ApplyFill(BuildFill("AAPL", OrderSide.Buy, qty: 2.5m, price: 150m));
+        portfolio.UpdateMarketPrice("AAPL", 170m);
+        var tracker = new PortfolioStatePositionTracker(portfolio);
+
+        var position = tracker.GetPosition("AAPL");
+
+        // Whole-share rounding would project 2 shares and a mark of 150 + 50/2 = 175.
+        position.Quantity.Should().Be(2.5m);
+        position.MarketPrice.Should().Be(170m);
+    }
+
+    [Fact]
+    public async Task PositionLimitRule_WithRealTracker_SeesFractionalHolding()
+    {
+        var portfolio = new PaperTradingPortfolio(1_000_000m);
+        portfolio.ApplyFill(BuildFill("AAPL", OrderSide.Buy, qty: 0.6m, price: 150m));
+        var tracker = new PortfolioStatePositionTracker(portfolio);
+        var rule = new PositionLimitRule(tracker, maxPositionSize: 1m, NullLogger<PositionLimitRule>.Instance);
+
+        // Current 0.6, buy 0.5 → projected 1.1 > 1. Rounding 0.6 down to 0 would approve it.
+        var result = await rule.EvaluateAsync(BuildOrder("AAPL", OrderSide.Buy, 0.5m));
+
+        result.IsApproved.Should().BeFalse();
+        result.ObservedValue.Should().Be(1.1m);
+    }
+
     // ─── Rule integration — no test doubles ──────────────────────────────────
 
     [Fact]

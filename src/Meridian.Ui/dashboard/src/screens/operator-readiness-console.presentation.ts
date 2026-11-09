@@ -1,3 +1,5 @@
+import { formatUtcTimestamp } from "@/lib/format";
+
 export function levelFromReadiness(status: string): "ready" | "review" | "blocked" {
   if (status === "Ready") {
     return "ready";
@@ -36,7 +38,7 @@ export function formatReadinessUtcMinute(value: string | null | undefined, fallb
     return fallback;
   }
 
-  return `${UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${padUtc(date.getUTCHours())}:${padUtc(date.getUTCMinutes())} UTC`;
+  return formatUtcTimestamp(date);
 }
 
 export function toErrorMessage(err: unknown, fallback: string): string {
@@ -47,8 +49,3 @@ export function toErrorMessage(err: unknown, fallback: string): string {
   return fallback;
 }
 
-function padUtc(value: number): string {
-  return String(value).padStart(2, "0");
-}
-
-const UTC_MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];

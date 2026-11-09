@@ -349,6 +349,41 @@ let ``Identifier source-provider metadata does not change canonical identity`` (
     SecurityIdentifier.sameIdentity left right |> should equal true
 
 [<Fact>]
+let ``Identifier identity strips punctuation for alphanumeric kinds like the C# normalizer`` () =
+    let now = DateTimeOffset.UtcNow
+    let isin value = { createPrimaryTicker now with Kind = IdentifierKind.Isin; Value = value }
+
+    SecurityIdentifier.sameIdentity (isin "US 0378-3310 05") (isin "us0378331005") |> should equal true
+    SecurityIdentifier.normalizeIdentifierValue IdentifierKind.Isin " us-0378 331005 " |> should equal "US0378331005"
+
+[<Fact>]
+let ``Identifier identity keeps only digits for Valoren and leaves ticker punctuation intact`` () =
+    SecurityIdentifier.normalizeIdentifierValue IdentifierKind.Valoren "CH-1.234.567" |> should equal "1234567"
+    SecurityIdentifier.normalizeIdentifierValue IdentifierKind.Ticker " brk.b " |> should equal "BRK.B"
+    SecurityIdentifier.normalizeIdentifierValue IdentifierKind.Cusip null |> should equal ""
+
+[<Fact>]
+let ``Identifier check-digit validators delegate to the C# normalizer`` () =
+    // ISIN and CUSIP results are unchanged from the former F# copies for canonical values.
+    SecurityIdentifier.validateIsin " us0378331005 " |> should equal true
+    SecurityIdentifier.validateIsin "US0378331006" |> should equal false
+    SecurityIdentifier.validateIsin "US-0378331005" |> should equal false
+    SecurityIdentifier.validateCusip "037833100" |> should equal true
+    SecurityIdentifier.validateCusip "037833101" |> should equal false
+    SecurityIdentifier.validateCusip null |> should equal false
+    // ISO 17442 takes MOD 97-10 over the LEI in written order; the former F# copy rotated four
+    // characters first and rejected these valid codes.
+    SecurityIdentifier.validateLei "529900T8BM49AURSDO55" |> should equal true
+    SecurityIdentifier.validateLei "HWUPKR0MPOU8FGXBT394" |> should equal true
+    SecurityIdentifier.validateLei "529900T8BM49AURSDO56" |> should equal false
+
+[<Fact>]
+let ``Identifier kinds map to the Contracts kind of the same name`` () =
+    SecurityIdentifier.toContractKind IdentifierKind.Isin |> string |> should equal "Isin"
+    SecurityIdentifier.toContractKind IdentifierKind.ListingId |> string |> should equal "ListingId"
+    SecurityIdentifier.toContractKind (IdentifierKind.ProviderSymbol "XNAS") |> string |> should equal "ProviderSymbol"
+
+[<Fact>]
 let ``ProviderSymbol snapshot rejects provider metadata that contradicts its discriminant`` () =
     let identifier = {
         createPrimaryTicker DateTimeOffset.UtcNow with
@@ -508,6 +543,26 @@ let ``SecurityMaster.create rejects missing primary identifier and blank common 
         codes |> List.contains "primary_identifier_invalid" |> should equal true
     | Ok events ->
         failwithf "Expected invalid create to be rejected, got: %A" events
+
+[<Fact>]
+let ``SecurityMaster.create refuses a shared-reference UPI as the primary identifier`` () =
+    let baseCommand = createEquityCreateCommand None
+    let upiPrimary =
+        { createPrimaryTicker baseCommand.EffectiveFrom with Kind = IdentifierKind.Upi; Value = "QZRBG6ZTKS42" }
+    let invalidCommand = { baseCommand with Identifiers = [ upiPrimary ] }
+
+    match SecurityMaster.create invalidCommand with
+    | Error errors ->
+        errors |> List.exists (fun error -> error.Code = "primary_identifier_shared_reference") |> should equal true
+    | Ok events ->
+        failwithf "Expected a UPI primary identifier to be refused, got: %A" events
+
+    let ticker = { createPrimaryTicker baseCommand.EffectiveFrom with IsPrimary = true }
+    let upiSecondary = { upiPrimary with IsPrimary = false }
+    match SecurityMaster.create { baseCommand with Identifiers = [ ticker; upiSecondary ] } with
+    | Error errors ->
+        errors |> List.exists (fun error -> error.Code = "primary_identifier_shared_reference") |> should equal false
+    | Ok _ -> ()
 
 [<Fact>]
 let ``SecurityMaster.amend emits TermsAmended when classification changes`` () =

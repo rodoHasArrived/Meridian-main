@@ -1,5 +1,6 @@
 import { type ReactNode, useState } from "react";
 import { cn } from "@/lib/utils";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 export interface NumberInputProps {
   value?: number;
@@ -59,7 +60,7 @@ export function NumberInput({
   return (
     <div className={className}>
       {label ? (
-        <label htmlFor={id} className="mb-1.5 block font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        <label htmlFor={id} className={cn("mb-1.5 block text-[10px] font-semibold text-muted-foreground", usesTrackedCaps(label) && "font-mono uppercase tracking-[0.14em]")}>
           {label}
         </label>
       ) : null}

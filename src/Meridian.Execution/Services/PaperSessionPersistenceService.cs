@@ -156,7 +156,7 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
                 }
 
                 var fillSnapshot = CloneExecutionReport(fillRecord.Fill);
-                portfolio.ApplyFill(fillSnapshot);
+                portfolio.ApplyRecordedFill(fillSnapshot);
                 fillHistory.Add(fillSnapshot);
                 if (!fillRecord.IsApplied)
                 {
@@ -510,15 +510,6 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
     }
 
     /// <summary>
-    /// Compatibility alias for <see cref="GetActivePortfolio"/>. The returned portfolio is a
-    /// defensive projection; callers cannot mutate authoritative state outside the session's
-    /// durable fill gate. Returns <see langword="null"/> when the session is absent or closed.
-    /// </summary>
-    [Obsolete("Use GetActivePortfolio; mutable session portfolios are no longer exposed.")]
-    public PaperTradingPortfolio? GetLivePortfolio(string sessionId)
-        => GetActivePortfolio(sessionId);
-
-    /// <summary>
     /// Converts a lightweight <see cref="ExecutionFill"/> into an <see cref="ExecutionReport"/>
     /// and records it against the session via <see cref="RecordFillAsync"/>.
     /// </summary>
@@ -817,7 +808,7 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
             var fills = await _store.LoadFillRecordsAsync(sessionId, ct).ConfigureAwait(false);
             var portfolio = new PaperTradingPortfolio(session.InitialCash);
             foreach (var fill in fills)
-                portfolio.ApplyFill(CloneExecutionReport(fill.Fill));
+                portfolio.ApplyRecordedFill(CloneExecutionReport(fill.Fill));
 
             return CreatePortfolioSnapshot(portfolio);
         }
@@ -1187,7 +1178,7 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
         var ledger = new Meridian.Ledger.Ledger();
         var portfolio = new PaperTradingPortfolio(session.InitialCash, ledger);
         foreach (var fill in fills)
-            portfolio.ApplyFill(fill);
+            portfolio.ApplyRecordedFill(fill);
         return portfolio;
     }
 

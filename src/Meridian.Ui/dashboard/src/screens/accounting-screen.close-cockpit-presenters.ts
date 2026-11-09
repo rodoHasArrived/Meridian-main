@@ -1,3 +1,4 @@
+import { isOpenBreakStatus } from "@/lib/cross-screen-counts";
 export function humanizeCloseBlockerCode(code: string): string {
   const normalized = code.trim();
   if (!normalized) {
@@ -23,7 +24,7 @@ export function closeCommandCenterTextMatches(left: string | null | undefined, r
     .some((value) => value.includes(normalizedNeedle));
 }
 
+/** The cross-screen definition (A3): open until resolved, dismissed or signed off. */
 export function isOpenAccountingBreakStatus(status: string): boolean {
-  const normalized = status.trim().toLowerCase();
-  return normalized !== "resolved" && normalized !== "dismissed" && normalized !== "closed";
+  return isOpenBreakStatus(status);
 }

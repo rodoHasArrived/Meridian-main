@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import hashlib
 import importlib.util
 import json
@@ -186,6 +187,59 @@ class MaintenanceRefreshTests(unittest.TestCase):
 class MaintenanceWorkflowTests(unittest.TestCase):
     def workflow(self, name):
         return yaml.safe_load((ROOT / ".github/workflows" / name).read_text())
+
+    def test_generated_repair_refresh_wakes_on_merges_and_main_pushes(self):
+        workflow = self.workflow("generated-repair-publish.yml")
+        events = workflow.get("on", workflow.get(True))
+        self.assertIn("main", events["push"]["branches"])
+        self.assertEqual(events["pull_request_target"]["types"], ["closed"])
+        self.assertIn("main", events["pull_request_target"]["branches"])
+        self.assertIn("schedule", events)
+        self.assertIn("workflow_dispatch", events)
+
+        # Evaluate only the condition's boolean/string grammar; this checks
+        # unmerged closures and publisher deliveries cannot start a refresh.
+        guard = workflow["jobs"]["refresh"]["if"].removeprefix("${{").removesuffix("}}")
+        allowed = (ast.Expression, ast.BoolOp, ast.Compare, ast.Constant,
+                   ast.And, ast.Or, ast.Eq, ast.NotEq)
+
+        def accepts(event, merged):
+            expression = guard.replace("github.event_name", repr(event))
+            expression = expression.replace("github.event.pull_request.merged", repr(merged))
+            expression = expression.replace("&&", " and ").replace("||", " or ")
+            expression = expression.replace("true", "True").replace("false", "False")
+            parsed = ast.parse(expression.strip(), mode="eval")
+            self.assertTrue(all(isinstance(node, allowed) for node in ast.walk(parsed)))
+            return eval(compile(parsed, "<refresh-event-guard>", "eval"), {"__builtins__": {}}, {})
+
+        for event, merged, expected in (
+            ("pull_request_target", True, True),
+            ("pull_request_target", False, False),
+            ("push", False, True),
+            ("schedule", False, True),
+            ("workflow_dispatch", False, True),
+            ("workflow_run", False, False),
+        ):
+            with self.subTest(event=event, merged=merged):
+                self.assertEqual(bool(accepts(event, merged)), expected)
+
+    def test_generated_repair_refresh_serializes_without_blocking_independent_publishers(self):
+        workflow = self.workflow("generated-repair-publish.yml")
+        refresh_job = workflow["jobs"]["refresh"]
+        self.assertIn("github.event.repository.default_branch", refresh_job["concurrency"]["group"])
+        self.assertFalse(refresh_job["concurrency"]["cancel-in-progress"])
+        self.assertIn("github.event.workflow_run.id", workflow["concurrency"]["group"])
+        self.assertNotIn("concurrency", workflow["jobs"]["publish"])
+        self.assertNotEqual(refresh_job["concurrency"]["group"], workflow["concurrency"]["group"])
+        self.assertEqual(refresh_job["environment"], "generated-repair")
+        checkout = next(s for s in refresh_job["steps"] if s.get("uses", "").startswith("actions/checkout@"))
+        self.assertEqual(checkout["with"]["ref"], "${{ github.event.repository.default_branch }}")
+        self.assertFalse(checkout["with"]["persist-credentials"])
+        token = next(s for s in refresh_job["steps"] if s.get("uses", "").startswith("actions/create-github-app-token@"))
+        self.assertEqual(token["with"]["permission-contents"], "read")
+        self.assertEqual(token["with"]["permission-pull-requests"], "read")
+        self.assertEqual(token["with"]["permission-actions"], "write")
+        self.assertEqual(token["with"]["repositories"], "${{ github.event.repository.name }}")
 
     def test_scheduled_and_manual_runs_cannot_be_cancelled_by_main_pushes(self):
         for name in ("ci.yml", "maintenance.yml"):

@@ -41,7 +41,6 @@ public sealed class FileBusinessDayCalendarSource : IBusinessDayCalendarSource
     public const string DirectoryName = "calendars";
 
     private const string FileExtension = ".json";
-    private const int MaxCalendarIdLength = 16;
 
     private static readonly IReadOnlyDictionary<string, DayOfWeek> DayNames = new Dictionary<string, DayOfWeek>(StringComparer.Ordinal)
     {
@@ -214,7 +213,7 @@ public sealed class FileBusinessDayCalendarSource : IBusinessDayCalendarSource
 
         // A stem such as "ZZTEST - Copy" is no calendar id in any casing, so no record can name it.
         var stem = Path.GetFileNameWithoutExtension(outcome.FileName).Trim();
-        if (IsCanonicalCalendarId(stem.ToUpperInvariant()) && !named.Contains(stem, StringComparer.OrdinalIgnoreCase))
+        if (BusinessDayCalendars.IsCanonicalCalendarId(stem.ToUpperInvariant()) && !named.Contains(stem, StringComparer.OrdinalIgnoreCase))
         {
             named.Add(stem);
         }
@@ -357,9 +356,9 @@ public sealed class FileBusinessDayCalendarSource : IBusinessDayCalendarSource
             return string.Create(CultureInfo.InvariantCulture, $"version must be at least 1 (found {document.Version.Value}).");
         }
 
-        if (!IsCanonicalCalendarId(calendarId))
+        if (!BusinessDayCalendars.IsCanonicalCalendarId(calendarId))
         {
-            return $"calendarId '{calendarId}' is not a canonical calendar id (an uppercase ASCII letter followed by 1 to 15 uppercase ASCII letters or digits).";
+            return $"calendarId '{calendarId}' is not a canonical calendar id ({BusinessDayCalendars.CanonicalCalendarIdDescription}).";
         }
 
         if (!string.Equals(calendarId, stem, StringComparison.Ordinal))
@@ -395,24 +394,6 @@ public sealed class FileBusinessDayCalendarSource : IBusinessDayCalendarSource
         }
 
         return null;
-    }
-
-    private static bool IsCanonicalCalendarId(string calendarId)
-    {
-        if (calendarId.Length is < 2 or > MaxCalendarIdLength || calendarId[0] is < 'A' or > 'Z')
-        {
-            return false;
-        }
-
-        foreach (var ch in calendarId)
-        {
-            if (ch is not ((>= 'A' and <= 'Z') or (>= '0' and <= '9')))
-            {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     private static string FormatDate(DateOnly? date)

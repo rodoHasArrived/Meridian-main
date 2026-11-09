@@ -14,6 +14,7 @@ import type {
   ReconciliationQueueRunTone,
   TradingParametersViewState,
 } from "./accounting-screen.view-model";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 const reconciliationQueueToneClass: Record<ReconciliationQueueRunTone, string> = {
   muted: "text-muted-foreground",
@@ -32,7 +33,7 @@ export const reconciliationQueueColumns: DenseDataTableColumn<ReconciliationQueu
       </span>
     )
   },
-  { id: "mode", label: "Mode", render: (row) => <span className="font-mono uppercase text-muted-foreground">{row.modeLabel}</span> },
+  { id: "mode", label: "Mode", render: (row) => <span className={cn("text-muted-foreground", usesTrackedCaps(row.modeLabel) && "font-mono uppercase")}>{row.modeLabel}</span> },
   { id: "status", label: "Status", render: (row) => row.runStatusLabel },
   { id: "breaks", label: "Breaks", align: "right", render: (row) => <span className="font-mono tabular-nums">{row.breakCountLabel}</span> },
   { id: "open", label: "Open", align: "right", render: (row) => <span className="font-mono tabular-nums">{row.openBreakLabel}</span> },

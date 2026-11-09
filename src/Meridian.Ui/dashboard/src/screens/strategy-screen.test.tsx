@@ -945,9 +945,8 @@ describe("StrategyScreen route views", () => {
   it("leads the overview with retained runs and retains focused task routes", async () => {
     renderWithRouter(<StrategyScreen data={twoRuns} />, { initialEntries: ["/strategy"] });
 
-    const tablist = screen.getByRole("tablist", { name: "Strategy routes" });
-    expect(tablist).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: "Overview", selected: true })).toBeInTheDocument();
+    // The sidebar is the only sub-route navigation; the route heading says where you are.
+    expect(screen.queryByRole("tablist", { name: "Strategy routes" })).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Strategy overview" })).toBeInTheDocument();
     expect(screen.getByRole("treegrid", { name: "Retained strategy runs" })).toBeInTheDocument();
     await userEvent.setup().click(screen.getByText("Strategy authoring and analysis tools"));
@@ -965,7 +964,7 @@ describe("StrategyScreen route views", () => {
   it("scopes /strategy/promotions to the run library and keeps raw run IDs in technical details", () => {
     renderWithRouter(<StrategyScreen data={twoRuns} />, { initialEntries: ["/strategy/promotions"] });
 
-    expect(screen.getByRole("tab", { name: "Promotions", selected: true })).toBeInTheDocument();
+    expect(screen.queryByRole("tablist", { name: "Strategy routes" })).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Promotions" })).toBeInTheDocument();
     expect(screen.getByText("Strategy run library")).toBeInTheDocument();
     const runReferences = screen.getByText("Run references").closest("details");
@@ -981,7 +980,7 @@ describe("StrategyScreen route views", () => {
   it("scopes /strategy/lab to the PlotTool workstation", () => {
     renderWithRouter(<StrategyScreen data={twoRuns} />, { initialEntries: ["/strategy/lab"] });
 
-    expect(screen.getByRole("tab", { name: "Strategy Lab", selected: true })).toBeInTheDocument();
+    expect(screen.queryByRole("tablist", { name: "Strategy routes" })).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Strategy Lab" })).toBeInTheDocument();
     expect(screen.getByText("PlotTool workstation")).toBeInTheDocument();
     expect(screen.queryByText("Strategy run library")).not.toBeInTheDocument();

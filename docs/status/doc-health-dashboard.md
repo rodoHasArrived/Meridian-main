@@ -19,14 +19,16 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 | Metric | Value |
 | -------- | ------- |
-| Total documentation files | 796 |
-| Total lines | 180,820 |
-| Average file size (lines) | 227.2 |
+| Total documentation files | 799 |
 | Orphaned files | 259 |
 | Files without headings | 157 |
 | Stale files (>90 days) | 0 |
-| TODO/FIXME markers | 327 |
+| TODO/FIXME markers | 329 |
 | **Health score** | **83/100** |
+
+Line counts (total, average and per file) change on every Markdown edit, so they are not
+tracked here; they still feed the score. Pass `--volatile-json-output` to the generator to
+write them to an untracked path. CI writes `artifacts/docs/doc-health-line-metrics.json`.
 
 ### Score Breakdown
 
@@ -93,7 +95,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 | ------ | ------- | ------- | --------- | ------- |
-| 1970-01-01 | 83 | 796 | 259 | 0 |
+| 1970-01-01 | 83 | 799 | 259 | 0 |
 
 ---
 

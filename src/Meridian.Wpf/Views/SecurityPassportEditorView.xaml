@@ -209,6 +209,8 @@
                                         <CheckBox IsChecked="{Binding Include}" Content="{Binding Label}" VerticalAlignment="Center" Margin="0,0,8,0" />
                                         <ComboBox ItemsSource="{Binding Dates}" SelectedItem="{Binding ExerciseDate}" IsEditable="True" Text="{Binding ExerciseDate, UpdateSourceTrigger=PropertyChanged}" Width="130" Margin="0,0,8,0" IsEnabled="{Binding Include}" />
                                         <TextBox Text="{Binding Amount, UpdateSourceTrigger=PropertyChanged}" Width="120" Margin="0,0,8,0" IsEnabled="{Binding Include}" />
+                                        <TextBox Text="{Binding NoticeDate, UpdateSourceTrigger=PropertyChanged}" Width="110" Margin="0,0,8,0" IsEnabled="{Binding Include}" AutomationProperties.Name="Notice date" ToolTip="Notice date (yyyy-MM-dd); blank notices on the exercise date" />
+                                        <TextBox Text="{Binding NoticeEvidenceId, UpdateSourceTrigger=PropertyChanged}" Width="240" Margin="0,0,8,0" IsEnabled="{Binding Include}" AutomationProperties.Name="Notice evidence" ToolTip="Approved notice id (optional); when set the exercise is retained rather than hypothetical" />
                                         <TextBlock Text="{Binding CalendarText}" Opacity="0.7" VerticalAlignment="Center" />
                                     </WrapPanel>
                                 </DataTemplate>
@@ -247,6 +249,24 @@
                         </StackPanel>
                         <TextBlock Text="{Binding LoadedRunText}" FontFamily="Consolas" FontSize="11" Margin="0,6,0,0" TextWrapping="Wrap" />
                         <TextBlock Text="{Binding ReplayStatusText}" Margin="0,4,0,0" TextWrapping="Wrap" AutomationProperties.Name="Replay verification" />
+                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                            <StackPanel Width="320" Margin="0,0,8,0">
+                                <TextBlock Text="Compare with retained run" Opacity="0.8" />
+                                <TextBox Text="{Binding CompareRunIdText, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Comparison run identity" />
+                            </StackPanel>
+                            <Button Content="Compare runs" Command="{Binding CompareRunsCommand}" Padding="12,6" VerticalAlignment="Bottom" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding ComparisonText}" FontFamily="Consolas" FontSize="11" Margin="0,6,0,0" TextWrapping="Wrap" AutomationProperties.Name="Retained run comparison" />
+                        <ItemsControl ItemsSource="{Binding BlockerDeltas}" Margin="0,4,0,0" AutomationProperties.Name="Blocker differences" />
+                        <DataGrid ItemsSource="{Binding CashDeltas}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" MaxHeight="240" Margin="0,4,0,0" AutomationProperties.Name="Net cash deltas by date">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Date" Binding="{Binding Date, StringFormat=yyyy-MM-dd}" />
+                                <DataGridTextColumn Header="Stream" Binding="{Binding StreamId}" />
+                                <DataGridTextColumn Header="First run" Binding="{Binding LeftNetCash}" />
+                                <DataGridTextColumn Header="Second run" Binding="{Binding RightNetCash}" />
+                                <DataGridTextColumn Header="Delta" Binding="{Binding Delta}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
                         <TextBlock Text="{Binding StatusText}" Margin="0,8,0,0" Opacity="0.8" TextWrapping="Wrap" />
                     </StackPanel>
                 </Expander>
@@ -264,6 +284,7 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
@@ -292,11 +313,22 @@
                         <TextBlock Text="Yield convention" Opacity="0.8" />
                         <ComboBox ItemsSource="{Binding YieldConventions}" SelectedItem="{Binding Convention}" AutomationProperties.Name="Yield convention" />
                     </StackPanel>
-                    <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Orientation="Horizontal">
-                        <Button Content="Calculate bond analytics" Command="{Binding CalculateCommand}" Padding="12,6" />
-                        <TextBlock Text="{Binding StatusText}" Margin="12,0,0,0" VerticalAlignment="Center" Opacity="0.8" TextWrapping="Wrap" />
+                    <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,0,0,8">
+                        <TextBlock Text="Calculation version" Opacity="0.8" />
+                        <ComboBox ItemsSource="{Binding CalculationVersions}" DisplayMemberPath="Label" SelectedValuePath="Version"
+                                  SelectedValue="{Binding CalculationVersion}" HorizontalAlignment="Left" MinWidth="360"
+                                  AutomationProperties.Name="Bond calculation version" />
+                        <TextBlock Text="{Binding ModelDescription}" Margin="0,4,0,0" TextWrapping="Wrap" Opacity="0.8" />
                     </StackPanel>
-                    <StackPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,8,0,0">
+                    <Grid Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Button Content="Calculate bond analytics" Command="{Binding CalculateCommand}" Padding="12,6" />
+                        <TextBlock Grid.Column="1" Text="{Binding StatusText}" Margin="12,0,0,0" VerticalAlignment="Center" Opacity="0.8" TextWrapping="Wrap" />
+                    </Grid>
+                    <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,8,0,0">
                         <TextBlock Text="{Binding ProvenanceText}" Opacity="0.7" TextWrapping="Wrap" />
                         <ItemsControl ItemsSource="{Binding Blockers}" Visibility="{Binding IsBlocked, Converter={StaticResource BooleanToVisibility}}" AutomationProperties.Name="Calculation blockers">
                             <ItemsControl.ItemTemplate>
@@ -314,12 +346,15 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <StackPanel Margin="0,4,18,4" MinWidth="160">
-                                        <TextBlock Text="{Binding Label}" Opacity="0.7" FontSize="11" />
+                                        <TextBlock Text="{Binding Label}" Opacity="0.7" FontSize="11" TextWrapping="Wrap" />
                                         <TextBlock Text="{Binding Value}" FontFamily="Consolas" />
                                     </StackPanel>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
+                        <TextBlock Text="DV01 is the approximate price decrease per 100 face for +1 bp yield with projected coupons held fixed. SpreadDv01 is the dirty-price change per 100 face for +1 bp coupon spread at the same yield, including caps and floors. These are separate sensitivities; the yield is not a discount margin."
+                                   Visibility="{Binding HasFloatingResult, Converter={StaticResource BooleanToVisibility}}"
+                                   Margin="0,4,0,4" TextWrapping="Wrap" Opacity="0.8" />
                         <Expander Header="Projected contractual payments (per 100 face; not observed payments or posted journals)"
                                   Visibility="{Binding HasResult, Converter={StaticResource BooleanToVisibility}}" Margin="0,6,0,0">
                             <DataGrid ItemsSource="{Binding CashFlows}" AutoGenerateColumns="False" IsReadOnly="True" MaxHeight="260"
@@ -331,6 +366,35 @@
                                     <DataGridTextColumn Header="Principal / 100" Binding="{Binding Principal}" />
                                 </DataGrid.Columns>
                             </DataGrid>
+                        </Expander>
+                        <Expander Header="Floating coupon reset evidence (rates are annual fractions; 0.03 = 3%)"
+                                  Visibility="{Binding HasFloatingResult, Converter={StaticResource BooleanToVisibility}}" Margin="0,6,0,0">
+                            <StackPanel>
+                                <TextBlock Text="Observed / forecast describes the fixing, not the payment. Coupon rates include the retained cap and floor."
+                                           Margin="0,4,0,6" Opacity="0.8" TextWrapping="Wrap" />
+                                <DataGrid ItemsSource="{Binding CashFlows}" AutoGenerateColumns="False" IsReadOnly="True" MaxHeight="260"
+                                      HorizontalScrollBarVisibility="Auto" AutomationProperties.Name="Floating coupon reset evidence">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Payment date" Binding="{Binding PaymentDate}" />
+                                        <DataGridTextColumn Header="Reset date" Binding="{Binding ResetDate}" />
+                                        <DataGridTextColumn Header="Fixing status" Binding="{Binding FixingStatus}" />
+                                        <DataGridTextColumn Header="Index" Binding="{Binding IndexName}" />
+                                        <DataGridTextColumn Header="Index rate" Binding="{Binding IndexRate}" />
+                                        <DataGridTextColumn Header="Spread (bp)" Binding="{Binding SpreadBps}" />
+                                        <DataGridTextColumn Header="Coupon rate" Binding="{Binding CouponRate}" />
+                                        <DataGridTextColumn Header="Fixing source" Binding="{Binding Source}" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </StackPanel>
+                        </Expander>
+                        <Expander Header="Retained calculation inputs" Margin="0,6,0,0">
+                            <ItemsControl ItemsSource="{Binding Inputs}" AutomationProperties.Name="Bond calculation inputs">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}" FontSize="11" TextWrapping="Wrap" Margin="0,2,0,2" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
                         </Expander>
                         <ItemsControl ItemsSource="{Binding ExerciseScenarios}" Margin="0,6,0,0" AutomationProperties.Name="Contractual exercise scenarios">
                             <ItemsControl.ItemTemplate>

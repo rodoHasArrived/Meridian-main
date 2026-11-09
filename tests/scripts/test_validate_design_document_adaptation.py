@@ -108,10 +108,10 @@ class DesignDocumentAdaptationTests(unittest.TestCase):
     def test_rejects_financial_baseline_ceiling_and_stale_charter_reference(self) -> None:
         self.adaptation["product_baseline"]["development_ceiling"] = True
         self.assertTrue(any("development_ceiling false" in error for error in self.errors()))
-        self.adaptation["design_source"]["version"] = "1.5"
+        self.adaptation["design_source"]["version"] = "1.6"
         self.adaptation["design_source"]["sections"].remove(module.DIRECTION_SECTION)
         errors = self.errors()
-        self.assertTrue(any("design_source version must be 1.6" in error for error in errors))
+        self.assertTrue(any("design_source version must be 1.7" in error for error in errors))
         self.assertTrue(any("design_source must include 22.7" in error for error in errors))
 
 

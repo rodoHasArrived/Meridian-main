@@ -35,6 +35,11 @@ When changing persistence-facing behavior, keep loan state, accrual, cash-flow, 
 and servicer-report projections tied to Security Master identity and lineage so loan planning,
 servicing, and accounting evidence can reconcile through the same instrument source of truth.
 
+## Audit hardening (2026-11)
+
+- **Manual payment breakdowns.** Each manual line is capped at the amount requested, the cash still unallocated, and the bucket's outstanding balance, so a breakdown can never book interest, fee, penalty or principal that is not owed. Excess is reported as `UnappliedAmount`, as in the automatic waterfall. Term-driven handling of that excess (principal prepayment, prepaid interest, tracked unapplied cash) is tracked as `PRD-115`.
+- **PRD-115 balances.** Every servicing command that rebuilds `OutstandingBalancesDto` passes `PrepaidInterest` and `UnappliedCash` through by name. A positional rebuild would silently reset them to the 0 default, which `Every servicing command carries prepaid interest and unapplied cash through unchanged` guards against.
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
@@ -74,3 +79,11 @@ Contract activation and amendment preserve collateral, unamortized discount/prem
 toggle. The SCH-DEF-008 characterization now asserts that preservation. No servicing formula or event
 shape changes; scheduled PIK/resets still require an explicit persisted schedule/fixing policy and
 versioned formula/residual state rather than assumptions based on payment frequency.
+
+That persisted policy now exists as opt-in terms (2026-11-05): `PikCapitalization` (PIK share,
+cadence, anchor) and `RateResetSchedule` (index, cadence, lookback, declared-unit spread/floor/cap).
+`ServicingSchedule.fs` (`DirectLendingServicingSchedule`) owns the date rules; `ServicingAggregate`
+adds `capitalizePik` and `applyScheduledRateReset`, and `postDailyAccrual` defers the PIK share to
+`PikInterestAccruedUnpaid` when a policy is present. Loans without the new terms keep the legacy
+toggle behaviour and their terms hashes. Formula one and SCH-DEF-006 are unchanged. See
+[the blueprint](../../docs/engineering/blueprints/direct-lending-pik-capitalization-and-rate-resets.md).

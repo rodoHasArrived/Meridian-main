@@ -52,6 +52,7 @@ import type {
   QualitySymbolHealth,
   QualityTopErrorSymbol
 } from "@/types/data-quality-watch.types";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 /** Matches the route defaults, so the label always states the threshold in force. */
 const HIGH_LATENCY_THRESHOLD_MS = 100;
@@ -257,7 +258,7 @@ export function DataQualityWatch() {
 function Stat({ label, value, tone }: { label: string; value: string; tone?: QualityTone }) {
   return (
     <div className="flex min-w-0 items-baseline gap-2">
-      <dt className="whitespace-nowrap uppercase tracking-[0.08em] text-muted-foreground">{label}</dt>
+      <dt className={cn("whitespace-nowrap text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-[0.08em]")}>{label}</dt>
       <dd className={cn("whitespace-nowrap font-mono text-sm font-semibold", toneClass(tone ?? "default"))}>{value}</dd>
     </div>
   );

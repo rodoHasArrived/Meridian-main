@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Instruments.AssetOperations;
 using Meridian.Strategies.Services;
@@ -161,7 +162,8 @@ public sealed class SecurityMasterAccountingEventServiceTests
                     CurrentFactor: 0.9625m,
                     OriginalFace: 100_000m,
                     CurrentFace: 96_250m,
-                    RequiresFactorSchedule: true),
+                    RequiresFactorSchedule: true)
+                { CouponRateUnit = RateUnit.Fraction },
                 new SecurityAccountingRule("AvailableForSale", "GAAP")),
             position: new SecurityMasterAccountingPosition(
                 Symbol: "MBS1",
@@ -249,7 +251,8 @@ public sealed class SecurityMasterAccountingEventServiceTests
                 CurrentFactor: 0.97m,
                 OriginalFace: 100_000m,
                 CurrentFace: 97_000m,
-                RequiresFactorSchedule: true),
+                RequiresFactorSchedule: true)
+            { CouponRateUnit = RateUnit.Fraction },
             new SecurityAccountingRule("AvailableForSale", "GAAP")));
 
         var result = service.Generate(request);
@@ -282,7 +285,8 @@ public sealed class SecurityMasterAccountingEventServiceTests
                     CurrentFactor: 0.97m,
                     OriginalFace: 100_000m,
                     CurrentFace: 97_000m,
-                    RequiresFactorSchedule: true),
+                    RequiresFactorSchedule: true)
+                { CouponRateUnit = RateUnit.Fraction },
                 new SecurityAccountingRule("AvailableForSale", "GAAP")),
             factorSchedule:
             [
@@ -375,7 +379,8 @@ public sealed class SecurityMasterAccountingEventServiceTests
                     AccrualStartDate: new DateOnly(2026, 1, 1),
                     CurrentFactor: 0.97m,
                     OriginalFace: 100_000m,
-                    CurrentFace: 97_000m),
+                    CurrentFace: 97_000m)
+                { CouponRateUnit = RateUnit.Fraction },
                 AccountingRule: null),
             factorSchedule:
             [
@@ -594,7 +599,8 @@ public sealed class SecurityMasterAccountingEventServiceTests
                 NextCouponDate: new DateOnly(2026, 2, 1),
                 MaturityDate: new DateOnly(2030, 1, 1),
                 AccrualStartDate: new DateOnly(2026, 1, 1),
-                CurrentFactor: 1m),
+                CurrentFactor: 1m)
+            { CouponRateUnit = RateUnit.Fraction },
             new SecurityAccountingRule("AvailableForSale", "GAAP"))));
 
         result.ExpectedEvents.Should().Contain(item => item.EventKind == ExpectedAccountingEventKindDto.AccrueInterestIncome);
@@ -763,7 +769,8 @@ public sealed class SecurityMasterAccountingEventServiceTests
                 NextCouponDate: new DateOnly(2026, 1, 31),
                 MaturityDate: new DateOnly(2030, 1, 1),
                 AccrualStartDate: new DateOnly(2026, 1, 1),
-                CurrentFactor: 1m),
+                CurrentFactor: 1m)
+            { CouponRateUnit = RateUnit.Fraction },
             new SecurityAccountingRule("AvailableForSale", "GAAP"));
 
     private static SecurityMasterAccountingEventRequest CreateRequest(
@@ -786,7 +793,8 @@ public sealed class SecurityMasterAccountingEventServiceTests
                 NextCouponDate: new DateOnly(2026, 1, 31),
                 MaturityDate: new DateOnly(2030, 1, 1),
                 AccrualStartDate: new DateOnly(2026, 1, 1),
-                CurrentFactor: 1m),
+                CurrentFactor: 1m)
+            { CouponRateUnit = RateUnit.Fraction },
             new SecurityAccountingRule("AvailableForSale", "GAAP"));
 
         return new SecurityMasterAccountingEventRequest(
