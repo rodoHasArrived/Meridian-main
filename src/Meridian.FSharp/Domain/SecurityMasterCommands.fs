@@ -58,7 +58,13 @@ module SecurityMaster =
         @ requireNotBlank "source_system_required" "SourceSystem" provenance.SourceSystem
         @ requireNotBlank "updated_by_required" "UpdatedBy" provenance.UpdatedBy
 
-    let private validateKindTerms (kind: SecurityKind) =
+    /// ADR-027 stage 2 (S2-B2): the kind rules whose subject data has NO module home — the exact
+    /// complement of definitionExpressibleCodes. The expressible rules moved to
+    /// validateDefinitionTerms, which validateKindTerms now composes with this remainder, so the
+    /// definition surface is authoritative for the 54 ledgered codes on every write while nothing
+    /// is checked twice. A rule leaves this function only by gaining a module home and a ledger
+    /// entry; the equivalence suite's mutation table keeps the partition honest.
+    let private validateCodecOnlyKindTerms (kind: SecurityKind) =
         match kind with
         | SecurityKind.Equity _ -> []
         | SecurityKind.Option terms ->
@@ -81,8 +87,6 @@ module SecurityMaster =
                 (error "bond_securitized_subclass_noncanonical" "Securitized products must be modeled as StructuredCredit, not Bond.")
             @ require (not (Meridian.Contracts.SecurityMaster.SecurityCanonicalAssetHomes.IsBankLoanLabel(BondSubclass.label terms.Subclass)))
                 (error "bond_bank_loan_subclass_noncanonical" "Bank loans must be modeled as DirectLoan, not Bond.")
-            @ require (BondTerms.couponRate terms |> Option.forall (fun rate -> rate >= 0m))
-                (error "bond_coupon_invalid" "Bond coupon rate must be zero or greater when present.")
             @ require (terms.PrincipalSchedule |> List.forall (fun entry -> entry.Amount > 0m))
                 (error "bond_principal_schedule_invalid" "Bond principal schedule amounts must be greater than zero.")
             @ require
@@ -159,47 +163,18 @@ module SecurityMaster =
                 (error "fx_currency_pair_invalid" "BaseCurrency and QuoteCurrency must differ.")
         | SecurityKind.Deposit terms ->
             []
-            @ requireNotBlank "deposit_type_required" "DepositType" terms.DepositType
-            @ requireNotBlank "deposit_institution_required" "InstitutionName" terms.InstitutionName
-            @ require (terms.InterestRate |> Option.forall (fun rate -> rate >= 0m))
-                (error "deposit_interest_rate_invalid" "Deposit InterestRate must be zero or greater when present.")
         | SecurityKind.MoneyMarketFund terms ->
             []
-            @ require (terms.WeightedAverageMaturityDays |> Option.forall (fun days -> days >= 0))
-                (error "mmf_wam_invalid" "MoneyMarketFund WeightedAverageMaturityDays must be zero or greater when present.")
         | SecurityKind.CertificateOfDeposit terms ->
             []
-            @ requireNotBlank "cd_issuer_required" "IssuerName" terms.IssuerName
-            @ require (terms.CouponRate |> Option.forall (fun rate -> rate >= 0m))
-                (error "cd_coupon_invalid" "CertificateOfDeposit CouponRate must be zero or greater when present.")
-            @ require (terms.CallableDate |> Option.forall (fun callableDate -> callableDate <= terms.Maturity))
-                (error "cd_callable_date_invalid" "CertificateOfDeposit CallableDate must be on or before Maturity when present.")
         | SecurityKind.CommercialPaper terms ->
             []
-            @ requireNotBlank "commercial_paper_issuer_required" "IssuerName" terms.IssuerName
-            @ require (terms.DiscountRate |> Option.forall (fun rate -> rate >= 0m))
-                (error "commercial_paper_discount_rate_invalid" "CommercialPaper DiscountRate must be zero or greater when present.")
         | SecurityKind.TreasuryBill terms ->
             []
-            @ require (terms.AuctionDate |> Option.forall (fun auctionDate -> auctionDate <= terms.Maturity))
-                (error "treasury_bill_auction_date_invalid" "TreasuryBill AuctionDate must be on or before Maturity when present.")
-            @ require (terms.DiscountRate |> Option.forall (fun rate -> rate >= 0m))
-                (error "treasury_bill_discount_rate_invalid" "TreasuryBill DiscountRate must be zero or greater when present.")
         | SecurityKind.Repo terms ->
             []
-            @ requireNotBlank "repo_counterparty_required" "Counterparty" terms.Counterparty
-            @ require (terms.StartDate <= terms.EndDate)
-                (error "repo_date_range_invalid" "Repo StartDate must be on or before EndDate.")
-            @ require (terms.RepoRate |> Option.forall (fun rate -> rate >= 0m))
-                (error "repo_rate_invalid" "Repo RepoRate must be zero or greater when present.")
-            @ require (terms.Haircut |> Option.forall (fun haircut -> haircut >= 0m))
-                (error "repo_haircut_invalid" "Repo Haircut must be zero or greater when present.")
         | SecurityKind.CashSweep terms ->
             []
-            @ requireNotBlank "cash_sweep_program_required" "ProgramName" terms.ProgramName
-            @ requireNotBlank "cash_sweep_vehicle_required" "SweepVehicleType" terms.SweepVehicleType
-            @ require (terms.YieldRate |> Option.forall (fun rate -> rate >= 0m))
-                (error "cash_sweep_yield_rate_invalid" "CashSweep YieldRate must be zero or greater when present.")
         | SecurityKind.OtherSecurity terms ->
             []
             @ requireNotBlank "other_security_category_required" "Category" terms.Category
@@ -207,8 +182,6 @@ module SecurityMaster =
                 (error "other_security_securitized_noncanonical" "Securitized products must be modeled as StructuredCredit, not OtherSecurity.")
         | SecurityKind.Swap terms ->
             []
-            @ require (terms.EffectiveDate <= terms.MaturityDate)
-                (error "swap_date_range_invalid" "Swap EffectiveDate must be on or before MaturityDate.")
             @ require (not terms.Legs.IsEmpty) (error "swap_legs_required" "Swap definitions must include at least one leg.")
             @ (terms.Legs
                |> List.collect (fun leg ->
@@ -243,7 +216,6 @@ module SecurityMaster =
                        (error "swap_leg_reset_schedule_order_invalid" "SwapLeg ResetSchedule dates must be strictly ascending.")))
         | SecurityKind.DirectLoan terms ->
             []
-            @ requireNotBlank "direct_loan_borrower_required" "Borrower" terms.Borrower
             @ (terms.Covenants
                |> List.collect (fun covenant ->
                    []
@@ -251,38 +223,6 @@ module SecurityMaster =
                    @ requireNotBlank "covenant_threshold_required" "Threshold" covenant.Threshold))
         | SecurityKind.StructuredCredit terms ->
             []
-            @ requireNotBlank "structured_credit_tranche_required" "Tranche" terms.Tranche
-            @ requireNotBlank "structured_credit_collateral_required" "CollateralType" terms.CollateralType
-            @ require (terms.OriginalFace > 0m)
-                (error "structured_credit_original_face_invalid" "StructuredCredit OriginalFace must be greater than zero.")
-            @ require (terms.CurrentFactor |> Option.forall (fun factor -> factor >= 0m && factor <= 1m))
-                (error "structured_credit_current_factor_invalid" "StructuredCredit CurrentFactor must be between zero and one when present — factors above one project cash flows exceeding the original principal.")
-            @ requireNotBlank "structured_credit_coupon_index_required" "CouponOrIndex" terms.CouponOrIndex
-            @ require (terms.FactorScheduleEntries |> List.forall (fun entry -> entry.Factor >= 0m && entry.Factor <= 1m))
-                (error "structured_credit_factor_schedule_invalid" "StructuredCredit factor schedule factors must be between zero and one — factors above one project cash flows exceeding the original principal.")
-            @ require
-                (terms.FactorScheduleEntries
-                 |> List.map (fun entry -> entry.AsOfDate)
-                 |> List.distinct
-                 |> List.length = List.length terms.FactorScheduleEntries)
-                (error
-                    "structured_credit_factor_schedule_duplicate_date"
-                    "StructuredCredit factor schedule dates must be unique — two factors on the same date make the effective outstanding principal depend on input ordering, and readers keep only one of them.")
-            @ require
-                (terms.FactorScheduleEntries
-                 |> List.sortBy (fun entry -> entry.AsOfDate)
-                 |> List.pairwise
-                 |> List.forall (fun (earlier, later) -> later.Factor <= earlier.Factor))
-                (error
-                    "structured_credit_factor_schedule_not_monotonic"
-                    "StructuredCredit factor schedule must be non-increasing in date order — a rising factor would grow outstanding principal, which the factor-paydown workflow treats as invalid retained evidence.")
-            @ require
-                (match terms.Maturity with
-                 | Some maturity -> terms.FactorScheduleEntries |> List.forall (fun entry -> entry.AsOfDate <= maturity)
-                 | None -> true)
-                (error
-                    "structured_credit_factor_after_maturity"
-                    "StructuredCredit factor schedule observations must fall on or before the retained maturity — a factor decline after the legal final date would emit principal paydowns for a tranche that has already reached term.")
             @ require (terms.AttachmentPoint |> Option.forall (fun point -> point >= 0m && point <= 1m))
                 (error "structured_credit_attachment_point_invalid" "StructuredCredit AttachmentPoint must be between zero and one when present — it is a fraction of the deal balance, not a percentage.")
             @ require (terms.DetachmentPoint |> Option.forall (fun point -> point >= 0m && point <= 1m))
@@ -292,12 +232,6 @@ module SecurityMaster =
                  | Some attachment, Some detachment -> attachment <= detachment
                  | _ -> true)
                 (error "structured_credit_attachment_above_detachment" "StructuredCredit AttachmentPoint must not exceed DetachmentPoint — the tranche absorbs losses from attachment up to detachment.")
-            @ require (terms.WeightedAverageCoupon |> Option.forall (fun coupon -> coupon >= 0m))
-                (error "structured_credit_weighted_average_coupon_invalid" "StructuredCredit WeightedAverageCoupon must be zero or greater when present.")
-            @ require (terms.WeightedAverageMaturityMonths |> Option.forall (fun months -> months >= 0))
-                (error "structured_credit_weighted_average_maturity_invalid" "StructuredCredit WeightedAverageMaturityMonths must be zero or greater when present.")
-            @ require (terms.WeightedAverageLoanAgeMonths |> Option.forall (fun months -> months >= 0))
-                (error "structured_credit_weighted_average_loan_age_invalid" "StructuredCredit WeightedAverageLoanAgeMonths must be zero or greater when present.")
             @ require
                 (match terms.Maturity with
                  | Some maturity ->
@@ -307,8 +241,6 @@ module SecurityMaster =
                 (error "structured_credit_period_after_maturity" "StructuredCredit reinvestment and non-call period ends must fall on or before the retained maturity.")
         | SecurityKind.PrivateFundInterest terms ->
             []
-            @ requireNotBlank "private_fund_gp_required" "GpSponsor" terms.GpSponsor
-            @ requireNotBlank "private_fund_strategy_required" "Strategy" terms.Strategy
             @ require (terms.Vintage > 0) (error "private_fund_vintage_invalid" "PrivateFundInterest Vintage must be greater than zero.")
             @ require (terms.Commitment > 0m) (error "private_fund_commitment_invalid" "PrivateFundInterest Commitment must be greater than zero.")
             @ require (terms.FundedAmount |> Option.forall (fun amount -> amount >= 0m))
@@ -317,9 +249,6 @@ module SecurityMaster =
                 (error "private_fund_unfunded_invalid" "PrivateFundInterest UnfundedAmount must be zero or greater when present.")
         | SecurityKind.PrivateCompanyEquity terms ->
             []
-            @ requireNotBlank "private_company_issuer_required" "Issuer" terms.Issuer
-            @ requireNotBlank "private_company_share_class_required" "ShareClass" terms.ShareClass
-            @ requireNotBlank "private_company_round_required" "Round" terms.Round
             @ require (terms.OwnershipPercent |> Option.forall (fun percent -> percent >= 0m))
                 (error "private_company_ownership_invalid" "PrivateCompanyEquity OwnershipPercent must be zero or greater when present.")
             @ require (terms.CostBasis > 0m) (error "private_company_cost_basis_invalid" "PrivateCompanyEquity CostBasis must be greater than zero.")
@@ -327,18 +256,14 @@ module SecurityMaster =
                 (error "private_company_valuation_invalid" "PrivateCompanyEquity LatestValuation must be zero or greater when present.")
         | SecurityKind.RealEstateHolding terms ->
             []
-            @ requireNotBlank "real_estate_property_type_required" "PropertyType" terms.PropertyType
             @ requireNotBlank "real_estate_market_required" "AddressOrMarket" terms.AddressOrMarket
             @ require (terms.OwnershipPercent > 0m) (error "real_estate_ownership_invalid" "RealEstateHolding OwnershipPercent must be greater than zero.")
             @ require (terms.AppraisalValue > 0m) (error "real_estate_appraisal_invalid" "RealEstateHolding AppraisalValue must be greater than zero.")
         | SecurityKind.CommitmentGuarantee terms ->
             []
-            @ requireNotBlank "commitment_guarantee_counterparty_required" "Counterparty" terms.Counterparty
             @ require (terms.CommittedAmount > 0m) (error "commitment_guarantee_amount_invalid" "CommitmentGuarantee CommittedAmount must be greater than zero.")
             @ require (terms.UnfundedAmount |> Option.forall (fun amount -> amount >= 0m))
                 (error "commitment_guarantee_exposure_invalid" "CommitmentGuarantee UnfundedAmount must be zero or greater when present.")
-            @ require (terms.ExpiryDate |> Option.forall (fun expiry -> terms.EffectiveDate <= expiry))
-                (error "commitment_guarantee_date_range_invalid" "CommitmentGuarantee EffectiveDate must be on or before ExpiryDate when present.")
             @ require (terms.FeeRate |> Option.forall (fun rate -> rate >= 0m))
                 (error "commitment_guarantee_fee_invalid" "CommitmentGuarantee FeeRate must be zero or greater when present.")
             @ (terms.Covenants
@@ -349,8 +274,6 @@ module SecurityMaster =
         | SecurityKind.Commodity terms ->
             []
             @ requireNotBlank "commodity_type_required" "CommodityType" terms.CommodityType
-            @ require (terms.ContractSize |> Option.forall (fun size -> size > 0m))
-                (error "commodity_contract_size_invalid" "Commodity ContractSize must be greater than zero when present.")
         | SecurityKind.CryptoCurrency terms ->
             []
             @ requireNotBlank "crypto_base_currency_required" "BaseCurrency" terms.BaseCurrency
@@ -360,8 +283,6 @@ module SecurityMaster =
         | SecurityKind.Cfd terms ->
             []
             @ requireNotBlank "cfd_underlying_asset_class_required" "UnderlyingAssetClass" terms.UnderlyingAssetClass
-            @ require (terms.Leverage |> Option.forall (fun l -> l > 0m))
-                (error "cfd_leverage_invalid" "CFD Leverage must be greater than zero when present.")
         | SecurityKind.Warrant terms ->
             []
             @ requireNotBlank "warrant_type_required" "WarrantType" terms.WarrantType
@@ -371,8 +292,6 @@ module SecurityMaster =
                 (error "warrant_type_invalid" "Warrant WarrantType must be either 'Call' or 'Put'.")
             @ require (terms.Strike |> Option.forall (fun s -> s > 0m))
                 (error "warrant_strike_invalid" "Warrant Strike must be greater than zero when present.")
-            @ require (terms.Multiplier |> Option.forall (fun m -> m > 0m))
-                (error "warrant_multiplier_invalid" "Warrant Multiplier must be greater than zero when present.")
         | SecurityKind.FxForward terms ->
             []
             @ requireNotBlank "fx_forward_base_currency_required" "BaseCurrency" terms.BaseCurrency
@@ -383,8 +302,6 @@ module SecurityMaster =
                 (error "fx_forward_notional_invalid" "FxForward Notional must be greater than zero when present.")
             @ require (terms.ForwardRate |> Option.forall (fun r -> r > 0m))
                 (error "fx_forward_rate_invalid" "FxForward ForwardRate must be greater than zero when present.")
-            @ require (terms.TradeDate |> Option.forall (fun tradeDate -> tradeDate <= terms.ValueDate))
-                (error "fx_forward_trade_date_invalid" "FxForward TradeDate must be on or before ValueDate when present.")
         | SecurityKind.NonDeliverableForward terms ->
             []
             @ requireNotBlank "ndf_base_currency_required" "BaseCurrency" terms.BaseCurrency
@@ -396,8 +313,6 @@ module SecurityMaster =
                 (error "ndf_notional_invalid" "NonDeliverableForward Notional must be greater than zero when present.")
             @ require (terms.ForwardRate |> Option.forall (fun r -> r > 0m))
                 (error "ndf_rate_invalid" "NonDeliverableForward ForwardRate must be greater than zero when present.")
-            @ require (terms.FixingDate <= terms.ValueDate)
-                (error "ndf_fixing_date_invalid" "NonDeliverableForward FixingDate must be on or before ValueDate.")
         | SecurityKind.CreditDefaultSwap terms ->
             []
             @ requireNotBlank "cds_reference_entity_required" "ReferenceEntity" terms.ReferenceEntity
@@ -407,10 +322,6 @@ module SecurityMaster =
                 (error "cds_protection_side_invalid" "CreditDefaultSwap ProtectionSide must be either 'Buy' or 'Sell'.")
             @ require (terms.Notional > 0m)
                 (error "cds_notional_invalid" "CreditDefaultSwap Notional must be greater than zero.")
-            @ require (terms.FixedCouponBps >= 0m)
-                (error "cds_fixed_coupon_invalid" "CreditDefaultSwap FixedCouponBps must be zero or greater.")
-            @ require (terms.EffectiveDate <= terms.MaturityDate)
-                (error "cds_date_range_invalid" "CreditDefaultSwap EffectiveDate must be on or before MaturityDate.")
             @ require (terms.RecoveryRateAssumption |> Option.forall (fun r -> r >= 0m && r <= 1m))
                 (error "cds_recovery_rate_invalid" "CreditDefaultSwap RecoveryRateAssumption must be between 0 and 1 when present.")
         | SecurityKind.Swaption terms ->
@@ -434,28 +345,17 @@ module SecurityMaster =
             []
             @ require (isType "Cap" || isType "Floor" || isType "Collar")
                 (error "cap_floor_type_invalid" "CapFloor CapFloorType must be Cap, Floor or Collar.")
-            @ requireNotBlank "cap_floor_reference_index_required" "ReferenceIndex" terms.ReferenceIndex
             @ require (not (isType "Cap" || isType "Collar") || terms.CapStrike.IsSome)
                 (error "cap_floor_cap_strike_required" "CapFloor CapStrike is required for a Cap or Collar.")
             @ require (not (isType "Floor" || isType "Collar") || terms.FloorStrike.IsSome)
                 (error "cap_floor_floor_strike_required" "CapFloor FloorStrike is required for a Floor or Collar.")
-            @ require
-                (match terms.FloorStrike, terms.CapStrike with
-                 | Some floor, Some cap -> floor <= cap
-                 | _ -> true)
-                (error "cap_floor_strike_order_invalid" "CapFloor FloorStrike must be at or below CapStrike when both are present.")
             @ require (terms.Notional > 0m)
                 (error "cap_floor_notional_invalid" "CapFloor Notional must be greater than zero.")
-            @ require (terms.EffectiveDate <= terms.MaturityDate)
-                (error "cap_floor_date_range_invalid" "CapFloor EffectiveDate must be on or before MaturityDate.")
             @ require (terms.PremiumAmount |> Option.forall (fun premium -> premium >= 0m))
                 (error "cap_floor_premium_invalid" "CapFloor PremiumAmount must be zero or greater when present.")
         | SecurityKind.StructuredNote terms ->
             []
-            @ requireNotBlank "structured_note_issuer_required" "IssuerName" terms.IssuerName
             @ requireNotBlank "structured_note_underlying_required" "UnderlyingDescription" terms.UnderlyingDescription
-            @ require (terms.IssueDate |> Option.forall (fun issueDate -> issueDate <= terms.Maturity))
-                (error "structured_note_issue_date_invalid" "StructuredNote IssueDate must be on or before Maturity when present.")
             @ require (terms.Denomination |> Option.forall (fun d -> d > 0m))
                 (error "structured_note_denomination_invalid" "StructuredNote Denomination must be greater than zero when present.")
             @ require (terms.PrincipalProtectionPct |> Option.forall (fun p -> p >= 0m && p <= 1m))
@@ -464,8 +364,6 @@ module SecurityMaster =
                 (error "structured_note_participation_invalid" "StructuredNote ParticipationRate must be zero or greater when present.")
             @ require (terms.ReturnCap |> Option.forall (fun c -> c >= 0m))
                 (error "structured_note_return_cap_invalid" "StructuredNote ReturnCap must be zero or greater when present.")
-            @ require (terms.CouponRate |> Option.forall (fun c -> c >= 0m))
-                (error "structured_note_coupon_invalid" "StructuredNote CouponRate must be zero or greater when present.")
             @ require (terms.BarrierLevel |> Option.forall (fun b -> b > 0m))
                 (error "structured_note_barrier_invalid" "StructuredNote BarrierLevel must be greater than zero when present.")
         | SecurityKind.InvestmentFund _ ->
@@ -530,143 +428,6 @@ module SecurityMaster =
                 (error "custom_asset_profile_version_invalid" "CustomAsset ProfileVersion must be greater than zero.")
             @ requireNotBlank "custom_asset_terms_required" "TermsJson" terms.TermsJson
             @ envelopeErrors
-
-    let private validateKind (kind: SecurityKind) =
-        let dayCounts =
-            match kind with
-            | SecurityKind.Bond terms -> [ BondTerms.dayCount terms ]
-            | SecurityKind.Deposit terms -> [ terms.DayCount ]
-            | SecurityKind.CertificateOfDeposit terms -> [ terms.DayCount ]
-            | SecurityKind.CommercialPaper terms -> [ terms.DayCount ]
-            | SecurityKind.Swap terms -> terms.Legs |> List.map (fun leg -> leg.DayCount)
-            | SecurityKind.CreditDefaultSwap terms -> [ terms.DayCount ]
-            | SecurityKind.Swaption terms -> [ terms.FixedLegDayCount ]
-            | SecurityKind.CapFloor terms -> [ terms.DayCount ]
-            | _ -> []
-        validateKindTerms kind
-        @ require
-            (dayCounts |> List.forall (Option.forall (fun value ->
-                Enum.IsDefined value && value <> Meridian.Contracts.SecurityMaster.DayCountConvention.Unknown)))
-            (error "day_count_invalid" "Supplied day-count conventions must name a supported convention.")
-
-    let private validateIdentifier (identifier: Identifier) =
-        []
-        @ requireNotBlank "identifier_value_required" "Identifier.Value" identifier.Value
-        @ (match identifier.Kind with
-           | IdentifierKind.ProviderSymbol provider ->
-               requireNotBlank "identifier_provider_required" "Identifier.Provider" provider
-           | _ -> [])
-        @ require (SecurityIdentifier.providerMetadataMatchesKind identifier)
-            (error
-                "identifier_provider_mismatch"
-                "ProviderSymbol metadata must match the authoritative provider namespace carried by Identifier.Kind.")
-        @ require (identifier.ValidTo |> Option.forall (fun validTo -> validTo > identifier.ValidFrom))
-            (error "identifier_date_range_invalid" "Identifier ValidTo must be later than ValidFrom when present.")
-
-    let private validateActiveIdentifierSet (identifiers: Identifier list) (asOf: DateTimeOffset) =
-        let activeIdentifiers =
-            identifiers
-            |> List.filter (SecurityIdentifier.isActiveAt asOf)
-
-        let primaryCount =
-            activeIdentifiers
-            |> List.filter (fun identifier -> identifier.IsPrimary)
-            |> List.length
-
-        let duplicateCount =
-            activeIdentifiers
-            |> List.countBy (fun identifier ->
-                SecurityIdentifier.kindName identifier,
-                SecurityIdentifier.normalizeIdentifierValue identifier.Kind identifier.Value,
-                identifier |> SecurityIdentifier.provider |> Option.defaultValue String.Empty |> SecurityIdentifier.normalizeValue)
-            |> List.filter (fun (_, count) -> count > 1)
-            |> List.length
-
-        // UPI and Markit RED codes name a product or reference entity shared by many contracts;
-        // as a primary identifier the normalized primary-identifier unique index (migration 032)
-        // would refuse the second contract, so creates and amends refuse it here.
-        let sharedReferencePrimary =
-            activeIdentifiers
-            |> List.exists (fun identifier ->
-                identifier.IsPrimary
-                && Meridian.Contracts.SecurityMaster.SecurityIdentifierNormalizer.IsSharedReferenceKind(
-                    SecurityIdentifier.toContractKind identifier.Kind))
-
-        []
-        @ require (primaryCount = 1)
-            (error "primary_identifier_invalid" "Active security identifiers must contain exactly one primary identifier.")
-        @ require (not sharedReferencePrimary)
-            (error
-                "primary_identifier_shared_reference"
-                "A UPI or Markit RED code is shared by many contracts and cannot be the primary identifier; mark a contract-level identifier as primary.")
-        @ require (duplicateCount = 0)
-            (error "duplicate_identifier_active" "Active security identifiers must not contain duplicate kind/value/provider combinations.")
-
-    let private validateRecord (record: SecurityMasterRecord) (asOf: DateTimeOffset) =
-        []
-        @ validateCommonTerms record.Common
-        @ validateProvenance record.Provenance
-        @ validateKind record.Kind
-        @ (record.Identifiers |> List.collect validateIdentifier)
-        @ validateActiveIdentifierSet record.Identifiers asOf
-
-    let private validateCreate (command: CreateSecurity) =
-        []
-        @ validateCommonTerms command.Common
-        @ validateProvenance command.Provenance
-        @ validateKind command.Kind
-        @ (command.Identifiers |> List.collect validateIdentifier)
-        @ validateActiveIdentifierSet command.Identifiers command.EffectiveFrom
-
-    let private validateAmend (current: SecurityMasterRecord) (command: AmendTerms) (nextIdentifiers: Identifier list) =
-        let primaryToExpire =
-            nextIdentifiers
-            |> List.filter (fun identifier -> identifier.IsPrimary)
-            |> List.exists (fun identifier ->
-                identifier.ValidTo = Some command.EffectiveFrom)
-
-        []
-        @ require (current.SecurityId = command.SecurityId)
-            (error "security_id_mismatch" "AmendTerms.SecurityId must match the current aggregate SecurityId.")
-        @ require (current.Version = command.ExpectedVersion)
-            (error "version_conflict" "ExpectedVersion does not match the current security version.")
-        @ require (current.Status = SecurityStatus.Active)
-            (error "security_inactive" "Inactive securities cannot be amended.")
-        @ require (command.EffectiveFrom >= current.EffectiveFrom)
-            (error "amend_effective_from_invalid" "AmendTerms.EffectiveFrom cannot be earlier than the security EffectiveFrom.")
-        @ require (not primaryToExpire)
-            (error "primary_identifier_expiry_forbidden" "Primary identifiers cannot be expired through TermsAmended.")
-        @ (command.Common |> Option.map validateCommonTerms |> Option.defaultValue [])
-        @ validateProvenance command.Provenance
-        @ (command.Kind |> Option.map validateKind |> Option.defaultValue [])
-        @ (command.IdentifiersToAdd |> List.collect validateIdentifier)
-        @ validateActiveIdentifierSet nextIdentifiers command.EffectiveFrom
-
-    let private validateDeactivate (current: SecurityMasterRecord) (command: DeactivateSecurity) =
-        []
-        @ require (current.SecurityId = command.SecurityId)
-            (error "security_id_mismatch" "DeactivateSecurity.SecurityId must match the current aggregate SecurityId.")
-        @ require (current.Version = command.ExpectedVersion)
-            (error "version_conflict" "ExpectedVersion does not match the current security version.")
-        @ require (current.Status <> SecurityStatus.Inactive)
-            (error "already_inactive" "Security is already inactive.")
-        @ require (command.EffectiveTo >= current.EffectiveFrom)
-            (error "deactivation_effective_to_invalid" "DeactivateSecurity.EffectiveTo cannot be earlier than EffectiveFrom.")
-        @ validateProvenance command.Provenance
-
-    let private collectExpiredIdentifiers (identifiersToExpire: Identifier list) (effectiveFrom: DateTimeOffset) (identifiers: Identifier list) =
-        identifiers
-        |> List.map (fun identifier ->
-            if identifiersToExpire |> List.exists (SecurityIdentifier.sameIdentity identifier) then
-                { identifier with ValidTo = Some effectiveFrom }
-            else
-                identifier)
-
-    /// Standalone kind-invariant validation for the C# write path: a profile-backed record
-    /// reclassified to its resolved first-class kind must satisfy that kind's rule set too, which
-    /// can be stricter than the pinned profile's (e.g. PrivateFundInterest requires a strictly
-    /// positive commitment while the profile's field range starts at zero).
-    let validateKindInvariants (kind: SecurityKind) = validateKind kind
 
     // ── ADR-027 stage 2 (S2-B1): the validation surface over the economic definition ────────────
     //
@@ -854,6 +615,153 @@ module SecurityMaster =
             []
             @ requireNotBlank "real_estate_property_type_required" "PropertyType" (moduleString (modules.Issuer |> Option.bind (fun i -> i.IssuerProgram)))
         | _ -> []
+
+    /// ADR-027 stage 2 (S2-B2): the kind rule set, recomposed. The definition surface
+    /// (validateDefinitionTerms over modulesFromKind) is authoritative for every
+    /// module-expressible code, and validateCodecOnlyKindTerms keeps the rules whose data has no
+    /// module home — the exact ledger partition, so nothing is checked twice and nothing is
+    /// dropped. Every command path (create, amend, record validation, the facade's standalone
+    /// checks) now validates through this composition.
+    let private validateKindTerms (kind: SecurityKind) =
+        validateDefinitionTerms (AssetClassRegistry.assetClassName kind) (SecurityMasterLegacyUpgrade.modulesFromKind kind)
+        @ validateCodecOnlyKindTerms kind
+
+    let private validateKind (kind: SecurityKind) =
+        let dayCounts =
+            match kind with
+            | SecurityKind.Bond terms -> [ BondTerms.dayCount terms ]
+            | SecurityKind.Deposit terms -> [ terms.DayCount ]
+            | SecurityKind.CertificateOfDeposit terms -> [ terms.DayCount ]
+            | SecurityKind.CommercialPaper terms -> [ terms.DayCount ]
+            | SecurityKind.Swap terms -> terms.Legs |> List.map (fun leg -> leg.DayCount)
+            | SecurityKind.CreditDefaultSwap terms -> [ terms.DayCount ]
+            | SecurityKind.Swaption terms -> [ terms.FixedLegDayCount ]
+            | SecurityKind.CapFloor terms -> [ terms.DayCount ]
+            | _ -> []
+        validateKindTerms kind
+        @ require
+            (dayCounts |> List.forall (Option.forall (fun value ->
+                Enum.IsDefined value && value <> Meridian.Contracts.SecurityMaster.DayCountConvention.Unknown)))
+            (error "day_count_invalid" "Supplied day-count conventions must name a supported convention.")
+
+    let private validateIdentifier (identifier: Identifier) =
+        []
+        @ requireNotBlank "identifier_value_required" "Identifier.Value" identifier.Value
+        @ (match identifier.Kind with
+           | IdentifierKind.ProviderSymbol provider ->
+               requireNotBlank "identifier_provider_required" "Identifier.Provider" provider
+           | _ -> [])
+        @ require (SecurityIdentifier.providerMetadataMatchesKind identifier)
+            (error
+                "identifier_provider_mismatch"
+                "ProviderSymbol metadata must match the authoritative provider namespace carried by Identifier.Kind.")
+        @ require (identifier.ValidTo |> Option.forall (fun validTo -> validTo > identifier.ValidFrom))
+            (error "identifier_date_range_invalid" "Identifier ValidTo must be later than ValidFrom when present.")
+
+    let private validateActiveIdentifierSet (identifiers: Identifier list) (asOf: DateTimeOffset) =
+        let activeIdentifiers =
+            identifiers
+            |> List.filter (SecurityIdentifier.isActiveAt asOf)
+
+        let primaryCount =
+            activeIdentifiers
+            |> List.filter (fun identifier -> identifier.IsPrimary)
+            |> List.length
+
+        let duplicateCount =
+            activeIdentifiers
+            |> List.countBy (fun identifier ->
+                SecurityIdentifier.kindName identifier,
+                SecurityIdentifier.normalizeIdentifierValue identifier.Kind identifier.Value,
+                identifier |> SecurityIdentifier.provider |> Option.defaultValue String.Empty |> SecurityIdentifier.normalizeValue)
+            |> List.filter (fun (_, count) -> count > 1)
+            |> List.length
+
+        // UPI and Markit RED codes name a product or reference entity shared by many contracts;
+        // as a primary identifier the normalized primary-identifier unique index (migration 032)
+        // would refuse the second contract, so creates and amends refuse it here.
+        let sharedReferencePrimary =
+            activeIdentifiers
+            |> List.exists (fun identifier ->
+                identifier.IsPrimary
+                && Meridian.Contracts.SecurityMaster.SecurityIdentifierNormalizer.IsSharedReferenceKind(
+                    SecurityIdentifier.toContractKind identifier.Kind))
+
+        []
+        @ require (primaryCount = 1)
+            (error "primary_identifier_invalid" "Active security identifiers must contain exactly one primary identifier.")
+        @ require (not sharedReferencePrimary)
+            (error
+                "primary_identifier_shared_reference"
+                "A UPI or Markit RED code is shared by many contracts and cannot be the primary identifier; mark a contract-level identifier as primary.")
+        @ require (duplicateCount = 0)
+            (error "duplicate_identifier_active" "Active security identifiers must not contain duplicate kind/value/provider combinations.")
+
+    let private validateRecord (record: SecurityMasterRecord) (asOf: DateTimeOffset) =
+        []
+        @ validateCommonTerms record.Common
+        @ validateProvenance record.Provenance
+        @ validateKind record.Kind
+        @ (record.Identifiers |> List.collect validateIdentifier)
+        @ validateActiveIdentifierSet record.Identifiers asOf
+
+    let private validateCreate (command: CreateSecurity) =
+        []
+        @ validateCommonTerms command.Common
+        @ validateProvenance command.Provenance
+        @ validateKind command.Kind
+        @ (command.Identifiers |> List.collect validateIdentifier)
+        @ validateActiveIdentifierSet command.Identifiers command.EffectiveFrom
+
+    let private validateAmend (current: SecurityMasterRecord) (command: AmendTerms) (nextIdentifiers: Identifier list) =
+        let primaryToExpire =
+            nextIdentifiers
+            |> List.filter (fun identifier -> identifier.IsPrimary)
+            |> List.exists (fun identifier ->
+                identifier.ValidTo = Some command.EffectiveFrom)
+
+        []
+        @ require (current.SecurityId = command.SecurityId)
+            (error "security_id_mismatch" "AmendTerms.SecurityId must match the current aggregate SecurityId.")
+        @ require (current.Version = command.ExpectedVersion)
+            (error "version_conflict" "ExpectedVersion does not match the current security version.")
+        @ require (current.Status = SecurityStatus.Active)
+            (error "security_inactive" "Inactive securities cannot be amended.")
+        @ require (command.EffectiveFrom >= current.EffectiveFrom)
+            (error "amend_effective_from_invalid" "AmendTerms.EffectiveFrom cannot be earlier than the security EffectiveFrom.")
+        @ require (not primaryToExpire)
+            (error "primary_identifier_expiry_forbidden" "Primary identifiers cannot be expired through TermsAmended.")
+        @ (command.Common |> Option.map validateCommonTerms |> Option.defaultValue [])
+        @ validateProvenance command.Provenance
+        @ (command.Kind |> Option.map validateKind |> Option.defaultValue [])
+        @ (command.IdentifiersToAdd |> List.collect validateIdentifier)
+        @ validateActiveIdentifierSet nextIdentifiers command.EffectiveFrom
+
+    let private validateDeactivate (current: SecurityMasterRecord) (command: DeactivateSecurity) =
+        []
+        @ require (current.SecurityId = command.SecurityId)
+            (error "security_id_mismatch" "DeactivateSecurity.SecurityId must match the current aggregate SecurityId.")
+        @ require (current.Version = command.ExpectedVersion)
+            (error "version_conflict" "ExpectedVersion does not match the current security version.")
+        @ require (current.Status <> SecurityStatus.Inactive)
+            (error "already_inactive" "Security is already inactive.")
+        @ require (command.EffectiveTo >= current.EffectiveFrom)
+            (error "deactivation_effective_to_invalid" "DeactivateSecurity.EffectiveTo cannot be earlier than EffectiveFrom.")
+        @ validateProvenance command.Provenance
+
+    let private collectExpiredIdentifiers (identifiersToExpire: Identifier list) (effectiveFrom: DateTimeOffset) (identifiers: Identifier list) =
+        identifiers
+        |> List.map (fun identifier ->
+            if identifiersToExpire |> List.exists (SecurityIdentifier.sameIdentity identifier) then
+                { identifier with ValidTo = Some effectiveFrom }
+            else
+                identifier)
+
+    /// Standalone kind-invariant validation for the C# write path: a profile-backed record
+    /// reclassified to its resolved first-class kind must satisfy that kind's rule set too, which
+    /// can be stricter than the pinned profile's (e.g. PrivateFundInterest requires a strictly
+    /// positive commitment while the profile's field range starts at zero).
+    let validateKindInvariants (kind: SecurityKind) = validateKind kind
 
     /// Standalone definition-invariant validation for the stage-2 equivalence tests (and, from
     /// S2-B2, the command write path): the module-expressible subset of the kind rule set, gated

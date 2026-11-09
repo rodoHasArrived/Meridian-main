@@ -774,6 +774,19 @@ Validation (local, .NET SDK 10.0.403): `dotnet test tests/Meridian.Tests -c Rele
 active-plus-inactive gauge, and the zero case. The full local `bash scripts/ci.sh` was not run;
 GitHub `Meridian CI / quality-gate` remains authoritative.
 
+### ADR-027 stage-2 S2-B2 — validation recomposed onto the definition — 2026-11-09
+
+The write path now validates through the definition surface. `validateKindTerms` became a
+composition: `validateDefinitionTerms (assetClassName kind) (modulesFromKind kind)` — the
+authoritative check for all 54 ledgered codes — appended with `validateCodecOnlyKindTerms`, the
+renamed remainder holding exactly the ledger's complement (the 54 moved rules were deleted from
+it, so nothing is checked twice). Every command route flows through the composition: create,
+amend and record validation in the F# aggregate, and the C# workbench term-block and
+profile-field edit validations through `SecurityMasterCommandFacade.ValidateKindInvariants`.
+The switch is proven behavior-neutral by the S2-B1 equivalence suite (whose mutation table pins
+the partition), the byte-identical replay corpus and write goldens, and a full green sweep of
+the F# suite (596) and the C# SecurityMaster namespace (5,593).
+
 ### ADR-027 stage-2 S2-B1 — the economic validation surface — 2026-11-09
 
 The first command-path increment landed without touching the write path:
