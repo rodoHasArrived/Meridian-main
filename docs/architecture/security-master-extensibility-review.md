@@ -774,6 +774,25 @@ Validation (local, .NET SDK 10.0.403): `dotnet test tests/Meridian.Tests -c Rele
 active-plus-inactive gauge, and the zero case. The full local `bash scripts/ci.sh` was not run;
 GitHub `Meridian CI / quality-gate` remains authoritative.
 
+### ADR-027 stage-2 S2-B1 — the economic validation surface — 2026-11-09
+
+The first command-path increment landed without touching the write path:
+`validateDefinitionTerms` re-expresses, over `SecurityTermModules` and gated by the
+classification's canonical `TypeName`, every `validateKindTerms` rule whose subject data has a
+module home under `termsFromKind` — 54 error codes across 23 classes, committed as the
+`definitionExpressibleCodes` ledger and exposed through
+`SecurityMasterCommandFacade.ValidateDefinitionInvariants` / `DefinitionExpressibleCodes`.
+Equivalence is pinned twice: `SecurityDefinitionValidationEquivalenceTests` proves every clean
+class twin passes both surfaces, trips both with the same code for every ledgered code via a
+twin mutation (with the table required to cover exactly the ledger), and forbids the definition
+surface from reporting any code the kind surface does not; `SecurityDefinitionValidationTests`
+(F#) proves the three factor-schedule codes whose invalid shapes the codec gate refuses before
+any validator runs — both surfaces carry them as defense in depth. The ledger's complement
+(option strike, swap legs, bond subclass/par/principal schedule/step coupons, currency pairs,
+notionals, type-conditional strike requirements, the CustomAsset envelope) stays codec-side
+until modules gain homes. `SecurityMasterLegacyUpgrade.modulesFromKind` makes the
+kind → modules projection a first-class seam for S2-B2's mapping-time derivation.
+
 ### ADR-027 stage-2 opens — the replay-compatibility corpus — 2026-11-09
 
 Stage 2's ADR-named precondition landed first: `SecurityMasterReplayCorpusTests` replays a

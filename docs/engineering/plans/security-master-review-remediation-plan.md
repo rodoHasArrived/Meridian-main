@@ -332,13 +332,25 @@ refusal messages included — are pinned in a committed golden with the received
 Every stage-1 codec change and every stage-2 command-path move must leave the corpus green or
 carry a reviewed golden diff. Planned increments, each corpus-gated:
 
-- **S2-B1 — the economic validation surface (no behavior change).** `validateDefinitionTerms`
-  over `SecurityTermModules`: class-agnostic module invariants (factor bounds, date orderings,
-  non-negative rates, floor-at-or-below-cap) plus classification-triggered required-field rules,
-  translated from `validateKindTerms`. An equivalence test pins, per class, that both validators
-  agree on the definition-expressible error codes; a committed ledger enumerates the codes that
-  stay codec-side because their data has no module home yet (option strike, swap legs, bond
-  subclass/par/principal schedule, currencies, notionals), shrinking as modules gain homes.
+- **S2-B1 — the economic validation surface (implemented 2026-11-09, no behavior change).**
+  `validateDefinitionTerms` over `SecurityTermModules`, gated by the classification's canonical
+  `TypeName` exactly as `validateKindTerms` is gated by the kind case, re-expresses every rule
+  whose subject data has a module home — 54 error codes across 23 classes, enumerated in the
+  committed `definitionExpressibleCodes` ledger (exposed as
+  `SecurityMasterCommandFacade.DefinitionExpressibleCodes` beside
+  `ValidateDefinitionInvariants`). `SecurityDefinitionValidationEquivalenceTests` pins the
+  equivalence: every declared class's clean twin passes both surfaces; for every ledgered code a
+  twin mutation trips both with the same code; the definition surface never reports a code the
+  kind surface does not; and the mutation table must cover exactly the ledger. The three
+  factor-schedule codes whose invalid shapes the codec gate
+  (`SecurityEconomicScheduleValidation`) refuses before any validator runs are proven on both
+  surfaces in `SecurityDefinitionValidationTests` (F#), which mutates the records directly —
+  both surfaces carry them as defense in depth. Codes with no module home (option strike, swap
+  legs, bond subclass/par/principal schedule/step coupons, currency pairs, notionals, CapFloor
+  type-conditional strike requirements, CustomAsset envelope) stay codec-side and are exactly
+  the ledger's complement, shrinking as modules gain homes. The kind → modules projection is now
+  a first-class seam (`SecurityMasterLegacyUpgrade.modulesFromKind`) for S2-B2 to derive the
+  definition at mapping time. Nothing on the write path calls the new surface yet.
 - **S2-B2 — commands carry the definition.** `CreateSecurity`/`AmendTerms` gain the economic
   definition at mapping time; validation switches to `validateDefinitionTerms`;
   `SecurityKind` remains as codec payload. Write-golden and corpus prove no byte drift.

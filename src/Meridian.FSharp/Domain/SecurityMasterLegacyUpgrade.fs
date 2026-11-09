@@ -852,6 +852,11 @@ module SecurityMasterLegacyUpgrade =
             // economic-term modules can be extracted without interpreting the profile.
             SecurityTermModules.empty
 
+    /// ADR-027 stage 2: the kind → modules projection as a first-class seam. S2-B1's equivalence
+    /// tests reach it directly, and S2-B2 derives the economic definition from commands at
+    /// mapping time through it.
+    let modulesFromKind (kind: SecurityKind) = termsFromKind kind
+
     let toEconomicDefinition (record: SecurityMasterRecord) =
         {
             SecurityId = record.SecurityId
