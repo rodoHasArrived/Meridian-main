@@ -195,6 +195,19 @@ internal sealed class OrderFillProcessor(
                 && !string.IsNullOrWhiteSpace(orderId)
                 && _context.ContainsOrder(orderId))
             {
+                // The booking model first, because it decides the money scale. A futures fill
+                // settles variation margin unless it continues a position restored from
+                // notional-model records, which stays on that model until flat. An unstamped
+                // record replays on the notional model, so anything else is stamped.
+                if (fillIncrement.BookedVariationMargin is null)
+                {
+                    var resolvedVariationMargin = PaperTradingPortfolio.ResolveVariationMargin(
+                        fillIncrement, fillIncrement.UsesFaceValuePercentageOfPar);
+                    var bookedVariationMargin = paperBook.GetOpenVariationMargin(fillIncrement.Symbol) ?? resolvedVariationMargin;
+                    if (bookedVariationMargin || resolvedVariationMargin)
+                        fillIncrement = fillIncrement with { BookedVariationMargin = bookedVariationMargin };
+                }
+
                 var resolvedMoneyMultiplier = PaperTradingPortfolio.ResolveMoneyMultiplier(
                     fillIncrement,
                     _context.GetContractMultiplier(orderId),
@@ -439,7 +452,8 @@ internal sealed class OrderFillProcessor(
             fillIncrement.Timestamp,
             financialAccountId,
             usesFaceValuePercentageOfPar,
-            contractMultiplier);
+            contractMultiplier,
+            fillIncrement.BookedVariationMargin == true);
     }
 
     /// <summary>

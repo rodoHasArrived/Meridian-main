@@ -201,6 +201,16 @@ public sealed record ExecutionReport
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public decimal? BookedMoneyMultiplier { get; init; }
 
+    /// <summary>
+    /// Whether the paper book booked this fill under daily variation margin (futures): opening
+    /// moves no notional and a close settles only the change since the last settlement. Stamped
+    /// with <see cref="BookedMoneyMultiplier"/> so a replay books the fill the same way. Absent on
+    /// records written before paper futures settled variation margin; those replay on the 1×
+    /// notional model they were booked on. Omitted from serialized payloads when null.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public bool? BookedVariationMargin { get; init; }
+
     /// <summary>Regulatory/exchange fees for this fill, when the gateway models them.</summary>
     public decimal? Fees { get; init; }
 
