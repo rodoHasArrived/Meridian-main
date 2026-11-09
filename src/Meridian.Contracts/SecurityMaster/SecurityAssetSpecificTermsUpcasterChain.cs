@@ -42,6 +42,17 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     /// </summary>
     public const string FlattenedFromMarkerProperty = "flattenedFromEconomicTermsSchemaVersion";
 
+    /// <summary>
+    /// The flat dated factor-schedule array StructuredCredit declares
+    /// (<see cref="SecurityAssetTermsSchema"/>), and the economic serializer's key for the same
+    /// list inside its <c>structuredProduct</c> module. ADR-027 stage 1 increment 4 recovers the
+    /// economic list into the flat home.
+    /// </summary>
+    private const string FactorScheduleEntriesKey = "factorScheduleEntries";
+
+    /// <summary>The economic module that carries <see cref="FactorScheduleEntriesKey"/>.</summary>
+    private const string StructuredProductModule = "structuredProduct";
+
     /// <summary>The economic-terms modules this conversion reads. Order is the flattening order.</summary>
     public static IReadOnlyList<string> BridgedModules { get; } =
         ["maturity", "coupon", "payment", "accrual", "discount"];
@@ -260,6 +271,16 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
 
         var writeConventions = conventions.BusinessDayConvention is not null || conventions.PaymentCalendars.Count > 0;
 
+        // ADR-027 stage 1, increment 4: a class that declares the typed factorScheduleEntries
+        // array (StructuredCredit, Since 1) recovers the economic structured-product module's
+        // dated factor observations instead of dropping them into the retained document while the
+        // flat row — and every projection built from it — silently loses the schedule.
+        IReadOnlyList<(string AsOfDate, decimal Factor)> factorEntries = [];
+        if (SecurityAssetTermsSchema.Field(assetClass!, FactorScheduleEntriesKey) is not null)
+        {
+            factorEntries = CollectFactorScheduleEntries(economicTerms);
+        }
+
         using var buffer = new MemoryStream();
         using (var writer = new Utf8JsonWriter(buffer))
         {
@@ -287,6 +308,21 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             {
                 WriteCallSchedule(writer, callEntries, callModule);
                 WritePutSchedule(writer, putEntries);
+            }
+
+            if (factorEntries.Count > 0)
+            {
+                writer.WritePropertyName(FactorScheduleEntriesKey);
+                writer.WriteStartArray();
+                foreach (var (asOfDate, factor) in factorEntries)
+                {
+                    writer.WriteStartObject();
+                    writer.WriteString("asOfDate", asOfDate);
+                    writer.WriteNumber("factor", factor);
+                    writer.WriteEndObject();
+                }
+
+                writer.WriteEndArray();
             }
 
             foreach (var mapping in mappings)
@@ -515,6 +551,150 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     }
 
     /// <summary>
+    /// The structured-product module's dated factor observations (ADR-027 stage 1, increment 4),
+    /// validated under the flat schema's own rules before they land in the declared
+    /// <c>factorScheduleEntries</c> home: each entry carries the canonical <c>asOfDate</c>
+    /// (decodable ISO <c>yyyy-MM-dd</c>) and <c>factor</c> (a number in [0, 1]); dates are
+    /// distinct and, ordered by date, factors never increase — the same invariants the domain
+    /// validation (<c>structured_credit_factor_schedule_invalid</c>) enforces on a flat write.
+    /// A JSON-null or all-null entry is unset and skipped. Anything else that declares content —
+    /// a non-array list, a non-object entry, an undecodable date, an out-of-range or missing
+    /// factor, a member the economic serializer never writes, or a case-variant module or key
+    /// spelling — refuses instead of being recovered as a schedule the flat readers would reject
+    /// or silently drop.
+    /// </summary>
+    private static IReadOnlyList<(string AsOfDate, decimal Factor)> CollectFactorScheduleEntries(JsonElement economicTerms)
+    {
+        if (economicTerms.ValueKind != JsonValueKind.Object)
+        {
+            return [];
+        }
+
+        var entries = new List<(DateOnly Date, string AsOfDate, decimal Factor)>();
+        foreach (var module in economicTerms.EnumerateObject())
+        {
+            if (!module.Name.Equals(StructuredProductModule, StringComparison.OrdinalIgnoreCase)
+                || module.Value.ValueKind != JsonValueKind.Object)
+            {
+                continue;
+            }
+
+            var canonicalModule = module.Name.Equals(StructuredProductModule, StringComparison.Ordinal);
+            foreach (var member in module.Value.EnumerateObject())
+            {
+                if (!member.Name.Equals(FactorScheduleEntriesKey, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                var declaresContent = member.Value.ValueKind != JsonValueKind.Null
+                    && (member.Value.ValueKind != JsonValueKind.Array || member.Value.GetArrayLength() > 0);
+                if (!canonicalModule || !member.Name.Equals(FactorScheduleEntriesKey, StringComparison.Ordinal))
+                {
+                    // A case-variant module or key is not the economic serializer's shape: the
+                    // conversion only reads the canonical spelling, so a variant that declares
+                    // content refuses instead of passing while its schedule is silently ignored.
+                    if (declaresContent)
+                    {
+                        throw UnrecoverableFactorSchedule();
+                    }
+
+                    continue;
+                }
+
+                CollectFactorEntries(member.Value, entries);
+            }
+        }
+
+        if (entries.Count > 1)
+        {
+            var ordered = entries.OrderBy(static entry => entry.Date).ToArray();
+            for (var i = 1; i < ordered.Length; i++)
+            {
+                if (ordered[i].Date == ordered[i - 1].Date || ordered[i].Factor > ordered[i - 1].Factor)
+                {
+                    throw UnrecoverableFactorSchedule();
+                }
+            }
+        }
+
+        return entries.Select(static entry => (entry.AsOfDate, entry.Factor)).ToArray();
+    }
+
+    private static void CollectFactorEntries(JsonElement list, List<(DateOnly Date, string AsOfDate, decimal Factor)> entries)
+    {
+        if (list.ValueKind == JsonValueKind.Null)
+        {
+            return;
+        }
+
+        if (list.ValueKind != JsonValueKind.Array)
+        {
+            throw UnrecoverableFactorSchedule();
+        }
+
+        foreach (var entry in list.EnumerateArray())
+        {
+            if (entry.ValueKind == JsonValueKind.Null)
+            {
+                continue;
+            }
+
+            if (entry.ValueKind != JsonValueKind.Object)
+            {
+                throw UnrecoverableFactorSchedule();
+            }
+
+            DateOnly? date = null;
+            string? asOfDate = null;
+            decimal? factor = null;
+            var populated = false;
+            foreach (var member in entry.EnumerateObject())
+            {
+                if (member.Value.ValueKind is JsonValueKind.Null)
+                {
+                    continue;
+                }
+
+                populated = true;
+                if (member.Name.Equals("asOfDate", StringComparison.Ordinal)
+                    && member.Value.ValueKind == JsonValueKind.String
+                    && DateOnly.TryParseExact(member.Value.GetString(), "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var parsed))
+                {
+                    date = parsed;
+                    asOfDate = member.Value.GetString();
+                }
+                else if (member.Name.Equals("factor", StringComparison.Ordinal)
+                         && member.Value.ValueKind == JsonValueKind.Number
+                         && member.Value.TryGetDecimal(out var value)
+                         && value is >= 0m and <= 1m)
+                {
+                    factor = value;
+                }
+                else
+                {
+                    // A populated member the frozen written form cannot carry — a variant or
+                    // foreign key, an undecodable date, an out-of-range or non-numeric factor —
+                    // would be silently dropped by the flat write, so it refuses instead.
+                    throw UnrecoverableFactorSchedule();
+                }
+            }
+
+            if (!populated)
+            {
+                continue;
+            }
+
+            if (date is not { } entryDate || asOfDate is null || factor is not { } entryFactor)
+            {
+                throw UnrecoverableFactorSchedule();
+            }
+
+            entries.Add((entryDate, asOfDate, entryFactor));
+        }
+    }
+
+    /// <summary>
     /// Writes the flat <c>scheduleConventions</c> block in the frozen ADR-024 form: null when
     /// nothing is declared, otherwise all twelve members in alphabetical order with null or []
     /// for an unset one. The economic family carried only the business-day convention and the
@@ -626,9 +806,12 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     /// the increment's declared semantics: <c>callPx</c> is documented as a percentage of par, so a
     /// written price carries <c>priceBasis = "PercentOfPar"</c>; a par call without a price writes
     /// 100 at that basis, which is what a par call means; <c>callType</c> "MakeWhole" is a price
-    /// type (with the module-level <c>makeWholeSpreadBps</c>), while "European", "American" and
-    /// "Bermudan" are exercise styles. Members the economic family never carried (windows, notice
-    /// terms, partial redemption) stay null and read under ADR-025's declared defaults.
+    /// type (with the module-level <c>makeWholeSpreadBps</c>), while every other label is an
+    /// exercise style carried back verbatim — the flat field preserves undeclared style strings
+    /// (<c>WithVerbatimUndeclaredValue</c>) and the economic upgrade copies them into
+    /// <c>callType</c> unchanged, so the recovery keeps them rather than dropping them. Members
+    /// the economic family never carried (windows, notice terms, partial redemption) stay null
+    /// and read under ADR-025's declared defaults.
     /// </summary>
     private static void WriteCallSchedule(Utf8JsonWriter writer, IReadOnlyList<JsonElement> entries, JsonElement? callModule)
     {
@@ -645,8 +828,14 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             var callType = entry.TryGetProperty("callType", out var type) && type.ValueKind == JsonValueKind.String
                 ? type.GetString()
                 : null;
+            // The economic writer's own inverse (SecurityMasterLegacyUpgrade.economicCalls):
+            // callType carries "MakeWhole" when the flat entry priced that way, else the flat
+            // entry's exerciseStyle verbatim — including labels outside the declared vocabulary,
+            // which the flat field preserves (WithVerbatimUndeclaredValue). Dropping an
+            // undeclared label here would lose it on the recovery round-trip, so every
+            // non-MakeWhole label goes back to exerciseStyle unchanged.
             var isMakeWhole = string.Equals(callType, "MakeWhole", StringComparison.Ordinal);
-            var isExerciseStyle = callType is "European" or "American" or "Bermudan";
+            var isExerciseStyle = callType is not null && !isMakeWhole;
             var callPrice = entry.TryGetProperty("callPx", out var price) && price.ValueKind == JsonValueKind.Number
                 ? price.GetDecimal()
                 : entry.TryGetProperty("isParCall", out var par) && par.ValueKind == JsonValueKind.True
@@ -733,6 +922,10 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     private static InvalidOperationException UnrecoverableSchedule()
         => new("Declared schedule economic replay requires retained legacy asset-specific terms; "
             + "the economic payload cannot reconstruct complete schedule conventions or exercise windows and notice terms.");
+
+    private static InvalidOperationException UnrecoverableFactorSchedule()
+        => new("Declared factor-schedule economic replay requires retained legacy asset-specific terms; "
+            + "the economic payload's factor entries cannot be recovered into the flat schedule the amortization readers trust.");
 
     /// <summary>
     /// The flat keys <see cref="Convert(JsonElement, string?)"/> can reconstruct for
