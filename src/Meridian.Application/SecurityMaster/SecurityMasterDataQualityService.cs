@@ -74,13 +74,19 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
             scanned++;
             violations.AddRange(RunMinimumAttributeRules(security, now));
             violations.AddRange(RunTaxonomyRules(security, now));
+            violations.AddRange(RunTermsFormatRules(security, now));
             violations.AddRange(RunConsistencyRules(security, now));
             violations.AddRange(RunStalenessRules(security, now));
         }
 
         violations.AddRange(await RunCoverageRulesAsync(now, ct).ConfigureAwait(false));
 
-        var report = new SecurityMasterQualityReportDto(now, scanned, violations.Count, violations);
+        var untaggedTermsPayloads = await CountUntaggedTermsPayloadsAsync(ct).ConfigureAwait(false);
+
+        var report = new SecurityMasterQualityReportDto(now, scanned, violations.Count, violations)
+        {
+            UntaggedTermsPayloadCount = untaggedTermsPayloads,
+        };
         await _reportStore.SaveAsync(report, ct).ConfigureAwait(false);
 
         _logger.LogInformation(
@@ -251,6 +257,46 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
                     DataQualityRuleSeverity.Warning, now);
             }
         }
+    }
+
+    // ── Terms payload format (ADR-024 decision 5) ───────────────────────────
+
+    /// <summary>
+    /// Flags an active record whose asset-specific terms carry no declared <c>termsFormat</c> tag
+    /// (rule TX003). These are the rows the ADR-024 shape rule still classifies by inference; the
+    /// tag is stamped on the record's next write, so the rule names the record rather than asking
+    /// for a payload rewrite — ADR-024 rejected rewriting stored blobs. The report-level
+    /// <see cref="SecurityMasterQualityReportDto.UntaggedTermsPayloadCount"/> gauges the whole
+    /// stored population, inactive rows included.
+    /// </summary>
+    private static IEnumerable<DataQualityRuleViolationDto> RunTermsFormatRules(
+        SecurityProjectionRecord security, DateTimeOffset now)
+    {
+        if (SecurityTermsEnvelope.GetDeclaredFormat(security.AssetSpecificTerms) is not null)
+        {
+            yield break;
+        }
+
+        var inferredFamily = security.AssetSpecificTerms.ValueKind == JsonValueKind.Object
+            ? SecurityTermsEnvelope.ResolveFormat(security.AssetSpecificTerms)
+            : SecurityTermsFormats.Flat;
+        yield return Violation(
+            "TX003", "Untagged Terms Payload Format", DataQualityRuleCategory.TaxonomyCheck,
+            security.SecurityId, "assetSpecificTerms.termsFormat",
+            $"Asset-specific terms declare no termsFormat; the ADR-024 shape rule infers '{inferredFamily}'. " +
+            "The tag is stamped on the record's next write; the shape rule retires only when no untagged payload remains.",
+            DataQualityRuleSeverity.Warning, now);
+    }
+
+    /// <summary>
+    /// The ADR-024 decision-5 retirement-gate count over every stored row, active and inactive,
+    /// mirroring <c>select count(*) from securities where asset_specific_terms-&gt;&gt;'termsFormat'
+    /// is null</c> through the same declared-format reader every consumer uses.
+    /// </summary>
+    private async Task<int> CountUntaggedTermsPayloadsAsync(CancellationToken ct)
+    {
+        var rows = await _securityStore.LoadAllAsync(ct).ConfigureAwait(false);
+        return rows?.Count(static row => SecurityTermsEnvelope.GetDeclaredFormat(row.AssetSpecificTerms) is null) ?? 0;
     }
 
     // ── StalenessMonitor rules ──────────────────────────────────────────────

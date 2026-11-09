@@ -649,13 +649,20 @@ Documentation only: no code was changed by this pass; no tests were run.
    and the slice-6 ratchet tests fail on omission. The remaining substance — generated or
    schema-asserted codec arms and a single new-class checklist — stays under D1 and the slice-6
    codec-generation caveats.
-5. **Tag the remaining untagged payloads; retire shape detection.** ADR-024 already guards the
-   formats; the shape heuristic stays load-bearing until stored rows are tagged. Proposed as
-   remediation slice 9; the backfill migration requires the independent schema/storage review.
+5. **Tag the remaining untagged payloads; retire shape detection.** Partly superseded, and the
+   audit's remedy (this pass initially repeated it) is the alternative ADR-024 explicitly
+   rejected: rewriting stored blobs to add the tag mutates event-sourced history and makes a
+   misclassification permanent. The accepted design already stamps every write (decision 1),
+   records the classification in the `terms_format` column without touching the payload
+   (migration 042, decision 2), and gates retirement on evidence (decision 5): zero untagged
+   rows on every governed deployment plus a replay-only legacy upcaster. What was genuinely
+   missing is the evidence itself — nothing measured the decision-5 count. Taken as remediation
+   slice 9 (see the disposition below); the retirement remains ADR-024's separate, later change.
 
-Slices 8–9 and the consolidation decision item were added to the
-[remediation working plan](../engineering/plans/security-master-review-remediation-plan.md) as
-proposals by this pass. Slice 7 was re-scoped to the parity contract and implemented:
+The consolidation decision item was added to the
+[remediation working plan](../engineering/plans/security-master-review-remediation-plan.md) by
+this pass. Slices 7–9 were re-scoped against current source and implemented, each with its dated
+disposition below:
 
 ### Slice 7 disposition — term-form parity contract — 2026-11-09
 
@@ -735,6 +742,33 @@ filtered): the three new suites — 100 passed; `SecurityMasterReferenceLookupTe
 asset-pack suites — 74 passed; `SecurityTermsWriteGoldenTests` — 51 passed, write golden
 unchanged. The full local `bash scripts/ci.sh` was not run; GitHub `Meridian CI / quality-gate`
 remains authoritative.
+
+### Slice 9 disposition — the ADR-024 retirement gate is now measurable — 2026-11-09
+
+The audit's proposed remedy — backfill `termsFormat` into stored payloads by migration — is the
+alternative ADR-024 explicitly rejected (it mutates event-sourced history and makes a
+misclassification permanent), and this pass's own first framing of slice 9 repeated that
+mistake; the corrections above record it. The accepted design already stamps every write
+(decision 1) and records the classification in the non-destructive `terms_format` column
+(migration 042, decision 2). What no surface measured was decision 5's retirement gate: zero
+untagged rows on every governed deployment.
+
+Implemented: the data-quality scan raises rule `TX003` ("Untagged Terms Payload Format",
+TaxonomyCheck, Warning) for each active record whose asset-specific terms declare no
+`termsFormat`, naming the family the shape rule infers; and
+`SecurityMasterQualityReportDto.UntaggedTermsPayloadCount` gauges the whole stored population —
+inactive rows included — mirroring the decision-5 SQL through the same
+`SecurityTermsEnvelope.GetDeclaredFormat` every consumer uses. The quality-report endpoint
+already serves both workstations, so each deployment's backlog is readable evidence; the count
+only falls, because every write stamps. No stored payload is rewritten, and the shape rule
+stays load-bearing exactly as decision 5 requires until the evidence reads zero everywhere; its
+removal remains ADR-024's separate, later change behind a replay-only legacy upcaster.
+
+Validation (local, .NET SDK 10.0.403): `dotnet test tests/Meridian.Tests -c Release` filtered to
+`SecurityMasterDataQualityService|SecurityMasterExceptionCaseworkServiceTests|QualityReport` —
+40 passed, 0 failed, covering the untagged/tagged/profile-envelope rule outcomes, the
+active-plus-inactive gauge, and the zero case. The full local `bash scripts/ci.sh` was not run;
+GitHub `Meridian CI / quality-gate` remains authoritative.
 
 ---
 

@@ -183,19 +183,32 @@ Open from this slice: moving class-aware pricing callers onto the convention ove
 class first declares a non-default convention, and the quote-convention vocabulary decision
 above.
 
-## Slice 9 — Tag stored legacy payloads, then retire shape detection (proposed 2026-11-09)
+## Slice 9 — Measure the ADR-024 retirement gate; drain through stamped writes (2026-11-09)
 
-**Evidence:** D1, ADR-024; the 2026-11-09 verification pass. Three payload families share one
-`schemaVersion` key, and untagged stored rows are classified by
-`SecurityTermsEnvelope.ResolveFormat`'s shape heuristic, which ADR-024 documents and guards.
-Backfill `termsFormat` onto stored rows using the same classification the readers already apply,
-verify that no untagged payloads remain, and only then narrow the readers to declared formats.
-The heuristic stays until the verification query returns zero.
+**Evidence:** D1, ADR-024 decision 5; the 2026-11-09 verification pass. The originally proposed
+remedy — a migration backfilling `termsFormat` into stored payloads — is the alternative ADR-024
+explicitly rejected (rewriting stored blobs mutates event-sourced history and makes a
+misclassification permanent), so this slice was re-scoped to what the accepted design still
+lacked: the decision-5 gate count was not measurable anywhere. Every write already stamps the
+tag, migration 042 already records the classification in the non-destructive `terms_format`
+column, and the population drains organically as records are rewritten by ordinary writes.
 
-**Proof:** the backfill is idempotent and classifies exactly as the runtime heuristic; a
-verification query shows zero untagged rows; retained fixtures read identically before and after;
-after removal, a new untagged payload fails loudly rather than being guessed. The migration needs
-the repository's independent schema/storage review.
+**Implementation (2026-11-09):** the data-quality scan reports rule `TX003` for each active
+record whose terms declare no `termsFormat` (naming the family the shape rule infers), and
+`SecurityMasterQualityReportDto.UntaggedTermsPayloadCount` gauges the whole stored population,
+inactive rows included, mirroring the decision-5 SQL through the same
+`SecurityTermsEnvelope.GetDeclaredFormat` reader every consumer uses. The quality-report
+endpoint already serves both workstations, so each governed deployment's backlog is readable
+evidence.
+
+**Proof:** an untagged row raises TX003 naming its inferred family; a stamped row raises none;
+the gauge counts inactive rows a scan skips; a fully stamped population reports zero.
+
+**Open (the ADR's separate, later change):** when every governed deployment reports zero, retire
+the shape rule and the reserved-2 routing behind a replay-only legacy upcaster, so a new untagged
+payload fails with a precise error instead of being inferred. That change re-reads ADR-024
+decision 5 and is not implementable from this repository alone — it needs the deployment
+evidence this slice makes visible.
 
 ## Decision — single economic model consolidation (recorded 2026-11-09, not an accepted slice)
 
