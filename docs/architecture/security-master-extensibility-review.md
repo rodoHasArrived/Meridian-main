@@ -8656,7 +8656,7 @@ legacy bond loop's flow ids had been derived from `SchedulePeriodId` since `4f2e
 | Broader regression filter (SecurityMaster, FixedIncome, AssetOperations, Architecture, Schedule, Workstation, Endpoint, Contract, OpenApi) | 10,205 passed, 297 skipped, and the same 1 Docker failure (run after the change only; no baseline was taken for this filter) |
 | Guards (test-skip register, duplicate helpers, inline SHA-256, file size, warning suppressions, endpoint cancellation, contract-type parity) and `dotnet format whitespace --verify-no-changes` on the 14 changed C# files | Pass |
 | F# and dashboard suites | Not run: no F# or dashboard source changed |
-| Generated outputs, `bash scripts/ci.sh`, `Meridian CI / quality-gate` | Not run here; generated outputs are refreshed and the gate is reported on the pull request |
+| `bash scripts/ci.sh` as a whole, `Meridian CI / quality-gate` | Not run locally as a whole; the lanes are in the final table below and the gate is reported on the pull request |
 
 **Recovered economic rows (added 2026-11-09, after main gained ADR-027 stage 1 increments 1 and 2).**
 The branch was merged with main at `a43c2d891`. Those increments recover an economic document's call
@@ -8686,3 +8686,8 @@ the code before it was changed.
 | Targeted filter after the fixes | 1,775 passed, 34 skipped, the same 1 Docker failure; 30 tests added |
 | Mutation check of the fixes | 8 of 8 caught: the predicate reverted, the unset notion narrowed to null, the occurrence dropped from the id, the gate order reverted, and four mutations of the explorer rule |
 | Guards and `dotnet format whitespace --verify-no-changes` on the changed C# files | Pass |
+| Broader regression filter on the tree merged with main at `18affe503`, after the fixes | 10,368 passed, 298 skipped, the same 1 Docker failure |
+| PostgreSQL-backed tests against scratch PostgreSQL 16 Security Master and ledger databases (Postgres, Security Master integration, AssetOperations, AssetObligation, BondExercise) | 1,516 passed, 0 failed, 146 skipped |
+| Schema-control `verify` against main | Pass; no manifest change was needed |
+| Maintained generation, `check-generated-output`, `validate-doc-hashes` | Generation converges (the UML step is advisory and needs Docker); generated output is clean; 0 hash errors after the Contracts, Instruments and Ui.Shared modules were re-reviewed |
+| `verify-docs` lane and the generated-output repair pre-check against main | Pass; the pre-check reports `ready` with no changes |
