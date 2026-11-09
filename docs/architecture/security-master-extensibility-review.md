@@ -774,6 +774,24 @@ Validation (local, .NET SDK 10.0.403): `dotnet test tests/Meridian.Tests -c Rele
 active-plus-inactive gauge, and the zero case. The full local `bash scripts/ci.sh` was not run;
 GitHub `Meridian CI / quality-gate` remains authoritative.
 
+### ADR-027 stage-1 increment 6 — the identity gate; stage 1 complete — 2026-11-09
+
+Stage 1's close-out landed: economic-only replay runs a byte-identity gate after the class-aware
+flatten — the candidate without `retainedEconomicTerms` is rebuilt into its next economic
+document, and when that reproduces the source byte-for-byte the carry is dropped, because the
+flat row holds the whole document. The gate fails closed (any byte difference or exception keeps
+the carry and its fold-on-read), never rewrites a stored payload, and leaves refusals refusing.
+The class flattenings gained the inverses for the increment-5 modules (CapFloor's four
+`floatingRate` keys; Warrant's `multiplier`), so those classes' replays recover them. Today's
+verdicts, pinned rather than assumed: CertificateOfDeposit and StructuredCredit image twins shed
+the carry; Bond's floating-coupon twin does not yet rebuild byte-identically and keeps it;
+hand-written corpus literals keep it. The corpus golden's reviewed diff is exactly that story.
+With increments 1–6 landed, ADR-027 stage 1 is complete: every module the serializer emits has
+either a declared flat home with fail-closed recovery or an explicitly pinned carry, and new
+image documents stop carrying `retainedEconomicTerms` the moment their class's codec round-trips
+them completely — the gate turns each remaining carry into a measurable, per-class fact instead
+of a permanent workaround.
+
 ### ADR-027 stage-3 S3-A — codec-arm gap audit — 2026-11-09
 
 What the schema-driven guard (`SecurityAssetTermsSchemaRoundTripTests` and companions) already

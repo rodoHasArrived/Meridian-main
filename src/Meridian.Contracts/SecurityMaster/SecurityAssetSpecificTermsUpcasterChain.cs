@@ -1139,7 +1139,7 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             Map("effectiveDate", ("maturity", "effectiveDate")),
             Map("expiryDate", MaturityDate)
         ]),
-        ("Warrant", [Map("expiry", MaturityDate)]),
+        ("Warrant", [Map("expiry", MaturityDate), Map("multiplier", ("tradingParameters", "contractMultiplier"))]),
         ("FxForward", [Map("tradeDate", ("maturity", "effectiveDate")), Map("valueDate", MaturityDate)]),
         ("NonDeliverableForward", [Map("fixingDate", ("maturity", "effectiveDate")), Map("valueDate", MaturityDate)]),
         ("CreditDefaultSwap",
@@ -1152,7 +1152,17 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             new FlatTermMapping("fixedCouponBps", [("coupon", "couponRate")], Scale: 10000m)
         ]),
         ("Swaption", [Map("expiry", MaturityDate), Map("underlyingEffectiveDate", ("maturity", "effectiveDate"))]),
-        ("CapFloor", [Map("effectiveDate", ("maturity", "effectiveDate")), Map("maturityDate", MaturityDate)]),
+        ("CapFloor",
+        [
+            Map("effectiveDate", ("maturity", "effectiveDate")),
+            Map("maturityDate", MaturityDate),
+            // ADR-027 stage 1 increment 6: the floatingRate module (serialized since increment 5)
+            // recovers the flat keys termsFromKind feeds it from.
+            Map("referenceIndex", ("floatingRate", "referenceIndex")),
+            Map("capStrike", ("floatingRate", "capRate")),
+            Map("floorStrike", ("floatingRate", "floorRate")),
+            Map("resetFrequency", ("floatingRate", "resetFrequency"))
+        ]),
         ("StructuredNote",
         [
             Map("maturity", MaturityDate),

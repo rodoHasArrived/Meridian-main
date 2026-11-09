@@ -130,7 +130,9 @@ internal static class SecurityEconomicDefinitionAdapter
         // branch is already stamped at it.
         var assetSpecificTerms = economic.LegacyAssetSpecificTerms is { } legacyTerms
             ? SecurityAssetClassTermsUpgrader.UpgradeForRead(legacyAssetClass, legacyTerms.Clone())
-            : SecurityAssetSpecificTermsUpcasterChain.Normalize(economic.EconomicTerms, legacyAssetClass).Payload;
+            : StripRetainedWhenLossless(
+                SecurityAssetSpecificTermsUpcasterChain.Normalize(economic.EconomicTerms, legacyAssetClass).Payload,
+                economic);
         var primaryIdentifier = economic.Identifiers.FirstOrDefault(identifier => identifier.IsPrimary);
 
         return new SecurityProjectionRecord(
@@ -149,6 +151,46 @@ internal static class SecurityEconomicDefinitionAdapter
             economic.EffectiveTo,
             economic.Identifiers,
             aliases ?? Array.Empty<SecurityAliasDto>());
+    }
+
+    /// <summary>
+    /// ADR-027 stage 1 increment 6: ends <c>retainedEconomicTerms</c> for documents the flat
+    /// family holds completely. After the economic-only flatten, the candidate (retained carry
+    /// removed) is rebuilt into its next economic document; when that reproduces the source
+    /// byte-for-byte, the flat row IS the document and the carry adds nothing, so it is dropped.
+    /// Byte equality is deliberately the strictest test: image documents written by the current
+    /// serializer pass; historical shapes (fewer module keys, different member forms) and
+    /// hand-shaped documents fail and keep the carry with its fold-on-read, and any exception on
+    /// the trial rebuild fails closed to keeping it. No stored payload is rewritten — this
+    /// changes only what a freshly rebuilt projection carries.
+    /// </summary>
+    private static JsonElement StripRetainedWhenLossless(JsonElement flattened, SecurityEconomicDefinitionRecord economic)
+    {
+        try
+        {
+            if (!SecurityTermsEnvelope.TryGetRetainedEconomicTerms(flattened, out _))
+            {
+                return flattened;
+            }
+
+            var candidateTerms = RemoveRetainedKey(flattened);
+            var candidate = ToProjection(economic with { LegacyAssetSpecificTerms = candidateTerms });
+            var rebuilt = ToEconomicRecord(candidate).EconomicTerms;
+            return string.Equals(rebuilt.GetRawText(), economic.EconomicTerms.GetRawText(), StringComparison.Ordinal)
+                ? candidateTerms
+                : flattened;
+        }
+        catch (Exception exception) when (exception is InvalidOperationException or ArgumentException or KeyNotFoundException or JsonException)
+        {
+            return flattened;
+        }
+    }
+
+    private static JsonElement RemoveRetainedKey(JsonElement flattened)
+    {
+        var node = JsonNode.Parse(flattened.GetRawText())!.AsObject();
+        node.Remove(SecurityTermsEnvelope.RetainedEconomicTermsKey);
+        return JsonSerializer.SerializeToElement(node);
     }
 
     /// <summary>
