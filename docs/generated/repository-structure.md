@@ -11197,6 +11197,7 @@ Meridian-main
 │   │   │   ├── FundStructureScopePostgresTests.Fixture.cs
 │   │   │   ├── FundStructureTenantBackfillPostgresTests.cs
 │   │   │   ├── GracefulShutdownIntegrationTests.cs
+│   │   │   ├── LiveProviderFactAttribute.cs
 │   │   │   ├── ProviderGoldenPathScenarioGenerator.cs
 │   │   │   ├── ProviderGoldenPathTransactionLedgerReconciliationTests.cs
 │   │   │   ├── StatementImportCaseworkEvidenceTests.cs
@@ -12785,7 +12786,7 @@ Meridian-main
 │   │   │   └── usage.md
 │   │   ├── man
 │   │   │   └── actionlint.1
-│   │   ├── actionlint.exe
+│   │   ├── .gitignore
 │   │   ├── LICENSE.txt
 │   │   └── README.md
 │   ├── codex
