@@ -793,20 +793,24 @@ public sealed class DirectLendingViewModel : BindableBase
             return "This loan holds no unapplied cash.";
         }
 
-        if (!decimal.TryParse(amountText, System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.CurrentCulture, out amount) || amount <= 0m)
+        if (!decimal.TryParse(amountText, System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.CurrentCulture, out var parsed) || parsed <= 0m)
         {
-            amount = 0m;
             return "Enter a positive amount.";
         }
 
-        if (amount > held)
+        if (parsed > held)
         {
             return $"The amount exceeds the {held:C2} held.";
         }
 
-        return isRefund && string.IsNullOrWhiteSpace(externalRef)
-            ? "Enter the external reference of the outgoing payment before refunding."
-            : null;
+        if (isRefund && string.IsNullOrWhiteSpace(externalRef))
+        {
+            return "Enter the external reference of the outgoing payment before refunding.";
+        }
+
+        // The amount is only handed back when the action is allowed.
+        amount = parsed;
+        return null;
     }
 
     public static string BuildUnappliedCashResultText(
