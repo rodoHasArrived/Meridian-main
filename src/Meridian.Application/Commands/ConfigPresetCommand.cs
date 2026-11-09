@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using Meridian.Core.Config;
 using Meridian.Platform.Results;
 using Meridian.Application.Services;
+using Meridian.Storage.Archival;
 using Serilog;
 
 namespace Meridian.Application.Commands;
@@ -107,7 +108,8 @@ internal sealed class ConfigPresetCommand : ICliCommand
         }
 
         var json = JsonSerializer.Serialize(config, JsonOptions);
-        await File.WriteAllTextAsync(configPath, json, ct);
+        // Atomic replace: an interrupted write must not leave a truncated config behind.
+        await AtomicFileWriter.WriteAsync(configPath, json, ct);
 
         Console.WriteLine($"  Configuration saved to: {configPath}");
         Console.WriteLine();

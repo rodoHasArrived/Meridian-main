@@ -34,6 +34,34 @@ public sealed class ConfigSchemaIntegrationTests
         sampleJson.Should().Contain("\"$schema\": \"./appsettings.schema.json\"");
     }
 
+    [Fact]
+    public void SampleConfig_UsesOnlyTopLevelKeysDeclaredByTheSchema()
+    {
+        // The schema root sets additionalProperties=false, so any sample key it does not declare
+        // is flagged by every editor that honours the sample's $schema reference.
+        var repoRoot = ResolveRepoRoot();
+        var readOptions = new JsonDocumentOptions
+        {
+            CommentHandling = JsonCommentHandling.Skip,
+            AllowTrailingCommas = true
+        };
+        using var sample = JsonDocument.Parse(
+            File.ReadAllText(Path.Combine(repoRoot, "config", "appsettings.sample.json")), readOptions);
+        using var schema = JsonDocument.Parse(
+            File.ReadAllText(Path.Combine(repoRoot, "config", "appsettings.schema.json")));
+
+        schema.RootElement.GetProperty("additionalProperties").GetBoolean().Should().BeFalse();
+        var declared = schema.RootElement.GetProperty("properties")
+            .EnumerateObject()
+            .Select(property => property.Name)
+            .ToHashSet(StringComparer.Ordinal);
+
+        sample.RootElement.EnumerateObject()
+            .Select(property => property.Name)
+            .Where(name => !declared.Contains(name))
+            .Should().BeEmpty("every top-level sample key must be declared in appsettings.schema.json");
+    }
+
     private static string ResolveRepoRoot()
     {
         var candidate = new DirectoryInfo(AppContext.BaseDirectory);

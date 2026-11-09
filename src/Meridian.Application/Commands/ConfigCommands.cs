@@ -1,6 +1,7 @@
 using Meridian.Core.Config;
 using Meridian.Platform.Results;
 using Meridian.Application.Services;
+using Meridian.Storage.Archival;
 using Serilog;
 
 namespace Meridian.Application.Commands;
@@ -157,7 +158,8 @@ internal sealed class ConfigCommands : ICliCommand
         if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
             Directory.CreateDirectory(dir);
 
-        File.WriteAllText(outputPath, template.Json);
+        // Atomic replace: an interrupted write must not leave a truncated config behind.
+        AtomicFileWriter.Write(outputPath, template.Json);
         Console.WriteLine($"Generated {template.Name} configuration template: {outputPath}");
 
         if (template.EnvironmentVariables?.Count > 0)
