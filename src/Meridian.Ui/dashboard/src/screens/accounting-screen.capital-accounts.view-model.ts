@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   getCapitalAccountWorkbench,
   type CapitalAccountWorkbenchQuery,
@@ -42,21 +42,39 @@ export function useCapitalAccountWorkbenchViewModel(
   search = "",
   services: CapitalAccountWorkbenchServices = defaultCapitalAccountWorkbenchServices
 ): CapitalAccountWorkbenchViewModel {
-  const [workbench, setWorkbench] = useState<CapitalAccountWorkbench | null>(null);
+  const [loadedWorkbench, setLoadedWorkbench] = useState<{
+    query: CapitalAccountWorkbenchQuery;
+    workbench: CapitalAccountWorkbench;
+  } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<ApiErrorDisplay | null>(null);
   const query = useMemo(() => parseCapitalAccountWorkbenchQuery(search), [search]);
+  const refreshRevision = useRef(0);
+  // A workbench is only shown for the scope it was requested for, so a changed fund or
+  // period never renders the previous scope's capital accounts while its own load runs.
+  const workbench = loadedWorkbench?.query === query ? loadedWorkbench.workbench : null;
 
   const refresh = useCallback(async () => {
+    // Only the latest request may apply its outcome; a slower response for an earlier
+    // scope must not replace the current one.
+    const requestRevision = ++refreshRevision.current;
+    const isCurrent = () => refreshRevision.current === requestRevision;
     setLoading(true);
     setError(null);
     try {
-      setWorkbench(await services.getWorkbench(query));
+      const next = await services.getWorkbench(query);
+      if (isCurrent()) {
+        setLoadedWorkbench({ query, workbench: next });
+      }
     } catch (err) {
-      setError(describeApiError(err, "Capital Account Workbench could not load."));
-      setWorkbench(null);
+      if (isCurrent()) {
+        setError(describeApiError(err, "Capital Account Workbench could not load."));
+        setLoadedWorkbench(null);
+      }
     } finally {
-      setLoading(false);
+      if (isCurrent()) {
+        setLoading(false);
+      }
     }
   }, [query, services]);
 

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
   approveRiskEscalation,
@@ -68,19 +68,35 @@ export function useGovernedApprovalsViewModel(
   const [errorText, setErrorText] = useState<string | null>(null);
   const [statusText, setStatusText] = useState<string | null>(null);
   const [forbidden, setForbidden] = useState(false);
+  const refreshRevisionRef = useRef(0);
 
   const refresh = useCallback(async () => {
     if (!enabled) {
       return;
     }
 
+    // Polls overlap with each other and with the read-back that follows a resolution.
+    // Only the most recently issued read may apply its outcome: an older response landing
+    // late would put an escalation this operator already resolved back in the queue.
+    const revision = refreshRevisionRef.current + 1;
+    refreshRevisionRef.current = revision;
+
     try {
-      setEscalations(await services.getRiskEscalations());
+      const next = await services.getRiskEscalations();
+      if (refreshRevisionRef.current !== revision) {
+        return;
+      }
+
+      setEscalations(next);
       setForbidden(false);
       // A recovered poll must retire the outage banner. Leaving it up beside current data
       // gives an operator no way to tell a live failure from a healed one.
       setErrorText(null);
     } catch (error) {
+      if (refreshRevisionRef.current !== revision) {
+        return;
+      }
+
       if (error instanceof ApiError && error.status === 403) {
         // Not an error state: this session simply does not manage orders. Latch it so the
         // poll stops re-requesting something it will never be allowed to have.

@@ -1,4 +1,4 @@
-import { act, renderHook } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import {
   useCapitalAccountWorkbenchViewModel,
@@ -170,7 +170,76 @@ function createCapitalAccountWorkbench(
   };
 }
 
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((promiseResolve, promiseReject) => {
+    resolve = promiseResolve;
+    reject = promiseReject;
+  });
+
+  return { promise, resolve, reject };
+}
+
 describe("accounting capital account view model", () => {
+  it("applies only the latest scope's workbench when an earlier request resolves last", async () => {
+    const alpha = deferred<CapitalAccountWorkbench>();
+    const beta = deferred<CapitalAccountWorkbench>();
+    const services: CapitalAccountWorkbenchServices = {
+      getWorkbench: vi.fn((query) => (query.fundProfileId === "fund-alpha" ? alpha.promise : beta.promise))
+    };
+    const alphaWorkbench: CapitalAccountWorkbench = {
+      ...createCapitalAccountWorkbench([]),
+      workbenchRoute: "/api/ledger/private-capital/capital-account-workbench?fundProfileId=fund-alpha"
+    };
+    const betaWorkbench: CapitalAccountWorkbench = {
+      ...createCapitalAccountWorkbench([]),
+      fundProfileId: "fund-beta",
+      workbenchRoute: "/api/ledger/private-capital/capital-account-workbench?fundProfileId=fund-beta"
+    };
+
+    const { result, rerender } = renderHook(
+      ({ search }) => useCapitalAccountWorkbenchViewModel(true, search, services),
+      { initialProps: { search: "?fundProfileId=fund-alpha" } }
+    );
+    rerender({ search: "?fundProfileId=fund-beta" });
+    expect(services.getWorkbench).toHaveBeenCalledTimes(2);
+
+    await act(async () => {
+      beta.resolve(betaWorkbench);
+    });
+    expect(result.current.workbenchRouteLabel).toBe(betaWorkbench.workbenchRoute);
+    expect(result.current.loading).toBe(false);
+
+    // The earlier fund's response lands after the current one and must be discarded.
+    await act(async () => {
+      alpha.resolve(alphaWorkbench);
+    });
+    expect(result.current.workbenchRouteLabel).toBe(betaWorkbench.workbenchRoute);
+    expect(result.current.loading).toBe(false);
+    expect(result.current.errorText).toBeNull();
+  });
+
+  it("stops showing the previous scope's workbench while the next scope loads", async () => {
+    const beta = deferred<CapitalAccountWorkbench>();
+    const services: CapitalAccountWorkbenchServices = {
+      getWorkbench: vi.fn((query) =>
+        query.fundProfileId === "fund-alpha" ? Promise.resolve(createCapitalAccountWorkbench([])) : beta.promise)
+    };
+
+    const { result, rerender } = renderHook(
+      ({ search }) => useCapitalAccountWorkbenchViewModel(true, search, services),
+      { initialProps: { search: "?fundProfileId=fund-alpha" } }
+    );
+    await waitFor(() => expect(result.current.investorAccounts).toHaveLength(1));
+
+    rerender({ search: "?fundProfileId=fund-beta" });
+
+    expect(result.current.available).toBe(false);
+    expect(result.current.investorAccounts).toEqual([]);
+    expect(result.current.loading).toBe(true);
+  });
+
   it("keeps the workbench unavailable when the first load fails", async () => {
     const request = Promise.reject(new Error("capital accounts offline"));
     const services: CapitalAccountWorkbenchServices = {

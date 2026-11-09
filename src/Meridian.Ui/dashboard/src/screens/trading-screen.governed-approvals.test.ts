@@ -38,7 +38,100 @@ function services(overrides: Partial<GovernedApprovalServices> = {}): GovernedAp
   };
 }
 
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((promiseResolve, promiseReject) => {
+    resolve = promiseResolve;
+    reject = promiseReject;
+  });
+
+  return { promise, resolve, reject };
+}
+
 describe("useGovernedApprovalsViewModel", () => {
+  it("discards an older poll response that arrives after a newer one", async () => {
+    const older = deferred<RiskEscalation[]>();
+    const newer = deferred<RiskEscalation[]>();
+    const api = services({
+      getRiskEscalations: vi.fn()
+        .mockReturnValueOnce(older.promise)
+        .mockReturnValueOnce(newer.promise)
+    });
+    const { result } = renderHook(() => useGovernedApprovalsViewModel(api));
+
+    let secondPoll!: Promise<void>;
+    act(() => {
+      secondPoll = result.current.refresh();
+    });
+    expect(api.getRiskEscalations).toHaveBeenCalledTimes(2);
+
+    // The newer read shows the escalation already resolved elsewhere.
+    await act(async () => {
+      newer.resolve([]);
+      await secondPoll;
+    });
+    expect(result.current.escalations).toEqual([]);
+
+    // The older read still lists it and must not bring it back.
+    await act(async () => {
+      older.resolve([escalation()]);
+      await older.promise;
+    });
+    expect(result.current.escalations).toEqual([]);
+  });
+
+  it("does not let an in-flight poll restore an escalation resolved locally", async () => {
+    const stalePoll = deferred<RiskEscalation[]>();
+    const api = services({
+      getRiskEscalations: vi.fn()
+        .mockResolvedValueOnce([escalation()])
+        .mockReturnValueOnce(stalePoll.promise)
+        .mockResolvedValue([])
+    });
+    const { result } = renderHook(() => useGovernedApprovalsViewModel(api));
+    await waitFor(() => expect(result.current.escalations).toHaveLength(1));
+
+    // A poll goes out and is still in flight while the operator approves.
+    act(() => {
+      void result.current.refresh();
+    });
+    act(() => result.current.setReason("esc-1", "cleared with the desk"));
+    await act(async () => {
+      await result.current.approve("esc-1");
+    });
+    expect(result.current.escalations).toEqual([]);
+
+    await act(async () => {
+      stalePoll.resolve([escalation()]);
+      await stalePoll.promise;
+    });
+    expect(result.current.escalations).toEqual([]);
+    expect(result.current.statusText).toBe("Approved and released.");
+  });
+
+  it("ignores a failure from a superseded poll", async () => {
+    const older = deferred<RiskEscalation[]>();
+    const api = services({
+      getRiskEscalations: vi.fn()
+        .mockReturnValueOnce(older.promise)
+        .mockResolvedValue([escalation()])
+    });
+    const { result } = renderHook(() => useGovernedApprovalsViewModel(api));
+
+    await act(async () => {
+      await result.current.refresh();
+    });
+    expect(result.current.escalations).toHaveLength(1);
+
+    await act(async () => {
+      older.reject(new Error("gateway timeout"));
+      await older.promise.catch(() => undefined);
+    });
+    expect(result.current.errorText).toBeNull();
+    expect(result.current.escalations).toHaveLength(1);
+  });
+
   it("loads the caller's parked escalations", async () => {
     const { result } = renderHook(() => useGovernedApprovalsViewModel(services()));
 
