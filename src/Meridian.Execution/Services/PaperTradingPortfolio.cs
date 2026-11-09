@@ -218,7 +218,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
                             netted[pos.Symbol] = (
                                 (long)pos.Quantity,
                                 pos.Quantity,
-                                pos.CostBasis,
+                                pos.ReportedCostBasis,
                                 pos.UnrealisedPnl,
                                 account.RealisedPnl,
                                 pos.EconomicMultiplier);
@@ -233,7 +233,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
                         ExactQuantity = kv.Value.exactQty,
                         // The multiplier this view's UnrealizedPnl was computed with, so readers
                         // that recover a mark or value from quote × quantity × multiplier agree
-                        // with the book (1 for shares and, for now, futures).
+                        // with the book (1 for shares and notional-model futures).
                         ContractMultiplier = kv.Value.multiplier
                     },
                     StringComparer.OrdinalIgnoreCase);
@@ -355,8 +355,11 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
                 return MarginCallStatus.NoMarginRequired(accountId);
 
             var marginBorrowed = account.Positions.Values.Sum(static p => p.MarginBorrowed);
-            var effectiveCash = account.Cash - marginBorrowed;
-            var executionPositions = account.Positions.ToDictionary(
+            // Variation-margin futures carry no initial margin here (none is modelled yet) and
+            // hold no notional: only their unsettled change since the last settlement is equity.
+            var effectiveCash = account.Cash - marginBorrowed
+                + account.Positions.Values.Where(static p => p.UsesVariationMargin).Sum(static p => p.SignedMarketValue);
+            var executionPositions = account.Positions.Where(static kv => !kv.Value.UsesVariationMargin).ToDictionary(
                 kv => kv.Key,
                 // The margin models size a position as quantity × ContractMultiplier. Cash, loan
                 // and collateral here move at the position's money scale (the contract multiplier
@@ -481,8 +484,9 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
     /// read per fund and keeps a derivative position's exposure from being measured as if each
     /// contract were one share. For options the multiplier also scales the money: cash, ledger,
     /// lot basis, market value and P&amp;L move at quote × quantity × multiplier, while the stored
-    /// cost basis stays a per-unit quote. Futures stay at 1× pending a variation-margin model
-    /// (see <c>ResolveEconomicMultiplier</c>).
+    /// cost basis stays a per-unit quote. Futures settle daily variation margin instead: no
+    /// notional moves, only price changes scaled by the multiplier (see
+    /// <c>ApplyVariationMarginFill</c> and <see cref="ApplyVariationMarginSettlement"/>).
     /// </summary>
     public void ApplyFill(
         ExecutionReport report,
@@ -546,10 +550,11 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         if (!Enum.IsDefined(lotUnit))
             throw new ArgumentOutOfRangeException(nameof(report), "Lot denomination must be a defined unit.");
 
-        // A stamped fill replays at exactly the scale it was booked at; an unstamped live fill
+        // A stamped fill replays on exactly the model it was booked on; an unstamped live fill
         // resolves it now (and the OMS stamps the increment before it is persisted).
+        var variationMargin = ResolveVariationMargin(report, faceValueSizing, assetClassResolved ? descriptor : null);
         var economicMultiplier = report.BookedMoneyMultiplier
-            ?? ResolveEconomicMultiplier(report, multiplier, faceValueSizing, assetClassResolved ? descriptor : null);
+            ?? ResolveEconomicMultiplier(report, multiplier, faceValueSizing, assetClassResolved ? descriptor : null, variationMargin);
         if (economicMultiplier <= 0m)
             throw new ArgumentOutOfRangeException(nameof(report), "Booked money multiplier must be positive.");
 
@@ -566,7 +571,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
 
             ApplyFillToAccount(account, report.Symbol, signedQty, fillPrice,
                 explicitCosts, report.Timestamp, report.OrderId,
-                ownerAccountId, multiplier, faceValueSizing, lotUnit, economicMultiplier);
+                ownerAccountId, multiplier, faceValueSizing, lotUnit, economicMultiplier, variationMargin);
         }
     }
 
@@ -574,12 +579,18 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
     /// Applies a fill read back from a durable paper-session record. A record stamped with
     /// <see cref="ExecutionReport.BookedMoneyMultiplier"/> replays at exactly that scale. A record
     /// without the stamp was written before this book scaled contract premiums and booked its cash
-    /// at 1×, so it replays at 1× rather than being silently reinterpreted.
+    /// at 1×, so it replays at 1× rather than being silently reinterpreted. Likewise a record
+    /// without <see cref="ExecutionReport.BookedVariationMargin"/> was booked on the notional model
+    /// and replays on it, even when it is a futures fill.
     /// </summary>
     internal void ApplyRecordedFill(ExecutionReport report)
     {
         ArgumentNullException.ThrowIfNull(report);
-        ApplyFill(report.BookedMoneyMultiplier is null ? report with { BookedMoneyMultiplier = 1m } : report);
+        ApplyFill(report with
+        {
+            BookedMoneyMultiplier = report.BookedMoneyMultiplier ?? 1m,
+            BookedVariationMargin = report.BookedVariationMargin ?? false
+        });
     }
 
     /// <summary>
@@ -604,6 +615,44 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
     }
 
     /// <summary>
+    /// Whether an open position in the default account is booked under daily variation margin, or
+    /// <see langword="null"/> when nothing is held in <paramref name="symbol"/>. Like the money
+    /// scale, a fill that adds to or closes a position continues on its model, so a futures
+    /// position restored from notional-model records stays on that model until it is flat.
+    /// </summary>
+    internal bool? GetOpenVariationMargin(string symbol)
+    {
+        lock (_lock)
+        {
+            return _accounts.TryGetValue(DefaultAccountId, out var account)
+                && account.Positions.TryGetValue(symbol, out var pos)
+                && pos.Quantity != 0m
+                    ? pos.UsesVariationMargin
+                    : null;
+        }
+    }
+
+    /// <summary>
+    /// Whether <see cref="ApplyFill(string, ExecutionReport, string?, decimal, bool)"/> books a
+    /// fill under daily variation margin: the report's stamp when it has one, otherwise the
+    /// catalog fact <see cref="SecurityAssetClassDescriptor.SettlesDailyVariationMargin"/>.
+    /// </summary>
+    internal static bool ResolveVariationMargin(ExecutionReport report, bool usesFaceValuePercentageOfPar)
+    {
+        ArgumentNullException.ThrowIfNull(report);
+        var faceValueSizing = usesFaceValuePercentageOfPar || report.UsesFaceValuePercentageOfPar;
+        var descriptor = SecurityAssetClassCatalog.TryResolveLabel(report.AssetClass, out var resolved) ? resolved : null;
+        return ResolveVariationMargin(report, faceValueSizing, descriptor);
+    }
+
+    private static bool ResolveVariationMargin(
+        ExecutionReport report,
+        bool faceValueSizing,
+        SecurityAssetClassDescriptor? descriptor)
+        => report.BookedVariationMargin
+            ?? (!faceValueSizing && descriptor is { SettlesDailyVariationMargin: true });
+
+    /// <summary>
     /// The money multiplier <see cref="ApplyFill(string, ExecutionReport, string?, decimal, bool)"/>
     /// books a fill at, for callers that must stamp or mirror it (the OMS stamps it on the fill
     /// increment before persisting it and carries it into the accounting event).
@@ -622,7 +671,8 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         if (multiplier <= 0m)
             throw new ArgumentOutOfRangeException(nameof(contractMultiplier), "Lot multiplier must be positive.");
         var descriptor = SecurityAssetClassCatalog.TryResolveLabel(report.AssetClass, out var resolved) ? resolved : null;
-        return ResolveEconomicMultiplier(report, multiplier, faceValueSizing, descriptor);
+        return ResolveEconomicMultiplier(
+            report, multiplier, faceValueSizing, descriptor, ResolveVariationMargin(report, faceValueSizing, descriptor));
     }
 
     /// <summary>
@@ -634,10 +684,10 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
     /// </summary>
     /// <remarks>
     /// Face-value fills are already converted to dollars per unit of face, so they stay at 1.
-    /// Futures also stay at 1 on purpose: no notional changes hands, and debiting the full
-    /// contract value would be wrong. They need a variation-margin cash model (see
-    /// <c>FuturePosition.SettleDaily</c>), which this book does not have yet. Other resolved
-    /// asset classes keep the 1× behaviour they had. An unresolved report that carries an option
+    /// Futures booked under variation margin use the contract multiplier too, but only to scale
+    /// the price changes they settle; no notional moves (see <c>ApplyVariationMarginFill</c>).
+    /// A futures position restored from notional-model records stays at 1× until flat. Other
+    /// resolved asset classes keep the 1× behaviour they had. An unresolved report that carries an option
     /// identity or a non-unit multiplier is the order-management option path: the OMS only
     /// records a multiplier above 1 from an option contract.
     /// </remarks>
@@ -645,10 +695,14 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         ExecutionReport report,
         decimal multiplier,
         bool faceValueSizing,
-        SecurityAssetClassDescriptor? descriptor)
+        SecurityAssetClassDescriptor? descriptor,
+        bool variationMargin)
     {
         if (faceValueSizing)
             return 1m;
+
+        if (variationMargin)
+            return multiplier;
 
         if (descriptor is not null)
         {
@@ -811,11 +865,17 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         decimal contractMultiplier = 1m,
         bool usesFaceValuePricing = false,
         SecurityLotUnitKind lotUnit = SecurityLotUnitKind.Shares,
-        decimal economicMultiplier = 1m)
+        decimal economicMultiplier = 1m,
+        bool variationMargin = false)
     {
         if (!account.Positions.TryGetValue(symbol, out var pos))
         {
-            pos = new PaperPosition(symbol, price) { LotUnit = lotUnit, EconomicMultiplier = economicMultiplier };
+            pos = new PaperPosition(symbol, price)
+            {
+                LotUnit = lotUnit,
+                EconomicMultiplier = economicMultiplier,
+                UsesVariationMargin = variationMargin
+            };
             // Seed the exact attribution multiplier: AttributeFill only ever raises it, so a valid
             // multiplier below 1 would otherwise stay at the default and fail the equality check
             // on the very next fill.
@@ -826,14 +886,20 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         {
             throw new InvalidOperationException($"Fill lot denomination {lotUnit} does not match the open {pos.LotUnit} position for '{symbol}'.");
         }
-        else if (pos.EconomicMultiplier != economicMultiplier)
+        else if (pos.EconomicMultiplier != economicMultiplier || pos.UsesVariationMargin != variationMargin)
         {
             if (pos.IsFlatWithoutLots)
             {
                 // Nothing is held, only fund attribution remains (for example an orphaned tally
-                // after a restored legacy 1x position was closed). The new holding opens at its
-                // own scale; the owner tallies are kept so real offsetting exposure survives.
-                pos.ResetMoneyScale(economicMultiplier);
+                // after a restored legacy 1x position was closed). The new holding opens on its
+                // own model; the owner tallies are kept so real offsetting exposure survives.
+                pos.ResetMoneyScale(economicMultiplier, variationMargin);
+            }
+            else if (pos.UsesVariationMargin != variationMargin)
+            {
+                // A notional-model lot and a variation-margin lot settle cash differently.
+                throw new InvalidOperationException(
+                    $"Fill booking model (variation margin: {variationMargin}) does not match the open position (variation margin: {pos.UsesVariationMargin}) for '{symbol}'.");
             }
             else
             {
@@ -864,7 +930,11 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         // A fill that crosses through zero closes the existing side first, then opens
         // the residual on the opposite side — the residual must not be dropped.
         // Commission is charged once, on the closing leg.
-        if (signedQty > 0 && pos.Quantity < 0)
+        if (pos.UsesVariationMargin)
+        {
+            ApplyVariationMarginFill(account, pos, symbol, signedQty, price, commission, ts);
+        }
+        else if (signedQty > 0 && pos.Quantity < 0)
         {
             var coverQty = Math.Min(signedQty, -pos.Quantity);
             ApplyCoverShort(account, pos, symbol, coverQty, price, commission, ts);
@@ -901,6 +971,141 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         // gross limits must see. Only drop the position when nobody is left holding it.
         if (pos.Quantity == 0m && !pos.HasOwnerExposure)
             account.Positions.Remove(symbol);
+    }
+
+    /// <summary>
+    /// Books a fill on a position that settles daily variation margin. Opening or adding moves no
+    /// notional: the contracts are carried at <see cref="PaperPosition.LastSettlementPrice"/>, the
+    /// quantity-weighted price at which their unsettled change starts. Reducing or closing pays or
+    /// receives only the change since that price, and books it as realized P&amp;L, so the cash a
+    /// round trip moves equals the sum of its settlements and its closing leg.
+    /// </summary>
+    private void ApplyVariationMarginFill(
+        AccountState account,
+        PaperPosition pos,
+        string symbol,
+        decimal signedQty,
+        decimal price,
+        decimal commission,
+        DateTimeOffset ts)
+    {
+        var remaining = signedQty;
+
+        if (pos.Quantity != 0m && Math.Sign(signedQty) != Math.Sign(pos.Quantity))
+        {
+            var closeQty = Math.Min(Math.Abs(signedQty), Math.Abs(pos.Quantity));
+            var signedClose = Math.Sign(pos.Quantity) * closeQty;
+            pos.ConsumeLots(closeQty, _lotSelectionMethod, isCoveringShort: pos.Quantity < 0m);
+
+            var cashFlow = pos.Money(signedClose, price - pos.LastSettlementPrice);
+            pos.Quantity -= signedClose;
+            account.Cash += cashFlow;
+            account.RealisedPnl += cashFlow;
+            PostVariationMarginEntry(symbol, cashFlow, ts, $"Close {closeQty} {symbol} @ {price:F4} (variation margin)");
+
+            if (pos.Quantity == 0m)
+            {
+                pos.CostBasis = 0m;
+                pos.LastSettlementPrice = 0m;
+            }
+
+            remaining = signedQty + signedClose;
+        }
+
+        if (remaining != 0m)
+        {
+            var heldQty = Math.Abs(pos.Quantity);
+            var addQty = Math.Abs(remaining);
+            pos.LastSettlementPrice = heldQty == 0m
+                ? price
+                : (pos.LastSettlementPrice * heldQty + price * addQty) / (heldQty + addQty);
+            pos.AddLot(remaining, price, ts);
+            var newQty = pos.Quantity + remaining;
+            pos.CostBasis = pos.OpenCostBasis / (Math.Abs(newQty) * pos.EconomicMultiplier);
+            pos.Quantity = newQty;
+        }
+
+        account.Cash -= commission;
+    }
+
+    /// <summary>
+    /// Settles the daily variation margin of an open futures position in <paramref name="accountId"/>
+    /// at <paramref name="settlementPrice"/>: cash and realized P&amp;L move by
+    /// (settlement − last settlement) × quantity × multiplier, and the settlement becomes the new
+    /// reference price, so the position's unrealized P&amp;L returns to zero at that price. Mirrors
+    /// <c>FuturePosition.SettleDaily</c>. Returns the cash moved; zero, and nothing changes, for a
+    /// flat position, a notional-model position, or an account or symbol that is not held.
+    /// </summary>
+    public decimal ApplyVariationMarginSettlement(
+        string accountId,
+        string symbol,
+        decimal settlementPrice,
+        DateTimeOffset asOf)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(accountId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(symbol);
+        if (settlementPrice <= 0m)
+            throw new ArgumentOutOfRangeException(nameof(settlementPrice), "Settlement price must be positive.");
+
+        lock (_lock)
+        {
+            if (!_accounts.TryGetValue(accountId, out var account)
+                || !account.Positions.TryGetValue(symbol, out var pos)
+                || !pos.UsesVariationMargin
+                || pos.Quantity == 0m)
+            {
+                return 0m;
+            }
+
+            var cashFlow = pos.Money(pos.Quantity, settlementPrice - pos.LastSettlementPrice);
+            account.Cash += cashFlow;
+            account.RealisedPnl += cashFlow;
+            pos.LastSettlementPrice = settlementPrice;
+            pos.MarketPrice = settlementPrice;
+            PostVariationMarginEntry(symbol, cashFlow, asOf, $"Daily settlement {symbol} @ {settlementPrice:F4} (variation margin)");
+            return cashFlow;
+        }
+    }
+
+    /// <summary>
+    /// The open positions, in every account, that settle daily variation margin, with the price
+    /// they were last settled at. An end-of-day job settles each of these once per trading day.
+    /// </summary>
+    public IReadOnlyList<VariationMarginPositionSnapshot> GetOpenVariationMarginPositions()
+    {
+        lock (_lock)
+        {
+            return _accounts.Values
+                .SelectMany(static account => account.Positions.Values
+                    .Where(static pos => pos.UsesVariationMargin && pos.Quantity != 0m)
+                    .Select(pos => new VariationMarginPositionSnapshot(
+                        account.AccountId, pos.Symbol, pos.Quantity, pos.LastSettlementPrice, pos.EconomicMultiplier,
+                        pos.EarliestLotOpenedAt)))
+                .ToArray();
+        }
+    }
+
+    private void PostVariationMarginEntry(string symbol, decimal cashFlow, DateTimeOffset ts, string description)
+    {
+        if (_ledger is null || cashFlow == 0m)
+            return;
+
+        if (cashFlow > 0m)
+        {
+            _ledger.PostLines(ts, description,
+            [
+                (LedgerAccounts.Cash, cashFlow, 0m),
+                (LedgerAccounts.FuturesMtmSettlement(symbol), 0m, cashFlow),
+            ]);
+        }
+        else
+        {
+            _ledger.PostLines(ts, description,
+            [
+                (LedgerAccounts.FuturesMtmSettlement(symbol), -cashFlow, 0m),
+                (LedgerAccounts.Cash, 0m, -cashFlow),
+            ]);
+        }
     }
 
     private void ApplyBuy(
@@ -1150,6 +1355,23 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
 // ─── Supporting types ───────────────────────────────────────────────────────
 
 /// <summary>
+/// An open position that settles daily variation margin, as an end-of-day settlement job sees it.
+/// </summary>
+/// <param name="AccountId">The account holding the position.</param>
+/// <param name="Symbol">The futures symbol.</param>
+/// <param name="Quantity">Signed contracts held (negative for shorts).</param>
+/// <param name="LastSettlementPrice">The per-unit price the unsettled change is measured from.</param>
+/// <param name="ContractMultiplier">The multiplier that scales each price change into money.</param>
+/// <param name="OpenedAt">When the oldest open lot was opened; no day closing before it needs settling.</param>
+public sealed record VariationMarginPositionSnapshot(
+    string AccountId,
+    string Symbol,
+    decimal Quantity,
+    decimal LastSettlementPrice,
+    decimal ContractMultiplier,
+    DateTimeOffset? OpenedAt);
+
+/// <summary>
 /// Defines one account within a multi-account paper trading session.
 /// </summary>
 /// <param name="AccountId">Unique account identifier.</param>
@@ -1339,9 +1561,9 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
 
     /// <summary>
     /// Multiplier that turns quantity × quote into money in this book: the contract multiplier
-    /// for listed premium contracts such as options and warrants (premium is paid in full), and 1
-    /// for everything else — including futures,
-    /// which settle variation margin rather than exchanging notional and are not yet modelled.
+    /// for listed premium contracts such as options and warrants (premium is paid in full) and for
+    /// variation-margin futures (which scale only their settled price changes by it), and 1 for
+    /// everything else, including futures restored from notional-model records.
     /// <see cref="CostBasis"/>, <see cref="MarketPrice"/> and lot entry prices stay per-unit
     /// quotes, because every downstream reader applies the multiplier to them itself; only the
     /// money amounts (<see cref="OpenCostBasis"/>, market value, P&amp;L, cash) are scaled.
@@ -1355,18 +1577,42 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
     public bool IsFlatWithoutLots => Quantity == 0m && _lots.Count == 0;
 
     /// <summary>
-    /// Re-bases the money scale of a flat entry that is kept only for its fund attribution, so
-    /// the next holding opens at its own scale. Refused while anything is held, because lots
-    /// and cost basis are priced on the existing scale.
+    /// Re-bases the money scale and booking model of a flat entry that is kept only for its fund
+    /// attribution, so the next holding opens on its own terms. Refused while anything is held,
+    /// because lots and cost basis are priced on the existing scale and model.
     /// </summary>
-    public void ResetMoneyScale(decimal economicMultiplier)
+    public void ResetMoneyScale(decimal economicMultiplier, bool usesVariationMargin = false)
     {
         if (economicMultiplier <= 0m)
             throw new ArgumentOutOfRangeException(nameof(economicMultiplier), "Money multiplier must be positive.");
         if (!IsFlatWithoutLots)
             throw new InvalidOperationException($"Cannot change the money scale of '{Symbol}' while it holds a position.");
         _economicMultiplier = economicMultiplier;
+        _usesVariationMargin = usesVariationMargin;
+        LastSettlementPrice = 0m;
     }
+
+    /// <summary>
+    /// The position settles daily variation margin (futures): no notional was paid to open it,
+    /// cash moves only by the price change since <see cref="LastSettlementPrice"/>, and its
+    /// equity contribution is that unsettled change rather than its notional value.
+    /// </summary>
+    public bool UsesVariationMargin { get => _usesVariationMargin; init => _usesVariationMargin = value; }
+
+    private bool _usesVariationMargin;
+
+    /// <summary>
+    /// For a variation-margin position, the per-unit price its unsettled change is measured from:
+    /// the last daily settlement, or the quantity-weighted fill price of contracts added since.
+    /// </summary>
+    public decimal LastSettlementPrice { get; set; }
+
+    /// <summary>
+    /// The per-unit basis the position reports: its entry cost, or for a variation-margin position
+    /// the price it is carried at after settlement. Readers recover the mark as basis plus
+    /// unrealized P&amp;L over quantity × multiplier, which only holds against the carried price.
+    /// </summary>
+    public decimal ReportedCostBasis => UsesVariationMargin ? LastSettlementPrice : CostBasis;
 
     /// <summary>Money value of <paramref name="quantity"/> units at a per-unit <paramref name="price"/>.</summary>
     public decimal Money(decimal quantity, decimal price) => quantity * price * EconomicMultiplier;
@@ -1380,18 +1626,31 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
     /// <summary>The open lot book in the shared lot shape.</summary>
     public IReadOnlyList<IUnitizedLot> UnitizedLots => _lots;
 
+    /// <summary>When the oldest open lot was opened, or <see langword="null"/> when none is open.</summary>
+    public DateTimeOffset? EarliestLotOpenedAt => _lots.Count == 0 ? null : _lots.Min(static lot => lot.OpenedAt);
+
     /// <summary>Unsigned exposure magnitude (|qty| × price); use <see cref="SignedMarketValue"/> for equity math.</summary>
     public decimal MarketValue => Money(Math.Abs(Quantity), MarketPrice);
 
-    /// <summary>Signed market value: positive for longs, negative for shorts (a liability).</summary>
-    public decimal SignedMarketValue => Money(Quantity, MarketPrice);
+    /// <summary>
+    /// Signed market value: positive for longs, negative for shorts (a liability). For a
+    /// variation-margin position it is only the unsettled change since the last settlement,
+    /// because no notional was paid; <see cref="MarketValue"/> still reports the exposure.
+    /// </summary>
+    public decimal SignedMarketValue => UsesVariationMargin
+        ? Money(Quantity, MarketPrice - LastSettlementPrice)
+        : Money(Quantity, MarketPrice);
 
     /// <summary>
     /// Unrealised P&amp;L uses exact retained basis; the display's weighted unit quote
     /// cannot reconstruct the remaining basis after fractional relief. The retained basis is
-    /// held per contract, so it is scaled by the multiplier like market value.
+    /// held per contract, so it is scaled by the multiplier like market value. A
+    /// variation-margin position has settled everything up to its last settlement, so only the
+    /// change since then is unrealised.
     /// </summary>
-    public decimal UnrealisedPnl => Math.Sign(Quantity) * (MarketValue - OpenCostBasis);
+    public decimal UnrealisedPnl => UsesVariationMargin
+        ? Money(Quantity, MarketPrice - LastSettlementPrice)
+        : Math.Sign(Quantity) * (MarketValue - OpenCostBasis);
 
     public IReadOnlyList<PositionLotEntry> GetLots() => _lots
         .Select(static lot => new PositionLotEntry(
@@ -1637,7 +1896,7 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
     public ExecutionPosition ToExecutionPosition() => new(
         Symbol,
         (long)Quantity,
-        CostBasis,
+        ReportedCostBasis,
         UnrealisedPnl,
         0m)  // realised P&L is carried at the account level
     {

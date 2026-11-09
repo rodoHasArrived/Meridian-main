@@ -562,6 +562,19 @@ WPF. Each count is gated by the permission of the route that owns its source, an
 caller may not read it. `tests/fixtures/cross-screen-counts/cross-screen-counts.json` holds this
 class and the browser's `lib/cross-screen-counts.ts` to the same expected values.
 
+## Paper futures daily settlement
+
+`Services/PaperFuturesSettlementService.cs` settles the daily variation margin of every open paper
+futures position once per NYSE trading day, after the regular close. Each pass walks the active
+paper sessions and, for each variation-margin position, settles every closed trading day after its
+last settlement and after it opened, oldest first (at most `MaxCatchUpTradingDays`, default 5), at
+that day's `IMarkPriceSource` mark; the close stands in for the exchange settlement price. A day
+with no price is skipped with a warning, never settled on a stale price. Settlements go through
+`PaperSessionPersistenceService.RecordSettlementAsync`, which persists before applying and ignores
+a day already settled, so repeated passes are safe. The job is off unless
+`PaperTrading:FuturesSettlement:Enabled` is true, and stays idle without a registered mark price
+source. `AddPaperFuturesSettlement` registers it; the host calls it next to the paper sessions.
+
 ## Operator default scope
 
 `GET`/`PUT /api/workstation/operator/scope-preference` read and save the signed-in operator's
