@@ -2103,6 +2103,9 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     }
 
     private async void OnActiveFundProfileChanged(object? sender, FundProfileChangedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => ActiveFundProfileChangedCoreAsync(sender, e), nameof(OnActiveFundProfileChanged)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task ActiveFundProfileChangedCoreAsync(object? sender, FundProfileChangedEventArgs e)
     {
         await LoadAsync();
     }

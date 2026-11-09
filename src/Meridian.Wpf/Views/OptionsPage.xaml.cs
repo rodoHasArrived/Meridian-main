@@ -47,8 +47,11 @@ public partial class OptionsPage : Page
         }
     }
 
-    private async void LoadExpirations_Click(object sender, RoutedEventArgs e) =>
-        await _viewModel.LoadExpirationsAsync();
+    private async void LoadExpirations_Click(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => LoadExpirations_ClickCoreAsync(sender, e), nameof(LoadExpirations_Click)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task LoadExpirations_ClickCoreAsync(object sender, RoutedEventArgs e)
+        => await _viewModel.LoadExpirationsAsync();
 
     private void SymbolInput_KeyDown(object sender, KeyEventArgs e)
     {
@@ -60,19 +63,28 @@ public partial class OptionsPage : Page
     }
 
     private async void UnderlyingsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => UnderlyingsList_SelectionChangedCoreAsync(sender, e), nameof(UnderlyingsList_SelectionChanged)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task UnderlyingsList_SelectionChangedCoreAsync(object sender, SelectionChangedEventArgs e)
     {
         if (e.AddedItems.Count > 0 && e.AddedItems[0] is string symbol)
             await _viewModel.SelectUnderlyingAsync(symbol);
     }
 
     private async void ExpirationsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => ExpirationsList_SelectionChangedCoreAsync(sender, e), nameof(ExpirationsList_SelectionChanged)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task ExpirationsList_SelectionChangedCoreAsync(object sender, SelectionChangedEventArgs e)
     {
         if (e.AddedItems.Count > 0 && e.AddedItems[0] is string expiration)
             await _viewModel.SelectExpirationAsync(expiration);
     }
 
-    private async void RefreshData_Click(object sender, RoutedEventArgs e) =>
-        await _viewModel.RefreshAsync();
+    private async void RefreshData_Click(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => RefreshData_ClickCoreAsync(sender, e), nameof(RefreshData_Click)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task RefreshData_ClickCoreAsync(object sender, RoutedEventArgs e)
+        => await _viewModel.RefreshAsync();
 
     private async void OnPageUnloaded(object sender, RoutedEventArgs e)
     {

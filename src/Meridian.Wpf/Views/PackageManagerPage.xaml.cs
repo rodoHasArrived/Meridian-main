@@ -50,18 +50,30 @@ public partial class PackageManagerPage : Page
         }
     }
 
-    private async void RefreshPackages_Click(object sender, RoutedEventArgs e) =>
-        await _viewModel.RefreshPackagesCommand.ExecuteAsync(null);
+    private async void RefreshPackages_Click(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => RefreshPackages_ClickCoreAsync(sender, e), nameof(RefreshPackages_Click)).ConfigureAwait(true);
 
-    private async void CreatePackage_Click(object sender, RoutedEventArgs e) =>
-        await _viewModel.CreatePackageAsync(
+    private async System.Threading.Tasks.Task RefreshPackages_ClickCoreAsync(object sender, RoutedEventArgs e)
+        => await _viewModel.RefreshPackagesCommand.ExecuteAsync(null);
+
+    private async void CreatePackage_Click(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => CreatePackage_ClickCoreAsync(sender, e), nameof(CreatePackage_Click)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task CreatePackage_ClickCoreAsync(object sender, RoutedEventArgs e)
+        => await _viewModel.CreatePackageAsync(
             PackageSymbolsInput.Text,
             PackageFromInput.Text,
             PackageToInput.Text);
 
-    private async void ValidatePackage_Click(object sender, RoutedEventArgs e) =>
-        await _viewModel.ValidatePackageAsync(ValidatePackageInput.Text);
+    private async void ValidatePackage_Click(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => ValidatePackage_ClickCoreAsync(sender, e), nameof(ValidatePackage_Click)).ConfigureAwait(true);
 
-    private async void ImportPackage_Click(object sender, RoutedEventArgs e) =>
-        await _viewModel.ImportPackageAsync(ImportPackageInput.Text);
+    private async System.Threading.Tasks.Task ValidatePackage_ClickCoreAsync(object sender, RoutedEventArgs e)
+        => await _viewModel.ValidatePackageAsync(ValidatePackageInput.Text);
+
+    private async void ImportPackage_Click(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => ImportPackage_ClickCoreAsync(sender, e), nameof(ImportPackage_Click)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task ImportPackage_ClickCoreAsync(object sender, RoutedEventArgs e)
+        => await _viewModel.ImportPackageAsync(ImportPackageInput.Text);
 }

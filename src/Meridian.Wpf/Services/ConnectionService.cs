@@ -115,11 +115,17 @@ public sealed class ConnectionService : ConnectionServiceBase, IConnectionServic
     }
 
     private async void OnMonitoringTimerElapsed(object? sender, ElapsedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => MonitoringTimerElapsedCoreAsync(sender, e), nameof(OnMonitoringTimerElapsed)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task MonitoringTimerElapsedCoreAsync(object? sender, ElapsedEventArgs e)
     {
         await OnMonitoringTimerFired();
     }
 
     private async void OnReconnectTimerElapsed(object? sender, ElapsedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => ReconnectTimerElapsedCoreAsync(sender, e), nameof(OnReconnectTimerElapsed)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task ReconnectTimerElapsedCoreAsync(object? sender, ElapsedEventArgs e)
     {
         await OnReconnectTimerFired();
     }

@@ -1062,6 +1062,9 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
     // E1: async void swallows exceptions — the handler delegates to a testable async Task method
     //     that is wrapped in try/catch so poll failures are logged rather than silently lost.
     private async void OnProgressPollTimerTick(object? sender, EventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => ProgressPollTimerTickCoreAsync(sender, e), nameof(OnProgressPollTimerTick)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task ProgressPollTimerTickCoreAsync(object? sender, EventArgs e)
     {
         await TickPollAsync();
     }

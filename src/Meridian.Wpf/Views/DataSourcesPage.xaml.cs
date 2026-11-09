@@ -49,6 +49,9 @@ public partial class DataSourcesPage : Page
     // ── Save – reads secret input before delegating ───────────────────────
 
     private async void SaveDataSource_Click(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => SaveDataSource_ClickCoreAsync(sender, e), nameof(SaveDataSource_Click)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task SaveDataSource_ClickCoreAsync(object sender, RoutedEventArgs e)
     {
         _viewModel.PolygonApiKey = PolygonApiKeyInput.Secret;
         await _viewModel.SaveSourceCommand.ExecuteAsync(null);

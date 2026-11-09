@@ -42,6 +42,9 @@ public sealed partial class ArchiveHealthPage : Page
     }
 
     private async void Page_Loaded(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => Page_LoadedCoreAsync(sender, e), nameof(Page_Loaded)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task Page_LoadedCoreAsync(object sender, RoutedEventArgs e)
     {
         SubscribeToHealthEvents();
         await LoadHealthStatusAsync();
@@ -191,6 +194,9 @@ public sealed partial class ArchiveHealthPage : Page
     }
 
     private async void VerifyAll_Click(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => VerifyAll_ClickCoreAsync(sender, e), nameof(VerifyAll_Click)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task VerifyAll_ClickCoreAsync(object sender, RoutedEventArgs e)
     {
         VerifyAllButton.IsEnabled = false;
         QuickCheckButton.IsEnabled = false;
@@ -241,6 +247,9 @@ public sealed partial class ArchiveHealthPage : Page
     }
 
     private async void QuickCheck_Click(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => QuickCheck_ClickCoreAsync(sender, e), nameof(QuickCheck_Click)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task QuickCheck_ClickCoreAsync(object sender, RoutedEventArgs e)
     {
         QuickCheckButton.IsEnabled = false;
         VerificationProgress.Visibility = Visibility.Visible;
@@ -272,6 +281,9 @@ public sealed partial class ArchiveHealthPage : Page
     }
 
     private async void VerifyAuditChain_Click(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => VerifyAuditChain_ClickCoreAsync(sender, e), nameof(VerifyAuditChain_Click)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task VerifyAuditChain_ClickCoreAsync(object sender, RoutedEventArgs e)
     {
         VerifyAuditChainButton.IsEnabled = false;
         AuditChainStatusText.Text = "Verifying audit chain...";
@@ -313,11 +325,17 @@ public sealed partial class ArchiveHealthPage : Page
     }
 
     private async void Refresh_Click(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => Refresh_ClickCoreAsync(sender, e), nameof(Refresh_Click)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task Refresh_ClickCoreAsync(object sender, RoutedEventArgs e)
     {
         await LoadHealthStatusAsync();
     }
 
     private async void ResolveIssue_Click(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => ResolveIssue_ClickCoreAsync(sender, e), nameof(ResolveIssue_Click)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task ResolveIssue_ClickCoreAsync(object sender, RoutedEventArgs e)
     {
         if (sender is Button button && button.DataContext is IssueDisplayItem item)
         {
@@ -334,6 +352,9 @@ public sealed partial class ArchiveHealthPage : Page
     }
 
     private async void GenerateDictionary_Click(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => GenerateDictionary_ClickCoreAsync(sender, e), nameof(GenerateDictionary_Click)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task GenerateDictionary_ClickCoreAsync(object sender, RoutedEventArgs e)
     {
         GenerateDictionaryButton.IsEnabled = false;
 

@@ -9288,6 +9288,7 @@ Meridian-main
 │   │   │   ├── ApiStatusService.cs
 │   │   │   ├── AppConfigDefaults.cs
 │   │   │   ├── ArchiveHealthService.cs
+│   │   │   ├── AsyncHandlerGuard.cs
 │   │   │   ├── BackendServiceManager.cs
 │   │   │   ├── BackgroundTaskSchedulerService.cs
 │   │   │   ├── BacktestDataAvailabilityService.cs
