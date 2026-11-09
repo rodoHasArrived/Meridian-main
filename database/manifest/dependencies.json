@@ -10090,6 +10090,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.AssetPackSharedCoverage"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.AssetPackValidationRules"
     },
     {
@@ -24341,6 +24347,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.AssetPackReportingTaxonomy"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.AssetPackSharedCoverage"
     },
     {
       "kind": "contract-set-member",
@@ -56939,7 +56951,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "8e7642d17a66b1b163d3667c02c36ebaa53579090e0dd9868cdcfc31353673c6",
+  "fingerprint": "feb9a4099b2282e6ccba1be417eed8e3c039f49bf6eaf747f39aef2fd38011cd",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -67077,6 +67089,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.AssetPackReportingTaxonomy",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.AssetPackReportingTaxonomy"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.AssetPackSharedCoverage",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.AssetPackSharedCoverage"
     },
     {
       "classification": "record",
@@ -83391,10 +83409,10 @@
   ],
   "summary": {
     "contract_references": 3632,
-    "contract_set_memberships": 4538,
-    "edges": 9461,
+    "contract_set_memberships": 4540,
+    "edges": 9463,
     "foreign_keys": 156,
     "logical_references": 6,
-    "nodes": 4588
+    "nodes": 4589
   }
 }
