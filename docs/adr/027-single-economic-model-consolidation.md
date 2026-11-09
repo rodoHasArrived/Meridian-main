@@ -1,10 +1,10 @@
 # ADR-027: Single Economic Model Consolidation
 
-**Status:** Proposed
-**Date:** 2026-11-09
+**Status:** Accepted
+**Date:** 2026-11-09 (proposed and accepted)
 **Owner:** core-team
 **Reviewed:** 2026-11-09
-**Deciders:** core-team (domain owner acceptance required)
+**Deciders:** core-team (domain owner accepted 2026-11-09)
 **Supersedes:** —
 **Superseded by:** —
 
@@ -58,7 +58,7 @@ records consolidation as a domain-owner decision; this ADR is that decision's wr
 
 ## Decision
 
-Proposed (not yet accepted): **consolidate on the economic model as the single domain model, in
+Accepted 2026-11-09: **consolidate on the economic model as the single domain model, in
 three gated stages, while keeping the flat family as a generated storage and wire codec.** The
 stages are ordered so each is independently valuable and the decision can stop after any of them.
 
@@ -94,8 +94,9 @@ stages are ordered so each is independently valuable and the decision can stop a
 | Economic↔flat loss ledger | `src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs` | `BridgedModules` / `DroppedModules` |
 | Event families | `src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs` | `EconomicDefinition` vs legacy `SecurityProjection` |
 
-Every component above is existing evidence; **no stage of this ADR is implemented**. Stage
-designs, when accepted, get their own remediation-plan slices with per-stage proof obligations.
+Every component above is existing evidence. Stage 1 is in progress as remediation-plan slice 10
+(per-module increments with their own proof obligations); stages 2 and 3 are accepted but not
+started.
 
 ## Preconditions the decision item names
 

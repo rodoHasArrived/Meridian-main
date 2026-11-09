@@ -774,6 +774,29 @@ Validation (local, .NET SDK 10.0.403): `dotnet test tests/Meridian.Tests -c Rele
 active-plus-inactive gauge, and the zero case. The full local `bash scripts/ci.sh` was not run;
 GitHub `Meridian CI / quality-gate` remains authoritative.
 
+### ADR-027 accepted; stage-1 increment 1 — call schedules recover — 2026-11-09
+
+The domain owner accepted [ADR-027](../adr/027-single-economic-model-consolidation.md) (single
+economic model consolidation, three gated stages); stage 1 proceeds as remediation slice 10. Its
+first increment landed: for a class that declares the flat `callSchedule`/`putSchedule` arrays
+(Bond and CertificateOfDeposit at terms version 3, StructuredCredit at 4), the class-aware
+economic→flat conversion recovers the Call module's lists into those arrays in the frozen
+ADR-024 entry form, stamped at the arrays' version, instead of refusing economic-only replay.
+Conversion semantics are declared and pinned (`SecurityEconomicCallScheduleFlatteningTests`);
+refusals narrow but never vanish (`SecurityEconomicScheduleReplayRefusalTests`: accrual
+conventions everywhere; schedule lists on the class-independent route and for non-declaring
+classes; malformed lists and populated-but-dateless entries on every route). The
+`SecurityTermsVersioningTests` economic-replay pin moved from refusal to recovery with the
+retained document still carried. Schema-control contract manifests were re-snapshot and promoted
+(`verify` reproduced CI's staleness locally and passes after promotion).
+
+Validation (local, .NET SDK 10.0.403, plus a local PostgreSQL 16 through
+`MERIDIAN_SECURITY_MASTER_CONNECTION_STRING`): bridge/versioning/upgrader/refusal/golden suites —
+425 passed, 0 failed; `SecurityMasterPostgresRoundTripTests` — 25 passed against the live
+database, the slice-9 gate-count row-by-row SQL parity test now exercised rather than skipped;
+CustomAsset/fan-out/alias-migration/terms-history Postgres suites — 35 passed. The full local
+`bash scripts/ci.sh` was not run; GitHub `Meridian CI / quality-gate` remains authoritative.
+
 ---
 
 ## Purpose

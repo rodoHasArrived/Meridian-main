@@ -143,7 +143,7 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     /// </summary>
     public static SecurityAssetSpecificTerms Convert(JsonElement economicTerms)
     {
-        EnsureScheduleModulesRecoverable(economicTerms);
+        EnsureScheduleModulesRecoverable(economicTerms, callSchedulesRecoverable: false);
         using var buffer = new MemoryStream();
         using (var writer = new Utf8JsonWriter(buffer))
         {
@@ -195,12 +195,14 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     /// an original v1 write for that class.
     /// <para>
     /// What remains lost is what the economic-terms document never carried: an option's strike and
-    /// put/call, a swap's legs, a bond's subclass and schedules, the scheduleConventions block
-    /// (whose business-day convention and joint payment calendar the Accrual module carries), and the
-    /// callSchedule and putSchedule arrays (whose dates and prices the Call module's lists carry). The
-    /// readable-only terms travel whole in the retained flat terms until a contract step maps them.
-    /// Economic-only documents that declare the lost schedule modules are refused instead of
-    /// presenting their flattened projection as an undeclared bullet.
+    /// put/call, a swap's legs, a bond's subclass, and the scheduleConventions block (whose
+    /// business-day convention and joint payment calendar the Accrual module carries). Since
+    /// ADR-027 stage 1 increment 1, the Call module's call and put lists land in the flat
+    /// callSchedule and putSchedule arrays for a class that declares them, stamped at the arrays'
+    /// terms version; the entry members the economic family never carried stay null and read under
+    /// ADR-025's declared defaults. Economic-only documents that declare the still-lost accrual
+    /// conventions — or schedule lists for a class without the declared arrays — are refused
+    /// instead of presenting their flattened projection as an undeclared bullet.
     /// Those keys are listed by
     /// <see cref="UnrecoverableKeys"/> and the result keeps the <see cref="FlattenedFromMarkerProperty"/>
     /// marker. When <paramref name="assetClass"/> is not a declared class (or is <see langword="null"/>)
@@ -225,11 +227,35 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
                 "the economic payload cannot reconstruct the complete classification and preferred/convertible terms.");
         }
 
-        EnsureScheduleModulesRecoverable(economicTerms);
+        // ADR-027 stage 1, increment 1: a class that declares the flat callSchedule/putSchedule
+        // arrays recovers the Call module's lists instead of refusing them. The entries carry what
+        // the economic family carried (date, price, par flag, call type); the window and notice
+        // members it never carried stay null and read under ADR-025's declared defaults, so the
+        // flattened record declares its calls rather than silently running a bullet.
+        var callScheduleSince = SecurityAssetTermsSchema.Field(assetClass!, SecurityVersionedTerms.CallScheduleKey)?.SinceTermsVersion;
+        EnsureScheduleModulesRecoverable(economicTerms, callSchedulesRecoverable: callScheduleSince is not null);
+
+        var callModule = GetObject(economicTerms, "call");
+        IReadOnlyList<JsonElement> callEntries = [];
+        IReadOnlyList<JsonElement> putEntries = [];
+        if (callScheduleSince is not null)
+        {
+            (callEntries, putEntries) = CollectScheduleEntries(callModule);
+        }
+
+        var writeSchedules = callEntries.Count > 0 || putEntries.Count > 0;
+
         using var buffer = new MemoryStream();
         using (var writer = new Utf8JsonWriter(buffer))
         {
-            WriteFlatEnvelope(writer, SecurityAssetClassCatalog.GetStampFloor(assetClass));
+            var stampFloor = SecurityAssetClassCatalog.GetStampFloor(assetClass);
+            WriteFlatEnvelope(writer, writeSchedules ? Math.Max(stampFloor, callScheduleSince!.Value) : stampFloor);
+
+            if (writeSchedules)
+            {
+                WriteCallSchedule(writer, callEntries, callModule);
+                WritePutSchedule(writer, putEntries);
+            }
 
             foreach (var mapping in mappings)
             {
@@ -300,7 +326,11 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     // lacks roll, unit, lag and accrual-adjustment terms; Call lists lack windows and notice terms.
     // Retaining those modules under an ignored key would let projection/amortization run a bullet.
     // Only conversion uses this guard. Retained flat rows keep their established replay path.
-    private static void EnsureScheduleModulesRecoverable(JsonElement economicTerms)
+    // Since ADR-027 stage 1 increment 1, a class whose schema declares the flat callSchedule and
+    // putSchedule arrays passes callSchedulesRecoverable: the Call module's lists land in those
+    // arrays instead of being refused, so only the accrual conventions remain unrecoverable. The
+    // class-independent route keeps refusing populated lists: it has no declared keys to map onto.
+    private static void EnsureScheduleModulesRecoverable(JsonElement economicTerms, bool callSchedulesRecoverable)
     {
         if (economicTerms.ValueKind != JsonValueKind.Object)
             return;
@@ -318,7 +348,7 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
                         throw UnrecoverableSchedule();
                 }
             }
-            else if (module.Name.Equals("call", StringComparison.OrdinalIgnoreCase))
+            else if (!callSchedulesRecoverable && module.Name.Equals("call", StringComparison.OrdinalIgnoreCase))
             {
                 foreach (var member in module.Value.EnumerateObject())
                 {
@@ -329,6 +359,191 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
                         throw UnrecoverableSchedule();
                 }
             }
+        }
+    }
+
+    /// <summary>
+    /// The dated call and put entries of the economic Call module, validated under the frozen
+    /// written form's rules: a schedule member that is not an array (or null) is malformed and
+    /// refuses like any other unrecoverable schedule; a JSON-null or all-null entry is unset and
+    /// skipped ("a re-serialization drops it"); an entry with content but no date is populated and
+    /// refuses, exactly as a flat write would. Member names match the old guard's tolerance
+    /// (ordinal-ignore-case), so a case-variant key cannot smuggle a schedule past validation.
+    /// </summary>
+    private static (IReadOnlyList<JsonElement> Calls, IReadOnlyList<JsonElement> Puts) CollectScheduleEntries(JsonElement? callModule)
+    {
+        if (callModule is not JsonElement module)
+        {
+            return ([], []);
+        }
+
+        var calls = new List<JsonElement>();
+        var puts = new List<JsonElement>();
+        foreach (var member in module.EnumerateObject())
+        {
+            if (member.Name.Equals(SecurityVersionedTerms.CallScheduleKey, StringComparison.OrdinalIgnoreCase))
+            {
+                CollectDatedEntries(member.Value, "callDt", calls);
+            }
+            else if (member.Name.Equals(SecurityVersionedTerms.PutScheduleKey, StringComparison.OrdinalIgnoreCase))
+            {
+                CollectDatedEntries(member.Value, "putDt", puts);
+            }
+        }
+
+        return (calls, puts);
+    }
+
+    private static void CollectDatedEntries(JsonElement list, string dateField, List<JsonElement> entries)
+    {
+        if (list.ValueKind == JsonValueKind.Null)
+        {
+            return;
+        }
+
+        if (list.ValueKind != JsonValueKind.Array)
+        {
+            throw UnrecoverableSchedule();
+        }
+
+        foreach (var entry in list.EnumerateArray())
+        {
+            if (entry.ValueKind == JsonValueKind.Null)
+            {
+                continue;
+            }
+
+            if (entry.ValueKind != JsonValueKind.Object)
+            {
+                throw UnrecoverableSchedule();
+            }
+
+            var hasDate = entry.TryGetProperty(dateField, out var date) && date.ValueKind == JsonValueKind.String;
+            if (hasDate)
+            {
+                entries.Add(entry);
+                continue;
+            }
+
+            foreach (var member in entry.EnumerateObject())
+            {
+                if (member.Value.ValueKind is not JsonValueKind.Null)
+                {
+                    // Populated but dateless: a flat write refuses it, so the conversion does too.
+                    throw UnrecoverableSchedule();
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Writes the flat <c>callSchedule</c> array in the frozen ADR-024 form (every member, in
+    /// alphabetical order, null when unset) from the economic Call module's entries
+    /// (<c>callDt</c>, <c>callPx</c>, <c>isParCall</c>, <c>callType</c>). The conversion rules are
+    /// the increment's declared semantics: <c>callPx</c> is documented as a percentage of par, so a
+    /// written price carries <c>priceBasis = "PercentOfPar"</c>; a par call without a price writes
+    /// 100 at that basis, which is what a par call means; <c>callType</c> "MakeWhole" is a price
+    /// type (with the module-level <c>makeWholeSpreadBps</c>), while "European", "American" and
+    /// "Bermudan" are exercise styles. Members the economic family never carried (windows, notice
+    /// terms, partial redemption) stay null and read under ADR-025's declared defaults.
+    /// </summary>
+    private static void WriteCallSchedule(Utf8JsonWriter writer, IReadOnlyList<JsonElement> entries, JsonElement? callModule)
+    {
+        var makeWholeSpreadBps = callModule is JsonElement module
+            && module.TryGetProperty("makeWholeSpreadBps", out var spread)
+            && spread.ValueKind == JsonValueKind.Number
+                ? spread.GetDecimal()
+                : (decimal?)null;
+
+        writer.WritePropertyName(SecurityVersionedTerms.CallScheduleKey);
+        writer.WriteStartArray();
+        foreach (var entry in entries)
+        {
+            var callType = entry.TryGetProperty("callType", out var type) && type.ValueKind == JsonValueKind.String
+                ? type.GetString()
+                : null;
+            var isMakeWhole = string.Equals(callType, "MakeWhole", StringComparison.Ordinal);
+            var isExerciseStyle = callType is "European" or "American" or "Bermudan";
+            var callPrice = entry.TryGetProperty("callPx", out var price) && price.ValueKind == JsonValueKind.Number
+                ? price.GetDecimal()
+                : entry.TryGetProperty("isParCall", out var par) && par.ValueKind == JsonValueKind.True
+                    ? 100m
+                    : (decimal?)null;
+
+            writer.WriteStartObject();
+            writer.WritePropertyName("callDate");
+            entry.GetProperty("callDt").WriteTo(writer);
+            writer.WriteNull("callEndDate");
+            WriteNumberOrNull(writer, "callPrice", callPrice);
+            writer.WriteNull("exerciseFrequency");
+            WriteStringOrNull(writer, "exerciseStyle", isExerciseStyle ? callType : null);
+            WriteNumberOrNull(writer, "makeWholeSpreadBps", isMakeWhole ? makeWholeSpreadBps : null);
+            writer.WriteNull("maximumNoticeDays");
+            writer.WriteNull("minimumNoticeDays");
+            writer.WriteNull("noticeDayType");
+            writer.WriteNull("partialRedemption");
+            WriteStringOrNull(writer, "priceBasis", callPrice is null ? null : "PercentOfPar");
+            WriteStringOrNull(writer, "priceType", isMakeWhole ? "MakeWhole" : callPrice is null ? null : "Fixed");
+            writer.WriteEndObject();
+        }
+
+        writer.WriteEndArray();
+    }
+
+    /// <summary>
+    /// Writes the flat <c>putSchedule</c> array in the frozen ADR-024 form from the economic Call
+    /// module's put entries (<c>putDt</c>, <c>putPx</c>); <c>putPx</c> follows <c>callPx</c>'s
+    /// percentage-of-par documentation. The flat writer emits both arrays together, so this is
+    /// written (as <c>[]</c> when no puts are declared) whenever the call schedule is.
+    /// </summary>
+    private static void WritePutSchedule(Utf8JsonWriter writer, IReadOnlyList<JsonElement> entries)
+    {
+        writer.WritePropertyName(SecurityVersionedTerms.PutScheduleKey);
+        writer.WriteStartArray();
+        foreach (var entry in entries)
+        {
+            var putPrice = entry.TryGetProperty("putPx", out var price) && price.ValueKind == JsonValueKind.Number
+                ? price.GetDecimal()
+                : (decimal?)null;
+
+            writer.WriteStartObject();
+            writer.WriteNull("exerciseFrequency");
+            writer.WriteNull("exerciseStyle");
+            writer.WriteNull("maximumNoticeDays");
+            writer.WriteNull("minimumNoticeDays");
+            writer.WriteNull("noticeDayType");
+            WriteStringOrNull(writer, "priceBasis", putPrice is null ? null : "PercentOfPar");
+            writer.WritePropertyName("putDate");
+            entry.GetProperty("putDt").WriteTo(writer);
+            writer.WriteNull("putEndDate");
+            WriteNumberOrNull(writer, "putPrice", putPrice);
+            writer.WriteEndObject();
+        }
+
+        writer.WriteEndArray();
+    }
+
+    private static void WriteNumberOrNull(Utf8JsonWriter writer, string name, decimal? value)
+    {
+        if (value is { } number)
+        {
+            writer.WriteNumber(name, number);
+        }
+        else
+        {
+            writer.WriteNull(name);
+        }
+    }
+
+    private static void WriteStringOrNull(Utf8JsonWriter writer, string name, string? value)
+    {
+        if (value is { } text)
+        {
+            writer.WriteString(name, text);
+        }
+        else
+        {
+            writer.WriteNull(name);
         }
     }
 

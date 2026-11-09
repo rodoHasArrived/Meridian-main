@@ -5,26 +5,29 @@ using Meridian.Contracts.SecurityMaster;
 
 namespace Meridian.Tests.SecurityMaster;
 
+/// <summary>
+/// Pins where economic-only replay still refuses after ADR-027 stage 1 increment 1. Accrual
+/// conventions remain unrecoverable everywhere; the Call module's schedule lists refuse on the
+/// class-independent route and for classes without the declared flat arrays, while a declaring
+/// class (Bond, CertificateOfDeposit, StructuredCredit) recovers them —
+/// <c>SecurityEconomicCallScheduleFlatteningTests</c> pins that recovery. Malformed schedule
+/// members (non-array lists, populated entries without a date) refuse on every route.
+/// </summary>
 public sealed class SecurityEconomicScheduleReplayRefusalTests
 {
-    public static IEnumerable<object[]> DeclaredSchedules()
+    public static IEnumerable<object[]> AccrualSchedules()
     {
         yield return ["{\"accrual\":{\"businessDayConvention\":\"Following\"}}"];
         yield return ["{\"accrual\":{\"businessDayConvention\":\"Unadjusted\"}}"];
         yield return ["{\"accrual\":{\"businessDayConvention\":\"\"}}"];
         yield return ["{\"accrual\":{\"holidayCalendar\":\"USNY\"}}"];
         yield return ["{\"accrual\":{\"holidayCalendar\":{}}}"];
-        yield return ["{\"call\":{\"callSchedule\":[{\"callDt\":\"2027-01-01\"}]}}"];
-        yield return ["{\"call\":{\"putSchedule\":[{\"putDt\":\"2027-01-01\"}]}}"];
-        yield return ["{\"call\":{\"callSchedule\":[null]}}"];
-        yield return ["{\"call\":{\"putSchedule\":\"not-an-array\"}}"];
         yield return ["{\"accrual\":{\"holidayCalendar\":null},\"Accrual\":{\"HOLIDAYCALENDAR\":\"USNY\"}}"];
-        yield return ["{\"call\":{\"callSchedule\":[],\"CALLSCHEDULE\":[{}]}}"];
     }
 
     [Theory]
-    [MemberData(nameof(DeclaredSchedules))]
-    public void EconomicOnlyConversion_RefusesUnrecoverableScheduleModules(string json)
+    [MemberData(nameof(AccrualSchedules))]
+    public void AccrualConventions_RefuseOnEveryRoute(string json)
     {
         var terms = Json(json);
         Action generic = () => SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(terms);
@@ -33,6 +36,53 @@ public sealed class SecurityEconomicScheduleReplayRefusalTests
 
         foreach (var convert in new[] { generic, bond, unknown })
             convert.Should().Throw<InvalidOperationException>().WithMessage("Declared schedule economic replay requires retained legacy asset-specific terms;*");
+    }
+
+    public static IEnumerable<object[]> CallSchedules()
+    {
+        yield return ["{\"call\":{\"callSchedule\":[{\"callDt\":\"2027-01-01\"}]}}"];
+        yield return ["{\"call\":{\"putSchedule\":[{\"putDt\":\"2027-01-01\"}]}}"];
+        yield return ["{\"call\":{\"callSchedule\":[null]}}"];
+        yield return ["{\"call\":{\"putSchedule\":\"not-an-array\"}}"];
+        yield return ["{\"call\":{\"callSchedule\":[],\"CALLSCHEDULE\":[{}]}}"];
+    }
+
+    [Theory]
+    [MemberData(nameof(CallSchedules))]
+    public void CallSchedules_StillRefuse_WithoutDeclaredFlatArrays(string json)
+    {
+        var terms = Json(json);
+        Action generic = () => SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(terms);
+        // Deposit has a class flattening but declares no flat callSchedule/putSchedule arrays.
+        Action deposit = () => SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(terms, "Deposit");
+        Action unknown = () => SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(terms, "UnknownClass");
+
+        foreach (var convert in new[] { generic, deposit, unknown })
+            convert.Should().Throw<InvalidOperationException>().WithMessage("Declared schedule economic replay requires retained legacy asset-specific terms;*");
+    }
+
+    [Theory]
+    [InlineData("{\"call\":{\"putSchedule\":\"not-an-array\"}}")]
+    [InlineData("{\"call\":{\"callSchedule\":[\"not-an-entry\"]}}")]
+    [InlineData("{\"call\":{\"callSchedule\":[{\"callPx\":102.5}]}}")] // populated but dateless
+    public void MalformedSchedules_RefuseEvenForDeclaringClasses(string json)
+    {
+        Action bond = () => SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(Json(json), "Bond");
+        bond.Should().Throw<InvalidOperationException>().WithMessage("Declared schedule economic replay requires retained legacy asset-specific terms;*");
+    }
+
+    [Theory]
+    [InlineData("{\"call\":{\"callSchedule\":[null]}}")]
+    [InlineData("{\"call\":{\"callSchedule\":[],\"CALLSCHEDULE\":[{}]}}")]
+    [InlineData("{\"call\":{\"callSchedule\":[{\"callDt\":null,\"callPx\":null}]}}")] // all-null entry is unset
+    public void UnsetEntries_ConvertWithoutDeclaringSchedules_OnDeclaringClasses(string json)
+    {
+        var flat = SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(Json(json), "Bond").Payload;
+
+        flat.TryGetProperty("callSchedule", out _).Should().BeFalse("an unset entry is not a term, so no schedule is declared");
+        flat.TryGetProperty("putSchedule", out _).Should().BeFalse();
+        flat.GetProperty(SecurityTermsEnvelope.AssetClassTermsVersionKey).GetInt32()
+            .Should().Be(SecurityAssetClassCatalog.GetStampFloor("Bond"), "a document holding no versioned terms stamps at the floor");
     }
 
     [Fact]
@@ -53,16 +103,21 @@ public sealed class SecurityEconomicScheduleReplayRefusalTests
     }
 
     [Fact]
-    public void EconomicOnlyAdapterReplay_Refuses_ButRetainedFlatTermsRemainByteIdentical()
+    public void EconomicOnlyAdapterReplay_RecoversDeclaredCalls_AndRetainedFlatTermsRemainByteIdentical()
     {
         var terms = Json("""
             {"termsFormat":"economic","schemaVersion":2,
              "call":{"isCallable":false,"callSchedule":[{"callDt":"2027-01-01"}],"putSchedule":[]}}
             """);
-        var economic = EconomicRecord(terms, null);
-        Action replay = () => SecurityEconomicDefinitionAdapter.ToProjection(economic);
-        replay.Should().Throw<InvalidOperationException>().WithMessage("Declared schedule economic replay requires retained legacy asset-specific terms;*");
 
+        // Since ADR-027 stage 1 increment 1 the economic-only route recovers the declared calls
+        // into the flat array instead of refusing; the source document stays retained beside them.
+        var recovered = SecurityEconomicDefinitionAdapter.ToProjection(EconomicRecord(terms, null));
+        recovered.AssetSpecificTerms.GetProperty("callSchedule").GetArrayLength().Should().Be(1);
+        recovered.AssetSpecificTerms.GetProperty("callSchedule")[0].GetProperty("callDate").GetString().Should().Be("2027-01-01");
+        recovered.AssetSpecificTerms.TryGetProperty(SecurityTermsEnvelope.RetainedEconomicTermsKey, out _).Should().BeTrue();
+
+        // The retained-flat replay path is untouched: stored flat terms replay byte-identically.
         var flat = Json("""
             {"schemaVersion":1,"termsFormat":"flat","assetClassTermsVersion":1,
              "maturity":"2030-01-01","isCallable":false,

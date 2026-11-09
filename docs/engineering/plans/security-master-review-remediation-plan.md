@@ -222,11 +222,45 @@ any implementation starts. Slices 7–9 are deliberately shaped to stay useful u
 outcome.
 
 *2026-11-09:* the decision writeup is
-[ADR-027](../../adr/027-single-economic-model-consolidation.md) (Proposed). Its evidence
-reframes the question — the event store already writes the economic definition on every command
-path, the economic serializer covers 14 of the 25 modules so flat is the silent system of record
-for the rest, and the duality lives in the write-path round trip and the projection codec. It
-proposes three gated stages (lossless flat codec ending `retainedEconomicTerms` for new writes;
-commands onto `SecurityEconomicDefinition`; schema-generated codec arms) with the three
-preconditions above mapped onto them. Accepting, staging differently or rejecting is the domain
-owner's call; accepted stages become new slices here.
+[ADR-027](../../adr/027-single-economic-model-consolidation.md). Its evidence reframes the
+question — the event store already writes the economic definition on every command path, the
+economic serializer covers 14 of the 25 modules so flat is the silent system of record for the
+rest, and the duality lives in the write-path round trip and the projection codec. It defines
+three gated stages (lossless flat codec ending `retainedEconomicTerms` for new writes; commands
+onto `SecurityEconomicDefinition`; schema-generated codec arms) with the three preconditions
+above mapped onto them. **Accepted by the domain owner 2026-11-09**; stage 1 proceeds as slice 10
+below, and stages 2–3 start only after it completes.
+
+## Slice 10 — ADR-027 stage 1: a lossless flat codec (in progress 2026-11-09)
+
+**Evidence:** ADR-027 stage 1; the upcaster's own loss ledger
+(`SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.DroppedModules`, the
+`EnsureScheduleModulesRecoverable` refusals, and `retainedEconomicTerms`). Each increment makes
+one lost module class recoverable through declared flat homes, never by rewriting a stored
+payload; `retainedEconomicTerms` keeps riding beside the flat keys until the last increment,
+then stops being written for new writes while fold-on-read keeps serving retained history.
+
+**Increment 1 — the Call module's schedule lists (implemented 2026-11-09).** For a class that
+declares the flat `callSchedule`/`putSchedule` arrays (Bond, CertificateOfDeposit at terms
+version 3; StructuredCredit at 4), the class-aware flattening recovers the economic Call
+module's lists into those arrays in the frozen ADR-024 entry form, stamped at the arrays'
+version, instead of refusing economic-only replay. Declared conversion semantics, pinned by
+`SecurityEconomicCallScheduleFlatteningTests`: `callPx` is a percentage of par; a par call
+without a price writes 100 at `PercentOfPar`; `callType` "MakeWhole" is a price type carrying
+the module-level spread; "European"/"American"/"Bermudan" are exercise styles; members the
+economic family never carried stay null under ADR-025's declared read defaults. Refusals narrow,
+never vanish: accrual conventions refuse everywhere; schedule lists still refuse on the
+class-independent route and for classes without the declared arrays; malformed lists and
+populated-but-dateless entries refuse on every route
+(`SecurityEconomicScheduleReplayRefusalTests`).
+
+**Remaining increments (ordered, each with its own round-trip proof):**
+2. `scheduleConventions` from the Accrual module's conventions (lifts the accrual refusal).
+3. Redemption, issuer and fund modules onto their declared per-class keys where scalars already
+   map, covering the member fields the scalar mappings skip.
+4. The structured-product detail the `StructuredCredit` mappings do not yet carry.
+5. The 11 unserialized modules: extend the economic serializer so the economic family stops
+   depending on flat for them (prerequisite for stage 2), with the serializer's module ledger
+   updated in step.
+6. Close-out: assert economic → flat → economic identity for every module; stop writing
+   `retainedEconomicTerms` on new writes; keep fold-on-read for retained history.
