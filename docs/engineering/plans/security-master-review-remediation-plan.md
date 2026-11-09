@@ -130,21 +130,28 @@ and no unrelated operational override field disappears. Each implementation upda
 review with a dated disposition and exact validation evidence; it does not add another unchanged
 scheduled-review PR.
 
-## Slice 7 — Terms schema and form model served to the browser workstation (proposed 2026-11-09)
+## Slice 7 — Term-form parity contract between the shared model and the browser mirror (2026-11-09)
 
 **Evidence:** D9; the [2026-11-09 verification pass](../../architecture/security-master-extensibility-review.md#verification-pass--2026-11-09--dual-model-audit-reconciliation).
-`SecurityAssetTermsSchema` and `SecurityAssetTermFormModel` drive the WPF passport editor, but no
-`Meridian.Ui.Services` endpoint serves either, so the dashboard's term editing is limited to
-hand-built bond panels and new asset classes get desktop editors only. Serve the schema and the
-shared form model through the `Meridian.Ui.Services`/`Meridian.Ui.Shared` read-model seam and
-derive the browser editor from the same declared facts the WPF editor consumes. Define the D9
-parity contract between the browser form model and the shared term-form model at that seam, not
-as mirrored field lists.
+The registry schema is already served (`/api/security-master/asset-classes[/{assetClass}]`) and
+the dashboard passport editor already builds its term fields from it; the original "serve the
+schema to the browser" scope was stale. What D9 still named open: the browser mirrors
+`SecurityAssetTermFormModel`'s grouping, choice and validation rules by hand
+(`security-passport-schema-fields.view-model.ts`), with nothing asserting the two lanes agree.
+Pin the parity as a generated contract: a .NET golden test emits a fixture from
+`SecurityAssetClassRegistry` + `SecurityAssetTermFormModel` (every class's served fields, pickable
+keys in form order, closed value choices, and each editor kind's validation verdict over a fixed
+input corpus), and a dashboard test replays the same fixture through the TypeScript mirror.
 
-**Proof:** the browser editor renders every catalog class from the served schema; a schema field
-added to one class appears in both clients without a client-side code change; parity is asserted
-against the declared schema rather than a copied list; existing bond panels keep their behavior or
-are explicitly retired.
+**Proof:** the fixture regenerates deterministically and the .NET test fails on any schema or
+form-rule drift from the committed copy; the dashboard parity suite fails until the mirror
+matches the regenerated fixture; the mirror's number, integer and date rules match the shared
+model's invariant parsing on the corpus (sign and group separators, `long` range, real calendar
+dates). Known out-of-corpus host-parsing esoterica (misplaced group separators, beyond-`decimal`
+magnitudes) stay with the authoritative server validator and are documented in the test.
+
+**Scope note:** which screens launch the schema-driven editor, and retiring the pre-schema bond
+panels, stay with the web/WPF parity lane (`W8-WPF-PARITY-001`), not this slice.
 
 ## Slice 8 — Descriptor-owned consumer rules: sub-type, routing keywords, quote convention (proposed 2026-11-09)
 

@@ -606,7 +606,6 @@ Documentation only: no code was changed by this pass; no tests were run.
 | `DeriveSubType` maps a fixed subset of the catalog | 11 arms (`src/Meridian.Ui.Shared/Services/SecurityMasterSecurityReferenceLookup.cs:176`) |
 | The coverage read model infers the class from keywords | `MultiAssetCoverageReadService.cs:441` returns `Bond` for any evidence shape containing "factor" |
 | Face-value quoting is hard-coded, and no descriptor declares a quote convention | `LotQuantity.ValueAtPrice` divides by 100 for every `FaceValue` lot (`src/Meridian.Contracts/SecurityMaster/LotQuantity.cs:35`); `AssetClassDescriptor` carries no quoting fact |
-| The terms schema reaches the desktop only | `SecurityAssetTermsSchema`/`SecurityAssetTermFormModel` are consumed by the WPF `SecurityPassportEditorViewModel`; no reference exists in `src/Meridian.Ui.Services/` or the dashboard, whose bond panels (`bond-analytics-panel.tsx`, `bond-reference-ladder-panel.tsx`) are hand-built |
 | Three payload families share one version key; untagged payloads are shape-detected | `SecurityTermsEnvelope.ResolveFormat` (`SecurityTermsEnvelope.cs:106`) classifies untagged documents by shape, as ADR-024 documents and guards |
 | Adding a class is code-heavy; `CustomAsset` is the only no-code route | `CapFloor` appears in 11 source files plus migration `047_rate_option_and_note_terms_projections.sql` and the schema manifests |
 
@@ -619,6 +618,15 @@ Documentation only: no code was changed by this pass; no tests were run.
   `SecurityAssetTermsSchemaRoundTripTests` walks every declared class. What remains missing is a
   single new-class touchpoint checklist spanning codecs, projections, validators, lookups and UI
   seams; the codec arms also remain hand-written (D1).
+- "No API exposes the terms schema to the browser" is **stale on current source**: the asset-class
+  registry, term fields and UI hints are served at `/api/security-master/asset-classes[/{assetClass}]`
+  (`SecurityMasterEndpoints.cs`, from `SecurityAssetClassRegistry.ToDtos()`), and the dashboard's
+  passport editor builds its term fields from that endpoint (`security-master-schema.api.ts`,
+  `security-passport-schema-fields.view-model.ts`), landed by `8119b637` (2026-11-01). What was
+  true when checked: the browser mirrors `SecurityAssetTermFormModel`'s grouping, choice and
+  validation rules by hand, with nothing asserting the two lanes agree — exactly D9's open
+  parity-contract gap — and the hand-built bond panels (`bond-analytics-panel.tsx`,
+  `bond-reference-ladder-panel.tsx`) predate the schema-driven route.
 
 ### Disposition of the audit's five priorities
 
@@ -630,7 +638,9 @@ Documentation only: no code was changed by this pass; no tests were run.
    and backfill design, and replay-compatibility proof. Recorded as the consolidation decision item
    in the remediation plan.
 2. **Expose the terms schema and form model through the shared API; build the browser editors from
-   it.** Consistent with D9's open parity-contract gap. Proposed as remediation slice 7.
+   it.** Partly superseded: the registry schema is already served and the browser passport editor
+   already builds from it (see the correction above). The remaining substance is D9's parity
+   contract between the C# form model and the TypeScript mirror, taken as remediation slice 7.
 3. **Move the sub-type lookup, keyword inference and quoting rule into the asset-class descriptors,
    adding a quote-convention fact.** Extends D3/D9 and follows the pattern slice 6 used for
    `LotUnit`/`LotMultiplierTermKey` and conflict-field categories. Proposed as remediation slice 8.
@@ -643,9 +653,39 @@ Documentation only: no code was changed by this pass; no tests were run.
    formats; the shape heuristic stays load-bearing until stored rows are tagged. Proposed as
    remediation slice 9; the backfill migration requires the independent schema/storage review.
 
-Proposed slices 7–9 and the consolidation decision item were added to the
-[remediation working plan](../engineering/plans/security-master-review-remediation-plan.md) by this
-pass.
+Slices 8–9 and the consolidation decision item were added to the
+[remediation working plan](../engineering/plans/security-master-review-remediation-plan.md) as
+proposals by this pass. Slice 7 was re-scoped to the parity contract and implemented:
+
+### Slice 7 disposition — term-form parity contract — 2026-11-09
+
+`SecurityAssetTermFormParityFixtureTests` (`tests/Meridian.Tests/SecurityMaster/`) generates
+`src/Meridian.Ui/dashboard/src/test/fixtures/security-asset-term-form-parity.json` from
+`SecurityAssetClassRegistry.ToDtos()` and `SecurityAssetTermFormModel`: every catalog class's
+served field definitions, pickable scalar fields and closed value choices, plus each editor
+kind's validation verdict (required and optional) over a fixed 33-input corpus. The test fails on
+any drift from the committed fixture and writes a received copy beside the test binaries.
+`security-passport-schema-fields.parity.test.ts` replays the fixture through the browser mirror.
+Parity is asserted on the declared facts: the mirror's pickable set sorted by declared order must
+equal the model's flat order, each browser section must keep declared order internally (grouping
+into sections is the browser's deliberate presentation, not drift), value choices must match per
+field, and every validation verdict must match per input.
+
+Aligning the mirror changed its client-side pre-checks (the server-side governed validator stays
+authoritative): Integer now accepts a leading `+` and enforces `long` range; Date now requires a
+real proleptic-Gregorian calendar date rather than any `\d{4}-\d{2}-\d{2}` string; Decimal now
+follows the model's invariant parsing — sign and `,` group separators accepted, exponent notation
+refused. Known out-of-corpus host-parsing esoterica (misplaced group separators such as `",5"`,
+beyond-`decimal` magnitudes) deliberately stay outside the contract and are documented in the
+generator.
+
+Validation (local, .NET SDK 10.0.403): `dotnet test tests/Meridian.Tests -c Release --filter
+FullyQualifiedName~SecurityAssetTermFormParityFixtureTests` — 1 passed after committing the
+generated fixture (and fails as designed when the fixture is absent or stale). Dashboard:
+`security-passport-schema-fields.parity.test.ts` + `security-passport-schema-fields.view-model.test.ts`
+— 54 passed; `security-passport-editor.test.tsx`, `security-passport-editor-launcher.test.tsx`,
+`security-passport-editor.view-model.test.ts` — 23 passed. The full local `bash scripts/ci.sh` was
+not run; GitHub `Meridian CI / quality-gate` remains authoritative.
 
 ---
 

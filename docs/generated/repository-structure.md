@@ -7453,6 +7453,7 @@ Meridian-main
 │   │   │   │   │   │   ├── security-passport-editor.tsx
 │   │   │   │   │   │   ├── security-passport-editor.view-model.test.ts
 │   │   │   │   │   │   ├── security-passport-editor.view-model.ts
+│   │   │   │   │   │   ├── security-passport-schema-fields.parity.test.ts
 │   │   │   │   │   │   ├── security-passport-schema-fields.view-model.test.ts
 │   │   │   │   │   │   ├── security-passport-schema-fields.view-model.ts
 │   │   │   │   │   │   ├── stat-strip.tsx
@@ -8308,7 +8309,8 @@ Meridian-main
 │   │   │   │   ├── test
 │   │   │   │   │   ├── fixtures
 │   │   │   │   │   │   ├── loan-portfolio.host.json
-│   │   │   │   │   │   └── quant-run-response.json
+│   │   │   │   │   │   ├── quant-run-response.json
+│   │   │   │   │   │   └── security-asset-term-form-parity.json
 │   │   │   │   │   ├── asset-approval-fixtures.ts
 │   │   │   │   │   ├── fixtures.ts
 │   │   │   │   │   ├── ledger-amount-proof-fixtures.ts
@@ -11965,6 +11967,7 @@ Meridian-main
 │   │   │   ├── SecurityAssetSpecificTermsUpcasterPipelineTests.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcasterTests.cs
 │   │   │   ├── SecurityAssetTermFormModelTests.cs
+│   │   │   ├── SecurityAssetTermFormParityFixtureTests.cs
 │   │   │   ├── SecurityAssetTermsFieldEditValidatorTests.cs
 │   │   │   ├── SecurityAssetTermsSchemaRoundTripTests.ContractualCompanions.cs
 │   │   │   ├── SecurityAssetTermsSchemaRoundTripTests.cs
