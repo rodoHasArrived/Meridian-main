@@ -911,10 +911,11 @@ public sealed class BrokeragePortfolioSyncService
         catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException)
         {
             // An unreadable prior projection must not block recording the current attempt.
+            // The account id is left out of the message: code scanning treats it as sensitive,
+            // and the exception already names the projection file that could not be read.
             _logger.LogWarning(
                 ex,
-                "Prior brokerage projection for fund account {FundAccountId} could not be read; nothing is carried forward.",
-                fundAccountId);
+                "Prior brokerage projection could not be read; nothing is carried forward.");
             return null;
         }
     }
