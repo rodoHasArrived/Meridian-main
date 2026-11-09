@@ -30,8 +30,24 @@ internal static class SecurityEconomicDefinitionAdapter
         => SecurityMasterLegacyUpgrade.toEconomicDefinition(SecurityMasterMapping.ToRecord(projection));
 
     public static SecurityEconomicDefinitionRecord ToEconomicRecord(SecurityProjectionRecord projection)
+        => ToEconomicRecord(ToEconomicDefinition(projection), projection);
+
+    /// <summary>
+    /// ADR-027 stage 2 (S2-B3): derives the economic record from a typed domain record already in
+    /// hand, skipping the per-write encode → re-decode seam (`ToProjection` → `ToRecord`) the
+    /// projection-only overload takes. The command services use this whenever no profile-backed
+    /// override replaced the projection's class or terms — there the projection's flat document is
+    /// exactly the codec serialization of <paramref name="record"/>, so the derivation is
+    /// byte-identical by the replay corpus's amend-cycle pins. Profile-backed overrides and the
+    /// replay/rebuild paths keep the projection-only overload: re-deriving from the overridden or
+    /// stored document is the authoritative route there, and the projection decode remains the
+    /// permanent read-only legacy upcaster.
+    /// </summary>
+    public static SecurityEconomicDefinitionRecord ToEconomicRecord(SecurityMasterRecord record, SecurityProjectionRecord projection)
+        => ToEconomicRecord(SecurityMasterLegacyUpgrade.toEconomicDefinition(record), projection);
+
+    private static SecurityEconomicDefinitionRecord ToEconomicRecord(SecurityEconomicDefinition definition, SecurityProjectionRecord projection)
     {
-        var definition = ToEconomicDefinition(projection);
 
         // A projection rebuilt from an economic event that predates retained flat terms carries the
         // original economic document under retainedEconomicTerms. Fold it back so modules and fields

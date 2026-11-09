@@ -238,7 +238,12 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
         // amendment must not read incumbents while this one sits between its committed projection
         // and its not-yet-written attribution — it would pair the previous source with this
         // amendment's value in a durably recorded conflict.
-        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
+        // S2-B3: no override means the carried projection's terms are the codec serialization of
+        // the amend result's typed record (the retained carry adds only the reserved key the
+        // codec ignores), so the economic record derives from that record without re-decoding.
+        var economic = assetClassOverride is null && assetTermsOverride is null
+            ? SecurityEconomicDefinitionAdapter.ToEconomicRecord(result.Snapshot!.Record, projection)
+            : SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
         var amendmentGate = await AmendmentGates.AcquireAsync(request.SecurityId, ct).ConfigureAwait(false);
         SecurityProjectionRecord? persistedProjection = null;
         try
@@ -439,14 +444,20 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
         var currentRecord = SecurityMasterMapping.ToRecord(currentProjection);
         EnsureAssetClassRoundTripsSafely(currentProjection);
         var result = SecurityMasterCommandFacade.Deactivate(currentRecord, SecurityMasterMapping.ToDeactivateCommand(request));
+        var deactivateClassOverride = GetProfileBackedAssetClassOverride(currentProjection);
+        var deactivateTermsOverride = GetProfileBackedAssetSpecificTermsOverride(currentProjection, assetSpecificTermsPatch: null);
         var projection = SecurityEconomicDefinitionAdapter.CarryRetainedEconomicTerms(
             currentProjection,
             CreateProjectionFromResult(
                 result,
                 currentProjection.Aliases,
-                GetProfileBackedAssetClassOverride(currentProjection),
-                GetProfileBackedAssetSpecificTermsOverride(currentProjection, assetSpecificTermsPatch: null)));
-        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
+                deactivateClassOverride,
+                deactivateTermsOverride));
+        // S2-B3: same rule as create and amend — the typed record is authoritative unless a
+        // profile-backed override replaced the projection's class or terms.
+        var economic = deactivateClassOverride is null && deactivateTermsOverride is null
+            ? SecurityEconomicDefinitionAdapter.ToEconomicRecord(result.Snapshot!.Record, projection)
+            : SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
         var envelope = SecurityMasterMapping.ToEventEnvelope(
             economic,
             "SecurityDeactivated",

@@ -360,8 +360,16 @@ carry a reviewed golden diff. Planned increments, each corpus-gated:
   data has no module home. Nothing is checked twice and nothing dropped: the equivalence
   suite's mutation table pins the partition, and the switch changed zero verdicts (596 F# +
   5,593 C# SecurityMaster tests green, corpus and write goldens byte-identical).
-- **S2-B3 — events built from the definition.** `ToEconomicRecord` stops round-tripping through
-  `ToRecord → toEconomicDefinition`; `SecurityMasterLegacyUpgrade` leaves the write path and
-  becomes the permanent read-only legacy replay upcaster (ADR-024 item 5).
+- **S2-B3 — events derived from the typed record (implemented 2026-11-09).** The command
+  services (create, amend, deactivate) derive the economic record through the new
+  `ToEconomicRecord(record, projection)` overload whenever no profile-backed override replaced
+  the projection's class or terms — the typed `SecurityMasterRecord` from the command result is
+  authoritative, and the per-write encode → re-decode seam (`ToProjection` → `ToRecord`)
+  disappears on those paths. A profile-backed override (CustomAsset resolution, envelope
+  repinning) replaces the document after the domain command, so the overridden document stays
+  authoritative there and keeps the projection-decode overload, as do event replay and
+  rebuild — the decode's permanent read-only legacy-upcaster role. Byte-neutrality is pinned by
+  `RecordAwareDerivation_IsByteIdenticalToTheProjectionDecode` over every declared class twin,
+  plus the corpus and write goldens.
 - **S2-B4 — term-block and approved-merge paths** move onto the definition (the
   `ToRecord(...).Kind` seam in the workbench command service).
