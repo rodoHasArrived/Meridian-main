@@ -18,6 +18,8 @@ export type NullableNumber = number | null | undefined;
 export interface NumberFormatOptions {
   minimumFractionDigits?: number;
   maximumFractionDigits?: number;
+  /** Thousands separators; false for a value typed back into an input, e.g. "1234.5". @default true */
+  useGrouping?: boolean;
   /** Rendered when the value is null, undefined, or not finite. */
   fallback?: string;
 }
@@ -25,6 +27,8 @@ export interface NumberFormatOptions {
 export interface CurrencyFormatOptions extends NumberFormatOptions {
   /** ISO 4217 code; blank or unknown codes render as "CODE 1,234.56". */
   currency?: string;
+  /** "compact" abbreviates large amounts for axes and chips, e.g. "$1.2M". @default "standard" */
+  notation?: "standard" | "compact";
 }
 
 export interface SignedCurrencyFormatOptions extends NumberFormatOptions {
@@ -38,12 +42,12 @@ function isRenderable(value: NullableNumber): value is number {
 
 /** Grouped plain number, e.g. "1,234.56". */
 export function formatNumber(value: NullableNumber, options: NumberFormatOptions = {}): string {
-  const { minimumFractionDigits, maximumFractionDigits = 2, fallback = DEFAULT_FALLBACK } = options;
+  const { minimumFractionDigits, maximumFractionDigits = 2, useGrouping, fallback = DEFAULT_FALLBACK } = options;
   if (!isRenderable(value)) {
     return fallback;
   }
 
-  return value.toLocaleString(FORMAT_LOCALE, { minimumFractionDigits, maximumFractionDigits });
+  return value.toLocaleString(FORMAT_LOCALE, { minimumFractionDigits, maximumFractionDigits, useGrouping });
 }
 
 // PERCENT UNITS: the workstation carries percent-like values in two different units,
@@ -77,7 +81,7 @@ export function formatRatioAsPercent(value: NullableNumber, options: NumberForma
 
 /** Symbol-style currency via Intl, e.g. "$1,234.56"; unknown codes render as "CODE 1,234.56". */
 export function formatCurrency(value: NullableNumber, options: CurrencyFormatOptions = {}): string {
-  const { currency = "USD", minimumFractionDigits, maximumFractionDigits = 2, fallback = DEFAULT_FALLBACK } = options;
+  const { currency = "USD", minimumFractionDigits, maximumFractionDigits = 2, notation, fallback = DEFAULT_FALLBACK } = options;
   if (!isRenderable(value)) {
     return fallback;
   }
@@ -87,11 +91,17 @@ export function formatCurrency(value: NullableNumber, options: CurrencyFormatOpt
     return new Intl.NumberFormat(FORMAT_LOCALE, {
       style: "currency",
       currency: code,
+      notation,
       minimumFractionDigits,
       maximumFractionDigits
     }).format(value);
   } catch {
-    return `${code} ${value.toLocaleString(FORMAT_LOCALE, { maximumFractionDigits: 2 })}`;
+    // Unknown code: the amount after the code, still abbreviated when compact, e.g. "XYZ 1.2M".
+    const amount = value.toLocaleString(
+      FORMAT_LOCALE,
+      notation === "compact" ? { notation, maximumFractionDigits } : { maximumFractionDigits: 2 }
+    );
+    return `${code} ${amount}`;
   }
 }
 
@@ -276,3 +286,38 @@ export function formatUtcDate(date: Date): string {
   return `${UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}`;
 }
 
+const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"] as const;
+
+/** UTC calendar month with the year, e.g. "June 2026", for a period label. */
+export function formatUtcMonthYear(date: Date): string {
+  return `${MONTH_NAMES[date.getUTCMonth()]} ${date.getUTCFullYear()}`;
+}
+
+/**
+ * A timestamp on the operator's local clock, e.g. "11/6/2026, 9:05:12 AM". For screens that show
+ * when something happened on this machine's day; ledger and evidence times use `formatUtcTimestamp`.
+ */
+export function formatLocalDateTime(date: Date): string {
+  return date.toLocaleString(FORMAT_LOCALE);
+}
+
+const dateTimeFormatters = new Map<string, Intl.DateTimeFormat>();
+
+/**
+ * A date or time in a layout the fixed helpers above do not cover, through one pinned-locale
+ * Intl.DateTimeFormat per option set, e.g. `formatDateTime(date, { dateStyle: "medium",
+ * timeStyle: "short" })`. Pass `timeZone: "UTC"` for evidence times; without it the operator's
+ * local clock is used. An invalid date renders "Invalid Date", as `toLocaleString` does.
+ */
+export function formatDateTime(date: Date, options: Intl.DateTimeFormatOptions): string {
+  if (Number.isNaN(date.getTime())) {
+    return "Invalid Date";
+  }
+  const key = JSON.stringify(options);
+  let formatter = dateTimeFormatters.get(key);
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat(FORMAT_LOCALE, options);
+    dateTimeFormatters.set(key, formatter);
+  }
+  return formatter.format(date);
+}

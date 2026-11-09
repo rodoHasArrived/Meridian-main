@@ -5,6 +5,7 @@ import type {
   ReportingExportStatusTone,
   ReportingFieldClassName
 } from "./reporting-screen.view-model";
+import { formatNumber } from "@/lib/format";
 
 /**
  * Pure presenter primitives for the Reporting desk: detail fields, their tone classes, and the
@@ -53,5 +54,5 @@ export function formatBytes(value: number): string {
     unitIndex += 1;
   }
 
-  return `${amount.toLocaleString(undefined, { maximumFractionDigits: amount >= 10 ? 1 : 2 })} ${units[unitIndex]}`;
+  return `${formatNumber(amount, { maximumFractionDigits: amount >= 10 ? 1 : 2 })} ${units[unitIndex]}`;
 }

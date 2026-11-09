@@ -8,7 +8,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import * as workstationApi from "@/lib/api";
-import { formatCurrency, formatMoney as formatMoneyValue, formatQuantity as formatQuantityValue } from "@/lib/format";
+import { formatCurrency, formatMoney as formatMoneyValue, formatQuantity as formatQuantityValue, formatUtcTimestamp } from "@/lib/format";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 import { useBrokerageRecoveryObservation } from "./trading-screen.brokerage-recovery-state";
 import type { ApiRequestOptions, ApprovePromotionRequest, RejectPromotionRequest } from "@/lib/api";
@@ -1392,16 +1392,7 @@ function formatExecutionAuditMetadata(entry: ExecutionAuditEntry): string {
     return "Recorded time unavailable";
   }
 
-  return `Recorded ${new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-    timeZone: "UTC",
-    timeZoneName: "short"
-  }).format(occurredAt).replace("24:", "00:")}`;
+  return `Recorded ${formatUtcTimestamp(occurredAt)}`;
 }
 
 function formatExecutionAuditTechnicalMetadata(entry: ExecutionAuditEntry): string | null {

@@ -1,6 +1,6 @@
 import { BACKTEST_EVIDENCE_BLOCKER } from "@/screens/strategy-designer-screen.copy";
 import { useCallback, useMemo, useState } from "react";
-import { formatPrefixedCurrency } from "@/lib/format";
+import { formatNumber, formatPrefixedCurrency } from "@/lib/format";
 import { STRATEGY_DESIGNER_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 
 export type StrategyLegKind =
@@ -2367,9 +2367,7 @@ function formatPnl(value: number): string {
 
 function formatQuantity(value: number): string {
   if (!Number.isFinite(value)) return "—";
-  return value.toLocaleString(undefined, {
-    maximumFractionDigits: 4
-  });
+  return formatNumber(value, { maximumFractionDigits: 4 });
 }
 
 function formatCurrency(value: number): string {
