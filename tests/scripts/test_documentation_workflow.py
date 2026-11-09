@@ -2,6 +2,7 @@ import os
 import json
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -13,6 +14,85 @@ from tests.scripts.workflow_assertions import assert_pinned_action
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DOCUMENTATION_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "documentation.yml"
+DASHBOARD = "docs/status/doc-health-dashboard.json"
+DASHBOARD_GATE_STEP = "Compare dashboard readiness deltas vs previous commit"
+
+
+class DashboardRegressionGateTests(unittest.TestCase):
+    """Execute the workflow's inline gate against scratch Git histories.
+
+    The step compares the regenerated dashboard in the worktree with the
+    dashboard committed at ``HEAD~1``, the base branch side of a PR merge ref.
+    """
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        steps = yaml.load(DOCUMENTATION_WORKFLOW.read_text(encoding="utf-8"), Loader=yaml.BaseLoader)[
+            "jobs"]["regenerate-docs"]["steps"]
+        step = next(step for step in steps if step.get("name") == DASHBOARD_GATE_STEP)
+        if step.get("shell") != "python":
+            raise AssertionError(f"{DASHBOARD_GATE_STEP} must run as Python, not {step.get('shell')!r}")
+        cls.script = step["run"]
+
+    def run_gate(self, history: list[dict], current: dict) -> tuple[subprocess.CompletedProcess, dict]:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temporary:
+            repo = Path(temporary) / "repo"
+            (repo / "docs/status").mkdir(parents=True)
+
+            def git(*args: str) -> None:
+                subprocess.run(["git", *args], cwd=repo, check=True, capture_output=True)
+
+            git("init", "--initial-branch=main")
+            git("config", "user.name", "Dashboard gate test")
+            git("config", "user.email", "dashboard-gate@example.invalid")
+            git("config", "commit.gpgsign", "false")
+            for number, payload in enumerate(history):
+                (repo / DASHBOARD).write_text(json.dumps(payload), encoding="utf-8")
+                git("add", "--all")
+                git("commit", "--allow-empty", "-m", f"dashboard {number}")
+            (repo / DASHBOARD).write_text(json.dumps(current), encoding="utf-8")
+            script = Path(temporary) / "gate.py"
+            script.write_text(self.script, encoding="utf-8")
+            result = subprocess.run([sys.executable, str(script)], cwd=repo, capture_output=True, text=True)
+            delta = repo / "artifacts/docs/dashboard-delta.json"
+            return result, json.loads(delta.read_text(encoding="utf-8")) if delta.exists() else {}
+
+    def test_drop_of_more_than_ten_points_fails(self) -> None:
+        result, delta = self.run_gate([{"health_score": 90}, {"health_score": 90}], {"health_score": 75})
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("Severe dashboard readiness regression detected (90.0 -> 75.0)", result.stderr)
+        self.assertEqual({"baseline_available": True, "current_score": 75.0, "previous_score": 90.0,
+                          "delta": -15.0, "missing_previous_files": [], "severe": True}, delta)
+
+    def test_smaller_drop_passes_and_records_real_scores(self) -> None:
+        result, delta = self.run_gate([{"health_score": 90}, {"health_score": 90}], {"health_score": 85})
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertEqual((90.0, 85.0, -5.0, False),
+                         (delta["previous_score"], delta["current_score"], delta["delta"], delta["severe"]))
+
+    def test_missing_baseline_skips_severe_failure(self) -> None:
+        for history in ([{"health_score": 90}], [{"healthScore": 90}, {"health_score": 90}]):
+            with self.subTest(history=history):
+                result, delta = self.run_gate(history, {"health_score": 40})
+                self.assertEqual(0, result.returncode, result.stderr)
+                self.assertFalse(delta["baseline_available"])
+                self.assertEqual([DASHBOARD], delta["missing_previous_files"])
+                self.assertIn("severe regression gating was skipped", result.stdout)
+
+    def test_current_dashboard_without_health_score_fails_instead_of_scoring_zero(self) -> None:
+        for current in ({"healthScore": 90}, {"health_score": "83"}, {"health_score": True}):
+            with self.subTest(current=current):
+                result, _ = self.run_gate([{"health_score": 90}, {"health_score": 90}], current)
+                self.assertNotEqual(0, result.returncode)
+                self.assertIn("has no numeric health_score", result.stderr)
+
+    def test_gate_reads_the_score_the_generator_commits(self) -> None:
+        committed = json.loads((REPO_ROOT / DASHBOARD).read_text(encoding="utf-8"))
+        result, delta = self.run_gate([committed, committed], committed)
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertGreater(delta["current_score"], 0.0)
+        self.assertEqual(float(committed["health_score"]), delta["current_score"])
+        self.assertTrue(delta["baseline_available"])
 
 
 class DocumentationWorkflowTests(unittest.TestCase):
