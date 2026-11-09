@@ -22,7 +22,14 @@ internal static class AsyncHandlerGuard
     /// </summary>
     /// <param name="action">The handler's work.</param>
     /// <param name="handler">Name of the event handler, recorded with the failure.</param>
-    public static async Task RunAsync(Func<Task> action, string handler)
+    public static Task RunAsync(Func<Task> action, string handler)
+        => RunAsync(action, handler, Report);
+
+    /// <summary>
+    /// Core of <see cref="RunAsync(Func{Task}, string)"/> with the failure reporter supplied, so
+    /// the containment rules can be tested without the logging and notification singletons.
+    /// </summary>
+    internal static async Task RunAsync(Func<Task> action, string handler, Action<Exception, string> report)
     {
         try
         {
@@ -34,7 +41,7 @@ internal static class AsyncHandlerGuard
         }
         catch (Exception ex) when (!IsFatal(ex))
         {
-            Report(ex, handler);
+            report(ex, handler);
         }
     }
 

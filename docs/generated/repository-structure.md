@@ -12810,6 +12810,7 @@ Meridian-main
 │   │   │   ├── AdminMaintenanceServiceTests.cs
 │   │   │   ├── AppLifecycleDataRootTests.cs
 │   │   │   ├── AppServiceRegistrationTests.cs
+│   │   │   ├── AsyncHandlerGuardTests.cs
 │   │   │   ├── BackendServiceManagerTests.cs
 │   │   │   ├── BackfillPresentationServiceTests.cs
 │   │   │   ├── BackgroundTaskSchedulerServiceTests.cs
