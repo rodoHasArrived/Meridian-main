@@ -195,6 +195,16 @@ an administrator's review of one-PR groups. Per-PR repair does not eliminate thi
 
 A custom `.gitattributes` merge driver depends on local Git configuration and does not configure
 GitHub's merge environment. It also cannot prove that a parent's assets match the merged source.
+
+The documentation health dashboard avoids that dependency by tracking only merge-stable signals.
+`docs/status/doc-health-dashboard.{json,md}` omit Markdown line counts, which every Markdown edit
+changes. Two PRs that edit different Markdown files therefore merge cleanly, and the merged
+dashboard stays current. The JSON's `signal_digest` line still conflicts when both sides change
+tracked signals differently, for example when each adds a file. Without it, both sides would write
+the same `total_files` value and Git would merge an undercount without reporting a conflict. The
+health score uses line counts only through its average-size and marker-density terms. At the repository's
+current size, those terms do not change for ordinary edits. A rare combined change that does move
+the score is still caught by the regular and merge-group freshness checks.
 The explicit command makes local conflict resolution repeatable and leaves regeneration and the
 existing freshness checks mandatory. See the
 [automation design constraints](docs-regeneration-automation-design.md) for the trust boundary and
