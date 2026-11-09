@@ -65,6 +65,15 @@ public interface ISecurityMasterStore
     Task<IReadOnlyList<SecuritySummaryDto>> SearchAsync(SecuritySearchRequest request, CancellationToken ct = default);
     Task<IReadOnlyList<SecurityProjectionRecord>> LoadAllAsync(CancellationToken ct = default);
     Task<IReadOnlyList<SecurityProjectionRecord>> LoadActiveAsync(CancellationToken ct = default);
+
+    /// <summary>
+    /// The ADR-024 decision-5 retirement-gate count: stored securities rows, active and inactive,
+    /// whose asset-specific terms declare no string <c>termsFormat</c> tag. A single aggregate —
+    /// never a projection load — with the same semantics as
+    /// <c>SecurityTermsEnvelope.GetDeclaredFormat</c>: a non-object payload or a missing or
+    /// non-string tag counts as untagged.
+    /// </summary>
+    Task<int> CountUntaggedAssetSpecificTermsAsync(CancellationToken ct = default);
     Task<long?> GetCheckpointAsync(string projectionName, CancellationToken ct = default);
     Task SaveCheckpointAsync(string projectionName, long lastGlobalSequence, CancellationToken ct = default);
 }

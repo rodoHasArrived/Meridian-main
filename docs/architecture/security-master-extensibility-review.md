@@ -3,7 +3,7 @@
 **Status:** active
 **Owner:** core-team
 **Reviewed:** 2026-11-09
-**Review history:** increment 8a resolution pass 2026-11-09; post-slice-6 source check 2026-11-06; slice-4 D3 decision 2026-11-05; slice 6 disposition 2026-11-04; slice-4 disposition 2026-11-04; consolidation pass 2026-10-28; resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
+**Review history:** increment 8a resolution pass 2026-11-09; dual-model audit reconciliation 2026-11-09; post-slice-6 source check 2026-11-06; slice-4 D3 decision 2026-11-05; slice 6 disposition 2026-11-04; slice-4 disposition 2026-11-04; consolidation pass 2026-10-28; resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -585,6 +585,235 @@ when the ledger connection string is absent. `BondProjectionGoldenTests.Bond_Key
 the first pass's 45, needed only a reachable PostgreSQL; it is a plain `[Fact]` that uses the
 database fixture. `check-file-size.py` and `dotnet format whitespace --verify-no-changes` pass.
 Hosted checks were not run.
+
+---
+
+## Verification pass — 2026-11-09 — dual-model audit reconciliation
+
+A condensed external audit of the Security Master's dual economic model was submitted for
+reconciliation. This pass checks each of its claims against current source at
+`fc848789e637f3e241698c84b5415a1a9e0ed32d` (main after #3393) and routes its proposals.
+Documentation only: no code was changed by this pass; no tests were run.
+
+### Confirmed against current source
+
+| Claim | Evidence |
+| --- | --- |
+| Two economic models describe the same securities | `SecurityKind` (`src/Meridian.FSharp/Domain/SecurityMaster.fs:945`) carries per-class terms; `SecurityTermModules` (`src/Meridian.FSharp/Domain/SecurityTermModules.fs:439`) carries exactly 25 optional modules |
+| ~2,800 lines of upgrade/mapping bridge | `SecurityMasterLegacyUpgrade.fs` (1,120 lines) + `SecurityMasterMapping.cs` (1,692 lines) = 2,812, plus the 360-line `SecurityEconomicDefinitionAdapter.cs` |
+| Every write round-trips through the legacy model | `SecurityEconomicDefinitionAdapter.ToEconomicRecord` routes through `SecurityMasterLegacyUpgrade.toEconomicDefinition(SecurityMasterMapping.ToRecord(…))`; `CarryRetainedEconomicTerms` preserves fields the per-kind format cannot hold (`SecurityMasterService.cs` amendment paths) |
+| Call, covenant, coupon and dividend structures are defined in both models | `CallScheduleTerm`/`CallPutSchedules` (`SecurityMaster.fs:287/344`) vs `CallScheduleEntry`/`EconomicCallTerms` (`SecurityTermModules.fs:98/112`); `Covenant` (`SecurityMaster.fs:599`) vs `CovenantTerms`; `BondCouponStructure` (`SecurityMaster.fs:219`) vs `CouponTerms`/`FloatingRateTerms`; `DividendType` (`SecurityMaster.fs:55`) vs `DividendFrequency`/`DividendScheduleTerms` (`SecurityTermModules.fs:250/259`) |
+| `DeriveSubType` maps a fixed subset of the catalog | 11 arms (`src/Meridian.Ui.Shared/Services/SecurityMasterSecurityReferenceLookup.cs:176`) |
+| The coverage read model infers the class from keywords | `MultiAssetCoverageReadService.cs:441` returns `Bond` for any evidence shape containing "factor" |
+| Face-value quoting is hard-coded, and no descriptor declares a quote convention | `LotQuantity.ValueAtPrice` divides by 100 for every `FaceValue` lot (`src/Meridian.Contracts/SecurityMaster/LotQuantity.cs:35`); `AssetClassDescriptor` carries no quoting fact |
+| Three payload families share one version key; untagged payloads are shape-detected | `SecurityTermsEnvelope.ResolveFormat` (`SecurityTermsEnvelope.cs:106`) classifies untagged documents by shape, as ADR-024 documents and guards |
+| Adding a class is code-heavy; `CustomAsset` is the only no-code route | `CapFloor` appears in 11 source files plus migration `047_rate_option_and_note_terms_projections.sql` and the schema manifests |
+
+### Corrections to the submitted audit
+
+- The catalog holds **32** asset classes, not 34 (`AssetClassRegistry` descriptors; the slice-6
+  disposition's "32 of 32" projection count). `DeriveSubType` therefore maps 11 of 32.
+- "No test lists everything a new asset class must implement" is **partly stale**: slice 6 landed
+  omission-failing coverage for reverse instrument mapping and readiness projectors, and
+  `SecurityAssetTermsSchemaRoundTripTests` walks every declared class. What remains missing is a
+  single new-class touchpoint checklist spanning codecs, projections, validators, lookups and UI
+  seams; the codec arms also remain hand-written (D1).
+- "No API exposes the terms schema to the browser" is **stale on current source**: the asset-class
+  registry, term fields and UI hints are served at `/api/security-master/asset-classes[/{assetClass}]`
+  (`SecurityMasterEndpoints.cs`, from `SecurityAssetClassRegistry.ToDtos()`), and the dashboard's
+  passport editor builds its term fields from that endpoint (`security-master-schema.api.ts`,
+  `security-passport-schema-fields.view-model.ts`), landed by `8119b637` (2026-11-01). What was
+  true when checked: the browser mirrors `SecurityAssetTermFormModel`'s grouping, choice and
+  validation rules by hand, with nothing asserting the two lanes agree — exactly D9's open
+  parity-contract gap — and the hand-built bond panels (`bond-analytics-panel.tsx`,
+  `bond-reference-ladder-panel.tsx`) predate the schema-driven route.
+
+### Disposition of the audit's five priorities
+
+1. **Merge into one economic model (modules canonical; retire the bridge and
+   `retainedEconomicTerms`).** Not accepted as a slice. This is the audit's largest proposal and it
+   supersedes guarantees this record already pins: D1 requires codec work to preserve retained
+   economic fields and explicit refusals, and slice 3 made historical reads compatible *without*
+   rewriting retained terms. Consolidation first needs a domain-owner decision, a payload-upgrade
+   and backfill design, and replay-compatibility proof. Recorded as the consolidation decision item
+   in the remediation plan.
+2. **Expose the terms schema and form model through the shared API; build the browser editors from
+   it.** Partly superseded: the registry schema is already served and the browser passport editor
+   already builds from it (see the correction above). The remaining substance is D9's parity
+   contract between the C# form model and the TypeScript mirror, taken as remediation slice 7.
+3. **Move the sub-type lookup, keyword inference and quoting rule into the asset-class descriptors,
+   adding a quote-convention fact.** Extends D3/D9 and follows the pattern slice 6 used for
+   `LotUnit`/`LotMultiplierTermKey` and conflict-field categories. Proposed as remediation slice 8.
+4. **Generate per-class projections from the registry; add a touchpoint test.** Partly superseded:
+   the projection registry and the CustomAsset projection (migration 064) already cover 32 of 32,
+   and the slice-6 ratchet tests fail on omission. The remaining substance — generated or
+   schema-asserted codec arms and a single new-class checklist — stays under D1 and the slice-6
+   codec-generation caveats.
+5. **Tag the remaining untagged payloads; retire shape detection.** Partly superseded, and the
+   audit's remedy (this pass initially repeated it) is the alternative ADR-024 explicitly
+   rejected: rewriting stored blobs to add the tag mutates event-sourced history and makes a
+   misclassification permanent. The accepted design already stamps every write (decision 1),
+   records the classification in the `terms_format` column without touching the payload
+   (migration 042, decision 2), and gates retirement on evidence (decision 5): zero untagged
+   rows on every governed deployment plus a replay-only legacy upcaster. What was genuinely
+   missing is the evidence itself — nothing measured the decision-5 count. Taken as remediation
+   slice 9 (see the disposition below); the retirement remains ADR-024's separate, later change.
+
+The consolidation decision item was added to the
+[remediation working plan](../engineering/plans/security-master-review-remediation-plan.md) by
+this pass. Slices 7–9 were re-scoped against current source and implemented, each with its dated
+disposition below:
+
+### Slice 7 disposition — term-form parity contract — 2026-11-09
+
+`SecurityAssetTermFormParityFixtureTests` (`tests/Meridian.Tests/SecurityMaster/`) generates
+`src/Meridian.Ui/dashboard/src/test/fixtures/security-asset-term-form-parity.json` from
+`SecurityAssetClassRegistry.ToDtos()` and `SecurityAssetTermFormModel`: every catalog class's
+served field definitions, pickable scalar fields and closed value choices, plus each editor
+kind's validation verdict (required and optional) over a fixed 33-input corpus. The test fails on
+any drift from the committed fixture and writes a received copy beside the test binaries.
+`security-passport-schema-fields.parity.test.ts` replays the fixture through the browser mirror.
+Parity is asserted on the declared facts: the mirror's pickable set sorted by declared order must
+equal the model's flat order, each browser section must keep declared order internally (grouping
+into sections is the browser's deliberate presentation, not drift), value choices must match per
+field, and every validation verdict must match per input.
+
+Aligning the mirror changed its client-side pre-checks (the server-side governed validator stays
+authoritative): Integer now accepts a leading `+` and enforces `long` range; Date now requires a
+real proleptic-Gregorian calendar date rather than any `\d{4}-\d{2}-\d{2}` string; Decimal now
+follows the model's invariant parsing — sign and `,` group separators accepted, exponent notation
+refused. Known out-of-corpus host-parsing esoterica (misplaced group separators such as `",5"`,
+beyond-`decimal` magnitudes) deliberately stay outside the contract and are documented in the
+generator.
+
+Validation (local, .NET SDK 10.0.403): `dotnet test tests/Meridian.Tests -c Release --filter
+FullyQualifiedName~SecurityAssetTermFormParityFixtureTests` — 1 passed after committing the
+generated fixture (and fails as designed when the fixture is absent or stale). Dashboard:
+`security-passport-schema-fields.parity.test.ts` + `security-passport-schema-fields.view-model.test.ts`
+— 54 passed; `security-passport-editor.test.tsx`, `security-passport-editor-launcher.test.tsx`,
+`security-passport-editor.view-model.test.ts` — 23 passed. The full local `bash scripts/ci.sh` was
+not run; GitHub `Meridian CI / quality-gate` remains authoritative.
+
+### Slice 8 disposition — descriptor-owned consumer rules — 2026-11-09
+
+The three catalog-external rules this pass confirmed now read declared facts.
+
+**Sub-type derivation.** `SecurityMasterSecurityReferenceLookup.DeriveSubType` (shared by
+`WorkstationEndpoints`) reads the F# `AssetClassRegistry` sub-type for every catalog class instead
+of an 11-arm switch. Three legacy workstation spellings stay pinned exceptions — "Bond", "Deposit",
+"MoneyMarket" are the deliberately generic labels reconciliation lines already carry — and Equity
+is declared sub-type-ambiguous (a record may be common, preferred, an ADR or an MLP unit), keeping
+the existing null. The 18 previously-unmapped determinate classes (StructuredCredit, CapFloor,
+CustomAsset, …) and the three previously-null echo classes (FxSpot, CashSweep, OtherSecurity) now
+derive their registry labels: an additive enrichment of workstation reads, with the existing 11
+mappings byte-identical. `WorkstationSecuritySubTypeCoverageTests` pins the full 32-class table
+omission-failing; the file left `SecurityAssetClassLiteralRatchetTests.KnownDispatchSites`, which
+only ever shrinks. The known-divergence pins in `SecurityAssetClassSurfaceParityTests` are
+unchanged.
+
+**Evidence-class routing.** `MultiAssetEvidenceClassRouter` replaces
+`MultiAssetCoverageReadService`'s substring inference: exact-token routes (candidate type, then
+ledger-effect kind with candidate-type fallback) over the closed vocabulary
+`ProviderLedgerReconciliationService.CorporateActions` produces, preserving every in-repo outcome
+(factor, amortization and principal-return evidence reads as Bond; loan schedules as DirectLoan;
+distributions as PrivateFundInterest; equity corporate-action, dividend, interest and plain
+provider evidence stays unresolved). Evidence outside the declared vocabulary is now explicitly
+unresolved instead of substring-guessed — the "mbs/structured/nav/covenant" token groups were
+unreachable with the produced vocabulary and are gone; securitized evidence routes to
+StructuredCredit (ADR-022) by declaring its token when a producer lands.
+`MultiAssetEvidenceClassRouterTests` pins the full vocabulary's routes and that every target is a
+catalog class.
+
+**Quote convention.** `SecurityAssetClassDescriptor.QuoteConvention` declares how a class's raw
+quotes scale into money (`PercentOfPar` / `PerUnit`), defaulting from the lot unit so every
+catalogued class prices identically; `LotQuantity` gains `ValueAtPrice(price, convention)` and
+`QuoteConventionFor(assetClass)`, and the unit-kind overload keeps the legacy rule.
+`SecurityQuoteConventionCoverageTests` pins the declared convention to the legacy conversion for
+every class and both pricing routes to agree, so a future non-percent-of-par class is a visible
+pin change that moves class-aware callers onto the convention overload, never a silent repricing.
+The quote-convention vocabulary itself remains the open domain-owner decision recorded in the
+remediation plan; existing `ValueAtPrice` consumers are deliberately untouched.
+
+Validation (local, .NET SDK 10.0.403, `dotnet test tests/Meridian.Tests -c Release --no-build`
+filtered): the three new suites — 100 passed; `SecurityMasterReferenceLookupTests`,
+`SecurityAssetClassSurfaceParityTests`, `SecurityAssetClassLiteralRatchetTests`,
+`WorkstationMultiAssetCoverageEndpointsTests` and `LotQuantity` suites — 77 passed;
+`SecurityAssetClassRegistryCoverageTests`, behavior-facts, `SecurityKindMappingTests` and
+asset-pack suites — 74 passed; `SecurityTermsWriteGoldenTests` — 51 passed, write golden
+unchanged. The full local `bash scripts/ci.sh` was not run; GitHub `Meridian CI / quality-gate`
+remains authoritative.
+
+### Slice 9 disposition — the ADR-024 retirement gate is now measurable — 2026-11-09
+
+The audit's proposed remedy — backfill `termsFormat` into stored payloads by migration — is the
+alternative ADR-024 explicitly rejected (it mutates event-sourced history and makes a
+misclassification permanent), and this pass's own first framing of slice 9 repeated that
+mistake; the corrections above record it. The accepted design already stamps every write
+(decision 1) and records the classification in the non-destructive `terms_format` column
+(migration 042, decision 2). What no surface measured was decision 5's retirement gate: zero
+untagged rows on every governed deployment.
+
+Implemented: the data-quality scan raises rule `TX003` ("Untagged Terms Payload Format",
+TaxonomyCheck, Warning) for each active record whose asset-specific terms declare no
+`termsFormat`, naming the family the shape rule infers; and
+`SecurityMasterQualityReportDto.UntaggedTermsPayloadCount` gauges the whole stored population —
+inactive rows included — through the store's single aggregate
+(`ISecurityMasterStore.CountUntaggedAssetSpecificTermsAsync`, never a projection load; a Codex
+review finding on the first cut, which counted by loading every projection, was confirmed
+against `LoadAllAsync`'s per-row reads and fixed), with the SQL pinned to the
+`SecurityTermsEnvelope.GetDeclaredFormat` verdict row by row by
+`SecurityMasterPostgresRoundTripTests`. The quality-report endpoint
+already serves both workstations, so each deployment's backlog is readable evidence; the count
+only falls, because every write stamps. No stored payload is rewritten, and the shape rule
+stays load-bearing exactly as decision 5 requires until the evidence reads zero everywhere; its
+removal remains ADR-024's separate, later change behind a replay-only legacy upcaster.
+
+Validation (local, .NET SDK 10.0.403): `dotnet test tests/Meridian.Tests -c Release` filtered to
+`SecurityMasterDataQualityService|SecurityMasterExceptionCaseworkServiceTests|QualityReport` —
+40 passed, 0 failed, covering the untagged/tagged/profile-envelope rule outcomes, the
+active-plus-inactive gauge, and the zero case. The full local `bash scripts/ci.sh` was not run;
+GitHub `Meridian CI / quality-gate` remains authoritative.
+
+### ADR-027 stage-1 increment 2 — accrual conventions recover — 2026-11-09
+
+The second slice-10 increment lifts the accrual refusal for classes that declare the
+`scheduleConventions` block (Bond and CertificateOfDeposit at terms version 2; StructuredCredit
+at 3): the economic Accrual module's business-day convention — kept verbatim
+and recovered only when the flat reader's own parser decodes the spelling — and its joint
+calendar, as the block's one payment calendar, land in the frozen twelve-member block, with the
+members the economic family never carried left null under ADR-025's read defaults. The frozen
+fill now holds on recovered documents: at or above the block's Since the key is present, null
+when nothing is declared, so a schedules-only document stamped at 3 carries
+`scheduleConventions: null`. Refusals keep the increment-1 discipline: unrecognized spellings,
+blank or non-string calendars, and case-variant module or member spellings refuse on every
+route, and classes without the declared block refuse as before
+(`SecurityEconomicScheduleReplayRefusalTests`; the recovery is pinned by the conventions cases
+in `SecurityEconomicCallScheduleFlatteningTests`).
+
+### ADR-027 accepted; stage-1 increment 1 — call schedules recover — 2026-11-09
+
+The domain owner accepted [ADR-027](../adr/027-single-economic-model-consolidation.md) (single
+economic model consolidation, three gated stages); stage 1 proceeds as remediation slice 10. Its
+first increment landed: for a class that declares the flat `callSchedule`/`putSchedule` arrays
+(Bond and CertificateOfDeposit at terms version 3, StructuredCredit at 4), the class-aware
+economic→flat conversion recovers the Call module's lists into those arrays in the frozen
+ADR-024 entry form, stamped at the arrays' version, instead of refusing economic-only replay.
+Conversion semantics are declared and pinned (`SecurityEconomicCallScheduleFlatteningTests`);
+refusals narrow but never vanish (`SecurityEconomicScheduleReplayRefusalTests`: accrual
+conventions everywhere; schedule lists on the class-independent route and for non-declaring
+classes; malformed lists, populated-but-dateless entries, undecodable dates and case-variant
+module or key spellings on every route — the latter two added after a Codex review pass caught
+the first cut failing open where the old guard failed closed). The
+`SecurityTermsVersioningTests` economic-replay pin moved from refusal to recovery with the
+retained document still carried. Schema-control contract manifests were re-snapshot and promoted
+(`verify` reproduced CI's staleness locally and passes after promotion).
+
+Validation (local, .NET SDK 10.0.403, plus a local PostgreSQL 16 through
+`MERIDIAN_SECURITY_MASTER_CONNECTION_STRING`): bridge/versioning/upgrader/refusal/golden suites —
+425 passed, 0 failed; `SecurityMasterPostgresRoundTripTests` — 25 passed against the live
+database, the slice-9 gate-count row-by-row SQL parity test now exercised rather than skipped;
+CustomAsset/fan-out/alias-migration/terms-history Postgres suites — 35 passed. The full local
+`bash scripts/ci.sh` was not run; GitHub `Meridian CI / quality-gate` remains authoritative.
 
 ---
 

@@ -404,17 +404,26 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
     [InlineData("Bond")]
     [InlineData("CertificateOfDeposit")]
     [InlineData("StructuredCredit")]
-    public void ReplayWithoutLegacyTerms_RefusesDeclaredAccrual_WhileRetainedFlatTermsRemainAuthoritative(string assetClass)
+    public void ReplayWithoutLegacyTerms_RecoversDeclaredAccrual_WhileRetainedFlatTermsRemainAuthoritative(string assetClass)
     {
         var twin = SecurityAssetTermsSchemaRoundTripTests.ReadableTwin(assetClass);
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
             SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(assetClass, twin));
-        economic.EconomicTerms.GetProperty("accrual").ValueKind.Should().Be(JsonValueKind.Object,
+        var accrual = economic.EconomicTerms.GetProperty("accrual");
+        accrual.ValueKind.Should().Be(JsonValueKind.Object,
             "the historical twin declares schedule accrual information");
 
-        Action replay = () => SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null });
+        // Since ADR-027 stage 1 increment 2, economic-only replay recovers the declared accrual
+        // conventions into the scheduleConventions block (and, with increment 1, the schedule
+        // lists into their arrays) instead of refusing; the source document stays retained.
+        var recovered = SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null });
+        var block = recovered.AssetSpecificTerms.GetProperty("scheduleConventions");
+        block.GetProperty("businessDayConvention").GetString()
+            .Should().Be(accrual.GetProperty("businessDayConvention").GetString(), "the verbatim spelling is kept");
+        string.Join("+", block.GetProperty("paymentCalendars").EnumerateArray().Select(static calendar => calendar.GetString()))
+            .Should().Be(accrual.GetProperty("holidayCalendar").GetString(), "the joint calendar id splits back into its parts");
+        SecurityTermsEnvelope.TryGetRetainedEconomicTerms(recovered.AssetSpecificTerms, out _).Should().BeTrue();
 
-        replay.Should().Throw<InvalidOperationException>().WithMessage("*Declared schedule economic replay requires retained legacy*");
         SecurityEconomicDefinitionAdapter.ToProjection(economic).AssetSpecificTerms.GetRawText().Should().Be(twin.GetRawText(),
             "the established retained-flat path preserves the complete declaration");
     }
@@ -573,7 +582,7 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
     [Theory]
     [InlineData("2032-12-15")]
     [InlineData(null)]
-    public void ReplayWithoutLegacyTerms_RefusesDeclaredExerciseLists_RegardlessOfScalarCallDate(string? callDate)
+    public void ReplayWithoutLegacyTerms_RecoversDeclaredExerciseLists_RegardlessOfScalarCallDate(string? callDate)
     {
         var twin = ScheduleTwin(
             "Bond",
@@ -588,9 +597,23 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
         call.GetProperty("callSchedule").GetArrayLength().Should().Be(2);
         call.GetProperty("putSchedule").GetArrayLength().Should().Be(1);
 
-        Action replay = () => SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null });
+        // Since ADR-027 stage 1 increments 1 and 2, economic-only replay recovers both exercise
+        // lists and the twin's accrual conventions instead of refusing; the scalar call date keeps
+        // its own flat key, independent of the lists, and the source document stays retained.
+        var recovered = SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null }).AssetSpecificTerms;
+        recovered.GetProperty("callSchedule").GetArrayLength().Should().Be(2);
+        recovered.GetProperty("putSchedule").GetArrayLength().Should().Be(1);
+        recovered.GetProperty("scheduleConventions").ValueKind.Should().Be(JsonValueKind.Object);
+        if (callDate is null)
+        {
+            recovered.TryGetProperty("callDate", out _).Should().BeFalse();
+        }
+        else
+        {
+            recovered.GetProperty("callDate").GetString().Should().Be(callDate);
+        }
 
-        replay.Should().Throw<InvalidOperationException>().WithMessage("*Declared schedule economic replay requires retained legacy*");
+        SecurityTermsEnvelope.TryGetRetainedEconomicTerms(recovered, out _).Should().BeTrue();
         SecurityEconomicDefinitionAdapter.ToProjection(economic).AssetSpecificTerms.GetRawText().Should().Be(twin.GetRawText());
     }
 
