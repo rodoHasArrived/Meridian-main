@@ -6,6 +6,7 @@ using Meridian.Ui.Shared.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Workstation.Models;
+using UtcFormat = Meridian.Ui.Services.FormatHelpers;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -2073,11 +2074,11 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
 
             _reportPackPreview = preview;
             ReportPackKindText = preview.ReportKind.ToString();
-            ReportPackAsOfText = preview.AsOf.LocalDateTime.ToString("g");
+            ReportPackAsOfText = UtcFormat.FormatUtcTimestamp(preview.AsOf);
             ReportPackNetAssetsText = preview.TotalNetAssets.ToString("C2");
             ReportPackTrialBalanceLinesText = preview.TrialBalanceLineCount.ToString("N0");
             ReportPackAssetSectionsText = preview.AssetClassSectionCount.ToString("N0");
-            ReportPackGeneratedAtText = preview.GeneratedAt.LocalDateTime.ToString("g");
+            ReportPackGeneratedAtText = UtcFormat.FormatUtcTimestamp(preview.GeneratedAt);
             ReportPackStatusText = $"{preview.DisplayName} {preview.ReportKind} preview is ready for operator handoff.";
 
             ReportPackAssetSections.Clear();

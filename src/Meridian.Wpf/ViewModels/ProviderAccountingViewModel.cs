@@ -166,7 +166,7 @@ public sealed class ProviderAccountingViewModel : BindableBase
         RegistrationTitle = report.IsHealthy
             ? "Provider registration healthy"
             : $"{RegistrationFailures.Count} provider registration failure{(RegistrationFailures.Count == 1 ? string.Empty : "s")}";
-        RegistrationSummary = $"{report.RegisteredModuleCount} registered, {report.SkippedModuleCount} skipped, {report.DiscoveredSourceCount} discovered sources. Reported {report.GeneratedAt:yyyy-MM-dd HH:mm:ss 'UTC'}.";
+        RegistrationSummary = $"{report.RegisteredModuleCount} registered, {report.SkippedModuleCount} skipped, {report.DiscoveredSourceCount} discovered sources. Reported {report.GeneratedAt.UtcDateTime.ToString("yyyy-MM-dd HH:mm:ss 'UTC'", CultureInfo.InvariantCulture)}.";
         OnPropertyChanged(nameof(HasRegistrationFailures));
     }
 
@@ -187,7 +187,7 @@ public sealed class ProviderAccountingViewModel : BindableBase
 
         RateLimitSummary = RateLimits.Count == 0
             ? "No provider runtime exposed a current rate-limit snapshot."
-            : $"{RateLimits.Count} current provider surface{(RateLimits.Count == 1 ? string.Empty : "s")} observed {response.Timestamp:yyyy-MM-dd HH:mm:ss 'UTC'}.";
+            : $"{RateLimits.Count} current provider surface{(RateLimits.Count == 1 ? string.Empty : "s")} observed {response.Timestamp.UtcDateTime.ToString("yyyy-MM-dd HH:mm:ss 'UTC'", CultureInfo.InvariantCulture)}.";
         OnPropertyChanged(nameof(HasRateLimits));
     }
 
