@@ -1,6 +1,7 @@
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.ViewModels;
 using Meridian.Contracts.Api;
+using UtcFormat = Meridian.Ui.Services.FormatHelpers;
 
 namespace Meridian.Wpf.Tests.ViewModels;
 
@@ -130,8 +131,8 @@ public sealed class BackfillViewModelTests
 
         stats.TotalBarsText.Should().Be("12,345");
         stats.SymbolsProcessedText.Should().Be("2 symbols");
-        stats.RunWindowText.Should().Be($"{status.StartedUtc.Value.LocalDateTime:g} to {status.CompletedUtc.Value.LocalDateTime:g}");
-        stats.LastSuccessfulRunText.Should().Be(status.CompletedUtc.Value.LocalDateTime.ToString("g"));
+        stats.RunWindowText.Should().Be($"{UtcFormat.FormatUtcTimestamp(status.StartedUtc.Value)} to {UtcFormat.FormatUtcTimestamp(status.CompletedUtc.Value)}");
+        stats.LastSuccessfulRunText.Should().Be(UtcFormat.FormatUtcTimestamp(status.CompletedUtc.Value));
     }
 
     [Fact]
@@ -153,7 +154,7 @@ public sealed class BackfillViewModelTests
 
         stats.TotalBarsText.Should().Be("0");
         stats.SymbolsProcessedText.Should().Be("2 symbols");
-        stats.RunWindowText.Should().Be($"Started {status.StartedUtc.Value.LocalDateTime:g}");
+        stats.RunWindowText.Should().Be($"Started {UtcFormat.FormatUtcTimestamp(status.StartedUtc.Value)}");
         stats.LastSuccessfulRunText.Should().Be("Latest run failed");
     }
 

@@ -358,7 +358,7 @@ public sealed class RunRiskViewModel : BindableBase
         RunAttributionSummary? attribution)
     {
         Title = $"{detail.Summary.StrategyName} — Risk Analytics";
-        StatusText = $"{detail.Summary.Mode} {detail.Summary.Status} · {detail.Summary.StartedAt.LocalDateTime:d}";
+        StatusText = $"{detail.Summary.Mode} {detail.Summary.Status} · {detail.Summary.StartedAt.UtcDateTime:d}";
 
         // ── Exposure metrics (from portfolio snapshot) ────────────────────────
         var portfolio = detail.Portfolio;

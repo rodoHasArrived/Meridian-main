@@ -48,7 +48,7 @@ import type {
   SecureReportingDistributionCapabilityCatalog,
   SecureReportingIssuedAccessGrant
 } from "@/types/reporting-governance";
-import { formatDateTime } from "@/lib/format";
+import { formatUtcTimestamp } from "@/lib/format";
 
 type ResourcePhase = "loading" | "ready" | "unavailable";
 
@@ -1913,7 +1913,7 @@ function formatTimestamp(value: string): string {
   const date = new Date(value);
   return Number.isNaN(date.getTime())
     ? value
-    : formatDateTime(date, { dateStyle: "medium", timeStyle: "short" });
+    : formatUtcTimestamp(date);
 }
 
 function formatBytes(value: number): string {
