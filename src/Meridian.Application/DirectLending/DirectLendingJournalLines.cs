@@ -76,6 +76,52 @@ public static class DirectLendingJournalLines
     }
 
     /// <summary>
+    /// PRD-115 increment 7: held cash applied to amounts owed. Dr UnappliedCashLiability for the amount
+    /// applied; Cr each receivable settled and LoanPrincipal. No cash moves.
+    /// </summary>
+    public static IReadOnlyList<DirectLendingJournalLine> ForUnappliedCashApplied(JsonElement root)
+    {
+        var applied = GetDecimal(root, "appliedAmount", "AppliedAmount");
+        var breakdown = root.TryGetProperty("breakdown", out var element) || root.TryGetProperty("Breakdown", out element) ? element : default;
+        var toInterest = GetDecimal(breakdown, "toInterest");
+        var toCommitmentFee = GetDecimal(breakdown, "toCommitmentFee");
+        var toFees = GetDecimal(breakdown, "toFees");
+        var toPenalty = GetDecimal(breakdown, "toPenalty");
+        var toPrincipal = GetDecimal(breakdown, "toPrincipal");
+        if (toInterest + toCommitmentFee + toFees + toPenalty + toPrincipal != applied)
+        {
+            throw new InvalidOperationException(
+                $"Unapplied cash application of {applied} does not match its breakdown; the journal would not balance.");
+        }
+
+        var lines = new List<DirectLendingJournalLine>();
+        void Add(string account, LedgerAccountType type, decimal debit, decimal credit)
+        {
+            if (debit > 0m || credit > 0m)
+            {
+                lines.Add(new DirectLendingJournalLine(account, type, debit, credit));
+            }
+        }
+
+        Add(UnappliedCashLiability, LedgerAccountType.Liability, applied, 0m);
+        Add("AccruedInterestReceivable", LedgerAccountType.Asset, 0m, toInterest);
+        Add("CommitmentFeeReceivable", LedgerAccountType.Asset, 0m, toCommitmentFee);
+        Add("FeeReceivable", LedgerAccountType.Asset, 0m, toFees);
+        Add("PenaltyReceivable", LedgerAccountType.Asset, 0m, toPenalty);
+        Add("LoanPrincipal", LedgerAccountType.Asset, 0m, toPrincipal);
+        return lines;
+    }
+
+    /// <summary>PRD-115 increment 7: held cash returned to the borrower. Dr UnappliedCashLiability / Cr Cash.</summary>
+    public static IReadOnlyList<DirectLendingJournalLine> ForUnappliedCashRefunded(JsonElement root)
+    {
+        var amount = GetDecimal(root, "amount", "Amount");
+        return amount > 0m
+            ? [new(UnappliedCashLiability, LedgerAccountType.Liability, amount, 0m), new("Cash", LedgerAccountType.Asset, 0m, amount)]
+            : [];
+    }
+
+    /// <summary>
     /// The interest lines of a daily accrual: Cr InterestIncome for the day's cash interest, settled
     /// first from prepaid interest (Dr PrepaidInterestLiability) and the rest as a receivable
     /// (Dr AccruedInterestReceivable). PIK, commitment-fee and penalty lines are unchanged and posted

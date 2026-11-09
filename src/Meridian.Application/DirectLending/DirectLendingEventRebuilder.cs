@@ -291,6 +291,62 @@ public sealed class DirectLendingEventRebuilder
                         break;
                     }
 
+                case "loan.unapplied-cash-applied":
+                    {
+                        // PRD-115: held cash allocated to amounts owed; no cash received.
+                        EnsureInitialized(contract, servicing, entry.EventType);
+                        var effectiveDate = entry.EffectiveDate ?? Deserialize<DateOnly>(root, "effectiveDate");
+                        var breakdown = Deserialize<PaymentBreakdownDto>(root, "breakdown");
+                        var appliedAmount = root.GetProperty("appliedAmount").GetDecimal();
+                        var balances = servicing!.Balances;
+                        var totalDrawnAfter = Math.Max(0m, servicing.TotalDrawn - breakdown.ToPrincipal);
+
+                        servicing = servicing with
+                        {
+                            TotalDrawn = totalDrawnAfter,
+                            AvailableToDraw = DirectLendingInterop.CalculateAvailableToDraw(servicing.CurrentCommitment, totalDrawnAfter),
+                            Balances = balances with
+                            {
+                                PrincipalOutstanding = Math.Max(0m, balances.PrincipalOutstanding - breakdown.ToPrincipal),
+                                InterestAccruedUnpaid = Math.Max(0m, balances.InterestAccruedUnpaid - breakdown.ToInterest),
+                                CommitmentFeeAccruedUnpaid = Math.Max(0m, balances.CommitmentFeeAccruedUnpaid - breakdown.ToCommitmentFee),
+                                FeesAccruedUnpaid = Math.Max(0m, balances.FeesAccruedUnpaid - breakdown.ToFees),
+                                PenaltyAccruedUnpaid = Math.Max(0m, balances.PenaltyAccruedUnpaid - breakdown.ToPenalty),
+                                UnappliedCash = balances.UnappliedCash - appliedAmount
+                            },
+                            DrawdownLots = ApplyPaymentToLots(servicing.DrawdownLots, breakdown.ToPrincipal),
+                            ServicingRevision = servicing.ServicingRevision + 1,
+                            RevisionHistory = PrependRevision(
+                                servicing.RevisionHistory,
+                                servicing.ServicingRevision + 1,
+                                "InternalEvent",
+                                effectiveDate,
+                                $"Unapplied cash applied for {appliedAmount:0.00}.",
+                                entry.RecordedAt)
+                        };
+                        break;
+                    }
+
+                case "loan.unapplied-cash-refunded":
+                    {
+                        EnsureInitialized(contract, servicing, entry.EventType);
+                        var effectiveDate = entry.EffectiveDate ?? Deserialize<DateOnly>(root, "effectiveDate");
+                        var refunded = root.GetProperty("amount").GetDecimal();
+                        servicing = servicing! with
+                        {
+                            Balances = servicing.Balances with { UnappliedCash = servicing.Balances.UnappliedCash - refunded },
+                            ServicingRevision = servicing.ServicingRevision + 1,
+                            RevisionHistory = PrependRevision(
+                                servicing.RevisionHistory,
+                                servicing.ServicingRevision + 1,
+                                "InternalEvent",
+                                effectiveDate,
+                                $"Unapplied cash refunded for {refunded:0.00}.",
+                                entry.RecordedAt)
+                        };
+                        break;
+                    }
+
                 case "loan.prepayment-penalty-charged":
                     {
                         EnsureInitialized(contract, servicing, entry.EventType);

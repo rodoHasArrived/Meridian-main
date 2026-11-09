@@ -243,6 +243,18 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
                 }
                 break;
 
+            case "loan.unapplied-cash-applied":
+            case "loan.unapplied-cash-refunded":
+                description = sourceEvent.EventType == "loan.unapplied-cash-applied" ? "Unapplied cash applied" : "Unapplied cash refund";
+                // PRD-115 increment 7 (shared with LoanAccountingProjector).
+                foreach (var line in sourceEvent.EventType == "loan.unapplied-cash-applied"
+                    ? DirectLendingJournalLines.ForUnappliedCashApplied(payload.RootElement)
+                    : DirectLendingJournalLines.ForUnappliedCashRefunded(payload.RootElement))
+                {
+                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, line.Account, line.Debit, line.Credit, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
+                }
+                break;
+
             case "loan.fee-assessed":
                 var feeAmount = GetRequiredDecimal(payload.RootElement, "amount", "Amount");
                 description = "Fee assessment";

@@ -56,6 +56,23 @@ public sealed record ApplyMixedPaymentRequest(
     PaymentBreakdownDto? Breakdown,
     string? ExternalRef);
 
+/// <summary>
+/// PRD-115: applies part of the loan's unapplied cash to amounts owed, by the automatic waterfall
+/// or a manual <see cref="Breakdown"/> capped at what is owed. Whatever cannot be allocated stays
+/// unapplied; no new cash is received.
+/// </summary>
+public sealed record ApplyUnappliedCashRequest(
+    decimal Amount,
+    DateOnly EffectiveDate,
+    PaymentBreakdownDto? Breakdown,
+    string? ExternalRef);
+
+/// <summary>PRD-115: returns unapplied cash to the borrower (Dr UnappliedCashLiability / Cr Cash).</summary>
+public sealed record RefundUnappliedCashRequest(
+    decimal Amount,
+    DateOnly EffectiveDate,
+    string ExternalRef);
+
 public sealed record AssessFeeRequest(
     string FeeType,
     decimal Amount,

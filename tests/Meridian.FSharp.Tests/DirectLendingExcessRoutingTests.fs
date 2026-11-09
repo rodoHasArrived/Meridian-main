@@ -140,3 +140,63 @@ let ``A payment with no excess records no rule and moves neither balance`` () =
     (payment.Resolution.ExcessToPrincipal, payment.Resolution.ExcessToPrepaidInterest, payment.Resolution.UnappliedAmount)
     |> should equal (0m, 0m, 0m)
     (payment.Servicing.Balances.PrepaidInterest, payment.Servicing.Balances.UnappliedCash) |> should equal (0m, 0m)
+
+// ── PRD-115 increment 7: applying and refunding unapplied cash ──────────────
+
+let private holdingUnapplied terms unapplied =
+    loanOwingInterest terms |> DirectLendingTestBalances.withExcessBalances 0m unapplied
+
+[<Fact>]
+let ``Applying unapplied cash runs the waterfall and keeps what cannot be allocated`` () =
+    // Interest-only period: the waterfall pays the 1,000 of interest and leaves principal alone,
+    // so 500 of the 1,500 applied stays unapplied.
+    let terms = termsWith (Nullable()) true (Nullable 0.02m) 12
+    let decision =
+        DirectLendingAggregateInterop.ApplyUnappliedCash
+            (holdingUnapplied terms 2_000m)
+            terms
+            (ApplyUnappliedCashRequest(1_500m, paymentDate, null, "apply"))
+
+    decision.Breakdown.ToInterest |> should equal 1_000m
+    decision.Breakdown.TotalAllocated |> should equal 1_000m
+    decision.ResolutionBasis |> should equal "WaterfallAuto"
+    decision.Servicing.Balances.InterestAccruedUnpaid |> should equal 0m
+    decision.Servicing.Balances.UnappliedCash |> should equal 1_000m // 2,000 held - 1,000 applied
+    decision.Servicing.Balances.PrincipalOutstanding |> should equal 500_000m
+
+[<Fact>]
+let ``Applying unapplied cash by manual breakdown pays principal earliest lot first`` () =
+    let terms = termsWith (Nullable()) true (Nullable()) 0
+    let decision =
+        DirectLendingAggregateInterop.ApplyUnappliedCash
+            (holdingUnapplied terms 250_000m)
+            terms
+            (ApplyUnappliedCashRequest(250_000m, paymentDate, PaymentBreakdownDto(0m, 0m, 0m, 0m, 250_000m), "apply-principal"))
+
+    decision.ResolutionBasis |> should equal "Manual"
+    decision.Servicing.Balances.PrincipalOutstanding |> should equal 250_000m
+    decision.Servicing.Balances.UnappliedCash |> should equal 0m
+    decision.Servicing.TotalDrawn |> should equal 250_000m
+    decision.Servicing.DrawdownLots |> Seq.map _.RemainingPrincipal |> Seq.toList |> should equal [ 0m; 250_000m ]
+    decision.Servicing.LastPaymentDate |> should equal (Nullable<DateOnly>())
+
+[<Fact>]
+let ``Refunding unapplied cash reduces only the unapplied balance`` () =
+    let terms = termsWith (Nullable()) true (Nullable()) 12
+    let held = holdingUnapplied terms 700m
+    let decision = DirectLendingAggregateInterop.RefundUnappliedCash held (RefundUnappliedCashRequest(300m, paymentDate, "wire-out-1"))
+
+    decision.Servicing.Balances.UnappliedCash |> should equal 400m
+    decision.Servicing.Balances.InterestAccruedUnpaid |> should equal held.Balances.InterestAccruedUnpaid
+    decision.Servicing.Balances.PrincipalOutstanding |> should equal held.Balances.PrincipalOutstanding
+    decision.Servicing.ServicingRevision |> should equal (held.ServicingRevision + 1L)
+
+[<Fact>]
+let ``Applying or refunding more than is held is refused`` () =
+    let terms = termsWith (Nullable()) true (Nullable()) 12
+    let held = holdingUnapplied terms 100m
+
+    (fun () -> DirectLendingAggregateInterop.ApplyUnappliedCash held terms (ApplyUnappliedCashRequest(100.01m, paymentDate, null, "x")) |> ignore)
+    |> should throw typeof<ArgumentException>
+    (fun () -> DirectLendingAggregateInterop.RefundUnappliedCash held (RefundUnappliedCashRequest(0m, paymentDate, "x")) |> ignore)
+    |> should throw typeof<ArgumentException>

@@ -339,6 +339,84 @@ module internal ServicingAggregate =
           CashTransactionId = cashTransactionId
           Allocations = allocations }
 
+    let private withUnappliedCashChange
+        (servicing: LoanServicingStateDto)
+        (breakdown: PaymentBreakdownDto)
+        (unappliedCashReduction: decimal)
+        (effectiveDate: DateOnly)
+        (note: string) =
+        let b = servicing.Balances
+        let totalDrawnAfter = max 0m (servicing.TotalDrawn - breakdown.ToPrincipal)
+        let nextRevision = servicing.ServicingRevision + 1L
+        LoanServicingStateDto(
+            servicing.LoanId,
+            servicing.Status,
+            servicing.CurrentCommitment,
+            totalDrawnAfter,
+            DirectLendingInterop.CalculateAvailableToDraw(servicing.CurrentCommitment, totalDrawnAfter),
+            OutstandingBalancesDto(
+                max 0m (b.PrincipalOutstanding - breakdown.ToPrincipal),
+                max 0m (b.InterestAccruedUnpaid - breakdown.ToInterest),
+                max 0m (b.CommitmentFeeAccruedUnpaid - breakdown.ToCommitmentFee),
+                max 0m (b.FeesAccruedUnpaid - breakdown.ToFees),
+                max 0m (b.PenaltyAccruedUnpaid - breakdown.ToPenalty),
+                PrepaidInterest = b.PrepaidInterest,
+                UnappliedCash = b.UnappliedCash - unappliedCashReduction),
+            applyPaymentToLots breakdown.ToPrincipal servicing.DrawdownLots,
+            servicing.CurrentRateReset,
+            servicing.LastAccrualDate,
+            servicing.LastPaymentDate,
+            nextRevision,
+            prependRevision nextRevision "InternalEvent" effectiveDate note servicing.RevisionHistory,
+            servicing.AccrualEntries,
+            Collateral = servicing.Collateral,
+            UnamortizedDiscount = servicing.UnamortizedDiscount,
+            UnamortizedPremium = servicing.UnamortizedPremium,
+            IsPikToggled = servicing.IsPikToggled,
+            PikInterestAccruedUnpaid = servicing.PikInterestAccruedUnpaid,
+            LastPikCapitalizationDate = servicing.LastPikCapitalizationDate,
+            RateResetHistory = servicing.RateResetHistory,
+            PikCapitalizations = servicing.PikCapitalizations)
+
+    /// PRD-115: allocates up to `amount` of the loan's unapplied cash to amounts owed, by the
+    /// automatic waterfall or a manual breakdown capped at what is owed. Only the allocated part
+    /// leaves UnappliedCash; the rest stays held. No cash is received, so LastPaymentDate is kept.
+    let applyUnappliedCash (servicing: LoanServicingStateDto) (terms: DirectLendingTermsDto) amount (breakdown: PaymentBreakdownDto) (effectiveDate: DateOnly) =
+        if amount <= 0m then
+            invalidArg (nameof amount) "Amount to apply must be positive."
+        if amount > servicing.Balances.UnappliedCash then
+            invalidArg (nameof amount) "Amount to apply exceeds the loan's unapplied cash."
+
+        let allocated, basis =
+            match box breakdown with
+            | null -> autoAllocate servicing terms amount effectiveDate, "WaterfallAuto"
+            | _ -> (buildResolution servicing amount breakdown).Breakdown, "Manual"
+
+        { Servicing =
+            withUnappliedCashChange
+                servicing
+                allocated
+                allocated.TotalAllocated
+                effectiveDate
+                (sprintf "Unapplied cash applied for %.2f." allocated.TotalAllocated)
+          Breakdown = allocated
+          ResolutionBasis = basis }
+
+    /// PRD-115: returns `amount` of the loan's unapplied cash to the borrower.
+    let refundUnappliedCash (servicing: LoanServicingStateDto) amount (effectiveDate: DateOnly) =
+        if amount <= 0m then
+            invalidArg (nameof amount) "Amount to refund must be positive."
+        if amount > servicing.Balances.UnappliedCash then
+            invalidArg (nameof amount) "Amount to refund exceeds the loan's unapplied cash."
+
+        { Servicing =
+            withUnappliedCashChange
+                servicing
+                (PaymentBreakdownDto(0m, 0m, 0m, 0m, 0m))
+                amount
+                effectiveDate
+                (sprintf "Unapplied cash refunded for %.2f." amount) }
+
     let assessFee (servicing: LoanServicingStateDto) amount effectiveDate =
         let nextRevision = servicing.ServicingRevision + 1L
         let balances =

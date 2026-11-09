@@ -160,6 +160,18 @@ public sealed class LoanAccountingProjector
                 }
                 break;
 
+            case "loan.unapplied-cash-applied":
+            case "loan.unapplied-cash-refunded":
+                description = eventType == "loan.unapplied-cash-applied" ? "Loan unapplied cash applied" : "Loan unapplied cash refund";
+                // PRD-115 increment 7 (shared with DirectLendingOutboxDispatcher).
+                foreach (var line in eventType == "loan.unapplied-cash-applied"
+                    ? DirectLendingJournalLines.ForUnappliedCashApplied(root)
+                    : DirectLendingJournalLines.ForUnappliedCashRefunded(root))
+                {
+                    Add(line.Account, line.AccountType, line.Debit, line.Credit);
+                }
+                break;
+
             case "loan.write-off-applied":
                 description = "Loan write-off";
                 var writeOffAmount = GetDecimal(root, "AppliedAmount", "appliedAmount", "Amount", "amount");

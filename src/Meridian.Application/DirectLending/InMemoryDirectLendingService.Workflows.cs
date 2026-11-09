@@ -144,6 +144,80 @@ public sealed partial class InMemoryDirectLendingService
         }
     }
 
+    public Task<LoanServicingStateDto?> ApplyUnappliedCashAsync(Guid loanId, ApplyUnappliedCashRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        lock (_gate)
+        {
+            if (!_loans.TryGetValue(loanId, out var stored))
+            {
+                return Task.FromResult<LoanServicingStateDto?>(null);
+            }
+
+            EnsureActive(stored);
+            ThrowIfInvalid(DirectLendingServiceSupport.ValidateUnappliedCashAmount(request.Amount, stored.Servicing.Balances.UnappliedCash, "apply"));
+
+            var terms = stored.TermsVersions[^1].Terms;
+            var allocated = DirectLendingServiceSupport.AllocateToAmountsOwed(ToServicingState(stored), terms, request.Amount, request.Breakdown, request.EffectiveDate);
+            var breakdown = allocated.Breakdown;
+            var applied = breakdown.TotalAllocated;
+            ApplyPaymentToLots(stored.Servicing.DrawdownLots, breakdown.ToPrincipal);
+            var balances = stored.Servicing.Balances;
+            stored.Servicing = stored.Servicing with
+            {
+                TotalDrawn = Math.Max(0m, stored.Servicing.TotalDrawn - breakdown.ToPrincipal),
+                AvailableToDraw = Meridian.FSharp.DirectLendingInterop.DirectLendingInterop.CalculateAvailableToDraw(stored.Servicing.CurrentCommitment, Math.Max(0m, stored.Servicing.TotalDrawn - breakdown.ToPrincipal)),
+                Balances = balances with
+                {
+                    PrincipalOutstanding = Math.Max(0m, balances.PrincipalOutstanding - breakdown.ToPrincipal),
+                    InterestAccruedUnpaid = Math.Max(0m, balances.InterestAccruedUnpaid - breakdown.ToInterest),
+                    CommitmentFeeAccruedUnpaid = Math.Max(0m, balances.CommitmentFeeAccruedUnpaid - breakdown.ToCommitmentFee),
+                    FeesAccruedUnpaid = Math.Max(0m, balances.FeesAccruedUnpaid - breakdown.ToFees),
+                    PenaltyAccruedUnpaid = Math.Max(0m, balances.PenaltyAccruedUnpaid - breakdown.ToPenalty),
+                    UnappliedCash = balances.UnappliedCash - applied
+                }
+            };
+            AppendRevision(stored, "InternalEvent", request.EffectiveDate, $"Unapplied cash applied for {applied:0.00}.");
+            AppendEvent(stored, "loan.unapplied-cash-applied", request.EffectiveDate, new { loanId, request.Amount, AppliedAmount = applied, request.EffectiveDate, request.ExternalRef, Breakdown = breakdown, allocated.ResolutionBasis }, metadata);
+            return Task.FromResult<LoanServicingStateDto?>(ToServicingState(stored));
+        }
+    }
+
+    public Task<LoanServicingStateDto?> RefundUnappliedCashAsync(Guid loanId, RefundUnappliedCashRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        lock (_gate)
+        {
+            if (!_loans.TryGetValue(loanId, out var stored))
+            {
+                return Task.FromResult<LoanServicingStateDto?>(null);
+            }
+
+            EnsureActive(stored);
+            ThrowIfInvalid(DirectLendingServiceSupport.ValidateUnappliedCashAmount(request.Amount, stored.Servicing.Balances.UnappliedCash, "refund"));
+            ThrowIfInvalid(string.IsNullOrWhiteSpace(request.ExternalRef) ? "A refund needs an external reference for the outgoing payment." : null);
+
+            stored.Servicing = stored.Servicing with
+            {
+                Balances = stored.Servicing.Balances with { UnappliedCash = stored.Servicing.Balances.UnappliedCash - request.Amount }
+            };
+            AppendRevision(stored, "InternalEvent", request.EffectiveDate, $"Unapplied cash refunded for {request.Amount:0.00}.");
+            AppendEvent(stored, "loan.unapplied-cash-refunded", request.EffectiveDate, new { loanId, request.Amount, request.EffectiveDate, request.ExternalRef }, metadata);
+            GetList(_cashTransactions, loanId).Add(new CashTransactionDto(
+                Guid.NewGuid(), loanId, "UnappliedCashRefund", request.EffectiveDate, request.EffectiveDate, request.EffectiveDate,
+                request.Amount, stored.TermsVersions[^1].Terms.BaseCurrency, request.ExternalRef, stored.History[^1].EventId, DateTimeOffset.UtcNow, false));
+            return Task.FromResult<LoanServicingStateDto?>(ToServicingState(stored));
+        }
+    }
+
+    private static void ThrowIfInvalid(string? error)
+    {
+        if (error is not null)
+        {
+            throw new DirectLendingCommandException(new DirectLendingCommandError(DirectLendingErrorCode.Validation, error));
+        }
+    }
+
     public Task<LoanServicingStateDto?> ChargePrepaymentPenaltyAsync(Guid loanId, ChargePrepaymentPenaltyRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);

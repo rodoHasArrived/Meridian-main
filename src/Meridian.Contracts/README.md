@@ -1591,7 +1591,7 @@ are unchanged. Both are owed *to* the borrower, so read models must not add them
 exposure. `MixedPaymentResolutionDto` records how a payment's excess was routed
 (`ExcessToPrincipal`, `ExcessToPrepaidInterest`, `ExcessRuleApplied`, `ExcessRuleNote`,
 `PrepaymentPenaltyCharged`); `UnappliedAmount` is the amount held after routing, and
-`ExcessPaymentRuleNotes` holds the note text both resolvers use. Split journals follow in a later
+`ExcessPaymentRuleNotes` holds the note text both resolvers use. `ApplyUnappliedCashRequest` and `RefundUnappliedCashRequest` (refunds need an external reference) drive the commands that apply or return held cash. Split journals follow in a later
 PRD-115 increment; see the
 [excess payment application blueprint](../../docs/engineering/blueprints/direct-lending-excess-payment-application.md).
 

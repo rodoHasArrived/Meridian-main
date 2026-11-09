@@ -133,6 +133,17 @@ internal static class DirectLendingServiceSupport
     }
 
     /// <summary>
+    /// PRD-115: the amount to apply or refund must be positive and no more than the loan's unapplied
+    /// cash. Returns the validation message, or null when the amount is acceptable.
+    /// </summary>
+    public static string? ValidateUnappliedCashAmount(decimal amount, decimal unappliedCash, string action)
+        => amount <= 0m
+            ? $"Amount to {action} must be positive."
+            : amount > unappliedCash
+                ? $"Amount to {action} ({amount:0.00}) exceeds the loan's unapplied cash ({unappliedCash:0.00})."
+                : null;
+
+    /// <summary>
     /// Resolves a mixed payment exactly as the F# servicing aggregate does: allocate to amounts owed
     /// (the automatic waterfall, or a manual breakdown capped at the amount owed), then route any
     /// excess by the loan's <see cref="ExcessPaymentApplication"/> rule (PRD-115).
@@ -151,6 +162,21 @@ internal static class DirectLendingServiceSupport
             return new MixedPaymentResolutionDto(new PaymentBreakdownDto(0m, 0m, 0m, 0m, 0m), "Invalid", null, amount);
         }
 
+        return RouteExcess(servicing, terms, AllocateToAmountsOwed(servicing, terms, amount, requestedBreakdown, effectiveDate));
+    }
+
+    /// <summary>
+    /// Allocates cash to amounts owed, without routing what is left: the automatic waterfall, or a
+    /// manual breakdown capped at what is owed. <see cref="MixedPaymentResolutionDto.UnappliedAmount"/>
+    /// is the cash not allocated. Mirrors the F# aggregate's <c>autoAllocate</c> / <c>buildResolution</c>.
+    /// </summary>
+    public static MixedPaymentResolutionDto AllocateToAmountsOwed(
+        LoanServicingStateDto servicing,
+        DirectLendingTermsDto terms,
+        decimal amount,
+        PaymentBreakdownDto? requestedBreakdown,
+        DateOnly effectiveDate)
+    {
         var remaining = amount;
         var owed = servicing.Balances;
         if (requestedBreakdown is not null)
@@ -158,7 +184,7 @@ internal static class DirectLendingServiceSupport
             // A manual breakdown says where cash goes, but never more than is owed in a bucket:
             // allocating 1,000 to interest when 10 is accrued would record 990 of income that
             // does not exist. Each line is capped at the requested amount, the cash still
-            // unallocated, and the bucket's outstanding balance; any excess is then routed.
+            // unallocated, and the bucket's outstanding balance; the rest is returned unallocated.
             decimal Take(decimal requested, decimal outstanding)
             {
                 var applied = Math.Min(remaining, Math.Min(Math.Max(0m, requested), Math.Max(0m, outstanding)));
@@ -173,7 +199,7 @@ internal static class DirectLendingServiceSupport
                 Take(requestedBreakdown.ToPenalty, owed.PenaltyAccruedUnpaid),
                 Take(requestedBreakdown.ToPrincipal, owed.PrincipalOutstanding));
 
-            return RouteExcess(servicing, terms, new MixedPaymentResolutionDto(manual, "Manual", "manual-v1", remaining));
+            return new MixedPaymentResolutionDto(manual, "Manual", "manual-v1", remaining);
         }
 
         decimal TakeAll(decimal outstanding)
@@ -192,14 +218,11 @@ internal static class DirectLendingServiceSupport
             ? 0m
             : TakeAll(owed.PrincipalOutstanding);
 
-        return RouteExcess(
-            servicing,
-            terms,
-            new MixedPaymentResolutionDto(
-                new PaymentBreakdownDto(toInterest, toCommitmentFee, toFees, toPenalty, toPrincipal),
-                "WaterfallAuto",
-                "waterfall-v1",
-                remaining));
+        return new MixedPaymentResolutionDto(
+            new PaymentBreakdownDto(toInterest, toCommitmentFee, toFees, toPenalty, toPrincipal),
+            "WaterfallAuto",
+            "waterfall-v1",
+            remaining);
     }
 
     /// <summary>

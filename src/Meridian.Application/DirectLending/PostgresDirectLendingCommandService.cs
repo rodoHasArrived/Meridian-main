@@ -864,6 +864,116 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
         return DirectLendingCommandResult<ServicerReportBatchDto>.Success(batch);
     }
 
+    public async Task<DirectLendingCommandResult<LoanServicingStateDto>> ApplyUnappliedCashAsync(Guid loanId, ApplyUnappliedCashRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        var stored = await _queryService.LoadAggregateAsync(loanId, ct).ConfigureAwait(false);
+        if (stored is null)
+        {
+            return DirectLendingCommandResult<LoanServicingStateDto>.Failure(DirectLendingErrorCode.NotFound, $"Loan '{loanId}' was not found.");
+        }
+
+        var activeError = DirectLendingServiceSupport.EnsureActive(stored.Contract);
+        if (activeError is not null)
+        {
+            return new DirectLendingCommandResult<LoanServicingStateDto>(null, activeError);
+        }
+
+        var amountError = DirectLendingServiceSupport.ValidateUnappliedCashAmount(request.Amount, stored.Servicing.Balances.UnappliedCash, "apply");
+        if (amountError is not null)
+        {
+            return DirectLendingCommandResult<LoanServicingStateDto>.Failure(DirectLendingErrorCode.Validation, amountError);
+        }
+
+        var decision = DirectLendingAggregateInterop.ApplyUnappliedCash(stored.Servicing, stored.Contract.CurrentTerms, request);
+        using var payload = DirectLendingServiceSupport.CreatePayloadDocument(new
+        {
+            loanId,
+            request.Amount,
+            AppliedAmount = decision.Breakdown.TotalAllocated,
+            request.EffectiveDate,
+            request.ExternalRef,
+            decision.Breakdown,
+            decision.ResolutionBasis
+        });
+
+        await SaveAsync(
+            loanId,
+            stored.AggregateVersion,
+            stored.AggregateVersion + 1,
+            stored.Contract,
+            decision.Servicing,
+            eventType: "loan.unapplied-cash-applied",
+            effectiveDate: request.EffectiveDate,
+            payload,
+            metadata,
+            ct: ct).ConfigureAwait(false);
+
+        return DirectLendingCommandResult<LoanServicingStateDto>.Success(decision.Servicing);
+    }
+
+    public async Task<DirectLendingCommandResult<LoanServicingStateDto>> RefundUnappliedCashAsync(Guid loanId, RefundUnappliedCashRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        var stored = await _queryService.LoadAggregateAsync(loanId, ct).ConfigureAwait(false);
+        if (stored is null)
+        {
+            return DirectLendingCommandResult<LoanServicingStateDto>.Failure(DirectLendingErrorCode.NotFound, $"Loan '{loanId}' was not found.");
+        }
+
+        var activeError = DirectLendingServiceSupport.EnsureActive(stored.Contract);
+        if (activeError is not null)
+        {
+            return new DirectLendingCommandResult<LoanServicingStateDto>(null, activeError);
+        }
+
+        var amountError = DirectLendingServiceSupport.ValidateUnappliedCashAmount(request.Amount, stored.Servicing.Balances.UnappliedCash, "refund")
+            ?? (string.IsNullOrWhiteSpace(request.ExternalRef) ? "A refund needs an external reference for the outgoing payment." : null);
+        if (amountError is not null)
+        {
+            return DirectLendingCommandResult<LoanServicingStateDto>.Failure(DirectLendingErrorCode.Validation, amountError);
+        }
+
+        var decision = DirectLendingAggregateInterop.RefundUnappliedCash(stored.Servicing, request);
+        using var payload = DirectLendingServiceSupport.CreatePayloadDocument(new
+        {
+            loanId,
+            request.Amount,
+            request.EffectiveDate,
+            request.ExternalRef
+        });
+
+        await SaveAsync(
+            loanId,
+            stored.AggregateVersion,
+            stored.AggregateVersion + 1,
+            stored.Contract,
+            decision.Servicing,
+            eventType: "loan.unapplied-cash-refunded",
+            effectiveDate: request.EffectiveDate,
+            payload,
+            metadata,
+            ct: ct,
+            persistenceBatch: new DirectLendingPersistenceBatch(
+                [
+                    new DirectLendingCashTransactionWrite(
+                        Guid.NewGuid(),
+                        "UnappliedCashRefund",
+                        request.EffectiveDate,
+                        request.EffectiveDate,
+                        request.EffectiveDate,
+                        request.Amount,
+                        stored.Contract.CurrentTerms.BaseCurrency.ToString(),
+                        Counterparty: null,
+                        ExternalRef: request.ExternalRef)
+                ],
+                [],
+                [],
+                [])).ConfigureAwait(false);
+
+        return DirectLendingCommandResult<LoanServicingStateDto>.Success(decision.Servicing);
+    }
+
     public async Task<DirectLendingCommandResult<LoanServicingStateDto>> ChargePrepaymentPenaltyAsync(Guid loanId, ChargePrepaymentPenaltyRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);

@@ -1,6 +1,6 @@
 # Direct Lending: Term-Driven Excess Payment Application
 
-**Status:** Approved design (owner decisions recorded 2026-11-02). Implementation proceeds by [increment](#increments); increments 1 (terms rule), 2 (balances and migration 010), 3 (excess routing), 4 (accrual consumption) and 5 (split journals) are implemented.
+**Status:** Approved design (owner decisions recorded 2026-11-02). Implementation proceeds by [increment](#increments); increments 1 (terms rule), 2 (balances and migration 010), 3 (excess routing), 4 (accrual consumption), 5 (split journals) and 7 (apply/refund commands, backend and API) are implemented; increment 6 (read models and UI) is in review.
 **Owner:** Direct Lending + Ledger
 **Reviewed:** 2026-11-02
 **Registered in:** [`docs/engineering/blueprints/README.md`](README.md)
@@ -211,7 +211,20 @@ owner can decide whether to reclass it.
   against `UnappliedCash`.
 - `RefundUnappliedCash(loanId, amount, externalRef)`: Dr `UnappliedCashLiability` / Cr `Cash`.
 
-Both are maker-checker governed like other direct-lending commands.
+Both are governed like the other direct-lending commands: the `ManageDirectLending` permission,
+the direct-lending mutation rate limit, fund-scoped write tenancy and command-id idempotency. (This
+originally said "maker-checker"; no direct-lending command has a maker-checker step, and the owner
+chose to keep these consistent on 2026-11-09.)
+
+**As implemented (increment 7):** `POST /api/loans/{loanId}/unapplied-cash/apply` and
+`/unapplied-cash/refund`. Apply allocates up to the requested amount by the automatic waterfall
+(interest-only aware) or a manual breakdown capped at what is owed; only the allocated part leaves
+`UnappliedCash`, and no cash is received (`LastPaymentDate` is unchanged). Refund requires an
+external reference and records an `UnappliedCashRefund` cash transaction. Both refuse amounts that
+are not positive or exceed the held cash. Events `loan.unapplied-cash-applied` and
+`loan.unapplied-cash-refunded` are replayed by the rebuilder and journaled by
+`DirectLendingJournalLines` in both journal paths. Workstation screens for the two commands follow
+separately.
 
 ## Decisions
 
