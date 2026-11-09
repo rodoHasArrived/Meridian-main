@@ -220,3 +220,13 @@ economics and explicit refusals; slice 3's historical reads without rewriting re
 needs a payload-upgrade design, replay-compatibility proof and an event-versioning ruling before
 any implementation starts. Slices 7–9 are deliberately shaped to stay useful under either
 outcome.
+
+*2026-11-09:* the decision writeup is
+[ADR-027](../../adr/027-single-economic-model-consolidation.md) (Proposed). Its evidence
+reframes the question — the event store already writes the economic definition on every command
+path, the economic serializer covers 14 of the 25 modules so flat is the silent system of record
+for the rest, and the duality lives in the write-path round trip and the projection codec. It
+proposes three gated stages (lossless flat codec ending `retainedEconomicTerms` for new writes;
+commands onto `SecurityEconomicDefinition`; schema-generated codec arms) with the three
+preconditions above mapped onto them. Accepting, staging differently or rejecting is the domain
+owner's call; accepted stages become new slices here.
