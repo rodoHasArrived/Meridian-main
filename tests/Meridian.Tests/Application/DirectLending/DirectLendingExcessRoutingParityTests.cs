@@ -88,6 +88,42 @@ public sealed class DirectLendingExcessRoutingParityTests
         rebuilt.Servicing.DrawdownLots.Select(lot => lot.RemainingPrincipal).Should().Equal(0m, 250_000m);
     }
 
+    [Fact]
+    public async Task SameDayDrawdowns_PartialPrincipalPrepayment_ReducesTheSameLotInEveryLaneAndOnReplay()
+    {
+        var terms = Terms(ExcessPaymentApplication.PrincipalPrepayment, prepaymentAllowed: true, penaltyRate: null, interestOnlyMonths: 12);
+        var drawDate = new DateOnly(2026, 2, 1);
+        var first = new BookDrawdownRequest(200_000m, drawDate, drawDate, "wire-first");
+        var second = new BookDrawdownRequest(300_000m, drawDate, drawDate, "wire-second");
+        var payment = new ApplyMixedPaymentRequest(150_000m, PaymentDate, null, "pay");
+
+        var service = new InMemoryDirectLendingService();
+        var created = await service.CreateLoanAsync(new CreateLoanRequest(
+            null, "Same Day Lots", new BorrowerInfoDto(Guid.NewGuid(), "Borrower", null), Origination, terms));
+        await service.ActivateLoanAsync(created.LoanId, new ActivateLoanRequest(Origination));
+        await service.BookDrawdownAsync(created.LoanId, first);
+        await service.BookDrawdownAsync(created.LoanId, second);
+        var inMemory = (await service.ApplyMixedPaymentAsync(created.LoanId, payment))!;
+
+        var fsCreated = DirectLendingAggregateInterop.CreateLoan(
+            Guid.NewGuid(),
+            new CreateLoanRequest(null, "Same Day Lots", new BorrowerInfoDto(Guid.NewGuid(), "Borrower", null), Origination, terms),
+            new DateTimeOffset(2026, 1, 15, 9, 0, 0, TimeSpan.Zero));
+        var fsActive = DirectLendingAggregateInterop.ActivateLoan(fsCreated.Contract, fsCreated.Servicing, new ActivateLoanRequest(Origination));
+        var fsFirst = DirectLendingAggregateInterop.BookDrawdown(fsActive.Servicing, first);
+        var fsSecond = DirectLendingAggregateInterop.BookDrawdown(fsFirst.Servicing, second);
+        var fsharp = DirectLendingAggregateInterop.ApplyMixedPayment(fsSecond.Servicing, terms, payment).Servicing;
+
+        // First booked, first reduced: the 200k lot is paid down before the 300k lot booked later that day.
+        static IEnumerable<(string?, decimal)> Lots(LoanServicingStateDto state)
+            => state.DrawdownLots.Select(lot => (lot.ExternalRef, lot.RemainingPrincipal));
+        Lots(inMemory).Should().Equal(("wire-first", 50_000m), ("wire-second", 300_000m));
+        Lots(fsharp).Should().Equal(Lots(inMemory), "the Postgres lane reduces the same lot");
+
+        var rebuilt = new DirectLendingEventRebuilder().Rebuild(created.LoanId, await service.GetHistoryAsync(created.LoanId));
+        Lots(rebuilt!.Servicing).Should().Equal(Lots(inMemory), "replay reduces the same lot");
+    }
+
     private static DirectLendingTermsDto Terms(ExcessPaymentApplication? rule, bool prepaymentAllowed, decimal? penaltyRate, int interestOnlyMonths)
         => new(
             OriginationDate: Origination,
