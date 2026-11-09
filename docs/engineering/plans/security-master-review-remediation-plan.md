@@ -298,9 +298,52 @@ The cross-module `structured_credit_factor_after_maturity` rule stays with domai
 as increments 1–2 left notice/window rules. Non-declaring classes and the class-independent
 route keep the pre-existing silent-retain behavior unchanged.
 
+**Increment 5 — the 11 unserialized modules (implemented 2026-11-09).** The economic serializer
+(`SecurityEconomicDefinitionAdapter.BuildEconomicTermsJson`) now emits every one of the 25
+`SecurityTermModules`: `floatingRate`, `tradingParameters`, `creditRating`, `depositaryReceipt`,
+`dividendSchedule`, `covenants`, `esg`, `venue`, `multiCalendar`, `inflationLinked` and
+`sinkingFund` joined the original 14 under the same contract (every module key written, null when
+the definition has no such module), appended after `structuredProduct` so existing fixtures
+change suffix-only. Of the newcomers only `FloatingRate` (StructuredCredit's coupon-or-index,
+CapFloor's index/strikes/reset) and `TradingParameters` (Commodity contract size, Cfd leverage,
+Warrant multiplier) have producers in `termsFromKind` today — those flat-fed values previously
+vanished from the economic family and survived economic-only replay only through the retained
+flat document; the other nine are constant-`None` expansion modules that serialize as null until
+a producer appears. DU labels ride through new F# `DividendFrequency.Label`/`CovenantKind.Label`
+helpers beside the existing label modules. The conversion ledger adds all 11 to
+`DroppedModules` (5 bridged / 20 dropped, coverage-pinned): the class-independent bridge does
+not read them and they ride verbatim in `retainedEconomicTerms`, exactly as the original dropped
+modules do. Recovering their flat homes on economic-only replay (CapFloor
+`referenceIndex`/`capStrike`/`floorStrike`/`resetFrequency`, Commodity `contractSize`, Warrant
+`multiplier`, Cfd `leverage` — the last needs a bespoke reciprocal transform) belongs to
+increment 6's per-module identity work.
+
 **Remaining increments (ordered, each with its own round-trip proof):**
-5. The 11 unserialized modules: extend the economic serializer so the economic family stops
-   depending on flat for them (prerequisite for stage 2), with the serializer's module ledger
-   updated in step.
-6. Close-out: assert economic → flat → economic identity for every module; stop writing
+6. Close-out: assert economic → flat → economic identity for every module (including the flat
+   homes of the newly serialized `floatingRate`/`tradingParameters` values); stop writing
    `retainedEconomicTerms` on new writes; keep fold-on-read for retained history.
+
+### Slice 11 — ADR-027 stage 2: commands and validation onto the economic definition
+
+The ADR-named precondition landed first (2026-11-09): the **replay-compatibility corpus**
+(`SecurityMasterReplayCorpusTests` over `tests/fixtures/security-master/replay-corpus/`), a
+committed set of stored-event-shaped records whose rebuild, next-event, and amend-cycle bytes —
+refusal messages included — are pinned in a committed golden with the received-file workflow.
+Every stage-1 codec change and every stage-2 command-path move must leave the corpus green or
+carry a reviewed golden diff. Planned increments, each corpus-gated:
+
+- **S2-B1 — the economic validation surface (no behavior change).** `validateDefinitionTerms`
+  over `SecurityTermModules`: class-agnostic module invariants (factor bounds, date orderings,
+  non-negative rates, floor-at-or-below-cap) plus classification-triggered required-field rules,
+  translated from `validateKindTerms`. An equivalence test pins, per class, that both validators
+  agree on the definition-expressible error codes; a committed ledger enumerates the codes that
+  stay codec-side because their data has no module home yet (option strike, swap legs, bond
+  subclass/par/principal schedule, currencies, notionals), shrinking as modules gain homes.
+- **S2-B2 — commands carry the definition.** `CreateSecurity`/`AmendTerms` gain the economic
+  definition at mapping time; validation switches to `validateDefinitionTerms`;
+  `SecurityKind` remains as codec payload. Write-golden and corpus prove no byte drift.
+- **S2-B3 — events built from the definition.** `ToEconomicRecord` stops round-tripping through
+  `ToRecord → toEconomicDefinition`; `SecurityMasterLegacyUpgrade` leaves the write path and
+  becomes the permanent read-only legacy replay upcaster (ADR-024 item 5).
+- **S2-B4 — term-block and approved-merge paths** move onto the definition (the
+  `ToRecord(...).Kind` seam in the workbench command service).

@@ -310,6 +310,120 @@ internal static class SecurityEconomicDefinitionAdapter
                 originator = definition.Terms.StructuredProduct.Value.Originator is null ? null : definition.Terms.StructuredProduct.Value.Originator.Value,
                 creditEnhancementPct = definition.Terms.StructuredProduct.Value.CreditEnhancementPct,
                 factorScheduleReference = definition.Terms.StructuredProduct.Value.FactorScheduleReference is null ? null : definition.Terms.StructuredProduct.Value.FactorScheduleReference.Value
+            },
+            // ADR-027 stage 1, increment 5: the eleven modules the serializer historically never
+            // wrote. Every module key is emitted (null when the definition has no such module), the
+            // same contract the first fourteen keep, so the economic family stops depending on the
+            // retained flat document for them.
+            floatingRate = definition.Terms.FloatingRate is null ? null : new
+            {
+                referenceIndex = definition.Terms.FloatingRate.Value.ReferenceIndex is null ? null : definition.Terms.FloatingRate.Value.ReferenceIndex.Value,
+                spreadBps = definition.Terms.FloatingRate.Value.SpreadBps,
+                resetFrequency = definition.Terms.FloatingRate.Value.ResetFrequency is null ? null : definition.Terms.FloatingRate.Value.ResetFrequency.Value,
+                floorRate = definition.Terms.FloatingRate.Value.FloorRate,
+                capRate = definition.Terms.FloatingRate.Value.CapRate
+            },
+            tradingParameters = definition.Terms.TradingParameters is null ? null : new
+            {
+                lotSize = definition.Terms.TradingParameters.Value.LotSize,
+                tickSize = definition.Terms.TradingParameters.Value.TickSize,
+                contractMultiplier = definition.Terms.TradingParameters.Value.ContractMultiplier,
+                marginRequirementPct = definition.Terms.TradingParameters.Value.MarginRequirementPct,
+                tradingHoursUtc = definition.Terms.TradingParameters.Value.TradingHoursUtc is null ? null : definition.Terms.TradingParameters.Value.TradingHoursUtc.Value,
+                circuitBreakerThresholdPct = definition.Terms.TradingParameters.Value.CircuitBreakerThresholdPct
+            },
+            creditRating = definition.Terms.CreditRating is null ? null : new
+            {
+                ratings = definition.Terms.CreditRating.Value.Ratings
+                    .Select(rating => new
+                    {
+                        agency = rating.Agency,
+                        grade = rating.Grade,
+                        outlook = rating.Outlook is null ? null : rating.Outlook.Value,
+                        issuanceLevel = rating.IssuanceLevel is null ? null : rating.IssuanceLevel.Value,
+                        asOfDt = rating.AsOfDt
+                    })
+                    .ToArray(),
+                compositeRating = definition.Terms.CreditRating.Value.CompositeRating is null ? null : definition.Terms.CreditRating.Value.CompositeRating.Value,
+                isInvestmentGrade = definition.Terms.CreditRating.Value.IsInvestmentGrade,
+                isHighYield = definition.Terms.CreditRating.Value.IsHighYield
+            },
+            depositaryReceipt = definition.Terms.DepositaryReceipt is null ? null : new
+            {
+                underlyingSecurityId = definition.Terms.DepositaryReceipt.Value.UnderlyingSecurityId is null ? (Guid?)null : definition.Terms.DepositaryReceipt.Value.UnderlyingSecurityId.Value.Item,
+                depositaryBank = definition.Terms.DepositaryReceipt.Value.DepositaryBank is null ? null : definition.Terms.DepositaryReceipt.Value.DepositaryBank.Value,
+                ordinaryShareRatio = definition.Terms.DepositaryReceipt.Value.OrdinaryShareRatio,
+                underlyingExchangeMic = definition.Terms.DepositaryReceipt.Value.UnderlyingExchangeMic is null ? null : definition.Terms.DepositaryReceipt.Value.UnderlyingExchangeMic.Value,
+                underlyingCurrency = definition.Terms.DepositaryReceipt.Value.UnderlyingCurrency is null ? null : definition.Terms.DepositaryReceipt.Value.UnderlyingCurrency.Value,
+                underlyingIsin = definition.Terms.DepositaryReceipt.Value.UnderlyingIsin is null ? null : definition.Terms.DepositaryReceipt.Value.UnderlyingIsin.Value,
+                underlyingCountry = definition.Terms.DepositaryReceipt.Value.UnderlyingCountry is null ? null : definition.Terms.DepositaryReceipt.Value.UnderlyingCountry.Value,
+                cusipOfOrdinary = definition.Terms.DepositaryReceipt.Value.CusipOfOrdinary is null ? null : definition.Terms.DepositaryReceipt.Value.CusipOfOrdinary.Value
+            },
+            dividendSchedule = definition.Terms.DividendSchedule is null ? null : new
+            {
+                dividendFrequency = DividendFrequencyModule.Label(definition.Terms.DividendSchedule.Value.DividendFrequency),
+                annualDividendRate = definition.Terms.DividendSchedule.Value.AnnualDividendRate,
+                lastExDate = definition.Terms.DividendSchedule.Value.LastExDate,
+                lastPayDate = definition.Terms.DividendSchedule.Value.LastPayDate,
+                lastDividendPerShare = definition.Terms.DividendSchedule.Value.LastDividendPerShare,
+                dividendCurrency = definition.Terms.DividendSchedule.Value.DividendCurrency is null ? null : definition.Terms.DividendSchedule.Value.DividendCurrency.Value,
+                isQualifiedDividend = definition.Terms.DividendSchedule.Value.IsQualifiedDividend
+            },
+            covenants = definition.Terms.Covenants is null ? null : new
+            {
+                covenants = definition.Terms.Covenants.Value.Covenants
+                    .Select(covenant => new
+                    {
+                        kind = CovenantKindModule.Label(covenant.Kind),
+                        description = covenant.Description,
+                        threshold = covenant.Threshold,
+                        metric = covenant.Metric is null ? null : covenant.Metric.Value,
+                        testFrequency = covenant.TestFrequency is null ? null : covenant.TestFrequency.Value
+                    })
+                    .ToArray()
+            },
+            esg = definition.Terms.Esg is null ? null : new
+            {
+                esgScore = definition.Terms.Esg.Value.EsgScore,
+                esgProvider = definition.Terms.Esg.Value.EsgProvider is null ? null : definition.Terms.Esg.Value.EsgProvider.Value,
+                esgRating = definition.Terms.Esg.Value.EsgRating is null ? null : definition.Terms.Esg.Value.EsgRating.Value,
+                esgAsOf = definition.Terms.Esg.Value.EsgAsOf,
+                isGreenBond = definition.Terms.Esg.Value.IsGreenBond,
+                isSocialBond = definition.Terms.Esg.Value.IsSocialBond,
+                isSustainabilityLinked = definition.Terms.Esg.Value.IsSustainabilityLinked,
+                unSdgAlignments = definition.Terms.Esg.Value.UNSDGAlignments.ToArray(),
+                paiIndicatorFlags = definition.Terms.Esg.Value.PaiIndicatorFlags.ToArray()
+            },
+            venue = definition.Terms.Venue is null ? null : new
+            {
+                isListedOnExchange = definition.Terms.Venue.Value.IsListedOnExchange,
+                primaryExchMic = definition.Terms.Venue.Value.PrimaryExchMic is null ? null : definition.Terms.Venue.Value.PrimaryExchMic.Value,
+                executionVenueMic = definition.Terms.Venue.Value.ExecutionVenueMic is null ? null : definition.Terms.Venue.Value.ExecutionVenueMic.Value,
+                ccpName = definition.Terms.Venue.Value.CcpName is null ? null : definition.Terms.Venue.Value.CcpName.Value,
+                otcProtocol = definition.Terms.Venue.Value.OtcProtocol is null ? null : definition.Terms.Venue.Value.OtcProtocol.Value
+            },
+            multiCalendar = definition.Terms.MultiCalendar is null ? null : new
+            {
+                calendars = definition.Terms.MultiCalendar.Value.Calendars
+                    .Select(calendar => new { calendarId = calendar.CalendarId, calendarPurpose = calendar.CalendarPurpose })
+                    .ToArray()
+            },
+            inflationLinked = definition.Terms.InflationLinked is null ? null : new
+            {
+                inflationIndex = definition.Terms.InflationLinked.Value.InflationIndex is null ? null : definition.Terms.InflationLinked.Value.InflationIndex.Value,
+                baseIndexValue = definition.Terms.InflationLinked.Value.BaseIndexValue,
+                baseDate = definition.Terms.InflationLinked.Value.BaseDate,
+                currentFactor = definition.Terms.InflationLinked.Value.CurrentFactor,
+                factorDate = definition.Terms.InflationLinked.Value.FactorDate,
+                indexFloor = definition.Terms.InflationLinked.Value.IndexFloor
+            },
+            sinkingFund = definition.Terms.SinkingFund is null ? null : new
+            {
+                schedule = definition.Terms.SinkingFund.Value.Schedule
+                    .Select(instalment => new { sinkDate = instalment.SinkDate, amount = instalment.Amount })
+                    .ToArray(),
+                sinkFrequency = definition.Terms.SinkingFund.Value.SinkFrequency is null ? null : definition.Terms.SinkingFund.Value.SinkFrequency.Value,
+                isProRata = definition.Terms.SinkingFund.Value.IsProRata
             }
         });
         // Keep byte-identical economics for records without a dated history. The additive field

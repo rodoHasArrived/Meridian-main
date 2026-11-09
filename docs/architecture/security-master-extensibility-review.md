@@ -774,6 +774,52 @@ Validation (local, .NET SDK 10.0.403): `dotnet test tests/Meridian.Tests -c Rele
 active-plus-inactive gauge, and the zero case. The full local `bash scripts/ci.sh` was not run;
 GitHub `Meridian CI / quality-gate` remains authoritative.
 
+### ADR-027 stage-2 opens — the replay-compatibility corpus — 2026-11-09
+
+Stage 2's ADR-named precondition landed first: `SecurityMasterReplayCorpusTests` replays a
+committed corpus of stored-event-shaped records (`tests/fixtures/security-master/replay-corpus/`)
+through the three paths the command-path moves must not disturb — the projection rebuild
+(`ToProjection`), the next-event derivation (`ToEconomicRecord`, retained fold included), and
+the amend-cycle domain-codec round trip (`ToRecord` → snapshot → `ToProjection` → retained
+carry, the seam stage 2 deletes) — and pins the resulting bytes in a committed golden with the
+same received-file workflow as the write goldens. Refusals pin their messages, so the corpus
+also documents today's honest losses: Equity economic-only replay refuses by classification,
+and CapFloor/Commodity/Swap/Warrant economic-only rebuilds refuse the next-event derivation
+because required flat keys (`capFloorType`, `commodityType`, `legs`, `underlyingId`) have no
+economic home yet. Corpus inputs are committed literals and never regenerate, so any serializer
+or bridge change surfaces as a reviewed golden diff — the "byte-identical before and after"
+proof obligation made mechanical. The upcoming increments extend it case by case.
+
+### ADR-027 stage-1 increment 5 — the economic serializer emits all 25 modules — 2026-11-09
+
+The fifth slice-10 increment extends `SecurityEconomicDefinitionAdapter.BuildEconomicTermsJson`
+with the 11 modules it never wrote (`floatingRate`, `tradingParameters`, `creditRating`,
+`depositaryReceipt`, `dividendSchedule`, `covenants`, `esg`, `venue`, `multiCalendar`,
+`inflationLinked`, `sinkingFund`), under the existing contract: every module key emitted, null
+when the definition has no such module, appended after `structuredProduct`. The observable gain
+is for the two modules with producers — `FloatingRate` (StructuredCredit coupon-or-index;
+CapFloor index, strikes and reset) and `TradingParameters` (Commodity contract size, Cfd
+leverage, Warrant multiplier) — whose flat-fed values previously vanished from economic events
+and survived economic-only replay only through the retained flat document. The other nine are
+constant-`None` expansion modules serializing as null until a producer appears. The conversion
+ledger adds all 11 to `DroppedModules` (5 bridged / 20 dropped): the class-independent bridge
+does not read them, they retain verbatim beside the flat keys, and their flat-home recovery
+(including Cfd leverage's reciprocal transform) is increment 6's identity work. New F#
+`DividendFrequency.Label` and `CovenantKind.Label` helpers carry the DU labels. Pinned by the
+extended `SecurityEconomicTermsV2BridgeCoverageTests` (full-fixture inventory, no-trace and
+retained-verbatim theories over all 20 dropped modules, and the producer-backed emission test)
+and the suffix-extended exact-byte twins in `SecurityEconomicTermsClassAwareBridgeTests`; the
+write-golden fixture was regenerated for the widened economic documents (41 of 164 entries, all
+pure suffix appends of the new module keys).
+
+The untagged-payload shape rule did not widen with the serializer: its vocabulary froze as
+`ShapeRuleModules` — exactly the 14 modules the serializer wrote before the `termsFormat` tag
+existed, which are the only keys an untagged payload can carry — and `IsEconomicTermsShape` now
+consults that frozen list, keeping it aligned with shipped migration 042's SQL mirror (pinned by
+the `SecurityTermsVersioningTests` migration test, which also pins the list's frozen count and
+its subset relation to the serializer inventory). The list never grows; it retires with the
+shape rule itself under ADR-024 decision 5.
+
 ### ADR-027 stage-1 increment 4 — structured-credit factor schedule recovers — 2026-11-09
 
 The fourth slice-10 increment (increment 3 was verified already complete, no code) recovers the
