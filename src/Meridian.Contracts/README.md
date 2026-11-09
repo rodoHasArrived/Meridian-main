@@ -546,6 +546,8 @@ accepts older numeric status payloads; persisted queue records already use text 
   `AccountingInstrumentClass` or `AccountingOutsideSlice` (StructuredNote is outside the slice).
   `ResolveAccountingInstrumentClass` returns null for a catalogued outside-slice name before the
   `FixedIncome` taxonomy fallback, which remains only for names the catalog does not model.
+  `SettlesDailyVariationMargin` (Future only) declares that positions settle the daily price change
+  in cash instead of exchanging notional; the paper book reads it to book futures on variation margin.
 - `SecurityMaster/Schedules/` - the contractual schedule kernel (`ScheduleGenerator`, kernel
   version `contractual-schedule-kernel-v1`). A pure, deterministic `ScheduleSpec` →
   `ScheduleGenerationResult` generator: anchored or compounded grids, forward or backward
