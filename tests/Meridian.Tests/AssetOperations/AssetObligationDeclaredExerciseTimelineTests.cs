@@ -390,6 +390,28 @@ public sealed class AssetObligationDeclaredExerciseTimelineTests
     }
 
     [Fact]
+    public async Task PolicyBlockedAndNotEffective_ReportsTheSameCodeAsTheNoticeWatchReadService()
+    {
+        // The read service checks effectiveness before the policy; the timeline gates in the same order.
+        var security = BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, 60, "Calendar")]) with { EffectiveFrom = AsOf.AddDays(1) };
+        var policy = Substitute.For<IBondCalculationPolicy>();
+        policy.GetBlockerAsync(security, Arg.Any<CancellationToken>()).Returns("Reviewed cutover blocks this bond.");
+        var query = Substitute.For<ISecurityMasterQueryService>();
+        query.GetByIdAsync(security.SecurityId, Arg.Any<CancellationToken>()).Returns(security);
+
+        var watch = await new Meridian.Ui.Shared.Services.BondExerciseNoticeReadService(query, Calendars, policy)
+            .GetAsync(security.SecurityId, AsOf, 90);
+        var viaReadService = await ReadAsync(security, policy, completed: false);
+        var viaSynchronousEntry = new AssetObligationProjectionService(policy, calendars: Calendars)
+            .ProjectFromSecurityMaster(security, new BondCalculationContext(AsOf), CompletedProjection(security));
+
+        var code = watch!.Blockers.Should().ContainSingle().Which.Code;
+        code.Should().Be("TermsNotEffective");
+        AssertBlocked(viaReadService, code, "the asynchronous entry point gates in the read service's order");
+        AssertBlocked(viaSynchronousEntry, code, "the synchronous entry point gates in the read service's order");
+    }
+
+    [Fact]
     public async Task CutoverPolicyThatPermits_LeavesTheDeclaredEvents()
     {
         var security = BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, 60, "Calendar")]);

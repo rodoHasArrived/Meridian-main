@@ -25,9 +25,14 @@ public sealed partial class AssetObligationProjectionService
     /// result becomes a timeline warning with no option event. It never falls back to the scalars.
     /// </summary>
     /// <remarks>
-    /// The gates are the notice-watch read service's, in its order: the retained cutover policy
-    /// (<c>CalculationPolicyBlocked</c>), terms effective at the evaluation date
-    /// (<c>TermsNotEffective</c>), then <see cref="BondExerciseNoticeWatch.EvaluateToMaturity"/>.
+    /// The gates are the notice-watch read service's, in its order: terms effective at the evaluation
+    /// date (<c>TermsNotEffective</c>), the retained cutover policy (<c>CalculationPolicyBlocked</c>),
+    /// then <see cref="BondExerciseNoticeWatch.EvaluateToMaturity"/>, so a record that fails both
+    /// reports the same code on both surfaces. This method does not call the policy: the caller passes
+    /// the blocker it obtained. A policy that throws while it is asked (for example
+    /// <c>SecurityScheduleValidationException</c> on a malformed owned schedule) is not caught by the
+    /// projection entry points, for any bond, declaring or not; the notice-watch read service does
+    /// convert that exception to a blocker.
     /// </remarks>
     /// <param name="security">The retained row the projection is built from.</param>
     /// <param name="context">The calculation context; its as-of is the evaluation date.</param>
@@ -43,15 +48,15 @@ public sealed partial class AssetObligationProjectionService
         }
 
         var asOf = DateOnly.FromDateTime(context.AsOf.UtcDateTime.Date);
-        if (policyBlocker is not null)
-        {
-            return BondExerciseNoticeWatch.Blocked(security, asOf, 0, "CalculationPolicyBlocked", policyBlocker);
-        }
-
         if (security.EffectiveFrom > context.AsOf || (security.EffectiveTo is { } effectiveTo && context.AsOf >= effectiveTo))
         {
             return BondExerciseNoticeWatch.Blocked(security, asOf, 0, "TermsNotEffective",
                 "The selected retained terms are not effective at the evaluation date; a historically eligible terms version is required.");
+        }
+
+        if (policyBlocker is not null)
+        {
+            return BondExerciseNoticeWatch.Blocked(security, asOf, 0, "CalculationPolicyBlocked", policyBlocker);
         }
 
         return BondExerciseNoticeWatch.EvaluateToMaturity(security, _calendars, asOf);
