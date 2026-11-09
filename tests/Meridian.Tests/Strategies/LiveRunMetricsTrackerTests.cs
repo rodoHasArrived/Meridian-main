@@ -90,7 +90,7 @@ public sealed class LiveRunMetricsTrackerTests
         var sampleStd = Math.Sqrt(returns.Sum(r => (r - mean) * (r - mean)) / (returns.Length - 1));
         var downside = returns.Where(r => r < 0).ToArray();
         var downsideDev = Math.Sqrt(downside.Average(r => r * r));
-        var years = 2.0 / 365.0; // first to last snapshot date
+        var years = 3.0 / 365.0; // session start to end: the first snapshot already carries a day
 
         metrics.SharpeRatio.Should().BeApproximately(mean / sampleStd * Math.Sqrt(252.0), 1e-9);
         metrics.SortinoRatio.Should().BeApproximately(mean / downsideDev * Math.Sqrt(252.0), 1e-9);

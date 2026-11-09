@@ -63,7 +63,9 @@ public static class BrokerageServiceRegistration
             var brokerageConfig = sp.GetRequiredService<BrokerageConfiguration>();
 
             if (!brokerageConfig.LiveExecutionEnabled || brokerageConfig.Gateway == "paper")
-                return new OmsGovernedExecutionOrderGateway(sp.GetRequiredService<IExecutionGateway>());
+                return new OmsGovernedExecutionOrderGateway(
+                    sp.GetRequiredService<IExecutionGateway>(),
+                    () => sp.GetService<IOrderManager>());
 
             // Resolve the named brokerage gateway via keyed registration, then expose it as an
             // OMS-governed read-only view rather than a directly submittable gateway.

@@ -11,7 +11,7 @@ last_reviewed: 2026-08-03
 
 # src/Meridian.Strategies
 
-`LiveRunMetricsTracker` uses the `BacktestMetricsEngine` formulas (geometric annualisation over calendar days, sample-deviation Sharpe, losing-day Sortino); a run with no losing day reports Sortino 0 so persisted metrics stay finite, and annualised return is capped at 1e12.
+`LiveRunMetricsTracker` uses the `BacktestMetricsEngine` formulas (geometric annualisation over the session's start-to-end interval, sample-deviation Sharpe, losing-day Sortino); a run with no losing day reports Sortino 0 so persisted metrics stay finite, and annualised return is capped at 1e12.
 
 Live strategy-run cash flows scale the quoted fill price by the report's `LotMultiplier` (stamped by the
 OMS), so a run's retained cash-flow history reconciles with the paper portfolio for multiplied contracts;

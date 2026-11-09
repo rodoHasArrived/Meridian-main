@@ -129,7 +129,7 @@ internal sealed class LiveRunMetricsTracker
         // Same formulas as BacktestMetricsEngine (risk-free rate zero), so live and backtest runs
         // emitting BacktestMetrics are comparable: geometric annualisation over calendar time,
         // sample standard deviation for Sharpe, and downside deviation over losing days for Sortino.
-        var annualizedReturn = ComputeAnnualizedReturn(totalReturn);
+        var annualizedReturn = ComputeAnnualizedReturn(totalReturn, elapsed);
         var dailyReturns = _snapshots.Select(static snapshot => (double)snapshot.DailyReturn).ToArray();
         double sharpe = 0, sortino = 0;
         if (dailyReturns.Length >= 2)
@@ -202,15 +202,15 @@ internal sealed class LiveRunMetricsTracker
                     "Win-rate, profit-factor, drawdown-recovery, and XIRR require closed-trade accounting not yet tracked by the live engine.",
                 ]));
     }
-    private decimal ComputeAnnualizedReturn(decimal totalReturn)
+    private static decimal ComputeAnnualizedReturn(decimal totalReturn, TimeSpan elapsed)
     {
-        if (_snapshots.Count == 0)
-            return 0m;
         // A loss of 100% or more has no real annualised root; report it as a total loss.
         if (totalReturn <= -1m)
             return -1m;
-        var days = (_snapshots[^1].Date.ToDateTime(TimeOnly.MinValue) - _snapshots[0].Date.ToDateTime(TimeOnly.MinValue)).TotalDays;
-        var years = Math.Max(days / 365.0, 1.0 / 365.0);
+        // The return is earned from the session start (initial equity) to its end, so annualise
+        // over that interval. Snapshot dates would miss the first day: sessions record no
+        // start-of-run snapshot, so the first end-of-day snapshot already includes a day's return.
+        var years = Math.Max(elapsed.TotalDays / 365.0, 1.0 / 365.0);
         var annualized = Math.Pow(1.0 + (double)totalReturn, 1.0 / years) - 1.0;
         // Compounding a short run's gain over a year overflows decimal (900% in three days is
         // ~1e116), which threw from Build. Cap the figure; it is reported, not traded on.

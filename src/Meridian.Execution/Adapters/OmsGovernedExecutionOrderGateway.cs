@@ -9,16 +9,39 @@ using SdkOrderStatus = Meridian.Execution.Sdk.OrderStatus;
 namespace Meridian.Execution.Adapters;
 
 /// <summary>
-/// Compatibility view that exposes health, capabilities, validation, and execution reports from
-/// the same <see cref="IExecutionGateway"/> instance owned by the OMS. Direct mutations are
-/// structurally blocked so there is only one authoritative order state and one risk-gated path.
+/// Compatibility view that exposes health, capabilities and validation from the same
+/// <see cref="IExecutionGateway"/> instance owned by the OMS, and order updates from the OMS's
+/// own report publication. Direct mutations are structurally blocked so there is only one
+/// authoritative order state and one risk-gated path.
 /// </summary>
+/// <remarks>
+/// Order updates never read <see cref="IExecutionGateway.StreamExecutionReportsAsync"/>: the OMS
+/// is that stream's only consumer, and a gateway such as the paper simulator hands each report to
+/// exactly one reader. A second reader would take resting-order fills away from the OMS, leaving
+/// its order state and portfolio unapplied.
+/// </remarks>
 public sealed class OmsGovernedExecutionOrderGateway : IOrderGateway
 {
+    private const string ObserverSubscriberName = "order-gateway-observer";
+
     private readonly IExecutionGateway _inner;
+    private readonly Func<IOrderManager?>? _orderManagerAccessor;
 
     public OmsGovernedExecutionOrderGateway(IExecutionGateway inner)
-        => _inner = inner ?? throw new ArgumentNullException(nameof(inner));
+        : this(inner, orderManagerAccessor: null)
+    {
+    }
+
+    /// <param name="inner">The OMS's execution gateway.</param>
+    /// <param name="orderManagerAccessor">
+    /// Resolves the OMS whose published reports back <see cref="StreamOrderUpdatesAsync"/>. Lazy
+    /// so the view can be composed before the OMS. Without it, the update stream is empty.
+    /// </param>
+    public OmsGovernedExecutionOrderGateway(IExecutionGateway inner, Func<IOrderManager?>? orderManagerAccessor)
+    {
+        _inner = inner ?? throw new ArgumentNullException(nameof(inner));
+        _orderManagerAccessor = orderManagerAccessor;
+    }
 
     public string BrokerName => _inner.GatewayId;
 
@@ -63,10 +86,21 @@ public sealed class OmsGovernedExecutionOrderGateway : IOrderGateway
         => throw new InvalidOperationException(
             "Order cancellation must go through IOrderManager so authoritative OMS state cannot be bypassed.");
 
+    /// <summary>
+    /// Order updates from an independent OMS report subscription. This is an observer: if it
+    /// falls behind its bounded inbox, the excess updates are dropped for this stream only and
+    /// the OMS fill path is unaffected.
+    /// </summary>
     public async IAsyncEnumerable<OrderStatusUpdate> StreamOrderUpdatesAsync(
         [EnumeratorCancellation] CancellationToken ct = default)
     {
-        await foreach (var report in _inner.StreamExecutionReportsAsync(ct).ConfigureAwait(false))
+        if (_orderManagerAccessor?.Invoke() is not OrderManagementSystem oms)
+            yield break;
+
+        await using var subscription = oms.SubscribeLosslessExecutionReports(
+            ObserverSubscriberName,
+            static (_, _, _) => ValueTask.CompletedTask);
+        await foreach (var report in subscription.Reports.ReadAllAsync(ct).ConfigureAwait(false))
         {
             yield return new OrderStatusUpdate(
                 report.OrderId,

@@ -355,7 +355,8 @@ public sealed class UiServer : IAsyncDisposable
                 // and risk gates, so strategy code could place paper orders the OMS never saw.
                 builder.Services.AddSingleton<IOrderGateway>(sp =>
                     new Meridian.Execution.Adapters.OmsGovernedExecutionOrderGateway(
-                        sp.GetRequiredService<IExecutionGateway>()));
+                        sp.GetRequiredService<IExecutionGateway>(),
+                        () => sp.GetService<IOrderManager>()));
             }
             if (usesPaperGateway)
             {

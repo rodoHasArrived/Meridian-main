@@ -133,6 +133,34 @@ public sealed class BrokerageExecutionRegistrationRecoveryTests
         await submit.Should().ThrowAsync<InvalidOperationException>().WithMessage("*IOrderManager*");
     }
 
+    [Fact]
+    public async Task PaperExecution_OrderGatewayUpdatesComeFromTheOmsWithoutTakingItsReports()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddBrokerageExecution(config =>
+            config.BrokerFlows["paper"] = new BrokerFlowFlags { PaperOrderFlowEnabled = true });
+        await using var provider = services.BuildServiceProvider();
+        await provider.GetRequiredService<IExecutionGateway>().ConnectAsync();
+        var oms = provider.GetRequiredService<IOrderManager>();
+        await ((IOrderManagementLifecycle)oms).StartAsync();
+        var orderGateway = provider.GetRequiredService<Meridian.Execution.Interfaces.IOrderGateway>();
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+
+        // Subscribes before the order is placed: the first MoveNext opens the OMS subscription.
+        await using var updates = orderGateway.StreamOrderUpdatesAsync(cts.Token).GetAsyncEnumerator(cts.Token);
+        var next = updates.MoveNextAsync();
+        // A market order with a simulated mark fills immediately; the OMS publishes fills.
+        var result = await oms.PlaceOrderAsync(Request("observed-paper-order") with { Type = OrderType.Market });
+
+        result.Success.Should().BeTrue();
+        (await next).Should().BeTrue();
+        updates.Current.OrderId.Should().Be(result.OrderId);
+        updates.Current.FilledQuantity.Should().Be(10m);
+        oms.GetOrder(result.OrderId)!.FilledQuantity.Should().Be(10m,
+            "the observer receives a copy; the OMS still applies the fill itself");
+    }
+
     private static ServiceCollection SandboxServices(BrokerageFixture gateway)
     {
         var services = new ServiceCollection();
