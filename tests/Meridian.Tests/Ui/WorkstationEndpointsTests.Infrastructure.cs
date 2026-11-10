@@ -42,7 +42,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
-using IReconciliationApiService = Meridian.Ui.Shared.Contracts.Reconciliation.IReconciliationApiService;
+using IReconciliationApiService = Meridian.Contracts.Reconciliation.IReconciliationApiService;
 using ISecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 
 namespace Meridian.Tests.Ui;
@@ -239,7 +239,7 @@ public sealed partial class WorkstationEndpointsTests
                 Arg.Any<Guid>(),
                 Arg.Any<ReconciliationBreakQueueScope>(),
                 Arg.Any<CancellationToken>())
-            .Returns(call => new Meridian.Ui.Shared.Contracts.Reconciliation.ReconciliationFundAccountAuthorization(
+            .Returns(call => new Meridian.Contracts.Reconciliation.ReconciliationFundAccountAuthorization(
                 call.ArgAt<Guid>(0),
                 "test-fund-profile"));
         services.AddSingleton(reconciliationAuthority);
@@ -267,7 +267,7 @@ public sealed partial class WorkstationEndpointsTests
                 Arg.Any<Guid>(),
                 Arg.Any<ReconciliationBreakQueueScope>(),
                 Arg.Any<CancellationToken>())
-            .Returns(call => new Meridian.Ui.Shared.Contracts.Reconciliation.ReconciliationFundAccountAuthorization(
+            .Returns(call => new Meridian.Contracts.Reconciliation.ReconciliationFundAccountAuthorization(
                 call.ArgAt<Guid>(0),
                 "test-fund-profile"));
         services.AddSingleton(reconciliationAuthority);
