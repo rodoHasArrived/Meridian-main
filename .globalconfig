@@ -8,5 +8,6 @@ is_global = true
 #
 # NOTE: Diagnostic suppressions (IL2026, IL2070, CS1587) are handled in
 #       Directory.Build.props via NoWarn property for better MSBuild integration.
-#       See Directory.Build.props lines 10-13 for the canonical suppressions.
+#       See the MeridianGlobalNoWarn inventory in Directory.Build.props for the
+#       canonical suppressions.
 # ============================================================================
