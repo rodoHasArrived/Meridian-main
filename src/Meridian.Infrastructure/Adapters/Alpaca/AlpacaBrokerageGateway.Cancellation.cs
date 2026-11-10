@@ -55,6 +55,37 @@ public sealed partial class AlpacaBrokerageGateway
             return unresolvedReport;
         }
 
+        // A confirmed replacement leaves the addressed order "replaced". Alpaca refuses to cancel
+        // it while the successor it names keeps working, so the cancel must reach the live end of
+        // the broker's own chain or the request fails with the replacement still fillable.
+        var (liveOrder, chainFailure) = await FollowConfirmedReplacementChainAsync(client, existing, ct).ConfigureAwait(false);
+        if (chainFailure is not null)
+        {
+            var unverifiedSuccessorReport = new ExecutionReport
+            {
+                OrderId = brokerOrderId,
+                ClientOrderId = existing.ClientOrderId,
+                GatewayOrderId = brokerOrderId,
+                ReportType = ExecutionReportType.Rejected,
+                Symbol = existing.Symbol ?? string.Empty,
+                Side = existing.Side == "sell" ? OrderSide.Sell : OrderSide.Buy,
+                // The successor may still be working, so the cancellation stays nonterminal and
+                // the OMS keeps the order in future kill-switch sweeps.
+                OrderStatus = OrderStatus.PendingCancel,
+                OrderQuantity = ParseDecimal(existing.Qty),
+                FilledQuantity = ParseDecimal(existing.FilledQty),
+                RejectReason = chainFailure,
+                Timestamp = DateTimeOffset.UtcNow,
+            };
+            await _reportChannel.Writer.WriteAsync(unverifiedSuccessorReport, ct).ConfigureAwait(false);
+            return unverifiedSuccessorReport;
+        }
+        // The caller knows the order by the identity it addressed; a successor's own client
+        // order id is broker-assigned and names nothing the caller submitted.
+        var addressedClientOrderId = ReferenceEquals(liveOrder, existing) ? null : existing.ClientOrderId;
+        existing = liveOrder;
+        brokerOrderId = liveOrder.Id!;
+
         // While a replacement is unconfirmed the OMS keeps routing cancellation to the predecessor,
         // but the candidate successor may already be live. Cancel every possible successor first,
         // or an operator or kill-switch cancel can leave that candidate working.
@@ -92,7 +123,7 @@ public sealed partial class AlpacaBrokerageGateway
         var report = new ExecutionReport
         {
             OrderId = brokerOrderId,
-            ClientOrderId = authoritativeOrder.ClientOrderId ?? existing.ClientOrderId,
+            ClientOrderId = addressedClientOrderId ?? authoritativeOrder.ClientOrderId ?? existing.ClientOrderId,
             ReportType = verifiedStatus switch
             {
                 OrderStatus.Cancelled => ExecutionReportType.Cancelled,
@@ -114,6 +145,29 @@ public sealed partial class AlpacaBrokerageGateway
         };
         await _reportChannel.Writer.WriteAsync(report, ct).ConfigureAwait(false);
         return report;
+    }
+
+    /// <summary>
+    /// Walks Alpaca's own <c>replaced_by</c> links from a replaced order to the order that
+    /// currently holds its terms. Returns the reason when a link cannot be verified.
+    /// </summary>
+    private async Task<(AlpacaOrderResponse Order, string? Failure)> FollowConfirmedReplacementChainAsync(
+        HttpClient client, AlpacaOrderResponse order, CancellationToken ct)
+    {
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        while (string.Equals(order.Status, "replaced", StringComparison.Ordinal)
+            && order.ReplacedBy is { Length: > 0 } successorId)
+        {
+            if (!seen.Add(order.Id!) || seen.Count > 32)
+                return (order, "Alpaca replacement chain is cyclic or exceeds the cancellation bound; the replacement may still be working.");
+            var successor = await ResolveOrderForCancellationAsync(client,
+                new OrderCancellationIdentifier(successorId, OrderCancellationIdentifierKind.BrokerOrderId), ct).ConfigureAwait(false);
+            if (successor is null || !string.Equals(successor.Replaces, order.Id, StringComparison.Ordinal))
+                return (order, "Alpaca replaced the order, but its successor could not be verified for cancellation and may still be working.");
+            order = successor;
+        }
+
+        return (order, null);
     }
 
     /// <summary>
