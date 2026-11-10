@@ -68,6 +68,24 @@
   <PropertyGroup>
     <NoWarn>$(NoWarn);@(MeridianGlobalNoWarn->'%(Identity)')</NoWarn>
   </PropertyGroup>
+  <PropertyGroup Label="Nullable warnings-as-errors ratchet">
+    <!-- Nullable-reference warnings (CS86xx) are build errors in every C# project except the
+         baseline below, which lists the projects that still emitted them when the ratchet was
+         introduced. Remove a project once it builds clean; never add one. The list is pinned by
+         tests/scripts/test_nullable_warning_ratchet.py. F# projects are out of scope.
+         The Windows-only desktop projects (Launcher, LifecycleSupervisor, Setup, Wpf and their
+         tests) compile as stubs off Windows, so they are baselined until measured on Windows.
+         WPF markup compilation builds a temporary '<name>_<random>_wpftmp' project; the suffix
+         is stripped so it inherits its real project's setting. -->
+    <MeridianNullableRatchetProjectName>$([System.Text.RegularExpressions.Regex]::Replace('$(MSBuildProjectName)', '_[A-Za-z0-9]+_wpftmp$', ''))</MeridianNullableRatchetProjectName>
+    <MeridianNullableWarningBaseline>;Meridian.Application;Meridian.Contracts;Meridian.DataIntegration;Meridian.Execution;Meridian.FinancialOperations;Meridian.FundStructure.Tests;Meridian.Infrastructure;Meridian.Launcher;Meridian.LifecycleSupervisor;Meridian.LifecycleSupervisor.Tests;Meridian.Reporting;Meridian.Setup;Meridian.Setup.Tests;Meridian.Storage;Meridian.Tests;Meridian.Ui.Shared;Meridian.Wpf;Meridian.Wpf.Tests;</MeridianNullableWarningBaseline>
+    <WarningsAsErrors Condition="'$(MSBuildProjectExtension)' == '.csproj' and !$(MeridianNullableWarningBaseline.Contains(';$(MeridianNullableRatchetProjectName);'))">$(WarningsAsErrors);nullable</WarningsAsErrors>
+  </PropertyGroup>
+  <PropertyGroup Label="Analyzer level" Condition="'$(MSBuildProjectExtension)' == '.csproj'">
+    <!-- Report the SDK's full recommended analyzer rule set. Rules that already had violations
+         are held at 'suggestion' in .globalconfig until they are fixed. -->
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+  </PropertyGroup>
   <ItemGroup Label="Runtime integrity defaults">
     <RuntimeHostConfigurationOption Include="System.IO.Compression.UseStrictValidation" Value="true" />
   </ItemGroup>

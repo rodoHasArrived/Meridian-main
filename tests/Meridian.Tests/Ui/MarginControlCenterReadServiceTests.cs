@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using FluentAssertions;
 using Meridian.Execution.Sdk;
 using Meridian.FinancialOperations.Reconciliation.Connectors;
+using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
 using Xunit;
 
@@ -95,6 +96,95 @@ public sealed class MarginControlCenterReadServiceTests : IDisposable
             "operator");
 
         await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*stale*");
+    }
+
+    [Fact]
+    public async Task GetAndCertify_WithVisibilityFilter_HidesOtherTenantsAccounts()
+    {
+        var asOf = new DateTimeOffset(DateTimeOffset.UtcNow.UtcDateTime.Date.AddDays(-1), TimeSpan.Zero);
+        await WriteArtifactAsync("ib", Artifact(
+            "ib-flex", "U1", asOf, providerMaintenance: 10000m, providerExcess: 40000m,
+            positions: [Position("U1", "AAPL", 100m, 10000m)]));
+        await WriteArtifactAsync("alpaca", Artifact(
+            "alpaca", "A1", asOf, providerMaintenance: 2500m, providerExcess: 20000m,
+            positions: [Position("A1", "MSFT", 25m, 10000m)]));
+        var service = CreateService();
+        Func<MarginEvidenceOwner, bool> onlyA1 = owner => owner.AccountId == "A1";
+
+        var center = await service.GetAsync(onlyA1);
+
+        center.Accounts.Should().ContainSingle().Which.AccountId.Should().Be("A1");
+        center.PrimeSummaries.Should().ContainSingle().Which.ProviderId.Should().Be("alpaca");
+        center.Alerts.Should().OnlyContain(alert => alert.AccountId == "A1");
+
+        var hidden = (await service.GetAsync()).Accounts.Single(item => item.AccountId == "U1");
+        var act = () => service.CertifyAsync(
+            new Meridian.Contracts.Workstation.MarginCertificationRequestDto(
+                hidden.ProviderId, hidden.AccountId, hidden.AsOf, hidden.EvidencePath, "Reviewed."),
+            "fund-controller",
+            onlyA1);
+        await act.Should().ThrowAsync<KeyNotFoundException>();
+    }
+
+    [Fact]
+    public async Task GetAndCertify_SameExternalIdUnderAnotherProvider_StaysWithItsImportingFundAccount()
+    {
+        // Tenant A's fund account is bound to (alpaca, SHARED); tenant B imported (ib-flex, SHARED)
+        // for its own fund account. External ids are unique only within a provider, so the shared
+        // id must not admit B's evidence for A.
+        var asOf = new DateTimeOffset(DateTimeOffset.UtcNow.UtcDateTime.Date.AddDays(-1), TimeSpan.Zero);
+        var tenantAFundAccount = Guid.NewGuid();
+        var tenantBFundAccount = Guid.NewGuid();
+        await WriteArtifactAsync("a-alpaca", Artifact(
+            "alpaca", "SHARED", asOf, providerMaintenance: 2500m, providerExcess: 20000m,
+            positions: [Position("SHARED", "MSFT", 25m, 10000m)]) with
+        { FundAccountId = tenantAFundAccount.ToString("D") });
+        await WriteArtifactAsync("b-ib", Artifact(
+            "ib-flex", "SHARED", asOf, providerMaintenance: 10000m, providerExcess: 40000m,
+            positions: [Position("SHARED", "AAPL", 100m, 10000m)]) with
+        { FundAccountId = tenantBFundAccount.ToString("D") });
+        await WriteArtifactAsync("legacy", Artifact(
+            "alpaca", "SHARED-LEGACY", asOf, providerMaintenance: 1000m, providerExcess: 5000m,
+            positions: [Position("SHARED-LEGACY", "IBM", 5m, 1000m)]));
+        var service = CreateService();
+        var tenantAOwns = new Dictionary<Guid, HashSet<string>>
+        {
+            [tenantAFundAccount] = new(StringComparer.OrdinalIgnoreCase) { "SHARED", "SHARED-LEGACY" }
+        };
+        Func<MarginEvidenceOwner, bool> tenantA = owner => WorkstationEndpoints.IsMarginEvidenceVisible(tenantAOwns, owner);
+
+        var center = await service.GetAsync(tenantA);
+
+        center.Accounts.Should().ContainSingle().Which.ProviderId.Should().Be("alpaca",
+            "tenant B's ib-flex evidence and evidence with no recorded fund account must stay hidden");
+
+        var tenantBAccount = (await service.GetAsync()).Accounts.Single(item => item.ProviderId == "ib-flex");
+        var act = () => service.CertifyAsync(
+            new Meridian.Contracts.Workstation.MarginCertificationRequestDto(
+                tenantBAccount.ProviderId, tenantBAccount.AccountId, tenantBAccount.AsOf, tenantBAccount.EvidencePath, "Reviewed."),
+            "tenant-a-controller",
+            tenantA);
+        await act.Should().ThrowAsync<KeyNotFoundException>();
+    }
+
+    [Fact]
+    public void IsMarginEvidenceVisible_RequiresTheOwnedFundAccountAndOneOfItsIdentifiers()
+    {
+        var owned = Guid.NewGuid();
+        var other = Guid.NewGuid();
+        var ownership = new Dictionary<Guid, HashSet<string>>
+        {
+            [owned] = new(StringComparer.OrdinalIgnoreCase) { "U1" },
+            [other] = new(StringComparer.OrdinalIgnoreCase) { "U2" }
+        };
+
+        WorkstationEndpoints.IsMarginEvidenceVisible(ownership, new(owned.ToString("D"), "ib-flex", " u1 ")).Should().BeTrue();
+        WorkstationEndpoints.IsMarginEvidenceVisible(ownership, new(owned.ToString("D"), "ib-flex", "U2")).Should()
+            .BeFalse("an id owned by a different fund account does not belong to this import");
+        WorkstationEndpoints.IsMarginEvidenceVisible(ownership, new(Guid.NewGuid().ToString("D"), "ib-flex", "U1")).Should()
+            .BeFalse("evidence imported for an unowned fund account is hidden");
+        WorkstationEndpoints.IsMarginEvidenceVisible(ownership, new(null, "ib-flex", "U1")).Should()
+            .BeFalse("evidence with no recorded fund account is hidden");
     }
 
     private MarginControlCenterReadService CreateService()

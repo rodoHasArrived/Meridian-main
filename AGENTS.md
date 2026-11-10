@@ -31,7 +31,8 @@ Unless the task explicitly requires a different protected-branch flow that
 GitHub repository rules allow, use the pull-request workflow:
 
 1. Begin from the latest `origin/main`.
-2. Create or use a branch named `codex/<short-task-name>`.
+2. Create or use a branch named `codex/<short-task-name>` or `claude/<short-task-name>`; either agent
+   prefix is accepted.
 3. Make only changes that are required for the assigned task.
 4. Add or update appropriate automated tests.
 5. Run the checks for the change's Level 1/2/3 tier in `docs/ai/solo-developer-workflow.md#verification-tiers` (routine, financial/architectural, sensitive/destructive); attempt `bash scripts/ci.sh` when proportionate or required, and state precisely if it was not run.

@@ -240,9 +240,13 @@ public sealed class StatementImportService(
         // canonical artifact, destroying the normalized evidence that run still references. Combining
         // both hashes gives every distinct rendering its own directory, while a same-profile re-import
         // rewrites identical bytes in place and stays idempotent.
+        // The fund account is part of the key too: the evidence sidecar records the fund account the
+        // import was ownership-checked for, and margin views scope by it. Importing identical bytes
+        // for another fund account must not overwrite that owner and move the evidence's visibility.
         var rawHash = ComputeSha256Hex(capturedSourceBytes);
         var canonicalHash = ComputeSha256Hex(artifactBytes);
-        var uploadId = $"sc-{rawHash}-{canonicalHash}";
+        var ownerKey = ComputeSha256Hex(Encoding.UTF8.GetBytes(request.FundAccountId.Trim().ToUpperInvariant()))[..16];
+        var uploadId = $"sc-{rawHash}-{canonicalHash}-{ownerKey}";
         const string reconciliationDirectory = "reconciliation";
         const string retainedImportsDirectory = "statement-connector-imports";
         var retainedDirectory = _retainedPathGuard.ResolvePath(
@@ -287,7 +291,8 @@ public sealed class StatementImportService(
             ActivityEvents: parse.ActivityEvents ?? [],
             ActivityCursors: parse.ActivityCursors ?? [],
             TaxLots: parse.TaxLots ?? [],
-            BorrowPositions: parse.BorrowPositions ?? []);
+            BorrowPositions: parse.BorrowPositions ?? [],
+            FundAccountId: request.FundAccountId.Trim());
         var canonicalEvidenceBytes = JsonSerializer.SerializeToUtf8Bytes(
             canonicalEvidence,
             StatementCanonicalEvidenceJsonContext.Default.StatementCanonicalEvidenceArtifact);
