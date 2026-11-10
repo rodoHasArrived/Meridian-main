@@ -118,9 +118,35 @@ class DocumentationWorkflowTests(unittest.TestCase):
             self.assertNotIn("continue-on-error", job)
             for step in job["steps"]:
                 self.assertNotIn("continue-on-error", step)
+
+    def test_generation_runs_only_where_meridian_ci_does_not(self):
+        # Meridian CI verify-docs owns generation/freshness for PRs to main, main pushes and
+        # merge groups. This workflow keeps them for every other event it receives, so the
+        # condition must mirror meridian-ci.yml's triggers exactly and nothing else may skip.
+        meridian = yaml.load((ROOT / ".github/workflows/meridian-ci.yml").read_text(encoding="utf-8"),
+                             Loader=yaml.BaseLoader)
+        self.assertEqual(meridian["on"]["pull_request"], {"branches": ["main"]})
+        self.assertEqual(meridian["on"]["push"], {"branches": ["main"]})
+        self.assertIn("merge_group", meridian["on"])
+        self.assertIn("Reject whole-repo generated documentation drift",
+                      (ROOT / "scripts/ci.sh").read_text(encoding="utf-8"))
+        self.assertEqual(
+            self.producer["env"]["MERIDIAN_CI_OWNS_GENERATION"],
+            "${{ github.event_name == 'merge_group' || github.event_name == 'push' || "
+            "(github.event_name == 'pull_request' && github.base_ref == 'main') }}",
+        )
+        conditional = {
+            "Set up Node.js", "Install diagram dependencies", "Converge maintained documentation",
+            "Check generated docs are current", "Check whitespace",
+        }
+        seen = set()
         for step in self.producer["steps"]:
-            if "run" in step:
+            if step.get("name") in conditional:
+                seen.add(step["name"])
+                self.assertEqual(step["if"], "env.MERIDIAN_CI_OWNS_GENERATION != 'true'")
+            elif "run" in step:
                 self.assertNotIn("if", step)
+        self.assertEqual(seen, conditional)
 
     def test_dashboard_regression_and_repair_artifact_are_retained(self):
         delta = next(c for c in self.commands if "baseline_available" in c)

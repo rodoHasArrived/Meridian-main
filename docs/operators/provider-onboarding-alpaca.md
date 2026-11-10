@@ -119,14 +119,15 @@ Run deterministic regression fixtures before using a paper account:
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter 'FullyQualifiedName~BrokerageOrderRecoveryTests|FullyQualifiedName~BrokerageExecutionReconciliationServiceTests|FullyQualifiedName~LiveBrokeragePortfolioSyncServiceTests|FullyQualifiedName~AlpacaBrokerageGatewayTests|FullyQualifiedName~AlpacaStreamedFillLoopTests|FullyQualifiedName~TradingBrokerageRecoveryEndpointTests'
 ```
 
-Run the opt-in [paper sandbox checks](../testing/alpaca-paper-portfolio-sandbox.md) for real
-broker evidence. The read-only classes cover account, holdings, reconciliation, risk, asset and
-option-contract reference data and the activity statement; the separately opted-in order class automates steps 2 to 5 below
-for one-share orders over the REST lane (a lost acknowledgement, exactly-one-submission recovery,
-a fill, and a restart over the same recovery journal). The order manager classifies every Alpaca
-route, paper included, as live routing, so a paper order needs the same brokerage configuration,
-run id and readiness approval as a live one. For external paper-sandbox execution acceptance,
-retain sanitized account and client-order evidence:
+Run the opt-in [paper portfolio sandbox check](../testing/alpaca-paper-portfolio-sandbox.md)
+for real broker account, holdings, reconciliation, and risk evidence. The same page describes the
+separate opt-in order check, which submits, replaces, cancels and fills real paper orders through
+the gateway, and the governed order-path check, which automates steps 2 to 5 below for one-share
+orders through the order manager (a lost acknowledgement, exactly-one-submission recovery, a fill,
+and a restart over the same recovery journal). The order manager classifies every Alpaca route,
+paper included, as live routing, so a paper order needs the same brokerage configuration, run id
+and readiness approval as a live one. For external paper-sandbox execution acceptance, retain
+sanitized account and client-order evidence:
 
 1. Confirm the endpoint is `paper-api.alpaca.markets`, verify the account, synchronize, and compare
    holdings, cash, equity, buying power and USD currency to Alpaca's account and positions responses.
