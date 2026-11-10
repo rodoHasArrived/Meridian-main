@@ -4,6 +4,7 @@ using Meridian.Contracts.DirectLending;
 using Meridian.FSharp.DirectLendingInterop;
 using Meridian.Storage.DirectLending;
 using Meridian.Contracts.Integrity;
+using Meridian.Contracts.Text;
 
 namespace Meridian.Application.DirectLending;
 
@@ -130,6 +131,76 @@ internal static class DirectLendingServiceSupport
             CommandId: commandId,
             SourceSystem: metadata?.SourceSystem ?? defaultSourceSystem,
             ReplayFlag: metadata?.ReplayFlag ?? false);
+    }
+
+    /// <summary>
+    /// PRD-115: whether a command id is already recorded on a loan's history. A retry of an Apply or
+    /// Refund that committed carries the same id; recomputing it against the updated balances would
+    /// describe a second movement. Only the same request (same mutation, amount, effective date and
+    /// external reference) is a replay; any other reuse of the id is a conflict.
+    /// </summary>
+    public static CommittedCommandMatch FindCommittedCommand(
+        IEnumerable<LoanEventLineageDto> history,
+        Guid? commandId,
+        string eventType,
+        decimal amount,
+        DateOnly effectiveDate,
+        string? externalRef)
+    {
+        if (commandId is not Guid id || id == Guid.Empty)
+        {
+            return CommittedCommandMatch.None;
+        }
+
+        var committed = history.FirstOrDefault(entry => entry.CommandId == id);
+        if (committed is null)
+        {
+            return CommittedCommandMatch.None;
+        }
+
+        return string.Equals(committed.EventType, eventType, StringComparison.Ordinal)
+            && RecordedRequestMatches(committed.PayloadJson, amount, effectiveDate, externalRef)
+                ? CommittedCommandMatch.Replay
+                : CommittedCommandMatch.Conflict;
+    }
+
+    private static bool RecordedRequestMatches(string payloadJson, decimal amount, DateOnly effectiveDate, string? externalRef)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(payloadJson);
+            var root = document.RootElement;
+            if (root.ValueKind != JsonValueKind.Object)
+            {
+                return false;
+            }
+
+            JsonElement? Find(string name)
+            {
+                foreach (var property in root.EnumerateObject())
+                {
+                    if (string.Equals(property.Name, name, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return property.Value;
+                    }
+                }
+
+                return null;
+            }
+
+            var recordedRef = Find("externalRef");
+            return Find("amount") is { ValueKind: JsonValueKind.Number } recordedAmount && recordedAmount.GetDecimal() == amount
+                && Find("effectiveDate") is { ValueKind: JsonValueKind.String } recordedDate
+                && DateOnly.TryParse(recordedDate.GetString(), System.Globalization.CultureInfo.InvariantCulture, out var date) && date == effectiveDate
+                && string.Equals(
+                    TextPrimitives.NormalizeOptional(recordedRef is { ValueKind: JsonValueKind.String } reference ? reference.GetString() : null),
+                    TextPrimitives.NormalizeOptional(externalRef),
+                    StringComparison.Ordinal);
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
     }
 
     /// <summary>Cash transaction type for an outgoing refund of unapplied cash (PRD-115).</summary>
@@ -400,4 +471,17 @@ internal static class DirectLendingServiceSupport
 
     public static System.Nullable<decimal> ToNullable(decimal? value) =>
         value.HasValue ? new System.Nullable<decimal>(value.Value) : new System.Nullable<decimal>();
+}
+
+/// <summary>Outcome of <see cref="DirectLendingServiceSupport.FindCommittedCommand"/>.</summary>
+public enum CommittedCommandMatch
+{
+    /// <summary>The command id is not recorded: process the command.</summary>
+    None,
+
+    /// <summary>The same request already committed: return the committed state.</summary>
+    Replay,
+
+    /// <summary>The command id was used for a different mutation or different inputs.</summary>
+    Conflict
 }

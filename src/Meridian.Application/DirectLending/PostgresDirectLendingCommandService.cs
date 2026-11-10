@@ -941,57 +941,14 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
         }
 
         var history = await _queryService.GetHistoryAsync(loanId, ct).ConfigureAwait(false);
-        var committed = history.FirstOrDefault(entry => entry.CommandId == commandId);
-        if (committed is null)
+        return DirectLendingServiceSupport.FindCommittedCommand(history, commandId, eventType, amount, effectiveDate, externalRef) switch
         {
-            return null;
-        }
-
-        // Only the same request is a replay: same mutation and the same caller inputs. Reusing a
-        // command id for a different amount, date or reference is refused like any other mismatch.
-        return string.Equals(committed.EventType, eventType, StringComparison.Ordinal)
-                && RecordedRequestMatches(committed.PayloadJson, amount, effectiveDate, externalRef)
-            ? DirectLendingCommandResult<LoanServicingStateDto>.Success(stored.Servicing)
-            : DirectLendingCommandResult<LoanServicingStateDto>.Failure(
+            CommittedCommandMatch.Replay => DirectLendingCommandResult<LoanServicingStateDto>.Success(stored.Servicing),
+            CommittedCommandMatch.Conflict => DirectLendingCommandResult<LoanServicingStateDto>.Failure(
                 DirectLendingErrorCode.Conflict,
-                $"Direct lending command id {commandId} was already used for a different mutation on loan {loanId}.");
-    }
-
-    internal static bool RecordedRequestMatches(string payloadJson, decimal amount, DateOnly effectiveDate, string? externalRef)
-    {
-        try
-        {
-            using var document = JsonDocument.Parse(payloadJson);
-            var root = document.RootElement;
-            static JsonElement? Find(JsonElement element, string name)
-            {
-                foreach (var property in element.EnumerateObject())
-                {
-                    if (string.Equals(property.Name, name, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return property.Value;
-                    }
-                }
-
-                return null;
-            }
-
-            static string? Normalize(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-
-            var recordedAmount = Find(root, "amount");
-            var recordedDate = Find(root, "effectiveDate");
-            var recordedRef = Find(root, "externalRef");
-            return recordedAmount is { ValueKind: JsonValueKind.Number } a && a.GetDecimal() == amount
-                && recordedDate is { ValueKind: JsonValueKind.String } d && DateOnly.TryParse(d.GetString(), System.Globalization.CultureInfo.InvariantCulture, out var date) && date == effectiveDate
-                && string.Equals(
-                    Normalize(recordedRef is { ValueKind: JsonValueKind.String } r ? r.GetString() : null),
-                    Normalize(externalRef),
-                    StringComparison.Ordinal);
-        }
-        catch (JsonException)
-        {
-            return false;
-        }
+                $"Direct lending command id {commandId} was already used for a different mutation on loan {loanId}."),
+            _ => null
+        };
     }
 
     public async Task<DirectLendingCommandResult<LoanServicingStateDto>> RefundUnappliedCashAsync(Guid loanId, RefundUnappliedCashRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)

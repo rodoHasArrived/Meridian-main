@@ -155,6 +155,11 @@ public sealed partial class InMemoryDirectLendingService
             }
 
             EnsureActive(stored);
+            if (IsCommittedReplay(stored, loanId, metadata, "loan.unapplied-cash-applied", request.Amount, request.EffectiveDate, request.ExternalRef))
+            {
+                return Task.FromResult<LoanServicingStateDto?>(ToServicingState(stored));
+            }
+
             ThrowIfInvalid(DirectLendingServiceSupport.ValidateUnappliedCashAmount(request.Amount, stored.Servicing.Balances.UnappliedCash, "apply"));
 
             var terms = stored.TermsVersions[^1].Terms;
@@ -194,6 +199,11 @@ public sealed partial class InMemoryDirectLendingService
             }
 
             EnsureActive(stored);
+            if (IsCommittedReplay(stored, loanId, metadata, "loan.unapplied-cash-refunded", request.Amount, request.EffectiveDate, request.ExternalRef))
+            {
+                return Task.FromResult<LoanServicingStateDto?>(ToServicingState(stored));
+            }
+
             ThrowIfInvalid(DirectLendingServiceSupport.ValidateUnappliedCashAmount(request.Amount, stored.Servicing.Balances.UnappliedCash, "refund"));
             ThrowIfInvalid(string.IsNullOrWhiteSpace(request.ExternalRef) ? "A refund needs an external reference for the outgoing payment." : null);
             var duplicate = DirectLendingServiceSupport.FindDuplicateRefund(GetList(_cashTransactions, loanId), request.ExternalRef);
@@ -214,6 +224,21 @@ public sealed partial class InMemoryDirectLendingService
             return Task.FromResult<LoanServicingStateDto?>(ToServicingState(stored));
         }
     }
+
+    /// <summary>
+    /// PRD-115: a retried Apply or Refund that already committed returns the current state instead
+    /// of moving the held cash again; reusing its command id for a different request is a conflict.
+    /// </summary>
+    private static bool IsCommittedReplay(
+        StoredLoan stored, Guid loanId, DirectLendingCommandMetadataDto? metadata, string eventType, decimal amount, DateOnly effectiveDate, string? externalRef)
+        => DirectLendingServiceSupport.FindCommittedCommand(stored.History, metadata?.CommandId, eventType, amount, effectiveDate, externalRef) switch
+        {
+            CommittedCommandMatch.Replay => true,
+            CommittedCommandMatch.Conflict => throw new DirectLendingCommandException(new DirectLendingCommandError(
+                DirectLendingErrorCode.Conflict,
+                $"Direct lending command id {metadata!.CommandId} was already used for a different mutation on loan {loanId}.")),
+            _ => false
+        };
 
     private static void ThrowIfInvalid(string? error)
     {

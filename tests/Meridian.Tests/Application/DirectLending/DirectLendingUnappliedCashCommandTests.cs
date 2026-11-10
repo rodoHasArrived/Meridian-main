@@ -88,6 +88,27 @@ public sealed class DirectLendingUnappliedCashCommandTests
     }
 
     [Fact]
+    public async Task Apply_RetriedWithTheSameCommandId_MovesTheCashOnce_AndADifferentRequestIsAConflict()
+    {
+        var service = new InMemoryDirectLendingService();
+        var loanId = await LoanHoldingUnappliedCashAsync(service, Terms(), 2_000m);
+        await service.PostDailyAccrualAsync(loanId, new PostDailyAccrualRequest(PaymentDate.AddDays(-1)));
+        var commandId = Guid.NewGuid();
+        var metadata = new DirectLendingCommandMetadataDto(commandId, null, null, "test", false);
+        var request = new ApplyUnappliedCashRequest(100m, PaymentDate, null, null);
+
+        var first = (await service.ApplyUnappliedCashAsync(loanId, request, metadata))!;
+        var retry = (await service.ApplyUnappliedCashAsync(loanId, request, metadata))!;
+
+        retry.Balances.Should().Be(first.Balances, "a retry after a lost response must not apply the cash again");
+        first.Balances.UnappliedCash.Should().Be(1_900m);
+        (await service.GetHistoryAsync(loanId)).Count(entry => entry.EventType == "loan.unapplied-cash-applied").Should().Be(1);
+
+        var reused = () => service.ApplyUnappliedCashAsync(loanId, request with { Amount = 200m }, metadata);
+        (await reused.Should().ThrowAsync<DirectLendingCommandException>()).Which.Error.Code.Should().Be(DirectLendingErrorCode.Conflict);
+    }
+
+    [Fact]
     public void Reconciliation_TreatsRefundsAsOutgoing()
     {
         static CashTransactionDto Cash(string type)
