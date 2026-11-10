@@ -24,6 +24,9 @@ public partial class SettingsWorkspaceShellPage : SettingsWorkspaceShellPageBase
     }
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => PageLoadedCoreAsync(sender, e), nameof(OnPageLoaded)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task PageLoadedCoreAsync(object sender, RoutedEventArgs e)
     {
         AttachViewModelEvents();
         await ViewModel.RefreshAsync().ConfigureAwait(true);
@@ -100,15 +103,27 @@ public partial class SettingsWorkspaceShellPage : SettingsWorkspaceShellPageBase
     }
 
     private async void OnCommandBarCommandInvoked(object sender, WorkspaceCommandInvokedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => CommandBarCommandInvokedCoreAsync(sender, e), nameof(OnCommandBarCommandInvoked)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task CommandBarCommandInvokedCoreAsync(object sender, WorkspaceCommandInvokedEventArgs e)
         => await ViewModel.ExecuteActionAsync(e.Command.Id, navigate: true).ConfigureAwait(true);
 
     private async void OnSettingsDecisionInvoked(object sender, WorkspaceDecisionInvokedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => SettingsDecisionInvokedCoreAsync(sender, e), nameof(OnSettingsDecisionInvoked)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task SettingsDecisionInvokedCoreAsync(object sender, WorkspaceDecisionInvokedEventArgs e)
         => await ViewModel.ExecuteActionAsync(e.ActionId, navigate: false).ConfigureAwait(true);
 
     private async void OnQuickLinkActionClick(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => QuickLinkActionClickCoreAsync(sender, e), nameof(OnQuickLinkActionClick)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task QuickLinkActionClickCoreAsync(object sender, RoutedEventArgs e)
         => await ExecuteTaggedActionAsync(sender, actionId => ViewModel.ExecuteActionAsync(actionId, navigate: false));
 
     private async void OnHeroActionClick(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => HeroActionClickCoreAsync(sender, e), nameof(OnHeroActionClick)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task HeroActionClickCoreAsync(object sender, RoutedEventArgs e)
         => await ExecuteTaggedActionAsync(sender, actionId => ViewModel.ExecuteActionAsync(actionId, navigate: false));
 
     private void OnPaneDropRequested(object? sender, PaneDropEventArgs e)

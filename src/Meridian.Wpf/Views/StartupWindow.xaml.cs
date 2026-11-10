@@ -25,6 +25,9 @@ public partial class StartupWindow : Window
     }
 
     protected override async void OnContentRendered(EventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => ContentRenderedCoreAsync(e), nameof(OnContentRendered)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task ContentRenderedCoreAsync(EventArgs e)
     {
         base.OnContentRendered(e);
         if (UsernameBox.IsVisible)
