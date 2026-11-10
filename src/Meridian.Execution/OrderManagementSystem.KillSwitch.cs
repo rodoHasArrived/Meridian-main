@@ -1,3 +1,4 @@
+using Meridian.Execution.OrderManagement;
 using Meridian.Execution.Logging;
 using Meridian.Execution.Sdk;
 using Microsoft.Extensions.Logging;
@@ -69,7 +70,7 @@ public sealed partial class OrderManagementSystem
             }
 
             _orders.TryGetValue(unsettledOrderId, out var unsettledState);
-            if (unsettledState is not null && IsTerminalStatus(unsettledState.Status))
+            if (unsettledState is not null && OrderStatusFacts.IsTerminal(unsettledState.Status))
             {
                 continue;
             }

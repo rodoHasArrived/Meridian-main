@@ -29,7 +29,7 @@ public sealed partial class OrderManagementSystem
 
             return new OrderResult { Success = false, OrderId = orderId, ErrorMessage = "Order not found" };
         }
-        if (_amendmentBook.Contains(orderId) || IsTerminal(state.Status))
+        if (_amendmentBook.Contains(orderId) || OrderStatusFacts.IsTerminal(state.Status))
             return new OrderResult
             {
                 Success = false,
