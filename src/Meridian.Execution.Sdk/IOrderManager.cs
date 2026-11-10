@@ -27,6 +27,15 @@ public interface IOrderManager
     /// </summary>
     IReadOnlyList<OrderState> GetExposureReservingOrders() => GetOpenOrders();
 
+    /// <summary>
+    /// Same reservations as <see cref="GetExposureReservingOrders"/>, but a pending amendment
+    /// reserves whichever outcome has the larger quantity rather than the larger value. Unit
+    /// limits need this: 100 shares at $1 amended to 1 share at $200 is the larger value at one
+    /// share, yet the original 100 shares still execute if the amendment fails.
+    /// Implementations without amendment tracking return the exposure reservations.
+    /// </summary>
+    IReadOnlyList<OrderState> GetUnitReservingOrders() => GetExposureReservingOrders();
+
     /// <summary>Gets order state by ID.</summary>
     OrderState? GetOrder(string orderId);
 

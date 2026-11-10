@@ -9,7 +9,7 @@ import type {
   ProviderRateLimitsResponse,
   ProviderRegistrationFailure
 } from "@/types";
-import { formatLocalDateTime } from "@/lib/format";
+import { formatUtcTimestamp } from "@/lib/format";
 
 export interface ProviderAccountingServices {
   getCatalog: (signal?: AbortSignal) => Promise<ProviderCatalogResponse>;
@@ -274,5 +274,5 @@ function formatToken(value: string): string {
 
 function formatTimestamp(value: string): string {
   const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? value : formatLocalDateTime(parsed);
+  return Number.isNaN(parsed.getTime()) ? value : formatUtcTimestamp(parsed);
 }

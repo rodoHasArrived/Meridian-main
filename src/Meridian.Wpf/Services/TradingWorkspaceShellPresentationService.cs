@@ -823,7 +823,7 @@ public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedS
         }
 
         var syncAsOf = readiness.BrokerageSync.LastSuccessfulSyncAt is { } successfulSync
-            ? successfulSync.ToLocalTime().ToString("MMM dd HH:mm")
+            ? FormatHelpers.FormatUtcTimestamp(successfulSync)
             : "never";
         return $"Brokerage sync {readiness.BrokerageSync.Health.ToString().ToLowerInvariant()} as of {syncAsOf}; {readiness.BrokerageSync.PositionCount} position(s), {readiness.BrokerageSync.OpenOrderCount} open order(s).";
     }
@@ -1036,7 +1036,7 @@ public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedS
         }
 
         var syncAsOf = readiness.BrokerageSync.LastSuccessfulSyncAt is { } successfulSync
-            ? successfulSync.ToLocalTime().ToString("MMM dd HH:mm")
+            ? FormatHelpers.FormatUtcTimestamp(successfulSync)
             : "never";
         var trustDetail = string.IsNullOrWhiteSpace(readiness.TrustGate.Detail)
             ? fallbackDetail

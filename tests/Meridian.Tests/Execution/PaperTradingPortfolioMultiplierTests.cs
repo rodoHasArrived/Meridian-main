@@ -12,7 +12,8 @@ namespace Meridian.Tests.Execution;
 /// <summary>
 /// Paper economics for contracts: an option pays its premium in full, so one $2.50 contract on a
 /// 100 multiplier moves $250 of cash — the same figure the risk layer sizes the order at.
-/// Futures deliberately stay at 1x until the book has a variation-margin model.
+/// Futures settle daily variation margin (see <c>PaperTradingPortfolioVariationMarginTests</c>);
+/// futures restored from notional-model records keep their 1x booking until flat.
 /// </summary>
 public sealed class PaperTradingPortfolioMultiplierTests
 {
@@ -149,8 +150,10 @@ public sealed class PaperTradingPortfolioMultiplierTests
     }
 
     [Fact]
-    public void FutureFill_KeepsOneTimesCash_UntilVariationMarginIsModelled()
+    public void LegacyFutureRecord_ReplaysOnTheOneTimesNotionalModelItWasBookedOn()
     {
+        // A record written before paper futures settled variation margin carries no booking
+        // stamp; it paid the quote x quantity at 1x, and replays exactly that way.
         var portfolio = new PaperTradingPortfolio(1_000_000m);
         var report = Fill("ESZ6", OrderSide.Buy, qty: 1m, price: 6_000m) with
         {
@@ -159,10 +162,10 @@ public sealed class PaperTradingPortfolioMultiplierTests
             LotMultiplier = 50m
         };
 
-        portfolio.ApplyFill(report);
+        portfolio.ApplyRecordedFill(report);
         portfolio.UpdateMarketPrice("ESZ6", 6_010m);
 
-        portfolio.Cash.Should().Be(994_000m, "futures cash is unchanged by this fix (deferred)");
+        portfolio.Cash.Should().Be(994_000m, "the legacy record booked the notional at 1x");
         portfolio.UnrealisedPnl.Should().Be(10m);
         portfolio.Positions["ESZ6"].ContractMultiplier.Should().Be(1m,
             "the aggregate view reports the multiplier its P&L was computed with");
@@ -265,11 +268,11 @@ public sealed class PaperTradingPortfolioMultiplierTests
     }
 
     [Fact]
-    public void RegTFuture_MarginCheck_UsesTheOneTimesMoneyScaleNotTheContractMultiplier()
+    public void RegTLegacyFuture_MarginCheck_UsesTheOneTimesMoneyScaleNotTheContractMultiplier()
     {
-        // Futures cash moves at 1x until variation margin is modelled, so the margin view must
-        // not size the holding at 50x: $3,000 cash buying one 6,000 contract on 50 % margin
-        // leaves cash $0 and a $3,000 loan against a $6,000 holding, not a $300,000 one.
+        // A futures position restored from a notional-model record moved cash at 1x, so the
+        // margin view must not size the holding at 50x: $3,000 cash buying one 6,000 contract on
+        // 50 % margin leaves cash $0 and a $3,000 loan against a $6,000 holding, not $300,000.
         var portfolio = new PaperTradingPortfolio(
         [
             new AccountDefinition("margin-1", "Reg T Margin", AccountKind.Brokerage, 3_000m,
@@ -279,7 +282,9 @@ public sealed class PaperTradingPortfolioMultiplierTests
         {
             AssetClass = "Future",
             LotUnitKind = SecurityLotUnitKind.Contracts,
-            LotMultiplier = 50m
+            LotMultiplier = 50m,
+            BookedMoneyMultiplier = 1m,
+            BookedVariationMargin = false
         });
 
         var status = portfolio.CheckMarginStatus("margin-1", new Dictionary<string, decimal> { ["ESZ6"] = 6_000m });

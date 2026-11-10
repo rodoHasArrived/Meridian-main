@@ -981,7 +981,8 @@ function AppShell({
         items={buildWorkstationStatusItems({
           workspaceLabel: headerWorkspace.label,
           refreshing: loading || refreshStatus.inFlight,
-          hasError: Boolean(error)
+          hasError: Boolean(error),
+          providerTrust: shell.trustStrip.items.find((item) => item.id === "providers") ?? null
         })}
       />
 

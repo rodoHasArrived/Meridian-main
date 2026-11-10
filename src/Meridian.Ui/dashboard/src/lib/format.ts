@@ -275,9 +275,13 @@ function padTwo(value: number): string {
 /**
  * UTC timestamp label that always carries the year, e.g. "Jun 30, 2026, 18:05 UTC". The year
  * is never dropped: a ledger or evidence timestamp has to be unambiguous, and a label that
- * omitted it for the current year would read differently as the calendar turns.
+ * omitted it for the current year would read differently as the calendar turns. An invalid
+ * date renders "Invalid Date", as `toLocaleString` does.
  */
 export function formatUtcTimestamp(date: Date): string {
+  if (Number.isNaN(date.getTime())) {
+    return "Invalid Date";
+  }
   return `${UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}, ${padTwo(date.getUTCHours())}:${padTwo(date.getUTCMinutes())} UTC`;
 }
 
@@ -293,21 +297,14 @@ export function formatUtcMonthYear(date: Date): string {
   return `${MONTH_NAMES[date.getUTCMonth()]} ${date.getUTCFullYear()}`;
 }
 
-/**
- * A timestamp on the operator's local clock, e.g. "11/6/2026, 9:05:12 AM". For screens that show
- * when something happened on this machine's day; ledger and evidence times use `formatUtcTimestamp`.
- */
-export function formatLocalDateTime(date: Date): string {
-  return date.toLocaleString(FORMAT_LOCALE);
-}
-
 const dateTimeFormatters = new Map<string, Intl.DateTimeFormat>();
 
 /**
  * A date or time in a layout the fixed helpers above do not cover, through one pinned-locale
- * Intl.DateTimeFormat per option set, e.g. `formatDateTime(date, { dateStyle: "medium",
- * timeStyle: "short" })`. Pass `timeZone: "UTC"` for evidence times; without it the operator's
- * local clock is used. An invalid date renders "Invalid Date", as `toLocaleString` does.
+ * Intl.DateTimeFormat per option set, e.g. `formatDateTime(date, { month: "short", day: "numeric",
+ * hour: "2-digit", minute: "2-digit", timeZone: "UTC" })`. Workstation times are shown in UTC, so
+ * pass `timeZone: "UTC"`; without it the formatter falls back to the operator's local clock. An
+ * invalid date renders "Invalid Date", as `toLocaleString` does.
  */
 export function formatDateTime(date: Date, options: Intl.DateTimeFormatOptions): string {
   if (Number.isNaN(date.getTime())) {

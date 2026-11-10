@@ -4,6 +4,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Workstation.Models;
+using UtcFormat = Meridian.Ui.Services.FormatHelpers;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -227,7 +228,7 @@ public sealed class StrategyRunPortfolioViewModel : BindableBase
         RealizedPnlText = portfolio.RealizedPnl.ToString("C2");
         UnrealizedPnlText = valuationMark.RecordedValue(portfolio.UnrealizedPnl);
         CommissionsText = portfolio.Commissions.ToString("C2");
-        AsOfText = portfolio.AsOf.LocalDateTime.ToString("g");
+        AsOfText = UtcFormat.FormatUtcTimestamp(portfolio.AsOf);
         SecurityResolvedText = portfolio.SecurityResolvedCount.ToString("N0");
         SecurityMissingText = portfolio.SecurityMissingCount.ToString("N0");
 

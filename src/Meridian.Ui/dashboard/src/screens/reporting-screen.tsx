@@ -1,7 +1,7 @@
 import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import { FileText, Landmark, Network, PencilLine, RotateCcw, XCircle } from "lucide-react";
 import { useLocation } from "react-router-dom";
-import { formatCount, formatCurrency as formatCurrencyAmount, formatPercent as formatPercentAmount } from "@/lib/format";
+import { formatCount, formatCurrency as formatCurrencyAmount, formatPercent as formatPercentAmount, pluralizeCount } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -829,7 +829,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
           tone: latestRetainedAsOfDate ? "ready" : "review"
         }}
         completeness={{
-          value: `${vm.templateRows.length} templates · ${vm.runStatusRows.length} runs`,
+          value: `${pluralizeCount(vm.templateRows.length, "template")} · ${pluralizeCount(vm.runStatusRows.length, "run")}`,
           detail: "Caller-visible Reporting records",
           tone: vm.templateRows.length > 0 ? "ready" : "review"
         }}

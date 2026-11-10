@@ -395,6 +395,12 @@
       "path": "/accounting/operations-continuity",
       "docLabel": "Accounting \u2014 Operations Continuity",
       "waitForText": "Operations continuity",
+      "allowedContentIssues": [
+        {
+          "kind": "opaque-identifier",
+          "reason": "A close workflow is identified by period and fund account, and OperationsContinuityWorkflowSummary exposes only fundAccountId. Remove this entry once the shared read model carries a fund-account display name."
+        }
+      ],
       "requiredApiRoutes": [
         "/api/workstation/accounting",
         "/api/accounting-system/providers",
@@ -406,7 +412,7 @@
         "/api/workstation/operations/financial-operations-command-center"
       ],
       "waitForTexts": [
-        "1 operations continuity workflows loaded.",
+        "1 operations continuity workflow loaded.",
         "Workflows",
         "Ledger Posting Draft",
         "Journal validation is still required.",
