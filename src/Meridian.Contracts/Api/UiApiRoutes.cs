@@ -1081,7 +1081,6 @@ public static class UiApiRoutes
     public const string ReportingStarterKits = "/api/fund-structure/reporting/starter-kits";
     public const string ReportingStarterKitProvision = "/api/fund-structure/reporting/starter-kits/{kitId}/provision";
     public const string ReportingSchedules = "/api/fund-structure/reporting/schedules";
-    public const string ReportingScheduleRunDue = "/api/fund-structure/reporting/schedules/run-due";
     public const string ReportingSchedulePause = "/api/fund-structure/reporting/schedules/{scheduleId}/pause";
     public const string ReportingScheduleResume = "/api/fund-structure/reporting/schedules/{scheduleId}/resume";
     public const string ReportingScheduleRunNow = "/api/fund-structure/reporting/schedules/{scheduleId}/run";

@@ -932,7 +932,6 @@ export const UI_API_ROUTES = {
   ReportingStarterKits: "/api/fund-structure/reporting/starter-kits",
   ReportingStarterKitProvision: "/api/fund-structure/reporting/starter-kits/{kitId}/provision",
   ReportingSchedules: "/api/fund-structure/reporting/schedules",
-  ReportingScheduleRunDue: "/api/fund-structure/reporting/schedules/run-due",
   ReportingSchedulePause: "/api/fund-structure/reporting/schedules/{scheduleId}/pause",
   ReportingScheduleResume: "/api/fund-structure/reporting/schedules/{scheduleId}/resume",
   ReportingScheduleRunNow: "/api/fund-structure/reporting/schedules/{scheduleId}/run",
