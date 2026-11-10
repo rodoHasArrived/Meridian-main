@@ -101,7 +101,8 @@ gh workflow run targeted-test.yml --ref <branch> -f mode=dotnet-filtered -f dotn
 ## Repository Layout
 
 - `src/Meridian.Ui/dashboard/` - active browser-based operator workstation
-- `src/Meridian.Ui/wwwroot/workstation/` - built workstation assets served by the `src/Meridian` host
+- `src/Meridian.Ui/wwwroot/workstation/` - built workstation assets, served by the `src/Meridian/` host
+  (`src/Meridian.Ui/` has no project file)
 - `src/Meridian.Ui.Services/`, `src/Meridian.Ui.Shared/` - shared UI/API read-model surface
 - `src/Meridian.Wpf/` - active Windows desktop workstation (co-equal UI lane); current focus is web-UI parity
 - `src/Meridian.Application/` - orchestration and pipelines
