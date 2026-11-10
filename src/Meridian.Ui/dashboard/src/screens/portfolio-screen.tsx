@@ -48,7 +48,6 @@ import { readinessToneToSeverityStatus } from "@/lib/shared-tone-mappings";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import {
   buildPortfolioExplorerPresentation,
-  buildPortfolioFigureDifferenceNote,
   resolveBrokerageAccountFilterKeyCommand,
   type PortfolioBrokerageAccountRow,
   type PortfolioBrokeragePositionRow,
@@ -74,6 +73,7 @@ import { eyebrowClassName } from "@/design-system/label-case";
 import { formatCount } from "@/lib/format";
 import { metricFreshnessFromTrustTone, withMetricContext } from "@/lib/metric-trust";
 import { FigureDifferenceNote } from "@/components/meridian/figure-difference-note";
+import { buildPortfolioFigureDifferenceNote } from "@/screens/portfolio-screen.figure-differences";
 
 interface PortfolioScreenProps {
   portfolio?: PortfolioWorkspaceResponse | null;
