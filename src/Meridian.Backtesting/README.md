@@ -11,6 +11,8 @@ last_reviewed: 2026-10-30
 
 # src/Meridian.Backtesting
 
+XIRR is computed from investor-boundary flows only (initial capital out, terminal equity in); internal trade, commission and dividend flows are already inside equity. A loss of 100% or more reports an annualised return of -100% instead of aborting the metrics build.
+
 `MarketImpactFillModel` leaves an order working on a zero-volume bar (no traded liquidity) and caps
 square-root impact at `MaxImpactFraction` (50%), so a thin bar can no longer drive a sell fill price
 to zero or below.

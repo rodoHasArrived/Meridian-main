@@ -28,16 +28,39 @@ public readonly record struct LotQuantity(decimal Amount, SecurityLotUnitKind Un
     public decimal EconomicUnits => Amount * Multiplier;
 
     /// <summary>
-    /// Value at a raw unit quote. Debt quotes are percentages of par; listed contracts
-    /// scale the quote by their contract multiplier. Exact retained monetary basis must
-    /// not pass through this conversion a second time.
+    /// Value at a raw unit quote, scaling by the unit kind's default quote convention: face-value
+    /// lots read the quote as a percentage of par, everything else per unit, and listed contracts
+    /// scale by their contract multiplier. Exact retained monetary basis must not pass through
+    /// this conversion a second time.
+    /// <para>
+    /// The unit-kind default and the catalog's declared <see cref="SecurityAssetClassDescriptor.QuoteConvention"/>
+    /// agree for every catalogued class today (pinned by <c>SecurityQuoteConventionCoverageTests</c>).
+    /// A class-aware caller pricing a class that declares a different convention uses
+    /// <see cref="ValueAtPrice(decimal, SecurityQuoteConvention)"/> with
+    /// <see cref="QuoteConventionFor(string?)"/> instead of this overload.
+    /// </para>
     /// </summary>
     public decimal ValueAtPrice(decimal price)
+        => ValueAtPrice(price, UnitKind == SecurityLotUnitKind.FaceValue
+            ? SecurityQuoteConvention.PercentOfPar
+            : SecurityQuoteConvention.PerUnit);
+
+    /// <summary>Value at a raw unit quote under a declared quote convention.</summary>
+    public decimal ValueAtPrice(decimal price, SecurityQuoteConvention quoteConvention)
     {
         if (!Enum.IsDefined(UnitKind) || Multiplier <= 0m)
             throw new InvalidOperationException("A defined lot unit and positive multiplier are required for pricing.");
-        return EconomicUnits * price / (UnitKind == SecurityLotUnitKind.FaceValue ? 100m : 1m);
+        return EconomicUnits * price / (quoteConvention == SecurityQuoteConvention.PercentOfPar ? 100m : 1m);
     }
+
+    /// <summary>
+    /// The quote convention an asset class declares in the catalog, for class-aware pricing paths.
+    /// Unknown classes are rejected rather than guessed.
+    /// </summary>
+    public static SecurityQuoteConvention QuoteConventionFor(string? assetClass)
+        => SecurityAssetClassCatalog.TryGet(assetClass, out var descriptor)
+            ? descriptor.QuoteConvention
+            : throw new ArgumentException($"Unknown asset class '{assetClass}' has no declared quote convention.", nameof(assetClass));
 
     /// <summary>The unitized quantity of any lot.</summary>
     public static LotQuantity Of(IUnitizedLot lot)

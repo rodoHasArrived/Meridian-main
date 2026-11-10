@@ -2,11 +2,13 @@
 
 # `security-master-contracts` data objects - page 3 of 7
 
-Objects 161-240 of 502. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 504. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_ISecurityForwardCurveProvider["ISecurityForwardCurveProvider"] {
+    }
     class Meridian_Contracts_SecurityMaster_ISecurityIdentityQueryService["ISecurityIdentityQueryService"] {
     }
     class Meridian_Contracts_SecurityMaster_ISecurityMasterAmender["ISecurityMasterAmender"] {
@@ -417,8 +419,6 @@ classDiagram
         +string? Reference
         +string Source
     }
-    class Meridian_Contracts_SecurityMaster_OtcValuationStatus["OtcValuationStatus"] {
-    }
     Meridian_Contracts_SecurityMaster_ISecurityMasterQueryService --> Meridian_Contracts_SecurityMaster_ISecurityIdentityQueryService
     Meridian_Contracts_SecurityMaster_ISecurityMasterQueryService --> Meridian_Contracts_SecurityMaster_ISecurityTradingParametersQueryService
     Meridian_Contracts_SecurityMaster_InstrumentTypeDescriptorCatalog --> Meridian_Contracts_SecurityMaster_InstrumentTypeDescriptorLabelException
@@ -443,7 +443,6 @@ classDiagram
     Meridian_Contracts_SecurityMaster_OtcContractLifecycleEventDto --> Meridian_Contracts_SecurityMaster_OtcContractLifecycleTarget
     Meridian_Contracts_SecurityMaster_OtcContractValuationDto --> Meridian_Contracts_SecurityMaster_OtcValuationBlockerDto
     Meridian_Contracts_SecurityMaster_OtcContractValuationDto --> Meridian_Contracts_SecurityMaster_OtcValuationInputDto
-    Meridian_Contracts_SecurityMaster_OtcContractValuationDto --> Meridian_Contracts_SecurityMaster_OtcValuationStatus
     Meridian_Contracts_SecurityMaster_OtcContractValuationRequest --> Meridian_Contracts_SecurityMaster_OtcContractDto
     Meridian_Contracts_SecurityMaster_OtcCreditEventData --> Meridian_Contracts_SecurityMaster_OtcContractLifecycleData
     Meridian_Contracts_SecurityMaster_OtcCreditEventData --> Meridian_Contracts_SecurityMaster_OtcCreditEventKind

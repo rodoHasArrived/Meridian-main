@@ -204,7 +204,10 @@ internal sealed class OrderAmendmentBook(IReadOnlyDictionary<string, OrderState>
             ReferenceEquals(terms, pending.Proposed));
     }
 
-    internal IReadOnlyList<OrderState> GetExposureReservations()
+    /// <param name="largestQuantity">
+    /// Reserve the outcome with the larger quantity instead of the larger value, for unit limits.
+    /// </param>
+    internal IReadOnlyList<OrderState> GetExposureReservations(bool largestQuantity = false)
     {
         var reservations = new List<OrderState>();
         foreach (var (id, pending) in _pending)
@@ -215,7 +218,9 @@ internal sealed class OrderAmendmentBook(IReadOnlyDictionary<string, OrderState>
             // Reserve one real outcome, never independent maxima: 100 shares at $1 amended to
             // 1 share at $100 is $100 either way, not a synthetic 100 shares at $100. Exposure
             // providers multiply quantity by price, so the terms must stay correlated.
-            var outcome = SelectLargerAmendmentOutcome(pending, current);
+            var outcome = largestQuantity
+                ? (pending.Proposed.Quantity > pending.Original.Quantity ? pending.Proposed : pending.Original)
+                : SelectLargerAmendmentOutcome(pending, current);
             if (outcome.Quantity <= current.FilledQuantity)
                 outcome = outcome == pending.Original ? pending.Proposed : pending.Original;
             reservations.Add(current with

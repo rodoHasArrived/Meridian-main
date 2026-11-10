@@ -11,6 +11,8 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Ledger
 
+Share-class redemptions round cash to the class currency's minor units (`NavPerUnitCalculator.CashForRedemption(units, nav, currency)`).
+
 `ShortCarryProjector` derives the borrow-fee and payment-in-lieu journals (expense debit, cash
 credit) from a reviewed `ShortCarryInstruction`; it refuses long lots, non-functional currencies,
 zero-rounding charges and mixed inputs, and changes no lot quantity or basis.

@@ -4,6 +4,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Workstation.Models;
+using UtcFormat = Meridian.Ui.Services.FormatHelpers;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -235,13 +236,13 @@ public sealed class StrategyRunDetailViewModel : BindableBase
     private void ApplyDetail(StrategyRunDetail detail)
     {
         Title = $"{detail.Summary.StrategyName} ({detail.Summary.RunId[..Math.Min(8, detail.Summary.RunId.Length)]})";
-        StatusText = $"{detail.Summary.Status} {detail.Summary.Mode} run recorded at {detail.Summary.StartedAt.LocalDateTime:g}.";
+        StatusText = $"{detail.Summary.Status} {detail.Summary.Mode} run recorded at {UtcFormat.FormatUtcTimestamp(detail.Summary.StartedAt)}.";
         RunActionStateTitle = "Run drill-ins ready";
         RunActionStateDetail = $"Open portfolio, ledger, risk, or cash-flow review for run {detail.Summary.RunId}.";
         ModeText = detail.Summary.Mode.ToString();
         EngineText = detail.Summary.Engine.ToString();
-        StartedAtText = detail.Summary.StartedAt.LocalDateTime.ToString("g");
-        CompletedAtText = detail.Summary.CompletedAt?.LocalDateTime.ToString("g") ?? "In progress";
+        StartedAtText = UtcFormat.FormatUtcTimestamp(detail.Summary.StartedAt);
+        CompletedAtText = UtcFormat.FormatUtcTimestamp(detail.Summary.CompletedAt, "In progress");
         NetPnlText = FormatCurrency(detail.Summary.NetPnl);
         ReturnText = FormatPercent(detail.Summary.TotalReturn);
         EquityText = FormatCurrency(detail.Summary.FinalEquity);
@@ -350,8 +351,8 @@ public sealed class StrategyRunDetailViewModel : BindableBase
             Badge = new WorkstationBadgeModel("Status", statusValue, "\uE8A5", ToneForStatus(statusValue)),
             Facts =
             [
-                new("Started", detail.Summary.StartedAt.LocalDateTime.ToString("g")),
-                new("Completed", detail.Summary.CompletedAt?.LocalDateTime.ToString("g") ?? "In progress"),
+                new("Started", UtcFormat.FormatUtcTimestamp(detail.Summary.StartedAt)),
+                new("Completed", UtcFormat.FormatUtcTimestamp(detail.Summary.CompletedAt, "In progress")),
                 new("Return", FormatPercent(detail.Summary.TotalReturn)),
                 new("Fills", detail.Summary.FillCount.ToString("N0")),
                 new("Portfolio", detail.Summary.PortfolioId ?? "Not linked"),

@@ -11,6 +11,8 @@ last_reviewed: 2026-10-28
 
 # src/Meridian.Execution
 
+`OrderManagementSystem.GetUnitReservingOrders` reserves the larger-quantity outcome of each pending amendment (the original order still executes if the amendment fails); `GetExposureReservingOrders` keeps the larger-value outcome.
+
 Paper fills retain security-definition lot units and multipliers in execution reports, so fund units
 and contracts with multiplier one preserve their denomination after session replay. Legacy reports
 without class or lot metadata retain the existing share assumption. Contradictory units on an open
@@ -193,7 +195,7 @@ value and P&L move at quote × quantity × contract multiplier, the same scale `
 sizes the order at. Cost basis, lot entry prices and marks stay per-unit quotes, because readers
 apply the multiplier themselves; the aggregate position view carries the multiplier its P&L used,
 and `PortfolioStatePositionTracker` divides by it when recovering a mark. Face-value fills and every
-other asset class stay at 1×. Futures stay at 1× on purpose until the book models variation margin.
+other asset class stay at 1×.
 A fill whose multiplier differs from the open position's is refused. The OMS stamps the multiplier
 on each fill increment, and stamps `BookedMoneyMultiplier` when the scale is not 1, so session
 replay reproduces the same cash; records written before that stamp replay at the 1× they were booked
@@ -202,6 +204,25 @@ legacy option position continues at 1× until it is flat. Once flat, a new holdi
 value agrees with the realized P&L, and the margin check values holdings on that scale. Margin
 interest is paid from cash once, leaves the loan principal unchanged, and posts Margin Interest
 Expense against Cash.
+
+Futures (catalog fact `SettlesDailyVariationMargin`) settle daily variation margin. Opening or
+adding moves no notional: the position is carried at `LastSettlementPrice`, the quantity-weighted
+price its unsettled change is measured from. `ApplyVariationMarginSettlement` pays or receives
+(settlement − last settlement) × quantity × multiplier and re-bases the position at the settlement;
+a reduce or close settles only the change since the last settlement. Every variation-margin cash
+movement is realized P&L and posts Cash against `Futures MTM Settlement`. Equity counts only the
+unsettled change, exposure views still report the notional, the aggregate position reports the
+last settlement as its cost basis (so a mark recovered from it is correct), and the margin check adds
+no initial requirement because none is modelled. The OMS stamps `BookedVariationMargin` beside
+`BookedMoneyMultiplier`; an unstamped futures record replays on the 1× notional model it was booked
+on, and a restored notional-model position continues on that model until flat. The accounting event
+carries `SettlesVariationMargin`, so `LedgerPostingConsumer` posts the settled cash flow
+(`trade-variation-margin`) rather than a securities purchase, and an open posts only its commission.
+Daily settlements are durable session records: `PaperSessionPersistenceService.RecordSettlementAsync`
+appends a `PaperSessionSettlementRecord` (one per account, symbol and trading date;
+`settlements.jsonl` in the JSONL store, read strictly) before applying it, and the live projection,
+restart and replay all merge settlements into the fills at `SettledAt`. Settlements are not yet
+published to the accounting handoff, and the sessionless OMS portfolio is not settled.
 
 Both paper gateways resolve the final fill price through the shared trading-parameter helper.
 Tick-size rounding is best-effort: a rounded price is used only when it remains positive, stays

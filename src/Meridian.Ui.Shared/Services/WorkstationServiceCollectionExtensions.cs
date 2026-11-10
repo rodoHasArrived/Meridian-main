@@ -545,7 +545,9 @@ public static class WorkstationServiceCollectionExtensions
                 rules.Add(new Meridian.Risk.Rules.PositionLimitRule(
                     positionTracker,
                     () => operatorControls?.GetSnapshot().DefaultMaxPositionSize,
-                    sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Risk.Rules.PositionLimitRule>>()));
+                    sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Risk.Rules.PositionLimitRule>>(),
+                    // Resolved per evaluation: the order manager depends on this validator.
+                    () => sp.GetService<Meridian.Execution.Sdk.IOrderManager>()));
             }
 
             var exposureProvider = sp.GetRequiredService<Meridian.Risk.IPortfolioExposureProvider>();
