@@ -33,7 +33,12 @@ replacement is confirmed, Alpaca refuses to cancel the `replaced` predecessor, s
 the broker's `replaced_by` links to the live successor and stays pending, cancelling nothing, when a
 link cannot be verified. A multi-leg package parent is returned with an empty symbol and side: REST
 reconciliation and the trade-update client leave it unnormalized (its legs are separate orders) so it
-cannot fail the durable inbox for other orders, and recovering or amending one is refused. Order and
+cannot fail the durable inbox for other orders, and recovering or amending one is refused.
+Alpaca corporate actions are read from the Market Data `v1/corporate-actions` endpoint (cash
+dividends and forward/reverse splits, paged, no currency); a refused or partly failed fetch returns
+nothing rather than a partial history. Alpaca historical quotes, trades and auctions always use the
+symbol-keyed routes, accept numeric trade ids, treat a caller's limit as a bound on the result, and
+send no feed for auctions, which exist only on SIP. Order and
 amendment recovery refuse evidence read across a connection change, rechecked before every report, and `accepted_for_bidding` is a valid provisional
 snapshot state. Durable trade-update hashes omit derived metadata
 while serialized pending reports retain it, preserving replay identities across upgrades.

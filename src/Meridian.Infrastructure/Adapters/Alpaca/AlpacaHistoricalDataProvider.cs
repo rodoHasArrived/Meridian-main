@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -38,6 +39,8 @@ namespace Meridian.Infrastructure.Adapters.Alpaca;
 public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
 {
     private const string BaseUrl = "https://data.alpaca.markets/v2/stocks";
+    // Largest page Alpaca serves for quotes and trades.
+    private const int MaxPageSize = 10000;
     private const string EnvKeyId = "ALPACA_KEY_ID";
     private const string EnvSecretKey = "ALPACA_SECRET_KEY";
 
@@ -351,10 +354,16 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
                 throw new InvalidOperationException($"Failed to parse Alpaca quotes data", ex);
             }
 
-        } while (!string.IsNullOrEmpty(nextPageToken));
+            // The caller's limit bounds the result, not just the page size: without this a small
+            // limit pages through the whole window a few records at a time.
+        } while (!string.IsNullOrEmpty(nextPageToken) && !ReachedLimit(allQuotes.Count, limit));
 
         Log.Information("Fetched {Count} quotes for {Symbols} from Alpaca", allQuotes.Count, string.Join(",", symbolList));
-        return new HistoricalQuotesResult(allQuotes.OrderBy(q => q.Timestamp).ToList(), null, allQuotes.Count);
+        var ordered = allQuotes.OrderBy(q => q.Timestamp).ToList();
+        if (limit is > 0 && ordered.Count > limit.Value)
+            ordered.RemoveRange(limit.Value, ordered.Count - limit.Value);
+        // A remaining page token tells the caller the window holds more than was returned.
+        return new HistoricalQuotesResult(ordered, nextPageToken, ordered.Count);
     }
 
     private string BuildQuotesUrl(IReadOnlyList<string> symbols, DateTimeOffset start, DateTimeOffset end, int? limit, string? pageToken)
@@ -363,18 +372,12 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
         var startStr = start.ToString("yyyy-MM-ddTHH:mm:ssZ");
         var endStr = end.ToString("yyyy-MM-ddTHH:mm:ssZ");
 
-        string url;
-        if (symbols.Count == 1)
-        {
-            url = $"{BaseUrl}/{symbols[0]}/quotes?start={startStr}&end={endStr}&feed={Uri.EscapeDataString(_feed)}";
-        }
-        else
-        {
-            url = $"{BaseUrl}/quotes?symbols={Uri.EscapeDataString(symbolsParam)}&start={startStr}&end={endStr}&feed={Uri.EscapeDataString(_feed)}";
-        }
+        // Always the multi-symbol route: it keys its results by symbol, while the single-symbol
+        // route returns a bare array that the keyed response model cannot read.
+        var url = $"{BaseUrl}/quotes?symbols={Uri.EscapeDataString(symbolsParam)}&start={startStr}&end={endStr}&feed={Uri.EscapeDataString(_feed)}";
 
-        if (limit.HasValue)
-            url += $"&limit={limit.Value}";
+        if (limit is > 0)
+            url += $"&limit={Math.Min(limit.Value, MaxPageSize)}";
 
         if (!string.IsNullOrEmpty(pageToken))
             url += $"&page_token={Uri.EscapeDataString(pageToken)}";
@@ -449,7 +452,12 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
                             Exchange: trade.Exchange ?? "",
                             Price: trade.Price,
                             Size: trade.Size,
-                            TradeId: trade.TradeId ?? sequenceNumber.ToString(),
+                            TradeId: trade.TradeId.ValueKind switch
+                            {
+                                JsonValueKind.Number => trade.TradeId.GetRawText(),
+                                JsonValueKind.String when trade.TradeId.GetString() is { Length: > 0 } id => id,
+                                _ => sequenceNumber.ToString(CultureInfo.InvariantCulture)
+                            },
                             Conditions: trade.Conditions?.ToArray(),
                             Tape: trade.Tape,
                             Source: Name,
@@ -466,10 +474,16 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
                 throw new InvalidOperationException($"Failed to parse Alpaca trades data", ex);
             }
 
-        } while (!string.IsNullOrEmpty(nextPageToken));
+            // The caller's limit bounds the result, not just the page size: without this a small
+            // limit pages through the whole window a few records at a time.
+        } while (!string.IsNullOrEmpty(nextPageToken) && !ReachedLimit(allTrades.Count, limit));
 
         Log.Information("Fetched {Count} trades for {Symbols} from Alpaca", allTrades.Count, string.Join(",", symbolList));
-        return new HistoricalTradesResult(allTrades.OrderBy(t => t.Timestamp).ToList(), null, allTrades.Count);
+        var ordered = allTrades.OrderBy(t => t.Timestamp).ToList();
+        if (limit is > 0 && ordered.Count > limit.Value)
+            ordered.RemoveRange(limit.Value, ordered.Count - limit.Value);
+        // A remaining page token tells the caller the window holds more than was returned.
+        return new HistoricalTradesResult(ordered, nextPageToken, ordered.Count);
     }
 
     private string BuildTradesUrl(IReadOnlyList<string> symbols, DateTimeOffset start, DateTimeOffset end, int? limit, string? pageToken)
@@ -478,18 +492,12 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
         var startStr = start.ToString("yyyy-MM-ddTHH:mm:ssZ");
         var endStr = end.ToString("yyyy-MM-ddTHH:mm:ssZ");
 
-        string url;
-        if (symbols.Count == 1)
-        {
-            url = $"{BaseUrl}/{symbols[0]}/trades?start={startStr}&end={endStr}&feed={Uri.EscapeDataString(_feed)}";
-        }
-        else
-        {
-            url = $"{BaseUrl}/trades?symbols={Uri.EscapeDataString(symbolsParam)}&start={startStr}&end={endStr}&feed={Uri.EscapeDataString(_feed)}";
-        }
+        // Always the multi-symbol route: it keys its results by symbol, while the single-symbol
+        // route returns a bare array that the keyed response model cannot read.
+        var url = $"{BaseUrl}/trades?symbols={Uri.EscapeDataString(symbolsParam)}&start={startStr}&end={endStr}&feed={Uri.EscapeDataString(_feed)}";
 
-        if (limit.HasValue)
-            url += $"&limit={limit.Value}";
+        if (limit is > 0)
+            url += $"&limit={Math.Min(limit.Value, MaxPageSize)}";
 
         if (!string.IsNullOrEmpty(pageToken))
             url += $"&page_token={Uri.EscapeDataString(pageToken)}";
@@ -552,10 +560,11 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
                     var sym = kvp.Key;
                     foreach (var auctionDay in kvp.Value)
                     {
-                        if (auctionDay.Date is null)
+                        // A calendar date, not an instant: reading it as a timestamp would shift
+                        // the session by a day on hosts east of UTC.
+                        if (!DateOnly.TryParseExact(auctionDay.Date, "yyyy-MM-dd", CultureInfo.InvariantCulture,
+                                DateTimeStyles.None, out var sessionDate))
                             continue;
-
-                        var sessionDate = DateOnly.FromDateTime(auctionDay.Date.Value.UtcDateTime);
 
                         // Skip if outside requested range
                         if (sessionDate < start || sessionDate > end)
@@ -614,15 +623,9 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
         var startStr = start.ToString("yyyy-MM-dd");
         var endStr = end.AddDays(1).ToString("yyyy-MM-dd");
 
-        string url;
-        if (symbols.Count == 1)
-        {
-            url = $"{BaseUrl}/{symbols[0]}/auctions?start={startStr}&end={endStr}&feed={Uri.EscapeDataString(_feed)}";
-        }
-        else
-        {
-            url = $"{BaseUrl}/auctions?symbols={Uri.EscapeDataString(symbolsParam)}&start={startStr}&end={endStr}&feed={Uri.EscapeDataString(_feed)}";
-        }
+        // Always the multi-symbol route, whose results are keyed by symbol. No feed is sent:
+        // auctions exist only on SIP, and Alpaca rejects the request when any other feed is named.
+        var url = $"{BaseUrl}/auctions?symbols={Uri.EscapeDataString(symbolsParam)}&start={startStr}&end={endStr}";
 
         if (!string.IsNullOrEmpty(pageToken))
             url += $"&page_token={Uri.EscapeDataString(pageToken)}";
@@ -631,6 +634,8 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
     }
 
 
+
+    private static bool ReachedLimit(int count, int? limit) => limit is > 0 && count >= limit.Value;
 
     private void ValidateCredentials()
     {
@@ -769,8 +774,9 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
         [JsonPropertyName("c")]
         public List<string>? Conditions { get; set; }
 
+        // A number for equities; kept as an element so either a number or a string is accepted.
         [JsonPropertyName("i")]
-        public string? TradeId { get; set; }
+        public JsonElement TradeId { get; set; }
 
         [JsonPropertyName("z")]
         public string? Tape { get; set; }
@@ -789,7 +795,7 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
     private sealed class AlpacaAuctionDay
     {
         [JsonPropertyName("d")]
-        public DateTimeOffset? Date { get; set; }
+        public string? Date { get; set; }
 
         [JsonPropertyName("o")]
         public AlpacaAuctionPrice[]? OpeningAuctions { get; set; }

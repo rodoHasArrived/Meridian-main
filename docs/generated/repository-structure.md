@@ -11052,6 +11052,7 @@ Meridian-main
 │   │   │   │   ├── AlpacaCorporateActionProviderTests.cs
 │   │   │   │   ├── AlpacaCredentialAndReconnectTests.cs
 │   │   │   │   ├── AlpacaHistoricalDataProviderTests.cs
+│   │   │   │   ├── AlpacaHistoricalTickDataTests.cs
 │   │   │   │   ├── AlpacaMessageParsingTests.cs
 │   │   │   │   ├── AlpacaMultiLegParentOrderTests.cs
 │   │   │   │   ├── AlpacaQuotePipelineGoldenTests.cs
@@ -11223,6 +11224,7 @@ Meridian-main
 │   │   │   │   ├── SymbolEndpointTests.cs
 │   │   │   │   ├── TrustedActionOriginTests.cs
 │   │   │   │   └── UiEndpointsJsonOptionsTests.cs
+│   │   │   ├── AlpacaMarketDataSandboxTests.cs
 │   │   │   ├── AlpacaPaperOrderLifecycleTests.cs
 │   │   │   ├── AlpacaPaperSandboxTests.cs
 │   │   │   ├── ConfigurableTickerDataCollectionTests.cs

@@ -1,4 +1,4 @@
-# Alpaca paper portfolio synchronization validation
+# Alpaca paper broker and market-data validation
 
 **Status:** supporting
 **Owner:** core-team
@@ -77,12 +77,38 @@ Requirements and limits:
 - The OMS admission path is not exercised: live routing through `OrderManagementSystem` requires
   a W7-approved run, which this suite does not fabricate.
 
+## Run the real market-data check
+
+`AlpacaMarketDataSandboxTests` runs the production `AlpacaHistoricalDataProvider` and
+`AlpacaCorporateActionProvider` against the real Market Data API. It is read-only: an HTTP guard
+allows only `GET` requests to `data.alpaca.markets`. Every expectation is a settled historical
+fact (Apple's 2020 split, General Electric's 2021 reverse split, one week of 2025 sessions), so
+the result does not depend on when it runs.
+
+- Corporate actions: known splits and dividends, with evidence identity on every record.
+- Daily bars: every session of a week, split adjustment against raw prices, and five years of paging.
+- Quotes, trades and auctions for one symbol, bounded by the requested limit.
+
+Set `MERIDIAN_RUN_ALPACA_MARKET_DATA=1` with `ALPACA_KEY_ID` and `ALPACA_SECRET_KEY` (paper keys
+are accepted by the Market Data API), then run:
+
+```bash
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj \
+  --filter 'FullyQualifiedName~AlpacaMarketDataSandboxTests' \
+  --logger 'console;verbosity=normal' \
+  --logger 'trx;LogFileName=alpaca-market-data.trx'
+```
+
+The account's market-data plan decides the feed; the default `iex` feed is enough for this check.
+Option snapshots, symbol search and the market-data WebSocket are outside it.
+
 ### Credentials held outside the test process
 
 Some managed environments keep the secret out of the process and add the Alpaca authentication
-header at the network boundary. The tests still require the three variables to be present, so set
-`ALPACA_KEY_ID` and `ALPACA_SECRET_KEY` to placeholders there. Such an environment cannot run the
-trade-update WebSocket, which authenticates inside the socket rather than in a header.
+header at the network boundary. The tests still require the credential variables to be present,
+so set whichever value the environment supplies itself to a placeholder there, and keep the real
+value for anything it does not supply. Such an environment cannot run the trade-update WebSocket,
+which authenticates inside the socket rather than in a header.
 
 ## Broker behaviour these checks established
 
@@ -99,6 +125,18 @@ Observed against the paper Trading API on 2026-11-10 and now covered by determin
   nonterminal so the order remains in cancellation sweeps.
 - **422 does not distinguish its causes.** A reused client order ID and an unknown asset return
   the same status and code, so both stay uncertain until recovery reads the client order ID.
+- **Corporate actions come from the Market Data API.** The provider previously called a
+  `/v2/corporate-actions/announcements` path that does not exist and expected a response shape
+  the broker never sends, so it returned nothing. It now reads
+  `data.alpaca.markets/v1/corporate-actions`, which groups records by action type, reports
+  numeric rates and no currency, and omits record and payable dates on older dividends.
+- **One-symbol and many-symbol tick requests answer differently.** The single-symbol quote and
+  trade routes return a bare array, the multi-symbol routes a map keyed by symbol, and equity
+  trade IDs are numbers. The historical provider now always uses the keyed routes.
+- **A limit is a page size to Alpaca.** The provider now treats the caller's limit as a bound on
+  the result and reports that more remains, instead of paging through the whole window.
+- **Auctions exist only on SIP.** Alpaca rejects an auctions request that names another feed, so
+  none is sent.
 - **Listings trail lookups.** The open-order listing can still show an order for a moment after
   its own lookup reports it cancelled, and a `FILL` activity can appear a moment after the order
   reports filled. Until the activity lands, the order snapshot carries the fill at its average
@@ -116,9 +154,9 @@ identifiers.
 ## Evidence boundary
 
 These tests provide real paper-broker REST evidence: account state, the order lifecycle, complete
-fills, and REST fill recovery into the durable inbox. They do not establish live-money readiness,
-trade-update WebSocket continuity, an actual post-acceptance disconnect, real-broker partial
-fills, or filled multi-leg packages.
+fills, REST fill recovery into the durable inbox, and historical and corporate-action market data.
+They do not establish live-money readiness, trade-update or market-data WebSocket continuity, an
+actual post-acceptance disconnect, real-broker partial fills, or filled multi-leg packages.
 The deterministic `BrokerageOrderRecoveryTests`, `LiveBrokeragePortfolioSyncServiceTests`,
 `BrokerageExecutionReconciliationServiceTests`, `AlpacaBrokerageGatewayTests`, and
 `AlpacaTradeUpdatesClientTests` cover retained dispatch recovery, uncertain acceptance, late fills,
