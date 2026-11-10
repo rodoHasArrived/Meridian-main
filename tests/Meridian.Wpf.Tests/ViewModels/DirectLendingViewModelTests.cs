@@ -162,12 +162,23 @@ public sealed class DirectLendingViewModelTests
     [Fact]
     public void BuildUnappliedCashResultText_ShouldReportWhatMovedAndWhatIsStillHeld()
     {
-        DirectLendingViewModel.BuildUnappliedCashResultText(false, 1_500m, BuildServicing(2_000m), true, BuildServicing(1_000m), null)
-            .Should().Be("Applied $1,000.00 to amounts owed; $1,000.00 still held.");
-        DirectLendingViewModel.BuildUnappliedCashResultText(true, 400m, BuildServicing(1_000m), true, BuildServicing(600m), null)
-            .Should().Be("Refunded $400.00; $600.00 still held.");
-        DirectLendingViewModel.BuildUnappliedCashResultText(true, 400m, BuildServicing(1_000m), false, null, "Amount to refund exceeds the held cash.")
+        DirectLendingViewModel.BuildUnappliedCashResultText(false, 1_500m, BuildServicing(2_000m), true, BuildServicing(1_000m), null, CurrencyCode.USD)
+            .Should().Be("Applied 1,000.00 USD to amounts owed; 1,000.00 USD still held.");
+        DirectLendingViewModel.BuildUnappliedCashResultText(true, 400m, BuildServicing(1_000m), true, BuildServicing(600m), null, CurrencyCode.USD)
+            .Should().Be("Refunded 400.00 USD; 600.00 USD still held.");
+        DirectLendingViewModel.BuildUnappliedCashResultText(true, 400m, BuildServicing(1_000m), false, null, "Amount to refund exceeds the held cash.", CurrencyCode.USD)
             .Should().Be("Refund failed: Amount to refund exceeds the held cash.");
+    }
+
+    [Fact]
+    public void UnappliedCashMessages_UseTheLoansCurrency_NotTheWorkstations()
+    {
+        // PRD-115: the operator enters an amount in the loan's currency, so a EUR loan's held cash
+        // must not be labelled with the workstation's currency symbol.
+        DirectLendingViewModel.BuildUnappliedCashResultText(false, 100m, BuildServicing(1_000m), true, BuildServicing(900m), null, CurrencyCode.EUR)
+            .Should().Be("Applied 100.00 EUR to amounts owed; 900.00 EUR still held.");
+        DirectLendingViewModel.ValidateUnappliedCashAction(BuildServicing(1_000m), false, false, "1500", null, false, out _, CurrencyCode.EUR)
+            .Should().Be("The amount exceeds the 1,000.00 EUR held.");
     }
 
     [Fact]

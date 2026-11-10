@@ -238,7 +238,7 @@ public sealed class DirectLendingViewModel : BindableBase
         => string.IsNullOrWhiteSpace(UnappliedCashResultText) ? Visibility.Collapsed : Visibility.Visible;
 
     public string HeldUnappliedCashText => SelectedServicing is { } servicing
-        ? servicing.Balances.UnappliedCash.ToString("C2")
+        ? FormatLoanMoney(servicing.Balances.UnappliedCash, SelectedLoan?.BaseCurrency)
         : "Select a loan";
 
     public bool CanApplyUnappliedCash => ValidateUnappliedCashAction(
@@ -248,11 +248,11 @@ public sealed class DirectLendingViewModel : BindableBase
         SelectedServicing, IsDetailLoading, IsSubmittingUnappliedCash, UnappliedCashAmountText, UnappliedCashExternalRef, isRefund: true, out _) is null;
 
     public string ApplyUnappliedCashTooltip => ValidateUnappliedCashAction(
-            SelectedServicing, IsDetailLoading, IsSubmittingUnappliedCash, UnappliedCashAmountText, UnappliedCashExternalRef, isRefund: false, out _)
+            SelectedServicing, IsDetailLoading, IsSubmittingUnappliedCash, UnappliedCashAmountText, UnappliedCashExternalRef, isRefund: false, out _, SelectedLoan?.BaseCurrency)
         ?? "Apply this much of the held cash to amounts owed (interest, fees, penalty, then principal). Anything not owed stays held.";
 
     public string RefundUnappliedCashTooltip => ValidateUnappliedCashAction(
-            SelectedServicing, IsDetailLoading, IsSubmittingUnappliedCash, UnappliedCashAmountText, UnappliedCashExternalRef, isRefund: true, out _)
+            SelectedServicing, IsDetailLoading, IsSubmittingUnappliedCash, UnappliedCashAmountText, UnappliedCashExternalRef, isRefund: true, out _, SelectedLoan?.BaseCurrency)
         ?? "Return this much of the held cash to the borrower under the external payment reference.";
 
     // ── Computed ─────────────────────────────────────────────────────────────
@@ -759,7 +759,7 @@ public sealed class DirectLendingViewModel : BindableBase
                 return;
             }
 
-            UnappliedCashResultText = BuildUnappliedCashResultText(isRefund, amount, SelectedServicing, response.Success, response.Data, response.ErrorMessage);
+            UnappliedCashResultText = BuildUnappliedCashResultText(isRefund, amount, SelectedServicing, response.Success, response.Data, response.ErrorMessage, loan.BaseCurrency);
             if (response.Success)
             {
                 UnappliedCashAmountText = string.Empty;
@@ -805,7 +805,8 @@ public sealed class DirectLendingViewModel : BindableBase
         string amountText,
         string? externalRef,
         bool isRefund,
-        out decimal amount)
+        out decimal amount,
+        CurrencyCode? currency = null)
     {
         amount = 0m;
         if (servicing is null)
@@ -836,7 +837,7 @@ public sealed class DirectLendingViewModel : BindableBase
 
         if (parsed > held)
         {
-            return $"The amount exceeds the {held:C2} held.";
+            return $"The amount exceeds the {FormatLoanMoney(held, currency)} held.";
         }
 
         if (isRefund && string.IsNullOrWhiteSpace(externalRef))
@@ -855,7 +856,8 @@ public sealed class DirectLendingViewModel : BindableBase
         LoanServicingStateDto? before,
         bool success,
         LoanServicingStateDto? after,
-        string? errorMessage)
+        string? errorMessage,
+        CurrencyCode? currency = null)
     {
         var action = isRefund ? "Refund" : "Apply";
         if (!success)
@@ -867,14 +869,21 @@ public sealed class DirectLendingViewModel : BindableBase
 
         if (after is null || before is null)
         {
-            return isRefund ? $"Refunded {requested:C2}." : "Unapplied cash applied.";
+            return isRefund ? $"Refunded {FormatLoanMoney(requested, currency)}." : "Unapplied cash applied.";
         }
 
         var moved = before.Balances.UnappliedCash - after.Balances.UnappliedCash;
         return isRefund
-            ? $"Refunded {moved:C2}; {after.Balances.UnappliedCash:C2} still held."
-            : $"Applied {moved:C2} to amounts owed; {after.Balances.UnappliedCash:C2} still held.";
+            ? $"Refunded {FormatLoanMoney(moved, currency)}; {FormatLoanMoney(after.Balances.UnappliedCash, currency)} still held."
+            : $"Applied {FormatLoanMoney(moved, currency)} to amounts owed; {FormatLoanMoney(after.Balances.UnappliedCash, currency)} still held.";
     }
+
+    /// <summary>
+    /// PRD-115: unapplied-cash amounts are in the loan's base currency, which can differ from the
+    /// workstation's, so they carry the ISO code (e.g. "1,000.00 EUR") with culture number formatting.
+    /// </summary>
+    internal static string FormatLoanMoney(decimal amount, CurrencyCode? currency)
+        => currency is { } code ? $"{amount:N2} {code}" : amount.ToString("C2");
 
     private void RaiseUnappliedCashStateChanged()
     {
