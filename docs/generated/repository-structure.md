@@ -8284,6 +8284,8 @@ Meridian-main
 │   │   │   │   │   ├── trading-screen.execution-controls.ts
 │   │   │   │   │   ├── trading-screen.governed-approvals.test.ts
 │   │   │   │   │   ├── trading-screen.governed-approvals.ts
+│   │   │   │   │   ├── trading-screen.headline-evidence.test.ts
+│   │   │   │   │   ├── trading-screen.headline-evidence.ts
 │   │   │   │   │   ├── trading-screen.linked-context.ts
 │   │   │   │   │   ├── trading-screen.operator-focus.ts
 │   │   │   │   │   ├── trading-screen.order-ticket-text.ts

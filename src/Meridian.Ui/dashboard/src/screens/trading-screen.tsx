@@ -83,8 +83,8 @@ import type { ExecutionAuditEntry, ExecutionControlSnapshot, MetricFreshness, Pa
 import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
 import { applyCrossScreenCounts, selectCrossScreenCounts } from "@/lib/cross-screen-counts";
 import { pluralizeCount } from "@/lib/format";
-import { combineMetricFreshness, withMetricContext } from "@/lib/metric-trust";
-import { resolveFigureEvidence, resolveFigureScope, useWorkspaceFigureContext } from "@/lib/workspace-figure-context";
+import { useWorkspaceFigureContext } from "@/lib/workspace-figure-context";
+import { withTradingHeadlineEvidence } from "@/screens/trading-screen.headline-evidence";
 import { useSharedCrossScreenCounts } from "@/lib/cross-screen-counts-context";
 
 interface TradingScreenProps {
@@ -571,42 +571,21 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
         ? "review"
         : "unknown";
 
-  // Headline figures state the same scope as the confidence summary below, and are marked when
-  // the broker evidence behind them is stale or cannot be confirmed. A readiness refresh in
-  // flight does not mute them: the last observation is still the evidence on screen.
-  // The scope is the account the payload on screen was loaded for. After the operator selects
-  // another account the previous account's payload stays on screen until the new one loads, and
-  // for as long as that load fails: those figures must keep naming the account they belong to,
-  // and are marked stale because they are not the selected account's.
-  const loadedAccount = resolveFigureScope(figureContext, "trading");
-  const selectedAccount = normalizeFundAccountGuid(operatingFundAccountId) ?? null;
-  const retainedFromAnotherAccount = loadedAccount !== undefined
-    && (loadedAccount?.toLowerCase() ?? null) !== (selectedAccount?.toLowerCase() ?? null);
-  const headlineScope = (loadedAccount !== undefined ? loadedAccount : fundAccountId)
-    ?? data.brokerage.account
-    ?? "All loaded accounts";
-  // Their values come from the Trading workspace payload, so that payload's load dates them. A
-  // brokerage recovery can report a newer observation before the next Trading poll reloads the
-  // values; its time belongs to the confidence summary, not to figures it did not supply. Outside
-  // the shell the payload's own heartbeat is the only time it carries.
-  const tradingEvidence = resolveFigureEvidence(figureContext, "trading");
-  const headlineAsOf = tradingEvidence.asOf ?? (data.brokerage.lastHeartbeat || null);
+  // Headline figures are marked when the broker evidence behind them is stale or cannot be
+  // confirmed. A readiness refresh in flight does not mute them: the last observation is still
+  // the evidence on screen. Scope, as-of and the combined verdict: `withTradingHeadlineEvidence`.
   const brokerFreshness: MetricFreshness = hasRecoveryProjection
     ? recoveryPortfolio?.isFresh === false
       ? "stale"
       : recoveryPortfolio?.isFresh && !tradingReadiness.errorText ? "fresh" : "unverified"
     : sourceTone === "ready" ? "fresh" : "unverified";
-  // The broker evidence can only lower the Trading payload's own verdict, never raise it: a
-  // failed Trading reload keeps the previous payload on screen (stale), and a session whose data
-  // source is unconfirmed stays unverified, whatever the broker reports.
-  const headlineFreshness = combineMetricFreshness(
-    tradingEvidence.freshness,
-    brokerFreshness,
-    retainedFromAnotherAccount ? "stale" : null
-  );
-  const trustedHeadlineMetrics = withMetricContext(headlineMetrics, {
-    provenance: { source: "Trading workspace", asOf: headlineAsOf, scope: headlineScope },
-    freshness: headlineFreshness
+  const trustedHeadlineMetrics = withTradingHeadlineEvidence(headlineMetrics, {
+    figureContext,
+    operatingFundAccountId,
+    fundAccountId,
+    brokerageAccount: data.brokerage.account,
+    lastHeartbeat: data.brokerage.lastHeartbeat,
+    brokerFreshness
   });
 
   return (
@@ -640,12 +619,12 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
           tone: sourceTone
         }}
         scope={{
-          value: headlineScope,
+          value: fundAccountId ?? data.brokerage.account ?? "All loaded accounts",
           detail: fundAccountId ? "Operating fund account" : "Brokerage account scope",
           tone: fundAccountId || data.brokerage.account ? "ready" : "unknown"
         }}
         freshness={{
-          value: headlineAsOf ?? "Unavailable",
+          value: hasRecoveryProjection ? recoveryPortfolio?.observedAt ?? "Unavailable" : data.brokerage.lastHeartbeat || "Unavailable",
           detail: hasRecoveryProjection ? "Latest broker portfolio observation" : "Latest brokerage heartbeat",
           tone: hasRecoveryProjection ? recoveryPortfolio?.isFresh === false ? "blocked" : recoveryUnavailable ? "unknown" : recoveryPortfolio?.isFresh ? "ready" : "blocked" : sourceTone
         }}
