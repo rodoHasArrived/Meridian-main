@@ -11064,12 +11064,14 @@ Meridian-main
 │   │   │   │   ├── AlpacaHistoricalTickDataTests.cs
 │   │   │   │   ├── AlpacaMessageParsingTests.cs
 │   │   │   │   ├── AlpacaMultiLegParentOrderTests.cs
+│   │   │   │   ├── AlpacaOptionsChainProviderTests.cs
 │   │   │   │   ├── AlpacaQuotePipelineGoldenTests.cs
 │   │   │   │   ├── AlpacaQuoteRoutingTests.cs
 │   │   │   │   ├── AlpacaStreamDiagnosticsTests.cs
 │   │   │   │   ├── AlpacaSymbolSearchProviderTests.cs
 │   │   │   │   ├── AlpacaTradeUpdateHashCompatibilityTests.cs
 │   │   │   │   ├── AlpacaTradeUpdatesClientTests.cs
+│   │   │   │   ├── AlpacaTradingApiTests.cs
 │   │   │   │   ├── AlphaVantageCorporateActionProviderTests.cs
 │   │   │   │   ├── AlphaVantageHistoricalDataProviderTests.cs
 │   │   │   │   ├── AlphaVantageSymbolSearchProviderTests.cs
@@ -11238,7 +11240,11 @@ Meridian-main
 │   │   │   │   ├── TrustedActionOriginTests.cs
 │   │   │   │   └── UiEndpointsJsonOptionsTests.cs
 │   │   │   ├── AlpacaMarketDataSandboxTests.cs
+│   │   │   ├── AlpacaOptionsMarketDataSandboxTests.cs
 │   │   │   ├── AlpacaPaperOrderLifecycleTests.cs
+│   │   │   ├── AlpacaPaperSandboxOrderLifecycleTests.cs
+│   │   │   ├── AlpacaPaperSandboxReferenceDataTests.cs
+│   │   │   ├── AlpacaPaperSandboxSupport.cs
 │   │   │   ├── AlpacaPaperSandboxTests.cs
 │   │   │   ├── ConfigurableTickerDataCollectionTests.cs
 │   │   │   ├── ConnectionRetryIntegrationTests.cs
