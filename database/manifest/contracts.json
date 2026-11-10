@@ -4702,11 +4702,7 @@
       ]
     }
   ],
-<<<<<<< HEAD
-  "fingerprint": "15239f8e1896bb8f9775c093ce27566027b3c7e2aa0ce4a95aada972a1310403",
-=======
-  "fingerprint": "6921e454f1cd7b38850402cf45a129f1b9e8c1eadf3624c4f0f61361f5320e97",
->>>>>>> origin/main
+  "fingerprint": "ed001721a77ffa39b41a651d0c5217d5a11af751ffa9de16b7365904f35667aa",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -6882,11 +6878,7 @@
         "all-contracts",
         "security-master-contracts"
       ],
-<<<<<<< HEAD
-      "fingerprint": "6e1bcbd24888ef69798c928ead52cb9be48c52e80591923269136b7b25bedfc8",
-=======
-      "fingerprint": "0f79f2f729200b8d7fbb3caa49e820a7ca10fb0360f00bf96e47dd72cfda0860",
->>>>>>> origin/main
+      "fingerprint": "96678d78cbd0e03fa83093b17b176600000d8200329068397a547970472c82b1",
       "mapped_schemas": [
         "security_master"
       ],
