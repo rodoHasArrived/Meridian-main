@@ -318,7 +318,8 @@ public sealed partial class ProviderFactory
         if (string.IsNullOrWhiteSpace(keyId) || string.IsNullOrWhiteSpace(secretKey))
             return null;
 
-        return new AlpacaSymbolSearchProvider(keyId, secretKey, httpClient: null, log: _log);
+        return new AlpacaSymbolSearchProvider(keyId, secretKey, httpClient: null, log: _log,
+            useSandbox: ResolveAlpacaTradingEnvironment(credentials) != AlpacaCredentialEnvironment.LiveEnvironment);
     }
 
     internal ISymbolSearchProvider? CreateFinnhubSearchProvider(FinnhubBackfillConfig? cfg)

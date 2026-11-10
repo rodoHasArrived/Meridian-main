@@ -28,6 +28,34 @@ internal static class AlpacaEndpoints
 }
 
 /// <summary>
+/// REST hosts for the Alpaca Trading API, which also serves the reference lookups (assets,
+/// option contracts, corporate-action announcements) that are not on the market-data host.
+/// </summary>
+/// <remarks>
+/// Paper and live credentials are separate key pairs and each authenticates only against its
+/// own host: a paper key sent to the live host is answered 401. Reference lookups therefore
+/// follow the same trading environment as the brokerage gateway rather than a fixed host.
+/// </remarks>
+internal static class AlpacaTradingApi
+{
+    /// <summary>Paper Trading API origin.</summary>
+    public const string PaperBaseUrl = "https://paper-api.alpaca.markets";
+
+    /// <summary>Live Trading API origin.</summary>
+    public const string LiveBaseUrl = "https://api.alpaca.markets";
+
+    /// <summary>Returns the Trading API origin for the selected environment.</summary>
+    public static string BaseUrl(bool useSandbox) => useSandbox ? PaperBaseUrl : LiveBaseUrl;
+
+    /// <summary>
+    /// Returns the Trading API origin for an explicit environment, or for the environment the
+    /// canonical <c>ALPACA_TRADING_ENVIRONMENT</c> contract selects (paper unless it says live).
+    /// </summary>
+    public static string ResolveBaseUrl(bool? useSandbox = null) =>
+        BaseUrl(useSandbox ?? Meridian.Core.Config.AlpacaCredentialEnvironment.Resolve().UseSandbox);
+}
+
+/// <summary>
 /// JSON action names used in Alpaca WebSocket protocol messages.
 /// </summary>
 internal static class AlpacaActions

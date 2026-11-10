@@ -14,20 +14,28 @@ namespace Meridian.Infrastructure.Adapters.Alpaca;
 /// Provides asset search for US equities with trading status information.
 /// </summary>
 /// <remarks>
+/// <para>
 /// Extends <see cref="BaseSymbolSearchProvider"/> for HTTP client management,
 /// rate limiting, disposal, and consistent error handling.
+/// </para>
+/// <para>
+/// Assets are served by the Trading API, so requests go to the paper or live Trading API host
+/// that matches the credentials' trading environment. A paper key pair is rejected by the live
+/// host, which previously left every paper-credentialed search and detail lookup empty.
+/// </para>
 /// </remarks>
 [ImplementsAdr("ADR-001", "Alpaca symbol search provider implementation")]
 public sealed class AlpacaSymbolSearchProvider : BaseSymbolSearchProvider
 {
     private readonly string? _secretKey;
+    private readonly string _tradingApiBaseUrl;
 
     public override string Name => "alpaca";
     public override string DisplayName => "Alpaca Markets";
     public override int Priority => 5;
 
     protected override string HttpClientName => HttpClientNames.AlpacaSymbolSearch;
-    protected override string BaseUrl => "https://api.alpaca.markets/v2";
+    protected override string BaseUrl => _tradingApiBaseUrl;
     protected override string ApiKeyEnvVar => "ALPACA_KEY_ID";
     protected override IReadOnlyList<string> AlternateApiKeyEnvVars => new[] { "ALPACA__KEYID" };
 
@@ -38,13 +46,24 @@ public sealed class AlpacaSymbolSearchProvider : BaseSymbolSearchProvider
     public override IReadOnlyList<string> SupportedAssetTypes => new[] { "us_equity", "crypto", "us_option", "fixed_income" };
     public override IReadOnlyList<string> SupportedExchanges => new[] { "NASDAQ", "NYSE", "ARCA", "AMEX", "BATS" };
 
+    /// <param name="keyId">Alpaca API key ID (falls back to the environment).</param>
+    /// <param name="secretKey">Alpaca API secret key (falls back to the environment).</param>
+    /// <param name="httpClient">Optional pre-built HTTP client.</param>
+    /// <param name="log">Optional logger.</param>
+    /// <param name="useSandbox">
+    /// <see langword="true"/> for the paper Trading API, <see langword="false"/> for live. When
+    /// omitted, the environment selected by <c>ALPACA_TRADING_ENVIRONMENT</c> is used (paper
+    /// unless it says live), matching the brokerage gateway.
+    /// </param>
     public AlpacaSymbolSearchProvider(
         string? keyId = null,
         string? secretKey = null,
         HttpClient? httpClient = null,
-        ILogger? log = null)
+        ILogger? log = null,
+        bool? useSandbox = null)
         : base(keyId, httpClient, log)
     {
+        _tradingApiBaseUrl = $"{AlpacaTradingApi.ResolveBaseUrl(useSandbox)}/v2";
         _secretKey = secretKey
             ?? Environment.GetEnvironmentVariable("ALPACA_SECRET_KEY")
             ?? Environment.GetEnvironmentVariable("ALPACA__SECRETKEY");
@@ -201,6 +220,11 @@ public sealed class AlpacaSymbolSearchProvider : BaseSymbolSearchProvider
     }
 
 
+    /// <remarks>
+    /// The Trading API reports the crypto order increments as JSON strings and the maintenance
+    /// margin as a JSON number; both forms are accepted so one string-encoded field cannot
+    /// discard the whole asset list.
+    /// </remarks>
     private sealed class AlpacaAsset
     {
         [JsonPropertyName("id")]
@@ -237,15 +261,19 @@ public sealed class AlpacaSymbolSearchProvider : BaseSymbolSearchProvider
         public bool Fractionable { get; set; }
 
         [JsonPropertyName("maintenance_margin_requirement")]
+        [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
         public decimal? MaintenanceMarginRequirement { get; set; }
 
         [JsonPropertyName("min_order_size")]
+        [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
         public decimal? MinOrderSize { get; set; }
 
         [JsonPropertyName("min_trade_increment")]
+        [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
         public decimal? MinTradeIncrement { get; set; }
 
         [JsonPropertyName("price_increment")]
+        [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
         public decimal? PriceIncrement { get; set; }
     }
 

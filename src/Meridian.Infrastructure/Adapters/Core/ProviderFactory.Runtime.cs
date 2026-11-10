@@ -175,10 +175,22 @@ public sealed partial class ProviderFactory
 
     internal IOptionsChainProvider CreateAlpacaOptionsProvider()
     {
-        var options = ResolveAlpacaOptions();
+        var options = ResolveAlpacaOptions(out var context);
         return new AlpacaOptionsChainProvider(Services.GetRequiredService<IHttpClientFactory>(),
-            options.KeyId, options.SecretKey, log: _log);
+            options.KeyId, options.SecretKey, log: _log,
+            useSandbox: ResolveAlpacaTradingEnvironment(context, options) != AlpacaCredentialEnvironment.LiveEnvironment);
     }
+
+    /// <summary>
+    /// The trading environment of the selected Alpaca credentials: the stored or module record's
+    /// own environment when it has one, otherwise the canonical environment contract. Every
+    /// Trading API surface (orders, assets, option contracts) must agree on it, because a key
+    /// pair authenticates only against its own environment's host.
+    /// </summary>
+    internal static string ResolveAlpacaTradingEnvironment(ICredentialContext context, AlpacaOptions? options = null)
+        => context.CredentialEnvironment is { } selectedEnvironment
+            ? AlpacaCredentialEnvironment.NormalizeTradingEnvironment(selectedEnvironment)
+            : AlpacaCredentialEnvironment.Resolve(options).Environment;
 
     internal IOptionsChainProvider CreatePolygonOptionsProvider()
     {
@@ -200,9 +212,7 @@ public sealed partial class ProviderFactory
         var options = ResolveAlpacaOptions(out var context);
         // Keep the selected credentials fixed across REST requests and WebSocket reconnects.
         // The legacy direct-construction path may still resolve environment credentials itself.
-        var environment = context.CredentialEnvironment is { } selectedEnvironment
-            ? AlpacaCredentialEnvironment.NormalizeTradingEnvironment(selectedEnvironment)
-            : AlpacaCredentialEnvironment.Resolve(options).Environment;
+        var environment = ResolveAlpacaTradingEnvironment(context, options);
         var credentials = new AlpacaCredentialSnapshot(options.KeyId, options.SecretKey, environment,
             UseSandbox: environment != AlpacaCredentialEnvironment.LiveEnvironment);
         var stream = new AlpacaTradeUpdatesClient(options, Services.GetRequiredService<ILogger<AlpacaTradeUpdatesClient>>(),
