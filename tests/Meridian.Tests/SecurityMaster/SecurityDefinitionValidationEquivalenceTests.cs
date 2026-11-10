@@ -99,6 +99,57 @@ public sealed class SecurityDefinitionValidationEquivalenceTests
         // zero must carry as a zero margin and be refused, not throw before validation runs.
         ("Cfd", "cfd_leverage_invalid", "leverage", "0"),
         ("Warrant", "warrant_multiplier_invalid", "multiplier", "-1"),
+        // ADR-027 stage 3 (S3-E): the exercise module homes the strike, right and style, and the
+        // contract multiplier joins tradingParameters for options and futures.
+        ("Option", "option_put_call_required", "putCall", "\" \""),
+        ("Option", "option_put_call_invalid", "putCall", "\"Straddle\""),
+        ("Option", "option_strike_invalid", "strike", "-1"),
+        ("Option", "option_multiplier_invalid", "multiplier", "-1"),
+        ("Future", "future_multiplier_invalid", "multiplier", "-1"),
+        ("Warrant", "warrant_type_required", "warrantType", "\" \""),
+        ("Warrant", "warrant_type_invalid", "warrantType", "\"Straddle\""),
+        ("Warrant", "warrant_strike_invalid", "strike", "-1"),
+        ("Swaption", "swaption_payer_receiver_invalid", "payerReceiver", "\"Both\""),
+        ("Swaption", "swaption_exercise_style_invalid", "exerciseStyle", "\"Asian\""),
+        ("CapFloor", "cap_floor_type_invalid", "capFloorType", "\"Corridor\""),
+        ("CapFloor", "cap_floor_cap_strike_required", "*", """{"capFloorType":"Cap","capStrike":null}"""),
+        ("CapFloor", "cap_floor_floor_strike_required", "*", """{"capFloorType":"Floor","floorStrike":null}"""),
+        ("CapFloor", "cap_floor_premium_invalid", "premiumAmount", "-1"),
+        // S3-E2: the currencyPair module homes the pair, the settlement currency and the agreed rate.
+        ("FxSpot", "fx_base_currency_required", "baseCurrency", "\" \""),
+        ("FxSpot", "fx_quote_currency_required", "quoteCurrency", "\" \""),
+        ("FxSpot", "fx_currency_pair_invalid", "*", """{"baseCurrency":"USD","quoteCurrency":"usd"}"""),
+        ("CryptoCurrency", "crypto_base_currency_required", "baseCurrency", "\" \""),
+        ("CryptoCurrency", "crypto_quote_currency_required", "quoteCurrency", "\" \""),
+        ("CryptoCurrency", "crypto_currency_pair_invalid", "*", """{"baseCurrency":"BTC","quoteCurrency":"btc"}"""),
+        ("FxForward", "fx_forward_base_currency_required", "baseCurrency", "\" \""),
+        ("FxForward", "fx_forward_quote_currency_required", "quoteCurrency", "\" \""),
+        ("FxForward", "fx_forward_currency_pair_invalid", "*", """{"baseCurrency":"USD","quoteCurrency":"usd"}"""),
+        ("FxForward", "fx_forward_rate_invalid", "forwardRate", "-1"),
+        ("NonDeliverableForward", "ndf_base_currency_required", "baseCurrency", "\" \""),
+        ("NonDeliverableForward", "ndf_quote_currency_required", "quoteCurrency", "\" \""),
+        ("NonDeliverableForward", "ndf_settlement_currency_required", "settlementCurrency", "\" \""),
+        ("NonDeliverableForward", "ndf_currency_pair_invalid", "*", """{"baseCurrency":"USD","quoteCurrency":"usd"}"""),
+        ("NonDeliverableForward", "ndf_rate_invalid", "forwardRate", "-1"),
+        // S3-E3: the notional module homes contract notionals, denominations and commitment amounts.
+        ("FxForward", "fx_forward_notional_invalid", "notional", "-1"),
+        ("NonDeliverableForward", "ndf_notional_invalid", "notional", "-1"),
+        ("CreditDefaultSwap", "cds_notional_invalid", "notional", "-1"),
+        ("Swaption", "swaption_notional_invalid", "notional", "-1"),
+        ("CapFloor", "cap_floor_notional_invalid", "notional", "-1"),
+        ("StructuredNote", "structured_note_denomination_invalid", "denomination", "-1"),
+        ("PrivateFundInterest", "private_fund_commitment_invalid", "commitment", "-1"),
+        ("PrivateFundInterest", "private_fund_funded_invalid", "fundedAmount", "-1"),
+        ("PrivateFundInterest", "private_fund_unfunded_invalid", "unfundedAmount", "-1"),
+        ("CommitmentGuarantee", "commitment_guarantee_amount_invalid", "committedAmount", "-1"),
+        ("CommitmentGuarantee", "commitment_guarantee_exposure_invalid", "unfundedAmount", "-1"),
+        // S3-E4: the profileEnvelope module carries the envelope and its governed document. The
+        // twin pins a profile that resolves to StructuredCredit; repinning it to one that does not
+        // leaves the securitized category noncanonical.
+        ("CustomAsset", "custom_asset_profile_version_missing", "profileVersion", "null"),
+        ("CustomAsset", "custom_asset_profile_version_invalid", "profileVersion", "1.5"),
+        ("CustomAsset", "custom_asset_profile_fields_missing", "profileFields", "null"),
+        ("CustomAsset", "custom_asset_securitized_noncanonical", "customProfileId", "\"co-invest-spv\""),
         ("CapFloor", "cap_floor_reference_index_required", "referenceIndex", "\" \""),
         ("CapFloor", "cap_floor_strike_order_invalid", "floorStrike", "99999"),
         ("CapFloor", "cap_floor_date_range_invalid", "effectiveDate", "\"2999-01-01\""),
@@ -163,6 +214,14 @@ public sealed class SecurityDefinitionValidationEquivalenceTests
                 "structured_credit_factor_schedule_invalid",
                 "structured_credit_factor_schedule_duplicate_date",
                 "structured_credit_factor_schedule_not_monotonic"
+            ],
+            // A blank profile id reads as the OtherSecurity salvage, and a non-object or
+            // unparseable document never reaches a CustomAsset kind through the codec.
+            ["CustomAsset"] =
+            [
+                "custom_asset_profile_required",
+                "custom_asset_terms_required",
+                "custom_asset_terms_invalid"
             ]
         };
 
