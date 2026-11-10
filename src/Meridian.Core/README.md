@@ -11,6 +11,8 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Core
 
+`Meridian.Core.Currency.CurrencyMinorUnits.GetPrecision` delegates to `Meridian.Contracts.Ledger.CurrencyMinorUnits`, so the ISO 4217 minor-unit table is maintained in one place.
+
 `ProviderConnectionsConfig.RuntimeCredentials` holds optional explicit host defaults keyed by
 canonical provider and retained tenant/connection identity. It is additive and omitted when absent;
 Application owns validation and resolution. It contains no secrets and confers no verification.

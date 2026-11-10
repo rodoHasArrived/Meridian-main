@@ -17,8 +17,9 @@ public sealed class LeaseManagerTests
         try
         {
             var config = CreateConfig(tempDir, leaseTtlSeconds: 5, renewIntervalSeconds: 30, takeoverDelaySeconds: 1);
-            var store1 = new SharedStorageCoordinationStore(config, tempDir);
-            var store2 = new SharedStorageCoordinationStore(config, tempDir);
+            var clock = new ManualClock(new DateTimeOffset(2026, 11, 4, 15, 0, 0, TimeSpan.Zero));
+            var store1 = new SharedStorageCoordinationStore(config, tempDir, clock);
+            var store2 = new SharedStorageCoordinationStore(config, tempDir, clock);
 
             await using var manager1 = new LeaseManager(config with { InstanceId = "instance-a" }, store1);
             await using var manager2 = new LeaseManager(config with { InstanceId = "instance-b" }, store2);
@@ -31,7 +32,7 @@ public sealed class LeaseManagerTests
             var initialLease = await store1.GetLeaseAsync(resourceId);
             initialLease.Should().NotBeNull();
 
-            await Task.Delay(1100);
+            clock.Advance(TimeSpan.FromSeconds(1.1));
             var renewed = await manager1.RenewAsync(resourceId);
             renewed.Should().BeTrue();
 
@@ -63,7 +64,8 @@ public sealed class LeaseManagerTests
         try
         {
             var config = CreateConfig(tempDir, leaseTtlSeconds: 1, renewIntervalSeconds: 30, takeoverDelaySeconds: 1);
-            var store = new SharedStorageCoordinationStore(config, tempDir);
+            var clock = new ManualClock(new DateTimeOffset(2026, 11, 4, 15, 0, 0, TimeSpan.Zero));
+            var store = new SharedStorageCoordinationStore(config, tempDir, clock);
             const string resourceId = "jobs/job-123";
 
             var first = await store.TryAcquireLeaseAsync(
@@ -74,7 +76,7 @@ public sealed class LeaseManagerTests
 
             first.Acquired.Should().BeTrue();
 
-            await Task.Delay(TimeSpan.FromSeconds(config.LeaseTtlSeconds + config.TakeoverDelaySeconds + 1));
+            clock.Advance(TimeSpan.FromSeconds(config.LeaseTtlSeconds + config.TakeoverDelaySeconds + 1));
 
             var takeover = await store.TryAcquireLeaseAsync(
                 resourceId,
@@ -345,5 +347,15 @@ public sealed class LeaseManagerTests
 
         public Task<IReadOnlyList<string>> GetCorruptedLeaseFilesAsync(CancellationToken ct = default)
             => Task.FromResult<IReadOnlyList<string>>(Array.Empty<string>());
+    }
+
+    /// <summary>Lease expiry is decided by the store's clock, so tests advance time instead of sleeping.</summary>
+    private sealed class ManualClock(DateTimeOffset start) : TimeProvider
+    {
+        private DateTimeOffset _now = start;
+
+        public override DateTimeOffset GetUtcNow() => _now;
+
+        public void Advance(TimeSpan by) => _now += by;
     }
 }
