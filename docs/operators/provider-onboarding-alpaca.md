@@ -54,7 +54,9 @@ $env:MDC_ALPACA_FEED = "iex"
 Trading API surface, not only orders: asset search, option contract discovery and corporate-action
 announcements are sent to the paper or live Trading API host of the selected credentials, because
 a paper key pair is refused by the live host and the reverse. A stored credential record's own
-environment takes precedence over the variable. The separate
+environment takes precedence over the variable. When neither names an environment, order routing
+defaults to paper, while those reference lookups keep the live host they always used unless the
+key ID is a paper key (`PK…`); set the variable to make every surface agree. The separate
 `MDC_ALPACA_SANDBOX` override sets `Alpaca:UseSandbox` for the configured market-data client.
 `ALPACA_PAPER` is not recognized. See the [environment reference](../reference/environment-variables.md#alpaca-provider)
 for exact names, defaults, and credential precedence.
