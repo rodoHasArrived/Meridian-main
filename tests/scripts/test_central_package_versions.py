@@ -81,8 +81,8 @@ class CentralPackageVersionTests(unittest.TestCase):
                 self.assertNotEqual(self.versions[package], "2.5.17677")
 
     def test_aspnet_test_host_has_central_pin(self) -> None:
-        self.assertEqual(self.versions["Microsoft.AspNetCore.Mvc.Testing"], "9.0.15")
-        self.assertEqual(self.versions["Microsoft.AspNetCore.TestHost"], "9.0.15")
+        self.assertEqual(self.versions["Microsoft.AspNetCore.Mvc.Testing"], "10.0.14")
+        self.assertEqual(self.versions["Microsoft.AspNetCore.TestHost"], "10.0.14")
 
     def test_security_transitive_pins_cover_current_audit_fixes(self) -> None:
         self.assertEqual(self.properties["CentralPackageTransitivePinningEnabled"], "true")
