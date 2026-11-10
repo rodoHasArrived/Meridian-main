@@ -1046,10 +1046,14 @@ public sealed class PaperTradingPortfolioMarginRulesTests
         var boughtAt = new DateTimeOffset(2026, 11, 1, 12, 0, 0, TimeSpan.Zero);
         var accruedAt = boughtAt.AddDays(days);
         var buy = BuildFill("AAPL", OrderSide.Buy, qty: 100, price: 200m) with { Timestamp = boughtAt };
-        var partialSale = BuildFill("AAPL", OrderSide.Sell, qty: 40, price: 200m)
-            with { Timestamp = accruedAt.AddMinutes(1) };
-        var finalSale = BuildFill("AAPL", OrderSide.Sell, qty: 60, price: 200m)
-            with { Timestamp = accruedAt.AddMinutes(2) };
+        var partialSale = BuildFill("AAPL", OrderSide.Sell, qty: 40, price: 200m) with
+        {
+            Timestamp = accruedAt.AddMinutes(1)
+        };
+        var finalSale = BuildFill("AAPL", OrderSide.Sell, qty: 60, price: 200m) with
+        {
+            Timestamp = accruedAt.AddMinutes(2)
+        };
 
         var originalTrace = RunScenario();
         // Reconstruct the same explicit operations in fresh books twice. This is operation
