@@ -4030,12 +4030,6 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
-      "target": "contract:Meridian.Contracts.DirectLending.ApplyUnappliedCashRequest"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.ApplyWriteOffRequest"
     },
     {
@@ -4277,12 +4271,6 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.ExcessPaymentApplication"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:all-contracts",
-      "target": "contract:Meridian.Contracts.DirectLending.ExcessPaymentRuleNotes"
     },
     {
       "kind": "contract-set-member",
@@ -4535,12 +4523,6 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.RecordIndexFixingRequest"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:all-contracts",
-      "target": "contract:Meridian.Contracts.DirectLending.RefundUnappliedCashRequest"
     },
     {
       "kind": "contract-set-member",
@@ -20206,12 +20188,6 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:direct-lending-contracts",
-      "target": "contract:Meridian.Contracts.DirectLending.ApplyUnappliedCashRequest"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:direct-lending-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.ApplyWriteOffRequest"
     },
     {
@@ -20453,12 +20429,6 @@
       "label": "",
       "source": "contract-set:direct-lending-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.ExcessPaymentApplication"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:direct-lending-contracts",
-      "target": "contract:Meridian.Contracts.DirectLending.ExcessPaymentRuleNotes"
     },
     {
       "kind": "contract-set-member",
@@ -20711,12 +20681,6 @@
       "label": "",
       "source": "contract-set:direct-lending-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.RecordIndexFixingRequest"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:direct-lending-contracts",
-      "target": "contract:Meridian.Contracts.DirectLending.RefundUnappliedCashRequest"
     },
     {
       "kind": "contract-set-member",
@@ -31143,12 +31107,6 @@
     {
       "kind": "contract-reference",
       "label": "",
-      "source": "contract:Meridian.Contracts.DirectLending.ApplyUnappliedCashRequest",
-      "target": "contract:Meridian.Contracts.DirectLending.PaymentBreakdownDto"
-    },
-    {
-      "kind": "contract-reference",
-      "label": "",
       "source": "contract:Meridian.Contracts.DirectLending.CashTransactionDto",
       "target": "contract:Meridian.Contracts.DirectLending.CurrencyCode"
     },
@@ -31535,12 +31493,6 @@
       "label": "",
       "source": "contract:Meridian.Contracts.DirectLending.LoanTermsVersionDto",
       "target": "contract:Meridian.Contracts.DirectLending.DirectLendingTermsDto"
-    },
-    {
-      "kind": "contract-reference",
-      "label": "",
-      "source": "contract:Meridian.Contracts.DirectLending.MixedPaymentResolutionDto",
-      "target": "contract:Meridian.Contracts.DirectLending.ExcessPaymentApplication"
     },
     {
       "kind": "contract-reference",
@@ -56987,7 +56939,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "9fcc84d884d69e3234dc40c872cc1a949adbab62e49bc523e6afd09499b8d558",
+  "fingerprint": "8e7642d17a66b1b163d3667c02c36ebaa53579090e0dd9868cdcfc31353673c6",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -61068,12 +61020,6 @@
     },
     {
       "classification": "request",
-      "id": "contract:Meridian.Contracts.DirectLending.ApplyUnappliedCashRequest",
-      "kind": "contract-type",
-      "label": "Meridian.Contracts.DirectLending.ApplyUnappliedCashRequest"
-    },
-    {
-      "classification": "request",
       "id": "contract:Meridian.Contracts.DirectLending.ApplyWriteOffRequest",
       "kind": "contract-type",
       "label": "Meridian.Contracts.DirectLending.ApplyWriteOffRequest"
@@ -61317,12 +61263,6 @@
       "id": "contract:Meridian.Contracts.DirectLending.ExcessPaymentApplication",
       "kind": "contract-type",
       "label": "Meridian.Contracts.DirectLending.ExcessPaymentApplication"
-    },
-    {
-      "classification": "class",
-      "id": "contract:Meridian.Contracts.DirectLending.ExcessPaymentRuleNotes",
-      "kind": "contract-type",
-      "label": "Meridian.Contracts.DirectLending.ExcessPaymentRuleNotes"
     },
     {
       "classification": "dto",
@@ -61575,12 +61515,6 @@
       "id": "contract:Meridian.Contracts.DirectLending.RecordIndexFixingRequest",
       "kind": "contract-type",
       "label": "Meridian.Contracts.DirectLending.RecordIndexFixingRequest"
-    },
-    {
-      "classification": "request",
-      "id": "contract:Meridian.Contracts.DirectLending.RefundUnappliedCashRequest",
-      "kind": "contract-type",
-      "label": "Meridian.Contracts.DirectLending.RefundUnappliedCashRequest"
     },
     {
       "classification": "request",
@@ -83456,11 +83390,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3634,
-    "contract_set_memberships": 4544,
-    "edges": 9469,
+    "contract_references": 3632,
+    "contract_set_memberships": 4538,
+    "edges": 9461,
     "foreign_keys": 156,
     "logical_references": 6,
-    "nodes": 4591
+    "nodes": 4588
   }
 }
