@@ -69,6 +69,22 @@ public static class BondExerciseNoticeWatch
     /// </summary>
     public static BondExerciseNoticeWatchResult Evaluate(SecurityDetailDto security, IBusinessDayCalendarSource? calendars,
         DateOnly asOf, int horizonDays = DefaultHorizonDays)
+        => EvaluateGuarded(security, calendars, asOf, horizonDays);
+
+    /// <summary>
+    /// Lists every notice window whose exercise date is on or after <paramref name="asOf"/>, with no horizon:
+    /// the same preconditions, scenarios, dates and classification as <see cref="Evaluate"/>, without its
+    /// horizon bound or filter. The result's <see cref="BondExerciseNoticeWatchResult.HorizonDays"/> is the
+    /// number of days from <paramref name="asOf"/> to the retained maturity, or 0 on a result blocked before
+    /// the maturity is read. For consumers that lay out a bond's whole remaining life, such as the asset
+    /// operations obligation timeline.
+    /// </summary>
+    public static BondExerciseNoticeWatchResult EvaluateToMaturity(SecurityDetailDto security,
+        IBusinessDayCalendarSource? calendars, DateOnly asOf)
+        => EvaluateGuarded(security, calendars, asOf, null);
+
+    private static BondExerciseNoticeWatchResult EvaluateGuarded(SecurityDetailDto security,
+        IBusinessDayCalendarSource? calendars, DateOnly asOf, int? horizonDays)
     {
         ArgumentNullException.ThrowIfNull(security);
         // Retained-data refusals stay actionable blocked results, as in bond analytics, rather than faults.
@@ -78,11 +94,11 @@ public static class BondExerciseNoticeWatch
         }
         catch (SecurityScheduleValidationException exception)
         {
-            return Blocked(security, asOf, horizonDays, "InvalidEconomicSchedule", exception.Message);
+            return Blocked(security, asOf, horizonDays ?? 0, "InvalidEconomicSchedule", exception.Message);
         }
         catch (ArithmeticException)
         {
-            return Blocked(security, asOf, horizonDays, "CalculationBoundsExceeded",
+            return Blocked(security, asOf, horizonDays ?? 0, "CalculationBoundsExceeded",
                 "Bond inputs exceed the supported decimal calculation bounds.");
         }
     }
@@ -93,10 +109,11 @@ public static class BondExerciseNoticeWatch
         => new(security.SecurityId, security.Version, asOf, horizonDays, [], [new(code, reason)], [AuthorityDiagnostic]);
 
     private static BondExerciseNoticeWatchResult EvaluateCore(SecurityDetailDto security, IBusinessDayCalendarSource? calendars,
-        DateOnly asOf, int horizonDays)
+        DateOnly asOf, int? horizonDays)
     {
-        BondExerciseNoticeWatchResult Refuse(string code, string reason) => Blocked(security, asOf, horizonDays, code, reason);
+        BondExerciseNoticeWatchResult Refuse(string code, string reason) => Blocked(security, asOf, horizonDays ?? 0, code, reason);
 
+        // A null horizon is the to-maturity read: no bound to validate and no window filtered out.
         if (horizonDays is < 1 or > MaxHorizonDays)
             return Refuse("InvalidHorizon", $"The notice horizon must be between 1 and {MaxHorizonDays} days.");
         if (!SecurityAssetClassCatalog.GetOrDefault(security.AssetClass).CarriesBondCouponStructure)
@@ -145,13 +162,13 @@ public static class BondExerciseNoticeWatch
                 out var scenarios, out refusal))
             return Refuse("ExerciseScheduleRefused", refusal!);
 
-        var horizonEnd = asOf.AddDays(horizonDays);
+        DateOnly? horizonEnd = horizonDays is { } days ? asOf.AddDays(days) : null;
         var windows = new List<BondExerciseNoticeWindow>();
         foreach (var scenario in scenarios.Where(item => item.ExerciseDate >= asOf))
         {
             var status = Classify(scenario, asOf);
             var anchor = scenario.EarliestNoticeDate ?? scenario.LatestNoticeDate ?? scenario.ExerciseDate;
-            if (status != BondExerciseNoticeStatus.DeadlineElapsed && anchor > horizonEnd)
+            if (status != BondExerciseNoticeStatus.DeadlineElapsed && horizonEnd is { } end && anchor > end)
                 continue;
             int? daysToDeadline = scenario.LatestNoticeDate is { } latest ? latest.DayNumber - asOf.DayNumber : null;
             windows.Add(new(scenario.Kind, scenario.ExerciseDate, scenario.RedemptionPrice, scenario.EarliestNoticeDate,
@@ -166,7 +183,8 @@ public static class BondExerciseNoticeWatch
         var diagnostics = new List<string> { AuthorityDiagnostic };
         if (ordered.Any(static window => window.Status == BondExerciseNoticeStatus.DeadlineElapsed))
             diagnostics.Add(ElapsedDiagnostic);
-        return new(security.SecurityId, security.Version, asOf, horizonDays, ordered, [], diagnostics);
+        return new(security.SecurityId, security.Version, asOf, horizonDays ?? maturity.DayNumber - asOf.DayNumber,
+            ordered, [], diagnostics);
     }
 
     private static BondExerciseNoticeStatus Classify(BondRedemptionScenario scenario, DateOnly asOf)

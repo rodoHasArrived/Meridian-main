@@ -58,7 +58,13 @@ module SecurityMaster =
         @ requireNotBlank "source_system_required" "SourceSystem" provenance.SourceSystem
         @ requireNotBlank "updated_by_required" "UpdatedBy" provenance.UpdatedBy
 
-    let private validateKindTerms (kind: SecurityKind) =
+    /// ADR-027 stage 2 (S2-B2): the kind rules whose subject data has NO module home — the exact
+    /// complement of definitionExpressibleCodes. The expressible rules moved to
+    /// validateDefinitionTerms, which validateKindTerms now composes with this remainder, so the
+    /// definition surface is authoritative for the 54 ledgered codes on every write while nothing
+    /// is checked twice. A rule leaves this function only by gaining a module home and a ledger
+    /// entry; the equivalence suite's mutation table keeps the partition honest.
+    let private validateCodecOnlyKindTerms (kind: SecurityKind) =
         match kind with
         | SecurityKind.Equity _ -> []
         | SecurityKind.Option terms ->
@@ -81,8 +87,6 @@ module SecurityMaster =
                 (error "bond_securitized_subclass_noncanonical" "Securitized products must be modeled as StructuredCredit, not Bond.")
             @ require (not (Meridian.Contracts.SecurityMaster.SecurityCanonicalAssetHomes.IsBankLoanLabel(BondSubclass.label terms.Subclass)))
                 (error "bond_bank_loan_subclass_noncanonical" "Bank loans must be modeled as DirectLoan, not Bond.")
-            @ require (BondTerms.couponRate terms |> Option.forall (fun rate -> rate >= 0m))
-                (error "bond_coupon_invalid" "Bond coupon rate must be zero or greater when present.")
             @ require (terms.PrincipalSchedule |> List.forall (fun entry -> entry.Amount > 0m))
                 (error "bond_principal_schedule_invalid" "Bond principal schedule amounts must be greater than zero.")
             @ require
@@ -159,47 +163,18 @@ module SecurityMaster =
                 (error "fx_currency_pair_invalid" "BaseCurrency and QuoteCurrency must differ.")
         | SecurityKind.Deposit terms ->
             []
-            @ requireNotBlank "deposit_type_required" "DepositType" terms.DepositType
-            @ requireNotBlank "deposit_institution_required" "InstitutionName" terms.InstitutionName
-            @ require (terms.InterestRate |> Option.forall (fun rate -> rate >= 0m))
-                (error "deposit_interest_rate_invalid" "Deposit InterestRate must be zero or greater when present.")
         | SecurityKind.MoneyMarketFund terms ->
             []
-            @ require (terms.WeightedAverageMaturityDays |> Option.forall (fun days -> days >= 0))
-                (error "mmf_wam_invalid" "MoneyMarketFund WeightedAverageMaturityDays must be zero or greater when present.")
         | SecurityKind.CertificateOfDeposit terms ->
             []
-            @ requireNotBlank "cd_issuer_required" "IssuerName" terms.IssuerName
-            @ require (terms.CouponRate |> Option.forall (fun rate -> rate >= 0m))
-                (error "cd_coupon_invalid" "CertificateOfDeposit CouponRate must be zero or greater when present.")
-            @ require (terms.CallableDate |> Option.forall (fun callableDate -> callableDate <= terms.Maturity))
-                (error "cd_callable_date_invalid" "CertificateOfDeposit CallableDate must be on or before Maturity when present.")
         | SecurityKind.CommercialPaper terms ->
             []
-            @ requireNotBlank "commercial_paper_issuer_required" "IssuerName" terms.IssuerName
-            @ require (terms.DiscountRate |> Option.forall (fun rate -> rate >= 0m))
-                (error "commercial_paper_discount_rate_invalid" "CommercialPaper DiscountRate must be zero or greater when present.")
         | SecurityKind.TreasuryBill terms ->
             []
-            @ require (terms.AuctionDate |> Option.forall (fun auctionDate -> auctionDate <= terms.Maturity))
-                (error "treasury_bill_auction_date_invalid" "TreasuryBill AuctionDate must be on or before Maturity when present.")
-            @ require (terms.DiscountRate |> Option.forall (fun rate -> rate >= 0m))
-                (error "treasury_bill_discount_rate_invalid" "TreasuryBill DiscountRate must be zero or greater when present.")
         | SecurityKind.Repo terms ->
             []
-            @ requireNotBlank "repo_counterparty_required" "Counterparty" terms.Counterparty
-            @ require (terms.StartDate <= terms.EndDate)
-                (error "repo_date_range_invalid" "Repo StartDate must be on or before EndDate.")
-            @ require (terms.RepoRate |> Option.forall (fun rate -> rate >= 0m))
-                (error "repo_rate_invalid" "Repo RepoRate must be zero or greater when present.")
-            @ require (terms.Haircut |> Option.forall (fun haircut -> haircut >= 0m))
-                (error "repo_haircut_invalid" "Repo Haircut must be zero or greater when present.")
         | SecurityKind.CashSweep terms ->
             []
-            @ requireNotBlank "cash_sweep_program_required" "ProgramName" terms.ProgramName
-            @ requireNotBlank "cash_sweep_vehicle_required" "SweepVehicleType" terms.SweepVehicleType
-            @ require (terms.YieldRate |> Option.forall (fun rate -> rate >= 0m))
-                (error "cash_sweep_yield_rate_invalid" "CashSweep YieldRate must be zero or greater when present.")
         | SecurityKind.OtherSecurity terms ->
             []
             @ requireNotBlank "other_security_category_required" "Category" terms.Category
@@ -207,8 +182,6 @@ module SecurityMaster =
                 (error "other_security_securitized_noncanonical" "Securitized products must be modeled as StructuredCredit, not OtherSecurity.")
         | SecurityKind.Swap terms ->
             []
-            @ require (terms.EffectiveDate <= terms.MaturityDate)
-                (error "swap_date_range_invalid" "Swap EffectiveDate must be on or before MaturityDate.")
             @ require (not terms.Legs.IsEmpty) (error "swap_legs_required" "Swap definitions must include at least one leg.")
             @ (terms.Legs
                |> List.collect (fun leg ->
@@ -243,7 +216,6 @@ module SecurityMaster =
                        (error "swap_leg_reset_schedule_order_invalid" "SwapLeg ResetSchedule dates must be strictly ascending.")))
         | SecurityKind.DirectLoan terms ->
             []
-            @ requireNotBlank "direct_loan_borrower_required" "Borrower" terms.Borrower
             @ (terms.Covenants
                |> List.collect (fun covenant ->
                    []
@@ -251,38 +223,6 @@ module SecurityMaster =
                    @ requireNotBlank "covenant_threshold_required" "Threshold" covenant.Threshold))
         | SecurityKind.StructuredCredit terms ->
             []
-            @ requireNotBlank "structured_credit_tranche_required" "Tranche" terms.Tranche
-            @ requireNotBlank "structured_credit_collateral_required" "CollateralType" terms.CollateralType
-            @ require (terms.OriginalFace > 0m)
-                (error "structured_credit_original_face_invalid" "StructuredCredit OriginalFace must be greater than zero.")
-            @ require (terms.CurrentFactor |> Option.forall (fun factor -> factor >= 0m && factor <= 1m))
-                (error "structured_credit_current_factor_invalid" "StructuredCredit CurrentFactor must be between zero and one when present — factors above one project cash flows exceeding the original principal.")
-            @ requireNotBlank "structured_credit_coupon_index_required" "CouponOrIndex" terms.CouponOrIndex
-            @ require (terms.FactorScheduleEntries |> List.forall (fun entry -> entry.Factor >= 0m && entry.Factor <= 1m))
-                (error "structured_credit_factor_schedule_invalid" "StructuredCredit factor schedule factors must be between zero and one — factors above one project cash flows exceeding the original principal.")
-            @ require
-                (terms.FactorScheduleEntries
-                 |> List.map (fun entry -> entry.AsOfDate)
-                 |> List.distinct
-                 |> List.length = List.length terms.FactorScheduleEntries)
-                (error
-                    "structured_credit_factor_schedule_duplicate_date"
-                    "StructuredCredit factor schedule dates must be unique — two factors on the same date make the effective outstanding principal depend on input ordering, and readers keep only one of them.")
-            @ require
-                (terms.FactorScheduleEntries
-                 |> List.sortBy (fun entry -> entry.AsOfDate)
-                 |> List.pairwise
-                 |> List.forall (fun (earlier, later) -> later.Factor <= earlier.Factor))
-                (error
-                    "structured_credit_factor_schedule_not_monotonic"
-                    "StructuredCredit factor schedule must be non-increasing in date order — a rising factor would grow outstanding principal, which the factor-paydown workflow treats as invalid retained evidence.")
-            @ require
-                (match terms.Maturity with
-                 | Some maturity -> terms.FactorScheduleEntries |> List.forall (fun entry -> entry.AsOfDate <= maturity)
-                 | None -> true)
-                (error
-                    "structured_credit_factor_after_maturity"
-                    "StructuredCredit factor schedule observations must fall on or before the retained maturity — a factor decline after the legal final date would emit principal paydowns for a tranche that has already reached term.")
             @ require (terms.AttachmentPoint |> Option.forall (fun point -> point >= 0m && point <= 1m))
                 (error "structured_credit_attachment_point_invalid" "StructuredCredit AttachmentPoint must be between zero and one when present — it is a fraction of the deal balance, not a percentage.")
             @ require (terms.DetachmentPoint |> Option.forall (fun point -> point >= 0m && point <= 1m))
@@ -292,12 +232,6 @@ module SecurityMaster =
                  | Some attachment, Some detachment -> attachment <= detachment
                  | _ -> true)
                 (error "structured_credit_attachment_above_detachment" "StructuredCredit AttachmentPoint must not exceed DetachmentPoint — the tranche absorbs losses from attachment up to detachment.")
-            @ require (terms.WeightedAverageCoupon |> Option.forall (fun coupon -> coupon >= 0m))
-                (error "structured_credit_weighted_average_coupon_invalid" "StructuredCredit WeightedAverageCoupon must be zero or greater when present.")
-            @ require (terms.WeightedAverageMaturityMonths |> Option.forall (fun months -> months >= 0))
-                (error "structured_credit_weighted_average_maturity_invalid" "StructuredCredit WeightedAverageMaturityMonths must be zero or greater when present.")
-            @ require (terms.WeightedAverageLoanAgeMonths |> Option.forall (fun months -> months >= 0))
-                (error "structured_credit_weighted_average_loan_age_invalid" "StructuredCredit WeightedAverageLoanAgeMonths must be zero or greater when present.")
             @ require
                 (match terms.Maturity with
                  | Some maturity ->
@@ -307,8 +241,6 @@ module SecurityMaster =
                 (error "structured_credit_period_after_maturity" "StructuredCredit reinvestment and non-call period ends must fall on or before the retained maturity.")
         | SecurityKind.PrivateFundInterest terms ->
             []
-            @ requireNotBlank "private_fund_gp_required" "GpSponsor" terms.GpSponsor
-            @ requireNotBlank "private_fund_strategy_required" "Strategy" terms.Strategy
             @ require (terms.Vintage > 0) (error "private_fund_vintage_invalid" "PrivateFundInterest Vintage must be greater than zero.")
             @ require (terms.Commitment > 0m) (error "private_fund_commitment_invalid" "PrivateFundInterest Commitment must be greater than zero.")
             @ require (terms.FundedAmount |> Option.forall (fun amount -> amount >= 0m))
@@ -317,9 +249,6 @@ module SecurityMaster =
                 (error "private_fund_unfunded_invalid" "PrivateFundInterest UnfundedAmount must be zero or greater when present.")
         | SecurityKind.PrivateCompanyEquity terms ->
             []
-            @ requireNotBlank "private_company_issuer_required" "Issuer" terms.Issuer
-            @ requireNotBlank "private_company_share_class_required" "ShareClass" terms.ShareClass
-            @ requireNotBlank "private_company_round_required" "Round" terms.Round
             @ require (terms.OwnershipPercent |> Option.forall (fun percent -> percent >= 0m))
                 (error "private_company_ownership_invalid" "PrivateCompanyEquity OwnershipPercent must be zero or greater when present.")
             @ require (terms.CostBasis > 0m) (error "private_company_cost_basis_invalid" "PrivateCompanyEquity CostBasis must be greater than zero.")
@@ -327,18 +256,14 @@ module SecurityMaster =
                 (error "private_company_valuation_invalid" "PrivateCompanyEquity LatestValuation must be zero or greater when present.")
         | SecurityKind.RealEstateHolding terms ->
             []
-            @ requireNotBlank "real_estate_property_type_required" "PropertyType" terms.PropertyType
             @ requireNotBlank "real_estate_market_required" "AddressOrMarket" terms.AddressOrMarket
             @ require (terms.OwnershipPercent > 0m) (error "real_estate_ownership_invalid" "RealEstateHolding OwnershipPercent must be greater than zero.")
             @ require (terms.AppraisalValue > 0m) (error "real_estate_appraisal_invalid" "RealEstateHolding AppraisalValue must be greater than zero.")
         | SecurityKind.CommitmentGuarantee terms ->
             []
-            @ requireNotBlank "commitment_guarantee_counterparty_required" "Counterparty" terms.Counterparty
             @ require (terms.CommittedAmount > 0m) (error "commitment_guarantee_amount_invalid" "CommitmentGuarantee CommittedAmount must be greater than zero.")
             @ require (terms.UnfundedAmount |> Option.forall (fun amount -> amount >= 0m))
                 (error "commitment_guarantee_exposure_invalid" "CommitmentGuarantee UnfundedAmount must be zero or greater when present.")
-            @ require (terms.ExpiryDate |> Option.forall (fun expiry -> terms.EffectiveDate <= expiry))
-                (error "commitment_guarantee_date_range_invalid" "CommitmentGuarantee EffectiveDate must be on or before ExpiryDate when present.")
             @ require (terms.FeeRate |> Option.forall (fun rate -> rate >= 0m))
                 (error "commitment_guarantee_fee_invalid" "CommitmentGuarantee FeeRate must be zero or greater when present.")
             @ (terms.Covenants
@@ -349,8 +274,6 @@ module SecurityMaster =
         | SecurityKind.Commodity terms ->
             []
             @ requireNotBlank "commodity_type_required" "CommodityType" terms.CommodityType
-            @ require (terms.ContractSize |> Option.forall (fun size -> size > 0m))
-                (error "commodity_contract_size_invalid" "Commodity ContractSize must be greater than zero when present.")
         | SecurityKind.CryptoCurrency terms ->
             []
             @ requireNotBlank "crypto_base_currency_required" "BaseCurrency" terms.BaseCurrency
@@ -360,8 +283,6 @@ module SecurityMaster =
         | SecurityKind.Cfd terms ->
             []
             @ requireNotBlank "cfd_underlying_asset_class_required" "UnderlyingAssetClass" terms.UnderlyingAssetClass
-            @ require (terms.Leverage |> Option.forall (fun l -> l > 0m))
-                (error "cfd_leverage_invalid" "CFD Leverage must be greater than zero when present.")
         | SecurityKind.Warrant terms ->
             []
             @ requireNotBlank "warrant_type_required" "WarrantType" terms.WarrantType
@@ -371,8 +292,6 @@ module SecurityMaster =
                 (error "warrant_type_invalid" "Warrant WarrantType must be either 'Call' or 'Put'.")
             @ require (terms.Strike |> Option.forall (fun s -> s > 0m))
                 (error "warrant_strike_invalid" "Warrant Strike must be greater than zero when present.")
-            @ require (terms.Multiplier |> Option.forall (fun m -> m > 0m))
-                (error "warrant_multiplier_invalid" "Warrant Multiplier must be greater than zero when present.")
         | SecurityKind.FxForward terms ->
             []
             @ requireNotBlank "fx_forward_base_currency_required" "BaseCurrency" terms.BaseCurrency
@@ -383,8 +302,6 @@ module SecurityMaster =
                 (error "fx_forward_notional_invalid" "FxForward Notional must be greater than zero when present.")
             @ require (terms.ForwardRate |> Option.forall (fun r -> r > 0m))
                 (error "fx_forward_rate_invalid" "FxForward ForwardRate must be greater than zero when present.")
-            @ require (terms.TradeDate |> Option.forall (fun tradeDate -> tradeDate <= terms.ValueDate))
-                (error "fx_forward_trade_date_invalid" "FxForward TradeDate must be on or before ValueDate when present.")
         | SecurityKind.NonDeliverableForward terms ->
             []
             @ requireNotBlank "ndf_base_currency_required" "BaseCurrency" terms.BaseCurrency
@@ -396,8 +313,6 @@ module SecurityMaster =
                 (error "ndf_notional_invalid" "NonDeliverableForward Notional must be greater than zero when present.")
             @ require (terms.ForwardRate |> Option.forall (fun r -> r > 0m))
                 (error "ndf_rate_invalid" "NonDeliverableForward ForwardRate must be greater than zero when present.")
-            @ require (terms.FixingDate <= terms.ValueDate)
-                (error "ndf_fixing_date_invalid" "NonDeliverableForward FixingDate must be on or before ValueDate.")
         | SecurityKind.CreditDefaultSwap terms ->
             []
             @ requireNotBlank "cds_reference_entity_required" "ReferenceEntity" terms.ReferenceEntity
@@ -407,10 +322,6 @@ module SecurityMaster =
                 (error "cds_protection_side_invalid" "CreditDefaultSwap ProtectionSide must be either 'Buy' or 'Sell'.")
             @ require (terms.Notional > 0m)
                 (error "cds_notional_invalid" "CreditDefaultSwap Notional must be greater than zero.")
-            @ require (terms.FixedCouponBps >= 0m)
-                (error "cds_fixed_coupon_invalid" "CreditDefaultSwap FixedCouponBps must be zero or greater.")
-            @ require (terms.EffectiveDate <= terms.MaturityDate)
-                (error "cds_date_range_invalid" "CreditDefaultSwap EffectiveDate must be on or before MaturityDate.")
             @ require (terms.RecoveryRateAssumption |> Option.forall (fun r -> r >= 0m && r <= 1m))
                 (error "cds_recovery_rate_invalid" "CreditDefaultSwap RecoveryRateAssumption must be between 0 and 1 when present.")
         | SecurityKind.Swaption terms ->
@@ -434,28 +345,17 @@ module SecurityMaster =
             []
             @ require (isType "Cap" || isType "Floor" || isType "Collar")
                 (error "cap_floor_type_invalid" "CapFloor CapFloorType must be Cap, Floor or Collar.")
-            @ requireNotBlank "cap_floor_reference_index_required" "ReferenceIndex" terms.ReferenceIndex
             @ require (not (isType "Cap" || isType "Collar") || terms.CapStrike.IsSome)
                 (error "cap_floor_cap_strike_required" "CapFloor CapStrike is required for a Cap or Collar.")
             @ require (not (isType "Floor" || isType "Collar") || terms.FloorStrike.IsSome)
                 (error "cap_floor_floor_strike_required" "CapFloor FloorStrike is required for a Floor or Collar.")
-            @ require
-                (match terms.FloorStrike, terms.CapStrike with
-                 | Some floor, Some cap -> floor <= cap
-                 | _ -> true)
-                (error "cap_floor_strike_order_invalid" "CapFloor FloorStrike must be at or below CapStrike when both are present.")
             @ require (terms.Notional > 0m)
                 (error "cap_floor_notional_invalid" "CapFloor Notional must be greater than zero.")
-            @ require (terms.EffectiveDate <= terms.MaturityDate)
-                (error "cap_floor_date_range_invalid" "CapFloor EffectiveDate must be on or before MaturityDate.")
             @ require (terms.PremiumAmount |> Option.forall (fun premium -> premium >= 0m))
                 (error "cap_floor_premium_invalid" "CapFloor PremiumAmount must be zero or greater when present.")
         | SecurityKind.StructuredNote terms ->
             []
-            @ requireNotBlank "structured_note_issuer_required" "IssuerName" terms.IssuerName
             @ requireNotBlank "structured_note_underlying_required" "UnderlyingDescription" terms.UnderlyingDescription
-            @ require (terms.IssueDate |> Option.forall (fun issueDate -> issueDate <= terms.Maturity))
-                (error "structured_note_issue_date_invalid" "StructuredNote IssueDate must be on or before Maturity when present.")
             @ require (terms.Denomination |> Option.forall (fun d -> d > 0m))
                 (error "structured_note_denomination_invalid" "StructuredNote Denomination must be greater than zero when present.")
             @ require (terms.PrincipalProtectionPct |> Option.forall (fun p -> p >= 0m && p <= 1m))
@@ -464,8 +364,6 @@ module SecurityMaster =
                 (error "structured_note_participation_invalid" "StructuredNote ParticipationRate must be zero or greater when present.")
             @ require (terms.ReturnCap |> Option.forall (fun c -> c >= 0m))
                 (error "structured_note_return_cap_invalid" "StructuredNote ReturnCap must be zero or greater when present.")
-            @ require (terms.CouponRate |> Option.forall (fun c -> c >= 0m))
-                (error "structured_note_coupon_invalid" "StructuredNote CouponRate must be zero or greater when present.")
             @ require (terms.BarrierLevel |> Option.forall (fun b -> b > 0m))
                 (error "structured_note_barrier_invalid" "StructuredNote BarrierLevel must be greater than zero when present.")
         | SecurityKind.InvestmentFund _ ->
@@ -530,6 +428,203 @@ module SecurityMaster =
                 (error "custom_asset_profile_version_invalid" "CustomAsset ProfileVersion must be greater than zero.")
             @ requireNotBlank "custom_asset_terms_required" "TermsJson" terms.TermsJson
             @ envelopeErrors
+
+    // ── ADR-027 stage 2 (S2-B1): the validation surface over the economic definition ────────────
+    //
+    // validateDefinitionTerms re-expresses, over SecurityTermModules, every validateKindTerms rule
+    // whose subject data has a module home under SecurityMasterLegacyUpgrade.termsFromKind. Rules
+    // are gated by the classification's TypeName exactly as validateKindTerms is gated by the kind
+    // case, so the two validators agree code-for-code on the expressible set — the equivalence the
+    // stage-2 tests pin per class. Rules whose data has no module home (an option's strike, a
+    // swap's legs, a bond's subclass/par/principal schedule, currency pairs, notionals) stay with
+    // the codec-side kind validation and are enumerated in definitionCodecOnlyCodes; the ledger
+    // shrinks as modules gain homes. Nothing on the write path calls this yet: S2-B2 moves the
+    // commands onto it.
+
+    let private moduleString (value: string option) = value |> Option.defaultValue String.Empty
+
+    let private validateDefinitionTerms (typeName: string) (modules: SecurityTermModules) =
+        let maturityDate = modules.Maturity |> Option.bind (fun m -> m.MaturityDate)
+        let effectiveDate = modules.Maturity |> Option.bind (fun m -> m.EffectiveDate)
+        let issueDate = modules.Maturity |> Option.bind (fun m -> m.IssueDate)
+        let couponRate = modules.Coupon |> Option.bind (fun c -> c.CouponRate)
+        let discountRate = modules.Discount |> Option.bind (fun d -> d.DiscountRate)
+        let yieldRate = modules.Discount |> Option.bind (fun d -> d.YieldRate)
+        let issuerName = modules.Issuer |> Option.bind (fun i -> i.IssuerName)
+        let requireOrderedWhenBoth earlier later validationError =
+            require
+                (match earlier, later with
+                 | Some earlierDate, Some laterDate -> earlierDate <= laterDate
+                 | _ -> true)
+                validationError
+        match typeName with
+        | "Bond" ->
+            []
+            @ require (couponRate |> Option.forall (fun rate -> rate >= 0m))
+                (error "bond_coupon_invalid" "Bond coupon rate must be zero or greater when present.")
+        | "CertificateOfDeposit" ->
+            []
+            @ requireNotBlank "cd_issuer_required" "IssuerName" (moduleString issuerName)
+            @ require (couponRate |> Option.forall (fun rate -> rate >= 0m))
+                (error "cd_coupon_invalid" "CertificateOfDeposit CouponRate must be zero or greater when present.")
+            @ requireOrderedWhenBoth (modules.Call |> Option.bind (fun c -> c.FirstCallDate)) maturityDate
+                (error "cd_callable_date_invalid" "CertificateOfDeposit CallableDate must be on or before Maturity when present.")
+        | "Deposit" ->
+            []
+            @ requireNotBlank "deposit_type_required" "DepositType" (moduleString (modules.Issuer |> Option.bind (fun i -> i.IssuerProgram)))
+            @ requireNotBlank "deposit_institution_required" "InstitutionName" (moduleString (modules.Issuer |> Option.bind (fun i -> i.InstitutionName)))
+            @ require (couponRate |> Option.forall (fun rate -> rate >= 0m))
+                (error "deposit_interest_rate_invalid" "Deposit InterestRate must be zero or greater when present.")
+        | "MoneyMarketFund" ->
+            []
+            @ require (modules.Fund |> Option.bind (fun f -> f.WeightedAverageMaturityDays) |> Option.forall (fun days -> days >= 0))
+                (error "mmf_wam_invalid" "MoneyMarketFund WeightedAverageMaturityDays must be zero or greater when present.")
+        | "CommercialPaper" ->
+            []
+            @ requireNotBlank "commercial_paper_issuer_required" "IssuerName" (moduleString issuerName)
+            @ require (discountRate |> Option.forall (fun rate -> rate >= 0m))
+                (error "commercial_paper_discount_rate_invalid" "CommercialPaper DiscountRate must be zero or greater when present.")
+        | "TreasuryBill" ->
+            []
+            @ requireOrderedWhenBoth (modules.Auction |> Option.bind (fun a -> a.AuctionDate)) maturityDate
+                (error "treasury_bill_auction_date_invalid" "TreasuryBill AuctionDate must be on or before Maturity when present.")
+            @ require (discountRate |> Option.forall (fun rate -> rate >= 0m))
+                (error "treasury_bill_discount_rate_invalid" "TreasuryBill DiscountRate must be zero or greater when present.")
+        | "Repo" ->
+            []
+            @ requireNotBlank "repo_counterparty_required" "Counterparty" (moduleString (modules.Financing |> Option.bind (fun f -> f.Counterparty)))
+            @ requireOrderedWhenBoth (modules.Financing |> Option.bind (fun f -> f.OpenDate)) (modules.Financing |> Option.bind (fun f -> f.CloseDate))
+                (error "repo_date_range_invalid" "Repo StartDate must be on or before EndDate.")
+            @ require (yieldRate |> Option.forall (fun rate -> rate >= 0m))
+                (error "repo_rate_invalid" "Repo RepoRate must be zero or greater when present.")
+            @ require (modules.Financing |> Option.bind (fun f -> f.Haircut) |> Option.forall (fun haircut -> haircut >= 0m))
+                (error "repo_haircut_invalid" "Repo Haircut must be zero or greater when present.")
+        | "CashSweep" ->
+            []
+            @ requireNotBlank "cash_sweep_program_required" "ProgramName" (moduleString (modules.Sweep |> Option.bind (fun s -> s.ProgramName)))
+            @ requireNotBlank "cash_sweep_vehicle_required" "SweepVehicleType"
+                (moduleString (modules.Sweep |> Option.bind (fun s -> s.SweepVehicleType) |> Option.map SweepVehicle.label))
+            @ require (yieldRate |> Option.forall (fun rate -> rate >= 0m))
+                (error "cash_sweep_yield_rate_invalid" "CashSweep YieldRate must be zero or greater when present.")
+        | "StructuredCredit" ->
+            let structured = modules.StructuredProduct
+            let factorEntries = structured |> Option.map (fun s -> s.FactorScheduleEntries) |> Option.defaultValue []
+            []
+            @ requireNotBlank "structured_credit_tranche_required" "Tranche" (moduleString (structured |> Option.bind (fun s -> s.TrancheClass)))
+            @ requireNotBlank "structured_credit_collateral_required" "CollateralType" (moduleString (structured |> Option.bind (fun s -> s.CollateralType)))
+            @ require (structured |> Option.bind (fun s -> s.NotionalBalance) |> Option.forall (fun face -> face > 0m))
+                (error "structured_credit_original_face_invalid" "StructuredCredit OriginalFace must be greater than zero.")
+            @ require (structured |> Option.bind (fun s -> s.Factor) |> Option.forall (fun factor -> factor >= 0m && factor <= 1m))
+                (error "structured_credit_current_factor_invalid" "StructuredCredit CurrentFactor must be between zero and one when present — factors above one project cash flows exceeding the original principal.")
+            @ requireNotBlank "structured_credit_coupon_index_required" "CouponOrIndex" (moduleString (modules.FloatingRate |> Option.bind (fun f -> f.ReferenceIndex)))
+            @ require (factorEntries |> List.forall (fun entry -> entry.Factor >= 0m && entry.Factor <= 1m))
+                (error "structured_credit_factor_schedule_invalid" "StructuredCredit factor schedule factors must be between zero and one — factors above one project cash flows exceeding the original principal.")
+            @ require
+                (factorEntries |> List.map (fun entry -> entry.AsOfDate) |> List.distinct |> List.length = List.length factorEntries)
+                (error
+                    "structured_credit_factor_schedule_duplicate_date"
+                    "StructuredCredit factor schedule dates must be unique — two factors on the same date make the effective outstanding principal depend on input ordering, and readers keep only one of them.")
+            @ require
+                (factorEntries
+                 |> List.sortBy (fun entry -> entry.AsOfDate)
+                 |> List.pairwise
+                 |> List.forall (fun (earlier, later) -> later.Factor <= earlier.Factor))
+                (error
+                    "structured_credit_factor_schedule_not_monotonic"
+                    "StructuredCredit factor schedule must be non-increasing in date order — a rising factor would grow outstanding principal, which the factor-paydown workflow treats as invalid retained evidence.")
+            @ require
+                (match maturityDate with
+                 | Some maturity -> factorEntries |> List.forall (fun entry -> entry.AsOfDate <= maturity)
+                 | None -> true)
+                (error
+                    "structured_credit_factor_after_maturity"
+                    "StructuredCredit factor schedule observations must fall on or before the retained maturity — a factor decline after the legal final date would emit principal paydowns for a tranche that has already reached term.")
+            @ require (structured |> Option.bind (fun s -> s.WeightedAvgCoupon) |> Option.forall (fun coupon -> coupon >= 0m))
+                (error "structured_credit_weighted_average_coupon_invalid" "StructuredCredit WeightedAverageCoupon must be zero or greater when present.")
+            @ require (structured |> Option.bind (fun s -> s.WeightedAvgMaturityMonths) |> Option.forall (fun months -> months >= 0))
+                (error "structured_credit_weighted_average_maturity_invalid" "StructuredCredit WeightedAverageMaturityMonths must be zero or greater when present.")
+            @ require (structured |> Option.bind (fun s -> s.WeightedAvgLoanAgeMos) |> Option.forall (fun months -> months >= 0))
+                (error "structured_credit_weighted_average_loan_age_invalid" "StructuredCredit WeightedAverageLoanAgeMonths must be zero or greater when present.")
+        | "Commodity" ->
+            []
+            @ require (modules.TradingParameters |> Option.bind (fun t -> t.ContractMultiplier) |> Option.forall (fun size -> size > 0m))
+                (error "commodity_contract_size_invalid" "Commodity ContractSize must be greater than zero when present.")
+        | "Cfd" ->
+            // Leverage maps to MarginRequirementPct = 1/leverage * 100 (zero carried as zero), so
+            // leverage > 0 holds exactly when the carried margin percentage is positive.
+            []
+            @ require (modules.TradingParameters |> Option.bind (fun t -> t.MarginRequirementPct) |> Option.forall (fun margin -> margin > 0m))
+                (error "cfd_leverage_invalid" "CFD Leverage must be greater than zero when present.")
+        | "Warrant" ->
+            []
+            @ require (modules.TradingParameters |> Option.bind (fun t -> t.ContractMultiplier) |> Option.forall (fun multiplier -> multiplier > 0m))
+                (error "warrant_multiplier_invalid" "Warrant Multiplier must be greater than zero when present.")
+        | "CapFloor" ->
+            []
+            @ requireNotBlank "cap_floor_reference_index_required" "ReferenceIndex" (moduleString (modules.FloatingRate |> Option.bind (fun f -> f.ReferenceIndex)))
+            @ require
+                (match modules.FloatingRate |> Option.bind (fun f -> f.FloorRate), modules.FloatingRate |> Option.bind (fun f -> f.CapRate) with
+                 | Some floor, Some cap -> floor <= cap
+                 | _ -> true)
+                (error "cap_floor_strike_order_invalid" "CapFloor FloorStrike must be at or below CapStrike when both are present.")
+            @ requireOrderedWhenBoth effectiveDate maturityDate
+                (error "cap_floor_date_range_invalid" "CapFloor EffectiveDate must be on or before MaturityDate.")
+        | "Swap" ->
+            []
+            @ requireOrderedWhenBoth effectiveDate maturityDate
+                (error "swap_date_range_invalid" "Swap EffectiveDate must be on or before MaturityDate.")
+        | "CreditDefaultSwap" ->
+            []
+            @ requireOrderedWhenBoth effectiveDate maturityDate
+                (error "cds_date_range_invalid" "CreditDefaultSwap EffectiveDate must be on or before MaturityDate.")
+            @ require (couponRate |> Option.forall (fun rate -> rate >= 0m))
+                (error "cds_fixed_coupon_invalid" "CreditDefaultSwap FixedCouponBps must be zero or greater.")
+        | "NonDeliverableForward" ->
+            []
+            @ requireOrderedWhenBoth effectiveDate maturityDate
+                (error "ndf_fixing_date_invalid" "NonDeliverableForward FixingDate must be on or before ValueDate.")
+        | "FxForward" ->
+            []
+            @ requireOrderedWhenBoth effectiveDate maturityDate
+                (error "fx_forward_trade_date_invalid" "FxForward TradeDate must be on or before ValueDate when present.")
+        | "StructuredNote" ->
+            []
+            @ requireNotBlank "structured_note_issuer_required" "IssuerName" (moduleString issuerName)
+            @ requireOrderedWhenBoth issueDate maturityDate
+                (error "structured_note_issue_date_invalid" "StructuredNote IssueDate must be on or before Maturity when present.")
+            @ require (couponRate |> Option.forall (fun rate -> rate >= 0m))
+                (error "structured_note_coupon_invalid" "StructuredNote CouponRate must be zero or greater when present.")
+        | "CommitmentGuarantee" ->
+            []
+            @ requireNotBlank "commitment_guarantee_counterparty_required" "Counterparty" (moduleString issuerName)
+            @ requireOrderedWhenBoth effectiveDate maturityDate
+                (error "commitment_guarantee_date_range_invalid" "CommitmentGuarantee EffectiveDate must be on or before ExpiryDate when present.")
+        | "DirectLoan" ->
+            []
+            @ requireNotBlank "direct_loan_borrower_required" "Borrower" (moduleString issuerName)
+        | "PrivateFundInterest" ->
+            []
+            @ requireNotBlank "private_fund_gp_required" "GpSponsor" (moduleString issuerName)
+            @ requireNotBlank "private_fund_strategy_required" "Strategy" (moduleString (modules.Issuer |> Option.bind (fun i -> i.IssuerProgram)))
+        | "PrivateCompanyEquity" ->
+            []
+            @ requireNotBlank "private_company_issuer_required" "Issuer" (moduleString issuerName)
+            @ requireNotBlank "private_company_share_class_required" "ShareClass" (moduleString (modules.EquityBehavior |> Option.bind (fun e -> e.ShareClass)))
+            @ requireNotBlank "private_company_round_required" "Round" (moduleString (modules.Issuer |> Option.bind (fun i -> i.IssuerProgram)))
+        | "RealEstateHolding" ->
+            []
+            @ requireNotBlank "real_estate_property_type_required" "PropertyType" (moduleString (modules.Issuer |> Option.bind (fun i -> i.IssuerProgram)))
+        | _ -> []
+
+    /// ADR-027 stage 2 (S2-B2): the kind rule set, recomposed. The definition surface
+    /// (validateDefinitionTerms over modulesFromKind) is authoritative for every
+    /// module-expressible code, and validateCodecOnlyKindTerms keeps the rules whose data has no
+    /// module home — the exact ledger partition, so nothing is checked twice and nothing is
+    /// dropped. Every command path (create, amend, record validation, the facade's standalone
+    /// checks) now validates through this composition.
+    let private validateKindTerms (kind: SecurityKind) =
+        validateDefinitionTerms (AssetClassRegistry.assetClassName kind) (SecurityMasterLegacyUpgrade.modulesFromKind kind)
+        @ validateCodecOnlyKindTerms kind
 
     let private validateKind (kind: SecurityKind) =
         let dayCounts =
@@ -667,6 +762,51 @@ module SecurityMaster =
     /// can be stricter than the pinned profile's (e.g. PrivateFundInterest requires a strictly
     /// positive commitment while the profile's field range starts at zero).
     let validateKindInvariants (kind: SecurityKind) = validateKind kind
+
+    /// Standalone definition-invariant validation for the stage-2 equivalence tests (and, from
+    /// S2-B2, the command write path): the module-expressible subset of the kind rule set, gated
+    /// by the classification's canonical TypeName.
+    let validateDefinitionInvariants (typeName: string) (modules: SecurityTermModules) =
+        validateDefinitionTerms typeName modules
+
+    /// Per-class ledger of validateKindTerms error codes the definition can express today. Codes
+    /// absent for a listed class — and every code of an unlisted class (Option, Future, FxSpot,
+    /// CryptoCurrency, Swaption, OtherSecurity, CustomAsset, Equity, InvestmentFund, plus the
+    /// structural Swap-leg, Bond-structure and currency-pair rules) — are codec-only: their
+    /// subject data has no module home yet, so they stay with validateKindTerms at the codec
+    /// boundary and move here only when a module gains the home.
+    let definitionExpressibleCodes : Map<string, string list> =
+        Map.ofList [
+            "Bond", [ "bond_coupon_invalid" ]
+            "CertificateOfDeposit", [ "cd_issuer_required"; "cd_coupon_invalid"; "cd_callable_date_invalid" ]
+            "Deposit", [ "deposit_type_required"; "deposit_institution_required"; "deposit_interest_rate_invalid" ]
+            "MoneyMarketFund", [ "mmf_wam_invalid" ]
+            "CommercialPaper", [ "commercial_paper_issuer_required"; "commercial_paper_discount_rate_invalid" ]
+            "TreasuryBill", [ "treasury_bill_auction_date_invalid"; "treasury_bill_discount_rate_invalid" ]
+            "Repo", [ "repo_counterparty_required"; "repo_date_range_invalid"; "repo_rate_invalid"; "repo_haircut_invalid" ]
+            "CashSweep", [ "cash_sweep_program_required"; "cash_sweep_vehicle_required"; "cash_sweep_yield_rate_invalid" ]
+            "StructuredCredit",
+            [ "structured_credit_tranche_required"; "structured_credit_collateral_required"
+              "structured_credit_original_face_invalid"; "structured_credit_current_factor_invalid"
+              "structured_credit_coupon_index_required"; "structured_credit_factor_schedule_invalid"
+              "structured_credit_factor_schedule_duplicate_date"; "structured_credit_factor_schedule_not_monotonic"
+              "structured_credit_factor_after_maturity"; "structured_credit_weighted_average_coupon_invalid"
+              "structured_credit_weighted_average_maturity_invalid"; "structured_credit_weighted_average_loan_age_invalid" ]
+            "Commodity", [ "commodity_contract_size_invalid" ]
+            "Cfd", [ "cfd_leverage_invalid" ]
+            "Warrant", [ "warrant_multiplier_invalid" ]
+            "CapFloor", [ "cap_floor_reference_index_required"; "cap_floor_strike_order_invalid"; "cap_floor_date_range_invalid" ]
+            "Swap", [ "swap_date_range_invalid" ]
+            "CreditDefaultSwap", [ "cds_date_range_invalid"; "cds_fixed_coupon_invalid" ]
+            "NonDeliverableForward", [ "ndf_fixing_date_invalid" ]
+            "FxForward", [ "fx_forward_trade_date_invalid" ]
+            "StructuredNote", [ "structured_note_issuer_required"; "structured_note_issue_date_invalid"; "structured_note_coupon_invalid" ]
+            "CommitmentGuarantee", [ "commitment_guarantee_counterparty_required"; "commitment_guarantee_date_range_invalid" ]
+            "DirectLoan", [ "direct_loan_borrower_required" ]
+            "PrivateFundInterest", [ "private_fund_gp_required"; "private_fund_strategy_required" ]
+            "PrivateCompanyEquity", [ "private_company_issuer_required"; "private_company_share_class_required"; "private_company_round_required" ]
+            "RealEstateHolding", [ "real_estate_property_type_required" ]
+        ]
 
     let create (command: CreateSecurity) =
         match validateCreate command with

@@ -12,6 +12,7 @@
   <ItemGroup>
     <Compile Include="DomainTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'Domain'" />
     <Compile Include="ValidationTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'Domain'" />
+    <Compile Include="SecurityDefinitionValidationTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'Domain'" />
     <Compile Include="CalculationTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'MarketData'" />
     <Compile Include="SecurityCalculationsTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'MarketData'" />
     <Compile Include="CanonicalizationTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'Domain'" />
@@ -34,6 +35,8 @@
     <Compile Include="SettlementInstructionCommandsTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'DirectLending'" />
     <Compile Include="DirectLendingTestBalances.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'DirectLending'" />
     <Compile Include="DirectLendingAggregateServicingTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'DirectLending'" />
+    <Compile Include="DirectLendingExcessRoutingTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'DirectLending'" />
+    <Compile Include="DirectLendingPrepaidInterestConsumptionTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'DirectLending'" />
     <Compile Include="DirectLendingPikCapitalizationAndResetTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'DirectLending'" />
   </ItemGroup>
 

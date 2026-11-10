@@ -24,7 +24,7 @@ rerun it from the repository root. Paths in the command column are relative to t
 | [Program state](program-state-summary.md) and [JSON](program-state-summary.json) | `python scripts/generate_program_state_summary.py`; same roadmap/program registries. |
 | [TODO scan](TODO.md) | `python build/scripts/docs/scan-todos.py --output docs/status/TODO.md --json-output docs/status/todo-scan-results.json`; scan JSON is ignored local output. |
 | [Changelog](CHANGELOG.md) | `python build/scripts/docs/generate-changelog.py --output docs/status/CHANGELOG.md --recent 50`; Git history, not a release certification. |
-| [Documentation health](doc-health-dashboard.md) and [JSON](doc-health-dashboard.json) | `generate-health-dashboard.py` in the core automation profile. |
+| [Documentation health](doc-health-dashboard.md) and [JSON](doc-health-dashboard.json) | `generate-health-dashboard.py` in the core automation profile; line counts go only to ignored `artifacts/docs/doc-health-line-metrics.json` so Markdown edits do not conflict here. |
 | [Automation summary](docs-automation-summary.md) and [JSON](docs-automation-summary.json) | `run-docs-automation.py --profile core`; results cover the listed scripts only. |
 | [Coverage](coverage-report.md) | `generate-coverage.py`; documentation/source coverage inventory, not runtime test coverage. |
 | [API documentation](api-docs-report.md) | `validate-api-docs.py`. |
