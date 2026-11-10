@@ -23,6 +23,27 @@ describe("zonedWallTimeToUtc", () => {
   });
 });
 
+describe("zonedWallTimeToUtc across daylight-saving edges", () => {
+  it("moves a wall time inside the spring-forward gap to after the gap, never before it", () => {
+    // 8 March 2026 in New York: 02:00-03:00 does not exist. 02:30 becomes 03:30 EDT (07:30Z),
+    // not 01:30 EST (06:30Z).
+    expect(zonedWallTimeToUtc(2026, 2, 8, 2, 30, "America/New_York").toISOString()).toBe("2026-03-08T07:30:00.000Z");
+    // Europe/London, 29 March 2026: 01:00-02:00 does not exist. 01:30 becomes 02:30 BST (01:30Z).
+    expect(zonedWallTimeToUtc(2026, 2, 29, 1, 30, "Europe/London").toISOString()).toBe("2026-03-29T01:30:00.000Z");
+  });
+
+  it("keeps the wall times on either side of the gap exact", () => {
+    expect(zonedWallTimeToUtc(2026, 2, 8, 1, 59, "America/New_York").toISOString()).toBe("2026-03-08T06:59:00.000Z");
+    expect(zonedWallTimeToUtc(2026, 2, 8, 3, 0, "America/New_York").toISOString()).toBe("2026-03-08T07:00:00.000Z");
+  });
+
+  it("returns an instant that reads back as the requested wall time when it is repeated on fall back", () => {
+    // 1 November 2026 in New York: 01:30 happens twice (05:30Z EDT and 06:30Z EST).
+    const instant = zonedWallTimeToUtc(2026, 10, 1, 1, 30, "America/New_York").toISOString();
+    expect(["2026-11-01T05:30:00.000Z", "2026-11-01T06:30:00.000Z"]).toContain(instant);
+  });
+});
+
 describe("listTimeZoneOptions", () => {
   it("lists UTC first, without duplicates, and always includes the current value", () => {
     const options = listTimeZoneOptions("Custom/Zone");

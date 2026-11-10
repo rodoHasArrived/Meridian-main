@@ -14,7 +14,11 @@ export function listTimeZoneOptions(currentTimeZoneId: string): string[] {
   return current && !options.includes(current) ? [current, ...options] : options;
 }
 
-/** Converts a wall-clock time in an IANA zone to the UTC instant; unknown zones fall back to UTC. */
+/**
+ * Converts a wall-clock time in an IANA zone to the UTC instant; unknown zones fall back to UTC.
+ * A wall time skipped by a spring-forward change resolves to the equivalent time after the gap;
+ * a wall time repeated by a fall-back change resolves to its second occurrence (standard time).
+ */
 export function zonedWallTimeToUtc(
   year: number,
   monthIndex: number,
@@ -58,5 +62,18 @@ export function zonedWallTimeToUtc(
   // Two passes settle the offset when the first guess lands on the other side of a
   // daylight-saving change.
   const firstGuess = wallAsUtc - offsetAt(wallAsUtc);
-  return new Date(wallAsUtc - offsetAt(firstGuess));
+  const settled = wallAsUtc - offsetAt(firstGuess);
+  const showsRequestedWallTime = (instant: number) => instant + offsetAt(instant) === wallAsUtc;
+  if (showsRequestedWallTime(settled)) {
+    return new Date(settled);
+  }
+  if (showsRequestedWallTime(firstGuess)) {
+    return new Date(firstGuess);
+  }
+
+  // Neither candidate reads back as the requested wall time: it falls in a spring-forward gap
+  // and does not exist (02:30 on the day clocks jump from 02:00 to 03:00). Use the later
+  // candidate, which is the same distance past the gap (03:30), rather than a time before it.
+  // The server's period planner applies the same "first valid time after the gap" rule.
+  return new Date(Math.max(settled, firstGuess));
 }

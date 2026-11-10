@@ -414,8 +414,31 @@ public sealed partial class ReportingScheduleService
             var current = _schedules[identity];
 
             EnsureScheduleInScope(current, accessContext);
-            if (_dueRunClaims.Contains(identity))
+            if (_store is not null
+                && (identity.TenantId.Length == 0 || identity.CompanyId.Length == 0))
             {
+                throw new InvalidDataException(
+                    "A legacy reporting schedule without tenant and company scope cannot be deleted; disable it instead.");
+            }
+
+            // Deleting takes the same durable execution lease a run takes. The store grants it
+            // only when no other host holds an unexpired lease on this revision, so a schedule
+            // that is executing anywhere (not just on this host) cannot be deleted mid-run.
+            var lease = TryAcquireExecutionLease(identity, current, DateTimeOffset.UtcNow);
+            if (lease is null)
+            {
+                RefreshSchedulesFromStore();
+                if (!_schedules.TryGetValue(identity, out var retained))
+                {
+                    throw new KeyNotFoundException(
+                        $"Reporting schedule '{current.ScheduleId}' no longer exists.");
+                }
+
+                if (retained.UpdatedAtUtc != current.UpdatedAtUtc)
+                {
+                    throw ReportingScheduleConcurrencyException.ForConflict(retained, current.UpdatedAtUtc);
+                }
+
                 throw new ReportingScheduleExecutionLeaseException(
                     identity.TenantId,
                     identity.CompanyId,
@@ -425,12 +448,6 @@ public sealed partial class ReportingScheduleService
 
             if (_store is not null)
             {
-                if (identity.TenantId.Length == 0 || identity.CompanyId.Length == 0)
-                {
-                    throw new InvalidDataException(
-                        "A legacy reporting schedule without tenant and company scope cannot be deleted; disable it instead.");
-                }
-
                 bool deleted;
                 try
                 {
@@ -444,18 +461,23 @@ public sealed partial class ReportingScheduleService
                 {
                     // Same recovery as a failed state change: a revision conflict reloads the
                     // retained row so the caller can retry against the current revision.
+                    ReleaseExecutionLease(identity, lease);
                     RestoreScheduleAfterPersistenceFailure(identity, current, ex);
                     throw;
                 }
 
                 if (!deleted)
                 {
+                    _dueRunClaims.Remove(identity);
                     _schedules.Remove(identity);
                     throw new KeyNotFoundException(
                         $"Reporting schedule '{current.ScheduleId}' no longer exists.");
                 }
             }
 
+            // The retained row, and with it the durable lease, is gone; only the in-process
+            // claim remains to clear.
+            _dueRunClaims.Remove(identity);
             _schedules.Remove(identity);
             return current;
         }

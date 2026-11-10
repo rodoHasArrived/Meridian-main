@@ -749,6 +749,61 @@ public sealed class ReportingOperationalConcurrencyTests
     }
 
     [Fact]
+    public void Scenario_ScheduleDelete_IsRefusedWhileAnotherHostHoldsTheExecutionLease()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "Meridian.Tests",
+            nameof(ReportingOperationalConcurrencyTests),
+            Guid.NewGuid().ToString("N"));
+        var path = Path.Combine(root, "reporting-schedules.json");
+        var accessContext = new ReportAccessQueryContext(
+            ActorPrincipalId: "operator-a",
+            CompanyId: "company-a",
+            TenantId: "tenant-a",
+            RequireBoundScope: true);
+        Directory.CreateDirectory(root);
+        var runningHostStore = new FileReportingScheduleStore(
+            new ReportingScheduleStoreOptions(path),
+            NullLogger<FileReportingScheduleStore>.Instance);
+        var deletingHostStore = new FileReportingScheduleStore(
+            new ReportingScheduleStoreOptions(path),
+            NullLogger<FileReportingScheduleStore>.Instance);
+        runningHostStore.Upsert(BuildCurrentSchedule("leased-elsewhere"));
+        var retained = runningHostStore.Load().Should().ContainSingle().Subject;
+        var deletingHost = CreateScheduleService(deletingHostStore);
+
+        try
+        {
+            // Another host is mid-run: it holds the durable lease, and this host has no
+            // in-process record of that.
+            var otherHostLease = runningHostStore.TryClaimExecution(
+                retained,
+                "other-host",
+                DateTimeOffset.UtcNow,
+                TimeSpan.FromMinutes(2));
+            otherHostLease.Should().NotBeNull();
+
+            var delete = () => deletingHost.Delete("leased-elsewhere", accessContext);
+
+            delete.Should().Throw<ReportingScheduleExecutionLeaseException>();
+            runningHostStore.Load().Should().ContainSingle(
+                "a schedule another host is executing must not be deleted underneath it");
+
+            runningHostStore.ReleaseExecutionLease("tenant-a", "company-a", "leased-elsewhere", otherHostLease!);
+            deletingHost.Delete("leased-elsewhere", accessContext);
+            runningHostStore.Load().Should().BeEmpty();
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
     public void Scenario_ScheduleDelete_LegacyUnscopedScheduleIsRefusedAndRetained()
     {
         var store = new SharedAtomicScheduleStore([BuildSchedule("legacy-unscoped", "operator-a")]);
