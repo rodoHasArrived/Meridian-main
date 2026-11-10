@@ -38,7 +38,7 @@ public static partial class WorkstationEndpoints
                 return EndpointHelpers.Forbidden();
 
             var result = await marginControl.GetAsync(
-                (_, accountId) => visibleAccounts.Contains(accountId.Trim()),
+                owner => IsMarginEvidenceVisible(visibleAccounts, owner),
                 context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
@@ -66,7 +66,7 @@ public static partial class WorkstationEndpoints
                 var result = await marginControl.CertifyAsync(
                     request,
                     ResolveCurrentActor(context),
-                    (_, accountId) => visibleAccounts.Contains(accountId.Trim()),
+                    owner => IsMarginEvidenceVisible(visibleAccounts, owner),
                     context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
@@ -877,13 +877,27 @@ public static partial class WorkstationEndpoints
            && string.Equals(schedule.FundAccountId, request.FundAccountId?.Trim(), StringComparison.OrdinalIgnoreCase)
            && string.Equals(schedule.SourceInstitution, request.SourceInstitution?.Trim(), StringComparison.OrdinalIgnoreCase);
     /// <summary>
-    /// External account ids of the active fund accounts owned by the caller's tenant and company.
-    /// Retained margin evidence records only a provider and an external account id, so it is
-    /// visible only when that id is bound to one of the caller's own accounts (account code,
-    /// custodian sub-account, bank account number or IBAN). Returns <c>null</c> (forbidden) when
-    /// the tenant context or the ownership registries are unavailable.
+    /// Retained margin evidence is visible only when the fund account it was imported for (an
+    /// import is ownership-checked before evidence is retained) belongs to the caller, and the
+    /// snapshot's external account id is one of that same fund account's identifiers. Matching on
+    /// the external id alone is not enough: ids are unique only within a provider, so another
+    /// tenant's evidence for a different provider can carry the same id. Evidence with no
+    /// recorded fund account is never shown.
     /// </summary>
-    private static async Task<HashSet<string>?> ResolveTenantMarginAccountIdsAsync(HttpContext context)
+    internal static bool IsMarginEvidenceVisible(
+        IReadOnlyDictionary<Guid, HashSet<string>> ownedAccountIdentifiers,
+        Meridian.Ui.Shared.Services.MarginEvidenceOwner owner)
+        => Guid.TryParse(owner.FundAccountId, out var fundAccountId)
+           && ownedAccountIdentifiers.TryGetValue(fundAccountId, out var identifiers)
+           && !string.IsNullOrWhiteSpace(owner.AccountId)
+           && identifiers.Contains(owner.AccountId.Trim());
+
+    /// <summary>
+    /// The caller's tenant- and company-owned active fund accounts, each with its external
+    /// identifiers (account code, custodian sub-account, bank account number or IBAN). Returns
+    /// <c>null</c> (forbidden) when the tenant context or the ownership registries are unavailable.
+    /// </summary>
+    private static async Task<Dictionary<Guid, HashSet<string>>?> ResolveTenantMarginAccountIdsAsync(HttpContext context)
     {
         var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
         var accounts = context.RequestServices.GetService<IAccountQueryService>();
@@ -899,7 +913,7 @@ public static partial class WorkstationEndpoints
         var activeAccounts = await accounts
             .ListAccountsAsync(accountType: null, isActive: true, currency: null, context.RequestAborted)
             .ConfigureAwait(false);
-        var visible = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var visible = new Dictionary<Guid, HashSet<string>>();
         var ownedFunds = new Dictionary<Guid, bool>();
         foreach (var account in activeAccounts)
         {
@@ -915,6 +929,8 @@ public static partial class WorkstationEndpoints
             if (!owned)
                 continue;
 
+            var identifiers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            visible[account.AccountId] = identifiers;
             foreach (var externalId in new[]
                      {
                          account.AccountCode,
@@ -924,7 +940,7 @@ public static partial class WorkstationEndpoints
                      })
             {
                 if (!string.IsNullOrWhiteSpace(externalId))
-                    visible.Add(externalId.Trim());
+                    identifiers.Add(externalId.Trim());
             }
         }
 

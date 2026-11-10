@@ -287,7 +287,8 @@ public sealed class StatementImportService(
             ActivityEvents: parse.ActivityEvents ?? [],
             ActivityCursors: parse.ActivityCursors ?? [],
             TaxLots: parse.TaxLots ?? [],
-            BorrowPositions: parse.BorrowPositions ?? []);
+            BorrowPositions: parse.BorrowPositions ?? [],
+            FundAccountId: request.FundAccountId.Trim());
         var canonicalEvidenceBytes = JsonSerializer.SerializeToUtf8Bytes(
             canonicalEvidence,
             StatementCanonicalEvidenceJsonContext.Default.StatementCanonicalEvidenceArtifact);

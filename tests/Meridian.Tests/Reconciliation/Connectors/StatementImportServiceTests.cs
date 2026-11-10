@@ -574,6 +574,9 @@ public sealed class StatementImportServiceTests : IDisposable
             var result = await _service.CommitAsync(CommitRequest(document));
             var evidencePath = Path.Combine(_root, Path.GetDirectoryName(result.RetainedCanonicalPath)!, "canonical-evidence.json");
             (await File.ReadAllTextAsync(evidencePath)).Should().Contain("GBP");
+            // Margin views scope retained evidence by the fund account the import was checked for.
+            (await new StatementCanonicalEvidenceReader(_root).ListAsync()).Should().ContainSingle()
+                .Which.Artifact.FundAccountId.Should().Be("FUND-A");
             return;
         }
 

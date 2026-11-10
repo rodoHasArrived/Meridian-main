@@ -5,6 +5,12 @@ using Meridian.FinancialOperations.Reconciliation.Connectors;
 namespace Meridian.Ui.Shared.Services;
 
 /// <summary>
+/// Who a retained margin snapshot belongs to: the fund account its statement was imported for
+/// (null when the evidence predates that record) and the snapshot's provider and external account.
+/// </summary>
+public sealed record MarginEvidenceOwner(string? FundAccountId, string ProviderId, string AccountId);
+
+/// <summary>
 /// Builds the multi-account margin operator view from retained connector evidence. Provider
 /// figures remain authoritative; shadow figures are transparent diagnostics only.
 /// </summary>
@@ -15,12 +21,15 @@ public sealed class MarginControlCenterReadService(
     private static readonly TimeSpan MaximumCertificationAge = TimeSpan.FromHours(72);
 
     /// <param name="isAccountVisible">
-    /// Restricts the view to provider accounts the caller may see (provider id, external account
-    /// id). Retained evidence carries no owner, so endpoints pass the tenant's bound accounts;
-    /// <c>null</c> shows every retained account and is for trusted in-process callers only.
+    /// Restricts the view to retained account snapshots the caller may see. It receives the fund
+    /// account the evidence was imported for (null for evidence retained before that was
+    /// recorded) with the snapshot's provider and external account id. Endpoints scope by the
+    /// importing fund account, not by account id alone, because an external account id is only
+    /// unique within its provider. <c>null</c> shows every retained account and is for trusted
+    /// in-process callers only.
     /// </param>
     public async Task<MarginControlCenterDto> GetAsync(
-        Func<string, string, bool>? isAccountVisible = null,
+        Func<MarginEvidenceOwner, bool>? isAccountVisible = null,
         CancellationToken ct = default)
     {
         var now = DateTimeOffset.UtcNow;
@@ -30,7 +39,10 @@ public sealed class MarginControlCenterReadService(
             .SelectMany(envelope => (envelope.Artifact.AccountSnapshots ?? [])
                 .Select(snapshot => new AccountEvidence(envelope, snapshot)))
             .Where(item => isAccountVisible is null
-                || isAccountVisible(item.Snapshot.ProviderId, item.Snapshot.AccountId))
+                || isAccountVisible(new MarginEvidenceOwner(
+                    item.Envelope.Artifact.FundAccountId,
+                    item.Snapshot.ProviderId,
+                    item.Snapshot.AccountId)))
             .GroupBy(static item => $"{item.Snapshot.ProviderId}\u001f{item.Snapshot.AccountId}", StringComparer.OrdinalIgnoreCase)
             .Select(static group => group.OrderByDescending(item => item.Envelope.Artifact.RetainedAtUtc).First())
             .OrderBy(static item => item.Snapshot.ProviderId, StringComparer.OrdinalIgnoreCase)
@@ -75,7 +87,7 @@ public sealed class MarginControlCenterReadService(
     public async Task<MarginCertificationResultDto> CertifyAsync(
         MarginCertificationRequestDto request,
         string actor,
-        Func<string, string, bool>? isAccountVisible = null,
+        Func<MarginEvidenceOwner, bool>? isAccountVisible = null,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
