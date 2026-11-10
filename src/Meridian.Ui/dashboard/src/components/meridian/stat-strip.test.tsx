@@ -96,8 +96,8 @@ describe("StatStrip", () => {
 
   it("takes the as-of time, freshness and data label from the shell for a workspace-fed strip", () => {
     render(
-      <WorkspaceFigureContextProvider value={{ asOf: "2026-06-30T18:05:00Z", freshness: "stale", dataLabel: "seeded demo data", staleWorkspaces: [], staleAsOf: "2026-06-30T18:05:00Z" }}>
-        <StatStrip label="Strategy headline metrics" source="Strategy workspace" metrics={[metric({ id: "runs", label: "Runs", value: "24" })]} />
+      <WorkspaceFigureContextProvider value={{ freshness: "stale", dataLabel: "seeded demo data", staleWorkspaces: [], workspaceLoadedAt: { strategy: "2026-06-30T18:05:00Z" } }}>
+        <StatStrip label="Strategy headline metrics" source="Strategy workspace" workspace="strategy" metrics={[metric({ id: "runs", label: "Runs", value: "24" })]} />
       </WorkspaceFigureContextProvider>
     );
 
@@ -109,11 +109,10 @@ describe("StatStrip", () => {
 
   it("shows a workspace's retained figures as stale after a partial refresh while others stay fresh", () => {
     const context = {
-      asOf: "2026-06-30T18:10:00Z",
       freshness: "fresh" as const,
       dataLabel: null,
       staleWorkspaces: ["accounting" as const],
-      staleAsOf: "2026-06-30T18:05:00Z"
+      workspaceLoadedAt: { accounting: "2026-06-30T18:05:00Z", strategy: "2026-06-30T18:10:00Z" }
     };
     render(
       <WorkspaceFigureContextProvider value={context}>
@@ -127,6 +126,36 @@ describe("StatStrip", () => {
     expect(screen.getByText("5")).toHaveClass("text-muted-foreground");
     expect(strategy).toHaveTextContent(/^Source: Strategy workspace · As of Jun 30, 2026, 18:10 UTC$/);
     expect(screen.getByText("24")).toHaveClass("text-foreground");
+  });
+
+  it("states each workspace's own load time, not the time of the latest refresh", () => {
+    // Strategy was reloaded at 18:10; Accounting's figures are still the 17:40 load.
+    const context = {
+      freshness: "fresh" as const,
+      dataLabel: null,
+      staleWorkspaces: [],
+      workspaceLoadedAt: { accounting: "2026-06-30T17:40:00Z", strategy: "2026-06-30T18:10:00Z" }
+    };
+    render(
+      <WorkspaceFigureContextProvider value={context}>
+        <StatStrip label="Accounting headline metrics" source="Accounting workspace" workspace="accounting" metrics={[metric({ id: "breaks", label: "Open breaks", value: "5" })]} />
+        <StatStrip label="Strategy headline metrics" source="Strategy workspace" workspace="strategy" metrics={[metric({ id: "runs", label: "Runs", value: "24" })]} />
+      </WorkspaceFigureContextProvider>
+    );
+
+    const [accounting, strategy] = screen.getAllByTestId("stat-strip-provenance");
+    expect(accounting).toHaveTextContent(/^Source: Accounting workspace · As of Jun 30, 2026, 17:40 UTC$/);
+    expect(strategy).toHaveTextContent(/^Source: Strategy workspace · As of Jun 30, 2026, 18:10 UTC$/);
+  });
+
+  it("states no as-of time when the workspace's load was never recorded", () => {
+    render(
+      <WorkspaceFigureContextProvider value={{ freshness: "fresh", dataLabel: null, staleWorkspaces: [], workspaceLoadedAt: {} }}>
+        <StatStrip label="Data headline metrics" source="Data workspace" workspace="data" metrics={[metric({ id: "runs", label: "Runs", value: "24" })]} />
+      </WorkspaceFigureContextProvider>
+    );
+
+    expect(screen.getByTestId("stat-strip-provenance")).toHaveTextContent(/^Source: Data workspace$/);
   });
 
   it("names the source of a workspace-fed strip outside the shell without claiming freshness", () => {

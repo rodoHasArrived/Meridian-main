@@ -445,6 +445,7 @@ function AppShell({
     loading,
     error,
     workspaceErrors,
+    workspaceFiguresLoadedAt,
     refreshStatus,
     portfolioRefreshStatus,
     refresh,
@@ -464,8 +465,8 @@ function AppShell({
     demoMode
   });
   const workspaceFigureContext = useMemo(
-    () => deriveWorkspaceFigureContext({ status: refreshStatus, provenance: dataProvenance, workspaceErrors }),
-    [refreshStatus, dataProvenance, workspaceErrors]
+    () => deriveWorkspaceFigureContext({ status: refreshStatus, provenance: dataProvenance, workspaceErrors, workspaceLoadedAt: workspaceFiguresLoadedAt }),
+    [refreshStatus, dataProvenance, workspaceErrors, workspaceFiguresLoadedAt]
   );
   const handleWorkflowPresetUsed = (presetId: string) =>
     markWorkflowPresetUsed(presetId).then((preset) => {
