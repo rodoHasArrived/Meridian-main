@@ -20,7 +20,7 @@ class CleanupGeneratedScriptTests(unittest.TestCase):
         if powershell is None:
             self.skipTest("PowerShell is not available")
 
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             repo_root = Path(temp_dir)
             script_copy = repo_root / "scripts" / "dev" / "cleanup-generated.ps1"
             script_copy.parent.mkdir(parents=True)
@@ -62,7 +62,7 @@ class CleanupGeneratedScriptTests(unittest.TestCase):
         if powershell is None:
             self.skipTest("PowerShell is not available")
 
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             repo_root = Path(temp_dir)
             script_copy = repo_root / "scripts" / "dev" / "cleanup-generated.ps1"
             script_copy.parent.mkdir(parents=True)
