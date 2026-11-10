@@ -266,8 +266,11 @@ public static class PackagingEndpoints
                     packagesDir = resolvedPackagesDirectory;
                 }
 
-                var packagePath = Path.Combine(packagesDir, fileName);
-                var fullPath = Path.GetFullPath(packagePath);
+                if (!TryResolvePackageFile(fileName, packagesDir, out var fullPath))
+                {
+                    return Results.BadRequest(new { error = "Invalid file name." });
+                }
+
                 if (!File.Exists(fullPath))
                     return Results.NotFound(new { error = $"Package not found: {fileName}" });
 
@@ -304,7 +307,11 @@ public static class PackagingEndpoints
                     packagesDir = resolvedPackagesDirectory;
                 }
 
-                var fullPath = Path.GetFullPath(Path.Combine(packagesDir, fileName));
+                if (!TryResolvePackageFile(fileName, packagesDir, out var fullPath))
+                {
+                    return Results.BadRequest("Invalid file name.");
+                }
+
                 if (!File.Exists(fullPath))
                 {
                     return Results.NotFound($"Package not found: {fileName}");
@@ -345,6 +352,42 @@ public static class PackagingEndpoints
             "maximum" or "max" => PackageCompressionLevel.Maximum,
             _ => PackageCompressionLevel.Balanced
         };
+    }
+
+    /// <summary>
+    /// Resolves a package file name to a path that is a direct child of
+    /// <paramref name="packagesDirectory"/>. Rejecting separators alone is not enough: a
+    /// drive-relative name such as <c>C:x</c> (Windows) or <c>..</c> contains none, yet resolves
+    /// outside the directory, so the resolved parent is compared against the directory itself.
+    /// </summary>
+    internal static bool TryResolvePackageFile(string fileName, string packagesDirectory, out string resolvedPath)
+    {
+        resolvedPath = string.Empty;
+        if (string.IsNullOrWhiteSpace(fileName)
+            || fileName is "." or ".."
+            || fileName.IndexOfAny(['/', '\\', ':']) >= 0)
+        {
+            return false;
+        }
+
+        try
+        {
+            var fullDirectory = Path.TrimEndingDirectorySeparator(Path.GetFullPath(packagesDirectory));
+            var fullCandidate = Path.GetFullPath(Path.Combine(fullDirectory, fileName));
+            var parent = Path.GetDirectoryName(fullCandidate);
+            if (parent is null
+                || !Path.TrimEndingDirectorySeparator(parent).Equals(fullDirectory, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            resolvedPath = fullCandidate;
+            return true;
+        }
+        catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException)
+        {
+            return false;
+        }
     }
 
     private static bool TryResolvePathWithinBase(string candidatePath, string basePath, out string resolvedPath)

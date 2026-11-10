@@ -49,20 +49,20 @@ describe("WorkstationStatusBar", () => {
     ]);
   });
 
-  it("repeats a provider-trust warning so a green sync is never the whole answer", () => {
-    const build = (providerTrust: Parameters<typeof buildWorkstationStatusItems>[0]["providerTrust"]) =>
-      buildWorkstationStatusItems({ workspaceLabel: "Accounting", refreshing: false, hasError: false, providerTrust });
+  it("repeats the masthead attention state so a green sync is never the whole answer", () => {
+    const build = (attention: Parameters<typeof buildWorkstationStatusItems>[0]["attention"]) =>
+      buildWorkstationStatusItems({ workspaceLabel: "Accounting", refreshing: false, hasError: false, attention });
 
-    expect(build({ value: "1 warning", tone: "review" })).toEqual([
+    expect(build({ tone: "review", title: "Providers: 1 warning", moreCount: 0 })).toEqual([
       { key: "sync", status: "ok", label: "Sync", value: "up to date" },
-      { key: "providers", status: "warn", label: "Providers", value: "1 warning" },
+      { key: "attention", status: "warn", label: "Attention", value: "Providers: 1 warning" },
       { key: "workspace", label: "Workspace", value: "Accounting", push: true }
     ]);
-    expect(build({ value: "2 blocked", tone: "blocked" })[1])
-      .toEqual({ key: "providers", status: "err", label: "Providers", value: "2 blocked" });
-    // Healthy and still-loading postures leave the footer on sync and workspace alone.
-    expect(build({ value: "4/4 healthy", tone: "ready" }).map((item) => item.key)).toEqual(["sync", "workspace"]);
-    expect(build({ value: "Pending", tone: "pending" }).map((item) => item.key)).toEqual(["sync", "workspace"]);
+    expect(build({ tone: "blocked", title: "Cash variance needs review", moreCount: 2 })[1])
+      .toEqual({ key: "attention", status: "err", label: "Attention", value: "Cash variance needs review +2 more" });
+    // Clear and still-loading states leave the footer on sync and workspace alone.
+    expect(build({ tone: "ready", title: "No open issues", moreCount: 0 }).map((item) => item.key)).toEqual(["sync", "workspace"]);
+    expect(build({ tone: "pending", title: "Workspace data loading", moreCount: 0 }).map((item) => item.key)).toEqual(["sync", "workspace"]);
     expect(build(null).map((item) => item.key)).toEqual(["sync", "workspace"]);
   });
 });
