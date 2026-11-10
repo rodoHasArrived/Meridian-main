@@ -20,6 +20,9 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
 {
     private readonly List<DataBrowserRecord> _allRecords;
     private readonly ObservableCollection<DataBrowserRecord> _pagedRecords = new();
+    // The full filtered and sorted result behind the current page; export uses this rather than
+    // the visible page so it matches the record count the browser reports.
+    private List<DataBrowserRecord> _filteredRecords = new();
     private string _symbolFilter = string.Empty;
     private string _selectedDataType = "All";
     private string _selectedVenue = "All";
@@ -339,6 +342,7 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
         };
 
         var filtered = sorted.ToList();
+        _filteredRecords = filtered;
         FilteredCount = filtered.Count;
         FilteredCountText = $"{FilteredCount:N0} records";
 
@@ -415,14 +419,41 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
         if (dialog.ShowDialog() != true)
             return;
 
+        // Export the whole filtered result, not only the visible page.
+        File.WriteAllText(dialog.FileName, BuildCsv(_filteredRecords));
+    }
+
+    /// <summary>
+    /// Builds RFC 4180 CSV: fields containing commas, quotes or line breaks are quoted with inner
+    /// quotes doubled, and numbers use the invariant culture so a comma decimal separator cannot
+    /// split a price across columns.
+    /// </summary>
+    internal static string BuildCsv(IEnumerable<DataBrowserRecord> records)
+    {
+        var culture = System.Globalization.CultureInfo.InvariantCulture;
         var sb = new StringBuilder();
         sb.AppendLine("Timestamp,Symbol,DataType,Venue,Price,Size");
-        foreach (var record in _pagedRecords)
+        foreach (var record in records)
         {
-            sb.AppendLine($"{record.Timestamp:O},{record.Symbol},{record.DataType},{record.Venue},{record.Price},{record.Size}");
+            sb.Append(record.Timestamp.ToString("O", culture)).Append(',')
+              .Append(EscapeCsv(record.Symbol)).Append(',')
+              .Append(EscapeCsv(record.DataType)).Append(',')
+              .Append(EscapeCsv(record.Venue)).Append(',')
+              .Append(record.Price.ToString("R", culture)).Append(',')
+              .Append(record.Size.ToString(culture))
+              .AppendLine();
         }
 
-        File.WriteAllText(dialog.FileName, sb.ToString());
+        return sb.ToString();
+    }
+
+    private static string EscapeCsv(string? value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return string.Empty;
+        return value.IndexOfAny([',', '"', '\r', '\n']) >= 0
+            ? "\"" + value.Replace("\"", "\"\"", StringComparison.Ordinal) + "\""
+            : value;
     }
 
     public string BuildSelectedRecordJson()

@@ -1547,6 +1547,9 @@ function AccountingCaseWorkbench({
                 <AccountingValue label="Run reference" value={selectedBreak?.runId ?? "No run selected"} />
                 <AccountingValue label="Route" value={selectedBreakDetail?.routingActionHref ?? selectedBlocker?.href ?? "No route"} />
                 <AccountingValue label="Raw category" value={selectedBreakDetail?.rawCategoryLabel ?? "No category"} />
+                {selectedBlocker?.sourceRecordIds?.length ? (
+                  <AccountingValue label="Source records" value={selectedBlocker.sourceRecordIds.join(", ")} />
+                ) : null}
                 <AccountingValue label="Audit packet" value={detailActions?.auditPacketLabel ?? "Open after selecting a break"} />
               </div>
               <BreakAuditRebuildCheck breakId={selectedBreak?.breakId ?? null} />

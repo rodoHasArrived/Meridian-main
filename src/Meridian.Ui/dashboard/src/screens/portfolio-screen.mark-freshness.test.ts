@@ -43,6 +43,25 @@ describe("Portfolio shared mark readiness", () => {
     expect(vm.selectedPosition?.statusDetail).toContain("Shared mark assessment unavailable");
   });
 
+  it("states a missing assessment once instead of listing every unknown field", () => {
+    const vm = portfolio(null);
+    const markFields = vm.selectedPosition?.fields.filter((field) => field.label.startsWith("Mark") || field.label === "Valuation date");
+    expect(markFields).toEqual([
+      { label: "Mark readiness", value: "Review required", tone: "warning" },
+      { label: "Mark evidence", value: "No mark observed", tone: "muted" },
+      { label: "Mark assessment", value: expect.stringContaining("Shared mark assessment unavailable"), tone: "warning" }
+    ]);
+    expect(vm.selectedPosition?.fields.map((field) => field.value)).not.toContain("Unknown");
+    expect(vm.positionRows[0].markFreshness.observationSummary).toBe("No mark observed");
+  });
+
+  it("summarises what was observed for the table cell", () => {
+    expect(presentMarkFreshness(current).observationSummary).toBe("Observed 2026-09-04 · age 0 day(s)");
+    expect(presentMarkFreshness({ ...current, ageDays: null }).observationSummary).toBe("Observed 2026-09-04");
+    expect(presentMarkFreshness({ ...current, observedOn: null, ageDays: null, status: "ReviewRequired" }).observationSummary)
+      .toBe("No mark observed");
+  });
+
   it("projects the shared decision without applying an independent browser age threshold", () => {
     expect(presentMarkFreshness({ ...current, ageDays: 40 })).toMatchObject({ label: "Current", age: "40 day(s)" });
     expect(presentMarkFreshness({ ...current, status: "ReviewRequired", blockReason: "Position scope requires review." })).toMatchObject({ reviewRequired: true, reason: "Position scope requires review." });

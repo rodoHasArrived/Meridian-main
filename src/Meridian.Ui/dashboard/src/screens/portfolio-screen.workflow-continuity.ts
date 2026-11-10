@@ -1,5 +1,6 @@
 import type { WorkflowContinuityStepStatus } from "@/app-shell.workflow-continuity";
 import type { PortfolioWorkspaceResponse } from "@/types";
+import { pluralizeCount } from "@/lib/format";
 
 export function buildPortfolioLedgerContinuityStatus(portfolio: PortfolioWorkspaceResponse | null): WorkflowContinuityStepStatus {
   if (!portfolio) {
@@ -15,6 +16,6 @@ export function buildPortfolioLedgerContinuityStatus(portfolio: PortfolioWorkspa
   }
 
   return (portfolio.positions ?? []).length > 0
-    ? { label: `${portfolio.positions.length} positions`, tone: "ready" }
+    ? { label: pluralizeCount(portfolio.positions.length, "position"), tone: "ready" }
     : { label: "Ready", tone: "ready" };
 }

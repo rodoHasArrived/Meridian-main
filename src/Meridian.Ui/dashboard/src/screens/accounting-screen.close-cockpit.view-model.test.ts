@@ -3131,8 +3131,11 @@ describe("accounting-screen close-cockpit view model", () => {
       } };
       const blockedView = buildCloseCommandCenterViewState({ ...input, commandCenter: blocked });
       expect(blockedView.status).toBe("blocked");
+      // Raw identifiers stay out of the operator-facing label and evidence text; they are kept
+      // for the audit-details disclosure only.
       expect(blockedView.blockerRows[0]).toMatchObject({ ownerLabel: "Controller",
-        evidenceLabel: "evidence-1, evidence-2", detail: expect.stringContaining("Count: 2") });
+        label: `Close plan - ${type}`, evidenceLabel: "2 source records",
+        sourceRecordIds: ["evidence-1", "evidence-2"], detail: expect.stringContaining("Count: 2") });
       expect(buildCloseCommandCenterViewState(input).status).toBe("ready");
     }
   });
