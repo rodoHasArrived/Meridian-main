@@ -77,6 +77,30 @@ public sealed class AlpacaHistoricalTickDataTests
     }
 
     [Fact]
+    public async Task GetHistoricalTradesAsync_LimitAcrossPages_AsksOnlyForTheRemainderOnLaterPages()
+    {
+        // A limit above Alpaca's page maximum: 10,000 on the first page, then only the 5,000 left.
+        static string Page(int first, int count, string? next) =>
+            "{\"next_page_token\":" + (next is null ? "null" : $"\"{next}\"") + ",\"trades\":{\"SPY\":["
+            + string.Join(",", Enumerable.Range(first, count).Select(id =>
+                $"{{\"i\":{id},\"p\":1,\"s\":1,\"t\":\"{new DateTime(2026, 11, 6, 15, 0, 0, DateTimeKind.Utc).AddTicks(id):O}\"}}"))
+            + "]}}";
+        var handler = new RecordingHandler(request => request.RequestUri!.Query.Contains("page_token=second", StringComparison.Ordinal)
+            ? Page(10_000, 5_000, "third")
+            : Page(0, 10_000, "second"));
+        using var sut = CreateSut(handler);
+
+        var result = await sut.GetHistoricalTradesAsync("SPY", Start, Start.AddMinutes(1), limit: 15_000);
+
+        result.Trades.Should().HaveCount(15_000);
+        result.Trades.Select(trade => trade.TradeId).Should().OnlyHaveUniqueItems();
+        result.NextPageToken.Should().Be("third", "the token must continue exactly where the returned trades end");
+        handler.Requests.Select(request => request.Query).Should().SatisfyRespectively(
+            first => first.Should().Contain("limit=10000"),
+            second => second.Should().Contain("limit=5000", "a full second page would fetch trades only to discard them"));
+    }
+
+    [Fact]
     public async Task GetHistoricalQuotesAsync_NoLimit_FollowsEveryPage()
     {
         var handler = new RecordingHandler(request => request.RequestUri!.Query.Contains("page_token=more", StringComparison.Ordinal)

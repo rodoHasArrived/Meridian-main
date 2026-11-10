@@ -307,7 +307,9 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
         {
             await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
 
-            var url = BuildQuotesUrl(symbolList, start, end, limit, nextPageToken);
+            // Each page asks only for what the limit still allows, so nothing fetched is discarded
+            // and the page token returned to the caller continues exactly where the result ends.
+            var url = BuildQuotesUrl(symbolList, start, end, RemainingLimit(allQuotes.Count, limit), nextPageToken);
             Log.Information("Requesting Alpaca quotes for {Symbols} ({Url})", string.Join(",", symbolList), url);
 
             try
@@ -424,7 +426,9 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
         {
             await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
 
-            var url = BuildTradesUrl(symbolList, start, end, limit, nextPageToken);
+            // Each page asks only for what the limit still allows, so nothing fetched is discarded
+            // and the page token returned to the caller continues exactly where the result ends.
+            var url = BuildTradesUrl(symbolList, start, end, RemainingLimit(allTrades.Count, limit), nextPageToken);
             Log.Information("Requesting Alpaca trades for {Symbols} ({Url})", string.Join(",", symbolList), url);
 
             try
@@ -638,6 +642,8 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
 
 
     private static bool ReachedLimit(int count, int? limit) => limit is > 0 && count >= limit.Value;
+
+    private static int? RemainingLimit(int count, int? limit) => limit is > 0 ? Math.Max(limit.Value - count, 1) : null;
 
     // The trailing Z is a literal, so the instant must be converted to UTC first: formatting a
     // value that carries another offset would send its local clock time labelled as UTC.

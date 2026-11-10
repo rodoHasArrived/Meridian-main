@@ -249,7 +249,6 @@ public sealed class AlpacaPaperOrderLifecycleTests(ITestOutputHelper output)
 
         var buyAck = await paper.SubmitAsync(RestingBuy(buyId) with { LimitPrice = MarketableBuyCap, Metadata = ExtendedHours });
         var buy = await paper.WaitForFillAsync(buyId);
-        paper.OwnPosition(Symbol, buy.FilledQuantity);
 
         buy.ReportType.Should().Be(ExecutionReportType.Fill);
         buy.FilledQuantity.Should().Be(1m);
@@ -290,7 +289,6 @@ public sealed class AlpacaPaperOrderLifecycleTests(ITestOutputHelper output)
                 Metadata = ExtendedHours,
             });
             var sell = await paper.WaitForFillAsync(sellId);
-            paper.OwnPosition(Symbol, -sell.FilledQuantity);
             sell.FilledQuantity.Should().Be(1m);
 
             var sellFills = await ExactFillsAsync(sellAck.GatewayOrderId!);
@@ -338,7 +336,7 @@ public sealed class AlpacaPaperOrderLifecycleTests(ITestOutputHelper output)
         private readonly PaperOrderHttpClientFactory _clients = new();
         private readonly AlpacaOptions _options;
         private readonly HashSet<string> _ownedBrokerOrderIds = new(StringComparer.Ordinal);
-        private readonly Dictionary<string, decimal> _ownedPositions = new(StringComparer.Ordinal);
+        private readonly List<(string ClientOrderId, string Symbol, OrderSide Side)> _submitted = [];
         private readonly string _runPrefix = $"mrd-it-{DateTimeOffset.UtcNow:yyyyMMddHHmmss}-{Guid.NewGuid():N}"[..30];
         private int _sequence;
 
@@ -378,11 +376,12 @@ public sealed class AlpacaPaperOrderLifecycleTests(ITestOutputHelper output)
                 _ownedBrokerOrderIds.Add(brokerOrderId);
         }
 
-        public void OwnPosition(string symbol, decimal signedQuantity) =>
-            _ownedPositions[symbol] = _ownedPositions.GetValueOrDefault(symbol) + signedQuantity;
-
         public async Task<ExecutionReport> SubmitAsync(OrderRequest request)
         {
+            // Recorded before the request leaves: cleanup asks the broker what each order filled,
+            // so a fill is undone even when the test failed before it could observe it.
+            if (request.Legs is not { Count: > 0 } && request.ClientOrderId is { Length: > 0 } clientOrderId)
+                _submitted.Add((clientOrderId, request.Symbol, request.Side));
             var ack = await Gateway.SubmitOrderAsync(request, Token);
             Own(ack.GatewayOrderId);
             foreach (var child in ack.ChildOrders ?? [])
@@ -504,7 +503,16 @@ public sealed class AlpacaPaperOrderLifecycleTests(ITestOutputHelper output)
                     _output.WriteLine("Cleanup cancelled a leftover order: {0}.", cancelled.OrderStatus);
                 }
 
-                foreach (var (symbol, quantity) in _ownedPositions.Where(owned => owned.Value != 0m))
+                // The broker's own cumulative fills decide what is left to undo, not what the test
+                // managed to observe before it failed.
+                var net = new Dictionary<string, decimal>(StringComparer.Ordinal);
+                foreach (var (clientOrderId, symbol, side) in _submitted)
+                {
+                    var filled = (await Gateway.GetOrderForRecoveryAsync(clientOrderId, cleanup.Token))?.FilledQuantity ?? 0m;
+                    net[symbol] = net.GetValueOrDefault(symbol) + (side == OrderSide.Buy ? filled : -filled);
+                }
+
+                foreach (var (symbol, quantity) in net.Where(position => position.Value != 0m))
                 {
                     var flatten = await Gateway.SubmitOrderAsync(new OrderRequest
                     {
