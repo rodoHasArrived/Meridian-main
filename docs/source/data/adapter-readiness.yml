@@ -40,12 +40,24 @@ adapters:
     the configured plan.
   - Unit and fixture evidence does not establish live execution acceptance; brokerage use remains subject to shared
     execution governance.
+  - Paper-environment REST evidence exists for brokerage orders, recovery, portfolio synchronization, symbol search,
+    option contract discovery, corporate-action announcements and the activity statement. The trade-update stream,
+    the market-data hosts (streaming, historical bars, option snapshots and quotes) and the live environment remain
+    live-untested.
+  - Option chain snapshots and option quotes currently return nothing: the snapshot payload carries no underlying
+    price and the domain records reject a non-positive one.
+  - The order manager classifies every Alpaca route, paper included, as live routing; a paper order needs the same
+    brokerage configuration, run id and readiness approval as a live one.
   - Pacing values describe repository defaults; verify current provider terms and the configured account allowance
     before operation.
   degradation: Missing credentials prevent credential-gated backfill/search activation. Asset-stream routing fails
     closed when the requested feed has no usable entitlement; diagnostics preserve the selected feed and entitlement.
-    REST and trade-update errors remain observable. Corporate-action HTTP failures and non-cancellation exceptions
-    are logged and return empty action collections; empty results must not be treated as verified absence of actions.
+    REST and trade-update errors remain observable. Corporate-action history is read as 90-day ex-date windows over
+    about two years plus 90 days ahead, paced to half the Trading API request budget; if any window fails, the failure
+    is logged and an empty collection is returned rather than a partial history, so empty results must not be treated
+    as verified absence of actions. Option contract discovery likewise returns nothing rather than a partial chain
+    when a page fails or paging does not terminate. Asset search, contract discovery and announcements follow the
+    credentials' paper or live Trading API host.
     Cancellation propagates. Streaming readiness waits for authentication and full subscription acknowledgments;
     rejected or timed-out subscription changes invalidate readiness, while transient control errors remain retryable.
     Automatic correction/cancel channels are limited to requested trades; permanent request errors stop retries.
@@ -79,12 +91,22 @@ adapters:
   - path: tests/Meridian.Tests/Infrastructure/Providers/AlpacaBrokerageGatewayTests.cs
     symbol: AlpacaBrokerageGatewayTests
     kind: test
-  - path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaOptionsChainProvider.cs
-    symbol: AlpacaOptionsChainProvider
-    kind: source
+  - path: tests/Meridian.Tests/Infrastructure/Providers/AlpacaOptionsChainProviderTests.cs
+    symbol: AlpacaOptionsChainProviderTests
+    kind: test
+  - path: tests/Meridian.Tests/Integration/AlpacaPaperSandboxTests.cs
+    symbol: AlpacaPaperSandboxTests
+    kind: test
+  - path: tests/Meridian.Tests/Integration/AlpacaPaperSandboxReferenceDataTests.cs
+    symbol: AlpacaPaperSandboxReferenceDataTests
+    kind: test
+  - path: tests/Meridian.Tests/Integration/AlpacaPaperSandboxOrderLifecycleTests.cs
+    symbol: AlpacaPaperSandboxOrderLifecycleTests
+    kind: test
   owner: Data Confidence and Validation
-  next_action: Retain account/feed-specific paper and live evidence and obtain operator acceptance before promoting
-    operational readiness.
+  next_action: Verify the market-data hosts and the trade-update stream with credentials that reach them, give option
+    snapshots an underlying price, decide whether paper credentials route under the paper order-flow gate, and obtain
+    operator acceptance before promoting operational readiness.
 - folder: AlphaVantage
   provider_id: alphavantage
   aliases:

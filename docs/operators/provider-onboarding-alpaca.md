@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-10-05
+**Reviewed:** 2026-11-10
 
 This is the canonical operator procedure lane for configuring and validating Alpaca provider onboarding in Meridian.
 
@@ -50,7 +50,11 @@ $env:MDC_ALPACA_SANDBOX = "true"
 $env:MDC_ALPACA_FEED = "iex"
 ```
 
-`ALPACA_TRADING_ENVIRONMENT` selects the environment for Trading API credentials. The separate
+`ALPACA_TRADING_ENVIRONMENT` selects the environment for Trading API credentials. It governs every
+Trading API surface, not only orders: asset search, option contract discovery and corporate-action
+announcements are sent to the paper or live Trading API host of the selected credentials, because
+a paper key pair is refused by the live host and the reverse. A stored credential record's own
+environment takes precedence over the variable. The separate
 `MDC_ALPACA_SANDBOX` override sets `Alpaca:UseSandbox` for the configured market-data client.
 `ALPACA_PAPER` is not recognized. See the [environment reference](../reference/environment-variables.md#alpaca-provider)
 for exact names, defaults, and credential precedence.
@@ -113,9 +117,14 @@ Run deterministic regression fixtures before using a paper account:
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter 'FullyQualifiedName~BrokerageOrderRecoveryTests|FullyQualifiedName~BrokerageExecutionReconciliationServiceTests|FullyQualifiedName~LiveBrokeragePortfolioSyncServiceTests|FullyQualifiedName~AlpacaBrokerageGatewayTests|FullyQualifiedName~AlpacaStreamedFillLoopTests|FullyQualifiedName~TradingBrokerageRecoveryEndpointTests'
 ```
 
-Run the opt-in [paper portfolio sandbox check](../testing/alpaca-paper-portfolio-sandbox.md)
-for real broker account, holdings, reconciliation, and risk evidence. For external
-paper-sandbox execution acceptance, retain sanitized account and client-order evidence:
+Run the opt-in [paper sandbox checks](../testing/alpaca-paper-portfolio-sandbox.md) for real
+broker evidence. The read-only classes cover account, holdings, reconciliation, risk, reference
+data and the activity statement; the separately opted-in order class automates steps 2 to 5 below
+for one-share orders over the REST lane (a lost acknowledgement, exactly-one-submission recovery,
+a fill, and a restart over the same recovery journal). The order manager classifies every Alpaca
+route, paper included, as live routing, so a paper order needs the same brokerage configuration,
+run id and readiness approval as a live one. For external paper-sandbox execution acceptance,
+retain sanitized account and client-order evidence:
 
 1. Confirm the endpoint is `paper-api.alpaca.markets`, verify the account, synchronize, and compare
    holdings, cash, equity, buying power and USD currency to Alpaca's account and positions responses.
@@ -131,7 +140,10 @@ paper-sandbox execution acceptance, retain sanitized account and client-order ev
 
 Deterministic HTTP/stream fixtures and browser fixtures are separate evidence from this external
 sandbox procedure. Paper fills depend on broker behavior; report any scenario not observed rather
-than treating fixture success as an external-broker result.
+than treating fixture success as an external-broker result. The automated order class does not
+observe a partial fill, a network-level disconnect, or the trade-update stream; those remain
+manual or fixture evidence. The broker's open-order list can lag a confirmed cancel by a moment,
+so a synchronization immediately after a cancel may report a break that the next one clears.
 
 ## Failure and recovery
 
