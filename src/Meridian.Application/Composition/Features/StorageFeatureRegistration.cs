@@ -188,6 +188,9 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<ScopedAccessService>();
         services.TryAddSingleton<IScopedAccessAssignmentService>(sp => sp.GetRequiredService<ScopedAccessService>());
         services.TryAddSingleton<IScopedAuthorizationService>(sp => sp.GetRequiredService<ScopedAccessService>());
+        // Registered before the profile governance service so its composed constructor, which reads
+        // the effective independent-approver requirement, is the one the container selects.
+        services.AddSecurityMasterGovernanceRequirements();
         services.TryAddSingleton<ISecurityAssetProfileGovernanceService, SecurityAssetProfileGovernanceService>();
         services.TryAddSingleton<ISecurityAssetProfileCatalog>(sp => sp.GetRequiredService<ISecurityAssetProfileGovernanceService>());
         services.TryAddSingleton(sp => AssetClassValidatorRegistry.CreateDefault(sp.GetRequiredService<ISecurityAssetProfileCatalog>()));
@@ -357,7 +360,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<IUflProjectionRebuilder, UflProjectionRebuilder>();
             services.AddSingleton<ISecurityMasterService, SecurityMasterService>();
             // Three typed write paths over one service: ISecurityMasterService is the operator-direct path
-            // (refused while SecurityMasterWorkbench:RequireGovernedTermAmendments is on), ISecurityMasterAmender
+            // (refused while governed term amendments are required, by setting or by the Institutional profile), ISecurityMasterAmender
             // the system-ingest path, and IGovernedPublicationAmender the approved-revision publication path.
             services.AddSingleton<ISecurityMasterAmender>(sp => (ISecurityMasterAmender)sp.GetRequiredService<ISecurityMasterService>());
             services.AddSingleton<IGovernedPublicationAmender>(sp => (IGovernedPublicationAmender)sp.GetRequiredService<ISecurityMasterService>());
@@ -529,11 +532,11 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<IStructuredCreditReferenceService, NullStructuredCreditReferenceService>();
         services.TryAddSingleton<ISecurityMasterAmender, NullSecurityMasterService>();
         services.TryAddSingleton<IGovernedPublicationAmender, NullSecurityMasterService>();
-        // The governed-amendment policy SecurityMasterService enforces on its operator-direct path.
-        // AddOptions keeps IOptionsMonitor resolvable in hosts that never bind the section (it then
-        // reads the defaults, under which direct amendments stay permitted).
-        services.AddOptions<SecurityMasterWorkbenchOptions>();
-        services.TryAddSingleton<IGovernedTermAmendmentPolicy, GovernedTermAmendmentPolicy>();
+        // The governance requirements seam and the governed-amendment policy SecurityMasterService
+        // enforces on its operator-direct path. Idempotent (also registered above); in hosts that
+        // never bind the section it reads the code defaults, under which direct amendments stay
+        // permitted unless the host is a production composition.
+        services.AddSecurityMasterGovernanceRequirements();
         services.TryAddSingleton<ISecurityMasterConflictService, NullSecurityMasterConflictService>();
         services.TryAddSingleton<ISecurityMasterImportService, NullSecurityMasterImportService>();
         services.TryAddSingleton<ISecurityMasterIngestStatusService>(sp => (ISecurityMasterIngestStatusService)sp.GetRequiredService<ISecurityMasterImportService>());

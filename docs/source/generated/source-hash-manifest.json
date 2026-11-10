@@ -9,8 +9,8 @@
       "id": "SRC-APP",
       "path": "src/Meridian.Application",
       "readme": "src/Meridian.Application/README.md",
-      "readme_hash": "629e8f43cd6cff7b61bd4e1eb672177d20fc0794159d388392c3092af20e05de",
-      "source_hash": "3cc1058bcd87b340a48d7649e227d72a2cc7f8c329f74654b71abf51c14ebca3"
+      "readme_hash": "00e173641c960a18325eb59e6fd4c069042615111bceb015e3a277264c7fa384",
+      "source_hash": "ea4829d6d0fd020c08b75d52d282f481488d1415a4395968b925a50ae5931a6e"
     },
     {
       "id": "SRC-BACKTESTING",
@@ -37,8 +37,8 @@
       "id": "SRC-CORE",
       "path": "src/Meridian.Core",
       "readme": "src/Meridian.Core/README.md",
-      "readme_hash": "5ddbcf770afdc5dfad7da42df7e11da658cf49ddbb235a827d786357e7f622f0",
-      "source_hash": "a43cf7673d3030ce1b22e80daf3755565ea8d5ee4abf430ae5df862b65acac77"
+      "readme_hash": "d463794fc6675e9b5d0888e2414fba63c7bce673295c414d690c42f6d6caa229",
+      "source_hash": "aa3b1324acbbf8eab8900b5663ea3458d0237744c6532c21e9ce7d830779f811"
     },
     {
       "id": "SRC-DESIGN-AUDIT",
@@ -282,15 +282,15 @@
       "id": "SRC-UI-SHARED",
       "path": "src/Meridian.Ui.Shared",
       "readme": "src/Meridian.Ui.Shared/README.md",
-      "readme_hash": "02106f13883763aa794aea51e50f41d8a1408964d5ac1a4616298d112529e4fe",
-      "source_hash": "896cd7c63d1135a160ada5766b1386aa06ea822d7a72093b4e89f2f6c9108826"
+      "readme_hash": "3cb97d7a17f86253b45310e6ffb9fd1ad76f15d26431c56136b46effffe3fb5d",
+      "source_hash": "10e6787af4fc976dbd854e0f0f36c1b305a85a898fd79a088fa6ac5a51d3e241"
     },
     {
       "id": "SRC-WPF",
       "path": "src/Meridian.Wpf",
       "readme": "src/Meridian.Wpf/README.md",
-      "readme_hash": "738b600821f840b2de3c19478f7a991692b0cc38ef1ec555a5ac20d8bc480422",
-      "source_hash": "12349207ac390e2029c0ba8bdd227477ca5d7f4773a89070be3d9ceb38fac836"
+      "readme_hash": "0257b124e1a2f23a3061275ea1f5547ac0b265c9a1a673eb793827a1315d88b4",
+      "source_hash": "c9c7e60b73ddda33b99de01e0f358c55281c132bb233b8eb7379924b0f9864cd"
     }
   ],
   "schema": {

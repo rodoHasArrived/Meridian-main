@@ -13,7 +13,8 @@ namespace Meridian.Application.SecurityMaster;
 /// <item><description><c>ISecurityMasterService.AmendTermsAsync</c> and its preferred, convertible and
 /// term-block siblings are the operator-direct path. They are refused with
 /// <see cref="GovernedTermAmendmentRequiredException"/> while
-/// <see cref="SecurityMasterWorkbenchOptions.RequireGovernedTermAmendments"/> is on.</description></item>
+/// <see cref="SecurityMasterWorkbenchOptions.RequireGovernedTermAmendments"/> is on or the Institutional
+/// governance profile is in force (<see cref="ISecurityMasterGovernanceRequirements"/>).</description></item>
 /// <item><description><see cref="ISecurityMasterAmender"/> is the system-ingest path (provider backfill,
 /// EDGAR ingest, ticker symbology). It is not governed by that setting, and it refuses requests that name
 /// an operator source system, so an operator edit cannot be routed through it.</description></item>

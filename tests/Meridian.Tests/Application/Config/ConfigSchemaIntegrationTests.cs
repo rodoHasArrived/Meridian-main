@@ -23,6 +23,20 @@ public sealed class ConfigSchemaIntegrationTests
     }
 
     [Fact]
+    public void Schema_SecurityMasterGovernanceProfile_ListsExactlyTheOptionsEnum()
+    {
+        // The generator lives below the Application layer and spells the values out, so pin them to
+        // the enum the options bind.
+        using var schema = JsonDocument.Parse(new ConfigJsonSchemaGenerator().GenerateSchemaJson());
+        var profiles = schema.RootElement
+            .GetProperty("$defs").GetProperty("SecurityMasterWorkbenchOptions")
+            .GetProperty("properties").GetProperty("GovernanceProfile").GetProperty("enum")
+            .EnumerateArray().Select(static value => value.GetString());
+
+        profiles.Should().Equal(Enum.GetNames<Meridian.Application.SecurityMaster.SecurityMasterGovernanceProfile>());
+    }
+
+    [Fact]
     public void SampleConfig_ReferencesCheckedInSchema()
     {
         var repoRoot = ResolveRepoRoot();

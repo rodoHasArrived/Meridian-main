@@ -109,6 +109,70 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
         result.State.Should().Be(SecurityMasterRevisionStateDto.Approved, "the gate, not this setting, decides when it is off");
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task InstitutionalProfile_RefusesSelfReviewAndSelfApproval_WithTheSettingItselfUnset(bool byProductionComposition)
+    {
+        var workflowId = Guid.NewGuid();
+        var drafting = new Harness(currentVersion: 2, governanceRequirements: GovernanceRequirementsFor.Institutional(byProductionComposition));
+        var draftId = await drafting.SeedRevisionAsync(SecurityMasterRevisionStateDto.Draft, actor: "ops.drafter");
+
+        await drafting.Service.Invoking(s => s.SubmitForApprovalAsync(Submit(draftId, workflowId, submitter: "ops.submitter", reviewer: "ops.drafter")))
+            .Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*drafted the revision*");
+
+        var approving = new Harness(currentVersion: 4, governanceRequirements: GovernanceRequirementsFor.Institutional(byProductionComposition));
+        var submittedId = await approving.SeedRevisionAsync(
+            SecurityMasterRevisionStateDto.Submitted, actor: "ops.analyst", workflowId: workflowId);
+
+        await approving.Service.Invoking(s => s.ApproveRevisionAsync(Approve(submittedId, workflowId, approver: "ops.analyst")))
+            .Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*submitted the revision*");
+        (await approving.Revisions.GetAsync(submittedId))!.State.Should().Be(SecurityMasterRevisionStateDto.Submitted);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task InstitutionalProfile_StillLetsAnIndependentReviewerApprove(bool byProductionComposition)
+    {
+        var workflowId = Guid.NewGuid();
+        var harness = new Harness(currentVersion: 4, governanceRequirements: GovernanceRequirementsFor.Institutional(byProductionComposition));
+        var revisionId = await harness.SeedRevisionAsync(
+            SecurityMasterRevisionStateDto.Submitted, actor: "ops.analyst", workflowId: workflowId);
+        harness.Workflow
+            .Setup(w => w.ApproveWorkflowAsync(workflowId, It.IsAny<OperationsApprovalDecisionRequestDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(SuccessTransition(newVersion: 5));
+
+        var result = await harness.Service.ApproveRevisionAsync(Approve(revisionId, workflowId, approver: "ops.reviewer"));
+
+        result.State.Should().Be(SecurityMasterRevisionStateDto.Approved, "the profile requires independence, not a dead end");
+    }
+
+    [Fact]
+    public async Task InstitutionalProfile_AReloadTurningIndependentReviewOff_StillRefusesSelfApproval()
+    {
+        var workflowId = Guid.NewGuid();
+        var options = new MutableWorkbenchOptionsMonitor(new SecurityMasterWorkbenchOptions
+        {
+            GovernanceProfile = SecurityMasterGovernanceProfile.Institutional
+        });
+        var harness = new Harness(currentVersion: 4, governanceRequirements: GovernanceRequirementsFor.NonProduction(options));
+        var revisionId = await harness.SeedRevisionAsync(
+            SecurityMasterRevisionStateDto.Submitted, actor: "ops.analyst", workflowId: workflowId);
+
+        options.Set(new SecurityMasterWorkbenchOptions
+        {
+            GovernanceProfile = SecurityMasterGovernanceProfile.Institutional,
+            RequireIndependentReviewer = false
+        });
+
+        await harness.Service.Invoking(s => s.ApproveRevisionAsync(Approve(revisionId, workflowId, approver: "ops.analyst")))
+            .Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*submitted the revision*");
+    }
+
     [Fact]
     public void RequireIndependentReviewer_DefaultsOff()
         => new SecurityMasterWorkbenchOptions().RequireIndependentReviewer.Should().BeFalse(
