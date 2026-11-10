@@ -131,6 +131,10 @@ Persisted workspace categories use canonical `Strategy`, `Trading`, `Data`, `Acc
 `Custom` enum members. The older `Research`, `DataOperations`, and `Governance` members remain
 only as numeric compatibility aliases for previously saved workspace state.
 
+`LiveDataService` reads the server's `TradesResponse`, `QuotesResponse` and `OrderBookResponse`
+envelopes, with URLs built from `UiApiRoutes`. `GetRecentQuotesAsync` returns at most one quote,
+because the server keeps only the current quote.
+
 ## Diagrams
 
 See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in

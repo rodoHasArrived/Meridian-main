@@ -136,6 +136,10 @@ Generic execution and backtesting lot prices are raw quotes: debt is priced as p
 and contract quotes are scaled by the declared multiplier. Cost, value, and P&L methods apply
 those conventions; retained exact monetary basis is never scaled again.
 
+`OrderState.ParentOrderId` links a broker-side exit leg to its parent order, so risk rules can count
+one-cancels-other legs once. It is omitted when null; records written before it existed read as
+unlinked orders.
+
 ## Diagrams
 
 See `DIA-PAPER-SESSION-REPLAY` in `docs/source/data/diagram-index.yml`.

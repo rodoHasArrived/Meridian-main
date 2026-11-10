@@ -133,6 +133,10 @@ request contracts.
 
 See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D8) for status and open decisions.
 
+`EventPipelinePolicy.CreateChannel` accepts an item-dropped callback so the owning pipeline can count
+evictions. `ConfigJsonSchemaGenerator` declares the sample configuration's `Settings`, `Serilog` and
+`$schema` keys.
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.

@@ -163,6 +163,11 @@ Risk decisions are log evidence, so the gate renders caller-supplied text throug
 F# position-limit rule embeds the symbol in its reason — and an unconstrained value containing a
 line break would otherwise render as a second log line that reads like a risk decision.
 
+**Position limit and working orders.** `PositionLimitRule` measures an order against the worst case
+its own side can reach: the filled position plus every working order in the same direction, read
+from the order manager's exposure-reserving orders. Opposite-side working orders are not netted off.
+An amendment does not count the order it replaces, and broker-side exit legs of one parent count once.
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.

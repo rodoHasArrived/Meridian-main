@@ -1390,6 +1390,20 @@ direct-lending and amortization gates are ungated when no verifier is registered
 
 See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D9, slice 6 disposition) for status and open decisions.
 
+**Provider credential read-ahead.** Provider construction is synchronous, so asynchronous callers
+await `IProviderCredentialResolver.PrepareAsync` and construct inside the prepared scope, where
+`StoredProviderCredentialResolver.CreateContext` does no storage I/O. The collector and backfill
+mode runners, `BackfillCoordinator`'s asynchronous operations and the routing engine's streaming
+resolver follow this order. A synchronous resolution outside a prepared scope still performs one
+blocking read on the thread pool. See
+[provider management](../../docs/architecture/provider-management.md).
+
+**Pipeline and backfill durability.** `EventPipeline` counts events the channel evicts in
+DropOldest/DropNewest mode as dropped. `HistoricalBackfillService` flushes the pipeline before each
+per-symbol checkpoint and reports failure when the final flush fails. `PersistentDedupLedger`
+offers a synchronous `Initialize` for dependency-injection factories, and `AutoResubscribePolicy`
+awaits `SubscriptionOrchestrator.ApplyAsync`.
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.

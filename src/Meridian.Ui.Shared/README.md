@@ -3018,6 +3018,11 @@ registered and it never writes; applying a proposal is a governed amendment.
 
 See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D8) for status and open decisions.
 
+**Brokerage sync carry-forward.** A failed or partial brokerage sync keeps the last good positions,
+balance and activity for whichever half returned nothing, with an explicit warning, and a
+carried-forward balance is not recorded as a new balance snapshot. **Package files.** Package
+download and delete require the resolved file to be a direct child of the packages directory.
+
 ## Diagrams
 
 See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.
