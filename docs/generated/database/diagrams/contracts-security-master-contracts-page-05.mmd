@@ -256,6 +256,7 @@ classDiagram
         +IReadOnlyList~string~ DroppedModules
         +IReadOnlyList~string~ EconomicTermsModules
         +SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster Instance
+        +IReadOnlyList~string~ ShapeRuleModules
     }
     class Meridian_Contracts_SecurityMaster_SecurityEvidenceLinkDto["SecurityEvidenceLinkDto"] {
         +string EvidenceId

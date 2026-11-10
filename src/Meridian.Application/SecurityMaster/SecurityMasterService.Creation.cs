@@ -17,14 +17,22 @@ public sealed partial class SecurityMasterService
         // Resolve the submitted profile and refuse contradictory metadata before domain mapping.
         var assetClassOverride = GetProfileBackedAssetClassOverride(request.AssetClass, request.AssetSpecificTerms);
         var result = SecurityMasterCommandFacade.Create(MapRequestOrRefuse(() => SecurityMasterMapping.ToCreateCommand(request)));
+        var assetTermsOverride = GetProfileBackedAssetSpecificTermsOverride(request.AssetSpecificTerms);
         var projection = CreateProjectionFromResult(
             result,
             aliases: null,
             assetClassOverride,
-            GetProfileBackedAssetSpecificTermsOverride(request.AssetSpecificTerms));
+            assetTermsOverride);
         EnsureProfileBackedTermsAreCatalogValid(projection, request.EffectiveFrom);
         SecurityAssetPackAdmission.EnsureAdmitted(projection, request.EffectiveFrom);
-        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
+        // S2-B3: with no profile-backed override the projection's flat document is exactly the
+        // codec serialization of the command result's typed record, so the economic record derives
+        // from that record directly instead of re-decoding the document it just produced. An
+        // override replaces the class or terms after the domain command, so only the overridden
+        // document is authoritative there.
+        var economic = assetClassOverride is null && assetTermsOverride is null
+            ? SecurityEconomicDefinitionAdapter.ToEconomicRecord(result.Snapshot!.Record, projection)
+            : SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
         var envelope = SecurityMasterMapping.ToEventEnvelope(
             economic,
             "SecurityCreated",

@@ -548,6 +548,28 @@ module SweepVehicle =
         | OtherVehicle other -> other
 
 [<RequireQualifiedAccess>]
+module DividendFrequency =
+
+    [<CompiledName("Label")>]
+    let label = function
+        | DividendFrequency.Annual -> "Annual"
+        | DividendFrequency.SemiAnnual -> "SemiAnnual"
+        | DividendFrequency.Quarterly -> "Quarterly"
+        | DividendFrequency.Monthly -> "Monthly"
+        | DividendFrequency.Irregular -> "Irregular"
+        | DividendFrequency.NoDividend -> "NoDividend"
+
+[<RequireQualifiedAccess>]
+module CovenantKind =
+
+    [<CompiledName("Label")>]
+    let label = function
+        | CovenantKind.FinancialMaintenance -> "FinancialMaintenance"
+        | CovenantKind.Incurrence -> "Incurrence"
+        | CovenantKind.Negative -> "Negative"
+        | CovenantKind.Affirmative -> "Affirmative"
+
+[<RequireQualifiedAccess>]
 module SecurityTermModules =
     let empty = {
         Maturity = None

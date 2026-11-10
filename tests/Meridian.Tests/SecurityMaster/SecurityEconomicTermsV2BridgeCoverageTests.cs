@@ -65,6 +65,41 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
             "prepaymentAssumption": { "model": "Psa", "speed": 150 }, "averageLifeYears": 6.5, "isInterestOnly": false,
             "isPrincipalOnly": false, "notionalBalance": 25000000, "originator": "Acme Mortgage", "creditEnhancementPct": 12.5,
             "factorScheduleReference": "trustee-report-2026-01"
+        },
+        "floatingRate": { "referenceIndex": "SOFR", "spreadBps": 125, "resetFrequency": "Quarterly", "floorRate": 0.0, "capRate": 8.5 },
+        "tradingParameters": {
+            "lotSize": 100, "tickSize": 0.01, "contractMultiplier": 1000, "marginRequirementPct": 20.0,
+            "tradingHoursUtc": "13:30-20:00", "circuitBreakerThresholdPct": 7.0
+        },
+        "creditRating": {
+            "ratings": [ { "agency": "Moody's", "grade": "Baa2", "outlook": "Stable", "issuanceLevel": "Instrument", "asOfDt": "2025-12-01" } ],
+            "compositeRating": "BBB", "isInvestmentGrade": true, "isHighYield": false
+        },
+        "depositaryReceipt": {
+            "underlyingSecurityId": "9e9e9e9e-0000-0000-0000-000000000002", "depositaryBank": "BNY Mellon", "ordinaryShareRatio": 4,
+            "underlyingExchangeMic": "XTKS", "underlyingCurrency": "JPY", "underlyingIsin": "JP3633400001", "underlyingCountry": "JP",
+            "cusipOfOrdinary": "594918104"
+        },
+        "dividendSchedule": {
+            "dividendFrequency": "Quarterly", "annualDividendRate": 2.48, "lastExDate": "2026-01-08", "lastPayDate": "2026-01-30",
+            "lastDividendPerShare": 0.62, "dividendCurrency": "USD", "isQualifiedDividend": true
+        },
+        "covenants": {
+            "covenants": [ { "kind": "FinancialMaintenance", "description": "Leverage covenant", "threshold": 4.0, "metric": "Net Debt / EBITDA", "testFrequency": "Quarterly" } ]
+        },
+        "esg": {
+            "esgScore": 72.5, "esgProvider": "MSCI", "esgRating": "AA", "esgAsOf": "2025-11-30",
+            "isGreenBond": true, "isSocialBond": false, "isSustainabilityLinked": false,
+            "unSdgAlignments": [ "SDG 7", "SDG 13" ], "paiIndicatorFlags": [ "GHG" ]
+        },
+        "venue": { "isListedOnExchange": true, "primaryExchMic": "XNYS", "executionVenueMic": "ARCX", "ccpName": "NSCC", "otcProtocol": null },
+        "multiCalendar": { "calendars": [ { "calendarId": "USNY", "calendarPurpose": "Payment" }, { "calendarId": "GBLO", "calendarPurpose": "Fixing" } ] },
+        "inflationLinked": {
+            "inflationIndex": "CPI-U", "baseIndexValue": 251.107, "baseDate": "2020-01-15", "currentFactor": 1.214,
+            "factorDate": "2026-01-01", "indexFloor": 1.0
+        },
+        "sinkingFund": {
+            "schedule": [ { "sinkDate": "2028-01-15", "amount": 5000000 } ], "sinkFrequency": "Annual", "isProRata": true
         }
     }
     """);
@@ -203,6 +238,17 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
     [InlineData("equityBehavior")]
     [InlineData("fund")]
     [InlineData("structuredProduct")]
+    [InlineData("floatingRate")]
+    [InlineData("tradingParameters")]
+    [InlineData("creditRating")]
+    [InlineData("depositaryReceipt")]
+    [InlineData("dividendSchedule")]
+    [InlineData("covenants")]
+    [InlineData("esg")]
+    [InlineData("venue")]
+    [InlineData("multiCalendar")]
+    [InlineData("inflationLinked")]
+    [InlineData("sinkingFund")]
     public void Convert_DroppedModule_LeavesNoTraceInTheFlatPayload(string module)
     {
         // This asserts the documented flat-key loss for an ordinary document. Declared schedule
@@ -235,6 +281,17 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
     [InlineData("equityBehavior")]
     [InlineData("fund")]
     [InlineData("structuredProduct")]
+    [InlineData("floatingRate")]
+    [InlineData("tradingParameters")]
+    [InlineData("creditRating")]
+    [InlineData("depositaryReceipt")]
+    [InlineData("dividendSchedule")]
+    [InlineData("covenants")]
+    [InlineData("esg")]
+    [InlineData("venue")]
+    [InlineData("multiCalendar")]
+    [InlineData("inflationLinked")]
+    [InlineData("sinkingFund")]
     public void Convert_DroppedModule_IsRetainedVerbatimBesideTheFlatKeys(string module)
     {
         // An ordinary document keeps its source module beside the lossy flat keys. Populated
@@ -246,6 +303,42 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
                 System.Text.Json.Nodes.JsonNode.Parse(retained.GetProperty(module).GetRawText()),
                 System.Text.Json.Nodes.JsonNode.Parse(OrdinaryEconomicTerms.GetProperty(module).GetRawText()))
             .Should().BeTrue($"the {module} module must be retained verbatim");
+    }
+
+    [Fact]
+    public void ProducerBackedExpansionModules_RideInTheEconomicDocument()
+    {
+        // ADR-027 stage 1 increment 5's observable gain: the flat terms that fed FloatingRate and
+        // TradingParameters no longer vanish from the economic family — before this increment the
+        // serializer never wrote the modules, so these values survived economic-only replay only
+        // through the retained flat document.
+        var capFloor = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("CapFloor", Json("""
+                {"schemaVersion":1,"capFloorType":"Collar","referenceIndex":"SOFR","capStrike":5.5,
+                 "floorStrike":1.0,"notional":10000000,"effectiveDate":"2026-01-15","maturityDate":"2031-01-15",
+                 "resetFrequency":"Quarterly"}
+                """))).EconomicTerms;
+        var floatingRate = capFloor.GetProperty("floatingRate");
+        floatingRate.GetProperty("referenceIndex").GetString().Should().Be("SOFR");
+        floatingRate.GetProperty("capRate").GetDecimal().Should().Be(5.5m);
+        floatingRate.GetProperty("floorRate").GetDecimal().Should().Be(1.0m);
+        floatingRate.GetProperty("resetFrequency").GetString().Should().Be("Quarterly");
+
+        var warrant = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("Warrant", Json("""
+                {"schemaVersion":1,"underlyingId":"9e9e9e9e-0000-0000-0000-000000000003","warrantType":"Call",
+                 "strike":25,"expiry":"2027-06-15","multiplier":100}
+                """))).EconomicTerms;
+        warrant.GetProperty("tradingParameters").GetProperty("contractMultiplier").GetDecimal().Should().Be(100m);
+
+        // A class that feeds neither module still writes the keys, null: the emitted inventory is
+        // one shape for every class.
+        var equity = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("Equity", Json("""
+                {"schemaVersion":1,"shareClass":"Common"}
+                """))).EconomicTerms;
+        equity.GetProperty("floatingRate").ValueKind.Should().Be(JsonValueKind.Null);
+        equity.GetProperty("sinkingFund").ValueKind.Should().Be(JsonValueKind.Null);
     }
 
     [Fact]
