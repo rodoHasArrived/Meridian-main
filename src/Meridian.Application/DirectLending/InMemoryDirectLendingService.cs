@@ -462,6 +462,8 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
             var interestAmount = isPikAccrual ? 0m : accruedInterest - deferredPik;
             var pikInterestAmount = isPikAccrual ? accruedInterest : deferredPik;
             var capitalizedToday = isPikAccrual ? pikInterestAmount : 0m;
+            // PRD-115: the day's cash interest is settled from prepaid interest first; PIK never consumes it.
+            var prepaidInterestConsumed = Math.Min(Math.Max(0m, stored.Servicing.Balances.PrepaidInterest), Math.Max(0m, interestAmount));
 
             // Undrawn commitment, rounded to cents, as the F# aggregate computes it.
             var commitmentFeeAmount = terms.CommitmentFeeRate is { } feeRate
@@ -492,8 +494,9 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
                 Balances = stored.Servicing.Balances with
                 {
                     PrincipalOutstanding = stored.Servicing.Balances.PrincipalOutstanding + capitalizedToday,
-                    InterestAccruedUnpaid = stored.Servicing.Balances.InterestAccruedUnpaid + interestAmount,
-                    CommitmentFeeAccruedUnpaid = stored.Servicing.Balances.CommitmentFeeAccruedUnpaid + commitmentFeeAmount
+                    InterestAccruedUnpaid = stored.Servicing.Balances.InterestAccruedUnpaid + interestAmount - prepaidInterestConsumed,
+                    CommitmentFeeAccruedUnpaid = stored.Servicing.Balances.CommitmentFeeAccruedUnpaid + commitmentFeeAmount,
+                    PrepaidInterest = stored.Servicing.Balances.PrepaidInterest - prepaidInterestConsumed
                 },
                 PikInterestAccruedUnpaid = stored.Servicing.PikInterestAccruedUnpaid + deferredPik,
                 LastAccrualDate = request.AccrualDate
@@ -517,7 +520,8 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
                     entry.PenaltyAmount,
                     entry.AnnualRateApplied,
                     entry.PikInterestAmount,
-                    entry.PikCapitalizationDeferred
+                    entry.PikCapitalizationDeferred,
+                    PrepaidInterestConsumed = prepaidInterestConsumed
                 }
                 : (object)new
                 {
@@ -528,7 +532,8 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
                     entry.CommitmentFeeAmount,
                     entry.PenaltyAmount,
                     entry.AnnualRateApplied,
-                    entry.PikInterestAmount
+                    entry.PikInterestAmount,
+                    PrepaidInterestConsumed = prepaidInterestConsumed
                 }, metadata);
             return Task.FromResult<DailyAccrualEntryDto?>(entry);
         }
@@ -824,9 +829,17 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
 
     private static void ApplyPaymentToLots(List<DrawdownLotDto> lots, decimal appliedAmount)
     {
+        // Earliest drawdown first, as the F# aggregate and the event rebuilder apply it; lots are
+        // stored in booking order, which can differ from drawdown order.
         var remaining = appliedAmount;
-        for (var i = 0; i < lots.Count && remaining > 0m; i++)
+        var earliestFirst = Enumerable.Range(0, lots.Count).OrderBy(index => lots[index].DrawdownDate).ToArray();
+        foreach (var i in earliestFirst)
         {
+            if (remaining <= 0m)
+            {
+                break;
+            }
+
             var lot = lots[i];
             if (lot.RemainingPrincipal <= 0m)
             {
