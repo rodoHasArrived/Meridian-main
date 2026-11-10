@@ -81,7 +81,7 @@ public sealed class CredentialServiceTests : IDisposable
 
         var credential = sut.GetCredential(resource);
         credential.HasValue.Should().BeTrue("the credential was just saved");
-        credential.Value.Username.Should().Be("user-1");
+        credential!.Value.Username.Should().Be("user-1");
         credential.Value.Password.Should().Be("pass-1");
         sut.HasCredential(resource).Should().BeTrue();
     }
@@ -97,7 +97,7 @@ public sealed class CredentialServiceTests : IDisposable
 
         var credential = sut.GetCredential(resource);
         credential.HasValue.Should().BeTrue();
-        credential.Value.Username.Should().Be("user-new", "the second save must overwrite the first");
+        credential!.Value.Username.Should().Be("user-new", "the second save must overwrite the first");
         credential.Value.Password.Should().Be("pass-new");
     }
 
@@ -113,7 +113,7 @@ public sealed class CredentialServiceTests : IDisposable
         var credential = reader.GetCredential(resource);
         credential.HasValue.Should().BeTrue(
             "a fresh instance must decrypt the vault written by the first instance");
-        credential.Value.Username.Should().Be("roundtrip-user");
+        credential!.Value.Username.Should().Be("roundtrip-user");
         credential.Value.Password.Should().Be("roundtrip-pass");
     }
 
@@ -164,7 +164,7 @@ public sealed class CredentialServiceTests : IDisposable
         sut.GetApiKey(resource).Should().Be("the-api-key");
         var credential = sut.GetCredential(resource);
         credential.HasValue.Should().BeTrue();
-        credential.Value.Username.Should().Be("apikey", "SaveApiKey stores the literal 'apikey' username");
+        credential!.Value.Username.Should().Be("apikey", "SaveApiKey stores the literal 'apikey' username");
     }
 
     [Fact]
@@ -326,7 +326,7 @@ public sealed class CredentialServiceTests : IDisposable
         var credential = reader.GetCredential(resource);
         credential.HasValue.Should().BeTrue(
             "after corrupt-store recovery the vault must self-heal into a valid encrypted file");
-        credential.Value.Username.Should().Be("healed-user");
+        credential!.Value.Username.Should().Be("healed-user");
         credential.Value.Password.Should().Be("healed-pass");
     }
 
@@ -407,7 +407,7 @@ public sealed class CredentialServiceTests : IDisposable
 
         var credentials = sut.GetAlpacaCredentials();
         credentials.HasValue.Should().BeTrue();
-        credentials.Value.KeyId.Should().Be("alpaca-key-id");
+        credentials!.Value.KeyId.Should().Be("alpaca-key-id");
         credentials.Value.SecretKey.Should().Be("alpaca-secret");
         sut.HasAlpacaCredentials().Should().BeTrue();
         sut.HasCredential(CredentialService.AlpacaCredentialResource).Should().BeTrue();
@@ -826,11 +826,11 @@ public sealed class CredentialServiceTests : IDisposable
 
         var accessCredential = sut.GetCredential(resource);
         accessCredential.HasValue.Should().BeTrue();
-        accessCredential.Value.Username.Should().Be("oauth");
+        accessCredential!.Value.Username.Should().Be("oauth");
 
         var refreshCredential = sut.GetCredential($"{resource}.refresh");
         refreshCredential.HasValue.Should().BeTrue("the refresh token must be stored alongside the access token");
-        refreshCredential.Value.Username.Should().Be("oauth_refresh");
+        refreshCredential!.Value.Username.Should().Be("oauth_refresh");
         refreshCredential.Value.Password.Should().Be("refresh-token-1");
 
         var metadata = sut.GetMetadata(resource);
