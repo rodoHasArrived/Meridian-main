@@ -118,6 +118,9 @@ Row classification, the WPF provenance composition and migration 062's independe
   listing/venue distinctions; compare C#, F# and retained SQL fixtures.
 - Declare profile-to-class resolution and cash-flow term roles with precedence/legacy rules;
   give the pack registry an agreed typed purpose or preserve it as informational documentation.
+  (Pack registry: informational disposition recorded 2026-11-04. On 2026-11-09 the built-in shared
+  coverage was declared and checked, and the candidate overlap rule gained the planned axis; see the
+  D9 disposition in the review. Profile-to-class resolution and term roles remain open.)
 - Verify actual ledger/NAV/risk/client consumption of income, factor, corporate-action and
   unitized-lot capabilities with retained end-to-end examples. Keep override enrichment fields
   separate from economic-term fields.
