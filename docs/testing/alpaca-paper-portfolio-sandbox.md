@@ -7,9 +7,13 @@
 `AlpacaPaperSandboxTests` exercises the production Alpaca portfolio adapter, account-scoped
 synchronization service, OMS reconciliation service, exposure provider, and portfolio risk gate
 against the real paper Trading API. It reads account balances, holdings and open orders, then
-checks account isolation and the restart/disconnect blocks. It never submits, changes or cancels
-an order. An HTTP guard allows only three GET endpoints on `paper-api.alpaca.markets` and disables
-redirects, independently of configuration.
+checks account isolation and the restart/disconnect blocks. A second test fetches the account's
+activity through `AlpacaActivityStatementConnector`, parses it on the same path as an imported
+statement, checks period bounds and account scoping, and verifies the credentials through
+`AlpacaBrokerageConnectionService` against a scratch credential store. Neither test submits,
+changes or cancels an order. An HTTP guard allows only the account, positions, open-order and
+account-activity GET endpoints on `paper-api.alpaca.markets` and disables redirects, independently
+of configuration.
 
 ## Run the real-broker check
 
