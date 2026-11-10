@@ -501,6 +501,95 @@ function collectCaptureWaitForAbsentTexts(capture) {
   )];
 }
 
+const OPAQUE_IDENTIFIER_PATTERN = /\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi;
+// A count of exactly one directly followed by a plural noun that ends its phrase ("1 rows",
+// "1 TEMPLATES", "1 jobs · 2 packages"). The lookbehinds keep "11 rows", "0.1 rows", "$1 fees",
+// "2026-01-1 ..." and ratios ("1 of 1 breaks") out. The lookahead requires the plural to be the
+// last word of its phrase: a plural-form modifier is correct English ("1 operations continuity
+// workflow", "1 securities account"), and a verb after a singular subject reads on ("Slice 1 uses
+// the provider"). The price is that "1 rows parsed" is not caught; precision matters more for a
+// check that fails a capture.
+const SINGULAR_COUNT_PLURAL_NOUN_PATTERN = /(?<![\w.,:/$%+#-])(?<!\bof )1 ([a-z]{3,}s)(?![\w-])(?! [a-z(])/gi;
+// Words ending in "s" that are not plural nouns: third-person verbs that can end a sentence
+// ("Step 1 fails.") and singular nouns. Words ending in "ss", "us" or "is" (business, status,
+// basis) are skipped by rule.
+const NOT_PLURAL_NOUNS = new Set([
+  "always", "appears", "applies", "blocks", "contributes", "does", "exceeds", "exists", "fails",
+  "has", "holds", "needs", "passes", "remains", "requires", "series", "shows", "uses", "was"
+]);
+export const CAPTURE_CONTENT_ISSUE_KINDS = ["opaque-identifier", "singular-count-plural-noun"];
+
+/**
+ * Operator-facing copy rules checked on each route's rendered main content:
+ *   - opaque-identifier: GUID/UUID-shaped text. Records are named by display name; identifiers
+ *     belong in a collapsed technical-details disclosure, a title attribute or a form field,
+ *     none of which is part of the rendered text.
+ *   - singular-count-plural-noun: "1 rows" style counts. Use pluralizeCount from the dashboard's
+ *     lib/format.
+ * Returns one entry per distinct offending excerpt.
+ */
+export function findCaptureContentIssues(text) {
+  const issues = [];
+  const seen = new Set();
+  const record = (kind, excerpt) => {
+    const key = `${kind}:${excerpt.toLowerCase()}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      issues.push({ kind, excerpt });
+    }
+  };
+
+  for (const match of String(text ?? "").matchAll(OPAQUE_IDENTIFIER_PATTERN)) {
+    record("opaque-identifier", match[0]);
+  }
+  for (const match of String(text ?? "").matchAll(SINGULAR_COUNT_PLURAL_NOUN_PATTERN)) {
+    const noun = match[1].toLowerCase();
+    if (!NOT_PLURAL_NOUNS.has(noun) && !/(ss|us|is)$/.test(noun)) {
+      record("singular-count-plural-noun", match[0]);
+    }
+  }
+
+  return issues;
+}
+
+/**
+ * The content-issue kinds a capture is allowed to render, from its `allowedContentIssues` list of
+ * `{ kind, reason }` entries. An entry without a reason is ignored: an exception has to say why.
+ */
+export function collectAllowedContentIssueKinds(capture) {
+  if (!Array.isArray(capture?.allowedContentIssues)) {
+    return new Set();
+  }
+
+  return new Set(
+    capture.allowedContentIssues
+      .filter((entry) => entry
+        && CAPTURE_CONTENT_ISSUE_KINDS.includes(entry.kind)
+        && typeof entry.reason === "string"
+        && entry.reason.trim().length > 0)
+      .map((entry) => entry.kind)
+  );
+}
+
+/** Splits a capture's content issues into the ones that fail it and the ones it is allowed. */
+export function partitionCaptureContentIssues(text, capture) {
+  const allowedKinds = collectAllowedContentIssueKinds(capture);
+  const blocking = [];
+  const allowed = [];
+  for (const issue of findCaptureContentIssues(text)) {
+    (allowedKinds.has(issue.kind) ? allowed : blocking).push(issue);
+  }
+  return { blocking, allowed };
+}
+
+export function describeCaptureContentIssues(captureName, issues) {
+  const shown = issues.slice(0, 5).map((issue) => `${issue.kind} "${issue.excerpt}"`).join("; ");
+  const more = issues.length > 5 ? `; and ${issues.length - 5} more` : "";
+  return `Capture ${captureName} renders ${issues.length} operator-copy issue(s) in its main content: ${shown}${more}. `
+    + "Name records by display name and keep identifiers in technical details; use pluralizeCount for counts. "
+    + "A route that cannot comply yet lists the kind with a reason under allowedContentIssues in the route catalog.";
+}
+
 function isActionableBrowserError(text) {
   return /Maximum update depth exceeded|Meridian workstation route failed to render|Unhandled error/i.test(text);
 }
@@ -665,6 +754,14 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
     throw new Error(`Rendered body text length ${textLength} is below minimum ${minTextLength}`);
   }
 
+  // Rendered text only: collapsed technical details, title attributes and form field values are
+  // not part of innerText, which is exactly where identifiers are meant to live.
+  const mainText = await page.evaluate(() => (document.querySelector("main") ?? document.body).innerText);
+  const contentIssues = partitionCaptureContentIssues(mainText, capture);
+  if (contentIssues.blocking.length > 0) {
+    throw new Error(describeCaptureContentIssues(capture.name, contentIssues.blocking));
+  }
+
   const actualUrl = page.url();
   const requestedPath = new URL(url).pathname;
   // Some captures deliberately target a compatibility route that redirects to
@@ -704,6 +801,8 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
     viewport,
     bytes: buffer.length,
     textLength,
+    // Exceptions the route catalog grants this capture, kept visible in the manifest.
+    ...(contentIssues.allowed.length > 0 ? { allowedContentIssues: contentIssues.allowed } : {}),
     durationSeconds: Number(((Date.now() - started) / 1000).toFixed(2)),
     status: "passed"
   };
