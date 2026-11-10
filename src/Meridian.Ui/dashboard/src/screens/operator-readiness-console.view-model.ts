@@ -14,6 +14,7 @@ import {
   formatReadinessUtcMinute,
   levelFromReadiness,
   levelFromTone,
+  sentence,
   toErrorMessage
 } from "@/screens/operator-readiness-console.presentation";
 import type {
@@ -1992,10 +1993,4 @@ function buildMissingReadinessDetail(
 function hasCriticalOperatorInbox(operatorInbox: OperatorInbox | null): boolean {
   return (operatorInbox?.criticalCount ?? 0) > 0 ||
     operatorInbox?.items.some((item) => item.tone === "Critical") === true;
-}
-
-/** Ends a message with one period, so a message that already has one does not get a second. */
-function sentence(message: string): string {
-  const trimmed = message.trim();
-  return /[.!?]$/.test(trimmed) ? trimmed : `${trimmed}.`;
 }
