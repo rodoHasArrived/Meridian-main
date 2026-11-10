@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "aaa3faae104dc98c2612767a0e8a9e644cca31bc930c06a2d76d212f358dee62",
+      "fingerprint": "32a95ec65e760120b767bd01ba048cf776eb5a3b40bc71069c8a1d14cffb81ff",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -1640,13 +1640,6 @@
         "Meridian.Contracts.Plaid.PlaidTransferResult",
         "Meridian.Contracts.Plaid.PlaidTransferStatusDto",
         "Meridian.Contracts.Plaid.PlaidWebhookEventDto",
-        "Meridian.Contracts.Reconciliation.IReconciliationApiService",
-        "Meridian.Contracts.Reconciliation.ReconciliationCaseSummaryDto",
-        "Meridian.Contracts.Reconciliation.ReconciliationFundAccountAuthorization",
-        "Meridian.Contracts.Reconciliation.ReconciliationQueueAccountStatusDto",
-        "Meridian.Contracts.Reconciliation.StatementImportSummaryDto",
-        "Meridian.Contracts.Reconciliation.StatementReconciliationRunAuthorization",
-        "Meridian.Contracts.Reconciliation.StatementRunEvidenceLinkDto",
         "Meridian.Contracts.Reporting.GovernedReportingRunDto",
         "Meridian.Contracts.Reporting.ReportingGovernanceAccessPrincipalDto",
         "Meridian.Contracts.Reporting.ReportingGovernanceAccessScopeDto",
@@ -4715,7 +4708,7 @@
       ]
     }
   ],
-  "fingerprint": "cbce1549f474f8e38b392cae6c38b299517e1a392f88cd3a3ed7dc21b1511c13",
+  "fingerprint": "ed6aeef883144b4f1011b223d1ce3b477b4c9d270a8feb2a73d9978a57cb16bb",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -6825,23 +6818,6 @@
     },
     {
       "contract_sets": [
-        "all-contracts"
-      ],
-      "fingerprint": "5c6fdf57c9a8d287fbc492004805b3581921574aab2e05dd5023dc7975dd766a",
-      "mapped_schemas": [],
-      "namespace": "Meridian.Contracts.Reconciliation",
-      "object_ids": [
-        "Meridian.Contracts.Reconciliation.IReconciliationApiService",
-        "Meridian.Contracts.Reconciliation.ReconciliationCaseSummaryDto",
-        "Meridian.Contracts.Reconciliation.ReconciliationFundAccountAuthorization",
-        "Meridian.Contracts.Reconciliation.ReconciliationQueueAccountStatusDto",
-        "Meridian.Contracts.Reconciliation.StatementImportSummaryDto",
-        "Meridian.Contracts.Reconciliation.StatementReconciliationRunAuthorization",
-        "Meridian.Contracts.Reconciliation.StatementRunEvidenceLinkDto"
-      ]
-    },
-    {
-      "contract_sets": [
         "all-contracts",
         "reporting-contracts"
       ],
@@ -6911,7 +6887,7 @@
         "all-contracts",
         "security-master-contracts"
       ],
-      "fingerprint": "76ef492d3ac07da170dc8fd1da3bf4677fa783eb9b9d3ae80ed0670ac9ce559e",
+      "fingerprint": "27cca1a3a981b3c367a80a1d894a6795b87b5610b8ec59e1fe9ac014c4346afe",
       "mapped_schemas": [
         "security_master"
       ],
@@ -228270,1227 +228246,6 @@
     },
     {
       "base_types": [],
-      "classification": "service_contract",
-      "containing_type": null,
-      "contract_sets": [
-        "all-contracts"
-      ],
-      "diagram": false,
-      "diagram_contract_sets": [],
-      "enum_members": [],
-      "fingerprint": "878bbdcb06df8268ad9ad21e0386cc1d1c47ddc2de1622848f31305e303c58df",
-      "full_name": "Meridian.Contracts.Reconciliation.IReconciliationApiService",
-      "id": "Meridian.Contracts.Reconciliation.IReconciliationApiService",
-      "kind": "interface",
-      "mapped_schemas": [],
-      "members": [],
-      "name": "IReconciliationApiService",
-      "namespace": "Meridian.Contracts.Reconciliation",
-      "partial": false,
-      "qualified_name": "Meridian.Contracts.Reconciliation.IReconciliationApiService",
-      "references": [],
-      "source": {
-        "line": 22,
-        "path": "src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs"
-      },
-      "sources": [
-        {
-          "line": 22,
-          "path": "src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs"
-        }
-      ],
-      "type_parameters": []
-    },
-    {
-      "base_types": [],
-      "classification": "dto",
-      "containing_type": null,
-      "contract_sets": [
-        "all-contracts"
-      ],
-      "diagram": false,
-      "diagram_contract_sets": [],
-      "enum_members": [],
-      "fingerprint": "3eed142acbd1ad0a098f3604e0836573e9a807460b1a4f3cb7ad085695b38b3c",
-      "full_name": "Meridian.Contracts.Reconciliation.ReconciliationCaseSummaryDto",
-      "id": "Meridian.Contracts.Reconciliation.ReconciliationCaseSummaryDto",
-      "kind": "record",
-      "mapped_schemas": [],
-      "members": [
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "AgeBand",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 26,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Assignee",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 19,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "0",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "BusinessAgeHours",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "double",
-          "source_line": 27,
-          "type": "double"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "CaseId",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 12,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Confidence",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "decimal",
-          "source_line": 16,
-          "type": "decimal"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "CreatedAtUtc",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 18,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "ImportId",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 13,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "\"Normal\"",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Priority",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 20,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Rationale",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 17,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Reason",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 15,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "ReopenedAtUtc",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 34,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "ReopenedBy",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 33,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "ReopenReason",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 35,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "ResolutionCode",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 29,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "ResolutionNote",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 30,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "RootCauseCode",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 28,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "SignedOffAtUtc",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 32,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "SignedOffBy",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 31,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "SlaBreachedAtUtc",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 24,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "SlaDueAtUtc",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 22,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "SlaPolicyId",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 21,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "\"OnTrack\"",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "SlaState",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 25,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "SlaWarningAtUtc",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 23,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Status",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 14,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "0",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Version",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "long",
-          "source_line": 36,
-          "type": "long"
-        }
-      ],
-      "name": "ReconciliationCaseSummaryDto",
-      "namespace": "Meridian.Contracts.Reconciliation",
-      "partial": false,
-      "qualified_name": "Meridian.Contracts.Reconciliation.ReconciliationCaseSummaryDto",
-      "references": [],
-      "source": {
-        "line": 11,
-        "path": "src/Meridian.Contracts/Reconciliation/StatementImportContracts.cs"
-      },
-      "sources": [
-        {
-          "line": 11,
-          "path": "src/Meridian.Contracts/Reconciliation/StatementImportContracts.cs"
-        }
-      ],
-      "type_parameters": []
-    },
-    {
-      "base_types": [],
-      "classification": "record",
-      "containing_type": null,
-      "contract_sets": [
-        "all-contracts"
-      ],
-      "diagram": false,
-      "diagram_contract_sets": [],
-      "enum_members": [],
-      "fingerprint": "279a480fafe56634bb7c00aa04e1769819ed77ff018ab139ec31cd6192e3b494",
-      "full_name": "Meridian.Contracts.Reconciliation.ReconciliationFundAccountAuthorization",
-      "id": "Meridian.Contracts.Reconciliation.ReconciliationFundAccountAuthorization",
-      "kind": "record",
-      "mapped_schemas": [],
-      "members": [
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "FundAccountId",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "Guid",
-          "source_line": 6,
-          "type": "Guid"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "FundProfileId",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 7,
-          "type": "string"
-        }
-      ],
-      "name": "ReconciliationFundAccountAuthorization",
-      "namespace": "Meridian.Contracts.Reconciliation",
-      "partial": false,
-      "qualified_name": "Meridian.Contracts.Reconciliation.ReconciliationFundAccountAuthorization",
-      "references": [],
-      "source": {
-        "line": 5,
-        "path": "src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs"
-      },
-      "sources": [
-        {
-          "line": 5,
-          "path": "src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs"
-        }
-      ],
-      "type_parameters": []
-    },
-    {
-      "base_types": [],
-      "classification": "dto",
-      "containing_type": null,
-      "contract_sets": [
-        "all-contracts"
-      ],
-      "diagram": false,
-      "diagram_contract_sets": [],
-      "enum_members": [],
-      "fingerprint": "e462872359a47a6e181bf38353a99c0c8c8458ec3c9ee3afca0e727193f68ee1",
-      "full_name": "Meridian.Contracts.Reconciliation.ReconciliationQueueAccountStatusDto",
-      "id": "Meridian.Contracts.Reconciliation.ReconciliationQueueAccountStatusDto",
-      "kind": "record",
-      "mapped_schemas": [],
-      "members": [
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "AccountCode",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 40,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "AccountId",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "Guid",
-          "source_line": 39,
-          "type": "Guid"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "BlockerReason",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 45,
-          "type": "string"
-        },
-        {
-          "collection": true,
-          "collection_kind": "IReadOnlyList",
-          "element_type": "string",
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "EvidenceLinks",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "IReadOnlyList<string>",
-          "source_line": 46,
-          "type": "IReadOnlyList<string>"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "NextBestAction",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 44,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "QueueState",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 41,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "SignOffReady",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "bool",
-          "source_line": 43,
-          "type": "bool"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "UnresolvedBreakCount",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "int",
-          "source_line": 42,
-          "type": "int"
-        }
-      ],
-      "name": "ReconciliationQueueAccountStatusDto",
-      "namespace": "Meridian.Contracts.Reconciliation",
-      "partial": false,
-      "qualified_name": "Meridian.Contracts.Reconciliation.ReconciliationQueueAccountStatusDto",
-      "references": [],
-      "source": {
-        "line": 38,
-        "path": "src/Meridian.Contracts/Reconciliation/StatementImportContracts.cs"
-      },
-      "sources": [
-        {
-          "line": 38,
-          "path": "src/Meridian.Contracts/Reconciliation/StatementImportContracts.cs"
-        }
-      ],
-      "type_parameters": []
-    },
-    {
-      "base_types": [],
-      "classification": "dto",
-      "containing_type": null,
-      "contract_sets": [
-        "all-contracts"
-      ],
-      "diagram": false,
-      "diagram_contract_sets": [],
-      "enum_members": [],
-      "fingerprint": "70878dd8240d6e1d3a921b11b5acfd46cc38f7ca26831b300e660ed7e00e39fb",
-      "full_name": "Meridian.Contracts.Reconciliation.StatementImportSummaryDto",
-      "id": "Meridian.Contracts.Reconciliation.StatementImportSummaryDto",
-      "kind": "record",
-      "mapped_schemas": [],
-      "members": [
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Broker",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 5,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "ImportedAtUtc",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 7,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "ImportId",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 4,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "NormalizedRowCount",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "int",
-          "source_line": 9,
-          "type": "int"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "RawRowCount",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "int",
-          "source_line": 8,
-          "type": "int"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "StatementDate",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 6,
-          "type": "string"
-        }
-      ],
-      "name": "StatementImportSummaryDto",
-      "namespace": "Meridian.Contracts.Reconciliation",
-      "partial": false,
-      "qualified_name": "Meridian.Contracts.Reconciliation.StatementImportSummaryDto",
-      "references": [],
-      "source": {
-        "line": 3,
-        "path": "src/Meridian.Contracts/Reconciliation/StatementImportContracts.cs"
-      },
-      "sources": [
-        {
-          "line": 3,
-          "path": "src/Meridian.Contracts/Reconciliation/StatementImportContracts.cs"
-        }
-      ],
-      "type_parameters": []
-    },
-    {
-      "base_types": [],
-      "classification": "record",
-      "containing_type": null,
-      "contract_sets": [
-        "all-contracts"
-      ],
-      "diagram": false,
-      "diagram_contract_sets": [],
-      "enum_members": [],
-      "fingerprint": "0547d69e0e64c94586eabaa7fa207769c104c4568704f74b7c880a1cf4c7cf71",
-      "full_name": "Meridian.Contracts.Reconciliation.StatementReconciliationRunAuthorization",
-      "id": "Meridian.Contracts.Reconciliation.StatementReconciliationRunAuthorization",
-      "kind": "record",
-      "mapped_schemas": [],
-      "members": [
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "AccountingPeriodId",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "Guid",
-          "source_line": 14,
-          "type": "Guid"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "AsOfDate",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "DateOnly",
-          "source_line": 15,
-          "type": "DateOnly"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "FundAccountId",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "Guid",
-          "source_line": 11,
-          "type": "Guid"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "FundProfileId",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 12,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "LedgerBookId",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "Guid",
-          "source_line": 13,
-          "type": "Guid"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "PeriodEnd",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "DateOnly",
-          "source_line": 17,
-          "type": "DateOnly"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "PeriodStart",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "DateOnly",
-          "source_line": 16,
-          "type": "DateOnly"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "RunId",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 10,
-          "type": "string"
-        }
-      ],
-      "name": "StatementReconciliationRunAuthorization",
-      "namespace": "Meridian.Contracts.Reconciliation",
-      "partial": false,
-      "qualified_name": "Meridian.Contracts.Reconciliation.StatementReconciliationRunAuthorization",
-      "references": [],
-      "source": {
-        "line": 9,
-        "path": "src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs"
-      },
-      "sources": [
-        {
-          "line": 9,
-          "path": "src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs"
-        }
-      ],
-      "type_parameters": []
-    },
-    {
-      "base_types": [],
-      "classification": "dto",
-      "containing_type": null,
-      "contract_sets": [
-        "all-contracts"
-      ],
-      "diagram": false,
-      "diagram_contract_sets": [],
-      "enum_members": [],
-      "fingerprint": "65eadde93ecd47cfe2418e5be13a7ff83446a9b7bda9d9a598aed7af8d1976f0",
-      "full_name": "Meridian.Contracts.Reconciliation.StatementRunEvidenceLinkDto",
-      "id": "Meridian.Contracts.Reconciliation.StatementRunEvidenceLinkDto",
-      "kind": "record",
-      "mapped_schemas": [],
-      "members": [
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Account",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 54,
-          "type": "string"
-        },
-        {
-          "collection": true,
-          "collection_kind": "IReadOnlyList",
-          "element_type": "string",
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "BreakIds",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "IReadOnlyList<string>",
-          "source_line": 63,
-          "type": "IReadOnlyList<string>"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "BrokerCustodian",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 53,
-          "type": "string"
-        },
-        {
-          "collection": true,
-          "collection_kind": "IReadOnlyList",
-          "element_type": "string",
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "CaseIds",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "IReadOnlyList<string>",
-          "source_line": 64,
-          "type": "IReadOnlyList<string>"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "EvidenceId",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 49,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "EvidenceRoute",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 50,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "ImportedAtUtc",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 66,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "ImportedBy",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 65,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "MappingProfileId",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 57,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "MappingProfileVersion",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "int",
-          "source_line": 58,
-          "type": "int"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "MatchSummary",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 62,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "ReconciledAtUtc",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 68,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "ReconciledBy",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 67,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "RunId",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 51,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "SourceFileHash",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 52,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "StatementPeriodEnd",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 56,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "StatementPeriodStart",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 55,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "ToleranceProfileId",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 59,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "ToleranceProfileVersion",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "int",
-          "source_line": 60,
-          "type": "int"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "ValidationSummary",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 61,
-          "type": "string"
-        }
-      ],
-      "name": "StatementRunEvidenceLinkDto",
-      "namespace": "Meridian.Contracts.Reconciliation",
-      "partial": false,
-      "qualified_name": "Meridian.Contracts.Reconciliation.StatementRunEvidenceLinkDto",
-      "references": [],
-      "source": {
-        "line": 48,
-        "path": "src/Meridian.Contracts/Reconciliation/StatementImportContracts.cs"
-      },
-      "sources": [
-        {
-          "line": 48,
-          "path": "src/Meridian.Contracts/Reconciliation/StatementImportContracts.cs"
-        }
-      ],
-      "type_parameters": []
-    },
-    {
-      "base_types": [],
       "classification": "dto",
       "containing_type": null,
       "contract_sets": [
@@ -268356,7 +267111,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "99c6ab0ebcb58a9756fcee63c7507da4463f2273c2a52fd821c89d25483206d8",
+      "fingerprint": "fa97fc35ba0ac9f8da064e6fa167ebdb340521ceb42e0a6ceeb6532caa776430",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterChain",
       "id": "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterChain",
       "kind": "class",
@@ -268370,12 +267125,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterChain",
       "references": [],
       "source": {
-        "line": 1247,
+        "line": 1356,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs"
       },
       "sources": [
         {
-          "line": 1247,
+          "line": 1356,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs"
         }
       ],
@@ -268396,7 +267151,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "6ca75ba544f21228f5de91c584c36c8d47760d97f9681aef8231f2bf64cbff5d",
+      "fingerprint": "f75374a730f4d75d1043e36fb4d1a918882adf174f00eeaf81059c26872e960c",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterPipeline",
       "id": "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterPipeline",
       "kind": "class",
@@ -268415,7 +267170,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "SecurityAssetSpecificTermsUpcasterPipeline",
-          "source_line": 1302,
+          "source_line": 1411,
           "type": "SecurityAssetSpecificTermsUpcasterPipeline"
         }
       ],
@@ -268428,12 +267183,12 @@
         "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTerms"
       ],
       "source": {
-        "line": 1299,
+        "line": 1408,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs"
       },
       "sources": [
         {
-          "line": 1299,
+          "line": 1408,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs"
         }
       ],
@@ -272719,7 +271474,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "4364b288179e16d2f04700995b35b315861ee13adcb918d1e442423c7ec0b912",
+      "fingerprint": "dc49a55c2337f028f6ae25f02895f9ae8d723b5c2c388d8ac7875414a87cf9c0",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster",
       "id": "Meridian.Contracts.SecurityMaster.SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster",
       "kind": "class",
@@ -272738,7 +271493,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 57,
+          "source_line": 63,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -272752,7 +271507,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 69,
+          "source_line": 88,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -272766,7 +271521,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 79,
+          "source_line": 99,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -272790,11 +271545,25 @@
           "json_ignored": false,
           "json_name": null,
           "key_type": null,
+          "name": "ModulesAddedAfterIdentityGate",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "IReadOnlyList<string>",
+          "source_line": 75,
+          "type": "IReadOnlyList<string>"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "string",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
           "name": "ShapeRuleModules",
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 91,
+          "source_line": 111,
           "type": "IReadOnlyList<string>"
         }
       ],
