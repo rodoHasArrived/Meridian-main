@@ -81,9 +81,6 @@ public sealed class SubscriptionOrchestrator
         string.Equals(sc.SecurityType, "OPT", StringComparison.OrdinalIgnoreCase)
         || sc.InstrumentType is InstrumentType.EquityOption or InstrumentType.IndexOption;
 
-    public void Apply(AppConfig cfg)
-        => ApplyAsync(cfg).GetAwaiter().GetResult();
-
     public async Task ApplyAsync(AppConfig cfg, CancellationToken ct = default)
     {
         if (cfg is null)

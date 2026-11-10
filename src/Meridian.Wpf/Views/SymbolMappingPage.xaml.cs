@@ -50,6 +50,9 @@ public partial class SymbolMappingPage : Page
     }
 
     private async void ImportCsv_Click(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => ImportCsv_ClickCoreAsync(sender, e), nameof(ImportCsv_Click)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task ImportCsv_ClickCoreAsync(object sender, RoutedEventArgs e)
     {
         var dialog = new Microsoft.Win32.OpenFileDialog
         {
