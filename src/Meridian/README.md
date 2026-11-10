@@ -11,6 +11,8 @@ last_reviewed: 2026-07-27
 
 # src/Meridian
 
+`UiServer` paper composition registers `IOrderGateway` as a read-only view over the OMS paper `IExecutionGateway` (no second paper simulator). The optional StockSharp gateway no longer registers placeholder account-catalog, portfolio or activity sync adapters; the runtime surface reports those as missing.
+
 The browser host can compose the Alpaca brokerage execution portfolio. `BrokeragePortfolioState`
 projects broker observations for the existing portfolio and position-tracker consumers; mandatory
 account synchronization and readiness gates reject missing, stale or inconsistent authority.
@@ -103,6 +105,10 @@ API-only status-code fallback converts otherwise empty 4xx/5xx results to the sa
 contract. Browser routes and static assets remain outside that fallback, while missing runtime
 services and safe server failures return typed errors instead of successful placeholder payloads
 or raw exception text.
+
+`UiServer.StartAsync` calls `WarmProvidersAsync` once the web application has started, so the
+provider registry and its brokerage, options and corporate-action objects are built with their
+credentials read ahead instead of on first use.
 
 ## Diagrams
 

@@ -617,7 +617,10 @@ The browser workstation exposes `/accounting/entity-setup` for the shared fund-s
 This is the active operator UI lane; keep shared contract compatibility with retained WPF consumers. Security
 Master Governance detail uses the workstation trust snapshot's `scheduleBook` and
 `openLotReadModel` projections for cash-flow schedules, factor provenance, and open-lot exposure
-review. Open-lot rows render explicit Long/Short direction in the table, detail panel, and accessible
+review. For a Bond that declares a call or put schedule the server sends `Call`, `Put`,
+`CallNoticeDeadline` and `PutNoticeDeadline` schedule rows; the last three have no label entry and are
+shown by their type name, and a notice-deadline row has no pay date, so its effective date is shown.
+Open-lot rows render explicit Long/Short direction in the table, detail panel, and accessible
 row description rather than inferring direction from the positive lot quantity.
 The Settings workspace also owns the browser asset-profile governance surface for custom Security
 Master assets: it reads approved profiles, drafts profile variants from starter templates, submits
@@ -1899,6 +1902,10 @@ governed validator remains authoritative.
 ## Security Master publish outcome
 
 `SecurityMasterPublishResult` in `lib/api/security-master-workbench.api.ts` carries an optional `canonicalMerge`. It says whether publishing the approved edit changed the golden record (`Merged` or `AlreadyCanonical`) or not (`OverlayOnly` or `NotApplicable`). When an approved proposal is stale because its field changed after the draft, the publish route answers 409 with `stale-field-proposal`. The existing classifier reports that as a revision-state conflict carrying the server message.
+
+Statement run detail, capital accounts and the governed-approvals poll ignore a response that
+arrives after a newer request was issued. Capital accounts shows its loading banner, never the
+previous scope's rows, while a changed query loads.
 
 ## Diagrams
 

@@ -126,9 +126,20 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
                 "Alpaca brokerage credentials are missing or incomplete; gateway will remain unavailable until valid credentials are provided.");
         }
 
-        _reportChannel = EventPipelinePolicy.Default.CreateChannel<ExecutionReport>(
-            singleReader: false, singleWriter: false);
+        _reportChannel = (EventPipelinePolicy.Default with { FullMode = ResolveReportChannelFullMode(tradeUpdates is not null) })
+            .CreateChannel<ExecutionReport>(singleReader: false, singleWriter: false);
     }
+
+    /// <summary>
+    /// How the REST report channel behaves when full. Without a trade-updates stream this channel
+    /// is the execution-report stream: reports carry fills and terminal order states, so writers
+    /// wait for the consumer rather than evict the oldest report. With a trade-updates stream,
+    /// <see cref="StreamExecutionReportsAsync"/> reads that stream instead and nothing drains this
+    /// channel, so waiting would eventually block every submit, cancel and amend; there it keeps
+    /// only the most recent reports.
+    /// </summary>
+    internal static BoundedChannelFullMode ResolveReportChannelFullMode(bool hasTradeUpdatesStream)
+        => hasTradeUpdatesStream ? BoundedChannelFullMode.DropOldest : BoundedChannelFullMode.Wait;
 
     /// <inheritdoc />
     public string GatewayId => "alpaca";
@@ -834,8 +845,19 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
                 }));
         }
 
+        var skippedPackageParents = 0;
         foreach (var order in ordersById.Values)
         {
+            // A multi-leg parent names no instrument, so it has no single-instrument execution
+            // report. Emitting one with an empty symbol is refused by the durable inbox, which
+            // fails the whole reconciliation and keeps the execution stream unhealthy for every
+            // other order. Its legs are separate broker orders and reconcile on their own.
+            if (order.IsMultiLegParent)
+            {
+                skippedPackageParents++;
+                continue;
+            }
+
             var status = MapAlpacaStatus(order.Status);
             if (ordersWithExactFills.Contains(order.Id!) &&
                 status is OrderStatus.Filled or OrderStatus.PartiallyFilled)
@@ -879,6 +901,13 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
                 "rest-order-snapshot",
                 snapshotIdentity,
                 report));
+        }
+
+        if (skippedPackageParents > 0)
+        {
+            _logger.LogWarning(
+                "Alpaca reconciliation left {PackageParentCount} multi-leg parent order(s) unnormalized; they carry no instrument symbol and only their legs reconcile",
+                skippedPackageParents);
         }
 
         return reconciled;
@@ -1878,6 +1907,15 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
         /// </summary>
         [JsonPropertyName("legs")] public AlpacaOrderResponse[]? Legs { get; set; }
         [JsonPropertyName("asset_class")] public string? AssetClass { get; set; }
+        [JsonPropertyName("order_class")] public string? OrderClass { get; set; }
+
+        /// <summary>
+        /// A multi-leg package parent. Alpaca returns it with an empty symbol and side because
+        /// only its legs name instruments, so it cannot be read as a single-instrument order.
+        /// </summary>
+        [JsonIgnore]
+        public bool IsMultiLegParent =>
+            string.Equals(OrderClass, "mleg", StringComparison.OrdinalIgnoreCase) && string.IsNullOrWhiteSpace(Symbol);
     }
 
     internal sealed class AlpacaAccountResponse

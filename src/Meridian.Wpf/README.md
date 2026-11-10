@@ -506,7 +506,10 @@ without page-specific registration, while pages that set their own DataContext r
 Runtime desktop capability toggles are declared by feature modules and surfaced in Settings through
 the feature capability gate. The Security Master page projects the workstation trust
 snapshot's `scheduleBook` and `openLotReadModel` payloads into operator-visible schedule, factor,
-provenance, and open-lot review sections.
+provenance, and open-lot review sections. For a Bond that declares a call or put schedule the
+schedule grid shows the server's `Call`, `Put`, `CallNoticeDeadline` and `PutNoticeDeadline` rows with
+their reason text, and a blocked declared schedule is reported in the schedule book's Summary and
+Source fields.
 Security Master create, edit, deactivate, and file-import commands require an active desktop actor
 with `ModifySecurityMaster`; trading-parameter backfill requires `TriggerBackfill`. WPF resolves
 actor and permission together again at the in-process application-service boundary, and configured
@@ -1004,6 +1007,19 @@ pre-check; the free-text field path remains available.
 - **Contract-multiplier requirement.** `SecurityMasterViewModel` uses `InstrumentTypeDescriptorCatalog.RequiresContractMultiplier` rather than matching "Option"/"Future"/"Derivative" in the asset-class name.
 
 See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D8) for status and open decisions.
+
+**Event-handler failures.** `async void` handlers that do not carry their own whole-body
+try/catch run their bodies through `AsyncHandlerGuard`: a
+failure is logged and shown as a notification (at most one per handler per minute), cancellation is
+ignored, and fatal runtime exceptions still propagate. **Blocking calls.**
+`FeatureCapabilityGateService.SetEnabledAsync` applies an override in memory and persists it off the
+UI thread; `WorkspaceService` writes the workspace file and reads and saves state tokens outside
+its state gate, and preloads the workspace file before taking it. A preload that failed, or that
+was read before a change made in the meantime, is not applied: the load then reads behind the
+persistence gate, under the state gate, so a reload cannot roll back a concurrent change. **Live data routes.** Order book, ticker strip, quote float, live data
+viewer and corporate-action recording call routes built from `UiApiRoutes`;
+`DesktopClientRouteContractTests` fails on a desktop `/api/` literal the server does not map,
+apart from three listed exceptions (`/api/logs`, `/api/watchlists`, `/api/archive/health`).
 
 ## Diagrams
 
