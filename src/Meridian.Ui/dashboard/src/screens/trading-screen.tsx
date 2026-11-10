@@ -609,8 +609,8 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
           tone: hasRecoveryProjection ? recoveryPortfolio?.isFresh === false ? "blocked" : recoveryUnavailable ? "unknown" : recoveryPortfolio?.isFresh ? "ready" : "blocked" : sourceTone
         }}
         completeness={{
-          value: hasRecoveryProjection ? recoveryPortfolio ? `${recoveryPortfolio.positionCount} positions · ${reconciliation?.matchedOpenOrderCount ?? "Unknown"} matched open orders` : "Unavailable" : `${pluralizeCount(data.positions.length, "position")} · ${pluralizeCount(crossCounts.openOrders ?? 0, "open order")} · ${pluralizeCount(data.fills.length, "fill")}`,
-          detail: hasRecoveryProjection ? recoveryUnavailable ? "Current account evidence unverified" : recoveryPortfolio?.isComplete && recoveryPortfolio.isConsistent ? "Complete and consistent broker evidence" : "Incomplete or inconsistent broker evidence" : `${completenessCount} execution records loaded`,
+          value: hasRecoveryProjection ? recoveryPortfolio ? `${pluralizeCount(recoveryPortfolio.positionCount, "position")} · ${typeof reconciliation?.matchedOpenOrderCount === "number" ? pluralizeCount(reconciliation.matchedOpenOrderCount, "matched open order") : "Unknown matched open orders"}` : "Unavailable" : `${pluralizeCount(data.positions.length, "position")} · ${pluralizeCount(crossCounts.openOrders ?? 0, "open order")} · ${pluralizeCount(data.fills.length, "fill")}`,
+          detail: hasRecoveryProjection ? recoveryUnavailable ? "Current account evidence unverified" : recoveryPortfolio?.isComplete && recoveryPortfolio.isConsistent ? "Complete and consistent broker evidence" : "Incomplete or inconsistent broker evidence" : `${pluralizeCount(completenessCount, "execution record")} loaded`,
           tone: hasRecoveryProjection ? recoveryUnavailable ? "unknown" : recoveryPortfolio?.isComplete && recoveryPortfolio.isConsistent ? "ready" : "blocked" : completenessCount > 0 ? "ready" : "review"
         }}
         blocker={readinessStatus ? {

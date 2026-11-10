@@ -11,6 +11,8 @@ last_reviewed: 2026-10-14
 
 # src/Meridian.FinancialOperations
 
+The reconciliation engine rethrows caller cancellation during Security Master lookups instead of logging a warning per remaining security and returning a partial lookup.
+
 `AccountingSystemIntegrationService.GetLatestImportAsync` returns the latest persisted import; when
 none exists it returns an unpersisted `Previewed` result and does not cache it, so the GET-backed
 latest-import and latest-reconciliation reads have no side effects.

@@ -356,14 +356,17 @@ function buildSharedFinancialOperationsCommandCenterViewState(
     .filter((blocker) => !commandCenter.queueRows.some((row) => row.queueId === blocker.code))
     .map((blocker) => ({
       id: blocker.code,
-      label: `${blocker.contributorId} - ${blocker.type}`,
+      label: `${humanizeCloseBlockerCode(blocker.contributorId)} - ${blocker.type}`,
       detail: `${blocker.message} Count: ${blocker.count}. Severity: ${blocker.severity}.`,
       tone: "danger" as AccountingToolingTone,
       href: localCommandCenterRoute(null, blocker.contributorId),
       statusLabel: "Blocked",
       ownerLabel: blocker.owner,
       dueLabel: "Required before close",
-      evidenceLabel: blocker.recordIds.length ? blocker.recordIds.join(", ") : "No source record supplied",
+      // Record identifiers are audit material: the row states how many back the blocker and the
+      // identifiers themselves stay behind the audit-details disclosure.
+      evidenceLabel: blocker.recordIds.length ? formatCount(blocker.recordIds.length, "source record") : "No source record supplied",
+      sourceRecordIds: blocker.recordIds,
       actionLabel: "Resolve this requirement and refresh close readiness.",
       impactLabel: "Blocks close completion"
     }));

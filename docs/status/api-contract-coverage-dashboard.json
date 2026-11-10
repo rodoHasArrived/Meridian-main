@@ -3383,25 +3383,25 @@
     {
       "method": "POST",
       "path": "/api/sampling/create",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SamplingEndpoints.cs:25",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SamplingEndpoints.cs:34",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/sampling/estimate",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SamplingEndpoints.cs:112",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SamplingEndpoints.cs:132",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/sampling/saved",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SamplingEndpoints.cs:154",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SamplingEndpoints.cs:193",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/sampling/{sampleId}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SamplingEndpoints.cs:178",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SamplingEndpoints.cs:217",
       "documented": false
     },
     {
