@@ -517,6 +517,18 @@ paths and original file names remain provenance metadata, not duplicate-detectio
 - **Backfill failover on timeouts.** `CompositeHistoricalDataProvider` and `CrossProviderValidator` rethrow `OperationCanceledException` only when the caller's token is cancelled. A provider-side timeout, such as `HttpClient.Timeout` surfacing as `TaskCanceledException`, now fails over to the next provider instead of ending the request.
 - **Polygon trading-parameter backfill uses the system-ingest path.** `TradingParametersBackfillService` amends through `ISecurityMasterAmender` when the composed service exposes it. That keeps provider-sourced tick and lot sizes writable while `SecurityMasterWorkbench:RequireGovernedTermAmendments` refuses operator-direct amendments.
 
+**Provider construction and credentials.** `ProviderFactory.CreateAndRegisterAllAsync`,
+`InitializeProvidersAsync`, `ProviderRegistry.CreateStreamingClientAsync` and `WarmProvidersAsync`
+read provider credentials first and construct inside the prepared scope. The synchronous
+`CreateAndRegisterAll` and `CreateStreamingClient` remain for callers that cannot await.
+
+**Brokerage hardening.** The Robinhood and Template gateways, and the Alpaca gateway when it has
+no trade-updates stream, wait on a full execution-report channel instead of dropping the oldest
+report. With a trade-updates stream the Alpaca gateway streams reports from it and nothing reads
+the REST report channel, so that channel keeps dropping its oldest entry. One Alpaca path cannot
+wait: a pending-modification report is returned to its caller and, if the channel is full, logged
+as not published.
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.

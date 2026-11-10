@@ -193,7 +193,9 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
         {
             var storageOptions = sp.GetRequiredService<StorageOptions>();
             var ledger = new PersistentDedupLedger(Path.Combine(storageOptions.RootPath, "_dedup"));
-            ledger.InitializeAsync().GetAwaiter().GetResult();
+            // A DI factory cannot await, so load with synchronous I/O rather than blocking on
+            // the asynchronous load. The ledger must be loaded before the pipeline starts.
+            ledger.Initialize();
             return ledger;
         });
 

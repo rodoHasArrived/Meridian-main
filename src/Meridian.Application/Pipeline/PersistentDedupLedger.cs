@@ -144,45 +144,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
                 string? line;
                 while ((line = await reader.ReadLineAsync(ct).ConfigureAwait(false)) != null)
                 {
-                    if (string.IsNullOrWhiteSpace(line))
-                        continue;
-                    try
-                    {
-                        using var doc = JsonDocument.Parse(line);
-                        var root = doc.RootElement;
-                        var key = root.GetProperty("k").GetString();
-                        var ticks = root.GetProperty("t").GetInt64();
-                        // Legacy lines carry no "v" field and load as version 1 (untrusted for
-                        // WAL recovery). Versions are clamped into the byte range defensively.
-                        var version = EntryVersionLegacy;
-                        if (root.TryGetProperty("v", out var versionElement) &&
-                            versionElement.TryGetInt32(out var parsedVersion) &&
-                            parsedVersion > EntryVersionLegacy)
-                        {
-                            version = parsedVersion >= byte.MaxValue ? byte.MaxValue : (byte)parsedVersion;
-                        }
-
-                        if (key != null && ticks > cutoff)
-                        {
-                            // Later lines refresh the timestamp, but a durability confirmation is
-                            // never retracted by a later legacy sighting of the same identity.
-                            if (_cache.TryGetValue(key, out var existing) && existing.Version > version)
-                            {
-                                version = existing.Version;
-                            }
-
-                            _cache[key] = new DedupCacheEntry(ticks, version);
-                            loaded++;
-                        }
-                        else
-                        {
-                            expired++;
-                        }
-                    }
-                    catch
-                    {
-                        // Skip malformed lines
-                    }
+                    LoadLedgerLine(line, cutoff, ref loaded, ref expired);
                 }
             }
             catch (Exception ex)
@@ -196,6 +158,81 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         // Defer opening the append writer until the first real write. This lets
         // read-only runtime graphs initialize against the same ledger file
         // without taking an exclusive write handle during startup.
+    }
+
+    /// <summary>
+    /// Synchronous counterpart of <see cref="InitializeAsync"/> for composition code that cannot
+    /// await, such as a dependency-injection factory. It reads the ledger with synchronous file
+    /// I/O instead of blocking on the asynchronous load. Loads exactly the same state.
+    /// </summary>
+    public void Initialize()
+    {
+        var cutoff = DateTimeOffset.UtcNow.Ticks - _entryTtl.Ticks;
+
+        if (File.Exists(_ledgerPath))
+        {
+            var loaded = 0;
+            var expired = 0;
+            try
+            {
+                using var reader = new StreamReader(_ledgerPath);
+                string? line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    LoadLedgerLine(line, cutoff, ref loaded, ref expired);
+                }
+            }
+            catch (Exception ex)
+            {
+                _log.Warning(ex, "Error loading dedup ledger from {Path}, starting fresh", _ledgerPath);
+            }
+
+            _log.Information("Loaded {LoadedCount} dedup entries from disk ({ExpiredCount} expired)", loaded, expired);
+        }
+    }
+
+    /// <summary>Applies one persisted ledger line to the cache; malformed lines are skipped.</summary>
+    private void LoadLedgerLine(string line, long cutoff, ref int loaded, ref int expired)
+    {
+        if (string.IsNullOrWhiteSpace(line))
+            return;
+        try
+        {
+            using var doc = JsonDocument.Parse(line);
+            var root = doc.RootElement;
+            var key = root.GetProperty("k").GetString();
+            var ticks = root.GetProperty("t").GetInt64();
+            // Legacy lines carry no "v" field and load as version 1 (untrusted for
+            // WAL recovery). Versions are clamped into the byte range defensively.
+            var version = EntryVersionLegacy;
+            if (root.TryGetProperty("v", out var versionElement) &&
+                versionElement.TryGetInt32(out var parsedVersion) &&
+                parsedVersion > EntryVersionLegacy)
+            {
+                version = parsedVersion >= byte.MaxValue ? byte.MaxValue : (byte)parsedVersion;
+            }
+
+            if (key != null && ticks > cutoff)
+            {
+                // Later lines refresh the timestamp, but a durability confirmation is
+                // never retracted by a later legacy sighting of the same identity.
+                if (_cache.TryGetValue(key, out var existing) && existing.Version > version)
+                {
+                    version = existing.Version;
+                }
+
+                _cache[key] = new DedupCacheEntry(ticks, version);
+                loaded++;
+            }
+            else
+            {
+                expired++;
+            }
+        }
+        catch
+        {
+            // Skip malformed lines
+        }
     }
 
     /// <summary>
