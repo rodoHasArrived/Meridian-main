@@ -129,6 +129,7 @@ public sealed class PositionLimitRule : IRiskRule
 
         var isBuy = request.Side == OrderSide.Buy;
         var working = 0m;
+        Dictionary<string, decimal>? largestLegByParent = null;
         // Unit reservations: a pending amendment counts as its larger-quantity outcome, since
         // either may still execute and this rule measures shares, not value.
         foreach (var order in orderManager.GetUnitReservingOrders())
@@ -151,8 +152,28 @@ public sealed class PositionLimitRule : IRiskRule
                 continue;
 
             var remaining = Math.Abs(order.Quantity) - Math.Abs(order.FilledQuantity);
-            if (remaining > 0m)
-                working += remaining;
+            if (remaining <= 0m)
+                continue;
+
+            // Broker-side exit legs of one parent are one-cancels-other: only one can execute.
+            // Summing a take-profit and a stop-loss of the same entry would read a protected
+            // long as an oversized short and refuse a manual partial exit, so each parent
+            // contributes only its largest leg on this side.
+            if (order.ParentOrderId is { Length: > 0 } parentOrderId)
+            {
+                largestLegByParent ??= new Dictionary<string, decimal>(StringComparer.Ordinal);
+                if (!largestLegByParent.TryGetValue(parentOrderId, out var largest) || remaining > largest)
+                    largestLegByParent[parentOrderId] = remaining;
+                continue;
+            }
+
+            working += remaining;
+        }
+
+        if (largestLegByParent is not null)
+        {
+            foreach (var leg in largestLegByParent.Values)
+                working += leg;
         }
 
         return isBuy ? working : -working;

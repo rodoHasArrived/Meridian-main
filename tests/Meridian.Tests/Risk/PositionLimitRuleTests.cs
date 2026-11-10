@@ -286,4 +286,39 @@ public sealed class PositionLimitRuleTests
 
         result.IsApproved.Should().BeTrue("the amended order replaces the 60-share original rather than adding to it");
     }
+
+    [Fact]
+    public async Task EvaluateAsync_BracketExitLegsOfOneParent_CountOnceBecauseOnlyOneCanExecute()
+    {
+        // Long 100 protected by a take-profit and a stop-loss leg of the same entry. Summing the
+        // legs would read the worst case as -100 and refuse any manual partial exit.
+        var orderManager = new Mock<IOrderManager>();
+        orderManager.Setup(m => m.GetUnitReservingOrders()).Returns(
+        [
+            WorkingOrder("tp", OrderSide.Sell, 100m) with { ParentOrderId = "entry-1" },
+            WorkingOrder("sl", OrderSide.Sell, 100m) with { ParentOrderId = "entry-1" },
+        ]);
+        var sut = new PositionLimitRule(
+            TrackerWithPosition(DefaultSymbol, 100m),
+            () => DefaultMaxPositionSize,
+            NullLogger<PositionLimitRule>.Instance,
+            () => orderManager.Object);
+
+        (await sut.EvaluateAsync(CreateSellOrder(quantity: 50m))).IsApproved.Should().BeTrue();
+        // Worst case with one leg filling is flat; a further sell beyond the limit opens a short.
+        (await sut.EvaluateAsync(CreateSellOrder(quantity: DefaultMaxPositionSize + 1m))).IsApproved.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_ExitLegsOfDifferentParents_AreEachCounted()
+    {
+        var sut = CreateSutWithBook(
+            WorkingOrder("a", OrderSide.Buy, 40m) with { ParentOrderId = "entry-1" },
+            WorkingOrder("b", OrderSide.Buy, 40m) with { ParentOrderId = "entry-2" });
+
+        // 80 is working across two independent parents. Counting them as one leg would leave
+        // room for 60 more; counting both leaves room for exactly 20.
+        (await sut.EvaluateAsync(CreateBuyOrder(quantity: 20m))).IsApproved.Should().BeTrue();
+        (await sut.EvaluateAsync(CreateBuyOrder(quantity: 21m))).IsApproved.Should().BeFalse();
+    }
 }
