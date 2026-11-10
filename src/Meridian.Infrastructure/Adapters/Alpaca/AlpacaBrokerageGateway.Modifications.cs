@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Meridian.Execution.Sdk;
+using Microsoft.Extensions.Logging;
 using OrderSide = Meridian.Execution.Sdk.OrderSide;
 
 namespace Meridian.Infrastructure.Adapters.Alpaca;
@@ -207,7 +208,13 @@ public sealed partial class AlpacaBrokerageGateway
     private ExecutionReport PublishPendingModification(ReplacementAttempt attempt, string reason)
     {
         var report = attempt.Resolution ?? CreatePendingModification(attempt, reason);
-        _reportChannel.Writer.TryWrite(report);
+        // Called from paths that must not wait (some run after cancellation). The report is still
+        // returned to the caller; if the stream is full it is missing from the stream only, so say so.
+        if (!_reportChannel.Writer.TryWrite(report))
+        {
+            _logger.LogWarning(
+                "Alpaca execution-report stream is full; a pending-modification report was returned to its caller but not published to the stream.");
+        }
         return report;
     }
 
