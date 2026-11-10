@@ -157,6 +157,19 @@ internal sealed class MarketImpactFillModel(
         }
 
         var totalFilled = fills.Sum(static f => f.FilledQuantity);
+
+        // The volume check above only covers liquidity. A limit order can still lose its later,
+        // higher-impact slices to the limit price, which left an all-or-none order partially
+        // filled. All-or-none means the whole remaining quantity or nothing on this bar.
+        if (!order.AllowPartialFills && Math.Abs(totalFilled) < remainingAbsolute)
+        {
+            return new OrderFillResult(
+                order with { IsTriggered = triggered },
+                [],
+                RemoveOrder: false,
+                WasTriggered: triggered && !order.IsTriggered);
+        }
+
         var updated = order with
         {
             FilledQuantity = order.FilledQuantity + totalFilled,
