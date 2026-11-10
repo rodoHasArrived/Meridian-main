@@ -48,6 +48,7 @@ import { readinessToneToSeverityStatus } from "@/lib/shared-tone-mappings";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import {
   buildPortfolioExplorerPresentation,
+  buildPortfolioFigureDifferenceNote,
   resolveBrokerageAccountFilterKeyCommand,
   type PortfolioBrokerageAccountRow,
   type PortfolioBrokeragePositionRow,
@@ -71,6 +72,8 @@ import type {
 } from "@/types";
 import { eyebrowClassName } from "@/design-system/label-case";
 import { formatCount } from "@/lib/format";
+import { metricFreshnessFromTrustTone, withMetricContext } from "@/lib/metric-trust";
+import { FigureDifferenceNote } from "@/components/meridian/figure-difference-note";
 
 interface PortfolioScreenProps {
   portfolio?: PortfolioWorkspaceResponse | null;
@@ -592,6 +595,24 @@ export function PortfolioScreen({
         : heartbeat
           ? "ready"
           : "unknown";
+  // The headline figures carry the same source, scope and freshness the confidence summary
+  // states, so a stale workspace cannot show figures that look current.
+  const headlineProvenance = {
+    source: vm.metricsFromTrading ? "Trading workspace" : vm.positionSourceLabel,
+    asOf: (hasRefreshEvidence ? refreshStatus?.lastSucceededAt : null) ?? brokeragePortfolio?.asOf ?? heartbeat,
+    scope: vm.selectedBrokerageAccount.title
+  };
+  const headlineMetrics = withMetricContext(vm.metricsFromTrading ? vm.metricCards : vm.fallbackStats, {
+    provenance: headlineProvenance,
+    freshness: metricFreshnessFromTrustTone(freshnessTone)
+  });
+  const figureDifferenceNote = showBrokerageSync
+    ? null
+    : buildPortfolioFigureDifferenceNote({
+        headerMetrics: headlineMetrics,
+        headerProvenance: headlineProvenance,
+        explorer: portfolioExplorerPresentation
+      });
   const completenessTone: OperationalTrustTone = vm.hasPositions && vm.hasRuns
     ? "ready"
     : vm.hasPositions || vm.hasRuns
@@ -718,10 +739,12 @@ export function PortfolioScreen({
       </section>
 
       <StatStrip
-        metrics={vm.metricsFromTrading ? vm.metricCards : vm.fallbackStats}
+        metrics={headlineMetrics}
         label="Portfolio headline metrics"
         compact={showOverview}
       />
+
+      {figureDifferenceNote ? <FigureDifferenceNote note={figureDifferenceNote} /> : null}
 
       <OperationalTrustSummary
         label="Portfolio data confidence"

@@ -7402,6 +7402,7 @@ Meridian-main
 │   │   │   │   │   │   ├── degraded-mode-banner.tsx
 │   │   │   │   │   │   ├── dense-row-detail-accessibility.test.tsx
 │   │   │   │   │   │   ├── dense-row-detail-accessibility.tsx
+│   │   │   │   │   │   ├── figure-difference-note.tsx
 │   │   │   │   │   │   ├── financial-record-explorer.test.tsx
 │   │   │   │   │   │   ├── financial-record-explorer.tsx
 │   │   │   │   │   │   ├── financial-record-explorer.view-state.test.ts
@@ -7465,6 +7466,7 @@ Meridian-main
 │   │   │   │   │   │   ├── security-passport-schema-fields.parity.test.ts
 │   │   │   │   │   │   ├── security-passport-schema-fields.view-model.test.ts
 │   │   │   │   │   │   ├── security-passport-schema-fields.view-model.ts
+│   │   │   │   │   │   ├── stat-strip.test.tsx
 │   │   │   │   │   │   ├── stat-strip.tsx
 │   │   │   │   │   │   ├── strategy-formula-workbench.test.tsx
 │   │   │   │   │   │   ├── strategy-formula-workbench.tsx
@@ -7799,6 +7801,8 @@ Meridian-main
 │   │   │   │   │   ├── ledger-tax-results-format.test.ts
 │   │   │   │   │   ├── ledger-tax-results-format.ts
 │   │   │   │   │   ├── mark-freshness.ts
+│   │   │   │   │   ├── metric-trust.test.ts
+│   │   │   │   │   ├── metric-trust.ts
 │   │   │   │   │   ├── onboarding.ts
 │   │   │   │   │   ├── plaid-link.ts
 │   │   │   │   │   ├── portfolio-positions-table.test.ts
@@ -7890,6 +7894,8 @@ Meridian-main
 │   │   │   │   │   ├── workflow-route-match.test.ts
 │   │   │   │   │   ├── workflow-route-match.ts
 │   │   │   │   │   ├── workspace-catalog.generated.ts
+│   │   │   │   │   ├── workspace-figure-context.test.ts
+│   │   │   │   │   ├── workspace-figure-context.tsx
 │   │   │   │   │   ├── workspace.test.ts
 │   │   │   │   │   ├── workspace.ts
 │   │   │   │   │   ├── workstation-endpoints.test.ts

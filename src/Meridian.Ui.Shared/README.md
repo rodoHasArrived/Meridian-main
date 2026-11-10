@@ -884,6 +884,8 @@ under `/api/workstation/financial-record-explorers/{explorerId}` for `ledger`, `
 `security-instrument`, and `report-line-provenance`. `FinancialRecordExplorerReadService` composes
 source-backed strategy run ledger, portfolio, Security Master, report-pack line provenance,
 delivery history, evidence, reconciliation, reporting, and audit projections into the shared DTO.
+Portfolio explorer column headers and record fields spell profit and loss "P&L" ("Realized P&L",
+"Unrealized P&L"), the spelling the workspace metric cards already use.
 The Security & Instrument Explorer remains productized as a thin shared-read-model surface: it uses
 `SecurityMasterWorkbenchQueryService`, `IAssetOperationsQueryService`, and report-line provenance
 from `FinancialRecordExplorerReadService` for instrument identity, provider evidence,

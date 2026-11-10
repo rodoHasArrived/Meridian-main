@@ -247,7 +247,43 @@ one is a shared-contract change for both workstations; the route holds the only
 `allowedContentIssues` entry until then. The detail-pane primitive, wrapped dates and mid-word
 breaks in P2 are untouched.
 
+**2026-11-10 — headline-figure trust rules (P1, browser side).** `@/lib/metric-trust` holds the
+rules and the shared `StatStrip` and `MetricCard` apply them, so a screen cannot opt out.
+
+- Source: every workspace strip (Trading, Portfolio, Accounting, Strategy, Data, Settings) prints
+  its source and as-of time under the row, with scope where the page has one. The shell supplies
+  the as-of time and data label (seeded, simulated, unverified) for strips fed by the workstation
+  load; Trading and Portfolio use their own broker and refresh evidence.
+- Deltas: a bare change is shown only with a stated baseline. The read models still send
+  placeholders (`0%`, `+N`, `+session`) with no comparison behind them, so the strips now show
+  none; "N new since your last visit" and descriptive captions are unchanged.
+- Stale data: figures fed by stale or unverified data are muted, carry a clock and say why on
+  hover and to screen readers. Portfolio's "Stale · 187d ago" now reaches its headline figures; a
+  failed workstation refresh marks every workspace-fed strip.
+- Disagreement: Portfolio shows "Why these differ" when the header strip (open positions in the
+  workspace read model) and the Portfolio Explorer (records retained for a run) report different
+  exposure, unrealized P&L or position counts, with both values and each source.
+- Number style: `formatPnl`, `pnlToneForValue` and `normalizeFinancialLabel` in `@/lib/format`;
+  "P&L" replaces "PnL" in browser labels and in the portfolio explorer read model. Two new
+  ratchets hold the rest: `handRolledNumberFormatting` (88 `.toFixed(` calls in 27 screen files)
+  and `localMoneyFormatters` (24 definitions in 13 files).
+
+Still open from P1:
+
+- The KPI definition registry (Phase 3 item 1) and the cross-route same-value assertion. Strips
+  still take values from each workspace's read model; this change makes the source visible, it
+  does not make the numbers agree.
+- Real baselines and a page-level "Compare to" control. No read model carries a comparison period;
+  `WorkstationMetricCard.Delta` needs a baseline (or a prior value) before either can exist. The
+  browser `MetricSnapshot.baseline` field is ready to receive it.
+- Variance direction. The break queue's `Variance` is an absolute amount for statement breaks and
+  signed for shadow-NAV and provider breaks, and the reconciliation measures use actual minus
+  expected (statement minus book). The browser renders it with a sign, so a statement break always
+  reads "+". Labelling a direction needs the queue item to carry its basis first.
+- WPF still spells "PnL" in its own view models (`RunRiskViewModel`,
+  `StrategyRunPortfolioViewModel`, `QuantScriptViewModel`, `StrategyRunBrowserViewModel`).
+
 ## Recommended Next Step
 
-Start with Phase 3 item 1: disagreeing KPI numbers are the largest trust problem and an
-inexpensive fix.
+Continue with Phase 3 item 1: the strips now say where each number comes from, and the KPI
+definition registry is what makes the same-named numbers agree and gives deltas a real baseline.

@@ -24,6 +24,9 @@ const CSS = `
 .mds-delta--up{color:var(--severity-ready-fg,#2C5C40);}
 .mds-delta--down{color:var(--severity-blocked-fg,#7E332D);}
 .mds-delta--flat{color:var(--text-muted,#5E666F);}
+.mds-metric--degraded .mds-metric__value{color:var(--text-muted,#5E666F);}
+.mds-metric__trust{font-family:var(--font-body);font-size:12px;line-height:1.35;margin-top:6px;
+  color:var(--text-muted,#5E666F);}
 `;
 
 export type MetricCardTone = "neutral" | "info" | "success" | "warning" | "danger";
@@ -43,6 +46,13 @@ export interface MetricCardProps {
   ariaLabel?: string;
   /** Override the delta accessible name when symbols need speech-safe labels. */
   deltaAriaLabel?: string;
+  /**
+   * Marks the figure as fed by stale or unverified data, e.g. "Stale": the value is muted and the
+   * marker is shown beside the trust line so the figure cannot pass for a current one.
+   */
+  freshnessLabel?: string;
+  /** Where the figure comes from, e.g. "Source: Portfolio workspace · As of Jun 30, 2026, 18:05 UTC". */
+  provenance?: string;
 }
 
 const TONE_STATUS: Record<MetricCardTone, string> = {
@@ -60,7 +70,7 @@ const TONE_STATUS: Record<MetricCardTone, string> = {
  * <MetricCard label="Net liquidation" value="$1,284,002.18" delta="+1.84% today" tone="success" />
  * <MetricCard label="Day P&L" value="-$4,118.22" delta="-0.32%" tone="danger" />
  */
-function MetricCardComponent({ label, value, delta, tone = "neutral", trend, ariaLabel, deltaAriaLabel }: MetricCardProps) {
+function MetricCardComponent({ label, value, delta, tone = "neutral", trend, ariaLabel, deltaAriaLabel, freshnessLabel, provenance }: MetricCardProps) {
   injectStyle("metric", CSS);
   const t =
     trend ??
@@ -74,12 +84,14 @@ function MetricCardComponent({ label, value, delta, tone = "neutral", trend, ari
       typeof value === "string" ? value : undefined,
       delta ? `change ${delta}` : undefined,
       TONE_STATUS[tone] ? `status ${TONE_STATUS[tone]}` : undefined,
+      freshnessLabel,
     ]
       .filter(Boolean)
       .join(", ");
+  const trustLine = [freshnessLabel, provenance].filter(Boolean).join(" · ");
   return (
     <div
-      className={`mds-metric mds-metric--${tone}`}
+      className={`mds-metric mds-metric--${tone}${freshnessLabel ? " mds-metric--degraded" : ""}`}
       role="group"
       aria-label={composedLabel}
     >
@@ -90,6 +102,7 @@ function MetricCardComponent({ label, value, delta, tone = "neutral", trend, ari
           {delta}
         </div>
       )}
+      {trustLine && <p className="mds-metric__trust">{trustLine}</p>}
     </div>
   );
 }

@@ -2203,7 +2203,7 @@ const fixturePortfolioFinancialRecordExplorerRows: FinancialRecordExplorerDto["r
       fields: [
         { label: "Quantity", value: "100", detail: "Retained fixture quantity.", tone: "Default" },
         { label: "Market value", value: "$18,840.00", detail: "Fixture market value.", tone: "Default" },
-        { label: "Unrealized PnL", value: "+$1,180.00", detail: "Fixture unrealized gain.", tone: "Success" }
+        { label: "Unrealized P&L", value: "+$1,180.00", detail: "Fixture unrealized gain.", tone: "Success" }
       ],
       proofActions: [
         {
@@ -2262,7 +2262,7 @@ const fixturePortfolioFinancialRecordExplorerRows: FinancialRecordExplorerDto["r
       fields: [
         { label: "Quantity", value: "16", detail: "Retained fixture quantity.", tone: "Default" },
         { label: "Market value", value: "$6,747.20", detail: "Fixture market value.", tone: "Default" },
-        { label: "Unrealized PnL", value: "+$59.20", detail: "Fixture unrealized gain.", tone: "Success" }
+        { label: "Unrealized P&L", value: "+$59.20", detail: "Fixture unrealized gain.", tone: "Success" }
       ],
       proofActions: [
         {
@@ -2336,7 +2336,7 @@ const fixturePortfolioFinancialRecordExplorer: FinancialRecordExplorerDto = {
       tone: "Default"
     },
     {
-      label: "Unrealized PnL",
+      label: "Unrealized P&L",
       value: "+$1,239",
       detail: "Fixture unrealized gain retained for portfolio review.",
       tone: "Success"
@@ -2351,8 +2351,8 @@ const fixturePortfolioFinancialRecordExplorer: FinancialRecordExplorerDto = {
     { columnId: "quantity", header: "Quantity", cellKind: "number", width: 120, isRightAligned: true },
     { columnId: "averageCost", header: "Average cost", cellKind: "currency", width: 140, isRightAligned: true },
     { columnId: "marketValue", header: "Market value", cellKind: "currency", width: 150, isRightAligned: true },
-    { columnId: "unrealizedPnl", header: "Unrealized PnL", cellKind: "currency", width: 150, isRightAligned: true },
-    { columnId: "realizedPnl", header: "Realized PnL", cellKind: "currency", width: 140, isRightAligned: true }
+    { columnId: "unrealizedPnl", header: "Unrealized P&L", cellKind: "currency", width: 150, isRightAligned: true },
+    { columnId: "realizedPnl", header: "Realized P&L", cellKind: "currency", width: 140, isRightAligned: true }
   ],
   rows: fixturePortfolioFinancialRecordExplorerRows,
   selectedRecord: fixturePortfolioFinancialRecordExplorerRows[0]!.detail,

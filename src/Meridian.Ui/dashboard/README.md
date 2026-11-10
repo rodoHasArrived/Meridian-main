@@ -299,6 +299,40 @@ not been recorded.
   `formatDateTime` covers any other date layout through a pinned-locale `Intl.DateTimeFormat`.
   ESLint blocks `Intl.*` and `toLocale*String` in every non-test file under `src/screens/`, and
   the `directIntlFormatting` baseline is empty.
+- **Number style.** One style for a financial figure, wherever it appears:
+  - *Signed P&L*: `formatPnl` puts an explicit sign on every non-zero amount with thousands
+    separators and fixed decimals (`+$1,234.56`, `-$1,234.56`, `$0.00`); `pnlToneForValue`
+    gives the matching green/red tone, so sign and color never disagree.
+  - *Spelling*: profit and loss is "P&L" in every label. `normalizeFinancialLabel` rewrites
+    "PnL", "P/L" and "P & L"; the stat strip, metric card, record explorer and proof drawer
+    apply it to labels that arrive from a read model.
+  - *Currency*: pass the ISO code whenever more than one currency is in scope
+    (`formatMoney(value, { currency })`, or `formatAmountWithCode` for a code suffix).
+  - *Decimals*: currency minor units for money, instrument precision for prices and
+    quantities (`formatMoney`'s `decimals`, `formatQuantity`), whole units for a headline
+    figure. Figures render in tabular numerals.
+  - *Enforcement*: two ratchets hold what is left to migrate. `handRolledNumberFormatting`
+    counts `.toFixed(` in screens, which skips separators and the sign convention;
+    `localMoneyFormatters` counts money and P&L formatters defined in a screen instead of
+    imported from `@/lib/format`.
+- **Headline figures.** `StatStrip` and `MetricCard` apply the rules in `@/lib/metric-trust`
+  to every `MetricSnapshot`, so a screen cannot opt out by accident:
+  - *Source*: a figure states where it comes from. `provenance` carries source, as-of time
+    and scope; the strip prints what its figures share once under the row and keeps a
+    differing figure's own provenance on hover and for screen readers. A strip fed by the
+    workstation load passes `source="…"` and takes the as-of time from the shell
+    (`WorkspaceFigureContextProvider`); a screen with its own freshness evidence stamps
+    its metrics with `withMetricContext`.
+  - *Change*: a bare change (`+8%`, `0%`, `+2`) is shown only with the `baseline` it is
+    measured against (`+8% vs prior session`) and is dropped otherwise. A change that names
+    its comparison (`3 new since your last visit`) and descriptive captions pass through.
+  - *Freshness*: `freshness: "stale" | "unverified"` mutes the figure, adds a clock, marks
+    the strip "Stale figures"/"Unverified figures" and explains the age on hover and to
+    assistive technology. A failed workstation refresh marks every workspace-fed strip stale.
+  - *Disagreement*: when two panels on one page report different values for the same
+    quantity, `buildFigureDifferenceNote` and `FigureDifferenceNote` show "Why these differ"
+    with both values and each panel's source. Portfolio uses it for the header strip and the
+    Portfolio Explorer.
 - **Tables.** `DenseDataTable` (`components/meridian/ui-kit-primitives.tsx`) provides:
   - a sticky header inside a bounded scroll area;
   - `aria-sort` sorting, either built in from a column's `sortValue` (numbers start

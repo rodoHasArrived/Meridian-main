@@ -744,12 +744,33 @@ export interface WorkspaceSummary {
   maturity: ProductMaturity;
 }
 
+/** Where a headline figure comes from, so it can be traced without cross-checking another panel. */
+export interface MetricProvenance {
+  /** The read model or feed the figure is taken from, e.g. "Portfolio workspace". */
+  source: string;
+  /** When the figure was last confirmed: an ISO timestamp, or display text when none exists. */
+  asOf?: string | null;
+  /** The accounts, fund or run the figure covers, e.g. "All loaded accounts". */
+  scope?: string | null;
+}
+
+/** Whether the data behind a figure is current: `stale` is past its budget, `unverified` has no evidence. */
+export type MetricFreshness = "fresh" | "stale" | "unverified";
+
 export interface MetricSnapshot {
   id: string;
   label: string;
   value: string;
+  /**
+   * A change or a short caption under the figure. A bare change ("+8%", "+2") is shown only with a
+   * `baseline`; see `resolveMetricDelta` in `@/lib/metric-trust`.
+   */
   delta: string;
   tone: "default" | "success" | "warning" | "danger";
+  /** What `delta` is measured against, e.g. "vs prior session". */
+  baseline?: string;
+  provenance?: MetricProvenance;
+  freshness?: MetricFreshness;
 }
 
 

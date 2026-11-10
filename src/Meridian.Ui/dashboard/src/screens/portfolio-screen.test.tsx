@@ -518,6 +518,106 @@ describe("PortfolioScreen", () => {
     expect(summary).toHaveTextContent("Holdings and run evidence loaded");
   });
 
+  it("marks headline figures stale and states their source when the last refresh is past its budget", async () => {
+    await renderPortfolioScreen(
+      <PortfolioScreen
+        portfolio={portfolio}
+        trading={trading}
+        strategy={strategy}
+        accounting={accounting}
+        refreshStatus={{
+          operation: "portfolio refresh",
+          phase: "succeeded",
+          inFlight: false,
+          version: 1,
+          message: "Refresh complete.",
+          error: null,
+          startedAt: "2026-01-02T14:00:00Z",
+          settledAt: "2026-01-02T14:00:00Z",
+          lastSucceededAt: "2026-01-02T14:00:00Z",
+          staleDiscardCount: 0,
+          backoff: { attempt: 1, retryCount: 0, nextRetryDelayMs: null, maxRetries: 0 }
+        }}
+      />
+    );
+
+    const strip = screen.getByLabelText("Portfolio headline metrics");
+    expect(within(strip).getByText("$10,200")).toHaveClass("text-muted-foreground");
+    expect(within(strip).getByText("+$120")).not.toHaveClass("text-success");
+    expect(strip.parentElement).toHaveTextContent(
+      "Stale figures · Source: Portfolio workspace · As of Jan 2, 2026, 14:00 UTC · Scope:"
+    );
+  });
+
+  it("keeps fresh headline figures in their P&L tone", async () => {
+    const now = new Date().toISOString();
+    await renderPortfolioScreen(
+      <PortfolioScreen
+        portfolio={portfolio}
+        trading={trading}
+        strategy={strategy}
+        accounting={accounting}
+        refreshStatus={{
+          operation: "portfolio refresh",
+          phase: "succeeded",
+          inFlight: false,
+          version: 1,
+          message: "Refresh complete.",
+          error: null,
+          startedAt: now,
+          settledAt: now,
+          lastSucceededAt: now,
+          staleDiscardCount: 0,
+          backoff: { attempt: 1, retryCount: 0, nextRetryDelayMs: null, maxRetries: 0 }
+        }}
+      />
+    );
+
+    const strip = screen.getByLabelText("Portfolio headline metrics");
+    expect(within(strip).getByText("+$120")).toHaveClass("text-success");
+    expect(strip.parentElement).not.toHaveTextContent("Stale figures");
+  });
+
+  it("explains why the header strip and the explorer report different figures", async () => {
+    const explorer = createPortfolioFinancialRecordExplorer();
+    explorer.scopeItems = [
+      { label: "Source", value: "Portfolio workspace", tone: "Default" },
+      { label: "Run", value: "run-1", tone: "Info" },
+      { label: "As of", value: "2026-04-28T18:14:30Z", tone: "Default" }
+    ];
+    explorer.summaryItems = [
+      { label: "Positions", value: "2", detail: "Retained position rows.", tone: "Success" },
+      { label: "Market value", value: "$25,587", detail: "Aggregate market value.", tone: "Default" },
+      { label: "Unrealized PnL", value: "+$1,239", detail: "Retained unrealized gain.", tone: "Success" }
+    ];
+    vi.spyOn(api, "getFinancialRecordExplorer").mockResolvedValue(explorer);
+
+    await renderPortfolioScreen(
+      <PortfolioScreen portfolio={portfolio} trading={trading} strategy={strategy} accounting={accounting} />,
+      { initialEntries: ["/portfolio/attribution"] }
+    );
+
+    const note = screen.getByRole("note", { name: "Why these differ" });
+    expect(note).toHaveTextContent("Header strip and Portfolio Explorer read different records, so their figures are not expected to match.");
+    const figures = within(note).getByRole("table", { name: "Figures that differ" });
+    expect(within(figures).getByRole("row", { name: "Total exposure $10,200 $25,587" })).toBeInTheDocument();
+    expect(within(figures).getByRole("row", { name: "Unrealized P&L +$120 +$1,239" })).toBeInTheDocument();
+    expect(within(figures).getByRole("row", { name: "Open positions 1 2" })).toBeInTheDocument();
+    expect(note).toHaveTextContent("Source: Portfolio workspace");
+    expect(note).toHaveTextContent("Source: Retained run records · As of Apr 28, 2026, 18:14 UTC · Scope:");
+    // The explorer's own summary uses the one P&L spelling too.
+    expect(within(screen.getByLabelText("Explorer summary")).getByText("Unrealized P&L")).toBeInTheDocument();
+  });
+
+  it("shows no difference note when the explorer agrees with the header strip", async () => {
+    await renderPortfolioScreen(
+      <PortfolioScreen portfolio={portfolio} trading={trading} strategy={strategy} accounting={accounting} />,
+      { initialEntries: ["/portfolio/attribution"] }
+    );
+
+    expect(screen.queryByRole("note", { name: "Why these differ" })).not.toBeInTheDocument();
+  });
+
   it("uses loaded snapshot evidence when the refresh lifecycle has no success timestamp", async () => {
     await renderPortfolioScreen(
       <PortfolioScreen

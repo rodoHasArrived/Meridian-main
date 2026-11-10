@@ -530,10 +530,10 @@ describe("CoveredCallScreen", () => {
 
     const tradeTable = await screen.findByRole("treegrid", { name: "SPY covered-call trade timeline" });
     const firstTrade = await screen.findByRole("row", {
-      name: "Inspect SPY trade 1, entry 2024-01-10, exit 2024-01-24, strike 505.00, PnL $320, status Closed gain."
+      name: "Inspect SPY trade 1, entry 2024-01-10, exit 2024-01-24, strike 505.00, P&L $320, status Closed gain."
     });
     const assignedTrade = await screen.findByRole("row", {
-      name: "Inspect SPY trade 2, entry 2024-02-01, exit 2024-02-12, strike 510.00, PnL -$140, status Assigned."
+      name: "Inspect SPY trade 2, entry 2024-02-01, exit 2024-02-12, strike 510.00, P&L -$140, status Assigned."
     });
 
     expect(tradeTable).toBeInTheDocument();
@@ -554,7 +554,7 @@ describe("CoveredCallScreen", () => {
       name: "Selected covered-call trade 2: SPY 510.00 call"
     })).toBeInTheDocument();
     expect(screen.getByText("Take profit")).toBeInTheDocument();
-    expect(screen.getByText("Assigned; exit reason Assigned; -$140 total net PnL.")).toBeInTheDocument();
+    expect(screen.getByText("Assigned; exit reason Assigned; -$140 total net P&L.")).toBeInTheDocument();
   });
 
   it("renders payoff position controls and updates the selected short-call diagram", async () => {

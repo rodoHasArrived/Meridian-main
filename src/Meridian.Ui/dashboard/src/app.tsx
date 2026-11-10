@@ -45,6 +45,7 @@ import { applyDensity, writeStoredDensity } from "@/lib/density";
 import { ScopePickerOpenerProvider } from "@/lib/operating-scope/scope-picker-context";
 import { readRecentScopes, rememberRecentScope } from "@/lib/operating-scope/recent-scopes";
 import { CrossScreenCountsProvider } from "@/lib/cross-screen-counts-context";
+import { deriveWorkspaceFigureContext, WorkspaceFigureContextProvider } from "@/lib/workspace-figure-context";
 import { buildLayoutRestorePlan, readUserLayouts, type LayoutRestorePlan } from "@/lib/saved-layouts";
 import { WorkspaceNav } from "@/components/meridian/workspace-nav";
 import { Skeleton } from "@/components/data/skeleton";
@@ -462,6 +463,10 @@ function AppShell({
     usingDevelopmentFixtures,
     demoMode
   });
+  const workspaceFigureContext = useMemo(
+    () => deriveWorkspaceFigureContext({ status: refreshStatus, provenance: dataProvenance }),
+    [refreshStatus, dataProvenance]
+  );
   const handleWorkflowPresetUsed = (presetId: string) =>
     markWorkflowPresetUsed(presetId).then((preset) => {
       upsertWorkflowPreset(preset);
@@ -780,6 +785,7 @@ function AppShell({
   return (
     <ScopePickerOpenerProvider open={openScopePicker}>
     <CrossScreenCountsProvider counts={crossScreenCounts}>
+    <WorkspaceFigureContextProvider value={workspaceFigureContext}>
     <div className="workstation-frame">
       <a className="skip-link" href="#workbench-content">Skip to workbench</a>
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
@@ -1026,6 +1032,7 @@ function AppShell({
         </SheetContent>
       </Sheet>
     </div>
+    </WorkspaceFigureContextProvider>
     </CrossScreenCountsProvider>
     </ScopePickerOpenerProvider>
   );

@@ -344,8 +344,8 @@ public sealed partial class FinancialRecordExplorerReadService
                 new("symbol", "Symbol", Width: 100),
                 new("quantity", "Quantity", "number", 100, IsRightAligned: true),
                 new("averageCost", "Average Cost", "money", 120, IsRightAligned: true),
-                new("realizedPnl", "Realized PnL", "money", 120, IsRightAligned: true),
-                new("unrealizedPnl", "Unrealized PnL", "money", 120, IsRightAligned: true),
+                new("realizedPnl", "Realized P&L", "money", 120, IsRightAligned: true),
+                new("unrealizedPnl", "Unrealized P&L", "money", 120, IsRightAligned: true),
                 new("security", "Security", Width: 180),
                 new("coverage", "Coverage", Width: 110)
             ],
@@ -1546,8 +1546,8 @@ public sealed partial class FinancialRecordExplorerReadService
             [
                 new("Quantity", position.Quantity.ToString(CultureInfo.InvariantCulture)),
                 new("Average Cost", FormatCurrency(position.AverageCostBasis)),
-                new("Realized PnL", FormatCurrency(position.RealizedPnl), Tone: ToneFromBalance(position.RealizedPnl)),
-                new("Unrealized PnL", FormatCurrency(position.UnrealizedPnl), Tone: ToneFromBalance(position.UnrealizedPnl)),
+                new("Realized P&L", FormatCurrency(position.RealizedPnl), Tone: ToneFromBalance(position.RealizedPnl)),
+                new("Unrealized P&L", FormatCurrency(position.UnrealizedPnl), Tone: ToneFromBalance(position.UnrealizedPnl)),
                 new("Security", security?.DisplayName ?? "Unresolved", Tone: security is null ? FinancialRecordExplorerTone.Warning : FinancialRecordExplorerTone.Success)
             ],
             ProofActions: BuildExplorerProofActions(run, UiApiRoutes.WorkstationPortfolio),
@@ -1558,7 +1558,7 @@ public sealed partial class FinancialRecordExplorerReadService
             ],
             Impacts:
             [
-                new("portfolio-equity", "Portfolio equity", $"Unrealized PnL impact is {FormatCurrency(position.UnrealizedPnl)}.", Tone: ToneFromBalance(position.UnrealizedPnl)),
+                new("portfolio-equity", "Portfolio equity", $"Unrealized P&L impact is {FormatCurrency(position.UnrealizedPnl)}.", Tone: ToneFromBalance(position.UnrealizedPnl)),
                 new("security-master", "Security Master", security is null ? "Security reference is unresolved." : $"Resolved to {security.DisplayName}.", securityHref, security is null ? FinancialRecordExplorerTone.Warning : FinancialRecordExplorerTone.Success)
             ],
             FullRecordHref: securityHref);

@@ -79,10 +79,11 @@ import {
 import { ExecutionControlsHeader } from "@/screens/trading-screen.execution-controls-header";
 import { BrokerageRecoveryPanel } from "@/screens/trading-screen.brokerage-recovery";
 import { LIVE_GOVERNED_APPROVAL_SERVICES, useGovernedApprovalsViewModel } from "@/screens/trading-screen.governed-approvals";
-import type { ExecutionAuditEntry, ExecutionControlSnapshot, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
+import type { ExecutionAuditEntry, ExecutionControlSnapshot, MetricFreshness, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
 import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
 import { applyCrossScreenCounts, selectCrossScreenCounts } from "@/lib/cross-screen-counts";
 import { pluralizeCount } from "@/lib/format";
+import { withMetricContext } from "@/lib/metric-trust";
 import { useSharedCrossScreenCounts } from "@/lib/cross-screen-counts-context";
 
 interface TradingScreenProps {
@@ -568,6 +569,21 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
         ? "review"
         : "unknown";
 
+  // Headline figures state the same scope and evidence time as the confidence summary below, and
+  // are marked when the broker evidence behind them is stale or cannot be confirmed. A readiness
+  // refresh in flight does not mute them: the last observation is still the evidence on screen.
+  const headlineScope = fundAccountId ?? data.brokerage.account ?? "All loaded accounts";
+  const headlineAsOf = (hasRecoveryProjection ? recoveryPortfolio?.observedAt : data.brokerage.lastHeartbeat) || null;
+  const headlineFreshness: MetricFreshness = hasRecoveryProjection
+    ? recoveryPortfolio?.isFresh === false
+      ? "stale"
+      : recoveryPortfolio?.isFresh && !tradingReadiness.errorText ? "fresh" : "unverified"
+    : sourceTone === "ready" ? "fresh" : "unverified";
+  const trustedHeadlineMetrics = withMetricContext(headlineMetrics, {
+    provenance: { source: "Trading workspace", asOf: headlineAsOf, scope: headlineScope },
+    freshness: headlineFreshness
+  });
+
   return (
     <div className="space-y-5">
       {/* The route answers "where am I?" first; workspace-wide metrics follow. Sub-route
@@ -586,7 +602,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
         </p>
       </section>
 
-      <StatStrip metrics={headlineMetrics} label="Trading headline metrics" />
+      <StatStrip metrics={trustedHeadlineMetrics} label="Trading headline metrics" />
 
       <OperationalTrustSummary
         label="Trading data confidence"
@@ -599,12 +615,12 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
           tone: sourceTone
         }}
         scope={{
-          value: fundAccountId ?? data.brokerage.account ?? "All loaded accounts",
+          value: headlineScope,
           detail: fundAccountId ? "Operating fund account" : "Brokerage account scope",
           tone: fundAccountId || data.brokerage.account ? "ready" : "unknown"
         }}
         freshness={{
-          value: hasRecoveryProjection ? recoveryPortfolio?.observedAt ?? "Unavailable" : data.brokerage.lastHeartbeat || "Unavailable",
+          value: headlineAsOf ?? "Unavailable",
           detail: hasRecoveryProjection ? "Latest broker portfolio observation" : "Latest brokerage heartbeat",
           tone: hasRecoveryProjection ? recoveryPortfolio?.isFresh === false ? "blocked" : recoveryUnavailable ? "unknown" : recoveryPortfolio?.isFresh ? "ready" : "blocked" : sourceTone
         }}

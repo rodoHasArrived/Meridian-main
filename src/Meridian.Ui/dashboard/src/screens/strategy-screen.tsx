@@ -447,7 +447,7 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
         </div>
       </section>
 
-      <StatStrip metrics={data.metrics} label="Strategy headline metrics" />
+      <StatStrip metrics={data.metrics} label="Strategy headline metrics" source="Strategy workspace" />
 
       {routeView === "overview" ? <StrategyOverviewHub vm={vm} /> : null}
 

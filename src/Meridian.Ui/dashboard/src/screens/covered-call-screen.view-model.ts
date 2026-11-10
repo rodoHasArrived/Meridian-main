@@ -1219,7 +1219,7 @@ function buildCoveredCallTradeTimelineRow(
       ? "success"
       : "danger";
   const id = coveredCallTradeRowId(trade, index);
-  const summary = `${underlyingSymbol} trade ${index + 1}, entry ${trade.entryDate}, exit ${trade.exitDate}, strike ${strikeLabel}, PnL ${pnlLabel}, status ${statusLabel}.`;
+  const summary = `${underlyingSymbol} trade ${index + 1}, entry ${trade.entryDate}, exit ${trade.exitDate}, strike ${strikeLabel}, P&L ${pnlLabel}, status ${statusLabel}.`;
 
   return {
     id,
@@ -1263,7 +1263,7 @@ function buildCoveredCallTradeTimelineDetail(
     eyebrow: "Selected trade",
     title: `${underlyingSymbol} ${strikeLabel} call`,
     subtitle: `${trade.entryDate} to ${trade.exitDate} · ${trade.contracts} contract${trade.contracts === 1 ? "" : "s"}`,
-    description: `${statusLabel}; exit reason ${exitReasonLabel}; ${totalPnl} total net PnL.`,
+    description: `${statusLabel}; exit reason ${exitReasonLabel}; ${totalPnl} total net P&L.`,
     statusLabel,
     statusBadgeVariant,
     fields: [
@@ -1271,7 +1271,7 @@ function buildCoveredCallTradeTimelineDetail(
       { label: "Entry credit", value: formatSignedMoney(trade.entryCredit) },
       { label: "Exit debit", value: formatSignedMoney(trade.exitDebit) },
       { label: "Net per contract", value: formatSignedMoney(trade.netPnlPerContract) },
-      { label: "Total net PnL", value: totalPnl },
+      { label: "Total net P&L", value: totalPnl },
       { label: "Holding days", value: formatCount(trade.holdingDays) },
       { label: "Multiplier", value: formatCount(trade.multiplier) },
       { label: "Entry IV", value: trade.entryImpliedVolatility === null ? "—" : formatRatioAsPercent(trade.entryImpliedVolatility) },

@@ -68,6 +68,15 @@ fails a route whose rendered content shows a raw identifier or a "1 rows" style 
 contract changed; Operations Continuity still shows fund-account identifiers because its shared
 summary carries no account name.
 
+The host-served bundle carries the headline-figure trust rules: every workspace stat strip
+states its source and as-of time (and scope where the page has one); a change is shown only with
+the baseline it is measured against, so the placeholder deltas the workspace read models still
+send (`0%`, `+N`, `+session`) are not rendered; figures fed by stale or unverified data are muted
+and marked; Portfolio explains a header strip and explorer that disagree; and profit and loss
+reads "P&L" in every label. `WorkstationMetricCard` is unchanged: the browser carries the
+baseline, provenance and freshness fields on its own `MetricSnapshot` until a read model supplies
+real comparison data.
+
 The host-served bundle carries the browser presentation correctness fixes: font stacks that end
 in a generic family (no serif fallback for data text), Ledger Explorer amounts at currency
 precision with journal-ID links, no invented Strategy metrics, and a masthead activation chip that
