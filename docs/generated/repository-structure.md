@@ -10825,6 +10825,7 @@ Meridian-main
 │   │   │   │   ├── EventDrivenDecouplingTests.CashFlow.cs
 │   │   │   │   ├── EventDrivenDecouplingTests.cs
 │   │   │   │   ├── EventDrivenDecouplingTests.LegacyCashFlowReplay.cs
+│   │   │   │   ├── EventDrivenDecouplingTests.PreCoverAccountingReplay.cs
 │   │   │   │   ├── EventDrivenDecouplingTests.VariationMargin.cs
 │   │   │   │   ├── MarginModelTests.cs
 │   │   │   │   ├── MultiCurrencyTests.cs
