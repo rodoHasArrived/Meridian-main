@@ -1,6 +1,6 @@
 # TODO / FIXME / HACK / NOTE Scan
 
-Total items: **238**
+Total items: **236**
 
 | File | Line | Tag | Linked Issue | Text |
 | --- | ---: | --- | :---: | --- |
@@ -10,7 +10,6 @@ Total items: **238**
 | `.codex/agents/meridian-cleanup.toml` | 417 | `TODO` | ❌ | - Open-work comments (for example, `// TODO:` or `// FIXME:`) that describe genuine pending tasks — flag them\r |
 | `.github/agents/cleanup-agent.md` | 385 | `TODO` | ❌ | - placeholder implementation comments (for example, `// TODO: implement`) in methods that are already implemented. |
 | `.github/agents/cleanup-agent.md` | 393 | `TODO` | ❌ | - Open-work comments (for example, `// TODO:` or `// FIXME:`) that describe genuine pending tasks — flag |
-| `CLAUDE.md` | 149 | `NOTE` | ❌ | > Note: the out-of-process Chief of Staff (CoS) ADK runtime that previously owned this heavy-duty |
 | `Meridian Design System/components/core/ContextMenu.d.ts` | 68 | `NOTE` | ❌ | * NOTE: bundle-internal — like `useToast` / `useTableState`, this lowercase helper is NOT on the |
 | `Meridian Design System/components/core/MultiSelect.jsx` | 23 | `NOTE` | ❌ | // Note: caller must provide all IDs; this component only tracks selection state. |
 | `Meridian Design System/tests/test_design_system_governance.py` | 28 | `NOTE` | ❌ | # NOTE: this exercises the real, current tree (ROOT), not a synthetic fixture. If this |
@@ -22,7 +21,7 @@ Total items: **238**
 | `src/Meridian.Application/Commands/SecurityMasterCommands.cs` | 35 | `NOTE` | ❌ | // NOTE: _importService is null when the Security Master database is not configured at CLI |
 | `src/Meridian.Core/Monitoring/MigrationDiagnostics.cs` | 17 | `NOTE` | ❌ | /// NOTE: This class lives in the Core project (not Application) so that |
 | `src/Meridian.Core/Serialization/MarketDataJsonContext.cs` | 177 | `NOTE` | ❌ | /// NOTE: Alpaca payloads use both "T" and "t" keys in the same object. |
-| `src/Meridian.Execution/BrokerageServiceRegistration.cs` | 291 | `NOTE` | ❌ | // NOTE: We intentionally use GetRequiredKeyedService here rather than |
+| `src/Meridian.Execution/BrokerageServiceRegistration.cs` | 281 | `NOTE` | ❌ | // NOTE: We intentionally use GetRequiredKeyedService here rather than |
 | `src/Meridian.Reporting/ReportingGovernanceService.cs` | 100 | `NOTE` | ❌ | note: ReportingGovernanceCanonicalValidation.BuildInitialRunAuditNote(run), |
 | `src/Meridian.Reporting/ReportingGovernanceService.cs` | 588 | `NOTE` | ❌ | note: ReportingGovernanceCanonicalValidation.BuildRestatementDraftAuditNote(draftRun), |
 | `src/Meridian.Reporting/ReportingGovernanceService.cs` | 617 | `NOTE` | ❌ | note: ReportingGovernanceCanonicalValidation.BuildRestatementApprovalAuditNote(approvedRequest), |
@@ -55,20 +54,20 @@ Total items: **238**
 | `src/Meridian.Ui.Shared/Endpoints/ArchiveMaintenanceEndpoints.cs` | 116 | `NOTE` | ❌ | // NOTE: POST /schedules/{id}/enable and POST /schedules/{id}/disable are registered |
 | `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.DataProviders.cs` | 136 | `NOTE` | ❌ | Note: note, |
 | `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementCaseworkAuthority.cs` | 113 | `NOTE` | ❌ | Note: request.ResolutionNote, |
-| `src/Meridian.Ui.Shared/Services/MarginControlCenterReadService.cs` | 103 | `NOTE` | ❌ | Note: request.Note.Trim(), |
+| `src/Meridian.Ui.Shared/Services/MarginControlCenterReadService.cs` | 125 | `NOTE` | ❌ | Note: request.Note.Trim(), |
 | `src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs` | 825 | `NOTE` | ❌ | Note: NormalizeOptional(target.Note) ?? $"Scheduled delivery for {normalizedTemplateId}.", |
 | `src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs` | 2047 | `NOTE` | ❌ | Note: NormalizeOptional(target.Note), |
 | `src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs` | 2101 | `NOTE` | ❌ | Note: NormalizeOptional(target.Note), |
 | `src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs` | 150 | `NOTE` | ❌ | Note: request.Note, |
 | `src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs` | 305 | `NOTE` | ❌ | Note: "Clear the durable statement casework evidence-handoff obligation.", |
 | `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 427 | `NOTE` | ❌ | note: "Heartbeat delayed" |
-| `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 495 | `NOTE` | ❌ | note: "Credential verification failed." |
-| `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 892 | `NOTE` | ❌ | note: "Streaming quote path is healthy." |
-| `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 967 | `NOTE` | ❌ | note: "Streaming quote path is healthy." |
-| `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 1423 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
+| `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 497 | `NOTE` | ❌ | note: "Credential verification failed." |
+| `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 898 | `NOTE` | ❌ | note: "Streaming quote path is healthy." |
+| `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 973 | `NOTE` | ❌ | note: "Streaming quote path is healthy." |
+| `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 1429 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
 | `src/Meridian.Ui/dashboard/src/app.test.tsx` | 263 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
-| `src/Meridian.Ui/dashboard/src/app.test.tsx` | 675 | `NOTE` | ❌ | note: "Credential check failed" |
-| `src/Meridian.Ui/dashboard/src/app.test.tsx` | 983 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
+| `src/Meridian.Ui/dashboard/src/app.test.tsx` | 689 | `NOTE` | ❌ | note: "Credential check failed" |
+| `src/Meridian.Ui/dashboard/src/app.test.tsx` | 998 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
 | `src/Meridian.Ui/dashboard/src/components/data/skeleton.tsx` | 5 | `NOTE` | ❌ | // NOTE: a second, Tailwind-based Skeleton family lives in `components/ui/skeleton.tsx` |
 | `src/Meridian.Ui/dashboard/src/components/meridian/security-details-tracker.test.tsx` | 23 | `NOTE` | ❌ | note: "Opening sleeve" |
 | `src/Meridian.Ui/dashboard/src/components/meridian/security-details-tracker.test.tsx` | 151 | `NOTE` | ❌ | note: "operator note" |
@@ -180,8 +179,8 @@ Total items: **238**
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4746 | `NOTE` | ❌ | note: "Board package.", |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4792 | `NOTE` | ❌ | note: "Board package.", |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4994 | `NOTE` | ❌ | note: "pricing-correction" |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | 2800 | `NOTE` | ❌ | note: note \|\| null |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | 2813 | `NOTE` | ❌ | note: draft.deliveryNote, |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | 2794 | `NOTE` | ❌ | note: note \|\| null |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | 2807 | `NOTE` | ❌ | note: draft.deliveryNote, |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.test.ts` | 203 | `NOTE` | ❌ | note: "pricing-correction" |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.test.ts` | 488 | `NOTE` | ❌ | note: "Starter target" |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.test.ts` | 619 | `NOTE` | ❌ | note: "Board package." |
@@ -212,7 +211,6 @@ Total items: **238**
 | `tests/Meridian.Tests/Application/Backfill/BackfillWorkerServiceTests.cs` | 56 | `NOTE` | ❌ | // NOTE: Using null! because validation throws before dependencies are accessed |
 | `tests/Meridian.Tests/Application/Backfill/BackfillWorkerServiceTests.cs` | 86 | `NOTE` | ❌ | // NOTE: Using null! dependencies - we only verify that ArgumentOutOfRangeException is not thrown |
 | `tests/Meridian.Tests/Application/Pipeline/FSharpEventValidatorTests.cs` | 72 | `NOTE` | ❌ | // Note: Trade.ctor only checks Price > 0, so $2,000,000 is constructible. |
-| `tests/Meridian.Tests/DataIntegration/Monitoring/DataQuality/DataFreshnessSlaMonitorTests.cs` | 525 | `NOTE` | ❌ | // NOTE: Actual result depends on current time, so we check the logic is working |
 | `tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs` | 1647 | `NOTE` | ❌ | note: "Canonical pilot run created from the certified renderer manifest."); |
 | `tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs` | 1660 | `NOTE` | ❌ | note: "Certified renderer output reconciliation started."); |
 | `tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs` | 1673 | `NOTE` | ❌ | note: "Exact certified renderer output was retained."); |

@@ -1,7 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { describe, expect, it, vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
-import { WorkflowContinuityDock } from "@/components/meridian/workflow-continuity-dock";
+import { OperatingScopeChip, WorkflowContextDisclosure } from "@/components/meridian/workflow-continuity-dock";
 import type { AppShellWorkflowContinuityViewModel } from "@/app-shell.view-model";
 
 const workflowViewModel: AppShellWorkflowContinuityViewModel = {
@@ -135,21 +136,78 @@ const workflowViewModel: AppShellWorkflowContinuityViewModel = {
   linkedContextItems: []
 };
 
-describe("WorkflowContinuityDock", () => {
-  it("keeps the collapsed dock to operating context plus on-demand flow details", async () => {
+describe("OperatingScopeChip", () => {
+  it("shows the scope value in one chip that opens the scope picker", async () => {
+    const user = userEvent.setup();
+    const onEdit = vi.fn();
+
+    render(<OperatingScopeChip viewModel={workflowViewModel} onEditOperatingContext={onEdit} />);
+
+    expect(screen.getByRole("region", { name: "Market Data To Paper continuity" })).toBeInTheDocument();
+    const chip = screen.getByRole("button", { name: "Operating scope: MSFT" });
+    expect(chip).toHaveTextContent("MSFT");
+    expect(chip).toHaveAttribute("aria-haspopup", "dialog");
+    // The old scope row's label, action and empty-state copy are gone; so is the inline workflow detail.
+    expect(screen.queryByText("Operating scope")).not.toBeInTheDocument();
+    expect(screen.queryByText("Change scope")).not.toBeInTheDocument();
+    expect(screen.queryByText("Workflow context")).not.toBeInTheDocument();
+
+    await user.click(chip);
+    expect(onEdit).toHaveBeenCalledTimes(1);
+  });
+
+  it("reads All funds when no scope is set", () => {
+    render(
+      <OperatingScopeChip
+        viewModel={{ ...workflowViewModel, operatingScope: { ...workflowViewModel.operatingScope, hasScope: false, items: [] } }}
+        onEditOperatingContext={vi.fn()}
+      />
+    );
+
+    expect(screen.getByRole("button", { name: "Operating scope: All funds" })).toHaveTextContent("All funds");
+    expect(screen.queryByText("No scope selected")).not.toBeInTheDocument();
+  });
+
+  it("distinguishes applied scope from retained scope in the chip and its description", () => {
+    render(
+      <OperatingScopeChip
+        viewModel={{
+          ...workflowViewModel,
+          operatingScope: {
+            ...workflowViewModel.operatingScope,
+            items: [
+              { id: "fundAccountId", label: "Account", value: "Desk A", ariaLabel: "Account Desk A" },
+              { id: "provider", label: "Provider", value: "Source B", ariaLabel: "Provider Source B" }
+            ]
+          }
+        }}
+        onEditOperatingContext={vi.fn()}
+        scopeDimensionsInEffect={["fundAccountId"]}
+      />
+    );
+
+    const chip = screen.getByRole("button", { name: "Operating scope: Desk A · Source B" });
+    expect(chip).toHaveAccessibleDescription(
+      "Applied on this screen: Account Desk A. Retained for other screens: Provider Source B."
+    );
+    expect(screen.getByText("Desk A")).toHaveAttribute("title", "Account: applied here");
+    expect(screen.getByText("Source B")).toHaveAttribute("title", "Provider: carried, but not applied on this screen");
+  });
+});
+
+describe("WorkflowContextDisclosure", () => {
+  it("keeps workflow detail collapsed until asked for", async () => {
     const user = userEvent.setup();
 
     render(
       <MemoryRouter>
-        <WorkflowContinuityDock viewModel={workflowViewModel} />
+        <WorkflowContextDisclosure viewModel={workflowViewModel} />
       </MemoryRouter>
     );
 
     expect(screen.queryByRole("navigation", { name: "Market Data To Paper workflow steps" })).not.toBeInTheDocument();
-    expect(screen.getByLabelText("Operating scope")).toHaveTextContent("MSFT");
-    expect(screen.queryByText("/data/quotes?symbol=MSFT")).not.toBeInTheDocument();
     expect(screen.queryByText("Import -> Validate -> Reconcile -> Investigate -> Approve -> Report")).not.toBeInTheDocument();
-    // The decision brief renders as the masthead status pill, not a dock banner.
+    // The decision brief renders as the masthead status pill, not here.
     expect(screen.queryByRole("link", { name: "Open provider posture" })).not.toBeInTheDocument();
 
     await user.tab();
@@ -165,27 +223,4 @@ describe("WorkflowContinuityDock", () => {
       "/data/alerts?symbol=MSFT"
     );
   });
-});
-
-it("distinguishes applied scope from retained scope in its accessible summary", () => {
-  render(
-    <MemoryRouter>
-      <WorkflowContinuityDock
-        viewModel={{
-          ...workflowViewModel,
-          operatingScope: {
-            ...workflowViewModel.operatingScope,
-            items: [
-              { id: "fundAccountId", label: "Account", value: "Desk A", ariaLabel: "Account Desk A" },
-              { id: "provider", label: "Provider", value: "Source B", ariaLabel: "Provider Source B" }
-            ]
-          }
-        }}
-        scopeDimensionsInEffect={["fundAccountId"]}
-      />
-    </MemoryRouter>
-  );
-  expect(screen.getByText(/Applied on this screen: Account Desk A/)).toHaveTextContent("Retained for other screens: Provider Source B.");
-  expect(screen.getByLabelText("Account Desk A")).toHaveTextContent("Applied here");
-  expect(screen.getByLabelText("Provider Source B. Retained for other screens.")).toHaveTextContent("Retained");
 });

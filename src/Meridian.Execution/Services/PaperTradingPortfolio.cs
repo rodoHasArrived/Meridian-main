@@ -1200,7 +1200,19 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         account.RealisedPnl += realised;
 
         if (_ledger is not null)
+        {
             PostCoverShortEntry(symbol, coverQty, price, coverCost, proceedsRemoved, realised, ts);
+
+            // Mirror the account: the covered share of the Reg T collateral returns to cash.
+            if (marginReleased > 0m)
+            {
+                _ledger.PostLines(ts, $"Reg T short collateral released {coverQty} {symbol}",
+                [
+                    (LedgerAccounts.Cash, marginReleased, 0m),
+                    (LedgerAccounts.ShortSaleCollateralReceivable, 0m, marginReleased),
+                ]);
+            }
+        }
     }
 
     private void ApplySellLong(
@@ -1255,6 +1267,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
             : pos.OpenCostBasis / (Math.Abs(newQty) * pos.EconomicMultiplier);
         pos.Quantity = newQty;
 
+        var collateralHeld = 0m;
         if (account.MarginModel is RegTMarginModel regt)
         {
             // Reg T: broker retains the short proceeds; trader must post the additional
@@ -1264,7 +1277,8 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
             account.Cash -= additionalMargin + commission;
 
             // Track total collateral held as a negative MarginBorrowed (broker holds it).
-            pos.MarginBorrowed -= proceeds * regt.ShortInitialRate;
+            collateralHeld = proceeds * regt.ShortInitialRate;
+            pos.MarginBorrowed -= collateralHeld;
         }
         else
         {
@@ -1277,6 +1291,18 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
             (LedgerAccounts.Cash, proceeds, 0m),
             (LedgerAccounts.ShortSecuritiesPayable(symbol), 0m, proceeds),
         ]);
+
+        // The broker holds the proceeds plus the posted margin, so that collateral is not free
+        // cash. Without this entry ledger cash read proceeds higher than the account's cash
+        // (by the full collateral) for as long as the short stayed open.
+        if (collateralHeld > 0m)
+        {
+            _ledger?.PostLines(ts, $"Reg T short collateral {qty} {symbol}",
+            [
+                (LedgerAccounts.ShortSaleCollateralReceivable, collateralHeld, 0m),
+                (LedgerAccounts.Cash, 0m, collateralHeld),
+            ]);
+        }
     }
 
     private void PostSellLongEntry(string symbol, decimal closeQty, decimal price, decimal proceeds,

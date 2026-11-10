@@ -11,6 +11,8 @@ last_reviewed: 2026-10-31
 
 # src/Meridian.Application
 
+Historical backfill enforces its adaptive concurrency: after a provider rate limit, workers beyond the reduced limit wait for a slot instead of continuing at the original parallelism.
+
 Backfill resume checkpoints are written only after the final pipeline flush succeeds, and a flush failure fails the run, so a crash or flush error can no longer skip dates on resume that never reached disk. `PersistentDedupLedger` rolls its cache entry back when the ledger write fails or is cancelled (a retry is no longer dropped as a duplicate) and fsyncs compacted ledgers before the rename. Scheduled catch-up skips an empty window instead of queueing From > To.
 
 Backfill runs publish into an `EventPipeline` with `BoundedChannelFullMode.Wait`, so a
@@ -1392,6 +1394,18 @@ direct-lending and amortization gates are ungated when no verifier is registered
 - **Terms-format retirement gate (ADR-024 decision 5, remediation slice 9).** The data-quality scan raises `TX003` for each active record whose asset-specific terms declare no `termsFormat` (naming the family the shape rule infers), and the report's `UntaggedTermsPayloadCount` gauges every stored row, inactive included, through the store's single aggregate (`ISecurityMasterStore.CountUntaggedAssetSpecificTermsAsync`) — never a projection load — with `SecurityMasterPostgresRoundTripTests` pinning the SQL to the `SecurityTermsEnvelope.GetDeclaredFormat` verdict row by row. No stored payload is rewritten — the tag drains through stamped writes — and the shape rule retires only when the gauge reads zero on every governed deployment.
 
 See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D9, slice 6 disposition) for status and open decisions.
+
+**Provider credential read-ahead.** Provider construction is synchronous, so asynchronous callers
+await `IProviderCredentialResolver.PrepareAsync` and construct inside the prepared scope, where
+`StoredProviderCredentialResolver.CreateContext` does no storage I/O. The collector and backfill
+mode runners, `BackfillCoordinator`'s asynchronous operations and the routing engine's streaming
+resolver follow this order. A synchronous resolution outside a prepared scope still performs one
+blocking read on the thread pool. See
+[provider management](../../docs/architecture/provider-management.md).
+
+**Pipeline.** `EventPipeline` counts events the channel evicts in DropOldest/DropNewest mode as
+dropped. `PersistentDedupLedger` offers a synchronous `Initialize` for dependency-injection
+factories, and `AutoResubscribePolicy` awaits `SubscriptionOrchestrator.ApplyAsync`.
 
 ## Diagrams
 

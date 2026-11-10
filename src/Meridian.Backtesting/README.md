@@ -11,6 +11,8 @@ last_reviewed: 2026-10-30
 
 # src/Meridian.Backtesting
 
+`MarketImpactFillModel` fills an all-or-none order completely or not at all; a limit order whose later slices cross the limit no longer returns a partial fill when partial fills are disallowed.
+
 XIRR is computed from investor-boundary flows only (initial capital out, terminal equity in); internal trade, commission and dividend flows are already inside equity. A loss of 100% or more reports an annualised return of -100% instead of aborting the metrics build.
 
 `MarketImpactFillModel` leaves an order working on a zero-volume bar (no traded liquidity) and caps
@@ -174,6 +176,14 @@ See the [expanded objectives](../../docs/product/implementation-todo-list.md#exp
 - `BacktestRequest.MaxParticipationRate` caps per-bar participation for bar-midpoint and
   market-impact fills. A value of `0` preserves the historical full-fill behavior; positive values
   leave oversized market-impact orders working across bars when partial fills are allowed.
+- The bar-based fill models honour time-in-force the same way the order-book model does. An
+  `ImmediateOrCancel` or `FillOrKill` order is resolved on the first bar it is executable: IOC keeps
+  what filled and cancels the remainder, FOK fills completely or is cancelled with no fill, and
+  neither stays working on later bars. An order with `AllowPartialFills = false` never ends
+  partially filled, including when market-impact slices are skipped for crossing the limit price.
+  The replay engine acts on that result: an order the fill model cancels, and an immediate order
+  whose generated fills the account rejected, is removed from the pending set and cannot fill on a
+  later event. This applies to every fill model, including the order-book model.
 - `MeridianNativeBacktestStudioEngine` stamps native engine output through
   `CanonicalBacktestResultNormalizer.FromNative`, matching the metadata contract used by
   QuantConnect Lean imports.

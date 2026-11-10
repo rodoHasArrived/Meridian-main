@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FreshnessChip } from "@/components/ui/freshness-chip";
 import { useReportRunStream } from "@/hooks/use-report-run-stream";
+import { useVisibleInterval } from "@/hooks/use-visible-interval";
 import { humanizeStatus, SeverityBadge } from "@/components/operations";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
 import { OperationalTrustSummary } from "@/components/meridian/operational-trust-summary";
@@ -403,17 +404,11 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
     }
   }, [vm.workflowTaskPanel?.selectedProfileId]);
 
-  useEffect(() => {
-    if (!onRefreshLivePortfolioViews || !shouldAutoRefreshLivePortfolioViews) {
-      return;
-    }
-
-    const timer = window.setInterval(() => {
-      void handleRefreshLivePortfolioViews("auto");
-    }, livePortfolioAutoRefreshIntervalMs);
-
-    return () => window.clearInterval(timer);
-  }, [onRefreshLivePortfolioViews, shouldAutoRefreshLivePortfolioViews]);
+  // Paused while the tab is hidden; refreshes once on return.
+  useVisibleInterval(
+    () => handleRefreshLivePortfolioViews("auto"),
+    onRefreshLivePortfolioViews && shouldAutoRefreshLivePortfolioViews ? livePortfolioAutoRefreshIntervalMs : null
+  );
 
   function handleReportPackProfileKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     const command = resolveReportPackProfileKeyCommand(event.key);
@@ -844,7 +839,6 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
           tone: "blocked"
         } : undefined}
         label="Reporting data confidence"
-        disclosure={isDailyReportingCockpitLanding}
       />
 
       {isDailyReportingCockpitLanding ? (

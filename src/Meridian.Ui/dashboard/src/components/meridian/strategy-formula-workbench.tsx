@@ -75,10 +75,10 @@ export function StrategyFormulaWorkbench({
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0">
           <div className="eyebrow-label eyebrow-label--sentence">Design system component</div>
-          <h1 id="strategy-formula-workbench-title" className="flex items-center gap-2 text-2xl font-semibold tracking-normal text-foreground">
+          <h2 id="strategy-formula-workbench-title" className="flex items-center gap-2 text-2xl font-semibold tracking-normal text-foreground">
             <FunctionSquare className="h-6 w-6 text-primary" aria-hidden="true" />
             {title}
-          </h1>
+          </h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">{description}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Strategy authoring mode">

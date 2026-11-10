@@ -11,6 +11,8 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Core
 
+`Meridian.Core.Currency.CurrencyMinorUnits.GetPrecision` delegates to `Meridian.Contracts.Ledger.CurrencyMinorUnits`, so the ISO 4217 minor-unit table is maintained in one place.
+
 `ProviderConnectionsConfig.RuntimeCredentials` holds optional explicit host defaults keyed by
 canonical provider and retained tenant/connection identity. It is additive and omitted when absent;
 Application owns validation and resolution. It contains no secrets and confers no verification.
@@ -132,6 +134,10 @@ request contracts.
 - **Config schema.** `ConfigJsonSchemaGenerator` includes the boolean `SecurityMasterWorkbench:RequireIndependentProfileApprover` key, matching `config/appsettings.schema.json`.
 
 See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D8) for status and open decisions.
+
+`EventPipelinePolicy.CreateChannel` accepts an item-dropped callback so the owning pipeline can count
+evictions. `ConfigJsonSchemaGenerator` declares the sample configuration's `Settings`, `Serilog` and
+`$schema` keys.
 
 ## Diagrams
 

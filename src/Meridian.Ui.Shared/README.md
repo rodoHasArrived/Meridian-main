@@ -11,6 +11,8 @@ last_reviewed: 2026-10-31
 
 # src/Meridian.Ui.Shared
 
+Margin Control Center reads and certifications are tenant-scoped: `GET /api/workstation/reconciliation/margin-control` and the certification POST require tenant and company scope and show only retained snapshots whose import was recorded against an active fund account owned by the caller's tenant and company, and whose external account id is one of that same fund account's identifiers. External ids are unique only within a provider, so an id match alone never admits another tenant's evidence; evidence retained before the importing fund account was recorded is not shown (fail closed). Both routes answer 403 when the tenant context, the account query service or the fund-profile tenancy registry is unavailable, and a fund whose ownership cannot be resolved contributes no visible accounts.
+
 Sampling endpoints bound `sampleSize` to 1..100,000, reject confidence or margin-of-error values outside (0, 1), keep at most 50 saved samples in memory, report `no_data` instead of inventing a population of 100,000, honour cancellation while counting, and no longer echo the storage root.
 
 Lean results ingest and auto-export reconfiguration confine request-supplied paths to the configured roots (`LEAN_RESULTS_PATH`/`LEAN_PATH` and `LEAN_DATA_PATH`/`LEAN_PATH`) and no longer echo paths in errors. `MarginCertificationStore` refuses to upsert over an unreadable evidence file. The workstation position-limit rule counts working orders.
@@ -835,7 +837,16 @@ institution and external-account evidence match the statement source. `AdminMain
 override account scope; other callers require account-scoped `ManageDirectLending` authorization.
 `SecurityMasterWorkbenchQueryService` is published under
 `Meridian.Ui.Shared.Services` and composes Application Security Master services into the shared
-workstation drill-in projection. The Security Master alias upsert route accepts corrections to an
+workstation drill-in projection. For a Bond that declares a call or put schedule, the snapshot's schedule
+book takes its `Call`, `Put`, `CallNoticeDeadline` and `PutNoticeDeadline` rows and the next lifecycle
+date from the declared outcome the asset-operations obligation timeline uses
+(`AssetObligationProjectionService.ResolveDeclaredExerciseAsync`), not from the economic
+`call.firstCallDate`. A blocked schedule adds no call or put row; its code and reason are appended to
+the schedule summary and source summary. A fault while resolving is logged and shown as a
+`DeclaredExerciseUnavailable` blocker; the snapshot does not fail. The service takes the host's
+`IBusinessDayCalendarSource`, `IBondCalculationPolicy`, `TimeProvider` and logger as optional
+constructor arguments, resolved from the container. Records that declare no schedule, CertificateOfDeposit and StructuredCredit keep the scalar
+read. The Security Master alias upsert route accepts corrections to an
 existing alias ID as a new revision; re-pointing an alias at a different security returns 409.
 `SecurityMasterEndpoints.Curves.cs` maps the stored-curve routes (`/api/security-master/curves`,
 `/curves/{curveId}`, `/curves/{curveId}/versions`, where `asOf` with an optional `knownAt` returns
@@ -3029,6 +3040,13 @@ registered and it never writes; applying a proposal is a governed amendment.
 - **Governed term-amendment refusal.** The Security Master endpoints build their HTTP 403 problem from `GovernedTermAmendmentPolicy.RefusalTitle` and `RefusalDetail`, so the API and the WPF editor show the same guidance when `RequireGovernedTermAmendments` is on. The direct write routes also answer the service's own `GovernedTermAmendmentRequiredException` with that same 403, and the workstation host registers `IGovernedTermAmendmentPolicy`, which `SecurityMasterService` enforces.
 
 See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D8) for status and open decisions.
+
+**Brokerage sync carry-forward.** A failed or partial brokerage sync keeps the last good positions,
+balance and activity for whichever half returned nothing, with an explicit warning, and a
+carried-forward balance is not recorded as a new balance snapshot. A projection that carries
+state forward is marked stale, so reconciliation does not treat it as a fresh provider observation. **Package files.** Package
+download and delete require the resolved file to be a direct child of the selected packages
+directory (the packages root, or a requested directory under it).
 
 ## Diagrams
 

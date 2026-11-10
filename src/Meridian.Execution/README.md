@@ -11,6 +11,10 @@ last_reviewed: 2026-10-28
 
 # src/Meridian.Execution
 
+Paper mode has one paper book: the DI-resolved `IOrderGateway` is `OmsGovernedExecutionOrderGateway`, a read-only view over the OMS's own paper `IExecutionGateway`, so direct submit/cancel through `IOrderGateway` is refused in paper as well as live mode. Its order-update stream reads `OrderManagementSystem.SubscribeOrderStateChanges()`: the OMS order table publishes every order-state transition (acceptance, fills, amendment, cancellation, rejection) at write time, in write order. Each subscription keeps only the latest unread state per order incarnation (a token issued when an order id is registered or a terminal id is reused), so a slow subscriber never blocks the OMS, skips only intermediate states, and still receives every order's final state, including orders already evicted from retention. Terminal order-status checks share `OrderManagement.OrderStatusFacts.IsTerminal`.
+
+Reg T short sales post the collateral the broker holds (proceeds × the short initial rate) from `Cash` to `Short Sale Collateral Receivable`, and covering releases it back, so ledger cash equals the account's free cash while a short is open.
+
 `OrderManagementSystem.GetUnitReservingOrders` reserves the larger-quantity outcome of each pending amendment (the original order still executes if the amendment fails); `GetExposureReservingOrders` keeps the larger-value outcome.
 
 Paper fills retain security-definition lot units and multipliers in execution reports, so fund units
@@ -340,6 +344,12 @@ Ledger posting from trade-fill events is explicit and Security Master gated. `Le
 retains the trade journal's Investing cash category against its immutable line IDs. Sales report
 actual cash proceeds; realized gains/losses remain noncash adjustments, and commission journals
 remain separate Operating payments. Reversal preserves the retained category.
+A buy that covers a short books its realized gain or loss the same way a sale does: Securities is
+debited by the short-sale proceeds being relieved (cash paid plus the gain, or less the loss), so a
+flat position leaves no residual Securities balance. A buy-to-cover fill whose two-line trade
+journal was retained before this accounting is replayed against that retained journal, matched
+exactly, so a fill interrupted across the upgrade can post its remaining journals. The retained
+journal is kept as posted; replay never appends the earlier shape and does not correct it.
 For a crash retry whose deterministic journal was already retained before attribution existed,
 the governed target first requires exactly one authoritative identity collision with no
 `cash-flow.*` evidence. Only the new canonical trade group/category tags can be omitted from the
