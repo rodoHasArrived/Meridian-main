@@ -713,11 +713,26 @@ public sealed class WorkspaceService
                 : workspace.Id;
         }, ct).ConfigureAwait(false);
 
-        return resolvedWorkspaceId is null
-            ? null
-            : await _workspaceStateTokenStore
+        if (resolvedWorkspaceId is null)
+        {
+            return null;
+        }
+
+        // A token save dequeues its token before writing it, so an in-flight save is not
+        // visible as pending work. Read behind the persistence gate so the restore sees every
+        // save that started before it, not the store as it was before that save landed. The
+        // state gate is not held here, so synchronous readers are still not blocked.
+        await _persistGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            return await _workspaceStateTokenStore
                 .RestoreAsync(resolvedWorkspaceId, pageTag, validation, ct)
                 .ConfigureAwait(false);
+        }
+        finally
+        {
+            _persistGate.Release();
+        }
     }
 
     public SessionState? GetLastSessionState() => WithStateLock(() => _lastSession);

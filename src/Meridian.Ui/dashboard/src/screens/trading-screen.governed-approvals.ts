@@ -69,6 +69,8 @@ export function useGovernedApprovalsViewModel(
   const [statusText, setStatusText] = useState<string | null>(null);
   const [forbidden, setForbidden] = useState(false);
   const refreshRevisionRef = useRef(0);
+  // The revision of the most recently issued read while it is still unanswered, else null.
+  const outstandingRevisionRef = useRef<number | null>(null);
 
   const refresh = useCallback(async () => {
     if (!enabled) {
@@ -80,6 +82,7 @@ export function useGovernedApprovalsViewModel(
     // late would put an escalation this operator already resolved back in the queue.
     const revision = refreshRevisionRef.current + 1;
     refreshRevisionRef.current = revision;
+    outstandingRevisionRef.current = revision;
 
     try {
       const next = await services.getRiskEscalations();
@@ -107,6 +110,10 @@ export function useGovernedApprovalsViewModel(
       }
 
       setErrorText(toErrorText(error, "Could not load the governed approval queue."));
+    } finally {
+      if (outstandingRevisionRef.current === revision) {
+        outstandingRevisionRef.current = null;
+      }
     }
   }, [enabled, services]);
 
@@ -123,7 +130,17 @@ export function useGovernedApprovalsViewModel(
       return;
     }
 
-    const timer = setInterval(() => void refresh(), refreshIntervalMs);
+    const timer = setInterval(() => {
+      // A timer tick must not supersede a read that is still unanswered: when the endpoint is
+      // slower than the interval, every response would be discarded and the queue would never
+      // update. The next tick after it answers polls again. Reads issued deliberately (after
+      // an approval or denial, or by the caller) still supersede an in-flight one.
+      if (outstandingRevisionRef.current !== null) {
+        return;
+      }
+
+      void refresh();
+    }, refreshIntervalMs);
     return () => clearInterval(timer);
   }, [forbidden, refresh, refreshIntervalMs]);
 

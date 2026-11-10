@@ -267,4 +267,29 @@ public sealed class WorkspaceServicePersistenceTests : IDisposable
         restored!.Token.WorkspaceId.Should().Be(workspaceId);
         restored.Token.PageTag.Should().Be(pageTag);
     }
+
+    [Fact]
+    public async Task Restore_WaitsForATokenSaveThatIsAlreadyInFlight()
+    {
+        var service = CreateService();
+        var session = SessionOn(service, out var workspaceId, out var pageTag);
+        var storeIo = new HeldTokenStoreIo();
+        service.SetStateTokenStoreIoHookForTests(storeIo.WaitAsync);
+
+        // The save has taken its token off the pending queue and is writing it. Nothing has
+        // reached the store yet, so a restore that read now would find no token.
+        var save = service.SaveSessionStateAsync(session, "alpha");
+        await storeIo.Started.WaitAsync(Patience);
+
+        var restore = service.RestoreWorkspaceStateTokenAsync(workspaceId, pageTag);
+        await Task.Delay(150);
+        restore.IsCompleted.Should().BeFalse("the restore must not read the store ahead of the in-flight save");
+
+        storeIo.Release();
+        await save.WaitAsync(Patience);
+        var restored = await restore.WaitAsync(Patience);
+        restored.Should().NotBeNull("the restore follows the save it was issued after");
+        restored!.Token.WorkspaceId.Should().Be(workspaceId);
+        restored.Token.PageTag.Should().Be(pageTag);
+    }
 }
