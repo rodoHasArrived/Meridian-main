@@ -3690,7 +3690,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
                 RightsPerShare: null);
 
             var result = (await ApiClientService.Instance
-                .PostWithResponseAsync<CorporateActionDto>($"/api/workstation/security-master/securities/{securityId}/corporate-actions", dto, ct)
+                .PostWithResponseAsync<SecurityMasterCorporateActionAppendResultDto>(UiApiRoutes.WithParam(UiApiRoutes.SecurityMasterCorporateActions, "securityId", securityId.ToString()), dto, ct)
                 .ConfigureAwait(false)).DataOrLoggedNull("Record corporate action");
 
             if (result is not null)

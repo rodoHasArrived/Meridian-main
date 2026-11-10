@@ -62,10 +62,8 @@ export function DesignSystemMasthead({
           <img src={brandMarkSrc} alt="" aria-hidden="true" />
           <div className="workstation-brand-copy min-w-0">
             <div className="name ws-brand__name">Meridian</div>
-            <div className="sub ws-brand__mod" aria-hidden="true">
-              <span className="workstation-brand-sep ws-brand__sep">/</span>
-              {workspaceLabel}
-            </div>
+            {/* The workspace is named once, visibly, by the header breadcrumb below; the
+                masthead only announces it so the banner landmark still states the location. */}
             <span className="sr-only">Current workspace: {workspaceLabel}</span>
           </div>
         </div>
