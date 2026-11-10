@@ -5424,7 +5424,9 @@ Meridian-main
 │   │   │   ├── OrderFillContext.cs
 │   │   │   ├── OrderFillProcessor.cs
 │   │   │   ├── OrderManagementLifecycleCoordinator.cs
-│   │   │   └── OrderRiskSizingPolicy.cs
+│   │   │   ├── OrderRiskSizingPolicy.cs
+│   │   │   ├── OrderStateTable.cs
+│   │   │   └── OrderStatusFacts.cs
 │   │   ├── PaperMatching
 │   │   │   ├── PaperMarketObservation.cs
 │   │   │   ├── PaperOrderMatchingPolicy.cs
@@ -8474,8 +8476,6 @@ Meridian-main
 │   │   │   │   └── OmsIntegrationServiceCollectionExtensions.cs
 │   │   │   ├── ProviderDiagnostics
 │   │   │   │   └── ProviderDiagnosticsApiClient.cs
-│   │   │   ├── Reconciliation
-│   │   │   │   └── ReconciliationApiService.cs
 │   │   │   ├── Reporting
 │   │   │   │   └── ReportingStatusProjectionService.cs
 │   │   │   ├── ActivityFeedService.cs
@@ -9029,6 +9029,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterSecurityReferenceLookup.cs
 │   │   │   ├── SecurityMasterSnapshotLotEconomics.cs
 │   │   │   ├── SecurityMasterWorkbenchQueryService.cs
+│   │   │   ├── SecurityMasterWorkbenchQueryService.DeclaredExercise.cs
 │   │   │   ├── SensitiveActionGovernance.cs
 │   │   │   ├── SpreadsheetFormulaGuard.cs
 │   │   │   ├── StartupRefusalPreflight.cs
@@ -9966,7 +9967,8 @@ Meridian-main
 │   │   ├── schedules
 │   │   │   ├── golden
 │   │   │   │   ├── asset-obligation-timeline-undeclared.json
-│   │   │   │   └── face-value-lot-constant-yield.json
+│   │   │   │   ├── face-value-lot-constant-yield.json
+│   │   │   │   └── security-master-schedule-book.json
 │   │   │   └── KNOWN-DEFECTS.md
 │   │   ├── security-master
 │   │   │   ├── governance-payloads
@@ -10425,6 +10427,7 @@ Meridian-main
 │   │   │   │   ├── SecurityMasterStartupTests.cs
 │   │   │   │   ├── SecurityMasterTermsCapabilityFloorTests.cs
 │   │   │   │   ├── SecurityMasterTermsCapabilityStartupTests.cs
+│   │   │   │   ├── SecurityMasterWorkbenchDeclaredExerciseCompositionTests.cs
 │   │   │   │   ├── StartupRefusalPreflightTests.cs
 │   │   │   │   ├── StorageFeatureRegistrationTests.cs
 │   │   │   │   ├── TenantCutoverConfigurationTests.cs
@@ -10859,6 +10862,7 @@ Meridian-main
 │   │   │   ├── OrderBrokerIdentityIndexTests.cs
 │   │   │   ├── OrderDispatchRegistryTests.cs
 │   │   │   ├── OrderFillProcessorTests.cs
+│   │   │   ├── OrderLifecycleServicesTests.cs
 │   │   │   ├── OrderManagementLifecycleCoordinatorTests.cs
 │   │   │   ├── OrderManagementSystemAmendmentHandoffTests.cs
 │   │   │   ├── OrderManagementSystemAmendmentRecoveryTests.cs
@@ -10873,6 +10877,7 @@ Meridian-main
 │   │   │   ├── OrderManagementSystemSubscriptionFailureTests.cs
 │   │   │   ├── OrderManagementSystemTests.cs
 │   │   │   ├── OrderRiskSizingPolicyTests.cs
+│   │   │   ├── OrderStateTableTests.cs
 │   │   │   ├── PaperExecutionGatewayLotSizeTests.cs
 │   │   │   ├── PaperFillEnvelopeRegressionTests.cs
 │   │   │   ├── PaperFuturesSettlementServiceTests.cs
@@ -12194,9 +12199,12 @@ Meridian-main
 │   │   │   ├── SecurityMasterTermsCapabilityRefusalEndpointsTests.cs
 │   │   │   ├── SecurityMasterUnderlyingEndpointsTests.cs
 │   │   │   ├── SecurityMasterValidationEndpointsTests.cs
+│   │   │   ├── SecurityMasterWorkbenchDeclaredExerciseScheduleBookTests.cs
 │   │   │   ├── SecurityMasterWorkbenchEndpointsTests.cs
 │   │   │   ├── SecurityMasterWorkbenchOptionsBindingTests.cs
 │   │   │   ├── SecurityMasterWorkbenchQueryServiceCallScheduleTests.cs
+│   │   │   ├── SecurityMasterWorkbenchScheduleBookGoldenTests.cs
+│   │   │   ├── SecurityMasterWorkbenchScheduleBookHarness.cs
 │   │   │   ├── SecurityMasterWriteRefusalEndpointsTests.cs
 │   │   │   ├── SpreadsheetFormulaGuardTests.cs
 │   │   │   ├── StatementImportEvidenceBridgeTests.cs
