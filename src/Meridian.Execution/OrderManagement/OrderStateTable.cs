@@ -17,6 +17,13 @@ internal sealed class OrderStateTable : IReadOnlyDictionary<string, OrderState>
     private readonly ConcurrentDictionary<string, OrderState> _inner = new();
     private readonly Lock _writeLock = new();
 
+    // Incarnation tokens: a client order id may be reused once its order is terminal, and the
+    // replacement can share the previous order's CreatedAt on a coarse clock. A fresh token is
+    // issued whenever an id is registered or a terminal order is replaced by a live one, so
+    // subscribers never coalesce two orders' states. Guarded by _writeLock.
+    private readonly Dictionary<string, long> _incarnations = new(StringComparer.Ordinal);
+    private long _nextIncarnation;
+
     public OrderStateBroadcast Broadcast { get; } = new();
 
     public OrderState this[string key]
@@ -26,8 +33,9 @@ internal sealed class OrderStateTable : IReadOnlyDictionary<string, OrderState>
         {
             lock (_writeLock)
             {
+                _inner.TryGetValue(key, out var previous);
                 _inner[key] = value;
-                Broadcast.Publish(value);
+                Publish(key, previous, value);
             }
         }
     }
@@ -38,7 +46,7 @@ internal sealed class OrderStateTable : IReadOnlyDictionary<string, OrderState>
         {
             if (!_inner.TryAdd(key, value))
                 return false;
-            Broadcast.Publish(value);
+            Publish(key, previous: null, value);
             return true;
         }
     }
@@ -49,7 +57,7 @@ internal sealed class OrderStateTable : IReadOnlyDictionary<string, OrderState>
         {
             if (!_inner.TryUpdate(key, newValue, comparisonValue))
                 return false;
-            Broadcast.Publish(newValue);
+            Publish(key, comparisonValue, newValue);
             return true;
         }
     }
@@ -61,8 +69,9 @@ internal sealed class OrderStateTable : IReadOnlyDictionary<string, OrderState>
     {
         lock (_writeLock)
         {
+            _inner.TryGetValue(key, out var previous);
             var value = _inner.AddOrUpdate(key, addValueFactory, updateValueFactory);
-            Broadcast.Publish(value);
+            Publish(key, previous, value);
             return value;
         }
     }
@@ -72,8 +81,22 @@ internal sealed class OrderStateTable : IReadOnlyDictionary<string, OrderState>
     {
         lock (_writeLock)
         {
-            return _inner.TryRemove(item);
+            if (!_inner.TryRemove(item))
+                return false;
+            _incarnations.Remove(item.Key);
+            return true;
         }
+    }
+
+    // Called under _writeLock.
+    private void Publish(string key, OrderState? previous, OrderState current)
+    {
+        var newIncarnation = previous is null
+            || !_incarnations.ContainsKey(key)
+            || (OrderStatusFacts.IsTerminal(previous.Status) && !OrderStatusFacts.IsTerminal(current.Status));
+        if (newIncarnation)
+            _incarnations[key] = ++_nextIncarnation;
+        Broadcast.Publish(current, _incarnations[key]);
     }
 
     public bool TryGetValue(string key, [MaybeNullWhen(false)] out OrderState value) => _inner.TryGetValue(key, out value);
@@ -122,16 +145,16 @@ internal sealed class OrderStateBroadcast
         }
     }
 
-    public void Publish(OrderState state)
+    public void Publish(OrderState state, long incarnation)
     {
         foreach (var subscriber in Volatile.Read(ref _subscribers))
-            subscriber.Offer(state);
+            subscriber.Offer(state, incarnation);
     }
 }
 
 /// <summary>
-/// One subscriber's view of OMS order-state transitions. Each order incarnation (order id plus
-/// creation time, so a reused client order id is a separate order) keeps only its latest unread
+/// One subscriber's view of OMS order-state transitions. Each order incarnation (a reused client
+/// order id is a separate incarnation, identified by a token the OMS issues) keeps only its latest unread
 /// state: a slow reader skips intermediate states but always receives the newest one, so a
 /// final state is never lost. Memory is bounded by the number of orders with unread changes.
 /// </summary>
@@ -147,9 +170,9 @@ public sealed class OrderStateSubscription : IAsyncDisposable
 
     internal OrderStateSubscription(OrderStateBroadcast broadcast) => _broadcast = broadcast;
 
-    internal void Offer(OrderState state)
+    internal void Offer(OrderState state, long incarnation)
     {
-        var key = $"{state.OrderId}\u001f{state.CreatedAt.UtcTicks}";
+        var key = $"{state.OrderId}\u001f{incarnation}";
         lock (_gate)
         {
             if (Volatile.Read(ref _disposed) != 0)
