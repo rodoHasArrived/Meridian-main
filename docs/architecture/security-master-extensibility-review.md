@@ -9196,3 +9196,13 @@ review found no blocking defect and raised five items. Each was checked against 
 | Mutation check of the fixes | 6 of 6 caught: the catch removed, cancellation caught too, the exception text used as the reason, the log call removed, the logger dropped in the constructor, and the null check moved back into the iterator |
 | Guards and `dotnet format whitespace --verify-no-changes` on the 9 changed C# files | Pass |
 | Broader regression filter after the fixes | Not rerun in this pass |
+
+**Final validation (2026-11-10, tree merged with main at `db46c5ada`).**
+
+| Check | Result |
+| --- | --- |
+| Broad regression filter (SecurityMaster, FixedIncome, AssetOperations, AssetObligation, BondExercise, Architecture, Schedule, Workstation, Endpoint, Contract, OpenApi, FinancialRecordExplorer, Ratchet, Composition, ServiceRegistration, `Category=KnownDefect`) | 11,689 passed, 298 skipped, 1 failed: `BondProjectionGoldenTests.Bond_KeysetPagesAreBounded_AndRetainCanonicalStructures`, which needs Docker and fails the same way on main |
+| PostgreSQL-backed tests against scratch PostgreSQL 16 Security Master and ledger databases | 1,780 passed, 0 failed, 146 skipped |
+| Schema-control `verify` against main | Pass; no manifest change was needed |
+| Maintained generation, `check-generated-output`, `validate-doc-hashes` | Generation converges (the UML step is advisory and needs Docker); generated output is clean; 0 hash errors after the Instruments, Ui, dashboard, Ui.Shared and Wpf modules were re-reviewed |
+| `verify-docs` lane and the generated-output repair pre-check against main | Pass; the pre-check reports `ready` with no changes |

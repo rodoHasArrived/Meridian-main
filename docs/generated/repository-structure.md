@@ -9027,6 +9027,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterSecurityReferenceLookup.cs
 │   │   │   ├── SecurityMasterSnapshotLotEconomics.cs
 │   │   │   ├── SecurityMasterWorkbenchQueryService.cs
+│   │   │   ├── SecurityMasterWorkbenchQueryService.DeclaredExercise.cs
 │   │   │   ├── SensitiveActionGovernance.cs
 │   │   │   ├── SpreadsheetFormulaGuard.cs
 │   │   │   ├── StartupRefusalPreflight.cs
@@ -9964,7 +9965,8 @@ Meridian-main
 │   │   ├── schedules
 │   │   │   ├── golden
 │   │   │   │   ├── asset-obligation-timeline-undeclared.json
-│   │   │   │   └── face-value-lot-constant-yield.json
+│   │   │   │   ├── face-value-lot-constant-yield.json
+│   │   │   │   └── security-master-schedule-book.json
 │   │   │   └── KNOWN-DEFECTS.md
 │   │   ├── security-master
 │   │   │   ├── governance-payloads
@@ -10423,6 +10425,7 @@ Meridian-main
 │   │   │   │   ├── SecurityMasterStartupTests.cs
 │   │   │   │   ├── SecurityMasterTermsCapabilityFloorTests.cs
 │   │   │   │   ├── SecurityMasterTermsCapabilityStartupTests.cs
+│   │   │   │   ├── SecurityMasterWorkbenchDeclaredExerciseCompositionTests.cs
 │   │   │   │   ├── StartupRefusalPreflightTests.cs
 │   │   │   │   ├── StorageFeatureRegistrationTests.cs
 │   │   │   │   ├── TenantCutoverConfigurationTests.cs
@@ -12186,9 +12189,12 @@ Meridian-main
 │   │   │   ├── SecurityMasterTermsCapabilityRefusalEndpointsTests.cs
 │   │   │   ├── SecurityMasterUnderlyingEndpointsTests.cs
 │   │   │   ├── SecurityMasterValidationEndpointsTests.cs
+│   │   │   ├── SecurityMasterWorkbenchDeclaredExerciseScheduleBookTests.cs
 │   │   │   ├── SecurityMasterWorkbenchEndpointsTests.cs
 │   │   │   ├── SecurityMasterWorkbenchOptionsBindingTests.cs
 │   │   │   ├── SecurityMasterWorkbenchQueryServiceCallScheduleTests.cs
+│   │   │   ├── SecurityMasterWorkbenchScheduleBookGoldenTests.cs
+│   │   │   ├── SecurityMasterWorkbenchScheduleBookHarness.cs
 │   │   │   ├── SecurityMasterWriteRefusalEndpointsTests.cs
 │   │   │   ├── SpreadsheetFormulaGuardTests.cs
 │   │   │   ├── StatementImportEvidenceBridgeTests.cs
