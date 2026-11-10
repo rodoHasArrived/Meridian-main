@@ -11038,6 +11038,7 @@ Meridian-main
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.PortfolioRecovery.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.PreDispatch.cs
+│   │   │   │   ├── AlpacaBrokerageGatewayTests.ReplacedOrderCancellation.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.ReplacementConfirmation.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.ReplacementTerms.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.ReplacementTrail.cs
@@ -11047,7 +11048,9 @@ Meridian-main
 │   │   │   │   ├── AlpacaCorporateActionProviderTests.cs
 │   │   │   │   ├── AlpacaCredentialAndReconnectTests.cs
 │   │   │   │   ├── AlpacaHistoricalDataProviderTests.cs
+│   │   │   │   ├── AlpacaHistoricalTickDataTests.cs
 │   │   │   │   ├── AlpacaMessageParsingTests.cs
+│   │   │   │   ├── AlpacaMultiLegParentOrderTests.cs
 │   │   │   │   ├── AlpacaQuotePipelineGoldenTests.cs
 │   │   │   │   ├── AlpacaQuoteRoutingTests.cs
 │   │   │   │   ├── AlpacaStreamDiagnosticsTests.cs
@@ -11218,6 +11221,8 @@ Meridian-main
 │   │   │   │   ├── SymbolEndpointTests.cs
 │   │   │   │   ├── TrustedActionOriginTests.cs
 │   │   │   │   └── UiEndpointsJsonOptionsTests.cs
+│   │   │   ├── AlpacaMarketDataSandboxTests.cs
+│   │   │   ├── AlpacaPaperOrderLifecycleTests.cs
 │   │   │   ├── AlpacaPaperSandboxTests.cs
 │   │   │   ├── ConfigurableTickerDataCollectionTests.cs
 │   │   │   ├── ConnectionRetryIntegrationTests.cs

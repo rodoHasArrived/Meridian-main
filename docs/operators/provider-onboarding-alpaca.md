@@ -114,7 +114,8 @@ dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter 'FullyQualifiedN
 ```
 
 Run the opt-in [paper portfolio sandbox check](../testing/alpaca-paper-portfolio-sandbox.md)
-for real broker account, holdings, reconciliation, and risk evidence. For external
+for real broker account, holdings, reconciliation, and risk evidence. The same page describes the
+separate opt-in order check, which submits, replaces, cancels and fills real paper orders. For external
 paper-sandbox execution acceptance, retain sanitized account and client-order evidence:
 
 1. Confirm the endpoint is `paper-api.alpaca.markets`, verify the account, synchronize, and compare
