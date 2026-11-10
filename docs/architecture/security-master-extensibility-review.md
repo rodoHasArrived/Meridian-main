@@ -806,6 +806,39 @@ Validation (local, .NET SDK 10.0.403): `dotnet test tests/Meridian.Tests -c Rele
 active-plus-inactive gauge, and the zero case. The full local `bash scripts/ci.sh` was not run;
 GitHub `Meridian CI / quality-gate` remains authoritative.
 
+### ADR-027 stage-3 S3-E3 — notionals gain a module home — 2026-11-10
+
+A new `notional` term module (`NotionalTerms`: `notional`, `denomination`, `committedAmount`,
+`fundedAmount`, `unfundedAmount`) homes the amounts a contract is written on: the contract
+notional of FxForward, NonDeliverableForward, CreditDefaultSwap, Swaption and CapFloor; the
+StructuredNote denomination; and the commitment of PrivateFundInterest and CommitmentGuarantee
+with its funded and unfunded split. A structured-credit tranche's original face stays on
+`structuredProduct.notionalBalance`, and swap leg notionals stay on the legs, which remain a
+structural decode.
+
+Eleven codes moved from `validateCodecOnlyKindTerms` to `validateDefinitionTerms` and the
+ledger: the five contract-notional rules, `structured_note_denomination_invalid`, the three
+PrivateFundInterest amount rules and the two CommitmentGuarantee amount rules. FxForward,
+NonDeliverableForward and CapFloor now keep no codec-only rule. `ClassFlattenings` inverts
+each home, so economic-only replay recovers the amounts at their declared flat keys.
+
+What S3-E1 to E3 leave codec-only, by class: Future (root symbol, contract month), Bond
+(subclass canonicality, principal schedule, step and inflation coupon structure), OtherSecurity
+(category), Swap (the legs), DirectLoan and CommitmentGuarantee (covenant entries, fee rate),
+StructuredCredit (attachment and detachment points, CLO period ends), PrivateFundInterest
+(vintage), PrivateCompanyEquity (ownership, cost basis, valuation), RealEstateHolding (market,
+ownership, appraisal), Commodity (type), Cfd (underlying asset class), CreditDefaultSwap
+(reference entity, protection side, recovery rate), Swaption (the underlying swap's dates),
+StructuredNote (underlying and payoff terms) and CustomAsset (the profile envelope).
+
+The replay corpus changed only by the appended `"notional":null` key; the write golden by that
+key plus the eight classes' module content.
+
+Validation (local, .NET SDK 10.0.403): `Meridian.Tests` SecurityMaster and Architecture
+namespaces — 6,327 passed, 1 skipped (after accepting the two goldens); `Meridian.FSharp.Tests`
+— 611 passed. The full local `bash scripts/ci.sh` was not run; GitHub
+`Meridian CI / quality-gate` remains authoritative.
+
 ### ADR-027 stage-3 S3-E2 — currency pairs gain a module home — 2026-11-10
 
 A new `currencyPair` term module (`CurrencyPairTerms`: `baseCurrency`, `quoteCurrency`,

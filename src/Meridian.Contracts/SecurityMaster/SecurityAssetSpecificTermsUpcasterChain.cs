@@ -67,7 +67,7 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     /// fails closed. A module added to the serializer from here on joins this list.
     /// </summary>
     public static IReadOnlyList<string> ModulesAddedAfterIdentityGate { get; } =
-        ["exercise", "currencyPair"];
+        ["exercise", "currencyPair", "notional"];
 
     /// <summary>
     /// The economic-terms modules the serializer emits that this conversion does not read. Listed
@@ -1150,7 +1150,14 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
                 ("structuredProduct", "isInterestOnly", "InterestOnly"),
                 ("structuredProduct", "isPrincipalOnly", "PrincipalOnly"))
         ]),
-        ("PrivateFundInterest", [Map("gpSponsor", ("issuer", "issuerName"), ("fund", "fundFamily")), Map("strategy", ("issuer", "issuerProgram"))]),
+        ("PrivateFundInterest",
+        [
+            Map("gpSponsor", ("issuer", "issuerName"), ("fund", "fundFamily")),
+            Map("strategy", ("issuer", "issuerProgram")),
+            Map("commitment", ("notional", "committedAmount")),
+            Map("fundedAmount", ("notional", "fundedAmount")),
+            Map("unfundedAmount", ("notional", "unfundedAmount"))
+        ]),
         ("PrivateCompanyEquity",
         [
             Map("issuer", ("issuer", "issuerName")),
@@ -1163,7 +1170,9 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             Map("counterparty", ("issuer", "issuerName")),
             Map("beneficiary", ("issuer", "issuerProgram")),
             Map("effectiveDate", ("maturity", "effectiveDate")),
-            Map("expiryDate", MaturityDate)
+            Map("expiryDate", MaturityDate),
+            Map("committedAmount", ("notional", "committedAmount")),
+            Map("unfundedAmount", ("notional", "unfundedAmount"))
         ]),
         ("Warrant",
         [
@@ -1178,6 +1187,7 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             Map("baseCurrency", ("currencyPair", "baseCurrency")),
             Map("quoteCurrency", ("currencyPair", "quoteCurrency")),
             Map("forwardRate", ("currencyPair", "forwardRate")),
+            Map("notional", ("notional", "notional")),
             Map("tradeDate", ("maturity", "effectiveDate")),
             Map("valueDate", MaturityDate)
         ]),
@@ -1187,6 +1197,7 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             Map("quoteCurrency", ("currencyPair", "quoteCurrency")),
             Map("settlementCurrency", ("currencyPair", "settlementCurrency")),
             Map("forwardRate", ("currencyPair", "forwardRate")),
+            Map("notional", ("notional", "notional")),
             Map("fixingDate", ("maturity", "effectiveDate")),
             Map("valueDate", MaturityDate)
         ]),
@@ -1197,7 +1208,8 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             Map("paymentFrequency", ("coupon", "paymentFrequency")),
             Map("dayCount", ("coupon", "dayCount")),
             // The upgrade stores FixedCouponBps / 10000 as coupon.couponRate.
-            new FlatTermMapping("fixedCouponBps", [("coupon", "couponRate")], Scale: 10000m)
+            new FlatTermMapping("fixedCouponBps", [("coupon", "couponRate")], Scale: 10000m),
+            Map("notional", ("notional", "notional"))
         ]),
         ("Swaption",
         [
@@ -1205,7 +1217,8 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             Map("exerciseStyle", ("exercise", "exerciseStyle")),
             Map("strikeRate", ("exercise", "strikeRate")),
             Map("expiry", MaturityDate),
-            Map("underlyingEffectiveDate", ("maturity", "effectiveDate"))
+            Map("underlyingEffectiveDate", ("maturity", "effectiveDate")),
+            Map("notional", ("notional", "notional"))
         ]),
         ("CapFloor",
         [
@@ -1218,7 +1231,8 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             Map("floorStrike", ("floatingRate", "floorRate")),
             Map("resetFrequency", ("floatingRate", "resetFrequency")),
             Map("capFloorType", ("exercise", "optionRight")),
-            Map("premiumAmount", ("exercise", "premiumAmount"))
+            Map("premiumAmount", ("exercise", "premiumAmount")),
+            Map("notional", ("notional", "notional"))
         ]),
         ("StructuredNote",
         [
@@ -1226,7 +1240,8 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             Map("issueDate", ("maturity", "issueDate")),
             Map("issuerName", ("issuer", "issuerName")),
             Map("couponRate", ("coupon", "couponRate")),
-            Map("paymentFrequency", ("coupon", "paymentFrequency"))
+            Map("paymentFrequency", ("coupon", "paymentFrequency")),
+            Map("denomination", ("notional", "denomination"))
         ]),
         ("InvestmentFund", [Map("fundFamily", ("fund", "fundFamily"))])
     ];

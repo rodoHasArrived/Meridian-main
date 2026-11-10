@@ -230,11 +230,6 @@ module SecurityMaster =
         | SecurityKind.PrivateFundInterest terms ->
             []
             @ require (terms.Vintage > 0) (error "private_fund_vintage_invalid" "PrivateFundInterest Vintage must be greater than zero.")
-            @ require (terms.Commitment > 0m) (error "private_fund_commitment_invalid" "PrivateFundInterest Commitment must be greater than zero.")
-            @ require (terms.FundedAmount |> Option.forall (fun amount -> amount >= 0m))
-                (error "private_fund_funded_invalid" "PrivateFundInterest FundedAmount must be zero or greater when present.")
-            @ require (terms.UnfundedAmount |> Option.forall (fun amount -> amount >= 0m))
-                (error "private_fund_unfunded_invalid" "PrivateFundInterest UnfundedAmount must be zero or greater when present.")
         | SecurityKind.PrivateCompanyEquity terms ->
             []
             @ require (terms.OwnershipPercent |> Option.forall (fun percent -> percent >= 0m))
@@ -249,9 +244,6 @@ module SecurityMaster =
             @ require (terms.AppraisalValue > 0m) (error "real_estate_appraisal_invalid" "RealEstateHolding AppraisalValue must be greater than zero.")
         | SecurityKind.CommitmentGuarantee terms ->
             []
-            @ require (terms.CommittedAmount > 0m) (error "commitment_guarantee_amount_invalid" "CommitmentGuarantee CommittedAmount must be greater than zero.")
-            @ require (terms.UnfundedAmount |> Option.forall (fun amount -> amount >= 0m))
-                (error "commitment_guarantee_exposure_invalid" "CommitmentGuarantee UnfundedAmount must be zero or greater when present.")
             @ require (terms.FeeRate |> Option.forall (fun rate -> rate >= 0m))
                 (error "commitment_guarantee_fee_invalid" "CommitmentGuarantee FeeRate must be zero or greater when present.")
             @ (terms.Covenants
@@ -269,14 +261,10 @@ module SecurityMaster =
             @ requireNotBlank "cfd_underlying_asset_class_required" "UnderlyingAssetClass" terms.UnderlyingAssetClass
         | SecurityKind.Warrant _ ->
             []
-        | SecurityKind.FxForward terms ->
+        | SecurityKind.FxForward _ ->
             []
-            @ require (terms.Notional |> Option.forall (fun n -> n > 0m))
-                (error "fx_forward_notional_invalid" "FxForward Notional must be greater than zero when present.")
-        | SecurityKind.NonDeliverableForward terms ->
+        | SecurityKind.NonDeliverableForward _ ->
             []
-            @ require (terms.Notional |> Option.forall (fun n -> n > 0m))
-                (error "ndf_notional_invalid" "NonDeliverableForward Notional must be greater than zero when present.")
         | SecurityKind.CreditDefaultSwap terms ->
             []
             @ requireNotBlank "cds_reference_entity_required" "ReferenceEntity" terms.ReferenceEntity
@@ -284,29 +272,21 @@ module SecurityMaster =
                 (String.Equals(terms.ProtectionSide, "Buy", StringComparison.OrdinalIgnoreCase)
                  || String.Equals(terms.ProtectionSide, "Sell", StringComparison.OrdinalIgnoreCase))
                 (error "cds_protection_side_invalid" "CreditDefaultSwap ProtectionSide must be either 'Buy' or 'Sell'.")
-            @ require (terms.Notional > 0m)
-                (error "cds_notional_invalid" "CreditDefaultSwap Notional must be greater than zero.")
             @ require (terms.RecoveryRateAssumption |> Option.forall (fun r -> r >= 0m && r <= 1m))
                 (error "cds_recovery_rate_invalid" "CreditDefaultSwap RecoveryRateAssumption must be between 0 and 1 when present.")
         | SecurityKind.Swaption terms ->
             []
-            @ require (terms.Notional > 0m)
-                (error "swaption_notional_invalid" "Swaption Notional must be greater than zero.")
             @ require (terms.Expiry <= terms.UnderlyingMaturityDate)
                 (error "swaption_expiry_invalid" "Swaption Expiry must be on or before UnderlyingMaturityDate.")
             @ require
                 (terms.UnderlyingEffectiveDate
                  |> Option.forall (fun effective -> terms.Expiry <= effective && effective < terms.UnderlyingMaturityDate))
                 (error "swaption_underlying_dates_invalid" "Swaption UnderlyingEffectiveDate must fall on or after Expiry and before UnderlyingMaturityDate when present.")
-        | SecurityKind.CapFloor terms ->
+        | SecurityKind.CapFloor _ ->
             []
-            @ require (terms.Notional > 0m)
-                (error "cap_floor_notional_invalid" "CapFloor Notional must be greater than zero.")
         | SecurityKind.StructuredNote terms ->
             []
             @ requireNotBlank "structured_note_underlying_required" "UnderlyingDescription" terms.UnderlyingDescription
-            @ require (terms.Denomination |> Option.forall (fun d -> d > 0m))
-                (error "structured_note_denomination_invalid" "StructuredNote Denomination must be greater than zero when present.")
             @ require (terms.PrincipalProtectionPct |> Option.forall (fun p -> p >= 0m && p <= 1m))
                 (error "structured_note_protection_invalid" "StructuredNote PrincipalProtectionPct must be between 0 and 1 when present.")
             @ require (terms.ParticipationRate |> Option.forall (fun p -> p >= 0m))
@@ -414,6 +394,9 @@ module SecurityMaster =
         let quoteCurrency = moduleString (modules.CurrencyPair |> Option.bind (fun p -> p.QuoteCurrency))
         let pairDiffers = not (String.Equals(baseCurrency, quoteCurrency, StringComparison.OrdinalIgnoreCase))
         let forwardRate = modules.CurrencyPair |> Option.bind (fun p -> p.ForwardRate)
+        let notional = modules.Notional |> Option.bind (fun n -> n.Notional)
+        let committedAmount = modules.Notional |> Option.bind (fun n -> n.CommittedAmount)
+        let unfundedAmount = modules.Notional |> Option.bind (fun n -> n.UnfundedAmount)
         match typeName with
         | "FxSpot" ->
             []
@@ -444,6 +427,8 @@ module SecurityMaster =
                 (error "swaption_payer_receiver_invalid" "Swaption PayerReceiver must be either 'Payer' or 'Receiver'.")
             @ require (modules.Exercise |> Option.bind (fun e -> e.ExerciseStyle) |> Option.forall (isOneOf [ "European"; "American"; "Bermudan" ]))
                 (error "swaption_exercise_style_invalid" "Swaption ExerciseStyle must be European, American or Bermudan when present.")
+            @ require (notional |> Option.forall (fun amount -> amount > 0m))
+                (error "swaption_notional_invalid" "Swaption Notional must be greater than zero.")
         | "Bond" ->
             []
             @ require (couponRate |> Option.forall (fun rate -> rate >= 0m))
@@ -568,6 +553,8 @@ module SecurityMaster =
                 (error "cap_floor_floor_strike_required" "CapFloor FloorStrike is required for a Floor or Collar.")
             @ require (modules.Exercise |> Option.bind (fun e -> e.PremiumAmount) |> Option.forall (fun premium -> premium >= 0m))
                 (error "cap_floor_premium_invalid" "CapFloor PremiumAmount must be zero or greater when present.")
+            @ require (notional |> Option.forall (fun amount -> amount > 0m))
+                (error "cap_floor_notional_invalid" "CapFloor Notional must be greater than zero.")
         | "Swap" ->
             []
             @ requireOrderedWhenBoth effectiveDate maturityDate
@@ -578,6 +565,8 @@ module SecurityMaster =
                 (error "cds_date_range_invalid" "CreditDefaultSwap EffectiveDate must be on or before MaturityDate.")
             @ require (couponRate |> Option.forall (fun rate -> rate >= 0m))
                 (error "cds_fixed_coupon_invalid" "CreditDefaultSwap FixedCouponBps must be zero or greater.")
+            @ require (notional |> Option.forall (fun amount -> amount > 0m))
+                (error "cds_notional_invalid" "CreditDefaultSwap Notional must be greater than zero.")
         | "NonDeliverableForward" ->
             []
             @ requireOrderedWhenBoth effectiveDate maturityDate
@@ -589,6 +578,8 @@ module SecurityMaster =
             @ require pairDiffers (error "ndf_currency_pair_invalid" "NonDeliverableForward BaseCurrency and QuoteCurrency must differ.")
             @ require (forwardRate |> Option.forall (fun rate -> rate > 0m))
                 (error "ndf_rate_invalid" "NonDeliverableForward ForwardRate must be greater than zero when present.")
+            @ require (notional |> Option.forall (fun amount -> amount > 0m))
+                (error "ndf_notional_invalid" "NonDeliverableForward Notional must be greater than zero when present.")
         | "FxForward" ->
             []
             @ requireOrderedWhenBoth effectiveDate maturityDate
@@ -598,6 +589,8 @@ module SecurityMaster =
             @ require pairDiffers (error "fx_forward_currency_pair_invalid" "FxForward BaseCurrency and QuoteCurrency must differ.")
             @ require (forwardRate |> Option.forall (fun rate -> rate > 0m))
                 (error "fx_forward_rate_invalid" "FxForward ForwardRate must be greater than zero when present.")
+            @ require (notional |> Option.forall (fun amount -> amount > 0m))
+                (error "fx_forward_notional_invalid" "FxForward Notional must be greater than zero when present.")
         | "StructuredNote" ->
             []
             @ requireNotBlank "structured_note_issuer_required" "IssuerName" (moduleString issuerName)
@@ -605,11 +598,17 @@ module SecurityMaster =
                 (error "structured_note_issue_date_invalid" "StructuredNote IssueDate must be on or before Maturity when present.")
             @ require (couponRate |> Option.forall (fun rate -> rate >= 0m))
                 (error "structured_note_coupon_invalid" "StructuredNote CouponRate must be zero or greater when present.")
+            @ require (modules.Notional |> Option.bind (fun n -> n.Denomination) |> Option.forall (fun denomination -> denomination > 0m))
+                (error "structured_note_denomination_invalid" "StructuredNote Denomination must be greater than zero when present.")
         | "CommitmentGuarantee" ->
             []
             @ requireNotBlank "commitment_guarantee_counterparty_required" "Counterparty" (moduleString issuerName)
             @ requireOrderedWhenBoth effectiveDate maturityDate
                 (error "commitment_guarantee_date_range_invalid" "CommitmentGuarantee EffectiveDate must be on or before ExpiryDate when present.")
+            @ require (committedAmount |> Option.forall (fun amount -> amount > 0m))
+                (error "commitment_guarantee_amount_invalid" "CommitmentGuarantee CommittedAmount must be greater than zero.")
+            @ require (unfundedAmount |> Option.forall (fun amount -> amount >= 0m))
+                (error "commitment_guarantee_exposure_invalid" "CommitmentGuarantee UnfundedAmount must be zero or greater when present.")
         | "DirectLoan" ->
             []
             @ requireNotBlank "direct_loan_borrower_required" "Borrower" (moduleString issuerName)
@@ -617,6 +616,12 @@ module SecurityMaster =
             []
             @ requireNotBlank "private_fund_gp_required" "GpSponsor" (moduleString issuerName)
             @ requireNotBlank "private_fund_strategy_required" "Strategy" (moduleString (modules.Issuer |> Option.bind (fun i -> i.IssuerProgram)))
+            @ require (committedAmount |> Option.forall (fun amount -> amount > 0m))
+                (error "private_fund_commitment_invalid" "PrivateFundInterest Commitment must be greater than zero.")
+            @ require (modules.Notional |> Option.bind (fun n -> n.FundedAmount) |> Option.forall (fun amount -> amount >= 0m))
+                (error "private_fund_funded_invalid" "PrivateFundInterest FundedAmount must be zero or greater when present.")
+            @ require (unfundedAmount |> Option.forall (fun amount -> amount >= 0m))
+                (error "private_fund_unfunded_invalid" "PrivateFundInterest UnfundedAmount must be zero or greater when present.")
         | "PrivateCompanyEquity" ->
             []
             @ requireNotBlank "private_company_issuer_required" "Issuer" (moduleString issuerName)
@@ -807,25 +812,31 @@ module SecurityMaster =
             "Commodity", [ "commodity_contract_size_invalid" ]
             "Cfd", [ "cfd_leverage_invalid" ]
             "Warrant", [ "warrant_type_required"; "warrant_type_invalid"; "warrant_strike_invalid"; "warrant_multiplier_invalid" ]
-            "Swaption", [ "swaption_payer_receiver_invalid"; "swaption_exercise_style_invalid" ]
+            "Swaption", [ "swaption_payer_receiver_invalid"; "swaption_exercise_style_invalid"; "swaption_notional_invalid" ]
             "CapFloor",
             [ "cap_floor_reference_index_required"; "cap_floor_strike_order_invalid"; "cap_floor_date_range_invalid"
               "cap_floor_type_invalid"; "cap_floor_cap_strike_required"; "cap_floor_floor_strike_required"
-              "cap_floor_premium_invalid" ]
+              "cap_floor_premium_invalid"; "cap_floor_notional_invalid" ]
             "Swap", [ "swap_date_range_invalid" ]
-            "CreditDefaultSwap", [ "cds_date_range_invalid"; "cds_fixed_coupon_invalid" ]
+            "CreditDefaultSwap", [ "cds_date_range_invalid"; "cds_fixed_coupon_invalid"; "cds_notional_invalid" ]
             "FxSpot", [ "fx_base_currency_required"; "fx_quote_currency_required"; "fx_currency_pair_invalid" ]
             "CryptoCurrency", [ "crypto_base_currency_required"; "crypto_quote_currency_required"; "crypto_currency_pair_invalid" ]
             "NonDeliverableForward",
             [ "ndf_fixing_date_invalid"; "ndf_base_currency_required"; "ndf_quote_currency_required"
-              "ndf_settlement_currency_required"; "ndf_currency_pair_invalid"; "ndf_rate_invalid" ]
+              "ndf_settlement_currency_required"; "ndf_currency_pair_invalid"; "ndf_rate_invalid"; "ndf_notional_invalid" ]
             "FxForward",
             [ "fx_forward_trade_date_invalid"; "fx_forward_base_currency_required"; "fx_forward_quote_currency_required"
-              "fx_forward_currency_pair_invalid"; "fx_forward_rate_invalid" ]
-            "StructuredNote", [ "structured_note_issuer_required"; "structured_note_issue_date_invalid"; "structured_note_coupon_invalid" ]
-            "CommitmentGuarantee", [ "commitment_guarantee_counterparty_required"; "commitment_guarantee_date_range_invalid" ]
+              "fx_forward_currency_pair_invalid"; "fx_forward_rate_invalid"; "fx_forward_notional_invalid" ]
+            "StructuredNote",
+            [ "structured_note_issuer_required"; "structured_note_issue_date_invalid"; "structured_note_coupon_invalid"
+              "structured_note_denomination_invalid" ]
+            "CommitmentGuarantee",
+            [ "commitment_guarantee_counterparty_required"; "commitment_guarantee_date_range_invalid"
+              "commitment_guarantee_amount_invalid"; "commitment_guarantee_exposure_invalid" ]
             "DirectLoan", [ "direct_loan_borrower_required" ]
-            "PrivateFundInterest", [ "private_fund_gp_required"; "private_fund_strategy_required" ]
+            "PrivateFundInterest",
+            [ "private_fund_gp_required"; "private_fund_strategy_required"; "private_fund_commitment_invalid"
+              "private_fund_funded_invalid"; "private_fund_unfunded_invalid" ]
             "PrivateCompanyEquity", [ "private_company_issuer_required"; "private_company_share_class_required"; "private_company_round_required" ]
             "RealEstateHolding", [ "real_estate_property_type_required" ]
         ]

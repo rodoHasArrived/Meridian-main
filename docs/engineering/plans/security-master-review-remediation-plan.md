@@ -468,3 +468,10 @@ and S2-B4 (codec single-purpose) land. Planned increments:
     fields of FxSpot, CryptoCurrency, FxForward and NonDeliverableForward. Fifteen rules moved
     to the definition surface; FxSpot and CryptoCurrency keep no codec-only rule and gained
     class-aware flattenings, so their economic-only replays recover both required keys.
+  - **S3-E3 — notionals (implemented 2026-11-10).** New `notional` term module
+    (`NotionalTerms`: notional, denomination, committed, funded and unfunded amounts) homes
+    the contract notionals of FxForward, NonDeliverableForward, CreditDefaultSwap, Swaption and
+    CapFloor, the StructuredNote denomination, and the commitment amounts of
+    PrivateFundInterest and CommitmentGuarantee. Eleven rules moved to the definition surface;
+    FxForward, NonDeliverableForward and CapFloor keep no codec-only rule. Swap leg notionals
+    stay with the structural leg decode.

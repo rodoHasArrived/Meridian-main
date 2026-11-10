@@ -192,6 +192,15 @@ module SecurityMasterLegacyUpgrade =
             CircuitBreakerThresholdPct = None
         }
 
+    let private emptyNotional : NotionalTerms =
+        {
+            Notional = None
+            Denomination = None
+            CommittedAmount = None
+            FundedAmount = None
+            UnfundedAmount = None
+        }
+
     let private termsFromKind (kind: SecurityKind) =
         match kind with
         | SecurityKind.Equity terms ->
@@ -671,6 +680,13 @@ module SecurityMasterLegacyUpgrade =
                             IssuerSector = None
                             IssuerCountry = None
                         }
+                    Notional =
+                        Some {
+                            emptyNotional with
+                                CommittedAmount = Some terms.Commitment
+                                FundedAmount = terms.FundedAmount
+                                UnfundedAmount = terms.UnfundedAmount
+                        }
             }
         | SecurityKind.PrivateCompanyEquity terms ->
             {
@@ -724,6 +740,12 @@ module SecurityMasterLegacyUpgrade =
                             UltimateParentName = None
                             IssuerSector = None
                             IssuerCountry = None
+                        }
+                    Notional =
+                        Some {
+                            emptyNotional with
+                                CommittedAmount = Some terms.CommittedAmount
+                                UnfundedAmount = terms.UnfundedAmount
                         }
             }
         | SecurityKind.Commodity terms ->
@@ -810,6 +832,7 @@ module SecurityMasterLegacyUpgrade =
                             SettlementCurrency = None
                             ForwardRate = terms.ForwardRate
                         }
+                    Notional = Some { emptyNotional with Notional = terms.Notional }
             }
         | SecurityKind.NonDeliverableForward terms ->
             {
@@ -827,6 +850,7 @@ module SecurityMasterLegacyUpgrade =
                             SettlementCurrency = Some terms.SettlementCurrency
                             ForwardRate = terms.ForwardRate
                         }
+                    Notional = Some { emptyNotional with Notional = terms.Notional }
             }
         | SecurityKind.CreditDefaultSwap terms ->
             {
@@ -845,6 +869,7 @@ module SecurityMasterLegacyUpgrade =
                             PaymentFrequency = terms.PaymentFrequency |> Option.map PaymentFrequency.parse
                             DayCount = terms.DayCount
                         }
+                    Notional = Some { emptyNotional with Notional = Some terms.Notional }
             }
         | SecurityKind.Swaption terms ->
             {
@@ -864,6 +889,7 @@ module SecurityMasterLegacyUpgrade =
                             UnderlyingSecurityId = None
                             PremiumAmount = None
                         }
+                    Notional = Some { emptyNotional with Notional = Some terms.Notional }
             }
         | SecurityKind.CapFloor terms ->
             {
@@ -891,6 +917,7 @@ module SecurityMasterLegacyUpgrade =
                             UnderlyingSecurityId = None
                             PremiumAmount = terms.PremiumAmount
                         }
+                    Notional = Some { emptyNotional with Notional = Some terms.Notional }
             }
         | SecurityKind.StructuredNote terms ->
             {
@@ -923,6 +950,7 @@ module SecurityMasterLegacyUpgrade =
                             IssuerSector = None
                             IssuerCountry = None
                         }
+                    Notional = Some { emptyNotional with Denomination = terms.Denomination }
             }
         | SecurityKind.InvestmentFund terms ->
             {

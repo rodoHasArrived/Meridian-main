@@ -538,6 +538,14 @@ internal static class SecurityEconomicDefinitionAdapter
                 quoteCurrency = definition.Terms.CurrencyPair.Value.QuoteCurrency is null ? null : definition.Terms.CurrencyPair.Value.QuoteCurrency.Value,
                 settlementCurrency = definition.Terms.CurrencyPair.Value.SettlementCurrency is null ? null : definition.Terms.CurrencyPair.Value.SettlementCurrency.Value,
                 forwardRate = definition.Terms.CurrencyPair.Value.ForwardRate
+            },
+            notional = definition.Terms.Notional is null ? null : new
+            {
+                notional = definition.Terms.Notional.Value.Notional,
+                denomination = definition.Terms.Notional.Value.Denomination,
+                committedAmount = definition.Terms.Notional.Value.CommittedAmount,
+                fundedAmount = definition.Terms.Notional.Value.FundedAmount,
+                unfundedAmount = definition.Terms.Notional.Value.UnfundedAmount
             }
         });
         // Keep byte-identical economics for records without a dated history. The additive field

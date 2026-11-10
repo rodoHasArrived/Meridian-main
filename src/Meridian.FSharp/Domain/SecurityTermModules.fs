@@ -471,6 +471,21 @@ type CurrencyPairTerms = {
     ForwardRate: decimal option
 }
 
+/// The amounts a contract is written on: the notional of a derivative, the face of one note,
+/// and the committed amount of a commitment with its funded and unfunded split. The home for
+/// the amounts the flat codec alone carried before S3-E. (A structured-credit tranche's original
+/// face stays on StructuredProductTerms.NotionalBalance; swap leg notionals stay on the legs.)
+type NotionalTerms = {
+    /// Contract notional (FX forwards in the base currency; CDS, swaption, cap/floor).
+    Notional: decimal option
+    /// Face amount of one unit (structured note).
+    Denomination: decimal option
+    /// Total committed amount (private fund commitment, commitment or guarantee).
+    CommittedAmount: decimal option
+    FundedAmount: decimal option
+    UnfundedAmount: decimal option
+}
+
 type SecurityTermModules = {
     // --- Original 15 modules ---
     Maturity: MaturityTerms option
@@ -508,6 +523,8 @@ type SecurityTermModules = {
     Exercise: ExerciseTerms option
     /// Base/quote (and settlement) currencies and the agreed rate for FX and crypto instruments.
     CurrencyPair: CurrencyPairTerms option
+    /// Notional, denomination and commitment amounts.
+    Notional: NotionalTerms option
 }
 
 [<RequireQualifiedAccess>]
@@ -639,4 +656,5 @@ module SecurityTermModules =
         SinkingFund = None
         Exercise = None
         CurrencyPair = None
+        Notional = None
     }
