@@ -233,12 +233,24 @@ function LoanScenarioSection({ loans }: { loans: Array<{ loanId: string; facilit
   const [loanId, setLoanId] = useState("");
   const selected = loans.find((loan) => loan.loanId === loanId) ?? null;
   if (loans.length === 0) return null;
+  // A facility is chosen by name. The loan identifier is appended only when two facilities share
+  // a name (or one has none), where the name alone could not tell them apart.
+  const nameCounts = new Map<string, number>();
+  for (const loan of loans) {
+    const name = loan.facilityName.trim();
+    nameCounts.set(name, (nameCounts.get(name) ?? 0) + 1);
+  }
+  const optionLabel = (loan: { loanId: string; facilityName: string }) => {
+    const name = loan.facilityName.trim();
+    if (!name) return loan.loanId;
+    return (nameCounts.get(name) ?? 0) > 1 ? `${name} · ${loan.loanId}` : name;
+  };
   return (
     <div className="mt-4 grid gap-3" aria-label="Loan cash-flow scenarios">
       <label className="grid max-w-md gap-1 text-xs font-medium text-muted-foreground">Facility for cash-flow scenarios
         <Select value={loanId} aria-label="Scenario facility" onChange={(event) => setLoanId(event.target.value)}>
           <option value="">Select a facility</option>
-          {loans.map((loan) => <option key={loan.loanId} value={loan.loanId}>{`${loan.facilityName} · ${loan.loanId}`}</option>)}
+          {loans.map((loan) => <option key={loan.loanId} value={loan.loanId} title={loan.loanId}>{optionLabel(loan)}</option>)}
         </Select>
       </label>
       {selected ? <ContractualCashFlowWorkbench subjectKind="Loan" subjectId={selected.loanId} subjectLabel={selected.facilityName} /> : null}

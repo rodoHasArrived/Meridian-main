@@ -156,6 +156,39 @@ public sealed class SecurityEconomicScheduleReplayRefusalTests
         convert.Should().Throw<InvalidOperationException>().WithMessage("Equity economic replay requires retained legacy asset-specific terms;*");
     }
 
+    // ── Factor schedule entries (ADR-027 stage 1, increment 4) ──────────────
+
+    [Theory]
+    [InlineData("{\"structuredProduct\":{\"factorScheduleEntries\":[{\"asOfDate\":\"2026-01-25\",\"factor\":1.5}]}}")] // factor above one
+    [InlineData("{\"structuredProduct\":{\"factorScheduleEntries\":[{\"asOfDate\":\"2026-01-25\",\"factor\":-0.1}]}}")] // negative factor
+    [InlineData("{\"structuredProduct\":{\"factorScheduleEntries\":[{\"asOfDate\":\"2026-01-25\"}]}}")] // populated but factorless
+    [InlineData("{\"structuredProduct\":{\"factorScheduleEntries\":[{\"factor\":0.98}]}}")] // populated but dateless
+    [InlineData("{\"structuredProduct\":{\"factorScheduleEntries\":[{\"asOfDate\":\"01/25/2026\",\"factor\":0.98}]}}")] // undecodable date
+    [InlineData("{\"structuredProduct\":{\"factorScheduleEntries\":[{\"asOfDate\":\"2026-01-25\",\"factor\":\"0.98\"}]}}")] // string factor
+    [InlineData("{\"structuredProduct\":{\"factorScheduleEntries\":[{\"factorDate\":\"2026-01-25\",\"factor\":0.98}]}}")] // member the serializer never writes
+    [InlineData("{\"structuredProduct\":{\"factorScheduleEntries\":{}}}")] // not an array
+    [InlineData("{\"structuredProduct\":{\"factorScheduleEntries\":[\"0.98\"]}}")] // non-object entry
+    [InlineData("{\"structuredProduct\":{\"factorScheduleEntries\":[{\"asOfDate\":\"2026-01-25\",\"factor\":0.98},{\"asOfDate\":\"2026-01-25\",\"factor\":0.98}]}}")] // duplicate dates
+    [InlineData("{\"structuredProduct\":{\"factorScheduleEntries\":[{\"asOfDate\":\"2026-01-25\",\"factor\":0.90},{\"asOfDate\":\"2026-02-25\",\"factor\":0.95}]}}")] // rising factor in date order
+    [InlineData("{\"structuredProduct\":{\"FactorScheduleEntries\":[{\"asOfDate\":\"2026-01-25\",\"factor\":0.98}]}}")] // case-variant key with content
+    [InlineData("{\"StructuredProduct\":{\"factorScheduleEntries\":[{\"asOfDate\":\"2026-01-25\",\"factor\":0.98}]}}")] // case-variant module with content
+    public void UnrecoverableFactorSchedules_RefuseOnTheDeclaringRoute_AndStaySilentlyRetainedElsewhere(string json)
+    {
+        var terms = Json(json);
+
+        // StructuredCredit is the only class with the declared flat home, so only its route
+        // validates; a schedule the flat readers would reject or drop refuses there.
+        Action structuredCredit = () => SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(terms, "StructuredCredit");
+        structuredCredit.Should().Throw<InvalidOperationException>()
+            .WithMessage("Declared factor-schedule economic replay requires retained legacy asset-specific terms;*");
+
+        // Non-declaring routes keep the pre-increment behavior: the module rides only in the
+        // retained carry, exactly as it always has (no new refusal, no new flat key).
+        var bond = SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(terms, "Bond").Payload;
+        bond.TryGetProperty("factorScheduleEntries", out _).Should().BeFalse();
+        bond.TryGetProperty(SecurityTermsEnvelope.RetainedEconomicTermsKey, out _).Should().BeTrue();
+    }
+
     private static JsonElement Json(string json) => JsonSerializer.Deserialize<JsonElement>(json);
 
     private static SecurityEconomicDefinitionRecord EconomicRecord(JsonElement terms, JsonElement? retainedFlat)

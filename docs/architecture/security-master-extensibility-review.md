@@ -806,6 +806,259 @@ Validation (local, .NET SDK 10.0.403): `dotnet test tests/Meridian.Tests -c Rele
 active-plus-inactive gauge, and the zero case. The full local `bash scripts/ci.sh` was not run;
 GitHub `Meridian CI / quality-gate` remains authoritative.
 
+### ADR-027 stage-3 S3-D complete; S3-E scoped by census — 2026-11-09
+
+S3-D closed with 28 of 32 classes' scalar decodes schema-bound (`SchemaBoundDecodeClasses`);
+the remainder is structural by design (Equity and Bond read through bespoke
+classification/coupon-structure builders, InvestmentFund through fund-profile reads, CustomAsset
+is the profile-envelope exclusion), with their schema conformance asserted externally by the
+sweep suites.
+
+S3-E opened with the consumer census its precondition demands, and the result is far narrower
+than the audit feared: outside the codec and the domain spine (commands, legacy upgrade,
+modules), the per-class term records have exactly four consumers — `BondTerms` in
+`SecurityMasterService` and the asset-class validator registry, and `StructuredCreditTerms` in
+the accounting-event service and the structured-credit reclassification service. Every other
+record type (SwapTerms, CapFloorTerms, DepositTerms, OptionTerms, …) is already codec-and-spine
+only, and no F# file outside the spine touches any of them. The remaining S3-E dependency is
+therefore not consumer migration but module homes: the codec-only field complement (strikes,
+currency pairs, notionals, envelopes) must gain `SecurityTermModules` homes before record
+fields can move, mirroring how the stage-2 validation ledger shrinks. That is domain-shaping
+work in its own right — field-by-field expand/contract with the owner sequencing it — and it
+belongs to a successor PR; this one carries the census as its starting evidence.
+
+### ADR-027 stage-3 S3-C — the encode-arm sweeps — 2026-11-09
+
+`SecurityAssetTermsSchemaEncodeSweepTests` closes the audit's encode-side backlog with 124
+schema-generated cases, all assertions: every written value carries its field's declared JSON
+kind (dates as ISO calendar dates, guids parseable, numbers for decimal and integer fields); a
+minimal required-only submission writes every required key and invents no optional value —
+beyond two committed ledgers: `WrittenOptionalDefaults` (ADR-025's Bond coupon pair: an absent
+coupon writes `couponType: "Fixed"`, `couponRate: 0` by declaration) and
+`ConditionallyRequiredOptionals` (the CapFloor twin's Collar must keep both strikes, the S2-B1
+codec-only rule made visible in the sweep); the written form is a fixed point of the codec for
+minimal rows as well as the fully-populated twins — the per-class property S3-D's table-driven
+extraction must preserve; and the envelope rules (declared format, stamp describing the
+document) hold on minimal rows too. With S3-B and S3-C in place, both codec arms are asserted
+from the schema table, which is the "fully assert" arm of the ADR's stage-3 decision; S3-D can
+now replace hand-written scalar handling class by class under a complete net.
+
+### ADR-027 stage-3 S3-B — the decode-arm sweeps, and their first catch — 2026-11-09
+
+`SecurityAssetTermsSchemaDecodeSweepTests` generates the S3-A backlog from the schema itself
+(387 cases today, growing with the schema): per-alias write equivalence, per-field missing-Req
+refusal, per-field type-mismatch refusal, the full vocabulary sweep, and the convention sweep.
+The sweeps immediately earned their keep: the codec ignored the schema's declared read aliases
+for seven classes (CapFloor, CreditDefaultSwap, StructuredNote, Swaption, NonDeliverableForward,
+FxForward, and Bond's `dayCountConvention`) — a required field submitted under an advertised
+alias refused as missing, and an optional one was silently dropped, even though the registry
+DTOs, the field-edit canonicalizer and the day-count guard all advertise those spellings. The
+fix is schema-driven, in the stage-3 direction: write-mode decode now canonicalizes every
+declared alias once, from the schema table (`CanonicalizeDeclaredAliases`), before the per-class
+decode — and an ambiguous submission carrying two spellings of one field with different values
+refuses rather than letting key order decide. Read mode is untouched: stored rows are canonical.
+
+The sweeps also pinned the decode arm's real contract where it diverges from a naive reading of
+the schema, each divergence now a committed ledger instead of folklore: vocabulary enforcement
+is two-sided (a write may only assert declared values whatever the field's flags; the
+verbatim/escape flags govern reads of odd stored values); eight Required booleans and Bond's
+`subclass` absorb absence with written defaults (`ToleratedAbsenceDefaults` — Required remains
+true of every stored row); and StructuredCredit's legacy `factorSchedule` pointer reads a
+mistyped submission as unset, written null (`ToleratedMistypes`). Tightening any ledgered
+tolerance is an explicit S3-D decision.
+
+### ADR-027 stage-1 increment 6 — the identity gate; stage 1 complete — 2026-11-09
+
+Stage 1's close-out landed: economic-only replay runs a byte-identity gate after the class-aware
+flatten — the candidate without `retainedEconomicTerms` is rebuilt into its next economic
+document, and when that reproduces the source byte-for-byte the carry is dropped, because the
+flat row holds the whole document. The gate fails closed (any byte difference or exception keeps
+the carry and its fold-on-read), never rewrites a stored payload, and leaves refusals refusing.
+The class flattenings gained the inverses for the increment-5 modules (CapFloor's four
+`floatingRate` keys; Warrant's `multiplier`), so those classes' replays recover them. Today's
+verdicts, pinned rather than assumed: CertificateOfDeposit and StructuredCredit image twins shed
+the carry; Bond's floating-coupon twin does not yet rebuild byte-identically and keeps it;
+hand-written corpus literals keep it. The corpus golden's reviewed diff is exactly that story.
+With increments 1–6 landed, ADR-027 stage 1 is complete: every module the serializer emits has
+either a declared flat home with fail-closed recovery or an explicitly pinned carry, and new
+image documents stop carrying `retainedEconomicTerms` the moment their class's codec round-trips
+them completely — the gate turns each remaining carry into a measurable, per-class fact instead
+of a permanent workaround.
+
+### ADR-027 stage-3 S3-A — codec-arm gap audit — 2026-11-09
+
+What the schema-driven guard (`SecurityAssetTermsSchemaRoundTripTests` and companions) already
+proves, per arm:
+
+- **Encode:** every class's serialized key set equals the declared schema field set; the
+  envelope declares its format and asset-class terms version; fully-populated payloads
+  round-trip byte-stably through both codecs (plus Bond coupon-structure variants and the
+  legacy Equity classification read); discriminants use declared values; the write goldens pin
+  the written bytes per class and report surface.
+- **Fixture discipline:** `FullPayloads` cover exactly the declared classes, and each declares
+  every schema field, so schema growth forces the fixtures to grow.
+- **Vocabularies and conventions (hand-picked):** write refusals for Swap leg conventions, Bond
+  `couponType` (undeclared, non-string, explicit-null default), Option `exerciseStyle`,
+  StructuredCredit malformed optional tranche terms and kind-label canonicalization, and the
+  field-edit validator's discriminant handling.
+
+What remains unproven — the S3-B/S3-C backlog, in priority order:
+
+1. **Per-alias acceptance (decode).** The schema declares read aliases
+   (`asOfDate` ← `factorDate`/`effectiveDate`/`date`, `notional` ← `notionalAmount`, …); no test
+   sweeps them. An alias the decoder forgot reads as an absent field today.
+2. **Per-field missing-Req refusal (decode).** A required field absent must refuse naming the
+   field; only incidental coverage exists.
+3. **Per-field type-mismatch refusal (decode).** Hand-picked cases only; no sweep of
+   string-where-decimal, number-where-date, etc. across the declared types.
+4. **Systematic `OneOf` sweep (decode).** Every `ReqOneOf`/`OptOneOf` field, enforcing or
+   escaping exactly per `WithVerbatimUndeclaredValue`, rather than today's named examples.
+5. **`WithConvention` parsing sweep (decode).** Only Swap legs are pinned; the other fields
+   carrying a convention kind are not.
+6. **Canonical written forms (encode).** Value formatting per type, the null/absent policy per
+   `Opt` field, and array stored-order rules are proven only transitively, through one full
+   payload's byte-stable round trip per class — form rules are not asserted as rules.
+
+S3-B/S3-C generate these sweeps from `SecurityAssetTermsSchema` itself, so a field added to the
+schema is swept without a test edit; S3-D (the table-driven extraction) stays gated on stage-1
+increment 6 per the ADR's safety ordering.
+
+### ADR-027 stage-2 S2-B4 — term-block and merge paths verified on the definition — 2026-11-09
+
+The last stage-2 increment needed no plumbing: the workbench term-block and profile-field edit
+validations already flow through `ValidateKindInvariants`, which the S2-B2 recomposition made
+definition-authoritative for every ledgered code, and the approved-merge handler publishes
+through the ordinary amend route — S2-B2's validation and S2-B3's typed-record derivation both
+apply. The one seam those sites keep, `ToRecord(...).Kind` over the staged effective document,
+is the flat → kind codec decode itself (fail-closed, with its own refusal path for documents
+the strict mapping cannot reconstruct) — the boundary stage 3's S3-D shrinks, not a command
+seam. Pinned by extending the workbench invariant test to assert the ledgered
+`structured_credit_current_factor_invalid` code surfaces through the term-block route. With
+this, ADR-027 stage 2 is complete: commands and validation live on `SecurityEconomicDefinition`,
+and `SecurityMasterLegacyUpgrade` is on the write path only as the typed-record projection
+(`modulesFromKind`, `toEconomicDefinition`) — the flat decode remains confined to the codec
+boundary and legacy replay.
+
+### ADR-027 stage-2 S2-B3 — events derived from the typed record — 2026-11-09
+
+The create, amend and deactivate services stop re-decoding the document they just encoded: with
+no profile-backed override in play, the economic record derives from the command result's typed
+`SecurityMasterRecord` through the new `ToEconomicRecord(record, projection)` overload (the
+projection still supplies the retained-terms fold), deleting the per-write
+`ToProjection → ToRecord` round trip the ADR names. Where an override replaces the class or
+terms after the domain command — CustomAsset profile resolution, envelope repinning — the
+overridden document remains authoritative and the projection-decode overload stays, exactly as
+it stays for event replay and aggregate rebuild, which is the decode's permanent read-only
+legacy-upcaster role. `RecordAwareDerivation_IsByteIdenticalToTheProjectionDecode` pins the two
+routes byte-identical over every declared class twin, alongside the corpus and write goldens.
+
+### ADR-027 stage-2 S2-B2 — validation recomposed onto the definition — 2026-11-09
+
+The write path now validates through the definition surface. `validateKindTerms` became a
+composition: `validateDefinitionTerms (assetClassName kind) (modulesFromKind kind)` — the
+authoritative check for all 54 ledgered codes — appended with `validateCodecOnlyKindTerms`, the
+renamed remainder holding exactly the ledger's complement (the 54 moved rules were deleted from
+it, so nothing is checked twice). Every command route flows through the composition: create,
+amend and record validation in the F# aggregate, and the C# workbench term-block and
+profile-field edit validations through `SecurityMasterCommandFacade.ValidateKindInvariants`.
+The switch is proven behavior-neutral by the S2-B1 equivalence suite (whose mutation table pins
+the partition), the byte-identical replay corpus and write goldens, and a full green sweep of
+the F# suite (596) and the C# SecurityMaster namespace (5,593).
+
+### ADR-027 stage-2 S2-B1 — the economic validation surface — 2026-11-09
+
+The first command-path increment landed without touching the write path:
+`validateDefinitionTerms` re-expresses, over `SecurityTermModules` and gated by the
+classification's canonical `TypeName`, every `validateKindTerms` rule whose subject data has a
+module home under `termsFromKind` — 54 error codes across 23 classes, committed as the
+`definitionExpressibleCodes` ledger and exposed through
+`SecurityMasterCommandFacade.ValidateDefinitionInvariants` / `DefinitionExpressibleCodes`.
+Equivalence is pinned twice: `SecurityDefinitionValidationEquivalenceTests` proves every clean
+class twin passes both surfaces, trips both with the same code for every ledgered code via a
+twin mutation (with the table required to cover exactly the ledger), and forbids the definition
+surface from reporting any code the kind surface does not; `SecurityDefinitionValidationTests`
+(F#) proves the three factor-schedule codes whose invalid shapes the codec gate refuses before
+any validator runs — both surfaces carry them as defense in depth. The ledger's complement
+(option strike, swap legs, bond subclass/par/principal schedule/step coupons, currency pairs,
+notionals, type-conditional strike requirements, the CustomAsset envelope) stays codec-side
+until modules gain homes. `SecurityMasterLegacyUpgrade.modulesFromKind` makes the
+kind → modules projection a first-class seam for S2-B2's mapping-time derivation.
+
+### ADR-027 stage-2 opens — the replay-compatibility corpus — 2026-11-09
+
+Stage 2's ADR-named precondition landed first: `SecurityMasterReplayCorpusTests` replays a
+committed corpus of stored-event-shaped records (`tests/fixtures/security-master/replay-corpus/`)
+through the three paths the command-path moves must not disturb — the projection rebuild
+(`ToProjection`), the next-event derivation (`ToEconomicRecord`, retained fold included), and
+the amend-cycle domain-codec round trip (`ToRecord` → snapshot → `ToProjection` → retained
+carry, the seam stage 2 deletes) — and pins the resulting bytes in a committed golden with the
+same received-file workflow as the write goldens. Refusals pin their messages, so the corpus
+also documents today's honest losses: Equity economic-only replay refuses by classification,
+and CapFloor/Commodity/Swap/Warrant economic-only rebuilds refuse the next-event derivation
+because required flat keys (`capFloorType`, `commodityType`, `legs`, `underlyingId`) have no
+economic home yet. Corpus inputs are committed literals and never regenerate, so any serializer
+or bridge change surfaces as a reviewed golden diff — the "byte-identical before and after"
+proof obligation made mechanical. The upcoming increments extend it case by case.
+
+### ADR-027 stage-1 increment 5 — the economic serializer emits all 25 modules — 2026-11-09
+
+The fifth slice-10 increment extends `SecurityEconomicDefinitionAdapter.BuildEconomicTermsJson`
+with the 11 modules it never wrote (`floatingRate`, `tradingParameters`, `creditRating`,
+`depositaryReceipt`, `dividendSchedule`, `covenants`, `esg`, `venue`, `multiCalendar`,
+`inflationLinked`, `sinkingFund`), under the existing contract: every module key emitted, null
+when the definition has no such module, appended after `structuredProduct`. The observable gain
+is for the two modules with producers — `FloatingRate` (StructuredCredit coupon-or-index;
+CapFloor index, strikes and reset) and `TradingParameters` (Commodity contract size, Cfd
+leverage, Warrant multiplier) — whose flat-fed values previously vanished from economic events
+and survived economic-only replay only through the retained flat document. The other nine are
+constant-`None` expansion modules serializing as null until a producer appears. The conversion
+ledger adds all 11 to `DroppedModules` (5 bridged / 20 dropped): the class-independent bridge
+does not read them, they retain verbatim beside the flat keys, and their flat-home recovery
+(including Cfd leverage's reciprocal transform) is increment 6's identity work. New F#
+`DividendFrequency.Label` and `CovenantKind.Label` helpers carry the DU labels. Pinned by the
+extended `SecurityEconomicTermsV2BridgeCoverageTests` (full-fixture inventory, no-trace and
+retained-verbatim theories over all 20 dropped modules, and the producer-backed emission test)
+and the suffix-extended exact-byte twins in `SecurityEconomicTermsClassAwareBridgeTests`; the
+write-golden fixture was regenerated for the widened economic documents (41 of 164 entries, all
+pure suffix appends of the new module keys).
+
+The untagged-payload shape rule did not widen with the serializer: its vocabulary froze as
+`ShapeRuleModules` — exactly the 14 modules the serializer wrote before the `termsFormat` tag
+existed, which are the only keys an untagged payload can carry — and `IsEconomicTermsShape` now
+consults that frozen list, keeping it aligned with shipped migration 042's SQL mirror (pinned by
+the `SecurityTermsVersioningTests` migration test, which also pins the list's frozen count and
+its subset relation to the serializer inventory). The list never grows; it retires with the
+shape rule itself under ADR-024 decision 5.
+
+### ADR-027 stage-1 increment 4 — structured-credit factor schedule recovers — 2026-11-09
+
+The fourth slice-10 increment (increment 3 was verified already complete, no code) recovers the
+economic `structuredProduct.factorScheduleEntries` list into the flat `factorScheduleEntries`
+array for the one class that declares it (StructuredCredit, Since 1, so the stamp floor of 2
+governs), in the frozen two-member entry form (`asOfDate`, `factor`) and in stored order. This
+closes a silent drop rather than lifting a refusal: no guard ever covered the factor schedule,
+so economic-only replay previously kept it alive only inside `retainedEconomicTerms` while the
+flat row — and the amortization/projection readers built from it — lost the dated schedule
+without a trace. Recovery is fail-closed under the flat side's own domain invariants
+(`structured_credit_factor_schedule_*` in `SecurityMasterCommands.fs`): canonical spellings
+only, decodable ISO dates, factors in `[0,1]`, distinct dates, non-increasing in date order;
+anything else that declares content refuses with a factor-specific message, while non-declaring
+classes and the class-independent route keep their pre-existing silent-retain behavior
+unchanged (pinned in `SecurityEconomicCallScheduleFlatteningTests` and
+`SecurityEconomicScheduleReplayRefusalTests`; the cross-module factor-after-maturity rule stays
+with domain validation, as increments 1–2 left notice/window rules).
+
+Shipped alongside, a confirmed Codex review finding on increment 1's recovery: undeclared
+`callType` labels (anything outside "MakeWhole"/"European"/"American"/"Bermudan") were nulled
+in the recovered `exerciseStyle`, silently losing them on the flat → economic → flat
+round-trip even though the flat entry field preserves undeclared style strings
+(`WithVerbatimUndeclaredValue`) and `SecurityMasterLegacyUpgrade.economicCalls` copies them
+into `callType` verbatim. The recovery now carries every non-MakeWhole label back into
+`exerciseStyle` unchanged — the exact inverse of the economic writer — with comparisons still
+ordinal, so a case-variant "makewhole" is a verbatim label, not a price type (pinned in
+`SecurityEconomicCallScheduleFlatteningTests` and the `SecurityTermsVersioningTests` replay
+pin, which moved from null-on-unknown to verbatim).
+
 ### ADR-027 stage-1 increment 2 — accrual conventions recover — 2026-11-09
 
 The second slice-10 increment lifts the accrual refusal for classes that declare the

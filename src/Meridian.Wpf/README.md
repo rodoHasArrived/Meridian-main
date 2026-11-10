@@ -11,6 +11,10 @@ last_reviewed: 2026-10-15
 
 # src/Meridian.Wpf
 
+Data Quality "Acknowledge All" removes only alerts the server acknowledged and reports partial failures; its action continuations stay on the UI thread. Data Browser CSV export writes the whole filtered result with RFC 4180 quoting and invariant-culture numbers.
+
+The credential vault moves an unreadable vault file aside (`credentials.enc.unreadable-*.bak`) before the next save and writes through a flushed temp file plus atomic rename. The environment designer rejects drafts missing `definition`/`name` and reports save failures instead of crashing.
+
 Fund Ledger defaults and resets to all reconciliation cases, includes explicitly fund-scoped statement cases without strategy runs, and shows retained source observation and occurrence age separately from case status. Exact lineage evidence is available in the source-observation disclosure. Missing strategy comparison detail preserves the selected case and reports unknown counts.
 
 The Security Master passport editor offers the browser's bond analytics and convention-migration

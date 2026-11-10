@@ -1,0 +1,3 @@
+# QuantScript worker sidecar output is build output copied next to the test assembly,
+# never source. It was once published into this directory and committed.
+workers/

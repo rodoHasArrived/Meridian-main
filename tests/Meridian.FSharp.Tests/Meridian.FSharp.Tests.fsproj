@@ -12,6 +12,7 @@
   <ItemGroup>
     <Compile Include="DomainTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'Domain'" />
     <Compile Include="ValidationTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'Domain'" />
+    <Compile Include="SecurityDefinitionValidationTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'Domain'" />
     <Compile Include="CalculationTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'MarketData'" />
     <Compile Include="SecurityCalculationsTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'MarketData'" />
     <Compile Include="CanonicalizationTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'Domain'" />
