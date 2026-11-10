@@ -1883,8 +1883,8 @@ governed validator remains authoritative.
 `SecurityMasterPublishResult` in `lib/api/security-master-workbench.api.ts` carries an optional `canonicalMerge`. It says whether publishing the approved edit changed the golden record (`Merged` or `AlreadyCanonical`) or not (`OverlayOnly` or `NotApplicable`). When an approved proposal is stale because its field changed after the draft, the publish route answers 409 with `stale-field-proposal`. The existing classifier reports that as a revision-state conflict carrying the server message.
 
 Statement run detail, capital accounts and the governed-approvals poll ignore a response that
-arrives after a newer request was issued. Capital accounts shows "Not loaded" while a new fund or
-period loads.
+arrives after a newer request was issued. Capital accounts shows its loading banner, never the
+previous scope's rows, while a changed query loads.
 
 ## Diagrams
 

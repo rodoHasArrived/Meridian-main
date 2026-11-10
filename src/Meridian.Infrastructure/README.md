@@ -503,10 +503,12 @@ paths and original file names remain provenance metadata, not duplicate-detectio
 **Provider construction and credentials.** `ProviderFactory.CreateAndRegisterAllAsync`,
 `InitializeProvidersAsync`, `ProviderRegistry.CreateStreamingClientAsync` and `WarmProvidersAsync`
 read provider credentials first and construct inside the prepared scope. The synchronous
-counterparts remain for callers that cannot await.
+`CreateAndRegisterAll` and `CreateStreamingClient` remain for callers that cannot await.
 
 **Brokerage and IB hardening.** The Alpaca, Robinhood and Template gateways wait on a full
-execution-report channel instead of dropping the oldest report. `IBDurableResultStore` flushes
+execution-report channel instead of dropping the oldest report. One Alpaca path cannot wait: a
+pending-modification report is returned to its caller and, if the stream is full, logged as not
+published. `IBDurableResultStore` flushes
 before the rename and updates its in-memory view only after the write succeeds. IB daily-bar
 requests send UTC. `RateLimiter` guards its timestamp queue and last-request time with one lock.
 
