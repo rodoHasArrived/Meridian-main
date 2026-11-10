@@ -11,6 +11,8 @@ last_reviewed: 2026-10-15
 
 # src/Meridian.Infrastructure
 
+`RateLimiter` serialises its expired-timestamp cleanup, so concurrent callers cannot dequeue a fresh timestamp and undercount the window.
+
 IB historical requests ask for epoch-second bar times (`formatDate = 2`) and send UTC, culture-invariant end times; a zone-less TWS-local timestamp is refused rather than read as UTC. `IBDurableResultStore` publishes an update to memory only after the fsynced atomic file replace succeeds. `ProviderRegistry` availability probes rethrow caller cancellation.
 
 Statement importers retain parser revision and upstream executed mapping proof; pre-normalized imports without upstream proof remain non-comparable. Immutable match artifacts retain that mapping fingerprint. Source-generated import and match hashing supports exact completed-checkpoint verification without rewriting legacy bytes.
@@ -512,7 +514,7 @@ no trade-updates stream, wait on a full execution-report channel instead of drop
 report. With a trade-updates stream the Alpaca gateway streams reports from it and nothing reads
 the REST report channel, so that channel keeps dropping its oldest entry. One Alpaca path cannot
 wait: a pending-modification report is returned to its caller and, if the channel is full, logged
-as not published. `RateLimiter` guards its timestamp queue and last-request time with one lock.
+as not published.
 
 ## Diagrams
 

@@ -299,6 +299,42 @@ public sealed class DataQualityViewModelCharacterizationTests
             Arg.Any<CancellationToken>());
     }
 
+    [Fact]
+    public async Task AcknowledgeAllAlerts_PartialFailure_KeepsUnacknowledgedAlertsListed()
+    {
+        // "Acknowledge All" used to clear every alert even when some acknowledgements failed,
+        // hiding alerts the server still considered open.
+        var apiClient = Substitute.For<IDataQualityApiClient>();
+        apiClient.AcknowledgeAnomalyAsync("alert-ok", Arg.Any<CancellationToken>()).Returns(true);
+        apiClient.AcknowledgeAnomalyAsync("alert-refused", Arg.Any<CancellationToken>()).Returns(false);
+        apiClient.AcknowledgeAnomalyAsync("alert-throws", Arg.Any<CancellationToken>())
+            .Returns<Task<bool>>(_ => throw new System.Net.Http.HttpRequestException("boom"));
+        using var viewModel = new DataQualityViewModel(
+            StatusService.Instance,
+            LoggingService.Instance,
+            NotificationService.Instance,
+            apiClient,
+            new DataQualityPresentationService(apiClient));
+        SeedAlerts(viewModel, "alert-ok", "alert-refused", "alert-throws");
+
+        await viewModel.AcknowledgeAllAlertsAsync();
+
+        viewModel.Alerts.Select(alert => alert.Id).Should().BeEquivalentTo(["alert-refused", "alert-throws"]);
+    }
+
+    private static void SeedAlerts(DataQualityViewModel viewModel, params string[] ids)
+    {
+        var field = typeof(DataQualityViewModel).GetField("_allAlerts", BindingFlags.Instance | BindingFlags.NonPublic);
+        field.Should().NotBeNull();
+        var alerts = (List<AlertModel>)field!.GetValue(viewModel)!;
+        foreach (var id in ids)
+        {
+            using var document = JsonDocument.Parse(
+                $$"""{"id":"{{id}}","symbol":"SPY","type":"StaleData","description":"d","severity":2}""");
+            alerts.Add(InvokePrivate<AlertModel?>(viewModel, "BuildAlertModel", document.RootElement)!);
+        }
+    }
+
     private static DataQualityViewModel CreateSubject()
     {
         var apiClient = Substitute.For<IDataQualityApiClient>();

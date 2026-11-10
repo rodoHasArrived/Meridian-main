@@ -127,6 +127,12 @@ public sealed class ReconciliationEngineService
                 if (detail is not null)
                     results[key.IdentifierValue] = detail;
             }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                // A cancelled reconciliation must stop, not log a warning per remaining security
+                // and return a partial lookup as if every resolution had simply failed.
+                throw;
+            }
             catch (Exception ex)
             {
                 _log.LogWarning(ex,

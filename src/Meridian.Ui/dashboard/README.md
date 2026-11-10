@@ -327,6 +327,22 @@ not been recorded.
   agree from one fixture set. Accounting takes open breaks from the payload's `workspace.openBreaks`,
   which the server counts over the whole queue even when it withholds `breakQueue` from a caller
   who may see the count but not the cases.
+- **Operator copy.** Records are named by display name. GUID-shaped identifiers stay out of the
+  reading path: `lib/identifiers.ts` (`isOpaqueIdentifier`, `withoutOpaqueIdentifiers`) strips
+  them from headings, and the identifier lives in a `TechnicalDetails` disclosure, a `title`
+  attribute or a read-only scope field. Counts with a noun go through `pluralizeCount` from `@/lib/format`. A
+  position with no shared mark assessment shows one "No mark observed" hint (`lib/mark-freshness.ts`)
+  instead of a row per unknown field. The screenshot harness checks every route's rendered main
+  content for both rules (`findCaptureContentIssues` in
+  `scripts/dev/capture-web-screenshots.mjs`) and fails the capture; a route that cannot comply yet
+  lists the rule with a reason under `allowedContentIssues` in
+  `scripts/dev/web-screenshot-routes.json`. Operations Continuity is the one exception today: its
+  shared summary identifies a close workflow by fund-account identifier only.
+- **Status agreement.** The status bar's Sync item reports the workstation's own read of the API.
+  When the trust strip's provider posture needs review or is blocked, the bar repeats it as a
+  Providers item, so a green Sync is never its whole answer under a masthead warning. The Daily
+  Control Tower's Evidence line names only the event correlated with the leading queue row; with
+  none it says so and cites the latest event as workstation context, matching the Freshness card.
 - **Operating scope.** Copy link appends every scope dimension the current route did not write
   into its URL (`buildShareableLink`), so a link from any screen restores the sender's scope in a
   fresh browser. The scope picker offers the last five applied scopes (per browser) and the

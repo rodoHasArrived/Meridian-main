@@ -12,16 +12,12 @@ public sealed class RateLimiter : IDisposable
 {
     private readonly SemaphoreSlim _semaphore = new(1, 1);
     private readonly ConcurrentQueue<DateTimeOffset> _requestTimestamps = new();
+    private readonly object _cleanupLock = new();
     private readonly int _maxRequests;
     private readonly TimeSpan _window;
     private readonly TimeSpan _minDelay;
     private readonly ILogger _log;
     private readonly TimeProvider _timeProvider;
-    // Guards the timestamp queue and _lastRequest. RecordRequest and GetStatus run outside the
-    // slot semaphore, and the peek-then-dequeue cleanup is not atomic on its own: two concurrent
-    // cleanups could both peek the same expired entry and the second would dequeue a live one,
-    // under-counting the window and letting requests through over the limit.
-    private readonly object _timestampLock = new();
     private DateTimeOffset _lastRequest = DateTimeOffset.MinValue;
     private bool _disposed;
 
@@ -74,13 +70,7 @@ public sealed class RateLimiter : IDisposable
             }
 
             // Enforce minimum delay between requests
-            DateTimeOffset lastRequest;
-            lock (_timestampLock)
-            {
-                lastRequest = _lastRequest;
-            }
-
-            var timeSinceLastRequest = _timeProvider.GetUtcNow() - lastRequest;
+            var timeSinceLastRequest = _timeProvider.GetUtcNow() - _lastRequest;
             if (timeSinceLastRequest < _minDelay)
             {
                 var delayNeeded = _minDelay - timeSinceLastRequest;
@@ -90,11 +80,8 @@ public sealed class RateLimiter : IDisposable
 
             // Record this request
             var now = _timeProvider.GetUtcNow();
-            lock (_timestampLock)
-            {
-                _requestTimestamps.Enqueue(now);
-                _lastRequest = now;
-            }
+            _requestTimestamps.Enqueue(now);
+            _lastRequest = now;
 
             return now - waitStart;
         }
@@ -111,11 +98,8 @@ public sealed class RateLimiter : IDisposable
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         var now = _timeProvider.GetUtcNow();
-        lock (_timestampLock)
-        {
-            _requestTimestamps.Enqueue(now);
-            _lastRequest = now;
-        }
+        _requestTimestamps.Enqueue(now);
+        _lastRequest = now;
     }
 
     /// <summary>
@@ -138,9 +122,12 @@ public sealed class RateLimiter : IDisposable
 
     private void CleanupOldTimestamps()
     {
-        var cutoff = _timeProvider.GetUtcNow() - _window;
-        lock (_timestampLock)
+        // Peek-then-dequeue is two operations: without a lock, two callers can both peek the
+        // same expired entry and the second dequeue removes a fresh timestamp instead,
+        // undercounting the window and letting a burst exceed the provider's limit.
+        lock (_cleanupLock)
         {
+            var cutoff = _timeProvider.GetUtcNow() - _window;
             while (_requestTimestamps.TryPeek(out var oldest) && oldest < cutoff)
             {
                 _requestTimestamps.TryDequeue(out _);
