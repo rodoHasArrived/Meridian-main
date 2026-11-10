@@ -9,6 +9,9 @@ public sealed class LedgerJournalStoreOptions
     /// <summary>Database schema that owns the ledger tables.</summary>
     public string SchemaName { get; set; } = "ledger";
 
+    /// <summary>Same-database banking authority required for atomic capital-call funding.</summary>
+    public string PrivateCapitalBankingSchema { get; set; } = "banking";
+
     /// <summary>
     /// Enables explicit row locking when period records are updated.
     /// Serializable transactions still protect writes; this flag controls whether the store also

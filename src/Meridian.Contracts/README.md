@@ -11,6 +11,15 @@ last_reviewed: 2026-10-31
 
 # src/Meridian.Contracts
 
+`PrivateCapitalLifecycleDtos` binds approved commitment revisions, frozen per-investor call plans,
+funding receipt identities, and notice summaries to explicit tenant/company/entity/fund/book/currency
+scope. Posted amounts are observations; caller-supplied totals and generic entity assignments do
+not establish commitment authority. Historical journals retain their original contracts and keys.
+
+`PrivateCapitalBankObservationSourceDto` describes a reviewed settled incoming bank observation.
+Import commands select an exact Evidence Vault document; they do not accept caller-supplied money
+or create a payment. The retained source hash and document identity explain the imported bank row.
+
 `BondContractualEconomics` owns declared per-100 coupon cash, reference-period stub fractions, accrued interest and discounting time. `BondExerciseEconomics` shares fixed-price whole-redemption dates and cash across analytics and cash forecasts. `BondFloatingRateEvidence` freezes each observed or forecast reset with explicit units, source, spread, cap/floor, principal and accrual fraction. New declared lot previews use `canonical-lot-amortization-v5`; v1–v3 retain their original arithmetic and dispatch. The interim v4 declared model was removed before any instruction was produced and is refused as an unsupported version.
 
 `CashFlows/` owns the versioned calculation-only cash-flow contracts, exercise/notice resolution, standard make-whole formulas, structured coupon/principal walks, deterministic CPR/SMM/PSA prepayments, and replay verification. The `cashFlowContract` companion reads ahead of existing write ceilings; undeclared terms and existing call/put element shapes remain unchanged. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).

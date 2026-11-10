@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-10-21T15:53:39Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-11-10T22:40:16Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -134,19 +134,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs` | Host and Composition | `468399d31` (2026-10-21T05:33:44Z) | 10 |
-| `src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs` | Unmapped | `468399d31` (2026-10-21T05:33:44Z) | 5 |
-| `src/Meridian.Application/SecurityMaster/AlternativeAssetLotExtensions.cs` | Host and Composition | `468399d31` (2026-10-21T05:33:44Z) | 2 |
-| `src/Meridian.Contracts/SecurityMaster/NotionalLot.cs` | Host and Composition | `468399d31` (2026-10-21T05:33:44Z) | 1 |
-| `src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs` | Host and Composition | `468399d31` (2026-10-21T05:33:44Z) | 1 |
-| `src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs` | Host and Composition | `0bd7b0bc4` (2026-10-20T20:28:18Z) | 16 |
-| `src/Meridian.Application/SecurityMaster/SecurityMasterDataQualityService.cs` | Host and Composition | `0bd7b0bc4` (2026-10-20T20:28:18Z) | 7 |
-| `src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.cs` | Desktop and UI Workflows | `0bd7b0bc4` (2026-10-20T20:28:18Z) | 3 |
-| `src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.CorporateActions.cs` | Desktop and UI Workflows | `7d276fc6d` (2026-10-20T20:14:06Z) | 5 |
-| `src/Meridian.Instruments/AssetOperations/AssetObligationProjectionService.cs` | Unmapped | `7d276fc6d` (2026-10-20T20:14:06Z) | 2 |
-| `src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs` | Host and Composition | `7d276fc6d` (2026-10-20T20:14:06Z) | 1 |
-| `src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.SecurityCoverage.cs` | Desktop and UI Workflows | `7d276fc6d` (2026-10-20T20:14:06Z) | 1 |
-| `src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs` | Host and Composition | `53223bf3b` (2026-10-20T19:34:19Z) | 2 |
-| `src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx` | Desktop and UI Workflows | `0aa3eeb19` (2026-10-20T19:26:20Z) | 3 |
-| `src/Meridian.Ui/dashboard/src/screens/settings-screen.operations-control.ts` | Desktop and UI Workflows | `0aa3eeb19` (2026-10-20T19:26:20Z) | 2 |
+| `src/Meridian.Core/Currency/CurrencyMinorUnits.cs` | Host and Composition | `248a331817` (2026-11-01T14:32:19Z) | 2 |
+| `src/Meridian.Ledger/LedgerEntry.cs` | Domain, Ledger, and F# | `3c42029ec2` (2026-11-01T12:05:53Z) | 1 |
+| `src/Meridian.Wpf/ViewModels/QuantScriptViewModel.cs` | Desktop and UI Workflows | `81febe098b` (2026-11-01T11:47:14Z) | 2 |
+| `src/Meridian.Application/Commands/ConfigCommands.cs` | Host and Composition | `81febe098b` (2026-11-01T11:47:14Z) | 1 |
+| `src/Meridian.Application/Services/ConfigurationService.cs` | Host and Composition | `81febe098b` (2026-11-01T11:47:14Z) | 1 |
+| `src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs` | Desktop and UI Workflows | `81febe098b` (2026-11-01T11:47:14Z) | 1 |
+| `src/Meridian.Wpf/ViewModels/FireAndForget.cs` | Desktop and UI Workflows | `81febe098b` (2026-11-01T11:47:14Z) | 1 |
+| `src/Meridian.Wpf/Views/DataSourcesPage.xaml.cs` | Desktop and UI Workflows | `81febe098b` (2026-11-01T11:47:14Z) | 1 |
+| `src/Meridian.Ui/dashboard/src/components/meridian/bond-analytics-panel.test.tsx` | Desktop and UI Workflows | `455ecc70d1` (2026-11-01T04:17:13Z) | 4 |
+| `src/Meridian.Ui/dashboard/src/types.ts` | Desktop and UI Workflows | `455ecc70d1` (2026-11-01T04:17:13Z) | 4 |
+| `src/Meridian.Wpf/ViewModels/CashFlows/ContractualCashFlowScenarioViewModel.cs` | Desktop and UI Workflows | `455ecc70d1` (2026-11-01T04:17:13Z) | 2 |
+| `src/Meridian.Wpf/Views/DirectLendingPage.xaml` | Desktop and UI Workflows | `455ecc70d1` (2026-11-01T04:17:13Z) | 2 |
+| `src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs` | Host and Composition | `39b16557bd` (2026-11-01T03:53:41Z) | 6 |
+| `src/Meridian.Application/ProviderRouting/ProviderRoutingLogValues.cs` | Host and Composition | `39b16557bd` (2026-11-01T03:53:41Z) | 1 |
+| `src/Meridian.Ledger/README.md` | Domain, Ledger, and F# | `22f694e987` (2026-11-01T00:06:40Z) | 6 |
 

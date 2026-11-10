@@ -1,6 +1,8 @@
 using FluentAssertions;
 using Meridian.Contracts.Ledger;
 using Meridian.Ui.Shared.Services;
+using Meridian.Ledger;
+using NSubstitute;
 using Xunit;
 
 namespace Meridian.Tests.Ui;
@@ -35,6 +37,9 @@ public sealed class CapitalCallIssuanceIntakeTests
         result.ReadinessBlockers.Should().BeEmpty();
         result.Intake.Skipped.Should().BeEmpty();
         result.Intake.Created.Should().HaveCount(2);
+        result.Intake.Created.SelectMany(draft => draft.ValidationIssues)
+            .Where(issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical)
+            .Select(issue => $"{issue.Code}: {issue.Message}").Should().BeEmpty();
         result.Intake.Created.Should().OnlyContain(
             draft => draft.Status == ManualJournalEntryStatusDto.Draft,
             "issuance drafts must land in the human approval queue, never post directly");
@@ -68,7 +73,7 @@ public sealed class CapitalCallIssuanceIntakeTests
         first.EvidenceLinks.Should().Contain("evidence://commitments/cmt-1/subscription-agreement");
 
         // Honesty grading: a first call has no posted history, so the assessment says the
-        // attested register is the sole basis instead of overstating corroboration.
+        // retained commitment terms are the sole basis instead of inventing prior-ledger corroboration.
         var assessment = result.EvidenceAssessments["capital-call:cmt-1:call-1:cmt-1"];
         assessment.RequiresInvestigation.Should().BeFalse();
         assessment.ConfidenceScore.Should().Be(0.80m);
@@ -92,6 +97,9 @@ public sealed class CapitalCallIssuanceIntakeTests
         var secondRun = await fixture.Runner.RunCapitalCallIssuanceIntakeAsync(request);
 
         firstRun.Intake.Created.Should().HaveCount(2);
+        firstRun.Intake.Created.SelectMany(draft => draft.ValidationIssues)
+            .Where(issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical)
+            .Select(issue => $"{issue.Code}: {issue.Message}").Should().BeEmpty();
         secondRun.Intake.Created.Should().BeEmpty("a re-run must never duplicate governed drafts");
         secondRun.Intake.Skipped.Should().HaveCount(2);
         secondRun.Intake.Skipped.Should().OnlyContain(skip => skip.IsReadyDuplicate);
@@ -100,7 +108,8 @@ public sealed class CapitalCallIssuanceIntakeTests
     [Fact]
     public async Task RunCapitalCallIssuanceIntakeAsync_MissingCommitmentEvidence_BlocksWithoutDrafting()
     {
-        var fixture = await CreateFixtureAsync();
+        var fixture = await CreateFixtureAsync(approvedRequest: BuildRequest(500_000m,
+            Commitment("cmt-1", "lp-1", 6_000_000m) with { EvidenceLinks = [] }));
 
         var result = await fixture.Runner.RunCapitalCallIssuanceIntakeAsync(BuildRequest(
             amountToCall: 500_000m,
@@ -120,7 +129,8 @@ public sealed class CapitalCallIssuanceIntakeTests
     [Fact]
     public async Task RunCapitalCallIssuanceIntakeAsync_WithoutPostedActivitySource_BlocksWithoutDrafting()
     {
-        var fixture = await CreateFixtureAsync(includeWorkbenchSource: false);
+        var fixture = await CreateFixtureAsync(includeWorkbenchSource: false,
+            approvedRequest: BuildRequest(500_000m, Commitment("cmt-1", "lp-1", 6_000_000m)));
 
         var result = await fixture.Runner.RunCapitalCallIssuanceIntakeAsync(BuildRequest(
             amountToCall: 500_000m,
@@ -130,6 +140,68 @@ public sealed class CapitalCallIssuanceIntakeTests
         result.ReadinessBlockers.Should().ContainSingle(blocker =>
             blocker.Contains("posted private-capital activity source is unavailable"));
         result.Intake.Created.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task RetainedAuthority_NewApprovedRevisionInvalidatesPendingReview()
+    {
+        var fixture = await CreateFixtureAsync();
+        var result = await fixture.Runner.RunCapitalCallIssuanceIntakeAsync(BuildRequest(1_000_000m,
+            Commitment("cmt-1", "lp-1", 6_000_000m), Commitment("cmt-2", "lp-2", 4_000_000m)));
+        var draft = result.Intake.Created.Single(item => item.TreasuryContext!.InvestorId == "lp-1");
+        var authority = PrivateCapitalPostingAuthority.Deserialize(draft.PrivateCapitalAuthorityJson!);
+        var prior = await fixture.Authority!.GetCommitmentAsync(authority.Scope, "cmt-1", 1);
+        fixture.Authority.ListCommitmentsAsync(authority.Scope, Arg.Any<CancellationToken>())
+            .Returns(new[] { prior! with { Revision = 2, TotalCommitment = 7_000_000m } });
+        var reviewed = await fixture.Workbench.ValidateDraftAsync(new(draft, "reviewer",
+            LedgerBookId: BookId, TenantId: "tenant-alpha", CompanyId: "company-alpha"));
+        reviewed.ValidationIssues.Should().Contain(issue => issue.Code == "manual-je.capital-authority-required"
+            && issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+    }
+
+    [Fact]
+    public async Task RetainedAuthority_RejectsEditedReservedLineProvenance()
+    {
+        var fixture = await CreateFixtureAsync();
+        var result = await fixture.Runner.RunCapitalCallIssuanceIntakeAsync(BuildRequest(1_000_000m,
+            Commitment("cmt-1", "lp-1", 6_000_000m), Commitment("cmt-2", "lp-2", 4_000_000m)));
+        var original = result.Intake.Created[0];
+        Meridian.Ledger.PrivateCapitalPostingAuthority.ValidateDraft(original).Should().BeNull();
+        foreach (var key in new[] { "capitalCallId", "commitmentId", "commitmentRevision", "capitalActivityKind" })
+        {
+            var changed = original with
+            {
+                Lines = original.Lines.Select(line => line with
+                {
+                    Dimensions = line.Dimensions! with
+                    {
+                        ExternalGlDimensions = new Dictionary<string,string>(line.Dimensions!.ExternalGlDimensions)
+                        {
+                            [key] = "edited"
+                        }
+                    }
+                }).ToArray()
+            };
+            Meridian.Ledger.PrivateCapitalPostingAuthority.ValidateDraft(changed).Should().NotBeNull();
+        }
+    }
+
+    [Fact]
+    public async Task RunCapitalCallIssuanceIntakeAsync_WithoutDurableAuthority_Refuses()
+    {
+        var fixture = await CreateFixtureAsync(includeAuthority: false);
+        var act = () => fixture.Runner.RunCapitalCallIssuanceIntakeAsync(BuildRequest(1_000_000m,
+            Commitment("cmt-1", "lp-1", 6_000_000m), Commitment("cmt-2", "lp-2", 4_000_000m)));
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*authority is unavailable*");
+    }
+
+    [Fact]
+    public async Task RunCapitalCallIssuanceIntakeAsync_ChangedCallerTotal_CannotReplaceApprovedTerms()
+    {
+        var fixture = await CreateFixtureAsync();
+        var act = () => fixture.Runner.RunCapitalCallIssuanceIntakeAsync(BuildRequest(1_000_000m,
+            Commitment("cmt-1", "lp-1", 60_000_000m), Commitment("cmt-2", "lp-2", 4_000_000m)));
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*consistency checks only*");
     }
 
     [Fact]
@@ -187,9 +259,11 @@ public sealed class CapitalCallIssuanceIntakeTests
 
     private sealed record Fixture(
         AutomatedJournalIntakeRunner Runner,
-        IManualJournalEntryWorkbenchService Workbench);
+        IManualJournalEntryWorkbenchService Workbench,
+        IPrivateCapitalStore? Authority);
 
-    private static async Task<Fixture> CreateFixtureAsync(bool includeWorkbenchSource = true)
+    private static async Task<Fixture> CreateFixtureAsync(bool includeWorkbenchSource = true,
+        RunCapitalCallIssuanceDraftIntakeRequest? approvedRequest = null, bool includeAuthority = true)
     {
         var configurationStore = new InMemoryAccountingConfigurationStore();
         await configurationStore.SaveAsync(new AccountingConfigurationWorkspaceDto(
@@ -207,21 +281,24 @@ public sealed class CapitalCallIssuanceIntakeTests
             JournalTemplates: [],
             PostingRules: [],
             ValidationIssues: [],
-            AuditTrail: []));
+            AuditTrail: [], TenantId: "tenant-alpha", CompanyId: "company-alpha"));
         var configurationService = new AccountingConfigurationService(
             configurationStore,
             new InMemoryAccountingActionAuditStore());
         var draftStore = new InMemoryManualJournalEntryDraftStore();
+        var capitalAuthority = includeAuthority ? CapitalIntakeAuthorityFixture.Issuance(approvedRequest ?? BuildRequest(
+            1_000_000m, Commitment("cmt-1", "lp-1", 6_000_000m), Commitment("cmt-2", "lp-2", 4_000_000m))) : null;
         var workbench = new ManualJournalEntryWorkbenchService(
             draftStore,
             configurationService,
-            new InMemoryAccountingActionAuditStore());
+            new InMemoryAccountingActionAuditStore(), privateCapitalStore: capitalAuthority);
         var intake = new AutomatedJournalDraftIntakeService(workbench, draftStore, configurationService);
         var runner = new AutomatedJournalIntakeRunner(
             intake,
             new FeeScheduleAccrualEventProducer(),
-            manualJournalWorkbench: includeWorkbenchSource ? workbench : null);
-        return new Fixture(runner, workbench);
+            manualJournalWorkbench: includeWorkbenchSource ? workbench : null,
+            privateCapitalStore: capitalAuthority);
+        return new Fixture(runner, workbench, capitalAuthority);
     }
 
     private static ChartOfAccountsNodeDto Node(string path, string name, string type)
@@ -250,7 +327,9 @@ public sealed class CapitalCallIssuanceIntakeTests
             Commitments: commitments,
             LedgerBookId: BookId,
             PeriodId: "2026-03",
-            EntityId: "entity-alpha",
+            EntityId: CapitalIntakeAuthorityFixture.EntityId,
+            TenantId: "tenant-alpha",
+            CompanyId: "company-alpha",
             AsOf: AsOf);
 
     private static PrivateCapitalFundEventDto PostedCapitalCall(

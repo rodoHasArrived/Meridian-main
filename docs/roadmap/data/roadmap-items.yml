@@ -2541,10 +2541,10 @@ items:
       - Accounting
       - Reporting
     owner_lane: Accounting and Ledger
-    status: planned
+    status: in_progress
     health: green
     priority: medium
-    evidence_posture: planned_evidence
+    evidence_posture: in_progress
     current_summary: >-
       Registered in the unranked fund-operations direction under DEC-FUND-OPERATIONS-DIRECTION-001.
       Extend the durable operator lifecycle around existing share-class unit registers, single-NAV
@@ -2557,6 +2557,11 @@ items:
       packs and is not an acceptance prerequisite. Series support includes the corresponding fee-state
       scope as one slice. Inventory display order does not change legal ownership, consolidation authority,
       W9-W11 priorities, or production gates.
+      The 2026-11-10 commitment-to-cash increment is in progress: versioned commitment authority,
+      governed call issuance and bank-evidenced funding, atomic capacity controls, certified posted-call
+      notices, and the existing browser capital-calls workspace. The scoped delivery plan records
+      acceptance requirements and later Carta-inspired candidates. This increment does not accept
+      full investor allocation, equalization/series, master-feeder, WPF parity, or production readiness.
     exit_criteria:
       - Fund, feeder, SPV, class, series, and investor participation retain effective dates, source terms, and approved policy versions. Commitment, subscription request, approved dealing, unit issuance, and observed cash receipt remain distinct linked events.
       - The Section 22.6 cutover snapshot reconciles opening investor capital, units/holdings, and the fee history needed by the selected method, including high-water marks, equalization balances, and carryforwards. Missing history blocks the affected dealing or fee calculation rather than resetting it.
@@ -2582,7 +2587,9 @@ items:
     evidence:
       - type: reference
         path: docs/product/meridian-design-document.md
-    last_reviewed: 2026-10-17
+      - type: reference
+        path: docs/engineering/plans/carta-inspired-capital-lifecycle.md
+    last_reviewed: 2026-11-10
 
   - id: W12-YEND-001
     title: Fiscal year-end close and opening-balance roll-forward

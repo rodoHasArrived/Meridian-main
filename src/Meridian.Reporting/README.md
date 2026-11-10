@@ -162,6 +162,29 @@ governed artifact package, approval, release, or delivery receipt. Only a separa
 readiness-approved run enters this module's certification and governance lifecycle, followed by the
 shared client-document renderer and secure distribution after independent release.
 
+The `capital-call-notice` template consumes only the exact investor's posted issuance journal.
+UI Shared resolves the frozen call plan, approved commitment revision, and atomic posting receipt;
+the authoritative source then filters by investor, capital account, call ID, and issuance kind and
+checks journal identity and balanced call amount. Notice certification retains the call plan hash,
+installment, dates, commitment revision and posted journal bindings. A deployment-owned
+`PrivateCapital:NoticeRecipients` mapping explicitly connects tenant/company/fund/investor to a
+Reporting user principal; investor IDs are never assumed to be user identities. Missing or
+ambiguous bindings block generation. The same binding must declare `ReviewGroupPrincipalId`, an
+internal Reporting group whose members can independently review and release the notice without
+making the investor its approver. Each immutable notice audience is restricted to that one
+recipient, the configured review group, and its operator owner, while the existing destination directory independently checks
+delivery addresses. The existing Documents renderer produces the notice's PDF/XLSX pair. Generation
+retains an actual reconciliation of the frozen installment to the posted journal, then returns a
+governed Draft. This receipt makes no accounting-close claim and is independent of unrelated
+mutable close casework. Its source branch verifies exact notice, investor, commitment and posted
+source bindings. The named
+operational-notice template can proceed through normal independent review, approval and release
+while its accounting period is open; release rechecks its exact posted source, reconciliation,
+recipient binding and immutable bytes under the existing period consistency fence. Other report
+templates continue to require Final-certified parameters and committed-close evidence. Revocation
+and delivery receipts remain authoritative. A call plan, posted issuance, generated notice,
+released notice and delivered notice are distinct states.
+
 ## Diagrams
 
 `DIA-ASSURANCE-LOOP`

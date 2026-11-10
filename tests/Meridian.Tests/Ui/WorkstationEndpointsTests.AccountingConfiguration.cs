@@ -2311,8 +2311,13 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task LedgerPrivateCapitalCapitalAccountSubledger_WhenMultipleInvestorSubledgersMatch_ReturnsBadRequestUntilDisambiguated()
     {
+        var retainedDrafts = new InMemoryManualJournalEntryDraftStore();
         await using var app = await CreateAppAsync(
-            RegisterAccountingConfigurationServices,
+            services =>
+            {
+                RegisterAccountingConfigurationServices(services);
+                services.AddSingleton<IManualJournalEntryDraftStore>(retainedDrafts);
+            },
             currentUserPermissions: UserPermission.AdminMaintenance);
         var client = app.GetTestClient();
 
@@ -2341,8 +2346,18 @@ public sealed partial class WorkstationEndpointsTests
             capitalAccountId: "capital-account:fund-alpha:shared",
             investorId: "investor:lp-2",
             amount: 75m);
-        await SaveAndSubmitManualJournalDraftAsync(client, lp1Draft, "lp-1");
-        await SaveAndSubmitManualJournalDraftAsync(client, lp2Draft, "lp-2");
+        // This read contract must still disambiguate retained legacy records. Native commitment
+        // authority refuses this shared-account/different-investor mapping for new writes.
+        await retainedDrafts.SaveAsync(lp1Draft with
+        {
+            Status = ManualJournalEntryStatusDto.Submitted, ApprovalId = "retained-legacy-lp-1",
+            TenantId = "tenant-test", CompanyId = "tenant-test"
+        });
+        await retainedDrafts.SaveAsync(lp2Draft with
+        {
+            Status = ManualJournalEntryStatusDto.Submitted, ApprovalId = "retained-legacy-lp-2",
+            TenantId = "tenant-test", CompanyId = "tenant-test"
+        });
 
         using var ambiguousResponse = await client.GetAsync(
             $"{UiApiRoutes.LedgerPrivateCapitalCapitalAccountSubledger}?fundProfileId=fund-alpha&capitalAccountId={Uri.EscapeDataString("capital-account:fund-alpha:shared")}");

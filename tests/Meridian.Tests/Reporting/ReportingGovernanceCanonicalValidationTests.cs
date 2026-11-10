@@ -20,6 +20,61 @@ public sealed class ReportingGovernanceCanonicalValidationTests
         new(2026, 7, 15, 20, 0, 0, TimeSpan.Zero);
 
     [Fact]
+    public async Task CapitalCallNotice_IndependentReviewAndReleaseAcceptOperationalSnapshotWithRestrictedInvestorAudience()
+    {
+        var scenario = NewScenario(finality: ReportingFinalityDto.Draft, outputFormat: ReportingOutputFormatDto.ClientPackage);
+        var json = System.Text.Json.Nodes.JsonNode.Parse(scenario.Request.Snapshot.ParametersCanonicalJson!)!;
+        json["scope"]!["entityScopeKind"] = "Investor";
+        json["scope"]!["investorId"] = "investor-a";
+        json["consolidationLevel"] = "Investor";
+        json["includeEvidenceAppendix"] = true;
+        json["templateParameters"] = new System.Text.Json.Nodes.JsonObject
+        {
+            ["operationalNoticeTemplateId"] = "capital-call-notice",
+            ["capitalCallId"] = "call-a", ["commitmentId"] = "commitment-a", ["commitmentRevision"] = "1",
+            ["capitalAccountId"] = "capital-a", ["installmentId"] = "installment-a",
+            ["issuanceJournalEntryId"] = "20000000-0000-0000-0000-000000000001",
+            ["planHash"] = new string('a', 64), ["callAmount"] = "100",
+            ["recipientPrincipalId"] = "lp-user-a", ["reviewGroupPrincipalId"] = "capital-reviewers"
+        };
+        var canonical = json.ToJsonString();
+        scenario = scenario with
+        {
+            Request = scenario.Request with
+            {
+                TemplateId = "capital-call-notice",
+                Snapshot = scenario.Request.Snapshot with
+                {
+                    ParametersCanonicalJson = canonical,
+                    ParametersHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical))).ToLowerInvariant()
+                },
+                Access = scenario.Request.Access with
+                {
+                    Mode = ReportingGovernanceAccessMode.Restricted, OwnerPrincipalId = "creator", AllowOwnerAccess = true,
+                    Principals = [new ReportingAccessPrincipalScope(ReportingAccessPrincipalKind.User, "lp-user-a"),
+                        new ReportingAccessPrincipalScope(ReportingAccessPrincipalKind.Group, "capital-reviewers")]
+                }
+            },
+            Approver = scenario.Approver with { PrincipalIds = ["capital-reviewers"] },
+            Releaser = scenario.Releaser with { PrincipalIds = ["capital-reviewers"] }
+        };
+        var run = await CreateValidatedRunAsync(scenario);
+        run = await scenario.Service.SubmitAsync(run.RunId, run.Version, scenario.Creator);
+        var selfApprove = async () => await scenario.Service.ApproveAsync(run.RunId, run.Version, "self approval", scenario.Creator);
+        await selfApprove.Should().ThrowAsync<ReportingGovernanceException>();
+        run = await scenario.Service.ApproveAsync(run.RunId, run.Version, "Independent notice review", scenario.Approver);
+        run = await scenario.Service.ReleaseAsync(run.RunId, run.Version,
+            new ReportingReleaseEvidence("manifest-notice", new string('4', 64),
+                [new ReportingArtifactReference($"{run.RunId}.pdf", new string('3', 64), 128),
+                 new ReportingArtifactReference($"{run.RunId}.xlsx", new string('5', 64), 256)],
+                ["posted-capital-call:20000000-0000-0000-0000-000000000001"]), scenario.Releaser);
+
+        run.GovernanceState.Should().Be(GovernedReportingState.Released);
+        ReportingGovernanceCanonicalValidation.ValidateGovernedRun(run);
+        run.Access.Principals.Should().NotContain(principal => principal.PrincipalId == "lp-user-b");
+    }
+
+    [Fact]
     public async Task GovernedLifecycle_AllowsReadinessEvaluationBeforeLaterCertifiedSnapshotCapture()
     {
         var scenario = NewScenario(snapshotCapturedAtUtc: Now.AddMinutes(-1));

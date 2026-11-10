@@ -11,6 +11,19 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Ledger
 
+`PrivateCapitalPostingAuthority` binds frozen call plans and approved commitment revisions to
+governed issuance/funding drafts. Native funding has a distinct stable receipt identity for each
+partial receipt while retaining the originating installment and fund-event identity. Historical
+factory calls without a receipt identity retain their previous idempotency keys. Bank evidence
+must identify a positive, unvoided `CapitalCallFunding` transaction matching entity, currency,
+amount and effective date; source snapshots are hashed and rechecked before posting.
+
+`IPrivateCapitalStore` exposes durable commitment revisions, frozen call plans, and immutable posting
+receipts without owning a storage engine. `PrivateCapitalAuthorityRules` validates explicit scope
+and source terms; `PrivateCapitalCallPlanHash` binds the reviewed allocation while excluding later
+posting observations. The commitment-to-cash workflow reuses the existing capital-call kernel and
+requires source-backed opening authority instead of inferring commitments from assignments.
+
 `ShortCarryProjector` derives the borrow-fee and payment-in-lieu journals (expense debit, cash
 credit) from a reviewed `ShortCarryInstruction`; it refuses long lots, non-functional currencies,
 zero-rounding charges and mixed inputs, and changes no lot quantity or basis.
@@ -138,6 +151,10 @@ QuestPDF/ClosedXML output for client delivery).
 The report pack's trial-balance, income-statement, and balance-sheet line provenance includes the
 complete selected as-of history, matching those point-in-time amounts. Prior-period entries remain
 explicit support for opening balances instead of being omitted from a current-period proof.
+When a chart row aggregates multiple investor, financial-account, or symbol identities under one
+account path, its provenance resolves the actual posted accounts of that type and path. The
+as-of, financial-account, and line-dimension filters still apply, so an aggregate retains every
+contributing journal without widening the selected scope.
 Ledger legs can carry explicit `LedgerEntryCurrency` (transaction currency, transaction amounts,
 and FX rate) alongside the functional debit/credit so currency no longer has to be inferred from
 account symbols; the currency-aware `Ledger.PostLines` overload and

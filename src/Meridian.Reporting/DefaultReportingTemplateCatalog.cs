@@ -49,6 +49,14 @@ public sealed class DefaultReportingTemplateCatalog : IReportingTemplateCatalog
             "1.0.0",
             ["cover", "capital-balance", "flows", "allocation"],
             ImmutableDictionary<string, string>.Empty.Add("audience", "investor")),
+        ["capital-call-notice"] = new(
+            "capital-call-notice",
+            ReportingTemplateFamily.InvestorStatement,
+            "Capital Call Notice",
+            "1.0.0",
+            ["notice", "commitment", "posted-issuance", "evidence"],
+            ImmutableDictionary<string, string>.Empty.Add("audience", "investor")
+                .Add("source", "posted-capital-call")),
         ["board-governance-packet"] = new(
             "board-governance-packet",
             ReportingTemplateFamily.BoardPacket,

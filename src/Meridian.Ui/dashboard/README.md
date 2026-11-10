@@ -1894,3 +1894,34 @@ those retained for other workflows. The seven root workspaces and WPF remain unc
 Focused regression coverage includes `reconciliation-view-state.test.tsx`,
 `accounting-screen.reconciliation-continuity.test.ts`, `accounting-screen.reconciliation-workbench.test.tsx`,
 `app-shell.route-focus.test.ts`, and the existing Accounting, shell and accessibility suites.
+
+## Native commitments and capital calls
+
+Accounting → Capital accounts links to the native commitment-to-cash workbench at
+`/accounting/capital-calls`. Select a retained ledger book; the server resolves entity, fund,
+currency, tenant and company authority. Reads disable development fallback and explicitly
+report unavailable persistence or unsupported book scope.
+
+Commitment revisions retain source terms and evidence before explicit review and approval.
+Call previews retain the reviewed server plan hash. The notice date selects one effective
+approved revision per commitment; inactive successors are excluded without reviving older terms.
+Changing that date clears selection and prior previews.
+Issuance and funding only queue governed journal drafts. Posted balances and receipt identities
+come from the shared authority. Decimal text is preserved without browser allocation or rounding.
+Retained calls and their detail show an overdue receivable only when a posted outstanding balance
+remains after the due date, evaluated at the server view's UTC date rather than the local clock.
+Funding requires a distinct receipt identity, bank-line identity and retained bank evidence.
+The cash-receipt panel imports a reviewed BankEvidence/BankStatement JSON observation through
+the native book-scoped authority. It submits only the accepted Evidence Vault reference and
+document ID. The returned source fills bank-line identity, exact amount, effective date and
+evidence; a fresh match confirmation is required before the separate funding-draft action.
+Import conflicts preserve existing cash fields and never create local balances or journals.
+The bounded funding workflow uses the call's accounting period; closed-period or different-period
+receipts require a separately supported correction or receipt workflow and remain blocked here.
+Notice generation creates a Reporting draft; governance and delivery states remain separate.
+
+Changing book selection disables the previous scope until Apply. Scope/session changes discard
+old results, input changes cancel pending previews, and unconfirmed writes retain the same request
+for retry. Journal and report links open the existing review workflows. The seven root workspaces
+remain unchanged. Focused coverage: `capital-call-issuance-screen.test.tsx`,
+`private-capital.api.test.ts`, and the existing pure capital-call presentation tests.

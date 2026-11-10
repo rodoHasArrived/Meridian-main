@@ -5,9 +5,9 @@ using Meridian.Ledger;
 namespace Meridian.Ui.Shared.Services;
 
 /// <summary>
-/// One operator-attested commitment-register line backing a capital call. The total commitment is
-/// the operator's attestation (there is no server commitment store yet), so each line must carry
-/// retained register evidence; the called-to-date state is never taken from the caller — it is
+/// Compatibility projection of one commitment-register line backing a capital call. Native intake
+/// resolves its terms from the approved durable commitment revision; caller totals are consistency
+/// checks. Each line carries retained register evidence; called-to-date is never taken from the caller — it is
 /// recomputed server-side from posted private-capital fund events before any draft is produced.
 /// </summary>
 public sealed record CapitalCallCommitmentInput(
@@ -260,7 +260,7 @@ internal static class CapitalCallIssuanceDraftProducer
         if (postedSteps == 0)
         {
             reasons.Add(FormattableString.Invariant(
-                $"No posted private-capital activity exists for capital account '{rollForward.CapitalAccountId}'; the operator-attested commitment register is the sole basis for this first call."));
+                $"No posted private-capital activity exists for capital account '{rollForward.CapitalAccountId}'; retained commitment terms are the sole basis for this first call, with native approval authority checked separately before journal review."));
         }
 
         var quality = confidence >= 0.90m

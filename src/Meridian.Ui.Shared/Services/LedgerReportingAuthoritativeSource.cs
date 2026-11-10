@@ -88,6 +88,7 @@ public sealed partial class LedgerReportingAuthoritativeSource : IReportingAutho
     private readonly IFundProfileTenancyRegistry _tenancyRegistry;
     private readonly IFundStructureService _fundStructure;
     private readonly TimeProvider _timeProvider;
+    private readonly CapitalCallNoticeSourceValidator? _capitalCallNotices;
 
     public LedgerReportingAuthoritativeSource(
         ILedgerJournalStore journalStore,
@@ -95,12 +96,14 @@ public sealed partial class LedgerReportingAuthoritativeSource : IReportingAutho
         IFundStructureService fundStructure,
         TimeProvider? timeProvider = null,
         ILedgerTaxLotDisposalHistory? taxLotDisposalHistory = null,
-        ILedgerOpenLotSuccessorHistory? openLotSuccessorHistory = null)
+        ILedgerOpenLotSuccessorHistory? openLotSuccessorHistory = null,
+        CapitalCallNoticeSourceValidator? capitalCallNotices = null)
     {
         _journalStore = journalStore ?? throw new ArgumentNullException(nameof(journalStore));
         _tenancyRegistry = tenancyRegistry ?? throw new ArgumentNullException(nameof(tenancyRegistry));
         _fundStructure = fundStructure ?? throw new ArgumentNullException(nameof(fundStructure));
         _timeProvider = timeProvider ?? TimeProvider.System;
+        _capitalCallNotices = capitalCallNotices;
 
         // The optional history arguments are retained for caller compatibility. Certified relief and
         // corporate-action successor evidence must come from the atomic reporting snapshot seam,
@@ -142,6 +145,14 @@ public sealed partial class LedgerReportingAuthoritativeSource : IReportingAutho
         ArgumentNullException.ThrowIfNull(accessContext);
         RequireBoundAccess(accessContext);
         ValidateParameterEnums(parameters);
+        var isCapitalCallNotice = string.Equals(intent?.TemplateId,
+            CapitalCallNoticeReportingService.TemplateId, StringComparison.OrdinalIgnoreCase);
+        if (isCapitalCallNotice)
+        {
+            if (_capitalCallNotices is null)
+                throw Unavailable("The retained capital-call notice authority is not configured.");
+            await _capitalCallNotices.ValidateAsync(parameters, accessContext, cancellationToken).ConfigureAwait(false);
+        }
 
         var tenantId = accessContext.TenantId!.Trim();
         var companyId = accessContext.CompanyId!.Trim();
@@ -252,6 +263,8 @@ public sealed partial class LedgerReportingAuthoritativeSource : IReportingAutho
         var rows = BuildRows(ordered, book, period, fundId, organization.OrganizationId);
         rows = RetainOpenLotSuccessorEvidence(
             rows, completeJournals, ordered, book, period, tenantId, companyId, fundId, retainedSuccessorHistory);
+        if (isCapitalCallNotice)
+            CapitalCallNoticeSourceValidator.ValidateRows(parameters, rows);
         if (parameters.Finality == ReportingFinalityDto.Final
             && rows.IsDefaultOrEmpty)
         {

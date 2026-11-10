@@ -11,6 +11,21 @@ last_reviewed: 2026-10-31
 
 # src/Meridian.Storage
 
+Native capital-call journals require approved commitment/call authority at the final PostgreSQL
+append boundary. Posting serializes with commitment amendments, rechecks the effective revision,
+unchanged allocation basis and remaining capacity, and commits one receipt with the journal.
+Competing drafts reserve no capacity. Funding additionally locks the retained `CapitalCallFunding`
+bank transaction in the same database and enforces unique receipt/bank-line consumption. The
+`PrivateCapitalBankingSchema` ledger option defaults to `banking`; absent or separate-database
+banking authority refuses funding. Unreconciled historical capital activity blocks native posting.
+
+Ledger migration `054` adds private-capital commitment revisions, immutable call plans, and posting
+receipts in the same PostgreSQL database as journals. `PostgresPrivateCapitalStore` checks retained
+book/entity/currency ownership and serializes commitment amendments with final posting through the
+same commitment advisory-lock identity. Historical capital journals without native receipts require
+opening reconciliation. Funding receipt and bank-line uniqueness span the owning tenant/company,
+and database triggers protect approved authority, retained calls, and posting receipts from rewrite.
+
 Governed short opening/cover now binds explicit direction to the authoritative Short/Liability
 position and liability carrying account. Opening debits cash and credits retained proceeds;
 cover debits relieved proceeds, credits execution cash cost, and books the exact realized result.

@@ -11,6 +11,55 @@ last_reviewed: 2026-10-31
 
 # src/Meridian.Ui.Shared
 
+Capital-call intake resolves frozen call plans and approved commitment terms from durable
+private-capital authority. Legacy caller-supplied totals are consistency checks. Trusted automated
+intake alone retains `PrivateCapitalAuthorityJson`; client edits cannot replace it. Draft review
+checks scope, dates, amounts and retained bank evidence, while final storage repeats authority and
+ceiling checks atomically. Unavailable authority and changed or voided funding sources refuse
+intake/review rather than falling back to attested totals.
+
+## Commitment-to-cash authority
+
+The browser capital-call workbench uses `/api/ledger/private-capital` over the shared
+`PrivateCapitalLifecycleService`. Every request resolves tenant/company from authenticated context
+and fund, entity and currency from an already-owned entity ledger book. Commitment revisions require
+accepted, integrity-verified scoped Evidence Vault documents. Preview and retained-call intake check
+the exact open accounting period; journal submission, independent review and posting remain separate.
+Amounts use exact decimal text on this HTTP surface.
+
+Native funding requires stable receipt and bank-transaction identities, a supported capital cash-in
+classification, matching entity/date/currency/amount, and retained source evidence. The final
+PostgreSQL append rechecks bank authority in the same database and records the economic receipt in
+the journal transaction. Missing authority, historical capital without opening reconciliation,
+unsupported book shapes, and changed preview inputs fail closed. This first slice supports funding
+within the call's accounting period; it does not infer legacy openings or execute payments.
+
+`POST /api/ledger/private-capital/bank-observations?ledgerBookId=...` imports a reviewed
+`BankEvidence`/`BankStatement` JSON document into Banking. The request supplies only `evidenceLink`
+and `documentId`; source bytes supply the positive settled Credit observation. Scope, original-byte
+SHA-256, accepted review, dates and exact `NUMERIC(19,4)` representation are checked before retention.
+Exact source retries recover the retained observation; changed inputs or collisions refuse. This
+operation neither posts cash nor initiates a payment and establishes no live-provider compatibility.
+
+Capital-call notices use the existing governed Reporting lifecycle and an explicit deployment-owned
+investor-to-recipient binding under `PrivateCapital:NoticeRecipients`. Investor IDs are not assumed
+to be login IDs. Each mapping supplies `TenantId`, `CompanyId`, `FundProfileId`, `InvestorId`, and
+`RecipientPrincipalId`, and `ReviewGroupPrincipalId`; the configured secure delivery destination is
+checked independently. The retained review group supports independent approval and release without
+widening the investor audience to other LPs.
+Before generation, `CapitalCallNoticeReportingService` reconciles the frozen investor installment
+to its exact posted issuance, retaining an operational receipt through
+the existing Reporting evidence store. This receipt does not claim accounting-close completion.
+Only the named notice template may release its restricted, independently approved operational
+snapshot while the period is open; financial reports keep their Final and committed-close gates.
+Unrelated close-queue changes do not alter that immutable issuance proof; the dedicated receipt
+branch checks exact notice, investor, commitment and source bindings before accepting it.
+Generation, approval, release, delivery and cash settlement remain distinct outcomes. Workbench
+notice summaries come from retained reporting and delivery records, never browser-local status.
+
+Focused validation uses the `PrivateCapital` and `CapitalCall` test filters in `Meridian.Tests`,
+with `EnableWindowsTargeting=true` and a configured PostgreSQL ledger test connection.
+
 Portfolio cash-ladder composition supplies the configured business-day calendars to the shared Instruments scenario engine. Declared issuer-call and holder-put scenarios use retained projection terms and calendar hashes; floating shocks consume retained per-reset inputs. Scenario blockers remain visible through the existing decision-readiness response; no new approval or payment authority is introduced. The optional `engineVersion` query selects explicit `portfolio-cash-ladder-v1` replay; an unknown version returns a blocked ladder with no contributions that names the unsupported version rather than falling back silently.
 
 Shared cash-flow preview endpoints expose calculation-only exercise and prepayment scenarios with view permission. Separate retention endpoints require modification permission, bind retries to immutable run IDs, and retrieve the complete replay evidence. Loan retention preserves the existing tenant write gate. Loan preview and retention share the actor-scoped direct-lending mutation budget; exhaustion refuses the request before calculation or retained-evidence access. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).

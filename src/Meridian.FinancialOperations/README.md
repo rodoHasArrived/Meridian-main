@@ -11,6 +11,14 @@ last_reviewed: 2026-10-14
 
 # src/Meridian.FinancialOperations
 
+`PrivateCapitalLifecycleService` coordinates commitment revision review, effective approved terms,
+pro-rata call previews, and retention of the exact reviewed plan over `IPrivateCapitalStore`.
+The first slice supports one fund/book/currency per call. It does not reserve capacity at preview
+or post journals itself. Missing evidence and unmatched historical capital activity block adoption
+until opening reconciliation; no legacy commitment balances are guessed or automatically migrated.
+Approved retained terms establish the source-backed investor/capital-account mapping for this slice;
+an approved capital account cannot be rebound to a different investor across commitments.
+
 Accounting provider discovery translates the typed ownership-required refusal into an explicit disabled
 row while retaining unrelated provider rows. Configuration and storage failures remain errors. Default
 QuickBooks, Xero and NetSuite imports cannot consume owned credentials until their runtime selects an

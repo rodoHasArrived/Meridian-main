@@ -63,6 +63,7 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
 
         <div className="flex flex-wrap gap-2">
           <AccountingChip label="Projected" value={view.projectedAtLabel} />
+          <Button asChild size="sm" variant="outline"><Link to={WORKSTATION_ROUTE_CATALOG.accountingCapitalCalls}>Manage commitments and capital calls</Link></Button>
         </div>
         <TechnicalDetails label="Workbench route" className="max-w-3xl">
           <div className="break-all font-mono text-xs text-foreground">{view.workbenchRouteLabel}</div>
