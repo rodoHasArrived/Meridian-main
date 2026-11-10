@@ -706,8 +706,13 @@ public sealed partial class SecurityMasterWorkbenchQueryService
             InstrumentType: instrumentType,
             DisplayName: displayName,
             SecurityMasterAssetClass: assetClass,
-            AssetFamily: NormalizeOptional(snapshot.EconomicDefinition.AssetFamily) ?? primaryDescriptor?.SecurityMasterAssetFamily,
-            SubType: NormalizeOptional(snapshot.EconomicDefinition.SubType) ?? primaryDescriptor?.SecurityMasterSubType,
+            // The record's own labels come first. The fallback is the descriptor's label only where it
+            // is a domain label: a descriptor placeholder that names no domain family or sub-type
+            // (OtherFamily, OtherSubType) is not shown as a classification (review D6).
+            AssetFamily: NormalizeOptional(snapshot.EconomicDefinition.AssetFamily)
+                ?? (primaryDescriptor is null ? null : InstrumentTypeDescriptorCatalog.ResolveDomainAssetFamilyLabel(primaryDescriptor)),
+            SubType: NormalizeOptional(snapshot.EconomicDefinition.SubType)
+                ?? (primaryDescriptor is null ? null : InstrumentTypeDescriptorCatalog.ResolveDomainSubTypeLabel(primaryDescriptor)),
             DefaultProviderSecurityType: SecurityMasterText(string.Join(", ", providerSecurityTypes), "n/a"),
             IsTradeable: primaryDescriptor?.IsTradeable ?? descriptors.Any(static descriptor => descriptor.IsTradeable),
             IsReferenceOnly: primaryDescriptor?.IsReferenceOnly ?? (descriptors.Count > 0 && descriptors.All(static descriptor => descriptor.IsReferenceOnly)),
