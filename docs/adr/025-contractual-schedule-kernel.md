@@ -935,7 +935,8 @@ This command verifies referenced files and directories exist; it does not valida
 - **Declared call and put rows in the Security Master schedule book (increment 8b) (2026-11-10).**
   Until this entry the workbench schedule book raised a `Call` row only from the economic
   `call.firstCallDate`, and the workbench's next lifecycle date used the same scalar, so for one
-  declaring bond the book and the obligation timeline disagreed. They now read one outcome. No
+  declaring bond the book and the obligation timeline disagreed. They now resolve through the same
+  code, with the exceptions listed below. No
   rule above changes, and no terms version, stamp, mapping version, route or contract member is
   added.
   - **Source.** For a Bond row that declares a schedule (the definition above: an array the stamp
@@ -948,7 +949,20 @@ This command verifies referenced files and directories exist; it does not valida
     in the notice-watch read service, so a workbench snapshot does not fail on one bond's
     malformed owned schedule. The evaluation date is the snapshot's own time. The rows are laid
     out by `AssetObligationProjectionService.DeclaredExerciseRows`, which the timeline now uses
-    too, so both surfaces list the same exercise dates and notice deadlines.
+    too, so one outcome gives both surfaces the same exercise dates and notice deadlines.
+  - **Where the two surfaces can still differ.** The book and the timeline resolve through the
+    same code, so for one record at one evaluation date they list the same dates and the same
+    blocker. Four cases are outside that. (1) A timeline served from a same-day published
+    projection is derived from the published terms and keeps the scalar `CallPutReview`; the book
+    reads the live row. (2) A timeline whose projection run is blocked reports `ProjectionBlocked`
+    (8a's added rule); the book has no run and resolves the schedule. (3) A cutover policy that
+    throws `SecurityScheduleValidationException` is an `InvalidEconomicSchedule` blocker in the
+    book; on the asset-operations path the exception escapes, as it did before 8a. (4) Any other
+    fault while resolving (a calendar source or policy that throws, an argument fault in schedule
+    generation) is logged by the workbench and shown as a `DeclaredExerciseUnavailable` blocker
+    with a fixed reason, because the scalar read it replaces could not throw and the snapshot
+    feeds the passport, the operating model, the record explorer and the restatement trigger; on
+    the asset-operations path it escapes. Cancellation propagates on both.
   - **Rows.** `Call` and `Put` on each remaining exercise date; `CallNoticeDeadline` and
     `PutNoticeDeadline` on the latest notice date where the entry states bounds. They correspond
     one to one to the timeline's `IssuerCallExercise`, `HolderPutExercise`,
@@ -979,6 +993,10 @@ This command verifies referenced files and directories exist; it does not valida
     `callnoticedeadline-<deadline>-<exercise date>` and the put equivalent, because two exercise
     dates can share a deadline. A repeat of a kind and adjusted exercise date carries the
     timeline's occurrence number as a suffix.
+  - **Readiness is not changed.** A blocked declaring bond still reads terms `Ready` in the
+    instrument passport and in close readiness, because those checks count schedule rows and
+    economic terms and the `Maturity` row remains. The blocker reaches the passport only as text,
+    in the two fields that repeat the schedule summary. No status was flipped and no member added.
   - **Unchanged.** Bonds that declare no schedule or only unset entries, rows stamped below 3,
     CertificateOfDeposit and StructuredCredit keep the scalar read and their output byte for
     byte. For them the next lifecycle date can still be a past scalar call date; that behaviour is

@@ -840,9 +840,10 @@ book takes its `Call`, `Put`, `CallNoticeDeadline` and `PutNoticeDeadline` rows 
 date from the declared outcome the asset-operations obligation timeline uses
 (`AssetObligationProjectionService.ResolveDeclaredExerciseAsync`), not from the economic
 `call.firstCallDate`. A blocked schedule adds no call or put row; its code and reason are appended to
-the schedule summary and source summary. The service takes the host's `IBusinessDayCalendarSource`,
-`IBondCalculationPolicy` and `TimeProvider` as optional constructor arguments, resolved from the
-container. Records that declare no schedule, CertificateOfDeposit and StructuredCredit keep the scalar
+the schedule summary and source summary. A fault while resolving is logged and shown as a
+`DeclaredExerciseUnavailable` blocker; the snapshot does not fail. The service takes the host's
+`IBusinessDayCalendarSource`, `IBondCalculationPolicy`, `TimeProvider` and logger as optional
+constructor arguments, resolved from the container. Records that declare no schedule, CertificateOfDeposit and StructuredCredit keep the scalar
 read. The Security Master alias upsert route accepts corrections to an
 existing alias ID as a new revision; re-pointing an alias at a different security returns 409.
 `SecurityMasterEndpoints.Curves.cs` maps the stored-curve routes (`/api/security-master/curves`,

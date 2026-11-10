@@ -9001,7 +9001,7 @@ date.
 | Blocked schedules | No call or put row and no scalar fallback. The blocker's code and reason are appended to `Summary` and `SourceSummary` of the schedule summary and of the schedule book, in the sentence the timeline uses |
 | Source of the dates | `AssetObligationProjectionService.ResolveDeclaredExerciseAsync`: the timeline's gates in the timeline's order (terms effective, cutover policy, `BondExerciseNoticeWatch.EvaluateToMaturity`), with the policy asked inside it and a policy that throws `SecurityScheduleValidationException` reported as `InvalidEconomicSchedule`. The book adds no date arithmetic |
 | Shared code | The gate order moved into one static method that the timeline's instance method now calls. The loop that turns windows into exercise and deadline rows, with its occurrence rule and its sentences, moved into `AssetObligationProjectionService.DeclaredExerciseRows`; the timeline and the book both map its rows to their own contracts. `DeclaredExerciseWarnings` is public for the same reason. The timeline's output is unchanged (its tests and golden are green without edits) |
-| Composition | `SecurityMasterWorkbenchQueryService` takes `IBusinessDayCalendarSource`, `IBondCalculationPolicy` and `TimeProvider` as optional constructor arguments. Its one production registration is by type in `AddWorkstationSharedServices`, so the container supplies the registered ones; a composition test pins that. The evaluation date is the snapshot's time, read once from the clock |
+| Composition | `SecurityMasterWorkbenchQueryService` takes `IBusinessDayCalendarSource`, `IBondCalculationPolicy` and `TimeProvider` as optional constructor arguments (and, since the review fixes below, a logger). Its one production registration is by type in `AddWorkstationSharedServices`, so the container supplies the registered ones; a composition test pins that. The evaluation date is the snapshot's time, read once from the clock |
 | File size | The new code is in `SecurityMasterWorkbenchQueryService.DeclaredExercise.cs`; the main file grew by 13 lines and stays under its recorded cap |
 
 **Owner decisions (2026-11-10).**
@@ -9107,6 +9107,33 @@ date.
 - The book has no engine stamp, so nothing on a stored or exported snapshot says which rule
   produced its call rows.
 - WPF and dashboard tests were not run; neither source changed.
+- A blocked declaring bond still reads terms `Ready`. The passport's Terms panel (`economics`,
+  `payment-schedule`), its terms-and-obligations and cash-flow readiness sections and close
+  readiness count schedule rows and economic terms, and the `Maturity` row keeps them positive.
+  The blocker is in the passport only as text: the `payment-schedule` item's detail and the
+  cash-flow readiness section's summary, which repeat the schedule summary. No status was flipped.
+- For a blocked declaring bond the next lifecycle date moves from the scalar call date to the
+  maturity, or to the next corporate action when one is earlier.
+- `EvaluationOutsideLife` blocks a declaring bond before its issue date and at or after maturity,
+  so a not-yet-issued or matured callable bond shows the blocker and no call row.
+- The book and the timeline can differ for one record in four cases, listed in ADR-025: a
+  same-day published projection on the timeline (scalar review), a blocked projection run
+  (`ProjectionBlocked` on the timeline only), a cutover policy that throws
+  `SecurityScheduleValidationException` (a blocker in the book, an escaping exception on the
+  asset-operations path), and any other fault while resolving (a logged
+  `DeclaredExerciseUnavailable` blocker in the book, an escaping exception there).
+- In the browser the three new row types are shown by their raw type names, and a notice
+  deadline's date appears under "Payment date", because the view model maps
+  `payDate ?? effectiveDate` (`accounting-screen.view-model.ts`). Deferred while pull request
+  #3423 edits those files.
+- The WPF "Schedule model" evidence item and the schedule fields print both `Summary` and the
+  source summary, so the blocker sentence appears twice there.
+- Clock injection is partial. The snapshot time and the declared rows use the injected clock; the
+  next corporate action, the `Maturity` and scalar rows' posting status and the corporate-action
+  status still read `DateTime.UtcNow`, as before.
+- Declared rows are not deduplicated against `Call` events from the economic `cashflowSchedule`,
+  `cashflows` or `paymentSchedule` arrays, where the scalar row is. No production producer of
+  economic terms emits those arrays (`SecurityEconomicDefinitionAdapter`).
 
 **Validation record.**
 
@@ -9124,3 +9151,21 @@ date.
 | Guards (test-skip register, duplicate helpers, inline SHA-256, file size, warning suppressions, endpoint cancellation, contract-type parity) and `dotnet format whitespace --verify-no-changes` on the 9 changed C# files | Pass |
 | F#, dashboard and WPF suites | Not run: no F#, dashboard or WPF source changed |
 | Generated outputs (generated docs, reviewed hashes, health dashboard) and `Meridian CI / quality-gate` | Not regenerated or run in this pass; reported on the pull request. New public members that the generated inventories will pick up: `ResolveDeclaredExerciseAsync`, the static `ResolveDeclaredExercise` overload, `DeclaredExerciseRows`, `DeclaredExerciseRow`, `DeclaredExerciseWarnings` (was internal), four event-type constants and three constructor arguments on `SecurityMasterWorkbenchQueryService`, and one new fixture file |
+
+**Review record (2026-11-10).** The branch was merged with main at `22a8c8046`. An independent
+review found no blocking defect and raised five items. Each was checked against the code first.
+
+| Finding | Real | Disposition |
+| --- | --- | --- |
+| A. A blocked declaring bond still reads terms `Ready` in the passport and close readiness; the blocker is only free text | Yes | No code change. The passport has two collections that other conditions add to. The Terms panel's items take conflict rows, but a panel item either sets the panel to `Review` (any item that is not ready or has a blocking count does) or would state a blocker under a `Ready` status. Recommended actions are typed by a closed enum with no kind for this. Neither fits without flipping a status or changing the contract, which were both ruled out. `BlockedDeclaringBond_PassportStillReadsTermsReady_AndCarriesTheBlockerOnlyAsText` pins what the passport says, and the risks above record it |
+| B. "Both surfaces read one outcome" was stated without its exceptions | Yes | ADR-025, the file comment, the Instruments README, the known-defects note and this section now state the cases where the two differ. The consistency theory gained a permitting-policy and a blocking-policy case. The asset-operations path was not changed |
+| C. A fault other than the two the watch converts would fail the whole trust snapshot | Yes | In the workbench only: exceptions other than `OperationCanceledException` around the resolution are logged with structured logging and become a `DeclaredExerciseUnavailable` blocker with a fixed reason; the exception text is not shown. The service had no logger, so it takes an optional `ILogger<SecurityMasterWorkbenchQueryService>` constructor argument and falls back to the null logger. The shared resolver and the timeline are unchanged |
+| D. `DeclaredExerciseRows` checked its argument on enumeration | Yes | Split into a checking method and a private iterator |
+| E. Browser labels and "Payment date", the doubled WPF sentence, partial clock injection, no deduplication against array events | Yes, all four | Recorded in the risks above; no code change |
+
+| Check after the review fixes | Result |
+| --- | --- |
+| Targeted filter (the one above) on the merged tree | 1,894 passed, 32 skipped, 0 failed; 8 test cases added |
+| Mutation check of the fixes | 6 of 6 caught: the catch removed, cancellation caught too, the exception text used as the reason, the log call removed, the logger dropped in the constructor, and the null check moved back into the iterator |
+| Guards and `dotnet format whitespace --verify-no-changes` on the 9 changed C# files | Pass |
+| Broader regression filter after the fixes | Not rerun in this pass |

@@ -112,7 +112,9 @@ committed at the behaviour before increment 8b; the increment changed the four d
 none of the nine other cases. A missing or mismatched fixture writes
 `security-master-schedule-book.received.json` to the test output and fails; it never skips.
 `SecurityMasterWorkbenchDeclaredExerciseScheduleBookTests` covers the declared paths, including that
-the book and the timeline list the same dates for one record.
+the book and the timeline list the same dates for one record resolved at one evaluation date (a
+published projection, a blocked projection run and a fault while resolving are the exceptions ADR-025
+records).
 
 One behaviour of the scalar read is recorded here and not registered as a defect: for a record on the
 scalar path the next lifecycle date is the earliest of the next corporate action, the first call date
