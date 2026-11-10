@@ -39,6 +39,37 @@ tests, automation, docs, design-system assets, and generated artifacts.
 | `src/Meridian.Ui.Services/`, `src/Meridian.Ui.Shared/` | Active source code | Shared UI services, endpoints, and read models for accounting configuration, private-capital drill-through, report packs, auth/session adapters, and browser/WPF workflow parity |
 | `src/Meridian.Wpf/` | Active source code | Active desktop shell for operator workflows, Accounting Configure, shared private-capital ledger evidence, report-pack readiness, and multi-asset operational-record views |
 
+### Browser Workstation Folder
+
+`src/Meridian.Ui/` is a folder, not a .NET project. It has no project file and is not in
+`Meridian.sln`. It holds two things:
+
+- `dashboard/` - the browser workstation source (npm/Vite).
+- `wwwroot/workstation/` - the tracked bundle the dashboard build writes.
+
+The `src/Meridian/` host serves that bundle. `Meridian.csproj` links `..\Meridian.Ui\wwwroot\**`
+as content and copies it beside the executable; `UiServer.cs` and `WorkstationAssetTree.cs` in
+`src/Meridian/` serve it. `Meridian.Ui.Services` and `Meridian.Ui.Shared` are real projects in
+sibling folders.
+
+### Project Consolidation
+
+Some small projects have few consumers. Do not open a change only to merge them. Merge one when a
+change already touches it and the merge keeps that change simple.
+
+| Project | Source projects that reference it | When touched |
+| --- | --- | --- |
+| `src/Meridian.ProcessIsolation/` | `Meridian.QuantScript` | Fold its one file into `Meridian.QuantScript`. |
+| `src/Meridian.Audit/` | `Meridian`, `Meridian.Ui.Shared` | Design module; see below. |
+| `src/Meridian.Entities/` | `Meridian.Application`, `Meridian.Workflow`, `Meridian.Ui.Shared` | Design module; see below. |
+| `src/Meridian.ReferenceData/` | `Meridian.Application`, `Meridian.Ui.Shared` | Design module; see below. |
+
+`Meridian.Audit`, `Meridian.Entities`, and `Meridian.ReferenceData` are design-document modules.
+[Design module conformance](design-module-conformance.md) requires a physical project for each, and
+its registry plans to move more code into them. Merging one away changes that contract: update
+`design-module-conformance.yml`, the conformance document, the module's source README and registry
+entry, and `tests/Meridian.DesignModules.Tests` in the same change.
+
 ## Tests And Validation
 
 | Area | Classification | Purpose |

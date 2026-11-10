@@ -47,7 +47,9 @@ Meridian is a .NET 10 trading and operational-finance platform with fund operati
   `src/Meridian.Ui/dashboard/` and the reactivated WPF desktop workstation in `src/Meridian.Wpf/`.
   The WPF lane's immediate focus is closing web-UI parity gaps (`W8-WPF-PARITY-001`); see
   `docs/engineering/plans/wpf-web-ui-alignment-plan.md`.
-- Built browser-workstation assets live in `src/Meridian.Ui/wwwroot/workstation/`.
+- Built browser-workstation assets live in `src/Meridian.Ui/wwwroot/workstation/`. `src/Meridian.Ui/`
+  is a folder, not a .NET project: the `src/Meridian/` host (`Meridian.csproj`) links that
+  `wwwroot/` tree and serves it.
 - Shared read-model and endpoint support belongs in `src/Meridian.Ui.Services/` and
   `src/Meridian.Ui.Shared/`.
 - Keep both the browser and WPF workflows backed by shared contracts, read models, and API seams so
@@ -103,7 +105,8 @@ gh workflow run targeted-test.yml --ref <branch> -f mode=dotnet-filtered -f dotn
 ## Repository Layout
 
 - `src/Meridian.Ui/dashboard/` - active browser-based operator workstation
-- `src/Meridian.Ui/wwwroot/workstation/` - built workstation assets served by `Meridian.Ui`
+- `src/Meridian.Ui/wwwroot/workstation/` - built workstation assets, served by the `src/Meridian/` host
+  (`src/Meridian.Ui/` has no project file)
 - `src/Meridian.Ui.Services/`, `src/Meridian.Ui.Shared/` - shared UI/API read-model surface
 - `src/Meridian.Wpf/` - active Windows desktop workstation (co-equal UI lane); current focus is web-UI parity
 - `src/Meridian.Application/` - orchestration and pipelines
