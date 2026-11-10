@@ -86,6 +86,9 @@ public sealed class CollectorModeRunner
             return 0;
         }
 
+        // Read provider credentials asynchronously before the registry is first resolved, so
+        // its construction does not wait on credential storage.
+        await hostStartup.InitializeProvidersAsync(ct).ConfigureAwait(false);
         var providerRegistry = hostStartup.GetRequiredService<ProviderRegistry>();
         var failoverCfg = ctx.Config.DataSources;
         var failoverRules = failoverCfg?.FailoverRules ?? Array.Empty<FailoverRuleConfig>();
@@ -120,7 +123,7 @@ public sealed class CollectorModeRunner
                     var providerKind = source?.Provider ?? ctx.Config.DataSource;
                     try
                     {
-                        var client = providerRegistry.CreateStreamingClient(providerKind);
+                        var client = await providerRegistry.CreateStreamingClientAsync(providerKind, ct).ConfigureAwait(false);
                         providerMap[providerId] = client;
                         if (client is IReconnectionGapSource clientGapSource)
                             gapSources.Add(clientGapSource);
@@ -142,7 +145,7 @@ public sealed class CollectorModeRunner
                 if (providerMap.Count == 0)
                 {
                     _log.Error("No streaming providers could be created for failover; falling back to single provider");
-                    dataClient = providerRegistry.CreateStreamingClient(ctx.Config.DataSource);
+                    dataClient = await providerRegistry.CreateStreamingClientAsync(ctx.Config.DataSource, ct).ConfigureAwait(false);
                 }
                 else
                 {
@@ -186,7 +189,7 @@ public sealed class CollectorModeRunner
         }
         else
         {
-            dataClient = providerRegistry.CreateStreamingClient(ctx.Config.DataSource);
+            dataClient = await providerRegistry.CreateStreamingClientAsync(ctx.Config.DataSource, ct).ConfigureAwait(false);
         }
 
         using var failoverResources = new FailoverResourceLease(failoverService, healthMonitor);

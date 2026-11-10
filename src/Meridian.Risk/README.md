@@ -167,6 +167,11 @@ Risk decisions are log evidence, so the gate renders caller-supplied text throug
 F# position-limit rule embeds the symbol in its reason — and an unconstrained value containing a
 line break would otherwise render as a second log line that reads like a risk decision.
 
+**Position limit and bracket legs.** When `PositionLimitRule` sums same-side working orders,
+broker-side exit legs of one parent (`OrderState.ParentOrderId`) are one-cancels-other, so each
+parent contributes only its largest leg. A long protected by a take-profit and a stop-loss is not
+read as an oversized short.
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
