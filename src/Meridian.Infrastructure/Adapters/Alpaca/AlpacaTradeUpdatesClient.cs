@@ -255,6 +255,18 @@ public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
             ReadTime(order, "updated_at") ??
             throw new JsonException("Alpaca trade update lacks a stable timestamp.");
         var eventType = ReadString(data, "event");
+        // A multi-leg parent names no instrument (Alpaca sends an empty symbol and side), so it
+        // has no single-instrument execution report. Admitting one is refused by the durable
+        // inbox and marks the whole stream failed for every other order.
+        if (string.Equals(ReadString(order, "order_class"), "mleg", StringComparison.OrdinalIgnoreCase)
+            && string.IsNullOrWhiteSpace(ReadString(order, "symbol")))
+        {
+            _logger.LogWarning(
+                "Alpaca trade update {EventType} for a multi-leg parent order was not normalized; it carries no instrument symbol and only its legs are tracked",
+                eventType);
+            return;
+        }
+
         var status = order.TryGetProperty("status", out var statusElement) ? statusElement.GetString() : null;
         var mapped = Map(status);
         var report = new ExecutionReport

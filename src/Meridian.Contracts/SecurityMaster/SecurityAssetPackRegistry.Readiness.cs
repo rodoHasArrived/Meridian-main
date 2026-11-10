@@ -248,9 +248,11 @@ public static partial class SecurityAssetPackRegistry
             ["RealEstateInterest"] = "RealEstateHolding",
             ["Property"] = "RealEstateHolding",
             ["SPV"] = "RealEstateHolding",
+            // A credit facility is a loan the fund extends, owned by the private-loan-credit pack;
+            // only its undrawn part is a commitment.
+            ["CreditFacility"] = "DirectLoan",
             ["UnfundedCommitment"] = "CommitmentGuarantee",
             ["Guarantee"] = "CommitmentGuarantee",
-            ["CreditFacility"] = "CommitmentGuarantee",
             ["Commitment"] = "CommitmentGuarantee",
             ["Other"] = "OtherSecurity",
             ["FX"] = "FxSpot",
