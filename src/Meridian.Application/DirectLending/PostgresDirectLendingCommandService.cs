@@ -880,6 +880,12 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
             return new DirectLendingCommandResult<LoanServicingStateDto>(null, activeError);
         }
 
+        var replay = await TryReplayCommittedCommandAsync(loanId, stored, metadata, "loan.unapplied-cash-applied", ct).ConfigureAwait(false);
+        if (replay is not null)
+        {
+            return replay;
+        }
+
         var amountError = DirectLendingServiceSupport.ValidateUnappliedCashAmount(request.Amount, stored.Servicing.Balances.UnappliedCash, "apply");
         if (amountError is not null)
         {
@@ -913,6 +919,38 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
         return DirectLendingCommandResult<LoanServicingStateDto>.Success(decision.Servicing);
     }
 
+    /// <summary>
+    /// PRD-115: a retry of an Apply or Refund that already committed carries the same command id.
+    /// Recomputing it against the updated balances would describe a second, unsaved movement (the
+    /// store skips the duplicate) or differ from the recorded payload and be refused as a conflict.
+    /// Recognise it up front and return the committed state instead. Null when the command is new.
+    /// </summary>
+    private async Task<DirectLendingCommandResult<LoanServicingStateDto>?> TryReplayCommittedCommandAsync(
+        Guid loanId,
+        PersistedDirectLendingState stored,
+        DirectLendingCommandMetadataDto? metadata,
+        string eventType,
+        CancellationToken ct)
+    {
+        if (metadata?.CommandId is not Guid commandId || commandId == Guid.Empty)
+        {
+            return null;
+        }
+
+        var history = await _queryService.GetHistoryAsync(loanId, ct).ConfigureAwait(false);
+        var committed = history.FirstOrDefault(entry => entry.CommandId == commandId);
+        if (committed is null)
+        {
+            return null;
+        }
+
+        return string.Equals(committed.EventType, eventType, StringComparison.Ordinal)
+            ? DirectLendingCommandResult<LoanServicingStateDto>.Success(stored.Servicing)
+            : DirectLendingCommandResult<LoanServicingStateDto>.Failure(
+                DirectLendingErrorCode.Conflict,
+                $"Direct lending command id {commandId} was already used for a different mutation on loan {loanId}.");
+    }
+
     public async Task<DirectLendingCommandResult<LoanServicingStateDto>> RefundUnappliedCashAsync(Guid loanId, RefundUnappliedCashRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -926,6 +964,12 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
         if (activeError is not null)
         {
             return new DirectLendingCommandResult<LoanServicingStateDto>(null, activeError);
+        }
+
+        var replay = await TryReplayCommittedCommandAsync(loanId, stored, metadata, "loan.unapplied-cash-refunded", ct).ConfigureAwait(false);
+        if (replay is not null)
+        {
+            return replay;
         }
 
         var amountError = DirectLendingServiceSupport.ValidateUnappliedCashAmount(request.Amount, stored.Servicing.Balances.UnappliedCash, "refund")
