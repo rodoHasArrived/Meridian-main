@@ -61,26 +61,18 @@ module SecurityMaster =
     /// ADR-027 stage 2 (S2-B2): the kind rules whose subject data has NO module home — the exact
     /// complement of definitionExpressibleCodes. The expressible rules moved to
     /// validateDefinitionTerms, which validateKindTerms now composes with this remainder, so the
-    /// definition surface is authoritative for the 54 ledgered codes on every write while nothing
+    /// definition surface is authoritative for every ledgered code on every write while nothing
     /// is checked twice. A rule leaves this function only by gaining a module home and a ledger
     /// entry; the equivalence suite's mutation table keeps the partition honest.
     let private validateCodecOnlyKindTerms (kind: SecurityKind) =
         match kind with
         | SecurityKind.Equity _ -> []
-        | SecurityKind.Option terms ->
+        | SecurityKind.Option _ ->
             []
-            @ requireNotBlank "option_put_call_required" "PutCall" terms.PutCall
-            @ require
-                (String.Equals(terms.PutCall, "Put", StringComparison.OrdinalIgnoreCase)
-                 || String.Equals(terms.PutCall, "Call", StringComparison.OrdinalIgnoreCase))
-                (error "option_put_call_invalid" "Option PutCall must be either 'Put' or 'Call'.")
-            @ require (terms.Strike > 0m) (error "option_strike_invalid" "Option strike must be greater than zero.")
-            @ require (terms.Multiplier > 0m) (error "option_multiplier_invalid" "Option multiplier must be greater than zero.")
         | SecurityKind.Future terms ->
             []
             @ requireNotBlank "future_root_symbol_required" "RootSymbol" terms.RootSymbol
             @ requireNotBlank "future_contract_month_required" "ContractMonth" terms.ContractMonth
-            @ require (terms.Multiplier > 0m) (error "future_multiplier_invalid" "Future multiplier must be greater than zero.")
         | SecurityKind.Bond terms ->
             []
             @ require (not (Meridian.Contracts.SecurityMaster.SecurityCanonicalAssetHomes.IsSecuritizedLabel(BondSubclass.label terms.Subclass)))
@@ -283,15 +275,8 @@ module SecurityMaster =
         | SecurityKind.Cfd terms ->
             []
             @ requireNotBlank "cfd_underlying_asset_class_required" "UnderlyingAssetClass" terms.UnderlyingAssetClass
-        | SecurityKind.Warrant terms ->
+        | SecurityKind.Warrant _ ->
             []
-            @ requireNotBlank "warrant_type_required" "WarrantType" terms.WarrantType
-            @ require
-                (String.Equals(terms.WarrantType, "Call", StringComparison.OrdinalIgnoreCase)
-                 || String.Equals(terms.WarrantType, "Put", StringComparison.OrdinalIgnoreCase))
-                (error "warrant_type_invalid" "Warrant WarrantType must be either 'Call' or 'Put'.")
-            @ require (terms.Strike |> Option.forall (fun s -> s > 0m))
-                (error "warrant_strike_invalid" "Warrant Strike must be greater than zero when present.")
         | SecurityKind.FxForward terms ->
             []
             @ requireNotBlank "fx_forward_base_currency_required" "BaseCurrency" terms.BaseCurrency
@@ -325,13 +310,7 @@ module SecurityMaster =
             @ require (terms.RecoveryRateAssumption |> Option.forall (fun r -> r >= 0m && r <= 1m))
                 (error "cds_recovery_rate_invalid" "CreditDefaultSwap RecoveryRateAssumption must be between 0 and 1 when present.")
         | SecurityKind.Swaption terms ->
-            let isOneOf (values: string list) (value: string) =
-                values |> List.exists (fun candidate -> String.Equals(candidate, value, StringComparison.OrdinalIgnoreCase))
             []
-            @ require (isOneOf [ "Payer"; "Receiver" ] terms.PayerReceiver)
-                (error "swaption_payer_receiver_invalid" "Swaption PayerReceiver must be either 'Payer' or 'Receiver'.")
-            @ require (terms.ExerciseStyle |> Option.forall (isOneOf [ "European"; "American"; "Bermudan" ]))
-                (error "swaption_exercise_style_invalid" "Swaption ExerciseStyle must be European, American or Bermudan when present.")
             @ require (terms.Notional > 0m)
                 (error "swaption_notional_invalid" "Swaption Notional must be greater than zero.")
             @ require (terms.Expiry <= terms.UnderlyingMaturityDate)
@@ -341,18 +320,9 @@ module SecurityMaster =
                  |> Option.forall (fun effective -> terms.Expiry <= effective && effective < terms.UnderlyingMaturityDate))
                 (error "swaption_underlying_dates_invalid" "Swaption UnderlyingEffectiveDate must fall on or after Expiry and before UnderlyingMaturityDate when present.")
         | SecurityKind.CapFloor terms ->
-            let isType value = String.Equals(terms.CapFloorType, value, StringComparison.OrdinalIgnoreCase)
             []
-            @ require (isType "Cap" || isType "Floor" || isType "Collar")
-                (error "cap_floor_type_invalid" "CapFloor CapFloorType must be Cap, Floor or Collar.")
-            @ require (not (isType "Cap" || isType "Collar") || terms.CapStrike.IsSome)
-                (error "cap_floor_cap_strike_required" "CapFloor CapStrike is required for a Cap or Collar.")
-            @ require (not (isType "Floor" || isType "Collar") || terms.FloorStrike.IsSome)
-                (error "cap_floor_floor_strike_required" "CapFloor FloorStrike is required for a Floor or Collar.")
             @ require (terms.Notional > 0m)
                 (error "cap_floor_notional_invalid" "CapFloor Notional must be greater than zero.")
-            @ require (terms.PremiumAmount |> Option.forall (fun premium -> premium >= 0m))
-                (error "cap_floor_premium_invalid" "CapFloor PremiumAmount must be zero or greater when present.")
         | SecurityKind.StructuredNote terms ->
             []
             @ requireNotBlank "structured_note_underlying_required" "UnderlyingDescription" terms.UnderlyingDescription
@@ -435,11 +405,10 @@ module SecurityMaster =
     // whose subject data has a module home under SecurityMasterLegacyUpgrade.termsFromKind. Rules
     // are gated by the classification's TypeName exactly as validateKindTerms is gated by the kind
     // case, so the two validators agree code-for-code on the expressible set — the equivalence the
-    // stage-2 tests pin per class. Rules whose data has no module home (an option's strike, a
-    // swap's legs, a bond's subclass/par/principal schedule, currency pairs, notionals) stay with
-    // the codec-side kind validation and are enumerated in definitionCodecOnlyCodes; the ledger
-    // shrinks as modules gain homes. Nothing on the write path calls this yet: S2-B2 moves the
-    // commands onto it.
+    // stage-2 tests pin per class. Rules whose data has no module home (a swap's legs, a bond's
+    // subclass/par/principal schedule) stay with the codec-side kind validation
+    // (validateCodecOnlyKindTerms); that remainder shrinks as modules gain homes, which S3-E
+    // does theme by theme.
 
     let private moduleString (value: string option) = value |> Option.defaultValue String.Empty
 
@@ -457,7 +426,31 @@ module SecurityMaster =
                  | Some earlierDate, Some laterDate -> earlierDate <= laterDate
                  | _ -> true)
                 validationError
+        let contractMultiplier = modules.TradingParameters |> Option.bind (fun t -> t.ContractMultiplier)
+        let optionRight = moduleString (modules.Exercise |> Option.bind (fun e -> e.OptionRight))
+        let strikePrice = modules.Exercise |> Option.bind (fun e -> e.StrikePrice)
+        let isOneOf (values: string list) (value: string) =
+            values |> List.exists (fun candidate -> String.Equals(candidate, value, StringComparison.OrdinalIgnoreCase))
         match typeName with
+        | "Option" ->
+            []
+            @ requireNotBlank "option_put_call_required" "PutCall" optionRight
+            @ require (isOneOf [ "Put"; "Call" ] optionRight)
+                (error "option_put_call_invalid" "Option PutCall must be either 'Put' or 'Call'.")
+            @ require (strikePrice |> Option.forall (fun strike -> strike > 0m))
+                (error "option_strike_invalid" "Option strike must be greater than zero.")
+            @ require (contractMultiplier |> Option.forall (fun multiplier -> multiplier > 0m))
+                (error "option_multiplier_invalid" "Option multiplier must be greater than zero.")
+        | "Future" ->
+            []
+            @ require (contractMultiplier |> Option.forall (fun multiplier -> multiplier > 0m))
+                (error "future_multiplier_invalid" "Future multiplier must be greater than zero.")
+        | "Swaption" ->
+            []
+            @ require (isOneOf [ "Payer"; "Receiver" ] optionRight)
+                (error "swaption_payer_receiver_invalid" "Swaption PayerReceiver must be either 'Payer' or 'Receiver'.")
+            @ require (modules.Exercise |> Option.bind (fun e -> e.ExerciseStyle) |> Option.forall (isOneOf [ "European"; "American"; "Bermudan" ]))
+                (error "swaption_exercise_style_invalid" "Swaption ExerciseStyle must be European, American or Bermudan when present.")
         | "Bond" ->
             []
             @ require (couponRate |> Option.forall (fun rate -> rate >= 0m))
@@ -557,7 +550,12 @@ module SecurityMaster =
                 (error "cfd_leverage_invalid" "CFD Leverage must be greater than zero when present.")
         | "Warrant" ->
             []
-            @ require (modules.TradingParameters |> Option.bind (fun t -> t.ContractMultiplier) |> Option.forall (fun multiplier -> multiplier > 0m))
+            @ requireNotBlank "warrant_type_required" "WarrantType" optionRight
+            @ require (isOneOf [ "Call"; "Put" ] optionRight)
+                (error "warrant_type_invalid" "Warrant WarrantType must be either 'Call' or 'Put'.")
+            @ require (strikePrice |> Option.forall (fun strike -> strike > 0m))
+                (error "warrant_strike_invalid" "Warrant Strike must be greater than zero when present.")
+            @ require (contractMultiplier |> Option.forall (fun multiplier -> multiplier > 0m))
                 (error "warrant_multiplier_invalid" "Warrant Multiplier must be greater than zero when present.")
         | "CapFloor" ->
             []
@@ -569,6 +567,14 @@ module SecurityMaster =
                 (error "cap_floor_strike_order_invalid" "CapFloor FloorStrike must be at or below CapStrike when both are present.")
             @ requireOrderedWhenBoth effectiveDate maturityDate
                 (error "cap_floor_date_range_invalid" "CapFloor EffectiveDate must be on or before MaturityDate.")
+            @ require (isOneOf [ "Cap"; "Floor"; "Collar" ] optionRight)
+                (error "cap_floor_type_invalid" "CapFloor CapFloorType must be Cap, Floor or Collar.")
+            @ require (not (isOneOf [ "Cap"; "Collar" ] optionRight) || (modules.FloatingRate |> Option.bind (fun f -> f.CapRate)).IsSome)
+                (error "cap_floor_cap_strike_required" "CapFloor CapStrike is required for a Cap or Collar.")
+            @ require (not (isOneOf [ "Floor"; "Collar" ] optionRight) || (modules.FloatingRate |> Option.bind (fun f -> f.FloorRate)).IsSome)
+                (error "cap_floor_floor_strike_required" "CapFloor FloorStrike is required for a Floor or Collar.")
+            @ require (modules.Exercise |> Option.bind (fun e -> e.PremiumAmount) |> Option.forall (fun premium -> premium >= 0m))
+                (error "cap_floor_premium_invalid" "CapFloor PremiumAmount must be zero or greater when present.")
         | "Swap" ->
             []
             @ requireOrderedWhenBoth effectiveDate maturityDate
@@ -770,13 +776,14 @@ module SecurityMaster =
         validateDefinitionTerms typeName modules
 
     /// Per-class ledger of validateKindTerms error codes the definition can express today. Codes
-    /// absent for a listed class — and every code of an unlisted class (Option, Future, FxSpot,
-    /// CryptoCurrency, Swaption, OtherSecurity, CustomAsset, Equity, InvestmentFund, plus the
-    /// structural Swap-leg, Bond-structure and currency-pair rules) — are codec-only: their
-    /// subject data has no module home yet, so they stay with validateKindTerms at the codec
-    /// boundary and move here only when a module gains the home.
+    /// absent for a listed class, and every code of an unlisted class, are codec-only: their
+    /// subject data has no module home yet, so they stay with validateCodecOnlyKindTerms at the
+    /// codec boundary and move here only when a module gains the home (ADR-027 stage 3, S3-E,
+    /// moves them theme by theme).
     let definitionExpressibleCodes : Map<string, string list> =
         Map.ofList [
+            "Option", [ "option_put_call_required"; "option_put_call_invalid"; "option_strike_invalid"; "option_multiplier_invalid" ]
+            "Future", [ "future_multiplier_invalid" ]
             "Bond", [ "bond_coupon_invalid" ]
             "CertificateOfDeposit", [ "cd_issuer_required"; "cd_coupon_invalid"; "cd_callable_date_invalid" ]
             "Deposit", [ "deposit_type_required"; "deposit_institution_required"; "deposit_interest_rate_invalid" ]
@@ -794,8 +801,12 @@ module SecurityMaster =
               "structured_credit_weighted_average_maturity_invalid"; "structured_credit_weighted_average_loan_age_invalid" ]
             "Commodity", [ "commodity_contract_size_invalid" ]
             "Cfd", [ "cfd_leverage_invalid" ]
-            "Warrant", [ "warrant_multiplier_invalid" ]
-            "CapFloor", [ "cap_floor_reference_index_required"; "cap_floor_strike_order_invalid"; "cap_floor_date_range_invalid" ]
+            "Warrant", [ "warrant_type_required"; "warrant_type_invalid"; "warrant_strike_invalid"; "warrant_multiplier_invalid" ]
+            "Swaption", [ "swaption_payer_receiver_invalid"; "swaption_exercise_style_invalid" ]
+            "CapFloor",
+            [ "cap_floor_reference_index_required"; "cap_floor_strike_order_invalid"; "cap_floor_date_range_invalid"
+              "cap_floor_type_invalid"; "cap_floor_cap_strike_required"; "cap_floor_floor_strike_required"
+              "cap_floor_premium_invalid" ]
             "Swap", [ "swap_date_range_invalid" ]
             "CreditDefaultSwap", [ "cds_date_range_invalid"; "cds_fixed_coupon_invalid" ]
             "NonDeliverableForward", [ "ndf_fixing_date_invalid" ]

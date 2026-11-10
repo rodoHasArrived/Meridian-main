@@ -58,18 +58,32 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
         ["maturity", "coupon", "payment", "accrual", "discount"];
 
     /// <summary>
+    /// The module keys the economic serializer gained after the identity gate (ADR-027 stage 1
+    /// increment 6) shipped: the S3-E module homes, in emission order. An image document written
+    /// before a key existed lacks it, while the current serializer emits it — null for a class the
+    /// module does not describe. <c>SecurityEconomicDefinitionAdapter</c>'s gate treats exactly
+    /// that absent-versus-null difference as none, so serializer growth does not re-age every
+    /// stored image into carrying its retained document again; every other difference still
+    /// fails closed. A module added to the serializer from here on joins this list.
+    /// </summary>
+    public static IReadOnlyList<string> ModulesAddedAfterIdentityGate { get; } =
+        ["exercise"];
+
+    /// <summary>
     /// The economic-terms modules the serializer emits that this conversion does not read. Listed
     /// here, rather than left implicit, so the loss is enumerated in code and in the coverage test
     /// (<c>SecurityEconomicTermsV2BridgeCoverageTests</c>) instead of discovered in a restatement.
-    /// The last eleven joined when ADR-027 stage 1 increment 5 taught the serializer to emit them;
-    /// the class-aware flattening recovers parts of some dropped modules into declared flat homes
-    /// (call schedules, accrual conventions, factor entries), and the rest ride in
+    /// Eleven joined when ADR-027 stage 1 increment 5 taught the serializer to emit them, and the
+    /// S3-E module homes (<c>exercise</c> onward) follow them; the class-aware flattening recovers
+    /// parts of some dropped modules into declared flat homes (call schedules, accrual
+    /// conventions, factor entries, the S3-E scalar homes), and the rest ride in
     /// <c>retainedEconomicTerms</c> until their own recovery step.
     /// </summary>
     public static IReadOnlyList<string> DroppedModules { get; } =
         ["redemption", "call", "auction", "sweep", "financing", "issuer", "equityBehavior", "fund", "structuredProduct",
          "floatingRate", "tradingParameters", "creditRating", "depositaryReceipt", "dividendSchedule", "covenants",
-         "esg", "venue", "multiCalendar", "inflationLinked", "sinkingFund"];
+         "esg", "venue", "multiCalendar", "inflationLinked", "sinkingFund",
+         .. ModulesAddedAfterIdentityGate];
 
     /// <summary>
     /// Every module key an economic-terms document can carry: the union of the bridged and dropped
@@ -1026,8 +1040,18 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     private static readonly IReadOnlyList<(string AssetClass, IReadOnlyList<FlatTermMapping> Mappings)> ClassFlattenings =
     [
         ("Equity", [Map("shareClass", ("equityBehavior", "shareClass")), Map("votingRightsCat", ("equityBehavior", "votingRights"))]),
-        ("Option", [Map("expiry", MaturityDate)]),
-        ("Future", [Map("expiry", MaturityDate)]),
+        // ADR-027 stage 3 (S3-E): the exercise module (and the contract multiplier on
+        // tradingParameters) recovers the strike fields termsFromKind now feeds it from.
+        ("Option",
+        [
+            Map("underlyingId", ("exercise", "underlyingSecurityId")),
+            Map("putCall", ("exercise", "optionRight")),
+            Map("strike", ("exercise", "strikePrice")),
+            Map("expiry", MaturityDate),
+            Map("multiplier", ("tradingParameters", "contractMultiplier")),
+            Map("exerciseStyle", ("exercise", "exerciseStyle"))
+        ]),
+        ("Future", [Map("expiry", MaturityDate), Map("multiplier", ("tradingParameters", "contractMultiplier"))]),
         ("Bond",
         [
             Map("maturity", MaturityDate),
@@ -1139,7 +1163,14 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             Map("effectiveDate", ("maturity", "effectiveDate")),
             Map("expiryDate", MaturityDate)
         ]),
-        ("Warrant", [Map("expiry", MaturityDate), Map("multiplier", ("tradingParameters", "contractMultiplier"))]),
+        ("Warrant",
+        [
+            Map("underlyingId", ("exercise", "underlyingSecurityId")),
+            Map("warrantType", ("exercise", "optionRight")),
+            Map("strike", ("exercise", "strikePrice")),
+            Map("expiry", MaturityDate),
+            Map("multiplier", ("tradingParameters", "contractMultiplier"))
+        ]),
         ("FxForward", [Map("tradeDate", ("maturity", "effectiveDate")), Map("valueDate", MaturityDate)]),
         ("NonDeliverableForward", [Map("fixingDate", ("maturity", "effectiveDate")), Map("valueDate", MaturityDate)]),
         ("CreditDefaultSwap",
@@ -1151,7 +1182,14 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             // The upgrade stores FixedCouponBps / 10000 as coupon.couponRate.
             new FlatTermMapping("fixedCouponBps", [("coupon", "couponRate")], Scale: 10000m)
         ]),
-        ("Swaption", [Map("expiry", MaturityDate), Map("underlyingEffectiveDate", ("maturity", "effectiveDate"))]),
+        ("Swaption",
+        [
+            Map("payerReceiver", ("exercise", "optionRight")),
+            Map("exerciseStyle", ("exercise", "exerciseStyle")),
+            Map("strikeRate", ("exercise", "strikeRate")),
+            Map("expiry", MaturityDate),
+            Map("underlyingEffectiveDate", ("maturity", "effectiveDate"))
+        ]),
         ("CapFloor",
         [
             Map("effectiveDate", ("maturity", "effectiveDate")),
@@ -1161,7 +1199,9 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             Map("referenceIndex", ("floatingRate", "referenceIndex")),
             Map("capStrike", ("floatingRate", "capRate")),
             Map("floorStrike", ("floatingRate", "floorRate")),
-            Map("resetFrequency", ("floatingRate", "resetFrequency"))
+            Map("resetFrequency", ("floatingRate", "resetFrequency")),
+            Map("capFloorType", ("exercise", "optionRight")),
+            Map("premiumAmount", ("exercise", "premiumAmount"))
         ]),
         ("StructuredNote",
         [

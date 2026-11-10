@@ -454,3 +454,12 @@ and S2-B4 (codec single-purpose) land. Planned increments:
   dependency is module homes for the codec-only field complement (strikes, currency pairs,
   notionals, envelopes) — field-by-field expand/contract the owner sequences, in a successor
   PR, with the census as its starting evidence.
+  - **S3-E1 — strikes (implemented 2026-11-10).** New `exercise` term module
+    (`ExerciseTerms`: option right, strike price, strike rate, exercise style, underlying
+    security, premium amount) homes the Option, Warrant, Swaption and CapFloor strike fields;
+    Option and Future contract multipliers join `tradingParameters`. Fourteen rules moved from
+    the codec-only validator to the definition surface (ledger and mutation table extended);
+    the class-aware flattening recovers the fields on economic-only replay. The identity gate
+    now tolerates exactly one difference — a module key added after the gate shipped
+    (`ModulesAddedAfterIdentityGate`) that an image predates and the rebuild emits null — so
+    serializer growth does not re-age stored images into carrying their retained document.

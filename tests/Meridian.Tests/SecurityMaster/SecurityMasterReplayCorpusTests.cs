@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
@@ -227,6 +228,75 @@ public sealed class SecurityMasterReplayCorpusTests
             retained.GetRawText().Should().Be(economic.EconomicTerms.GetRawText(),
                 $"a {assetClass} replay that keeps the carry must keep the source verbatim");
         }
+    }
+
+    [Theory]
+    [InlineData("Deposit")]
+    [InlineData("CommercialPaper")]
+    [InlineData("Repo")]
+    public void IdentityGate_KeepsSheddingForImagesThatPredateALaterModuleKey(string assetClass)
+    {
+        // ADR-027 stage 3 (S3-E): the serializer gained module keys after the gate shipped. An
+        // image written before a key existed lacks it; the rebuild emits it null. That is the one
+        // difference the gate tolerates — otherwise every serializer expansion would re-age every
+        // stored image into carrying its retained document again.
+        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(
+                assetClass,
+                SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain(
+                    assetClass, SecurityAssetTermsSchemaRoundTripTests.FullPayloads[assetClass])));
+        SecurityTermsEnvelope.TryGetRetainedEconomicTerms(
+                SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null }).AssetSpecificTerms,
+                out _)
+            .Should().BeFalse($"precondition: the current {assetClass} image sheds its carry");
+
+        var laterKeys = SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.ModulesAddedAfterIdentityGate;
+        laterKeys.Should().NotBeEmpty();
+        var predating = JsonNode.Parse(economic.EconomicTerms.GetRawText())!.AsObject();
+        foreach (var key in laterKeys)
+        {
+            predating[key].Should().BeNull($"the {assetClass} twin does not feed the {key} module");
+            predating.Remove(key).Should().BeTrue();
+        }
+
+        var predatingImage = JsonSerializer.SerializeToElement(predating);
+        var recovered = SecurityEconomicDefinitionAdapter.ToProjection(
+            economic with { EconomicTerms = predatingImage, LegacyAssetSpecificTerms = null });
+
+        SecurityTermsEnvelope.TryGetRetainedEconomicTerms(recovered.AssetSpecificTerms, out _)
+            .Should().BeFalse("an image that only predates later module keys still holds everything the flat row holds");
+        SecurityEconomicDefinitionAdapter.ToEconomicRecord(recovered).EconomicTerms.GetRawText()
+            .Should().Be(economic.EconomicTerms.GetRawText(), "the next event is the current image of the same document");
+    }
+
+    [Fact]
+    public void IdentityGate_StillKeepsTheCarryForEveryOtherShapeDifference()
+    {
+        const string assetClass = "Deposit";
+        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(
+                assetClass,
+                SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain(
+                    assetClass, SecurityAssetTermsSchemaRoundTripTests.FullPayloads[assetClass])));
+
+        // A key the gate shipped with is not tolerated: the pre-increment-5 shapes keep their carry.
+        var historical = JsonNode.Parse(economic.EconomicTerms.GetRawText())!.AsObject();
+        historical.Remove("sinkingFund").Should().BeTrue();
+        CarriesRetained(JsonSerializer.SerializeToElement(historical)).Should().BeTrue(
+            "an at-gate module key missing from the source is a historical shape, not a later-key image");
+
+        // A later-module key the SOURCE carries is compared as written: a populated one the flat
+        // row cannot reproduce keeps the carry.
+        var populated = JsonNode.Parse(economic.EconomicTerms.GetRawText())!.AsObject();
+        populated["exercise"] = JsonNode.Parse("""{"optionRight":"Call","strikePrice":10,"strikeRate":null,"exerciseStyle":null,"underlyingSecurityId":null,"premiumAmount":null}""");
+        CarriesRetained(JsonSerializer.SerializeToElement(populated)).Should().BeTrue(
+            "a Deposit row has no flat home for an exercise module, so the document is not the flat row");
+
+        bool CarriesRetained(JsonElement economicTerms)
+            => SecurityTermsEnvelope.TryGetRetainedEconomicTerms(
+                SecurityEconomicDefinitionAdapter.ToProjection(
+                    economic with { EconomicTerms = economicTerms, LegacyAssetSpecificTerms = null }).AssetSpecificTerms,
+                out _);
     }
 
     [Theory]

@@ -806,6 +806,34 @@ Validation (local, .NET SDK 10.0.403): `dotnet test tests/Meridian.Tests -c Rele
 active-plus-inactive gauge, and the zero case. The full local `bash scripts/ci.sh` was not run;
 GitHub `Meridian CI / quality-gate` remains authoritative.
 
+### ADR-027 stage-3 S3-E1 — strikes gain a module home — 2026-11-10
+
+First of the S3-E module-home increments the census scoped. A new `exercise` term module
+(`ExerciseTerms` in `SecurityTermModules.fs`) carries what only the flat codec held: the right
+(`optionRight` — Put/Call for options and warrants, Payer/Receiver for swaptions,
+Cap/Floor/Collar for caps and floors), `strikePrice`, `strikeRate`, `exerciseStyle`,
+`underlyingSecurityId` and `premiumAmount`. `termsFromKind` feeds it for Option, Warrant,
+Swaption and CapFloor, and feeds the Option and Future multipliers into the existing
+`tradingParameters.contractMultiplier` (cap and floor strike rates were already homed on
+`floatingRate`). The economic serializer emits the `exercise` key for every class, null when
+unset, as it does every other module.
+
+| Surface | Change |
+| --- | --- |
+| Validation ledger | Fourteen codes moved from `validateCodecOnlyKindTerms` to `validateDefinitionTerms` and joined `definitionExpressibleCodes`: the four Option rules, `future_multiplier_invalid`, three Warrant rules, two Swaption rules and four CapFloor rules. Option and Warrant now have no codec-only rule left. The equivalence suite's mutation table proves each code on both surfaces. |
+| Economic-only replay | `ClassFlattenings` inverts the new homes: an Option recovers `underlyingId`, `putCall`, `strike`, `multiplier` and `exerciseStyle`; Future its `multiplier`; Warrant `underlyingId`, `warrantType` and `strike`; Swaption `payerReceiver`, `exerciseStyle` and `strikeRate`; CapFloor `capFloorType` and `premiumAmount`. Option's unrecoverable set is now the listing detail only (`optChainId`, `settlementType`, `lastTradingDt`). |
+| Identity gate | Adding a module key would have made every stored image fail the gate's byte equality — the committed CertificateOfDeposit corpus image caught it, flipping from carry-free back to carrying its retained document. The gate now tolerates exactly that case: a key in `ModulesAddedAfterIdentityGate` that the source image lacks and the rebuild emits null. A key the gate shipped with, or a later key the source itself carries, is still compared as written, and every other difference still fails closed. Three corpus-suite cases pin the tolerance and its two limits. |
+
+The replay corpus changed only by the appended `"exercise":null` key (the image case is
+byte-identical); the write golden changed by that key plus the five classes' new module content.
+
+Validation (local, .NET SDK 10.0.403): `Meridian.Tests` filtered to the SecurityMaster and
+Architecture namespaces — 6,297 passed, 1 skipped; the SecurityMaster-named suites outside that
+namespace plus AssetOperations, kind-mapping, workstation-endpoint and report-generation suites —
+2,340 passed; `Meridian.FSharp.Tests` — 611 passed; `Meridian.Contracts.UnitTests`
+SecurityMaster — 45 passed. The full local `bash scripts/ci.sh` was not run; GitHub
+`Meridian CI / quality-gate` remains authoritative.
+
 ### ADR-027 stage-3 S3-D complete; S3-E scoped by census — 2026-11-09
 
 S3-D closed with 28 of 32 classes' scalar decodes schema-bound (`SchemaBoundDecodeClasses`);

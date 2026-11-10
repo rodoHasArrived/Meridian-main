@@ -99,6 +99,22 @@ public sealed class SecurityDefinitionValidationEquivalenceTests
         // zero must carry as a zero margin and be refused, not throw before validation runs.
         ("Cfd", "cfd_leverage_invalid", "leverage", "0"),
         ("Warrant", "warrant_multiplier_invalid", "multiplier", "-1"),
+        // ADR-027 stage 3 (S3-E): the exercise module homes the strike, right and style, and the
+        // contract multiplier joins tradingParameters for options and futures.
+        ("Option", "option_put_call_required", "putCall", "\" \""),
+        ("Option", "option_put_call_invalid", "putCall", "\"Straddle\""),
+        ("Option", "option_strike_invalid", "strike", "-1"),
+        ("Option", "option_multiplier_invalid", "multiplier", "-1"),
+        ("Future", "future_multiplier_invalid", "multiplier", "-1"),
+        ("Warrant", "warrant_type_required", "warrantType", "\" \""),
+        ("Warrant", "warrant_type_invalid", "warrantType", "\"Straddle\""),
+        ("Warrant", "warrant_strike_invalid", "strike", "-1"),
+        ("Swaption", "swaption_payer_receiver_invalid", "payerReceiver", "\"Both\""),
+        ("Swaption", "swaption_exercise_style_invalid", "exerciseStyle", "\"Asian\""),
+        ("CapFloor", "cap_floor_type_invalid", "capFloorType", "\"Corridor\""),
+        ("CapFloor", "cap_floor_cap_strike_required", "*", """{"capFloorType":"Cap","capStrike":null}"""),
+        ("CapFloor", "cap_floor_floor_strike_required", "*", """{"capFloorType":"Floor","floorStrike":null}"""),
+        ("CapFloor", "cap_floor_premium_invalid", "premiumAmount", "-1"),
         ("CapFloor", "cap_floor_reference_index_required", "referenceIndex", "\" \""),
         ("CapFloor", "cap_floor_strike_order_invalid", "floorStrike", "99999"),
         ("CapFloor", "cap_floor_date_range_invalid", "effectiveDate", "\"2999-01-01\""),

@@ -177,6 +177,21 @@ module SecurityMasterLegacyUpgrade =
           IsPuttable = not puts.IsEmpty
           PutSchedule = puts }
 
+    let private exerciseStyleLabel = function
+        | ExerciseStyle.American -> "American"
+        | ExerciseStyle.European -> "European"
+        | ExerciseStyle.Bermudan -> "Bermudan"
+
+    let private contractMultiplierOnly (multiplier: decimal option) : TradingParams =
+        {
+            LotSize = None
+            TickSize = None
+            ContractMultiplier = multiplier
+            MarginRequirementPct = None
+            TradingHoursUtc = None
+            CircuitBreakerThresholdPct = None
+        }
+
     let private termsFromKind (kind: SecurityKind) =
         match kind with
         | SecurityKind.Equity terms ->
@@ -223,6 +238,16 @@ module SecurityMasterLegacyUpgrade =
                             IssueDate = None
                             MaturityDate = Some terms.Expiry
                         }
+                    TradingParameters = Some (contractMultiplierOnly (Some terms.Multiplier))
+                    Exercise =
+                        Some {
+                            OptionRight = Some terms.PutCall
+                            StrikePrice = Some terms.Strike
+                            StrikeRate = None
+                            ExerciseStyle = terms.ExerciseStyle |> Option.map exerciseStyleLabel
+                            UnderlyingSecurityId = Some terms.UnderlyingId
+                            PremiumAmount = None
+                        }
             }
         | SecurityKind.Future terms ->
             {
@@ -233,6 +258,7 @@ module SecurityMasterLegacyUpgrade =
                             IssueDate = None
                             MaturityDate = Some terms.Expiry
                         }
+                    TradingParameters = Some (contractMultiplierOnly (Some terms.Multiplier))
             }
         | SecurityKind.Bond terms ->
             let isStructured =
@@ -740,6 +766,15 @@ module SecurityMasterLegacyUpgrade =
                             TradingHoursUtc = None
                             CircuitBreakerThresholdPct = None
                         }
+                    Exercise =
+                        Some {
+                            OptionRight = Some terms.WarrantType
+                            StrikePrice = terms.Strike
+                            StrikeRate = None
+                            ExerciseStyle = None
+                            UnderlyingSecurityId = Some terms.UnderlyingId
+                            PremiumAmount = None
+                        }
             }
         | SecurityKind.FxForward terms ->
             {
@@ -788,6 +823,15 @@ module SecurityMasterLegacyUpgrade =
                             IssueDate = None
                             MaturityDate = Some terms.Expiry
                         }
+                    Exercise =
+                        Some {
+                            OptionRight = Some terms.PayerReceiver
+                            StrikePrice = None
+                            StrikeRate = Some terms.StrikeRate
+                            ExerciseStyle = terms.ExerciseStyle
+                            UnderlyingSecurityId = None
+                            PremiumAmount = None
+                        }
             }
         | SecurityKind.CapFloor terms ->
             {
@@ -805,6 +849,15 @@ module SecurityMasterLegacyUpgrade =
                             ResetFrequency = terms.ResetFrequency
                             FloorRate = terms.FloorStrike
                             CapRate = terms.CapStrike
+                        }
+                    Exercise =
+                        Some {
+                            OptionRight = Some terms.CapFloorType
+                            StrikePrice = None
+                            StrikeRate = None
+                            ExerciseStyle = None
+                            UnderlyingSecurityId = None
+                            PremiumAmount = terms.PremiumAmount
                         }
             }
         | SecurityKind.StructuredNote terms ->

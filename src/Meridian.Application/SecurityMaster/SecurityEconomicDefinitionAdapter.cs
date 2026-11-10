@@ -159,9 +159,12 @@ internal static class SecurityEconomicDefinitionAdapter
     /// removed) is rebuilt into its next economic document; when that reproduces the source
     /// byte-for-byte, the flat row IS the document and the carry adds nothing, so it is dropped.
     /// Byte equality is deliberately the strictest test: image documents written by the current
-    /// serializer pass; historical shapes (fewer module keys, different member forms) and
-    /// hand-shaped documents fail and keep the carry with its fold-on-read, and any exception on
-    /// the trial rebuild fails closed to keeping it. No stored payload is rewritten — this
+    /// serializer pass; historical shapes (the pre-increment-5 module set, different member
+    /// forms) and hand-shaped documents fail and keep the carry with its fold-on-read, and any
+    /// exception on the trial rebuild fails closed to keeping it. The single tolerated
+    /// difference is a module key added after this gate shipped that the image predates and the
+    /// rebuild emits null (<see cref="EqualsBeforeLaterModuleKeys"/>), so serializer growth does
+    /// not undo the retirement for images already stored. No stored payload is rewritten — this
     /// changes only what a freshly rebuilt projection carries.
     /// </summary>
     private static JsonElement StripRetainedWhenLossless(JsonElement flattened, SecurityEconomicDefinitionRecord economic)
@@ -177,6 +180,7 @@ internal static class SecurityEconomicDefinitionAdapter
             var candidate = ToProjection(economic with { LegacyAssetSpecificTerms = candidateTerms });
             var rebuilt = ToEconomicRecord(candidate).EconomicTerms;
             return string.Equals(rebuilt.GetRawText(), economic.EconomicTerms.GetRawText(), StringComparison.Ordinal)
+                   || EqualsBeforeLaterModuleKeys(rebuilt, economic.EconomicTerms)
                 ? candidateTerms
                 : flattened;
         }
@@ -184,6 +188,40 @@ internal static class SecurityEconomicDefinitionAdapter
         {
             return flattened;
         }
+    }
+
+    /// <summary>
+    /// The one difference the gate tolerates: a module key the serializer gained after the gate
+    /// shipped (<see cref="SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.ModulesAddedAfterIdentityGate"/>)
+    /// that the source image predates and the rebuild emits null. Such a rebuild carries nothing
+    /// the source does not, so the carry is still redundant. A later-module key the rebuild
+    /// populates, or one the source itself carries, is compared as written.
+    /// </summary>
+    private static bool EqualsBeforeLaterModuleKeys(JsonElement rebuilt, JsonElement source)
+    {
+        if (rebuilt.ValueKind != JsonValueKind.Object || source.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        var node = JsonNode.Parse(rebuilt.GetRawText())!.AsObject();
+        var removed = false;
+        foreach (var module in SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.ModulesAddedAfterIdentityGate)
+        {
+            if (!source.TryGetProperty(module, out _)
+                && node.TryGetPropertyValue(module, out var value)
+                && value is null)
+            {
+                node.Remove(module);
+                removed = true;
+            }
+        }
+
+        return removed
+               && string.Equals(
+                   JsonSerializer.SerializeToElement(node).GetRawText(),
+                   source.GetRawText(),
+                   StringComparison.Ordinal);
     }
 
     private static JsonElement RemoveRetainedKey(JsonElement flattened)
@@ -482,6 +520,17 @@ internal static class SecurityEconomicDefinitionAdapter
                     .ToArray(),
                 sinkFrequency = definition.Terms.SinkingFund.Value.SinkFrequency is null ? null : definition.Terms.SinkingFund.Value.SinkFrequency.Value,
                 isProRata = definition.Terms.SinkingFund.Value.IsProRata
+            },
+            // ADR-027 stage 3 (S3-E): module homes for the codec-only field complement. Same
+            // contract as every other module: the key is always emitted, null when unset.
+            exercise = definition.Terms.Exercise is null ? null : new
+            {
+                optionRight = definition.Terms.Exercise.Value.OptionRight is null ? null : definition.Terms.Exercise.Value.OptionRight.Value,
+                strikePrice = definition.Terms.Exercise.Value.StrikePrice,
+                strikeRate = definition.Terms.Exercise.Value.StrikeRate,
+                exerciseStyle = definition.Terms.Exercise.Value.ExerciseStyle is null ? null : definition.Terms.Exercise.Value.ExerciseStyle.Value,
+                underlyingSecurityId = definition.Terms.Exercise.Value.UnderlyingSecurityId is null ? (Guid?)null : definition.Terms.Exercise.Value.UnderlyingSecurityId.Value.Item,
+                premiumAmount = definition.Terms.Exercise.Value.PremiumAmount
             }
         });
         // Keep byte-identical economics for records without a dated history. The additive field

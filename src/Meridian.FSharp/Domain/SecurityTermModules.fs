@@ -436,6 +436,30 @@ type SinkingFundTerms = {
     IsProRata: bool
 }
 
+// ---------------------------------------------------------------------------
+// ADR-027 stage 3 (S3-E): module homes for the codec-only field complement
+// ---------------------------------------------------------------------------
+
+/// Exercise terms for instruments that carry a right: listed options, warrants, swaptions and
+/// caps/floors/collars. The home for the strike, the right and the style that the flat codec
+/// alone carried before S3-E.
+type ExerciseTerms = {
+    /// The right the holder owns, as the class spells it: "Put"/"Call" (option, warrant),
+    /// "Payer"/"Receiver" (swaption), "Cap"/"Floor"/"Collar" (cap/floor).
+    OptionRight: string option
+    /// Strike as a price of the underlying (option, warrant).
+    StrikePrice: decimal option
+    /// Strike as a decimal rate (swaption); may be negative. Cap and floor strike rates stay on
+    /// FloatingRateTerms.CapRate/FloorRate, where they bound the reference index.
+    StrikeRate: decimal option
+    /// "American", "European" or "Bermudan"; None leaves the style undeclared.
+    ExerciseStyle: string option
+    /// The security the right is exercised into, when it is a security-master record.
+    UnderlyingSecurityId: SecurityId option
+    /// Premium paid for the right, as an amount (cap/floor).
+    PremiumAmount: decimal option
+}
+
 type SecurityTermModules = {
     // --- Original 15 modules ---
     Maturity: MaturityTerms option
@@ -468,6 +492,9 @@ type SecurityTermModules = {
     InflationLinked: InflationLinkedTerms option
     /// Contractual sinking fund or scheduled principal instalment schedule.
     SinkingFund: SinkingFundTerms option
+    // --- ADR-027 stage 3 (S3-E) module homes ---
+    /// Strike, right, style and underlying for options, warrants, swaptions and caps/floors.
+    Exercise: ExerciseTerms option
 }
 
 [<RequireQualifiedAccess>]
@@ -597,4 +624,5 @@ module SecurityTermModules =
         StructuredProduct = None
         InflationLinked = None
         SinkingFund = None
+        Exercise = None
     }
