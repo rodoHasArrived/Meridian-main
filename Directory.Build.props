@@ -76,6 +76,11 @@
     <MeridianNullableWarningBaseline>;Meridian.Application;Meridian.Contracts;Meridian.DataIntegration;Meridian.Execution;Meridian.FinancialOperations;Meridian.FundStructure.Tests;Meridian.Infrastructure;Meridian.Reporting;Meridian.Storage;Meridian.Tests;Meridian.Ui.Shared;</MeridianNullableWarningBaseline>
     <WarningsAsErrors Condition="'$(MSBuildProjectExtension)' == '.csproj' and !$(MeridianNullableWarningBaseline.Contains(';$(MSBuildProjectName);'))">$(WarningsAsErrors);nullable</WarningsAsErrors>
   </PropertyGroup>
+  <PropertyGroup Label="Analyzer level" Condition="'$(MSBuildProjectExtension)' == '.csproj'">
+    <!-- Report the SDK's full recommended analyzer rule set. Rules that already had violations
+         are held at 'suggestion' in .globalconfig until they are fixed. -->
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+  </PropertyGroup>
   <ItemGroup Label="Runtime integrity defaults">
     <RuntimeHostConfigurationOption Include="System.IO.Compression.UseStrictValidation" Value="true" />
   </ItemGroup>
