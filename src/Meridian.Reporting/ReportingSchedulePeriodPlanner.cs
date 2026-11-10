@@ -28,13 +28,16 @@ public static class ReportingSchedulePeriodPlanner
     /// Returns the occurrence that follows the period ending on <paramref name="currentPeriodEnd"/>.
     /// The due time keeps the wall-clock time of <paramref name="currentDueAtUtc"/> in
     /// <paramref name="timeZone"/>, so a schedule due at 08:00 local stays at 08:00 local
-    /// across daylight-saving changes.
+    /// across daylight-saving changes. Pass <paramref name="intendedLocalTime"/> when the
+    /// configured time of day is known: the previous due instant may itself have been moved
+    /// past a spring-forward gap, and reusing it would shift every later run.
     /// </summary>
     public static ReportingSchedulePeriodOccurrence Next(
         ReportingSchedulePeriodCadenceDto cadence,
         DateOnly currentPeriodEnd,
         DateTimeOffset currentDueAtUtc,
-        TimeZoneInfo timeZone)
+        TimeZoneInfo timeZone,
+        TimeOnly? intendedLocalTime = null)
     {
         ArgumentNullException.ThrowIfNull(cadence);
         ArgumentNullException.ThrowIfNull(timeZone);
@@ -46,8 +49,8 @@ public static class ReportingSchedulePeriodPlanner
         var period = LedgerReportSchedulePlanner.PeriodStartingOn(
             ToLedgerFrequency(cadence.Frequency),
             currentPeriodEnd.AddDays(1));
-        var localTimeOfDay = TimeOnly.FromDateTime(
-            TimeZoneInfo.ConvertTime(currentDueAtUtc, timeZone).DateTime);
+        var localTimeOfDay = intendedLocalTime
+            ?? TimeOnly.FromDateTime(TimeZoneInfo.ConvertTime(currentDueAtUtc, timeZone).DateTime);
         var localDue = period.PeriodEnd
             .AddDays(cadence.DueDaysAfterPeriodEnd)
             .ToDateTime(localTimeOfDay, DateTimeKind.Unspecified);

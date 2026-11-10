@@ -58,6 +58,31 @@ public sealed class ReportingSchedulePeriodPlannerTests
         next.DueAtUtc.Should().Be(new DateTimeOffset(year, month, day, 20, 0, 0, TimeSpan.Zero));
     }
 
+    [Fact]
+    public void Next_DueTimeInASpringForwardGap_MovesOnlyThatRunWhenTheIntendedTimeIsKnown()
+    {
+        var newYork = TimeZoneInfo.FindSystemTimeZoneById("America/New_York");
+        var cadence = new ReportingSchedulePeriodCadenceDto(ReportingSchedulePeriodFrequencyDto.Monthly, 8);
+        var intended = new TimeOnly(2, 30);
+
+        // Due 02:30 on 8 March 2026 does not exist in New York; that run moves to 03:00 EDT.
+        var march = ReportingSchedulePeriodPlanner.Next(
+            cadence,
+            currentPeriodEnd: new DateOnly(2026, 1, 31),
+            currentDueAtUtc: new DateTimeOffset(2026, 2, 8, 7, 30, 0, TimeSpan.Zero),
+            newYork,
+            intended);
+        march.DueAtUtc.Should().Be(new DateTimeOffset(2026, 3, 8, 7, 0, 0, TimeSpan.Zero));
+
+        // The following run returns to 02:30 local (06:30Z in daylight time), not 03:00.
+        var april = ReportingSchedulePeriodPlanner.Next(cadence, march.PeriodEnd, march.DueAtUtc, newYork, intended);
+        april.DueAtUtc.Should().Be(new DateTimeOffset(2026, 4, 8, 6, 30, 0, TimeSpan.Zero));
+
+        // Without the intended time the shifted 03:00 would stick.
+        ReportingSchedulePeriodPlanner.Next(cadence, march.PeriodEnd, march.DueAtUtc, newYork)
+            .DueAtUtc.Should().Be(new DateTimeOffset(2026, 4, 8, 7, 0, 0, TimeSpan.Zero));
+    }
+
     [Theory]
     [InlineData(-1)]
     [InlineData(367)]

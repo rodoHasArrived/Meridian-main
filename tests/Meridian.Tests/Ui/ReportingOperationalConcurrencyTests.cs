@@ -929,6 +929,33 @@ public sealed class ReportingOperationalConcurrencyTests
     }
 
     [Fact]
+    public async Task Scenario_PeriodCloseSchedule_ReturnsToItsConfiguredTimeAfterADaylightSavingGap()
+    {
+        // Configured for 02:30 New York. The 8 March run was moved to 03:00 EDT (07:00Z) because
+        // 02:30 does not exist that day; the next run must go back to 02:30, not stay at 03:00.
+        var gapShiftedDue = new DateTimeOffset(2026, 3, 8, 7, 0, 0, TimeSpan.Zero);
+        var due = BuildSchedule("gap-recovery", "operator-a") with
+        {
+            CronExpression = "30 2 8 * *",
+            TimeZoneId = "America/New_York",
+            State = ReportingScheduleStateDto.Active,
+            NextAsOfDate = new DateOnly(2026, 2, 28),
+            DueAtUtc = gapShiftedDue,
+            PeriodCadence = new ReportingSchedulePeriodCadenceDto(ReportingSchedulePeriodFrequencyDto.Monthly, 8)
+        };
+        var store = new SharedAtomicScheduleStore([due]);
+        var service = CreateRunnableScheduleService(store, new CountingRenderer());
+
+        await service.RunDueForWorkerAsync(gapShiftedDue, CancellationToken.None);
+
+        var advanced = store.Load().Should().ContainSingle().Subject;
+        advanced.NextAsOfDate.Should().Be(new DateOnly(2026, 3, 31));
+        advanced.DueAtUtc.Should().Be(
+            new DateTimeOffset(2026, 4, 8, 6, 30, 0, TimeSpan.Zero),
+            "8 April 02:30 EDT is the configured time; the gap adjustment applied to March only");
+    }
+
+    [Fact]
     public void Scenario_ScheduleUpsert_PeriodCadenceIsValidatedAndReplacedOnEachUpsert()
     {
         var store = new SharedAtomicScheduleStore([]);

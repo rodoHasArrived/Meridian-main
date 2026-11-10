@@ -51,6 +51,17 @@ public sealed partial class ReportingScheduleService
         return selector is null ? parameters : parameters with { PeriodId = selector };
     }
 
+    // A period-close schedule's cron expression carries its configured time of day. Using it,
+    // rather than the previous due instant, keeps a run that was moved past a daylight-saving
+    // gap from shifting every later run. Expressions without one fixed time fall back to the
+    // previous due instant.
+    private static TimeOnly? ResolveConfiguredLocalTime(string cronExpression) =>
+        CronExpressionParser.TryParse(cronExpression, out var cron)
+        && cron.Hours.Count == 1
+        && cron.Minutes.Count == 1
+            ? new TimeOnly(cron.Hours.Single(), cron.Minutes.Single())
+            : null;
+
     private static DateOnly ResolveNextAsOfDate(ReportingScheduleRecordDto schedule) =>
         schedule.PeriodCadence is { } cadence
         && ReportingScheduleTimeZones.TryResolve(schedule.TimeZoneId, out var timeZone)
@@ -378,7 +389,8 @@ public sealed partial class ReportingScheduleService
                 periodCadence,
                 schedule.NextAsOfDate,
                 schedule.DueAtUtc,
-                timeZone);
+                timeZone,
+                ResolveConfiguredLocalTime(schedule.CronExpression));
             nextDue = occurrence.DueAtUtc;
             nextAsOfDate = occurrence.PeriodEnd;
         }
