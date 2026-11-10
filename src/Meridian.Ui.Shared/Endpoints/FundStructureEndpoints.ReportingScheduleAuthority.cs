@@ -59,6 +59,60 @@ public static partial class FundStructureEndpoints
         }
     }
 
+    private static IResult DeleteReportingSchedule(
+        HttpContext context,
+        string scheduleId)
+    {
+        if (!HasReportingWorkflowPermission(context))
+        {
+            return EndpointHelpers.Forbidden();
+        }
+
+        if (RequireReadyReportingDeployment(context) is { } deploymentFailure)
+        {
+            return deploymentFailure;
+        }
+
+        var service = context.RequestServices.GetService<ReportingScheduleService>();
+        if (service is null)
+        {
+            return WorkspaceServiceUnavailable();
+        }
+
+        try
+        {
+            return Results.Json(
+                service.Delete(
+                    scheduleId,
+                    BuildReportAccessQueryContext(context)),
+                statusCode: StatusCodes.Status200OK);
+        }
+        catch (UnauthorizedAccessException exception)
+        {
+            return Results.Problem(
+                exception.Message,
+                statusCode: StatusCodes.Status403Forbidden);
+        }
+        catch (Exception exception) when (exception is ReportingScheduleConcurrencyException
+                                          or ReportingScheduleExecutionLeaseException)
+        {
+            return ReportingScheduleFailure(context, exception);
+        }
+        catch (KeyNotFoundException exception)
+        {
+            return Results.Problem(
+                exception.Message,
+                statusCode: StatusCodes.Status404NotFound);
+        }
+        catch (Exception exception) when (exception is ArgumentException
+                                          or InvalidDataException)
+        {
+            return Results.Problem(
+                exception.Message,
+                statusCode: StatusCodes.Status400BadRequest);
+        }
+    }
+
     private static IResult? RequireReadyReportingDeployment(
         HttpContext context,
         string? unavailableMessage = null)

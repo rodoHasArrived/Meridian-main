@@ -934,6 +934,8 @@ export const UI_API_ROUTES = {
   ReportingSchedules: "/api/fund-structure/reporting/schedules",
   ReportingSchedulePause: "/api/fund-structure/reporting/schedules/{scheduleId}/pause",
   ReportingScheduleResume: "/api/fund-structure/reporting/schedules/{scheduleId}/resume",
+  ReportingScheduleDisable: "/api/fund-structure/reporting/schedules/{scheduleId}/disable",
+  ReportingScheduleDelete: "/api/fund-structure/reporting/schedules/{scheduleId}",
   ReportingScheduleRunNow: "/api/fund-structure/reporting/schedules/{scheduleId}/run",
   FundStructureSetupDraftValidate: "/api/fund-structure/setup-drafts/validate",
   FundStructureSetupDraftCreate: "/api/fund-structure/setup-drafts/create",

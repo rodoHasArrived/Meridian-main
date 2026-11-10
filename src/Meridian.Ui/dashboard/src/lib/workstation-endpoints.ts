@@ -180,6 +180,8 @@ export const FUND_STRUCTURE_API_ENDPOINTS = {
   reportingSchedules: UI_API_ROUTES.ReportingSchedules,
   reportingSchedulePause: UI_API_ROUTES.ReportingSchedulePause,
   reportingScheduleResume: UI_API_ROUTES.ReportingScheduleResume,
+  reportingScheduleDisable: UI_API_ROUTES.ReportingScheduleDisable,
+  reportingScheduleDelete: UI_API_ROUTES.ReportingScheduleDelete,
   reportingScheduleRunNow: UI_API_ROUTES.ReportingScheduleRunNow
 } as const;
 
@@ -1370,6 +1372,14 @@ export function reportingSchedulePauseEndpoint(scheduleId: string): string {
 
 export function reportingScheduleResumeEndpoint(scheduleId: string): string {
   return routeWithParam(FUND_STRUCTURE_API_ENDPOINTS.reportingScheduleResume, "scheduleId", scheduleId);
+}
+
+export function reportingScheduleDisableEndpoint(scheduleId: string): string {
+  return routeWithParam(FUND_STRUCTURE_API_ENDPOINTS.reportingScheduleDisable, "scheduleId", scheduleId);
+}
+
+export function reportingScheduleDeleteEndpoint(scheduleId: string): string {
+  return routeWithParam(FUND_STRUCTURE_API_ENDPOINTS.reportingScheduleDelete, "scheduleId", scheduleId);
 }
 
 export function reportingScheduleRunNowEndpoint(scheduleId: string): string {

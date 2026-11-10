@@ -1,3 +1,4 @@
+import { useMemo, useState } from "react";
 import { Plus, Send, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -34,6 +35,7 @@ export type ReportingScheduleDraftField =
   | "scheduleId"
   | "templateId"
   | "cronExpression"
+  | "timeZoneId"
   | "nextAsOfDate"
   | "dueAtUtc"
   | "maxRetries"
@@ -50,6 +52,8 @@ export interface ReportingScheduleDraftState {
   scheduleId: string;
   templateId: string;
   cronExpression: string;
+  /** IANA time zone the cadence is evaluated in; "UTC" is the default. */
+  timeZoneId: string;
   nextAsOfDate: string;
   dueAtUtc: string;
   maxRetries: string;
@@ -80,12 +84,32 @@ export type ReportingScheduleRecipientPrincipalKind = "User" | "Group" | "Compan
 
 export const reportingScheduleArtifactFormats: ReportingScheduleArtifactFormat[] = ["Pdf", "Xlsx", "Csv"];
 export const reportingScheduleDeliveryModes: ReportPackDeliveryMode[] = ["SecurePortal", "EmailLink", "EvidenceVault", "InternalRoute"];
-const reportingScheduleCadences = [
+export const reportingScheduleCadences = [
+  { value: "0 8 * * *", label: "Every day" },
   { value: "0 8 * * 1-5", label: "Every weekday" },
   { value: "0 8 * * 1", label: "Every Monday" },
+  { value: "0 8 1,15 * *", label: "Twice a month (1st and 15th)" },
   { value: "0 8 1 * *", label: "First day of each month" },
-  { value: "0 8 1 1,4,7,10 *", label: "Quarterly" }
+  { value: "0 8 L * *", label: "Last day of each month" },
+  { value: "0 8 1 1,4,7,10 *", label: "Quarterly" },
+  { value: "0 8 1 1 *", label: "Annually (1 January)" }
 ] as const;
+
+export const REPORTING_SCHEDULE_UTC_TIME_ZONE = "UTC";
+
+/** UTC first, then every IANA zone the browser knows; the current value is always offered. */
+export function buildReportingScheduleTimeZoneOptions(currentTimeZoneId: string): string[] {
+  let supported: string[] = [];
+  try {
+    supported = typeof Intl.supportedValuesOf === "function" ? Intl.supportedValuesOf("timeZone") : [];
+  } catch {
+    supported = [];
+  }
+
+  const options = [REPORTING_SCHEDULE_UTC_TIME_ZONE, ...supported.filter((zone) => zone !== REPORTING_SCHEDULE_UTC_TIME_ZONE)];
+  const current = currentTimeZoneId.trim();
+  return current && !options.includes(current) ? [current, ...options] : options;
+}
 
 export function buildReportingScheduleTemplateOptions(templates: readonly ReportingTemplateRow[]): ReportingTemplateRow[] {
   return [...templates]
@@ -93,12 +117,19 @@ export function buildReportingScheduleTemplateOptions(templates: readonly Report
     .sort((left, right) => left.name.localeCompare(right.name) || right.versionNumber - left.versionNumber);
 }
 
-function buildScheduleTimingGuidance(cronExpression: string): string {
+function buildScheduleTimingGuidance(cronExpression: string, timeZoneId: string): string {
+  const zone = timeZoneId.trim() || REPORTING_SCHEDULE_UTC_TIME_ZONE;
+  const zoneNote = zone === REPORTING_SCHEDULE_UTC_TIME_ZONE
+    ? "Run times are in UTC."
+    : `Run times follow ${zone} local time, including daylight-saving changes.`;
   if (cronExpression === "0 8 1 * *") {
-    return "Runs on the first day of each month. The report uses the period-end date selected beside the cadence.";
+    return `Runs on the first day of each month. The report uses the period-end date selected beside the cadence. ${zoneNote}`;
+  }
+  if (cronExpression === "0 8 L * *") {
+    return `Runs on the last calendar day of each month. The report uses the period-end date selected beside the cadence. ${zoneNote}`;
   }
 
-  return "The cadence controls when the schedule runs; the report period end controls the data cut used by that run.";
+  return `The cadence controls when the schedule runs; the report period end controls the data cut used by that run. ${zoneNote}`;
 }
 
 export interface ReportingScheduleManagementModel {
@@ -128,9 +159,11 @@ interface ReportingScheduleManagementPanelProps {
   onStageTarget: () => void;
   onRemoveTarget: (distributionId: string) => void;
   onSaveDraft: () => void | Promise<void>;
-  onScheduleAction: (schedule: ReportingScheduleRow, action: "pause" | "resume" | "run") => void | Promise<void>;
+  onScheduleAction: (schedule: ReportingScheduleRow, action: ReportingScheduleAction) => void | Promise<void>;
   onSchedulePlanRun: (plan: ReportingScheduleDeliveryPlanRow) => void | Promise<void>;
 }
+
+export type ReportingScheduleAction = "pause" | "resume" | "run" | "disable" | "delete";
 
 export function ReportingScheduleManagementPanel({
   model,
@@ -150,6 +183,12 @@ export function ReportingScheduleManagementPanel({
   onSchedulePlanRun
 }: ReportingScheduleManagementPanelProps) {
   const scheduleTemplateOptions = buildReportingScheduleTemplateOptions(templates);
+  const timeZoneOptions = useMemo(
+    () => buildReportingScheduleTimeZoneOptions(scheduleDraft.timeZoneId),
+    [scheduleDraft.timeZoneId]
+  );
+  // Deleting is permanent, so the row asks for a second click before it calls the server.
+  const [pendingDeleteScheduleId, setPendingDeleteScheduleId] = useState<string | null>(null);
   const selectedScheduleTemplate = scheduleTemplateOptions.find((template) =>
     template.templateName === scheduleDraft.templateId && template.versionNumber === scheduleDraft.templateVersion) ?? null;
   const selectedScheduleTemplateRowId = selectedScheduleTemplate?.id
@@ -210,6 +249,19 @@ export function ReportingScheduleManagementPanel({
               </Select>
             </label>
             <label className="min-w-0 space-y-1">
+              <span className="text-xs font-medium text-muted-foreground">Time zone</span>
+              <Select
+                value={scheduleDraft.timeZoneId || REPORTING_SCHEDULE_UTC_TIME_ZONE}
+                onChange={(event) => onDraftChange("timeZoneId", event.target.value)}
+                aria-label="Reporting schedule time zone"
+                aria-describedby="reporting-schedule-timing-guidance"
+              >
+                {timeZoneOptions.map((zone) => (
+                  <option key={zone} value={zone}>{zone}</option>
+                ))}
+              </Select>
+            </label>
+            <label className="min-w-0 space-y-1">
               <span className="text-xs font-medium text-muted-foreground">Next report period end</span>
               <Input
                 type="date"
@@ -220,7 +272,7 @@ export function ReportingScheduleManagementPanel({
               />
             </label>
             <p id="reporting-schedule-timing-guidance" className="text-xs leading-5 text-muted-foreground sm:col-span-2">
-              {buildScheduleTimingGuidance(scheduleDraft.cronExpression)}
+              {buildScheduleTimingGuidance(scheduleDraft.cronExpression, scheduleDraft.timeZoneId)}
             </p>
             <label className="min-w-0 space-y-1">
               <span className="text-xs font-medium text-muted-foreground">Distribution</span>
@@ -641,11 +693,58 @@ export function ReportingScheduleManagementPanel({
                     busy={runningScheduleActionId === `${schedule.id}:resume`}
                     busyLabel="Resuming"
                     disabled={!schedule.canResume || Boolean(runningScheduleActionId)}
-                    disabledReason={schedule.canResume ? null : "Only paused schedules can be resumed."}
+                    disabledReason={schedule.canResume ? null : "Only paused or disabled schedules can be resumed."}
                     onClick={() => void onScheduleAction(schedule, "resume")}
                   >
                     Resume
                   </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    busy={runningScheduleActionId === `${schedule.id}:disable`}
+                    busyLabel="Disabling"
+                    disabled={!schedule.canDisable || Boolean(runningScheduleActionId)}
+                    disabledReason={schedule.canDisable ? null : "This schedule is already disabled."}
+                    onClick={() => void onScheduleAction(schedule, "disable")}
+                  >
+                    Disable
+                  </Button>
+                  {pendingDeleteScheduleId === schedule.id ? (
+                    <>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        busy={runningScheduleActionId === `${schedule.id}:delete`}
+                        busyLabel="Deleting"
+                        disabled={Boolean(runningScheduleActionId)}
+                        aria-label={`Confirm delete ${schedule.id}`}
+                        onClick={() => {
+                          setPendingDeleteScheduleId(null);
+                          void onScheduleAction(schedule, "delete");
+                        }}
+                      >
+                        Confirm delete
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        aria-label={`Cancel delete ${schedule.id}`}
+                        onClick={() => setPendingDeleteScheduleId(null)}
+                      >
+                        Cancel
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={Boolean(runningScheduleActionId)}
+                      aria-label={`Delete ${schedule.id}`}
+                      onClick={() => setPendingDeleteScheduleId(schedule.id)}
+                    >
+                      Delete
+                    </Button>
+                  )}
                 </div>
               </div>
             ))}

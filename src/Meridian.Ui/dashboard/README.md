@@ -1367,8 +1367,10 @@ access snapshot as `allowOwnerAccess` plus typed `User`, `Group`, or `Company` p
 renders those values as policy evidence only; flattened principal ids are rejected at the API
 boundary rather than assigned a client-inferred principal kind or used to infer authorization.
 The Reporting workspace also renders operator-managed schedule rows from the shared schedule
-payload and wires schedule save/upsert, run-now, pause, and resume controls through the shared
-schedule endpoints. Due schedules are leased and executed only by the hosted reporting worker; the
+payload and wires schedule save/upsert, run-now, pause, resume, disable, and delete (with an
+inline confirm step) controls through the shared schedule endpoints. Cadence presets cover daily,
+weekday, weekly, twice-monthly, first and last day of month, quarterly, and annual runs, and a
+time zone select sends the schedule's IANA `timeZoneId` (default `UTC`). Due schedules are leased and executed only by the hosted reporting worker; the
 browser has no public batch `run-due` control or API helper. Schedule drafts default from the current schedule, approved template, and
 distribution payload before posting back to the server. Retained delivery attempts render from the
 shared delivery-history payload, so browser Reporting shows actual

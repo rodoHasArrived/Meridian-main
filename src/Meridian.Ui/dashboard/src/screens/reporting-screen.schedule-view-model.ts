@@ -62,7 +62,7 @@ export function buildScheduleRows(
     templateId: schedule.templateId,
     state: schedule.state,
     stateVariant: schedule.state === "Active" ? "success" : schedule.state === "Paused" ? "warning" : "outline",
-    cronLabel: schedule.cronExpression,
+    cronLabel: schedule.timeZoneId ? `${schedule.cronExpression} (${schedule.timeZoneId})` : schedule.cronExpression,
     dueLabel: formatReportingTimestamp(schedule.dueAtUtc),
     nextAsOfLabel: presentReportingAsOfDate(schedule.nextAsOfDate),
     lastRunLabel: schedule.lastRunAtUtc ? formatReportingTimestamp(schedule.lastRunAtUtc) : "Not run",
@@ -72,7 +72,8 @@ export function buildScheduleRows(
     datasetSourceLabel: formatScheduleDatasetSource(schedule.datasetSourceId, datasetSources),
     ...buildScheduleReleaseView(schedule),
     canPause: schedule.state === "Active",
-    canResume: schedule.state === "Paused",
+    canResume: schedule.state === "Paused" || schedule.state === "Disabled",
+    canDisable: schedule.state !== "Disabled",
     ariaLabel: `${schedule.scheduleId} ${schedule.templateId} reporting schedule is ${schedule.state}`
   }));
 }

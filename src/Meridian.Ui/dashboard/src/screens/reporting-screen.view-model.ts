@@ -495,6 +495,7 @@ export interface ReportingScheduleRow {
   releaseHandoffs: ReportingScheduledReleaseHandoffRow[];
   canPause: boolean;
   canResume: boolean;
+  canDisable: boolean;
   ariaLabel: string;
 }
 

@@ -1191,7 +1191,11 @@ public sealed record ReportingScheduleRecordDto(
     ReportingRunReadinessDto? LastReadiness = null,
     IReadOnlyList<ReportingScheduledReleaseHandoffDto>? ReleaseDeliveryHandoffs = null,
     string? AccessPolicySnapshotHash = null,
-    string? DeliveryTargetsSnapshotHash = null);
+    string? DeliveryTargetsSnapshotHash = null,
+    // IANA time zone the cron expression is evaluated in; null means UTC. Omitted from JSON
+    // when null so payloads retained before the field existed keep their content hash.
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? TimeZoneId = null);
 
 public sealed record ReportingScheduleUpsertRequestDto(
     string ScheduleId,
@@ -1209,7 +1213,10 @@ public sealed record ReportingScheduleUpsertRequestDto(
     string? BrandingThemeId = null,
     ReportBrandingThemeDto? BrandingThemeOverride = null,
     VersionedReportTemplateIdDto? Template = null,
-    ReportingRunParametersDto? RunParameters = null);
+    ReportingRunParametersDto? RunParameters = null,
+    // IANA time zone the cron expression is evaluated in. Null keeps the retained zone on
+    // update (UTC for a new schedule); send "UTC" to reset an existing schedule to UTC.
+    string? TimeZoneId = null);
 
 public sealed record ReportingScheduleRunResultDto(
     ReportingScheduleRecordDto Schedule,

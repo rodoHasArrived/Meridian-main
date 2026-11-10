@@ -120,11 +120,12 @@ public sealed partial class ReportingScheduleService
         ReportingScheduleRecordDto schedule,
         ReportingScheduleIdentity identity)
     {
-        if (!CronExpressionParser.TryParse(schedule.CronExpression, out var cronSchedule)
-            || cronSchedule.GetNextOccurrenceOrNull(schedule.DueAtUtc, TimeZoneInfo.Utc) is null)
+        if (!ReportingScheduleTimeZones.TryResolve(schedule.TimeZoneId, out var timeZone)
+            || !CronExpressionParser.TryParse(schedule.CronExpression, out var cronSchedule)
+            || cronSchedule.GetNextOccurrenceOrNull(schedule.DueAtUtc, timeZone) is null)
         {
             throw new InvalidDataException(
-                $"Reporting schedule '{schedule.ScheduleId}' has an invalid cron expression or no future UTC occurrence.");
+                $"Reporting schedule '{schedule.ScheduleId}' has an invalid cron expression or time zone, or no future occurrence.");
         }
 
         if (identity.TenantId.Length > 0
@@ -317,7 +318,7 @@ public sealed partial class ReportingScheduleService
         ReportingOutputManifest manifest,
         ReportingRunParametersDto resolvedParameters)
     {
-        var nextDue = ResolveNextDue(schedule.CronExpression, schedule.DueAtUtc);
+        var nextDue = ResolveNextDue(schedule.CronExpression, schedule.DueAtUtc, schedule.TimeZoneId);
         var nextAsOfDate = schedule.NextAsOfDate.AddDays(
             (nextDue.Date - schedule.DueAtUtc.Date).Days);
         var runAtUtc = DateTimeOffset.UtcNow;
@@ -335,7 +336,8 @@ public sealed partial class ReportingScheduleService
 
     private static DateTimeOffset ResolveNextDue(
         string cronExpression,
-        DateTimeOffset dueAtUtc)
+        DateTimeOffset dueAtUtc,
+        string? timeZoneId)
     {
         if (!CronExpressionParser.TryParse(cronExpression, out var schedule))
         {
@@ -343,14 +345,24 @@ public sealed partial class ReportingScheduleService
                 $"Reporting schedule cron expression '{cronExpression}' is invalid.");
         }
 
-        return schedule.GetNextOccurrenceOrNull(dueAtUtc.ToUniversalTime(), TimeZoneInfo.Utc)
+        if (!ReportingScheduleTimeZones.TryResolve(timeZoneId, out var timeZone))
+        {
+            throw new InvalidDataException(
+                $"Reporting schedule time zone '{timeZoneId}' is not recognized.");
+        }
+
+        // The cron expression is evaluated in the schedule's time zone; the due instant is
+        // always retained in UTC.
+        return (schedule.GetNextOccurrenceOrNull(dueAtUtc.ToUniversalTime(), timeZone)
             ?? throw new InvalidDataException(
-                $"Reporting schedule cron expression '{cronExpression}' has no future UTC occurrence.");
+                $"Reporting schedule cron expression '{cronExpression}' has no future occurrence."))
+            .ToUniversalTime();
     }
 
     private static void ValidateCronExpressionForUpsert(
         string cronExpression,
-        DateTimeOffset dueAtUtc)
+        DateTimeOffset dueAtUtc,
+        string? timeZoneId)
     {
         if (!CronExpressionParser.TryParse(cronExpression, out var schedule))
         {
@@ -359,12 +371,56 @@ public sealed partial class ReportingScheduleService
                 nameof(cronExpression));
         }
 
-        if (schedule.GetNextOccurrenceOrNull(dueAtUtc.ToUniversalTime(), TimeZoneInfo.Utc) is null)
+        if (!ReportingScheduleTimeZones.TryResolve(timeZoneId, out var timeZone))
         {
             throw new ArgumentException(
-                "The reporting schedule cron expression has no future UTC occurrence within the supported calendar horizon.",
+                $"Unknown reporting schedule time zone: {timeZoneId}",
+                nameof(timeZoneId));
+        }
+
+        if (schedule.GetNextOccurrenceOrNull(dueAtUtc.ToUniversalTime(), timeZone) is null)
+        {
+            throw new ArgumentException(
+                "The reporting schedule cron expression has no future occurrence within the supported calendar horizon.",
                 nameof(cronExpression));
         }
     }
 
+}
+
+/// <summary>
+/// Resolves the optional time zone a reporting schedule's cron expression is evaluated in.
+/// A missing identifier means UTC, and UTC is always retained as <see langword="null"/>.
+/// </summary>
+internal static class ReportingScheduleTimeZones
+{
+    public static bool TryResolve(string? timeZoneId, out TimeZoneInfo timeZone)
+    {
+        if (string.IsNullOrWhiteSpace(timeZoneId))
+        {
+            timeZone = TimeZoneInfo.Utc;
+            return true;
+        }
+
+        if (TimeZoneInfo.TryFindSystemTimeZoneById(timeZoneId.Trim(), out var resolved))
+        {
+            timeZone = resolved;
+            return true;
+        }
+
+        timeZone = TimeZoneInfo.Utc;
+        return false;
+    }
+
+    /// <summary>Returns the identifier to retain: null for UTC, the trimmed id otherwise.</summary>
+    public static string? Normalize(string? timeZoneId)
+    {
+        if (string.IsNullOrWhiteSpace(timeZoneId))
+        {
+            return null;
+        }
+
+        var trimmed = timeZoneId.Trim();
+        return trimmed is "UTC" or "Etc/UTC" or "Z" ? null : trimmed;
+    }
 }

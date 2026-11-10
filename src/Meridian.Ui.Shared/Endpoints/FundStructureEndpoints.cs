@@ -1583,6 +1583,18 @@ public static partial class FundStructureEndpoints
             .Produces<ReportingScheduleRecordDto>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status409Conflict)
             .ProducesProblem(StatusCodes.Status503ServiceUnavailable);
+        reportingGroup.MapPost("/schedules/{scheduleId}/disable", (string scheduleId, HttpContext context) => SetScheduleState(context, scheduleId, ReportingScheduleStateDto.Disabled))
+            .WithName("DisableReportingSchedule").RequireAnyPermission(UserPermission.ManageReporting, UserPermission.AdminMaintenance)
+            .Produces<ReportingScheduleRecordDto>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesProblem(StatusCodes.Status503ServiceUnavailable);
+        reportingGroup.MapDelete("/schedules/{scheduleId}", (string scheduleId, HttpContext context) => DeleteReportingSchedule(context, scheduleId))
+            .WithName("DeleteReportingSchedule").RequireAnyPermission(UserPermission.ManageReporting, UserPermission.AdminMaintenance)
+            .Produces<ReportingScheduleRecordDto>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesProblem(StatusCodes.Status503ServiceUnavailable);
         reportingGroup.MapPost("/schedules/{scheduleId}/run", async (string scheduleId, HttpContext context) =>
         {
             if (!HasReportingWorkflowPermission(context))

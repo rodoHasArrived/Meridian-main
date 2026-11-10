@@ -18,6 +18,8 @@ import { TechnicalDetails } from "@/components/ui/technical-details";
 import { ReportingIncomeComparisonPanel } from "@/screens/reporting-income-comparison";
 import {
   approveReportTemplateDraft,
+  deleteReportingSchedule,
+  disableReportingSchedule,
   pauseReportingSchedule,
   provisionReportingStarterKit,
   rejectReportTemplateDraft,
@@ -86,8 +88,10 @@ import {
 } from "@/screens/reporting-screen.report-writer";
 import {
   ReportingScheduleManagementPanel,
+  REPORTING_SCHEDULE_UTC_TIME_ZONE,
   reportingScheduleArtifactFormats,
   reportingScheduleDeliveryModes,
+  type ReportingScheduleAction,
   type ReportingScheduleArtifactFormat,
   type ReportingScheduleDraftField,
   type ReportingScheduleDraftState,
@@ -509,17 +513,20 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
     }
   }
 
-  async function handleScheduleAction(schedule: ReportingScheduleRow, action: "pause" | "resume" | "run") {
+  async function handleScheduleAction(schedule: ReportingScheduleRow, action: ReportingScheduleAction) {
     const statusId = `${schedule.id}:${action}`;
     if (runningScheduleActionId) {
       return;
     }
 
-    const label = action === "run"
-      ? `Run ${schedule.id}`
-      : action === "pause"
-        ? `Pause ${schedule.id}`
-        : `Resume ${schedule.id}`;
+    const actionVerbs: Record<ReportingScheduleAction, string> = {
+      run: "Run",
+      pause: "Pause",
+      resume: "Resume",
+      disable: "Disable",
+      delete: "Delete"
+    };
+    const label = `${actionVerbs[action]} ${schedule.id}`;
     setScheduleActionStatus({
       id: statusId,
       label,
@@ -534,6 +541,10 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
         await pauseReportingSchedule(schedule.id);
       } else if (action === "resume") {
         await resumeReportingSchedule(schedule.id);
+      } else if (action === "disable") {
+        await disableReportingSchedule(schedule.id);
+      } else if (action === "delete") {
+        await deleteReportingSchedule(schedule.id);
       } else {
         const result = await runReportingScheduleNow(schedule.id);
         details = formatReportingScheduleRunDetails(result);
@@ -611,8 +622,8 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
             ? normalizeReportingScheduleRecipientPrincipalKind(value)
             : value
       } as ReportingScheduleDraftState;
-      if (field === "cronExpression" || field === "nextAsOfDate") {
-        next.dueAtUtc = resolveReportingScheduleDueAtUtc(next.nextAsOfDate, next.cronExpression, current.dueAtUtc);
+      if (field === "cronExpression" || field === "nextAsOfDate" || field === "timeZoneId") {
+        next.dueAtUtc = resolveReportingScheduleDueAtUtc(next.nextAsOfDate, next.cronExpression, current.dueAtUtc, next.timeZoneId);
       }
       if (field === "nextAsOfDate") {
         next.runParameters = {
@@ -2637,6 +2648,7 @@ function buildDefaultReportingScheduleDraft(reporting: AccountingWorkspaceRespon
     scheduleId,
     templateId,
     cronExpression: normalizeDraftText(schedule?.cronExpression, "0 8 1 * *"),
+    timeZoneId: normalizeDraftText(schedule?.timeZoneId, REPORTING_SCHEDULE_UTC_TIME_ZONE),
     nextAsOfDate,
     dueAtUtc,
     maxRetries: String(Math.max(0, schedule?.maxRetries ?? 1)),
@@ -2674,7 +2686,8 @@ function normalizeReportBuilderContextToken(value: string): string {
 export function resolveReportingScheduleDueAtUtc(
   nextAsOfDate: string,
   cronExpression: string,
-  currentDueAtUtc: string
+  currentDueAtUtc: string,
+  timeZoneId: string = REPORTING_SCHEDULE_UTC_TIME_ZONE
 ): string {
   const dateMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(nextAsOfDate.trim());
   const cronFields = cronExpression.trim().split(/\s+/);
@@ -2687,7 +2700,9 @@ export function resolveReportingScheduleDueAtUtc(
   const year = Number.parseInt(dateMatch[1], 10);
   const monthIndex = Number.parseInt(dateMatch[2], 10) - 1;
   const day = Number.parseInt(dateMatch[3], 10);
-  let dueDate = new Date(Date.UTC(year, monthIndex, day));
+  // Calendar arithmetic runs on a UTC-anchored date that stands for the schedule's local
+  // calendar day; the zone is applied once, when the wall time becomes a UTC instant.
+  const dueDate = new Date(Date.UTC(year, monthIndex, day));
   if (
     dueDate.getUTCFullYear() !== year
     || dueDate.getUTCMonth() !== monthIndex
@@ -2696,34 +2711,83 @@ export function resolveReportingScheduleDueAtUtc(
     return currentDueAtUtc;
   }
 
-  const normalizedCron = cronFields.join(" ");
-  if (normalizedCron === "0 8 * * 1-5") {
-    while (dueDate.getUTCDay() === 0 || dueDate.getUTCDay() === 6) {
+  // The first day on or after the period end that the cadence preset runs on. A custom
+  // cron keeps the period-end day; the server validates and advances it from there.
+  const matchesPresetDay = reportingSchedulePresetDayMatchers[cronFields.join(" ")];
+  if (matchesPresetDay) {
+    for (let guard = 0; guard < 400 && !matchesPresetDay(dueDate); guard += 1) {
       dueDate.setUTCDate(dueDate.getUTCDate() + 1);
     }
-  } else if (normalizedCron === "0 8 * * 1") {
-    while (dueDate.getUTCDay() !== 1) {
-      dueDate.setUTCDate(dueDate.getUTCDate() + 1);
-    }
-  } else if (normalizedCron === "0 8 1 * *") {
-    if (dueDate.getUTCDate() !== 1) {
-      dueDate = new Date(Date.UTC(dueDate.getUTCFullYear(), dueDate.getUTCMonth() + 1, 1));
-    }
-  } else if (normalizedCron === "0 8 1 1,4,7,10 *") {
-    const quarterlyMonths = new Set([0, 3, 6, 9]);
-    let candidate = new Date(Date.UTC(dueDate.getUTCFullYear(), dueDate.getUTCMonth(), 1));
-    if (candidate < dueDate || !quarterlyMonths.has(candidate.getUTCMonth())) {
-      do {
-        candidate = new Date(Date.UTC(candidate.getUTCFullYear(), candidate.getUTCMonth() + 1, 1));
-      } while (!quarterlyMonths.has(candidate.getUTCMonth()));
-    }
-    dueDate = candidate;
   }
 
-  const dueYear = dueDate.getUTCFullYear().toString().padStart(4, "0");
-  const dueMonth = (dueDate.getUTCMonth() + 1).toString().padStart(2, "0");
-  const dueDay = dueDate.getUTCDate().toString().padStart(2, "0");
-  return `${dueYear}-${dueMonth}-${dueDay}T${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}:00Z`;
+  const dueInstant = zonedWallTimeToUtc(
+    dueDate.getUTCFullYear(),
+    dueDate.getUTCMonth(),
+    dueDate.getUTCDate(),
+    hour,
+    minute,
+    timeZoneId
+  );
+  return dueInstant.toISOString().replace(/\.\d{3}Z$/, "Z");
+}
+
+const reportingSchedulePresetDayMatchers: Record<string, (localDay: Date) => boolean> = {
+  "0 8 * * *": () => true,
+  "0 8 * * 1-5": (localDay) => localDay.getUTCDay() !== 0 && localDay.getUTCDay() !== 6,
+  "0 8 * * 1": (localDay) => localDay.getUTCDay() === 1,
+  "0 8 1,15 * *": (localDay) => localDay.getUTCDate() === 1 || localDay.getUTCDate() === 15,
+  "0 8 1 * *": (localDay) => localDay.getUTCDate() === 1,
+  "0 8 L * *": (localDay) =>
+    localDay.getUTCDate() === new Date(Date.UTC(localDay.getUTCFullYear(), localDay.getUTCMonth() + 1, 0)).getUTCDate(),
+  "0 8 1 1,4,7,10 *": (localDay) => localDay.getUTCDate() === 1 && localDay.getUTCMonth() % 3 === 0,
+  "0 8 1 1 *": (localDay) => localDay.getUTCDate() === 1 && localDay.getUTCMonth() === 0
+};
+
+/** Converts a wall-clock time in an IANA zone to the UTC instant; unknown zones fall back to UTC. */
+function zonedWallTimeToUtc(
+  year: number,
+  monthIndex: number,
+  day: number,
+  hour: number,
+  minute: number,
+  timeZoneId: string
+): Date {
+  const wallAsUtc = Date.UTC(year, monthIndex, day, hour, minute);
+  const zone = timeZoneId.trim();
+  if (!zone || zone === REPORTING_SCHEDULE_UTC_TIME_ZONE) {
+    return new Date(wallAsUtc);
+  }
+
+  let formatter: Intl.DateTimeFormat;
+  try {
+    formatter = new Intl.DateTimeFormat("en-US", {
+      timeZone: zone,
+      hourCycle: "h23",
+      year: "numeric",
+      month: "numeric",
+      day: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+      second: "numeric"
+    });
+  } catch {
+    return new Date(wallAsUtc);
+  }
+
+  const offsetAt = (instant: number): number => {
+    const parts: Record<string, number> = {};
+    for (const part of formatter.formatToParts(new Date(instant))) {
+      if (part.type !== "literal") {
+        parts[part.type] = Number.parseInt(part.value, 10);
+      }
+    }
+    return Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second) - instant;
+  };
+
+  // Two passes settle the offset when the first guess lands on the other side of a
+  // daylight-saving change.
+  const firstGuess = wallAsUtc - offsetAt(wallAsUtc);
+  return new Date(wallAsUtc - offsetAt(firstGuess));
 }
 
 function buildReportingScheduleUpsertRequest(
@@ -2756,6 +2820,8 @@ function buildReportingScheduleUpsertRequest(
     scheduleId,
     templateId,
     cronExpression: normalizeDraftText(draft.cronExpression, "0 8 1 * *"),
+    // Always explicit: a null zone would keep whatever zone the server already retains.
+    timeZoneId: normalizeDraftText(draft.timeZoneId, REPORTING_SCHEDULE_UTC_TIME_ZONE),
     nextAsOfDate,
     dueAtUtc: normalizeDraftText(draft.dueAtUtc, `${nextAsOfDate}T20:00:00Z`),
     maxRetries: parseScheduleMaxRetries(draft.maxRetries),

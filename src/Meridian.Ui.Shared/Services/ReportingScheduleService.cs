@@ -700,11 +700,12 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
             throw new InvalidDataException("Reporting schedule is structurally invalid.");
         }
 
-        if (!CronExpressionParser.TryParse(schedule.CronExpression, out var cronSchedule)
-            || cronSchedule.GetNextOccurrenceOrNull(schedule.DueAtUtc, TimeZoneInfo.Utc) is null)
+        if (!ReportingScheduleTimeZones.TryResolve(schedule.TimeZoneId, out var timeZone)
+            || !CronExpressionParser.TryParse(schedule.CronExpression, out var cronSchedule)
+            || cronSchedule.GetNextOccurrenceOrNull(schedule.DueAtUtc, timeZone) is null)
         {
             throw new InvalidDataException(
-                $"Reporting schedule '{schedule.ScheduleId}' has an invalid cron expression or no future UTC occurrence.");
+                $"Reporting schedule '{schedule.ScheduleId}' has an invalid cron expression or time zone, or no future occurrence.");
         }
     }
 
@@ -1262,7 +1263,9 @@ public sealed partial class ReportingScheduleService
             throw new ArgumentOutOfRangeException(nameof(request), "maxRetries must be zero or greater.");
         }
 
-        ValidateCronExpressionForUpsert(request.CronExpression, request.DueAtUtc);
+        // A null request zone keeps the retained zone; the effective zone is resolved again
+        // under the lock once the existing record is known.
+        ValidateCronExpressionForUpsert(request.CronExpression, request.DueAtUtc, request.TimeZoneId);
 
         EnsureTemplateAccess(request.TemplateId, accessContext);
         EnsureBoundContext(accessContext);
@@ -1306,6 +1309,13 @@ public sealed partial class ReportingScheduleService
                 request.TemplateId,
                 request.Template ?? existing?.Template,
                 accessContext);
+            var timeZoneId = request.TimeZoneId is null
+                ? existing?.TimeZoneId
+                : ReportingScheduleTimeZones.Normalize(request.TimeZoneId);
+            if (request.TimeZoneId is null && timeZoneId is not null)
+            {
+                ValidateCronExpressionForUpsert(request.CronExpression, request.DueAtUtc, timeZoneId);
+            }
             var runParameters = request.RunParameters ?? existing?.RunParameters;
             if (accessContext?.RequireBoundScope == true
                 && request.State == ReportingScheduleStateDto.Active
@@ -1362,7 +1372,8 @@ public sealed partial class ReportingScheduleService
                 LastReadiness: existing?.LastReadiness,
                 ReleaseDeliveryHandoffs: retainedReleaseDeliveryHandoffs,
                 AccessPolicySnapshotHash: ComputeAccessPolicySnapshotHash(accessPolicySnapshot),
-                DeliveryTargetsSnapshotHash: deliveryTargetsSnapshotHash);
+                DeliveryTargetsSnapshotHash: deliveryTargetsSnapshotHash,
+                TimeZoneId: timeZoneId);
             return new PreparedScheduleUpsert(identity, existing, record);
         }
     }
@@ -1493,6 +1504,70 @@ public sealed partial class ReportingScheduleService
                 throw;
             }
             return updated;
+        }
+    }
+
+    /// <summary>
+    /// Permanently removes a schedule. Runs it already produced are retained by the run store;
+    /// only the recurring definition is deleted. A schedule that is executing on this host is
+    /// refused so an in-flight run cannot resurrect or lose its advance.
+    /// </summary>
+    public ReportingScheduleRecordDto Delete(
+        string scheduleId,
+        ReportAccessQueryContext? accessContext)
+    {
+        EnsureReportingDeploymentReady("delete a reporting schedule");
+        ArgumentException.ThrowIfNullOrWhiteSpace(scheduleId);
+        lock (_gate)
+        {
+            var identity = ResolveExistingIdentity(scheduleId, accessContext);
+            var current = _schedules[identity];
+
+            EnsureScheduleInScope(current, accessContext);
+            if (_dueRunClaims.Contains(identity))
+            {
+                throw new ReportingScheduleExecutionLeaseException(
+                    identity.TenantId,
+                    identity.CompanyId,
+                    current.ScheduleId,
+                    "The reporting schedule is executing and cannot be deleted until the run completes.");
+            }
+
+            if (_store is not null)
+            {
+                if (identity.TenantId.Length == 0 || identity.CompanyId.Length == 0)
+                {
+                    throw new InvalidDataException(
+                        "A legacy reporting schedule without tenant and company scope cannot be deleted; disable it instead.");
+                }
+
+                bool deleted;
+                try
+                {
+                    deleted = _store.Delete(
+                        identity.TenantId,
+                        identity.CompanyId,
+                        current.ScheduleId,
+                        current.UpdatedAtUtc);
+                }
+                catch (Exception ex)
+                {
+                    // Same recovery as a failed state change: a revision conflict reloads the
+                    // retained row so the caller can retry against the current revision.
+                    RestoreScheduleAfterPersistenceFailure(identity, current, ex);
+                    throw;
+                }
+
+                if (!deleted)
+                {
+                    _schedules.Remove(identity);
+                    throw new KeyNotFoundException(
+                        $"Reporting schedule '{current.ScheduleId}' no longer exists.");
+                }
+            }
+
+            _schedules.Remove(identity);
+            return current;
         }
     }
 

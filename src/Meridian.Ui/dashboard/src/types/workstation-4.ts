@@ -1420,6 +1420,8 @@ export interface ReportingScheduleRecord {
   releaseDeliveryHandoffs?: ReportingScheduledReleaseHandoff[] | null;
   accessPolicySnapshotHash?: string | null;
   deliveryTargetsSnapshotHash?: string | null;
+  /** IANA time zone the cron expression is evaluated in. Absent or null means UTC. */
+  timeZoneId?: string | null;
 }
 
 export interface ReportingScheduleUpsertRequest {
@@ -1439,6 +1441,8 @@ export interface ReportingScheduleUpsertRequest {
   brandingThemeOverride?: ReportBrandingTheme | null;
   template?: VersionedReportTemplateId | null;
   runParameters?: ReportingRunParameters | null;
+  /** IANA time zone. Null keeps the retained zone on update; send "UTC" to reset to UTC. */
+  timeZoneId?: string | null;
 }
 
 export interface ReportingScheduleRunResult {

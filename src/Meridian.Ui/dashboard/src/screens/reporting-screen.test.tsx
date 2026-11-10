@@ -1334,7 +1334,7 @@ function createReportLineProvenanceExplorer(): FinancialRecordExplorerDto {
   };
 }
 
-function withReportingSchedule(state: "Active" | "Paused" = "Active"): AccountingWorkspaceResponse {
+function withReportingSchedule(state: "Active" | "Paused" | "Disabled" = "Active"): AccountingWorkspaceResponse {
   return {
     ...accounting,
     reporting: {
@@ -3429,6 +3429,42 @@ describe("ReportingScreen", () => {
     expect(screen.getByLabelText("Reporting schedule due at UTC")).toHaveValue("2026-07-01T08:00:00Z");
   });
 
+  it("offers daily, semi-monthly, month-end and annual cadence presets", () => {
+    renderWithRouter(<ReportingScreen data={withReportingSchedule()} />, { initialEntries: ["/reporting/scheduled"] });
+
+    const cadence = screen.getByLabelText("Reporting schedule cadence");
+    const labels = within(cadence).getAllByRole("option").map((option) => option.textContent);
+    expect(labels).toEqual(expect.arrayContaining([
+      "Every day",
+      "Twice a month (1st and 15th)",
+      "Last day of each month",
+      "Annually (1 January)"
+    ]));
+
+    fireEvent.change(screen.getByLabelText("Reporting schedule next report period end"), {
+      target: { value: "2026-02-10" }
+    });
+    fireEvent.change(cadence, { target: { value: "0 8 L * *" } });
+
+    expect(screen.getByLabelText("Reporting schedule cron expression")).toHaveValue("0 8 L * *");
+    expect(screen.getByLabelText("Reporting schedule due at UTC")).toHaveValue("2026-02-28T08:00:00Z");
+  });
+
+  it("converts the schedule due time from the selected time zone to UTC", () => {
+    renderWithRouter(<ReportingScreen data={withReportingSchedule()} />, { initialEntries: ["/reporting/scheduled"] });
+
+    fireEvent.change(screen.getByLabelText("Reporting schedule next report period end"), {
+      target: { value: "2026-06-30" }
+    });
+    fireEvent.change(screen.getByLabelText("Reporting schedule time zone"), {
+      target: { value: "America/New_York" }
+    });
+
+    // 08:00 on 1 July in New York is daylight time, four hours behind UTC.
+    expect(screen.getByLabelText("Reporting schedule due at UTC")).toHaveValue("2026-07-01T12:00:00Z");
+    expect(screen.getByText(/Run times follow America\/New_York local time/)).toBeInTheDocument();
+  });
+
   it("saves operator-authored report schedules through the shared schedule endpoint", async () => {
     userEvent.setup();
     fetchMock.mockResolvedValueOnce({
@@ -3584,6 +3620,7 @@ describe("ReportingScreen", () => {
       scheduleId: "sched-investor-email",
       templateId: "investor-monthly-statement",
       cronExpression: "0 9 * * 1",
+      timeZoneId: "UTC",
       nextAsOfDate: "2026-06-30",
       dueAtUtc: "2026-07-01T15:00:00Z",
       maxRetries: 3,
@@ -4292,7 +4329,7 @@ describe("ReportingScreen", () => {
     expect(scheduleRow).toBeInTheDocument();
     expect(scheduleRow).toHaveTextContent("Next scheduled run");
     expect(scheduleRow).toHaveTextContent("Report period endJun 1, 2026");
-    expect(screen.getByText("Runs on the first day of each month. The report uses the period-end date selected beside the cadence.")).toBeInTheDocument();
+    expect(screen.getByText("Runs on the first day of each month. The report uses the period-end date selected beside the cadence. Run times are in UTC.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Run now" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Pause" })).toBeEnabled();
     expect(screen.getByRole("button", { name: "Resume" })).toBeDisabled();
@@ -4539,6 +4576,61 @@ describe("ReportingScreen", () => {
     const status = screen.getByRole("status", { name: "Resume sched-investor status" });
     expect(status).toHaveTextContent("Schedule cannot resume until distribution targets are ready.");
     expect(status).toHaveTextContent("board-reporting-committee is missing retained portal entitlement evidence.");
+  });
+
+  it("disables a reporting schedule through the shared schedule endpoint", async () => {
+    const user = userEvent.setup();
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      text: async () => JSON.stringify(withReportingSchedule("Disabled").reporting.schedules![0])
+    });
+
+    renderWithRouter(<ReportingScreen data={withReportingSchedule("Active")} />, { initialEntries: ["/reporting/scheduled"] });
+
+    await user.click(screen.getByRole("button", { name: "Disable" }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(
+      "/api/fund-structure/reporting/schedules/sched-investor/disable",
+      expect.objectContaining({ method: "POST" })
+    ));
+    expect(screen.getByRole("status", { name: "Disable sched-investor status" }))
+      .toHaveTextContent("Disable sched-investor completed.");
+  });
+
+  it("lets a disabled reporting schedule be resumed but not disabled again", () => {
+    renderWithRouter(<ReportingScreen data={withReportingSchedule("Disabled")} />, { initialEntries: ["/reporting/scheduled"] });
+
+    expect(screen.getByRole("button", { name: "Resume" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Disable" })).toBeDisabled();
+  });
+
+  it("deletes a reporting schedule only after the operator confirms", async () => {
+    const user = userEvent.setup();
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      text: async () => JSON.stringify(withReportingSchedule("Paused").reporting.schedules![0])
+    });
+
+    renderWithRouter(<ReportingScreen data={withReportingSchedule("Paused")} />, { initialEntries: ["/reporting/scheduled"] });
+
+    await user.click(screen.getByRole("button", { name: "Delete sched-investor" }));
+    expect(fetchMock).not.toHaveBeenCalledWith(
+      "/api/fund-structure/reporting/schedules/sched-investor",
+      expect.anything()
+    );
+
+    await user.click(screen.getByRole("button", { name: "Cancel delete sched-investor" }));
+    expect(screen.queryByRole("button", { name: "Confirm delete sched-investor" })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Delete sched-investor" }));
+    await user.click(screen.getByRole("button", { name: "Confirm delete sched-investor" }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(
+      "/api/fund-structure/reporting/schedules/sched-investor",
+      expect.objectContaining({ method: "DELETE" })
+    ));
+    expect(screen.getByRole("status", { name: "Delete sched-investor status" }))
+      .toHaveTextContent("Delete sched-investor completed.");
   });
 
   it("shows schedule delivery counts after running a configured reporting schedule", async () => {

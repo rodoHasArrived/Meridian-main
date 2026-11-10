@@ -690,6 +690,188 @@ public sealed class ReportingOperationalConcurrencyTests
     }
 
     [Fact]
+    public void Scenario_ScheduleDelete_RemovesTheRetainedDefinitionAndRejectsAStaleHost()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "Meridian.Tests",
+            nameof(ReportingOperationalConcurrencyTests),
+            Guid.NewGuid().ToString("N"));
+        var path = Path.Combine(root, "reporting-schedules.json");
+        var accessContext = new ReportAccessQueryContext(
+            ActorPrincipalId: "operator-a",
+            CompanyId: "company-a",
+            TenantId: "tenant-a",
+            RequireBoundScope: true);
+        Directory.CreateDirectory(root);
+        var firstStore = new FileReportingScheduleStore(
+            new ReportingScheduleStoreOptions(path),
+            NullLogger<FileReportingScheduleStore>.Instance);
+        var staleStore = new FileReportingScheduleStore(
+            new ReportingScheduleStoreOptions(path),
+            NullLogger<FileReportingScheduleStore>.Instance);
+        firstStore.Upsert(BuildCurrentSchedule("file-schedule-delete"));
+        firstStore.Upsert(BuildCurrentSchedule("file-schedule-keep"));
+        var firstHost = CreateScheduleService(firstStore);
+        var staleHost = CreateScheduleService(staleStore);
+
+        try
+        {
+            firstHost.SetState(
+                "file-schedule-delete",
+                ReportingScheduleStateDto.Paused,
+                accessContext);
+
+            var staleDelete = () => staleHost.Delete("file-schedule-delete", accessContext);
+            staleDelete.Should().Throw<ReportingScheduleConcurrencyException>(
+                "a host holding an older revision must not delete a schedule another host changed");
+            firstStore.Load().Should().HaveCount(2);
+
+            staleHost.Delete("file-schedule-delete", accessContext)
+                .ScheduleId
+                .Should()
+                .Be("file-schedule-delete");
+
+            firstStore.Load().Should().ContainSingle(schedule =>
+                schedule.ScheduleId == "file-schedule-keep");
+            staleHost.ListSchedules(accessContext).Should().ContainSingle(schedule =>
+                schedule.ScheduleId == "file-schedule-keep");
+            var deleteAgain = () => staleHost.Delete("file-schedule-delete", accessContext);
+            deleteAgain.Should().Throw<KeyNotFoundException>();
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public void Scenario_ScheduleDelete_LegacyUnscopedScheduleIsRefusedAndRetained()
+    {
+        var store = new SharedAtomicScheduleStore([BuildSchedule("legacy-unscoped", "operator-a")]);
+        var service = CreateScheduleService(store);
+
+        var delete = () => service.Delete("legacy-unscoped", accessContext: null);
+
+        delete.Should().Throw<InvalidDataException>().WithMessage("*disable it instead*");
+        store.Load().Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task Scenario_DisabledSchedule_IsSkippedByTheWorkerUntilResumed()
+    {
+        var due = BuildSchedule("disabled-then-resumed", "operator-a") with
+        {
+            State = ReportingScheduleStateDto.Active,
+            DueAtUtc = FixedNow
+        };
+        var store = new SharedAtomicScheduleStore([due]);
+        var service = CreateRunnableScheduleService(store, new CountingRenderer());
+
+        service.SetState(due.ScheduleId, ReportingScheduleStateDto.Disabled);
+        var whileDisabled = await service.RunDueForWorkerAsync(FixedNow, CancellationToken.None);
+        service.SetState(due.ScheduleId, ReportingScheduleStateDto.Active);
+        var afterResume = await service.RunDueForWorkerAsync(FixedNow, CancellationToken.None);
+
+        whileDisabled.Result.Runs.Should().BeEmpty();
+        afterResume.Result.Runs.Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task Scenario_ScheduleWithTimeZone_AdvancesInLocalTimeAcrossDaylightSaving()
+    {
+        // 08:00 New York is 13:00 UTC in winter and 12:00 UTC once daylight time starts
+        // (8 March 2026), so a UTC-pinned schedule would drift by an hour.
+        var winterDue = new DateTimeOffset(2026, 3, 7, 13, 0, 0, TimeSpan.Zero);
+        var due = BuildSchedule("new-york-daily", "operator-a") with
+        {
+            CronExpression = "0 8 * * *",
+            TimeZoneId = "America/New_York",
+            State = ReportingScheduleStateDto.Active,
+            DueAtUtc = winterDue
+        };
+        var store = new SharedAtomicScheduleStore([due]);
+        var service = CreateRunnableScheduleService(store, new CountingRenderer());
+
+        var result = await service.RunDueForWorkerAsync(
+            winterDue,
+            CancellationToken.None);
+
+        result.Result.Runs.Should().ContainSingle();
+        var advanced = store.Load().Should().ContainSingle().Subject;
+        advanced.DueAtUtc.Should().Be(new DateTimeOffset(2026, 3, 8, 12, 0, 0, TimeSpan.Zero));
+        advanced.DueAtUtc.Offset.Should().Be(TimeSpan.Zero);
+        advanced.TimeZoneId.Should().Be("America/New_York");
+    }
+
+    [Fact]
+    public async Task Scenario_LastDayOfMonthSchedule_AdvancesToTheNextMonthEnd()
+    {
+        var januaryEnd = new DateTimeOffset(2026, 1, 31, 8, 0, 0, TimeSpan.Zero);
+        var due = BuildSchedule("month-end", "operator-a") with
+        {
+            CronExpression = "0 8 L * *",
+            State = ReportingScheduleStateDto.Active,
+            NextAsOfDate = new DateOnly(2026, 1, 31),
+            DueAtUtc = januaryEnd
+        };
+        var store = new SharedAtomicScheduleStore([due]);
+        var service = CreateRunnableScheduleService(store, new CountingRenderer());
+
+        await service.RunDueForWorkerAsync(januaryEnd, CancellationToken.None);
+
+        store.Load().Should().ContainSingle(schedule =>
+            schedule.DueAtUtc == new DateTimeOffset(2026, 2, 28, 8, 0, 0, TimeSpan.Zero)
+            && schedule.NextAsOfDate == new DateOnly(2026, 2, 28));
+    }
+
+    [Fact]
+    public void Scenario_ScheduleUpsert_UnknownTimeZoneFailsBeforePersistence()
+    {
+        var store = new SharedAtomicScheduleStore([]);
+        var service = CreateScheduleService(store);
+
+        var upsert = () => service.Upsert(new ReportingScheduleUpsertRequestDto(
+            "unknown-zone",
+            "investor-monthly-statement",
+            "0 8 1 * *",
+            new DateOnly(2026, 8, 31),
+            FixedNow.AddDays(1),
+            2,
+            "operator-a",
+            State: ReportingScheduleStateDto.Draft,
+            TimeZoneId: "Mars/Olympus_Mons"));
+
+        upsert.Should().Throw<ArgumentException>()
+            .WithMessage("*time zone*");
+        store.Load().Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Scenario_ScheduleUpsert_TimeZoneIsRetainedUntilExplicitlyResetToUtc()
+    {
+        var store = new SharedAtomicScheduleStore([]);
+        var service = CreateScheduleService(store);
+        ReportingScheduleUpsertRequestDto Request(string? timeZoneId) => new(
+            "zone-lifecycle",
+            "investor-monthly-statement",
+            "0 8 1 * *",
+            new DateOnly(2026, 8, 31),
+            FixedNow.AddDays(1),
+            2,
+            "operator-a",
+            State: ReportingScheduleStateDto.Draft,
+            TimeZoneId: timeZoneId);
+
+        service.Upsert(Request("Europe/London")).TimeZoneId.Should().Be("Europe/London");
+        service.Upsert(Request(null)).TimeZoneId.Should().Be("Europe/London");
+        service.Upsert(Request("UTC")).TimeZoneId.Should().BeNull();
+    }
+
+    [Fact]
     public void Scenario_ScheduleLease_ExpiresWithFencingAgainstLateOwner()
     {
         var schedule = BuildCurrentSchedule("lease-expiry") with

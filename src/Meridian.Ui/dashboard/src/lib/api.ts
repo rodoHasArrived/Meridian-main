@@ -448,6 +448,8 @@ import {
   reportingTemplateSubmitEndpoint,
   reportingSchedulePauseEndpoint,
   reportingScheduleResumeEndpoint,
+  reportingScheduleDisableEndpoint,
+  reportingScheduleDeleteEndpoint,
   reportingScheduleRunNowEndpoint,
   reportingStarterKitProvisionEndpoint,
   securityMasterAssetProfileApproveEndpoint,
@@ -2696,6 +2698,14 @@ export function pauseReportingSchedule(scheduleId: string, options: ApiRequestOp
 
 export function resumeReportingSchedule(scheduleId: string, options: ApiRequestOptions = {}) {
   return postJson<ReportingScheduleRecord>(reportingScheduleResumeEndpoint(scheduleId), undefined, options);
+}
+
+export function disableReportingSchedule(scheduleId: string, options: ApiRequestOptions = {}) {
+  return postJson<ReportingScheduleRecord>(reportingScheduleDisableEndpoint(scheduleId), undefined, options);
+}
+
+export function deleteReportingSchedule(scheduleId: string, options: ApiRequestOptions = {}) {
+  return deleteJson<ReportingScheduleRecord>(reportingScheduleDeleteEndpoint(scheduleId), options);
 }
 
 export function runReportingScheduleNow(scheduleId: string, options: ApiRequestOptions = {}) {

@@ -1049,6 +1049,9 @@ dataset powered a no-code report-writer output.
 contract. `WorkstationReportingPayload` and `FundReportingSummaryDto` carry the available kits and
 selected starter state, while `ReportingScheduleStateDto.Draft` represents schedule stubs that were
 seeded for review but should not run until an operator activates them.
+`ReportingScheduleStateDto.Disabled` is set by the schedule `disable` route and cleared by `resume`.
+Both schedule DTOs carry an optional IANA `TimeZoneId` for cron evaluation (null means UTC; it is
+omitted from JSON when null so previously retained payloads keep their content hash).
 `ReportingScheduleUpsertRequestDto` and `ReportingScheduleRecordDto` can also retain a
 `BrandingThemeId` or `BrandingThemeOverride`, and the generic Reporting manifest carries the
 resolved theme into scheduled generated-run packages so recurring report-writer deliveries preserve
