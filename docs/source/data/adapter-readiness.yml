@@ -44,8 +44,8 @@ adapters:
     option contract discovery, corporate-action announcements and the activity statement. The trade-update stream,
     the market-data hosts (streaming, historical bars, option snapshots and quotes) and the live environment remain
     live-untested.
-  - Option chain snapshots and option quotes currently return nothing: the snapshot payload carries no underlying
-    price and the domain records reject a non-positive one.
+  - Option chain snapshots and option quotes currently return nothing, because the snapshot payload carries no
+    underlying price and the domain records reject a non-positive one.
   - The order manager classifies every Alpaca route, paper included, as live routing; a paper order needs the same
     brokerage configuration, run id and readiness approval as a live one.
   - Pacing values describe repository defaults; verify current provider terms and the configured account allowance

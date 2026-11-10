@@ -85,7 +85,7 @@ strictly non-owning.
 | `MDC_ALPACA_SECRET_KEY` | `Alpaca:SecretKey` | Alpaca API secret key | When using Alpaca | — |
 | `MDC_ALPACA_FEED` | `Alpaca:Feed` | Data feed: `iex` (free), `sip` (paid) | No | `iex` |
 | `MDC_ALPACA_SANDBOX` | `Alpaca:UseSandbox` | Select the sandbox endpoint for the configured Alpaca market-data client. Trading credentials use the separate environment selector below. | No | `false` |
-| `ALPACA_TRADING_ENVIRONMENT` | Alpaca trading credential resolver / credential-store environment fallback | Select `paper` or `live` for environment-backed Trading API credentials. A stored credential record carries its own environment. This does not set `Alpaca:UseSandbox` for market-data configuration. | No | `paper` |
+| `ALPACA_TRADING_ENVIRONMENT` | Alpaca trading credential resolver / credential-store environment fallback | Select `paper` or `live` for environment-backed Trading API credentials. It selects the Trading API host for orders and for asset search, option contract discovery and corporate-action announcements. A stored credential record carries its own environment. This does not set `Alpaca:UseSandbox` for market-data configuration. | No | `paper` |
 | `MDC_ALPACA_QUOTES` | `Alpaca:SubscribeQuotes` | Subscribe to quote data | No | `false` |
 | `ALPACA_KEY_ID` | `Alpaca:KeyId` | Bare alias that **takes precedence over** `MDC_ALPACA_KEY_ID`: `ApplyOverrides` applies it later, and the backfill path reads it directly via `ProviderCredentialResolver` ahead of any configured value. Set this one, or unset it, if both exist. | — | — |
 | `ALPACA_SECRET_KEY` | `Alpaca:SecretKey` | Bare alias that **takes precedence over** `MDC_ALPACA_SECRET_KEY`, for the same reason. | — | — |
