@@ -3,7 +3,7 @@
 **Status:** active
 **Owner:** core-team
 **Reviewed:** 2026-11-09
-**Review history:** increment 8a resolution pass 2026-11-09; dual-model audit reconciliation 2026-11-09; post-slice-6 source check 2026-11-06; slice-4 D3 decision 2026-11-05; slice 6 disposition 2026-11-04; slice-4 disposition 2026-11-04; consolidation pass 2026-10-28; resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
+**Review history:** increment 8b resolution pass 2026-11-10; increment 8a resolution pass 2026-11-09; dual-model audit reconciliation 2026-11-09; post-slice-6 source check 2026-11-06; slice-4 D3 decision 2026-11-05; slice 6 disposition 2026-11-04; slice-4 disposition 2026-11-04; consolidation pass 2026-10-28; resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -8723,3 +8723,151 @@ the code before it was changed.
 | Schema-control `verify` against main | Pass; no manifest change was needed |
 | Maintained generation, `check-generated-output`, `validate-doc-hashes` | Generation converges (the UML step is advisory and needs Docker); generated output is clean; 0 hash errors after the Contracts, Instruments and Ui.Shared modules were re-reviewed |
 | `verify-docs` lane and the generated-output repair pre-check against main | Pass; the pre-check reports `ready` with no changes |
+
+## Resolution pass — 2026-11-10 (priority 5, increment 8b: declared call and put events in the schedule book)
+
+This pass records source on branch `codex/schedule-book-declared-call-put`, based on main at
+`5bb05a845`. It changes no dated observation above and establishes no deployment, term write or
+fleet state. It is read-side only: no terms version, write version, stamp floor, declared mapping
+version, migration, route or contract member changes.
+
+**What main had.** Increment 8a put declared call and put events on the asset-operations obligation
+timeline and recorded that the Security Master workbench still disagreed with it.
+`SecurityMasterWorkbenchQueryService.BuildScheduleBook` raised a `Call` row only from the economic
+`call.firstCallDate`, and `BuildScheduleSummary` used the same scalar for the next lifecycle date.
+For a declaring bond the book therefore showed one call date at most, no put, no notice deadline,
+and for a bond whose declared schedule the timeline reports as blocked it still showed the scalar
+date.
+
+**What landed.**
+
+| Area | What landed |
+| --- | --- |
+| Declared rows in the schedule book | A Bond whose row decodes a `callSchedule` or `putSchedule` with at least one entry that is not unset (8a's `DeclaresExerciseSchedule`) gets a `Call` or `Put` row on every remaining exercise date and a `CallNoticeDeadline` or `PutNoticeDeadline` row on the latest notice date where the entry states bounds. The economic `call.firstCallDate` is not read for such a bond |
+| Next lifecycle date | For a declaring bond: the earliest of the next corporate action, the declared exercise dates, the notice deadlines on or after the evaluation date, and the maturity. The scalar call date is not a candidate and an elapsed notice deadline never is |
+| Blocked schedules | No call or put row and no scalar fallback. The blocker's code and reason are appended to `Summary` and `SourceSummary` of the schedule summary and of the schedule book, in the sentence the timeline uses |
+| Source of the dates | `AssetObligationProjectionService.ResolveDeclaredExerciseAsync`: the timeline's gates in the timeline's order (terms effective, cutover policy, `BondExerciseNoticeWatch.EvaluateToMaturity`), with the policy asked inside it and a policy that throws `SecurityScheduleValidationException` reported as `InvalidEconomicSchedule`. The book adds no date arithmetic |
+| Shared code | The gate order moved into one static method that the timeline's instance method now calls. The loop that turns windows into exercise and deadline rows, with its occurrence rule and its sentences, moved into `AssetObligationProjectionService.DeclaredExerciseRows`; the timeline and the book both map its rows to their own contracts. `DeclaredExerciseWarnings` is public for the same reason. The timeline's output is unchanged (its tests and golden are green without edits) |
+| Composition | `SecurityMasterWorkbenchQueryService` takes `IBusinessDayCalendarSource`, `IBondCalculationPolicy` and `TimeProvider` as optional constructor arguments. Its one production registration is by type in `AddWorkstationSharedServices`, so the container supplies the registered ones; a composition test pins that. The evaluation date is the snapshot's time, read once from the clock |
+| File size | The new code is in `SecurityMasterWorkbenchQueryService.DeclaredExercise.cs`; the main file grew by 13 lines and stays under its recorded cap |
+
+**Owner decisions (2026-11-10).**
+
+- The next pull request is 8b: the schedule book's call and put events and the workbench's next
+  lifecycle date come from the declared schedule for declaring Bond rows.
+- A declaring bond whose schedule is blocked gets no scalar `Call` row; the blocked code and reason
+  are shown instead. This includes every row recovered from economic terms by ADR-027, which block
+  with `DeclaredScheduleRequired`.
+- Notice deadlines appear as their own rows, as on the timeline.
+- No contract shape changes while pull request #3439 is open: the blocked reason goes in existing
+  text fields.
+- Bonds that declare no schedule, CertificateOfDeposit and StructuredCredit keep their output byte
+  for byte.
+- The gates and their order are 8a's.
+
+**Choices made inside those decisions.**
+
+- *Row types.* `Call`, `Put`, `CallNoticeDeadline` and `PutNoticeDeadline`, one for each of the
+  timeline's `IssuerCallExercise`, `HolderPutExercise`, `IssuerCallNoticeDeadline` and
+  `HolderPutNoticeDeadline`. `Call` is the type the book already uses for a call date and that the
+  browser labels, so the timeline's longer names were not copied. The four names are constants on
+  the service.
+- *Row fields.* An exercise row's pay date is its exercise date, as on the scalar row; a deadline
+  row has no pay date. No row has an amount. `SourceReason` carries the timeline's sentence for the
+  event (the price, or the exercise date a deadline belongs to and when its window opens). The
+  source system, record, time and editor are the winning source's, as on the scalar row; with no
+  winning source the system is `declared-exercise-schedule`. `IsDerivedFromEconomicTerms` is false,
+  because the row is read from the declared schedule on the stored row and not from the economic
+  document.
+- *Row ids.* `call-<date>` and `put-<date>`, the scalar row's format, so a resolved bond's first
+  call keeps the id it had. A deadline row's id carries its exercise date. A repeat of a type and
+  adjusted exercise date carries 8a's occurrence number.
+- *Elapsed events.* The book already keeps a past scalar call date as a row with posting status
+  `Reference`. An elapsed notice deadline is treated the same way, with the watch's elapsed
+  diagnostic at the end of its reason text and in the schedule summary. The watch returns no
+  exercise date before the evaluation date, so the book shows none, as the timeline shows none.
+- *Where the blocked reason goes.* `Summary`, because the WPF schedule section and the instrument
+  passport's cash-flow sections print it, and `SourceSummary`, because the browser's schedule
+  panel prints only that one. The elapsed diagnostic goes to `Summary` only.
+- *Policy that throws.* The workbench uses the notice-watch read service's rule (a blocker), not
+  the asset-operations entry points' (the exception escapes), because a failed snapshot would take
+  the whole Security Master drill-in down for one bond.
+- *Clock.* The snapshot time is now read from an injected `TimeProvider` so the evaluation date can
+  be fixed in tests. The corporate-action rows and the scalar rows still read `DateTime.UtcNow`;
+  those reads are increment 7's.
+
+**Behaviour changes for declaring bonds.**
+
+- A resolved declaring bond gains rows: every remaining exercise date, puts, and notice deadlines.
+  The shared resolver refuses a row whose scalar `callDate` is not its earliest declared call date,
+  so the `Call` row such a bond showed before is one of the declared rows, with the same id and
+  date. Its `SourceReason` and `IsDerivedFromEconomicTerms` differ.
+- Its next lifecycle date can be earlier than before: an open notice deadline or a put date now
+  counts.
+- A blocked declaring bond loses its `Call` row and its next lifecycle date no longer uses the
+  scalar. Its summary and source summary name the blocker. That is every recovered row, every
+  declaring row without a reviewed conventions block, and every declaring row the watch refuses
+  (floating or step coupon, factored principal, `American` or make-whole entries, a scalar
+  mandatory put or pre-refund date, a scalar call date that contradicts the schedule, terms not
+  effective, a cutover policy block, an evaluation date outside the bond's life).
+- The instrument passport's terms-and-obligations section counts schedule-book rows, so its count
+  and sentence follow the new rows; its cash-flow readiness summary repeats the schedule summary,
+  blocker included.
+
+**Consumers checked.**
+
+- C# readers of the book (`BuildInstrumentPassportAsync` and the passport section builders in the
+  same service) use only `Events.Count`, `SupportsCashflowSchedule` and the summary text. None
+  switches on an event type. A bond with economic terms keeps its `Maturity` row, so no count that
+  was positive becomes zero.
+- The browser (`accounting-screen.view-model.ts`) types the event type as a string, maps
+  `payDate ?? effectiveDate` and falls back to the raw type where it has no label. It labels
+  `Call`; `Put`, `CallNoticeDeadline` and `PutNoticeDeadline` are shown by their type name. It
+  does not print the book's `Summary` or its next lifecycle date. No dashboard source changed,
+  because pull request #3423 has two `accounting-screen` files open.
+- WPF binds the rows to a grid with a Reason column and prints `Summary`, `SourceSummary` and the
+  next lifecycle date as fields. It orders by effective date with a stable sort. No WPF source
+  changed.
+
+**Deliberately left out.**
+
+- Increment 7 (cash-flow rows from the engine) and the remaining `DateTime.UtcNow` reads.
+- 8c, 8e and 8f. CertificateOfDeposit and StructuredCredit keep the scalar read.
+- A typed blocked-outcome member on the schedule book contract, until #3439 has merged.
+- Browser labels for the three new row types.
+- The scalar path's next lifecycle date, which can still name a past call date for a bond that
+  declares no schedule.
+- As-of and historical workbench reads: the book is evaluated at the snapshot's time only.
+- Published asset-operations projections, which still show the scalar `CallPutReview` on the
+  timeline (8a's open item). For a declaring bond with a publication the book and that published
+  timeline can still differ.
+
+**Open risks.**
+
+- The change is visible in both workstations for the whole declaring population, and for recovered
+  rows it removes a date operators see today until a conventions block is reviewed.
+- The blocked sentence appears twice in the WPF schedule fields (Summary and Source).
+- A Bermudan schedule adds up to two rows per exercise date for the bond's remaining life, bounded
+  by the resolver's 1,200-scenario cap.
+- Each workbench snapshot of a declaring bond now asks the cutover policy and the calendar source.
+  A host without them gets the watch's refusal as a blocker, not a fault.
+- The book has no engine stamp, so nothing on a stored or exported snapshot says which rule
+  produced its call rows.
+- WPF and dashboard tests were not run; neither source changed.
+
+**Validation record.**
+
+| Check | Result |
+| --- | --- |
+| Baseline at `5bb05a845`, targeted filter on `Meridian.Tests` (SecurityMasterWorkbench, SecurityMasterInstrumentPassport, AssetObligation, AssetOperations, BondExercise, FinancialRecordExplorer, Ratchet, Composition, ServiceRegistration, and `Category=KnownDefect`) | 1,824 passed, 32 skipped, 0 failed |
+| Characterization committed before any product change: `SecurityMasterWorkbenchScheduleBookGoldenTests`, the serialized schedule summary and schedule book of 13 records (7 undeclared Bond shapes, CertificateOfDeposit, StructuredCredit, 4 declaring bonds) | 1,825 passed |
+| Same filter after the change | 1,886 passed, 32 skipped, 0 failed; 62 tests added, none removed; 1 existing pin flipped on purpose (`SecurityMasterWorkbenchQueryServiceCallScheduleTests`, the Bond case) |
+| Undeclared output | The 9 undeclared, CertificateOfDeposit and StructuredCredit cases of the golden are unchanged from the fixture committed before the change. The 4 declaring cases changed: one resolved (a notice deadline, a call and a put where there was one call), three blocked (scalar contradicts the schedule, no conventions, recovered from economic terms) |
+| Timeline output after the shared-code extraction | `AssetObligationTimelineGoldenTests` and the 8a timeline tests are green with no fixture or assertion changed |
+| Same dates on both surfaces | `ScheduleBookAndObligationTimeline_ListTheSameExerciseAndNoticeDates_ForTheSameRecord`, 8 records, resolved and blocked |
+| Composition | `SecurityMasterWorkbenchDeclaredExerciseCompositionTests`: the workstation's own registration, resolved beside the storage feature, receives the file calendar source and the registered cutover policy |
+| Mutation check | 53 of 53 mutations fail a named test: 34 in the workbench service and 19 in the shared Instruments code. 52 were caught on the first pass. The survivor swapped the timeline's formula-trace sentences between exercise and deadline rows, a line 8a had not pinned; an assertion was added and it is caught |
+| Broader regression filter (SecurityMaster, FixedIncome, AssetOperations, AssetObligation, Architecture, Schedule, Workstation, Endpoint, Contract, OpenApi), after the change only | 10,409 passed, 298 skipped, 1 failed: `BondProjectionGoldenTests.Bond_KeysetPagesAreBounded_AndRetainCanonicalStructures`, which needs Docker and fails at the base commit in this environment |
+| Guards (test-skip register, duplicate helpers, inline SHA-256, file size, warning suppressions, endpoint cancellation, contract-type parity) and `dotnet format whitespace --verify-no-changes` on the 9 changed C# files | Pass |
+| F#, dashboard and WPF suites | Not run: no F#, dashboard or WPF source changed |
+| Generated outputs (generated docs, reviewed hashes, health dashboard) and `Meridian CI / quality-gate` | Not regenerated or run in this pass; reported on the pull request. New public members that the generated inventories will pick up: `ResolveDeclaredExerciseAsync`, the static `ResolveDeclaredExercise` overload, `DeclaredExerciseRows`, `DeclaredExerciseRow`, `DeclaredExerciseWarnings` (was internal), four event-type constants and three constructor arguments on `SecurityMasterWorkbenchQueryService`, and one new fixture file |
