@@ -104,6 +104,7 @@ function mockWorkstationData(overrides: Partial<WorkstationDataSnapshot>) {
     workspaceErrors: {},
     figureSourceLoadedAt: {},
     figureSourcesStale: [],
+    figureSourceScope: {},
     refreshStatus: idleRequestStatus("workstation overview refresh"),
     tradingRefreshStatus: idleRequestStatus("trading workspace refresh"),
     providerRoutingRefreshStatus: idleRequestStatus("provider routing refresh"),

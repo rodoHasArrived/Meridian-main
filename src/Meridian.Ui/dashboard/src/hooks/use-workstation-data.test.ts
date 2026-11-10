@@ -728,6 +728,46 @@ describe("useWorkstationData", () => {
       resolveRequest<TradingWorkspaceResponse>("trading", 1, { marker: "scoped trading refresh" } as unknown as TradingWorkspaceResponse);
       await tradingRefresh;
     });
+    expect(result.current.figureSourceScope.trading).toBe(fundAccountId);
+  });
+
+  it("keeps the retained Trading payload's account when the selected account's reload fails", async () => {
+    const accountA = "53bf0251-17f6-4fb7-8dbe-6fb4966e2749";
+    const accountB = "7c1d2f7e-0a37-4d0c-9a34-2b1f8a6f6a10";
+    const { result, rerender } = renderHook(
+      ({ fundAccountId }) => useWorkstationData({
+        activeWorkspace: "trading",
+        workflowSummaryScope: { hasOperatingContext: true, fundAccountId }
+      }),
+      { initialProps: { fundAccountId: accountA } }
+    );
+
+    await waitFor(() => expect(api.getTradingWorkspace).toHaveBeenCalledTimes(1));
+    await act(async () => {
+      await resolveRefreshBatch(0, "account-a");
+      await flushAsync();
+    });
+    await waitFor(() => expect(result.current.refreshStatus.inFlight).toBe(false));
+    expect(result.current.figureSourceScope.trading).toBe(accountA);
+
+    // The operator selects account B: the shell reloads for B, and that Trading request fails.
+    rerender({ fundAccountId: accountB });
+    await waitFor(() => expect(api.getTradingWorkspace).toHaveBeenCalledTimes(2));
+    expect(api.getTradingWorkspace).toHaveBeenLastCalledWith(expect.objectContaining({ fundAccountId: accountB }));
+    await act(async () => {
+      resolveRequest<SessionInfo>("session", 1, { activeWorkspace: "trading", commandCount: 1, displayName: "account-b session", environment: "paper", role: "Operator" });
+      resolveRequest<SystemOverviewResponse>("overview", 1, { marker: "account-b overview" } as unknown as SystemOverviewResponse);
+      rejectRequest("trading", 1, new Error("Trading workspace request failed."));
+      resolveRequest<WorkflowLibrary>("workflowLibrary", 1, { marker: "account-b workflows" } as unknown as WorkflowLibrary);
+      resolveRequest<WorkflowPresetLibrary>("workflowPresets", 1, { generatedAt: "2026-01-01T00:04:00Z", presets: [] });
+      await flushAsync();
+    });
+    await waitFor(() => expect(result.current.refreshStatus.inFlight).toBe(false));
+
+    // Account A's payload is still the one on screen, and it is still recorded as account A's.
+    expect(result.current.trading).toEqual({ marker: "account-a trading" });
+    expect(result.current.figureSourceScope.trading).toBe(accountA);
+    expect(result.current.figureSourcesStale).toContain("trading");
   });
 
   it("omits non-GUID operating account labels from trading workspace requests", async () => {

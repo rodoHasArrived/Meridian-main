@@ -106,6 +106,12 @@ interface RefreshEntry {
   key: RefreshDataKey;
   category: RefreshCategory;
   workspaceKeys?: WorkspaceKey[];
+  /**
+   * For an account-scoped figure payload: the fund account the request asks for (null for every
+   * account). Recorded with the payload when it loads, so its figures name the account they
+   * belong to even after the operator selects another one.
+   */
+  figureScope?: string | null;
   start: (requestOptions: { signal: AbortSignal }) => Promise<unknown>;
 }
 
@@ -171,6 +177,11 @@ interface WorkstationDataState {
    * `workspaceErrors`, it is not cleared when another refresh starts.
    */
   figureSourcesStale: readonly FigureSourceKey[];
+  /**
+   * The fund account each account-scoped figure payload on screen was loaded for (null for every
+   * account). The selected account can change before, or without, that payload reloading.
+   */
+  figureSourceScope: Partial<Record<FigureSourceKey, string | null>>;
   refreshStatus: RequestLifecycleStatus;
   tradingRefreshStatus: RequestLifecycleStatus;
   providerRoutingRefreshStatus: RequestLifecycleStatus;
@@ -213,6 +224,7 @@ const initialState: WorkstationDataState = {
   workspaceErrors: {},
   figureSourceLoadedAt: {},
   figureSourcesStale: [],
+  figureSourceScope: {},
   refreshStatus: null as unknown as RequestLifecycleStatus,
   tradingRefreshStatus: null as unknown as RequestLifecycleStatus,
   providerRoutingRefreshStatus: null as unknown as RequestLifecycleStatus,
@@ -494,9 +506,10 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
     const token = tradingRefreshLifecycle.start({ busyMode: "drop", attempt: options.attempt });
     if (!token) return;
     try {
+      const requestedFundAccountId = normalizeFundAccountGuid(workflowSummaryFundAccountId);
       const result = await getTradingWorkspace({
         signal: token.signal,
-        fundAccountId: normalizeFundAccountGuid(workflowSummaryFundAccountId)
+        fundAccountId: requestedFundAccountId
       });
       if (!token.isCurrent()) {
         tradingRefreshLifecycle.markStale(token.version);
@@ -511,6 +524,7 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
           trading: result,
           figureSourceLoadedAt: { ...current.figureSourceLoadedAt, trading: loadedAt },
           figureSourcesStale: withoutStaleFigures(current.figureSourcesStale, "trading"),
+          figureSourceScope: { ...current.figureSourceScope, trading: requestedFundAccountId ?? null },
           error: current.error === tradingError ? firstWorkspaceError(workspaceErrors) ?? null : current.error,
           workspaceErrors,
           usingDevelopmentFixtures: current.usingDevelopmentFixtures || hasDevelopmentFixtureUsage()
@@ -804,12 +818,18 @@ function createRefreshEntries(
     { key: "overview", category: "bootstrap", start: (requestOptions) => getSystemStatus(requestOptions) },
     // Loaded on every route, like the overview, so Settings and the shell show the same counts as
     // the workspaces that hold the source lists.
-    { key: "crossScreenCounts", category: "bootstrap", start: (requestOptions) => getCrossScreenCounts(tradingFundAccountId, requestOptions) },
+    {
+      key: "crossScreenCounts",
+      category: "bootstrap",
+      figureScope: tradingFundAccountId ?? null,
+      start: (requestOptions) => getCrossScreenCounts(tradingFundAccountId, requestOptions)
+    },
     { key: "strategy", category: "workspace", workspaceKeys: ["strategy"], start: (requestOptions) => getStrategyWorkspace(requestOptions) },
     {
       key: "trading",
       category: "workspace",
       workspaceKeys: ["trading"],
+      figureScope: tradingFundAccountId ?? null,
       start: (requestOptions) => getTradingWorkspace({ ...requestOptions, fundAccountId: tradingFundAccountId })
     },
     { key: "portfolio", category: "workspace", workspaceKeys: ["portfolio"], start: (requestOptions) => getPortfolioWorkspace(requestOptions) },
@@ -939,6 +959,7 @@ function mergeRefreshSettlements(
   }
   const figureSourceLoadedAt: FigureSourceLoadedAtMap = { ...current.figureSourceLoadedAt };
   let figureSourcesStale = current.figureSourcesStale;
+  const figureSourceScope = { ...current.figureSourceScope };
   const bootstrapErrors: string[] = [];
   const hasBootstrapSettlements = settlements.some((settlement) => settlement.entry.category === "bootstrap");
   const hasWorkflowSettlements = settlements.some((settlement) => settlement.entry.category === "workflow");
@@ -952,6 +973,9 @@ function mergeRefreshSettlements(
       if (figureSource) {
         figureSourceLoadedAt[figureSource] = options.loadedAt;
         figureSourcesStale = withoutStaleFigures(figureSourcesStale, figureSource);
+        if (entry.figureScope !== undefined) {
+          figureSourceScope[figureSource] = entry.figureScope;
+        }
       }
       continue;
     }
@@ -977,6 +1001,7 @@ function mergeRefreshSettlements(
   next.workspaceErrors = workspaceErrors;
   next.figureSourceLoadedAt = figureSourceLoadedAt;
   next.figureSourcesStale = figureSourcesStale;
+  next.figureSourceScope = figureSourceScope;
   next.workflowError = workflowErrors[0] ?? null;
   const retainedGlobalError = !hasBootstrapSettlements && current.error && !currentErrorIsWorkspaceError
     ? current.error

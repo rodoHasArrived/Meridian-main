@@ -44,6 +44,12 @@ export interface WorkspaceFigureContextValue {
    * latest refresh says nothing about a payload it did not reload.
    */
   sourceLoadedAt: Partial<Record<FigureSourceKey, string>>;
+  /**
+   * The fund account each account-scoped payload on screen was loaded for (null for every
+   * account). The operator's selected account can change before, or without, that payload
+   * reloading, so a figure's scope is the account its payload was loaded for, not the selection.
+   */
+  sourceScope?: Partial<Record<FigureSourceKey, string | null>>;
 }
 
 const DATA_LABELS: Record<DataProvenanceKind, string | null> = {
@@ -69,7 +75,8 @@ export function deriveWorkspaceFigureContext({
   status,
   provenance,
   staleSources = [],
-  sourceLoadedAt = {}
+  sourceLoadedAt = {},
+  sourceScope = {}
 }: {
   status: Pick<RequestLifecycleStatus, "phase" | "inFlight" | "lastSucceededAt" | "settledAt">;
   provenance: DataProvenanceKind;
@@ -77,6 +84,8 @@ export function deriveWorkspaceFigureContext({
   staleSources?: readonly FigureSourceKey[];
   /** When each payload last loaded. */
   sourceLoadedAt?: Partial<Record<FigureSourceKey, string>>;
+  /** The fund account each account-scoped payload was loaded for. */
+  sourceScope?: Partial<Record<FigureSourceKey, string | null>>;
 }): WorkspaceFigureContextValue {
   // A partial refresh did load the payloads without an error, so it counts as a load.
   const hasLoaded = Boolean(status.lastSucceededAt || (status.phase === "partial" && status.settledAt));
@@ -90,8 +99,21 @@ export function deriveWorkspaceFigureContext({
     freshness,
     dataLabel: DATA_LABELS[provenance],
     staleSources,
-    sourceLoadedAt
+    sourceLoadedAt,
+    sourceScope
   };
+}
+
+/**
+ * The fund account a payload on screen was loaded for: an id, null when it was loaded for every
+ * account, or undefined when no scope was recorded (outside the shell, or a payload that is not
+ * account-scoped).
+ */
+export function resolveFigureScope(
+  context: WorkspaceFigureContextValue | null,
+  source: FigureSourceKey
+): string | null | undefined {
+  return context?.sourceScope?.[source];
 }
 
 /**

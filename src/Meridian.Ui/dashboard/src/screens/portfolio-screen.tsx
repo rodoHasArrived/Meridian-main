@@ -73,7 +73,7 @@ import type {
 import { eyebrowClassName } from "@/design-system/label-case";
 import { formatCount } from "@/lib/format";
 import { metricFreshnessFromTrustTone, withMetricContext } from "@/lib/metric-trust";
-import { resolveFigureEvidence, useWorkspaceFigureContext } from "@/lib/workspace-figure-context";
+import { resolveFigureEvidence, resolveFigureScope, useWorkspaceFigureContext } from "@/lib/workspace-figure-context";
 import { FigureDifferenceNote } from "@/components/meridian/figure-difference-note";
 import { buildPortfolioFigureDifferenceNote } from "@/screens/portfolio-screen.figure-differences";
 
@@ -589,14 +589,16 @@ export function PortfolioScreen({
         })
       : null;
   const heartbeat = portfolio?.brokerage.lastHeartbeat ?? trading?.brokerage.lastHeartbeat ?? null;
-  // The totals on screen are a retained payload when the latest reload of the workspace that
-  // supplies them failed: the shell lists that workspace as stale, or the Portfolio poll settled
-  // as partial (its Portfolio request was rejected). A recent settle time does not make those
-  // figures current.
+  // The totals on screen are a retained payload when the latest reload of the payload that
+  // supplies them failed. In the shell that is the payload's own recorded outcome, which every
+  // load path updates: a poll that failed earlier must not keep the totals stale after a shell or
+  // workspace refresh reloaded them. Only outside the shell is the Portfolio poll's `partial`
+  // phase (its Portfolio request was rejected) the evidence there is.
   const headlineSource = vm.metricsFromTrading ? "trading" : "portfolio";
   const headlineFigures = resolveFigureEvidence(figureContext, headlineSource);
-  const headlineRefreshFailed = (figureContext?.staleSources.includes(headlineSource) ?? false)
-    || (!vm.metricsFromTrading && refreshStatus?.phase === "partial");
+  const headlineRefreshFailed = figureContext
+    ? figureContext.staleSources.includes(headlineSource)
+    : !vm.metricsFromTrading && refreshStatus?.phase === "partial";
   const evidenceTone: OperationalTrustTone = freshnessVm?.state === "failing"
     ? "blocked"
     : freshnessVm?.state === "aging"
@@ -626,10 +628,12 @@ export function PortfolioScreen({
         : metricFreshnessFromTrustTone(freshnessTone);
   // Their scope is every position in the workspace read model: selecting a brokerage account
   // filters the brokerage table, not these totals, so that account must not be named as scope.
+  // Totals borrowed from Trading cover the fund account the Trading payload was loaded for.
+  const borrowedTradingAccount = vm.metricsFromTrading ? resolveFigureScope(figureContext, "trading") : null;
   const headlineProvenance = {
     source: vm.metricsFromTrading ? "Trading workspace" : vm.positionSourceLabel,
     asOf: headlineLoadedAt ?? brokeragePortfolio?.asOf ?? heartbeat,
-    scope: "All workspace positions"
+    scope: borrowedTradingAccount ?? "All workspace positions"
   };
   const headlineMetrics = withMetricContext(vm.metricsFromTrading ? vm.metricCards : vm.fallbackStats, {
     provenance: headlineProvenance,
