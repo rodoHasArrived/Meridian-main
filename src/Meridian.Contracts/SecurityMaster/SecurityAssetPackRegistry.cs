@@ -14,6 +14,15 @@ namespace Meridian.Contracts.SecurityMaster;
 /// documentation only. A runtime rule needs a typed field and a named consumer; it must not be
 /// inferred from this text (extensibility review D9, slice 6 disposition 2026-11-04).
 /// </para>
+/// <para>
+/// <b>The same holds for the shared descriptive lists.</b> <c>ValidationRules</c>,
+/// <c>ReportingTaxonomy</c> and the prose lists of <c>ContractSchema</c> are one set of English
+/// phrases handed to every pack, built-in or candidate. <see cref="ValidateDescriptor"/> checks them
+/// for non-emptiness only, as a completeness self-check: it cannot tell one pack's contract from
+/// another's. The per-pack, checkable part of a pack is its membership, lifecycle and valuation
+/// declarations, journal-template bindings, and <c>ContractSchema.AssetClassTerms</c>, which
+/// canonical admission enforces (extensibility review N5, disposition 2026-11-09).
+/// </para>
 /// </summary>
 public static partial class SecurityAssetPackRegistry
 {
@@ -269,6 +278,10 @@ public static partial class SecurityAssetPackRegistry
             .Where(pack => pack.AssetClasses.Contains(assetClass, StringComparer.OrdinalIgnoreCase))
             .ToArray();
 
+    /// <summary>
+    /// Validates the built-in registry: every pack's descriptor, and every class that several
+    /// built-in packs cover against <see cref="DeclaredSharedCoverage"/>.
+    /// </summary>
     public static AssetPackRegistryValidationResult ValidateAll()
     {
         return ValidateCandidateSet([]);
@@ -296,16 +309,16 @@ public static partial class SecurityAssetPackRegistry
                 "PackId",
                 $"Asset pack id '{group.Key}' is duplicated.")));
 
-        issues.AddRange(packs
-            .SelectMany(static pack => pack.AssetClasses.Select(assetClass => new { pack.PackId, AssetClass = assetClass }))
-            .GroupBy(static row => row.AssetClass, StringComparer.OrdinalIgnoreCase)
-            .Where(static group => group.Select(static row => row.PackId).Distinct(StringComparer.OrdinalIgnoreCase).Count() > 1)
-            .Where(group => group.Any(row => candidateIds.Contains(row.PackId)))
-            .Select(group => Issue(
-                "asset-pack.asset-class-overlap",
-                "Critical",
-                "AssetClasses",
-                $"Asset class '{group.Key}' is claimed by multiple asset packs.")));
+        // A candidate may not take a class another pack already covers, on either axis. Built-in
+        // packs are held to the declared shared-coverage list instead, so their overlaps are stated
+        // allowances and an undeclared one is reported.
+        issues.AddRange(CandidateOverlapIssues(
+            packs, candidateIds, static pack => pack.AssetClasses,
+            "asset-pack.asset-class-overlap", "AssetClasses", "claimed"));
+        issues.AddRange(CandidateOverlapIssues(
+            packs, candidateIds, static pack => pack.PlannedAssetClasses,
+            "asset-pack.planned-asset-class-overlap", "PlannedAssetClasses", "planned"));
+        issues.AddRange(ValidateSharedCoverage(Packs, SharedCoverage));
 
         return new AssetPackRegistryValidationResult(issues.Count == 0, issues);
     }
@@ -850,6 +863,10 @@ public sealed record AssetPackLifecycleCoverage(
     string AccountingAutomationStatus,
     IReadOnlyList<string> JournalTemplateIds);
 
+/// <summary>
+/// A pack's contract. The nine prose lists are shared descriptive metadata, identical for every pack;
+/// <c>AssetClassTerms</c> is the per-pack, machine-checked part.
+/// </summary>
 public sealed record AssetPackContractSchema(
     IReadOnlyList<string> Terms,
     IReadOnlyList<string> Counterparties,
@@ -890,12 +907,20 @@ public sealed record AssetPackRegistryValidationIssue(
     string Target,
     string Message);
 
+/// <summary>
+/// Descriptive metadata: one shared set of phrases for every pack, shown on the readiness surface.
+/// Nothing evaluates these as rules; executable validation lives in the terms schema and validators.
+/// </summary>
 public sealed record AssetPackValidationRules(
     IReadOnlyList<string> RequiredFields,
     IReadOnlyList<string> ExpectedSchedules,
     IReadOnlyList<string> ToleranceChecks,
     IReadOnlyList<string> IncompatibleCombinations);
 
+/// <summary>
+/// Descriptive metadata: one shared set of reporting dimensions for every pack, shown on the
+/// readiness surface. No report or classification path reads it.
+/// </summary>
 public sealed record AssetPackReportingTaxonomy(
     IReadOnlyList<string> AssetClass,
     IReadOnlyList<string> Liquidity,

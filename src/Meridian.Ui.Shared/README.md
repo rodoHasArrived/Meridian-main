@@ -720,6 +720,9 @@ the header. Readiness status and access policy are unchanged. Focused coverage l
 enforced rules read, so the dashboard and the gate cannot disagree. `DrawdownGuardrailRule` takes
 this service directly; the order-rate rule is bound the other way round, through
 `RiskRuleRuntimeService.OrderRateUsageProbe`.
+The drawdown circuit breaker fails closed: without registered portfolio state the drawdown
+cannot be measured, so it rejects the order instead of approving it. Hosts register
+`IPortfolioState` on every path.
 
 **Composition invariant: the probe must close over the same `OrderRateThrottle` instance that the
 validator enforces with.** `WorkstationServiceCollectionExtensions` constructs the throttle once,

@@ -4969,6 +4969,7 @@ Meridian-main
 │   │   │   ├── SecurityAssetPackRegistry.cs
 │   │   │   ├── SecurityAssetPackRegistry.Profiles.cs
 │   │   │   ├── SecurityAssetPackRegistry.Readiness.cs
+│   │   │   ├── SecurityAssetPackRegistry.SharedCoverage.cs
 │   │   │   ├── SecurityAssetProfiles.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcaster.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcasterChain.cs
@@ -10443,6 +10444,7 @@ Meridian-main
 │   │   │   │   ├── AccrualLedgerServiceTests.cs
 │   │   │   │   ├── DailyAccrualWorkerServicingScheduleTests.cs
 │   │   │   │   ├── DailyAccrualWorkerTests.cs
+│   │   │   │   ├── DirectLendingAccrualParityTests.cs
 │   │   │   │   ├── DirectLendingEventRebuilderTests.cs
 │   │   │   │   ├── DirectLendingExcessBalancesCompatibilityTests.cs
 │   │   │   │   ├── DirectLendingOutboxDispatcherTests.cs
