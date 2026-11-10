@@ -437,20 +437,21 @@ public sealed partial class SecurityMasterWorkbenchQueryService
             return SecurityMasterImpactSeverity.Unknown;
         }
 
-        var normalizedFieldPath = conflict.FieldPath.Replace("_", string.Empty, StringComparison.OrdinalIgnoreCase);
-        if (normalizedFieldPath.Contains("CorporateAction", StringComparison.OrdinalIgnoreCase) &&
+        // Declared field names, compared by whole path segment, decide which exposure a conflict raises.
+        var category = SecurityMasterConflictFieldCategories.For(conflict);
+        if (category.HasFlag(SecurityMasterConflictFieldCategory.CorporateAction) &&
             downstreamImpact.ReportPackExposureCount > 0)
         {
             return SecurityMasterImpactSeverity.High;
         }
 
-        if (normalizedFieldPath.Contains("Identifier", StringComparison.OrdinalIgnoreCase) &&
+        if (category.HasFlag(SecurityMasterConflictFieldCategory.Identifier) &&
             downstreamImpact.ReconciliationExposureCount > 0)
         {
             return SecurityMasterImpactSeverity.High;
         }
 
-        if (normalizedFieldPath.Contains("TradingParameters", StringComparison.OrdinalIgnoreCase) &&
+        if (category.HasFlag(SecurityMasterConflictFieldCategory.TradingParameter) &&
             downstreamImpact.LedgerExposureCount > 0)
         {
             return SecurityMasterImpactSeverity.Medium;

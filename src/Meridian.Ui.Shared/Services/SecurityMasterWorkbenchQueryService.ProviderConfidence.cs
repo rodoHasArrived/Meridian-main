@@ -183,8 +183,8 @@ public sealed partial class SecurityMasterWorkbenchQueryService
                ProviderMatches(mapping.Provider, conflict.ProviderB) ||
                ProviderMatches(mapping.NormalizedProvider, conflict.ProviderA) ||
                ProviderMatches(mapping.NormalizedProvider, conflict.ProviderB) ||
-               Contains(conflict.FieldPath, mapping.MappingKind) ||
-               Contains(conflict.FieldPath, mapping.Value);
+               SecurityMasterConflictRouting.HasSegment(conflict.FieldPath, mapping.MappingKind) ||
+               SecurityMasterConflictRouting.EndsWithValue(conflict.FieldPath, mapping.Value);
     }
 
     private static bool IsOverrideHistory(SecurityMasterChangeHistoryItemDto item) =>

@@ -433,7 +433,10 @@ public sealed partial class SecurityMasterWorkbenchQueryService
                 EvidenceCount: factorCount,
                 BlockingIssueCount: factorCount > 0 || snapshot.ScheduleSummary?.SupportsFactorHistory == true ? 0 : 1)
         };
-        items.AddRange(BuildConflictItems(snapshot, "terms-conflict", IsTermsConflict));
+        items.AddRange(BuildConflictItems(
+            snapshot,
+            "terms-conflict",
+            assessment => IsTermsConflict(assessment, snapshot.EconomicDefinition.AssetClass)));
 
         return BuildOperationsPanel("terms", "Terms", items);
     }
@@ -463,42 +466,14 @@ public sealed partial class SecurityMasterWorkbenchQueryService
             .ToArray();
     }
 
+    // Conflict routing reads declared facts (SecurityMasterConflictRouting): identifier names and kinds
+    // and provider-evidence segments for the identity panel; for the terms panel the declared mismatch
+    // kinds, the terms containers and the term keys the record's own asset class declares.
     private static bool IsProviderOrIdentifierConflict(SecurityMasterConflictAssessmentDto assessment) =>
-        ContainsAnyControlToken(
-            [
-                assessment.Conflict.ConflictKind,
-                assessment.Conflict.FieldPath
-            ],
-            "identifier",
-            "ticker",
-            "cusip",
-            "isin",
-            "figi",
-            "provider",
-            "mapping",
-            "alias");
+        SecurityMasterConflictRouting.IsIdentityConflict(assessment.Conflict);
 
-    private static bool IsTermsConflict(SecurityMasterConflictAssessmentDto assessment) =>
-        ContainsAnyControlToken(
-            [
-                assessment.Conflict.ConflictKind,
-                assessment.Conflict.FieldPath
-            ],
-            "maturity",
-            "coupon",
-            "assettype",
-            "asset type",
-            "classification",
-            "currency",
-            "factor",
-            "collateral",
-            "covenant",
-            "paydown",
-            "amortization",
-            "strike",
-            "expiry",
-            "expiration",
-            "pik");
+    private static bool IsTermsConflict(SecurityMasterConflictAssessmentDto assessment, string? assetClass) =>
+        SecurityMasterConflictRouting.IsTermsConflict(assessment.Conflict, assetClass);
 
     private static IReadOnlyList<InstrumentPassportOperationsReadinessDto> BuildOperationsReadiness(
         SecurityMasterTrustSnapshotDto snapshot,
