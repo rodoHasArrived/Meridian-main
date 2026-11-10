@@ -106,6 +106,10 @@ contract. Browser routes and static assets remain outside that fallback, while m
 services and safe server failures return typed errors instead of successful placeholder payloads
 or raw exception text.
 
+`UiServer.StartAsync` calls `WarmProvidersAsync` once the web application has started, so the
+provider registry and its brokerage, options and corporate-action objects are built with their
+credentials read ahead instead of on first use.
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.

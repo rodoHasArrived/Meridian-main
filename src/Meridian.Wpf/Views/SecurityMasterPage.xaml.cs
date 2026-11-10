@@ -21,6 +21,9 @@ public partial class SecurityMasterPage : Page
     }
 
     private async void ResultsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => ResultsList_SelectionChangedCoreAsync(sender, e), nameof(ResultsList_SelectionChanged)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task ResultsList_SelectionChangedCoreAsync(object sender, SelectionChangedEventArgs e)
     {
         if (_viewModel.SelectedSecurity is SecurityMasterWorkstationDto selected)
             await _viewModel.LoadSelectedTrustSnapshotAsync(selected.SecurityId);

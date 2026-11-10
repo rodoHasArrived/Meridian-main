@@ -58,11 +58,7 @@ internal sealed class BarMidpointFillModel(
 
         if (!TryResolveFillPrice(bar, order, executableType.Value, isBuy, newlyTriggered, out var fillPrice))
         {
-            return new OrderFillResult(
-                order with { IsTriggered = triggered },
-                [],
-                RemoveOrder: false,
-                WasTriggered: triggered && !order.IsTriggered);
+            return BarTimeInForce.NoFillThisBar(order, triggered);
         }
 
         fillPrice = SnapToTick(fillPrice, order.Symbol);
@@ -75,21 +71,13 @@ internal sealed class BarMidpointFillModel(
         if (fillableAbsolute == 0)
         {
             // Volume cap prevents any fill this bar — leave the order working.
-            return new OrderFillResult(
-                order with { IsTriggered = triggered },
-                [],
-                RemoveOrder: false,
-                WasTriggered: triggered && !order.IsTriggered);
+            return BarTimeInForce.NoFillThisBar(order, triggered);
         }
 
-        if (fillableAbsolute < remainingAbsolute && !order.AllowPartialFills)
+        if (fillableAbsolute < remainingAbsolute && !BarTimeInForce.AllowsPartialFill(order))
         {
             // Volume cap would produce a partial fill but the order disallows it.
-            return new OrderFillResult(
-                order with { IsTriggered = triggered },
-                [],
-                RemoveOrder: false,
-                WasTriggered: triggered && !order.IsTriggered);
+            return BarTimeInForce.NoFillThisBar(order, triggered);
         }
 
         var fillQuantitySigned = isBuy ? fillableAbsolute : -fillableAbsolute;
@@ -106,17 +94,22 @@ internal sealed class BarMidpointFillModel(
 
         var newFilledQuantity = order.FilledQuantity + fillQuantitySigned;
         var isFullyFilled = Math.Abs(newFilledQuantity) >= Math.Abs(order.Quantity);
+        // An immediate-or-cancel order keeps what filled and cancels the unfilled remainder
+        // instead of staying working across later bars.
+        var cancelRemainder = !isFullyFilled && BarTimeInForce.IsImmediate(order);
         var updated = order with
         {
             FilledQuantity = newFilledQuantity,
-            Status = isFullyFilled ? OrderStatus.Filled : OrderStatus.PartiallyFilled,
+            Status = isFullyFilled
+                ? OrderStatus.Filled
+                : cancelRemainder ? OrderStatus.Cancelled : OrderStatus.PartiallyFilled,
             IsTriggered = triggered
         };
 
         return new OrderFillResult(
             updated,
             [fill],
-            RemoveOrder: isFullyFilled,
+            RemoveOrder: isFullyFilled || cancelRemainder,
             WasTriggered: triggered && !order.IsTriggered);
     }
 
