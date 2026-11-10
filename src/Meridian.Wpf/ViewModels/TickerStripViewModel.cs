@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Threading;
+using Meridian.Contracts.Api;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Contracts;
 using WpfServices = Meridian.Wpf.Services;
@@ -217,18 +218,23 @@ public sealed class TickerStripViewModel : BindableBase, IDisposable
     {
         try
         {
-            var endpoint = $"/api/live/{Uri.EscapeDataString(symbol)}/quote";
-            var response = await _remoteClient.GetWithResponseAsync<TickerStripQuoteDto>(endpoint, ct)
+            var endpoint = UiApiRoutes.WithParam(UiApiRoutes.DataQuotes, "symbol", symbol);
+            var response = await _remoteClient.GetWithResponseAsync<QuotesResponse>(endpoint, ct)
                 .ConfigureAwait(false);
-            if (!response.Success || response.Data is null)
+
+            // The quotes endpoint answers 200 with a null quote until the collector has a BBO.
+            if (!response.Success || response.Data?.Quote is not { } quote)
             {
                 return;
             }
 
-            // Fall back to "price" key if "last" is absent (some endpoints use this)
-            var bid = response.Data.Bid;
-            var ask = response.Data.Ask;
-            var last = response.Data.Last != 0m ? response.Data.Last : response.Data.Price;
+            // Last trade price comes from the session statistics; fall back to the quote
+            // midpoint when no trade has been observed for the symbol yet.
+            var bid = quote.BidPrice;
+            var ask = quote.AskPrice;
+            var last = quote.Session is { Last: not 0m } session
+                ? session.Last
+                : quote.MidPrice ?? 0m;
 
             var prevLast = _lastPrices.TryGetValue(symbol, out var prev) ? prev : 0m;
             var uptick = last >= prevLast;
@@ -250,13 +256,5 @@ public sealed class TickerStripViewModel : BindableBase, IDisposable
         Stop();
         _watchlistSubscription?.Dispose();
         _cts?.Dispose();
-    }
-
-    internal sealed class TickerStripQuoteDto
-    {
-        public decimal Bid { get; init; }
-        public decimal Ask { get; init; }
-        public decimal Last { get; init; }
-        public decimal Price { get; init; }
     }
 }

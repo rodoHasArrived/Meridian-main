@@ -74,8 +74,10 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
             _logger.LogWarning(
                 "ROBINHOOD_ACCESS_TOKEN is not set; Robinhood brokerage gateway will be unavailable.");
 
-        _reportChannel = EventPipelinePolicy.Default.CreateChannel<ExecutionReport>(
-            singleReader: false, singleWriter: false);
+        // Execution reports carry fills and terminal order states, so they must never be
+        // evicted: wait for the consumer instead of dropping the oldest report when full.
+        _reportChannel = (EventPipelinePolicy.Default with { FullMode = BoundedChannelFullMode.Wait })
+            .CreateChannel<ExecutionReport>(singleReader: false, singleWriter: false);
     }
 
     // ── IBrokerageGateway / IExecutionGateway ─────────────────────────────

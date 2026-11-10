@@ -124,6 +124,9 @@ public partial class MainWindow : Window
     }
 
     private async void OnWindowLoaded(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => WindowLoadedCoreAsync(sender, e), nameof(OnWindowLoaded)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task WindowLoadedCoreAsync(object sender, RoutedEventArgs e)
     {
         EnsureShellVisibleOnStartup();
         if (RootFrame.Content is null)
@@ -410,6 +413,9 @@ public partial class MainWindow : Window
     }
 
     private async void OnLaunchArgsReceived(object? sender, string[] args)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => LaunchArgsReceivedCoreAsync(sender, args), nameof(OnLaunchArgsReceived)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task LaunchArgsReceivedCoreAsync(object? sender, string[] args)
     {
         if (!Dispatcher.CheckAccess())
         {
@@ -640,6 +646,9 @@ public partial class MainWindow : Window
     }
 
     private async void OnActiveContextChanged(object? sender, WorkstationOperatingContextChangedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => ActiveContextChangedCoreAsync(sender, e), nameof(OnActiveContextChanged)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task ActiveContextChangedCoreAsync(object? sender, WorkstationOperatingContextChangedEventArgs e)
     {
         if (!Dispatcher.CheckAccess())
         {
@@ -651,6 +660,9 @@ public partial class MainWindow : Window
     }
 
     private async void OnFundSwitchRequested(object? sender, EventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => FundSwitchRequestedCoreAsync(sender, e), nameof(OnFundSwitchRequested)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task FundSwitchRequestedCoreAsync(object? sender, EventArgs e)
     {
         if (!Dispatcher.CheckAccess())
         {
@@ -662,6 +674,9 @@ public partial class MainWindow : Window
     }
 
     private async void OnContextSwitchRequested(object? sender, EventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => ContextSwitchRequestedCoreAsync(sender, e), nameof(OnContextSwitchRequested)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task ContextSwitchRequestedCoreAsync(object? sender, EventArgs e)
     {
         if (!Dispatcher.CheckAccess())
         {

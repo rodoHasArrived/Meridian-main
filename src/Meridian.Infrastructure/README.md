@@ -101,7 +101,14 @@ and outage classifications for failed batches.
 Alpha Vantage adjusted OHLC uses the adjusted-close/raw-close ratio independently of the session's
 split coefficient. Yahoo daily history includes boundary padding and uses historical exchange
 timezone rules for session dates, falling back to the supplied offset and then UTC when absent.
-Alpaca symbol search initializes authentication after credentials are assigned. OpenFIGI resolution
+Alpaca symbol search initializes authentication after credentials are assigned. Alpaca asset
+search and option contract discovery are Trading API resources and follow the selected credential
+record's paper or live Trading API host, then `ALPACA_TRADING_ENVIRONMENT`; with neither, a paper
+key ID goes to paper and anything else stays on the live host, because a paper key pair is refused
+there. Contract discovery states its expiration horizon and follows page tokens, and returns
+nothing rather than a partial chain when a page cannot be read. Option chain snapshots and quotes
+read the underlying's latest trade first, because the snapshot payload has no underlying price,
+and join open interest from the contract listing. OpenFIGI resolution
 learns canonical identities only from complete, unambiguous exchange and instrument evidence;
 broad NASDAQ requests include UW, UQ, and UR while exact venue requests remain distinct;
 discovery can still return candidate lists. These corrections support `W1-DATA-001` and `W7-LIVE-001`.
@@ -522,6 +529,18 @@ paths and original file names remain provenance metadata, not duplicate-detectio
 
 - **Backfill failover on timeouts.** `CompositeHistoricalDataProvider` and `CrossProviderValidator` rethrow `OperationCanceledException` only when the caller's token is cancelled. A provider-side timeout, such as `HttpClient.Timeout` surfacing as `TaskCanceledException`, now fails over to the next provider instead of ending the request.
 - **Polygon trading-parameter backfill uses the system-ingest path.** `TradingParametersBackfillService` amends through `ISecurityMasterAmender` when the composed service exposes it. That keeps provider-sourced tick and lot sizes writable while `SecurityMasterWorkbench:RequireGovernedTermAmendments` refuses operator-direct amendments.
+
+**Provider construction and credentials.** `ProviderFactory.CreateAndRegisterAllAsync`,
+`InitializeProvidersAsync`, `ProviderRegistry.CreateStreamingClientAsync` and `WarmProvidersAsync`
+read provider credentials first and construct inside the prepared scope. The synchronous
+`CreateAndRegisterAll` and `CreateStreamingClient` remain for callers that cannot await.
+
+**Brokerage hardening.** The Robinhood and Template gateways, and the Alpaca gateway when it has
+no trade-updates stream, wait on a full execution-report channel instead of dropping the oldest
+report. With a trade-updates stream the Alpaca gateway streams reports from it and nothing reads
+the REST report channel, so that channel keeps dropping its oldest entry. One Alpaca path cannot
+wait: a pending-modification report is returned to its caller and, if the channel is full, logged
+as not published.
 
 ## Diagrams
 
