@@ -773,6 +773,9 @@ public sealed class DirectLendingViewModel : BindableBase
                 new("Available", selected.AvailableToDraw.ToString("C0")),
                 new("Accrued interest", selected.InterestAccruedUnpaid.ToString("C2")),
                 new("Penalty", selected.PenaltyAccruedUnpaid.ToString("C2")),
+                // PRD-115: owed to the borrower, so shown beside, not inside, the receivables.
+                new("Prepaid interest", selected.PrepaidInterest.ToString("C2")),
+                new("Unapplied cash", selected.UnappliedCash.ToString("C2")),
                 new("Maturity", selected.MaturityDate.ToString("d")),
                 new("Last accrual", selected.LastAccrualDate?.ToString("d") ?? "Not posted"),
                 new("Commitment", (contract?.CurrentTerms.CommitmentAmount ?? selected.CommitmentAmount).ToString("C0")),
