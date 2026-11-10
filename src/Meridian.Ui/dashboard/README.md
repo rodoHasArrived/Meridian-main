@@ -318,28 +318,32 @@ not been recorded.
 - **Headline figures.** `StatStrip` and `MetricCard` apply the rules in `@/lib/metric-trust`
   to every `MetricSnapshot`, so a screen cannot opt out by accident:
   - *Source*: a figure states where it comes from. `provenance` carries source, as-of time
-    and scope; the strip prints what its figures share once under the row and keeps a
-    differing figure's own provenance on hover and for screen readers. A strip fed by the
-    workstation load passes `source="…"` and `workspace="…"` and takes that workspace's as-of
-    time from the shell (`WorkspaceFigureContextProvider`). The time is when the workspace's own
-    payload last loaded (`workspaceFiguresLoadedAt` in `useWorkstationData`), never the time of
-    the latest refresh, which may have reloaded another workspace or nothing; a strip that names
-    no workspace states no as-of time. A screen with its own freshness evidence stamps its
-    metrics with `withMetricContext`.
+    and scope; the strip prints what its figures share once under the row. When figures in one
+    strip come from different sources it names each source with the figures it supplies
+    ("Active runs, Open positions from System overview; Providers healthy from Cross-screen
+    counts · As of …"). A strip fed by the workstation load passes `source="…"` and
+    `figureSource="…"` (the payload that supplies its figures) and takes that payload's evidence
+    from the shell (`WorkspaceFigureContextProvider`). Evidence is kept per payload
+    (`figureSourceLoadedAt` and `figureSourcesStale` in `useWorkstationData`), never per refresh:
+    the as-of time is when that payload last loaded, not the time of the latest refresh, which
+    may have reloaded another workspace or nothing. A figure another payload supplies carries
+    its own `provenance` and `freshness` (Settings' provider health comes from the cross-screen
+    counts, not the overview), and a strip that names no payload states no as-of time. A screen
+    with its own freshness evidence stamps its metrics with `withMetricContext`, still dated
+    from the payload that supplies the values (`resolveFigureEvidence`): Trading's totals follow
+    the Trading payload, not a newer brokerage observation.
   - *Change*: a bare change (`+8%`, `0%`, `+2`) is shown only with the `baseline` it is
     measured against (`+8% vs prior session`) and is dropped otherwise. A change that names
     its comparison (`3 new since your last visit`) and descriptive captions pass through.
   - *Freshness*: `freshness: "stale" | "unverified"` mutes the figure, adds a clock, marks
     the strip "Stale figures"/"Unverified figures" and explains the age on hover and to
     assistive technology. A failed workstation refresh marks every workspace-fed strip stale; a
-    refresh that fails for some workspaces only marks just those (a strip names its workspace
-    with `workspace="…"`), while the ones that did refresh stay fresh. A workspace stays stale
-    until its own payload reloads (`workspaceFiguresStale` in `useWorkstationData`); refreshing
-    another workspace clears the shell's error map but not this. A screen that stamps its
-    own freshness checks the same list: Portfolio's totals go stale when the workspace that
-    supplies them is listed, or when the Portfolio poll settles as `partial` (its Portfolio
-    request was rejected; a failing side feed such as an unconnected brokerage does not count),
-    and are dated from that payload's last load.
+    payload whose own reload failed marks just the figures it supplies, while the ones that did
+    reload stay fresh. It stays stale until that payload reloads; refreshing another workspace
+    clears the shell's error map but not this. Portfolio's totals go stale when the payload that
+    supplies them is listed, when the Portfolio poll settles as `partial` (its Portfolio request
+    was rejected; a failing side feed such as an unconnected brokerage does not count), or when
+    that payload's load is past the freshness budget.
   - *Disagreement*: when two panels on one page report different values for the same
     quantity, `buildFigureDifferenceNote` and `FigureDifferenceNote` show "Why these differ"
     with both values and each panel's source. Portfolio uses it for the header strip and the

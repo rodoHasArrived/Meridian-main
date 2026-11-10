@@ -1,9 +1,16 @@
 import { Clock3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { normalizeFinancialLabel } from "@/lib/format";
-import { buildMetricTrust, describeMetricProvenance, sharedMetricProvenance, withMetricContext, worstMetricFreshness } from "@/lib/metric-trust";
-import { resolveWorkspaceFigures, useWorkspaceFigureContext } from "@/lib/workspace-figure-context";
-import type { MetricFreshness, MetricSnapshot, WorkspaceKey } from "@/types";
+import {
+  buildMetricTrust,
+  describeGroupedMetricProvenance,
+  describeMetricProvenance,
+  sharedMetricProvenance,
+  withMetricContext,
+  worstMetricFreshness
+} from "@/lib/metric-trust";
+import { resolveFigureEvidence, useWorkspaceFigureContext, type FigureSourceKey } from "@/lib/workspace-figure-context";
+import type { MetricFreshness, MetricSnapshot } from "@/types";
 import { usesTrackedCaps } from "@/design-system/label-case";
 
 const statToneClass: Record<MetricSnapshot["tone"], string> = {
@@ -26,13 +33,15 @@ const degradedStripLabel: Record<Exclude<MetricFreshness, "fresh">, string> = {
  * The strip applies the headline-figure trust rules from `@/lib/metric-trust`: a change is shown
  * only with what it is measured against, a figure fed by stale or unverified data is muted and
  * carries a clock, and the source, as-of time and scope the figures share are stated once under
- * the row (each figure's own provenance is on hover when they differ).
+ * the row. When the figures come from different sources, each source is stated with the figures
+ * it covers (and each figure's own provenance is on hover).
  *
- * Pass `source` and `workspace` (and `scope` when the page has one) for a strip fed by the
- * workstation load: the as-of time and freshness then come from the shell, per workspace, so a
- * workspace whose refresh failed shows stale figures even while others refreshed. A screen with
- * its own freshness evidence stamps its metrics with `withMetricContext` instead and leaves
- * `source` off.
+ * Pass `source` and `figureSource` (and `scope` when the page has one) for a strip fed by the
+ * workstation load: the as-of time and freshness then come from the shell's record of that
+ * payload, so a payload whose reload failed shows stale figures even while others reloaded. A
+ * figure in the strip that another payload supplies carries its own provenance and freshness,
+ * which win over the strip's. A screen with its own freshness evidence stamps its metrics with
+ * `withMetricContext` instead and leaves `source` off.
  */
 export function StatStrip({
   metrics: suppliedMetrics,
@@ -40,7 +49,7 @@ export function StatStrip({
   className,
   compact = false,
   source,
-  workspace: workspaceKey,
+  figureSource,
   scope
 }: {
   metrics: MetricSnapshot[];
@@ -49,8 +58,8 @@ export function StatStrip({
   compact?: boolean;
   /** The read model behind the strip, e.g. "Strategy workspace". */
   source?: string;
-  /** The workspace whose load feeds the strip, so its own refresh outcome decides freshness. */
-  workspace?: WorkspaceKey;
+  /** The payload that supplies the strip's figures, so its own load decides as-of and freshness. */
+  figureSource?: FigureSourceKey;
   /** The accounts, fund or run the strip covers. */
   scope?: string | null;
 }) {
@@ -59,7 +68,7 @@ export function StatStrip({
     return null;
   }
 
-  const loaded = resolveWorkspaceFigures(workspace, workspaceKey);
+  const loaded = resolveFigureEvidence(workspace, figureSource);
   const stamped = source
     ? withMetricContext(suppliedMetrics, {
         provenance: { source, asOf: loaded.asOf, scope: scope ?? null },
@@ -73,11 +82,12 @@ export function StatStrip({
         ? { ...metric, provenance: { ...metric.provenance, source: `${metric.provenance.source} (${dataLabel})` } }
         : metric)
     : stamped;
-  const sharedProvenance = describeMetricProvenance(sharedMetricProvenance(metrics));
+  // Figures from different sources: state each source once with the figures it supplies.
+  const provenanceLine = describeMetricProvenance(sharedMetricProvenance(metrics)) ?? describeGroupedMetricProvenance(metrics);
   const stripFreshness = worstMetricFreshness(metrics);
   const footnote = [
     stripFreshness === "fresh" ? null : degradedStripLabel[stripFreshness],
-    sharedProvenance
+    provenanceLine
   ].filter(Boolean).join(" · ");
 
   return (
@@ -114,7 +124,7 @@ export function StatStrip({
                 {trust.delta ? (
                   <span className="whitespace-nowrap text-xs text-muted-foreground">{trust.delta.text}</span>
                 ) : null}
-                {!sharedProvenance && trust.provenanceText ? <span className="sr-only">{trust.provenanceText}</span> : null}
+                {!provenanceLine && trust.provenanceText ? <span className="sr-only">{trust.provenanceText}</span> : null}
               </dd>
             </div>
           );

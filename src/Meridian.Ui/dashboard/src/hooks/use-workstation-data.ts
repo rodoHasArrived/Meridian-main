@@ -38,6 +38,7 @@ import {
 import { getCrossScreenCounts } from "@/lib/api/operator-workstation.api";
 import { describeApiError } from "@/lib/api-errors";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
+import { FIGURE_SOURCE_KEYS, type FigureSourceKey } from "@/lib/workspace-figure-context";
 import type {
   BrokerageConnectionStatus,
   BrokerageHouseholdPortfolio,
@@ -70,7 +71,7 @@ import type {
 import type { WorkstationCrossScreenCounts } from "@/types/cross-screen-counts";
 
 type WorkspaceErrorMap = Partial<Record<WorkspaceKey, string>>;
-type WorkspaceLoadedAtMap = Partial<Record<WorkspaceKey, string>>;
+type FigureSourceLoadedAtMap = Partial<Record<FigureSourceKey, string>>;
 type RefreshCategory = "bootstrap" | "workspace" | "workflow";
 type RefreshDataKey =
   | "session"
@@ -160,16 +161,16 @@ interface WorkstationDataState {
   error: string | null;
   workspaceErrors: WorkspaceErrorMap;
   /**
-   * When the payload behind each workspace's headline figures last loaded (ISO). A refresh
-   * lifecycle cannot say this: it also settles for another workspace or for no request at all.
+   * When each payload that supplies headline figures last loaded (ISO). A refresh lifecycle
+   * cannot say this: it also settles for another workspace or for no request at all.
    */
-  workspaceFiguresLoadedAt: WorkspaceLoadedAtMap;
+  figureSourceLoadedAt: FigureSourceLoadedAtMap;
   /**
-   * Workspaces whose headline-figure payload failed its latest reload, so the figures on screen
-   * are retained ones. A workspace leaves this list only when that payload reloads successfully:
-   * unlike `workspaceErrors`, it is not cleared when another refresh starts.
+   * Figure payloads that failed their latest reload, so the figures they supply are retained
+   * ones. A payload leaves this list only when it reloads successfully: unlike
+   * `workspaceErrors`, it is not cleared when another refresh starts.
    */
-  workspaceFiguresStale: readonly WorkspaceKey[];
+  figureSourcesStale: readonly FigureSourceKey[];
   refreshStatus: RequestLifecycleStatus;
   tradingRefreshStatus: RequestLifecycleStatus;
   providerRoutingRefreshStatus: RequestLifecycleStatus;
@@ -210,8 +211,8 @@ const initialState: WorkstationDataState = {
   loading: true,
   error: null,
   workspaceErrors: {},
-  workspaceFiguresLoadedAt: {},
-  workspaceFiguresStale: [],
+  figureSourceLoadedAt: {},
+  figureSourcesStale: [],
   refreshStatus: null as unknown as RequestLifecycleStatus,
   tradingRefreshStatus: null as unknown as RequestLifecycleStatus,
   providerRoutingRefreshStatus: null as unknown as RequestLifecycleStatus,
@@ -508,8 +509,8 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
         return {
           ...current,
           trading: result,
-          workspaceFiguresLoadedAt: { ...current.workspaceFiguresLoadedAt, trading: loadedAt },
-          workspaceFiguresStale: withoutStaleFigures(current.workspaceFiguresStale, "trading"),
+          figureSourceLoadedAt: { ...current.figureSourceLoadedAt, trading: loadedAt },
+          figureSourcesStale: withoutStaleFigures(current.figureSourcesStale, "trading"),
           error: current.error === tradingError ? firstWorkspaceError(workspaceErrors) ?? null : current.error,
           workspaceErrors,
           usingDevelopmentFixtures: current.usingDevelopmentFixtures || hasDevelopmentFixtureUsage()
@@ -532,7 +533,7 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
           ...current,
           error: current.error ?? message,
           workspaceErrors,
-          workspaceFiguresStale: withStaleFigures(current.workspaceFiguresStale, "trading")
+          figureSourcesStale: withStaleFigures(current.figureSourcesStale, "trading")
         };
       });
       tradingRefreshLifecycle.fail(token, err, { fallback: "Trading workspace refresh failed." });
@@ -681,11 +682,11 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
           next = {
             ...next,
             portfolio: portfolio.value,
-            workspaceFiguresLoadedAt: { ...next.workspaceFiguresLoadedAt, portfolio: loadedAt },
-            workspaceFiguresStale: withoutStaleFigures(next.workspaceFiguresStale, "portfolio")
+            figureSourceLoadedAt: { ...next.figureSourceLoadedAt, portfolio: loadedAt },
+            figureSourcesStale: withoutStaleFigures(next.figureSourcesStale, "portfolio")
           };
         } else {
-          next = { ...next, workspaceFiguresStale: withStaleFigures(next.workspaceFiguresStale, "portfolio") };
+          next = { ...next, figureSourcesStale: withStaleFigures(next.figureSourcesStale, "portfolio") };
           refreshErrors.push(formatRequestError(portfolio.reason, "Portfolio workspace refresh failed"));
         }
         if (portfolioMultiAssetCoverage.status === "fulfilled") {
@@ -702,11 +703,11 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
           next = {
             ...next,
             reporting: reporting.value,
-            workspaceFiguresLoadedAt: { ...next.workspaceFiguresLoadedAt, reporting: loadedAt },
-            workspaceFiguresStale: withoutStaleFigures(next.workspaceFiguresStale, "reporting")
+            figureSourceLoadedAt: { ...next.figureSourceLoadedAt, reporting: loadedAt },
+            figureSourcesStale: withoutStaleFigures(next.figureSourcesStale, "reporting")
           };
         } else {
-          next = { ...next, workspaceFiguresStale: withStaleFigures(next.workspaceFiguresStale, "reporting") };
+          next = { ...next, figureSourcesStale: withStaleFigures(next.figureSourcesStale, "reporting") };
           reportingRefreshErrors.push(formatRequestError(reporting.reason, "Reporting live portfolio refresh failed"));
         }
 
@@ -909,24 +910,16 @@ function hasSuccessfulBootstrapEvidence(settlements: SettledRefreshEntry[]) {
     && bootstrapSettlements.every((settlement) => settlement.result.status === "fulfilled");
 }
 
-// The request whose payload carries each workspace's headline figures. Settings shows the system
-// overview's figures, so its as-of time follows that request.
-const HEADLINE_FIGURE_WORKSPACE: Partial<Record<RefreshDataKey, WorkspaceKey>> = {
-  strategy: "strategy",
-  trading: "trading",
-  portfolio: "portfolio",
-  data: "data",
-  accounting: "accounting",
-  reporting: "reporting",
-  overview: "settings"
-};
-
-function withStaleFigures(stale: readonly WorkspaceKey[], workspace: WorkspaceKey): readonly WorkspaceKey[] {
-  return stale.includes(workspace) ? stale : [...stale, workspace];
+function asFigureSource(key: RefreshDataKey): FigureSourceKey | null {
+  return (FIGURE_SOURCE_KEYS as readonly string[]).includes(key) ? key as FigureSourceKey : null;
 }
 
-function withoutStaleFigures(stale: readonly WorkspaceKey[], workspace: WorkspaceKey): readonly WorkspaceKey[] {
-  return stale.includes(workspace) ? stale.filter((key) => key !== workspace) : stale;
+function withStaleFigures(stale: readonly FigureSourceKey[], source: FigureSourceKey): readonly FigureSourceKey[] {
+  return stale.includes(source) ? stale : [...stale, source];
+}
+
+function withoutStaleFigures(stale: readonly FigureSourceKey[], source: FigureSourceKey): readonly FigureSourceKey[] {
+  return stale.includes(source) ? stale.filter((key) => key !== source) : stale;
 }
 
 function mergeRefreshSettlements(
@@ -944,8 +937,8 @@ function mergeRefreshSettlements(
   for (const workspaceKey of options.replaceErrorsFor ?? []) {
     delete workspaceErrors[workspaceKey];
   }
-  const workspaceFiguresLoadedAt: WorkspaceLoadedAtMap = { ...current.workspaceFiguresLoadedAt };
-  let workspaceFiguresStale = current.workspaceFiguresStale;
+  const figureSourceLoadedAt: FigureSourceLoadedAtMap = { ...current.figureSourceLoadedAt };
+  let figureSourcesStale = current.figureSourcesStale;
   const bootstrapErrors: string[] = [];
   const hasBootstrapSettlements = settlements.some((settlement) => settlement.entry.category === "bootstrap");
   const hasWorkflowSettlements = settlements.some((settlement) => settlement.entry.category === "workflow");
@@ -955,17 +948,17 @@ function mergeRefreshSettlements(
   for (const { entry, result } of settlements) {
     if (result.status === "fulfilled") {
       assignRefreshValue(next, entry.key, result.value);
-      const figureWorkspace = HEADLINE_FIGURE_WORKSPACE[entry.key];
-      if (figureWorkspace) {
-        workspaceFiguresLoadedAt[figureWorkspace] = options.loadedAt;
-        workspaceFiguresStale = withoutStaleFigures(workspaceFiguresStale, figureWorkspace);
+      const figureSource = asFigureSource(entry.key);
+      if (figureSource) {
+        figureSourceLoadedAt[figureSource] = options.loadedAt;
+        figureSourcesStale = withoutStaleFigures(figureSourcesStale, figureSource);
       }
       continue;
     }
 
-    const failedFigureWorkspace = HEADLINE_FIGURE_WORKSPACE[entry.key];
-    if (failedFigureWorkspace) {
-      workspaceFiguresStale = withStaleFigures(workspaceFiguresStale, failedFigureWorkspace);
+    const failedFigureSource = asFigureSource(entry.key);
+    if (failedFigureSource) {
+      figureSourcesStale = withStaleFigures(figureSourcesStale, failedFigureSource);
     }
     const message = formatRequestError(result.reason, `${getRefreshEntryLabel(entry)} request failed.`);
     if (entry.category === "workspace") {
@@ -982,8 +975,8 @@ function mergeRefreshSettlements(
   }
 
   next.workspaceErrors = workspaceErrors;
-  next.workspaceFiguresLoadedAt = workspaceFiguresLoadedAt;
-  next.workspaceFiguresStale = workspaceFiguresStale;
+  next.figureSourceLoadedAt = figureSourceLoadedAt;
+  next.figureSourcesStale = figureSourcesStale;
   next.workflowError = workflowErrors[0] ?? null;
   const retainedGlobalError = !hasBootstrapSettlements && current.error && !currentErrorIsWorkspaceError
     ? current.error

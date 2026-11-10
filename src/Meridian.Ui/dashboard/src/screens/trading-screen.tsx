@@ -84,7 +84,7 @@ import { usesTrackedCaps } from "@/design-system/label-case";
 import { applyCrossScreenCounts, selectCrossScreenCounts } from "@/lib/cross-screen-counts";
 import { pluralizeCount } from "@/lib/format";
 import { withMetricContext } from "@/lib/metric-trust";
-import { useWorkspaceFigureContext } from "@/lib/workspace-figure-context";
+import { resolveFigureEvidence, useWorkspaceFigureContext } from "@/lib/workspace-figure-context";
 import { useSharedCrossScreenCounts } from "@/lib/cross-screen-counts-context";
 
 interface TradingScreenProps {
@@ -573,14 +573,19 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
         ? "review"
         : "unknown";
 
-  // Headline figures state the same scope and evidence time as the confidence summary below, and
-  // are marked when the broker evidence behind them is stale or cannot be confirmed. A readiness
-  // refresh in flight does not mute them: the last observation is still the evidence on screen.
+  // Headline figures state the same scope as the confidence summary below, and are marked when
+  // the broker evidence behind them is stale or cannot be confirmed. A readiness refresh in
+  // flight does not mute them: the last observation is still the evidence on screen.
   const headlineScope = fundAccountId ?? data.brokerage.account ?? "All loaded accounts";
-  const headlineAsOf = (hasRecoveryProjection ? recoveryPortfolio?.observedAt : data.brokerage.lastHeartbeat) || null;
+  // Their values come from the Trading workspace payload, so that payload's load dates them. A
+  // brokerage recovery can report a newer observation before the next Trading poll reloads the
+  // values; its time belongs to the confidence summary, not to figures it did not supply. Outside
+  // the shell the payload's own heartbeat is the only time it carries.
+  const tradingEvidence = resolveFigureEvidence(figureContext, "trading");
+  const headlineAsOf = tradingEvidence.asOf ?? (data.brokerage.lastHeartbeat || null);
   // A failed Trading refresh keeps the previous payload on screen: those figures are stale
   // whatever the broker evidence says.
-  const tradingRefreshFailed = figureContext?.staleWorkspaces.includes("trading") ?? false;
+  const tradingRefreshFailed = figureContext?.staleSources.includes("trading") ?? false;
   const headlineFreshness: MetricFreshness = tradingRefreshFailed
     ? "stale"
     : hasRecoveryProjection

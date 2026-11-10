@@ -612,7 +612,7 @@ describe("PortfolioScreen", () => {
     const now = new Date().toISOString();
     await renderPortfolioScreen(
       <WorkspaceFigureContextProvider
-        value={{ freshness: "fresh", dataLabel: null, staleWorkspaces: ["portfolio"], workspaceLoadedAt: { portfolio: "2026-01-02T14:00:00Z" } }}
+        value={{ freshness: "fresh", dataLabel: null, staleSources: ["portfolio"], sourceLoadedAt: { portfolio: "2026-01-02T14:00:00Z" } }}
       >
         <PortfolioScreen
           portfolio={portfolio}
@@ -641,6 +641,32 @@ describe("PortfolioScreen", () => {
     expect(strip.parentElement).toHaveTextContent(
       "Stale figures · Source: Portfolio workspace · As of Jan 2, 2026, 14:00 UTC · Scope: All workspace positions"
     );
+  });
+
+  it("dates the totals from the Portfolio payload's own load, not from an older brokerage snapshot", async () => {
+    // In the shell the Portfolio payload loaded just now. The brokerage household snapshot is
+    // months old; it does not supply the totals, so it must not date them or mark them stale.
+    const loadedAt = new Date().toISOString();
+    await renderPortfolioScreen(
+      <WorkspaceFigureContextProvider
+        value={{ freshness: "fresh", dataLabel: null, staleSources: [], sourceLoadedAt: { portfolio: loadedAt } }}
+      >
+        <PortfolioScreen
+          portfolio={portfolio}
+          trading={trading}
+          strategy={strategy}
+          accounting={accounting}
+          brokeragePortfolio={{ ...brokeragePortfolio, asOf: "2026-01-02T14:00:00Z" }}
+        />
+      </WorkspaceFigureContextProvider>
+    );
+
+    const strip = screen.getByLabelText("Portfolio headline metrics");
+    expect(within(strip).getByText("+$120")).toHaveClass("text-success");
+    expect(strip.parentElement).toHaveTextContent(
+      `Source: Portfolio workspace · As of ${formatUtcTimestamp(new Date(loadedAt))} · Scope: All workspace positions`
+    );
+    expect(strip.parentElement).not.toHaveTextContent("Stale figures");
   });
 
   it("keeps fresh headline figures in their P&L tone", async () => {
