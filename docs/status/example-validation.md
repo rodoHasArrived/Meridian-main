@@ -8,8 +8,8 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 1132 |
-| Valid | 634 |
+| Total code blocks | 1134 |
+| Valid | 636 |
 | Invalid | 0 |
 | Skipped | 498 |
 
