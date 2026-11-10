@@ -52,8 +52,8 @@ public sealed class AlpacaSymbolSearchProvider : BaseSymbolSearchProvider
     /// <param name="log">Optional logger.</param>
     /// <param name="useSandbox">
     /// <see langword="true"/> for the paper Trading API, <see langword="false"/> for live. When
-    /// omitted, the environment selected by <c>ALPACA_TRADING_ENVIRONMENT</c> is used (paper
-    /// unless it says live), matching the brokerage gateway.
+    /// omitted, <c>ALPACA_TRADING_ENVIRONMENT</c> decides if it is set; otherwise a paper key ID
+    /// (<c>PK…</c>) selects paper and anything else keeps the live host these lookups always used.
     /// </param>
     public AlpacaSymbolSearchProvider(
         string? keyId = null,
@@ -63,7 +63,7 @@ public sealed class AlpacaSymbolSearchProvider : BaseSymbolSearchProvider
         bool? useSandbox = null)
         : base(keyId, httpClient, log)
     {
-        _tradingApiBaseUrl = $"{AlpacaTradingApi.ResolveBaseUrl(useSandbox)}/v2";
+        _tradingApiBaseUrl = $"{AlpacaTradingApi.ResolveBaseUrl(useSandbox, ApiKey)}/v2";
         _secretKey = secretKey
             ?? Environment.GetEnvironmentVariable("ALPACA_SECRET_KEY")
             ?? Environment.GetEnvironmentVariable("ALPACA__SECRETKEY");

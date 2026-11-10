@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -360,18 +361,12 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
     private string BuildQuotesUrl(IReadOnlyList<string> symbols, DateTimeOffset start, DateTimeOffset end, int? limit, string? pageToken)
     {
         var symbolsParam = string.Join(",", symbols);
-        var startStr = start.ToString("yyyy-MM-ddTHH:mm:ssZ");
-        var endStr = end.ToString("yyyy-MM-ddTHH:mm:ssZ");
+        var startStr = FormatUtcInstant(start);
+        var endStr = FormatUtcInstant(end);
 
-        string url;
-        if (symbols.Count == 1)
-        {
-            url = $"{BaseUrl}/{symbols[0]}/quotes?start={startStr}&end={endStr}&feed={Uri.EscapeDataString(_feed)}";
-        }
-        else
-        {
-            url = $"{BaseUrl}/quotes?symbols={Uri.EscapeDataString(symbolsParam)}&start={startStr}&end={endStr}&feed={Uri.EscapeDataString(_feed)}";
-        }
+        // Always the multi-symbol route: it answers with quotes keyed by symbol, which is the
+        // shape read below. The per-symbol route answers with a bare array instead.
+        var url = $"{BaseUrl}/quotes?symbols={Uri.EscapeDataString(symbolsParam)}&start={startStr}&end={endStr}&feed={Uri.EscapeDataString(_feed)}";
 
         if (limit.HasValue)
             url += $"&limit={limit.Value}";
@@ -449,7 +444,8 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
                             Exchange: trade.Exchange ?? "",
                             Price: trade.Price,
                             Size: trade.Size,
-                            TradeId: trade.TradeId ?? sequenceNumber.ToString(),
+                            TradeId: trade.TradeId?.ToString(CultureInfo.InvariantCulture)
+                                ?? sequenceNumber.ToString(CultureInfo.InvariantCulture),
                             Conditions: trade.Conditions?.ToArray(),
                             Tape: trade.Tape,
                             Source: Name,
@@ -475,18 +471,12 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
     private string BuildTradesUrl(IReadOnlyList<string> symbols, DateTimeOffset start, DateTimeOffset end, int? limit, string? pageToken)
     {
         var symbolsParam = string.Join(",", symbols);
-        var startStr = start.ToString("yyyy-MM-ddTHH:mm:ssZ");
-        var endStr = end.ToString("yyyy-MM-ddTHH:mm:ssZ");
+        var startStr = FormatUtcInstant(start);
+        var endStr = FormatUtcInstant(end);
 
-        string url;
-        if (symbols.Count == 1)
-        {
-            url = $"{BaseUrl}/{symbols[0]}/trades?start={startStr}&end={endStr}&feed={Uri.EscapeDataString(_feed)}";
-        }
-        else
-        {
-            url = $"{BaseUrl}/trades?symbols={Uri.EscapeDataString(symbolsParam)}&start={startStr}&end={endStr}&feed={Uri.EscapeDataString(_feed)}";
-        }
+        // Always the multi-symbol route: it answers with trades keyed by symbol, which is the
+        // shape read below. The per-symbol route answers with a bare array instead.
+        var url = $"{BaseUrl}/trades?symbols={Uri.EscapeDataString(symbolsParam)}&start={startStr}&end={endStr}&feed={Uri.EscapeDataString(_feed)}";
 
         if (limit.HasValue)
             url += $"&limit={limit.Value}";
@@ -611,18 +601,16 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
     private string BuildAuctionsUrl(IReadOnlyList<string> symbols, DateOnly start, DateOnly end, string? pageToken)
     {
         var symbolsParam = string.Join(",", symbols);
-        var startStr = start.ToString("yyyy-MM-dd");
-        var endStr = end.AddDays(1).ToString("yyyy-MM-dd");
+        var startStr = start.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        // A date-only end already covers that whole session. Asking through the following day
+        // reaches into "recent" consolidated data whenever that day is today, which accounts
+        // without a real-time consolidated entitlement are refused outright.
+        var endStr = end.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
-        string url;
-        if (symbols.Count == 1)
-        {
-            url = $"{BaseUrl}/{symbols[0]}/auctions?start={startStr}&end={endStr}&feed={Uri.EscapeDataString(_feed)}";
-        }
-        else
-        {
-            url = $"{BaseUrl}/auctions?symbols={Uri.EscapeDataString(symbolsParam)}&start={startStr}&end={endStr}&feed={Uri.EscapeDataString(_feed)}";
-        }
+        // Always the multi-symbol route, for the keyed response shape read below. No feed is
+        // sent: auctions exist only on the consolidated feed and the API refuses any other
+        // (including the default IEX feed) rather than ignoring it.
+        var url = $"{BaseUrl}/auctions?symbols={Uri.EscapeDataString(symbolsParam)}&start={startStr}&end={endStr}";
 
         if (!string.IsNullOrEmpty(pageToken))
             url += $"&page_token={Uri.EscapeDataString(pageToken)}";
@@ -631,6 +619,13 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
     }
 
 
+
+    /// <summary>
+    /// Formats an instant as the UTC timestamp the API expects. The offset must be applied
+    /// first: formatting the local clock time with a literal Z shifts any non-UTC instant.
+    /// </summary>
+    private static string FormatUtcInstant(DateTimeOffset instant) =>
+        instant.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture);
 
     private void ValidateCredentials()
     {
@@ -769,8 +764,10 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
         [JsonPropertyName("c")]
         public List<string>? Conditions { get; set; }
 
+        /// <summary>The exchange trade id: a JSON number on the stock trades endpoint.</summary>
         [JsonPropertyName("i")]
-        public string? TradeId { get; set; }
+        [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
+        public long? TradeId { get; set; }
 
         [JsonPropertyName("z")]
         public string? Tape { get; set; }

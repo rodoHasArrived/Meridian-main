@@ -319,7 +319,7 @@ public sealed partial class ProviderFactory
             return null;
 
         return new AlpacaSymbolSearchProvider(keyId, secretKey, httpClient: null, log: _log,
-            useSandbox: ResolveAlpacaTradingEnvironment(credentials) != AlpacaCredentialEnvironment.LiveEnvironment);
+            useSandbox: SelectedAlpacaReferenceEnvironment(credentials));
     }
 
     internal ISymbolSearchProvider? CreateFinnhubSearchProvider(FinnhubBackfillConfig? cfg)

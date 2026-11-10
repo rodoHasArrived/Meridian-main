@@ -48,11 +48,46 @@ internal static class AlpacaTradingApi
     public static string BaseUrl(bool useSandbox) => useSandbox ? PaperBaseUrl : LiveBaseUrl;
 
     /// <summary>
-    /// Returns the Trading API origin for an explicit environment, or for the environment the
-    /// canonical <c>ALPACA_TRADING_ENVIRONMENT</c> contract selects (paper unless it says live).
+    /// Returns the Trading API origin for reference lookups, in order of authority:
+    /// <list type="number">
+    ///   <item>an explicit environment (a selected credential record names its own);</item>
+    ///   <item><c>ALPACA_TRADING_ENVIRONMENT</c>, when it is set;</item>
+    ///   <item>a key ID that identifies itself as a paper key (<c>PK…</c>);</item>
+    ///   <item>the live host, where these lookups went before any environment was selectable.</item>
+    /// </list>
     /// </summary>
-    public static string ResolveBaseUrl(bool? useSandbox = null) =>
-        BaseUrl(useSandbox ?? Meridian.Core.Config.AlpacaCredentialEnvironment.Resolve().UseSandbox);
+    /// <remarks>
+    /// The last two steps apply only when nothing selected an environment. They keep a
+    /// deployment that uses live keys and never set the variable on the live host, and stop a
+    /// paper key from being sent where it is always refused. A misjudged key reaches the other
+    /// Alpaca environment's host and is answered 401; it is never sent anywhere else.
+    /// </remarks>
+    public static string ResolveBaseUrl(bool? useSandbox, string? keyId)
+    {
+        if (useSandbox is { } selected)
+            return BaseUrl(selected);
+
+        var configured = Meridian.Core.Config.AlpacaCredentialEnvironment.ReadEnvironmentValue(
+            Meridian.Core.Config.AlpacaCredentialEnvironment.TradingEnvironmentName);
+        if (!string.IsNullOrWhiteSpace(configured))
+            return BaseUrl(IsPaper(configured));
+
+        return BaseUrl(IsPaperKeyId(keyId));
+    }
+
+    /// <summary>Whether a trading-environment name selects paper (anything that is not live).</summary>
+    public static bool IsPaper(string? tradingEnvironment) => !string.Equals(
+        Meridian.Core.Config.AlpacaCredentialEnvironment.NormalizeTradingEnvironment(tradingEnvironment),
+        Meridian.Core.Config.AlpacaCredentialEnvironment.LiveEnvironment,
+        StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>Alpaca issues paper Trading API key IDs with a <c>PK</c> prefix.</summary>
+    public static bool IsPaperKeyId(string? keyId) =>
+        keyId?.TrimStart().StartsWith("PK", StringComparison.Ordinal) == true;
+
+    /// <summary>Names the environment of a Trading API origin for diagnostics.</summary>
+    public static string DescribeEnvironment(string baseUrl) =>
+        baseUrl.StartsWith(PaperBaseUrl, StringComparison.OrdinalIgnoreCase) ? "paper" : "live";
 }
 
 /// <summary>

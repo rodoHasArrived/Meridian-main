@@ -139,8 +139,10 @@ public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProv
             return [];
         }
 
+        ticker = ticker.Trim();
+        var tradingApiBaseUrl = AlpacaTradingApi.ResolveBaseUrl(ResolveUseSandbox(), keyId);
         using var client = _httpClientFactory.CreateClient("alpaca-corp-actions");
-        client.BaseAddress = new Uri(AlpacaTradingApi.ResolveBaseUrl(ResolveUseSandbox()));
+        client.BaseAddress = new Uri(tradingApiBaseUrl);
         client.DefaultRequestHeaders.TryAddWithoutValidation("APCA-API-KEY-ID", keyId);
         client.DefaultRequestHeaders.TryAddWithoutValidation("APCA-API-SECRET-KEY", secretKey);
 
@@ -153,16 +155,17 @@ public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProv
             {
                 // A history with a hole in it is indistinguishable from a complete one downstream.
                 _logger.LogWarning(
-                    "Alpaca corporate action history for {Ticker} is incomplete; returning no actions rather than a partial history.",
-                    ticker);
+                    "Alpaca corporate action history for {Ticker} on the {Environment} Trading API is incomplete; returning no actions rather than a partial history.",
+                    ticker, AlpacaTradingApi.DescribeEnvironment(tradingApiBaseUrl));
                 return [];
             }
 
             foreach (var command in window)
             {
                 // Windows do not overlap, but the announcement id still decides identity.
-                var eventKey = command.SourceEventId
-                    ?? FormattableString.Invariant($"{command.ActionType}|{command.ExDate:O}|{command.Amount}|{command.SplitFromFactor}|{command.SplitToFactor}");
+                var eventKey = !string.IsNullOrWhiteSpace(command.SourceEventId)
+                    ? command.SourceEventId
+                    : FormattableString.Invariant($"{command.ActionType}|{command.ExDate:O}|{command.Amount}|{command.SplitFromFactor}|{command.SplitToFactor}");
                 commandsByEvent.TryAdd(eventKey, command);
             }
         }
@@ -181,20 +184,18 @@ public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProv
     }
 
     /// <summary>
-    /// The selected credential record names its own trading environment; without one the
-    /// canonical <c>ALPACA_TRADING_ENVIRONMENT</c> contract decides, as for the brokerage gateway.
+    /// The selected credential record names its own trading environment; without one
+    /// <see cref="AlpacaTradingApi.ResolveBaseUrl"/> decides.
     /// </summary>
     private bool? ResolveUseSandbox() => _useSandbox
         ?? (_credentials?.CredentialEnvironment is { } selectedEnvironment
-            ? !string.Equals(
-                Meridian.Core.Config.AlpacaCredentialEnvironment.NormalizeTradingEnvironment(selectedEnvironment),
-                Meridian.Core.Config.AlpacaCredentialEnvironment.LiveEnvironment,
-                StringComparison.OrdinalIgnoreCase)
+            ? AlpacaTradingApi.IsPaper(selectedEnvironment)
             : null);
 
     /// <summary>
     /// Splits an inclusive ex-date range into consecutive, non-overlapping windows no longer
-    /// than the endpoint accepts, newest first.
+    /// than the endpoint accepts, newest first. The endpoint treats both <c>since</c> and
+    /// <c>until</c> as inclusive, so adjacent windows meet without sharing a day.
     /// </summary>
     internal static IReadOnlyList<(DateOnly Since, DateOnly Until)> BuildExDateWindows(DateOnly earliest, DateOnly latest)
     {
@@ -254,7 +255,8 @@ public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProv
                 return null;
             }
 
-            return document.RootElement.EnumerateArray()
+            var announced = document.RootElement.GetArrayLength();
+            var commands = document.RootElement.EnumerateArray()
                 .Select(payload => new
                 {
                     Announcement = payload.Deserialize(
@@ -266,8 +268,18 @@ public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProv
                 .Where(cmd => cmd is not null)
                 .Select(cmd => cmd!)
                 .ToArray();
+            if (commands.Length != announced)
+            {
+                // Not bound: an announcement for another security, or one without an ex-date.
+                _logger.LogDebug(
+                    "Alpaca announced {Announced} corporate action(s) for {Ticker} ex-dates {Since} to {Until}; {Bound} could be bound to the security.",
+                    announced, ticker, since, until, commands.Length);
+            }
+
+            return commands;
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        // A request that times out is a failed read, not the caller's cancellation.
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
             _logger.LogWarning(ex,
                 "Failed to fetch Alpaca corporate actions for {Ticker} ex-dates {Since} to {Until}.",
@@ -276,9 +288,17 @@ public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProv
         }
     }
 
-    private static bool NamesTicker(AlpacaAnnouncement announcement, string ticker) =>
-        string.Equals(announcement.TargetSymbol?.Trim(), ticker.Trim(), StringComparison.OrdinalIgnoreCase)
-        || string.Equals(announcement.InitiatingSymbol?.Trim(), ticker.Trim(), StringComparison.OrdinalIgnoreCase);
+    /// <summary>
+    /// The target symbol names the security the action applies to. The initiating symbol is
+    /// consulted only when the announcement has no target, never to override a different one.
+    /// </summary>
+    private static bool NamesTicker(AlpacaAnnouncement announcement, string ticker)
+    {
+        var named = string.IsNullOrWhiteSpace(announcement.TargetSymbol)
+            ? announcement.InitiatingSymbol
+            : announcement.TargetSymbol;
+        return string.Equals(named?.Trim(), ticker, StringComparison.OrdinalIgnoreCase);
+    }
 
     private CorporateActionCommand? MapToCommand(
         AlpacaAnnouncement announcement,

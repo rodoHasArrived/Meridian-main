@@ -183,6 +183,40 @@ public sealed class AlpacaCorporateActionProviderTests
     }
 
     [Fact]
+    public async Task FetchAsync_BindsByTargetSymbolAndFallsBackToInitiatingOnlyWhenThereIsNoTarget()
+    {
+        // The initiating symbol matches but the action applies to another security.
+        var appliesElsewhere = CashDividend
+            .Replace("\"target_symbol\":\"ACME\"", "\"target_symbol\":\"OTHER\"", StringComparison.Ordinal)
+            .Replace("7808fce5-4d71-4c5f-9636-80a34a0ed87c", "11111111-1111-1111-1111-111111111111", StringComparison.Ordinal);
+        // No target at all: the initiating symbol is the only name the announcement carries.
+        var initiatingOnly = CashDividend
+            .Replace("\"target_symbol\":\"ACME\",", string.Empty, StringComparison.Ordinal)
+            .Replace("7808fce5-4d71-4c5f-9636-80a34a0ed87c", "22222222-2222-2222-2222-222222222222", StringComparison.Ordinal);
+        using var handler = new StubHttpMessageHandler(request =>
+        {
+            var (since, until) = Window(request.RequestUri!);
+            return Json(Contained(since, until, appliesElsewhere, initiatingOnly));
+        });
+
+        var results = await CreateSut(handler, useSandbox: true).FetchAsync(" ACME ", Guid.NewGuid(), CancellationToken.None);
+
+        results.Should().ContainSingle().Which.SourceEventId.Should().Be("22222222-2222-2222-2222-222222222222");
+    }
+
+    [Fact]
+    public async Task FetchAsync_WhenARequestTimesOut_ReturnsNothingRatherThanReportingCancellation()
+    {
+        using var handler = new StubHttpMessageHandler(_ => throw new TaskCanceledException("The request timed out."));
+
+        // The caller's token is not cancelled; an HttpClient timeout is a failed read.
+        var results = await CreateSut(handler, useSandbox: true).FetchAsync("ACME", Guid.NewGuid(), CancellationToken.None);
+
+        results.Should().BeEmpty();
+        handler.CallCount.Should().Be(1);
+    }
+
+    [Fact]
     public async Task FetchAsync_PropagatesCancellation()
     {
         using var handler = new StubHttpMessageHandler(_ => Json("[]"));
