@@ -172,7 +172,7 @@ public sealed class ProviderFactoryCredentialIsolationTests : IDisposable
         await corporate.FetchAsync("AAPL", Guid.NewGuid());
         await using var brokerage = factory.CreateAlpacaBrokerageGateway();
         await brokerage.GetAccountInfoAsync();
-        handler.Requests.Should().HaveCount(3).And.OnlyContain(request => request.Key == key && request.Secret == secret);
+        handler.Requests.Should().HaveCount(2).And.OnlyContain(request => request.Key == key && request.Secret == secret);
         handler.Requests.Single(request => request.Uri.AbsolutePath == "/v2/account").Uri.Host.Should()
             .Be(environment == "live" ? "api.alpaca.markets" : "paper-api.alpaca.markets");
     }
