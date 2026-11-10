@@ -4412,6 +4412,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterService.ClassificationText.cs
 │   │   │   ├── SecurityMasterService.Creation.cs
 │   │   │   ├── SecurityMasterService.cs
+│   │   │   ├── SecurityMasterService.Deactivation.cs
 │   │   │   ├── SecurityMasterService.WriteRefusals.cs
 │   │   │   ├── SecurityMasterStructuredCreditReclassificationService.cs
 │   │   │   ├── SecurityMasterTermsCapabilityRefusedException.cs
@@ -9966,6 +9967,9 @@ Meridian-main
 │   │   ├── security-master
 │   │   │   ├── governance-payloads
 │   │   │   │   └── v1-captured.json
+│   │   │   ├── replay-corpus
+│   │   │   │   ├── replay-corpus-golden.json
+│   │   │   │   └── replay-corpus.json
 │   │   │   ├── schedule-validation
 │   │   │   │   ├── accepted.json
 │   │   │   │   ├── duplicate-properties.json
@@ -10133,6 +10137,7 @@ Meridian-main
 │   │   ├── ReportPackValidationRulesTests.fs
 │   │   ├── RiskPolicyTests.fs
 │   │   ├── SecurityCalculationsTests.fs
+│   │   ├── SecurityDefinitionValidationTests.fs
 │   │   ├── SensitiveActionPolicyTests.fs
 │   │   ├── SettlementInstructionCommandsTests.fs
 │   │   ├── TradingReadinessRulesTests.fs
@@ -11555,6 +11560,8 @@ Meridian-main
 │   │   │   ├── SecurityAssetTermFormModelTests.cs
 │   │   │   ├── SecurityAssetTermFormParityFixtureTests.cs
 │   │   │   ├── SecurityAssetTermsFieldEditValidatorTests.cs
+│   │   │   ├── SecurityAssetTermsSchemaDecodeSweepTests.cs
+│   │   │   ├── SecurityAssetTermsSchemaEncodeSweepTests.cs
 │   │   │   ├── SecurityAssetTermsSchemaRoundTripTests.ContractualCompanions.cs
 │   │   │   ├── SecurityAssetTermsSchemaRoundTripTests.cs
 │   │   │   ├── SecurityAssetTermsSchemaRoundTripTests.ReadableTwins.cs
@@ -11563,6 +11570,7 @@ Meridian-main
 │   │   │   ├── SecurityCurvesMigrationTests.cs
 │   │   │   ├── SecurityCurvesPostgresTests.cs
 │   │   │   ├── SecurityDayCountTermTests.cs
+│   │   │   ├── SecurityDefinitionValidationEquivalenceTests.cs
 │   │   │   ├── SecurityEconomicCallScheduleFlatteningTests.cs
 │   │   │   ├── SecurityEconomicScheduleFixtureCorpus.cs
 │   │   │   ├── SecurityEconomicScheduleMappingTests.cs
@@ -11635,6 +11643,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterRecordedIdentifierPostgresTests.cs
 │   │   │   ├── SecurityMasterRecordedIdentifierQueryTests.cs
 │   │   │   ├── SecurityMasterReferenceLookupTests.cs
+│   │   │   ├── SecurityMasterReplayCorpusTests.cs
 │   │   │   ├── SecurityMasterSchemaVersionsTests.cs
 │   │   │   ├── SecurityMasterServiceAliasCacheRefreshTests.cs
 │   │   │   ├── SecurityMasterServiceCommittedReadbackTests.cs
