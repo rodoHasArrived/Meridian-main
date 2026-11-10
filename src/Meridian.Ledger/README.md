@@ -11,6 +11,8 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Ledger
 
+`LedgerAccounts.ShortSaleCollateralReceivable` is the asset account for collateral the broker holds against open Reg T short sales.
+
 Share-class redemptions round cash to the class currency's minor units (`NavPerUnitCalculator.CashForRedemption(units, nav, currency)`).
 
 `ShortCarryProjector` derives the borrow-fee and payment-in-lieu journals (expense debit, cash

@@ -502,6 +502,39 @@ Validation: no .NET SDK was available where this was written, so the new
 `SecurityAssetClassCatalogTests` cases were not run locally; the hosted `Meridian CI / quality-gate`
 is their compile and test gate.
 
+**2026-11-10 — `CreditFacility` has one owning pack; Option stays specialized (owner decisions).**
+*`CreditFacility`.* The domain owner chose `private-loan-credit`. It is removed from the planned
+lists of `mortgage-facility-intercompany` and `commitment-guarantee`, and its
+`DeclaredSharedCoverage` entry is deleted, so `DirectLoan` is the only declared overlap and no
+planned class is shared. The reasons are in source: Direct Lending already services commitment,
+available-to-draw, drawdown lots and commitment fees for a loan; `private-loan-credit` is the only
+loan pack with a `Fee` lifecycle event and a fee-income template; and the undrawn part of a facility
+is already a `CommitmentGuarantee` record (`committedAmount`, `unfundedAmount`). The readiness label
+`CreditFacility` now resolves to `DirectLoan` instead of `CommitmentGuarantee`, so readiness requests
+and evidence carrying that label classify with the loan. This reads a credit facility as one the fund
+extends. A facility the fund borrows under (the financing blueprint's borrower-side term debt) has
+no planned class name and is not decided here. The `mortgage-facility-intercompany` pack keeps its
+id and display name.
+
+*Option.* Option stays on its specialized projection, by decision and not by backlog. Its four
+tables are keyed by contract symbol and chain, the quote path writes the same tables, and the
+contract and chain lookups read them. Moving it means re-keying on `security_id` and separating the
+quote path first, for a consistency gain only. A security-keyed option terms table beside the
+existing four remains available if a consumer needs option terms queried like other classes; none
+was identified.
+
+*Known limit, not changed.* Both option writers set `lifecycle_stat` (`Active` or `Expired`) from
+the clock at write time (`PostgresSecurityMasterStore.TryBuildOptionProjection`,
+`PostgresOptionReferenceProjectionStore`), so a contract that expires after its last write stays
+`Active` in `option_contract_projection` and `option_lifecycle_projection`. No code path is affected
+today: `option_lifecycle_projection` has no reader, `OptionProjectionService.MapContract` drops the
+column, and no query filters on it. A direct SQL reader would see the stale value. The remedy when a
+consumer appears is to derive the status at read time from `expiry_date` and an as-of date, as
+`BondProjectionService.ResolveLifecycle` does.
+Validation: no .NET SDK was available where this was written; the hosted
+`Meridian CI / quality-gate` is the compile and test gate for the updated
+`SecurityAssetClassCatalogTests` and `SecurityAssetPackReadinessMappingTests`.
+
 **Validation of this disposition.** Local, on the branch, with
 `MERIDIAN_SECURITY_MASTER_CONNECTION_STRING` pointing at a local PostgreSQL 16 (no Testcontainers):
 
