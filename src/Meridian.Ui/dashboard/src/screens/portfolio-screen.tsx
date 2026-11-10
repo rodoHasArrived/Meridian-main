@@ -76,6 +76,7 @@ import { metricFreshnessFromTrustTone, withMetricContext } from "@/lib/metric-tr
 import { resolveFigureEvidence, resolveFigureScope, useWorkspaceFigureContext } from "@/lib/workspace-figure-context";
 import { FigureDifferenceNote } from "@/components/meridian/figure-difference-note";
 import { buildPortfolioFigureDifferenceNote } from "@/screens/portfolio-screen.figure-differences";
+import { withPortfolioMarkEvidence } from "@/screens/portfolio-screen.headline-evidence";
 
 interface PortfolioScreenProps {
   portfolio?: PortfolioWorkspaceResponse | null;
@@ -635,10 +636,12 @@ export function PortfolioScreen({
     asOf: headlineLoadedAt ?? brokeragePortfolio?.asOf ?? heartbeat,
     scope: borrowedTradingAccount ?? "All workspace positions"
   };
-  const headlineMetrics = withMetricContext(vm.metricsFromTrading ? vm.metricCards : vm.fallbackStats, {
-    provenance: headlineProvenance,
-    freshness: headlineFreshness
-  });
+  // Portfolio's own totals are sums over the positions, so they also carry those positions' mark
+  // evidence. Trading's cards are server totals and are stated as loaded.
+  const headlineMetrics = withMetricContext(
+    vm.metricsFromTrading ? vm.metricCards : withPortfolioMarkEvidence(vm.fallbackStats, vm.positionRows, headlineFreshness),
+    { provenance: headlineProvenance, freshness: headlineFreshness }
+  );
   const figureDifferenceNote = showBrokerageSync
     ? null
     : buildPortfolioFigureDifferenceNote({

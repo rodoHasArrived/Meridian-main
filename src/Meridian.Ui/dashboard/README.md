@@ -345,7 +345,11 @@ not been recorded.
     refresh as a whole reported. It stays stale until that payload reloads; refreshing another
     workspace clears the shell's error map but not this. An unconfirmed session keeps every
     figure unverified, and a screen's own evidence (Trading's broker observation) can lower a
-    figure's verdict but never raise it (`combineMetricFreshness`). Portfolio's totals go stale when the payload that
+    figure's verdict but never raise it (`combineMetricFreshness`). Portfolio's exposure and
+    unrealized P&L are sums over positions, so they are unverified, with a caption such as
+    "2 of 5 marks need review", while any position's mark is not accepted as current
+    (`withPortfolioMarkEvidence`): a recent load does not make a total better evidenced than
+    its inputs. Portfolio's totals go stale when the payload that
     supplies them is listed or its load is past the freshness budget. Outside the shell, where no
     per-payload record exists, the Portfolio poll settling as `partial` is the evidence (its
     Portfolio request was rejected; a failing side feed such as an unconnected brokerage does
