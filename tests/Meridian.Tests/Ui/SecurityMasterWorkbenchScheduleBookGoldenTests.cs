@@ -20,8 +20,10 @@ namespace Meridian.Tests.Ui;
 /// economic document by the real conversion), whose cases that increment changed on purpose.
 /// </summary>
 /// <remarks>
-/// <para>The workbench reads the system clock. Every fixture date is either before 2026 or after 2088,
-/// so the frozen output does not depend on the day the test runs.</para>
+/// <para>The workbench reads the system clock for corporate-action and scalar row statuses. Every
+/// fixture date is either before 2026 or after 2088, so that part of the frozen output does not depend
+/// on the day the test runs. The snapshot time, which a declaring record's typed outcome states as its
+/// evaluation date, comes from a fixed clock.</para>
 /// <para>A missing or mismatched fixture writes <c>security-master-schedule-book.received.json</c>
 /// beside the test binaries and fails. It never skips. Replace the committed fixture under
 /// tests/fixtures/schedules/golden/ only when the change in governed output is intended.</para>
@@ -33,6 +35,10 @@ public sealed class SecurityMasterWorkbenchScheduleBookGoldenTests
     private const string ReceivedFileName = "security-master-schedule-book.received.json";
     private const int ExpectedCaseCount = 13;
     private static readonly DateTimeOffset RecordedAt = new(2025, 1, 2, 0, 0, 0, TimeSpan.Zero);
+
+    // The declared outcome states its evaluation date, so the snapshot's clock is fixed. Any date
+    // between the fixture's pre-2026 and post-2088 dates gives the same rows.
+    private static readonly DateTimeOffset EvaluatedAt = new(2026, 11, 10, 0, 0, 0, TimeSpan.Zero);
     private static readonly IBusinessDayCalendarSource Calendars =
         new StaticBusinessDayCalendarSource([BusinessDayCalendars.WeekendsOnly]);
     private static readonly JsonSerializerOptions Indented = new() { WriteIndented = true };
@@ -61,7 +67,7 @@ public sealed class SecurityMasterWorkbenchScheduleBookGoldenTests
         var cases = new List<(string Key, JsonNode Value)>();
         foreach (var (key, projection, corporateActions) in Cases())
         {
-            var snapshot = await CreateService(new StoredRowSecurityMasterQueryService(projection, corporateActions), Calendars)
+            var snapshot = await CreateService(new StoredRowSecurityMasterQueryService(projection, corporateActions), Calendars, now: EvaluatedAt)
                 .GetTrustSnapshotAsync(projection.SecurityId, fundProfileId: null);
             Assert.NotNull(snapshot);
             Assert.NotNull(snapshot.ScheduleSummary);

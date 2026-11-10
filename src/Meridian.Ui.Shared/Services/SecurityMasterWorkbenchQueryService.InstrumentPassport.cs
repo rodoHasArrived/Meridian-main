@@ -96,14 +96,19 @@ public sealed partial class SecurityMasterWorkbenchQueryService
             identifierSummary.HasProviderMappings &&
             activeProviderEvidenceCount > 0 &&
             openIdentifierConflictCount == 0;
+        // A declared call or put schedule that is blocked leaves its option dates unknown, so the
+        // obligation and cash-flow sections are not ready however many other rows the book holds.
+        var declaredExerciseBlockerCount = DeclaredExerciseBlockers(snapshot).Count;
         var hasObligationEvidence =
-            snapshot.CorporateActions.Count > 0 ||
+            declaredExerciseBlockerCount == 0 &&
+            (snapshot.CorporateActions.Count > 0 ||
             snapshot.ScheduleBook?.Events.Count > 0 ||
-            snapshot.ScheduleSummary?.HasEconomicScheduleTerms == true;
+            snapshot.ScheduleSummary?.HasEconomicScheduleTerms == true);
         var hasCashFlowReadiness =
-            snapshot.ScheduleSummary?.SupportsCashflowSchedule == true ||
+            declaredExerciseBlockerCount == 0 &&
+            (snapshot.ScheduleSummary?.SupportsCashflowSchedule == true ||
             snapshot.ScheduleBook?.SupportsCashflowSchedule == true ||
-            snapshot.CorporateActions.Count > 0;
+            snapshot.CorporateActions.Count > 0);
         var hasLedgerClassification =
             !string.IsNullOrWhiteSpace(snapshot.EconomicDefinition.AssetClass) &&
             !string.IsNullOrWhiteSpace(snapshot.EconomicDefinition.Currency);
@@ -135,14 +140,15 @@ public sealed partial class SecurityMasterWorkbenchQueryService
                 Status: hasObligationEvidence ? "Ready" : "Review",
                 Summary: BuildTermsAndObligationsSummary(snapshot),
                 EvidenceCount: snapshot.CorporateActions.Count + (snapshot.ScheduleBook?.Events.Count ?? 0),
-                BlockingIssueCount: snapshot.TrustPosture.HasOpenConflicts ? snapshot.TrustPosture.OpenConflictCount : 0),
+                BlockingIssueCount: (snapshot.TrustPosture.HasOpenConflicts ? snapshot.TrustPosture.OpenConflictCount : 0)
+                    + declaredExerciseBlockerCount),
             new InstrumentPassportReferenceDataWorkbenchSectionDto(
                 SectionId: "cash-flow-readiness",
                 Title: "Projected cash-flow readiness",
                 Status: hasCashFlowReadiness ? "Ready" : "Review",
                 Summary: snapshot.ScheduleSummary?.Summary ?? pricing.Summary,
                 EvidenceCount: (snapshot.ScheduleBook?.Events.Count ?? 0) + snapshot.CorporateActions.Count,
-                BlockingIssueCount: hasCashFlowReadiness ? 0 : 1),
+                BlockingIssueCount: hasCashFlowReadiness ? 0 : Math.Max(1, declaredExerciseBlockerCount)),
             new InstrumentPassportReferenceDataWorkbenchSectionDto(
                 SectionId: "ledger-classification",
                 Title: "Ledger classification",
@@ -366,6 +372,9 @@ public sealed partial class SecurityMasterWorkbenchQueryService
     {
         var scheduleEventCount = snapshot.ScheduleBook?.Events.Count ?? 0;
         var factorCount = snapshot.ScheduleBook?.FactorHistory.Count ?? 0;
+        var declaredExerciseBlockerCount = DeclaredExerciseBlockers(snapshot).Count;
+        var paymentScheduleReady = declaredExerciseBlockerCount == 0
+            && (scheduleEventCount > 0 || snapshot.ScheduleSummary?.SupportsCashflowSchedule == true);
         var hasClassification = !string.IsNullOrWhiteSpace(snapshot.EconomicDefinition.AssetClass)
             && !string.IsNullOrWhiteSpace(snapshot.EconomicDefinition.Currency);
         var hasEconomicTerms = snapshot.ScheduleSummary?.HasEconomicScheduleTerms == true
@@ -411,10 +420,10 @@ public sealed partial class SecurityMasterWorkbenchQueryService
                 ItemId: "payment-schedule",
                 Label: "Payment schedule",
                 Value: scheduleEventCount > 0 ? $"{scheduleEventCount} projected event(s)" : "No projected events",
-                Status: scheduleEventCount > 0 || snapshot.ScheduleSummary?.SupportsCashflowSchedule == true ? "Ready" : "Review",
+                Status: paymentScheduleReady ? "Ready" : "Review",
                 Detail: snapshot.ScheduleSummary?.Summary ?? "Payment, amortization, PIK, covenant, and paydown schedule evidence is not retained.",
                 EvidenceCount: scheduleEventCount,
-                BlockingIssueCount: scheduleEventCount > 0 || snapshot.ScheduleSummary?.SupportsCashflowSchedule == true ? 0 : 1),
+                BlockingIssueCount: paymentScheduleReady ? 0 : Math.Max(1, declaredExerciseBlockerCount)),
             new(
                 ItemId: "factors-collateral-covenants",
                 Label: "Factors, collateral, covenants",
@@ -506,10 +515,17 @@ public sealed partial class SecurityMasterWorkbenchQueryService
             && identifierConflictCount == 0;
         var classificationReady = !string.IsNullOrWhiteSpace(snapshot.EconomicDefinition.AssetClass)
             && !string.IsNullOrWhiteSpace(snapshot.EconomicDefinition.Currency);
-        var termsReady = snapshot.ScheduleBook?.Events.Count > 0
+        // Close readiness needs the record's terms; a blocked declared call or put schedule means they
+        // cannot be relied on for option dates, whatever else is retained.
+        var declaredExerciseBlockers = DeclaredExerciseBlockers(snapshot);
+        var closeBlockedAction = declaredExerciseBlockers.Count == 0
+            ? "Clear unresolved Security Master blockers before close package use."
+            : $"Resolve the blocked declared call/put schedule ({string.Join(", ", declaredExerciseBlockers.Select(static blocker => blocker.Code))}) before close package use.";
+        var termsReady = declaredExerciseBlockers.Count == 0
+            && (snapshot.ScheduleBook?.Events.Count > 0
             || snapshot.ScheduleSummary?.HasEconomicScheduleTerms == true
             || snapshot.CorporateActions.Count > 0
-            || pricing.TradingParameters is not null;
+            || pricing.TradingParameters is not null);
         var valuationReady = identityReady && IsReadyStatus(pricing.Status);
         var reconciliationReady = identityReady && classificationReady && !snapshot.TrustPosture.HasOpenConflicts;
         var ledgerReady = identityReady && classificationReady && snapshot.DownstreamImpact.LedgerExposureCount > 0;
@@ -522,7 +538,7 @@ public sealed partial class SecurityMasterWorkbenchQueryService
             BuildReadiness("valuation", "Valuation-ready", valuationReady, pricing.Summary, activeProviderCount + (pricing.TradingParameters is null ? 0 : 1), identifierConflictCount, "Review pricing source, identifier confidence, and active provider evidence.", nextAction?.Target),
             BuildReadiness("reconciliation", "Reconciliation-ready", reconciliationReady, snapshot.DownstreamImpact.ReconciliationExposureSummary, snapshot.DownstreamImpact.ReconciliationExposureCount + activeProviderCount, snapshot.TrustPosture.OpenConflictCount, "Resolve identifier, classification, maturity, coupon, currency, or factor conflicts.", nextAction?.Target),
             BuildReadiness("ledger", "Ledger-ready", ledgerReady, snapshot.DownstreamImpact.LedgerExposureSummary, snapshot.DownstreamImpact.LedgerExposureCount + (classificationReady ? 1 : 0), ledgerReady ? 0 : 1, "Confirm ledger classification and retained Security Master provenance.", nextAction?.Target),
-            BuildReadiness("close", "Close-ready", closeReady, snapshot.DownstreamImpact.Summary, snapshot.DownstreamImpact.Links.Count + (termsReady ? 1 : 0), closeReady ? 0 : 1, "Clear unresolved Security Master blockers before close package use.", nextAction?.Target),
+            BuildReadiness("close", "Close-ready", closeReady, snapshot.DownstreamImpact.Summary, snapshot.DownstreamImpact.Links.Count + (termsReady ? 1 : 0), closeReady ? 0 : Math.Max(1, declaredExerciseBlockers.Count), closeBlockedAction, nextAction?.Target),
             BuildReadiness("report", "Report-ready", reportReady, snapshot.DownstreamImpact.ReportPackExposureSummary, snapshot.DownstreamImpact.ReportPackExposureCount, reportReady ? 0 : 1, "Link report-line provenance and resolve open definition conflicts.", nextAction?.Target)
         ];
     }

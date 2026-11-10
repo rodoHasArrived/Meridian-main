@@ -1010,7 +1010,17 @@
         "CurrentFactorDate": null,
         "NextLifecycleDate": "2089-12-16",
         "SourceSummary": "Schedules follow golden-edm record edm-book-13 as of 2025-01-02 00:00 UTC.",
-        "Summary": "Cash-flow schedule support is available. Next lifecycle date 2089-12-16."
+        "Summary": "Cash-flow schedule support is available. Next lifecycle date 2089-12-16.",
+        "DeclaredExercise": {
+          "Status": "Resolved",
+          "AsOf": "2026-11-10",
+          "SecurityVersion": 3,
+          "WindowCount": 2,
+          "Blockers": [],
+          "Diagnostics": [
+            "Notice windows grant no exercise, notice, payment or posting authority."
+          ]
+        }
       },
       "scheduleBook": {
         "SupportsCashflowSchedule": true,
@@ -1179,7 +1189,17 @@
             "StreamVersion": null,
             "EventType": null
           }
-        ]
+        ],
+        "DeclaredExercise": {
+          "Status": "Resolved",
+          "AsOf": "2026-11-10",
+          "SecurityVersion": 3,
+          "WindowCount": 2,
+          "Blockers": [],
+          "Diagnostics": [
+            "Notice windows grant no exercise, notice, payment or posting authority."
+          ]
+        }
       }
     },
     "bond/declaring/call-and-put-with-contradicting-scalar": {
@@ -1191,7 +1211,22 @@
         "CurrentFactorDate": null,
         "NextLifecycleDate": "2096-01-15",
         "SourceSummary": "Schedules follow golden-edm record edm-book-10 as of 2025-01-02 00:00 UTC. Declared call/put schedule is blocked (ExerciseScheduleRefused): Declared exercise schedule could not be evaluated: Invalid declared schedule terms: callDate must equal the earliest declared call date so scalar consumers agree with it. No call or put event is shown and the scalar call date is not used.",
-        "Summary": "Cash-flow schedule support is available. Next lifecycle date 2096-01-15. Declared call/put schedule is blocked (ExerciseScheduleRefused): Declared exercise schedule could not be evaluated: Invalid declared schedule terms: callDate must equal the earliest declared call date so scalar consumers agree with it. No call or put event is shown and the scalar call date is not used."
+        "Summary": "Cash-flow schedule support is available. Next lifecycle date 2096-01-15. Declared call/put schedule is blocked (ExerciseScheduleRefused): Declared exercise schedule could not be evaluated: Invalid declared schedule terms: callDate must equal the earliest declared call date so scalar consumers agree with it. No call or put event is shown and the scalar call date is not used.",
+        "DeclaredExercise": {
+          "Status": "Blocked",
+          "AsOf": "2026-11-10",
+          "SecurityVersion": 3,
+          "WindowCount": 0,
+          "Blockers": [
+            {
+              "Code": "ExerciseScheduleRefused",
+              "Reason": "Declared exercise schedule could not be evaluated: Invalid declared schedule terms: callDate must equal the earliest declared call date so scalar consumers agree with it."
+            }
+          ],
+          "Diagnostics": [
+            "Notice windows grant no exercise, notice, payment or posting authority."
+          ]
+        }
       },
       "scheduleBook": {
         "SupportsCashflowSchedule": true,
@@ -1255,7 +1290,22 @@
             "StreamVersion": null,
             "EventType": null
           }
-        ]
+        ],
+        "DeclaredExercise": {
+          "Status": "Blocked",
+          "AsOf": "2026-11-10",
+          "SecurityVersion": 3,
+          "WindowCount": 0,
+          "Blockers": [
+            {
+              "Code": "ExerciseScheduleRefused",
+              "Reason": "Declared exercise schedule could not be evaluated: Invalid declared schedule terms: callDate must equal the earliest declared call date so scalar consumers agree with it."
+            }
+          ],
+          "Diagnostics": [
+            "Notice windows grant no exercise, notice, payment or posting authority."
+          ]
+        }
       }
     },
     "bond/declaring/without-conventions": {
@@ -1267,7 +1317,22 @@
         "CurrentFactorDate": null,
         "NextLifecycleDate": "2096-01-15",
         "SourceSummary": "Schedules follow golden-edm record edm-book-11 as of 2025-01-02 00:00 UTC. Declared call/put schedule is blocked (DeclaredScheduleRequired): Exercise notice windows require reviewed explicit schedule conventions; legacy defaults are not inferred. No call or put event is shown and the scalar call date is not used.",
-        "Summary": "Cash-flow schedule support is available. Next lifecycle date 2096-01-15. Declared call/put schedule is blocked (DeclaredScheduleRequired): Exercise notice windows require reviewed explicit schedule conventions; legacy defaults are not inferred. No call or put event is shown and the scalar call date is not used."
+        "Summary": "Cash-flow schedule support is available. Next lifecycle date 2096-01-15. Declared call/put schedule is blocked (DeclaredScheduleRequired): Exercise notice windows require reviewed explicit schedule conventions; legacy defaults are not inferred. No call or put event is shown and the scalar call date is not used.",
+        "DeclaredExercise": {
+          "Status": "Blocked",
+          "AsOf": "2026-11-10",
+          "SecurityVersion": 3,
+          "WindowCount": 0,
+          "Blockers": [
+            {
+              "Code": "DeclaredScheduleRequired",
+              "Reason": "Exercise notice windows require reviewed explicit schedule conventions; legacy defaults are not inferred."
+            }
+          ],
+          "Diagnostics": [
+            "Notice windows grant no exercise, notice, payment or posting authority."
+          ]
+        }
       },
       "scheduleBook": {
         "SupportsCashflowSchedule": true,
@@ -1331,7 +1396,22 @@
             "StreamVersion": null,
             "EventType": null
           }
-        ]
+        ],
+        "DeclaredExercise": {
+          "Status": "Blocked",
+          "AsOf": "2026-11-10",
+          "SecurityVersion": 3,
+          "WindowCount": 0,
+          "Blockers": [
+            {
+              "Code": "DeclaredScheduleRequired",
+              "Reason": "Exercise notice windows require reviewed explicit schedule conventions; legacy defaults are not inferred."
+            }
+          ],
+          "Diagnostics": [
+            "Notice windows grant no exercise, notice, payment or posting authority."
+          ]
+        }
       }
     },
     "bond/declaring/recovered-from-economic-terms": {
@@ -1343,7 +1423,22 @@
         "CurrentFactorDate": null,
         "NextLifecycleDate": "2096-01-15",
         "SourceSummary": "Schedules follow golden-edm record edm-book-12 as of 2025-01-02 00:00 UTC. Declared call/put schedule is blocked (DeclaredScheduleRequired): Exercise notice windows require reviewed explicit schedule conventions; legacy defaults are not inferred. No call or put event is shown and the scalar call date is not used.",
-        "Summary": "Cash-flow schedule support is available. Next lifecycle date 2096-01-15. Declared call/put schedule is blocked (DeclaredScheduleRequired): Exercise notice windows require reviewed explicit schedule conventions; legacy defaults are not inferred. No call or put event is shown and the scalar call date is not used."
+        "Summary": "Cash-flow schedule support is available. Next lifecycle date 2096-01-15. Declared call/put schedule is blocked (DeclaredScheduleRequired): Exercise notice windows require reviewed explicit schedule conventions; legacy defaults are not inferred. No call or put event is shown and the scalar call date is not used.",
+        "DeclaredExercise": {
+          "Status": "Blocked",
+          "AsOf": "2026-11-10",
+          "SecurityVersion": 3,
+          "WindowCount": 0,
+          "Blockers": [
+            {
+              "Code": "DeclaredScheduleRequired",
+              "Reason": "Exercise notice windows require reviewed explicit schedule conventions; legacy defaults are not inferred."
+            }
+          ],
+          "Diagnostics": [
+            "Notice windows grant no exercise, notice, payment or posting authority."
+          ]
+        }
       },
       "scheduleBook": {
         "SupportsCashflowSchedule": true,
@@ -1407,7 +1502,22 @@
             "StreamVersion": null,
             "EventType": null
           }
-        ]
+        ],
+        "DeclaredExercise": {
+          "Status": "Blocked",
+          "AsOf": "2026-11-10",
+          "SecurityVersion": 3,
+          "WindowCount": 0,
+          "Blockers": [
+            {
+              "Code": "DeclaredScheduleRequired",
+              "Reason": "Exercise notice windows require reviewed explicit schedule conventions; legacy defaults are not inferred."
+            }
+          ],
+          "Diagnostics": [
+            "Notice windows grant no exercise, notice, payment or posting authority."
+          ]
+        }
       }
     }
   }

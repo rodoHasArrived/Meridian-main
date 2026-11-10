@@ -97,7 +97,8 @@ public sealed partial class SecurityMasterWorkbenchQueryService
             CurrentFactorDate: currentFactorDate,
             NextLifecycleDate: nextLifecycleDate,
             SourceSummary: sourceSummary,
-            Summary: summary);
+            Summary: summary,
+            DeclaredExercise: ToDeclaredExerciseOutcome(declaredExercise));
     }
 
     private static SecurityMasterScheduleBookDto BuildScheduleBook(
@@ -204,7 +205,8 @@ public sealed partial class SecurityMasterWorkbenchQueryService
             Summary: summary.Summary,
             Events: orderedEvents,
             FactorHistory: factorHistory,
-            ProvenanceHistory: provenanceHistory);
+            ProvenanceHistory: provenanceHistory,
+            DeclaredExercise: summary.DeclaredExercise);
     }
 
     private static void AppendScheduleEventsFromArray(
