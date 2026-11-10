@@ -252,6 +252,16 @@ const portfolio: PortfolioWorkspaceResponse = {
   }
 };
 
+// The same payload with a mark the shared valuation policy accepts as current, for tests about
+// when the payload loaded rather than about its marks.
+const portfolioWithCurrentMarks: PortfolioWorkspaceResponse = {
+  ...portfolio,
+  positions: portfolio.positions.map((position) => ({
+    ...position,
+    markFreshness: { symbol: position.symbol, valuationDate: "2026-06-30", observedOn: "2026-06-30", ageDays: 0, policyVersion: "v1", status: "Current" }
+  }))
+};
+
 function createPortfolioFinancialRecordExplorer(): FinancialRecordExplorerDto {
   const detail = {
     recordId: "portfolio:run-1:AAPL",
@@ -633,7 +643,7 @@ describe("PortfolioScreen", () => {
         value={{ freshness: "fresh", dataLabel: null, staleSources: [], sourceLoadedAt: { portfolio: loadedAt } }}
       >
         <PortfolioScreen
-          portfolio={portfolio}
+          portfolio={portfolioWithCurrentMarks}
           trading={trading}
           strategy={strategy}
           accounting={accounting}
@@ -660,7 +670,7 @@ describe("PortfolioScreen", () => {
         value={{ freshness: "fresh", dataLabel: null, staleSources: [], sourceLoadedAt: { portfolio: reloadedAt } }}
       >
         <PortfolioScreen
-          portfolio={portfolio}
+          portfolio={portfolioWithCurrentMarks}
           trading={trading}
           strategy={strategy}
           accounting={accounting}
@@ -687,11 +697,30 @@ describe("PortfolioScreen", () => {
     expect(strip.parentElement).not.toHaveTextContent("Stale figures");
   });
 
+  it("shows valuation totals as unverified when a position's mark needs review, even on a fresh load", async () => {
+    // The payload loaded just now, but its only position has no accepted mark assessment: the
+    // holdings table warns about it, so the totals built from it must not look current.
+    const loadedAt = new Date().toISOString();
+    await renderPortfolioScreen(
+      <WorkspaceFigureContextProvider
+        value={{ freshness: "fresh", dataLabel: null, staleSources: [], sourceLoadedAt: { portfolio: loadedAt } }}
+      >
+        <PortfolioScreen portfolio={portfolio} trading={trading} strategy={strategy} accounting={accounting} />
+      </WorkspaceFigureContextProvider>
+    );
+
+    const strip = screen.getByLabelText("Portfolio headline metrics");
+    expect(within(strip).getByText("$10,200")).toHaveClass("text-muted-foreground");
+    expect(within(strip).getByText("+$120")).not.toHaveClass("text-success");
+    expect(within(strip).getAllByText("1 of 1 mark needs review")).toHaveLength(2);
+    expect(strip.parentElement).toHaveTextContent("Unverified figures");
+  });
+
   it("keeps fresh headline figures in their P&L tone", async () => {
     const now = new Date().toISOString();
     await renderPortfolioScreen(
       <PortfolioScreen
-        portfolio={portfolio}
+        portfolio={portfolioWithCurrentMarks}
         trading={trading}
         strategy={strategy}
         accounting={accounting}
