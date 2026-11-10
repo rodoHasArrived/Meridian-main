@@ -78,6 +78,50 @@ public sealed class BacktestMetricsEngineTests
     }
 
     [Fact]
+    public void Compute_Xirr_IgnoresInternalCashFlowsAlreadyReflectedInEquity()
+    {
+        // A one-year run that buys, pays commission and receives a dividend, ending 10% up.
+        // Those flows are internal to the portfolio and already inside terminal equity; treating
+        // them as investor flows previously reported this run as roughly -50% or NaN.
+        var startDate = new DateOnly(2023, 1, 2);
+        var snapshots = BuildSnapshots([100_000m, 110_000m], startDate)
+            .Select((snapshot, i) => snapshot with
+            {
+                Date = startDate.AddDays(365 * i),
+                Timestamp = new DateTimeOffset(startDate.AddDays(365 * i).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero)
+            }).ToArray();
+        var ts = snapshots[0].Timestamp;
+        var cashFlows = new List<CashFlowEntry>
+        {
+            new TradeCashFlow(ts.AddDays(1), -50_000m, "AAPL", 500L, 100m),
+            new CommissionCashFlow(ts.AddDays(1), -10m, "AAPL", Guid.NewGuid()),
+            new DividendCashFlow(ts.AddDays(90), 250m, "AAPL", 500L, 0.5m),
+        };
+        var request = new BacktestRequest(From: startDate, To: startDate.AddDays(365), InitialCash: 100_000m);
+
+        var metrics = BacktestMetricsEngine.Compute(snapshots, cashFlows, [], request);
+
+        metrics.Xirr.Should().BeApproximately(0.10, 0.001,
+            "only initial capital and terminal equity cross the portfolio boundary");
+    }
+
+    [Fact]
+    public void Compute_LossGreaterThanInitialCapital_ReportsTotalLossInsteadOfThrowing()
+    {
+        // Leverage or shorts can push equity below zero. Math.Pow of a negative base returned NaN
+        // and the decimal cast threw, aborting the whole metrics build.
+        var startDate = new DateOnly(2024, 1, 2);
+        var snapshots = BuildSnapshots([100m, 40m, -20m], startDate);
+        var request = new BacktestRequest(From: startDate, To: startDate.AddDays(2), InitialCash: 100m);
+
+        var act = () => BacktestMetricsEngine.Compute(snapshots, [], [], request);
+
+        act.Should().NotThrow();
+        act().AnnualizedReturn.Should().Be(-1m);
+        act().TotalReturn.Should().Be(-1.2m);
+    }
+
+    [Fact]
     public void Compute_ScalarRiskFreeRateFallback_UsesConstantDailyExcessReturns()
     {
         var startDate = new DateOnly(2024, 1, 2);

@@ -88,6 +88,45 @@ module internal ServicingAggregate =
 
         MixedPaymentResolutionDto(breakdown, "Manual", "manual-v1", remaining)
 
+    /// PRD-115: routes the cash left after allocation (UnappliedAmount on entry) by the loan's
+    /// excess rule. Mirrored exactly by DirectLendingServiceSupport.RouteExcess in C#.
+    let private routeExcess (servicing: LoanServicingStateDto) (terms: DirectLendingTermsDto) (allocated: MixedPaymentResolutionDto) =
+        let excess = allocated.UnappliedAmount
+        if excess <= 0m then
+            allocated
+        else
+            let rule = terms.EffectiveExcessPaymentApplication
+            let routed held toPrincipal toPrepaid penalty (note: string) =
+                MixedPaymentResolutionDto(
+                    allocated.Breakdown,
+                    allocated.ResolutionBasis,
+                    allocated.RuleVersion,
+                    held,
+                    ExcessToPrincipal = toPrincipal,
+                    ExcessToPrepaidInterest = toPrepaid,
+                    ExcessRuleApplied = Nullable rule,
+                    ExcessRuleNote = note,
+                    PrepaymentPenaltyCharged = penalty)
+
+            match rule with
+            | ExcessPaymentApplication.PrincipalPrepayment when not terms.PrepaymentAllowed ->
+                routed excess 0m 0m 0m ExcessPaymentRuleNotes.PrepaymentNotAllowed
+            | ExcessPaymentApplication.PrincipalPrepayment ->
+                let principalAfterAllocation = max 0m (servicing.Balances.PrincipalOutstanding - allocated.Breakdown.ToPrincipal)
+                let toPrincipal = min excess principalAfterAllocation
+                let held = excess - toPrincipal
+                let rate = decimalOrDefault terms.PrepaymentPenaltyRate 0m
+                let penalty =
+                    if rate > 0m && toPrincipal > 0m then
+                        Math.Round(toPrincipal * rate, 2, MidpointRounding.AwayFromZero)
+                    else
+                        0m
+                routed held toPrincipal 0m penalty (if held > 0m then ExcessPaymentRuleNotes.ExceedsOutstandingPrincipal else null)
+            | ExcessPaymentApplication.PrepaidInterest ->
+                routed 0m 0m excess 0m null
+            | _ ->
+                routed excess 0m 0m 0m null
+
     let bookDrawdown (servicing: LoanServicingStateDto) amount tradeDate settleDate externalRef =
         let lotId = Guid.NewGuid()
         let lot = DrawdownLotDto(lotId, tradeDate, settleDate, amount, amount, externalRef)
@@ -111,7 +150,9 @@ module internal ServicingAggregate =
                 updatedTotalDrawn,
                 DirectLendingInterop.CalculateAvailableToDraw(servicing.CurrentCommitment, updatedTotalDrawn),
                 balances,
-                (servicing.DrawdownLots |> Seq.append [ lot ] |> Seq.sortBy _.DrawdownDate |> Seq.toArray),
+                // Append, then a stable sort: same-day lots stay in booking order, as in the
+                // in-memory service and the event rebuilder, so payments reduce the same lots.
+                (Seq.append servicing.DrawdownLots [ lot ] |> Seq.sortBy _.DrawdownDate |> Seq.toArray),
                 servicing.CurrentRateReset,
                 servicing.LastAccrualDate,
                 servicing.LastPaymentDate,
@@ -222,22 +263,27 @@ module internal ServicingAggregate =
         { Servicing = updated; AppliedAmount = appliedAmount }
 
     let applyMixedPayment (servicing: LoanServicingStateDto) (terms: DirectLendingTermsDto) amount breakdown effectiveDate =
-        let resolution =
+        let allocated =
             match box breakdown with
-            | null -> MixedPaymentResolutionDto(autoAllocate servicing terms amount effectiveDate, "WaterfallAuto", "waterfall-v1", amount - (autoAllocate servicing terms amount effectiveDate).TotalAllocated)
+            | null ->
+                let auto = autoAllocate servicing terms amount effectiveDate
+                MixedPaymentResolutionDto(auto, "WaterfallAuto", "waterfall-v1", amount - auto.TotalAllocated)
             | _ -> buildResolution servicing amount breakdown
+
+        let resolution = routeExcess servicing terms allocated
+        let principalReduction = resolution.Breakdown.ToPrincipal + resolution.ExcessToPrincipal
 
         let updatedBalances =
             OutstandingBalancesDto(
-                max 0m (servicing.Balances.PrincipalOutstanding - resolution.Breakdown.ToPrincipal),
+                max 0m (servicing.Balances.PrincipalOutstanding - principalReduction),
                 max 0m (servicing.Balances.InterestAccruedUnpaid - resolution.Breakdown.ToInterest),
                 max 0m (servicing.Balances.CommitmentFeeAccruedUnpaid - resolution.Breakdown.ToCommitmentFee),
                 max 0m (servicing.Balances.FeesAccruedUnpaid - resolution.Breakdown.ToFees),
-                max 0m (servicing.Balances.PenaltyAccruedUnpaid - resolution.Breakdown.ToPenalty),
-                PrepaidInterest = servicing.Balances.PrepaidInterest,
-                UnappliedCash = servicing.Balances.UnappliedCash)
+                max 0m (servicing.Balances.PenaltyAccruedUnpaid - resolution.Breakdown.ToPenalty) + resolution.PrepaymentPenaltyCharged,
+                PrepaidInterest = servicing.Balances.PrepaidInterest + resolution.ExcessToPrepaidInterest,
+                UnappliedCash = servicing.Balances.UnappliedCash + resolution.UnappliedAmount)
 
-        let totalDrawnAfter = max 0m (servicing.TotalDrawn - resolution.Breakdown.ToPrincipal)
+        let totalDrawnAfter = max 0m (servicing.TotalDrawn - principalReduction)
         let nextRevision = servicing.ServicingRevision + 1L
         let updated =
             LoanServicingStateDto(
@@ -247,7 +293,7 @@ module internal ServicingAggregate =
                 totalDrawnAfter,
                 DirectLendingInterop.CalculateAvailableToDraw(servicing.CurrentCommitment, totalDrawnAfter),
                 updatedBalances,
-                applyPaymentToLots resolution.Breakdown.ToPrincipal servicing.DrawdownLots,
+                applyPaymentToLots principalReduction servicing.DrawdownLots,
                 servicing.CurrentRateReset,
                 servicing.LastAccrualDate,
                 Nullable effectiveDate,
@@ -264,30 +310,114 @@ module internal ServicingAggregate =
                 PikCapitalizations = servicing.PikCapitalizations)
 
         let cashTransactionId = Guid.NewGuid()
+        // PRD-115: routed excess gets its own rows, so allocations always sum to the cash received.
+        let excessRule =
+            if resolution.ExcessRuleApplied.HasValue then
+                $"Excess{resolution.ExcessRuleApplied.Value}"
+            else
+                "Excess"
+
         let allocations =
             [|
-                ("Interest", resolution.Breakdown.ToInterest)
-                ("CommitmentFee", resolution.Breakdown.ToCommitmentFee)
-                ("Fees", resolution.Breakdown.ToFees)
-                ("Penalty", resolution.Breakdown.ToPenalty)
-                ("Principal", resolution.Breakdown.ToPrincipal)
+                ("Interest", resolution.Breakdown.ToInterest, resolution.ResolutionBasis)
+                ("CommitmentFee", resolution.Breakdown.ToCommitmentFee, resolution.ResolutionBasis)
+                ("Fees", resolution.Breakdown.ToFees, resolution.ResolutionBasis)
+                ("Penalty", resolution.Breakdown.ToPenalty, resolution.ResolutionBasis)
+                ("Principal", resolution.Breakdown.ToPrincipal, resolution.ResolutionBasis)
+                ("PrincipalPrepayment", resolution.ExcessToPrincipal, excessRule)
+                ("PrepaidInterest", resolution.ExcessToPrepaidInterest, excessRule)
+                ("UnappliedCash", resolution.UnappliedAmount, excessRule)
             |]
-            |> Array.choose (fun (targetType, allocatedAmount) ->
-                if allocatedAmount <= 0m then
-                    None
-                else
-                    Some (targetType, allocatedAmount))
-            |> Array.mapi (fun index (targetType, allocatedAmount) ->
+            |> Array.filter (fun (_, allocatedAmount, _) -> allocatedAmount > 0m)
+            |> Array.mapi (fun index (targetType, allocatedAmount, rule) ->
                 { SequenceNumber = index + 1
                   TargetType = targetType
                   TargetReference = Guid.NewGuid()
                   Amount = allocatedAmount
-                  AllocationRule = resolution.ResolutionBasis })
+                  AllocationRule = rule })
 
         { Servicing = updated
           Resolution = resolution
           CashTransactionId = cashTransactionId
           Allocations = allocations }
+
+    let private withUnappliedCashChange
+        (servicing: LoanServicingStateDto)
+        (breakdown: PaymentBreakdownDto)
+        (unappliedCashReduction: decimal)
+        (effectiveDate: DateOnly)
+        (note: string) =
+        let b = servicing.Balances
+        let totalDrawnAfter = max 0m (servicing.TotalDrawn - breakdown.ToPrincipal)
+        let nextRevision = servicing.ServicingRevision + 1L
+        LoanServicingStateDto(
+            servicing.LoanId,
+            servicing.Status,
+            servicing.CurrentCommitment,
+            totalDrawnAfter,
+            DirectLendingInterop.CalculateAvailableToDraw(servicing.CurrentCommitment, totalDrawnAfter),
+            OutstandingBalancesDto(
+                max 0m (b.PrincipalOutstanding - breakdown.ToPrincipal),
+                max 0m (b.InterestAccruedUnpaid - breakdown.ToInterest),
+                max 0m (b.CommitmentFeeAccruedUnpaid - breakdown.ToCommitmentFee),
+                max 0m (b.FeesAccruedUnpaid - breakdown.ToFees),
+                max 0m (b.PenaltyAccruedUnpaid - breakdown.ToPenalty),
+                PrepaidInterest = b.PrepaidInterest,
+                UnappliedCash = b.UnappliedCash - unappliedCashReduction),
+            applyPaymentToLots breakdown.ToPrincipal servicing.DrawdownLots,
+            servicing.CurrentRateReset,
+            servicing.LastAccrualDate,
+            servicing.LastPaymentDate,
+            nextRevision,
+            prependRevision nextRevision "InternalEvent" effectiveDate note servicing.RevisionHistory,
+            servicing.AccrualEntries,
+            Collateral = servicing.Collateral,
+            UnamortizedDiscount = servicing.UnamortizedDiscount,
+            UnamortizedPremium = servicing.UnamortizedPremium,
+            IsPikToggled = servicing.IsPikToggled,
+            PikInterestAccruedUnpaid = servicing.PikInterestAccruedUnpaid,
+            LastPikCapitalizationDate = servicing.LastPikCapitalizationDate,
+            RateResetHistory = servicing.RateResetHistory,
+            PikCapitalizations = servicing.PikCapitalizations)
+
+    /// PRD-115: allocates up to `amount` of the loan's unapplied cash to amounts owed, by the
+    /// automatic waterfall or a manual breakdown capped at what is owed. Only the allocated part
+    /// leaves UnappliedCash; the rest stays held. No cash is received, so LastPaymentDate is kept.
+    let applyUnappliedCash (servicing: LoanServicingStateDto) (terms: DirectLendingTermsDto) amount (breakdown: PaymentBreakdownDto) (effectiveDate: DateOnly) =
+        if amount <= 0m then
+            invalidArg (nameof amount) "Amount to apply must be positive."
+        if amount > servicing.Balances.UnappliedCash then
+            invalidArg (nameof amount) "Amount to apply exceeds the loan's unapplied cash."
+
+        let allocated, basis =
+            match box breakdown with
+            | null -> autoAllocate servicing terms amount effectiveDate, "WaterfallAuto"
+            | _ -> (buildResolution servicing amount breakdown).Breakdown, "Manual"
+
+        { Servicing =
+            withUnappliedCashChange
+                servicing
+                allocated
+                allocated.TotalAllocated
+                effectiveDate
+                (sprintf "Unapplied cash applied for %.2f." allocated.TotalAllocated)
+          Breakdown = allocated
+          ResolutionBasis = basis }
+
+    /// PRD-115: returns `amount` of the loan's unapplied cash to the borrower.
+    let refundUnappliedCash (servicing: LoanServicingStateDto) amount (effectiveDate: DateOnly) =
+        if amount <= 0m then
+            invalidArg (nameof amount) "Amount to refund must be positive."
+        if amount > servicing.Balances.UnappliedCash then
+            invalidArg (nameof amount) "Amount to refund exceeds the loan's unapplied cash."
+
+        { Servicing =
+            withUnappliedCashChange
+                servicing
+                (PaymentBreakdownDto(0m, 0m, 0m, 0m, 0m))
+                amount
+                effectiveDate
+                (sprintf "Unapplied cash refunded for %.2f." amount) }
 
     let assessFee (servicing: LoanServicingStateDto) amount effectiveDate =
         let nextRevision = servicing.ServicingRevision + 1L
@@ -430,6 +560,10 @@ module internal ServicingAggregate =
         let pikInterestAmount = if isPikAccrual then accruedInterest else deferredPik
         let capitalizedToday = if isPikAccrual then pikInterestAmount else 0m
 
+        // PRD-115: the day's cash interest is settled from prepaid interest first; only the rest
+        // becomes a receivable. PIK interest never consumes prepaid interest.
+        let prepaidInterestConsumed = min (max 0m servicing.Balances.PrepaidInterest) (max 0m interestAmount)
+
         let commitmentFeeAmount =
             if terms.CommitmentFeeRate.HasValue then
                 Math.Round(
@@ -459,11 +593,11 @@ module internal ServicingAggregate =
         let balances =
             OutstandingBalancesDto(
                 servicing.Balances.PrincipalOutstanding + capitalizedToday,
-                servicing.Balances.InterestAccruedUnpaid + interestAmount,
+                servicing.Balances.InterestAccruedUnpaid + interestAmount - prepaidInterestConsumed,
                 servicing.Balances.CommitmentFeeAccruedUnpaid + commitmentFeeAmount,
                 servicing.Balances.FeesAccruedUnpaid,
                 servicing.Balances.PenaltyAccruedUnpaid,
-                PrepaidInterest = servicing.Balances.PrepaidInterest,
+                PrepaidInterest = servicing.Balances.PrepaidInterest - prepaidInterestConsumed,
                 UnappliedCash = servicing.Balances.UnappliedCash)
 
         let accrualEntries =
@@ -506,7 +640,9 @@ module internal ServicingAggregate =
                 RateResetHistory = servicing.RateResetHistory,
                 PikCapitalizations = servicing.PikCapitalizations)
 
-        { Servicing = updated; Entry = entry }
+        { Servicing = updated
+          Entry = entry
+          PrepaidInterestConsumed = prepaidInterestConsumed }
 
     /// Moves accrued PIK interest into principal on a capitalization date of the loan's policy.
     /// The day's accrual must already be posted, so capitalized PIK compounds from the next day.

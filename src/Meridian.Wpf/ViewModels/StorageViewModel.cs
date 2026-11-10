@@ -323,7 +323,7 @@ public sealed class StorageViewModel : BindableBase
             : "Capacity horizon: not enough growth history";
 
         var scanText = analytics.LastUpdated is DateTime lastUpdated
-            ? $"Last scan: {lastUpdated.ToLocalTime():MMM d, h:mm tt}"
+            ? $"Last scan: {FormatHelpers.FormatUtcTimestamp(lastUpdated)}"
             : "Last scan: not available";
 
         if (analytics.TotalFileCount <= 0)

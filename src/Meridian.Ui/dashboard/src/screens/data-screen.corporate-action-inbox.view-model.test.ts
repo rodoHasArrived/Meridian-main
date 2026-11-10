@@ -208,6 +208,7 @@ describe("buildCorporateActionInboxModel", () => {
     expect(row.canAcceptCanonicalFact).toBe(false);
     expect(row.acceptCanonicalFactDisabledReason).toBe("Server did not supply action authorization.");
     expect(model.summary).toContain("1 staged proposal");
+    expect(model.lastIngestLabel).toBe("Jul 5, 2026, 12:00 UTC");
   });
 
   it("orders rows by ex-date urgency and flags disputes with a warning tone", () => {

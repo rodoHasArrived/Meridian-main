@@ -86,7 +86,7 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Ric,
                 SecurityIdentifierKind.ProviderSymbol,
                 SecurityIdentifierKind.InternalCode
-            ]) { AccountingOutsideSlice = true },
+            ]) { AccountingOutsideSlice = true, SettlesDailyVariationMargin = true },
         new(
             AssetClass: "Bond",
             CarriesBondCouponStructure: true,
@@ -1180,6 +1180,13 @@ public sealed record SecurityAssetClassDescriptor(
     public bool SupportsCreditLifecycle { get; init; }
 
     /// <summary>
+    /// Whether positions settle the daily price change in cash (variation margin) instead of
+    /// exchanging the contract's notional. Opening such a position moves no premium; each day's
+    /// change, and the move since the last settlement on a close, is paid or received.
+    /// </summary>
+    public bool SettlesDailyVariationMargin { get; init; }
+
+    /// <summary>
     /// Declares the class intentionally outside the Security Master accounting slice. Every catalogued
     /// class states its accounting disposition, an <see cref="AccountingInstrumentClass"/> or this
     /// marker (review D10, slice 4), so an outside-slice class is distinguishable from a missing mapping.
@@ -1208,19 +1215,34 @@ public sealed record SecurityAssetClassDescriptor(
     /// valid identifier) and <see cref="QuotesRatesAsFractions"/> (the class quotes rates as
     /// fractions; per-field units live in <see cref="SecurityRateFieldUnits"/>), <see cref="TradesAsBilateralContract"/> (positions are
     /// bilateral contracts against a counterparty under a master agreement, so the instrument
-    /// carries <c>OtcContractDto</c> records rather than exchange-traded lots) and a
+    /// carries <c>OtcContractDto</c> records rather than exchange-traded lots),
+    /// <see cref="SettlesDailyVariationMargin"/> (positions settle the daily price change in cash
+    /// rather than exchanging notional) and a
     /// <see cref="DefaultValuationModel"/> other than the quoted price (the class is valued from its
     /// projected cash flows and a stored discount curve unless a request names another model).
     /// </summary>
     public bool HasDeclaredBehaviorFacts
         => RequiresProfileReference || SupportsEquityClassification || CarriesBondCouponStructure || UsesOccOptionSymbols || QuotesRatesAsFractions || TradesAsBilateralContract || SupportsCreditLifecycle
-           || DefaultValuationModel != SecurityValuationModelKind.QuotedPrice;
+           || SettlesDailyVariationMargin || DefaultValuationModel != SecurityValuationModelKind.QuotedPrice;
 
     /// <summary>
     /// Whether positions are held as face-value lots (par-denominated quantity). Derived from
     /// <see cref="LotUnit"/>; there is no separately maintained flag to drift from it.
     /// </summary>
     public bool UsesFaceValueLots => LotUnit == SecurityLotUnitKind.FaceValue;
+
+    /// <summary>
+    /// How this class's raw quotes scale into money (remediation slice 8). The default derives
+    /// from <see cref="LotUnit"/> — face-value lots quote as a percentage of par, everything else
+    /// per unit — so nothing drifts while every catalogued class follows that rule; a class that
+    /// quotes differently overrides it here, and <c>SecurityQuoteConventionCoverageTests</c> pins
+    /// each class's declared value against the legacy unit-kind conversion so a divergence is a
+    /// visible decision, never a silent repricing.
+    /// </summary>
+    public SecurityQuoteConvention QuoteConvention { get; init; }
+        = LotUnit == SecurityLotUnitKind.FaceValue
+            ? SecurityQuoteConvention.PercentOfPar
+            : SecurityQuoteConvention.PerUnit;
 
     /// <summary>
     /// Whether a calculated cash-flow schedule projection is expected by default. Derived from
