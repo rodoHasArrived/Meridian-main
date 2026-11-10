@@ -35,34 +35,36 @@ export function WorkstationStatusBar({ items }: WorkstationStatusBarProps) {
   );
 }
 
-/** The masthead's provider-trust posture, as the trust strip reports it. */
-export interface WorkstationStatusProviderTrust {
-  value: string;
+/** The slice of the shell attention state the footer repeats. */
+export interface WorkstationStatusAttention {
   tone: "ready" | "review" | "blocked" | "pending";
+  title: string;
+  moreCount: number;
 }
 
 export function buildWorkstationStatusItems({
   workspaceLabel,
   refreshing,
   hasError,
-  providerTrust = null
+  attention = null
 }: {
   workspaceLabel: string;
   refreshing: boolean;
   hasError: boolean;
-  providerTrust?: WorkstationStatusProviderTrust | null;
+  attention?: WorkstationStatusAttention | null;
 }): WorkstationStatusBarItem[] {
-  // "Sync" only says the workstation's own read of the API is current. When provider trust needs
-  // review or is blocked, the footer repeats that posture beside it so a green sync dot is never
-  // the footer's whole answer while the masthead is warning. A ready or still-loading posture adds
-  // nothing, which keeps the footer to sync and workspace in the normal case.
-  const providerItems: WorkstationStatusBarItem[] =
-    providerTrust && (providerTrust.tone === "review" || providerTrust.tone === "blocked")
+  // "Sync" only says the workstation's own read of the API is current. When the shell attention
+  // state needs review or is blocked, the footer repeats the masthead pill's worst issue beside
+  // it, so a green sync dot is never the footer's whole answer while the masthead is warning.
+  // It reads the same attention state as the pill, so the two cannot disagree. A clear or
+  // still-loading state adds nothing, which keeps the footer to sync and workspace normally.
+  const attentionItems: WorkstationStatusBarItem[] =
+    attention && (attention.tone === "review" || attention.tone === "blocked")
       ? [{
-        key: "providers",
-        status: providerTrust.tone === "blocked" ? "err" : "warn",
-        label: "Providers",
-        value: providerTrust.value
+        key: "attention",
+        status: attention.tone === "blocked" ? "err" : "warn",
+        label: "Attention",
+        value: attention.moreCount > 0 ? `${attention.title} +${attention.moreCount} more` : attention.title
       }]
       : [];
 
@@ -73,7 +75,7 @@ export function buildWorkstationStatusItems({
       label: "Sync",
       value: hasError ? "attention required" : refreshing ? "refreshing..." : "up to date"
     },
-    ...providerItems,
+    ...attentionItems,
     {
       key: "workspace",
       label: "Workspace",

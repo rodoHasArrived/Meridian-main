@@ -32,7 +32,7 @@ import {
   writeStoredOperatingScope
 } from "@/lib/operating-scope/persistence";
 import { WorkflowContinuityDock } from "@/components/meridian/workflow-continuity-dock";
-import { DecisionBriefPill } from "@/components/meridian/decision-brief-pill";
+import { AttentionPill } from "@/components/meridian/attention-pill";
 import { WorkspaceViewsMenu } from "@/components/meridian/workspace-views-menu";
 import { WorkspaceStatus } from "@/components/meridian/workspace-status";
 import { WorkspaceHeader } from "@/components/meridian/workspace-header";
@@ -45,6 +45,7 @@ import { applyDensity, writeStoredDensity } from "@/lib/density";
 import { ScopePickerOpenerProvider } from "@/lib/operating-scope/scope-picker-context";
 import { readRecentScopes, rememberRecentScope } from "@/lib/operating-scope/recent-scopes";
 import { CrossScreenCountsProvider } from "@/lib/cross-screen-counts-context";
+import { ShellStatusSignalsProvider } from "@/lib/shell-status-signals-context";
 import { buildLayoutRestorePlan, readUserLayouts, type LayoutRestorePlan } from "@/lib/saved-layouts";
 import { WorkspaceNav } from "@/components/meridian/workspace-nav";
 import { Skeleton } from "@/components/data/skeleton";
@@ -460,7 +461,8 @@ function AppShell({
   });
   const dataProvenance = resolveWorkstationDataProvenance({
     usingDevelopmentFixtures,
-    demoMode
+    demoMode,
+    sampleWorkspace: firstRunStatus?.workspace.isSample ?? false
   });
   const handleWorkflowPresetUsed = (presetId: string) =>
     markWorkflowPresetUsed(presetId).then((preset) => {
@@ -667,6 +669,15 @@ function AppShell({
     workflowSummary,
     operatingScopeInput
   ]);
+  // Page status rows fold in the shell's source signals, so a page cannot read "All sources
+  // current" while the masthead pill warns about the same sources.
+  const shellStatusSignals = useMemo(
+    () => ({
+      sourceSignals: shell.attention.sourceSignals,
+      operatingScope: shell.workflowContinuity.operatingScope
+    }),
+    [shell.attention.sourceSignals, shell.workflowContinuity.operatingScope]
+  );
   // Sidebar attention counts read the same queue selection the Daily Control Tower lists.
   const workspaceAttention = useMemo(
     () => buildWorkspaceAttentionCounts(shell.workflowContinuity),
@@ -780,6 +791,7 @@ function AppShell({
   return (
     <ScopePickerOpenerProvider open={openScopePicker}>
     <CrossScreenCountsProvider counts={crossScreenCounts}>
+    <ShellStatusSignalsProvider value={shellStatusSignals}>
     <div className="workstation-frame">
       <a className="skip-link" href="#workbench-content">Skip to workbench</a>
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
@@ -796,7 +808,7 @@ function AppShell({
         session={session}
         actions={(
           <>
-            <DecisionBriefPill brief={shell.workflowContinuity.decisionBrief} />
+            <AttentionPill attention={shell.attention} />
             <ActivationHeaderProgress status={firstRunStatus} />
             <ActivityCenter />
             <NotificationCenter overview={overview} fundAccountId={operatingScopeInput.fundAccountId} />
@@ -806,14 +818,16 @@ function AppShell({
 
       {/* Persistent, non-dismissable simulation label (W9-TRUTH-001): whenever the
           workstation is showing simulated, seeded, or sample data the operator keeps
-          seeing it. Renders nothing for real data. Unresolved provenance renders the
-          `unknown` badge with a retry control instead of a false SIMULATED claim. */}
+          seeing it. The masthead environment badge carries the visible label, so this is
+          a thin stripe; it stays a full banner for a LIVE or unresolved session and for
+          unresolved provenance, which needs the retry control instead of a false
+          SIMULATED claim. Renders nothing for real data. */}
       <DataProvenanceBanner
         provenance={dataProvenance}
         onRetryLiveData={onRetryDemoModeProbe}
         retryBusy={demoModeProbeBusy}
         environment={session?.environment ?? null}
-        compactAfterSeen
+        labeledInMasthead
       />
       <DegradedModeBanner degradedMode={overview?.degradedMode} />
 
@@ -877,6 +891,7 @@ function AppShell({
                     <DailyControlTowerScreen
                       viewModel={shell.workflowContinuity}
                       trustStrip={shell.trustStrip}
+                      attention={shell.attention}
                       onEditOperatingScope={() => setScopePickerOpen(true)}
                       onRefresh={() => {
                         void refresh({ includeDeferred: true });
@@ -973,7 +988,7 @@ function AppShell({
           workspaceLabel: headerWorkspace.label,
           refreshing: loading || refreshStatus.inFlight,
           hasError: Boolean(error),
-          providerTrust: shell.trustStrip.items.find((item) => item.id === "providers") ?? null
+          attention: shell.attention
         })}
       />
 
@@ -1026,6 +1041,7 @@ function AppShell({
         </SheetContent>
       </Sheet>
     </div>
+    </ShellStatusSignalsProvider>
     </CrossScreenCountsProvider>
     </ScopePickerOpenerProvider>
   );

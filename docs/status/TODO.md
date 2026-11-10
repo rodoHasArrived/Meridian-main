@@ -62,13 +62,13 @@ Total items: **238**
 | `src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs` | 150 | `NOTE` | ❌ | Note: request.Note, |
 | `src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs` | 305 | `NOTE` | ❌ | Note: "Clear the durable statement casework evidence-handoff obligation.", |
 | `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 427 | `NOTE` | ❌ | note: "Heartbeat delayed" |
-| `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 495 | `NOTE` | ❌ | note: "Credential verification failed." |
-| `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 892 | `NOTE` | ❌ | note: "Streaming quote path is healthy." |
-| `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 967 | `NOTE` | ❌ | note: "Streaming quote path is healthy." |
-| `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 1423 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
+| `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 497 | `NOTE` | ❌ | note: "Credential verification failed." |
+| `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 898 | `NOTE` | ❌ | note: "Streaming quote path is healthy." |
+| `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 973 | `NOTE` | ❌ | note: "Streaming quote path is healthy." |
+| `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 1429 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
 | `src/Meridian.Ui/dashboard/src/app.test.tsx` | 263 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
-| `src/Meridian.Ui/dashboard/src/app.test.tsx` | 675 | `NOTE` | ❌ | note: "Credential check failed" |
-| `src/Meridian.Ui/dashboard/src/app.test.tsx` | 983 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
+| `src/Meridian.Ui/dashboard/src/app.test.tsx` | 689 | `NOTE` | ❌ | note: "Credential check failed" |
+| `src/Meridian.Ui/dashboard/src/app.test.tsx` | 997 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
 | `src/Meridian.Ui/dashboard/src/components/data/skeleton.tsx` | 5 | `NOTE` | ❌ | // NOTE: a second, Tailwind-based Skeleton family lives in `components/ui/skeleton.tsx` |
 | `src/Meridian.Ui/dashboard/src/components/meridian/security-details-tracker.test.tsx` | 23 | `NOTE` | ❌ | note: "Opening sleeve" |
 | `src/Meridian.Ui/dashboard/src/components/meridian/security-details-tracker.test.tsx` | 151 | `NOTE` | ❌ | note: "operator note" |
@@ -180,8 +180,8 @@ Total items: **238**
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4746 | `NOTE` | ❌ | note: "Board package.", |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4792 | `NOTE` | ❌ | note: "Board package.", |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4994 | `NOTE` | ❌ | note: "pricing-correction" |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | 2800 | `NOTE` | ❌ | note: note \|\| null |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | 2813 | `NOTE` | ❌ | note: draft.deliveryNote, |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | 2799 | `NOTE` | ❌ | note: note \|\| null |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | 2812 | `NOTE` | ❌ | note: draft.deliveryNote, |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.test.ts` | 203 | `NOTE` | ❌ | note: "pricing-correction" |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.test.ts` | 488 | `NOTE` | ❌ | note: "Starter target" |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.test.ts` | 619 | `NOTE` | ❌ | note: "Board package." |

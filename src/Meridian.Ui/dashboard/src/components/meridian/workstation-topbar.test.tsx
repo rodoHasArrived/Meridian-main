@@ -8,7 +8,7 @@ import type { SessionInfo } from "@/types";
 
 const trustStrip: AppShellTrustStripState = {
   ariaLabel: "Trust status",
-  environment: { label: "PAPER", variant: "paper" },
+  environment: { label: "PAPER", variant: "paper", dataLabel: "SEEDED" },
   items: [
     {
       id: "mode",
@@ -108,7 +108,7 @@ describe("WorkstationTopbar", () => {
             hasPopup: "dialog"
           }}
           onOpenCommandPalette={vi.fn()}
-          trustStrip={{ ariaLabel: "Trust status", environment: { label: "LOADING", variant: "default" }, items: [] }}
+          trustStrip={{ ariaLabel: "Trust status", environment: { label: "LOADING", variant: "default", dataLabel: null }, items: [] }}
           session={null}
         />
       </MemoryRouter>

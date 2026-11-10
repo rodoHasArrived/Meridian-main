@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Check, Circle, FlaskConical, ListChecks, MonitorUp } from "lucide-react";
+import { ArrowRight, Check, Circle, ListChecks, MonitorUp } from "lucide-react";
 import { apiPostJson } from "@/lib/api";
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import {
@@ -27,6 +27,9 @@ import type { FirstRunStatus } from "./types";
  * The count alone was a dead end: it named a denominator without ever saying which steps
  * were left or where to do them. The host already publishes a label, an action label and a
  * route per outcome, so the chip opens a drawer that walks the user to the next one.
+ *
+ * The sample-workspace label is not repeated here: the masthead environment badge is the one
+ * place that says the data is sample data.
  *
  * The status is fetched once by AppRoot and passed down — this component must not issue its
  * own fetch, so the shell renders from a single consistent first-run snapshot. It does track
@@ -56,16 +59,6 @@ export function ActivationHeaderProgress({ status }: { status?: FirstRunStatus |
 
   return (
     <div className="flex items-center gap-2">
-      {liveStatus.workspace.isSample ? (
-        <span
-          className="inline-flex items-center gap-1.5 rounded-full bg-amber-400/15 px-2.5 py-1 text-xs font-semibold text-amber-200"
-          title={liveStatus.workspace.safetyMessage}
-        >
-          <FlaskConical size={13} />
-          {liveStatus.workspace.badge}
-        </span>
-      ) : null}
-
       {/* Kept mounted while the sheet is open so finishing the last step mid-sheet does not
           pull the drawer's trigger out from under it; it leaves on the next close. */}
       {model.triggerVisible || open ? (

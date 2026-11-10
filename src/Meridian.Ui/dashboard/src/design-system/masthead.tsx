@@ -96,8 +96,8 @@ export function DesignSystemMasthead({
             aria-label={`Current session: ${session.environment}, ${session.displayName}, ${session.role}`}
             title={`${session.displayName} · ${session.role}`}
           >
-            {/* The environment badge lives in the trust pill (its leading, never-shrinking
-                segment) so the masthead fits one row; the group label still names it. */}
+            {/* The environment is the masthead environment badge's leading, never-shrinking
+                segment, so the masthead fits one row; the group label still names it. */}
             <span className="workstation-session-name">{session.displayName}</span>
             <span className="workstation-session-role text-muted-foreground">{session.role}</span>
           </div>

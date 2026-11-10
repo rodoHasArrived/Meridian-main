@@ -20,6 +20,10 @@ import {
   buildTrustStripState,
   type AppShellTrustStripState
 } from "@/app-shell.trust-strip";
+import {
+  buildAppShellAttentionState,
+  type AppShellAttentionState
+} from "@/app-shell.attention";
 import type { DataProvenanceKind } from "@/app-shell.data-provenance-badge";
 import { buildWorkflowContinuityViewModel } from "@/app-shell.workflow-continuity-view-model";
 import type { AppShellOperatingScopeInput } from "@/app-shell.operating-scope";
@@ -58,6 +62,7 @@ export type { AppShellLinkedContextItem } from "@/app-shell.linked-context";
 export type { AppShellRouteFocusState } from "@/app-shell.route-focus";
 export type { ShellStatusItem, ShellStatusPanel, ShellStatusTone } from "@/app-shell.status-panel";
 export type { AppShellTrustStripItem, AppShellTrustStripState, AppShellTrustStripTone } from "@/app-shell.trust-strip";
+export type { AppShellAttentionSignal, AppShellAttentionSignalId, AppShellAttentionState } from "@/app-shell.attention";
 export type {
   AppShellDecisionBrief,
   AppShellEvidenceTimelineItem,
@@ -94,6 +99,8 @@ export interface AppShellViewState {
   canRenderRoutes: boolean;
   routeFocus: AppShellRouteFocusState;
   trustStrip: AppShellTrustStripState;
+  /** The single attention state the masthead pill, page status rows, Today and the footer read. */
+  attention: AppShellAttentionState;
   workflowContinuity: AppShellWorkflowContinuityViewModel;
   commandPaletteTrigger: AppShellCommandPaletteTriggerState;
 }
@@ -163,6 +170,31 @@ export function buildAppShellViewState({
   );
   const bootstrapFailed = !loading && !hasAnyPayload;
   const canRenderRoutes = !bootstrapFailed && (!loading || activeWorkspace.key === "accounting");
+  const trustStrip = buildTrustStripState({
+    loading,
+    bootstrapFailed,
+    usingDevelopmentFixtures,
+    dataProvenance,
+    workspaceErrors,
+    session: payload.session,
+    data: payload.data,
+    crossScreenCounts: payload.crossScreenCounts ?? null
+  });
+  const workflowContinuity = buildWorkflowContinuityViewModel(
+    pathname,
+    search,
+    hash,
+    activeWorkspace,
+    {
+      loading,
+      error,
+      workflowError,
+      workspaceErrors,
+      payload
+    },
+    operatingContextSymbol,
+    operatingContextScope
+  );
 
   return {
     activeWorkspace,
@@ -175,31 +207,16 @@ export function buildAppShellViewState({
     }),
     canRenderRoutes,
     routeFocus: buildRouteFocusState(pathname, search, hash, activeWorkspace),
-    trustStrip: buildTrustStripState({
+    trustStrip,
+    attention: buildAppShellAttentionState({
       loading,
       bootstrapFailed,
-      usingDevelopmentFixtures,
-      dataProvenance,
-      workspaceErrors,
-      session: payload.session,
-      data: payload.data,
-      crossScreenCounts: payload.crossScreenCounts ?? null
+      failedItems,
+      trustStrip,
+      workflowContinuity,
+      degradedMode: payload.overview?.degradedMode ?? null
     }),
-    workflowContinuity: buildWorkflowContinuityViewModel(
-      pathname,
-      search,
-      hash,
-      activeWorkspace,
-      {
-        loading,
-        error,
-        workflowError,
-        workspaceErrors,
-        payload
-      },
-      operatingContextSymbol,
-      operatingContextScope
-    ),
+    workflowContinuity,
     commandPaletteTrigger: buildCommandPaletteTriggerState(commandPaletteOpen)
   };
 }

@@ -581,11 +581,22 @@ describe("App", () => {
     expect(within(screen.getByRole("navigation", { name: /breadcrumb/i })).getByText("Today")).toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: /^Today, Daily Control Tower, current route/ }).length).toBeGreaterThan(0);
     expect(screen.getByRole("region", { name: "Daily Control Tower continuity" })).toBeInTheDocument();
-    const confidence = screen.getByRole("region", { name: "Daily control tower confidence" });
-    ["Connectivity", "Scope", "Freshness", "Completeness", "Blocker"].forEach((label) => {
-      expect(within(confidence).getByText(label)).toBeInTheDocument();
+    // One rule, three surfaces: the masthead pill, Today's status row and Today's headline
+    // read the same attention state, so they name the same worst issue with the same status.
+    const attentionPill = screen.getByRole("link", { name: /^Workstation attention: Blocked\. Brokerage sync failed\./ });
+    expect(attentionPill).toHaveAttribute("href", "/");
+    expect(attentionPill).toHaveAttribute("data-attention-tone", "blocked");
+    const status = screen.getByRole("region", { name: "Workstation status" });
+    expect(status).toHaveAttribute("data-status-tone", "blocked");
+    expect(within(status).getByTestId("status-row-issues")).toHaveTextContent("Decisions:Brokerage sync failed");
+    ["Decisions", "Providers", "Provenance", "Workspace data"].forEach((label) => {
+      expect(within(status.querySelector("dl") as HTMLElement).getByText(label)).toBeInTheDocument();
     });
-    expect(confidence).toHaveTextContent("4 ranked items");
+    expect(screen.getByText("Brokerage sync failed", { selector: ".mds-rpanel__title" }).closest(".mds-rpanel"))
+      .toHaveTextContent("Blocked");
+    // The footer repeats the same issue rather than keeping a status of its own.
+    expect(within(screen.getByRole("contentinfo", { name: "Workstation status" })).getByText(/^Brokerage sync failed \+\d+ more$/))
+      .toBeInTheDocument();
     expect(screen.queryByRole("region", { name: "Daily control tower decision drivers" })).not.toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Choose Control Tower scope" })).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Review all scopes" }));
@@ -594,6 +605,9 @@ describe("App", () => {
       name: "Reporting: Report pack approval waiting. Monthly board pack still needs an operator sign-off. Open report packs."
     }).some((link) => link.getAttribute("href") === "/reporting/report-packs")).toBe(true);
 
+    // The evidence pane opens on the leading (worst) decision; any other row is one click away.
+    expect(screen.getByRole("region", { name: /Brokerage sync failed evidence summary/i })).toBeInTheDocument();
+    await user.click(screen.getByRole("row", { name: "Report pack approval waiting" }));
     const evidenceSummary = screen.getByRole("region", { name: /Report pack approval waiting evidence summary/i });
     const moreEvidence = within(evidenceSummary).getByText("More evidence").closest("details");
     expect(moreEvidence).not.toHaveAttribute("open");

@@ -338,11 +338,15 @@ not been recorded.
   lists the rule with a reason under `allowedContentIssues` in
   `scripts/dev/web-screenshot-routes.json`. Operations Continuity is the one exception today: its
   shared summary identifies a close workflow by fund-account identifier only.
-- **Status agreement.** The status bar's Sync item reports the workstation's own read of the API.
-  When the trust strip's provider posture needs review or is blocked, the bar repeats it as a
-  Providers item, so a green Sync is never its whole answer under a masthead warning. The Daily
-  Control Tower's Evidence line names only the event correlated with the leading queue row; with
-  none it says so and cites the latest event as workstation context, matching the Freshness card.
+- **Status agreement.** One rule (`src/lib/status-signals.ts`) classifies, ranks and summarizes
+  every status fact, and one shell attention state (`src/app-shell.attention.ts`) feeds the
+  masthead attention pill, every page status row, Today's status row and the status bar. The
+  same input therefore gives the same status on each surface; see "Status signals" below. The
+  status bar's Sync item reports the workstation's own read of the API, and when the attention
+  state needs review or is blocked the bar repeats the pill's worst issue as an Attention item, so
+  a green Sync is never its whole answer under a masthead warning. The Daily Control Tower's
+  Evidence line names only the event correlated with the leading decision's queue row; with none
+  it says so and cites the latest event as workstation context.
 - **Operating scope.** Copy link appends every scope dimension the current route did not write
   into its URL (`buildShareableLink`), so a link from any screen restores the sender's scope in a
   fresh browser. The scope picker offers the last five applied scopes (per browser) and the
@@ -499,11 +503,46 @@ cash forecast, statement import, historical prices, and running reports. Local d
 searchable when remote command or entity search is unavailable; unwired routes stay excluded.
 Accounting onboarding searches open the existing External GL surface, which hosts the bounded
 onboarding workspace and its retained comparison and readiness evidence.
-From 1200px the masthead is one 48px row: the session environment is the trust pill's leading,
-never-shrinking badge (`PAPER · SEEDED · 1 warning`; LIVE uses the alarm-red `--live-env` token and
-follows the resolved session, not the workspace bootstrap), and desktop launch is an icon button with
-the same accessible name. Between 981px and 1199px operator controls take a second row so search
-stays readable.
+From 1200px the masthead is one 48px row: the environment badge leads with the never-shrinking
+session environment and adds the data qualifier only when the data is not confirmed real
+(`PAPER · SEEDED`; LIVE uses the alarm-red `--live-env` token and follows the resolved session, not
+the workspace bootstrap), the attention pill names the worst open issue, and desktop launch is an
+icon button with the same accessible name. Between 981px and 1199px operator controls take a second
+row so search stays readable.
+
+### Status signals
+
+The shell shows status in four places, all derived from one attention state so they cannot
+disagree:
+
+- **Environment badge** (masthead): `PAPER`, `LIVE` or `DEMO`, plus `SEEDED`, `SIMULATED`,
+  `SAMPLE` or `UNKNOWN` when the data is not confirmed real. It says what the operator is looking
+  at and never changes colour for an issue. A first-run sample workspace is folded into the same
+  label, so there is no separate sample-data chip. Build, environment, provenance and provider
+  facts are in its disclosure.
+- **Attention pill** (masthead): the worst open issue across the workstation with a count of the
+  rest, or `All clear`. It always opens Today. The count matches the queue count beside `Today`
+  in the sidebar; a provider warning or failed workspace area that is also queued is counted once.
+- **Page status row** (`OperationalTrustSummary`, rendered by `StatusRow`): one line that reads
+  `All sources current` or names only the facts that are not ready
+  (`Scope: none selected`, `Freshness: 187d stale`). The per-fact breakdown, with detail and
+  recovery actions, is behind `Details`. The row also folds in shell source issues (provider
+  posture, unverified provenance, workspace data that did not load, degraded host), so a page
+  cannot read `All sources current` while the pill warns about the same sources.
+- **Status bar** (footer): Sync, plus the pill's worst issue when the state needs review or is
+  blocked.
+
+Rules worth knowing when adding a signal:
+
+- Anything short of `ready` is an issue and is named; `ready` facts are never listed in a summary
+  line. Blocked outranks review, which outranks pending/unknown.
+- Declared demo data on a Paper or Demo session is not an issue (the badge names it). Provenance
+  that was never confirmed needs review; non-real data in a LIVE session blocks.
+- LIVE is identity, not a warning.
+- The leading decision is the worst queued item by tone and does not depend on the route, even
+  though Today lists its queue finance-first.
+- New shell-wide signals belong in `buildAppShellAttentionState`; page-specific facts belong in the
+  page's `OperationalTrustSummary`. Do not add a status indicator that computes its own tone.
 
 Workspace routes open on their own job: the route heading leads, the workspace KPI strip follows it,
 and the sidebar is the only sub-route navigation (Trading, Portfolio, Strategy and Data no longer
@@ -544,7 +583,9 @@ instead of introducing one-off screen styling.
 - `src/app-shell.development-fixture-notice.ts` - app-shell no-host demo-data notice and evidence path view models.
 - `src/app-shell.route-focus.ts` - app-shell route announcement, document title, and hash-target focus view models.
 - `src/app-shell.status-panel.ts` - app-shell bootstrap, degraded workspace, and recovery status view models.
-- `src/app-shell.trust-strip.ts` - app-shell build, mode, source, and provider posture view models.
+- `src/app-shell.trust-strip.ts` - app-shell environment badge plus build, mode, source, and provider posture view models.
+- `src/app-shell.attention.ts` - the single shell attention state behind the masthead pill, page status rows, Today, and the status bar.
+- `src/lib/status-signals.ts` - the one rule that ranks status tones and summarizes a set of status facts.
 - `src/app-shell.workflow-continuity-types.ts` - shell workflow-continuity view model contract.
 - `src/screens/operations-continuity-screen.date-format.ts` - retained UTC timestamp and due-date formatting used by the Operations Continuity view model.
 - `src/components/ui/` - shared Meridian Design System primitives, including buttons, inputs, selects, badges, tooltips, dialogs/modals, sheets, checkbox/toggle, breadcrumb, form rows/grids, tabs, status banners, context menus, multi-select, toast, and panel surfaces.
@@ -727,10 +768,10 @@ No-host browser previews must keep fixture data visibly labeled as demo data. Th
 non-dismissable provenance strip routes operators through the typed demo evidence path: watchlist,
 live quote evidence, trading readiness, and provider setup, while keeping retry-to-live behavior
 available. Do not add a second full-width seeded-data warning below the masthead.
-The full-width `DataProvenanceBanner` shows the first time a provenance and environment pairing
-appears in a browser and again whenever either changes; after that it is a 4px top-edge stripe with
-the same status role and full text for assistive technology (`compactAfterSeen`). LIVE sessions,
-unresolved sessions and `unknown` provenance (it carries the retry) always keep the full banner.
+The masthead environment badge carries the visible provenance label, so `DataProvenanceBanner`
+renders as a 4px top-edge stripe with the same status role and full text for assistive technology
+(`labeledInMasthead`). LIVE sessions, unresolved sessions and `unknown` provenance (it carries the
+retry) always keep the full-width banner.
 The app-shell data-provenance badge combines the server-owned `/api/demo/mode` response with actual
 fixture usage. Explicit demo or fixture data always wins over a nominal live posture, and a missing
 or malformed mode response fails closed to simulated/unverified rather than being presented as real
@@ -1742,8 +1783,11 @@ now prioritizes the finance sequence Today, Exceptions, Close, Reconciliation, L
 Evidence, and Data Health before non-finance surfaces. Decision drivers emphasize the finance
 queue, trust posture, linked context, and evidence events before the queued work, so the first screen
 explains why the operator should act, who owns the issue, what output is affected, which action is
-next, and which retained evidence supports it. Scope, freshness, and provider-connectivity trust
-cards expose their remediation actions in the card that reports the warning.
+next, and which retained evidence supports it. The queue is listed finance-first, but the headline
+and the default evidence pane follow the worst queued decision, which is the one the masthead
+attention pill names on every route. Below the headline, the `Workstation status` row lists the
+shell attention signals (decisions, providers, provenance, workspace data, and host posture when
+degraded); each signal's recovery action is in its tile behind `Details`.
 Queue evidence association is fail-closed on the stable item/evidence identifier. Similar route,
 workspace, severity, or list position never attaches an unrelated proof event; missing correlation
 is displayed as unavailable evidence and timestamp posture.

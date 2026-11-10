@@ -73,6 +73,29 @@ describe("normalizeDataProvenance", () => {
 });
 
 describe("resolveWorkstationDataProvenance", () => {
+  it("does not honour a real answer over a first-run sample workspace", () => {
+    // The masthead used to show this as a separate SAMPLE chip beside a provenance label that
+    // could say something else. One resolver now decides the label.
+    expect(resolveWorkstationDataProvenance({
+      usingDevelopmentFixtures: false,
+      demoMode: { enabled: false, provenance: "real" },
+      sampleWorkspace: true
+    })).toBe("sample");
+  });
+
+  it("keeps a more specific or unresolved label when the workspace is a sample", () => {
+    expect(resolveWorkstationDataProvenance({
+      usingDevelopmentFixtures: false,
+      demoMode: { enabled: true, provenance: "seeded" },
+      sampleWorkspace: true
+    })).toBe("seeded");
+    expect(resolveWorkstationDataProvenance({
+      usingDevelopmentFixtures: false,
+      demoMode: null,
+      sampleWorkspace: true
+    })).toBe("unknown");
+  });
+
   it("uses successful demo-mode provenance even when no development fixture header was observed", () => {
     expect(resolveWorkstationDataProvenance({
       usingDevelopmentFixtures: false,

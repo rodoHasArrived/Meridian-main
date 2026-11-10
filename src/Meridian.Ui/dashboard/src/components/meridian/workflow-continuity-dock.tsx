@@ -79,8 +79,8 @@ export function WorkflowContinuityDock({
         ) : null}
       </div>
 
-      {/* The cross-workspace decision brief renders as the masthead status pill
-          (DecisionBriefPill); the dock keeps only operating context and the
+      {/* The worst cross-workspace issue renders as the masthead attention pill
+          (AttentionPill); the dock keeps only operating context and the
           on-demand flow details so a blocked item never repaints every route. */}
       <details
         className="workflow-continuity-operator-flow"

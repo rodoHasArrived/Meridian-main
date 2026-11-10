@@ -188,7 +188,7 @@
 }
 
 /* Keep a readable search field and every operator control on small laptop displays.
-   From 1200px the masthead is one 48px row: the environment lives in the trust pill,
+   From 1200px the masthead is one 48px row: the environment lives in its own badge,
    desktop launch is an icon, and the actions cluster is narrow enough to leave the
    search track usable. Below that, actions get a second row rather than consuming
    the search track down to an icon-sized sliver. */
@@ -205,7 +205,8 @@
   }
 }
 
-/* Trust strip (build / mode / source / provider posture) ------------------------ */
+/* Environment badge (PAPER / LIVE plus the data qualifier). Build, mode, source and
+   provider facts are in its disclosure; what needs attention is the attention pill. */
 .workstation-trust-strip {
   position: relative;
   display: block;
@@ -252,8 +253,8 @@
 }
 
 /* PAPER vs LIVE is the one fact in the masthead an operator cannot afford to lose:
-   the environment badge leads the pill and never shrinks; only the provenance and
-   provider text after it may ellipsize. */
+   the environment badge leads the pill and never shrinks; only the data qualifier
+   after it may ellipsize. */
 .workstation-trust-summary .workstation-trust-environment {
   flex: none;
   min-height: 1.25rem;
@@ -263,6 +264,14 @@
 .workstation-trust-sep {
   flex: none;
   color: #969188;
+}
+
+/* SEEDED / SIMULATED / SAMPLE / UNKNOWN: not real data, in the masthead's warning ochre. */
+.workstation-trust-summary .workstation-trust-data {
+  color: #E0B36B;
+  font-family: var(--font-data, "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
 }
 
 .workstation-trust-chevron {
@@ -366,8 +375,8 @@ a.workstation-trust-item:focus-visible {
   min-width: 0;
 }
 
-/* Decision-brief status pill — the masthead handle for the cross-workspace
-   break queue. Replaces the per-route decision-brief banner. */
+/* Attention pill — the masthead's one status signal: the worst open issue across
+   the workstation, or "All clear". Always opens Today. */
 .masthead-status-pill {
   display: inline-flex;
   align-items: center;
@@ -416,6 +425,15 @@ a.workstation-trust-item:focus-visible {
 .masthead-status-pill-review .masthead-status-pill-status { color: #D9C27A; }
 .masthead-status-pill-ready .masthead-status-pill-dot { background: #4CAF7E; }
 .masthead-status-pill-ready .masthead-status-pill-status { color: #9FD0A5; }
+.masthead-status-pill-pending .masthead-status-pill-dot { background: #B6A6E0; }
+.masthead-status-pill-pending .masthead-status-pill-status { color: #B6A6E0; }
+
+.masthead-status-pill-more {
+  flex: none;
+  color: #BBB5AC;
+  font-family: var(--font-data, "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace);
+  font-size: 0.75rem;
+}
 
 @media (max-width: 900px) {
   .masthead-status-pill-title {

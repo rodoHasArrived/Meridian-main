@@ -88,7 +88,7 @@ const payload: AppShellWorkspacePayload = {
 };
 
 describe("daily control tower model", () => {
-  it("projects the highest-priority shell decision into a blocked output queue", () => {
+  it("leads with the worst queued decision while listing the queue finance-first", () => {
     const shell = buildAppShellViewState({
       pathname: "/",
       loading: false,
@@ -100,18 +100,20 @@ describe("daily control tower model", () => {
     const model = buildDailyControlTowerModel(shell.workflowContinuity, shell.trustStrip);
 
     expect(shell.workflowContinuity.title).toBe("Daily Control Tower");
-    expect(model.decision.title).toBe("Report pack approval waiting");
-    expect(model.statusLabel).toBe("Review");
-    expect(model.ownerLabel).toBe("Reporting");
-    expect(model.outputLabel).toBe("Reporting package or evidence");
-    expect(model.nextActionHref).toBe("/reporting/report-packs");
+    // The blocked Portfolio item leads even though the finance-first list puts a Reporting
+    // review item on top: the headline must name the same decision as the masthead pill.
+    expect(model.decision.title).toBe("Brokerage sync failed");
+    expect(model.statusLabel).toBe("Blocked");
+    expect(model.leadingRow?.item.label).toBe("Brokerage sync failed");
+    expect(model.ownerLabel).toBe(model.leadingRow?.item.workspaceLabel);
+    expect(model.nextActionHref).toBe(model.leadingRow?.item.route);
     expect(model.driverItems).toEqual(expect.arrayContaining([
       expect.objectContaining({
         id: "continuity",
         label: "Continuity source",
         value: "Daily Control Tower",
         detail: expect.stringContaining("Source route: /."),
-        badgeVariant: "warning"
+        badgeVariant: "danger"
       }),
       expect.objectContaining({
         id: "queue",
@@ -152,9 +154,11 @@ describe("daily control tower model", () => {
     const row = model.queueRows[0];
 
     expect(row?.proof?.label).toBe("Report pack approval waiting");
-    // The hero names the event correlated with the leading row, so it agrees with the row's
+    // The hero names the event correlated with the leading row, so it agrees with that row's
     // Freshness fact rather than quoting whichever event is newest in the workstation.
-    expect(model.evidenceLabel).toBe("Linked evidence: Reporting 2026-05-14 21:00 UTC");
+    const leadingFreshness = model.leadingRow?.proofPassportItems.find((item) => item.label === "Freshness")?.value;
+    expect(model.leadingRow?.proof?.label).toBe("Brokerage sync failed");
+    expect(model.evidenceLabel).toBe(`Linked evidence: ${model.leadingRow?.proof?.workspaceLabel} ${leadingFreshness}`);
     expect(row?.proofPassportItems.map((item) => item.label)).toEqual(dailyControlTowerProofPassportLabels());
     expect(row?.proofPassportItems.find((item) => item.label === "Source")?.value).toBe("Reporting");
     expect(row?.proofPassportItems.find((item) => item.label === "Freshness")?.value).toBe("2026-05-14 21:00 UTC");
@@ -170,7 +174,7 @@ describe("daily control tower model", () => {
       workspaceErrors: {},
       payload
     });
-    const leadingItemId = shell.workflowContinuity.operatorFocusItems[0]?.id;
+    const leadingItemId = shell.workflowContinuity.leadingOperatorFocusItemId;
     const viewModel = {
       ...shell.workflowContinuity,
       evidenceTimelineItems: shell.workflowContinuity.evidenceTimelineItems.filter(
@@ -179,8 +183,9 @@ describe("daily control tower model", () => {
     };
 
     const model = buildDailyControlTowerModel(viewModel, shell.trustStrip);
-    const row = model.queueRows[0];
+    const row = model.leadingRow;
 
+    expect(row?.item.id).toBe(leadingItemId);
     expect(row?.proof).toBeNull();
     // The newest remaining event belongs to another item. The hero may mention it as workstation
     // context but must not present it as this decision's evidence.

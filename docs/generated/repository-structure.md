@@ -7370,6 +7370,9 @@ Meridian-main
 │   │   │   │   │   │   └── symbol-universe-manager.tsx
 │   │   │   │   │   ├── meridian
 │   │   │   │   │   │   ├── activity-center.tsx
+│   │   │   │   │   │   ├── attention-pill.test.tsx
+│   │   │   │   │   │   ├── attention-pill.tsx
+│   │   │   │   │   │   ├── attention-signal-fact.tsx
 │   │   │   │   │   │   ├── bias-disclosure-panel.tsx
 │   │   │   │   │   │   ├── bond-analytics-panel.test.tsx
 │   │   │   │   │   │   ├── bond-analytics-panel.tsx
@@ -7466,6 +7469,7 @@ Meridian-main
 │   │   │   │   │   │   ├── security-passport-schema-fields.view-model.test.ts
 │   │   │   │   │   │   ├── security-passport-schema-fields.view-model.ts
 │   │   │   │   │   │   ├── stat-strip.tsx
+│   │   │   │   │   │   ├── status-row.tsx
 │   │   │   │   │   │   ├── strategy-formula-workbench.test.tsx
 │   │   │   │   │   │   ├── strategy-formula-workbench.tsx
 │   │   │   │   │   │   ├── ui-kit-primitives.table-system.test.tsx
@@ -7777,6 +7781,7 @@ Meridian-main
 │   │   │   │   │   ├── csv.ts
 │   │   │   │   │   ├── daily-control-tower.test.ts
 │   │   │   │   │   ├── daily-control-tower.ts
+│   │   │   │   │   ├── degraded-mode.ts
 │   │   │   │   │   ├── dense-table-virtualization.test.ts
 │   │   │   │   │   ├── dense-table-virtualization.ts
 │   │   │   │   │   ├── dense-virtualization.test.ts
@@ -7874,10 +7879,13 @@ Meridian-main
 │   │   │   │   │   ├── shareable-view.test.ts
 │   │   │   │   │   ├── shared-tone-mappings.test.ts
 │   │   │   │   │   ├── shared-tone-mappings.ts
+│   │   │   │   │   ├── shell-status-signals-context.tsx
 │   │   │   │   │   ├── since-last-visit.test.ts
 │   │   │   │   │   ├── since-last-visit.ts
 │   │   │   │   │   ├── sql-workbench-storage.test.ts
 │   │   │   │   │   ├── sql-workbench-storage.ts
+│   │   │   │   │   ├── status-signals.test.ts
+│   │   │   │   │   ├── status-signals.ts
 │   │   │   │   │   ├── system-status.ts
 │   │   │   │   │   ├── theme.test.ts
 │   │   │   │   │   ├── theme.ts
@@ -8386,6 +8394,8 @@ Meridian-main
 │   │   │   │   │   ├── workstation-7.ts
 │   │   │   │   │   ├── workstation-8.ts
 │   │   │   │   │   └── workstation-corporate-actions.ts
+│   │   │   │   ├── app-shell.attention.test.ts
+│   │   │   │   ├── app-shell.attention.ts
 │   │   │   │   ├── app-shell.command-palette.ts
 │   │   │   │   ├── app-shell.data-provenance-badge.test.ts
 │   │   │   │   ├── app-shell.data-provenance-badge.ts

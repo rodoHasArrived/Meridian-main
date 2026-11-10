@@ -68,6 +68,18 @@ fails a route whose rendered content shows a raw identifier or a "1 rows" style 
 contract changed; Operations Continuity still shows fund-account identifiers because its shared
 summary carries no account name.
 
+The host-served bundle carries the status-signal consolidation: one rule
+(`dashboard/src/lib/status-signals.ts`) and one shell attention state
+(`dashboard/src/app-shell.attention.ts`) now feed every status indicator. The masthead keeps an
+environment badge (`PAPER · SEEDED`, replacing the trust pill's provider text and the separate
+sample-data chip) and one attention pill that names the worst open issue and opens Today. Page
+status rows read `All sources current` or name only the facts that are not ready, with the
+per-fact breakdown behind Details, and fold in shell source issues so they cannot contradict the
+pill. Today leads with the same worst decision on every route, the status bar repeats the pill
+instead of a Providers item, and the provenance banner is a stripe whenever the badge names the
+provenance. Declared demo data on a Paper session is no longer raised as a warning. No shared
+contract changed; the WPF shell keeps its own indicators until it consumes the same rule.
+
 The host-served bundle carries the browser presentation correctness fixes: font stacks that end
 in a generic family (no serif fallback for data text), Ledger Explorer amounts at currency
 precision with journal-ID links, no invented Strategy metrics, and a masthead activation chip that
