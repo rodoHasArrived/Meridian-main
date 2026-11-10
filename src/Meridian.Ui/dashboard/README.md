@@ -158,7 +158,9 @@ complete series. Focused coverage lives in `historical-chart.test.tsx`.
 Loan book accepts numeric and named host enums and preserves unknown values without inventing
 USD. Server `currencyTotals` retain their denomination and an explicit no-FX notice; scalar
 totals without a currency are withheld. Principal and undrawn amounts group by facility base
-currency, while collateral retains its own appraisal currency.
+currency, while collateral retains its own appraisal currency. Each row also shows prepaid interest
+and unapplied cash (PRD-115): amounts owed to the borrower, shown beside the receivables but not in
+any total; a host that predates them shows the not-reported marker rather than zero.
 
 The generated `api-routes.ts` catalog includes exact account-owned ledger-book oversight routes
 for cash continuity, reviewed close prices and cash forecasts. Regenerate it from shared
@@ -293,7 +295,7 @@ not been recorded.
   `formatMoney` (`accounting` puts negatives in parentheses at the currency's minor units,
   `trading` uses a minus sign at instrument precision, `summary` shows whole units),
   `formatQuantity`, and `formatUtcTimestamp`/`formatUtcDate`/`formatUtcMonthYear`, which always
-  include the year. `formatLocalDateTime` is for times on the operator's own clock, and
+  include the year. Screens show times in UTC, not on the operator's local clock;
   `formatDateTime` covers any other date layout through a pinned-locale `Intl.DateTimeFormat`.
   ESLint blocks `Intl.*` and `toLocale*String` in every non-test file under `src/screens/`, and
   the `directIntlFormatting` baseline is empty.
@@ -325,6 +327,22 @@ not been recorded.
   agree from one fixture set. Accounting takes open breaks from the payload's `workspace.openBreaks`,
   which the server counts over the whole queue even when it withholds `breakQueue` from a caller
   who may see the count but not the cases.
+- **Operator copy.** Records are named by display name. GUID-shaped identifiers stay out of the
+  reading path: `lib/identifiers.ts` (`isOpaqueIdentifier`, `withoutOpaqueIdentifiers`) strips
+  them from headings, and the identifier lives in a `TechnicalDetails` disclosure, a `title`
+  attribute or a read-only scope field. Counts with a noun go through `pluralizeCount` from `@/lib/format`. A
+  position with no shared mark assessment shows one "No mark observed" hint (`lib/mark-freshness.ts`)
+  instead of a row per unknown field. The screenshot harness checks every route's rendered main
+  content for both rules (`findCaptureContentIssues` in
+  `scripts/dev/capture-web-screenshots.mjs`) and fails the capture; a route that cannot comply yet
+  lists the rule with a reason under `allowedContentIssues` in
+  `scripts/dev/web-screenshot-routes.json`. Operations Continuity is the one exception today: its
+  shared summary identifies a close workflow by fund-account identifier only.
+- **Status agreement.** The status bar's Sync item reports the workstation's own read of the API.
+  When the trust strip's provider posture needs review or is blocked, the bar repeats it as a
+  Providers item, so a green Sync is never its whole answer under a masthead warning. The Daily
+  Control Tower's Evidence line names only the event correlated with the leading queue row; with
+  none it says so and cites the latest event as workstation context, matching the Freshness card.
 - **Operating scope.** Copy link appends every scope dimension the current route did not write
   into its URL (`buildShareableLink`), so a link from any screen restores the sender's scope in a
   fresh browser. The scope picker offers the last five applied scopes (per browser) and the
@@ -1871,6 +1889,12 @@ The passport editor builds its term picker from `GET /api/security-master/asset-
 (`security-master-schema.api.ts`): scalar-editable terms grouped as the registry declares them,
 a value control per editor kind, and a client pre-check
 (`security-passport-schema-fields.view-model.ts`). The free-text field path stays as a fallback.
+The pre-check mirrors the shared `SecurityAssetTermFormModel` and is pinned to it by a parity
+contract: `SecurityAssetTermFormParityFixtureTests` (tests/Meridian.Tests) generates
+`src/test/fixtures/security-asset-term-form-parity.json` from the registry and form model, and
+`security-passport-schema-fields.parity.test.ts` replays it through the mirror — field sets in
+declared order, value choices, and every validation verdict over a fixed corpus. The server-side
+governed validator remains authoritative.
 
 ## Security Master publish outcome
 
@@ -1929,8 +1953,13 @@ npm --prefix src/Meridian.Ui/dashboard run smoke:workstation
 Linting is a correctness-only ESLint flat-config baseline (`eslint.config.mjs`): typescript-eslint
 recommended, react-hooks rules, and a local kebab-case filename rule with grandfathered
 PascalCase/camelCase directories (`components/accounting`, `components/charts`,
-`features/accounting`). No stylistic or formatting rules are enforced. `react-hooks/exhaustive-deps`
-stays a warning; treat new warnings in touched files as part of the change. Screen-level
+`features/accounting`). No stylistic or formatting ESLint rules are enforced. `react-hooks/exhaustive-deps`
+stays a warning; treat new warnings in touched files as part of the change. After ESLint,
+`npm run lint` runs `scripts/check-typography-floor.mjs`, a ratchet on the 12px type floor. It
+counts sub-12px text per file: Tailwind `text-[Npx]` arbitrary sizes and CSS `font-size` below
+12px, excluding `*.test.ts(x)` fixtures. A file that gains occurrences, or a new file with any,
+fails against `scripts/typography-floor-baseline.json`. Run the script with `--update-baseline`
+after a reduction; it refuses any increase, so the baseline only shrinks. Screen-level
 accessibility is exercised by the `src/screens/*.a11y.test.tsx` suites plus axe assertions embedded
 in the larger screen tests; keep new screens covered by at least one axe render.
 

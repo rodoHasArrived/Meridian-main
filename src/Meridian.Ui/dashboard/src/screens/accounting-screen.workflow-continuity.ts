@@ -131,7 +131,7 @@ function buildFinancialOperationsActiveStepLabel(stepId: string, summary: Worksp
       return "Match";
     case "resolve-exceptions": {
       const breakCount = getWorkflowEvidenceValue(summary, "Breaks");
-      return breakCount && breakCount !== "0" ? `${breakCount} breaks` : "Resolve";
+      return breakCount && breakCount !== "0" ? `${breakCount} ${breakCount === "1" ? "break" : "breaks"}` : "Resolve";
     }
     case "approve-results": {
       const approval = getWorkflowEvidenceValue(summary, "Approval");

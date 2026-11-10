@@ -308,8 +308,13 @@ describe("TrialBalanceScreen", () => {
 
     // The book is attached to a fund-structure node; "All entities" was an affirmative claim
     // about a book scoped to exactly one.
-    expect(screen.getAllByText((_, node) => (node?.textContent ?? "").includes("Fund · 00000000-0000-0000-0000-0000000000bb")).length)
+    // The heading names the node by its kind; the exact node identifier stays in the read-only
+    // scope field rather than in the page's reading path.
+    expect(screen.getAllByText((_, node) => /^Fund · [^·]*Master Fund · /.test(node?.textContent ?? "")).length)
       .toBeGreaterThan(0);
+    expect(screen.queryAllByText((_, node) => (node?.textContent ?? "").includes("00000000-0000-0000-0000-0000000000bb")))
+      .toHaveLength(0);
+    expect(screen.getByLabelText("Entity / fund / portfolio")).toHaveValue("Fund · 00000000-0000-0000-0000-0000000000bb");
   });
 
   it("lets a book chosen by hand supersede a deep link whose period request failed", async () => {

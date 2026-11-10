@@ -50,6 +50,14 @@ Captures go into ignored `artifacts/web-screenshots/captures`; setup failures ca
 committed catalog as newly rendered evidence. Only a fully validated run copies images into the
 requested catalog directory under `docs/screenshots/web` for the refresh PR.
 
+The capture script also reads each route's rendered main content and fails the route when it shows
+a GUID-shaped identifier or a count of one before a phrase-ending plural noun ("1 rows"). Collapsed technical
+details, `title` attributes and form-field values are not rendered text, so identifiers kept there
+pass. A route that cannot comply yet lists the rule (`opaque-identifier` or
+`singular-count-plural-noun`) with a `reason` under `allowedContentIssues` in
+`scripts/dev/web-screenshot-routes.json`; an entry without a reason excuses nothing, and the
+manifest records each excused excerpt.
+
 The capture script checkpoints its manifest after each completed route. Failed attempts remove
 rejected PNGs, and cleanup failures retain diagnostics and the original render error. An interrupted
 run may therefore retain a `running` manifest with completed routes and unattempted counts; it does

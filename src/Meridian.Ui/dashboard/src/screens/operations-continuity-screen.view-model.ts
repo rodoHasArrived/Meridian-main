@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { formatCurrency as formatCurrencyAmount, formatNumber } from "@/lib/format";
+import { formatCurrency as formatCurrencyAmount, formatNumber, pluralizeCount } from "@/lib/format";
 import { formatDate, formatDateOnly } from "@/screens/operations-continuity-screen.date-format";
 import {
   collectCloseWorkflowEvidenceLinks,
@@ -3917,7 +3917,7 @@ function buildStatusAnnouncement({
     return "No operations continuity workflows are available.";
   }
 
-  return `${rows.length} operations continuity workflows loaded. Selected ${selectedSummary.periodId} close.`;
+  return `${pluralizeCount(rows.length, "operations continuity workflow")} loaded. Selected ${selectedSummary.periodId} close.`;
 }
 
 function formatError(err: unknown, fallback: string): string {
