@@ -21,10 +21,17 @@ ALLOWED_BASELINE = frozenset({
     "Meridian.FinancialOperations",
     "Meridian.FundStructure.Tests",
     "Meridian.Infrastructure",
+    "Meridian.Launcher",
+    "Meridian.LifecycleSupervisor",
+    "Meridian.LifecycleSupervisor.Tests",
     "Meridian.Reporting",
+    "Meridian.Setup",
+    "Meridian.Setup.Tests",
     "Meridian.Storage",
     "Meridian.Tests",
     "Meridian.Ui.Shared",
+    "Meridian.Wpf",
+    "Meridian.Wpf.Tests",
 })
 
 
@@ -50,7 +57,10 @@ class NullableWarningRatchetTests(unittest.TestCase):
         self.assertEqual(element.text, "$(WarningsAsErrors);nullable")
         condition = element.attrib["Condition"]
         self.assertIn("'$(MSBuildProjectExtension)' == '.csproj'", condition)
-        self.assertIn("!$(MeridianNullableWarningBaseline.Contains(';$(MSBuildProjectName);'))", condition)
+        self.assertIn("!$(MeridianNullableWarningBaseline.Contains(';$(MeridianNullableRatchetProjectName);'))", condition)
+        # WPF markup compilation builds '<name>_<random>_wpftmp'; it must resolve to the real project.
+        name = self.root.findtext(".//MeridianNullableRatchetProjectName") or ""
+        self.assertIn("'$(MSBuildProjectName)', '_[A-Za-z0-9]+_wpftmp$', ''", name)
 
 
 if __name__ == "__main__":

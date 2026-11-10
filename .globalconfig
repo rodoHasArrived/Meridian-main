@@ -11,3 +11,73 @@ is_global = true
 #       See the MeridianGlobalNoWarn inventory in Directory.Build.props for the
 #       canonical suppressions.
 # ============================================================================
+
+# ============================================================================
+# AnalysisLevel=latest-recommended baseline
+# ============================================================================
+# Directory.Build.props sets AnalysisLevel=latest-recommended for C# projects. Every rule
+# below already had violations when that was turned on, so it is held at 'suggestion'
+# (not reported by the build) until its violations are fixed. To ratchet: fix a rule's
+# violations, then delete its line so it reports as a warning again. Do not add rules.
+# The list is pinned by tests/scripts/test_analysis_level_baseline.py.
+
+dotnet_diagnostic.CA1000.severity = suggestion
+dotnet_diagnostic.CA1001.severity = suggestion
+dotnet_diagnostic.CA1036.severity = suggestion
+dotnet_diagnostic.CA1051.severity = suggestion
+dotnet_diagnostic.CA1068.severity = suggestion
+dotnet_diagnostic.CA1070.severity = suggestion
+dotnet_diagnostic.CA1304.severity = suggestion
+dotnet_diagnostic.CA1305.severity = suggestion
+dotnet_diagnostic.CA1310.severity = suggestion
+dotnet_diagnostic.CA1311.severity = suggestion
+dotnet_diagnostic.CA1507.severity = suggestion
+dotnet_diagnostic.CA1510.severity = suggestion
+dotnet_diagnostic.CA1512.severity = suggestion
+dotnet_diagnostic.CA1513.severity = suggestion
+dotnet_diagnostic.CA1707.severity = suggestion
+dotnet_diagnostic.CA1708.severity = suggestion
+dotnet_diagnostic.CA1711.severity = suggestion
+dotnet_diagnostic.CA1715.severity = suggestion
+dotnet_diagnostic.CA1716.severity = suggestion
+dotnet_diagnostic.CA1720.severity = suggestion
+dotnet_diagnostic.CA1725.severity = suggestion
+dotnet_diagnostic.CA1805.severity = suggestion
+dotnet_diagnostic.CA1806.severity = suggestion
+dotnet_diagnostic.CA1816.severity = suggestion
+dotnet_diagnostic.CA1822.severity = suggestion
+dotnet_diagnostic.CA1825.severity = suggestion
+dotnet_diagnostic.CA1826.severity = suggestion
+dotnet_diagnostic.CA1827.severity = suggestion
+dotnet_diagnostic.CA1829.severity = suggestion
+dotnet_diagnostic.CA1835.severity = suggestion
+dotnet_diagnostic.CA1838.severity = suggestion
+dotnet_diagnostic.CA1845.severity = suggestion
+dotnet_diagnostic.CA1846.severity = suggestion
+dotnet_diagnostic.CA1847.severity = suggestion
+dotnet_diagnostic.CA1848.severity = suggestion
+dotnet_diagnostic.CA1850.severity = suggestion
+dotnet_diagnostic.CA1852.severity = suggestion
+dotnet_diagnostic.CA1854.severity = suggestion
+dotnet_diagnostic.CA1859.severity = suggestion
+dotnet_diagnostic.CA1860.severity = suggestion
+dotnet_diagnostic.CA1861.severity = suggestion
+dotnet_diagnostic.CA1862.severity = suggestion
+dotnet_diagnostic.CA1863.severity = suggestion
+dotnet_diagnostic.CA1865.severity = suggestion
+dotnet_diagnostic.CA1866.severity = suggestion
+dotnet_diagnostic.CA1869.severity = suggestion
+dotnet_diagnostic.CA1872.severity = suggestion
+dotnet_diagnostic.CA1873.severity = suggestion
+dotnet_diagnostic.CA1875.severity = suggestion
+dotnet_diagnostic.CA2012.severity = suggestion
+dotnet_diagnostic.CA2016.severity = suggestion
+dotnet_diagnostic.CA2201.severity = suggestion
+dotnet_diagnostic.CA2208.severity = suggestion
+dotnet_diagnostic.CA2211.severity = suggestion
+dotnet_diagnostic.CA2219.severity = suggestion
+dotnet_diagnostic.CA2241.severity = suggestion
+dotnet_diagnostic.CA2249.severity = suggestion
+dotnet_diagnostic.CA2254.severity = suggestion
+dotnet_diagnostic.CA2263.severity = suggestion
+dotnet_diagnostic.CA5351.severity = suggestion
