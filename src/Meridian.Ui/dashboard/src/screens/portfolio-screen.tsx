@@ -588,10 +588,12 @@ export function PortfolioScreen({
         })
       : null;
   const heartbeat = portfolio?.brokerage.lastHeartbeat ?? trading?.brokerage.lastHeartbeat ?? null;
-  // The totals on screen are a retained payload when the refresh of the workspace that supplies
-  // them did not complete: the Portfolio poll settled as partial, or the shell recorded a refresh
-  // error for that workspace. A recent settle time does not make those figures current.
+  // The totals on screen are a retained payload when the latest reload of the workspace that
+  // supplies them failed: the shell lists that workspace as stale, or the Portfolio poll settled
+  // as partial (its Portfolio request was rejected). A recent settle time does not make those
+  // figures current.
   const headlineWorkspace = vm.metricsFromTrading ? "trading" : "portfolio";
+  const headlineFigures = resolveWorkspaceFigures(figureContext, headlineWorkspace);
   const headlineRefreshFailed = (figureContext?.staleWorkspaces.includes(headlineWorkspace) ?? false)
     || (!vm.metricsFromTrading && refreshStatus?.phase === "partial");
   const evidenceTone: OperationalTrustTone = freshnessVm?.state === "failing"
@@ -608,12 +610,12 @@ export function PortfolioScreen({
   // a stale workspace cannot show figures that look current. Their scope is every position in the
   // workspace read model: selecting a brokerage account filters the brokerage table, not these
   // totals, so the selected account must not be named as their scope.
-  // As-of is when the totals' payload was last loaded. The Portfolio lifecycle keeps its last
-  // complete refresh through a partial one; totals borrowed from Trading after its refresh
-  // failed date from the last time the Trading payload loaded.
+  // As-of is when the payload supplying the totals last loaded: the shell's recorded load time
+  // for that workspace (Trading's when the totals are borrowed from it), else the Portfolio
+  // lifecycle, which keeps its last successful load through a partial refresh.
   const headlineProvenance = {
     source: vm.metricsFromTrading ? "Trading workspace" : vm.positionSourceLabel,
-    asOf: (headlineRefreshFailed && vm.metricsFromTrading ? resolveWorkspaceFigures(figureContext, "trading").asOf : null)
+    asOf: headlineFigures.asOf
       ?? (hasRefreshEvidence ? refreshStatus?.lastSucceededAt : null)
       ?? brokeragePortfolio?.asOf
       ?? heartbeat,

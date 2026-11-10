@@ -45,7 +45,7 @@ describe("resolveWorkspaceFigures", () => {
   const context = deriveWorkspaceFigureContext({
     status: { phase: "partial", inFlight: false, lastSucceededAt: "2026-06-30T18:05:00Z", settledAt: "2026-06-30T18:10:00Z" },
     provenance: "real",
-    workspaceErrors: { accounting: "Accounting workspace request failed.", data: undefined },
+    staleWorkspaces: ["accounting"],
     workspaceLoadedAt: { accounting: "2026-06-30T17:40:00Z", data: "2026-06-30T17:55:00Z", strategy: "2026-06-30T18:10:00Z" }
   });
 
@@ -67,8 +67,8 @@ describe("resolveWorkspaceFigures", () => {
     expect(resolveWorkspaceFigures(context)).toEqual({ asOf: null, freshness: "fresh" });
   });
 
-  it("stays stale for a workspace whose own later refresh failed after a full success", () => {
-    const later = deriveWorkspaceFigureContext({ status: loaded, provenance: "real", workspaceErrors: { trading: "Trading refresh failed." } });
+  it("stays stale for a workspace whose reload failed even after a later refresh succeeded", () => {
+    const later = deriveWorkspaceFigureContext({ status: loaded, provenance: "real", staleWorkspaces: ["trading"] });
 
     expect(resolveWorkspaceFigures(later, "trading").freshness).toBe("stale");
     expect(resolveWorkspaceFigures(later, "portfolio").freshness).toBe("fresh");

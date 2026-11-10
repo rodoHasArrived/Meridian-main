@@ -333,10 +333,13 @@ not been recorded.
     the strip "Stale figures"/"Unverified figures" and explains the age on hover and to
     assistive technology. A failed workstation refresh marks every workspace-fed strip stale; a
     refresh that fails for some workspaces only marks just those (a strip names its workspace
-    with `workspace="…"`), while the ones that did refresh stay fresh. A screen that stamps its
-    own freshness checks the same failure list: Portfolio's totals go stale when the Portfolio
-    poll settles as `partial` or the shell reports a Portfolio refresh error, dated from the
-    last complete refresh.
+    with `workspace="…"`), while the ones that did refresh stay fresh. A workspace stays stale
+    until its own payload reloads (`workspaceFiguresStale` in `useWorkstationData`); refreshing
+    another workspace clears the shell's error map but not this. A screen that stamps its
+    own freshness checks the same list: Portfolio's totals go stale when the workspace that
+    supplies them is listed, or when the Portfolio poll settles as `partial` (its Portfolio
+    request was rejected; a failing side feed such as an unconnected brokerage does not count),
+    and are dated from that payload's last load.
   - *Disagreement*: when two panels on one page report different values for the same
     quantity, `buildFigureDifferenceNote` and `FigureDifferenceNote` show "Why these differ"
     with both values and each panel's source. Portfolio uses it for the header strip and the

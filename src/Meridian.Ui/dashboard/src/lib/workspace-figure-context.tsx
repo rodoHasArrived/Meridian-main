@@ -13,8 +13,10 @@ export interface WorkspaceFigureContextValue {
   /** Qualifier appended to a figure's source when the session is not on real data. */
   dataLabel: string | null;
   /**
-   * Workspaces whose latest refresh failed while others succeeded. Their figures on screen are the
-   * retained ones from an earlier load, so they are stale whatever the overall state says.
+   * Workspaces whose headline-figure payload failed its latest reload. Their figures on screen
+   * are the retained ones from an earlier load, so they are stale whatever the overall state
+   * says, and stay stale until that payload reloads: a later refresh of another workspace does
+   * not clear them.
    */
   staleWorkspaces: readonly WorkspaceKey[];
   /**
@@ -39,19 +41,21 @@ const DATA_LABELS: Record<DataProvenanceKind, string | null> = {
  * A failed refresh leaves the last good figures on screen, so they are stale; a session whose
  * data source is unconfirmed, or that never loaded, is unverified. A refresh can also fail for
  * some workspaces only: those workspaces keep their retained payload and are listed as stale,
- * while the ones that did refresh stay fresh. A time budget is deliberately not applied here:
+ * while the ones that did refresh stay fresh. The stale list comes from the data hook's record of
+ * each workspace's own reload outcome (`workspaceFiguresStale`), not from the shell's error map,
+ * which is cleared whenever a refresh starts. A time budget is deliberately not applied here:
  * workspaces that poll (Trading, Portfolio) judge their own freshness.
  */
 export function deriveWorkspaceFigureContext({
   status,
   provenance,
-  workspaceErrors = {},
+  staleWorkspaces = [],
   workspaceLoadedAt = {}
 }: {
   status: Pick<RequestLifecycleStatus, "phase" | "inFlight" | "lastSucceededAt" | "settledAt">;
   provenance: DataProvenanceKind;
-  /** Per-workspace refresh errors; a workspace with one is showing a retained payload. */
-  workspaceErrors?: Partial<Record<WorkspaceKey, string | null | undefined>>;
+  /** Workspaces whose figure payload failed its latest reload and has not reloaded since. */
+  staleWorkspaces?: readonly WorkspaceKey[];
   /** Per-workspace load times of the payloads behind the headline figures. */
   workspaceLoadedAt?: Partial<Record<WorkspaceKey, string>>;
 }): WorkspaceFigureContextValue {
@@ -64,7 +68,6 @@ export function deriveWorkspaceFigureContext({
       : hasLoaded
         ? "fresh"
         : status.inFlight ? null : "unverified";
-  const staleWorkspaces = (Object.keys(workspaceErrors) as WorkspaceKey[]).filter((key) => Boolean(workspaceErrors[key]));
 
   return {
     freshness,

@@ -589,11 +589,11 @@ describe("PortfolioScreen", () => {
     );
   });
 
-  it("marks headline figures stale when the shell reports a failed Portfolio refresh", async () => {
+  it("marks headline figures stale when the shell reports a failed Portfolio reload, as of its last load", async () => {
     const now = new Date().toISOString();
     await renderPortfolioScreen(
       <WorkspaceFigureContextProvider
-        value={{ freshness: "fresh", dataLabel: null, staleWorkspaces: ["portfolio"], workspaceLoadedAt: {} }}
+        value={{ freshness: "fresh", dataLabel: null, staleWorkspaces: ["portfolio"], workspaceLoadedAt: { portfolio: "2026-01-02T14:00:00Z" } }}
       >
         <PortfolioScreen
           portfolio={portfolio}
@@ -619,7 +619,9 @@ describe("PortfolioScreen", () => {
 
     const strip = screen.getByLabelText("Portfolio headline metrics");
     expect(within(strip).getByText("+$120")).not.toHaveClass("text-success");
-    expect(strip.parentElement).toHaveTextContent("Stale figures · Source: Portfolio workspace");
+    expect(strip.parentElement).toHaveTextContent(
+      "Stale figures · Source: Portfolio workspace · As of Jan 2, 2026, 14:00 UTC · Scope: All workspace positions"
+    );
   });
 
   it("keeps fresh headline figures in their P&L tone", async () => {
