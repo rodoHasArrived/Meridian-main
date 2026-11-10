@@ -448,6 +448,14 @@ and S2-B4 (codec single-purpose) land. Planned increments:
   externally (sweeps, write
   goldens, corpus — behavior-neutral by the full namespace sweep). Bespoke arms remain for the
   structural decodes (coupon structures, schedules, swap legs, profile envelopes).
+  *2026-11-10: S3-D is complete.* Equity, Bond, InvestmentFund and CustomAsset read their scalars
+  through the schema-bound reader, including the reads inside the bond, equity-classification and
+  profile-envelope decoders, so `SchemaBoundDecodeClasses` names all 32 catalog classes and a test
+  holds it equal to the catalog. The reader binds nested objects to the inner shape the schema
+  registers (`Equity.convertibleTerms`). Fourteen reads the schema cannot bind are committed in
+  `UnboundCompatibilityReads` and enforced at run time: three keys of the envelope-less CustomAsset
+  salvage, and the members of `Equity.preferredTerms`, for which the schema registers no inner
+  shape. No schema field was added and no fixture, golden or corpus changed.
 - **S3-E — shrink `SecurityKind`'s per-class records (scoped by census 2026-11-09).** The
   consumer census shows the precondition nearly holds already: outside the codec and domain
   spine, only four call sites touch any per-class record (`BondTerms` ×2,
@@ -455,3 +463,23 @@ and S2-B4 (codec single-purpose) land. Planned increments:
   dependency is module homes for the codec-only field complement (strikes, currency pairs,
   notionals, envelopes) — field-by-field expand/contract the owner sequences, in a successor
   PR, with the census as its starting evidence.
+
+
+  *2026-11-10: not started, and not startable from main.* The module homes this increment needs
+  are in pull request #3446, which is open and unmerged; contracting the records before those
+  homes exist would drop fields. Two limits apply when it does start. ADR-027 keeps
+  `SecurityMasterLegacyUpgrade` as the permanent read-only upcaster for legacy `SecurityProjection`
+  events, so the bridge is confined, not deleted. And #3446 leaves a residual codec-only complement
+  (bond coupon structures, principal schedules, swap legs, covenant entries and a scalar
+  remainder) that still needs module homes before those record fields can go.
+
+## Close-out pass — 2026-11-10
+
+Recorded in the review's
+[close-out section](../../architecture/security-master-extensibility-review.md#close-out-pass--2026-11-10).
+It implements the typed blocked outcome and ADR-025 increment 8f, completes S3-D, decides the
+governance defaults (D5), closes the code-level parts of D6 and D8, moves conflict and profile
+routing onto class-owned keys (D9), and acts on an agent-run review of migration 062 (D7). Open
+after it: S3-E above; the owner's authorization of the migration 062 waiver; and the D10 choices
+that remain the domain owner's (a repair path for undeclared legacy rates, a signed-interest
+model, StructuredNote's accounting treatment).
