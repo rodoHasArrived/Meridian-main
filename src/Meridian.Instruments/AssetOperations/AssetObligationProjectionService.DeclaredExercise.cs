@@ -49,7 +49,8 @@ public sealed partial class AssetObligationProjectionService
     /// The declared exercise outcome of <paramref name="security"/> at <paramref name="asOf"/>, for a
     /// caller that already holds the cutover policy's blocker (or has none to ask). This is the one
     /// place the gates and their order live; the obligation timeline and the Security Master workbench
-    /// schedule book both read through it, so one record reports one outcome on both.
+    /// schedule book both read through it. They report one outcome for one record at one evaluation
+    /// date, except where a caller wraps it differently: see ADR-025's increment 8b entry.
     /// </summary>
     /// <returns>Null when the record declares no decoded call or put schedule.</returns>
     public static BondExerciseNoticeWatchResult? ResolveDeclaredExercise(
@@ -189,12 +190,17 @@ public sealed partial class AssetObligationProjectionService
     /// The rows a declared exercise outcome yields, in the watch's order: for each window its exercise
     /// date, then its notice deadline when the entry states notice bounds. A blocked outcome carries no
     /// windows and yields nothing. The obligation timeline and the Security Master workbench schedule
-    /// book both lay their call and put rows out from this, so they list the same dates.
+    /// book both lay their call and put rows out from this, so one outcome gives both the same dates.
     /// </summary>
     public static IEnumerable<DeclaredExerciseRow> DeclaredExerciseRows(BondExerciseNoticeWatchResult declaredExercise)
     {
+        // Checked here, not in the iterator, so a null argument fails at the call and not on enumeration.
         ArgumentNullException.ThrowIfNull(declaredExercise);
+        return EnumerateDeclaredExerciseRows(declaredExercise);
+    }
 
+    private static IEnumerable<DeclaredExerciseRow> EnumerateDeclaredExerciseRows(BondExerciseNoticeWatchResult declaredExercise)
+    {
         // Exercise dates are business-day adjusted, so two declared entries (or a Bermudan grid date and
         // the next entry's start) can land on one date with the same kind. The occurrence of a
         // (kind, exercise date) pair in the watch's order tells them apart. That order is by notice

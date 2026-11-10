@@ -60,7 +60,8 @@ public sealed partial class SecurityMasterWorkbenchQueryService : ISecurityMaste
         IHttpContextAccessor? httpContextAccessor = null,
         Meridian.Contracts.Calendars.IBusinessDayCalendarSource? calendars = null,
         Meridian.Contracts.FixedIncome.IBondCalculationPolicy? bondCalculationPolicy = null,
-        TimeProvider? timeProvider = null)
+        TimeProvider? timeProvider = null,
+        Microsoft.Extensions.Logging.ILogger<SecurityMasterWorkbenchQueryService>? logger = null)
     {
         _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
         _validationService = validationService ?? throw new ArgumentNullException(nameof(validationService));
@@ -80,6 +81,7 @@ public sealed partial class SecurityMasterWorkbenchQueryService : ISecurityMaste
         _calendars = calendars;
         _bondCalculationPolicy = bondCalculationPolicy;
         _timeProvider = timeProvider ?? TimeProvider.System;
+        _logger = logger ?? Microsoft.Extensions.Logging.Abstractions.NullLogger<SecurityMasterWorkbenchQueryService>.Instance;
     }
 
     public async Task<SecurityMasterTrustSnapshotDto?> GetTrustSnapshotAsync(

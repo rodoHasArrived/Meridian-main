@@ -4,14 +4,20 @@ using Meridian.Contracts.FixedIncome;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Instruments.AssetOperations;
+using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Services;
 
 // Declared issuer-call and holder-put rows of the schedule book (ADR-025, increment 8b). A Bond whose
 // row decodes a call or put schedule takes its call and put rows, and their share of the next
-// lifecycle date, from the outcome the asset operations obligation timeline uses
-// (AssetObligationProjectionService.ResolveDeclaredExerciseAsync), so the two surfaces list the same
-// dates. Every other record keeps the scalar call.firstCallDate read untouched.
+// lifecycle date, from the resolution the asset operations obligation timeline uses
+// (AssetObligationProjectionService.ResolveDeclaredExerciseAsync). For one record at one evaluation
+// date the two surfaces then list the same dates, with these exceptions: a timeline served from a
+// same-day published projection is derived from the published terms and keeps the scalar review; a
+// timeline whose projection run is blocked reports ProjectionBlocked where the book resolves; and a
+// cutover policy that throws, or any other fault while resolving, is a blocker here and an escaping
+// exception on the asset-operations path. Every other record keeps the scalar call.firstCallDate
+// read untouched.
 public sealed partial class SecurityMasterWorkbenchQueryService
 {
     /// <summary>Schedule-book event type of a declared issuer call date; also the type of the scalar call row.</summary>
@@ -29,6 +35,14 @@ public sealed partial class SecurityMasterWorkbenchQueryService
     private readonly IBusinessDayCalendarSource? _calendars;
     private readonly IBondCalculationPolicy? _bondCalculationPolicy;
     private readonly TimeProvider _timeProvider;
+    private readonly ILogger<SecurityMasterWorkbenchQueryService> _logger;
+
+    /// <summary>Blocker code of a declared schedule whose resolution faulted on this node.</summary>
+    public const string DeclaredExerciseUnavailableCode = "DeclaredExerciseUnavailable";
+
+    /// <summary>The fixed reason shown with <see cref="DeclaredExerciseUnavailableCode"/>; the fault itself goes to the log only.</summary>
+    public const string DeclaredExerciseUnavailableReason =
+        "The declared call/put schedule could not be evaluated on this node; the service log has the cause.";
 
     /// <summary>The calendar source declared notice bounds and exercise-date adjustment are resolved with.</summary>
     internal IBusinessDayCalendarSource? CalendarSource => _calendars;
@@ -41,9 +55,29 @@ public sealed partial class SecurityMasterWorkbenchQueryService
     /// declares no decoded call or put schedule. The gates and their order are the obligation
     /// timeline's and the notice-watch read service's: terms effective, cutover policy, then the watch.
     /// </summary>
-    private Task<BondExerciseNoticeWatchResult?> ResolveDeclaredExerciseAsync(
+    /// <remarks>
+    /// The scalar read could not throw, and the snapshot feeds the passport, the operating model, the
+    /// record explorer and the restatement trigger. So a fault the shared resolver does not already
+    /// convert (a calendar source or policy that throws, an argument fault in schedule generation) is
+    /// logged and becomes a blocked outcome with a fixed reason. Cancellation is not converted.
+    /// </remarks>
+    private async Task<BondExerciseNoticeWatchResult?> ResolveDeclaredExerciseAsync(
         SecurityDetailDto detail, DateTimeOffset nowUtc, CancellationToken ct)
-        => AssetObligationProjectionService.ResolveDeclaredExerciseAsync(detail, nowUtc, _calendars, _bondCalculationPolicy, ct);
+    {
+        try
+        {
+            return await AssetObligationProjectionService
+                .ResolveDeclaredExerciseAsync(detail, nowUtc, _calendars, _bondCalculationPolicy, ct).ConfigureAwait(false);
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            _logger.LogError(exception,
+                "Declared call/put schedule resolution failed for security {SecurityId} version {SecurityVersion}; the schedule book reports a blocker",
+                detail.SecurityId, detail.Version);
+            return BondExerciseNoticeWatch.Blocked(detail, DateOnly.FromDateTime(nowUtc.UtcDateTime.Date), 0,
+                DeclaredExerciseUnavailableCode, DeclaredExerciseUnavailableReason);
+        }
+    }
 
     /// <summary>
     /// The dates a declaring bond offers for the next lifecycle date: the next corporate action, every

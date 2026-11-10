@@ -22,7 +22,8 @@ internal static class SecurityMasterWorkbenchScheduleBookHarness
         StoredRowSecurityMasterQueryService queryService,
         IBusinessDayCalendarSource? calendars = null,
         IBondCalculationPolicy? policy = null,
-        DateTimeOffset? now = null) =>
+        DateTimeOffset? now = null,
+        Microsoft.Extensions.Logging.ILogger<SecurityMasterWorkbenchQueryService>? logger = null) =>
         new(
             queryService,
             new EmptySecurityValidationService(),
@@ -34,7 +35,8 @@ internal static class SecurityMasterWorkbenchScheduleBookHarness
             new ReportGenerationService(queryService),
             calendars: calendars,
             bondCalculationPolicy: policy,
-            timeProvider: now is { } instant ? new FixedTimeProvider(instant) : null);
+            timeProvider: now is { } instant ? new FixedTimeProvider(instant) : null,
+            logger: logger);
 
     /// <summary>The stored row a detail is read from, so the economic definition is the adapter's read of the same terms.</summary>
     internal static SecurityProjectionRecord ProjectionOf(SecurityDetailDto detail)
@@ -60,6 +62,20 @@ internal static class SecurityMasterWorkbenchScheduleBookHarness
             EffectiveTo: detail.EffectiveTo,
             Identifiers: detail.Identifiers,
             Aliases: detail.Aliases);
+
+    /// <summary>Records each log entry's level, rendered message and exception.</summary>
+    internal sealed class RecordingLogger : Microsoft.Extensions.Logging.ILogger<SecurityMasterWorkbenchQueryService>
+    {
+        public List<(Microsoft.Extensions.Logging.LogLevel Level, string Message, Exception? Exception)> Entries { get; } = [];
+
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+
+        public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel) => true;
+
+        public void Log<TState>(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId,
+            TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+            => Entries.Add((logLevel, formatter(state, exception), exception));
+    }
 
     internal sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider
     {

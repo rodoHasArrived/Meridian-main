@@ -550,7 +550,7 @@ public sealed class SecurityMasterWorkbenchDeclaredExerciseScheduleBookTests
         await policy.DidNotReceiveWithAnyArgs().GetBlockerAsync(default!, default);
     }
 
-    public static TheoryData<string, SecurityDetailDto> ConsistencyCases()
+    public static TheoryData<string, SecurityDetailDto, string?> ConsistencyCases()
     {
         var bermudan = new Dictionary<string, object?>
         {
@@ -564,26 +564,38 @@ public sealed class SecurityMasterWorkbenchDeclaredExerciseScheduleBookTests
         };
         var later = EuropeanCall(40, null, "Calendar");
         later["callDate"] = "2027-01-25";
+        // The third member is the cutover policy: null for no policy on the host, "" for a policy that
+        // permits the bond, and any other text for a policy that blocks it with that reason.
         return new()
         {
-            { "European call", BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, 60, "Calendar")]) },
-            { "call without notice", BondExerciseNoticeWatchTests.Bond([EuropeanCall(null, null, null)]) },
-            { "call and put", BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, 60, "Calendar")], [Put()]) },
-            { "Bermudan call and put", BondExerciseNoticeWatchTests.Bond([bermudan], [Put()]) },
-            { "shared deadline", BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, null, "Calendar"), later]) },
-            { "blocked: no conventions", WithoutConventions(BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, 60, "Calendar")])) },
-            { "blocked: floating", BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, 60, "Calendar")], extra: new() { ["couponType"] = "Floating", ["floatingIndex"] = "SOFR" }) },
-            { "recovered", Recovered(EuropeanPriced, RecoveredPut, AccrualBoth) }
+            { "European call", BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, 60, "Calendar")]), null },
+            { "call without notice", BondExerciseNoticeWatchTests.Bond([EuropeanCall(null, null, null)]), null },
+            { "call and put", BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, 60, "Calendar")], [Put()]), null },
+            { "Bermudan call and put", BondExerciseNoticeWatchTests.Bond([bermudan], [Put()]), null },
+            { "shared deadline", BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, null, "Calendar"), later]), null },
+            { "blocked: no conventions", WithoutConventions(BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, 60, "Calendar")])), null },
+            { "blocked: floating", BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, 60, "Calendar")], extra: new() { ["couponType"] = "Floating", ["floatingIndex"] = "SOFR" }), null },
+            { "recovered", Recovered(EuropeanPriced, RecoveredPut, AccrualBoth), null },
+            { "policy permits", BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, 60, "Calendar")], [Put()]), "" },
+            { "policy blocks", BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, 60, "Calendar")], [Put()]), "Reviewed cutover blocks this bond." }
         };
     }
 
     [Theory]
     [MemberData(nameof(ConsistencyCases))]
     public async Task ScheduleBookAndObligationTimeline_ListTheSameExerciseAndNoticeDates_ForTheSameRecord(
-        string because, SecurityDetailDto security)
+        string because, SecurityDetailDto security, string? policyOutcome)
     {
-        var timeline = await TimelineAsync(security, policy: null);
-        var book = (await ReadAsync(security)).ScheduleBook!;
+        IBondCalculationPolicy? policy = null;
+        if (policyOutcome is not null)
+        {
+            policy = Substitute.For<IBondCalculationPolicy>();
+            policy.GetBlockerAsync(Arg.Any<SecurityDetailDto>(), Arg.Any<CancellationToken>())
+                .Returns(policyOutcome.Length == 0 ? null : policyOutcome);
+        }
+
+        var timeline = await TimelineAsync(security, policy);
+        var book = (await ReadAsync(security, policy)).ScheduleBook!;
 
         var timelineRows = timeline.Events
             .Where(static row => TimelineKindToEventType.ContainsKey(row.EventKind))
@@ -597,6 +609,126 @@ public sealed class SecurityMasterWorkbenchDeclaredExerciseScheduleBookTests
         foreach (var warning in timeline.Warnings.Where(static warning => warning.StartsWith("Declared call/put schedule is blocked", StringComparison.Ordinal)))
             book.Summary.Should().Contain(warning, because);
         book.Summary.Contains("Declared call/put schedule is blocked", StringComparison.Ordinal).Should().Be(timelineBlockers.Length > 0, because);
+        if (policyOutcome is { Length: > 0 })
+            timelineBlockers.Should().Equal("CalculationPolicyBlocked");
+        if (policyOutcome is { Length: 0 })
+            timelineBlockers.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task BlockedDeclaringBond_PassportStillReadsTermsReady_AndCarriesTheBlockerOnlyAsText()
+    {
+        // Recorded behaviour, not a target: the Maturity row and the economic terms keep the terms
+        // checks positive, and no passport collection takes a warning without changing a status or
+        // the contract. The blocker reaches the passport through the two texts that repeat the
+        // schedule summary.
+        var snapshot = await ReadAsync(WithoutConventions(BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, 60, "Calendar")])));
+        const string Blocker = "Declared call/put schedule is blocked (DeclaredScheduleRequired): "
+            + "Exercise notice windows require reviewed explicit schedule conventions; legacy defaults are not inferred. "
+            + "No call or put event is shown and the scalar call date is not used.";
+
+        var passport = snapshot.InstrumentPassport!;
+        var terms = passport.OperationsWorkbench!.Panels.Single(static panel => panel.PanelId == "terms");
+        var economics = terms.Items.Single(static item => item.ItemId == "economics");
+        economics.Status.Should().Be("Ready");
+        economics.BlockingIssueCount.Should().Be(0);
+        economics.Detail.Should().Be("1 projected obligation event(s) retained with source provenance.");
+        var paymentSchedule = terms.Items.Single(static item => item.ItemId == "payment-schedule");
+        paymentSchedule.Status.Should().Be("Ready");
+        paymentSchedule.BlockingIssueCount.Should().Be(0);
+        paymentSchedule.Value.Should().Be("1 projected event(s)");
+        paymentSchedule.Detail.Should().EndWith(Blocker);
+        terms.Items.Should().NotContain(static item => item.ItemId.Contains("declared", StringComparison.OrdinalIgnoreCase),
+            "no item is added for the blocker");
+
+        var sections = passport.ReferenceDataWorkbench!.Sections;
+        sections.Single(static section => section.SectionId == "terms-obligations").Status.Should().Be("Ready");
+        var cashFlow = sections.Single(static section => section.SectionId == "cash-flow-readiness");
+        cashFlow.Status.Should().Be("Ready");
+        cashFlow.BlockingIssueCount.Should().Be(0);
+        cashFlow.Summary.Should().EndWith(Blocker);
+
+        snapshot.RecommendedActions.Should().NotContain(action => action.Detail.Contains("Declared call/put", StringComparison.Ordinal),
+            "recommended actions are typed by a closed kind and none is for a blocked declared schedule");
+    }
+
+    [Fact]
+    public async Task CalendarSourceThatThrows_IsABlockedBook_NotAFailedSnapshot_AndIsLogged()
+    {
+        var calendars = Substitute.For<IBusinessDayCalendarSource>();
+        calendars.TryGet(Arg.Any<string>(), out Arg.Any<IBusinessDayCalendar?>())
+            .Throws(new InvalidOperationException("calendar store offline at 10.0.0.7"));
+        calendars.TryResolve(Arg.Any<IReadOnlyList<string>>(), out Arg.Any<IBusinessDayCalendar?>())
+            .Throws(new InvalidOperationException("calendar store offline at 10.0.0.7"));
+        var logger = new RecordingLogger();
+        var security = BondExerciseNoticeWatchTests.Bond([EuropeanCall(10, null, "Business")]);
+
+        var snapshot = await ReadWithLoggerAsync(security, calendars, policy: null, logger);
+
+        AssertBlocked(snapshot, SecurityMasterWorkbenchQueryService.DeclaredExerciseUnavailableCode, "a fault while resolving is a blocker")
+            .Should().Be(SecurityMasterWorkbenchQueryService.DeclaredExerciseUnavailableReason);
+        snapshot.ScheduleBook!.Summary.Should().NotContain("10.0.0.7", "the fault's own text goes to the log only");
+        snapshot.InstrumentPassport.Should().NotBeNull();
+        var entry = logger.Entries.Should().ContainSingle().Subject;
+        entry.Level.Should().Be(Microsoft.Extensions.Logging.LogLevel.Error);
+        entry.Exception.Should().BeOfType<InvalidOperationException>();
+        entry.Message.Should().Contain(security.SecurityId.ToString());
+    }
+
+    [Fact]
+    public async Task PolicyThatThrowsAnUnexpectedException_IsABlockedBook_NotAFailedSnapshot_AndIsLogged()
+    {
+        var policy = Substitute.For<IBondCalculationPolicy>();
+        policy.GetBlockerAsync(Arg.Any<SecurityDetailDto>(), Arg.Any<CancellationToken>())
+            .ThrowsAsync(new IOException("cutover.json is locked"));
+        var logger = new RecordingLogger();
+
+        var snapshot = await ReadWithLoggerAsync(BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, 60, "Calendar")]), Calendars, policy, logger);
+
+        AssertBlocked(snapshot, SecurityMasterWorkbenchQueryService.DeclaredExerciseUnavailableCode, "a fault while asking the policy is a blocker")
+            .Should().Be(SecurityMasterWorkbenchQueryService.DeclaredExerciseUnavailableReason);
+        logger.Entries.Should().ContainSingle().Which.Exception.Should().BeOfType<IOException>();
+    }
+
+    [Fact]
+    public async Task ResolvedAndOrdinarilyBlockedBooks_LogNothing()
+    {
+        var logger = new RecordingLogger();
+
+        await ReadWithLoggerAsync(BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, 60, "Calendar")]), Calendars, policy: null, logger);
+        await ReadWithLoggerAsync(WithoutConventions(BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, 60, "Calendar")])), Calendars, policy: null, logger);
+
+        logger.Entries.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Cancellation_WhileThePolicyIsAsked_Propagates_AndIsNotABlocker()
+    {
+        var policy = Substitute.For<IBondCalculationPolicy>();
+        policy.GetBlockerAsync(Arg.Any<SecurityDetailDto>(), Arg.Any<CancellationToken>())
+            .ThrowsAsync(new OperationCanceledException());
+        var logger = new RecordingLogger();
+
+        var act = () => ReadWithLoggerAsync(BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, 60, "Calendar")]), Calendars, policy, logger);
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
+        logger.Entries.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void DeclaredExerciseRows_RejectsANullOutcome_AtTheCall()
+    {
+        var act = () => AssetObligationProjectionService.DeclaredExerciseRows(null!);
+
+        act.Should().Throw<ArgumentNullException>("the check runs before enumeration starts");
+    }
+
+    private static async Task<SecurityMasterTrustSnapshotDto> ReadWithLoggerAsync(SecurityDetailDto security,
+        IBusinessDayCalendarSource? calendars, IBondCalculationPolicy? policy, RecordingLogger logger)
+    {
+        var query = new StoredRowSecurityMasterQueryService(ProjectionOf(security));
+        var snapshot = await CreateService(query, calendars, policy, AsOf, logger).GetTrustSnapshotAsync(security.SecurityId, fundProfileId: null);
+        return snapshot!;
     }
 
     [Fact]
