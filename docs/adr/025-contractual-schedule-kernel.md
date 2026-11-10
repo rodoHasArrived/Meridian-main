@@ -857,8 +857,8 @@ This command verifies referenced files and directories exist; it does not valida
     that also carries a scalar `mandatoryPutDate` or `preRefundDate`; an exercise that falls between
     a coupon's accrual end and its lagged payment date; more than 1,200 scenarios. Make-whole and
     American windows exist only in the calculation-only `cashFlowContract` engine (the 2026-10-29
-    entry below). Bond analytics, the cash ladder, the notice watch and the obligation timeline
-    refuse them; none of them warns and continues.
+    entry below). Bond analytics, the cash ladder, the notice watch, the obligation timeline and the
+    workbench schedule book refuse them; none of them warns and continues.
   - **Obligation timeline.** A Bond that declares a call or put schedule gets `IssuerCallExercise`
     and `HolderPutExercise` events on every remaining exercise date, and `IssuerCallNoticeDeadline`
     and `HolderPutNoticeDeadline` events on the latest notice date where an entry states bounds.
@@ -923,13 +923,70 @@ This command verifies referenced files and directories exist; it does not valida
   - **Still open.** Two id instabilities are not fixed and nothing marks the affected ids: a
     canonical entry with no unadjusted period is keyed on a running ordinal that shifts as earlier
     rows fall out of the projection, and a legacy bond with no issue date is anchored on the as-of
-    date, so its period ids change daily. The schedule book and workbench lifecycle (8b), a notice
-    watch screen (8c), American windows and make-whole in bond analytics (8e) and
-    CertificateOfDeposit and StructuredCredit consumers (8f) are not part of this entry.
+    date, so its period ids change daily. A notice watch screen (8c), American windows and
+    make-whole in bond analytics (8e) and CertificateOfDeposit and StructuredCredit consumers (8f)
+    are not part of this entry. The schedule book and workbench lifecycle (8b) were open when this
+    entry was written and are the next entry.
   - Tests: `AssetObligationDeclaredExerciseTimelineTests`, `AssetObligationRecoveredExerciseTimelineTests`,
     `FinancialRecordExplorerTermsObligationsDetailTests`, `AssetObligationTimelineGoldenTests`,
     `AssetOperationsEngineVersionStampTests`, `BondExerciseNoticeWatchTests` and the SCH-DEF-012 pin
     in `AssetObligationProjectionServiceTests`.
+
+- **Declared call and put rows in the Security Master schedule book (increment 8b) (2026-11-10).**
+  Until this entry the workbench schedule book raised a `Call` row only from the economic
+  `call.firstCallDate`, and the workbench's next lifecycle date used the same scalar, so for one
+  declaring bond the book and the obligation timeline disagreed. They now read one outcome. No
+  rule above changes, and no terms version, stamp, mapping version, route or contract member is
+  added.
+  - **Source.** For a Bond row that declares a schedule (the definition above: an array the stamp
+    decodes with at least one entry that is not unset), the book takes its call and put rows from
+    `AssetObligationProjectionService.ResolveDeclaredExerciseAsync`, which is the timeline's
+    resolution with the policy asked inside it. The gates and their order are unchanged: terms
+    effective at the evaluation date (`TermsNotEffective`), the cutover policy
+    (`CalculationPolicyBlocked`), then `BondExerciseNoticeWatch.EvaluateToMaturity`. A policy that
+    throws `SecurityScheduleValidationException` becomes an `InvalidEconomicSchedule` blocker, as
+    in the notice-watch read service, so a workbench snapshot does not fail on one bond's
+    malformed owned schedule. The evaluation date is the snapshot's own time. The rows are laid
+    out by `AssetObligationProjectionService.DeclaredExerciseRows`, which the timeline now uses
+    too, so both surfaces list the same exercise dates and notice deadlines.
+  - **Rows.** `Call` and `Put` on each remaining exercise date; `CallNoticeDeadline` and
+    `PutNoticeDeadline` on the latest notice date where the entry states bounds. They correspond
+    one to one to the timeline's `IssuerCallExercise`, `HolderPutExercise`,
+    `IssuerCallNoticeDeadline` and `HolderPutNoticeDeadline`. `Call` is the book's existing type
+    for a call date and is kept. An exercise row's pay date is the exercise date; a deadline row
+    has none. No row carries an amount, because a redemption price is a percent of par. The row's
+    reason text is the timeline's sentence for the same event. A row is marked as not derived from
+    economic terms, because it is read from the declared schedule on the stored row.
+  - **Scalar.** The economic `call.firstCallDate` is not read for a declaring bond: it raises no
+    row and is not a candidate for the next lifecycle date. The shared resolver already refuses a
+    row whose scalar `callDate` differs from its earliest declared call date, so a resolved bond's
+    scalar date is always one of the declared rows.
+  - **Blocked.** A blocked outcome adds no call or put row and never falls back to the scalar.
+    The blocker's code and reason are appended to the schedule summary and to the source summary
+    of both the summary and the book, in the timeline's sentence: `Declared call/put schedule is
+    blocked (<code>): <reason> No call or put event is shown and the scalar call date is not
+    used.` No contract member was added for it. Every row recovered from economic terms
+    (ADR-027 stage 1) is blocked with `DeclaredScheduleRequired` until a reviewed
+    `scheduleConventions` block is declared, so those rows lose the `Call` row they showed.
+  - **Elapsed deadlines.** The watch returns no exercise date before the evaluation date. A notice
+    deadline that has passed keeps its row with posting status `Reference`, which is how the book
+    already shows a past scalar call date, and its reason text ends with the watch's elapsed
+    diagnostic; the same diagnostic is appended to the schedule summary. The next lifecycle date
+    is the earliest of the next corporate action, the declared exercise dates, the notice
+    deadlines on or after the evaluation date, and the maturity. An elapsed deadline is never a
+    candidate.
+  - **Row identity.** `call-<exercise date>` and `put-<exercise date>`;
+    `callnoticedeadline-<deadline>-<exercise date>` and the put equivalent, because two exercise
+    dates can share a deadline. A repeat of a kind and adjusted exercise date carries the
+    timeline's occurrence number as a suffix.
+  - **Unchanged.** Bonds that declare no schedule or only unset entries, rows stamped below 3,
+    CertificateOfDeposit and StructuredCredit keep the scalar read and their output byte for
+    byte. For them the next lifecycle date can still be a past scalar call date; that behaviour is
+    not changed here.
+  - Tests: `SecurityMasterWorkbenchDeclaredExerciseScheduleBookTests`,
+    `SecurityMasterWorkbenchScheduleBookGoldenTests`,
+    `SecurityMasterWorkbenchQueryServiceCallScheduleTests` and
+    `SecurityMasterWorkbenchDeclaredExerciseCompositionTests`.
 
 ## Calculation-only contractual companion — 2026-10-29
 

@@ -502,7 +502,10 @@ without page-specific registration, while pages that set their own DataContext r
 Runtime desktop capability toggles are declared by feature modules and surfaced in Settings through
 the feature capability gate. The Security Master page projects the workstation trust
 snapshot's `scheduleBook` and `openLotReadModel` payloads into operator-visible schedule, factor,
-provenance, and open-lot review sections.
+provenance, and open-lot review sections. For a Bond that declares a call or put schedule the
+schedule grid shows the server's `Call`, `Put`, `CallNoticeDeadline` and `PutNoticeDeadline` rows with
+their reason text, and a blocked declared schedule is reported in the schedule book's Summary and
+Source fields.
 Security Master create, edit, deactivate, and file-import commands require an active desktop actor
 with `ModifySecurityMaster`; trading-parameter backfill requires `TriggerBackfill`. WPF resolves
 actor and permission together again at the in-process application-service boundary, and configured

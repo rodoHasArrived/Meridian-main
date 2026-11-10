@@ -130,6 +130,11 @@ for that bond; a schedule that cannot be resolved is a blocked outcome in the ti
 payload and warnings, never a scalar fallback. Such a timeline is stamped
 `asset-terms-obligations-timeline-declared-v1`; all others keep `asset-terms-obligations-timeline-v1`.
 Published projections keep the timeline derived from their published terms.
+The gates and the row layout of that outcome are shared, not copied:
+`AssetObligationProjectionService.ResolveDeclaredExercise` / `ResolveDeclaredExerciseAsync` (terms
+effective, cutover policy, then the watch) and `DeclaredExerciseRows` (an exercise row per window and
+a notice-deadline row where bounds are stated). The Security Master workbench schedule book in
+`Meridian.Ui.Shared` reads through the same two members, so it lists the same dates.
 `AssetOperationsEngineVersions` names the stamps: the legacy bond loop writes
 `fixed-income-cash-flow-projection-v2` (stored `-v1` runs are read as they are), and declared runs
 and flows keep `asset-obligation-declared-v3` / `-v2`.

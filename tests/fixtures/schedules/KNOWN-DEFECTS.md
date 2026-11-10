@@ -95,3 +95,27 @@ SCH-DEF-012 remains pinned for every other record: bonds that declare no schedul
 3 (a stray schedule is not decoded), published projections (their timeline is derived from the
 published terms), CertificateOfDeposit and StructuredCredit. `AssetObligationTimelineGoldenTests`
 freezes their whole serialized detail.
+
+## Declared call and put rows in the Security Master schedule book
+
+The workbench schedule book and its next lifecycle date read the same declared outcome as the
+obligation timeline for a Bond that declares a schedule (increment 8b): `Call` and `Put` rows on each
+remaining exercise date, `CallNoticeDeadline` and `PutNoticeDeadline` rows where the entry states
+notice bounds, and for a blocked schedule the blocker's code and reason in the summary texts with no
+call or put row and no scalar fallback. This was never a registered defect, so no row above changes:
+the book's scalar read of `call.firstCallDate` stays in force, byte for byte, for bonds that declare
+no schedule or only unset entries, rows stamped below 3, CertificateOfDeposit and StructuredCredit.
+
+`golden/security-master-schedule-book.json` holds the serialized schedule summary and schedule book of
+13 records, compared by `SecurityMasterWorkbenchScheduleBookGoldenTests` with exact equality. It was
+committed at the behaviour before increment 8b; the increment changed the four declaring bonds and
+none of the nine other cases. A missing or mismatched fixture writes
+`security-master-schedule-book.received.json` to the test output and fails; it never skips.
+`SecurityMasterWorkbenchDeclaredExerciseScheduleBookTests` covers the declared paths, including that
+the book and the timeline list the same dates for one record.
+
+One behaviour of the scalar read is recorded here and not registered as a defect: for a record on the
+scalar path the next lifecycle date is the earliest of the next corporate action, the first call date
+and the maturity, and the last two are not checked against today, so it can name a past call date
+(`bond/undeclared/past-scalar-call` in the golden). Declared rows do not have it: an elapsed notice
+deadline is never the next lifecycle date.

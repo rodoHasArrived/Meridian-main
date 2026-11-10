@@ -601,7 +601,10 @@ The browser workstation exposes `/accounting/entity-setup` for the shared fund-s
 This is the active operator UI lane; keep shared contract compatibility with retained WPF consumers. Security
 Master Governance detail uses the workstation trust snapshot's `scheduleBook` and
 `openLotReadModel` projections for cash-flow schedules, factor provenance, and open-lot exposure
-review. Open-lot rows render explicit Long/Short direction in the table, detail panel, and accessible
+review. For a Bond that declares a call or put schedule the server sends `Call`, `Put`,
+`CallNoticeDeadline` and `PutNoticeDeadline` schedule rows; the last three have no label entry and are
+shown by their type name, and a notice-deadline row has no pay date, so its effective date is shown.
+Open-lot rows render explicit Long/Short direction in the table, detail panel, and accessible
 row description rather than inferring direction from the positive lot quantity.
 The Settings workspace also owns the browser asset-profile governance surface for custom Security
 Master assets: it reads approved profiles, drafts profile variants from starter templates, submits
