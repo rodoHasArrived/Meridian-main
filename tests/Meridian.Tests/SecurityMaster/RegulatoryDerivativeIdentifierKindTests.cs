@@ -5,8 +5,7 @@ namespace Meridian.Tests.SecurityMaster;
 
 /// <summary>
 /// Regulatory derivatives-reporting identifiers: UTI (ISO 23897), UPI (ISO 4914) and the Markit RED
-/// entity (RED6) and pair (RED9) codes. All values are synthetic except the published ANNA DSB UPI
-/// example used to pin the check-character algorithm.
+/// entity (RED6) and pair (RED9) codes. UPI checksum coverage includes published ISO and ANNA DSB examples.
 /// </summary>
 [Trait("Category", "Unit")]
 public sealed class RegulatoryDerivativeIdentifierKindTests
@@ -30,12 +29,26 @@ public sealed class RegulatoryDerivativeIdentifierKindTests
     }
 
     [Theory]
-    [InlineData("QZRBG6ZTKS42", true)] // Published ANNA DSB example.
+    [InlineData("QZNX2JD91QCG")] // ISO 4914:2021 Annex C worked example.
+    [InlineData("QZRBG6ZTKS42")] // ANNA DSB, The UPI: How to search for and create a UPI, Figure 10.
+    [InlineData("QZVLFS6FH9VZ")] // ANNA DSB, DSB-2771 Identifier Section.
+    [InlineData("QZFTFRVB9S17")] // ANNA DSB, DSB-2772 Identifier Section.
+    public void Upi_AcceptsPublishedCheckCharacters(string value)
+    {
+        SecurityIdentifierNormalizer.TryValidateFormat(SecurityIdentifierKind.Upi, value, out var message)
+            .Should().BeTrue(message);
+    }
+
+    [Theory]
     [InlineData("qz-rbg6-ztks42", true)]
     [InlineData("QZ1BCD2FGH31", true)] // Synthetic, valid MOD 31,30 check character.
+    [InlineData("QZ00000000B0", true)] // Synthetic Annex C boundary: final remainder 1 gives check value 0.
     [InlineData("QZRBG6ZTKS43", false)] // Wrong check character.
+    [InlineData("QZNX2JD91QCH", false)] // Annex C example with a different permitted check character.
+    [InlineData("QZVLFS6FH9VY", false)] // Y is forbidden in the check position too.
+    [InlineData("QZFTFRVB9S177", false)] // 13 characters.
     [InlineData("QZRBG6ZTKS4", false)] // 11 characters.
-    [InlineData("XZRBG6ZTKS42", false)] // Wrong prefix.
+    [InlineData("XZRBG6ZTKS4M", false)] // The checksum matches, but the prefix is wrong.
     [InlineData("QZRAG6ZTKS42", false)] // Vowel.
     [InlineData("QZRYG6ZTKS42", false)] // Y is not in the UPI alphabet.
     public void Upi_RequiresQzPrefixUpiAlphabetAndCheckCharacter(string value, bool valid)

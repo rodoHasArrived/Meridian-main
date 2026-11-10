@@ -19,10 +19,13 @@ public sealed class SharedStorageCoordinationStore : ICoordinationStore
 
     private readonly TimeSpan _lockWaitTimeout = TimeSpan.FromSeconds(5);
     private readonly RootedPathGuard _pathGuard;
+    private readonly TimeProvider _timeProvider;
 
-    public SharedStorageCoordinationStore(CoordinationConfig config, string dataRoot)
+    /// <param name="timeProvider">Clock for lease expiry and takeover decisions; defaults to the system clock.</param>
+    public SharedStorageCoordinationStore(CoordinationConfig config, string dataRoot, TimeProvider? timeProvider = null)
     {
         ArgumentNullException.ThrowIfNull(config);
+        _timeProvider = timeProvider ?? TimeProvider.System;
         _pathGuard = new RootedPathGuard(config.GetResolvedRootPath(dataRoot));
         RootPath = _pathGuard.RootPath;
         Directory.CreateDirectory(RootPath);
@@ -40,7 +43,7 @@ public sealed class SharedStorageCoordinationStore : ICoordinationStore
         var retained = await ReadLeaseFileAsync(leasePath, ct).ConfigureAwait(false);
         if (retained is null || retained.LeaseVersion != lease.LeaseVersion ||
             !string.Equals(retained.InstanceId, lease.InstanceId, StringComparison.Ordinal) ||
-            retained.ExpiresAtUtc <= DateTimeOffset.UtcNow)
+            retained.ExpiresAtUtc <= _timeProvider.GetUtcNow())
             return false;
 
         ct.ThrowIfCancellationRequested();
@@ -62,7 +65,7 @@ public sealed class SharedStorageCoordinationStore : ICoordinationStore
         await using var resourceLock = await AcquireResourceLockAsync(leasePath, ct).ConfigureAwait(false);
 
         LeaseRecord? existing = await ReadLeaseFileAsync(leasePath, ct).ConfigureAwait(false);
-        var now = DateTimeOffset.UtcNow;
+        var now = _timeProvider.GetUtcNow();
 
         if (existing is not null &&
             string.Equals(existing.InstanceId, instanceId, StringComparison.OrdinalIgnoreCase))
@@ -116,7 +119,7 @@ public sealed class SharedStorageCoordinationStore : ICoordinationStore
         if (existing is null || !string.Equals(existing.InstanceId, instanceId, StringComparison.OrdinalIgnoreCase))
             return false;
 
-        var now = DateTimeOffset.UtcNow;
+        var now = _timeProvider.GetUtcNow();
         var renewed = existing with
         {
             ExpiresAtUtc = now.Add(leaseTtl),

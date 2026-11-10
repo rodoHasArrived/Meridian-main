@@ -3,23 +3,24 @@ using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
-using Meridian.Reporting;
-using Meridian.Strategies.Interfaces;
-using Meridian.Strategies.Services;
 using Meridian.Ui.Shared.Services;
-using NSubstitute;
-using ContractSecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
+using static Meridian.Tests.Ui.SecurityMasterWorkbenchScheduleBookHarness;
 
 namespace Meridian.Tests.Ui;
 
 /// <summary>
-/// The workbench schedule read of declared call and put schedules (ADR-024 and ADR-025, increment 4b).
-/// Rows stamped at the readable version carry the arrays, and the economic Call fill copies them into
-/// the economic <c>call</c> module's lists. The fill takes <c>firstCallDate</c> only from a class's own
-/// scalar call terms, and the workbench reads only <c>call.firstCallDate</c>, so a declared schedule
-/// adds no "Call" lifecycle event and does not move the next lifecycle date. The economic documents
-/// here come from the real adapter over a stored row, so the fill and the read are pinned together.
-/// Increment 8 changes these tests on purpose, when the workbench starts reading declared schedules.
+/// The workbench schedule read of declared call and put schedules (ADR-024 and ADR-025, increments 4b
+/// and 8b). Rows stamped at the readable version carry the arrays, and the economic Call fill copies
+/// them into the economic <c>call</c> module's lists. The fill takes <c>firstCallDate</c> only from a
+/// class's own scalar call terms. The economic documents here come from the real adapter over a stored
+/// row, so the fill and the read are pinned together.
+/// <para>StructuredCredit (and CertificateOfDeposit) keep the scalar read: only
+/// <c>call.firstCallDate</c> raises a "Call" row, so a declared schedule adds none and does not move
+/// the next lifecycle date.</para>
+/// <para>A Bond that declares a schedule is read from it since increment 8b: the scalar is not shown.
+/// The fixture here declares no schedule conventions, so its declared schedule is blocked and the
+/// book shows the blocker and no call or put row.
+/// <see cref="SecurityMasterWorkbenchDeclaredExerciseScheduleBookTests"/> covers the resolved cases.</para>
 /// </summary>
 public sealed class SecurityMasterWorkbenchQueryServiceCallScheduleTests
 {
@@ -68,13 +69,14 @@ public sealed class SecurityMasterWorkbenchQueryServiceCallScheduleTests
         snapshot.ScheduleBook.Should().NotBeNull();
         snapshot.ScheduleBook!.NextLifecycleDate.Should().Be(new DateOnly(2031, 6, 15));
         snapshot.ScheduleBook.Events.Should().NotContain(
-            item => item.EventType == "Call", "the workbench reads only call.firstCallDate, which a declared schedule leaves null");
+            item => item.EventType == "Call", "StructuredCredit keeps the scalar read of call.firstCallDate, which a declared schedule leaves null");
+        snapshot.ScheduleBook.Summary.Should().NotContain("Declared call/put schedule", "only Bond rows are read from the declared schedule");
         snapshot.ScheduleBook.Events.Should().ContainSingle(item => item.EventType == "Maturity")
             .Which.EffectiveDate.Should().Be(new DateOnly(2031, 6, 15));
     }
 
     [Fact]
-    public async Task GetTrustSnapshotAsync_BondDeclaringCallSchedulesWithAScalarCallDate_KeepsExactlyOneCallEventAtTheScalarDate()
+    public async Task GetTrustSnapshotAsync_BondDeclaringCallSchedulesWithAScalarCallDate_ShowsNoScalarCallEvent_AndTheBlockedReason()
     {
         var queryService = new StoredRowSecurityMasterQueryService(Projection("Bond", DeclaringBond));
         var economic = (await queryService.GetEconomicDefinitionByIdAsync(SecurityId))!;
@@ -88,14 +90,25 @@ public sealed class SecurityMasterWorkbenchQueryServiceCallScheduleTests
 
         var snapshot = await CreateService(queryService).GetTrustSnapshotAsync(SecurityId, fundProfileId: null);
 
+        // Until increment 8b this bond showed exactly one Call event, at the scalar 2028-01-01, which
+        // was also its next lifecycle date. It declares a schedule and no conventions, so the declared
+        // schedule is the authority and is blocked: no call or put row, and the scalar is not used.
+        const string Blocked = "Declared call/put schedule is blocked (DeclaredScheduleRequired): "
+            + "Exercise notice windows require reviewed explicit schedule conventions; legacy defaults are not inferred. "
+            + "No call or put event is shown and the scalar call date is not used.";
         snapshot.Should().NotBeNull();
         snapshot!.ScheduleSummary.Should().NotBeNull();
         snapshot.ScheduleSummary!.SupportsCashflowSchedule.Should().BeTrue();
-        snapshot.ScheduleSummary.NextLifecycleDate.Should().Be(new DateOnly(2028, 1, 1), "the scalar call date precedes the maturity");
+        snapshot.ScheduleSummary.NextLifecycleDate.Should().Be(new DateOnly(2030, 1, 1), "the scalar call date is not a lifecycle date of a declaring bond");
+        snapshot.ScheduleSummary.Summary.Should().Be("Cash-flow schedule support is available. Next lifecycle date 2030-01-01. " + Blocked);
         snapshot.ScheduleBook.Should().NotBeNull();
-        snapshot.ScheduleBook!.Events.Where(static item => item.EventType == "Call")
-            .Should().ContainSingle("only the scalar first call date becomes a lifecycle event")
-            .Which.EffectiveDate.Should().Be(new DateOnly(2028, 1, 1));
+        snapshot.ScheduleBook!.NextLifecycleDate.Should().Be(new DateOnly(2030, 1, 1));
+        snapshot.ScheduleBook.Summary.Should().Be(snapshot.ScheduleSummary.Summary);
+        snapshot.ScheduleBook.SourceSummary.Should().Be(
+            "Schedules follow golden-edm record edm-declaring as of 2026-01-02 00:00 UTC. " + Blocked);
+        snapshot.ScheduleBook.Events.Should().NotContain(
+            static item => item.EventType.Contains("Call", StringComparison.Ordinal) || item.EventType.Contains("Put", StringComparison.Ordinal),
+            "a blocked declared schedule shows no option row and never falls back to the scalar");
         snapshot.ScheduleBook.Events.Should().ContainSingle(item => item.EventType == "Maturity")
             .Which.EffectiveDate.Should().Be(new DateOnly(2030, 1, 1));
     }
@@ -118,122 +131,8 @@ public sealed class SecurityMasterWorkbenchQueryServiceCallScheduleTests
             Identifiers: [new SecurityIdentifierDto(SecurityIdentifierKind.InternalCode, $"DECL-{assetClass}-1", true, EffectiveFrom)],
             Aliases: []);
 
-    private static SecurityMasterWorkbenchQueryService CreateService(StoredRowSecurityMasterQueryService queryService) =>
-        new(
-            queryService,
-            new EmptySecurityValidationService(),
-            new EmptySecurityMasterConflictService(),
-            new EmptySecurityMasterIngestStatusService(),
-            Substitute.For<IStrategyRepository>(),
-            new PortfolioReadService(),
-            new LedgerReadService(),
-            new ReportGenerationService(queryService));
-
-    /// <summary>
-    /// Serves one stored row the way a deployed node reads it: the detail is the projection's, and the
-    /// economic definition is the adapter's read of the same terms.
-    /// </summary>
-    private sealed class StoredRowSecurityMasterQueryService(SecurityProjectionRecord projection)
-        : ContractSecurityMasterQueryService
-    {
-        public Task<SecurityDetailDto?> GetByIdAsync(Guid requestedSecurityId, CancellationToken ct = default)
-        {
-            ct.ThrowIfCancellationRequested();
-            return Task.FromResult(requestedSecurityId == projection.SecurityId ? SecurityMasterMapping.ToDetail(projection) : null);
-        }
-
-        public Task<SecurityDetailDto?> GetByIdAsOfAsync(Guid requestedSecurityId, DateTimeOffset asOfUtc, CancellationToken ct = default)
-            => GetByIdAsync(requestedSecurityId, ct);
-
-        public Task<SecurityDetailDto?> GetByIdentifierAsync(
-            SecurityIdentifierKind identifierKind,
-            string identifierValue,
-            string? provider,
-            CancellationToken ct = default,
-            DateTimeOffset? asOfUtc = null)
-            => GetByIdAsync(projection.SecurityId, ct);
-
-        public Task<IReadOnlyList<SecuritySummaryDto>> SearchAsync(SecuritySearchRequest request, CancellationToken ct = default)
-        {
-            ct.ThrowIfCancellationRequested();
-            return Task.FromResult<IReadOnlyList<SecuritySummaryDto>>([]);
-        }
-
-        public Task<IReadOnlyList<SecurityMasterEventEnvelope>> GetHistoryAsync(SecurityHistoryRequest request, CancellationToken ct = default)
-        {
-            ct.ThrowIfCancellationRequested();
-            return Task.FromResult<IReadOnlyList<SecurityMasterEventEnvelope>>([]);
-        }
-
-        public Task<SecurityEconomicDefinitionRecord?> GetEconomicDefinitionByIdAsync(Guid requestedSecurityId, CancellationToken ct = default)
-        {
-            ct.ThrowIfCancellationRequested();
-            return Task.FromResult<SecurityEconomicDefinitionRecord?>(requestedSecurityId == projection.SecurityId
-                ? SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection)
-                : null);
-        }
-
-        public Task<TradingParametersDto?> GetTradingParametersAsync(Guid requestedSecurityId, DateTimeOffset asOf, CancellationToken ct = default)
-        {
-            ct.ThrowIfCancellationRequested();
-            return Task.FromResult<TradingParametersDto?>(requestedSecurityId == projection.SecurityId
-                ? new TradingParametersDto(projection.SecurityId, 1m, 0.01m, 1m, 0.25m, "14:30-21:00", 0.10m, asOf)
-                : null);
-        }
-
-        public Task<IReadOnlyList<CorporateActionDto>> GetCorporateActionsAsync(Guid requestedSecurityId, CancellationToken ct = default)
-        {
-            ct.ThrowIfCancellationRequested();
-            return Task.FromResult<IReadOnlyList<CorporateActionDto>>([]);
-        }
-
-        public Task<PreferredEquityTermsDto?> GetPreferredEquityTermsAsync(Guid securityId, CancellationToken ct = default) =>
-            Task.FromResult<PreferredEquityTermsDto?>(null);
-
-        public Task<ConvertibleEquityTermsDto?> GetConvertibleEquityTermsAsync(Guid securityId, CancellationToken ct = default) =>
-            Task.FromResult<ConvertibleEquityTermsDto?>(null);
-    }
-
-    private sealed class EmptySecurityValidationService : ISecurityValidationService
-    {
-        public Task<SecurityValidationReportDto> ValidateSecurityAsync(Guid securityId, CancellationToken ct = default) =>
-            Task.FromResult(new SecurityValidationReportDto(securityId, "Security", DateTimeOffset.UtcNow, false, 0, 0, []));
-
-        public Task<SecurityValidationReportDto> ValidateUniverseAsync(CancellationToken ct = default) =>
-            Task.FromResult(new SecurityValidationReportDto(null, "Universe", DateTimeOffset.UtcNow, false, 0, 0, []));
-
-        public SecurityValidationReportDto ValidateRecord(
-            SecurityProjectionRecord record,
-            IReadOnlyList<SecurityProjectionRecord> universe,
-            DateTimeOffset? evaluatedAtUtc = null) =>
-            new(record.SecurityId, "Security", evaluatedAtUtc ?? DateTimeOffset.UtcNow, false, 0, 0, []);
-    }
-
-    private sealed class EmptySecurityMasterConflictService : ISecurityMasterConflictService
-    {
-        public Task<IReadOnlyList<SecurityMasterConflict>> GetOpenConflictsAsync(CancellationToken ct) =>
-            Task.FromResult<IReadOnlyList<SecurityMasterConflict>>([]);
-
-        public Task<SecurityMasterConflict?> GetConflictAsync(Guid conflictId, CancellationToken ct) =>
-            Task.FromResult<SecurityMasterConflict?>(null);
-
-        public Task<SecurityMasterConflict?> ResolveAsync(ResolveConflictRequest request, CancellationToken ct) =>
-            Task.FromResult<SecurityMasterConflict?>(null);
-
-        public Task RecordConflictsForProjectionAsync(SecurityProjectionRecord projection, CancellationToken ct) =>
-            Task.CompletedTask;
-
-        public Task RecordFieldConflictsAsync(SecurityProjectionRecord previous, SecurityProjectionRecord incoming, CancellationToken ct) =>
-            Task.CompletedTask;
-
-        public Task ReconcileOpenFieldConflictsAsync(SecurityProjectionRecord persisted, CancellationToken ct) =>
-            Task.CompletedTask;
-    }
-
-    private sealed class EmptySecurityMasterIngestStatusService : ISecurityMasterIngestStatusService
-    {
-        public SecurityMasterIngestStatusSnapshot GetSnapshot() => new(null, null);
-    }
+    private static SecurityMasterWorkbenchQueryService CreateService(StoredRowSecurityMasterQueryService queryService)
+        => SecurityMasterWorkbenchScheduleBookHarness.CreateService(queryService);
 
     private static JsonElement Json(string json) =>
         JsonDocument.Parse(json).RootElement.Clone();
