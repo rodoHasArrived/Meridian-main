@@ -293,6 +293,34 @@ public sealed class DirectLendingPostgresIntegrationTests
     }
 
     [DirectLendingDatabaseFact]
+    public async Task PortfolioSummary_ShouldReportExcessBalancesPerLoan_WithoutAddingThemToExposure()
+    {
+        // PRD-115 increment 6: the shared read model behind both workstations' loan books carries
+        // prepaid interest and unapplied cash per loan, and keeps them out of the receivable totals.
+        await using var db = await DirectLendingPostgresTestDatabase.CreateOrSkipAsync();
+        if (db is null)
+        {
+            return;
+        }
+
+        var created = await db.Service.CreateLoanAsync(BuildCreateRequest());
+        await db.Service.ActivateLoanAsync(created.LoanId, new ActivateLoanRequest(new DateOnly(2026, 3, 22)));
+        await db.Service.BookDrawdownAsync(created.LoanId, new BookDrawdownRequest(150_000m, new DateOnly(2026, 3, 22), new DateOnly(2026, 3, 22), "wire-summary"));
+        var live = (await db.Store.LoadAsync(created.LoanId))!;
+        await db.Store.SaveStateAsync(created.LoanId, live.AggregateVersion, live.Contract, live.Servicing with
+        {
+            Balances = live.Servicing.Balances with { PrepaidInterest = 600m, UnappliedCash = 99_000m }
+        });
+
+        var summary = await db.QueryService.GetPortfolioSummaryAsync();
+
+        var row = summary.Loans.Single(loan => loan.LoanId == created.LoanId);
+        (row.PrepaidInterest, row.UnappliedCash).Should().Be((600m, 99_000m));
+        summary.TotalPrincipalOutstanding.Should().Be(150_000m, "balances owed to the borrower are not exposure");
+        summary.TotalInterestAccruedUnpaid.Should().Be(0m);
+    }
+
+    [DirectLendingDatabaseFact]
     public async Task QueryService_RebuildFromHistory_ShouldMatchLiveExcessBalances()
     {
         await using var db = await DirectLendingPostgresTestDatabase.CreateOrSkipAsync();
