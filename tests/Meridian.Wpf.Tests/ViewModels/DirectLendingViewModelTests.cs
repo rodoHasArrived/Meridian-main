@@ -70,6 +70,22 @@ public sealed class DirectLendingViewModelTests
     }
 
     [Fact]
+    public void BuildLoanInspector_ShouldShowPrepaidInterestAndUnappliedCash()
+    {
+        // PRD-115: owed to the borrower, shown beside the receivables with the same values the
+        // browser loan book shows (both read LoanSummaryDto).
+        var inspector = DirectLendingViewModel.BuildLoanInspector(
+            BuildLoan() with { PrepaidInterest = 600m, UnappliedCash = 99_000m },
+            contract: null,
+            servicing: null,
+            isDetailLoading: false);
+
+        inspector.Facts.Should().Contain(fact => fact.Label == "Prepaid interest" && fact.Value == "$600.00");
+        inspector.Facts.Should().Contain(fact => fact.Label == "Unapplied cash" && fact.Value == "$99,000.00");
+        inspector.Facts.Should().Contain(fact => fact.Label == "Accrued interest" && fact.Value == "$4,250.25");
+    }
+
+    [Fact]
     public void BuildLoanActionInspector_ShouldFailClosedWithoutSelection()
     {
         var blocked = DirectLendingViewModel.BuildLoanActionInspector(

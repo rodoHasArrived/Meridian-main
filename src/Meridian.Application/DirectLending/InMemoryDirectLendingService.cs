@@ -639,7 +639,9 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
                     terms.OriginationDate,
                     terms.MaturityDate,
                     s.LastAccrualDate,
-                    s.LastPaymentDate);
+                    s.LastPaymentDate,
+                    s.Balances.PrepaidInterest,
+                    s.Balances.UnappliedCash);
             }).ToList();
 
             var collateral = _loans.Values.SelectMany(loan => loan.Servicing.Collateral ?? []).ToArray();
