@@ -1467,7 +1467,7 @@ items:
     health: yellow
     priority: high
     evidence_posture: in_progress
-    current_summary: Implementation in PR 3004 separates stable business lineage from comparison policy, retains executed mapping fingerprints and completed recovery evidence, resolves named SLA calendars, and shows source state and occurrence age in browser and WPF. Source clearing never disposes governed casework. Reconstructed after workspace maintenance removed an earlier unpublished implementation; that earlier local test result is not acceptance evidence for this head. Current focused, hosted, Windows and rendered operator verification remain required. Legacy imports without mapping proof remain non-comparable, and historical policy forks require explicit review.
+    current_summary: Implementation in PR 3004 separates stable business lineage from comparison policy, retains executed mapping fingerprints and completed recovery evidence, resolves named SLA calendars, and shows source state and occurrence age in browser and WPF. Source clearing never disposes governed casework. Reconstructed after workspace maintenance removed an earlier unpublished implementation; that earlier local test result is not acceptance evidence for this head. Focused verification ran on 2026-11-10 against source 471d651e - the lineage, SLA-calendar, statement-intake and statement-lineage test classes passed locally on Linux (39 tests), the same filter passed on hosted Linux (Targeted Test run 42910954556), and FundReconciliationWorkbenchServiceTests passed on hosted Windows with the full WPF build (Targeted Test run 42910959791, 12 tests). The browser source-observation test was not rerun in that pass, and rendered operator verification remains required. Legacy imports without mapping proof remain non-comparable, and historical policy forks require explicit review.
     exit_criteria:
       - A break keeps one identity across runs even when its amount, tolerance, or as-of date changes.
       - A break that clears and later recurs is recognizable as the same lineage while remaining a distinct occurrence, so a recurrence neither inherits the age of the original nor overwrites the interval during which it was clear.
@@ -1503,10 +1503,12 @@ items:
       - type: test
         path: tests/Meridian.Tests/Ui/StatementReconciliationIntakeAuthorityTests.cs
       - type: test
+        path: tests/Meridian.Tests/Ui/StatementReconciliationLineageTests.cs
+      - type: test
         path: src/Meridian.Ui/dashboard/src/screens/reconciliation-source-observation.test.ts
       - type: test
         path: tests/Meridian.Wpf.Tests/Services/FundReconciliationWorkbenchServiceTests.cs
-    last_reviewed: 2026-09-26
+    last_reviewed: 2026-11-10
 
   - id: W10-PROV-001
     title: Ledger-amount evidence subject and shared proof drawer
