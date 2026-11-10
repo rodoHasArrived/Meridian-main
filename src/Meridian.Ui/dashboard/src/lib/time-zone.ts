@@ -2,7 +2,7 @@ export const UTC_TIME_ZONE = "UTC";
 
 /** UTC first, then every IANA zone the runtime knows; the current value is always offered. */
 export function listTimeZoneOptions(currentTimeZoneId: string): string[] {
-  let supported: string[] = [];
+  let supported: string[];
   try {
     supported = typeof Intl.supportedValuesOf === "function" ? Intl.supportedValuesOf("timeZone") : [];
   } catch {

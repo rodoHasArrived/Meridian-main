@@ -1,3 +1,10 @@
+import {
+  reportingScheduleDeleteEndpoint,
+  reportingScheduleDisableEndpoint,
+  reportingSchedulePauseEndpoint,
+  reportingScheduleResumeEndpoint,
+  reportingScheduleRunNowEndpoint,
+} from "@/lib/reporting-schedule-endpoints";
 import { providerConnectionScopeEndpoint, type ProviderCredentialRequestOptions } from "@/lib/provider-credential-scope";
 import {
   mapQuantRunResponseToCellResult,
@@ -446,11 +453,6 @@ import {
   reportingTemplateApproveEndpoint,
   reportingTemplateRejectEndpoint,
   reportingTemplateSubmitEndpoint,
-  reportingSchedulePauseEndpoint,
-  reportingScheduleResumeEndpoint,
-  reportingScheduleDisableEndpoint,
-  reportingScheduleDeleteEndpoint,
-  reportingScheduleRunNowEndpoint,
   reportingStarterKitProvisionEndpoint,
   securityMasterAssetProfileApproveEndpoint,
   securityMasterAssetProfileDraftsEndpoint,

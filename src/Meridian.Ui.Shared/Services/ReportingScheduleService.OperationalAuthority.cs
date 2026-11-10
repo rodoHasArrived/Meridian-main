@@ -393,6 +393,70 @@ public sealed partial class ReportingScheduleService
             .ToUniversalTime();
     }
 
+    /// <summary>
+    /// Permanently removes a schedule. Runs it already produced are retained by the run store;
+    /// only the recurring definition is deleted. A schedule that is executing on this host is
+    /// refused so an in-flight run cannot resurrect or lose its advance.
+    /// </summary>
+    public ReportingScheduleRecordDto Delete(
+        string scheduleId,
+        ReportAccessQueryContext? accessContext)
+    {
+        EnsureReportingDeploymentReady("delete a reporting schedule");
+        ArgumentException.ThrowIfNullOrWhiteSpace(scheduleId);
+        lock (_gate)
+        {
+            var identity = ResolveExistingIdentity(scheduleId, accessContext);
+            var current = _schedules[identity];
+
+            EnsureScheduleInScope(current, accessContext);
+            if (_dueRunClaims.Contains(identity))
+            {
+                throw new ReportingScheduleExecutionLeaseException(
+                    identity.TenantId,
+                    identity.CompanyId,
+                    current.ScheduleId,
+                    "The reporting schedule is executing and cannot be deleted until the run completes.");
+            }
+
+            if (_store is not null)
+            {
+                if (identity.TenantId.Length == 0 || identity.CompanyId.Length == 0)
+                {
+                    throw new InvalidDataException(
+                        "A legacy reporting schedule without tenant and company scope cannot be deleted; disable it instead.");
+                }
+
+                bool deleted;
+                try
+                {
+                    deleted = _store.Delete(
+                        identity.TenantId,
+                        identity.CompanyId,
+                        current.ScheduleId,
+                        current.UpdatedAtUtc);
+                }
+                catch (Exception ex)
+                {
+                    // Same recovery as a failed state change: a revision conflict reloads the
+                    // retained row so the caller can retry against the current revision.
+                    RestoreScheduleAfterPersistenceFailure(identity, current, ex);
+                    throw;
+                }
+
+                if (!deleted)
+                {
+                    _schedules.Remove(identity);
+                    throw new KeyNotFoundException(
+                        $"Reporting schedule '{current.ScheduleId}' no longer exists.");
+                }
+            }
+
+            _schedules.Remove(identity);
+            return current;
+        }
+    }
+
     private static void ValidateCronExpressionForUpsert(
         string cronExpression,
         DateTimeOffset dueAtUtc,

@@ -10,6 +10,7 @@ import { Select } from "@/components/ui/select";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { safeReportingHref } from "@/lib/reporting-link-safety";
 import { listTimeZoneOptions, UTC_TIME_ZONE } from "@/lib/time-zone";
+import { parseDueDays } from "@/lib/reporting-schedule-due";
 import {
   ReportingCommandStatusView,
   ReportingScheduleField,
@@ -111,11 +112,7 @@ export function normalizeReportingSchedulePeriodFrequency(value: string | null |
   return reportingSchedulePeriodFrequencies.find((frequency) => frequency === value) ?? "";
 }
 
-/** Whole days between period end and due date, clamped to the range the server accepts. */
-export function parseReportingScheduleDueDays(value: string): number {
-  const parsed = Number.parseInt(value, 10);
-  return Number.isFinite(parsed) ? Math.min(366, Math.max(0, parsed)) : 0;
-}
+export { parseDueDays as parseReportingScheduleDueDays };
 
 export function buildReportingScheduleTemplateOptions(templates: readonly ReportingTemplateRow[]): ReportingTemplateRow[] {
   return [...templates]
@@ -134,7 +131,7 @@ function buildScheduleTimingGuidance(
     ? "Run times are in UTC."
     : `Run times follow ${zone} local time, including daylight-saving changes.`;
   if (periodFrequency) {
-    const days = parseReportingScheduleDueDays(dueDaysAfterPeriodEnd);
+    const days = parseDueDays(dueDaysAfterPeriodEnd);
     const period = periodFrequency === "Monthly" ? "month" : periodFrequency === "Quarterly" ? "quarter" : "year";
     const dueNote = days === 0 ? "on the period-end date" : `${days} day${days === 1 ? "" : "s"} after the period end`;
     return `Runs once per ${period}, as of each period end and due ${dueNote}. After each run the report period moves to the next ${period}. ${zoneNote}`;
