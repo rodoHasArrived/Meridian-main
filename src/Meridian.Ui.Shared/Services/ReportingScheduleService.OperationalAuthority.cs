@@ -319,18 +319,18 @@ public sealed partial class ReportingScheduleService
         ReportingOutputManifest manifest,
         ReportingRunParametersDto resolvedParameters)
     {
+        if (!ReportingScheduleTimeZones.TryResolve(schedule.TimeZoneId, out var timeZone))
+        {
+            throw new InvalidDataException(
+                $"Reporting schedule time zone '{schedule.TimeZoneId}' is not recognized.");
+        }
+
         DateTimeOffset nextDue;
         DateOnly nextAsOfDate;
         if (schedule.PeriodCadence is { } periodCadence)
         {
             // Period-close schedules advance by accounting period (shared with the ledger's
             // report planner) rather than by cron; the cron expression is retained for display.
-            if (!ReportingScheduleTimeZones.TryResolve(schedule.TimeZoneId, out var timeZone))
-            {
-                throw new InvalidDataException(
-                    $"Reporting schedule time zone '{schedule.TimeZoneId}' is not recognized.");
-            }
-
             var occurrence = ReportingSchedulePeriodPlanner.Next(
                 periodCadence,
                 schedule.NextAsOfDate,
@@ -342,8 +342,12 @@ public sealed partial class ReportingScheduleService
         else
         {
             nextDue = ResolveNextDue(schedule.CronExpression, schedule.DueAtUtc, schedule.TimeZoneId);
-            nextAsOfDate = schedule.NextAsOfDate.AddDays(
-                (nextDue.Date - schedule.DueAtUtc.Date).Days);
+            // Count days on the schedule's local calendar. Two consecutive local days can share
+            // one UTC date (or sit two apart) across a daylight-saving change, so UTC dates
+            // would repeat or skip a report date.
+            var localDue = TimeZoneInfo.ConvertTime(schedule.DueAtUtc, timeZone).Date;
+            var localNextDue = TimeZoneInfo.ConvertTime(nextDue, timeZone).Date;
+            nextAsOfDate = schedule.NextAsOfDate.AddDays((localNextDue - localDue).Days);
         }
 
         var runAtUtc = DateTimeOffset.UtcNow;

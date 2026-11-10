@@ -864,6 +864,37 @@ public sealed class ReportingOperationalConcurrencyTests
         advanced.TimeZoneId.Should().Be("America/New_York");
     }
 
+    [Theory]
+    // Spring forward: 19:30 New York is 00:30Z the next day in winter and 23:30Z the same day
+    // in summer, so two consecutive local days share one UTC date.
+    [InlineData("2026-03-08T00:30:00Z", "2026-03-07", "2026-03-08T23:30:00Z", "2026-03-08")]
+    // Fall back: two consecutive local days are two UTC dates apart.
+    [InlineData("2026-10-31T23:30:00Z", "2026-10-31", "2026-11-02T00:30:00Z", "2026-11-01")]
+    public async Task Scenario_ScheduleWithTimeZone_AdvancesTheAsOfDateByLocalCalendarDays(
+        string dueAtUtc, string asOf, string expectedDueAtUtc, string expectedAsOf)
+    {
+        var firstDue = DateTimeOffset.Parse(dueAtUtc, System.Globalization.CultureInfo.InvariantCulture);
+        var due = BuildSchedule("new-york-evening", "operator-a") with
+        {
+            CronExpression = "30 19 * * *",
+            TimeZoneId = "America/New_York",
+            State = ReportingScheduleStateDto.Active,
+            NextAsOfDate = DateOnly.Parse(asOf, System.Globalization.CultureInfo.InvariantCulture),
+            DueAtUtc = firstDue
+        };
+        var store = new SharedAtomicScheduleStore([due]);
+        var service = CreateRunnableScheduleService(store, new CountingRenderer());
+
+        await service.RunDueForWorkerAsync(firstDue, CancellationToken.None);
+
+        var advanced = store.Load().Should().ContainSingle().Subject;
+        advanced.DueAtUtc.Should().Be(
+            DateTimeOffset.Parse(expectedDueAtUtc, System.Globalization.CultureInfo.InvariantCulture));
+        advanced.NextAsOfDate.Should().Be(
+            DateOnly.Parse(expectedAsOf, System.Globalization.CultureInfo.InvariantCulture),
+            "the as-of date moves by days on the schedule's local calendar, not by UTC dates");
+    }
+
     [Fact]
     public async Task Scenario_LastDayOfMonthSchedule_AdvancesToTheNextMonthEnd()
     {
