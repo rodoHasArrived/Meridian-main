@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -17,6 +17,8 @@ afterEach(() => {
   vi.resetAllMocks();
 });
 
+// The scenario selector lists each facility by name as well, so table assertions exclude its
+// <option> elements with `{ selector: ":not(option)" }`.
 function summary(overrides: Partial<LoanPortfolioSummary> = {}): LoanPortfolioSummary {
   return {
     totalLoans: 2,
@@ -58,8 +60,8 @@ describe("LoanBookScreen", () => {
   it("renders and refreshes the host-serialized numeric enums and currency buckets", async () => {
     api.getLoanPortfolioSummary.mockResolvedValue(hostPortfolio);
     render(<LoanBookScreen />);
-    expect(await screen.findByText("Harbour USD")).toBeInTheDocument();
-    expect(screen.getByText("Harbour EUR")).toBeInTheDocument();
+    expect(await screen.findByText("Harbour USD", { selector: ":not(option)" })).toBeInTheDocument();
+    expect(screen.getByText("Harbour EUR", { selector: ":not(option)" })).toBeInTheDocument();
     expect(screen.getByText("Defaulted", { selector: "span.mds-badge" })).toHaveClass("mds-badge--danger");
     expect(screen.getByRole("group", { name: "Principal outstanding (USD): $100,000.00" })).toBeInTheDocument();
     expect(screen.getByRole("group", { name: "Principal outstanding (EUR): €200,000.00" })).toBeInTheDocument();
@@ -91,7 +93,7 @@ describe("LoanBookScreen", () => {
 
     render(<LoanBookScreen />);
 
-    expect(await screen.findByText("Senior Term Facility A")).toBeInTheDocument();
+    expect(await screen.findByText("Senior Term Facility A", { selector: ":not(option)" })).toBeInTheDocument();
     expect(screen.getByText("Harbour Logistics")).toBeInTheDocument();
     expect(screen.getByRole("group", { name: "Principal outstanding (USD): $6,400,000.00" })).toBeInTheDocument();
     expect(screen.getByRole("table", { name: "Direct lending facilities" })).toBeInTheDocument();
@@ -121,11 +123,29 @@ describe("LoanBookScreen", () => {
     api.getLoanPortfolioSummary.mockResolvedValue(summary());
 
     render(<LoanBookScreen />);
-    await screen.findByText("Senior Term Facility A");
+    await screen.findByText("Senior Term Facility A", { selector: ":not(option)" });
 
     await userEvent.click(screen.getByRole("button", { name: "Refresh the loan book" }));
 
     await waitFor(() => expect(api.getLoanPortfolioSummary).toHaveBeenCalledTimes(2));
+  });
+
+  it("names scenario facilities without their identifiers unless two share a name", () => {
+    const [loan] = summary().loans;
+    const { unmount } = render(<LoanBookScreen summary={summary()} />);
+    const options = () => within(screen.getByRole("combobox", { name: "Scenario facility" }))
+      .getAllByRole("option").map((option) => option.textContent);
+
+    expect(options()).toEqual(["Select a facility", "Senior Term Facility A"]);
+    unmount();
+
+    const twinId = "33333333-3333-3333-3333-333333333333";
+    render(<LoanBookScreen summary={summary({ loans: [loan, { ...loan, loanId: twinId }] })} />);
+    expect(options()).toEqual([
+      "Select a facility",
+      `Senior Term Facility A · ${loan.loanId}`,
+      `Senior Term Facility A · ${twinId}`
+    ]);
   });
 
   it("announces the loan book state to assistive technology", async () => {

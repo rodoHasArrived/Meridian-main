@@ -812,7 +812,7 @@ describe("SettingsScreen", () => {
     expect(within(controlCenter).getByText("Account Close Calendar")).toBeInTheDocument();
     expect(within(controlCenter).getByText("1 unmapped")).toBeInTheDocument();
     expect(within(controlCenter).getByText("Accounting active")).toBeInTheDocument();
-    expect(within(controlCenter).getByText("1 rules")).toBeInTheDocument();
+    expect(within(controlCenter).getByText("1 rule")).toBeInTheDocument();
     expect(within(controlCenter).getByText("1 blocked")).toBeInTheDocument();
     const roleCard = within(controlCenter).getByText("Role and Permission Studio").closest('[role="listitem"]');
     const closeCard = within(controlCenter).getByText("Account Close Calendar").closest('[role="listitem"]');

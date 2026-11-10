@@ -1,5 +1,6 @@
 import type { WorkflowContinuityStepStatus } from "@/app-shell.workflow-continuity";
 import type { StrategyWorkspaceResponse } from "@/types";
+import { pluralizeCount } from "@/lib/format";
 
 export function buildStrategyContinuityStatus(
   strategy: StrategyWorkspaceResponse | null,
@@ -23,5 +24,5 @@ export function buildStrategyContinuityStatus(
     return { label: `${activeCount} active`, tone: "review" };
   }
 
-  return { label: (strategy.runs ?? []).length > 0 ? `${strategy.runs.length} runs` : "Ready", tone: "ready" };
+  return { label: (strategy.runs ?? []).length > 0 ? pluralizeCount(strategy.runs.length, "run") : "Ready", tone: "ready" };
 }
