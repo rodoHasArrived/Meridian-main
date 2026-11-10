@@ -317,6 +317,11 @@ npm --prefix src/Meridian.Ui/dashboard run test
 npm --prefix src/Meridian.Ui/dashboard run build
 ```
 
+Tests that call real external market-data providers (`Category=LiveProvider`, such as the Yahoo
+Finance integration tests) are excluded from deterministic runs by their `Category` filters
+(`Category!=Integration`, `Category!=LiveProvider`). When a run invokes them, an unreachable
+provider fails the test instead of passing silently.
+
 ### Python automation environment
 
 Create a virtual environment before installing automation requirements, especially on Linux
