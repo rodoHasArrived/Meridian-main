@@ -5,11 +5,11 @@
 .workstation-provenance { padding-block: .375rem; }
 .workstation-provenance-banner { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 1rem; row-gap: .125rem; padding-block: .5rem; }
 .workstation-provenance-banner > div:last-child { font-family: var(--font-body); }
-/* Seen-before provenance: a persistent top-edge stripe in the banner's tone. Non-dismissable and
-   non-interactive; the masthead trust pill keeps the provenance named and holds the details. */
+/* Provenance already named in the masthead: a persistent top-edge stripe in the banner's tone.
+   Non-dismissable and non-interactive; the environment badge names the provenance and holds
+   the details. */
 .workstation-provenance--stripe { padding: 0; border: 0; background: transparent; }
 .workstation-provenance-stripe { height: 4px; background: hsl(var(--danger)); }
-.workstation-provenance-stripe[data-tone="warning"] { background: hsl(var(--warning)); }
 .workspace-workbench-shell-layout--with-inspector:not(.workspace-workbench-shell-layout--with-context) {
   grid-template-columns: minmax(0, 1fr) minmax(19rem, var(--workbench-inspector-width));
 }

@@ -839,7 +839,6 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
           tone: "blocked"
         } : undefined}
         label="Reporting data confidence"
-        disclosure={isDailyReportingCockpitLanding}
       />
 
       {isDailyReportingCockpitLanding ? (

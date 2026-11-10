@@ -11,7 +11,7 @@ last_reviewed: 2026-10-31
 
 # src/Meridian.Ui.Shared
 
-Margin Control Center reads and certifications are tenant-scoped: `GET /api/workstation/reconciliation/margin-control` and the certification POST require tenant and company scope and show only retained snapshots whose import was recorded against an active fund account owned by the caller's tenant and company, and whose external account id is one of that same fund account's identifiers. External ids are unique only within a provider, so an id match alone never admits another tenant's evidence; evidence retained before the importing fund account was recorded is not shown (fail closed).
+Margin Control Center reads and certifications are tenant-scoped: `GET /api/workstation/reconciliation/margin-control` and the certification POST require tenant and company scope and show only retained snapshots whose import was recorded against an active fund account owned by the caller's tenant and company, and whose external account id is one of that same fund account's identifiers. External ids are unique only within a provider, so an id match alone never admits another tenant's evidence; evidence retained before the importing fund account was recorded is not shown (fail closed). Both routes answer 403 when the tenant context, the account query service or the fund-profile tenancy registry is unavailable, and a fund whose ownership cannot be resolved contributes no visible accounts.
 
 Sampling endpoints bound `sampleSize` to 1..100,000, reject confidence or margin-of-error values outside (0, 1), keep at most 50 saved samples in memory, report `no_data` instead of inventing a population of 100,000, honour cancellation while counting, and no longer echo the storage root.
 
@@ -3040,6 +3040,13 @@ registered and it never writes; applying a proposal is a governed amendment.
 - **Governed term-amendment refusal.** The Security Master endpoints build their HTTP 403 problem from `GovernedTermAmendmentPolicy.RefusalTitle` and `RefusalDetail`, so the API and the WPF editor show the same guidance when `RequireGovernedTermAmendments` is on. The direct write routes also answer the service's own `GovernedTermAmendmentRequiredException` with that same 403, and the workstation host registers `IGovernedTermAmendmentPolicy`, which `SecurityMasterService` enforces.
 
 See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D8) for status and open decisions.
+
+**Brokerage sync carry-forward.** A failed or partial brokerage sync keeps the last good positions,
+balance and activity for whichever half returned nothing, with an explicit warning, and a
+carried-forward balance is not recorded as a new balance snapshot. A projection that carries
+state forward is marked stale, so reconciliation does not treat it as a fresh provider observation. **Package files.** Package
+download and delete require the resolved file to be a direct child of the selected packages
+directory (the packages root, or a requested directory under it).
 
 ## Diagrams
 
