@@ -188,6 +188,11 @@ classDiagram
         +IReadOnlyList~string~ Risk
         +IReadOnlyList~string~ Tax
     }
+    class Meridian_Contracts_SecurityMaster_AssetPackSharedCoverage["AssetPackSharedCoverage"] {
+        +string AssetClass
+        +IReadOnlyList~string~ PackIds
+        +string Reason
+    }
     class Meridian_Contracts_SecurityMaster_AssetPackValidationRules["AssetPackValidationRules"] {
         +IReadOnlyList~string~ ExpectedSchedules
         +IReadOnlyList~string~ IncompatibleCombinations
@@ -527,8 +532,6 @@ classDiagram
         +string Key
         +bool RequiredForAcceptance
         +CorporateActionPayloadValueType ValueType
-    }
-    class Meridian_Contracts_SecurityMaster_CorporateActionPayloadSchemaCatalog["CorporateActionPayloadSchemaCatalog"] {
     }
     Meridian_Contracts_SecurityMaster_AcceptCorporateActionSourceProposalRequestDto --> Meridian_Contracts_SecurityMaster_CorporateActionCaseScopeDto
     Meridian_Contracts_SecurityMaster_AddCorporateActionEvidenceRequestDto --> Meridian_Contracts_SecurityMaster_CorporateActionCaseScopeDto

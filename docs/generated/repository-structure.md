@@ -4970,6 +4970,7 @@ Meridian-main
 │   │   │   ├── SecurityAssetPackRegistry.cs
 │   │   │   ├── SecurityAssetPackRegistry.Profiles.cs
 │   │   │   ├── SecurityAssetPackRegistry.Readiness.cs
+│   │   │   ├── SecurityAssetPackRegistry.SharedCoverage.cs
 │   │   │   ├── SecurityAssetProfiles.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcaster.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcasterChain.cs
