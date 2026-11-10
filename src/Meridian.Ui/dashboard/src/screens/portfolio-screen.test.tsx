@@ -3,6 +3,8 @@ import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
 import { PortfolioScreen } from "@/screens/portfolio-screen";
+import { formatUtcTimestamp } from "@/lib/format";
+import { WorkspaceFigureContextProvider } from "@/lib/workspace-figure-context";
 import * as api from "@/lib/api";
 import type {
   BrokerageConnectionStatus,
@@ -567,6 +569,76 @@ describe("PortfolioScreen", () => {
     expect(strip.parentElement).toHaveTextContent(
       "Stale figures · Source: Portfolio workspace · As of Jan 2, 2026, 14:00 UTC · Scope: All workspace positions"
     );
+  });
+
+  it("marks headline figures stale when the Portfolio refresh did not complete, as of the last complete one", async () => {
+    // A poll whose Portfolio request failed keeps the previous totals on screen. It settled just
+    // now, but the figures date from the last complete refresh.
+    const now = new Date();
+    const lastComplete = new Date(now.getTime() - 60_000).toISOString();
+    await renderPortfolioScreen(
+      <PortfolioScreen
+        portfolio={portfolio}
+        trading={trading}
+        strategy={strategy}
+        accounting={accounting}
+        refreshStatus={{
+          operation: "portfolio refresh",
+          phase: "partial",
+          inFlight: false,
+          version: 2,
+          message: "Portfolio workspace refresh failed",
+          error: "Portfolio workspace refresh failed",
+          startedAt: now.toISOString(),
+          settledAt: now.toISOString(),
+          lastSucceededAt: lastComplete,
+          staleDiscardCount: 0,
+          backoff: { attempt: 1, retryCount: 0, nextRetryDelayMs: null, maxRetries: 0 }
+        }}
+      />
+    );
+
+    const strip = screen.getByLabelText("Portfolio headline metrics");
+    expect(within(strip).getByText("+$120")).not.toHaveClass("text-success");
+    expect(strip.parentElement).toHaveTextContent(
+      `Stale figures · Source: Portfolio workspace · As of ${formatUtcTimestamp(new Date(lastComplete))} · Scope: All workspace positions`
+    );
+    expect(screen.getByLabelText("Portfolio data confidence")).toHaveTextContent(
+      "The latest refresh did not complete; the last loaded figures are shown."
+    );
+  });
+
+  it("marks headline figures stale when the shell reports a failed Portfolio refresh", async () => {
+    const now = new Date().toISOString();
+    await renderPortfolioScreen(
+      <WorkspaceFigureContextProvider
+        value={{ asOf: now, freshness: "fresh", dataLabel: null, staleWorkspaces: ["portfolio"], staleAsOf: "2026-01-02T14:00:00Z" }}
+      >
+        <PortfolioScreen
+          portfolio={portfolio}
+          trading={trading}
+          strategy={strategy}
+          accounting={accounting}
+          refreshStatus={{
+            operation: "portfolio refresh",
+            phase: "succeeded",
+            inFlight: false,
+            version: 1,
+            message: "Refresh complete.",
+            error: null,
+            startedAt: now,
+            settledAt: now,
+            lastSucceededAt: now,
+            staleDiscardCount: 0,
+            backoff: { attempt: 1, retryCount: 0, nextRetryDelayMs: null, maxRetries: 0 }
+          }}
+        />
+      </WorkspaceFigureContextProvider>
+    );
+
+    const strip = screen.getByLabelText("Portfolio headline metrics");
+    expect(within(strip).getByText("+$120")).not.toHaveClass("text-success");
+    expect(strip.parentElement).toHaveTextContent("Stale figures · Source: Portfolio workspace");
   });
 
   it("keeps fresh headline figures in their P&L tone", async () => {

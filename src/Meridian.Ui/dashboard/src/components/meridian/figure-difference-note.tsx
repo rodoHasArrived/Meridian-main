@@ -33,7 +33,10 @@ export function FigureDifferenceNote({ note, className }: { note: FigureDifferen
         <tbody>
           {note.rows.map((row) => (
             <tr key={row.key} className="border-t border-border/60">
-              <th scope="row" className="py-1 pr-4 text-left font-normal text-foreground">{row.label}</th>
+              <th scope="row" className="py-1 pr-4 text-left font-normal text-foreground">
+                {row.label}
+                {row.detail ? <span className="block text-muted-foreground">{row.detail}</span> : null}
+              </th>
               <td className="py-1 pr-4 text-right font-mono tabular-nums text-foreground">{row.first}</td>
               <td className="py-1 text-right font-mono tabular-nums text-foreground">{row.second}</td>
             </tr>

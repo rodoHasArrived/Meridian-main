@@ -200,6 +200,11 @@ export interface HeadlineFigure {
   key: string;
   label: string;
   value: string;
+  /**
+   * How the quantity is measured when panels can define it differently, e.g. "gross" / "net"
+   * exposure. Two figures with different bases are different measures, not conflicting values.
+   */
+  basis?: string;
 }
 
 export interface HeadlineFigureSet {
@@ -214,6 +219,8 @@ export interface FigureDifferenceRow {
   label: string;
   first: string;
   second: string;
+  /** Set when the two panels measure the figure on different bases, so a gap is expected. */
+  detail?: string;
 }
 
 export interface FigureDifferenceNote {
@@ -229,19 +236,36 @@ export interface FigureDifferenceNote {
 /**
  * Explains two sets of figures on one page that disagree. Returns null when every figure they
  * share matches, so the note appears only when an operator would otherwise have to reconcile the
- * page by hand.
+ * page by hand. A pair measured on different bases (gross against net) is not a disagreement on
+ * its own: it is listed, with the bases named, only alongside a like-for-like figure that differs.
  */
 export function buildFigureDifferenceNote(first: HeadlineFigureSet, second: HeadlineFigureSet): FigureDifferenceNote | null {
   const secondByKey = new Map(second.figures.map((figure) => [figure.key, figure]));
   const rows: FigureDifferenceRow[] = [];
+  let likeForLikeDifferences = 0;
   for (const figure of first.figures) {
     const other = secondByKey.get(figure.key);
-    if (other && !sameDisplayedFigure(figure.value, other.value)) {
+    if (!other || sameDisplayedFigure(figure.value, other.value)) {
+      continue;
+    }
+
+    const firstBasis = figure.basis?.trim().toLowerCase();
+    const secondBasis = other.basis?.trim().toLowerCase();
+    if (firstBasis && secondBasis && firstBasis !== secondBasis) {
+      rows.push({
+        key: figure.key,
+        label: figure.label,
+        first: figure.value,
+        second: other.value,
+        detail: `${first.name} is ${firstBasis}, ${second.name} is ${secondBasis}: different measures, so these would differ on the same records.`
+      });
+    } else {
+      likeForLikeDifferences += 1;
       rows.push({ key: figure.key, label: figure.label, first: figure.value, second: other.value });
     }
   }
 
-  if (rows.length === 0) {
+  if (likeForLikeDifferences === 0) {
     return null;
   }
 
