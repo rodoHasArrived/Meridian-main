@@ -1,4 +1,3 @@
-using System.Globalization;
 using Meridian.Contracts.Workstation;
 using Meridian.Core.Scheduling;
 using Meridian.Reporting;
@@ -13,6 +12,50 @@ public sealed partial class ReportingScheduleService
     private readonly string _executionLeaseOwner =
         $"reporting-schedule:{Environment.ProcessId}:{Guid.NewGuid():N}";
     private readonly IReportingDeploymentReadinessService? _deploymentReadinessService;
+
+    /// <summary>
+    /// Ledger authority for the accounting period a period-close schedule reports on. When it
+    /// is absent, or cannot name a unique period, the retained selector is left untouched.
+    /// </summary>
+    public IReportingSchedulePeriodResolver? PeriodResolver { get; init; }
+
+    /// <summary>
+    /// For a period-close schedule, returns <paramref name="parameters"/> with the selector of
+    /// the ledger period that contains <paramref name="asOfDate"/>. The selector is only ever
+    /// replaced by one the ledger store returned; it is never derived from the date.
+    /// </summary>
+    private async Task<ReportingRunParametersDto?> WithLedgerPeriodAsync(
+        ReportingScheduleRecordDto schedule,
+        ReportingRunParametersDto? parameters,
+        DateOnly asOfDate,
+        CancellationToken ct)
+    {
+        if (schedule.PeriodCadence is null || PeriodResolver is null || parameters is null)
+        {
+            return parameters;
+        }
+
+        string? selector;
+        try
+        {
+            selector = await PeriodResolver.ResolvePeriodSelectorAsync(parameters, asOfDate, ct)
+                .ConfigureAwait(false);
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            // The ledger lookup is advisory here. The run's own authoritative source still
+            // validates the period against the as-of date and fails closed on a mismatch.
+            selector = null;
+        }
+
+        return selector is null ? parameters : parameters with { PeriodId = selector };
+    }
+
+    private static DateOnly ResolveNextAsOfDate(ReportingScheduleRecordDto schedule) =>
+        schedule.PeriodCadence is { } cadence
+        && ReportingScheduleTimeZones.TryResolve(schedule.TimeZoneId, out var timeZone)
+            ? ReportingSchedulePeriodPlanner.Next(cadence, schedule.NextAsOfDate, schedule.DueAtUtc, timeZone).PeriodEnd
+            : schedule.NextAsOfDate;
 
     private void EnsureReportingDeploymentReady(
         string operation,
@@ -355,16 +398,9 @@ public sealed partial class ReportingScheduleService
         {
             DueAtUtc = nextDue,
             NextAsOfDate = nextAsOfDate,
-            // A period-close schedule moves to a new accounting period each run, so its period
-            // id moves too (yyyy-MM of the period end, the convention the workstation uses when
-            // an operator changes the report period). Cron schedules keep their retained id.
-            RunParameters = schedule.PeriodCadence is null
-                ? resolvedParameters with { AsOfDate = nextAsOfDate }
-                : resolvedParameters with
-                {
-                    AsOfDate = nextAsOfDate,
-                    PeriodId = nextAsOfDate.ToString("yyyy-MM", CultureInfo.InvariantCulture)
-                },
+            // The caller has already pointed a period-close schedule's parameters at the ledger
+            // period for the next as-of date (WithLedgerPeriodAsync); only the date moves here.
+            RunParameters = resolvedParameters with { AsOfDate = nextAsOfDate },
             UpdatedAtUtc = NextRevisionTimestamp(schedule.UpdatedAtUtc, runAtUtc),
             LastRunAtUtc = runAtUtc,
             LastRunId = manifest.RunId,

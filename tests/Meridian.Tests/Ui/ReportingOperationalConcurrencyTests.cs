@@ -867,6 +867,68 @@ public sealed class ReportingOperationalConcurrencyTests
     }
 
     [Fact]
+    public async Task Scenario_PeriodCloseSchedule_TakesItsAccountingPeriodFromTheLedgerNotTheCalendar()
+    {
+        // An April-start fiscal year: the period ending 31 May 2026 is fiscal 2027 period 02, so
+        // a selector built from the calendar date ("2026-05") would name the wrong period.
+        var mayPeriodId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+        var resolver = new RecordingPeriodResolver(asOf =>
+            asOf == new DateOnly(2026, 4, 30) ? "11111111-1111-1111-1111-111111111111"
+            : asOf == new DateOnly(2026, 5, 31) ? mayPeriodId.ToString("D")
+            : null);
+        var firstDue = new DateTimeOffset(2026, 5, 10, 8, 0, 0, TimeSpan.Zero);
+        var due = BuildSchedule("fiscal-period-close", "operator-a") with
+        {
+            RunParameters = BuildCurrentSchedule("parameters-only").RunParameters,
+            State = ReportingScheduleStateDto.Active,
+            NextAsOfDate = new DateOnly(2026, 4, 30),
+            DueAtUtc = firstDue,
+            PeriodCadence = new ReportingSchedulePeriodCadenceDto(ReportingSchedulePeriodFrequencyDto.Monthly, 10)
+        };
+        due = due with { RunParameters = due.RunParameters! with { PeriodId = "stale-selector" } };
+        var store = new SharedAtomicScheduleStore([due]);
+        var service = CreateRunnableScheduleService(store, new CountingRenderer(), resolver);
+
+        await service.RunDueForWorkerAsync(firstDue, CancellationToken.None);
+
+        var advanced = store.Load().Should().ContainSingle().Subject;
+        advanced.NextAsOfDate.Should().Be(new DateOnly(2026, 5, 31));
+        advanced.RunParameters!.AsOfDate.Should().Be(new DateOnly(2026, 5, 31));
+        advanced.RunParameters.PeriodId.Should().Be(
+            mayPeriodId.ToString("D"),
+            "the next period selector is the one the ledger returned for the next as-of date");
+        resolver.AsOfDates.Should().Contain(new DateOnly(2026, 4, 30), "the run itself re-resolves its period first");
+    }
+
+    [Fact]
+    public async Task Scenario_PeriodCloseSchedule_KeepsTheRetainedSelectorWhenTheLedgerCannotNameAPeriod()
+    {
+        var firstDue = new DateTimeOffset(2026, 5, 10, 8, 0, 0, TimeSpan.Zero);
+        var due = BuildSchedule("unopened-period", "operator-a") with
+        {
+            RunParameters = BuildCurrentSchedule("parameters-only").RunParameters,
+            State = ReportingScheduleStateDto.Active,
+            NextAsOfDate = new DateOnly(2026, 4, 30),
+            DueAtUtc = firstDue,
+            PeriodCadence = new ReportingSchedulePeriodCadenceDto(ReportingSchedulePeriodFrequencyDto.Monthly, 10)
+        };
+        var retainedSelector = due.RunParameters!.PeriodId;
+        var store = new SharedAtomicScheduleStore([due]);
+        var service = CreateRunnableScheduleService(
+            store,
+            new CountingRenderer(),
+            new RecordingPeriodResolver(_ => null));
+
+        await service.RunDueForWorkerAsync(firstDue, CancellationToken.None);
+
+        var advanced = store.Load().Should().ContainSingle().Subject;
+        advanced.NextAsOfDate.Should().Be(new DateOnly(2026, 5, 31));
+        advanced.RunParameters!.PeriodId.Should().Be(
+            retainedSelector,
+            "a selector is never invented from the date when the ledger has no unique period");
+    }
+
+    [Fact]
     public void Scenario_ScheduleUpsert_PeriodCadenceIsValidatedAndReplacedOnEachUpsert()
     {
         var store = new SharedAtomicScheduleStore([]);
@@ -1218,9 +1280,24 @@ public sealed class ReportingOperationalConcurrencyTests
                 () => FixedNow),
             store);
 
+    private sealed class RecordingPeriodResolver(Func<DateOnly, string?> resolve) : IReportingSchedulePeriodResolver
+    {
+        public List<DateOnly> AsOfDates { get; } = [];
+
+        public Task<string?> ResolvePeriodSelectorAsync(
+            ReportingRunParametersDto parameters,
+            DateOnly asOfDate,
+            CancellationToken ct = default)
+        {
+            AsOfDates.Add(asOfDate);
+            return Task.FromResult(resolve(asOfDate));
+        }
+    }
+
     private static ReportingScheduleService CreateRunnableScheduleService(
         IReportingScheduleStore store,
-        IReportingSectionRenderer renderer)
+        IReportingSectionRenderer renderer,
+        IReportingSchedulePeriodResolver? periodResolver = null)
     {
         var catalog = new DefaultReportingTemplateCatalog();
         return new ReportingScheduleService(
@@ -1234,7 +1311,10 @@ public sealed class ReportingOperationalConcurrencyTests
                 dependencyEvaluator: new AlwaysReadyEvaluator(),
                 utcNow: () => FixedNow,
                 options: new ReportingRunReadinessOptions(
-                    AllowLegacyUnscopedDrafts: true)));
+                    AllowLegacyUnscopedDrafts: true)))
+        {
+            PeriodResolver = periodResolver
+        };
     }
 
     private static ReportingRunSnapshot BuildSnapshot(

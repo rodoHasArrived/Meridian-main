@@ -1927,9 +1927,11 @@ public sealed partial class ReportingScheduleService
                 "A governed reporting schedule has no immutable run-parameter snapshot and cannot execute.");
         }
 
-        var scheduledParameters = schedule.RunParameters is null
-            ? null
-            : schedule.RunParameters with { AsOfDate = schedule.NextAsOfDate };
+        var scheduledParameters = await WithLedgerPeriodAsync(
+            schedule,
+            schedule.RunParameters is null ? null : schedule.RunParameters with { AsOfDate = schedule.NextAsOfDate },
+            schedule.NextAsOfDate,
+            ct).ConfigureAwait(false);
         var runRequest = new ReportingRunRequestDto(
             schedule.TemplateId,
             schedule.NextAsOfDate,
@@ -2046,7 +2048,9 @@ public sealed partial class ReportingScheduleService
                 ? _orchestrationService.GetAudit(scope.TenantId, manifest.RunId)
                 : _orchestrationService.GetAudit(manifest.RunId));
         var handoffs = BuildReleaseDeliveryHandoffs(schedule, manifest);
-        var advanced = AdvanceSchedule(schedule, manifest, effectiveReadiness.ResolvedParameters) with
+        var nextParameters = await WithLedgerPeriodAsync(
+            schedule, effectiveReadiness.ResolvedParameters, ResolveNextAsOfDate(schedule), ct).ConfigureAwait(false);
+        var advanced = AdvanceSchedule(schedule, manifest, nextParameters!) with
         {
             LastReadiness = effectiveReadiness,
             ReleaseDeliveryHandoffs = handoffs
