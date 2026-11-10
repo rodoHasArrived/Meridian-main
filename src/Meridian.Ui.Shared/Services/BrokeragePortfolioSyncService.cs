@@ -308,7 +308,7 @@ public sealed class BrokeragePortfolioSyncService
             ct).ConfigureAwait(false);
         projection = CarryForwardLastGoodState(
             projection,
-            await TryLoadPriorProjectionAsync(fundAccountId, ct).ConfigureAwait(false),
+            await TryLoadPriorProjectionAsync(projection.FundAccountId, ct).ConfigureAwait(false),
             portfolioMissing: portfolio is null,
             activityMissing: activity is null);
 
@@ -893,7 +893,7 @@ public sealed class BrokeragePortfolioSyncService
             ProjectionPath: projectionPath);
         projection = CarryForwardLastGoodState(
             projection,
-            await TryLoadPriorProjectionAsync(fundAccountId, ct).ConfigureAwait(false),
+            await TryLoadPriorProjectionAsync(projection.FundAccountId, ct).ConfigureAwait(false),
             portfolioMissing: true,
             activityMissing: true);
 
