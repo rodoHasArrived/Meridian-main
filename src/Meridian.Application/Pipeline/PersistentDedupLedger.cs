@@ -58,12 +58,32 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
 
     private readonly SemaphoreSlim _writeLock = new(1, 1);
     private StreamWriter? _writer;
+
+    // Automatic compaction. Every admitted identity appends a line, so without compaction the
+    // file grows for the life of the deployment and each startup re-reads all of it. The fields
+    // below are only written while holding _writeLock (or before the ledger is shared).
+    private readonly int _compactionMinLines;
+    private long _diskLineCount;
+    private long _compactionDueAtLineCount;
+    private bool _autoCompactionEnabled;
+
+    // Legacy admissions whose cache entry is published but whose ledger line is not yet
+    // appended (the caller is waiting for _writeLock). Compaction rewrites from the cache, so
+    // it must leave these out: if that caller's append then fails, the admission is rolled
+    // back and no line for it may exist on disk.
+    private readonly ConcurrentDictionary<string, byte> _unpersistedLegacyKeys = new(StringComparer.Ordinal);
     private long _totalChecked;
     private long _totalDuplicates;
     private static int _hashPathWarmed;
 
     // Background eviction timer — avoids scanning the full cache on the hot path.
     private readonly Timer _evictionTimer;
+
+    /// <summary>Default number of ledger lines below which the file is never compacted.</summary>
+    internal const int DefaultCompactionMinLines = 100_000;
+
+    /// <summary>Lines currently in the ledger file, as far as this instance has read or written it.</summary>
+    internal long DiskLineCount => Interlocked.Read(ref _diskLineCount);
 
     /// <summary>
     /// Total events checked for duplicates.
@@ -79,11 +99,14 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
     public PersistentDedupLedger(
         string ledgerDirectory,
         TimeSpan? entryTtl = null,
-        int maxInMemoryEntries = 500_000)
+        int maxInMemoryEntries = 500_000,
+        int compactionMinLines = DefaultCompactionMinLines)
     {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(compactionMinLines);
         _ledgerPath = Path.Combine(ledgerDirectory, "dedup_ledger.jsonl");
         _entryTtl = entryTtl ?? TimeSpan.FromHours(24);
         _maxInMemoryEntries = maxInMemoryEntries;
+        _compactionMinLines = compactionMinLines;
         Directory.CreateDirectory(ledgerDirectory);
         WarmHashPath();
         WarmPrefixCache();
@@ -133,6 +156,8 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
     public async Task InitializeAsync(CancellationToken ct = default)
     {
         var cutoff = DateTimeOffset.UtcNow.Ticks - _entryTtl.Ticks;
+        var loadedCleanly = true;
+        _diskLineCount = 0;
 
         if (File.Exists(_ledgerPath))
         {
@@ -149,11 +174,14 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
             }
             catch (Exception ex)
             {
+                loadedCleanly = false;
                 _log.Warning(ex, "Error loading dedup ledger from {Path}, starting fresh", _ledgerPath);
             }
 
             _log.Information("Loaded {LoadedCount} dedup entries from disk ({ExpiredCount} expired)", loaded, expired);
         }
+
+        EnableAutoCompactionAfterLoad(loadedCleanly);
 
         // Defer opening the append writer until the first real write. This lets
         // read-only runtime graphs initialize against the same ledger file
@@ -168,6 +196,8 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
     public void Initialize()
     {
         var cutoff = DateTimeOffset.UtcNow.Ticks - _entryTtl.Ticks;
+        var loadedCleanly = true;
+        _diskLineCount = 0;
 
         if (File.Exists(_ledgerPath))
         {
@@ -184,18 +214,38 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
             }
             catch (Exception ex)
             {
+                loadedCleanly = false;
                 _log.Warning(ex, "Error loading dedup ledger from {Path}, starting fresh", _ledgerPath);
             }
 
             _log.Information("Loaded {LoadedCount} dedup entries from disk ({ExpiredCount} expired)", loaded, expired);
         }
+
+        EnableAutoCompactionAfterLoad(loadedCleanly);
     }
+
+    /// <summary>
+    /// Arms automatic compaction once the ledger file has been read in full. Compaction rewrites
+    /// the file from the in-memory cache, so it is only safe when the cache holds everything the
+    /// file does: an instance that never loaded, or whose load failed part-way, never compacts.
+    /// </summary>
+    private void EnableAutoCompactionAfterLoad(bool loadedCleanly)
+    {
+        _autoCompactionEnabled = loadedCleanly;
+        _compactionDueAtLineCount = NextCompactionDueAt(liveLineCount: _cache.Count);
+    }
+
+    // Compact again once the file holds twice the lines the last rewrite kept, so the rewrite
+    // cost stays proportional to the lines appended since, and never below the minimum.
+    private long NextCompactionDueAt(long liveLineCount)
+        => Math.Max(_compactionMinLines, 2 * liveLineCount);
 
     /// <summary>Applies one persisted ledger line to the cache; malformed lines are skipped.</summary>
     private void LoadLedgerLine(string line, long cutoff, ref int loaded, ref int expired)
     {
         if (string.IsNullOrWhiteSpace(line))
             return;
+        _diskLineCount++;
         try
         {
             using var doc = JsonDocument.Parse(line);
@@ -303,6 +353,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
             // sink write proves nothing about this newly admitted one, so trust resets to
             // version 1 and WAL recovery replays it until a sink flush re-confirms it.
             var hadPrevious = _cache.TryGetValue(key, out var previous);
+            _unpersistedLegacyKeys[key] = 0;
             _cache[key] = new DedupCacheEntry(nowTicks, EntryVersionLegacy);
             var ledgerLine = CreateLedgerLine(key, nowTicks, EntryVersionLegacy);
 
@@ -317,6 +368,9 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
                 {
                     await EnsureWriterInitializedAsync(ct).ConfigureAwait(false);
                     await _writer!.WriteLineAsync(ledgerLine.AsMemory(), ct).ConfigureAwait(false);
+                    _unpersistedLegacyKeys.TryRemove(key, out _);
+                    _diskLineCount++;
+                    await CompactIfDueLockedAsync().ConfigureAwait(false);
                 }
                 finally
                 {
@@ -325,6 +379,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
             }
             catch
             {
+                _unpersistedLegacyKeys.TryRemove(key, out _);
                 if (hadPrevious)
                     _cache[key] = previous;
                 else
@@ -432,6 +487,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
 
                 var line = CreateLedgerLine(reservation.Key, nowTicks, EntryVersionSinkDurable);
                 await _writer!.WriteLineAsync(line.AsMemory(), ct).ConfigureAwait(false);
+                _diskLineCount++;
                 validatedIndexes.Add(i);
             }
 
@@ -450,6 +506,9 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
                 _cache[reservation.Key] = new DedupCacheEntry(nowTicks, EntryVersionSinkDurable);
                 ReleaseCore(reservation.Key, reservation.Token);
             }
+
+            // The commit is complete; compaction never fails it.
+            await CompactIfDueLockedAsync().ConfigureAwait(false);
         }
         finally
         {
@@ -877,67 +936,106 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
 
     /// <summary>
     /// Compacts the ledger file by rewriting only non-expired entries.
-    /// Call periodically (e.g., daily) to prevent unbounded file growth.
+    /// The ledger also does this itself as the file grows; see <see cref="CompactIfDueLockedAsync"/>.
     /// </summary>
     public async Task CompactAsync(CancellationToken ct = default)
     {
         await _writeLock.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            if (_writer != null)
-            {
-                await _writer.FlushAsync(ct).ConfigureAwait(false);
-                await _writer.DisposeAsync().ConfigureAwait(false);
-                _writer = null;
-            }
-
-            var tempPath = _ledgerPath + ".tmp";
-            var nowTicks = DateTimeOffset.UtcNow.Ticks;
-            var cutoff = nowTicks - _entryTtl.Ticks;
-            var kept = 0;
-
-            try
-            {
-                await using (var tempStream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None))
-                await using (var writer = new StreamWriter(tempStream, Encoding.UTF8))
-                {
-                    // Only committed entries are rewritten — pending reservations stay
-                    // memory-only — and each entry keeps its recorded version so compaction
-                    // never implicitly upgrades legacy trust to durability-confirmed.
-                    foreach (var (key, entry) in _cache)
-                    {
-                        if (entry.Ticks > cutoff)
-                        {
-                            await writer.WriteLineAsync(
-                                CreateLedgerLine(key, entry.Ticks, entry.Version).AsMemory(), ct).ConfigureAwait(false);
-                            kept++;
-                        }
-                    }
-
-                    // Durably persist the compacted contents before the rename replaces the
-                    // ledger; otherwise a crash after the move can leave an empty/torn ledger.
-                    await writer.FlushAsync(ct).ConfigureAwait(false);
-                    tempStream.Flush(flushToDisk: true);
-                }
-
-                File.Move(tempPath, _ledgerPath, overwrite: true);
-                _log.Information("Compacted dedup ledger: {KeptCount} entries retained", kept);
-            }
-            catch (Exception ex)
-            {
-                _log.Warning(ex, "Dedup ledger compaction failed, cleaning up temp file");
-                try
-                { File.Delete(tempPath); }
-                catch { /* best effort */ }
-            }
-
-            // Reopen lazily when the next write arrives so read-only consumers do not
-            // immediately reclaim an exclusive file handle after compaction.
-            _writer = null;
+            await CompactLockedAsync(ct).ConfigureAwait(false);
         }
         finally
         {
             _writeLock.Release();
+        }
+    }
+
+    /// <summary>
+    /// Compacts the ledger when the file has grown to twice the lines the last rewrite kept (and
+    /// past the configured minimum). Called by the append paths while they hold
+    /// <see cref="_writeLock"/>, so the instance that compacts is always the one writing the file
+    /// and no append can interleave with the rewrite. It never throws: the caller's append has
+    /// already succeeded, and a failed compaction leaves the existing ledger untouched.
+    /// </summary>
+    private async ValueTask CompactIfDueLockedAsync()
+    {
+        if (!_autoCompactionEnabled || _diskLineCount < _compactionDueAtLineCount)
+            return;
+
+        var compacted = false;
+        try
+        {
+            // Not cancellable: once started, the rewrite either completes or is discarded whole.
+            compacted = await CompactLockedAsync(CancellationToken.None).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _log.Warning(ex, "Automatic dedup ledger compaction failed; the existing ledger is unchanged");
+        }
+
+        if (!compacted)
+        {
+            // Back off rather than retrying on every append while the cause persists.
+            _compactionDueAtLineCount = _diskLineCount + _compactionMinLines;
+        }
+    }
+
+    /// <summary>Rewrites the ledger from the cache. The caller must hold <see cref="_writeLock"/>.</summary>
+    private async Task<bool> CompactLockedAsync(CancellationToken ct)
+    {
+        // The writer is closed here and reopens lazily when the next write arrives, so read-only
+        // consumers do not immediately reclaim an exclusive file handle after compaction.
+        if (_writer != null)
+        {
+            await _writer.FlushAsync(ct).ConfigureAwait(false);
+            await _writer.DisposeAsync().ConfigureAwait(false);
+            _writer = null;
+        }
+
+        var tempPath = _ledgerPath + ".tmp";
+        var nowTicks = DateTimeOffset.UtcNow.Ticks;
+        var cutoff = nowTicks - _entryTtl.Ticks;
+        var kept = 0;
+
+        try
+        {
+            await using (var tempStream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None))
+            await using (var writer = new StreamWriter(tempStream, Encoding.UTF8))
+            {
+                // Only committed entries are rewritten — pending reservations stay
+                // memory-only, as does a legacy admission whose own line is not appended
+                // yet — and each entry keeps its recorded version so compaction never
+                // implicitly upgrades legacy trust to durability-confirmed.
+                foreach (var (key, entry) in _cache)
+                {
+                    if (entry.Ticks > cutoff && !_unpersistedLegacyKeys.ContainsKey(key))
+                    {
+                        await writer.WriteLineAsync(
+                            CreateLedgerLine(key, entry.Ticks, entry.Version).AsMemory(), ct).ConfigureAwait(false);
+                        kept++;
+                    }
+                }
+
+                // Durably persist the compacted contents before the rename replaces the
+                // ledger; otherwise a crash after the move can leave an empty/torn ledger.
+                await writer.FlushAsync(ct).ConfigureAwait(false);
+                tempStream.Flush(flushToDisk: true);
+            }
+
+            File.Move(tempPath, _ledgerPath, overwrite: true);
+            _diskLineCount = kept;
+            _compactionDueAtLineCount = NextCompactionDueAt(kept);
+            _log.Information("Compacted dedup ledger: {KeptCount} entries retained", kept);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _log.Warning(ex, "Dedup ledger compaction failed, cleaning up temp file");
+            try
+            { File.Delete(tempPath); }
+            catch { /* best effort */ }
+            return false;
         }
     }
 
