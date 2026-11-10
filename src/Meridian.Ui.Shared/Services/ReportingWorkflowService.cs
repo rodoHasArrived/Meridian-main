@@ -1002,7 +1002,8 @@ public sealed class ReportTemplateRegistryService
         char.IsLetterOrDigit(value) || value is '_' or '-' or '.';
 
     private static bool IsFormulaFunctionIdentifier(string identifier) =>
-        string.Equals(identifier, "abs", StringComparison.OrdinalIgnoreCase)
+        string.Equals(identifier, "if", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(identifier, "abs", StringComparison.OrdinalIgnoreCase)
         || string.Equals(identifier, "min", StringComparison.OrdinalIgnoreCase)
         || string.Equals(identifier, "max", StringComparison.OrdinalIgnoreCase)
         || string.Equals(identifier, "safeDivide", StringComparison.OrdinalIgnoreCase)

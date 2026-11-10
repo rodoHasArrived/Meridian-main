@@ -226,8 +226,13 @@ and downstream exports can retain a source-backed audit trace without relying on
 synthesis. Formula lineage includes brace references, bare identifier references, and `total(...)`
 references, while the evaluator supports nested `abs(...)`, `min(...)`, `max(...)`,
 `safeDivide(numerator, denominator[, fallback])`, `percent(numerator, denominator[, fallback])`,
-`basisPoints(numerator, denominator[, fallback])`, and `round(value[, decimals])` expressions for
-guarded P&L, exposure, contribution, return, and basis-point calculations. Custom formula grids
+`basisPoints(numerator, denominator[, fallback])`, `round(value[, decimals])`, and
+`if(condition, whenTrue, whenFalse)` expressions for guarded P&L, exposure, contribution, return,
+and basis-point calculations. Comparisons (`=`, `<>`, `<`, `<=`, `>`, `>=`) yield 1 or 0 and are
+numeric only; `if` evaluates just the selected branch, so `if({mv} = 0, 0, {pnl} / {mv})` cannot
+raise a division-by-zero warning. The same function list is mirrored by hand in
+`ReportingWorkflowService.IsFormulaFunctionIdentifier` and the dashboard's
+`isReportWriterFormulaFunction`; update all three together. Custom formula grids
 therefore retain the same source evidence that was used for evaluation, and formula data-dictionary
 rows retain those source-field pointers while still marking the column as generated.
 Generated Reporting run manifests also retain the report-writer grid

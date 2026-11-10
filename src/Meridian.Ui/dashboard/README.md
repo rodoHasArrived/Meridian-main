@@ -1485,7 +1485,7 @@ source-backed option posts the selected payload-owned rows to the render endpoin
 renders the source-owned field catalog with role and data-type metadata before preview. Formula
 preview row generation recognizes brace references, bare identifiers, `total(...)`, and shared
 formula functions such as `abs(...)`, `min(...)`, `max(...)`, `safeDivide(...)`, `percent(...)`,
-`basisPoints(...)`, and `round(...)`, so local sample rows include the same formula source fields
+`basisPoints(...)`, `round(...)`, and `if(...)`, so local sample rows include the same formula source fields
 the shared renderer will evaluate. The
 certified operational data-mart option is server-projected with row-lineage keys, lineage manifest
 pointers, evidence-index links, source run ids, validation/reconciliation posture, certification

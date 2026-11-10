@@ -1,3 +1,4 @@
+using System.Globalization;
 using FluentAssertions;
 using Meridian.Contracts.Workstation;
 using Meridian.Reporting;
@@ -535,6 +536,109 @@ public sealed class ReportWriterGridEngineTests
         row.Values["selfRef"].Should().BeEmpty();
         // Non-circular formulas alongside a cycle still evaluate.
         row.Values["acyclic"].Should().Be("200");
+    }
+
+    [Fact]
+    public void RenderGrids_IfFormula_SelectsBranchAndSkipsTheBranchNotTaken()
+    {
+        var rows = new[]
+        {
+            Row(("symbol", "AAA"), ("pnl", "50"), ("marketValue", "1000")),
+            Row(("symbol", "BBB"), ("pnl", "-20"), ("marketValue", "0")),
+        };
+        var grid = new ReportWriterGridDefinitionDto(
+            "if-grid",
+            "Guarded return",
+            ReportWriterGridKindDto.Detail,
+            RowFields: ["symbol"],
+            Metrics:
+            [
+                new ReportWriterMetricDefinitionDto("pnl", "pnl"),
+                new ReportWriterMetricDefinitionDto("marketValue", "marketValue"),
+            ],
+            Formulas:
+            [
+                // The false branch divides by zero for BBB; it must not be evaluated.
+                new ReportWriterFormulaDefinitionDto("returnPct", "if({marketValue} = 0, 0, {pnl} / {marketValue} * 100)"),
+                new ReportWriterFormulaDefinitionDto("bucket", "IF(pnl >= 0, 1, if(pnl < -10, -2, -1))"),
+            ]);
+
+        var rendered = ReportWriterGridEngine.RenderGrids([grid], rows).Single();
+
+        rendered.Warnings.Should().BeEmpty();
+        var aaa = rendered.Rows.Single(row => row.Values["symbol"] == "AAA");
+        var bbb = rendered.Rows.Single(row => row.Values["symbol"] == "BBB");
+        decimal.Parse(aaa.Values["returnPct"], CultureInfo.InvariantCulture).Should().Be(5m);
+        decimal.Parse(bbb.Values["returnPct"], CultureInfo.InvariantCulture).Should().Be(0m);
+        decimal.Parse(aaa.Values["bucket"], CultureInfo.InvariantCulture).Should().Be(1m);
+        decimal.Parse(bbb.Values["bucket"], CultureInfo.InvariantCulture).Should().Be(-2m);
+        rendered.Lineage!.Formulas.Single(formula => formula.Name == "returnPct")
+            .SourceFields.Should().BeEquivalentTo("marketValue", "pnl");
+    }
+
+    [Theory]
+    [InlineData("{a} = {b}", "0")]
+    [InlineData("{a} == 3", "1")]
+    [InlineData("{a} <> {b}", "1")]
+    [InlineData("{a} != {b}", "1")]
+    [InlineData("{a} < {b}", "1")]
+    [InlineData("{a} <= 3", "1")]
+    [InlineData("{a} > {b}", "0")]
+    [InlineData("{a} >= {b} - 1", "1")]
+    [InlineData("({a} < {b}) * 10 + ({a} > {b})", "10")]
+    public void RenderGrids_ComparisonOperators_YieldOneOrZero(string expression, string expected)
+    {
+        var grid = new ReportWriterGridDefinitionDto(
+            "comparison-grid",
+            "Comparisons",
+            ReportWriterGridKindDto.Detail,
+            RowFields: ["symbol"],
+            Metrics:
+            [
+                new ReportWriterMetricDefinitionDto("a", "a"),
+                new ReportWriterMetricDefinitionDto("b", "b"),
+            ],
+            Formulas: [new ReportWriterFormulaDefinitionDto("result", expression)]);
+
+        var rendered = ReportWriterGridEngine.RenderGrids(
+            [grid],
+            [Row(("symbol", "AAA"), ("a", "3"), ("b", "4"))]).Single();
+
+        rendered.Warnings.Should().BeEmpty();
+        decimal.Parse(rendered.Rows.Single().Values["result"], CultureInfo.InvariantCulture)
+            .Should().Be(decimal.Parse(expected, CultureInfo.InvariantCulture));
+    }
+
+    [Theory]
+    [InlineData("if({a} > 0, 1)", "expected ','")]
+    [InlineData("if({a} > 0, 1, 2, 3)", "expected ')'")]
+    [InlineData("if({a} > 0, 1, {missing})", null)]
+    [InlineData("if({a} < 0, 1, {missing})", "field 'missing'")]
+    public void RenderGrids_IfFormula_ReportsSyntaxAndSelectedBranchErrorsOnly(string expression, string? expectedWarning)
+    {
+        var grid = new ReportWriterGridDefinitionDto(
+            "if-errors",
+            "If errors",
+            ReportWriterGridKindDto.Detail,
+            RowFields: ["symbol"],
+            Metrics: [new ReportWriterMetricDefinitionDto("a", "a")],
+            Formulas: [new ReportWriterFormulaDefinitionDto("result", expression)]);
+
+        var rendered = ReportWriterGridEngine.RenderGrids(
+            [grid],
+            [Row(("symbol", "AAA"), ("a", "3"))]).Single();
+
+        if (expectedWarning is null)
+        {
+            rendered.Warnings.Should().NotContain(warning => warning.StartsWith("Formula 'result'"));
+            rendered.Rows.Single().Values["result"].Should().NotBeEmpty();
+        }
+        else
+        {
+            rendered.Warnings.Should().Contain(warning =>
+                warning.StartsWith("Formula 'result' could not be evaluated:") && warning.Contains(expectedWarning));
+            rendered.Rows.Single().Values["result"].Should().BeEmpty();
+        }
     }
 
     private static IReadOnlyDictionary<string, string> Row(params (string Key, string Value)[] values) =>
