@@ -10830,6 +10830,7 @@ Meridian-main
 │   │   │   ├── MultiCurrency
 │   │   │   │   └── InMemoryFxRateProviderTests.cs
 │   │   │   ├── AccountingHandoffCoordinatorTests.cs
+│   │   │   ├── AlpacaReportChannelPolicyTests.cs
 │   │   │   ├── AlpacaStreamedFillLoopTests.cs
 │   │   │   ├── BrokerageExecutionAdmissionLimitTests.cs
 │   │   │   ├── BrokerageExecutionReconciliationServiceTests.cs

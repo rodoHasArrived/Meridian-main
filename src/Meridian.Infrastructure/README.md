@@ -507,10 +507,12 @@ paths and original file names remain provenance metadata, not duplicate-detectio
 read provider credentials first and construct inside the prepared scope. The synchronous
 `CreateAndRegisterAll` and `CreateStreamingClient` remain for callers that cannot await.
 
-**Brokerage hardening.** The Alpaca, Robinhood and Template gateways wait on a full
-execution-report channel instead of dropping the oldest report. One Alpaca path cannot wait: a
-pending-modification report is returned to its caller and, if the stream is full, logged as not
-published. `RateLimiter` guards its timestamp queue and last-request time with one lock.
+**Brokerage hardening.** The Robinhood and Template gateways, and the Alpaca gateway when it has
+no trade-updates stream, wait on a full execution-report channel instead of dropping the oldest
+report. With a trade-updates stream the Alpaca gateway streams reports from it and nothing reads
+the REST report channel, so that channel keeps dropping its oldest entry. One Alpaca path cannot
+wait: a pending-modification report is returned to its caller and, if the channel is full, logged
+as not published. `RateLimiter` guards its timestamp queue and last-request time with one lock.
 
 ## Diagrams
 

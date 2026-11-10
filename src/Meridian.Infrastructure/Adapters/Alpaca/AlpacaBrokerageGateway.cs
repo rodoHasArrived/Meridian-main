@@ -126,11 +126,20 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
                 "Alpaca brokerage credentials are missing or incomplete; gateway will remain unavailable until valid credentials are provided.");
         }
 
-        // Execution reports carry fills and terminal order states, so they must never be
-        // evicted: wait for the consumer instead of dropping the oldest report when full.
-        _reportChannel = (EventPipelinePolicy.Default with { FullMode = BoundedChannelFullMode.Wait })
+        _reportChannel = (EventPipelinePolicy.Default with { FullMode = ResolveReportChannelFullMode(tradeUpdates is not null) })
             .CreateChannel<ExecutionReport>(singleReader: false, singleWriter: false);
     }
+
+    /// <summary>
+    /// How the REST report channel behaves when full. Without a trade-updates stream this channel
+    /// is the execution-report stream: reports carry fills and terminal order states, so writers
+    /// wait for the consumer rather than evict the oldest report. With a trade-updates stream,
+    /// <see cref="StreamExecutionReportsAsync"/> reads that stream instead and nothing drains this
+    /// channel, so waiting would eventually block every submit, cancel and amend; there it keeps
+    /// only the most recent reports.
+    /// </summary>
+    internal static BoundedChannelFullMode ResolveReportChannelFullMode(bool hasTradeUpdatesStream)
+        => hasTradeUpdatesStream ? BoundedChannelFullMode.DropOldest : BoundedChannelFullMode.Wait;
 
     /// <inheritdoc />
     public string GatewayId => "alpaca";
