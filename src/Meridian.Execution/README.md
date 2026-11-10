@@ -11,6 +11,8 @@ last_reviewed: 2026-10-28
 
 # src/Meridian.Execution
 
+Paper mode has one paper book: the DI-resolved `IOrderGateway` is `OmsGovernedExecutionOrderGateway`, a read-only view over the OMS's own paper `IExecutionGateway`, so direct submit/cancel through `IOrderGateway` is refused in paper as well as live mode. Its order-update stream reads `OrderManagementSystem.SubscribeOrderStateChanges()`: the OMS order table publishes every order-state transition (acceptance, fills, amendment, cancellation, rejection) at write time, in write order. Each subscription keeps only the latest unread state per order incarnation (a token issued when an order id is registered or a terminal id is reused), so a slow subscriber never blocks the OMS, skips only intermediate states, and still receives every order's final state, including orders already evicted from retention. Terminal order-status checks share `OrderManagement.OrderStatusFacts.IsTerminal`.
+
 Reg T short sales post the collateral the broker holds (proceeds × the short initial rate) from `Cash` to `Short Sale Collateral Receivable`, and covering releases it back, so ledger cash equals the account's free cash while a short is open.
 
 `OrderManagementSystem.GetUnitReservingOrders` reserves the larger-quantity outcome of each pending amendment (the original order still executes if the amendment fails); `GetExposureReservingOrders` keeps the larger-value outcome.
