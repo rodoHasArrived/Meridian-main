@@ -21,8 +21,7 @@ namespace Meridian.Tests.Integration;
 /// These tests hit the live Yahoo Finance API and are marked with
 /// Trait("Category", "LiveProvider") so deterministic certification excludes them.
 /// Run with: dotnet test --filter "Category=Integration"
-/// When the Yahoo Finance API is unreachable (e.g. in offline CI sandboxes)
-/// each test is dynamically skipped rather than failing.
+/// When the Yahoo Finance API is unreachable the tests fail rather than passing as no-ops.
 /// </summary>
 [Trait("Category", "Integration")]
 [Trait("Category", "LiveProvider")]
@@ -56,20 +55,17 @@ public sealed class YahooFinancePcgPreferredIntegrationTests : IDisposable
     }
 
     /// <summary>
-    /// Returns <c>false</c> (and logs a message) when Yahoo Finance is not reachable so that
-    /// tests exit early rather than failing in offline environments (e.g. CI sandboxes).
-    /// The tests are structured to pass trivially when the API is unreachable — no assertions
-    /// are skipped in error; the test simply becomes a no-op.
+    /// Deterministic runs exclude these tests through <c>Category=LiveProvider</c>, so a run that
+    /// invokes them expects the provider: an unreachable Yahoo Finance API is a failure here. It
+    /// used to return <c>false</c> and let every test pass as a no-op, which reported offline runs
+    /// as green.
     /// </summary>
     private async Task<bool> IsYahooOnlineAsync()
     {
-        if (await _yahooAvailable.Value.ConfigureAwait(false))
-            return true;
-
-        _output.WriteLine(
-            "Yahoo Finance API is not reachable in this environment. " +
-            "Run with live network access to execute these tests.");
-        return false;
+        var available = await _yahooAvailable.Value.ConfigureAwait(false);
+        available.Should().BeTrue(
+            "live provider tests were invoked, so Yahoo Finance must be reachable from this environment");
+        return true;
     }
 
     [Fact]
