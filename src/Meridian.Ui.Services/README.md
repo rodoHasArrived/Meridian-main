@@ -11,6 +11,8 @@ last_reviewed: 2026-10-01
 
 # src/Meridian.Ui.Services
 
+`DataSamplingService.EstimateSampleSizeAsync` calls `GET /api/sampling/estimate?symbol=...` once per requested symbol and combines the server's population and recommended size; it previously POSTed a body the route does not accept.
+
 ## Purpose
 
 Owned credential connection discovery excludes incomplete ownership and duplicate connection IDs.

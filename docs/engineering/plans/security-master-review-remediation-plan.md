@@ -124,7 +124,8 @@ Row classification, the WPF provenance composition and migration 062's independe
 - Verify actual ledger/NAV/risk/client consumption of income, factor, corporate-action and
   unitized-lot capabilities with retained end-to-end examples. Keep override enrichment fields
   separate from economic-term fields.
-- Reassess specialized Option projection and CustomAsset projection separately. Codec generation
+- Reassess specialized Option projection and CustomAsset projection separately. (Option reassessed
+  2026-11-10: it stays specialized by owner decision; see the D9 disposition in the review.) Codec generation
   must preserve retained economics and precise refusal paths. Existing graph/OTC/curve/schedule
   increments and their acceptance limitations remain owned by their ADRs and resolution sections.
 
