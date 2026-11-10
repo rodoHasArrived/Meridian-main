@@ -18,7 +18,7 @@ status, named index, index and effective coupon annual fractions, spread in basi
 The optional field and `BondAnalyticsResult.SpreadDv01` are omitted from fixed/zero v1/v2 JSON.
 These are calculation display contracts; they do not introduce discount margin or posting authority.
 
-`BondContractualEconomics` owns declared per-100 coupon cash, reference-period stub fractions, accrued interest and discounting time. `BondExerciseEconomics` shares fixed-price whole-redemption dates and cash across analytics and cash forecasts. `BondExerciseNoticeWatch` reads the same scenarios' notice bounds into dated notice windows for the workstation notice watch, refusing every structure fixed analytics refuses. `BondFloatingRateEvidence` freezes each observed or forecast reset with explicit units, source, spread, cap/floor, principal and accrual fraction. New declared lot previews use `canonical-lot-amortization-v5`; v1–v3 retain their original arithmetic and dispatch. The interim v4 declared model was removed before any instruction was produced and is refused as an unsupported version.
+`BondContractualEconomics` owns declared per-100 coupon cash, reference-period stub fractions, accrued interest and discounting time. `BondExerciseEconomics` shares fixed-price whole-redemption dates and cash across analytics and cash forecasts. `BondExerciseNoticeWatch` reads the same scenarios' notice bounds into dated notice windows for the workstation notice watch, refusing every structure fixed analytics refuses; `EvaluateToMaturity` is the same read without the horizon, used by the asset-operations obligation timeline. `BondFloatingRateEvidence` freezes each observed or forecast reset with explicit units, source, spread, cap/floor, principal and accrual fraction. New declared lot previews use `canonical-lot-amortization-v5`; v1–v3 retain their original arithmetic and dispatch. The interim v4 declared model was removed before any instruction was produced and is refused as an unsupported version.
 
 `CashFlows/` owns the versioned calculation-only cash-flow contracts, exercise/notice resolution, standard make-whole formulas, structured coupon/principal walks, deterministic CPR/SMM/PSA prepayments, and replay verification. The `cashFlowContract` companion reads ahead of existing write ceilings; undeclared terms and existing call/put element shapes remain unchanged. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).
 
@@ -1481,7 +1481,11 @@ Asset Operations terms/obligations timeline contracts carry the shared projectio
 expected cash flows, projected obligations, retained evidence posture, variances, ledger support,
 formula trace, and next action. Browser and WPF clients should render `AssetTermsObligationsTimelineDto`
 and its event/variance rows as supplied instead of rebuilding projection math or source-support
-rules in UI-specific DTOs.
+rules in UI-specific DTOs. Event kinds are open text: a Bond with a declared call or put schedule
+carries `IssuerCallExercise`, `HolderPutExercise`, `IssuerCallNoticeDeadline` and
+`HolderPutNoticeDeadline` rows instead of `CallPutReview`, and the timeline's `ExtensionPayload`
+then carries a `declaredExercise` object (`status` `Resolved` or `Blocked`, `blockers` with `code`
+and `reason`, `diagnostics`). `EngineVersion` is evidence to display, not a value to branch on.
 
 Brokerage sync activity payloads are fund-account scoped under `Workstation/BrokerageSyncDtos.cs`.
 Keep readiness and work-item decisions on `WorkstationBrokerageSyncStatusDto` and reserve
