@@ -21,6 +21,7 @@ import type {
   FinancialRecordExplorerTone
 } from "@/types";
 import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
+import { pluralizeCount } from "@/lib/format";
 
 export interface FinancialRecordExplorerScopeItem {
   id: string;
@@ -304,7 +305,7 @@ export function FinancialRecordExplorerShell({
                 placeholder="Search financial records"
                 aria-label={`Search ${headerTitle}`}
               />
-              {dtoMode.isBlocked ? <Badge variant="danger">Blocked</Badge> : <Badge variant="outline">{rows.length} rows</Badge>}
+              {dtoMode.isBlocked ? <Badge variant="danger">Blocked</Badge> : <Badge variant="outline">{pluralizeCount(rows.length, "row")}</Badge>}
             </div>
             <ExplorerGrid explorer={dtoMode} rows={rows} columns={visibleColumns} selectedRecordId={selectedRow?.recordId ?? null} onSelect={handleSelectRecord} />
             <RecordGraph explorer={dtoMode} />

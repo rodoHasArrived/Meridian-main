@@ -307,6 +307,19 @@ internal static class SecurityMasterMapping
         // The guard sees the stored or submitted payload; the decoder reads it at the class's current
         // terms version (ADR-024). Identity steps return the same element.
         json = SecurityAssetClassTermsUpgrader.UpgradeForRead(assetClass, json);
+        if (mode == SecurityKindMappingMode.Write)
+        {
+            // ADR-027 stage 3 (S3-B): the schema's declared read aliases are part of the submission
+            // contract — the registry DTOs, the field-edit canonicalizer and the day-count guard all
+            // advertise them — but the per-class decode below reads canonical spellings. Rewriting
+            // the submitted document once, from the schema table, makes every declared alias land on
+            // its canonical key for every class (the S3-B sweep found seven classes whose declared
+            // aliases the decode ignored, silently dropping optional values submitted under an
+            // advertised spelling). An ambiguous submission — the canonical key and an alias, or two
+            // aliases, carrying different values — refuses rather than letting key order decide.
+            // Read mode is untouched: stored rows are canonical by construction.
+            json = CanonicalizeDeclaredAliases(assetClass, json);
+        }
         var terms = ResolveAssetTermsJson(json);
         SecurityEconomicScheduleValidation? economicSchedules = null;
         if (assetClass is "Bond" or "DirectLoan" or "StructuredCredit")
@@ -318,6 +331,12 @@ internal static class SecurityMasterMapping
         // same-date principal payments. Sorting/aggregation belongs to calculated and relational
         // views, not to reconstructing a retained record or emitting its next domain snapshot.
 
+        // S3-D: the schema-bound view the migrated classes (SchemaBoundDecodeClasses) read
+        // through; every bound read verifies its key is declared with the type it is read as.
+        var bound = new SchemaBoundTerms(assetClass, json, mode);
+        // The profile-resolved sub-document some classes read their flat fields from; the schema
+        // declares the same keys wherever the bag lives.
+        var boundTerms = new SchemaBoundTerms(assetClass, terms, mode);
         var kind = assetClass switch
         {
             "Equity" => SecurityKind.NewEquity(new EquityTerms(
@@ -325,28 +344,28 @@ internal static class SecurityMasterMapping
                 ToVotingRightsCatOption(GetOptionalString(json, "votingRightsCat")),
                 ToEquityClassificationOption(json, mode))),
             "Option" => SecurityKind.NewOption(new OptionTerms(
-                SecurityId.NewSecurityId(GetRequiredGuid(json, "underlyingId")),
-                GetRequiredString(json, "putCall"),
-                GetRequiredDecimal(json, "strike"),
-                GetRequiredDateOnly(json, "expiry"),
-                GetRequiredDecimal(json, "multiplier"),
-                ToOption(GetOptionalString(json, "optChainId")),
-                ParseExerciseStyle(GetOptionalString(json, "exerciseStyle")),
-                ToOption(GetOptionalString(json, "settlementType")),
-                GetOptionalBoolean(json, "isAdjusted") ?? false,
-                ToOption(GetOptionalDateOnly(json, "lastTradingDt")))),
+                SecurityId.NewSecurityId(bound.RequiredGuid("underlyingId")),
+                bound.RequiredString("putCall"),
+                bound.RequiredDecimal("strike"),
+                bound.RequiredDateOnly("expiry"),
+                bound.RequiredDecimal("multiplier"),
+                ToOption(bound.OptionalString("optChainId")),
+                ParseExerciseStyle(bound.OptionalString("exerciseStyle")),
+                ToOption(bound.OptionalString("settlementType")),
+                bound.OptionalBoolean("isAdjusted") ?? false,
+                ToOption(bound.OptionalDateOnly("lastTradingDt")))),
             "Future" => SecurityKind.NewFuture(new FutureTerms(
-                GetRequiredString(json, "rootSymbol"),
-                GetRequiredString(json, "contractMonth"),
-                GetRequiredDateOnly(json, "expiry"),
-                GetRequiredDecimal(json, "multiplier"),
-                ToOption(GetOptionalDateOnly(json, "lastTradingDt")),
-                ToOption(GetOptionalDateOnly(json, "firstNoticeDt")),
-                ToOption(GetOptionalDateOnly(json, "deliveryMonthDt")),
-                ToOption(GetOptionalString(json, "settlementType")),
-                ToOption(GetOptionalString(json, "deliveryLocationCode")),
-                GetOptionalBoolean(json, "isRollTarget") ?? false,
-                ToOption(GetOptionalInt(json, "rollWindowDays")))),
+                bound.RequiredString("rootSymbol"),
+                bound.RequiredString("contractMonth"),
+                bound.RequiredDateOnly("expiry"),
+                bound.RequiredDecimal("multiplier"),
+                ToOption(bound.OptionalDateOnly("lastTradingDt")),
+                ToOption(bound.OptionalDateOnly("firstNoticeDt")),
+                ToOption(bound.OptionalDateOnly("deliveryMonthDt")),
+                ToOption(bound.OptionalString("settlementType")),
+                ToOption(bound.OptionalString("deliveryLocationCode")),
+                bound.OptionalBoolean("isRollTarget") ?? false,
+                ToOption(bound.OptionalInt("rollWindowDays")))),
             "Bond" => SecurityKind.NewBond(ToBondTerms(
                 json,
                 mode,
@@ -354,82 +373,82 @@ internal static class SecurityMasterMapping
                 ReadScheduleConventions(json, assetClass, versionedTerms),
                 ReadCallPutSchedules(json, assetClass, versionedTerms))),
             "FxSpot" => SecurityKind.NewFxSpot(new FxSpotTerms(
-                GetRequiredString(json, "baseCurrency"),
-                GetRequiredString(json, "quoteCurrency"))),
+                bound.RequiredString("baseCurrency"),
+                bound.RequiredString("quoteCurrency"))),
             "Deposit" => SecurityKind.NewDeposit(new DepositTerms(
-                GetRequiredString(json, "depositType"),
-                GetRequiredString(json, "institutionName"),
-                ToOption(GetOptionalDateOnly(json, "maturity")),
-                ToOption(GetOptionalDecimal(json, "interestRate")),
-                ToDayCountOption(GetOptionalString(json, "dayCount", mode), mode),
-                GetOptionalBoolean(json, "isCallable") ?? false)),
+                bound.RequiredString("depositType"),
+                bound.RequiredString("institutionName"),
+                ToOption(bound.OptionalDateOnly("maturity")),
+                ToOption(bound.OptionalDecimal("interestRate")),
+                ToDayCountOption(bound.OptionalConventionString("dayCount"), mode),
+                bound.OptionalBoolean("isCallable") ?? false)),
             "MoneyMarketFund" => SecurityKind.NewMoneyMarketFund(new MoneyMarketFundTerms(
-                ToOption(GetOptionalString(json, "fundFamily")),
-                GetOptionalBoolean(json, "sweepEligible") ?? false,
-                ToOption(GetOptionalInt(json, "weightedAverageMaturityDays")),
-                GetOptionalBoolean(json, "liquidityFeeEligible") ?? false)),
+                ToOption(bound.OptionalString("fundFamily")),
+                bound.OptionalBoolean("sweepEligible") ?? false,
+                ToOption(bound.OptionalInt("weightedAverageMaturityDays")),
+                bound.OptionalBoolean("liquidityFeeEligible") ?? false)),
             "CertificateOfDeposit" => SecurityKind.NewCertificateOfDeposit(new CertificateOfDepositTerms(
-                GetRequiredString(json, "issuerName"),
-                GetRequiredDateOnly(json, "maturity"),
-                ToOption(GetOptionalDecimal(json, "couponRate")),
-                ToOption(GetOptionalDateOnly(json, "callableDate")),
-                ToDayCountOption(GetOptionalString(json, "dayCount", mode), mode),
+                bound.RequiredString("issuerName"),
+                bound.RequiredDateOnly("maturity"),
+                ToOption(bound.OptionalDecimal("couponRate")),
+                ToOption(bound.OptionalDateOnly("callableDate")),
+                ToDayCountOption(bound.OptionalConventionString("dayCount"), mode),
                 ReadScheduleConventions(json, assetClass, versionedTerms),
                 ReadCallPutSchedules(json, assetClass, versionedTerms))),
             "CommercialPaper" => SecurityKind.NewCommercialPaper(new CommercialPaperTerms(
-                GetRequiredString(json, "issuerName"),
-                GetRequiredDateOnly(json, "maturity"),
-                ToOption(GetOptionalDecimal(json, "discountRate")),
-                ToDayCountOption(GetOptionalString(json, "dayCount", mode), mode),
-                GetOptionalBoolean(json, "isAssetBacked") ?? false)),
+                bound.RequiredString("issuerName"),
+                bound.RequiredDateOnly("maturity"),
+                ToOption(bound.OptionalDecimal("discountRate")),
+                ToDayCountOption(bound.OptionalConventionString("dayCount"), mode),
+                bound.OptionalBoolean("isAssetBacked") ?? false)),
             "TreasuryBill" => SecurityKind.NewTreasuryBill(new TreasuryBillTerms(
-                GetRequiredDateOnly(json, "maturity"),
-                ToOption(GetOptionalDateOnly(json, "auctionDate")),
-                ToOption(GetOptionalString(json, "cusip")),
-                ToOption(GetOptionalDecimal(json, "discountRate")))),
+                bound.RequiredDateOnly("maturity"),
+                ToOption(bound.OptionalDateOnly("auctionDate")),
+                ToOption(bound.OptionalString("cusip")),
+                ToOption(bound.OptionalDecimal("discountRate")))),
             "Repo" => SecurityKind.NewRepo(new RepoTerms(
-                GetRequiredString(json, "counterparty"),
-                GetRequiredDateOnly(json, "startDate"),
-                GetRequiredDateOnly(json, "endDate"),
-                ToOption(GetOptionalDecimal(json, "repoRate")),
-                ToOption(GetOptionalString(json, "collateralType")),
-                ToOption(GetOptionalDecimal(json, "haircut")))),
+                bound.RequiredString("counterparty"),
+                bound.RequiredDateOnly("startDate"),
+                bound.RequiredDateOnly("endDate"),
+                ToOption(bound.OptionalDecimal("repoRate")),
+                ToOption(bound.OptionalString("collateralType")),
+                ToOption(bound.OptionalDecimal("haircut")))),
             "CashSweep" => SecurityKind.NewCashSweep(new CashSweepTerms(
-                GetRequiredString(json, "programName"),
-                GetRequiredString(json, "sweepVehicleType"),
-                ToOption(GetOptionalString(json, "sweepFrequency")),
-                ToOption(GetOptionalString(json, "targetAccountType")),
-                ToOption(GetOptionalDecimal(json, "yieldRate")))),
+                bound.RequiredString("programName"),
+                bound.RequiredString("sweepVehicleType"),
+                ToOption(bound.OptionalString("sweepFrequency")),
+                ToOption(bound.OptionalString("targetAccountType")),
+                ToOption(bound.OptionalDecimal("yieldRate")))),
             "OtherSecurity" => SecurityKind.NewOtherSecurity(new OtherSecurityTerms(
-                GetRequiredString(json, "category"),
-                ToOption(GetOptionalString(json, "subType")),
-                ToOption(GetOptionalDateOnly(json, "maturity")),
-                ToOption(GetOptionalString(json, "issuerName")),
-                ToOption(GetOptionalString(json, "settlementType")))),
+                bound.RequiredString("category"),
+                ToOption(bound.OptionalString("subType")),
+                ToOption(bound.OptionalDateOnly("maturity")),
+                ToOption(bound.OptionalString("issuerName")),
+                ToOption(bound.OptionalString("settlementType")))),
             "CustomAsset" => ToCustomAssetKind(json, mode),
             "Swap" => SecurityKind.NewSwap(new SwapTerms(
-                GetRequiredDateOnly(json, "effectiveDate"),
-                GetRequiredDateOnly(json, "maturityDate"),
+                bound.RequiredDateOnly("effectiveDate"),
+                bound.RequiredDateOnly("maturityDate"),
                 ToFSharpList(GetSwapLegItems(json).Select(leg => ToSwapLeg(leg, ReadLegScheduleConventions(leg, assetClass, versionedTerms), mode))))),
             "DirectLoan" => SecurityKind.NewDirectLoan(new DirectLoanTerms(
-                GetRequiredString(json, "borrower"),
-                ToOption(GetOptionalDateOnly(json, "maturity")),
+                bound.RequiredString("borrower"),
+                ToOption(bound.OptionalDateOnly("maturity")),
                 ToFSharpList(GetRequiredArray(json, "covenants").EnumerateArray().Select(ToCovenant)),
-                ToOption(GetOptionalString(json, "referenceIndex")),
-                ToOption(GetOptionalDecimal(json, "spreadBps")),
-                ToOption(GetOptionalDecimal(json, "currentCouponRate")),
-                ToOption(GetOptionalString(json, "resetFrequency")),
+                ToOption(bound.OptionalString("referenceIndex")),
+                ToOption(bound.OptionalDecimal("spreadBps")),
+                ToOption(bound.OptionalDecimal("currentCouponRate")),
+                ToOption(bound.OptionalString("resetFrequency")),
                 ToFSharpList(economicSchedules!.PrincipalSchedule.SourceEntries.Select(static entry =>
                     new PrincipalPaymentEntry(entry.PaymentDate, entry.Amount))),
                 ToOption(GetOptionalString(json, "pricingSource")))),
             "StructuredCredit" => SecurityKind.NewStructuredCredit(new StructuredCreditTerms(
-                GetRequiredString(terms, "tranche"),
-                ToOption(GetOptionalString(terms, "poolId")),
-                GetRequiredString(terms, "collateralType"),
-                GetRequiredDecimal(terms, "originalFace"),
-                ToOption(GetOptionalDecimal(terms, "currentFactor")),
-                GetRequiredString(terms, "couponOrIndex"),
-                ToOption(GetOptionalString(terms, "factorSchedule")),
+                boundTerms.RequiredString("tranche"),
+                ToOption(boundTerms.OptionalString("poolId")),
+                boundTerms.RequiredString("collateralType"),
+                boundTerms.RequiredDecimal("originalFace"),
+                ToOption(boundTerms.OptionalDecimal("currentFactor")),
+                boundTerms.RequiredString("couponOrIndex"),
+                ToOption(boundTerms.OptionalString("factorSchedule")),
                 ToFSharpList(economicSchedules!.FactorSchedule.SourceEntries.Select(static entry =>
                     new FactorScheduleEntry(entry.AsOfDate, entry.Factor))),
                 ToOption(GetOptionalDateOnly(terms, "maturity")),
@@ -437,139 +456,139 @@ internal static class SecurityMasterMapping
                 // value as absent: persisting null for a numeric kind, "1.5" months or an unparseable
                 // date would silently discard caller input. Reads stay tolerant so stored rows remain
                 // loadable.
-                ToStructuredCreditKindOption(GetOptionalString(terms, "structuredCreditKind", mode)),
-                ToOption(GetOptionalString(terms, "seniority", mode)),
-                ToOption(GetOptionalDecimal(terms, "attachmentPoint", mode)),
-                ToOption(GetOptionalDecimal(terms, "detachmentPoint", mode)),
-                ToOption(GetOptionalDecimal(terms, "weightedAverageCoupon", mode)),
-                ToOption(GetOptionalInt(terms, "weightedAverageMaturityMonths", mode)),
-                ToOption(GetOptionalInt(terms, "weightedAverageLoanAgeMonths", mode)),
-                ToOption(GetOptionalDateOnly(terms, "reinvestmentPeriodEnd", mode)),
-                ToOption(GetOptionalDateOnly(terms, "nonCallPeriodEnd", mode)),
+                ToStructuredCreditKindOption(boundTerms.OptionalConventionString("structuredCreditKind")),
+                ToOption(boundTerms.OptionalConventionString("seniority")),
+                ToOption(boundTerms.OptionalStrictDecimal("attachmentPoint")),
+                ToOption(boundTerms.OptionalStrictDecimal("detachmentPoint")),
+                ToOption(boundTerms.OptionalStrictDecimal("weightedAverageCoupon")),
+                ToOption(boundTerms.OptionalStrictInt("weightedAverageMaturityMonths")),
+                ToOption(boundTerms.OptionalStrictInt("weightedAverageLoanAgeMonths")),
+                ToOption(boundTerms.OptionalStrictDateOnly("reinvestmentPeriodEnd")),
+                ToOption(boundTerms.OptionalStrictDateOnly("nonCallPeriodEnd")),
                 // From the root: a profile envelope decodes no versioned container, so its
                 // profileFields never reach the block or the schedules.
                 ReadScheduleConventions(json, assetClass, versionedTerms),
                 ReadCallPutSchedules(json, assetClass, versionedTerms))),
             "PrivateFundInterest" => SecurityKind.NewPrivateFundInterest(new PrivateFundInterestTerms(
-                GetRequiredString(terms, "gpSponsor"),
-                GetRequiredString(terms, "strategy"),
-                GetRequiredInt(terms, "vintage"),
-                GetRequiredDecimal(terms, "commitment"),
-                ToOption(GetOptionalDecimal(terms, "fundedAmount")),
-                ToOption(GetOptionalDecimal(terms, "unfundedAmount")),
-                GetRequiredDateOnly(terms, "navDate"),
-                ToOption(GetOptionalString(terms, "lockup")))),
+                boundTerms.RequiredString("gpSponsor"),
+                boundTerms.RequiredString("strategy"),
+                boundTerms.RequiredInt("vintage"),
+                boundTerms.RequiredDecimal("commitment"),
+                ToOption(boundTerms.OptionalDecimal("fundedAmount")),
+                ToOption(boundTerms.OptionalDecimal("unfundedAmount")),
+                boundTerms.RequiredDateOnly("navDate"),
+                ToOption(boundTerms.OptionalString("lockup")))),
             "PrivateCompanyEquity" => SecurityKind.NewPrivateCompanyEquity(new PrivateCompanyEquityTerms(
-                GetRequiredString(terms, "issuer"),
-                GetRequiredString(terms, "shareClass"),
-                GetRequiredString(terms, "round"),
-                ToOption(GetOptionalDecimal(terms, "ownershipPercent")),
-                GetRequiredDecimal(terms, "costBasis"),
-                ToOption(GetOptionalDecimal(terms, "latestValuation")),
-                ToOption(GetOptionalString(terms, "transferRestrictions")))),
+                boundTerms.RequiredString("issuer"),
+                boundTerms.RequiredString("shareClass"),
+                boundTerms.RequiredString("round"),
+                ToOption(boundTerms.OptionalDecimal("ownershipPercent")),
+                boundTerms.RequiredDecimal("costBasis"),
+                ToOption(boundTerms.OptionalDecimal("latestValuation")),
+                ToOption(boundTerms.OptionalString("transferRestrictions")))),
             "RealEstateHolding" => SecurityKind.NewRealEstateHolding(new RealEstateHoldingTerms(
-                GetRequiredString(terms, "propertyType"),
-                GetRequiredString(terms, "addressOrMarket"),
-                GetRequiredDecimal(terms, "ownershipPercent"),
-                GetRequiredDecimal(terms, "appraisalValue"),
-                GetRequiredDateOnly(terms, "valuationDate"),
-                ToOption(GetOptionalString(terms, "debtStack")),
-                ToOption(GetOptionalString(terms, "sponsor")))),
+                boundTerms.RequiredString("propertyType"),
+                boundTerms.RequiredString("addressOrMarket"),
+                boundTerms.RequiredDecimal("ownershipPercent"),
+                boundTerms.RequiredDecimal("appraisalValue"),
+                boundTerms.RequiredDateOnly("valuationDate"),
+                ToOption(boundTerms.OptionalString("debtStack")),
+                ToOption(boundTerms.OptionalString("sponsor")))),
             "CommitmentGuarantee" => SecurityKind.NewCommitmentGuarantee(new CommitmentGuaranteeTerms(
-                GetRequiredString(terms, "counterparty"),
-                ToOption(GetOptionalString(terms, "beneficiary")),
-                GetRequiredDecimal(terms, "committedAmount"),
-                ToOption(GetOptionalDecimal(terms, "unfundedAmount")),
-                GetRequiredDateOnly(terms, "effectiveDate"),
-                ToOption(GetOptionalDateOnly(terms, "expiryDate")),
-                ToOption(GetOptionalDecimal(terms, "feeRate")),
-                ToOption(GetOptionalString(terms, "collateral")),
+                boundTerms.RequiredString("counterparty"),
+                ToOption(boundTerms.OptionalString("beneficiary")),
+                boundTerms.RequiredDecimal("committedAmount"),
+                ToOption(boundTerms.OptionalDecimal("unfundedAmount")),
+                boundTerms.RequiredDateOnly("effectiveDate"),
+                ToOption(boundTerms.OptionalDateOnly("expiryDate")),
+                ToOption(boundTerms.OptionalDecimal("feeRate")),
+                ToOption(boundTerms.OptionalString("collateral")),
                 ToFSharpList(GetOptionalArrayItems(terms, "covenants").Select(ToCovenant)))),
             "Commodity" => SecurityKind.NewCommodity(new CommodityTerms(
-                GetRequiredString(json, "commodityType"),
-                ToOption(GetOptionalString(json, "denomination")),
-                ToOption(GetOptionalDecimal(json, "contractSize")))),
+                bound.RequiredString("commodityType"),
+                ToOption(bound.OptionalString("denomination")),
+                ToOption(bound.OptionalDecimal("contractSize")))),
             "CryptoCurrency" => SecurityKind.NewCryptoCurrency(new CryptoTerms(
-                GetRequiredString(json, "baseCurrency"),
-                GetRequiredString(json, "quoteCurrency"),
-                ToOption(GetOptionalString(json, "network")))),
+                bound.RequiredString("baseCurrency"),
+                bound.RequiredString("quoteCurrency"),
+                ToOption(bound.OptionalString("network")))),
             "Cfd" => SecurityKind.NewCfd(new CfdTerms(
-                GetRequiredString(json, "underlyingAssetClass"),
-                ToOption(GetOptionalString(json, "underlyingDescription")),
-                ToOption(GetOptionalDecimal(json, "leverage")))),
+                bound.RequiredString("underlyingAssetClass"),
+                ToOption(bound.OptionalString("underlyingDescription")),
+                ToOption(bound.OptionalDecimal("leverage")))),
             "Warrant" => SecurityKind.NewWarrant(new WarrantTerms(
-                SecurityId.NewSecurityId(GetRequiredGuid(json, "underlyingId")),
-                GetRequiredString(json, "warrantType"),
-                ToOption(GetOptionalDecimal(json, "strike")),
-                ToOption(GetOptionalDateOnly(json, "expiry")),
-                ToOption(GetOptionalDecimal(json, "multiplier")))),
+                SecurityId.NewSecurityId(bound.RequiredGuid("underlyingId")),
+                bound.RequiredString("warrantType"),
+                ToOption(bound.OptionalDecimal("strike")),
+                ToOption(bound.OptionalDateOnly("expiry")),
+                ToOption(bound.OptionalDecimal("multiplier")))),
             "FxForward" => SecurityKind.NewFxForward(new FxForwardTerms(
-                GetRequiredString(json, "baseCurrency"),
-                GetRequiredString(json, "quoteCurrency"),
-                ToOption(GetOptionalDecimal(json, "notional", mode)),
-                ToOption(GetOptionalDecimal(json, "forwardRate", mode)),
-                ToOption(GetOptionalDateOnly(json, "tradeDate", mode)),
-                GetRequiredDateOnly(json, "valueDate"),
-                ToOption(GetOptionalString(json, "settlementType", mode)))),
+                bound.RequiredString("baseCurrency"),
+                bound.RequiredString("quoteCurrency"),
+                ToOption(bound.OptionalStrictDecimal("notional")),
+                ToOption(bound.OptionalStrictDecimal("forwardRate")),
+                ToOption(bound.OptionalStrictDateOnly("tradeDate")),
+                bound.RequiredDateOnly("valueDate"),
+                ToOption(bound.OptionalConventionString("settlementType")))),
             "NonDeliverableForward" => SecurityKind.NewNonDeliverableForward(new NonDeliverableForwardTerms(
-                GetRequiredString(json, "baseCurrency"),
-                GetRequiredString(json, "quoteCurrency"),
-                GetRequiredString(json, "settlementCurrency"),
-                ToOption(GetOptionalDecimal(json, "notional", mode)),
-                ToOption(GetOptionalDecimal(json, "forwardRate", mode)),
-                GetRequiredDateOnly(json, "fixingDate"),
-                GetRequiredDateOnly(json, "valueDate"),
-                ToOption(GetOptionalString(json, "fixingSource", mode)))),
+                bound.RequiredString("baseCurrency"),
+                bound.RequiredString("quoteCurrency"),
+                bound.RequiredString("settlementCurrency"),
+                ToOption(bound.OptionalStrictDecimal("notional")),
+                ToOption(bound.OptionalStrictDecimal("forwardRate")),
+                bound.RequiredDateOnly("fixingDate"),
+                bound.RequiredDateOnly("valueDate"),
+                ToOption(bound.OptionalConventionString("fixingSource")))),
             "CreditDefaultSwap" => SecurityKind.NewCreditDefaultSwap(new CreditDefaultSwapTerms(
-                GetRequiredString(json, "referenceEntity"),
-                ToOption(GetOptionalString(json, "referenceObligation", mode)),
-                GetRequiredString(json, "protectionSide"),
-                GetRequiredDecimal(json, "notional"),
-                GetRequiredDecimal(json, "fixedCouponBps"),
-                GetRequiredDateOnly(json, "effectiveDate"),
-                GetRequiredDateOnly(json, "maturityDate"),
-                ToOption(GetOptionalString(json, "paymentFrequency", mode)),
-                ToDayCountOption(GetOptionalString(json, "dayCount", mode), mode),
-                ToOption(GetOptionalString(json, "seniority", mode)),
-                ToOption(GetOptionalString(json, "restructuringClause", mode)),
-                ToOption(GetOptionalDecimal(json, "upfrontPoints", mode)),
-                ToOption(GetOptionalDecimal(json, "recoveryRateAssumption", mode)),
-                ToOption(GetOptionalString(json, "indexName", mode)))),
+                bound.RequiredString("referenceEntity"),
+                ToOption(bound.OptionalConventionString("referenceObligation")),
+                bound.RequiredString("protectionSide"),
+                bound.RequiredDecimal("notional"),
+                bound.RequiredDecimal("fixedCouponBps"),
+                bound.RequiredDateOnly("effectiveDate"),
+                bound.RequiredDateOnly("maturityDate"),
+                ToOption(bound.OptionalConventionString("paymentFrequency")),
+                ToDayCountOption(bound.OptionalConventionString("dayCount"), mode),
+                ToOption(bound.OptionalConventionString("seniority")),
+                ToOption(bound.OptionalConventionString("restructuringClause")),
+                ToOption(bound.OptionalStrictDecimal("upfrontPoints")),
+                ToOption(bound.OptionalStrictDecimal("recoveryRateAssumption")),
+                ToOption(bound.OptionalConventionString("indexName")))),
             "Swaption" => SecurityKind.NewSwaption(new SwaptionTerms(
-                GetRequiredString(json, "payerReceiver"),
-                ToOption(GetOptionalString(json, "exerciseStyle", mode)),
-                GetRequiredDecimal(json, "strikeRate"),
-                GetRequiredDateOnly(json, "expiry"),
-                ToOption(GetOptionalDateOnly(json, "underlyingEffectiveDate", mode)),
-                GetRequiredDateOnly(json, "underlyingMaturityDate"),
-                GetRequiredDecimal(json, "notional"),
-                ToOption(GetOptionalString(json, "floatingIndex", mode)),
-                ToOption(GetOptionalString(json, "fixedLegPaymentFrequency", mode)),
-                ToDayCountOption(GetOptionalString(json, "fixedLegDayCount", mode), mode, "fixedLegDayCount"),
-                ToOption(GetOptionalString(json, "settlementType", mode)))),
+                bound.RequiredString("payerReceiver"),
+                ToOption(bound.OptionalConventionString("exerciseStyle")),
+                bound.RequiredDecimal("strikeRate"),
+                bound.RequiredDateOnly("expiry"),
+                ToOption(bound.OptionalStrictDateOnly("underlyingEffectiveDate")),
+                bound.RequiredDateOnly("underlyingMaturityDate"),
+                bound.RequiredDecimal("notional"),
+                ToOption(bound.OptionalConventionString("floatingIndex")),
+                ToOption(bound.OptionalConventionString("fixedLegPaymentFrequency")),
+                ToDayCountOption(bound.OptionalConventionString("fixedLegDayCount"), mode, "fixedLegDayCount"),
+                ToOption(bound.OptionalConventionString("settlementType")))),
             "CapFloor" => SecurityKind.NewCapFloor(new CapFloorTerms(
-                GetRequiredString(json, "capFloorType"),
-                GetRequiredString(json, "referenceIndex"),
-                ToOption(GetOptionalDecimal(json, "capStrike", mode)),
-                ToOption(GetOptionalDecimal(json, "floorStrike", mode)),
-                GetRequiredDecimal(json, "notional"),
-                GetRequiredDateOnly(json, "effectiveDate"),
-                GetRequiredDateOnly(json, "maturityDate"),
-                ToOption(GetOptionalString(json, "resetFrequency", mode)),
-                ToDayCountOption(GetOptionalString(json, "dayCount", mode), mode),
-                ToOption(GetOptionalDecimal(json, "premiumAmount", mode)))),
+                bound.RequiredString("capFloorType"),
+                bound.RequiredString("referenceIndex"),
+                ToOption(bound.OptionalStrictDecimal("capStrike")),
+                ToOption(bound.OptionalStrictDecimal("floorStrike")),
+                bound.RequiredDecimal("notional"),
+                bound.RequiredDateOnly("effectiveDate"),
+                bound.RequiredDateOnly("maturityDate"),
+                ToOption(bound.OptionalConventionString("resetFrequency")),
+                ToDayCountOption(bound.OptionalConventionString("dayCount"), mode),
+                ToOption(bound.OptionalStrictDecimal("premiumAmount")))),
             "StructuredNote" => SecurityKind.NewStructuredNote(new StructuredNoteTerms(
-                GetRequiredString(json, "issuerName"),
-                GetRequiredString(json, "underlyingDescription"),
-                GetRequiredDateOnly(json, "maturity"),
-                ToOption(GetOptionalDateOnly(json, "issueDate", mode)),
-                ToOption(GetOptionalDecimal(json, "denomination", mode)),
-                ToOption(GetOptionalDecimal(json, "principalProtectionPct", mode)),
-                ToOption(GetOptionalDecimal(json, "participationRate", mode)),
-                ToOption(GetOptionalDecimal(json, "returnCap", mode)),
-                ToOption(GetOptionalDecimal(json, "couponRate", mode)),
-                ToOption(GetOptionalString(json, "paymentFrequency", mode)),
-                ToOption(GetOptionalDecimal(json, "barrierLevel", mode)))),
+                bound.RequiredString("issuerName"),
+                bound.RequiredString("underlyingDescription"),
+                bound.RequiredDateOnly("maturity"),
+                ToOption(bound.OptionalStrictDateOnly("issueDate")),
+                ToOption(bound.OptionalStrictDecimal("denomination")),
+                ToOption(bound.OptionalStrictDecimal("principalProtectionPct")),
+                ToOption(bound.OptionalStrictDecimal("participationRate")),
+                ToOption(bound.OptionalStrictDecimal("returnCap")),
+                ToOption(bound.OptionalStrictDecimal("couponRate")),
+                ToOption(bound.OptionalConventionString("paymentFrequency")),
+                ToOption(bound.OptionalStrictDecimal("barrierLevel")))),
             "InvestmentFund" => SecurityKind.NewInvestmentFund(new InvestmentFundTerms(
                 ToOption(GetOptionalString(json, "fundType")),
                 ToOption(GetOptionalString(json, "fundFamily")),
@@ -1330,6 +1349,134 @@ internal static class SecurityMasterMapping
 
     private static bool SupportsProfileBackedTerms(string assetClass)
         => SecurityAssetClassCatalog.GetOrDefault(assetClass).SupportsProfileBackedTerms;
+
+    /// <summary>
+    /// Rewrites a submitted asset-terms document so every value lands on its schema-canonical key:
+    /// for each declared root field whose canonical key is absent, a value submitted under one of
+    /// the field's declared aliases moves to the canonical key. Two spellings of the same field
+    /// carrying different raw values refuse — an ambiguous submission must not be resolved by key
+    /// order; identical duplicates collapse to the canonical spelling. Undeclared keys pass
+    /// through untouched (the codec's existing posture), and a document that already uses only
+    /// canonical spellings comes back unchanged.
+    /// </summary>
+    private static JsonElement CanonicalizeDeclaredAliases(string assetClass, JsonElement json)
+    {
+        if (json.ValueKind != JsonValueKind.Object || !SecurityAssetTermsSchema.TryGetFields(assetClass, out var fields))
+        {
+            return json;
+        }
+
+        System.Text.Json.Nodes.JsonObject? rewritten = null;
+        foreach (var field in fields)
+        {
+            if (field.Aliases.Count == 0)
+            {
+                continue;
+            }
+
+            string? presentSpelling = json.TryGetProperty(field.Key, out _) ? field.Key : null;
+            foreach (var alias in field.Aliases)
+            {
+                if (!json.TryGetProperty(alias, out var aliasValue))
+                {
+                    continue;
+                }
+
+                if (presentSpelling is not null)
+                {
+                    var existing = (rewritten?[field.Key]?.ToJsonString())
+                        ?? (json.TryGetProperty(presentSpelling, out var presentValue) ? presentValue.GetRawText() : null);
+                    if (!string.Equals(NormalizeRawJson(existing), NormalizeRawJson(aliasValue.GetRawText()), StringComparison.Ordinal))
+                    {
+                        throw new InvalidOperationException(
+                            $"Ambiguous '{field.Key}' submission for asset class '{assetClass}': '{presentSpelling}' and " +
+                            $"'{alias}' carry different values. Submit one spelling of the field.");
+                    }
+
+                    rewritten ??= System.Text.Json.Nodes.JsonNode.Parse(json.GetRawText())!.AsObject();
+                    rewritten.Remove(alias);
+                    continue;
+                }
+
+                rewritten ??= System.Text.Json.Nodes.JsonNode.Parse(json.GetRawText())!.AsObject();
+                rewritten.Remove(alias);
+                rewritten[field.Key] = System.Text.Json.Nodes.JsonNode.Parse(aliasValue.GetRawText());
+                presentSpelling = alias;
+            }
+        }
+
+        return rewritten is null ? json : JsonSerializer.SerializeToElement(rewritten);
+    }
+
+    private static string? NormalizeRawJson(string? rawJson)
+        => rawJson is null ? null : System.Text.Json.Nodes.JsonNode.Parse(rawJson)?.ToJsonString();
+
+    /// <summary>
+    /// ADR-027 stage 3 (S3-D): classes whose scalar decode reads run through the schema-bound
+    /// reader, so every key the codec reads is verified declared with the type it is read as —
+    /// codec/schema drift throws instead of silently reading past the table. Classes migrate
+    /// cohort by cohort; each migration is behavior-neutral by the decode/encode sweeps, the
+    /// write goldens and the replay corpus, and the sweep suite exercises every bound read
+    /// through the fully-populated twins.
+    /// </summary>
+    public static IReadOnlyList<string> SchemaBoundDecodeClasses { get; } =
+        ["FxSpot", "Deposit", "MoneyMarketFund", "Commodity", "CryptoCurrency", "Cfd",
+         "CertificateOfDeposit", "CommercialPaper", "TreasuryBill", "Repo", "CashSweep", "OtherSecurity", "Warrant",
+         "Option", "Future", "FxForward", "NonDeliverableForward", "CreditDefaultSwap", "Swaption", "CapFloor", "StructuredNote",
+         "DirectLoan", "StructuredCredit", "PrivateFundInterest", "PrivateCompanyEquity", "RealEstateHolding", "CommitmentGuarantee", "Swap"];
+
+    /// <summary>
+    /// The schema-bound view of a submitted or stored terms document for one asset class: each
+    /// read verifies, against <see cref="SecurityAssetTermsSchema"/>, that the key is declared
+    /// and that its declared type matches the type the codec reads it as. Requiredness stays the
+    /// codec's call — the tolerated absence defaults are ledgered in the S3-B sweep — so this
+    /// binds exactly the facts whose drift would corrupt a decode.
+    /// </summary>
+    private readonly struct SchemaBoundTerms(string assetClass, JsonElement json, SecurityKindMappingMode mode)
+    {
+        public string RequiredString(string key) => GetRequiredString(json, Declared(key, SecurityAssetTermFieldType.String));
+
+        public string? OptionalString(string key) => GetOptionalString(json, Declared(key, SecurityAssetTermFieldType.String));
+
+        public string? OptionalConventionString(string key)
+            => GetOptionalString(json, Declared(key, SecurityAssetTermFieldType.String), mode);
+
+        public decimal? OptionalDecimal(string key) => GetOptionalDecimal(json, Declared(key, SecurityAssetTermFieldType.Decimal));
+
+        public int? OptionalInt(string key) => GetOptionalInt(json, Declared(key, SecurityAssetTermFieldType.Integer));
+
+        public bool? OptionalBoolean(string key) => GetOptionalBoolean(json, Declared(key, SecurityAssetTermFieldType.Boolean));
+
+        public DateOnly? OptionalDateOnly(string key) => GetOptionalDateOnly(json, Declared(key, SecurityAssetTermFieldType.Date));
+
+        public DateOnly RequiredDateOnly(string key) => GetRequiredDateOnly(json, Declared(key, SecurityAssetTermFieldType.Date));
+
+        public Guid RequiredGuid(string key) => GetRequiredGuid(json, Declared(key, SecurityAssetTermFieldType.Guid));
+
+        public decimal RequiredDecimal(string key) => GetRequiredDecimal(json, Declared(key, SecurityAssetTermFieldType.Decimal));
+
+        public int RequiredInt(string key) => GetRequiredInt(json, Declared(key, SecurityAssetTermFieldType.Integer));
+
+        public decimal? OptionalStrictDecimal(string key) => GetOptionalDecimal(json, Declared(key, SecurityAssetTermFieldType.Decimal), mode);
+
+        public DateOnly? OptionalStrictDateOnly(string key) => GetOptionalDateOnly(json, Declared(key, SecurityAssetTermFieldType.Date), mode);
+
+        public int? OptionalStrictInt(string key) => GetOptionalInt(json, Declared(key, SecurityAssetTermFieldType.Integer), mode);
+
+        private string Declared(string key, SecurityAssetTermFieldType readAs)
+        {
+            var field = SecurityAssetTermsSchema.Field(assetClass, key)
+                ?? throw new InvalidOperationException(
+                    $"Codec/schema drift: the codec reads '{assetClass}.{key}', which the schema does not declare.");
+            if (field.Type != readAs)
+            {
+                throw new InvalidOperationException(
+                    $"Codec/schema drift: '{assetClass}.{key}' is declared {field.Type} but the codec reads it as {readAs}.");
+            }
+
+            return field.Key;
+        }
+    }
 
     private static JsonElement ResolveAssetTermsJson(JsonElement json)
         => json.TryGetProperty("profileFields", out var profileFields) && profileFields.ValueKind == JsonValueKind.Object

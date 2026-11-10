@@ -223,6 +223,30 @@ Phases continue the Phase 0–2 numbering already in history.
 - Before closing, file matching WPF-parity backlog items over the same contracts
   (`W8-WPF-PARITY-001`, see [WPF / Web-UI Alignment Plan](wpf-web-ui-alignment-plan.md)).
 
+## Progress
+
+**2026-11-10 — operator-copy pass (parts of P2 and P6).** Checked against a fresh fixture-backed
+capture of all 80 routes rather than the 2026-10-28 catalog.
+
+- P2 raw IDs: display names replace GUID-shaped identifiers on the close cockpit (blocker label and
+  evidence count; record IDs move under Audit details), the trial balance heading, the
+  factor-paydown scope line and the loan-book facility selector. `lib/identifiers.ts` is the shared
+  helper.
+- P6 unknown marks: a position with no shared mark assessment shows one "No mark observed" hint in
+  the table cell and one row in the detail pane.
+- Counts agree with their nouns on the eight routes that rendered "1 rows"-style text, and on the
+  workspace posture and navigation summaries.
+- Status agreement: the status bar repeats a provider-trust warning beside Sync, and the Control
+  Tower evidence line names only evidence correlated with the leading row.
+- Guard: the screenshot harness fails a route whose rendered main content shows a raw identifier
+  or a count of one before a plural noun.
+
+Still open from P2: Operations Continuity names a close workflow by period and fund-account
+identifier because `OperationsContinuityWorkflowSummary` carries no account display name. Adding
+one is a shared-contract change for both workstations; the route holds the only
+`allowedContentIssues` entry until then. The detail-pane primitive, wrapped dates and mid-word
+breaks in P2 are untouched.
+
 ## Recommended Next Step
 
 Start with Phase 3 item 1: disagreeing KPI numbers are the largest trust problem and an

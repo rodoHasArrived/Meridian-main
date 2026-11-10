@@ -438,6 +438,31 @@ public sealed class AccountCashForecastTests : IDisposable
     }
 
     [Theory]
+    [InlineData("fixed-income-cash-flow-projection-v1")]
+    [InlineData("fixed-income-cash-flow-projection-v2")]
+    [InlineData("asset-obligation-declared-v3")]
+    public void FromObligation_CarriesTheRunStampVerbatim_SoStoredAndCurrentRunsBothAdapt(string engineVersion)
+    {
+        // The adapter never branches on the stamp: a run stored before the legacy bond loop was
+        // restamped v2 adapts exactly as a current run does, and its stamp reaches forecast evidence.
+        var security = Guid.NewGuid();
+        var runId = Guid.NewGuid();
+        var source = Provenance("bond-terms", AccountCashEvidenceRole.Projection, Start);
+        var flow = new AssetProjectedCashFlowDto(Guid.NewGuid(), runId, security, 1, "Coupon", Start.AddDays(1), 10m, "USD", "Expected",
+            SourceDomain: source.SourceDomain, SourceEntityId: source.SourceEntityId);
+        var run = new AssetCashFlowProjectionRunDto(runId, security, Start, engineVersion,
+            "Completed", Recorded, source.SourceDomain, source.SourceEntityId);
+        var term = new AssetTermsVersionDto(Guid.NewGuid(), security, 1, source.SourceContentHash, Start, Recorded,
+            source.SourceDomain, source.SourceEntityId, "Retained bond terms");
+
+        var adapted = AccountCashForecastProjectionAdapter.FromObligation(Scope, "bond-coupon", flow, run, term,
+            2m, Start.AddDays(2), Start.AddDays(4), source);
+
+        adapted.ProjectionEngineVersion.Should().Be(engineVersion);
+        adapted.Amount.Should().Be(20m);
+    }
+
+    [Theory]
     [InlineData("offset")]
     [InlineData("default")]
     public async Task Capture_NonUtcRecordingTimeIsRejectedAsInputBeforeRetention(string variant)

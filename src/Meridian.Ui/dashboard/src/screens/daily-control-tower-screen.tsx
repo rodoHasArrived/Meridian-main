@@ -18,7 +18,7 @@ import {
   readinessToneToSeverityStatus
 } from "@/lib/shared-tone-mappings";
 import { eyebrowClassName } from "@/design-system/label-case";
-import { formatUtcTimestamp } from "@/lib/format";
+import { formatUtcTimestamp, pluralizeCount } from "@/lib/format";
 
 export interface DailyControlTowerScreenProps {
   viewModel: AppShellWorkflowContinuityViewModel;
@@ -179,7 +179,7 @@ export function DailyControlTowerScreen({
           ) : null
         }}
         completeness={{
-          value: `${model.queueRows.length} ranked items · ${model.evidenceTimelineItems.length} evidence events`,
+          value: `${pluralizeCount(model.queueRows.length, "ranked item")} · ${pluralizeCount(model.evidenceTimelineItems.length, "evidence event")}`,
           detail: "Finance queue and retained evidence coverage",
           tone: model.queueRows.length > 0 && model.evidenceTimelineItems.length > 0 ? "ready" : "review"
         }}

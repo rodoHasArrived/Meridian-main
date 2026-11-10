@@ -1808,13 +1808,22 @@ public sealed partial class FinancialRecordExplorerReadService
         return $"{terms.ToString(CultureInfo.InvariantCulture)} term{Plural(terms)} / {obligations.ToString(CultureInfo.InvariantCulture)} obligation{Plural(obligations)}";
     }
 
-    private static string BuildTermsObligationsDetail(AssetOperationsDetailDto operations)
+    internal static string BuildTermsObligationsDetail(AssetOperationsDetailDto operations)
     {
         var latestTerms = operations.TermsHistory
             .OrderByDescending(static terms => terms.EffectiveDate)
             .FirstOrDefault();
+        // "Next" is the first timeline row outside the Lifecycle lane. One kind of row is passed over: a
+        // declared call or put notice deadline dated before the timeline's as-of. The scalar call
+        // review it replaces was never raised for a date already past, so a declaring bond would
+        // otherwise lead with an elapsed deadline where an undeclared bond leads with its next row.
+        // The elapsed deadline stays on the timeline with its past-due status and warning.
+        var timelineAsOf = operations.TermsObligationsTimeline?.ProjectionAsOf;
         var nextTimelineEvent = operations.TermsObligationsTimeline?.Events
-            .FirstOrDefault(static timelineEvent => !string.Equals(timelineEvent.EventLane, "Lifecycle", StringComparison.OrdinalIgnoreCase));
+            .FirstOrDefault(timelineEvent => !string.Equals(timelineEvent.EventLane, "Lifecycle", StringComparison.OrdinalIgnoreCase)
+                && !(timelineEvent.EffectiveDate < timelineAsOf
+                    && timelineEvent.EventKind is Meridian.Instruments.AssetOperations.AssetObligationProjectionService.IssuerCallNoticeDeadlineEventKind
+                        or Meridian.Instruments.AssetOperations.AssetObligationProjectionService.HolderPutNoticeDeadlineEventKind));
         var nextFlow = nextTimelineEvent is null
             ? operations.ProjectedCashFlows
                 .OrderBy(static flow => flow.DueDate)

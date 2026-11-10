@@ -1172,6 +1172,10 @@ symbol at the journal level while posting a different instrument line underneath
 journal writes carry line-level Security Master ids, one journal entry may not combine multiple
 instrument symbols behind one entry-level Security Master id.
 
+Direct-lending loan accounts (`LoanPrincipal`, the interest, fee and penalty receivables, and since
+PRD-115 `PrepaidInterestLiability` and `UnappliedCashLiability`) are on the guard's instrument-account
+list, so a line on any of them needs Security Master evidence even if it arrives without a symbol.
+
 Ledger journal writes that opt into treasury-ledger metadata also fail closed. When a posting carries
 effective-date, idempotency, fund-event, capital-account, investor, payment-intent, or settlement
 metadata, `LedgerPeriodPostingGuard` requires an effective date inside the target accounting period

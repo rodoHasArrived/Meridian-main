@@ -4189,6 +4189,7 @@ Meridian-main
 │   │   │   ├── AccrualLedgerService.cs
 │   │   │   ├── DailyAccrualWorker.cs
 │   │   │   ├── DirectLendingEventRebuilder.cs
+│   │   │   ├── DirectLendingJournalLines.cs
 │   │   │   ├── DirectLendingOutboxDispatcher.cs
 │   │   │   ├── DirectLendingSchedulePeriods.cs
 │   │   │   ├── DirectLendingServicerStatementService.cs
@@ -4411,6 +4412,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterService.ClassificationText.cs
 │   │   │   ├── SecurityMasterService.Creation.cs
 │   │   │   ├── SecurityMasterService.cs
+│   │   │   ├── SecurityMasterService.Deactivation.cs
 │   │   │   ├── SecurityMasterService.WriteRefusals.cs
 │   │   │   ├── SecurityMasterStructuredCreditReclassificationService.cs
 │   │   │   ├── SecurityMasterTermsCapabilityRefusedException.cs
@@ -4969,6 +4971,7 @@ Meridian-main
 │   │   │   ├── SecurityAssetPackRegistry.cs
 │   │   │   ├── SecurityAssetPackRegistry.Profiles.cs
 │   │   │   ├── SecurityAssetPackRegistry.Readiness.cs
+│   │   │   ├── SecurityAssetPackRegistry.SharedCoverage.cs
 │   │   │   ├── SecurityAssetProfiles.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcaster.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcasterChain.cs
@@ -6070,7 +6073,9 @@ Meridian-main
 │   │   │   ├── AccountCashForecastProjectionAdapter.cs
 │   │   │   ├── AccountCashForecastService.cs
 │   │   │   ├── AssetObligationProjectionService.cs
+│   │   │   ├── AssetObligationProjectionService.DeclaredExercise.cs
 │   │   │   ├── AssetObligationProjectionService.FixedIncome.cs
+│   │   │   ├── AssetOperationsEngineVersions.cs
 │   │   │   ├── AssetOperationsProjectionBuilder.BondCashFlows.cs
 │   │   │   ├── AssetOperationsProjectionBuilder.LegacyBond.cs
 │   │   │   ├── AssetOperationsReadService.cs
@@ -7784,6 +7789,8 @@ Meridian-main
 │   │   │   │   │   ├── format.test.ts
 │   │   │   │   │   ├── format.ts
 │   │   │   │   │   ├── fund-account-scope.ts
+│   │   │   │   │   ├── identifiers.test.ts
+│   │   │   │   │   ├── identifiers.ts
 │   │   │   │   │   ├── ledger-amount-proof-api.test.ts
 │   │   │   │   │   ├── ledger-amount-proof-api.ts
 │   │   │   │   │   ├── ledger-reports-api.ts
@@ -9956,11 +9963,15 @@ Meridian-main
 │   │   │   └── mixed-credit-status-set.json
 │   │   ├── schedules
 │   │   │   ├── golden
+│   │   │   │   ├── asset-obligation-timeline-undeclared.json
 │   │   │   │   └── face-value-lot-constant-yield.json
 │   │   │   └── KNOWN-DEFECTS.md
 │   │   ├── security-master
 │   │   │   ├── governance-payloads
 │   │   │   │   └── v1-captured.json
+│   │   │   ├── replay-corpus
+│   │   │   │   ├── replay-corpus-golden.json
+│   │   │   │   └── replay-corpus.json
 │   │   │   ├── schedule-validation
 │   │   │   │   ├── accepted.json
 │   │   │   │   ├── duplicate-properties.json
@@ -10110,8 +10121,10 @@ Meridian-main
 │   │   ├── CashFlowProjectorTests.fs
 │   │   ├── DeterministicInvariantTests.fs
 │   │   ├── DirectLendingAggregateServicingTests.fs
+│   │   ├── DirectLendingExcessRoutingTests.fs
 │   │   ├── DirectLendingInteropTests.fs
 │   │   ├── DirectLendingPikCapitalizationAndResetTests.fs
+│   │   ├── DirectLendingPrepaidInterestConsumptionTests.fs
 │   │   ├── DirectLendingScheduleCharacterizationTests.fs
 │   │   ├── DirectLendingTestBalances.fs
 │   │   ├── DomainTests.fs
@@ -10126,6 +10139,7 @@ Meridian-main
 │   │   ├── ReportPackValidationRulesTests.fs
 │   │   ├── RiskPolicyTests.fs
 │   │   ├── SecurityCalculationsTests.fs
+│   │   ├── SecurityDefinitionValidationTests.fs
 │   │   ├── SensitiveActionPolicyTests.fs
 │   │   ├── SettlementInstructionCommandsTests.fs
 │   │   ├── TradingReadinessRulesTests.fs
@@ -10443,14 +10457,18 @@ Meridian-main
 │   │   │   │   ├── AccrualLedgerServiceTests.cs
 │   │   │   │   ├── DailyAccrualWorkerServicingScheduleTests.cs
 │   │   │   │   ├── DailyAccrualWorkerTests.cs
+│   │   │   │   ├── DirectLendingAccrualParityTests.cs
 │   │   │   │   ├── DirectLendingEventRebuilderTests.cs
 │   │   │   │   ├── DirectLendingExcessBalancesCompatibilityTests.cs
+│   │   │   │   ├── DirectLendingExcessRoutingParityTests.cs
 │   │   │   │   ├── DirectLendingOutboxDispatcherTests.cs
 │   │   │   │   ├── DirectLendingOutboxFailureTests.cs
+│   │   │   │   ├── DirectLendingPrepaidInterestConsumptionTests.cs
 │   │   │   │   ├── DirectLendingServicerStatementServiceTests.cs
 │   │   │   │   ├── DirectLendingServicingPolicyTermsHashTests.cs
 │   │   │   │   ├── DirectLendingServicingPolicyValidatorTests.cs
 │   │   │   │   ├── DirectLendingTermsHashCharacterizationTests.cs
+│   │   │   │   ├── DirectLendingUnappliedCashCommandTests.cs
 │   │   │   │   ├── ManualPaymentResolutionTests.cs
 │   │   │   │   ├── PostgresDirectLendingCommandServiceTests.CapabilityFloor.cs
 │   │   │   │   ├── PostgresDirectLendingCommandServiceTests.cs
@@ -10630,8 +10648,12 @@ Meridian-main
 │   │   │   ├── AssetAcquisitionLotPostgresRoundTripTests.Completion.cs
 │   │   │   ├── AssetAcquisitionLotPostgresRoundTripTests.cs
 │   │   │   ├── AssetAmortizationPostgresRoundTripTests.cs
+│   │   │   ├── AssetObligationDeclaredExerciseTimelineTests.cs
 │   │   │   ├── AssetObligationProjectionServiceTests.cs
+│   │   │   ├── AssetObligationRecoveredExerciseTimelineTests.cs
+│   │   │   ├── AssetObligationTimelineGoldenTests.cs
 │   │   │   ├── AssetOperationsBondScheduleCharacterizationTests.cs
+│   │   │   ├── AssetOperationsEngineVersionStampTests.cs
 │   │   │   ├── AssetOperationsMigrationRunnerTests.cs
 │   │   │   ├── AssetOperationsReadServiceTests.cs
 │   │   │   ├── AssetOperationsReferenceProjectionServiceTests.cs
@@ -11542,6 +11564,8 @@ Meridian-main
 │   │   │   ├── SecurityAssetTermFormModelTests.cs
 │   │   │   ├── SecurityAssetTermFormParityFixtureTests.cs
 │   │   │   ├── SecurityAssetTermsFieldEditValidatorTests.cs
+│   │   │   ├── SecurityAssetTermsSchemaDecodeSweepTests.cs
+│   │   │   ├── SecurityAssetTermsSchemaEncodeSweepTests.cs
 │   │   │   ├── SecurityAssetTermsSchemaRoundTripTests.ContractualCompanions.cs
 │   │   │   ├── SecurityAssetTermsSchemaRoundTripTests.cs
 │   │   │   ├── SecurityAssetTermsSchemaRoundTripTests.ReadableTwins.cs
@@ -11550,6 +11574,7 @@ Meridian-main
 │   │   │   ├── SecurityCurvesMigrationTests.cs
 │   │   │   ├── SecurityCurvesPostgresTests.cs
 │   │   │   ├── SecurityDayCountTermTests.cs
+│   │   │   ├── SecurityDefinitionValidationEquivalenceTests.cs
 │   │   │   ├── SecurityEconomicCallScheduleFlatteningTests.cs
 │   │   │   ├── SecurityEconomicScheduleFixtureCorpus.cs
 │   │   │   ├── SecurityEconomicScheduleMappingTests.cs
@@ -11622,6 +11647,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterRecordedIdentifierPostgresTests.cs
 │   │   │   ├── SecurityMasterRecordedIdentifierQueryTests.cs
 │   │   │   ├── SecurityMasterReferenceLookupTests.cs
+│   │   │   ├── SecurityMasterReplayCorpusTests.cs
 │   │   │   ├── SecurityMasterSchemaVersionsTests.cs
 │   │   │   ├── SecurityMasterServiceAliasCacheRefreshTests.cs
 │   │   │   ├── SecurityMasterServiceCommittedReadbackTests.cs
@@ -12052,6 +12078,7 @@ Meridian-main
 │   │   │   ├── FileAccountingAuditChainTests.cs
 │   │   │   ├── FileFundProfileTenancyRegistryTests.cs
 │   │   │   ├── FileOnboardingWorkspaceStoreTests.cs
+│   │   │   ├── FinancialRecordExplorerTermsObligationsDetailTests.cs
 │   │   │   ├── FirstRunEndpointsTests.cs
 │   │   │   ├── FirstRunExperienceServiceTests.cs
 │   │   │   ├── FundAccountEndpointAuthorizationTests.cs
@@ -12299,6 +12326,7 @@ Meridian-main
 │   │   │   ├── EventReplayServiceTests.cs
 │   │   │   ├── FixtureDataServiceTests.cs
 │   │   │   ├── FixtureModeDetectorTests.cs
+│   │   │   ├── FormatHelpersTests.cs
 │   │   │   ├── FormValidationServiceTests.cs
 │   │   │   ├── IntegrityEventsServiceTests.cs
 │   │   │   ├── LeanIntegrationServiceTests.cs

@@ -1408,7 +1408,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             Status: evidence.QualityReport is not null && blockingCount == 0 ? "Ready" : "Review",
             Summary: evidence.QualityReport is null
                 ? "No retained Security Master quality report is available for completeness, taxonomy, consistency, or staleness checks."
-                : $"{violations.Length} quality violation(s) retained for this security from the {evidence.QualityReport.RunAt:yyyy-MM-dd HH:mm} UTC run.",
+                : $"{violations.Length} quality violation(s) retained for this security from the {evidence.QualityReport.RunAt.UtcDateTime.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture)} UTC run.",
             EvidenceCount: violations.Length,
             BlockingIssueCount: evidence.QualityReport is null ? 1 : blockingCount);
     }

@@ -239,6 +239,110 @@ public sealed class SecurityEconomicCallScheduleFlatteningTests
             .Should().Be(flat.GetProperty(SecurityTermsEnvelope.AssetClassTermsVersionKey).GetInt32());
     }
 
+    [Fact]
+    public void UndeclaredCallTypeLabels_RideBackIntoExerciseStyleVerbatim()
+    {
+        // The flat entry field preserves undeclared exercise-style strings
+        // (WithVerbatimUndeclaredValue) and the economic upgrade copies them into callType
+        // unchanged, so the recovery keeps them: nulling the label would silently lose it on the
+        // flat → economic → flat round-trip (a Codex review finding on the first cut).
+        var flat = Convert("""
+            {"call":{"callSchedule":[
+                {"callDt":"2027-01-01","callPx":101.0,"isParCall":false,"callType":"AnyTime"},
+                {"callDt":"2028-01-01","callPx":null,"isParCall":false,"callType":"makewhole"}]}}
+            """, "Bond");
+
+        var calls = flat.GetProperty("callSchedule");
+        calls[0].GetProperty("exerciseStyle").GetString().Should().Be("AnyTime");
+        calls[0].GetProperty("priceType").GetString().Should().Be("Fixed", "the priced entry still prices as Fixed");
+        calls[1].GetProperty("exerciseStyle").GetString().Should().Be("makewhole",
+            "comparisons are ordinal, exactly as the economic upgrade's: a case-variant MakeWhole is a verbatim label, not a price type");
+        calls[1].GetProperty("priceType").ValueKind.Should().Be(JsonValueKind.Null);
+        calls[1].GetProperty("makeWholeSpreadBps").ValueKind.Should().Be(JsonValueKind.Null);
+    }
+
+    // ── Factor schedule entries (ADR-027 stage 1, increment 4) ──────────────
+
+    [Fact]
+    public void StructuredCredit_FactorEntries_LandInTheFlatArray()
+    {
+        var flat = Convert("""
+            {"structuredProduct":{"trancheClass":"A1","factor":0.9,
+             "factorScheduleEntries":[
+                {"asOfDate":"2026-01-25","factor":0.98},
+                {"asOfDate":"2026-02-25","factor":0.95}]}}
+            """, "StructuredCredit");
+
+        var entries = flat.GetProperty("factorScheduleEntries");
+        entries.GetArrayLength().Should().Be(2);
+        AssertFrozenMembers(entries[0], ["asOfDate", "factor"]);
+        entries[0].GetProperty("asOfDate").GetString().Should().Be("2026-01-25");
+        entries[0].GetProperty("factor").GetDecimal().Should().Be(0.98m);
+        entries[1].GetProperty("asOfDate").GetString().Should().Be("2026-02-25");
+        entries[1].GetProperty("factor").GetDecimal().Should().Be(0.95m);
+
+        // The scalar factor keeps its own flat home; the dated schedule no longer rides only in
+        // the retained carry while the flat projections miss it.
+        flat.GetProperty("currentFactor").GetDecimal().Should().Be(0.9m);
+        flat.GetProperty("tranche").GetString().Should().Be("A1");
+        flat.TryGetProperty(SecurityTermsEnvelope.RetainedEconomicTermsKey, out _).Should().BeTrue();
+    }
+
+    [Fact]
+    public void FactorEntriesAlone_StampAtTheClassFloor_TheArrayIsAVersionOneField()
+    {
+        var flat = Convert("""
+            {"structuredProduct":{"factorScheduleEntries":[{"asOfDate":"2026-01-25","factor":0.98}]}}
+            """, "StructuredCredit");
+
+        flat.GetProperty(SecurityTermsEnvelope.AssetClassTermsVersionKey).GetInt32()
+            .Should().Be(2, "factorScheduleEntries is declared since StructuredCredit version 1, so only the stamp floor governs");
+        flat.GetProperty("factorScheduleEntries").GetArrayLength().Should().Be(1);
+
+        var readable = () => SecurityTermsEnvelope.EnsureReadableAsAssetSpecificTerms("StructuredCredit", flat);
+        readable.Should().NotThrow("the recovered document must pass the read guard at its own stamp");
+    }
+
+    [Fact]
+    public void FactorEntries_KeepTheirStoredOrder()
+    {
+        // The domain invariant orders by date before checking monotonicity; the stored order
+        // itself is the writer's, and the recovery preserves it exactly.
+        var flat = Convert("""
+            {"structuredProduct":{"factorScheduleEntries":[
+                {"asOfDate":"2026-02-25","factor":0.95},
+                {"asOfDate":"2026-01-25","factor":0.98}]}}
+            """, "StructuredCredit");
+
+        var entries = flat.GetProperty("factorScheduleEntries");
+        entries[0].GetProperty("asOfDate").GetString().Should().Be("2026-02-25");
+        entries[1].GetProperty("asOfDate").GetString().Should().Be("2026-01-25");
+    }
+
+    [Fact]
+    public void NonDeclaringClass_KeepsTheRetainedCarry_WithoutTheFlatFactorKey()
+    {
+        var flat = Convert("""
+            {"maturity":{"maturityDate":"2032-06-30"},
+             "structuredProduct":{"factorScheduleEntries":[{"asOfDate":"2026-01-25","factor":0.98}]}}
+            """, "Bond");
+
+        flat.TryGetProperty("factorScheduleEntries", out _).Should().BeFalse("Bond declares no factor-schedule home");
+        flat.TryGetProperty(SecurityTermsEnvelope.RetainedEconomicTermsKey, out _).Should().BeTrue();
+    }
+
+    [Fact]
+    public void UnsetFactorEntries_ConvertWithoutDeclaringTheArray()
+    {
+        var flat = Convert("""
+            {"structuredProduct":{"factorScheduleEntries":[null,{"asOfDate":null,"factor":null}],
+             "FactorScheduleEntries":[]}}
+            """, "StructuredCredit");
+
+        flat.TryGetProperty("factorScheduleEntries", out _).Should().BeFalse(
+            "null and all-null entries are unset, and a case-variant key without content is tolerated like an absent one");
+    }
+
     private static JsonElement Convert(string economicJson, string assetClass)
         => SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster
             .Convert(JsonSerializer.Deserialize<JsonElement>(economicJson), assetClass)
