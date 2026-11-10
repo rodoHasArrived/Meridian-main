@@ -172,8 +172,10 @@ public sealed class ProviderFactoryCredentialIsolationTests : IDisposable
         await corporate.FetchAsync("AAPL", Guid.NewGuid());
         await using var brokerage = factory.CreateAlpacaBrokerageGateway();
         await brokerage.GetAccountInfoAsync();
-        // One corporate-action page from the Market Data API and one account read.
+        // One Market Data v1/corporate-actions request (dividends and splits share it) and one
+        // account request; both must carry the selected credentials.
         handler.Requests.Should().HaveCount(2).And.OnlyContain(request => request.Key == key && request.Secret == secret);
+        handler.Requests.Should().ContainSingle(request => request.Uri.AbsolutePath == "/v1/corporate-actions");
         handler.Requests.Single(request => request.Uri.AbsolutePath == "/v2/account").Uri.Host.Should()
             .Be(environment == "live" ? "api.alpaca.markets" : "paper-api.alpaca.markets");
     }

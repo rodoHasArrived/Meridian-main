@@ -11,6 +11,8 @@ last_reviewed: 2026-10-15
 
 # src/Meridian.Infrastructure
 
+The backfill worker's connectivity handler is documented as logging only; offline-queued requests resume on the worker's next poll (at most `EmptyPollMaxDelay`).
+
 `RateLimiter` serialises its expired-timestamp cleanup, so concurrent callers cannot dequeue a fresh timestamp and undercount the window.
 
 IB historical requests ask for epoch-second bar times (`formatDate = 2`) and send UTC, culture-invariant end times; a zone-less TWS-local timestamp is refused rather than read as UTC. `IBDurableResultStore` publishes an update to memory only after the fsynced atomic file replace succeeds. `ProviderRegistry` availability probes rethrow caller cancellation.
