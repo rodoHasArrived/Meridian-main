@@ -57,6 +57,9 @@ export const APP_SHELL_TODAY_ROUTE = "/";
 
 const WORKFLOW_CATALOG_FAILURE_KEY = "workflow-catalog";
 
+/** What the bootstrap requests carry, as the operator would name it. */
+const BOOTSTRAP_REQUEST_LABEL = "Session, host status or shared counts";
+
 /** Source signals whose issues the decision queue also lists, by the queue item id prefix. */
 const QUEUED_SOURCE_SIGNALS: ReadonlyArray<{ signalId: AppShellAttentionSignalId; queueIdPrefix: string }> = [
   { signalId: "providers", queueIdPrefix: "provider:" },
@@ -74,6 +77,7 @@ export function buildAppShellAttentionState({
   loading,
   bootstrapFailed,
   failedItems,
+  error = null,
   trustStrip,
   workflowContinuity,
   degradedMode = null
@@ -81,6 +85,11 @@ export function buildAppShellAttentionState({
   loading: boolean;
   bootstrapFailed: boolean;
   failedItems: ShellStatusItem[];
+  /**
+   * The data hook's global request error: set when a workspace area or a bootstrap request
+   * (session, host status, shared counts) failed. The footer's Sync item reads the same value.
+   */
+  error?: string | null;
   trustStrip: AppShellTrustStripState;
   workflowContinuity: AppShellWorkflowContinuityViewModel;
   degradedMode?: DegradedModeStatus | null;
@@ -96,7 +105,7 @@ export function buildAppShellAttentionState({
     decisions.signal,
     ...(providers ? [fromTrustItem("providers", providers, `Providers: ${providers.value}`)] : []),
     ...(source ? [fromTrustItem("source", source, dataSourceHeadline(source))] : []),
-    buildWorkspaceDataSignal({ loading, bootstrapFailed, failedItems }),
+    buildWorkspaceDataSignal({ loading, bootstrapFailed, failedItems, error }),
     ...(host ? [host] : [])
   ];
 
@@ -206,11 +215,13 @@ function dataSourceHeadline(source: AppShellTrustStripItem): string {
 function buildWorkspaceDataSignal({
   loading,
   bootstrapFailed,
-  failedItems
+  failedItems,
+  error
 }: {
   loading: boolean;
   bootstrapFailed: boolean;
   failedItems: ShellStatusItem[];
+  error: string | null;
 }): AppShellAttentionSignal {
   const base = { id: "workspace-data", kind: "source", label: "Workspace data" } as const;
 
@@ -238,16 +249,29 @@ function buildWorkspaceDataSignal({
     };
   }
 
-  if (failedItems.length > 0) {
-    const value = `${pluralizeCount(failedItems.length, "area")} did not load`;
-    // Same classification the decision queue gives these failures: a workspace area that did not
-    // load blocks the work that depends on it; a missing workflow catalog alone needs review.
-    const workspaceAreaFailed = failedItems.some((item) => item.key !== WORKFLOW_CATALOG_FAILURE_KEY);
+  const workspaceAreaFailed = failedItems.some((item) => item.key !== WORKFLOW_CATALOG_FAILURE_KEY);
+  // The global error is set by a failed workspace area or a failed bootstrap request. With no
+  // failed workspace area to explain it, a bootstrap request failed while the workspaces loaded:
+  // session, host status or shared counts are missing or retained from an earlier refresh. That
+  // is not "loaded", and the footer's Sync item already reports it as an error.
+  const bootstrapRequestFailed = Boolean(error) && !workspaceAreaFailed;
+
+  if (failedItems.length > 0 || bootstrapRequestFailed) {
+    const notLoaded = [
+      ...failedItems.map((item) => item.label),
+      ...(bootstrapRequestFailed ? [BOOTSTRAP_REQUEST_LABEL] : [])
+    ];
+    const value = `${pluralizeCount(notLoaded.length, "area")} did not load`;
     return {
       ...base,
       value,
-      detail: `Not loaded: ${failedItems.map((item) => item.label).join(", ")}. Available routes remain open.`,
-      tone: workspaceAreaFailed ? "blocked" : "review",
+      detail: `Not loaded: ${notLoaded.join(", ")}. ${
+        bootstrapRequestFailed ? "Those figures may be missing or retained from an earlier refresh. " : ""
+      }Available routes remain open.`,
+      // Same classification the decision queue gives these failures: a workspace area that did
+      // not load blocks the work that depends on it, and so does a failed bootstrap request; a
+      // missing workflow catalog alone needs review.
+      tone: workspaceAreaFailed || bootstrapRequestFailed ? "blocked" : "review",
       headline: `Workspace data: ${value}`,
       href: WORKSTATION_ROUTE_CATALOG.settingsBackendCapabilityCoverage,
       actionLabel: "Review diagnostics"

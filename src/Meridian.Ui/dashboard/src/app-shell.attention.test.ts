@@ -211,6 +211,58 @@ describe("app shell attention state", () => {
     expect(attention.moreCount).toBe(0);
   });
 
+  it("is not all clear when only a bootstrap request failed", () => {
+    // Session and workspaces loaded but the host-status request failed: the data hook records
+    // that in the global error alone, with no failed workspace area. The footer's Sync item
+    // already shows it as an error, so the pill must not read "All clear" beside it.
+    const error = "Workstation bootstrap request failed.";
+    const { attention } = build({ error });
+
+    expect(attention.clear).toBe(false);
+    expect(attention.tone).toBe("blocked");
+    expect(attention.title).toBe("Workspace data: 1 area did not load");
+    expect(attention.moreCount).toBe(0);
+    expect(attention.sourceSignals.find((signal) => signal.id === "workspace-data")).toMatchObject({
+      tone: "blocked",
+      value: "1 area did not load",
+      detail: expect.stringContaining("Session, host status or shared counts"),
+      actionLabel: "Review diagnostics"
+    });
+
+    const footer = buildWorkstationStatusItems({
+      workspaceLabel: "Trading",
+      refreshing: false,
+      hasError: Boolean(error),
+      attention
+    });
+    expect(footer.find((item) => item.key === "sync")).toMatchObject({ status: "err" });
+    expect(footer.find((item) => item.key === "attention")).toMatchObject({
+      status: "err",
+      value: "Workspace data: 1 area did not load"
+    });
+  });
+
+  it("blocks when a bootstrap request failed alongside a workflow catalog failure", () => {
+    const { attention } = build({
+      error: "Workstation bootstrap request failed.",
+      workflowError: "Workflow library request failed."
+    });
+
+    expect(attention.sourceSignals.find((signal) => signal.id === "workspace-data")).toMatchObject({
+      tone: "blocked",
+      value: "2 areas did not load"
+    });
+  });
+
+  it("keeps a workflow catalog failure alone at review", () => {
+    const { attention } = build({ workflowError: "Workflow library request failed." });
+
+    expect(attention.sourceSignals.find((signal) => signal.id === "workspace-data")).toMatchObject({
+      tone: "review",
+      value: "1 area did not load"
+    });
+  });
+
   it("is pending, not clear, while workspace data loads", () => {
     const { attention } = build({ loading: true });
 

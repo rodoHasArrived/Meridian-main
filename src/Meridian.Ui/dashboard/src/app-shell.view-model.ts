@@ -212,6 +212,7 @@ export function buildAppShellViewState({
       loading,
       bootstrapFailed,
       failedItems,
+      error,
       trustStrip,
       workflowContinuity,
       degradedMode: payload.overview?.degradedMode ?? null

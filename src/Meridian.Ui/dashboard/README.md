@@ -539,6 +539,10 @@ Rules worth knowing when adding a signal:
 - Declared demo data on a Paper or Demo session is not an issue (the badge names it). Provenance
   that was never confirmed needs review; non-real data in a LIVE session blocks.
 - LIVE is identity, not a warning.
+- Any request failure the status bar's Sync item reports as an error is a blocked `Workspace data`
+  signal: a workspace area that did not load, or a bootstrap request (session, host status, shared
+  counts) that failed while the workspaces loaded. The pill never reads `All clear` beside a Sync
+  error. A missing workflow catalog alone needs review.
 - The leading decision is the worst queued item by tone and does not depend on the route, even
   though Today lists its queue finance-first.
 - New shell-wide signals belong in `buildAppShellAttentionState`; page-specific facts belong in the
