@@ -263,6 +263,11 @@ public sealed partial class AlpacaBrokerageGateway
 
     private static void ValidateReplacementSnapshot(AlpacaOrderResponse order)
     {
+        // Say why, rather than calling the broker's documented package shape inconsistent: the
+        // empty symbol and side are how Alpaca returns every multi-leg parent.
+        if (order.IsMultiLegParent)
+            throw new InvalidDataException(
+                "Alpaca multi-leg parent orders carry no instrument symbol or side, so this gateway cannot recover or amend one as a single-instrument order.");
         if (string.IsNullOrWhiteSpace(order.Id) || string.IsNullOrWhiteSpace(order.ClientOrderId)
             || string.IsNullOrWhiteSpace(order.Symbol) || order.Side is not ("buy" or "sell")
             // accepted_for_bidding is a valid provisional state; ObserveReplacementAsync keeps it pending.

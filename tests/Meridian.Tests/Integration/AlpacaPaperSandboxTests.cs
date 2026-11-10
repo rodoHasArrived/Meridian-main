@@ -1,8 +1,12 @@
 using FluentAssertions;
+using Meridian.Contracts.Workstation;
 using Meridian.Core.Config;
+using Meridian.DataIntegration.Credentials;
 using Meridian.Execution;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
+using Meridian.FinancialOperations.Reconciliation.Connectors;
+using Meridian.FinancialOperations.Reconciliation.Connectors.Alpaca;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Risk.Rules;
 using Meridian.Strategies.Services;
@@ -114,9 +118,89 @@ public sealed class AlpacaPaperSandboxTests(ITestOutputHelper output)
         output.WriteLine("Validated account isolation, restart blocking, and disconnect risk blocking. No orders were submitted, changed, or cancelled.");
     }
 
-    private sealed class PaperReadOnlyHttpClientFactory : IHttpClientFactory, IDisposable
+    [AlpacaPaperSandboxFact]
+    public async Task StatementFetchAndConnectionVerification_UseRealPaperBrokerEvidence()
     {
-        private readonly PaperReadOnlyHandler _handler = new();
+        var key = Environment.GetEnvironmentVariable(AlpacaCredentialEnvironment.KeyIdName);
+        var secret = Environment.GetEnvironmentVariable(AlpacaCredentialEnvironment.SecretKeyName);
+        // Assert presence only: test failures must never print a credential value.
+        string.IsNullOrWhiteSpace(key).Should().BeFalse("ALPACA_KEY_ID must be configured for the opted-in sandbox run");
+        string.IsNullOrWhiteSpace(secret).Should().BeFalse("ALPACA_SECRET_KEY must be configured for the opted-in sandbox run");
+        string.Equals(Environment.GetEnvironmentVariable(AlpacaCredentialEnvironment.TradingEnvironmentName), "paper", StringComparison.Ordinal)
+            .Should().BeTrue("ALPACA_TRADING_ENVIRONMENT must explicitly be paper; live or implicit defaults are refused");
+
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+        using var clients = new PaperReadOnlyHttpClientFactory(allowActivities: true);
+        await using var gateway = new AlpacaBrokerageGateway(clients,
+            new AlpacaOptions(KeyId: key!, SecretKey: secret!, UseSandbox: true),
+            NullLogger<AlpacaBrokerageGateway>.Instance);
+        await gateway.ConnectAsync(timeout.Token);
+        var externalAccountId = (await gateway.GetAccountsAsync(timeout.Token)).Single().AccountId;
+        (await gateway.CheckHealthAsync(timeout.Token)).IsHealthy.Should().BeTrue();
+
+        // Local scratch only: mapping profiles and the verified-credential record never leave it.
+        var scratch = Path.Combine(Path.GetTempPath(), $"meridian-alpaca-paper-statement-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(scratch);
+        try
+        {
+            var connector = new AlpacaActivityStatementConnector(
+                new StatementMappingProfileCatalog(new FileStatementMappingProfileStore(scratch)), [gateway], [gateway]);
+            connector.Descriptor.SupportsRemoteFetch.Should().BeTrue();
+
+            // The fetched broker snapshot goes through the same parse path as an imported file.
+            var document = await connector.FetchAsync(
+                new StatementFetchRequest(AlpacaActivityStatementConnector.ConnectorId, externalAccountId), timeout.Token);
+            connector.CanHandle(document).Should().BeTrue();
+            var statement = await connector.ParseAsync(document, timeout.Token);
+            statement.Issues.Should().BeEmpty("a complete broker snapshot must parse without diagnostics");
+            statement.AccountSnapshots.Should().ContainSingle();
+            statement.Records.Should().ContainSingle(record => record.Kind == StatementRecordKind.CashBalance)
+                .Which.Currency.Should().Be("USD");
+            var fills = statement.Records.Where(record => record.ProviderActivityCode == "FILL").ToArray();
+            fills.Should().OnlyContain(fill => fill.Kind == StatementRecordKind.Transaction && fill.Currency == "USD"
+                && fill.Quantity != 0m && fill.Price > 0m && fill.CashAmount == -fill.Quantity * fill.Price
+                && !string.IsNullOrWhiteSpace(fill.OrderId) && !string.IsNullOrWhiteSpace(fill.ExternalTransactionId));
+            output.WriteLine("Statement snapshot: {0} records, {1} fills, {2} issues.",
+                statement.Records.Count, fills.Length, statement.Issues.Count);
+
+            // A bounded period is activity only, and every record must fall inside the half-open window.
+            var until = DateTimeOffset.UtcNow;
+            var since = until.AddDays(-7);
+            var bounded = await connector.ParseAsync(await connector.FetchAsync(new StatementFetchRequest(
+                AlpacaActivityStatementConnector.ConnectorId, externalAccountId, since,
+                Datasets: StatementFetchDatasets.Activity, UntilExclusive: until), timeout.Token), timeout.Token);
+            bounded.Issues.Should().BeEmpty();
+            bounded.Records.Should().OnlyContain(record => record.Kind == StatementRecordKind.Transaction
+                && record.TradeDate >= DateOnly.FromDateTime(since.UtcDateTime) && record.TradeDate <= DateOnly.FromDateTime(until.UtcDateTime));
+            var historicalPositions = await Record.ExceptionAsync(() => connector.FetchAsync(new StatementFetchRequest(
+                AlpacaActivityStatementConnector.ConnectorId, externalAccountId, since, UntilExclusive: until), timeout.Token));
+            historicalPositions.Should().BeOfType<NotSupportedException>("Alpaca has no portfolio snapshot as of a past instant");
+            var foreignAccount = await Record.ExceptionAsync(() => connector.FetchAsync(
+                new StatementFetchRequest(AlpacaActivityStatementConnector.ConnectorId, "another-account"), timeout.Token));
+            foreignAccount.Should().BeOfType<InvalidOperationException>("credentials for one account must not serve another");
+
+            var connection = new AlpacaBrokerageConnectionService(
+                NullLogger<AlpacaBrokerageConnectionService>.Instance, clients, new FileProviderCredentialStore(scratch));
+            (await connection.GetStatusAsync(timeout.Token)).IsConfigured.Should().BeFalse();
+            var verified = await connection.ConnectAsync(new AlpacaBrokerageConnectionRequestDto(key, secret, "paper"), timeout.Token);
+            verified.State.Should().Be(BrokerageConnectionStateDto.Connected);
+            verified.Environment.Should().Be("paper");
+            verified.LastError.Should().BeNullOrEmpty();
+            string.IsNullOrWhiteSpace(verified.ExternalAccountId).Should().BeFalse("verification must record the broker account it reached");
+            (await connection.RevokeAsync(timeout.Token)).IsConfigured.Should().BeFalse();
+        }
+        finally
+        {
+            Directory.Delete(scratch, recursive: true);
+        }
+
+        output.WriteLine("Validated statement fetch and parse, period bounds, account scoping, and connection verification with {0} GET requests.",
+            clients.RequestCount);
+    }
+
+    private sealed class PaperReadOnlyHttpClientFactory(bool allowActivities = false) : IHttpClientFactory, IDisposable
+    {
+        private readonly PaperReadOnlyHandler _handler = new(allowActivities);
         public int RequestCount => _handler.RequestCount;
         public HttpClient CreateClient(string name) => new(_handler, disposeHandler: false)
         {
@@ -130,15 +214,20 @@ public sealed class AlpacaPaperSandboxTests(ITestOutputHelper output)
         private int _requestCount;
         public int RequestCount => Volatile.Read(ref _requestCount);
 
-        public PaperReadOnlyHandler() : base(new HttpClientHandler { AllowAutoRedirect = false }) { }
+        private readonly bool _allowActivities;
+
+        public PaperReadOnlyHandler(bool allowActivities) : base(new HttpClientHandler { AllowAutoRedirect = false }) =>
+            _allowActivities = allowActivities;
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             var uri = request.RequestUri;
             if (request.Method != HttpMethod.Get || uri is null || uri.Scheme != Uri.UriSchemeHttps
                 || !string.Equals(uri.Host, "paper-api.alpaca.markets", StringComparison.OrdinalIgnoreCase)
-                || uri.Port != 443 || uri.AbsolutePath is not ("/v2/account" or "/v2/positions" or "/v2/orders"))
-                throw new InvalidOperationException("Sandbox certification permits only paper Trading API account, positions, and open-order GET requests.");
+                || uri.Port != 443
+                || uri.AbsolutePath is not ("/v2/account" or "/v2/positions" or "/v2/orders")
+                    && !(_allowActivities && uri.AbsolutePath == "/v2/account/activities"))
+                throw new InvalidOperationException("Sandbox certification permits only paper Trading API account, positions, open-order, and account-activity GET requests.");
             Interlocked.Increment(ref _requestCount);
             return base.SendAsync(request, cancellationToken);
         }

@@ -24,10 +24,13 @@ authority. Consolidation removes duplicate execution, never a validation purpose
 
 The October 15 follow-up keeps the four lanes and both gate identities. Documentation Automation
 now covers PRs, main pushes and merge groups without path filters: any tracked file can affect
-repository-structure output. Its existing rules/example/AI checks and diagram generation remain;
-a docs-only maintained-generation pass converges the full documentation sequence before freshness
-validation. New generated files and deletions are included in the drift check, with
-`artifacts/docs/generated-repair.patch` and `drift.json` retained alongside generation evidence.
+repository-structure output. Its existing rules and memory checks and the dashboard regression
+gate run on every event. The docs-only maintained-generation pass and freshness validation run
+once per event: Meridian CI `verify-docs` owns them for pull requests to `main`, `main` pushes and
+merge groups, and Documentation Automation runs the same catalog only for the events Meridian CI
+does not receive (pull requests to other branches and manual runs). New generated files and
+deletions are included in the drift check, with `artifacts/docs/generated-repair.patch` and
+`drift.json` retained alongside generation evidence by whichever workflow ran it.
 
 Maintenance PR/push runs delegate workflow hygiene, AI contract drift and navigation validation to
 the canonical lanes. Scheduled/manual Maintenance still repeats those checks; tooling metadata
