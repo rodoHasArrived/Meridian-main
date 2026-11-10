@@ -164,7 +164,7 @@ public sealed class DirectLendingEndpointsTests
 
         var accrual = await accrualResponse.Content.ReadFromJsonAsync<DailyAccrualEntryDto>();
         accrual.Should().NotBeNull();
-        accrual!.InterestAmount.Should().BeApproximately(44.444444444m, 0.000000001m);
+        accrual!.InterestAmount.Should().Be(44.44m); // 44.4444 rounded to cents
 
         var getLoan = await client.GetFromJsonAsync<LoanContractDetailDto>($"/api/loans/{created.LoanId}");
         getLoan.Should().NotBeNull();
