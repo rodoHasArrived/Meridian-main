@@ -23,7 +23,11 @@ export const FIGURE_SOURCE_KEYS = [
 export type FigureSourceKey = (typeof FIGURE_SOURCE_KEYS)[number];
 
 export interface WorkspaceFigureContextValue {
-  /** Null while the first load is still in flight: nothing can be claimed yet. */
+  /**
+   * The session's verdict, before any payload's own reload outcome: unverified when the data
+   * source is unconfirmed or nothing ever loaded, null while the first load is still in flight
+   * (nothing can be claimed yet), fresh otherwise. Staleness is never decided here.
+   */
   freshness: MetricFreshness | null;
   /** Qualifier appended to a figure's source when the session is not on real data. */
   dataLabel: string | null;
@@ -51,13 +55,15 @@ const DATA_LABELS: Record<DataProvenanceKind, string | null> = {
 };
 
 /**
- * A failed refresh leaves the last good figures on screen, so they are stale; a session whose
- * data source is unconfirmed, or that never loaded, is unverified. A refresh can also fail for
- * some payloads only: those keep their retained value and are listed as stale, while the ones
- * that did reload stay fresh. The stale list and load times come from the data hook's record of
- * each payload's own reload outcome (`figureSourcesStale`, `figureSourceLoadedAt`), not from the
- * shell's error map, which is cleared whenever a refresh starts. A time budget is deliberately
- * not applied here: workspaces that poll (Trading, Portfolio) judge their own freshness.
+ * A session whose data source is unconfirmed, or that never loaded, is unverified. Staleness is
+ * decided per payload, from the data hook's record of each payload's own reload outcome
+ * (`figureSourcesStale`, `figureSourceLoadedAt`): a payload whose reload failed keeps its retained
+ * value and is stale until it reloads, while the ones that did reload stay fresh. The refresh
+ * lifecycle's own outcome is not used for that, because it describes one refresh, not a payload:
+ * a failed refresh says nothing about a payload a later poll reloaded, and a successful one says
+ * nothing about a payload it did not touch. Nor is the shell's error map, which is cleared
+ * whenever a refresh starts. A time budget is deliberately not applied here: workspaces that poll
+ * (Trading, Portfolio) judge their own freshness.
  */
 export function deriveWorkspaceFigureContext({
   status,
@@ -74,13 +80,11 @@ export function deriveWorkspaceFigureContext({
 }): WorkspaceFigureContextValue {
   // A partial refresh did load the payloads without an error, so it counts as a load.
   const hasLoaded = Boolean(status.lastSucceededAt || (status.phase === "partial" && status.settledAt));
-  const freshness: MetricFreshness | null = status.phase === "failed"
-    ? "stale"
-    : provenance === "unknown"
-      ? "unverified"
-      : hasLoaded
-        ? "fresh"
-        : status.inFlight ? null : "unverified";
+  const freshness: MetricFreshness | null = provenance === "unknown"
+    ? "unverified"
+    : hasLoaded
+      ? "fresh"
+      : status.inFlight ? null : "unverified";
 
   return {
     freshness,
@@ -94,8 +98,9 @@ export function deriveWorkspaceFigureContext({
  * The as-of time and freshness of the figures one payload supplies. The as-of time is when that
  * payload was last loaded, whatever has been refreshed since, and is not stated when no payload
  * is named or its load was never recorded. A payload whose latest reload failed is stale as of
- * that load, even when the overall refresh is reported as partial or a later refresh of something
- * else succeeded.
+ * that load, whatever a refresh of something else did; one that has loaded and not failed since
+ * is fresh, whatever the latest refresh's outcome was. An unconfirmed session keeps every figure
+ * unverified.
  */
 export function resolveFigureEvidence(
   context: WorkspaceFigureContextValue | null,
@@ -104,10 +109,17 @@ export function resolveFigureEvidence(
   if (!context) {
     return { asOf: null, freshness: null };
   }
-  return {
-    asOf: source ? context.sourceLoadedAt[source] ?? null : null,
-    freshness: source && context.staleSources.includes(source) ? "stale" : context.freshness
-  };
+  if (!source) {
+    return { asOf: null, freshness: context.freshness };
+  }
+
+  const asOf = context.sourceLoadedAt[source] ?? null;
+  const freshness = context.staleSources.includes(source)
+    ? "stale"
+    : context.freshness === "unverified" || !asOf
+      ? context.freshness
+      : "fresh";
+  return { asOf, freshness };
 }
 
 const WorkspaceFigureContext = createContext<WorkspaceFigureContextValue | null>(null);

@@ -83,7 +83,7 @@ import type { ExecutionAuditEntry, ExecutionControlSnapshot, MetricFreshness, Pa
 import { usesTrackedCaps } from "@/design-system/label-case";
 import { applyCrossScreenCounts, selectCrossScreenCounts } from "@/lib/cross-screen-counts";
 import { pluralizeCount } from "@/lib/format";
-import { withMetricContext } from "@/lib/metric-trust";
+import { combineMetricFreshness, withMetricContext } from "@/lib/metric-trust";
 import { resolveFigureEvidence, useWorkspaceFigureContext } from "@/lib/workspace-figure-context";
 import { useSharedCrossScreenCounts } from "@/lib/cross-screen-counts-context";
 
@@ -583,16 +583,15 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
   // the shell the payload's own heartbeat is the only time it carries.
   const tradingEvidence = resolveFigureEvidence(figureContext, "trading");
   const headlineAsOf = tradingEvidence.asOf ?? (data.brokerage.lastHeartbeat || null);
-  // A failed Trading refresh keeps the previous payload on screen: those figures are stale
-  // whatever the broker evidence says.
-  const tradingRefreshFailed = figureContext?.staleSources.includes("trading") ?? false;
-  const headlineFreshness: MetricFreshness = tradingRefreshFailed
-    ? "stale"
-    : hasRecoveryProjection
-      ? recoveryPortfolio?.isFresh === false
-        ? "stale"
-        : recoveryPortfolio?.isFresh && !tradingReadiness.errorText ? "fresh" : "unverified"
-      : sourceTone === "ready" ? "fresh" : "unverified";
+  const brokerFreshness: MetricFreshness = hasRecoveryProjection
+    ? recoveryPortfolio?.isFresh === false
+      ? "stale"
+      : recoveryPortfolio?.isFresh && !tradingReadiness.errorText ? "fresh" : "unverified"
+    : sourceTone === "ready" ? "fresh" : "unverified";
+  // The broker evidence can only lower the Trading payload's own verdict, never raise it: a
+  // failed Trading reload keeps the previous payload on screen (stale), and a session whose data
+  // source is unconfirmed stays unverified, whatever the broker reports.
+  const headlineFreshness = combineMetricFreshness(tradingEvidence.freshness, brokerFreshness);
   const trustedHeadlineMetrics = withMetricContext(headlineMetrics, {
     provenance: { source: "Trading workspace", asOf: headlineAsOf, scope: headlineScope },
     freshness: headlineFreshness

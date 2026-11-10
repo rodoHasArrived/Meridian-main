@@ -718,6 +718,38 @@ describe("TradingScreen", () => {
     expect(provenance).not.toHaveTextContent("15:30 UTC");
   });
 
+  it("keeps the headline figures unverified when the session's data source is unconfirmed, whatever the broker reports", async () => {
+    const accountId = "11111111-1111-1111-1111-111111111111";
+    const readiness: TradingOperatorReadiness = {
+      ...serverReadinessData.readiness!,
+      brokerageRecovery: {
+        fundAccountId: accountId, providerId: "alpaca", externalAccountId: "PA-404", status: "Ready", detail: "Synchronized", blockingReasons: [], affectedRuns: [],
+        portfolio: { cash: 100, buyingPower: 200, portfolioValue: 300, currency: "USD", positionCount: 1, observedAt: "2026-10-05T15:30:00Z", expiresAt: "2026-10-05T15:30:30Z", lastAttemptedAt: null, lastSuccessfulAt: null, isComplete: true, isFresh: true, isConsistent: true, warnings: [] }
+      }
+    };
+    const renderWithSession = (freshness: "fresh" | "unverified") => {
+      const result = renderWithRouter(
+        <WorkspaceFigureContextProvider
+          value={{ freshness, dataLabel: null, staleSources: [], sourceLoadedAt: { trading: "2026-10-05T15:00:00Z" } }}
+        >
+          <TradingScreen data={{ ...data, readiness }} fundAccountId={accountId} />
+        </WorkspaceFigureContextProvider>,
+        { initialEntries: ["/trading"] }
+      );
+      return result;
+    };
+
+    const unverified = renderWithSession("unverified");
+    await waitForAsyncEffects();
+    expect(screen.getByLabelText("Trading headline metrics").parentElement).toHaveTextContent("Unverified figures");
+    unverified.unmount();
+
+    // The same broker evidence with a confirmed session is fresh.
+    renderWithSession("fresh");
+    await waitForAsyncEffects();
+    expect(screen.getByLabelText("Trading headline metrics").parentElement).not.toHaveTextContent(/Unverified figures|Stale figures/);
+  });
+
   it("refreshes shared readiness and surfaces account brokerage posture", async () => {
     const user = userEvent.setup();
     vi.mocked(api.getTradingReadiness).mockResolvedValueOnce({
