@@ -8,9 +8,10 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Services;
 
-// Declared issuer-call and holder-put rows of the schedule book (ADR-025, increment 8b). A Bond whose
-// row decodes a call or put schedule takes its call and put rows, and their share of the next
-// lifecycle date, from the resolution the asset operations obligation timeline uses
+// Declared issuer-call and holder-put rows of the schedule book (ADR-025, increments 8b and 8f). A
+// Bond, CertificateOfDeposit or StructuredCredit whose row decodes a call or put schedule takes its
+// call and put rows, and their share of the next lifecycle date, from the resolution the asset
+// operations obligation timeline uses
 // (AssetObligationProjectionService.ResolveDeclaredExerciseAsync). For one record at one evaluation
 // date the two surfaces then list the same dates, with these exceptions: a timeline served from a
 // same-day published projection is derived from the published terms and keeps the scalar review; a

@@ -12,10 +12,10 @@ namespace Meridian.Tests.Ui;
 /// <summary>
 /// Golden schedule summaries and schedule books of the Security Master workbench snapshot. It freezes
 /// the two serialized read models for records that declare no call or put schedule the read path
-/// decodes (Bond with and without scalar call terms, a Bond stamped below the arrays' terms version, a
-/// Bond whose array holds only unset entries, CertificateOfDeposit and StructuredCredit): increment 8b,
-/// which moved declaring bonds to the declared schedule, left those nine cases byte-identical. It also
-/// holds four declaring bonds (a call and a put with a scalar call date that agrees with the declared
+/// decodes (Bond with and without scalar call terms, a Bond stamped below the arrays' terms version
+/// and a Bond whose array holds only unset entries): increments 8b and 8f left those seven cases
+/// byte-identical. Its CertificateOfDeposit and StructuredCredit cases declare a schedule and moved to
+/// the declared rows in increment 8f, on purpose. It also holds four declaring bonds (a call and a put with a scalar call date that agrees with the declared
 /// one, the same with a scalar that contradicts it, one without conventions, and one recovered from an
 /// economic document by the real conversion), whose cases that increment changed on purpose.
 /// </summary>
