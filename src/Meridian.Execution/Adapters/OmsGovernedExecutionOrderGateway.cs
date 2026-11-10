@@ -125,6 +125,10 @@ public sealed class OmsGovernedExecutionOrderGateway : IOrderGateway
                 return ValueTask.CompletedTask;
             });
         var reports = subscription.Reports;
+        // Outstanding waits are kept until they complete and reused, so an idle stream never
+        // accumulates abandoned waiters on either channel.
+        Task<bool>? reportWait = null;
+        Task<bool>? dropWait = null;
         while (true)
         {
             while (doorbell.Reader.TryRead(out _))
@@ -146,12 +150,20 @@ public sealed class OmsGovernedExecutionOrderGateway : IOrderGateway
                 continue;
             }
 
-            var reportReady = reports.WaitToReadAsync(ct).AsTask();
-            var dropReady = doorbell.Reader.WaitToReadAsync(ct).AsTask();
-            await Task.WhenAny(reportReady, dropReady).ConfigureAwait(false);
+            reportWait ??= reports.WaitToReadAsync(ct).AsTask();
+            dropWait ??= doorbell.Reader.WaitToReadAsync(ct).AsTask();
+            await Task.WhenAny(reportWait, dropWait).ConfigureAwait(false);
             ct.ThrowIfCancellationRequested();
-            if (reportReady.IsCompletedSuccessfully && !reportReady.Result && droppedOrders.IsEmpty)
-                yield break;
+            if (dropWait.IsCompleted)
+                dropWait = null;
+            if (reportWait.IsCompleted)
+            {
+                // A faulted subscription surfaces its failure rather than ending quietly.
+                var more = await reportWait.ConfigureAwait(false);
+                reportWait = null;
+                if (!more && droppedOrders.IsEmpty)
+                    yield break;
+            }
         }
     }
 
