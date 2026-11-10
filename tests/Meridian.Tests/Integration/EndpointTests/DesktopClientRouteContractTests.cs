@@ -114,6 +114,8 @@ public sealed class DesktopClientRouteContractTests : EndpointIntegrationTestBas
     [InlineData("$", "{_baseUrl}/api/data/orderbook/{Uri.EscapeDataString(symbol)}?levels={levels}", true)]
     [InlineData("$", "/api/security-master/{securityId}/corporate-actions", true)]
     [InlineData("", "/api/data/quotes-snapshot", true)]
+    [InlineData("$", "/api/loans/{loan.LoanId}/unapplied-cash/{(isRefund ? ", true)]
+    [InlineData("$", "/api/no-such-area/{loan.LoanId}/unapplied-cash/{(isRefund ? ", false)]
     [InlineData("$", "/api/live/{Uri.EscapeDataString(symbol)}/quote", false)]
     [InlineData("$", "{_baseUrl}/api/live/{Uri.EscapeDataString(symbol)}/recent?limit=50", false)]
     [InlineData("$", "{_baseUrl}/api/live/{Uri.EscapeDataString(symbol)}/trades?limit=15", false)]
@@ -214,9 +216,20 @@ public sealed class DesktopClientRouteContractTests : EndpointIntegrationTestBas
     /// </summary>
     private static ApiLiteral? TryNormalize(string file, int line, string prefix, string body)
     {
-        var text = prefix.Contains('$', StringComparison.Ordinal)
-            ? InterpolationHolePattern.Replace(body, Hole.ToString())
-            : body;
+        var text = body;
+        if (prefix.Contains('$', StringComparison.Ordinal))
+        {
+            text = InterpolationHolePattern.Replace(body, Hole.ToString());
+
+            // A hole whose expression contains its own string literal, such as
+            // {(isRefund ? "refund" : "apply")}, ends the scanned literal at the inner quote and
+            // leaves the hole open. Whatever it evaluates to, it is one more hole.
+            var openHole = text.LastIndexOf('{');
+            if (openHole >= 0)
+            {
+                text = string.Concat(text.AsSpan(0, openHole), Hole.ToString());
+            }
+        }
 
         var apiIndex = text.IndexOf("/api/", StringComparison.Ordinal);
         if (apiIndex < 0)
