@@ -1019,7 +1019,7 @@ function buildCockpitGateRows({
       fallbackDetail: controls
         ? controls.circuitBreakerOpen
           ? controls.circuitBreakerReason ?? "Execution circuit breaker is open."
-          : `${controls.manualOverrideCount} manual overrides, ${controls.symbolLimitCount} symbol limits, and ${controls.defaultMaxPositionSize ?? "no"} default max-position limit are visible.`
+          : `${pluralizeCount(controls.manualOverrideCount, "manual override")}, ${pluralizeCount(controls.symbolLimitCount, "symbol limit")}, and ${controls.defaultMaxPositionSize ?? "no"} default max-position limit are visible.`
         : "Execution-control evidence has not loaded.",
       fallbackMeta: controls?.circuitBreakerChangedBy ?? controls?.circuitBreakerChangedAt ?? "Execution controls",
       fallbackLevel: controls?.circuitBreakerOpen ? "blocked" : controls ? "ready" : "review",
@@ -1720,7 +1720,7 @@ function buildMetrics({
       id: "report-packs",
       label: "Report-pack recipients",
       value: String(reportDistributions.length),
-      detail: `${pendingReportDistributions} report-pack distributions pending.`,
+      detail: `${pluralizeCount(pendingReportDistributions, "report-pack distribution")} pending.`,
       level: reportDistributions.length > 0 && pendingReportDistributions === 0 ? "ready" : "review"
     }
   ];

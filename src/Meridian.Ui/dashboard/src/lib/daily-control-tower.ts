@@ -131,7 +131,7 @@ export function buildDailyControlTowerModel(
     nextActionLabel: decision.actionLabel,
     nextActionHref: decision.actionHref,
     nextActionAriaLabel: decision.actionAriaLabel,
-    evidenceLabel: decision.evidenceLabel ?? leadingRow?.proof?.label ?? "No evidence linked",
+    evidenceLabel: buildDecisionEvidenceLabel(decision.evidenceLabel, leadingRow, viewModel.evidenceTimelineItems[0] ?? null),
     driverItems: buildDriverItems({
       viewModel,
       queueRows,
@@ -311,6 +311,31 @@ function buildProofPassportItems({
       detail: proof?.route ?? item.route
     }
   ];
+}
+
+/**
+ * The hero's evidence line for the leading decision. Evidence association is fail-closed (see
+ * findProofForItem): the workstation's latest evidence event is this decision's evidence only
+ * when it is the event correlated with the leading row. Without a correlated event the line says
+ * so and names the latest event as workstation context, which is the same answer the Freshness
+ * card gives for the row instead of a timestamp that reads as proof for it.
+ */
+function buildDecisionEvidenceLabel(
+  decisionEvidenceLabel: string | null,
+  leadingRow: DailyControlTowerFocusRow | null,
+  latestEvidence: AppShellEvidenceTimelineItem | null
+): string {
+  if (!leadingRow) {
+    return decisionEvidenceLabel ?? "No evidence linked";
+  }
+
+  if (leadingRow.proof) {
+    return `Linked evidence: ${leadingRow.proof.workspaceLabel} ${leadingRow.proof.timestampLabel}`;
+  }
+
+  return latestEvidence
+    ? `No evidence linked to this item. Latest workstation evidence: ${latestEvidence.workspaceLabel} ${latestEvidence.timestampLabel}`
+    : "No evidence linked to this item";
 }
 
 function findProofForItem(

@@ -2436,6 +2436,8 @@ export interface CloseCommandCenterBlockerViewModel {
   ownerLabel: string | null;
   dueLabel: string | null;
   evidenceLabel: string;
+  /** Raw identifiers of the records behind the blocker; shown only under audit details. */
+  sourceRecordIds?: string[];
   actionLabel: string;
   impactLabel: string;
 }
