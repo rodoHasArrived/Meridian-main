@@ -605,6 +605,123 @@ public sealed class SecurityAssetClassCatalogTests
     }
 
     [Fact]
+    public void AssetPackRegistry_ValidateCandidateSet_ShouldRejectACandidatePlanningAnAlreadyPlannedClass()
+    {
+        // CreditFacility is planned by three built-in packs. A newcomer may not add a fourth claim
+        // silently, even though the class is not modeled yet.
+        var candidate = SecurityAssetPackRegistry.CreateCandidateDescriptor(
+            "revolving-credit",
+            "Revolving credit",
+            [],
+            ["Purchase", "Sale", "Draw", "Repayment", "Amendment"],
+            ["DiscountedCashFlow", "UserEstimate"],
+            [],
+            AssetPackAutomationDepth.WideCapture,
+            plannedAssetClasses: ["CreditFacility"]);
+
+        var result = SecurityAssetPackRegistry.ValidateCandidateSet([candidate]);
+
+        result.IsValid.Should().BeFalse();
+        var issue = result.Issues.Should().ContainSingle().Subject;
+        issue.Code.Should().Be("asset-pack.planned-asset-class-overlap");
+        issue.Target.Should().Be("PlannedAssetClasses");
+    }
+
+    [Fact]
+    public void AssetPackRegistry_ValidateCandidateSet_ShouldRejectTwoCandidatesPlanningTheSameClass()
+    {
+        SecurityAssetPackDescriptor Planning(string packId) => SecurityAssetPackRegistry.CreateCandidateDescriptor(
+            packId,
+            packId,
+            [],
+            ["Purchase", "Sale", "Distribution", "Amendment"],
+            ["DiscountedCashFlow", "UserEstimate"],
+            [],
+            AssetPackAutomationDepth.WideCapture,
+            plannedAssetClasses: ["RoyaltyStream"]);
+
+        var result = SecurityAssetPackRegistry.ValidateCandidateSet([Planning("royalty-stream"), Planning("music-royalty")]);
+
+        result.Issues.Should().ContainSingle(issue => issue.Code == "asset-pack.planned-asset-class-overlap");
+    }
+
+    [Fact]
+    public void AssetPackRegistry_DeclaredSharedCoverage_ShouldNameEveryBuiltInOverlapAndItsReason()
+    {
+        // The built-in overlaps are stated allowances, not a side effect of the candidate filter.
+        var declared = SecurityAssetPackRegistry.DeclaredSharedCoverage;
+
+        declared.Select(static entry => entry.AssetClass).Should().BeEquivalentTo("DirectLoan", "CreditFacility");
+        declared.Single(static entry => entry.AssetClass == "DirectLoan").PackIds
+            .Should().BeEquivalentTo("private-loan-credit", "mortgage-facility-intercompany");
+        declared.Single(static entry => entry.AssetClass == "CreditFacility").PackIds
+            .Should().BeEquivalentTo("private-loan-credit", "mortgage-facility-intercompany", "commitment-guarantee");
+        declared.Should().OnlyContain(static entry => !string.IsNullOrWhiteSpace(entry.Reason));
+        SecurityAssetPackRegistry.ValidateSharedCoverage(SecurityAssetPackRegistry.All, declared).Should().BeEmpty();
+    }
+
+    [Fact]
+    public void AssetPackRegistry_ValidateSharedCoverage_ShouldReportAnUndeclaredBuiltInOverlap()
+    {
+        // With no allowances declared, the overlaps the registry ships are reported, claimed and
+        // planned alike: the built-in rule can fire.
+        var issues = SecurityAssetPackRegistry.ValidateSharedCoverage(SecurityAssetPackRegistry.All, []);
+
+        issues.Should().HaveCount(2).And.OnlyContain(static issue =>
+            issue.Code == "asset-pack.shared-coverage-undeclared" && issue.Severity == "Critical");
+        issues.Should().Contain(static issue => issue.Message.Contains("'DirectLoan'"));
+        issues.Should().Contain(static issue => issue.Message.Contains("'CreditFacility'"));
+    }
+
+    [Fact]
+    public void AssetPackRegistry_ValidateSharedCoverage_ShouldReportDeclarationsThatNoLongerMatch()
+    {
+        AssetPackSharedCoverage[] declarations =
+        [
+            // Names one of the two packs that actually share DirectLoan.
+            new("DirectLoan", ["private-loan-credit", "fixed-income"], "wrong pack set"),
+            new("CreditFacility", ["private-loan-credit", "mortgage-facility-intercompany", "commitment-guarantee"], " "),
+            // Equity belongs to one pack, so this allowance describes nothing.
+            new("Equity", ["public-equity-etf", "fixed-income"], "stale")
+        ];
+
+        var issues = SecurityAssetPackRegistry.ValidateSharedCoverage(SecurityAssetPackRegistry.All, declarations);
+
+        issues.Select(static issue => issue.Code).Should().BeEquivalentTo(
+            "asset-pack.shared-coverage-mismatch",
+            "asset-pack.shared-coverage-reason-required",
+            "asset-pack.shared-coverage-stale");
+    }
+
+    [Fact]
+    public void AssetPackRegistry_DescriptiveMetadata_IsOneSharedSetAndOnlyTheTermsSchemaIsPerPack()
+    {
+        // ValidationRules, ReportingTaxonomy and the contract schema's prose lists describe; they do
+        // not gate. Every pack, built-in or candidate, carries the same instances. If one of them
+        // becomes per-pack, it needs a real check and the registry's doc comment must say so.
+        var candidate = SecurityAssetPackRegistry.CreateCandidateDescriptor(
+            "royalty-stream",
+            "Royalty streams",
+            [],
+            ["Purchase", "Sale"],
+            ["UserEstimate"],
+            [],
+            AssetPackAutomationDepth.WideCapture,
+            plannedAssetClasses: ["RoyaltyStream"]);
+        var reference = SecurityAssetPackRegistry.All[0];
+
+        foreach (var pack in SecurityAssetPackRegistry.All.Append(candidate))
+        {
+            pack.ValidationRules.Should().BeSameAs(reference.ValidationRules);
+            pack.ReportingTaxonomy.Should().BeSameAs(reference.ReportingTaxonomy);
+            pack.ContractSchema.Terms.Should().BeSameAs(reference.ContractSchema.Terms);
+            pack.ContractSchema.Rates.Should().BeSameAs(reference.ContractSchema.Rates);
+            pack.ContractSchema.AssetClassTerms.Select(static schema => schema.AssetClass)
+                .Should().BeEquivalentTo(pack.AssetClasses);
+        }
+    }
+
+    [Fact]
     public void AssetPackRegistry_ValidateDescriptor_ShouldFailClosedForInvalidCandidatePack()
     {
         var baseline = SecurityAssetPackRegistry.Find("private-loan-credit");
