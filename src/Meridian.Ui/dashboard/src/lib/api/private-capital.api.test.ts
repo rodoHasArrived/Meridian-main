@@ -33,6 +33,14 @@ describe("Authoritative native private capital API", () => {
     post.mockResolvedValue({ call: null, isReady: true, blockers: [] });
     await expect(native.previewPrivateCapitalCall(CAPITAL_BOOK_ID, { callId: "call-a", amountToCall: "1.00", noticeDate: "2026-11-10", dueDate: "2026-11-20", periodId: CAPITAL_PERIOD_ID, commitmentIds: ["commitment-a"], purpose: null })).rejects.toThrow("complete allocation preview");
   });
+  it("accepts the server canonical call identity and still rejects another call", async () => {
+    const request = { callId: " CALL-A ", amountToCall: "250000.01", noticeDate: capitalCall.noticeDate,
+      dueDate: capitalCall.dueDate, periodId: CAPITAL_PERIOD_ID, commitmentIds: ["commitment-a"], purpose: null };
+    post.mockResolvedValue({ call: capitalCall, isReady: true, blockers: [] });
+    await expect(native.previewPrivateCapitalCall(CAPITAL_BOOK_ID, request)).resolves.toMatchObject({ call: { callId: "call-a" } });
+    post.mockResolvedValue({ call: { ...capitalCall, callId: "another-call" }, isReady: true, blockers: [] });
+    await expect(native.previewPrivateCapitalCall(CAPITAL_BOOK_ID, request)).rejects.toThrow("complete allocation preview");
+  });
   it("imports only the accepted source identities without caller monetary or actor fields", async () => {
     post.mockResolvedValue(capitalBankObservationImport);
     const request = { evidenceLink: CAPITAL_EVIDENCE, documentId: capitalBankObservationImport.documentId };

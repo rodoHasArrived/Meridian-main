@@ -11,6 +11,9 @@ last_reviewed: 2026-10-28
 
 # src/Meridian.Ui/dashboard
 
+Native capital-call previews accept the server's canonical case-normalized call identity while
+retaining the reviewed plan hash; a preview for another call is rejected before retention.
+
 Bond records in Security Master expose calculated analytics and a convention-migration preview
 under the existing Evidence detail tab. Operators supply dates and a clean price or annual yield;
 the browser displays server-calculated per-100 values, annual-fraction yields, projected payments,

@@ -39,7 +39,8 @@ export async function approvePrivateCapitalCommitment(bookId: string, commitment
 export async function previewPrivateCapitalCall(bookId: string, request: PreviewPrivateCapitalCall, options: ApiRequestOptions = {}) {
   const result = await apiPostJson<PrivateCapitalCallPreview>(endpoint(bookId, "calls/preview"), request, authoritative(options));
   if (result.call) verifyBook(bookId, result.call);
-  if (!Array.isArray(result.blockers) || (result.isReady && (!result.call?.planHash || result.call.callId !== request.callId))) {
+  if (!Array.isArray(result.blockers) || (result.isReady && (!result.call?.planHash
+    || typeof result.call.callId !== "string" || result.call.callId.trim().toLowerCase() !== request.callId.trim().toLowerCase()))) {
     throw new Error("The server did not return a complete allocation preview.");
   }
   return result;
