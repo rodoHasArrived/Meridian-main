@@ -145,6 +145,9 @@ Use this module for deterministic business-rule kernels shared by strategy, trad
 ## Audit hardening (2026-11)
 
 - **Position limit unwinds.** `RiskRules.positionLimit` always approves an order that shrinks a position on the same side of zero, or flattens it, even when the position is already over the limit. An order that crosses zero must still land within the limit.
+- **Drawdown breaker fails closed.** `RiskRules.drawdownCircuitBreaker` rejects, with an explicit
+  reason, when a threshold is configured but the portfolio value is missing or the initial capital
+  is missing or not positive. An unconfigured threshold still approves.
 
 ## Security Master governance controls (2026-11)
 
