@@ -62,6 +62,9 @@ public partial class AddProviderWizardPage : Page
     }
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => PageLoadedCoreAsync(sender, e), nameof(OnPageLoaded)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task PageLoadedCoreAsync(object sender, RoutedEventArgs e)
         => await LoadProviderCatalogAsync();
 
     internal async Task LoadProviderCatalogAsync()
@@ -191,6 +194,9 @@ public partial class AddProviderWizardPage : Page
     }
 
     private async void TestProviderConnection_Click(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => TestProviderConnection_ClickCoreAsync(sender, e), nameof(TestProviderConnection_Click)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task TestProviderConnection_ClickCoreAsync(object sender, RoutedEventArgs e)
         => await TestProviderConnectionAsync();
 
     internal async Task TestProviderConnectionAsync()
@@ -223,6 +229,9 @@ public partial class AddProviderWizardPage : Page
     }
 
     private async void SaveProvider_Click(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => SaveProvider_ClickCoreAsync(sender, e), nameof(SaveProvider_Click)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task SaveProvider_ClickCoreAsync(object sender, RoutedEventArgs e)
         => await SaveProviderAsync();
 
     internal async Task SaveProviderAsync()
