@@ -48,4 +48,21 @@ describe("WorkstationStatusBar", () => {
       { key: "workspace", label: "Workspace", value: "Portfolio", push: true }
     ]);
   });
+
+  it("repeats a provider-trust warning so a green sync is never the whole answer", () => {
+    const build = (providerTrust: Parameters<typeof buildWorkstationStatusItems>[0]["providerTrust"]) =>
+      buildWorkstationStatusItems({ workspaceLabel: "Accounting", refreshing: false, hasError: false, providerTrust });
+
+    expect(build({ value: "1 warning", tone: "review" })).toEqual([
+      { key: "sync", status: "ok", label: "Sync", value: "up to date" },
+      { key: "providers", status: "warn", label: "Providers", value: "1 warning" },
+      { key: "workspace", label: "Workspace", value: "Accounting", push: true }
+    ]);
+    expect(build({ value: "2 blocked", tone: "blocked" })[1])
+      .toEqual({ key: "providers", status: "err", label: "Providers", value: "2 blocked" });
+    // Healthy and still-loading postures leave the footer on sync and workspace alone.
+    expect(build({ value: "4/4 healthy", tone: "ready" }).map((item) => item.key)).toEqual(["sync", "workspace"]);
+    expect(build({ value: "Pending", tone: "pending" }).map((item) => item.key)).toEqual(["sync", "workspace"]);
+    expect(build(null).map((item) => item.key)).toEqual(["sync", "workspace"]);
+  });
 });

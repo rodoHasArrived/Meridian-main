@@ -59,6 +59,15 @@ typography floor check in `dashboard/scripts/check-typography-floor.mjs` (run by
 keep legacy uses from growing. No shared contract changed; positions and orders still arrive as preformatted strings,
 so those tables sort on their text columns until a shared seam carries raw figures.
 
+The host-served bundle carries the operator-copy pass: display names in place of GUID-shaped
+identifiers on the close cockpit, trial balance heading, factor-paydown scope and loan-book
+facility selector; counts that agree with their nouns; one "No mark observed" hint for a position
+with no mark assessment; a Providers item in the status bar whenever provider trust needs review;
+and a Control Tower evidence line that names only correlated evidence. The screenshot harness
+fails a route whose rendered content shows a raw identifier or a "1 rows" style count. No shared
+contract changed; Operations Continuity still shows fund-account identifiers because its shared
+summary carries no account name.
+
 The host-served bundle carries the browser presentation correctness fixes: font stacks that end
 in a generic family (no serif fallback for data text), Ledger Explorer amounts at currency
 precision with journal-ID links, no invented Strategy metrics, and a masthead activation chip that
