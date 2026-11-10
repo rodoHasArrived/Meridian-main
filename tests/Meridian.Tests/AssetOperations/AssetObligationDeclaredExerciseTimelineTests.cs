@@ -65,6 +65,11 @@ public sealed class AssetObligationDeclaredExerciseTimelineTests
         deadline.Status.Should().Be("Projected");
         deadline.Summary.Should().Be(
             "Last day to give notice for the 2027-01-15 declared call date. The notice window opens on 2026-11-16.");
+        exercise.FormulaTrace.Should().Be(
+            "Contractual exercise date resolved from the declared schedule by the bond exercise notice watch; not an exercise forecast.");
+        exercise.NextAction.Should().StartWith("Review the declared exercise");
+        deadline.FormulaTrace.Should().Be("Notice bounds counted back from the exercise date in the declared notice day type.");
+        deadline.NextAction.Should().StartWith("Retain notice evidence");
 
         var outcome = timeline.ExtensionPayload!.Value.GetProperty("declaredExercise");
         outcome.GetProperty("status").GetString().Should().Be("Resolved");
