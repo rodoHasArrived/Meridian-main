@@ -695,8 +695,24 @@ public sealed class BacktestEngine(
                     pendingOrders.Add(contingentOrder);
             }
 
+            // The fill model decides when an order stops working: an immediate-or-cancel or
+            // fill-or-kill order that takes what its first executable event offers is cancelled,
+            // not left to fill on a later one. An immediate order whose fills this account
+            // rejected has had its one attempt as well.
+            var cancelledByModel = result.RemoveOrder
+                && result.UpdatedOrder.Status is OrderStatus.Cancelled or OrderStatus.Expired or OrderStatus.Rejected;
+            var immediateAttemptSpent = result.Fills.Count > 0
+                && order.TimeInForce is TimeInForce.ImmediateOrCancel or TimeInForce.FillOrKill;
+            var stopsWorking = cancelledByModel || immediateAttemptSpent;
+
             if (acceptedFilledQuantity == 0)
             {
+                if (stopsWorking)
+                {
+                    filled.Add(order.OrderId);
+                    continue;
+                }
+
                 // Preserve trigger activation even when all generated fills were rejected.
                 pendingOrders[i] = result.WasTriggered
                     ? order with { IsTriggered = true }
@@ -713,7 +729,7 @@ public sealed class BacktestEngine(
                 IsTriggered = result.UpdatedOrder.IsTriggered
             };
 
-            if (updatedOrder.IsComplete)
+            if (updatedOrder.IsComplete || stopsWorking)
             {
                 filled.Add(order.OrderId);
                 continue;

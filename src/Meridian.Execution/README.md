@@ -344,6 +344,12 @@ Ledger posting from trade-fill events is explicit and Security Master gated. `Le
 retains the trade journal's Investing cash category against its immutable line IDs. Sales report
 actual cash proceeds; realized gains/losses remain noncash adjustments, and commission journals
 remain separate Operating payments. Reversal preserves the retained category.
+A buy that covers a short books its realized gain or loss the same way a sale does: Securities is
+debited by the short-sale proceeds being relieved (cash paid plus the gain, or less the loss), so a
+flat position leaves no residual Securities balance. A buy-to-cover fill whose two-line trade
+journal was retained before this accounting is replayed against that retained journal, matched
+exactly, so a fill interrupted across the upgrade can post its remaining journals. The retained
+journal is kept as posted; replay never appends the earlier shape and does not correct it.
 For a crash retry whose deterministic journal was already retained before attribution existed,
 the governed target first requires exactly one authoritative identity collision with no
 `cash-flow.*` evidence. Only the new canonical trade group/category tags can be omitted from the
