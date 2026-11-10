@@ -2163,6 +2163,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
         )}
         label="Accounting headline metrics"
         source="Accounting workspace"
+        workspace="accounting"
       />
       {currentDailyValuationSchedule && (sectionVisibility.showCloseCockpitLanding || sectionVisibility.showWorkflowDetails) ? <ValuationMarkPreviewPanel preview={valuationMarkPreview} /> : null}
 

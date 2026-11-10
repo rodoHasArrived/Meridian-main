@@ -563,8 +563,9 @@ describe("PortfolioScreen", () => {
     const strip = screen.getByLabelText("Portfolio headline metrics");
     expect(within(strip).getByText("$10,200")).toHaveClass("text-muted-foreground");
     expect(within(strip).getByText("+$120")).not.toHaveClass("text-success");
+    // The totals cover every workspace position, so that is the scope they state.
     expect(strip.parentElement).toHaveTextContent(
-      "Stale figures · Source: Portfolio workspace · As of Jan 2, 2026, 14:00 UTC · Scope:"
+      "Stale figures · Source: Portfolio workspace · As of Jan 2, 2026, 14:00 UTC · Scope: All workspace positions"
     );
   });
 
@@ -731,6 +732,32 @@ describe("PortfolioScreen", () => {
   it("shows cash-flow posture when accounting data is available", async () => {
     await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />);
     expect(screen.getByText(/1 run needs variance review/i)).toBeDefined();
+  });
+
+  it("keeps the headline totals scoped to the workspace when one brokerage account is selected", async () => {
+    const user = userEvent.setup();
+    await renderPortfolioScreen(
+      <PortfolioScreen
+        portfolio={portfolio}
+        trading={trading}
+        strategy={strategy}
+        accounting={accounting}
+        brokerageConnection={brokerageConnection}
+        brokeragePortfolio={brokeragePortfolio}
+      />,
+      { initialEntries: ["/portfolio/brokerage-sync"] }
+    );
+
+    const strip = screen.getByLabelText("Portfolio headline metrics");
+    const exposureBefore = within(strip).getByText("$10,200");
+    expect(strip.parentElement).toHaveTextContent("Scope: All workspace positions");
+
+    // Selecting an account filters the brokerage table only; the totals and their scope stay put.
+    await user.click(screen.getByRole("button", { name: /show alpaca paper roth ira account/i }));
+
+    expect(within(strip).getByText("$10,200")).toBe(exposureBefore);
+    expect(strip.parentElement).toHaveTextContent("Scope: All workspace positions");
+    expect(strip.parentElement).not.toHaveTextContent(/Scope: .*Roth IRA/i);
   });
 
   it("renders Alpaca account and selectable current positions when brokerage sync data is available", async () => {

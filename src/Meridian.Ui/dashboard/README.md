@@ -320,7 +320,7 @@ not been recorded.
   - *Source*: a figure states where it comes from. `provenance` carries source, as-of time
     and scope; the strip prints what its figures share once under the row and keeps a
     differing figure's own provenance on hover and for screen readers. A strip fed by the
-    workstation load passes `source="…"` and takes the as-of time from the shell
+    workstation load passes `source="…"` and `workspace="…"` and takes the as-of time from the shell
     (`WorkspaceFigureContextProvider`); a screen with its own freshness evidence stamps
     its metrics with `withMetricContext`.
   - *Change*: a bare change (`+8%`, `0%`, `+2`) is shown only with the `baseline` it is
@@ -328,7 +328,9 @@ not been recorded.
     its comparison (`3 new since your last visit`) and descriptive captions pass through.
   - *Freshness*: `freshness: "stale" | "unverified"` mutes the figure, adds a clock, marks
     the strip "Stale figures"/"Unverified figures" and explains the age on hover and to
-    assistive technology. A failed workstation refresh marks every workspace-fed strip stale.
+    assistive technology. A failed workstation refresh marks every workspace-fed strip stale; a
+    refresh that fails for some workspaces only marks just those (a strip names its workspace
+    with `workspace="…"`), while the ones that did refresh stay fresh.
   - *Disagreement*: when two panels on one page report different values for the same
     quantity, `buildFigureDifferenceNote` and `FigureDifferenceNote` show "Why these differ"
     with both values and each panel's source. Portfolio uses it for the header strip and the

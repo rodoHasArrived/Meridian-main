@@ -276,7 +276,7 @@ export function DataScreen({
         </div>
       </section>
 
-      <StatStrip metrics={applyCrossScreenCounts(data.metrics, selectCrossScreenCounts({ shared: sharedCounts, providers: data.providers }))} label="Data headline metrics" source="Data workspace" />
+      <StatStrip metrics={applyCrossScreenCounts(data.metrics, selectCrossScreenCounts({ shared: sharedCounts, providers: data.providers }))} label="Data headline metrics" source="Data workspace" workspace="data" />
 
       {showHealthMonitoring ? (
         <div className="space-y-4">

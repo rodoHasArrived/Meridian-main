@@ -2420,7 +2420,7 @@ export function SettingsScreen({
         </div>
       </section>
 
-      <StatStrip metrics={settingsStatMetrics} label="Operator control posture metrics" source="System overview" />
+      <StatStrip metrics={settingsStatMetrics} label="Operator control posture metrics" source="System overview" workspace="settings" />
 
       {showChooserSection ? <SettingsTaskChooser /> : null}
 
