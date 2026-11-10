@@ -11,6 +11,8 @@ last_reviewed: 2026-10-31
 
 # src/Meridian.Application
 
+Historical backfill enforces its adaptive concurrency: after a provider rate limit, workers beyond the reduced limit wait for a slot instead of continuing at the original parallelism.
+
 Backfill resume checkpoints are written only after the final pipeline flush succeeds, and a flush failure fails the run, so a crash or flush error can no longer skip dates on resume that never reached disk. `PersistentDedupLedger` rolls its cache entry back when the ledger write fails or is cancelled (a retry is no longer dropped as a duplicate) and fsyncs compacted ledgers before the rename. Scheduled catch-up skips an empty window instead of queueing From > To.
 
 Backfill runs publish into an `EventPipeline` with `BoundedChannelFullMode.Wait`, so a
