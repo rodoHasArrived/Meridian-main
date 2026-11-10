@@ -510,6 +510,10 @@ anonymous roles use the shared `RolePermissions` mapping rather than inheriting 
 local-development access.
 
 The same page now loads the shared Instrument Passport endpoint for the selected security so desktop operators see provider-confidence, pricing, trust, downstream usage, operations-readiness, and handoff evidence in parity with the browser Accounting workstream.
+The Direct Lending loan inspector shows prepaid interest and unapplied cash (PRD-115) from the shared
+`LoanSummaryDto`, the same values the browser loan book shows; both are owed to the borrower and are
+listed beside the receivables, not in exposure.
+
 The Direct Lending page consumes the shared `DirectLendingOperationsReadModelDto` for servicer
 statement batches as well as collateral, status, exceptions, evidence, and close blockers. The WPF
 panel is read-only over imported position/remittance batches; preview, validation, evidence

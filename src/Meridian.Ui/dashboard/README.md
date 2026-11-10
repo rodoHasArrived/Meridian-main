@@ -158,7 +158,9 @@ complete series. Focused coverage lives in `historical-chart.test.tsx`.
 Loan book accepts numeric and named host enums and preserves unknown values without inventing
 USD. Server `currencyTotals` retain their denomination and an explicit no-FX notice; scalar
 totals without a currency are withheld. Principal and undrawn amounts group by facility base
-currency, while collateral retains its own appraisal currency.
+currency, while collateral retains its own appraisal currency. Each row also shows prepaid interest
+and unapplied cash (PRD-115): amounts owed to the borrower, shown beside the receivables but not in
+any total; a host that predates them shows the not-reported marker rather than zero.
 
 The generated `api-routes.ts` catalog includes exact account-owned ledger-book oversight routes
 for cash continuity, reviewed close prices and cash forecasts. Regenerate it from shared
