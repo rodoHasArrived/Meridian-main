@@ -994,6 +994,70 @@ public static class DirectLendingEndpoints
         .RequireFundScopedWriteTenant()
         .RequirePermission(UserPermission.ManageDirectLending);
 
+        // PRD-115 increment 7: governed like the other direct-lending mutations (permission, rate
+        // limit, fund-scoped tenancy, command-id idempotency).
+        mutationGroup.MapPost("/{loanId:guid}/unapplied-cash/apply", async (Guid loanId, JsonElement body, HttpContext context) =>
+        {
+            var service = ResolveService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            if (!TryBindCommand<ApplyUnappliedCashRequest>(body, jsonOptions, context, out var request, out var metadata, out var error))
+            {
+                return Results.Problem(error, statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            try
+            {
+                var servicing = await service.ApplyUnappliedCashAsync(loanId, request!, metadata, context.RequestAborted).ConfigureAwait(false);
+                return servicing is null ? Results.NotFound() : Results.Json(servicing, jsonOptions);
+            }
+            catch (DirectLendingCommandException ex)
+            {
+                return ToProblem(ex);
+            }
+        })
+        .WithName("ApplyLoanUnappliedCash")
+        .Produces<LoanServicingStateDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound)
+        .AddEndpointFilter(requireManageDirectLending)
+        .RequireFundScopedWriteTenant()
+        .RequirePermission(UserPermission.ManageDirectLending);
+
+        // PRD-115 increment 7: governed like the other direct-lending mutations (permission, rate
+        // limit, fund-scoped tenancy, command-id idempotency).
+        mutationGroup.MapPost("/{loanId:guid}/unapplied-cash/refund", async (Guid loanId, JsonElement body, HttpContext context) =>
+        {
+            var service = ResolveService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            if (!TryBindCommand<RefundUnappliedCashRequest>(body, jsonOptions, context, out var request, out var metadata, out var error))
+            {
+                return Results.Problem(error, statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            try
+            {
+                var servicing = await service.RefundUnappliedCashAsync(loanId, request!, metadata, context.RequestAborted).ConfigureAwait(false);
+                return servicing is null ? Results.NotFound() : Results.Json(servicing, jsonOptions);
+            }
+            catch (DirectLendingCommandException ex)
+            {
+                return ToProblem(ex);
+            }
+        })
+        .WithName("RefundLoanUnappliedCash")
+        .Produces<LoanServicingStateDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound)
+        .AddEndpointFilter(requireManageDirectLending)
+        .RequireFundScopedWriteTenant()
+        .RequirePermission(UserPermission.ManageDirectLending);
+
         mutationGroup.MapPost("/{loanId:guid}/prepayment-penalties", async (Guid loanId, JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);

@@ -42,6 +42,16 @@ type MixedPaymentDecision =
       CashTransactionId: Guid
       Allocations: PaymentAllocationInstruction array }
 
+/// PRD-115: unapplied cash allocated to amounts owed; no cash is received.
+type UnappliedCashApplicationDecision =
+    { Servicing: LoanServicingStateDto
+      Breakdown: PaymentBreakdownDto
+      ResolutionBasis: string }
+
+/// PRD-115: unapplied cash returned to the borrower.
+type UnappliedCashRefundDecision =
+    { Servicing: LoanServicingStateDto }
+
 type FeeDecision =
     { Servicing: LoanServicingStateDto }
 
@@ -51,7 +61,9 @@ type WriteOffDecision =
 
 type DailyAccrualDecision =
     { Servicing: LoanServicingStateDto
-      Entry: DailyAccrualEntryDto }
+      Entry: DailyAccrualEntryDto
+      /// PRD-115: the part of the day's cash interest settled from the prepaid-interest balance.
+      PrepaidInterestConsumed: decimal }
 
 type PrepaymentPenaltyDecision =
     { Servicing: LoanServicingStateDto
