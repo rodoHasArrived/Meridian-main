@@ -179,6 +179,9 @@ See the [expanded objectives](../../docs/product/implementation-todo-list.md#exp
   what filled and cancels the remainder, FOK fills completely or is cancelled with no fill, and
   neither stays working on later bars. An order with `AllowPartialFills = false` never ends
   partially filled, including when market-impact slices are skipped for crossing the limit price.
+  The replay engine acts on that result: an order the fill model cancels, and an immediate order
+  whose generated fills the account rejected, is removed from the pending set and cannot fill on a
+  later event. This applies to every fill model, including the order-book model.
 - `MeridianNativeBacktestStudioEngine` stamps native engine output through
   `CanonicalBacktestResultNormalizer.FromNative`, matching the metadata contract used by
   QuantConnect Lean imports.

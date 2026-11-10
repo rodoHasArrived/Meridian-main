@@ -16,8 +16,8 @@
       "id": "SRC-BACKTESTING",
       "path": "src/Meridian.Backtesting",
       "readme": "src/Meridian.Backtesting/README.md",
-      "readme_hash": "a688517ea4a6a4b3458b7a475b8eb60bde114212dd0ae1e3ccc2745acd127af5",
-      "source_hash": "9a295f136548cabb5f082d57faac62859ab1e5b30ddd800143a1b47b18803b11"
+      "readme_hash": "17bebebbddde5e59c2981ac783fc21e286798691b9b35ed34b5b18a9ba277078",
+      "source_hash": "ca0e44395bd9d2bf8a874c84aa41a6900ebb9197f4570b261fd2e9f283749a5c"
     },
     {
       "id": "SRC-BACKTESTING-SDK",
