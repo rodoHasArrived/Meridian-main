@@ -11,12 +11,14 @@ last_reviewed: 2026-10-31
 
 # src/Meridian.Contracts
 
+`LedgerCurrencyRounding.RoundCurrency(amount, currency)` rounds to the currency's minor units via `CurrencyMinorUnits` (0 for JPY, 3 for KWD/BHD, 2 otherwise).
+
 `BondAnalyticsCashFlow.FloatingCoupon` carries v3-only reset evidence: reset date, observed/forecast
 status, named index, index and effective coupon annual fractions, spread in basis points, and source.
 The optional field and `BondAnalyticsResult.SpreadDv01` are omitted from fixed/zero v1/v2 JSON.
 These are calculation display contracts; they do not introduce discount margin or posting authority.
 
-`BondContractualEconomics` owns declared per-100 coupon cash, reference-period stub fractions, accrued interest and discounting time. `BondExerciseEconomics` shares fixed-price whole-redemption dates and cash across analytics and cash forecasts. `BondExerciseNoticeWatch` reads the same scenarios' notice bounds into dated notice windows for the workstation notice watch, refusing every structure fixed analytics refuses. `BondFloatingRateEvidence` freezes each observed or forecast reset with explicit units, source, spread, cap/floor, principal and accrual fraction. New declared lot previews use `canonical-lot-amortization-v5`; v1–v3 retain their original arithmetic and dispatch. The interim v4 declared model was removed before any instruction was produced and is refused as an unsupported version.
+`BondContractualEconomics` owns declared per-100 coupon cash, reference-period stub fractions, accrued interest and discounting time. `BondExerciseEconomics` shares fixed-price whole-redemption dates and cash across analytics and cash forecasts. `BondExerciseNoticeWatch` reads the same scenarios' notice bounds into dated notice windows for the workstation notice watch, refusing every structure fixed analytics refuses; `EvaluateToMaturity` is the same read without the horizon, used by the asset-operations obligation timeline. `BondFloatingRateEvidence` freezes each observed or forecast reset with explicit units, source, spread, cap/floor, principal and accrual fraction. New declared lot previews use `canonical-lot-amortization-v5`; v1–v3 retain their original arithmetic and dispatch. The interim v4 declared model was removed before any instruction was produced and is refused as an unsupported version.
 
 `CashFlows/` owns the versioned calculation-only cash-flow contracts, exercise/notice resolution, standard make-whole formulas, structured coupon/principal walks, deterministic CPR/SMM/PSA prepayments, and replay verification. The `cashFlowContract` companion reads ahead of existing write ceilings; undeclared terms and existing call/put element shapes remain unchanged. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).
 
@@ -544,6 +546,8 @@ accepts older numeric status payloads; persisted queue records already use text 
   `AccountingInstrumentClass` or `AccountingOutsideSlice` (StructuredNote is outside the slice).
   `ResolveAccountingInstrumentClass` returns null for a catalogued outside-slice name before the
   `FixedIncome` taxonomy fallback, which remains only for names the catalog does not model.
+  `SettlesDailyVariationMargin` (Future only) declares that positions settle the daily price change
+  in cash instead of exchanging notional; the paper book reads it to book futures on variation margin.
 - `SecurityMaster/Schedules/` - the contractual schedule kernel (`ScheduleGenerator`, kernel
   version `contractual-schedule-kernel-v1`). A pure, deterministic `ScheduleSpec` →
   `ScheduleGenerationResult` generator: anchored or compounded grids, forward or backward
@@ -1477,7 +1481,11 @@ Asset Operations terms/obligations timeline contracts carry the shared projectio
 expected cash flows, projected obligations, retained evidence posture, variances, ledger support,
 formula trace, and next action. Browser and WPF clients should render `AssetTermsObligationsTimelineDto`
 and its event/variance rows as supplied instead of rebuilding projection math or source-support
-rules in UI-specific DTOs.
+rules in UI-specific DTOs. Event kinds are open text: a Bond with a declared call or put schedule
+carries `IssuerCallExercise`, `HolderPutExercise`, `IssuerCallNoticeDeadline` and
+`HolderPutNoticeDeadline` rows instead of `CallPutReview`, and the timeline's `ExtensionPayload`
+then carries a `declaredExercise` object (`status` `Resolved` or `Blocked`, `blockers` with `code`
+and `reason`, `diagnostics`). `EngineVersion` is evidence to display, not a value to branch on.
 
 Brokerage sync activity payloads are fund-account scoped under `Workstation/BrokerageSyncDtos.cs`.
 Keep readiness and work-item decisions on `WorkstationBrokerageSyncStatusDto` and reserve
@@ -1588,7 +1596,9 @@ existed keeps its terms hash. Setting a rule is a material term and changes the 
 and F# lanes pin that value identically. `OutstandingBalancesDto` also carries `PrepaidInterest`
 and `UnappliedCash`, appended with 0 defaults so earlier positional constructions and persisted JSON
 are unchanged. Both are owed *to* the borrower, so read models must not add them to outstanding
-exposure. Nothing sets them yet; routing and journals follow in later PRD-115 increments; see the
+exposure. `LoanSummaryDto` carries both per loan for the browser and WPF loan books, appended with 0
+defaults; `LoanPortfolioSummaryDto` totals still exclude them. Nothing sets them yet on `main`;
+routing and journals follow in later PRD-115 increments; see the
 [excess payment application blueprint](../../docs/engineering/blueprints/direct-lending-excess-payment-application.md).
 
 Accounting reconciliation casework contracts are shared here: break queue items carry assignee, priority, SLA policy/state/timestamps, age band, versioned taxonomy, threaded comments with mention/evidence/hash metadata, evidence counts, sign-off/reopen metadata, source-origin metadata, and optimistic concurrency versions. Resolve/dismiss, casework command, and bulk casework request payloads carry `ActionOrigin` so reviewed automation can draft triage but cannot resolve, sign off, dismiss, or reopen accounting exceptions. Casework command, bulk-triage, taxonomy, SLA policy, validation-problem, and sequenced audit-event payloads must remain additive so browser and WPF workstation clients use the same Accounting workflow. `ReconciliationBulkCaseworkRequest.AssignToCurrentOperator` (init-only, omitted from JSON when false) asks the server to assign the selected cases to the authenticated operator. `OperatorSurfaceVisitDto` carries an operator's previous and current visit to a workstation surface, the shared baseline for "since your last visit" markers.
@@ -2044,7 +2054,12 @@ write version to a term's version, a flat payload that populates that term (the 
 `resetSchedule` (`{resetDate, fixingRate}`) arrays; `StructuredCashFlowLeg.NotionalOn` and `FixingOn`
 let the leg scheduler accrue on the scheduled notional (paying step-downs as principal when the leg
 exchanges principal) and use a recorded fixing for a period that has already reset. `LotQuantity`/`IUnitizedLot` give execution, backtesting, ledger and face-value lots
-one shape: decimal quantity, `SecurityLotUnitKind` and multiplier. `CommitmentLot` (commitment,
+one shape: decimal quantity, `SecurityLotUnitKind` and multiplier. How a raw quote scales into
+money is a declared catalog fact (remediation slice 8): `SecurityAssetClassDescriptor.QuoteConvention`
+(`PercentOfPar` for face-value paper, `PerUnit` otherwise, defaulting from the lot unit so no
+price changes), read by `LotQuantity.ValueAtPrice(price, convention)` and
+`LotQuantity.QuoteConventionFor(assetClass)`; the unit-kind overload keeps the legacy rule and
+`SecurityQuoteConventionCoverageTests` pins the two routes to agree for every catalogued class. `CommitmentLot` (commitment,
 funded and unfunded amounts, recallable distributions, `Draw`) and `FundUnitLot` (units at an
 acquisition NAV) are the `Commitment` and `Units` cases the registry assigns to private fund
 interests, guarantees and funds. `SecurityIdentifierKind` adds

@@ -1,11 +1,11 @@
 {
-  "total_files": 800,
+  "total_files": 801,
   "orphaned_count": 259,
   "no_heading_count": 157,
   "stale_count": 0,
   "todo_count": 328,
   "health_score": 83,
-  "signal_digest": "sha256:0ad08197a4b08ed21794fb073ad032ea3b038fc472ad35202ff9948f5311c05f",
+  "signal_digest": "sha256:53dceb17823ac00a6bd4be25a52b649977176fbef1479f03a765dd26197966a4",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -1004,6 +1004,13 @@
     },
     {
       "path": "docs/adr/026-stored-curves-and-valuation-seam.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/adr/027-single-economic-model-consolidation.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

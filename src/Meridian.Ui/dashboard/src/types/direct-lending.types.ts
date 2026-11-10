@@ -28,6 +28,10 @@ export interface LoanSummary {
   principalOutstanding: number;
   interestAccruedUnpaid: number;
   penaltyAccruedUnpaid: number;
+  /** PRD-115: owed to the borrower. Absent from hosts that predate it. */
+  prepaidInterest?: number | null;
+  /** PRD-115: excess cash held for the borrower. Absent from hosts that predate it. */
+  unappliedCash?: number | null;
   availableToDraw: number;
   originationDate: string;
   maturityDate: string;

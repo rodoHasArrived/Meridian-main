@@ -11,6 +11,8 @@ last_reviewed: 2026-10-15
 
 # src/Meridian.Wpf
 
+The credential vault moves an unreadable vault file aside (`credentials.enc.unreadable-*.bak`) before the next save and writes through a flushed temp file plus atomic rename. The environment designer rejects drafts missing `definition`/`name` and reports save failures instead of crashing.
+
 Fund Ledger defaults and resets to all reconciliation cases, includes explicitly fund-scoped statement cases without strategy runs, and shows retained source observation and occurrence age separately from case status. Exact lineage evidence is available in the source-observation disclosure. Missing strategy comparison detail preserves the selected case and reports unknown counts.
 
 The Security Master passport editor offers the browser's bond analytics and convention-migration
@@ -510,6 +512,10 @@ anonymous roles use the shared `RolePermissions` mapping rather than inheriting 
 local-development access.
 
 The same page now loads the shared Instrument Passport endpoint for the selected security so desktop operators see provider-confidence, pricing, trust, downstream usage, operations-readiness, and handoff evidence in parity with the browser Accounting workstream.
+The Direct Lending loan inspector shows prepaid interest and unapplied cash (PRD-115) from the shared
+`LoanSummaryDto`, the same values the browser loan book shows; both are owed to the borrower and are
+listed beside the receivables, not in exposure.
+
 The Direct Lending page consumes the shared `DirectLendingOperationsReadModelDto` for servicer
 statement batches as well as collateral, status, exceptions, evidence, and close blockers. The WPF
 panel is read-only over imported position/remittance batches; preview, validation, evidence
