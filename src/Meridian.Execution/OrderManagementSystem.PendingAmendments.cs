@@ -36,7 +36,7 @@ public sealed partial class OrderManagementSystem
             _orders[orderId] = ApplyAmendmentTerms(current, original);
             try
             {
-                if (IsTerminal(current.Status))
+                if (OrderStatusFacts.IsTerminal(current.Status))
                     throw new InvalidOperationException("Order became terminal before amendment dispatch.");
                 SavePendingAmendment(orderId);
             }
