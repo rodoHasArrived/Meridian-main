@@ -316,7 +316,10 @@ let ``Manual breakdown above the amount owed is capped and never books phantom i
     payment.Resolution.Breakdown.ToInterest |> should equal 10m
     payment.Resolution.UnappliedAmount |> should equal 990m
     payment.Servicing.Balances.InterestAccruedUnpaid |> should equal 0m
-    payment.Allocations |> Array.sumBy (fun a -> a.Amount) |> should equal 10m
+    // Only 10 is income; since PRD-115 the 990 excess is held as tracked unapplied cash (the
+    // default rule), so allocations sum to the cash received.
+    payment.Allocations |> Array.map (fun a -> a.TargetType, a.Amount) |> should equal [| "Interest", 10m; "UnappliedCash", 990m |]
+    payment.Servicing.Balances.UnappliedCash |> should equal 990m
 
 [<Fact>]
 let ``Manual breakdown smaller than the cash received leaves the excess unapplied`` () =
@@ -421,8 +424,6 @@ let ``Every servicing command carries prepaid interest and unapplied cash throug
           fun s -> (DirectLendingAggregateInterop.AssessFee s (AssessFeeRequest("Amendment", 500m, effective, null))).Servicing
           "ApplyWriteOff",
           fun s -> (DirectLendingAggregateInterop.ApplyWriteOff s (ApplyWriteOffRequest(1_000m, effective, "test write-off"))).Servicing
-          "PostDailyAccrual",
-          fun s -> (DirectLendingAggregateInterop.PostDailyAccrual s loanTerms (PostDailyAccrualRequest(effective))).Servicing
           "ChargePrepaymentPenalty",
           fun s -> (DirectLendingAggregateInterop.ChargePrepaymentPenalty s loanTerms (ChargePrepaymentPenaltyRequest(100_000m, effective, "pen-x"))).Servicing ]
 
@@ -430,6 +431,13 @@ let ``Every servicing command carries prepaid interest and unapplied cash throug
         let after = command seeded
         (name, after.Balances.PrepaidInterest, after.Balances.UnappliedCash)
         |> should equal (name, 123.45m, 678.90m)
+
+    // Daily accrual is the one command that moves prepaid interest (PRD-115 increment 4): it
+    // consumes it, exactly by the amount the decision reports, and leaves unapplied cash alone.
+    let accrual = DirectLendingAggregateInterop.PostDailyAccrual seeded loanTerms (PostDailyAccrualRequest(effective))
+    accrual.PrepaidInterestConsumed |> should be (greaterThan 0m)
+    accrual.Servicing.Balances.PrepaidInterest |> should equal (123.45m - accrual.PrepaidInterestConsumed)
+    accrual.Servicing.Balances.UnappliedCash |> should equal 678.90m
 
 [<Fact>]
 let ``Loans created before PRD-115 start with zero prepaid interest and unapplied cash`` () =

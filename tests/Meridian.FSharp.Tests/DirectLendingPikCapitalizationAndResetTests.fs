@@ -260,12 +260,31 @@ let ``capitalization dates follow the policy cadence and always include maturity
     paymentDates[0..1] |> should equal [| DateOnly(2026, 4, 15); DateOnly(2026, 7, 15) |] // quarterly payment frequency
 
 [<Fact>]
-let ``PIK accrual and capitalization carry prepaid interest and unapplied cash through unchanged`` () =
+let ``PIK capitalization carries prepaid interest and unapplied cash through unchanged`` () =
     let terms = buildTerms RateTypeKind.Fixed (monthlyPik PikElection.Always (DeclaredRate.Percent 25m)) null
     let seeded = activeDrawnLoan terms |> DirectLendingTestBalances.withExcessBalances 50m 75m
     let accrued = accrueThrough terms seeded (DateOnly(2026, 1, 16)) (DateOnly(2026, 2, 15))
 
     let capitalized = DirectLendingAggregateInterop.CapitalizePik accrued terms (CapitalizePikRequest(DateOnly(2026, 2, 15)))
 
-    (accrued.Balances.PrepaidInterest, accrued.Balances.UnappliedCash) |> should equal (50m, 75m)
-    (capitalized.Servicing.Balances.PrepaidInterest, capitalized.Servicing.Balances.UnappliedCash) |> should equal (50m, 75m)
+    // Accrual consumed the 50 of prepaid interest on day one (PRD-115 increment 4); unapplied cash
+    // is untouched, and capitalization moves neither balance.
+    (accrued.Balances.PrepaidInterest, accrued.Balances.UnappliedCash) |> should equal (0m, 75m)
+    (capitalized.Servicing.Balances.PrepaidInterest, capitalized.Servicing.Balances.UnappliedCash)
+    |> should equal (accrued.Balances.PrepaidInterest, accrued.Balances.UnappliedCash)
+
+[<Fact>]
+let ``PIK interest never consumes prepaid interest; only the cash share does`` () =
+    // PRD-115 decision 4. 1,000,000 x 8% / 360 = 222.22; the 25% PIK share (55.56) is deferred to
+    // capitalization, and only the 166.66 cash share is settled from prepaid interest.
+    let terms = buildTerms RateTypeKind.Fixed (monthlyPik PikElection.Always (DeclaredRate.Percent 25m)) null
+    let seeded = activeDrawnLoan terms |> DirectLendingTestBalances.withExcessBalances 1_000m 0m
+
+    let decision = accrue terms seeded (DateOnly(2026, 1, 16))
+
+    decision.Entry.PikInterestAmount |> should equal 55.56m
+    decision.Entry.InterestAmount |> should equal 166.66m
+    decision.PrepaidInterestConsumed |> should equal 166.66m
+    decision.Servicing.Balances.PrepaidInterest |> should equal 833.34m
+    decision.Servicing.Balances.InterestAccruedUnpaid |> should equal 0m
+    decision.Servicing.PikInterestAccruedUnpaid |> should equal 55.56m

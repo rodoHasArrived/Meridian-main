@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using Meridian.QuantScript.Documents;
+using UtcFormat = Meridian.Ui.Services.FormatHelpers;
 
 namespace Meridian.Wpf.Models;
 
@@ -35,7 +36,7 @@ public sealed record QuantScriptExecutionRecord(
     string? Warning = null)
 {
     [JsonIgnore]
-    public string ExecutedAtText => ExecutedAtUtc.LocalDateTime.ToString("g");
+    public string ExecutedAtText => UtcFormat.FormatUtcTimestamp(ExecutedAtUtc);
 
     [JsonIgnore]
     public string DocumentKindLabel => DocumentKind == QuantScriptDocumentKind.Notebook ? "Notebook" : "Script";
