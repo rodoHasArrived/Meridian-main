@@ -1,5 +1,5 @@
 {
-  "contract": "source_hash retains the reviewed source baseline. readme_hash fingerprints handwritten README content and exact registered markers, excluding only generated block bodies. Generated block freshness is independently validated against the source/roadmap registries. Source paths use ordinal POSIX ordering; UTF-8 text uses LF-normalized content hashes.",
+  "contract": "source_hash retains the reviewed source baseline, excluding package-lock.json files and package.json dependency version specifiers. readme_hash fingerprints handwritten README content and exact registered markers, excluding only generated block bodies. Generated block freshness is independently validated against the source/roadmap registries. Source paths use ordinal POSIX ordering; UTF-8 text uses LF-normalized content hashes.",
   "generator": {
     "name": "build/scripts/docs/validate-doc-hashes.py",
     "version": "2.0.0"
@@ -262,14 +262,14 @@
       "path": "src/Meridian.Ui",
       "readme": "src/Meridian.Ui/README.md",
       "readme_hash": "a705974b5dd61654a80489e6a05263acc3510d61bb3f3848d01e3bd29586576d",
-      "source_hash": "9c4080ca5b240751202fe3dfafe5f176772798d38f5a74043b3ff8504d5219ec"
+      "source_hash": "884068a03209c0b02309674716bc76402acf30dad960c1effe85e29030f68528"
     },
     {
       "id": "SRC-UI-DASHBOARD",
       "path": "src/Meridian.Ui/dashboard",
       "readme": "src/Meridian.Ui/dashboard/README.md",
       "readme_hash": "7b8cdd97a599fa5b692d51a3a7d1c86438a0cab6e043a0a16262968c8c5cb167",
-      "source_hash": "9c4080ca5b240751202fe3dfafe5f176772798d38f5a74043b3ff8504d5219ec"
+      "source_hash": "884068a03209c0b02309674716bc76402acf30dad960c1effe85e29030f68528"
     },
     {
       "id": "SRC-UI-SERVICES",
