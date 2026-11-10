@@ -9,9 +9,30 @@ describe("deriveWorkspaceFigureContext", () => {
       .toEqual({ freshness: "fresh", dataLabel: null, staleSources: [], sourceLoadedAt: {} });
   });
 
-  it("marks figures stale when the latest refresh failed and the last good load is still shown", () => {
-    expect(deriveWorkspaceFigureContext({ status: { ...loaded, phase: "failed", settledAt: "2026-06-30T18:10:00Z" }, provenance: "real" }).freshness)
-      .toBe("stale");
+  it("leaves staleness to each payload's own reload outcome when a refresh failed", () => {
+    // Every request of the 18:10 refresh failed. The overview is retained from 18:05 and stale;
+    // Trading was reloaded by its own poll at 18:12 and is current again.
+    const context = deriveWorkspaceFigureContext({
+      status: { ...loaded, phase: "failed", settledAt: "2026-06-30T18:10:00Z" },
+      provenance: "real",
+      staleSources: ["overview"],
+      sourceLoadedAt: { overview: "2026-06-30T18:05:00Z", trading: "2026-06-30T18:12:00Z" }
+    });
+
+    expect(resolveFigureEvidence(context, "overview")).toEqual({ asOf: "2026-06-30T18:05:00Z", freshness: "stale" });
+    expect(resolveFigureEvidence(context, "trading")).toEqual({ asOf: "2026-06-30T18:12:00Z", freshness: "fresh" });
+  });
+
+  it("keeps every figure unverified while the session's data source is unconfirmed", () => {
+    const context = deriveWorkspaceFigureContext({
+      status: loaded,
+      provenance: "unknown",
+      staleSources: ["accounting"],
+      sourceLoadedAt: { accounting: "2026-06-30T17:40:00Z", trading: "2026-06-30T18:05:00Z" }
+    });
+
+    expect(resolveFigureEvidence(context, "trading")).toEqual({ asOf: "2026-06-30T18:05:00Z", freshness: "unverified" });
+    expect(resolveFigureEvidence(context, "accounting").freshness).toBe("stale");
   });
 
   it("marks figures unverified when the data source is unconfirmed or nothing ever loaded", () => {

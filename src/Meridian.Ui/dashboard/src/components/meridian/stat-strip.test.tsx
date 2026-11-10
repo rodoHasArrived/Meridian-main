@@ -154,7 +154,7 @@ describe("StatStrip", () => {
 
   it("takes the as-of time, freshness and data label from the shell for a workspace-fed strip", () => {
     render(
-      <WorkspaceFigureContextProvider value={{ freshness: "stale", dataLabel: "seeded demo data", staleSources: [], sourceLoadedAt: { strategy: "2026-06-30T18:05:00Z" } }}>
+      <WorkspaceFigureContextProvider value={{ freshness: "fresh", dataLabel: "seeded demo data", staleSources: ["strategy"], sourceLoadedAt: { strategy: "2026-06-30T18:05:00Z" } }}>
         <StatStrip label="Strategy headline metrics" source="Strategy workspace" figureSource="strategy" metrics={[metric({ id: "runs", label: "Runs", value: "24" })]} />
       </WorkspaceFigureContextProvider>
     );

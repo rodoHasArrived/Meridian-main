@@ -337,10 +337,12 @@ not been recorded.
     its comparison (`3 new since your last visit`) and descriptive captions pass through.
   - *Freshness*: `freshness: "stale" | "unverified"` mutes the figure, adds a clock, marks
     the strip "Stale figures"/"Unverified figures" and explains the age on hover and to
-    assistive technology. A failed workstation refresh marks every workspace-fed strip stale; a
-    payload whose own reload failed marks just the figures it supplies, while the ones that did
-    reload stay fresh. It stays stale until that payload reloads; refreshing another workspace
-    clears the shell's error map but not this. Portfolio's totals go stale when the payload that
+    assistive technology. Staleness is decided per payload: a payload whose own reload failed
+    marks just the figures it supplies, while the ones that did reload stay fresh, whatever the
+    refresh as a whole reported. It stays stale until that payload reloads; refreshing another
+    workspace clears the shell's error map but not this. An unconfirmed session keeps every
+    figure unverified, and a screen's own evidence (Trading's broker observation) can lower a
+    figure's verdict but never raise it (`combineMetricFreshness`). Portfolio's totals go stale when the payload that
     supplies them is listed, when the Portfolio poll settles as `partial` (its Portfolio request
     was rejected; a failing side feed such as an unconnected brokerage does not count), or when
     that payload's load is past the freshness budget.

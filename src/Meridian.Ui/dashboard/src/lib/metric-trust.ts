@@ -180,10 +180,19 @@ export function describeGroupedMetricProvenance(metrics: readonly MetricSnapshot
   return supplied.map((text, index) => [text, evidence[index]].filter(Boolean).join(" · ")).join("; ");
 }
 
-/** The worst freshness in a strip: stale outranks unverified, which outranks fresh. */
-export function worstMetricFreshness(metrics: readonly MetricSnapshot[]): MetricFreshness {
-  const states = metrics.map((metric) => metric.freshness ?? "fresh");
+/**
+ * The worst of several freshness verdicts about one figure: stale outranks unverified, which
+ * outranks fresh. A figure is only as trustworthy as the weakest evidence behind it, so a screen
+ * with evidence of its own (a broker observation, a poll) combines it with the supplying
+ * payload's verdict instead of replacing it. A missing verdict claims nothing and is ignored.
+ */
+export function combineMetricFreshness(...states: Array<MetricFreshness | null | undefined>): MetricFreshness {
   return states.includes("stale") ? "stale" : states.includes("unverified") ? "unverified" : "fresh";
+}
+
+/** The worst freshness in a strip. */
+export function worstMetricFreshness(metrics: readonly MetricSnapshot[]): MetricFreshness {
+  return combineMetricFreshness(...metrics.map((metric) => metric.freshness));
 }
 
 /** Maps a data-confidence tone (the page's trust summary) onto figure freshness. */

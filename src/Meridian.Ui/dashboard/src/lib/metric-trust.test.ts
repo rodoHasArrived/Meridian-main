@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildFigureDifferenceNote,
   buildMetricTrust,
+  combineMetricFreshness,
   describeGroupedMetricProvenance,
   describeMetricProvenance,
   formatMetricAsOf,
@@ -139,6 +140,15 @@ describe("parseDisplayedNumber", () => {
     expect(parseDisplayedNumber("1/2")).toBeNull();
     expect(parseDisplayedNumber("Observe")).toBeNull();
     expect(parseDisplayedNumber(null)).toBeNull();
+  });
+});
+
+describe("combineMetricFreshness", () => {
+  it("returns the weakest verdict and ignores a missing one", () => {
+    expect(combineMetricFreshness("fresh", "stale", "unverified")).toBe("stale");
+    expect(combineMetricFreshness("unverified", "fresh")).toBe("unverified");
+    expect(combineMetricFreshness(null, undefined, "fresh")).toBe("fresh");
+    expect(combineMetricFreshness()).toBe("fresh");
   });
 });
 
