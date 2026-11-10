@@ -421,6 +421,25 @@ describe("PortfolioScreen", () => {
     expect(screen.getByText(/\$18,900 exposure with \+\$90 unrealized p&l/i)).toBeDefined();
   });
 
+  it("names the selected holding in one heading line and lists what its row does not show", async () => {
+    await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />);
+
+    const pane = screen.getByRole("region", { name: /aapl holding detail/i });
+    expect(within(pane).getByRole("heading", { level: 3, name: "Holding AAPL" })).toBeInTheDocument();
+    expect(pane).toHaveAttribute("data-detail-pane", "true");
+    // No separate "Detail" chip; the next action sits with the selection.
+    expect(within(pane).queryByText("Detail")).not.toBeInTheDocument();
+    expect(within(pane).getByRole("link", { name: "Open asset detail for AAPL" })).toBeInTheDocument();
+    const facts = within(pane).getByLabelText("Holding details");
+    expect(facts).toHaveTextContent("Quantity100");
+    // Side and mark readiness are always-visible columns of the selected row.
+    expect(within(facts).queryByText("Side")).not.toBeInTheDocument();
+    expect(within(facts).queryByText("Mark readiness")).not.toBeInTheDocument();
+    for (const value of within(facts).getAllByRole("definition")) {
+      expect(value).toHaveClass("text-left");
+    }
+  });
+
   it("puts holdings before supporting records and lets the operator expand readiness", async () => {
     const user = userEvent.setup();
     await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />, {
@@ -742,14 +761,15 @@ describe("PortfolioScreen", () => {
     expect(screen.getAllByText("AAPL").length).toBeGreaterThan(0);
 
     const defaultDetail = screen.getByRole("region", { name: /aapl brokerage position detail/i });
-    expect(within(defaultDetail).getByText(/brokerage position inspector/i)).toBeInTheDocument();
+    // One heading line names the kind of thing and the selection.
+    expect(within(defaultDetail).getByRole("heading", { name: "Brokerage position AAPL" })).toBeInTheDocument();
     expect(within(defaultDetail).getAllByText(/security master missing/i).length).toBeGreaterThan(0);
-    const positionIdentity = within(defaultDetail).getByText("Technical position identity").closest("details");
+    const positionIdentity = within(defaultDetail).getByText("Technical details").closest("details");
     expect(positionIdentity).not.toBeNull();
     const positionId = within(positionIdentity!).getByText("pos-aapl");
     expect(positionIdentity).not.toHaveAttribute("open");
     expect(positionId).not.toBeVisible();
-    await user.click(within(positionIdentity!).getByText("Technical position identity"));
+    await user.click(within(positionIdentity!).getByText("Technical details"));
     expect(positionIdentity).toHaveAttribute("open");
     expect(positionId).toBeVisible();
 
@@ -761,7 +781,11 @@ describe("PortfolioScreen", () => {
 
     const updatedDetail = screen.getByRole("region", { name: /msft brokerage position detail/i });
     expect(within(updatedDetail).getByText(/alpaca paper \/ alpaca brokerage \/ equity/i)).toBeInTheDocument();
-    expect(within(updatedDetail).getByText("$1,750")).toBeInTheDocument();
+    // The pane lists what the selected row does not show: no repeated market value or P&L.
+    const updatedFacts = within(updatedDetail).getByLabelText("Brokerage position details");
+    expect(updatedFacts).toHaveTextContent("Average entry");
+    expect(updatedFacts).not.toHaveTextContent("Market value");
+    expect(updatedFacts).not.toHaveTextContent("Unrealized P&L");
     expect(msftRow).toHaveAttribute("aria-selected", "true");
     expect(msftRow).toHaveAttribute("aria-expanded", "true");
   });

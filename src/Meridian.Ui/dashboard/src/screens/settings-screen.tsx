@@ -1,3 +1,4 @@
+import { DetailFieldItem } from "@/components/meridian/detail-pane";
 import { selectSharedProviderHealth } from "@/lib/cross-screen-counts";
 import { useSharedCrossScreenCounts } from "@/lib/cross-screen-counts-context";
 import { OwnedProviderCredentialPanel } from "./settings-owned-provider-credentials";
@@ -4882,10 +4883,7 @@ function SettingsFieldRow({
   tone: keyof typeof itemToneClass;
 }) {
   return (
-    <div className="grid grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)] items-start gap-3 rounded-md border border-border/60 bg-secondary/25 px-3 py-2">
-      <dt className="min-w-0 break-words text-xs text-muted-foreground">{label}</dt>
-      <dd className={cn("min-w-0 break-words text-right font-mono text-xs", itemToneClass[tone])}>{value}</dd>
-    </div>
+    <DetailFieldItem label={label} value={value} tone={tone} />
   );
 }
 

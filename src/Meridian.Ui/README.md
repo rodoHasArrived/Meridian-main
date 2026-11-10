@@ -68,6 +68,12 @@ fails a route whose rendered content shows a raw identifier or a "1 rows" style 
 contract changed; Operations Continuity still shows fund-account identifiers because its shared
 summary carries no account name.
 
+The host-served bundle carries the shared detail pane: a selected row's pane has one heading
+line (object type, name, one status badge) with no separate "Selected from …" pill or "Detail"
+chip; field values are left-aligned and never broken mid-word, with figures and dates on one
+line; opaque identifiers sit behind a copyable "Technical details" disclosure; and Trading
+orders and fills share one pane keyed to the table selected last. No shared contract changed.
+
 The host-served bundle carries the headline-figure trust rules: every workspace stat strip
 states its source and as-of time (and scope where the page has one); a change is shown only with
 the baseline it is measured against, so the placeholder deltas the workspace read models still

@@ -1,3 +1,4 @@
+import { DetailFieldItem } from "@/components/meridian/detail-pane";
 import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import { FileText, Landmark, Network, PencilLine, RotateCcw, XCircle } from "lucide-react";
 import { useLocation } from "react-router-dom";
@@ -2393,17 +2394,9 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                 >
                   {vm.selectedProfile.readinessSummary}
                 </div>
-                <dl className="grid gap-2">
+                <dl className="border-t border-border/60">
                   {vm.selectedProfile.fields.map((field) => (
-                    <div
-                      key={field.label}
-                      className="grid grid-cols-[minmax(0,0.6fr)_minmax(0,1fr)] items-start gap-3 rounded-md border border-border/60 bg-secondary/25 px-3 py-2"
-                    >
-                      <dt className="text-xs text-muted-foreground">{field.label}</dt>
-                      <dd className={cn("text-right font-mono text-xs", field.className)}>
-                        {field.value}
-                      </dd>
-                    </div>
+                    <DetailFieldItem key={field.label} label={field.label} value={field.value} valueClassName={field.className} />
                   ))}
                 </dl>
                 <div className="grid gap-2 pt-2" role="list" aria-label={`${vm.selectedProfile.title} export actions`}>
