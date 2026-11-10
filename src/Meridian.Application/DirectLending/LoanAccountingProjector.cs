@@ -85,12 +85,15 @@ public sealed class LoanAccountingProjector
 
             case "loan.daily-accrual-posted":
                 description = "Loan daily accrual";
-                var interest = GetDecimal(root, "interestAmount");
                 var commitmentFee = GetDecimal(root, "commitmentFeeAmount");
                 var penalty = GetDecimal(root, "penaltyAmount");
                 var pikInterest = GetDecimal(root, "pikInterestAmount");
-                Add("AccruedInterestReceivable", LedgerAccountType.Asset, interest, 0m);
-                Add("InterestIncome", LedgerAccountType.Revenue, 0m, interest);
+                // PRD-115: interest settled from prepaid interest first (shared with DirectLendingOutboxDispatcher).
+                foreach (var line in DirectLendingJournalLines.ForAccruedInterest(root))
+                {
+                    Add(line.Account, line.AccountType, line.Debit, line.Credit);
+                }
+
                 if (IsPikCapitalizationDeferred(root))
                 {
                     // Capitalization policy: PIK is earned now but is neither cash nor principal
@@ -112,12 +115,15 @@ public sealed class LoanAccountingProjector
 
             case "loan.daily-accrual-reversed":
                 description = "Loan daily accrual reversal";
-                var reversedInterest = GetDecimal(root, "interestAmount");
                 var reversedCommitmentFee = GetDecimal(root, "commitmentFeeAmount");
                 var reversedPenalty = GetDecimal(root, "penaltyAmount");
                 var reversedPikInterest = GetDecimal(root, "pikInterestAmount");
-                Add("InterestIncome", LedgerAccountType.Revenue, reversedInterest, 0m);
-                Add("AccruedInterestReceivable", LedgerAccountType.Asset, 0m, reversedInterest);
+                // PRD-115: the exact inverse of the posting, so interest that consumed prepaid interest
+                // restores PrepaidInterestLiability instead of crediting a receivable never debited.
+                foreach (var line in DirectLendingJournalLines.ForAccruedInterest(root))
+                {
+                    Add(line.Account, line.AccountType, line.Credit, line.Debit);
+                }
                 if (IsPikCapitalizationDeferred(root))
                 {
                     Add("PikInterestIncome", LedgerAccountType.Revenue, reversedPikInterest, 0m);
@@ -132,6 +138,23 @@ public sealed class LoanAccountingProjector
                 Add("CommitmentFeeReceivable", LedgerAccountType.Asset, 0m, reversedCommitmentFee);
                 Add("PenaltyIncome", LedgerAccountType.Revenue, reversedPenalty, 0m);
                 Add("PenaltyReceivable", LedgerAccountType.Asset, 0m, reversedPenalty);
+                break;
+
+            // PRD-115: payments now settle FeeReceivable and PenaltyReceivable directly, so the
+            // assessments that create those receivables must reach the authoritative ledger too
+            // (the same pairs the outbox dispatcher drafts), or settlement would drive them negative.
+            case "loan.fee-assessed":
+                description = "Loan fee assessment";
+                var assessedFee = GetDecimal(root, "amount", "Amount");
+                Add("FeeReceivable", LedgerAccountType.Asset, assessedFee, 0m);
+                Add("FeeIncome", LedgerAccountType.Revenue, 0m, assessedFee);
+                break;
+
+            case "loan.prepayment-penalty-charged":
+                description = "Loan prepayment penalty";
+                var chargedPenalty = GetDecimal(root, "penaltyAmount", "PenaltyAmount");
+                Add("PenaltyReceivable", LedgerAccountType.Asset, chargedPenalty, 0m);
+                Add("PenaltyIncome", LedgerAccountType.Revenue, 0m, chargedPenalty);
                 break;
 
             case "loan.pik-capitalized":
@@ -150,9 +173,23 @@ public sealed class LoanAccountingProjector
 
             case "loan.mixed-payment-applied":
                 description = "Loan cash receipt";
-                var paymentAmount = GetDecimal(root, "amount");
-                Add("Cash", LedgerAccountType.Asset, paymentAmount, 0m);
-                Add("LoanAndAccrualsClearing", LedgerAccountType.Asset, 0m, paymentAmount);
+                // PRD-115: split by allocation (shared with DirectLendingOutboxDispatcher).
+                foreach (var line in DirectLendingJournalLines.ForMixedPayment(root))
+                {
+                    Add(line.Account, line.AccountType, line.Debit, line.Credit);
+                }
+                break;
+
+            case "loan.unapplied-cash-applied":
+            case "loan.unapplied-cash-refunded":
+                description = eventType == "loan.unapplied-cash-applied" ? "Loan unapplied cash applied" : "Loan unapplied cash refund";
+                // PRD-115 increment 7 (shared with DirectLendingOutboxDispatcher).
+                foreach (var line in eventType == "loan.unapplied-cash-applied"
+                    ? DirectLendingJournalLines.ForUnappliedCashApplied(root)
+                    : DirectLendingJournalLines.ForUnappliedCashRefunded(root))
+                {
+                    Add(line.Account, line.AccountType, line.Debit, line.Credit);
+                }
                 break;
 
             case "loan.write-off-applied":

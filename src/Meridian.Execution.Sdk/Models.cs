@@ -191,6 +191,26 @@ public sealed record ExecutionReport
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public decimal? LotMultiplier { get; init; }
 
+    /// <summary>
+    /// The money multiplier the paper book applied to this fill: quote × quantity × this value is
+    /// the cash it moved (the contract multiplier for listed premium contracts, 1 otherwise).
+    /// Stamped when the fill is booked so a session replay reproduces the same economics. Absent on
+    /// records written before paper books scaled contract premiums; those replay at 1×, as they
+    /// were booked. Omitted from serialized payloads when null so existing records are unaffected.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public decimal? BookedMoneyMultiplier { get; init; }
+
+    /// <summary>
+    /// Whether the paper book booked this fill under daily variation margin (futures): opening
+    /// moves no notional and a close settles only the change since the last settlement. Stamped
+    /// with <see cref="BookedMoneyMultiplier"/> so a replay books the fill the same way. Absent on
+    /// records written before paper futures settled variation margin; those replay on the 1×
+    /// notional model they were booked on. Omitted from serialized payloads when null.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public bool? BookedVariationMargin { get; init; }
+
     /// <summary>Regulatory/exchange fees for this fill, when the gateway models them.</summary>
     public decimal? Fees { get; init; }
 
@@ -375,8 +395,16 @@ public sealed record PositionState
     public decimal Quantity { get; init; }
     public decimal AverageCostBasis { get; init; }
     public decimal MarketPrice { get; init; }
-    public decimal UnrealizedPnl => (MarketPrice - AverageCostBasis) * Quantity;
+
+    /// <summary>
+    /// Multiplier that turns quantity × quote into money for this position (100 for a standard
+    /// equity option, 1 for outright instruments). <see cref="AverageCostBasis"/> and
+    /// <see cref="MarketPrice"/> stay per-unit quotes; the money fields below apply it.
+    /// </summary>
+    public decimal ContractMultiplier { get; init; } = 1m;
+
+    public decimal UnrealizedPnl => (MarketPrice - AverageCostBasis) * Quantity * ContractMultiplier;
     public decimal RealizedPnl { get; init; }
-    public decimal MarketValue => MarketPrice * Math.Abs(Quantity);
+    public decimal MarketValue => MarketPrice * Math.Abs(Quantity) * ContractMultiplier;
     public DateTimeOffset LastUpdated { get; init; }
 }

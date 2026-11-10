@@ -25,7 +25,8 @@ export const BASELINE_PATH = path.join(DASHBOARD_ROOT, "scripts", "design-system
 const SCREENS_DIR = path.join(DASHBOARD_ROOT, "src", "screens");
 
 const STRING_LITERAL = /"([^"\n]*)"|'([^'\n]*)'|`([^`]*)`/g;
-const DIRECT_INTL = /Intl\.NumberFormat|Intl\.DateTimeFormat|\.toLocaleString\(|\.toLocaleDateString\(|\.toLocaleTimeString\(/g;
+// `\b` keeps type references such as `Intl.DateTimeFormatOptions` out of the count.
+const DIRECT_INTL = /Intl\.(?:NumberFormat|DateTimeFormat)\b|\.toLocaleString\(|\.toLocaleDateString\(|\.toLocaleTimeString\(/g;
 // A <table opening tag that is not styled as the table system's `dense-data-table`.
 const RAW_TABLE = /<table\b(?![^>]*\bclassName="[^"]*\bdense-data-table\b)/g;
 

@@ -11,6 +11,10 @@ last_reviewed: 2026-10-15
 
 # src/Meridian.Infrastructure
 
+`RateLimiter` serialises its expired-timestamp cleanup, so concurrent callers cannot dequeue a fresh timestamp and undercount the window.
+
+IB historical requests ask for epoch-second bar times (`formatDate = 2`) and send UTC, culture-invariant end times; a zone-less TWS-local timestamp is refused rather than read as UTC. `IBDurableResultStore` publishes an update to memory only after the fsynced atomic file replace succeeds. `ProviderRegistry` availability probes rethrow caller cancellation.
+
 Statement importers retain parser revision and upstream executed mapping proof; pre-normalized imports without upstream proof remain non-comparable. Immutable match artifacts retain that mapping fingerprint. Source-generated import and match hashing supports exact completed-checkpoint verification without rewriting legacy bytes.
 
 Broker amendment and cancellation failures retain the broker-observed order status and use

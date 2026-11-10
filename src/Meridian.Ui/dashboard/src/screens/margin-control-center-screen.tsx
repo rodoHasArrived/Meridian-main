@@ -9,6 +9,7 @@ import { certifyMarginSnapshot, getMarginControlCenter } from "@/lib/api";
 import type { MarginControlAccount, MarginControlCenter } from "@/types";
 import { cn } from "@/lib/utils";
 import { usesTrackedCaps } from "@/design-system/label-case";
+import { formatCurrency, formatNumber, formatUtcTimestamp } from "@/lib/format";
 
 export function MarginControlCenterScreen() {
   const [data, setData] = useState<MarginControlCenter | null>(null);
@@ -242,6 +243,6 @@ function Comparison({ label, initial, maintenance, excess, currency }: { label: 
 function Metric({ label, value }: { label: string; value: string }) { return <div><p className={cn("text-[0.6875rem] text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-wide")}>{label}</p><p className="mt-1 font-mono text-sm font-semibold tabular-nums">{value}</p></div>; }
 function Th(props: React.ThHTMLAttributes<HTMLTableCellElement>) { return <th className="px-3 py-2 font-medium" {...props} />; }
 function Td({ className = "", ...props }: React.TdHTMLAttributes<HTMLTableCellElement>) { return <td className={`px-3 py-2 ${className}`} {...props} />; }
-function number(value: number) { return new Intl.NumberFormat(undefined, { maximumFractionDigits: 4 }).format(value); }
-function money(value: number | null | undefined, currency = "USD") { return value == null ? "—" : new Intl.NumberFormat(undefined, { style: "currency", currency, maximumFractionDigits: 2 }).format(value); }
-function dateTime(value: string) { const parsed = new Date(value); return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString(); }
+function number(value: number) { return formatNumber(value, { maximumFractionDigits: 4 }); }
+function money(value: number | null | undefined, currency = "USD") { return formatCurrency(value, { currency, maximumFractionDigits: 2 }); }
+function dateTime(value: string) { const parsed = new Date(value); return Number.isNaN(parsed.getTime()) ? value : formatUtcTimestamp(parsed); }

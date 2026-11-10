@@ -70,6 +70,7 @@ import type {
   TradingWorkspaceResponse
 } from "@/types";
 import { eyebrowClassName } from "@/design-system/label-case";
+import { formatCount } from "@/lib/format";
 
 interface PortfolioScreenProps {
   portfolio?: PortfolioWorkspaceResponse | null;
@@ -1587,7 +1588,7 @@ function PortfolioChip({ label, value }: { label: string; value: string }) {
   );
 }
 
-const drillInCurrency = (value: number) => `$${Math.round(value).toLocaleString("en-US")}`;
+const drillInCurrency = (value: number) => `$${formatCount(Math.round(value))}`;
 const drillInSignedPercent = (value: number) => `${value >= 0 ? "+" : ""}${value.toFixed(2)}%`;
 
 /** Concrete equity + underwater drawdown view for a loaded run drill-in profile. Additive

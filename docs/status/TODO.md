@@ -1,6 +1,6 @@
 # TODO / FIXME / HACK / NOTE Scan
 
-Total items: **239**
+Total items: **238**
 
 | File | Line | Tag | Linked Issue | Text |
 | --- | ---: | --- | :---: | --- |
@@ -146,16 +146,16 @@ Total items: **239**
 | `src/Meridian.Ui/dashboard/src/screens/price-alerts-screen.view-model.test.ts` | 182 | `NOTE` | ❌ | note: null |
 | `src/Meridian.Ui/dashboard/src/screens/price-alerts-screen.view-model.test.ts` | 358 | `NOTE` | ❌ | note: null, |
 | `src/Meridian.Ui/dashboard/src/screens/price-alerts-screen.view-model.test.ts` | 380 | `NOTE` | ❌ | note: null, |
-| `src/Meridian.Ui/dashboard/src/screens/price-alerts-screen.view-model.ts` | 14 | `NOTE` | ❌ | note: string; |
-| `src/Meridian.Ui/dashboard/src/screens/price-alerts-screen.view-model.ts` | 22 | `NOTE` | ❌ | note: "" |
-| `src/Meridian.Ui/dashboard/src/screens/price-alerts-screen.view-model.ts` | 62 | `NOTE` | ❌ | note: PriceAlertStaticFormFieldViewModel; |
-| `src/Meridian.Ui/dashboard/src/screens/price-alerts-screen.view-model.ts` | 511 | `NOTE` | ❌ | note: buildPriceAlertStaticFormField(PRICE_ALERT_STATIC_FIELD_CONFIG.note) |
-| `src/Meridian.Ui/dashboard/src/screens/price-alerts-screen.view-model.ts` | 529 | `NOTE` | ❌ | note: form.note.trim() \|\| null |
-| `src/Meridian.Ui/dashboard/src/screens/price-alerts-screen.view-model.ts` | 601 | `NOTE` | ❌ | note: { |
+| `src/Meridian.Ui/dashboard/src/screens/price-alerts-screen.view-model.ts` | 15 | `NOTE` | ❌ | note: string; |
+| `src/Meridian.Ui/dashboard/src/screens/price-alerts-screen.view-model.ts` | 23 | `NOTE` | ❌ | note: "" |
+| `src/Meridian.Ui/dashboard/src/screens/price-alerts-screen.view-model.ts` | 63 | `NOTE` | ❌ | note: PriceAlertStaticFormFieldViewModel; |
+| `src/Meridian.Ui/dashboard/src/screens/price-alerts-screen.view-model.ts` | 512 | `NOTE` | ❌ | note: buildPriceAlertStaticFormField(PRICE_ALERT_STATIC_FIELD_CONFIG.note) |
+| `src/Meridian.Ui/dashboard/src/screens/price-alerts-screen.view-model.ts` | 530 | `NOTE` | ❌ | note: form.note.trim() \|\| null |
+| `src/Meridian.Ui/dashboard/src/screens/price-alerts-screen.view-model.ts` | 602 | `NOTE` | ❌ | note: { |
 | `src/Meridian.Ui/dashboard/src/screens/reconciliation-bulk-triage.test.ts` | 55 | `NOTE` | ❌ | note: "Journal posted.", |
 | `src/Meridian.Ui/dashboard/src/screens/reconciliation-bulk-triage.ts` | 81 | `NOTE` | ❌ | note: reason, |
 | `src/Meridian.Ui/dashboard/src/screens/report-run-governance-screen.test.tsx` | 538 | `NOTE` | ❌ | note: "Certified run created.", |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.schedule-view-model.ts` | 205 | `NOTE` | ❌ | note: plan.note, |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.schedule-view-model.ts` | 199 | `NOTE` | ❌ | note: plan.note, |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 731 | `NOTE` | ❌ | note: "Built-in template catalog" |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 739 | `NOTE` | ❌ | note: "Controller approved investor statement baseline." |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 825 | `NOTE` | ❌ | note: "Starter target" |
@@ -208,8 +208,6 @@ Total items: **239**
 | `src/Meridian.Ui/dashboard/src/types/workstation-4.ts` | 1610 | `NOTE` | ❌ | note: string \| null; |
 | `src/Meridian.Wpf/GlobalUsings.cs` | 7 | `NOTE` | ❌ | // NOTE: Type aliases and Contracts namespaces are NOT re-defined here because |
 | `src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs` | 401 | `NOTE` | ❌ | Note: null, |
-| `tests/Meridian.QuantScript.Tests/workers/quant-script/Meridian.Core.xml` | 3203 | `NOTE` | ❌ | NOTE: This class lives in the Core project (not Application) so that |
-| `tests/Meridian.QuantScript.Tests/workers/quant-script/Meridian.Core.xml` | 4997 | `NOTE` | ❌ | NOTE: Alpaca payloads use both "T" and "t" keys in the same object. |
 | `tests/Meridian.Tests/Application/Backfill/BackfillWorkerServiceTests.cs` | 28 | `NOTE` | ❌ | // NOTE: Using null! because validation throws before dependencies are accessed |
 | `tests/Meridian.Tests/Application/Backfill/BackfillWorkerServiceTests.cs` | 56 | `NOTE` | ❌ | // NOTE: Using null! because validation throws before dependencies are accessed |
 | `tests/Meridian.Tests/Application/Backfill/BackfillWorkerServiceTests.cs` | 86 | `NOTE` | ❌ | // NOTE: Using null! dependencies - we only verify that ArgumentOutOfRangeException is not thrown |
@@ -219,18 +217,19 @@ Total items: **239**
 | `tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs` | 1660 | `NOTE` | ❌ | note: "Certified renderer output reconciliation started."); |
 | `tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs` | 1673 | `NOTE` | ❌ | note: "Exact certified renderer output was retained."); |
 | `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.IndependentReviewer.cs` | 129 | `NOTE` | ❌ | Note: "Submit.", |
-| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 2102 | `NOTE` | ❌ | Note: "Ready for review."); |
-| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 2128 | `NOTE` | ❌ | Note: "Submit through gate.", |
-| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 2173 | `NOTE` | ❌ | Note: "Retry after a crashed submission.", |
-| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 2215 | `NOTE` | ❌ | Note: "Attempt to claim someone else's submitted workflow.", |
-| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 2240 | `NOTE` | ❌ | Note: "Submit.", |
-| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 2265 | `NOTE` | ❌ | Note: "Submit.", |
-| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 2289 | `NOTE` | ❌ | Note: "Submit through gate.", |
-| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 3339 | `NOTE` | ❌ | Note: "Submit while an edit is mid-flight.", |
+| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 2105 | `NOTE` | ❌ | Note: "Ready for review."); |
+| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 2131 | `NOTE` | ❌ | Note: "Submit through gate.", |
+| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 2176 | `NOTE` | ❌ | Note: "Retry after a crashed submission.", |
+| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 2218 | `NOTE` | ❌ | Note: "Attempt to claim someone else's submitted workflow.", |
+| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 2243 | `NOTE` | ❌ | Note: "Submit.", |
+| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 2268 | `NOTE` | ❌ | Note: "Submit.", |
+| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 2292 | `NOTE` | ❌ | Note: "Submit through gate.", |
+| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 3342 | `NOTE` | ❌ | Note: "Submit while an edit is mid-flight.", |
 | `tests/Meridian.Tests/Storage/StorageChecksumServiceTests.cs` | 99 | `NOTE` | ❌ | // NOTE: File.WriteAllTextAsync uses UTF-8 with BOM by default on some platforms, |
 | `tests/Meridian.Tests/Strategies/ReconciliationBreakQueueRepositoryTests.cs` | 868 | `NOTE` | ❌ | Note: "Automation suggested reopened-case resolution.", |
 | `tests/Meridian.Tests/Ui/EvidenceWorkflowFabricTests.cs` | 5563 | `NOTE` | ❌ | Note: "Delivered after approval.", |
 | `tests/Meridian.Tests/Ui/FundOpsCloseLaneScenarioTests.cs` | 438 | `NOTE` | ❌ | // Note: Status derives as ApprovalPending once all four gates are clean, which is expected |
+| `tests/Meridian.Tests/Ui/MarginCertificationStoreTests.cs` | 31 | `NOTE` | ❌ | Note: "ok", |
 | `tests/Meridian.Tests/Ui/ReportPackWorkflowServiceTests.cs` | 2056 | `NOTE` | ❌ | Note: "Delivered after restatement.", |
 | `tests/Meridian.Tests/Ui/SecurityMasterWorkbenchEndpointsTests.cs` | 274 | `NOTE` | ❌ | Note: "ready", |
 | `tests/Meridian.Tests/Ui/StatementReconciliationCaseworkHandoffTests.cs` | 612 | `NOTE` | ❌ | Note: "Corrected statement row retained.", |

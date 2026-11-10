@@ -11,6 +11,8 @@ last_reviewed: 2026-07-05
 
 # src/Meridian.Execution.Sdk
 
+`IOrderManager.GetUnitReservingOrders` returns the exposure reservations, except that a pending amendment reserves its larger-quantity outcome rather than its larger-value one, for unit limits.
+
 `CanonicalTaxLotAdapter` now compares explicit retained direction with the execution lot's sign,
 then compares absolute quantity, original date, identity and exact basis. Matching short lots may
 bind; opposite directions cannot net. Symbols remain display evidence and binding grants no
@@ -93,6 +95,12 @@ scope so synchronization and durable recovery revoke evidence when the active co
 The OMS retains it in `OrderState.BrokerAccountId` for exact account-qualified restart recovery;
 it is distinct from internal `FundAccountId` and cannot be supplied through caller routing metadata.
 Both fields are omitted when null, so old recovery snapshots remain readable without inventing ownership.
+`ExecutionReport.BookedMoneyMultiplier` records the money scale a paper book applied to a fill (the
+contract multiplier for listed premium contracts); it is omitted when null, and an unstamped durable
+record replays at the 1× it was booked at. `ExecutionReport.BookedVariationMargin` records that a
+paper book booked a futures fill under daily variation margin (no notional moved); it is omitted when
+null, and an unstamped durable record replays on the notional model. `PositionState.ContractMultiplier` (default 1) scales its
+`UnrealizedPnl` and `MarketValue`, while `AverageCostBasis` and `MarketPrice` stay per-unit quotes.
 Brokerage activity fill snapshots can carry explicit provider-reported realized P&L when a broker
 or custodian supplies it; callers should leave the field null rather than infer it from fill
 notional. Activity snapshots can also carry provider corporate-action/factor events such as

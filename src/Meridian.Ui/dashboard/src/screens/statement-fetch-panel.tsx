@@ -18,6 +18,7 @@ import {
 } from "@/screens/statement-fetch-panel.view-model";
 import { StatementImportPreviewDetails } from "@/screens/statement-import-preview";
 import type { StatementConnectorDescriptor, StatementMappingProfile } from "@/types";
+import { formatUtcTimestamp } from "@/lib/format";
 
 export interface StatementFetchPanelProps {
   connectors: StatementConnectorDescriptor[];
@@ -451,7 +452,7 @@ function formatTimestamp(value: string | null): string {
     return "—";
   }
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
+  return Number.isNaN(date.getTime()) ? value : formatUtcTimestamp(date);
 }
 
 function toKebabCase(value: string): string {

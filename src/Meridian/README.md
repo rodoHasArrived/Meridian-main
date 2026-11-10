@@ -75,7 +75,9 @@ add placeholder StockSharp services when the connector package is absent. Host o
 paper-first by default: brokerage
 execution resolves to paper gateways unless live execution is explicitly enabled, and Paper -> Live
 promotion claims must be tied to execution-governance audit or manual-override evidence before they
-are presented as readiness evidence.
+are presented as readiness evidence. The host registers the paper futures daily settlement job
+(`AddPaperFuturesSettlement`) beside the paper sessions; it is off unless
+`PaperTrading:FuturesSettlement:Enabled` is true.
 
 `UiServer` delegates workstation accounting and reconciliation adapter registration to
 `AddWorkstationSharedServices`. Statement reconciliation endpoints therefore use the shared

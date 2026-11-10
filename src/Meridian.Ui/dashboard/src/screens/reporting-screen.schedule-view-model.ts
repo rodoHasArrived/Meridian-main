@@ -14,22 +14,16 @@ import type {
   ReportingScheduleRow,
   ReportingScheduledReleaseHandoffRow
 } from "@/screens/reporting-screen.view-model";
+import { formatDateTime, formatUtcDate } from "@/lib/format";
 
-const reportingTimestampFormatter = new Intl.DateTimeFormat("en-US", {
+const REPORTING_TIMESTAMP_FORMAT: Intl.DateTimeFormatOptions = {
   month: "short",
   day: "numeric",
   hour: "numeric",
   minute: "2-digit",
   timeZone: "UTC",
   timeZoneName: "short"
-});
-
-const reportingDateFormatter = new Intl.DateTimeFormat("en-US", {
-  month: "short",
-  day: "numeric",
-  year: "numeric",
-  timeZone: "UTC"
-});
+};
 
 export function hasRetainedReportingAsOfDate(value: string | null | undefined): boolean {
   return hasRetainedReportingAsOfDateValue(value);
@@ -47,7 +41,7 @@ export function presentReportingAsOfDate(value: string | null | undefined): stri
   }
 
   const parsed = new Date(`${isoDate}T00:00:00Z`);
-  return Number.isNaN(parsed.getTime()) ? retained : reportingDateFormatter.format(parsed);
+  return Number.isNaN(parsed.getTime()) ? retained : formatUtcDate(parsed);
 }
 
 export function formatReportingTimestamp(value: string): string {
@@ -56,7 +50,7 @@ export function formatReportingTimestamp(value: string): string {
     return value;
   }
 
-  return reportingTimestampFormatter.format(timestamp);
+  return formatDateTime(timestamp, REPORTING_TIMESTAMP_FORMAT);
 }
 
 export function buildScheduleRows(

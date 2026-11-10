@@ -34,7 +34,12 @@ internal static class BacktestMetricsEngine
         var years = Math.Max((snapshots[^1].Date.ToDateTime(TimeOnly.MinValue) - snapshots[0].Date.ToDateTime(TimeOnly.MinValue)).TotalDays / 365.0, 1.0 / 365.0);
 
         var totalReturn = initial == 0 ? 0m : (final - initial) / initial;
-        var annualisedReturn = (decimal)(Math.Pow(1.0 + (double)totalReturn, 1.0 / years) - 1.0);
+        // A loss of 100% or more (equity at or below zero, possible with leverage or shorts) has no
+        // real annualised root: Math.Pow returns NaN and the decimal cast throws, which aborted the
+        // whole metrics build. Report it as a total loss (-100%) instead.
+        var annualisedReturn = totalReturn <= -1m
+            ? -1m
+            : (decimal)(Math.Pow(1.0 + (double)totalReturn, 1.0 / years) - 1.0);
         var sharpe = ComputeSharpe(datedDailyReturns, request.RiskFreeRate, request.RiskFreeRateSeries);
         var sortino = ComputeSortino(datedDailyReturns, request.RiskFreeRate, request.RiskFreeRateSeries);
         var (maxDrawdown, maxDrawdownPct, recoveryDays) = ComputeMaxDrawdown(snapshots, initial);
@@ -42,7 +47,7 @@ internal static class BacktestMetricsEngine
 
         var (winRate, profitFactor, totalTrades, wins, losses) = ComputeTradeStats(fills, snapshots[^1], allCashFlows, request);
         var attribution = ComputeAttribution(fills, snapshots[^1], allCashFlows);
-        var xirr = ComputeXirr(allCashFlows, initial, snapshots);
+        var xirr = ComputeXirr(initial, snapshots);
 
         return new BacktestMetrics(
             initial,
@@ -252,19 +257,20 @@ internal static class BacktestMetricsEngine
     }
 
     private static double ComputeXirr(
-        IReadOnlyList<CashFlowEntry> cashFlows,
         decimal initialCapital,
         IReadOnlyList<PortfolioSnapshot> snapshots)
     {
+        // XIRR is an investor-level return: only flows that cross the portfolio boundary belong
+        // in the series. Trade, commission, dividend, interest, rebate and asset-event cash
+        // flows all move money *inside* the portfolio and are already reflected in terminal
+        // equity, so adding them as investor flows double-counted them (a 10% gain could report
+        // as roughly -50% or NaN). No external contribution/withdrawal flow type exists today,
+        // so the series is initial capital out and terminal equity in.
         var flows = new List<(DateTimeOffset date, decimal amount)>();
 
         // Initial capital outflow
         var startDate = snapshots.Count > 0 ? snapshots[0].Timestamp : DateTimeOffset.UtcNow;
         flows.Add((startDate, -initialCapital));
-
-        // All real cash flows
-        foreach (var cf in cashFlows)
-            flows.Add((cf.Timestamp, cf.Amount));
 
         // Terminal value inflow
         if (snapshots.Count > 0)

@@ -192,7 +192,7 @@ import type {
   ValidateManualJournalEntryDraftRequest,
   CapitalAccountWorkbench
 } from "@/types";
-import { formatCount as formatCountValue } from "@/lib/format";
+import { formatCount as formatCountValue, formatNumber } from "@/lib/format";
 
 export {
   buildCalibrationSummaryViewState
@@ -7039,10 +7039,7 @@ function formatScheduleAmount(value: number | null, currency: string): string {
   }
 
   const prefix = value >= 0 ? "" : "-";
-  const amount = Math.abs(value).toLocaleString(undefined, {
-    maximumFractionDigits: 2,
-    minimumFractionDigits: 0
-  });
+  const amount = formatNumber(Math.abs(value), { maximumFractionDigits: 2, minimumFractionDigits: 0 });
   return `${prefix}${amount} ${currency}`;
 }
 
@@ -7056,7 +7053,7 @@ function formatSignedScheduleAmount(value: number, currency: string): string {
   }
 
   const sign = value > 0 ? "+" : "-";
-  return `${sign}${Math.abs(value).toLocaleString(undefined, { maximumFractionDigits: 2 })} ${currency}`;
+  return `${sign}${formatNumber(Math.abs(value), { maximumFractionDigits: 2 })} ${currency}`;
 }
 
 function formatQuantity(value: number | null): string {
@@ -7064,7 +7061,7 @@ function formatQuantity(value: number | null): string {
     return "—";
   }
 
-  return value.toLocaleString(undefined, { maximumFractionDigits: 4 });
+  return formatNumber(value, { maximumFractionDigits: 4 });
 }
 
 function formatOpenLotScope(lot: SecurityMasterOpenLot): string {
@@ -7103,7 +7100,7 @@ function formatScheduleVariance(expected: number | null, actual: number | null, 
   }
 
   const sign = variance > 0 ? "+" : "-";
-  return `${sign}${Math.abs(variance).toLocaleString(undefined, { maximumFractionDigits: 2 })} ${currency}`;
+  return `${sign}${formatNumber(Math.abs(variance), { maximumFractionDigits: 2 })} ${currency}`;
 }
 
 function formatScheduleFactor(start: number | null, end: number | null): string {

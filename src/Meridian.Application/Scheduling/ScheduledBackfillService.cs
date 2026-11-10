@@ -595,6 +595,19 @@ public sealed class ScheduledBackfillService : IAsyncDisposable
                     "Catching up {Count} missed executions for schedule {ScheduleId}: {Name}",
                     missedCount, schedule.ScheduleId, schedule.Name);
 
+                // Both bounds are UTC calendar days. When the last run was yesterday or today the
+                // catch-up window (day after last run .. yesterday) is empty — From would land
+                // after To — so there is nothing to backfill and no execution is queued.
+                var fromDate = DateOnly.FromDateTime(lastExecution.UtcDateTime).AddDays(1);
+                var toDate = DateOnly.FromDateTime(DateTime.UtcNow).AddDays(-1);
+                if (fromDate > toDate)
+                {
+                    _logger.LogInformation(
+                        "Skipping catch-up for schedule {ScheduleId}: no complete day since the last execution ({From} > {To})",
+                        schedule.ScheduleId, fromDate, toDate);
+                    continue;
+                }
+
                 // Create a catch-up execution
                 var execution = new BackfillExecutionLog
                 {
@@ -602,8 +615,8 @@ public sealed class ScheduledBackfillService : IAsyncDisposable
                     ScheduleName = schedule.Name,
                     Trigger = ExecutionTrigger.CatchUp,
                     ScheduledAt = DateTimeOffset.UtcNow,
-                    FromDate = DateOnly.FromDateTime(lastExecution.DateTime).AddDays(1),
-                    ToDate = DateOnly.FromDateTime(DateTime.UtcNow).AddDays(-1),
+                    FromDate = fromDate,
+                    ToDate = toDate,
                     Symbols = new List<string>(schedule.Symbols)
                 };
 

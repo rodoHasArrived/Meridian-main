@@ -11,21 +11,24 @@ last_reviewed: 2026-10-28
 
 # src/Meridian.Execution
 
+`OrderManagementSystem.GetUnitReservingOrders` reserves the larger-quantity outcome of each pending amendment (the original order still executes if the amendment fails); `GetExposureReservingOrders` keeps the larger-value outcome.
+
 Paper fills retain security-definition lot units and multipliers in execution reports, so fund units
 and contracts with multiplier one preserve their denomination after session replay. Legacy reports
 without class or lot metadata retain the existing share assumption. Contradictory units on an open
 position are refused before booking.
 Cash, realised and unrealised P&L, market value and ledger postings are scaled by the position's
-contract multiplier while lot prices and cost basis stay quoted per contract; a fill whose multiplier
-differs from the open position's is refused. A new position takes the fill's exact multiplier, including
-values below 1. `TradeExecutedEvent` carries the same `ContractMultiplier`, so its `GrossValue` and the
-multiplied realized P&L reach the ledger handoff in the same money terms; events serialized before the
-member existed read as 1.
+money multiplier while lot prices and cost basis stay quoted per contract (see the premium-contract
+section below for which fills scale). A new position takes the fill's exact contract multiplier,
+including values below 1, and a fill whose multiplier differs from the open position's is refused.
+`TradeExecutedEvent` carries the booked `ContractMultiplier`, so its `GrossValue` and the multiplied
+realized P&L reach the ledger handoff in the same money terms; events serialized before the member
+existed read as 1.
 When the gateway supplies no lot multiplier, the OMS stamps its resolved multiplier onto the fill
 report before booking, so session projection and restart replay apply the same multiplier as the live
 book.
-Reg T and portfolio margin models value positions at quantity × multiplier × price, the same money
-terms the paper book uses for cash and margin borrowing.
+Reg T and portfolio margin models value positions at quantity × multiplier × price; the paper book
+hands them each position's money multiplier, the same terms it uses for cash and margin borrowing.
 Paper notional-based costs (basis-point commission, fees, slippage) and the spread cost use the same
 multiplied principal; per-share and fixed per-order charges are unchanged.
 Session TCA computes commission rates and notionals on the same multiplied principal.
@@ -185,6 +188,41 @@ exact aggregate remainder. An asynchronous adjustment cannot replace a lot book 
 fills, including close/reopen at the same quantity and price. Legacy custom adjusters retain their
 quantity/quote behavior and do not claim exact total-basis evidence. This calculation convergence
 does not supply canonical security/book identity, acquisition FX or production short-posting authority.
+
+Fills of listed premium contracts (options and warrants, whose catalog descriptor declares
+`UsesOccOptionSymbols`) pay their premium in full: paper cash, ledger amounts, lot basis, market
+value and P&L move at quote × quantity × contract multiplier, the same scale `OrderNotionalResolver`
+sizes the order at. Cost basis, lot entry prices and marks stay per-unit quotes, because readers
+apply the multiplier themselves; the aggregate position view carries the multiplier its P&L used,
+and `PortfolioStatePositionTracker` divides by it when recovering a mark. Face-value fills and every
+other asset class stay at 1×.
+A fill whose multiplier differs from the open position's is refused. The OMS stamps the multiplier
+on each fill increment, and stamps `BookedMoneyMultiplier` when the scale is not 1, so session
+replay reproduces the same cash; records written before that stamp replay at the 1× they were booked
+at. A fill that adds to or closes an open position takes that position's scale, so a restored 1×
+legacy option position continues at 1× until it is flat. Once flat, a new holding opens at its own scale, even if the entry stays listed for fund attribution. The accounting `TradeExecutedEvent` carries that booked scale as `ContractMultiplier`, so its gross
+value agrees with the realized P&L, and the margin check values holdings on that scale. Margin
+interest is paid from cash once, leaves the loan principal unchanged, and posts Margin Interest
+Expense against Cash.
+
+Futures (catalog fact `SettlesDailyVariationMargin`) settle daily variation margin. Opening or
+adding moves no notional: the position is carried at `LastSettlementPrice`, the quantity-weighted
+price its unsettled change is measured from. `ApplyVariationMarginSettlement` pays or receives
+(settlement − last settlement) × quantity × multiplier and re-bases the position at the settlement;
+a reduce or close settles only the change since the last settlement. Every variation-margin cash
+movement is realized P&L and posts Cash against `Futures MTM Settlement`. Equity counts only the
+unsettled change, exposure views still report the notional, the aggregate position reports the
+last settlement as its cost basis (so a mark recovered from it is correct), and the margin check adds
+no initial requirement because none is modelled. The OMS stamps `BookedVariationMargin` beside
+`BookedMoneyMultiplier`; an unstamped futures record replays on the 1× notional model it was booked
+on, and a restored notional-model position continues on that model until flat. The accounting event
+carries `SettlesVariationMargin`, so `LedgerPostingConsumer` posts the settled cash flow
+(`trade-variation-margin`) rather than a securities purchase, and an open posts only its commission.
+Daily settlements are durable session records: `PaperSessionPersistenceService.RecordSettlementAsync`
+appends a `PaperSessionSettlementRecord` (one per account, symbol and trading date;
+`settlements.jsonl` in the JSONL store, read strictly) before applying it, and the live projection,
+restart and replay all merge settlements into the fills at `SettledAt`. Settlements are not yet
+published to the accounting handoff, and the sessionless OMS portfolio is not settled.
 
 Both paper gateways resolve the final fill price through the shared trading-parameter helper.
 Tick-size rounding is best-effort: a rounded price is used only when it remains positive, stays

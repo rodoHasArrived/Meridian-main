@@ -37,6 +37,7 @@ import type {
 } from "@/types/archive-maintenance.types";
 import { cn } from "@/lib/utils";
 import { usesTrackedCaps } from "@/design-system/label-case";
+import { formatUtcTimestamp } from "@/lib/format";
 
 const EXECUTION_LIMIT = 25;
 
@@ -262,7 +263,7 @@ function badgeVariant(tone: MaintenanceTone): "default" | "success" | "warning" 
 }
 
 function formatTimestamp(value: string): string {
-  return new Date(value).toLocaleString();
+  return formatUtcTimestamp(new Date(value));
 }
 
 function errorMessage(reason: unknown): string {
