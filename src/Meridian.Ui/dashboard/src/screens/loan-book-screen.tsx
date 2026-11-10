@@ -81,6 +81,18 @@ const loanColumns: DenseDataTableColumn<LoanBookRowViewModel>[] = [
     render: (row) => <span className="font-mono tabular-nums text-foreground">{row.interestAccruedLabel}</span>
   },
   {
+    id: "prepaid-interest",
+    label: "Prepaid interest",
+    align: "right",
+    render: (row) => <span className="font-mono tabular-nums text-foreground">{row.prepaidInterestLabel}</span>
+  },
+  {
+    id: "unapplied-cash",
+    label: "Unapplied cash",
+    align: "right",
+    render: (row) => <span className="font-mono tabular-nums text-foreground">{row.unappliedCashLabel}</span>
+  },
+  {
     id: "available",
     label: "Available to draw",
     align: "right",

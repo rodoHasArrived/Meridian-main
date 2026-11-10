@@ -470,6 +470,38 @@ Release --filter FullyQualifiedName~SecurityMasterConflictFieldCategoriesTests` 
 The WPF view model compiles only on Windows, so the hosted Windows lane is its compile and test
 gate.
 
+**2026-11-09 — pack overlap allowances are declared (N4, P3) and the shared pack text is stated as
+descriptive (N5).** `ValidateAll()` could not report an overlap between built-in packs: the rule kept
+only groups containing a candidate, and the built-in path has none. The candidate filter stays, as
+the earlier passes required. What changes is that the built-in overlaps are now a stated list.
+`SecurityAssetPackRegistry.DeclaredSharedCoverage` names each class several built-in packs cover,
+the packs, and the reason: `DirectLoan` (claimed by `private-loan-credit` and
+`mortgage-facility-intercompany`, because it is the only modeled loan class) and `CreditFacility`
+(planned by three packs, with no owner chosen). `ValidateAll()` checks the built-in packs against
+that list in both directions, on the claimed and planned axes together. An overlap missing from the
+list is `asset-pack.shared-coverage-undeclared`; a declaration naming the wrong packs is
+`asset-pack.shared-coverage-mismatch`; one describing an overlap that no longer exists is
+`asset-pack.shared-coverage-stale`. A grandfathered overlap can now be told from an unnoticed one.
+For candidates, the overlap rule gains the planned axis: a candidate that plans a class another pack
+already plans is refused with `asset-pack.planned-asset-class-overlap`. Claimed overlap keeps its
+code and message. Many-to-many coverage is still allowed by contract; no uniqueness or routing rule
+is added, and the `CreditFacility` owner is still undecided. The declaration records that; it does
+not settle it.
+
+N5 takes the informational disposition already applied to the policy text. `ValidationRules`,
+`ReportingTaxonomy` and the prose lists of `ContractSchema` are documented on the registry and on
+their records as one shared descriptive set that `ValidateDescriptor` checks for non-emptiness only.
+The per-pack, checkable parts are named beside them: membership, lifecycle and valuation
+declarations, journal-template bindings (exact names since the substring inference was removed) and
+`ContractSchema.AssetClassTerms`, which canonical admission enforces. A test pins that every
+built-in and candidate pack carries the same descriptive instances, so making one per-pack without a
+real check fails. No check was removed and no readiness field changed. `FindByAssetClass` now has
+production readers (`SecurityAssetPackAdmission`, the default readiness specification); both treat
+the result as a set, so `DirectLoan`'s two packs are each validated and each named.
+Validation: no .NET SDK was available where this was written, so the new
+`SecurityAssetClassCatalogTests` cases were not run locally; the hosted `Meridian CI / quality-gate`
+is their compile and test gate.
+
 **Validation of this disposition.** Local, on the branch, with
 `MERIDIAN_SECURITY_MASTER_CONNECTION_STRING` pointing at a local PostgreSQL 16 (no Testcontainers):
 

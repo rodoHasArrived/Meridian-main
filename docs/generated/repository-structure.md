@@ -4189,6 +4189,7 @@ Meridian-main
 │   │   │   ├── AccrualLedgerService.cs
 │   │   │   ├── DailyAccrualWorker.cs
 │   │   │   ├── DirectLendingEventRebuilder.cs
+│   │   │   ├── DirectLendingJournalLines.cs
 │   │   │   ├── DirectLendingOutboxDispatcher.cs
 │   │   │   ├── DirectLendingSchedulePeriods.cs
 │   │   │   ├── DirectLendingServicerStatementService.cs
@@ -4969,6 +4970,7 @@ Meridian-main
 │   │   │   ├── SecurityAssetPackRegistry.cs
 │   │   │   ├── SecurityAssetPackRegistry.Profiles.cs
 │   │   │   ├── SecurityAssetPackRegistry.Readiness.cs
+│   │   │   ├── SecurityAssetPackRegistry.SharedCoverage.cs
 │   │   │   ├── SecurityAssetProfiles.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcaster.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcasterChain.cs
@@ -10113,8 +10115,10 @@ Meridian-main
 │   │   ├── CashFlowProjectorTests.fs
 │   │   ├── DeterministicInvariantTests.fs
 │   │   ├── DirectLendingAggregateServicingTests.fs
+│   │   ├── DirectLendingExcessRoutingTests.fs
 │   │   ├── DirectLendingInteropTests.fs
 │   │   ├── DirectLendingPikCapitalizationAndResetTests.fs
+│   │   ├── DirectLendingPrepaidInterestConsumptionTests.fs
 │   │   ├── DirectLendingScheduleCharacterizationTests.fs
 │   │   ├── DirectLendingTestBalances.fs
 │   │   ├── DomainTests.fs
@@ -10888,14 +10892,18 @@ Meridian-main
 │   │   │   │   ├── AccrualLedgerServiceTests.cs
 │   │   │   │   ├── DailyAccrualWorkerServicingScheduleTests.cs
 │   │   │   │   ├── DailyAccrualWorkerTests.cs
+│   │   │   │   ├── DirectLendingAccrualParityTests.cs
 │   │   │   │   ├── DirectLendingEventRebuilderTests.cs
 │   │   │   │   ├── DirectLendingExcessBalancesCompatibilityTests.cs
+│   │   │   │   ├── DirectLendingExcessRoutingParityTests.cs
 │   │   │   │   ├── DirectLendingOutboxDispatcherTests.cs
 │   │   │   │   ├── DirectLendingOutboxFailureTests.cs
+│   │   │   │   ├── DirectLendingPrepaidInterestConsumptionTests.cs
 │   │   │   │   ├── DirectLendingServicerStatementServiceTests.cs
 │   │   │   │   ├── DirectLendingServicingPolicyTermsHashTests.cs
 │   │   │   │   ├── DirectLendingServicingPolicyValidatorTests.cs
 │   │   │   │   ├── DirectLendingTermsHashCharacterizationTests.cs
+│   │   │   │   ├── DirectLendingUnappliedCashCommandTests.cs
 │   │   │   │   ├── ManualPaymentResolutionTests.cs
 │   │   │   │   ├── PostgresDirectLendingCommandServiceTests.CapabilityFloor.cs
 │   │   │   │   ├── PostgresDirectLendingCommandServiceTests.cs

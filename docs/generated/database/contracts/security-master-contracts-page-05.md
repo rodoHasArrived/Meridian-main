@@ -2,11 +2,18 @@
 
 # `security-master-contracts` data objects - page 5 of 7
 
-Objects 321-400 of 503. References crossing pages remain available in the dependency manifest.
+Objects 321-400 of 504. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityAssetProfileTermsDto["SecurityAssetProfileTermsDto"] {
+        +string CustomProfileId
+        +IReadOnlyList~SecurityEvidenceLinkDto~ EvidenceLinks
+        +SecurityAssetProfileApprovalMetadataDto ProfileApproval
+        +IReadOnlyDictionary~string__JsonElement~ ProfileFields
+        +int ProfileVersion
+    }
     class Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTerms["SecurityAssetSpecificTerms"] {
         +JsonElement Payload
         +int SchemaVersion
@@ -426,11 +433,7 @@ classDiagram
         +string? SourceRecordId
         +string SourceSystem
     }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionRestatementDto["SecurityMasterCorporateActionRestatementDto"] {
-        +IReadOnlyList~RestatementCandidateDto~ Candidates
-        +string EvaluationStatus
-        +bool RestatementRequired
-    }
+    Meridian_Contracts_SecurityMaster_SecurityAssetProfileTermsDto --> Meridian_Contracts_SecurityMaster_SecurityEvidenceLinkDto
     Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTermsUpcasterPipeline --> Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTerms
     Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTermsV0ToCurrentUpcaster --> Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTerms
     Meridian_Contracts_SecurityMaster_SecurityAssetTermField --> Meridian_Contracts_SecurityMaster_SecurityAssetTermFieldType
@@ -468,5 +471,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityIncomeCashFlowScheduleDto --> Meridian_Contracts_SecurityMaster_SecurityIncomeCashFlowGap
     Meridian_Contracts_SecurityMaster_SecurityLotUnitDescriptor --> Meridian_Contracts_SecurityMaster_SecurityLotUnitKind
     Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAppendResultDto --> Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAuditDto
-    Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAppendResultDto --> Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionRestatementDto
 ```
