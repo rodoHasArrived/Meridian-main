@@ -30,43 +30,91 @@ public sealed partial class ReportingScheduleService
         DateOnly asOfDate,
         CancellationToken ct)
     {
-        if (schedule.PeriodCadence is null || PeriodResolver is null || parameters is null)
+        if (schedule.PeriodCadence is null || parameters is null)
         {
             return parameters;
         }
 
-        string? selector;
+        var period = await TryResolveLedgerPeriodAsync(parameters, asOfDate, ct).ConfigureAwait(false);
+        return period is null ? parameters : parameters with { PeriodId = period.Selector };
+    }
+
+    private async Task<ReportingSchedulePeriodMatch?> TryResolveLedgerPeriodAsync(
+        ReportingRunParametersDto parameters,
+        DateOnly date,
+        CancellationToken ct)
+    {
+        if (PeriodResolver is null)
+        {
+            return null;
+        }
+
         try
         {
-            selector = await PeriodResolver.ResolvePeriodSelectorAsync(parameters, asOfDate, ct)
-                .ConfigureAwait(false);
+            return await PeriodResolver.ResolvePeriodAsync(parameters, date, ct).ConfigureAwait(false);
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
             // The ledger lookup is advisory here. The run's own authoritative source still
             // validates the period against the as-of date and fails closed on a mismatch.
-            selector = null;
+            return null;
         }
-
-        return selector is null ? parameters : parameters with { PeriodId = selector };
     }
 
-    // A period-close schedule's cron expression carries its configured time of day. Using it,
-    // rather than the previous due instant, keeps a run that was moved past a daylight-saving
-    // gap from shifting every later run. Expressions without one fixed time fall back to the
-    // previous due instant.
+    /// <summary>Where a period-close schedule goes next: the report date and when it is due.</summary>
+    private readonly record struct PeriodCloseAdvance(DateOnly AsOfDate, DateTimeOffset DueAtUtc);
+
+    /// <summary>
+    /// Works out a period-close schedule's next report date, due instant and period selector.
+    /// The ledger's durable accounting period is the authority for all three when it can be
+    /// resolved, so books whose periods are not calendar months (for example 4-4-5 calendars)
+    /// close on their real period end. Calendar arithmetic is the fallback only.
+    /// </summary>
+    private async Task<(ReportingRunParametersDto Parameters, PeriodCloseAdvance? Advance)> ResolvePeriodCloseAdvanceAsync(
+        ReportingScheduleRecordDto schedule,
+        ReportingRunParametersDto parameters,
+        CancellationToken ct)
+    {
+        if (schedule.PeriodCadence is not { } cadence
+            || !ReportingScheduleTimeZones.TryResolve(schedule.TimeZoneId, out var timeZone))
+        {
+            return (parameters, null);
+        }
+
+        // The cron expression carries the configured time of day. Using it, rather than the
+        // previous due instant, keeps a run that was moved past a daylight-saving gap from
+        // shifting every later run.
+        var localTime = ResolveConfiguredLocalTime(schedule.CronExpression)
+            ?? TimeOnly.FromDateTime(TimeZoneInfo.ConvertTime(schedule.DueAtUtc, timeZone).DateTime);
+        var calendar = ReportingSchedulePeriodPlanner.Next(
+            cadence, schedule.NextAsOfDate, schedule.DueAtUtc, timeZone, localTime);
+        var advance = new PeriodCloseAdvance(calendar.PeriodEnd, calendar.DueAtUtc);
+
+        // A monthly close moves to the durable period that starts the day after the current one
+        // ends. Quarterly and annual closes land on the durable period that holds the calendar
+        // quarter or year end. Either way the report date becomes that period's own end date.
+        var probe = cadence.Frequency == ReportingSchedulePeriodFrequencyDto.Monthly
+            ? schedule.NextAsOfDate.AddDays(1)
+            : calendar.PeriodEnd;
+        var period = await TryResolveLedgerPeriodAsync(parameters, probe, ct).ConfigureAwait(false);
+        if (period is not null && period.EndDate > schedule.NextAsOfDate)
+        {
+            advance = new PeriodCloseAdvance(
+                period.EndDate,
+                ReportingSchedulePeriodPlanner.DueAtUtc(
+                    period.EndDate, cadence.DueDaysAfterPeriodEnd, timeZone, localTime));
+            parameters = parameters with { PeriodId = period.Selector };
+        }
+
+        return (parameters, advance);
+    }
+
     private static TimeOnly? ResolveConfiguredLocalTime(string cronExpression) =>
         CronExpressionParser.TryParse(cronExpression, out var cron)
         && cron.Hours.Count == 1
         && cron.Minutes.Count == 1
             ? new TimeOnly(cron.Hours.Single(), cron.Minutes.Single())
             : null;
-
-    private static DateOnly ResolveNextAsOfDate(ReportingScheduleRecordDto schedule) =>
-        schedule.PeriodCadence is { } cadence
-        && ReportingScheduleTimeZones.TryResolve(schedule.TimeZoneId, out var timeZone)
-            ? ReportingSchedulePeriodPlanner.Next(cadence, schedule.NextAsOfDate, schedule.DueAtUtc, timeZone).PeriodEnd
-            : schedule.NextAsOfDate;
 
     private void EnsureReportingDeploymentReady(
         string operation,
@@ -371,7 +419,8 @@ public sealed partial class ReportingScheduleService
     private static ReportingScheduleRecordDto AdvanceSchedule(
         ReportingScheduleRecordDto schedule,
         ReportingOutputManifest manifest,
-        ReportingRunParametersDto resolvedParameters)
+        ReportingRunParametersDto resolvedParameters,
+        PeriodCloseAdvance? periodClose = null)
     {
         if (!ReportingScheduleTimeZones.TryResolve(schedule.TimeZoneId, out var timeZone))
         {
@@ -381,10 +430,16 @@ public sealed partial class ReportingScheduleService
 
         DateTimeOffset nextDue;
         DateOnly nextAsOfDate;
-        if (schedule.PeriodCadence is { } periodCadence)
+        if (periodClose is { } resolved)
         {
-            // Period-close schedules advance by accounting period (shared with the ledger's
-            // report planner) rather than by cron; the cron expression is retained for display.
+            // Period-close schedules advance by accounting period rather than by cron; the caller
+            // resolved the period (ResolvePeriodCloseAdvanceAsync). The cron expression is
+            // retained for its time of day and for display.
+            nextDue = resolved.DueAtUtc;
+            nextAsOfDate = resolved.AsOfDate;
+        }
+        else if (schedule.PeriodCadence is { } periodCadence)
+        {
             var occurrence = ReportingSchedulePeriodPlanner.Next(
                 periodCadence,
                 schedule.NextAsOfDate,
@@ -411,7 +466,7 @@ public sealed partial class ReportingScheduleService
             DueAtUtc = nextDue,
             NextAsOfDate = nextAsOfDate,
             // The caller has already pointed a period-close schedule's parameters at the ledger
-            // period for the next as-of date (WithLedgerPeriodAsync); only the date moves here.
+            // period for the next as-of date; only the date moves here.
             RunParameters = resolvedParameters with { AsOfDate = nextAsOfDate },
             UpdatedAtUtc = NextRevisionTimestamp(schedule.UpdatedAtUtc, runAtUtc),
             LastRunAtUtc = runAtUtc,

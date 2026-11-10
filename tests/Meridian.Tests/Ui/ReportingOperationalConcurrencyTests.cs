@@ -871,10 +871,13 @@ public sealed class ReportingOperationalConcurrencyTests
     {
         // An April-start fiscal year: the period ending 31 May 2026 is fiscal 2027 period 02, so
         // a selector built from the calendar date ("2026-05") would name the wrong period.
-        var mayPeriodId = Guid.Parse("22222222-2222-2222-2222-222222222222");
-        var resolver = new RecordingPeriodResolver(asOf =>
-            asOf == new DateOnly(2026, 4, 30) ? "11111111-1111-1111-1111-111111111111"
-            : asOf == new DateOnly(2026, 5, 31) ? mayPeriodId.ToString("D")
+        var april = new ReportingSchedulePeriodMatch(
+            "11111111-1111-1111-1111-111111111111", new DateOnly(2026, 4, 1), new DateOnly(2026, 4, 30));
+        var may = new ReportingSchedulePeriodMatch(
+            "22222222-2222-2222-2222-222222222222", new DateOnly(2026, 5, 1), new DateOnly(2026, 5, 31));
+        var resolver = new RecordingPeriodResolver(date =>
+            date >= april.StartDate && date <= april.EndDate ? april
+            : date >= may.StartDate && date <= may.EndDate ? may
             : null);
         var firstDue = new DateTimeOffset(2026, 5, 10, 8, 0, 0, TimeSpan.Zero);
         var due = BuildSchedule("fiscal-period-close", "operator-a") with
@@ -895,13 +898,47 @@ public sealed class ReportingOperationalConcurrencyTests
         advanced.NextAsOfDate.Should().Be(new DateOnly(2026, 5, 31));
         advanced.RunParameters!.AsOfDate.Should().Be(new DateOnly(2026, 5, 31));
         advanced.RunParameters.PeriodId.Should().Be(
-            mayPeriodId.ToString("D"),
-            "the next period selector is the one the ledger returned for the next as-of date");
-        resolver.AsOfDates.Should().Contain(new DateOnly(2026, 4, 30), "the run itself re-resolves its period first");
+            may.Selector,
+            "the next period selector is the one the ledger returned for the next period");
+        resolver.Dates.Should().Contain(new DateOnly(2026, 4, 30), "the run itself re-resolves its period first");
     }
 
     [Fact]
-    public async Task Scenario_PeriodCloseSchedule_KeepsTheRetainedSelectorWhenTheLedgerCannotNameAPeriod()
+    public async Task Scenario_PeriodCloseSchedule_ClosesOnTheLedgerPeriodEndForNonCalendarPeriods()
+    {
+        // A 4-4-5 style book: after the period ending 28 February comes a five-week period,
+        // 1 March to 4 April. Calendar arithmetic would close it on 31 March, four days early.
+        var fiveWeeks = new ReportingSchedulePeriodMatch(
+            "33333333-3333-3333-3333-333333333333", new DateOnly(2026, 3, 1), new DateOnly(2026, 4, 4));
+        var resolver = new RecordingPeriodResolver(date =>
+            date >= fiveWeeks.StartDate && date <= fiveWeeks.EndDate ? fiveWeeks : null);
+        var firstDue = new DateTimeOffset(2026, 3, 5, 8, 0, 0, TimeSpan.Zero);
+        var due = BuildSchedule("four-four-five", "operator-a") with
+        {
+            RunParameters = BuildCurrentSchedule("parameters-only").RunParameters,
+            State = ReportingScheduleStateDto.Active,
+            NextAsOfDate = new DateOnly(2026, 2, 28),
+            DueAtUtc = firstDue,
+            PeriodCadence = new ReportingSchedulePeriodCadenceDto(ReportingSchedulePeriodFrequencyDto.Monthly, 5)
+        };
+        var store = new SharedAtomicScheduleStore([due]);
+        var service = CreateRunnableScheduleService(store, new CountingRenderer(), resolver);
+
+        await service.RunDueForWorkerAsync(firstDue, CancellationToken.None);
+
+        var advanced = store.Load().Should().ContainSingle().Subject;
+        advanced.NextAsOfDate.Should().Be(
+            new DateOnly(2026, 4, 4),
+            "the close date is the durable period's own end, not the calendar month end");
+        advanced.RunParameters!.AsOfDate.Should().Be(new DateOnly(2026, 4, 4));
+        advanced.RunParameters.PeriodId.Should().Be(fiveWeeks.Selector);
+        advanced.DueAtUtc.Should().Be(
+            new DateTimeOffset(2026, 4, 9, 8, 0, 0, TimeSpan.Zero),
+            "the due date is the configured five days after the real period end");
+    }
+
+    [Fact]
+    public async Task Scenario_PeriodCloseSchedule_FallsBackToTheCalendarWhenTheLedgerCannotNameAPeriod()
     {
         var firstDue = new DateTimeOffset(2026, 5, 10, 8, 0, 0, TimeSpan.Zero);
         var due = BuildSchedule("unopened-period", "operator-a") with
@@ -1307,17 +1344,18 @@ public sealed class ReportingOperationalConcurrencyTests
                 () => FixedNow),
             store);
 
-    private sealed class RecordingPeriodResolver(Func<DateOnly, string?> resolve) : IReportingSchedulePeriodResolver
+    private sealed class RecordingPeriodResolver(Func<DateOnly, ReportingSchedulePeriodMatch?> resolve)
+        : IReportingSchedulePeriodResolver
     {
-        public List<DateOnly> AsOfDates { get; } = [];
+        public List<DateOnly> Dates { get; } = [];
 
-        public Task<string?> ResolvePeriodSelectorAsync(
+        public Task<ReportingSchedulePeriodMatch?> ResolvePeriodAsync(
             ReportingRunParametersDto parameters,
-            DateOnly asOfDate,
+            DateOnly date,
             CancellationToken ct = default)
         {
-            AsOfDates.Add(asOfDate);
-            return Task.FromResult(resolve(asOfDate));
+            Dates.Add(date);
+            return Task.FromResult(resolve(date));
         }
     }
 

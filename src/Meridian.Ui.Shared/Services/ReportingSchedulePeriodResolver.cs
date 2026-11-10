@@ -3,21 +3,24 @@ using Meridian.Storage.Ledger;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>A durable accounting period: its canonical selector (the period id) and its boundaries.</summary>
+public sealed record ReportingSchedulePeriodMatch(string Selector, DateOnly StartDate, DateOnly EndDate);
+
 /// <summary>
-/// Resolves the accounting-period selector a period-close reporting schedule should carry for a
-/// given report date. The ledger store is the authority on period identity: fiscal periods need
+/// Resolves the accounting period a period-close reporting schedule should report on for a
+/// given date. The ledger store is the authority on period identity: fiscal periods need
 /// not follow calendar months, so a selector must never be derived from the date alone.
 /// </summary>
 public interface IReportingSchedulePeriodResolver
 {
     /// <summary>
-    /// Returns the canonical selector (the durable period id) of the one accounting period of
-    /// the parameters' ledger book that contains <paramref name="asOfDate"/>, or
-    /// <see langword="null"/> when the book or a unique containing period cannot be found.
+    /// Returns the one accounting period of the parameters' ledger book that contains
+    /// <paramref name="date"/>, or <see langword="null"/> when the book or a unique containing
+    /// period cannot be found.
     /// </summary>
-    Task<string?> ResolvePeriodSelectorAsync(
+    Task<ReportingSchedulePeriodMatch?> ResolvePeriodAsync(
         ReportingRunParametersDto parameters,
-        DateOnly asOfDate,
+        DateOnly date,
         CancellationToken ct = default);
 }
 
@@ -47,9 +50,9 @@ public sealed class LedgerReportingSchedulePeriodResolver : IReportingSchedulePe
         _listBookPeriods = listBookPeriods ?? throw new ArgumentNullException(nameof(listBookPeriods));
     }
 
-    public async Task<string?> ResolvePeriodSelectorAsync(
+    public async Task<ReportingSchedulePeriodMatch?> ResolvePeriodAsync(
         ReportingRunParametersDto parameters,
-        DateOnly asOfDate,
+        DateOnly date,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(parameters);
@@ -62,13 +65,18 @@ public sealed class LedgerReportingSchedulePeriodResolver : IReportingSchedulePe
         var periods = await _listBookPeriods(book.LedgerBookId, ct).ConfigureAwait(false);
         var containing = periods
             .Where(period => period.LedgerBookId == book.LedgerBookId
-                && period.StartDate <= asOfDate
-                && asOfDate <= period.EndDate)
+                && period.StartDate <= date
+                && date <= period.EndDate)
             .ToArray();
 
         // Overlapping or missing periods are a ledger-setup question for an operator; picking one
         // here would silently certify a report against the wrong period.
-        return containing.Length == 1 ? containing[0].PeriodId.ToString("D") : null;
+        return containing.Length == 1
+            ? new ReportingSchedulePeriodMatch(
+                containing[0].PeriodId.ToString("D"),
+                containing[0].StartDate,
+                containing[0].EndDate)
+            : null;
     }
 
     // Mirrors LedgerReportingAuthoritativeSource.ResolveBookAsync: an explicit book id wins,

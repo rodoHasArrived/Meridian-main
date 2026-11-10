@@ -2048,9 +2048,9 @@ public sealed partial class ReportingScheduleService
                 ? _orchestrationService.GetAudit(scope.TenantId, manifest.RunId)
                 : _orchestrationService.GetAudit(manifest.RunId));
         var handoffs = BuildReleaseDeliveryHandoffs(schedule, manifest);
-        var nextParameters = await WithLedgerPeriodAsync(
-            schedule, effectiveReadiness.ResolvedParameters, ResolveNextAsOfDate(schedule), ct).ConfigureAwait(false);
-        var advanced = AdvanceSchedule(schedule, manifest, nextParameters!) with
+        var (nextParameters, periodClose) = await ResolvePeriodCloseAdvanceAsync(
+            schedule, effectiveReadiness.ResolvedParameters, ct).ConfigureAwait(false);
+        var advanced = AdvanceSchedule(schedule, manifest, nextParameters, periodClose) with
         {
             LastReadiness = effectiveReadiness,
             ReleaseDeliveryHandoffs = handoffs

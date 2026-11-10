@@ -19,11 +19,11 @@ public sealed class LedgerReportingSchedulePeriodResolverTests
         var may = Period(BookId, 2027, 2, new DateOnly(2026, 5, 1), new DateOnly(2026, 5, 31));
         var resolver = Resolver([Book(BookId, "fund-a", "Primary")], [april, may]);
 
-        var selector = await resolver.ResolvePeriodSelectorAsync(
+        var selector = await resolver.ResolvePeriodAsync(
             Parameters("fund-a", new ReportingLedgerBookSelectionDto(BookId)),
             new DateOnly(2026, 5, 31));
 
-        selector.Should().Be(may.PeriodId.ToString("D"));
+        selector.Should().Be(new ReportingSchedulePeriodMatch(may.PeriodId.ToString("D"), may.StartDate, may.EndDate));
     }
 
     [Fact]
@@ -34,11 +34,11 @@ public sealed class LedgerReportingSchedulePeriodResolverTests
             [Book(BookId, "fund-a", "STAT-GL"), Book(OtherBookId, "fund-a", "Tax")],
             [may, Period(OtherBookId, 2026, 5, new DateOnly(2026, 5, 1), new DateOnly(2026, 5, 31))]);
 
-        var selector = await resolver.ResolvePeriodSelectorAsync(
+        var selector = await resolver.ResolvePeriodAsync(
             Parameters("fund-a", new ReportingLedgerBookSelectionDto(LedgerBookCode: "stat-gl")),
             new DateOnly(2026, 5, 15));
 
-        selector.Should().Be(may.PeriodId.ToString("D"));
+        selector!.Selector.Should().Be(may.PeriodId.ToString("D"));
     }
 
     [Fact]
@@ -52,19 +52,19 @@ public sealed class LedgerReportingSchedulePeriodResolverTests
         var byId = Parameters("fund-a", new ReportingLedgerBookSelectionDto(BookId));
 
         // No period opened yet for the date.
-        (await resolver.ResolvePeriodSelectorAsync(byId, new DateOnly(2026, 7, 31))).Should().BeNull();
+        (await resolver.ResolvePeriodAsync(byId, new DateOnly(2026, 7, 31))).Should().BeNull();
         // Two periods contain the date.
-        (await resolver.ResolvePeriodSelectorAsync(byId, new DateOnly(2026, 5, 25))).Should().BeNull();
+        (await resolver.ResolvePeriodAsync(byId, new DateOnly(2026, 5, 25))).Should().BeNull();
         // The book belongs to another fund.
-        (await resolver.ResolvePeriodSelectorAsync(
+        (await resolver.ResolvePeriodAsync(
             Parameters("fund-b", new ReportingLedgerBookSelectionDto(BookId)),
             new DateOnly(2026, 5, 10))).Should().BeNull();
         // The code matches two books.
-        (await resolver.ResolvePeriodSelectorAsync(
+        (await resolver.ResolvePeriodAsync(
             Parameters("fund-a", new ReportingLedgerBookSelectionDto(LedgerBookCode: "Primary")),
             new DateOnly(2026, 5, 10))).Should().BeNull();
         // Unknown book id.
-        (await resolver.ResolvePeriodSelectorAsync(
+        (await resolver.ResolvePeriodAsync(
             Parameters("fund-a", new ReportingLedgerBookSelectionDto(Guid.NewGuid())),
             new DateOnly(2026, 5, 10))).Should().BeNull();
     }

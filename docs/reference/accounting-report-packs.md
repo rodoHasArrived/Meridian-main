@@ -297,18 +297,26 @@ runs in UTC. Daylight-saving changes are followed, so `0 8 * * *` stays at 08:00
 zone and `"UTC"` resets it; an unknown zone is rejected with `400`.
 
 A schedule may instead carry a `periodCadence` (`Monthly`, `Quarterly`, or `Annually`, plus
-`dueDaysAfterPeriodEnd` from 0 to 366). It then runs once per accounting period: after each run
-the next as-of date is the next period end, the due date is that many days later at the same local
-time of day, and the retained run parameters move to the new period. The period selector is taken
-from the durable ledger store: `periodId` becomes the id of the one accounting period of the
-schedule's ledger book that contains the new as-of date, so non-calendar fiscal years resolve
-correctly. It is re-resolved when the run starts as well. If the ledger has no unique period for
-the date (not opened yet, or overlapping), the retained selector is left unchanged and the run's
-own period validation fails closed rather than a selector being derived from the date. Period boundaries come from the ledger's
-`LedgerReportSchedulePlanner`, so reporting schedules and ledger report exports share one period
-definition. The cron expression is still required and retained for display, but it does not drive
-advancement while a period cadence is set. `periodCadence` is replaced on every upsert; sending
-null returns the schedule to cron advancement.
+`dueDaysAfterPeriodEnd` from 0 to 366). It then runs once per accounting period instead of by
+cron. The durable ledger store is the authority for the next period:
+
+- A monthly close moves to the accounting period of the schedule's ledger book that starts the day
+  after the current as-of date. Quarterly and annual closes move to the period that contains the
+  calendar quarter or year end.
+- The next as-of date is that period's own end date, the due date is `dueDaysAfterPeriodEnd` days
+  after it, and `periodId` becomes that period's id. Books whose periods are not calendar months
+  (for example 4-4-5 calendars or non-calendar fiscal years) therefore close on their real period
+  end. The period id is re-resolved when the run starts as well.
+- If the ledger has no unique period (not opened yet, overlapping, or the book cannot be
+  resolved), the schedule falls back to calendar month, quarter, or year ends from
+  `LedgerReportSchedulePlanner` and leaves the retained `periodId` unchanged; the run's own period
+  validation then fails closed rather than a selector being derived from the date.
+
+The due time of day comes from the cron expression's hour and minute, in the schedule's time zone.
+A due time that falls in a daylight-saving gap moves to the first valid time for that run only.
+The cron expression is still required but does not drive advancement while a period cadence is
+set. `periodCadence` is replaced on every upsert; sending null returns the schedule to cron
+advancement.
 
 `Paused` and `Disabled` schedules are both skipped by the worker and both return to `Active`
 through `resume`; `Disabled` marks a schedule an operator has deliberately switched off rather
