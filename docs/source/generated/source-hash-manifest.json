@@ -9,15 +9,15 @@
       "id": "SRC-APP",
       "path": "src/Meridian.Application",
       "readme": "src/Meridian.Application/README.md",
-      "readme_hash": "625e8d24b46d135fa19dd9174c2359e82b7c01dade7d275827988d62df457efa",
-      "source_hash": "c6b8f68d9ed23d57b9faec3c00c01494dc715d545ad87efb0f3508312da053f9"
+      "readme_hash": "629e8f43cd6cff7b61bd4e1eb672177d20fc0794159d388392c3092af20e05de",
+      "source_hash": "3cc1058bcd87b340a48d7649e227d72a2cc7f8c329f74654b71abf51c14ebca3"
     },
     {
       "id": "SRC-BACKTESTING",
       "path": "src/Meridian.Backtesting",
       "readme": "src/Meridian.Backtesting/README.md",
-      "readme_hash": "cf18e37a74b0eb3850e56953d9c050f8baa4d2575a6c05844a75e4c512729320",
-      "source_hash": "570202eee40ac04bccc2199cbc612d33616b658147319d07746783d5af78ce91"
+      "readme_hash": "f40fc61efe044bc9ffe47e094faa4e0d3e495d9a64d9221e7d53ab2e5ff50b54",
+      "source_hash": "6cf9c510331668e4cfefdfab32e6914af4350ac16954575f00ad419fa7d693b8"
     },
     {
       "id": "SRC-BACKTESTING-SDK",
@@ -191,8 +191,8 @@
       "id": "SRC-INFRASTRUCTURE",
       "path": "src/Meridian.Infrastructure",
       "readme": "src/Meridian.Infrastructure/README.md",
-      "readme_hash": "cc5a4fe8216a9d4f970c75cdbeb1a55e5b01c8186a59ef0a3afeaec3d945155b",
-      "source_hash": "a040055f74270a75c83b87c971169783cc3294a0893c1bf1ef2b21c548cb2484"
+      "readme_hash": "17a66d797572c1be120c03649e92b5724b3fc3bdc742be99a1619feccbf5a726",
+      "source_hash": "fda30e2e6acd7c08970b8a85cff4efad9f50e08612d2a7407277d56afcc028fa"
     },
     {
       "id": "SRC-LAUNCHER",
@@ -247,8 +247,8 @@
       "id": "SRC-STORAGE",
       "path": "src/Meridian.Storage",
       "readme": "src/Meridian.Storage/README.md",
-      "readme_hash": "af5b06ce2aca0988b25bccdc433e3263abc438345f01ebbec0f8a83c05b8e0e7",
-      "source_hash": "4482d33d895cab17e859afe7d379e8d85ce7928a5b86f0090f91e2eb475702a1"
+      "readme_hash": "5d49a545c77987668374001e921ee865d5ed03b7ca2c482ffc91a687582bb759",
+      "source_hash": "36fbdb58b77e4356c53a8ed386d17a9feb13b5ee37e2f2165225a1aeff7fee42"
     },
     {
       "id": "SRC-STRATEGIES",
