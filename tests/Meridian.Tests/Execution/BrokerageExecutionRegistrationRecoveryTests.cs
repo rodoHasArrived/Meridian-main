@@ -134,7 +134,7 @@ public sealed class BrokerageExecutionRegistrationRecoveryTests
     }
 
     [Fact]
-    public async Task PaperExecution_OrderGatewayUpdatesComeFromTheOmsWithoutTakingItsReports()
+    public async Task PaperExecution_OrderGatewayUpdatesComeFromTheOmsStateBroadcast()
     {
         var services = new ServiceCollection();
         services.AddLogging();
@@ -155,6 +155,9 @@ public sealed class BrokerageExecutionRegistrationRecoveryTests
 
         result.Success.Should().BeTrue();
         (await next).Should().BeTrue();
+        // The stream carries every transition; read until the fill's snapshot arrives.
+        while (updates.Current.FilledQuantity < 10m)
+            (await updates.MoveNextAsync()).Should().BeTrue();
         updates.Current.OrderId.Should().Be(result.OrderId);
         updates.Current.FilledQuantity.Should().Be(10m);
         oms.GetOrder(result.OrderId)!.FilledQuantity.Should().Be(10m,

@@ -62,6 +62,16 @@ public sealed partial class OrderManagementSystem
         UndeliverableExecutionReportHandler? undeliverableHandler)
         => new(_lifecycle.SubscribeExecutionReports(capacity, subscriberName, undeliverableHandler));
 
+    /// <summary>
+    /// Subscribes to OMS order-state transitions: every change the OMS writes to an order
+    /// (acceptance, fills, amendment, cancellation, rejection), published at write time. Each
+    /// order keeps only its latest unread state, so a slow subscriber never blocks the OMS and
+    /// never misses an order's final state, even after the order is evicted from retention.
+    /// This is an observation stream; strategy and accounting state must keep using
+    /// <see cref="SubscribeLosslessExecutionReports()"/>.
+    /// </summary>
+    public OrderStateSubscription SubscribeOrderStateChanges() => _orders.Broadcast.Subscribe();
+
     /// <summary>Consumer-owned handle for one independent accounted execution-report stream.</summary>
     public sealed class ExecutionReportSubscription : IAsyncDisposable
     {

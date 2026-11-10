@@ -1,6 +1,4 @@
-using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
-using System.Threading.Channels;
 using Meridian.Execution.Interfaces;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
@@ -89,13 +87,12 @@ public sealed class OmsGovernedExecutionOrderGateway : IOrderGateway
             "Order cancellation must go through IOrderManager so authoritative OMS state cannot be bypassed.");
 
     /// <summary>
-    /// Order snapshots (cumulative filled quantity, average price and status) taken from OMS
-    /// order state each time the OMS publishes a fill, via an independent report subscription.
-    /// This is an observer: reports that overflow its bounded inbox are dropped for this stream
-    /// only, and because every snapshot is read from OMS state, a dropped report never leaves a
-    /// later snapshot short; the dropped report's order is re-snapshotted, so its final state
-    /// still arrives. The OMS publishes fills only, so acceptance, cancellation and
-    /// rejection without a fill do not trigger a snapshot; read those from
+    /// Order snapshots (status, cumulative filled quantity and average price) for every OMS
+    /// order-state transition, fills and non-fill transitions alike, from
+    /// <see cref="OrderManagementSystem.SubscribeOrderStateChanges"/>. Each snapshot is captured
+    /// when the OMS writes it, so it never depends on the order still being retained. A slow
+    /// reader may skip an order's intermediate states but always receives its latest, and never
+    /// blocks the OMS. Covers transitions after subscribing; read earlier state from
     /// <see cref="IOrderManager"/>.
     /// </summary>
     public async IAsyncEnumerable<OrderStatusUpdate> StreamOrderUpdatesAsync(
@@ -104,86 +101,20 @@ public sealed class OmsGovernedExecutionOrderGateway : IOrderGateway
         if (_orderManagerAccessor?.Invoke() is not OrderManagementSystem oms)
             yield break;
 
-        // A slow observer must not block the OMS: reports that overflow this subscription are
-        // dropped. Each published report is only a trigger; the update is built from the OMS's
-        // authoritative order state (cumulative filled quantity, average price and status), so a
-        // dropped, buffered or reused-id report can never make a snapshot short or double-count.
-        // A snapshot may be ahead of the report that triggered it, which is still a correct state.
-        // A dropped report's order id is kept and re-snapshotted, so an order whose final report
-        // overflowed still produces an update even when nothing else for it arrives.
-        var droppedOrders = new ConcurrentDictionary<string, byte>(StringComparer.Ordinal);
-        var doorbell = Channel.CreateBounded<byte>(new BoundedChannelOptions(1)
+        await using var subscription = oms.SubscribeOrderStateChanges();
+        await foreach (var state in subscription.ReadAllAsync(ct).ConfigureAwait(false))
         {
-            FullMode = BoundedChannelFullMode.DropWrite
-        });
-        await using var subscription = oms.SubscribeLosslessExecutionReports(
-            ObserverSubscriberName,
-            (dropped, _, _) =>
-            {
-                if (droppedOrders.TryAdd(dropped.OrderId, 0))
-                    doorbell.Writer.TryWrite(0);
-                return ValueTask.CompletedTask;
-            });
-        var reports = subscription.Reports;
-        // Outstanding waits are kept until they complete and reused, so an idle stream never
-        // accumulates abandoned waiters on either channel.
-        Task<bool>? reportWait = null;
-        Task<bool>? dropWait = null;
-        while (true)
-        {
-            while (doorbell.Reader.TryRead(out _))
-            {
-            }
-
-            foreach (var orderId in droppedOrders.Keys)
-            {
-                if (!droppedOrders.TryRemove(orderId, out _))
-                    continue;
-                if (Snapshot(oms, orderId, clientOrderId: null, rejectReason: null, DateTimeOffset.UtcNow) is { } recovered)
-                    yield return recovered;
-            }
-
-            if (reports.TryRead(out var report))
-            {
-                if (Snapshot(oms, report.OrderId, report.ClientOrderId, report.RejectReason, report.Timestamp) is { } update)
-                    yield return update;
-                continue;
-            }
-
-            reportWait ??= reports.WaitToReadAsync(ct).AsTask();
-            dropWait ??= doorbell.Reader.WaitToReadAsync(ct).AsTask();
-            await Task.WhenAny(reportWait, dropWait).ConfigureAwait(false);
-            ct.ThrowIfCancellationRequested();
-            if (dropWait.IsCompleted)
-                dropWait = null;
-            if (reportWait.IsCompleted)
-            {
-                // A faulted subscription surfaces its failure rather than ending quietly.
-                var more = await reportWait.ConfigureAwait(false);
-                reportWait = null;
-                if (!more && droppedOrders.IsEmpty)
-                    yield break;
-            }
-        }
-    }
-
-    private static OrderStatusUpdate? Snapshot(
-        OrderManagementSystem oms,
-        string orderId,
-        string? clientOrderId,
-        string? rejectReason,
-        DateTimeOffset timestamp)
-        => oms.GetOrder(orderId) is { } state
-            ? new OrderStatusUpdate(
+            yield return new OrderStatusUpdate(
                 state.OrderId,
-                clientOrderId ?? state.OrderId,
+                state.OrderId,
                 state.Symbol,
                 MapStatus(state.Status),
                 state.FilledQuantity,
                 state.AverageFillPrice,
-                rejectReason,
-                timestamp)
-            : null;
+                RejectReason: null,
+                state.LastUpdatedAt ?? state.CreatedAt);
+        }
+    }
 
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 

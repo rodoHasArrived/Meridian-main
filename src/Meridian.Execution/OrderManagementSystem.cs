@@ -20,7 +20,7 @@ namespace Meridian.Execution;
 [ImplementsAdr("ADR-013", "Uses bounded channels for execution event pipeline")]
 public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagementLifecycle, IDisposable, IAsyncDisposable
 {
-    private readonly ConcurrentDictionary<string, OrderState> _orders = new();
+    private readonly OrderStateTable _orders = new();
     private readonly IExecutionGateway _gateway;
     private readonly OrderFillProcessor _fillProcessor;
     private readonly OrderExecutionAudit _executionAudit;
