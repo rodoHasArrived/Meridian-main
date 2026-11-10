@@ -434,17 +434,24 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
             var isPikAccrual = policy is null && stored.Servicing.IsPikToggled;
             // Date-aware day count: Act/Act accrues against the actual year length of the
             // accrual date (366 in leap years); other conventions keep fixed denominators.
-            var accruedInterest = isPikAccrual
-                ? DirectLendingInterop.CalculatePikAccrual(
-                    stored.Servicing.Balances.PrincipalOutstanding,
-                    annualRate,
-                    (int)terms.DayCountBasis,
-                    request.AccrualDate)
-                : DirectLendingInterop.CalculateDailyAccrualAmountForDate(
-                    stored.Servicing.Balances.PrincipalOutstanding,
-                    annualRate,
-                    (int)terms.DayCountBasis,
-                    request.AccrualDate);
+            // Rounded to cents, half away from zero, exactly as the F# servicing aggregate (the
+            // Postgres path) posts it, so both lanes accrue identical amounts.
+            var accruedInterest = stored.Servicing.Balances.PrincipalOutstanding > 0m
+                ? Math.Round(
+                    isPikAccrual
+                        ? DirectLendingInterop.CalculatePikAccrual(
+                            stored.Servicing.Balances.PrincipalOutstanding,
+                            annualRate,
+                            (int)terms.DayCountBasis,
+                            request.AccrualDate)
+                        : DirectLendingInterop.CalculateDailyAccrualAmountForDate(
+                            stored.Servicing.Balances.PrincipalOutstanding,
+                            annualRate,
+                            (int)terms.DayCountBasis,
+                            request.AccrualDate),
+                    2,
+                    MidpointRounding.AwayFromZero)
+                : 0m;
             // Capitalization policy: the PIK share is deferred to the policy's capitalization dates.
             var pikShare = policy is not null && (policy.Mode == PikElection.Always || stored.Servicing.IsPikToggled)
                 ? RateUnitNormalizer.ToFraction(policy.PikShare, DirectLendingRateField.PikShare)
@@ -458,12 +465,16 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
             // PRD-115: the day's cash interest is settled from prepaid interest first; PIK never consumes it.
             var prepaidInterestConsumed = Math.Min(Math.Max(0m, stored.Servicing.Balances.PrepaidInterest), Math.Max(0m, interestAmount));
 
-            var commitmentFeeAmount = terms.CommitmentFeeRate is { } feeRate && feeRate > 0m
-                ? DirectLendingInterop.CalculateDailyAccrualAmountForDate(
-                    stored.Servicing.AvailableToDraw,
-                    feeRate,
-                    (int)terms.DayCountBasis,
-                    request.AccrualDate)
+            // Undrawn commitment, rounded to cents, as the F# aggregate computes it.
+            var commitmentFeeAmount = terms.CommitmentFeeRate is { } feeRate
+                ? Math.Round(
+                    DirectLendingInterop.CalculateDailyAccrualAmountForDate(
+                        Math.Max(0m, stored.Servicing.CurrentCommitment - stored.Servicing.TotalDrawn),
+                        feeRate,
+                        (int)terms.DayCountBasis,
+                        request.AccrualDate),
+                    2,
+                    MidpointRounding.AwayFromZero)
                 : 0m;
 
             var entry = new DailyAccrualEntryDto(

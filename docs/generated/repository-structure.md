@@ -10888,6 +10888,7 @@ Meridian-main
 │   │   │   │   ├── AccrualLedgerServiceTests.cs
 │   │   │   │   ├── DailyAccrualWorkerServicingScheduleTests.cs
 │   │   │   │   ├── DailyAccrualWorkerTests.cs
+│   │   │   │   ├── DirectLendingAccrualParityTests.cs
 │   │   │   │   ├── DirectLendingEventRebuilderTests.cs
 │   │   │   │   ├── DirectLendingExcessBalancesCompatibilityTests.cs
 │   │   │   │   ├── DirectLendingExcessRoutingParityTests.cs
