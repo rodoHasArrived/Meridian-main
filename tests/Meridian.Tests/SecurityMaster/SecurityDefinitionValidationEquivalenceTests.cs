@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.FSharp.Domain;
 using Meridian.FSharp.SecurityMasterInterop;
 using Xunit;
@@ -161,6 +162,23 @@ public sealed class SecurityDefinitionValidationEquivalenceTests
                 "structured_credit_factor_schedule_not_monotonic"
             ]
         };
+
+    /// <summary>
+    /// Parity guard for the asset-class literal ratchet
+    /// (<c>SecurityAssetClassLiteralRatchetTests</c>): the class-gated
+    /// <c>validateDefinitionTerms</c> dispatch in <c>SecurityMasterCommands.fs</c> is a declared
+    /// dispatch site, and its ledger may only name declared catalog classes. Together with the
+    /// clean-twin theory (every declared class runs both validators) and
+    /// <see cref="MutationTable_CoversEveryLedgeredCode"/> (the proof covers exactly the ledger),
+    /// this holds the F# dispatch to <see cref="SecurityAssetClassCatalog"/>.
+    /// </summary>
+    [Fact]
+    public void LedgeredClasses_AreDeclaredCatalogClasses()
+    {
+        SecurityMasterCommandFacade.DefinitionExpressibleCodes.Keys.Should().BeSubsetOf(
+            SecurityAssetClassCatalog.AssetClasses,
+            "the definition-expressible ledger (and the validateDefinitionTerms dispatch it mirrors) may only name declared catalog classes");
+    }
 
     [Fact]
     public void MutationTable_CoversEveryLedgeredCode()
