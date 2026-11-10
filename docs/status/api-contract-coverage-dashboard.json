@@ -1961,13 +1961,13 @@
     {
       "method": "POST",
       "path": "/api/lean/results/ingest",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:375",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:395",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/lean/symbol-map",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:469",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:507",
       "documented": false
     },
     {

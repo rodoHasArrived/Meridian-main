@@ -118,6 +118,28 @@ public sealed class CredentialServiceTests : IDisposable
     }
 
     [Fact]
+    public void SaveCredential_AfterUnreadableVault_PreservesOriginalFileAsBackup()
+    {
+        // A torn write or DPAPI failure used to load as an empty vault, and the next save then
+        // overwrote the file — permanently erasing every stored credential.
+        var unreadable = Encoding.UTF8.GetBytes("not-a-dpapi-blob");
+        File.WriteAllBytes(_vaultPath, unreadable);
+        var sut = CreateSut();
+        var resource = UniqueResource();
+
+        sut.SaveCredential(resource, "user-after-corruption", "pass");
+
+        var backups = Directory.GetFiles(_storageDir, "credentials.enc.unreadable-*.bak");
+        backups.Should().ContainSingle("the unreadable vault must be moved aside, not overwritten");
+        File.ReadAllBytes(backups[0]).Should().Equal(unreadable);
+        sut.GetTelemetryCounters().VaultAccessFailures.Should().Be(1);
+
+        var reader = CreateSut();
+        reader.GetCredential(resource).HasValue.Should().BeTrue("the new vault is written normally after the backup");
+        Directory.GetFiles(_storageDir, "*.tmp").Should().BeEmpty("the atomic write leaves no temp file behind");
+    }
+
+    [Fact]
     public void GetCredential_UnknownResource_ReturnsNull()
     {
         var sut = CreateSut();
