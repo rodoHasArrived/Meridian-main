@@ -261,6 +261,9 @@ and a retained preview identity; it cannot submit approved evidence or a prepare
 
 Trading recovery uses `LiveBrokeragePortfolioSyncService` to publish account-scoped Alpaca
 holdings, cash, buying power, currency and completeness to the existing exposure provider.
+A linked identifier is accepted when the gateway recognizes it as a name of the connected account
+(Alpaca's account number or its internal UUID), and two names for one broker account cannot bind it
+to two local accounts.
 Broker holdings replace local projections for that account; remaining OMS exposure stays reserved.
 The mandatory brokerage risk rule blocks missing, stale, interrupted or inconsistent evidence.
 An order/fill change, reconnect or restart requires synchronization again. The shared readiness

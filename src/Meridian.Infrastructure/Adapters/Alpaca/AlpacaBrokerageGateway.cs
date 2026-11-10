@@ -40,7 +40,7 @@ namespace Meridian.Infrastructure.Adapters.Alpaca;
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
 [ImplementsAdr("ADR-010", "Uses IHttpClientFactory for HTTP connections")]
-public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccountCatalog, IBrokeragePortfolioSync, IBrokerageActivitySync, INotionalOrderSizingGateway, IFaceValueOrderSizingGateway, IExplicitOrderCancellationGateway, IExplicitOrderModificationGateway, IBrokerageConnectionState, IBrokerageOrderRecoveryGateway, IBrokerageOrderAmendmentRecoveryGateway
+public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccountCatalog, IBrokeragePortfolioSync, IBrokerageActivitySync, INotionalOrderSizingGateway, IFaceValueOrderSizingGateway, IExplicitOrderCancellationGateway, IExplicitOrderModificationGateway, IBrokerageConnectionState, IBrokerageAccountIdentity, IBrokerageOrderRecoveryGateway, IBrokerageOrderAmendmentRecoveryGateway
 {
     /// <inheritdoc />
     public bool UsesFaceValuePercentageOfPar(OrderRequest request)
@@ -105,6 +105,9 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
     private long _generationStreamEpoch;
     private AlpacaCredentialSnapshot? _connectedCredentials;
     private string? _connectedAccountId;
+    // Alpaca's internal UUID for the same account. Operators never see it, so it is accepted as
+    // a second name for the account but never reported as the account's identity.
+    private string? _connectedProviderAccountId;
 
     public AlpacaBrokerageGateway(
         IHttpClientFactory httpClientFactory,
@@ -143,6 +146,17 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
         && !string.Equals(_connectedAccountId, "unknown", StringComparison.OrdinalIgnoreCase)
             ? $"{connected.Environment}:{_connectedAccountId}"
             : null;
+
+    /// <inheritdoc />
+    public bool IdentifiesConnectedAccount(string externalAccountId)
+    {
+        if (ScopeIdentity is null || string.IsNullOrWhiteSpace(externalAccountId))
+            return false;
+        var requested = externalAccountId.Trim();
+        return string.Equals(_connectedAccountId, requested, StringComparison.OrdinalIgnoreCase)
+            || _connectedProviderAccountId is { } providerAccountId
+                && string.Equals(providerAccountId, requested, StringComparison.OrdinalIgnoreCase);
+    }
 
     public long ConnectionGeneration
     {
@@ -203,7 +217,7 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
                 "Alpaca KeyId and SecretKey are required for brokerage. Configure credentials before calling ConnectAsync.");
 
         var connectedCredentials = CurrentCredentials;
-        var account = await GetAccountInfoAsync(ct).ConfigureAwait(false);
+        var (account, providerAccountId) = await ReadAccountAsync(null, ct).ConfigureAwait(false);
         if (connectedCredentials != CurrentCredentials)
             throw new InvalidOperationException("Alpaca credentials changed during connection establishment.");
         if (_tradeUpdates is not null)
@@ -214,7 +228,9 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
                 throw new InvalidDataException(
                     "Alpaca did not return a provider account identity required to scope durable execution state.");
             }
-            _tradeUpdates.ConfigureDurableStateScope(account.AccountId, CurrentCredentials.Environment);
+            // Durable execution state stays keyed by Alpaca's immutable account UUID when it is
+            // reported, so naming the account by its account number does not orphan an inbox.
+            _tradeUpdates.ConfigureDurableStateScope(providerAccountId ?? account.AccountId, CurrentCredentials.Environment);
             // The gateway owns this stream until disposal. A browser recovery request must
             // not own its lifetime, or cancelling that request permanently stops later fills.
             ct.ThrowIfCancellationRequested();
@@ -222,6 +238,7 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
         }
         _connectedCredentials = connectedCredentials;
         _connectedAccountId = account.AccountId;
+        _connectedProviderAccountId = providerAccountId;
         _connected = true;
         Interlocked.Increment(ref _connectionGeneration);
         _logger.LogInformation("Alpaca brokerage connected: account {AccountId}, status {Status}",
@@ -352,7 +369,16 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
     public async Task<AccountInfo> GetAccountInfoAsync(CancellationToken ct = default)
         => await GetAccountInfoCoreAsync(null, ct).ConfigureAwait(false);
 
-    private async Task<AccountInfo> GetAccountInfoCoreAsync(List<string>? completenessIssues, CancellationToken ct)
+    private async Task<AccountInfo> GetAccountInfoCoreAsync(List<string>? completenessIssues, CancellationToken ct) =>
+        (await ReadAccountAsync(completenessIssues, ct).ConfigureAwait(false)).Account;
+
+    /// <summary>
+    /// Reads the account with both of Alpaca's names for it: the account number an operator sees
+    /// in the dashboard and on statements, which is the account's identity here, and the internal
+    /// UUID, which is only ever accepted as an alias.
+    /// </summary>
+    private async Task<(AccountInfo Account, string? ProviderAccountId)> ReadAccountAsync(
+        List<string>? completenessIssues, CancellationToken ct)
     {
         using var client = CreateHttpClient();
         var response = await client.GetAsync($"{BaseUrl}/v2/account", ct).ConfigureAwait(false);
@@ -383,9 +409,11 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
                 completenessIssues.Add("Account trading restrictions were not reported.");
         }
 
-        return new AccountInfo
+        var accountNumber = NormalizeAccountIdentifier(account?.AccountNumber);
+        var providerAccountId = NormalizeAccountIdentifier(account?.Id);
+        return (new AccountInfo
         {
-            AccountId = account?.Id ?? account?.AccountNumber ?? "unknown",
+            AccountId = accountNumber ?? providerAccountId ?? "unknown",
             Equity = ParseDecimal(account?.Equity),
             Cash = ParseDecimal(account?.Cash),
             BuyingPower = ParseDecimal(account?.BuyingPower),
@@ -406,8 +434,11 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
             ShortingEnabled = account?.ShortingEnabled ?? false,
             OptionsApprovedLevel = account?.OptionsApprovedLevel,
             OptionsTradingLevel = account?.OptionsTradingLevel,
-        };
+        }, accountNumber is null ? null : providerAccountId);
     }
+
+    private static string? NormalizeAccountIdentifier(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     /// <inheritdoc />
     public async Task<IReadOnlyList<BrokerPosition>> GetPositionsAsync(CancellationToken ct = default)
@@ -688,18 +719,23 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
         CancellationToken ct,
         List<string>? completenessIssues = null)
     {
-        var account = await GetAccountInfoCoreAsync(completenessIssues, ct).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(account.AccountId)
-            || !string.Equals(
-                account.AccountId.Trim(),
-                externalAccountId.Trim(),
-                StringComparison.OrdinalIgnoreCase))
+        var (account, providerAccountId) = await ReadAccountAsync(completenessIssues, ct).ConfigureAwait(false);
+        var requested = externalAccountId.Trim();
+        if (string.Equals(account.AccountId, requested, StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(account.AccountId, "unknown", StringComparison.OrdinalIgnoreCase))
         {
-            throw new InvalidOperationException(
-                "The requested Alpaca account does not match the account resolved by the configured credentials.");
+            return account;
         }
 
-        return account;
+        if (providerAccountId is not null && string.Equals(providerAccountId, requested, StringComparison.OrdinalIgnoreCase))
+        {
+            // A link retained under the UUID keeps resolving: the evidence is returned under the
+            // name the caller holds, so its own identity checks still compare like with like.
+            return account with { AccountId = providerAccountId };
+        }
+
+        throw new InvalidOperationException(
+            "The requested Alpaca account does not match the account resolved by the configured credentials.");
     }
 
 

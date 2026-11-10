@@ -129,6 +129,12 @@ Observed against the paper Trading API on 2026-11-10 and now covered by determin
   nonterminal so the order remains in cancellation sweeps.
 - **422 does not distinguish its causes.** A reused client order ID and an unknown asset return
   the same status and code, so both stay uncertain until recovery reads the client order ID.
+- **An account has two identifiers.** `/v2/account` returns the account number shown in Alpaca's
+  dashboard and an internal UUID shown nowhere else. The gateway used to identify the account by
+  the UUID while credential verification recorded the account number, so a link made with the
+  visible account number was refused. The account number is now the account's identity; the UUID
+  is still accepted as an alias. The read-only check asserts that verification and the gateway
+  name the account the same way.
 - **Corporate actions come from the Market Data API.** The provider previously called a
   `/v2/corporate-actions/announcements` path that does not exist and expected a response shape
   the broker never sends, so it returned nothing. It now reads
