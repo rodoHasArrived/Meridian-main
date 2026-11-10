@@ -502,6 +502,39 @@ Validation: no .NET SDK was available where this was written, so the new
 `SecurityAssetClassCatalogTests` cases were not run locally; the hosted `Meridian CI / quality-gate`
 is their compile and test gate.
 
+**2026-11-10 — `CreditFacility` has one owning pack; Option stays specialized (owner decisions).**
+*`CreditFacility`.* The domain owner chose `private-loan-credit`. It is removed from the planned
+lists of `mortgage-facility-intercompany` and `commitment-guarantee`, and its
+`DeclaredSharedCoverage` entry is deleted, so `DirectLoan` is the only declared overlap and no
+planned class is shared. The reasons are in source: Direct Lending already services commitment,
+available-to-draw, drawdown lots and commitment fees for a loan; `private-loan-credit` is the only
+loan pack with a `Fee` lifecycle event and a fee-income template; and the undrawn part of a facility
+is already a `CommitmentGuarantee` record (`committedAmount`, `unfundedAmount`). The readiness label
+`CreditFacility` now resolves to `DirectLoan` instead of `CommitmentGuarantee`, so readiness requests
+and evidence carrying that label classify with the loan. This reads a credit facility as one the fund
+extends. A facility the fund borrows under (the financing blueprint's borrower-side term debt) has
+no planned class name and is not decided here. The `mortgage-facility-intercompany` pack keeps its
+id and display name.
+
+*Option.* Option stays on its specialized projection, by decision and not by backlog. Its four
+tables are keyed by contract symbol and chain, the quote path writes the same tables, and the
+contract and chain lookups read them. Moving it means re-keying on `security_id` and separating the
+quote path first, for a consistency gain only. A security-keyed option terms table beside the
+existing four remains available if a consumer needs option terms queried like other classes; none
+was identified.
+
+*Known limit, not changed.* Both option writers set `lifecycle_stat` (`Active` or `Expired`) from
+the clock at write time (`PostgresSecurityMasterStore.TryBuildOptionProjection`,
+`PostgresOptionReferenceProjectionStore`), so a contract that expires after its last write stays
+`Active` in `option_contract_projection` and `option_lifecycle_projection`. No code path is affected
+today: `option_lifecycle_projection` has no reader, `OptionProjectionService.MapContract` drops the
+column, and no query filters on it. A direct SQL reader would see the stale value. The remedy when a
+consumer appears is to derive the status at read time from `expiry_date` and an as-of date, as
+`BondProjectionService.ResolveLifecycle` does.
+Validation: no .NET SDK was available where this was written; the hosted
+`Meridian CI / quality-gate` is the compile and test gate for the updated
+`SecurityAssetClassCatalogTests` and `SecurityAssetPackReadinessMappingTests`.
+
 **Validation of this disposition.** Local, on the branch, with
 `MERIDIAN_SECURITY_MASTER_CONNECTION_STRING` pointing at a local PostgreSQL 16 (no Testcontainers):
 
@@ -8746,6 +8779,33 @@ hosted `schema-control.yml` verify step is authoritative.
 | `schema-control.py inventory` | 0 errors |
 | `run-maintained-generation.py --docs-only` | Converged; only the optional Docker UML render failed |
 | `bash scripts/ci.sh` | Not run as a whole; `Meridian CI / quality-gate` on the pull request is authoritative |
+
+### UPI checksum verification follow-up
+
+[ISO 4914:2021](https://www.iso.org/standard/80506.html) §4 requires `QZ`, nine ASCII digits or
+uppercase consonants excluding `Y`, and one check character from the same 30-symbol alphabet.
+Annex C Table C.1 assigns values in the order `0123456789BCDFGHJKLMNPQRSTVWXZ`. The MOD 31,30
+calculation starts at 30 and processes all 11 characters before the check character, including
+`QZ`. At each step it adds the character value, reduces modulo 30 with zero mapped to 30, doubles
+the result, and reduces modulo 31. The check value makes the final sum congruent to 1 modulo 30.
+The merged implementation matches these steps. The Annex C worked example ends at 17, giving check
+value 14 (`G`) for `QZNX2JD91QCG`. Annex E of [JR/T 0294.1–2024](https://www.csrc.gov.cn/csrc/c106431/c7513047/7513047/files/%E9%99%84%E4%BB%B61%EF%BC%9A%E9%87%91%E8%9E%8D%E5%B8%82%E5%9C%BA%E4%BA%A4%E6%98%93%E6%8A%A5%E5%91%8A%E6%95%B0%E6%8D%AE%E8%A6%81%E7%B4%A0%E6%8C%87%E5%8D%97%20%E7%AC%AC1%E9%83%A8%E5%88%86%EF%BC%9A%E5%85%A8%E7%90%83%E5%94%AF%E4%B8%80%E4%BA%A7%E5%93%81%E8%AF%86%E5%88%AB%E7%A0%81.pdf)
+reproduces the calculation and worked example.
+
+| Published example | Source |
+| --- | --- |
+| `QZNX2JD91QCG` | ISO 4914:2021 Annex C worked example |
+| `QZRBG6ZTKS42` | [ANNA DSB search and create guide](https://www.anna-dsb.com/wp-content/uploads/2023/10/The-UPI-How-to-search-for-and-create-a-UPI.pdf), figure 10. Exercises the zero-to-30 substitution. |
+| `QZVLFS6FH9VZ` | [ANNA DSB-2771](https://www.anna-dsb.com/download/dsb-2771-upi-eq-sw-total-return-swap-single-name-template-definition/), Identifier Section |
+| `QZFTFRVB9S17` | [ANNA DSB-2772](https://www.anna-dsb.com/download/dsb-2772-upi-eq-sw-total-return-swap-single-index-template-definition/), Identifier Section |
+
+The canonical ISO code contains no separators. Meridian's format check applies to the normalized
+candidate after the shared C#/F# import normalizer uppercases the input and strips characters
+outside ASCII `A-Z0-9`. The raw identifier is retained separately. The regressions cover published
+check characters and reject mutations with an incorrect check character, forbidden letters, or an
+incorrect length or prefix. This is an offline format and checksum check. Verifying issuance,
+record status, or product attributes requires a DSB reference data lookup. Meridian treats a UPI
+as shared product reference data and a UTI as transaction-specific.
 
 ## Consumer pass — 2026-11-05 (call/put notice-date watch)
 
