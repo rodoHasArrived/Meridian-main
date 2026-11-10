@@ -7,19 +7,20 @@
 Four opt-in test classes exercise the production Alpaca adapters against the real paper Trading
 API (`paper-api.alpaca.markets`) and, for market data, the market-data host
 (`data.alpaca.markets`). They exist because fixtures can only restate what an adapter already
-assumes about the wire contract; the first live runs found reference, options and historical
-adapters whose requests the real API refused or whose responses they could not read.
+assumes about the wire contract; the first live runs found reference and options adapters whose
+requests the real API refused or whose responses they could not read.
 
 | Class | Sends | Opt-in |
 | --- | --- | --- |
 | `AlpacaPaperSandboxTests` | GET account, positions, open orders | `MERIDIAN_RUN_ALPACA_PAPER_SANDBOX=1` |
-| `AlpacaPaperSandboxReferenceDataTests` | GET assets, option contracts, corporate-action announcements, account activity | `MERIDIAN_RUN_ALPACA_PAPER_SANDBOX=1` |
+| `AlpacaPaperSandboxReferenceDataTests` | GET assets, option contracts, account activity | `MERIDIAN_RUN_ALPACA_PAPER_SANDBOX=1` |
 | `AlpacaPaperSandboxOrderLifecycleTests` | Additionally submits, replaces and cancels one-share paper orders and takes a one-share position that it closes again | both `MERIDIAN_RUN_ALPACA_PAPER_SANDBOX=1` and `MERIDIAN_RUN_ALPACA_PAPER_SANDBOX_ORDERS=1` |
-| `AlpacaMarketDataSandboxTests` | GET option contracts on the paper host; GET stock bars, trades, quotes, auctions, latest trade and option snapshots on the market-data host | both `MERIDIAN_RUN_ALPACA_PAPER_SANDBOX=1` and `MERIDIAN_RUN_ALPACA_MARKET_DATA=1` |
+| `AlpacaOptionsMarketDataSandboxTests` | GET option contracts on the paper host; GET the underlying's latest trade and option snapshots on the market-data host | both `MERIDIAN_RUN_ALPACA_PAPER_SANDBOX=1` and `MERIDIAN_RUN_ALPACA_MARKET_DATA=1` |
 
 Every class uses a transport guard that is independent of configuration: HTTPS only, no
 redirects, and a host/method/path allow-list. The read-only classes can send nothing but GET to
-the paper host; the market-data class may also GET market data from the market-data host. The
+the paper host; the options market-data class may also GET option snapshots and a latest trade
+from the market-data host. The
 order class may additionally POST `/v2/orders` and PATCH or DELETE one order by its broker id,
 for at most two shares sized by quantity; bulk cancellation (`DELETE /v2/orders`), liquidation
 (`DELETE /v2/positions`), dollar-sized orders and account configuration stay refused.
@@ -35,8 +36,6 @@ restart/disconnect blocks. It never submits, changes or cancels an order.
 - symbol search and asset details for an equity and a crypto pair (string-encoded increments);
 - option contract discovery: expirations across the forward horizon and the strikes of one
   expiration (string-encoded strikes, stated expiration window);
-- corporate actions: two years of dividend history read as nine 90-day ex-date windows through
-  the production request pacing;
 - the activity statement connector: fetch from the account, then parse through the production
   statement path with no error issues.
 
@@ -56,14 +55,13 @@ recovery journal and portfolio synchronization:
   order without booking the fill twice or submitting anything; a closing order returns holdings
   to where the run found them.
 
-`AlpacaMarketDataSandboxTests` checks, with the free IEX and indicative-options feeds:
+`AlpacaOptionsMarketDataSandboxTests` checks, with the free indicative-options feed, an option
+chain snapshot for one expiration: an underlying price read from the latest trade, calls and puts
+classified by the right in their symbols, open interest joined from the contract listing, greeks,
+and the near-the-money strike filter; then one contract's quote from the single-contract route.
 
-- an option chain snapshot for one expiration: an underlying price read from the latest trade,
-  calls and puts classified by the right in their symbols, open interest joined from the contract
-  listing, greeks, and the near-the-money strike filter; then one contract's quote from the
-  single-contract route;
-- historical daily and adjusted bars, and two minutes of trades and quotes and one session's
-  auctions through the multi-symbol routes.
+Corporate actions and historical bars, trades, quotes and auctions are certified separately, with
+their own adapters' checks.
 
 The order manager classifies every Alpaca route, the paper environment included, as live routing
 (`AlpacaBrokerageGateway` does not report an execution mode, so the placement gate does not treat
@@ -89,16 +87,16 @@ Configure these values through the execution environment's secret settings:
 - `ALPACA_TRADING_ENVIRONMENT`: exactly `paper`.
 - `MERIDIAN_RUN_ALPACA_PAPER_SANDBOX`: `1` to enable the read-only classes.
 - `MERIDIAN_RUN_ALPACA_PAPER_SANDBOX_ORDERS`: `1` to additionally enable the order class.
-- `MERIDIAN_RUN_ALPACA_MARKET_DATA`: `1` to additionally enable the market-data class.
+- `MERIDIAN_RUN_ALPACA_MARKET_DATA`: `1` to additionally enable the options market-data class.
 
 Permit HTTPS access to `paper-api.alpaca.markets:443`, and to `data.alpaca.markets:443` for the
-market-data class. None of these tests opens a WebSocket.
+options market-data class. None of these tests opens a WebSocket.
 Credentials remain in environment variables and are not printed or persisted. Run from the
 repository root with the repository's .NET 10 SDK:
 
 ```bash
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj \
-  --filter 'FullyQualifiedName~AlpacaPaperSandbox|FullyQualifiedName~AlpacaMarketDataSandbox' \
+  --filter 'FullyQualifiedName~AlpacaPaperSandbox|FullyQualifiedName~AlpacaOptionsMarketDataSandbox' \
   --logger 'console;verbosity=normal' \
   --logger 'trx;LogFileName=alpaca-paper-sandbox.trx'
 ```
@@ -131,14 +129,10 @@ Recorded because fixtures cannot show it and code that reads the broker must tol
   client id, reports `replaced`, and links its successor through `replaced_by`.
 - A reused client id is refused with `422 client_order_id must be unique`.
 - Paper and live key pairs authenticate only against their own host.
-- The announcements endpoint treats `since` and `until` as inclusive and refuses a span over 90
-  days; an underlying with no options answers with an empty contract array, not an error.
-- On the market-data host, the per-symbol trades/quotes/auctions routes answer with a bare array
-  and the multi-symbol routes with results keyed by symbol; stock trade ids are JSON numbers;
-  auctions are refused for any feed but the consolidated one, and for a range that reaches into
-  today on an account without a real-time consolidated entitlement; the option chain route
-  refuses a `symbols` filter (single contracts have their own route); option snapshots carry no
-  underlying price and no open interest.
+- An underlying with no options answers with an empty contract array, not an error; without an
+  expiration bound the contract listing stops at the upcoming weekend.
+- On the market-data host, the option chain route refuses a `symbols` filter (single contracts
+  have their own route), and option snapshots carry no underlying price and no open interest.
 
 ## Evidence boundary
 
@@ -151,9 +145,7 @@ as of the 2026-11-10 paper run (dated record held privately by the owner):
 | Portfolio synchronization, reconciliation, risk blocking, restart recovery | `live-verified` | Paper environment, REST lane |
 | Symbol search and asset details | `live-verified` | Paper host; equities and crypto pairs |
 | Option contract discovery (expirations, strikes) | `live-verified` | Paper host |
-| Corporate-action announcements (dividends, splits) | `live-verified` | Paper host; dividend history observed, split mapping fixture-only |
 | Activity statement connector | `live-verified` | Cash journal and trade fills observed |
-| Historical bars, trades, quotes and auctions | `live-verified` | Market-data host; IEX feed, consolidated auctions for a completed session |
 | Option chain snapshot and option quote | `live-verified` | Market-data host; indicative feed |
 | Trade-update WebSocket stream | `live-untested` | Not exercised by these tests |
 | Market-data streaming (equities, options, crypto, news) | `live-untested` | WebSocket; not exercised by these tests |

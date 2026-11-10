@@ -56,7 +56,7 @@ The six capability columns mean implementations of the shared streaming, histori
 
 **Owner:** Data Confidence and Validation
 
-**Next action:** Verify the trade-update and market-data streams where WebSockets are reachable, decide whether paper credentials route under the paper order-flow gate, and obtain operator acceptance before promoting operational readiness.
+**Next action:** Retain account/feed-specific paper and live evidence and obtain operator acceptance before promoting operational readiness.
 
 **Aliases:** `alpaca-api`, `alpaca-brokerage`, `alpaca-corp-actions`, `alpaca-options`, `alpaca-symbols`
 
@@ -68,12 +68,12 @@ The six capability columns mean implementations of the shared streaming, histori
 
 - The historical default is 200 requests/minute; actual quotas and IEX/SIP or indicative/OPRA access depend on the configured plan.
 - Unit and fixture evidence does not establish live execution acceptance; brokerage use remains subject to shared execution governance.
-- Paper-environment REST evidence exists for brokerage orders, recovery, portfolio synchronization, symbol search, option contract discovery, corporate-action announcements and the activity statement, and market-data REST evidence for historical bars, trades, quotes and auctions and for option chain snapshots and quotes. The trade-update stream, market-data streaming and the live environment remain live-untested.
+- Paper-environment REST evidence exists for brokerage orders, recovery, portfolio synchronization, symbol search, option contract discovery and the activity statement, and market-data REST evidence for option chain snapshots and quotes. The trade-update stream, market-data streaming and the live environment remain live-untested.
 - Option chain snapshots and quotes depend on the underlying's latest trade; when the market-data API has none for the underlying, no chain or quote is produced.
 - The order manager classifies every Alpaca route, paper included, as live routing; a paper order needs the same brokerage configuration, run id and readiness approval as a live one.
 - Pacing values describe repository defaults; verify current provider terms and the configured account allowance before operation.
 
-**Degradation / fail-closed behavior:** Missing credentials prevent credential-gated backfill/search activation. Asset-stream routing fails closed when the requested feed has no usable entitlement; diagnostics preserve the selected feed and entitlement. REST and trade-update errors remain observable. Corporate-action history is read as 90-day ex-date windows over about two years plus 90 days ahead, paced to half the Trading API request budget; if any window fails, the failure is logged and an empty collection is returned rather than a partial history, so empty results must not be treated as verified absence of actions. Option contract discovery likewise returns nothing rather than a partial chain when a page fails or paging does not terminate. Asset search, contract discovery and announcements follow the selected credential record's Trading API host, then ALPACA_TRADING_ENVIRONMENT; with neither, a paper key ID goes to paper and anything else stays on the live host. Cancellation propagates. Streaming readiness waits for authentication and full subscription acknowledgments; rejected or timed-out subscription changes invalidate readiness, while transient control errors remain retryable. Automatic correction/cancel channels are limited to requested trades; permanent request errors stop retries. Final subscription-reference removal sends an explicit upstream unsubscribe.
+**Degradation / fail-closed behavior:** Missing credentials prevent credential-gated backfill/search activation. Asset-stream routing fails closed when the requested feed has no usable entitlement; diagnostics preserve the selected feed and entitlement. REST and trade-update errors remain observable. Corporate-action HTTP failures and non-cancellation exceptions are logged and return empty action collections; empty results must not be treated as verified absence of actions. Cancellation propagates. Option contract discovery and chain snapshots return nothing rather than a partial chain when a page fails or paging does not terminate. Asset search and contract discovery follow the selected credential record's Trading API host, then ALPACA_TRADING_ENVIRONMENT; with neither, a paper key ID goes to paper and anything else stays on the live host. Streaming readiness waits for authentication and full subscription acknowledgments; rejected or timed-out subscription changes invalidate readiness, while transient control errors remain retryable. Automatic correction/cancel channels are limited to requested trades; permanent request errors stop retries. Final subscription-reference removal sends an explicit upstream unsubscribe.
 
 **Implementation types:**
 
@@ -103,7 +103,7 @@ The six capability columns mean implementations of the shared streaming, histori
 - Test: [AlpacaPaperSandboxTests](../../../tests/Meridian.Tests/Integration/AlpacaPaperSandboxTests.cs) (`tests/Meridian.Tests/Integration/AlpacaPaperSandboxTests.cs`)
 - Test: [AlpacaPaperSandboxReferenceDataTests](../../../tests/Meridian.Tests/Integration/AlpacaPaperSandboxReferenceDataTests.cs) (`tests/Meridian.Tests/Integration/AlpacaPaperSandboxReferenceDataTests.cs`)
 - Test: [AlpacaPaperSandboxOrderLifecycleTests](../../../tests/Meridian.Tests/Integration/AlpacaPaperSandboxOrderLifecycleTests.cs) (`tests/Meridian.Tests/Integration/AlpacaPaperSandboxOrderLifecycleTests.cs`)
-- Test: [AlpacaMarketDataSandboxTests](../../../tests/Meridian.Tests/Integration/AlpacaMarketDataSandboxTests.cs) (`tests/Meridian.Tests/Integration/AlpacaMarketDataSandboxTests.cs`)
+- Test: [AlpacaOptionsMarketDataSandboxTests](../../../tests/Meridian.Tests/Integration/AlpacaOptionsMarketDataSandboxTests.cs) (`tests/Meridian.Tests/Integration/AlpacaOptionsMarketDataSandboxTests.cs`)
 
 ## AlphaVantage
 

@@ -172,14 +172,9 @@ public sealed class ProviderFactoryCredentialIsolationTests : IDisposable
         await corporate.FetchAsync("AAPL", Guid.NewGuid());
         await using var brokerage = factory.CreateAlpacaBrokerageGateway();
         await brokerage.GetAccountInfoAsync();
-        // One account read plus the nine ex-date windows of the corporate-action history.
-        handler.Requests.Should().HaveCount(10).And.OnlyContain(request => request.Key == key && request.Secret == secret);
-        // Every Trading API surface must follow the selected credential's environment: a paper key
-        // pair is refused by the live host and the reverse.
-        handler.Requests.Should().OnlyContain(request =>
-            request.Uri.Host == (environment == "live" ? "api.alpaca.markets" : "paper-api.alpaca.markets"));
-        handler.Requests.Count(request => request.Uri.AbsolutePath == "/v2/account").Should().Be(1);
-        handler.Requests.Count(request => request.Uri.AbsolutePath == "/v2/corporate_actions/announcements").Should().Be(9);
+        handler.Requests.Should().HaveCount(3).And.OnlyContain(request => request.Key == key && request.Secret == secret);
+        handler.Requests.Single(request => request.Uri.AbsolutePath == "/v2/account").Uri.Host.Should()
+            .Be(environment == "live" ? "api.alpaca.markets" : "paper-api.alpaca.markets");
     }
 
     private static async Task AssertUnavailableAsync(ProviderFactory factory, CredentialCaptureHandler handler)
@@ -216,8 +211,6 @@ public sealed class ProviderFactoryCredentialIsolationTests : IDisposable
         services.AddSingleton<IConfiguration>(new ConfigurationBuilder().AddEnvironmentVariables().Build());
         services.AddSingleton<IHttpClientFactory>(new CaptureClientFactory(handler));
         services.AddSingleton(Mock.Of<IAtomicFileWriter>());
-        // These fixtures never reach Alpaca, so the production request pacing is not exercised here.
-        services.AddSingleton(AlpacaReferenceRequestPacing.Unpaced);
         var publisher = new TestMarketEventPublisher();
         services.AddSingleton(new TradeDataCollector(publisher));
         services.AddSingleton(new QuoteCollector(publisher));

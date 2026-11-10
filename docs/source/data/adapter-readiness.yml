@@ -41,9 +41,8 @@ adapters:
   - Unit and fixture evidence does not establish live execution acceptance; brokerage use remains subject to shared
     execution governance.
   - Paper-environment REST evidence exists for brokerage orders, recovery, portfolio synchronization, symbol search,
-    option contract discovery, corporate-action announcements and the activity statement, and market-data REST
-    evidence for historical bars, trades, quotes and auctions and for option chain snapshots and quotes. The
-    trade-update stream, market-data streaming and the live environment remain live-untested.
+    option contract discovery and the activity statement, and market-data REST evidence for option chain snapshots
+    and quotes. The trade-update stream, market-data streaming and the live environment remain live-untested.
   - Option chain snapshots and quotes depend on the underlying's latest trade; when the market-data API has none
     for the underlying, no chain or quote is produced.
   - The order manager classifies every Alpaca route, paper included, as live routing; a paper order needs the same
@@ -52,14 +51,12 @@ adapters:
     before operation.
   degradation: Missing credentials prevent credential-gated backfill/search activation. Asset-stream routing fails
     closed when the requested feed has no usable entitlement; diagnostics preserve the selected feed and entitlement.
-    REST and trade-update errors remain observable. Corporate-action history is read as 90-day ex-date windows over
-    about two years plus 90 days ahead, paced to half the Trading API request budget; if any window fails, the failure
-    is logged and an empty collection is returned rather than a partial history, so empty results must not be treated
-    as verified absence of actions. Option contract discovery likewise returns nothing rather than a partial chain
-    when a page fails or paging does not terminate. Asset search, contract discovery and announcements follow the
-    selected credential record's Trading API host, then ALPACA_TRADING_ENVIRONMENT; with neither, a paper key ID
-    goes to paper and anything else stays on the live host.
-    Cancellation propagates. Streaming readiness waits for authentication and full subscription acknowledgments;
+    REST and trade-update errors remain observable. Corporate-action HTTP failures and non-cancellation exceptions
+    are logged and return empty action collections; empty results must not be treated as verified absence of actions.
+    Cancellation propagates. Option contract discovery and chain snapshots return nothing rather than a partial
+    chain when a page fails or paging does not terminate. Asset search and contract discovery follow the selected
+    credential record's Trading API host, then ALPACA_TRADING_ENVIRONMENT; with neither, a paper key ID goes to
+    paper and anything else stays on the live host. Streaming readiness waits for authentication and full subscription acknowledgments;
     rejected or timed-out subscription changes invalidate readiness, while transient control errors remain retryable.
     Automatic correction/cancel channels are limited to requested trades; permanent request errors stop retries.
     Final subscription-reference removal sends an explicit upstream unsubscribe.
@@ -104,13 +101,12 @@ adapters:
   - path: tests/Meridian.Tests/Integration/AlpacaPaperSandboxOrderLifecycleTests.cs
     symbol: AlpacaPaperSandboxOrderLifecycleTests
     kind: test
-  - path: tests/Meridian.Tests/Integration/AlpacaMarketDataSandboxTests.cs
-    symbol: AlpacaMarketDataSandboxTests
+  - path: tests/Meridian.Tests/Integration/AlpacaOptionsMarketDataSandboxTests.cs
+    symbol: AlpacaOptionsMarketDataSandboxTests
     kind: test
   owner: Data Confidence and Validation
-  next_action: Verify the trade-update and market-data streams where WebSockets are reachable, decide whether paper
-    credentials route under the paper order-flow gate, and obtain operator acceptance before promoting operational
-    readiness.
+  next_action: Retain account/feed-specific paper and live evidence and obtain operator acceptance before promoting
+    operational readiness.
 - folder: AlphaVantage
   provider_id: alphavantage
   aliases:

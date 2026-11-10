@@ -51,9 +51,9 @@ $env:MDC_ALPACA_FEED = "iex"
 ```
 
 `ALPACA_TRADING_ENVIRONMENT` selects the environment for Trading API credentials. It governs every
-Trading API surface, not only orders: asset search, option contract discovery and corporate-action
-announcements are sent to the paper or live Trading API host of the selected credentials, because
-a paper key pair is refused by the live host and the reverse. A stored credential record's own
+Trading API surface, not only orders: asset search and option contract discovery are sent to the
+paper or live Trading API host of the selected credentials, because a paper key pair is refused by
+the live host and the reverse. A stored credential record's own
 environment takes precedence over the variable. When neither names an environment, order routing
 defaults to paper, while those reference lookups keep the live host they always used unless the
 key ID is a paper key (`PK…`); set the variable to make every surface agree. The separate
@@ -120,8 +120,8 @@ dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter 'FullyQualifiedN
 ```
 
 Run the opt-in [paper sandbox checks](../testing/alpaca-paper-portfolio-sandbox.md) for real
-broker evidence. The read-only classes cover account, holdings, reconciliation, risk, reference
-data and the activity statement; the separately opted-in order class automates steps 2 to 5 below
+broker evidence. The read-only classes cover account, holdings, reconciliation, risk, asset and
+option-contract reference data and the activity statement; the separately opted-in order class automates steps 2 to 5 below
 for one-share orders over the REST lane (a lost acknowledgement, exactly-one-submission recovery,
 a fill, and a restart over the same recovery journal). The order manager classifies every Alpaca
 route, paper included, as live routing, so a paper order needs the same brokerage configuration,

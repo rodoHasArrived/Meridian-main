@@ -83,16 +83,13 @@ Alpha Vantage adjusted OHLC uses the adjusted-close/raw-close ratio independentl
 split coefficient. Yahoo daily history includes boundary padding and uses historical exchange
 timezone rules for session dates, falling back to the supplied offset and then UTC when absent.
 Alpaca symbol search initializes authentication after credentials are assigned. Alpaca asset
-search, option contract discovery and corporate-action announcements are Trading API resources and
-follow the selected credential record's paper or live Trading API host, then
-`ALPACA_TRADING_ENVIRONMENT`; with neither, a paper key ID goes to paper and anything else stays on
-the live host, because a paper key pair is refused there. Contract discovery states its expiration
-horizon and follows page tokens, and corporate-action history is read as paced 90-day ex-date
-windows; both return nothing rather than a partial result when a page or window cannot be read.
-Option chain snapshots and quotes read the underlying's latest trade first, because the snapshot
-payload has no underlying price, and join open interest from the contract listing. Historical
-trades, quotes and auctions use the multi-symbol routes, whose keyed responses are the shape read;
-auctions send no feed and a date-only end. OpenFIGI resolution
+search and option contract discovery are Trading API resources and follow the selected credential
+record's paper or live Trading API host, then `ALPACA_TRADING_ENVIRONMENT`; with neither, a paper
+key ID goes to paper and anything else stays on the live host, because a paper key pair is refused
+there. Contract discovery states its expiration horizon and follows page tokens, and returns
+nothing rather than a partial chain when a page cannot be read. Option chain snapshots and quotes
+read the underlying's latest trade first, because the snapshot payload has no underlying price,
+and join open interest from the contract listing. OpenFIGI resolution
 learns canonical identities only from complete, unambiguous exchange and instrument evidence;
 broad NASDAQ requests include UW, UQ, and UR while exact venue requests remain distinct;
 discovery can still return candidate lists. These corrections support `W1-DATA-001` and `W7-LIVE-001`.

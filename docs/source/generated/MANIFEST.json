@@ -6,7 +6,7 @@
   "inputs": [
     {
       "path": "docs/source/data/adapter-readiness.yml",
-      "sha256": "6eb7eb939ee75a948f543bf063e07a48cbdbd0da8ccac9fcce003ca23e0e8c19"
+      "sha256": "d66bc4cc43cf51e761ded285482c12ebcd2261dd7280781c8c4ebbef86b9a733"
     },
     {
       "path": "docs/source/data/diagram-index.yml",

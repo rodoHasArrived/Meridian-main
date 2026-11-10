@@ -46,9 +46,9 @@
       "review_by": "2026-12-01"
     },
     {
-      "path": "tests/Meridian.Tests/Integration/AlpacaMarketDataSandboxTests.cs",
-      "test": "AlpacaMarketDataFactAttribute",
-      "reason": "Alpaca market-data validation reaches the market-data host and is opt-in: set MERIDIAN_RUN_ALPACA_PAPER_SANDBOX=1, MERIDIAN_RUN_ALPACA_MARKET_DATA=1 and the documented paper credentials.",
+      "path": "tests/Meridian.Tests/Integration/AlpacaOptionsMarketDataSandboxTests.cs",
+      "test": "AlpacaOptionsMarketDataFactAttribute",
+      "reason": "Alpaca options market-data validation reaches the market-data host and is opt-in: set MERIDIAN_RUN_ALPACA_PAPER_SANDBOX=1, MERIDIAN_RUN_ALPACA_MARKET_DATA=1 and the documented paper credentials.",
       "owner": "Data Confidence and Validation",
       "category": "environment-gated",
       "tracking": "docs/testing/alpaca-paper-portfolio-sandbox.md",

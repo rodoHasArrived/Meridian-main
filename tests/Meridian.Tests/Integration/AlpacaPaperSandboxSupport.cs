@@ -49,8 +49,8 @@ internal enum AlpacaPaperSandboxAccess
     ReadOnly,
 
     /// <summary>
-    /// <see cref="ReadOnly"/> plus GET requests for stock and option market data on the
-    /// market-data host. Nothing on that host is a mutation.
+    /// <see cref="ReadOnly"/> plus GET requests for option snapshots and an underlying's latest
+    /// trade on the market-data host. Nothing on that host is a mutation.
     /// </summary>
     ReadOnlyWithMarketData,
 
@@ -96,7 +96,7 @@ internal sealed partial class AlpacaPaperSandboxHttpClientFactory(AlpacaPaperSan
     public void Dispose() => _handler.Dispose();
 
     [GeneratedRegex(
-        @"^/v2/(account|account/activities(/[A-Z_]+)?|positions|orders|orders:by_client_order_id|orders/[0-9a-f-]{36}|assets|assets/[A-Za-z0-9./]+|options/contracts|corporate_actions/announcements)\z",
+        @"^/v2/(account|account/activities(/[A-Z_]+)?|positions|orders|orders:by_client_order_id|orders/[0-9a-f-]{36}|assets|assets/[A-Za-z0-9./]+|options/contracts)\z",
         RegexOptions.CultureInvariant)]
     private static partial Regex ReadablePath();
 
@@ -104,7 +104,7 @@ internal sealed partial class AlpacaPaperSandboxHttpClientFactory(AlpacaPaperSan
     private static partial Regex SingleOrderPath();
 
     [GeneratedRegex(
-        @"^/(v2/stocks/(bars|trades|quotes|auctions)|v2/stocks/[A-Za-z0-9.]+/(bars|trades|quotes|auctions|trades/latest)|v1beta1/options/snapshots(/[A-Za-z0-9.]+)?)\z",
+        @"^/(v2/stocks/[A-Za-z0-9.]+/trades/latest|v1beta1/options/snapshots(/[A-Za-z0-9.]+)?)\z",
         RegexOptions.CultureInvariant)]
     private static partial Regex MarketDataPath();
 

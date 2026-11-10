@@ -5866,7 +5866,6 @@ Meridian-main
 │   │   │   │   ├── AlpacaMarketDataClient.cs
 │   │   │   │   ├── AlpacaOptionsChainProvider.cs
 │   │   │   │   ├── AlpacaProviderModule.cs
-│   │   │   │   ├── AlpacaReferenceRequestPacing.cs
 │   │   │   │   ├── AlpacaStreamProfiles.cs
 │   │   │   │   ├── AlpacaSymbolSearchProvider.cs
 │   │   │   │   └── AlpacaTradeUpdatesClient.cs
@@ -11227,7 +11226,7 @@ Meridian-main
 │   │   │   │   ├── SymbolEndpointTests.cs
 │   │   │   │   ├── TrustedActionOriginTests.cs
 │   │   │   │   └── UiEndpointsJsonOptionsTests.cs
-│   │   │   ├── AlpacaMarketDataSandboxTests.cs
+│   │   │   ├── AlpacaOptionsMarketDataSandboxTests.cs
 │   │   │   ├── AlpacaPaperSandboxOrderLifecycleTests.cs
 │   │   │   ├── AlpacaPaperSandboxReferenceDataTests.cs
 │   │   │   ├── AlpacaPaperSandboxSupport.cs

@@ -6,7 +6,6 @@ using Meridian.FinancialOperations.Reconciliation.Connectors;
 using Meridian.FinancialOperations.Reconciliation.Connectors.Alpaca;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Tests.Ui;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit.Abstractions;
 
@@ -80,47 +79,6 @@ public sealed class AlpacaPaperSandboxReferenceDataTests(ITestOutputHelper outpu
 
         output.WriteLine("Option contracts: expirations={0} (nearest {1:yyyy-MM-dd}, furthest {2:yyyy-MM-dd}), strikes at nearest={3}; requests={4}.",
             expirations.Count, expirations[0], expirations[^1], strikes.Count, clients.RequestCount);
-    }
-
-    [AlpacaPaperSandboxFact]
-    public async Task CorporateActions_ReadDividendHistoryAcrossTheWindowedAnnouncementsEndpoint()
-    {
-        var (key, secret) = AlpacaPaperSandbox.RequirePaperCredentials();
-        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(120));
-        using var clients = new AlpacaPaperSandboxHttpClientFactory(AlpacaPaperSandboxAccess.ReadOnly);
-        var configuration = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?>
-            {
-                [AlpacaCredentialEnvironment.KeyIdName] = key,
-                [AlpacaCredentialEnvironment.SecretKeyName] = secret,
-            })
-            .Build();
-        // The public constructor, so the production request pacing is the one exercised.
-        var provider = new AlpacaCorporateActionProvider(
-            clients, configuration, NullLogger<AlpacaCorporateActionProvider>.Instance);
-        var securityId = Guid.NewGuid();
-
-        // A long-standing quarterly payer: roughly eight ex-dates fall inside the default lookback.
-        var actions = await provider.FetchAsync("KO", securityId, timeout.Token);
-
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
-        var dividends = actions.Where(action => action.ActionType == "Dividend").ToArray();
-        dividends.Length.Should().BeGreaterThanOrEqualTo(4,
-            "a single 90-day window cannot hold two years of quarterly dividends; the windows must join up");
-        dividends.Should().OnlyContain(dividend => dividend.Amount > 0m, "cash arrives as a JSON string");
-        actions.Should().OnlyContain(action =>
-            action.SecurityId == securityId
-            && action.SourceProvider == "alpaca"
-            && !string.IsNullOrWhiteSpace(action.SourceEventId)
-            && action.EvidenceHash!.Length == 64
-            && action.ExDate >= today.AddDays(-AlpacaCorporateActionProvider.DefaultLookbackDays)
-            && action.ExDate <= today.AddDays(AlpacaCorporateActionProvider.ForwardDays));
-        actions.Select(action => action.SourceEventId).Should().OnlyHaveUniqueItems();
-        actions.Select(action => action.ExDate).Should().BeInAscendingOrder();
-        clients.RequestCount.Should().Be(9, "the default lookback is read as nine ex-date windows");
-
-        output.WriteLine("Corporate actions: {0} action(s), {1} dividend(s), ex-dates {2:yyyy-MM-dd} to {3:yyyy-MM-dd}; requests={4}.",
-            actions.Count, dividends.Length, actions[0].ExDate, actions[^1].ExDate, clients.RequestCount);
     }
 
     [AlpacaPaperSandboxFact]
