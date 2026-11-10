@@ -4518,6 +4518,7 @@ Meridian-main
 │   │   ├── Metrics
 │   │   │   ├── BacktestMetricsEngine.cs
 │   │   │   ├── PostSimulationTcaReporter.cs
+│   │   │   ├── ReportedReturn.cs
 │   │   │   └── XirrCalculator.cs
 │   │   ├── Plugins
 │   │   │   ├── PluginBacktestStrategyLiveSource.cs
@@ -10348,6 +10349,7 @@ Meridian-main
 │   │   │   │   ├── BackfillCoordinatorStorageOptionsTests.cs
 │   │   │   │   ├── BackfillCostEstimatorTests.cs
 │   │   │   │   ├── BackfillExecutionHistoryTests.cs
+│   │   │   │   ├── BackfillJobProgressAndGranularityTests.cs
 │   │   │   │   ├── BackfillRequestTraceContextTests.cs
 │   │   │   │   ├── BackfillScheduleManagerDurabilityTests.cs
 │   │   │   │   ├── BackfillSourceAttributionTests.cs
