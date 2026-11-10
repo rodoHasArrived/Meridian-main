@@ -92,6 +92,40 @@ public sealed class DirectLendingViewModelTests
 
     // ── PRD-115: apply or refund unapplied cash ─────────────────────────────
 
+    [Fact]
+    public void ResolveUnappliedCashCommand_RetryOfTheSameRequest_ReusesTheCommandId()
+    {
+        var loanId = Guid.NewGuid();
+        var key = new DirectLendingViewModel.UnappliedCashCommandKey(loanId, IsRefund: false, 100m, null, new DateOnly(2026, 4, 1));
+        var first = DirectLendingViewModel.ResolveUnappliedCashCommand(null, key, Guid.NewGuid);
+
+        var retry = DirectLendingViewModel.ResolveUnappliedCashCommand(first, key with { }, () => throw new InvalidOperationException("must not mint a new id"));
+
+        retry.CommandId.Should().Be(first.CommandId, "the server recognises a committed request whose response was lost");
+    }
+
+    [Theory]
+    [InlineData("amount")]
+    [InlineData("action")]
+    [InlineData("reference")]
+    [InlineData("loan")]
+    [InlineData("day")]
+    public void ResolveUnappliedCashCommand_ChangedRequest_StartsANewCommand(string changed)
+    {
+        var key = new DirectLendingViewModel.UnappliedCashCommandKey(Guid.NewGuid(), IsRefund: true, 100m, "wire-1", new DateOnly(2026, 4, 1));
+        var pending = DirectLendingViewModel.ResolveUnappliedCashCommand(null, key, Guid.NewGuid);
+        var next = changed switch
+        {
+            "amount" => key with { Amount = 101m },
+            "action" => key with { IsRefund = false },
+            "reference" => key with { ExternalRef = "wire-2" },
+            "loan" => key with { LoanId = Guid.NewGuid() },
+            _ => key with { EffectiveDate = key.EffectiveDate.AddDays(1) },
+        };
+
+        DirectLendingViewModel.ResolveUnappliedCashCommand(pending, next, Guid.NewGuid).CommandId.Should().NotBe(pending.CommandId);
+    }
+
     [Theory]
     [InlineData(null, false, false, "500", "", false, "Select a loan")]
     [InlineData(2_000.0, true, false, "500", "", false, "finish loading")]

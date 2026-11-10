@@ -730,16 +730,28 @@ public sealed class DirectLendingViewModel : BindableBase
         }
 
         IsSubmittingUnappliedCash = true;
-        var today = DateOnly.FromDateTime(DateTime.UtcNow).ToString("yyyy-MM-dd");
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
         var externalRef = string.IsNullOrWhiteSpace(UnappliedCashExternalRef) ? null : UnappliedCashExternalRef.Trim();
         var path = $"/api/loans/{loan.LoanId}/unapplied-cash/{(isRefund ? "refund" : "apply")}";
+
+        // A retry of the same logical request (same loan, action, amount, reference and day) reuses
+        // its command id, so the server recognises a request that committed but whose response was
+        // lost instead of applying or refunding the cash a second time.
+        var key = new UnappliedCashCommandKey(loan.LoanId, isRefund, amount, externalRef, today);
+        _pendingUnappliedCashCommand = ResolveUnappliedCashCommand(_pendingUnappliedCashCommand, key, Guid.NewGuid);
+        var metadata = new DirectLendingCommandMetadataDto(_pendingUnappliedCashCommand.Value.CommandId, null, null, "meridian.wpf", false);
         object body = isRefund
-            ? new { Amount = amount, EffectiveDate = today, ExternalRef = externalRef }
-            : new { Amount = amount, EffectiveDate = today, Breakdown = (object?)null, ExternalRef = externalRef };
+            ? new DirectLendingCommandEnvelope<RefundUnappliedCashRequest>(new RefundUnappliedCashRequest(amount, today, externalRef ?? string.Empty), metadata)
+            : new DirectLendingCommandEnvelope<ApplyUnappliedCashRequest>(new ApplyUnappliedCashRequest(amount, today, null, externalRef), metadata);
 
         try
         {
             var response = await _apiClient.PostWithResponseAsync<LoanServicingStateDto>(path, body, ct).ConfigureAwait(false);
+            if (response.Success)
+            {
+                _pendingUnappliedCashCommand = null;
+            }
+
             if (!IsStillSelected(loan))
             {
                 // The operator moved to another loan while this ran. Reloading the submitted loan now
@@ -765,6 +777,21 @@ public sealed class DirectLendingViewModel : BindableBase
     }
 
     private bool IsStillSelected(LoanSummaryDto submitted) => SelectedLoan?.LoanId == submitted.LoanId;
+
+    private (UnappliedCashCommandKey Key, Guid CommandId)? _pendingUnappliedCashCommand;
+
+    /// <summary>The inputs that make two unapplied-cash submissions the same logical request.</summary>
+    internal readonly record struct UnappliedCashCommandKey(Guid LoanId, bool IsRefund, decimal Amount, string? ExternalRef, DateOnly EffectiveDate);
+
+    /// <summary>
+    /// PRD-115: reuse the pending command id when the operator retries the same request after a
+    /// failure or lost response; any change to the request starts a new command.
+    /// </summary>
+    internal static (UnappliedCashCommandKey Key, Guid CommandId) ResolveUnappliedCashCommand(
+        (UnappliedCashCommandKey Key, Guid CommandId)? pending,
+        UnappliedCashCommandKey key,
+        Func<Guid> newId)
+        => pending is { } existing && existing.Key == key ? existing : (key, newId());
 
     /// <summary>
     /// PRD-115: why Apply or Refund unapplied cash cannot run yet, or null when it can. Mirrors the
