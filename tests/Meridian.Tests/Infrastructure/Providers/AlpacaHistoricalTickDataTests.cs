@@ -114,6 +114,35 @@ public sealed class AlpacaHistoricalTickDataTests
         request.Query.Should().NotContain("feed=", "Alpaca rejects an auctions request that names any feed but SIP");
     }
 
+    [Fact]
+    public async Task GetHistoricalTradesAsync_WindowWithAnOffset_IsSentAsTheSameInstantInUtc()
+    {
+        var handler = new RecordingHandler(_ => """{"next_page_token":null,"trades":{}}""");
+        using var sut = CreateSut(handler);
+        var tenAmNewYork = new DateTimeOffset(2026, 11, 6, 10, 0, 0, TimeSpan.FromHours(-5));
+
+        await sut.GetHistoricalTradesAsync("SPY", tenAmNewYork, tenAmNewYork.AddMinutes(1));
+        await sut.GetHistoricalQuotesAsync("SPY", tenAmNewYork, tenAmNewYork.AddMinutes(1));
+
+        handler.Requests.Should().HaveCount(2).And.OnlyContain(request =>
+            request.Query.Contains("start=2026-11-06T15:00:00Z", StringComparison.Ordinal)
+            && request.Query.Contains("end=2026-11-06T15:01:00Z", StringComparison.Ordinal),
+            "the local clock time must not be sent with a UTC designator");
+    }
+
+    [Fact]
+    public async Task GetHistoricalAuctionsAsync_EndDate_IsSentAsRequestedBecauseItIsInclusive()
+    {
+        var handler = new RecordingHandler(_ => """{"auctions":{},"next_page_token":null}""");
+        using var sut = CreateSut(handler);
+
+        await sut.GetHistoricalAuctionsAsync("SPY", new DateOnly(2026, 11, 5), new DateOnly(2026, 11, 6));
+
+        handler.Requests.Should().ContainSingle().Which.Query.Should()
+            .Contain("start=2026-11-05").And.Contain("end=2026-11-06",
+                "asking for the following day reaches into data some plans may not query");
+    }
+
     private static AlpacaHistoricalDataProvider CreateSut(HttpMessageHandler handler, string feed = "iex") =>
         new(keyId: "test-key", secretKey: "test-secret", feed: feed, httpClient: new HttpClient(handler));
 

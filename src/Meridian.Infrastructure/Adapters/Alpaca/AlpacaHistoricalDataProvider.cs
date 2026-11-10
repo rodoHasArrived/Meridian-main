@@ -369,8 +369,8 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
     private string BuildQuotesUrl(IReadOnlyList<string> symbols, DateTimeOffset start, DateTimeOffset end, int? limit, string? pageToken)
     {
         var symbolsParam = string.Join(",", symbols);
-        var startStr = start.ToString("yyyy-MM-ddTHH:mm:ssZ");
-        var endStr = end.ToString("yyyy-MM-ddTHH:mm:ssZ");
+        var startStr = FormatUtcInstant(start);
+        var endStr = FormatUtcInstant(end);
 
         // Always the multi-symbol route: it keys its results by symbol, while the single-symbol
         // route returns a bare array that the keyed response model cannot read.
@@ -489,8 +489,8 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
     private string BuildTradesUrl(IReadOnlyList<string> symbols, DateTimeOffset start, DateTimeOffset end, int? limit, string? pageToken)
     {
         var symbolsParam = string.Join(",", symbols);
-        var startStr = start.ToString("yyyy-MM-ddTHH:mm:ssZ");
-        var endStr = end.ToString("yyyy-MM-ddTHH:mm:ssZ");
+        var startStr = FormatUtcInstant(start);
+        var endStr = FormatUtcInstant(end);
 
         // Always the multi-symbol route: it keys its results by symbol, while the single-symbol
         // route returns a bare array that the keyed response model cannot read.
@@ -621,7 +621,9 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
     {
         var symbolsParam = string.Join(",", symbols);
         var startStr = start.ToString("yyyy-MM-dd");
-        var endStr = end.AddDays(1).ToString("yyyy-MM-dd");
+        // A date-only end already covers that whole session. Asking for the day after reaches
+        // into today when the range ends yesterday, which plans without recent SIP data refuse.
+        var endStr = end.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
         // Always the multi-symbol route, whose results are keyed by symbol. No feed is sent:
         // auctions exist only on SIP, and Alpaca rejects the request when any other feed is named.
@@ -636,6 +638,11 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
 
 
     private static bool ReachedLimit(int count, int? limit) => limit is > 0 && count >= limit.Value;
+
+    // The trailing Z is a literal, so the instant must be converted to UTC first: formatting a
+    // value that carries another offset would send its local clock time labelled as UTC.
+    private static string FormatUtcInstant(DateTimeOffset instant) =>
+        instant.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture);
 
     private void ValidateCredentials()
     {

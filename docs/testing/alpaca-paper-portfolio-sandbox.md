@@ -140,7 +140,8 @@ Observed against the paper Trading API on 2026-11-10 and now covered by determin
 - **A limit is a page size to Alpaca.** The provider now treats the caller's limit as a bound on
   the result and reports that more remains, instead of paging through the whole window.
 - **Auctions exist only on SIP.** Alpaca rejects an auctions request that names another feed, so
-  none is sent.
+  none is sent. A date-only end is inclusive; asking for the following day reaches into today
+  when the range ends yesterday, which plans without recent SIP data refuse.
 - **Listings trail lookups.** The open-order listing can still show an order for a moment after
   its own lookup reports it cancelled, and a `FILL` activity can appear a moment after the order
   reports filled. Until the activity lands, the order snapshot carries the fill at its average
