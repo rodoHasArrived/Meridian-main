@@ -550,8 +550,8 @@ module SecurityMaster =
             @ require (modules.TradingParameters |> Option.bind (fun t -> t.ContractMultiplier) |> Option.forall (fun size -> size > 0m))
                 (error "commodity_contract_size_invalid" "Commodity ContractSize must be greater than zero when present.")
         | "Cfd" ->
-            // Leverage maps to MarginRequirementPct = 1/leverage * 100, so leverage > 0 holds
-            // exactly when the carried margin percentage is positive.
+            // Leverage maps to MarginRequirementPct = 1/leverage * 100 (zero carried as zero), so
+            // leverage > 0 holds exactly when the carried margin percentage is positive.
             []
             @ require (modules.TradingParameters |> Option.bind (fun t -> t.MarginRequirementPct) |> Option.forall (fun margin -> margin > 0m))
                 (error "cfd_leverage_invalid" "CFD Leverage must be greater than zero when present.")

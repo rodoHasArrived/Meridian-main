@@ -714,7 +714,10 @@ module SecurityMasterLegacyUpgrade =
                             LotSize = None
                             TickSize = None
                             ContractMultiplier = None
-                            MarginRequirementPct = terms.Leverage |> Option.map (fun l -> 1m / l * 100m)
+                            // Total for every input: zero leverage carries as a zero margin so the
+                            // definition validator can refuse it (cfd_leverage_invalid) instead of
+                            // this projection throwing before validation runs.
+                            MarginRequirementPct = terms.Leverage |> Option.map (fun l -> if l = 0m then 0m else 1m / l * 100m)
                             TradingHoursUtc = None
                             CircuitBreakerThresholdPct = None
                         }

@@ -95,6 +95,9 @@ public sealed class SecurityDefinitionValidationEquivalenceTests
         ("StructuredCredit", "structured_credit_weighted_average_loan_age_invalid", "weightedAverageLoanAgeMonths", "-1"),
         ("Commodity", "commodity_contract_size_invalid", "contractSize", "-1"),
         ("Cfd", "cfd_leverage_invalid", "leverage", "-1"),
+        // Zero regression (Codex review on #3439): the module projection divides by leverage, so
+        // zero must carry as a zero margin and be refused, not throw before validation runs.
+        ("Cfd", "cfd_leverage_invalid", "leverage", "0"),
         ("Warrant", "warrant_multiplier_invalid", "multiplier", "-1"),
         ("CapFloor", "cap_floor_reference_index_required", "referenceIndex", "\" \""),
         ("CapFloor", "cap_floor_strike_order_invalid", "floorStrike", "99999"),

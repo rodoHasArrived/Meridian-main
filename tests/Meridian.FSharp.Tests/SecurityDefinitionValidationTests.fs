@@ -46,6 +46,13 @@ let private codesOnBothSurfaces entries =
 
 let private entry (date: DateOnly) factor : FactorScheduleEntry = { AsOfDate = date; Factor = factor }
 
+let private cfd leverage : SecurityKind =
+    SecurityKind.Cfd {
+        UnderlyingAssetClass = "Equity"
+        UnderlyingDescription = None
+        Leverage = leverage
+    }
+
 [<Fact>]
 let ``a clean factor schedule passes both surfaces`` () =
     let kindCodes, definitionCodes =
@@ -71,3 +78,22 @@ let ``an invalid factor schedule trips both surfaces with the same code`` (code:
     // The definition surface may never invent an error the kind surface does not raise.
     for definitionCode in definitionCodes do
         Assert.Contains(definitionCode, kindCodes)
+
+/// Zero-leverage regression (Codex review on #3439): validateKindInvariants projects modules
+/// before validating, and the CFD margin projection divides by leverage. Zero must come back as
+/// the cfd_leverage_invalid refusal on both surfaces, never a DivideByZeroException.
+[<Fact>]
+let ``zero CFD leverage is refused on both surfaces instead of throwing`` () =
+    let kind = cfd (Some 0m)
+    let kindCodes = SecurityMaster.validateKindInvariants kind |> List.map (fun e -> e.Code)
+    let definitionCodes =
+        SecurityMaster.validateDefinitionInvariants "Cfd" (SecurityMasterLegacyUpgrade.modulesFromKind kind)
+        |> List.map (fun e -> e.Code)
+    Assert.Contains("cfd_leverage_invalid", kindCodes)
+    Assert.Contains("cfd_leverage_invalid", definitionCodes)
+
+[<Fact>]
+let ``positive CFD leverage passes both surfaces`` () =
+    let kind = cfd (Some 5m)
+    Assert.Empty(SecurityMaster.validateKindInvariants kind)
+    Assert.Empty(SecurityMaster.validateDefinitionInvariants "Cfd" (SecurityMasterLegacyUpgrade.modulesFromKind kind))
