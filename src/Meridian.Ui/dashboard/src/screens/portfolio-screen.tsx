@@ -72,7 +72,7 @@ import type {
 import { eyebrowClassName } from "@/design-system/label-case";
 import { formatCount } from "@/lib/format";
 import { metricFreshnessFromTrustTone, withMetricContext } from "@/lib/metric-trust";
-import { useWorkspaceFigureContext } from "@/lib/workspace-figure-context";
+import { resolveWorkspaceFigures, useWorkspaceFigureContext } from "@/lib/workspace-figure-context";
 import { FigureDifferenceNote } from "@/components/meridian/figure-difference-note";
 import { buildPortfolioFigureDifferenceNote } from "@/screens/portfolio-screen.figure-differences";
 
@@ -610,10 +610,10 @@ export function PortfolioScreen({
   // totals, so the selected account must not be named as their scope.
   // As-of is when the totals' payload was last loaded. The Portfolio lifecycle keeps its last
   // complete refresh through a partial one; totals borrowed from Trading after its refresh
-  // failed date from the shell's last full load.
+  // failed date from the last time the Trading payload loaded.
   const headlineProvenance = {
     source: vm.metricsFromTrading ? "Trading workspace" : vm.positionSourceLabel,
-    asOf: (headlineRefreshFailed && vm.metricsFromTrading ? figureContext?.staleAsOf : null)
+    asOf: (headlineRefreshFailed && vm.metricsFromTrading ? resolveWorkspaceFigures(figureContext, "trading").asOf : null)
       ?? (hasRefreshEvidence ? refreshStatus?.lastSucceededAt : null)
       ?? brokeragePortfolio?.asOf
       ?? heartbeat,

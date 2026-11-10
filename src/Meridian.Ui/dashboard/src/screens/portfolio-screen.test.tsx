@@ -612,7 +612,7 @@ describe("PortfolioScreen", () => {
     const now = new Date().toISOString();
     await renderPortfolioScreen(
       <WorkspaceFigureContextProvider
-        value={{ asOf: now, freshness: "fresh", dataLabel: null, staleWorkspaces: ["portfolio"], staleAsOf: "2026-01-02T14:00:00Z" }}
+        value={{ freshness: "fresh", dataLabel: null, staleWorkspaces: ["portfolio"], workspaceLoadedAt: {} }}
       >
         <PortfolioScreen
           portfolio={portfolio}

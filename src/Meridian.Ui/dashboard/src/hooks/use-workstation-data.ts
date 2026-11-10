@@ -70,6 +70,7 @@ import type {
 import type { WorkstationCrossScreenCounts } from "@/types/cross-screen-counts";
 
 type WorkspaceErrorMap = Partial<Record<WorkspaceKey, string>>;
+type WorkspaceLoadedAtMap = Partial<Record<WorkspaceKey, string>>;
 type RefreshCategory = "bootstrap" | "workspace" | "workflow";
 type RefreshDataKey =
   | "session"
@@ -158,6 +159,11 @@ interface WorkstationDataState {
   loading: boolean;
   error: string | null;
   workspaceErrors: WorkspaceErrorMap;
+  /**
+   * When the payload behind each workspace's headline figures last loaded (ISO). A refresh
+   * lifecycle cannot say this: it also settles for another workspace or for no request at all.
+   */
+  workspaceFiguresLoadedAt: WorkspaceLoadedAtMap;
   refreshStatus: RequestLifecycleStatus;
   tradingRefreshStatus: RequestLifecycleStatus;
   providerRoutingRefreshStatus: RequestLifecycleStatus;
@@ -198,6 +204,7 @@ const initialState: WorkstationDataState = {
   loading: true,
   error: null,
   workspaceErrors: {},
+  workspaceFiguresLoadedAt: {},
   refreshStatus: null as unknown as RequestLifecycleStatus,
   tradingRefreshStatus: null as unknown as RequestLifecycleStatus,
   providerRoutingRefreshStatus: null as unknown as RequestLifecycleStatus,
@@ -357,8 +364,10 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
       return;
     }
 
+    const primaryLoadedAt = new Date().toISOString();
     const primaryPublished = token.safeSetState(setState, (current) => mergeRefreshSettlements(current, primaryResults, {
       loading: false,
+      loadedAt: primaryLoadedAt,
       replaceErrorsFor: getWorkspaceKeysForEntries(primaryEntries)
     }));
     if (primaryPublished) {
@@ -379,8 +388,10 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
       return;
     }
 
+    const deferredLoadedAt = new Date().toISOString();
     const deferredPublished = token.safeSetState(setState, (current) => mergeRefreshSettlements(current, deferredResults, {
       loading: false,
+      loadedAt: deferredLoadedAt,
       replaceErrorsFor: getWorkspaceKeysForEntries(deferredEntries)
     }));
     if (deferredPublished) {
@@ -436,8 +447,10 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
       return;
     }
 
+    const loadedAt = new Date().toISOString();
     const published = token.safeSetState(setState, (current) => mergeRefreshSettlements(current, settlements, {
       loading: false,
+      loadedAt,
       replaceErrorsFor: getWorkspaceKeysForEntries(scopedEntries)
     }));
     if (published) {
@@ -481,12 +494,14 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
         tradingRefreshLifecycle.markStale(token.version);
         return;
       }
+      const loadedAt = new Date().toISOString();
       token.safeSetState(setState, (current) => {
         const tradingError = current.workspaceErrors.trading;
         const workspaceErrors = withoutWorkspaceError(current.workspaceErrors, "trading");
         return {
           ...current,
           trading: result,
+          workspaceFiguresLoadedAt: { ...current.workspaceFiguresLoadedAt, trading: loadedAt },
           error: current.error === tradingError ? firstWorkspaceError(workspaceErrors) ?? null : current.error,
           workspaceErrors,
           usingDevelopmentFixtures: current.usingDevelopmentFixtures || hasDevelopmentFixtureUsage()
@@ -646,6 +661,7 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
         portfolioRefreshLifecycle.markStale(token.version);
         return;
       }
+      const loadedAt = new Date().toISOString();
       token.safeSetState(setState, (current) => {
         let next = { ...current };
         const previousPortfolioError = current.workspaceErrors.portfolio;
@@ -653,7 +669,11 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
         const refreshErrors: string[] = [];
         const reportingRefreshErrors: string[] = [];
         if (portfolio.status === "fulfilled") {
-          next = { ...next, portfolio: portfolio.value };
+          next = {
+            ...next,
+            portfolio: portfolio.value,
+            workspaceFiguresLoadedAt: { ...next.workspaceFiguresLoadedAt, portfolio: loadedAt }
+          };
         } else {
           refreshErrors.push(formatRequestError(portfolio.reason, "Portfolio workspace refresh failed"));
         }
@@ -668,7 +688,11 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
           refreshErrors.push(formatRequestError(brokeragePortfolio.reason, "Brokerage household portfolio refresh failed"));
         }
         if (reporting.status === "fulfilled") {
-          next = { ...next, reporting: reporting.value };
+          next = {
+            ...next,
+            reporting: reporting.value,
+            workspaceFiguresLoadedAt: { ...next.workspaceFiguresLoadedAt, reporting: loadedAt }
+          };
         } else {
           reportingRefreshErrors.push(formatRequestError(reporting.reason, "Reporting live portfolio refresh failed"));
         }
@@ -872,10 +896,22 @@ function hasSuccessfulBootstrapEvidence(settlements: SettledRefreshEntry[]) {
     && bootstrapSettlements.every((settlement) => settlement.result.status === "fulfilled");
 }
 
+// The request whose payload carries each workspace's headline figures. Settings shows the system
+// overview's figures, so its as-of time follows that request.
+const HEADLINE_FIGURE_WORKSPACE: Partial<Record<RefreshDataKey, WorkspaceKey>> = {
+  strategy: "strategy",
+  trading: "trading",
+  portfolio: "portfolio",
+  data: "data",
+  accounting: "accounting",
+  reporting: "reporting",
+  overview: "settings"
+};
+
 function mergeRefreshSettlements(
   current: WorkstationDataState,
   settlements: SettledRefreshEntry[],
-  options: { loading: boolean; replaceErrorsFor?: WorkspaceKey[] }
+  options: { loading: boolean; loadedAt: string; replaceErrorsFor?: WorkspaceKey[] }
 ): WorkstationDataState {
   const next: WorkstationDataState = {
     ...current,
@@ -887,6 +923,7 @@ function mergeRefreshSettlements(
   for (const workspaceKey of options.replaceErrorsFor ?? []) {
     delete workspaceErrors[workspaceKey];
   }
+  const workspaceFiguresLoadedAt: WorkspaceLoadedAtMap = { ...current.workspaceFiguresLoadedAt };
   const bootstrapErrors: string[] = [];
   const hasBootstrapSettlements = settlements.some((settlement) => settlement.entry.category === "bootstrap");
   const hasWorkflowSettlements = settlements.some((settlement) => settlement.entry.category === "workflow");
@@ -896,6 +933,10 @@ function mergeRefreshSettlements(
   for (const { entry, result } of settlements) {
     if (result.status === "fulfilled") {
       assignRefreshValue(next, entry.key, result.value);
+      const figureWorkspace = HEADLINE_FIGURE_WORKSPACE[entry.key];
+      if (figureWorkspace) {
+        workspaceFiguresLoadedAt[figureWorkspace] = options.loadedAt;
+      }
       continue;
     }
 
@@ -914,6 +955,7 @@ function mergeRefreshSettlements(
   }
 
   next.workspaceErrors = workspaceErrors;
+  next.workspaceFiguresLoadedAt = workspaceFiguresLoadedAt;
   next.workflowError = workflowErrors[0] ?? null;
   const retainedGlobalError = !hasBootstrapSettlements && current.error && !currentErrorIsWorkspaceError
     ? current.error

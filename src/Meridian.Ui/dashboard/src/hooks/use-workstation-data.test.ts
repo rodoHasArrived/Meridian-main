@@ -480,6 +480,9 @@ describe("useWorkstationData", () => {
       await flushAsync();
     });
     await waitFor(() => expect(result.current.refreshStatus.inFlight).toBe(false));
+    const initialLoadedAt = result.current.workspaceFiguresLoadedAt;
+    expect(Object.keys(initialLoadedAt).sort()).toEqual(["accounting", "data", "portfolio", "reporting", "settings", "strategy", "trading"]);
+    await new Promise<void>((resolve) => setTimeout(resolve, 5));
 
     now = 32_000;
     rerender({ workspace: "data" });
@@ -503,6 +506,44 @@ describe("useWorkstationData", () => {
     });
 
     expect(result.current.data).toEqual({ marker: "navigation data" });
+    // Only the payloads that were reloaded get a new figure load time: Data and the system
+    // overview (Settings). The workspaces this refresh did not touch keep theirs.
+    const loadedAt = result.current.workspaceFiguresLoadedAt;
+    expect(Date.parse(loadedAt.data!)).toBeGreaterThan(Date.parse(initialLoadedAt.data!));
+    expect(Date.parse(loadedAt.settings!)).toBeGreaterThan(Date.parse(initialLoadedAt.settings!));
+    for (const workspace of ["accounting", "portfolio", "reporting", "strategy", "trading"] as const) {
+      expect(loadedAt[workspace]).toBe(initialLoadedAt[workspace]);
+    }
+  });
+
+  it("keeps every figure load time when a workspace change reloads none of the workspace payloads", async () => {
+    let now = 1_000;
+    vi.spyOn(Date, "now").mockImplementation(() => now);
+    const { result, rerender } = renderHook(
+      ({ workspace }) => useWorkstationData({ activeWorkspace: workspace }),
+      { initialProps: { workspace: "trading" as WorkspaceKey } }
+    );
+
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
+    await act(async () => {
+      await resolveRefreshBatch(0, "initial");
+      await flushAsync();
+    });
+    await waitFor(() => expect(result.current.refreshStatus.inFlight).toBe(false));
+    const initialLoadedAt = result.current.workspaceFiguresLoadedAt;
+    const initialSucceededAt = result.current.refreshStatus.lastSucceededAt;
+    await new Promise<void>((resolve) => setTimeout(resolve, 5));
+
+    // Inside the 30-second budget no workspace payload is stale, so the refresh settles again
+    // without reloading Accounting or the overview. The refresh time moves; the figures' do not.
+    now = 2_000;
+    rerender({ workspace: "accounting" });
+    await waitFor(() => expect(result.current.refreshStatus.lastSucceededAt).not.toBe(initialSucceededAt));
+
+    expect(api.getAccountingWorkspace).toHaveBeenCalledTimes(1);
+    expect(api.getSystemStatus).toHaveBeenCalledTimes(1);
+    expect(result.current.refreshStatus.phase).toBe("succeeded");
+    expect(result.current.workspaceFiguresLoadedAt).toEqual(initialLoadedAt);
   });
 
   it("preserves unrelated workspace errors during scoped refresh replacement", async () => {
