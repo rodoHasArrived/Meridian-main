@@ -35,15 +35,37 @@ export function WorkstationStatusBar({ items }: WorkstationStatusBarProps) {
   );
 }
 
+/** The masthead's provider-trust posture, as the trust strip reports it. */
+export interface WorkstationStatusProviderTrust {
+  value: string;
+  tone: "ready" | "review" | "blocked" | "pending";
+}
+
 export function buildWorkstationStatusItems({
   workspaceLabel,
   refreshing,
-  hasError
+  hasError,
+  providerTrust = null
 }: {
   workspaceLabel: string;
   refreshing: boolean;
   hasError: boolean;
+  providerTrust?: WorkstationStatusProviderTrust | null;
 }): WorkstationStatusBarItem[] {
+  // "Sync" only says the workstation's own read of the API is current. When provider trust needs
+  // review or is blocked, the footer repeats that posture beside it so a green sync dot is never
+  // the footer's whole answer while the masthead is warning. A ready or still-loading posture adds
+  // nothing, which keeps the footer to sync and workspace in the normal case.
+  const providerItems: WorkstationStatusBarItem[] =
+    providerTrust && (providerTrust.tone === "review" || providerTrust.tone === "blocked")
+      ? [{
+        key: "providers",
+        status: providerTrust.tone === "blocked" ? "err" : "warn",
+        label: "Providers",
+        value: providerTrust.value
+      }]
+      : [];
+
   return [
     {
       key: "sync",
@@ -51,6 +73,7 @@ export function buildWorkstationStatusItems({
       label: "Sync",
       value: hasError ? "attention required" : refreshing ? "refreshing..." : "up to date"
     },
+    ...providerItems,
     {
       key: "workspace",
       label: "Workspace",

@@ -1112,10 +1112,10 @@ only; no tests were run.
 ### New finding
 
 **N1 — Two `ScheduleSpecFactory` mappings with divergent calendar rules.** The public
-[Contracts factory](../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs) is the
+[Contracts factory](https://github.com/rodoHasArrived/Meridian-main/blob/9412120c/src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs) is the
 production mapping (cash-flow service, bond analytics/migration, portfolio cash ladder, open-lot
 amortization) and states that it never falls back to the common terms' holiday calendar. The
-internal [Application factory](../../src/Meridian.Application/SecurityMaster/CashFlow/ScheduleSpecFactory.cs)
+internal [Application factory](https://github.com/rodoHasArrived/Meridian-main/blob/9412120c/src/Meridian.Application/SecurityMaster/CashFlow/ScheduleSpecFactory.cs)
 (`e0fc1538`, 2026-10-28) has no production caller — only `ScheduleSpecFactoryTests` — and
 substitutes `commonCalendarId` when the block declares no calendar. A same-named, test-pinned
 mapping with the opposite refusal rule is a wiring hazard. Remove it, or retarget its tests at the
