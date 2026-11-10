@@ -1008,6 +1008,19 @@ pre-check; the free-text field path remains available.
 
 See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D8) for status and open decisions.
 
+**Event-handler failures.** `async void` handlers that do not carry their own whole-body
+try/catch run their bodies through `AsyncHandlerGuard`: a
+failure is logged and shown as a notification (at most one per handler per minute), cancellation is
+ignored, and fatal runtime exceptions still propagate. **Blocking calls.**
+`FeatureCapabilityGateService.SetEnabledAsync` applies an override in memory and persists it off the
+UI thread; `WorkspaceService` writes the workspace file and reads and saves state tokens outside
+its state gate, and preloads the workspace file before taking it. A preload that failed, or that
+was read before a change made in the meantime, is not applied: the load then reads behind the
+persistence gate, under the state gate, so a reload cannot roll back a concurrent change. **Live data routes.** Order book, ticker strip, quote float, live data
+viewer and corporate-action recording call routes built from `UiApiRoutes`;
+`DesktopClientRouteContractTests` fails on a desktop `/api/` literal the server does not map,
+apart from three listed exceptions (`/api/logs`, `/api/watchlists`, `/api/archive/health`).
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
