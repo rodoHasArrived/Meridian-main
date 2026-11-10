@@ -89,6 +89,8 @@ import {
 import {
   ReportingScheduleManagementPanel,
   REPORTING_SCHEDULE_UTC_TIME_ZONE,
+  normalizeReportingSchedulePeriodFrequency,
+  parseReportingScheduleDueDays,
   reportingScheduleArtifactFormats,
   reportingScheduleDeliveryModes,
   type ReportingScheduleAction,
@@ -625,8 +627,16 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
             ? normalizeReportingScheduleRecipientPrincipalKind(value)
             : value
       } as ReportingScheduleDraftState;
-      if (field === "cronExpression" || field === "nextAsOfDate" || field === "timeZoneId") {
-        next.dueAtUtc = resolveReportingScheduleDueAtUtc(next.nextAsOfDate, next.cronExpression, current.dueAtUtc, next.timeZoneId);
+      if (field === "periodFrequency") {
+        next.periodFrequency = normalizeReportingSchedulePeriodFrequency(value);
+      }
+      if (
+        field === "cronExpression" || field === "nextAsOfDate" || field === "timeZoneId"
+        || field === "periodFrequency" || field === "dueDaysAfterPeriodEnd"
+      ) {
+        next.dueAtUtc = next.periodFrequency
+          ? resolveReportingSchedulePeriodDueAtUtc(next.nextAsOfDate, next.cronExpression, next.dueDaysAfterPeriodEnd, current.dueAtUtc, next.timeZoneId)
+          : resolveReportingScheduleDueAtUtc(next.nextAsOfDate, next.cronExpression, current.dueAtUtc, next.timeZoneId);
       }
       if (field === "nextAsOfDate") {
         next.runParameters = {
@@ -2655,6 +2665,8 @@ function buildDefaultReportingScheduleDraft(reporting: AccountingWorkspaceRespon
     templateId,
     cronExpression: normalizeDraftText(schedule?.cronExpression, "0 8 1 * *"),
     timeZoneId: normalizeDraftText(schedule?.timeZoneId, REPORTING_SCHEDULE_UTC_TIME_ZONE),
+    periodFrequency: normalizeReportingSchedulePeriodFrequency(schedule?.periodCadence?.frequency),
+    dueDaysAfterPeriodEnd: String(Math.max(0, schedule?.periodCadence?.dueDaysAfterPeriodEnd ?? 0)),
     nextAsOfDate,
     dueAtUtc,
     maxRetries: String(Math.max(0, schedule?.maxRetries ?? 1)),
@@ -2735,6 +2747,40 @@ export function resolveReportingScheduleDueAtUtc(
     timeZoneId
   );
   return dueInstant.toISOString().replace(/\.\d{3}Z$/, "Z");
+}
+
+/**
+ * Due instant for a period-close schedule: the period end plus the due-day offset, at the
+ * cadence's time of day in the schedule's time zone.
+ */
+export function resolveReportingSchedulePeriodDueAtUtc(
+  nextAsOfDate: string,
+  cronExpression: string,
+  dueDaysAfterPeriodEnd: string,
+  currentDueAtUtc: string,
+  timeZoneId: string = REPORTING_SCHEDULE_UTC_TIME_ZONE
+): string {
+  const dateMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(nextAsOfDate.trim());
+  const cronFields = cronExpression.trim().split(/\s+/);
+  const minute = Number.parseInt(cronFields[0] ?? "", 10);
+  const hour = Number.parseInt(cronFields[1] ?? "", 10);
+  if (!dateMatch || !Number.isInteger(minute) || minute < 0 || minute > 59 || !Number.isInteger(hour) || hour < 0 || hour > 23) {
+    return currentDueAtUtc;
+  }
+
+  const dueDay = new Date(Date.UTC(
+    Number.parseInt(dateMatch[1], 10),
+    Number.parseInt(dateMatch[2], 10) - 1,
+    Number.parseInt(dateMatch[3], 10) + parseReportingScheduleDueDays(dueDaysAfterPeriodEnd)
+  ));
+  return zonedWallTimeToUtc(
+    dueDay.getUTCFullYear(),
+    dueDay.getUTCMonth(),
+    dueDay.getUTCDate(),
+    hour,
+    minute,
+    timeZoneId
+  ).toISOString().replace(/\.\d{3}Z$/, "Z");
 }
 
 const reportingSchedulePresetDayMatchers: Record<string, (localDay: Date) => boolean> = {
@@ -2828,6 +2874,14 @@ function buildReportingScheduleUpsertRequest(
     cronExpression: normalizeDraftText(draft.cronExpression, "0 8 1 * *"),
     // Always explicit: a null zone would keep whatever zone the server already retains.
     timeZoneId: normalizeDraftText(draft.timeZoneId, REPORTING_SCHEDULE_UTC_TIME_ZONE),
+    ...(draft.periodFrequency
+      ? {
+          periodCadence: {
+            frequency: draft.periodFrequency,
+            dueDaysAfterPeriodEnd: parseReportingScheduleDueDays(draft.dueDaysAfterPeriodEnd)
+          }
+        }
+      : {}),
     nextAsOfDate,
     dueAtUtc: normalizeDraftText(draft.dueAtUtc, `${nextAsOfDate}T20:00:00Z`),
     maxRetries: parseScheduleMaxRetries(draft.maxRetries),

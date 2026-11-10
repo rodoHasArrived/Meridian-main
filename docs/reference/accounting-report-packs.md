@@ -296,6 +296,16 @@ runs in UTC. Daylight-saving changes are followed, so `0 8 * * *` stays at 08:00
 `dueAtUtc` is always retained as a UTC instant. On upsert a null `timeZoneId` keeps the retained
 zone and `"UTC"` resets it; an unknown zone is rejected with `400`.
 
+A schedule may instead carry a `periodCadence` (`Monthly`, `Quarterly`, or `Annually`, plus
+`dueDaysAfterPeriodEnd` from 0 to 366). It then runs once per accounting period: after each run
+the next as-of date is the next period end, the due date is that many days later at the same local
+time of day, and the retained run parameters move to the new period (`periodId` becomes the
+`yyyy-MM` of the period end). Period boundaries come from the ledger's
+`LedgerReportSchedulePlanner`, so reporting schedules and ledger report exports share one period
+definition. The cron expression is still required and retained for display, but it does not drive
+advancement while a period cadence is set. `periodCadence` is replaced on every upsert; sending
+null returns the schedule to cron advancement.
+
 `Paused` and `Disabled` schedules are both skipped by the worker and both return to `Active`
 through `resume`; `Disabled` marks a schedule an operator has deliberately switched off rather
 than temporarily held. `DELETE` permanently removes the recurring definition (runs it already

@@ -293,7 +293,9 @@ fund/entity/sleeve plus organization, portfolio, book, account, customer, vendor
 external-GL scoped instead of emitting all same-account ledger entries.
 `LedgerReportSchedulePlanner` projects monthly, quarterly, or annual report schedules into
 period-bounded export occurrences and dimension-scoped report-pack requests for regulatory,
-investor, or internal stakeholder delivery workflows.
+investor, or internal stakeholder delivery workflows. Its `PeriodStartingOn` method is the shared
+period-boundary definition that the governed reporting scheduler uses to advance period-close
+schedules; the planner itself never executes anything.
 `LedgerScheduledReportExportPackageBuilder` turns a signed report pack plus one scheduled
 occurrence into a delivery manifest and regulator-facing XML summary artifact when requested by the
 schedule, preserving recipients, due date, requested formats, report-pack signature, dimension

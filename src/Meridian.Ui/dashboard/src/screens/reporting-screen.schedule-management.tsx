@@ -18,6 +18,7 @@ import type {
   GovernanceReportArtifactFormat,
   ReportPackDeliveryMode,
   ReportPackDistributionRecord,
+  ReportingSchedulePeriodFrequency,
   ReportWriterDatasetSource
 } from "@/types";
 import type {
@@ -37,6 +38,8 @@ export type ReportingScheduleDraftField =
   | "templateId"
   | "cronExpression"
   | "timeZoneId"
+  | "periodFrequency"
+  | "dueDaysAfterPeriodEnd"
   | "nextAsOfDate"
   | "dueAtUtc"
   | "maxRetries"
@@ -55,6 +58,9 @@ export interface ReportingScheduleDraftState {
   cronExpression: string;
   /** IANA time zone the cadence is evaluated in; "UTC" is the default. */
   timeZoneId: string;
+  /** Period-close cadence; "" means the schedule advances by the run cadence (cron). */
+  periodFrequency: ReportingSchedulePeriodFrequency | "";
+  dueDaysAfterPeriodEnd: string;
   nextAsOfDate: string;
   dueAtUtc: string;
   maxRetries: string;
@@ -98,6 +104,18 @@ export const reportingScheduleCadences = [
 
 export const REPORTING_SCHEDULE_UTC_TIME_ZONE = "UTC";
 
+export const reportingSchedulePeriodFrequencies: ReportingSchedulePeriodFrequency[] = ["Monthly", "Quarterly", "Annually"];
+
+export function normalizeReportingSchedulePeriodFrequency(value: string | null | undefined): ReportingSchedulePeriodFrequency | "" {
+  return reportingSchedulePeriodFrequencies.find((frequency) => frequency === value) ?? "";
+}
+
+/** Whole days between period end and due date, clamped to the range the server accepts. */
+export function parseReportingScheduleDueDays(value: string): number {
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) ? Math.min(366, Math.max(0, parsed)) : 0;
+}
+
 /** UTC first, then every IANA zone the browser knows; the current value is always offered. */
 export function buildReportingScheduleTimeZoneOptions(currentTimeZoneId: string): string[] {
   let supported: string[] = [];
@@ -118,11 +136,22 @@ export function buildReportingScheduleTemplateOptions(templates: readonly Report
     .sort((left, right) => left.name.localeCompare(right.name) || right.versionNumber - left.versionNumber);
 }
 
-function buildScheduleTimingGuidance(cronExpression: string, timeZoneId: string): string {
+function buildScheduleTimingGuidance(
+  cronExpression: string,
+  timeZoneId: string,
+  periodFrequency: ReportingSchedulePeriodFrequency | "" = "",
+  dueDaysAfterPeriodEnd = "0"
+): string {
   const zone = timeZoneId.trim() || REPORTING_SCHEDULE_UTC_TIME_ZONE;
   const zoneNote = zone === REPORTING_SCHEDULE_UTC_TIME_ZONE
     ? "Run times are in UTC."
     : `Run times follow ${zone} local time, including daylight-saving changes.`;
+  if (periodFrequency) {
+    const days = parseReportingScheduleDueDays(dueDaysAfterPeriodEnd);
+    const period = periodFrequency === "Monthly" ? "month" : periodFrequency === "Quarterly" ? "quarter" : "year";
+    const dueNote = days === 0 ? "on the period-end date" : `${days} day${days === 1 ? "" : "s"} after the period end`;
+    return `Runs once per ${period}, as of each period end and due ${dueNote}. After each run the report period moves to the next ${period}. ${zoneNote}`;
+  }
   if (cronExpression === "0 8 1 * *") {
     return `Runs on the first day of each month. The report uses the period-end date selected beside the cadence. ${zoneNote}`;
   }
@@ -240,6 +269,8 @@ export function ReportingScheduleManagementPanel({
                 onChange={(event) => onDraftChange("cronExpression", event.target.value)}
                 aria-label="Reporting schedule cadence"
                 aria-describedby="reporting-schedule-timing-guidance"
+                disabled={Boolean(scheduleDraft.periodFrequency)}
+                title={scheduleDraft.periodFrequency ? "A period-close schedule runs once per period; the run cadence only sets the time of day." : undefined}
               >
                 {reportingScheduleCadences.some((cadence) => cadence.value === scheduleDraft.cronExpression) ? null : (
                   <option value={scheduleDraft.cronExpression}>Custom cadence</option>
@@ -263,6 +294,34 @@ export function ReportingScheduleManagementPanel({
               </Select>
             </label>
             <label className="min-w-0 space-y-1">
+              <span className="text-xs font-medium text-muted-foreground">Report period</span>
+              <Select
+                value={scheduleDraft.periodFrequency}
+                onChange={(event) => onDraftChange("periodFrequency", event.target.value)}
+                aria-label="Reporting schedule report period"
+                aria-describedby="reporting-schedule-timing-guidance"
+              >
+                <option value="">Follows the run cadence</option>
+                <option value="Monthly">Monthly close</option>
+                <option value="Quarterly">Quarterly close</option>
+                <option value="Annually">Annual close</option>
+              </Select>
+            </label>
+            {scheduleDraft.periodFrequency ? (
+              <label className="min-w-0 space-y-1">
+                <span className="text-xs font-medium text-muted-foreground">Due days after period end</span>
+                <Input
+                  type="number"
+                  min={0}
+                  max={366}
+                  value={scheduleDraft.dueDaysAfterPeriodEnd}
+                  onChange={(event) => onDraftChange("dueDaysAfterPeriodEnd", event.target.value)}
+                  aria-label="Reporting schedule due days after period end"
+                  aria-describedby="reporting-schedule-timing-guidance"
+                />
+              </label>
+            ) : null}
+            <label className="min-w-0 space-y-1">
               <span className="text-xs font-medium text-muted-foreground">Next report period end</span>
               <Input
                 type="date"
@@ -273,7 +332,7 @@ export function ReportingScheduleManagementPanel({
               />
             </label>
             <p id="reporting-schedule-timing-guidance" className="text-xs leading-5 text-muted-foreground sm:col-span-2">
-              {buildScheduleTimingGuidance(scheduleDraft.cronExpression, scheduleDraft.timeZoneId)}
+              {buildScheduleTimingGuidance(scheduleDraft.cronExpression, scheduleDraft.timeZoneId, scheduleDraft.periodFrequency, scheduleDraft.dueDaysAfterPeriodEnd)}
             </p>
             <label className="min-w-0 space-y-1">
               <span className="text-xs font-medium text-muted-foreground">Distribution</span>

@@ -3490,6 +3490,45 @@ describe("ReportingScreen", () => {
     expect(screen.getByLabelText("Reporting schedule due at UTC")).toHaveValue("2026-02-28T08:00:00Z");
   });
 
+  it("builds a period-close schedule: due date offset from the period end and a periodCadence in the request", async () => {
+    const user = userEvent.setup();
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      text: async () => JSON.stringify(withReportingSchedule().reporting.schedules![0])
+    });
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting/scheduled"] });
+
+    expect(screen.queryByLabelText("Reporting schedule due days after period end")).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Reporting schedule next report period end"), {
+      target: { value: "2026-06-30" }
+    });
+    fireEvent.change(screen.getByLabelText("Reporting schedule report period"), { target: { value: "Quarterly" } });
+    fireEvent.change(screen.getByLabelText("Reporting schedule due days after period end"), { target: { value: "20" } });
+
+    expect(screen.getByLabelText("Reporting schedule due at UTC")).toHaveValue("2026-07-20T08:00:00Z");
+    expect(screen.getByLabelText("Reporting schedule cadence")).toBeDisabled();
+    expect(screen.getByText(/Runs once per quarter, as of each period end and due 20 days after the period end/)).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Reporting schedule recipient principal kind"), { target: { value: "Group" } });
+    fireEvent.change(screen.getByLabelText("Reporting schedule recipient principal ID"), { target: { value: "reporting-ops" } });
+    fireEvent.change(screen.getByLabelText("Reporting schedule ledger book code"), { target: { value: "STAT-GL" } });
+    fireEvent.change(screen.getByLabelText("Reporting schedule ledger book ID"), {
+      target: { value: "11111111-1111-1111-1111-111111111111" }
+    });
+    await user.click(screen.getByRole("button", { name: "Save reporting schedule" }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(
+      "/api/fund-structure/reporting/schedules",
+      expect.objectContaining({ method: "POST" })
+    ));
+    const call = fetchMock.mock.calls.find(([url]) => url === "/api/fund-structure/reporting/schedules");
+    expect(JSON.parse((call?.[1] as RequestInit).body as string)).toMatchObject({
+      nextAsOfDate: "2026-06-30",
+      dueAtUtc: "2026-07-20T08:00:00Z",
+      periodCadence: { frequency: "Quarterly", dueDaysAfterPeriodEnd: 20 }
+    });
+  });
+
   it("converts the schedule due time from the selected time zone to UTC", () => {
     renderWithRouter(<ReportingScreen data={withReportingSchedule()} />, { initialEntries: ["/reporting/scheduled"] });
 

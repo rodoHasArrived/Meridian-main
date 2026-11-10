@@ -1,3 +1,4 @@
+using System.Globalization;
 using Meridian.Contracts.Workstation;
 using Meridian.Core.Scheduling;
 using Meridian.Reporting;
@@ -318,15 +319,48 @@ public sealed partial class ReportingScheduleService
         ReportingOutputManifest manifest,
         ReportingRunParametersDto resolvedParameters)
     {
-        var nextDue = ResolveNextDue(schedule.CronExpression, schedule.DueAtUtc, schedule.TimeZoneId);
-        var nextAsOfDate = schedule.NextAsOfDate.AddDays(
-            (nextDue.Date - schedule.DueAtUtc.Date).Days);
+        DateTimeOffset nextDue;
+        DateOnly nextAsOfDate;
+        if (schedule.PeriodCadence is { } periodCadence)
+        {
+            // Period-close schedules advance by accounting period (shared with the ledger's
+            // report planner) rather than by cron; the cron expression is retained for display.
+            if (!ReportingScheduleTimeZones.TryResolve(schedule.TimeZoneId, out var timeZone))
+            {
+                throw new InvalidDataException(
+                    $"Reporting schedule time zone '{schedule.TimeZoneId}' is not recognized.");
+            }
+
+            var occurrence = ReportingSchedulePeriodPlanner.Next(
+                periodCadence,
+                schedule.NextAsOfDate,
+                schedule.DueAtUtc,
+                timeZone);
+            nextDue = occurrence.DueAtUtc;
+            nextAsOfDate = occurrence.PeriodEnd;
+        }
+        else
+        {
+            nextDue = ResolveNextDue(schedule.CronExpression, schedule.DueAtUtc, schedule.TimeZoneId);
+            nextAsOfDate = schedule.NextAsOfDate.AddDays(
+                (nextDue.Date - schedule.DueAtUtc.Date).Days);
+        }
+
         var runAtUtc = DateTimeOffset.UtcNow;
         return schedule with
         {
             DueAtUtc = nextDue,
             NextAsOfDate = nextAsOfDate,
-            RunParameters = resolvedParameters with { AsOfDate = nextAsOfDate },
+            // A period-close schedule moves to a new accounting period each run, so its period
+            // id moves too (yyyy-MM of the period end, the convention the workstation uses when
+            // an operator changes the report period). Cron schedules keep their retained id.
+            RunParameters = schedule.PeriodCadence is null
+                ? resolvedParameters with { AsOfDate = nextAsOfDate }
+                : resolvedParameters with
+                {
+                    AsOfDate = nextAsOfDate,
+                    PeriodId = nextAsOfDate.ToString("yyyy-MM", CultureInfo.InvariantCulture)
+                },
             UpdatedAtUtc = NextRevisionTimestamp(schedule.UpdatedAtUtc, runAtUtc),
             LastRunAtUtc = runAtUtc,
             LastRunId = manifest.RunId,

@@ -780,6 +780,63 @@ public sealed class ReportingOperationalConcurrencyTests
         afterResume.Result.Runs.Should().ContainSingle();
     }
 
+    [Theory]
+    [InlineData(ReportingSchedulePeriodFrequencyDto.Monthly, 2026, 2, 28, 2026, 3, 10)]
+    [InlineData(ReportingSchedulePeriodFrequencyDto.Quarterly, 2026, 4, 30, 2026, 5, 10)]
+    [InlineData(ReportingSchedulePeriodFrequencyDto.Annually, 2027, 1, 31, 2027, 2, 10)]
+    public async Task Scenario_PeriodCloseSchedule_AdvancesToTheNextPeriodEndAndDueOffset(
+        ReportingSchedulePeriodFrequencyDto frequency,
+        int asOfYear, int asOfMonth, int asOfDay,
+        int dueYear, int dueMonth, int dueDay)
+    {
+        // January 2026 period, due 10 days after period end at 08:00 UTC. A cron expression
+        // cannot express "as of period end, due N days later".
+        var firstDue = new DateTimeOffset(2026, 2, 10, 8, 0, 0, TimeSpan.Zero);
+        var due = BuildSchedule("period-close", "operator-a") with
+        {
+            State = ReportingScheduleStateDto.Active,
+            NextAsOfDate = new DateOnly(2026, 1, 31),
+            DueAtUtc = firstDue,
+            PeriodCadence = new ReportingSchedulePeriodCadenceDto(frequency, DueDaysAfterPeriodEnd: 10)
+        };
+        var store = new SharedAtomicScheduleStore([due]);
+        var service = CreateRunnableScheduleService(store, new CountingRenderer());
+
+        var result = await service.RunDueForWorkerAsync(firstDue, CancellationToken.None);
+
+        result.Result.Runs.Should().ContainSingle();
+        var advanced = store.Load().Should().ContainSingle().Subject;
+        advanced.NextAsOfDate.Should().Be(new DateOnly(asOfYear, asOfMonth, asOfDay));
+        advanced.DueAtUtc.Should().Be(new DateTimeOffset(dueYear, dueMonth, dueDay, 8, 0, 0, TimeSpan.Zero));
+        advanced.PeriodCadence.Should().Be(due.PeriodCadence);
+    }
+
+    [Fact]
+    public void Scenario_ScheduleUpsert_PeriodCadenceIsValidatedAndReplacedOnEachUpsert()
+    {
+        var store = new SharedAtomicScheduleStore([]);
+        var service = CreateScheduleService(store);
+        ReportingScheduleUpsertRequestDto Request(ReportingSchedulePeriodCadenceDto? cadence) => new(
+            "period-cadence-lifecycle",
+            "investor-monthly-statement",
+            "0 8 1 * *",
+            new DateOnly(2026, 8, 31),
+            FixedNow.AddDays(1),
+            2,
+            "operator-a",
+            State: ReportingScheduleStateDto.Draft,
+            PeriodCadence: cadence);
+
+        var invalid = () => service.Upsert(Request(
+            new ReportingSchedulePeriodCadenceDto(ReportingSchedulePeriodFrequencyDto.Monthly, -1)));
+        invalid.Should().Throw<ArgumentException>().WithMessage("*period cadence*");
+        store.Load().Should().BeEmpty();
+
+        var monthly = new ReportingSchedulePeriodCadenceDto(ReportingSchedulePeriodFrequencyDto.Monthly, 5);
+        service.Upsert(Request(monthly)).PeriodCadence.Should().Be(monthly);
+        service.Upsert(Request(null)).PeriodCadence.Should().BeNull();
+    }
+
     [Fact]
     public async Task Scenario_ScheduleWithTimeZone_AdvancesInLocalTimeAcrossDaylightSaving()
     {

@@ -1316,6 +1316,13 @@ public sealed partial class ReportingScheduleService
             {
                 ValidateCronExpressionForUpsert(request.CronExpression, request.DueAtUtc, timeZoneId);
             }
+            if (request.PeriodCadence is { } requestedCadence
+                && !ReportingSchedulePeriodPlanner.IsValid(requestedCadence))
+            {
+                throw new ArgumentException(
+                    $"The reporting schedule period cadence must be Monthly, Quarterly, or Annually with 0 to {ReportingSchedulePeriodPlanner.MaximumDueDaysAfterPeriodEnd} due days after period end.",
+                    nameof(request));
+            }
             var runParameters = request.RunParameters ?? existing?.RunParameters;
             if (accessContext?.RequireBoundScope == true
                 && request.State == ReportingScheduleStateDto.Active
@@ -1373,7 +1380,8 @@ public sealed partial class ReportingScheduleService
                 ReleaseDeliveryHandoffs: retainedReleaseDeliveryHandoffs,
                 AccessPolicySnapshotHash: ComputeAccessPolicySnapshotHash(accessPolicySnapshot),
                 DeliveryTargetsSnapshotHash: deliveryTargetsSnapshotHash,
-                TimeZoneId: timeZoneId);
+                TimeZoneId: timeZoneId,
+                PeriodCadence: request.PeriodCadence);
             return new PreparedScheduleUpsert(identity, existing, record);
         }
     }
