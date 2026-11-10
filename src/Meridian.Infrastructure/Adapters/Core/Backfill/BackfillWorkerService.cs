@@ -1142,15 +1142,15 @@ public sealed class BackfillWorkerService : IDisposable, IAsyncDisposable
     }
 
     /// <summary>
-    /// Handles connectivity state changes. When going online, triggers reprocessing of offline-queued requests.
+    /// Logs connectivity state changes. It does not wake the worker loop: while offline the loop
+    /// re-checks <see cref="IConnectivityProbeService.IsOnline"/> every <see cref="EmptyPollMaxDelay"/>,
+    /// so offline-queued requests resume within that interval after connectivity returns.
     /// </summary>
     private void OnConnectivityChanged(object? sender, bool isOnline)
     {
         if (isOnline)
         {
-            _log.Information("Connectivity restored, reprocessing offline-queued backfill requests");
-            // Signal the worker loop to check for queued requests
-            // This happens naturally as the loop will process any items in the queue
+            _log.Information("Connectivity restored; offline-queued backfill requests resume on the worker's next poll");
         }
         else
         {
