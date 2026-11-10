@@ -92,7 +92,9 @@ public static partial class AssetOperationsProjectionBuilder
                     SourceDomain: "SecurityMaster", SourceEntityId: security.SecurityId.ToString("D"),
                     ExtensionPayload: JsonSerializer.SerializeToElement(new
                     {
-                        engineVersion = entry.RateEvidence is null ? "asset-obligation-declared-v2" : "asset-obligation-declared-v3",
+                        engineVersion = entry.RateEvidence is null
+                            ? AssetOperationsEngineVersions.DeclaredObligationWithoutRateEvidence
+                            : AssetOperationsEngineVersions.DeclaredObligation,
                         termsVersion = security.Version,
                         projection.SourceKind,
                         projection.Staleness,

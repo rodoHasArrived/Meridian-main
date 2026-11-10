@@ -6073,7 +6073,9 @@ Meridian-main
 │   │   │   ├── AccountCashForecastProjectionAdapter.cs
 │   │   │   ├── AccountCashForecastService.cs
 │   │   │   ├── AssetObligationProjectionService.cs
+│   │   │   ├── AssetObligationProjectionService.DeclaredExercise.cs
 │   │   │   ├── AssetObligationProjectionService.FixedIncome.cs
+│   │   │   ├── AssetOperationsEngineVersions.cs
 │   │   │   ├── AssetOperationsProjectionBuilder.BondCashFlows.cs
 │   │   │   ├── AssetOperationsProjectionBuilder.LegacyBond.cs
 │   │   │   ├── AssetOperationsReadService.cs
@@ -9959,6 +9961,7 @@ Meridian-main
 │   │   │   └── mixed-credit-status-set.json
 │   │   ├── schedules
 │   │   │   ├── golden
+│   │   │   │   ├── asset-obligation-timeline-undeclared.json
 │   │   │   │   └── face-value-lot-constant-yield.json
 │   │   │   └── KNOWN-DEFECTS.md
 │   │   ├── security-master
@@ -11085,8 +11088,12 @@ Meridian-main
 │   │   │   ├── AssetAcquisitionLotPostgresRoundTripTests.Completion.cs
 │   │   │   ├── AssetAcquisitionLotPostgresRoundTripTests.cs
 │   │   │   ├── AssetAmortizationPostgresRoundTripTests.cs
+│   │   │   ├── AssetObligationDeclaredExerciseTimelineTests.cs
 │   │   │   ├── AssetObligationProjectionServiceTests.cs
+│   │   │   ├── AssetObligationRecoveredExerciseTimelineTests.cs
+│   │   │   ├── AssetObligationTimelineGoldenTests.cs
 │   │   │   ├── AssetOperationsBondScheduleCharacterizationTests.cs
+│   │   │   ├── AssetOperationsEngineVersionStampTests.cs
 │   │   │   ├── AssetOperationsMigrationRunnerTests.cs
 │   │   │   ├── AssetOperationsReadServiceTests.cs
 │   │   │   ├── AssetOperationsReferenceProjectionServiceTests.cs
@@ -12508,6 +12515,7 @@ Meridian-main
 │   │   │   ├── FileAccountingAuditChainTests.cs
 │   │   │   ├── FileFundProfileTenancyRegistryTests.cs
 │   │   │   ├── FileOnboardingWorkspaceStoreTests.cs
+│   │   │   ├── FinancialRecordExplorerTermsObligationsDetailTests.cs
 │   │   │   ├── FirstRunEndpointsTests.cs
 │   │   │   ├── FirstRunExperienceServiceTests.cs
 │   │   │   ├── FundAccountEndpointAuthorizationTests.cs
