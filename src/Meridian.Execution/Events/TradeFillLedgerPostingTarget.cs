@@ -58,6 +58,19 @@ public interface ITradeFillLedgerPostingTarget
     Task<TradeFillLedgerPostingConfirmation> PostAndConfirmAsync(
         LedgerJournalEntryWrite write,
         CancellationToken ct = default);
+
+    /// <summary>
+    /// Posts <paramref name="write"/>, or confirms an already retained journal. When the journal
+    /// is already retained in the shape of <paramref name="retainedShapeAlternative"/> (the form
+    /// an earlier version posted for the same journal id), that alternative is confirmed instead.
+    /// The alternative is never appended: it only ever matches a journal that is already there.
+    /// Targets that cannot tell ignore it and behave as the two-argument overload.
+    /// </summary>
+    Task<TradeFillLedgerPostingConfirmation> PostAndConfirmAsync(
+        LedgerJournalEntryWrite write,
+        LedgerJournalEntryWrite? retainedShapeAlternative,
+        CancellationToken ct = default)
+        => PostAndConfirmAsync(write, ct);
 }
 
 /// <summary>
@@ -77,8 +90,14 @@ public sealed class GovernedTradeFillLedgerPostingTarget : ITradeFillLedgerPosti
         _journalStore = journalStore ?? throw new ArgumentNullException(nameof(journalStore));
     }
 
+    public Task<TradeFillLedgerPostingConfirmation> PostAndConfirmAsync(
+        LedgerJournalEntryWrite write,
+        CancellationToken ct = default)
+        => PostAndConfirmAsync(write, retainedShapeAlternative: null, ct);
+
     public async Task<TradeFillLedgerPostingConfirmation> PostAndConfirmAsync(
         LedgerJournalEntryWrite write,
+        LedgerJournalEntryWrite? retainedShapeAlternative,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(write);
@@ -89,6 +108,18 @@ public sealed class GovernedTradeFillLedgerPostingTarget : ITradeFillLedgerPosti
             .ConfigureAwait(false);
         if (collisions.Count == 1 && collisions[0].Entry.JournalEntryId == write.Entry.JournalEntryId)
         {
+            // Only a journal that is already retained can select the alternative, and only by
+            // having its line count rather than the canonical one. The governed target below
+            // still compares the whole record, so a retained journal that merely has that many
+            // lines is refused exactly as before.
+            if (retainedShapeAlternative?.Entry is { } alternative
+                && alternative.JournalEntryId == write.Entry.JournalEntryId
+                && collisions[0].Entry.Lines.Count == alternative.Lines.Count
+                && collisions[0].Entry.Lines.Count != write.Entry.Lines.Count)
+            {
+                write = retainedShapeAlternative;
+            }
+
             write = write with
             {
                 Entry = TradeFillCashFlowReplayCompatibility.SelectCandidate(write.Entry, collisions[0].Entry)

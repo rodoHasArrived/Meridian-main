@@ -534,9 +534,31 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
             }
 
             var write = AccountingPostingCommandValidator.NormalizeAndValidate(BuildDurableWrite(evt, expectedJournal));
+            // A buy-to-cover fill posted before cover accounting retained a two-line journal under
+            // this same journal id. Offer that exact earlier shape so a fill interrupted across
+            // the upgrade can finish replay; it is only ever matched against a journal that is
+            // already retained, never appended.
+            var earlierShape = BuildPreCoverAccountingTradeJournal(evt, securityGate, expectedJournal) is { } earlierJournal
+                ? AccountingPostingCommandValidator.NormalizeAndValidate(BuildDurableWrite(evt, earlierJournal))
+                : null;
             var confirmation = await _postingTarget
-                .PostAndConfirmAsync(write, ct)
+                .PostAndConfirmAsync(write, earlierShape, ct)
                 .ConfigureAwait(false);
+            if (!confirmation.WasAppended
+                && earlierShape is not null
+                && confirmation.RetainedRecord.Entry.Lines.Count == earlierShape.Entry.Lines.Count
+                && confirmation.RetainedRecord.Entry.Lines.Count != write.Entry.Lines.Count)
+            {
+                // Everything below still compares the retained record exactly, now against the
+                // earlier shape. The retained journal is not rewritten: it keeps the pre-change
+                // booking, which this replay does not correct.
+                _logger.LogWarning(
+                    "Fill {FillId} on {Symbol} replays against a buy-to-cover journal retained before cover accounting; the retained journal is kept as posted.",
+                    evt.FillId,
+                    evt.Symbol);
+                write = earlierShape;
+            }
+
             var comparisonJournal = confirmation.WasAppended ? write.Entry
                 : TradeFillCashFlowReplayCompatibility.SelectCandidate(write.Entry, confirmation.RetainedRecord.Entry);
             DurableLedgerPostingTarget.VerifyRetainedEntry(confirmation.RetainedRecord, write with { Entry = comparisonJournal });
@@ -588,9 +610,26 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
         return journals;
     }
 
+    /// <summary>
+    /// The trade journal a buy-to-cover fill produced before cover accounting: every buy debited
+    /// Securities and credited Cash at gross value, whatever its realized P&amp;L. Returns
+    /// <see langword="null"/> for any fill whose journal that change did not alter.
+    /// </summary>
+    private JournalEntry? BuildPreCoverAccountingTradeJournal(
+        TradeExecutedEvent evt,
+        LedgerPostingSecurityGateResult securityGate,
+        JournalEntry expectedJournal)
+        => evt.Side == Sdk.OrderSide.Buy
+            && evt.RealizedPnl != 0m
+            && !evt.SettlesVariationMargin
+            && string.Equals(expectedJournal.Metadata.ActivityType, TradeFillActivityType, StringComparison.Ordinal)
+            ? BuildTradeJournal(evt, securityGate, preCoverAccountingShape: true)
+            : null;
+
     private JournalEntry BuildTradeJournal(
         TradeExecutedEvent evt,
-        LedgerPostingSecurityGateResult securityGate)
+        LedgerPostingSecurityGateResult securityGate,
+        bool preCoverAccountingShape = false)
     {
         const string activityType = TradeFillActivityType;
         var journalId = CreateDeterministicGuid(evt.FillId, activityType, "journal");
@@ -608,7 +647,12 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
         var securitiesAccount = LedgerAccounts.Securities(evt.Symbol, accountId);
         var lines = new List<(LedgerAccount Account, decimal Debit, decimal Credit)>();
 
-        if (evt.Side == Sdk.OrderSide.Buy && evt.RealizedPnl > 0m)
+        if (evt.Side == Sdk.OrderSide.Buy && preCoverAccountingShape)
+        {
+            lines.Add((securitiesAccount, evt.GrossValue, 0m));
+            lines.Add((cashAccount, 0m, evt.GrossValue));
+        }
+        else if (evt.Side == Sdk.OrderSide.Buy && evt.RealizedPnl > 0m)
         {
             // Buy-to-cover at a gain: the short was opened with Cr Securities at the sale
             // proceeds, so the cover must debit Securities by those proceeds (cash paid plus the
