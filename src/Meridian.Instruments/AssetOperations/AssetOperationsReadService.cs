@@ -654,11 +654,18 @@ public static partial class AssetOperationsProjectionBuilder
     private static bool AmountMatches(decimal? expectedAmount, decimal actualAmount)
         => expectedAmount.HasValue && RoundCash(expectedAmount.Value) == RoundCash(actualAmount);
 
+    /// <summary>
+    /// Activity types that are cash paid out, never a receipt (PRD-115: a refund of a loan's
+    /// unapplied cash). They stay on the timeline but cannot evidence an expected receipt.
+    /// </summary>
+    private static readonly HashSet<string> OutgoingActivityTypes = new(StringComparer.Ordinal) { "UnappliedCashRefund" };
+
     private static AssetActualActivityDto? FindActivity(
         AssetProjectedCashFlowDto flow,
         AssetReconciliationResultDto? reconciliation,
         IReadOnlyList<AssetActualActivityDto> actualActivity)
     {
+        actualActivity = actualActivity.Where(activity => !OutgoingActivityTypes.Contains(activity.ActivityType)).ToArray();
         if (reconciliation?.ActualDate is DateOnly actualDate)
         {
             var matched = actualActivity.FirstOrDefault(activity =>

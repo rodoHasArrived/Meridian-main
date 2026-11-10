@@ -106,6 +106,127 @@ public sealed class DirectLendingViewModelTests
         ready.Facts.Should().Contain(fact => fact.Label == "Result" && fact.Value == "Accrual posted.");
     }
 
+    // ── PRD-115: apply or refund unapplied cash ─────────────────────────────
+
+    [Fact]
+    public void ResolveUnappliedCashCommand_RetryOfTheSameRequest_ReusesTheCommandId()
+    {
+        var loanId = Guid.NewGuid();
+        var key = new DirectLendingViewModel.UnappliedCashCommandKey(loanId, IsRefund: false, 100m, null, new DateOnly(2026, 4, 1));
+        var first = DirectLendingViewModel.ResolveUnappliedCashCommand(null, key, Guid.NewGuid);
+
+        var retry = DirectLendingViewModel.ResolveUnappliedCashCommand(first, key with { }, () => throw new InvalidOperationException("must not mint a new id"));
+
+        retry.CommandId.Should().Be(first.CommandId, "the server recognises a committed request whose response was lost");
+    }
+
+    [Theory]
+    [InlineData("amount")]
+    [InlineData("action")]
+    [InlineData("reference")]
+    [InlineData("loan")]
+    [InlineData("day")]
+    public void ResolveUnappliedCashCommand_ChangedRequest_StartsANewCommand(string changed)
+    {
+        var key = new DirectLendingViewModel.UnappliedCashCommandKey(Guid.NewGuid(), IsRefund: true, 100m, "wire-1", new DateOnly(2026, 4, 1));
+        var pending = DirectLendingViewModel.ResolveUnappliedCashCommand(null, key, Guid.NewGuid);
+        var next = changed switch
+        {
+            "amount" => key with { Amount = 101m },
+            "action" => key with { IsRefund = false },
+            "reference" => key with { ExternalRef = "wire-2" },
+            "loan" => key with { LoanId = Guid.NewGuid() },
+            _ => key with { EffectiveDate = key.EffectiveDate.AddDays(1) },
+        };
+
+        DirectLendingViewModel.ResolveUnappliedCashCommand(pending, next, Guid.NewGuid).CommandId.Should().NotBe(pending.CommandId);
+    }
+
+    [Theory]
+    [InlineData(null, false, false, "500", "", false, "Select a loan")]
+    [InlineData(2_000.0, true, false, "500", "", false, "finish loading")]
+    [InlineData(2_000.0, false, true, "500", "", false, "already running")]
+    [InlineData(0.0, false, false, "500", "", false, "holds no unapplied cash")]
+    [InlineData(2_000.0, false, false, "", "", false, "positive amount")]
+    [InlineData(2_000.0, false, false, "-5", "", false, "positive amount")]
+    [InlineData(2_000.0, false, false, "2500", "", false, "exceeds")]
+    [InlineData(2_000.0, false, false, "500", " ", true, "external reference")]
+    public void ValidateUnappliedCashAction_ShouldExplainWhyTheActionIsBlocked(
+        double? held, bool isDetailLoading, bool isSubmitting, string amountText, string externalRef, bool isRefund, string expectedReason)
+    {
+        var servicing = held is null ? null : BuildServicing((decimal)held.Value);
+
+        var reason = DirectLendingViewModel.ValidateUnappliedCashAction(
+            servicing, isDetailLoading, isSubmitting, amountText, externalRef, isRefund, out var amount);
+
+        reason.Should().Contain(expectedReason);
+        amount.Should().Be(0m);
+    }
+
+    [Theory]
+    [InlineData(false, "")]
+    [InlineData(true, "wire-out-1")]
+    public void ValidateUnappliedCashAction_ShouldAllowAPositiveAmountWithinTheHeldCash(bool isRefund, string externalRef)
+    {
+        var reason = DirectLendingViewModel.ValidateUnappliedCashAction(
+            BuildServicing(2_000m), isDetailLoading: false, isSubmitting: false, "2000", externalRef, isRefund, out var amount);
+
+        reason.Should().BeNull();
+        amount.Should().Be(2_000m);
+    }
+
+    [Fact]
+    public void BuildUnappliedCashResultText_ShouldReportWhatMovedAndWhatIsStillHeld()
+    {
+        DirectLendingViewModel.BuildUnappliedCashResultText(false, 1_500m, BuildServicing(2_000m), true, BuildServicing(1_000m), null, CurrencyCode.USD)
+            .Should().Be("Applied 1,000.00 USD to amounts owed; 1,000.00 USD still held.");
+        DirectLendingViewModel.BuildUnappliedCashResultText(true, 400m, BuildServicing(1_000m), true, BuildServicing(600m), null, CurrencyCode.USD)
+            .Should().Be("Refunded 400.00 USD; 600.00 USD still held.");
+        DirectLendingViewModel.BuildUnappliedCashResultText(true, 400m, BuildServicing(1_000m), false, null, "Amount to refund exceeds the held cash.", CurrencyCode.USD)
+            .Should().Be("Refund failed: Amount to refund exceeds the held cash.");
+    }
+
+    [Fact]
+    public void UnappliedCashMessages_UseTheLoansCurrency_NotTheWorkstations()
+    {
+        // PRD-115: the operator enters an amount in the loan's currency, so a EUR loan's held cash
+        // must not be labelled with the workstation's currency symbol.
+        DirectLendingViewModel.BuildUnappliedCashResultText(false, 100m, BuildServicing(1_000m), true, BuildServicing(900m), null, CurrencyCode.EUR)
+            .Should().Be("Applied 100.00 EUR to amounts owed; 900.00 EUR still held.");
+        DirectLendingViewModel.ValidateUnappliedCashAction(BuildServicing(1_000m), false, false, "1500", null, false, out _, CurrencyCode.EUR)
+            .Should().Be("The amount exceeds the 1,000.00 EUR held.");
+    }
+
+    [Fact]
+    public void DirectLendingPageSource_ShouldExposeUnappliedCashActions()
+    {
+        var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\DirectLendingPage.xaml"));
+
+        xaml.Should().Contain("DirectLendingUnappliedCashPanel");
+        xaml.Should().Contain("Command=\"{Binding ApplyUnappliedCashCommand}\"");
+        xaml.Should().Contain("Command=\"{Binding RefundUnappliedCashCommand}\"");
+        xaml.Should().Contain("ToolTip=\"{Binding ApplyUnappliedCashTooltip}\"");
+        xaml.Should().Contain("ToolTip=\"{Binding RefundUnappliedCashTooltip}\"");
+        xaml.Should().Contain("Text=\"{Binding UnappliedCashAmountText, UpdateSourceTrigger=PropertyChanged}\"");
+        xaml.Should().Contain("Text=\"{Binding UnappliedCashExternalRef, UpdateSourceTrigger=PropertyChanged}\"");
+    }
+
+    private static LoanServicingStateDto BuildServicing(decimal unappliedCash)
+        => new(
+            Guid.Parse("8b24c79e-050e-48b5-88bd-b7f9823fa2c1"),
+            LoanStatus.Active,
+            25_000_000m,
+            12_000_000m,
+            13_000_000m,
+            new OutstandingBalancesDto(12_000_000m, 4_250.25m, 0m, 0m, 0m, UnappliedCash: unappliedCash),
+            [],
+            null,
+            null,
+            null,
+            1,
+            [],
+            []);
+
     [Fact]
     public void DirectLendingPageSource_ShouldUseCompactDenseTablesInspectorsAndActionTooltips()
     {
