@@ -976,6 +976,59 @@ public sealed class BrokeragePortfolioSyncServiceTests
     }
 
     [Fact]
+    public async Task DiscoverAccountsAsync_LinkRetainedUnderAProviderAlias_StillMatchesItsCatalogEntry()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            const string providerId = "alpaca";
+            const string accountNumber = "PA3ALPACA01";
+            const string retainedUuid = "d23b8f95-7654-4c6e-8bf8-b0d4ed1796c2";
+            // The catalog names the account by its account number and declares the UUID an alias.
+            var catalog = new FixedAccountCatalog(providerId,
+            [
+                BuildExternalAccount(providerId, accountNumber) with
+                {
+                    Metadata = new Dictionary<string, string> { [BrokerageExternalAccountMetadata.AccountIdAliases] = retainedUuid }
+                },
+                BuildExternalAccount(providerId, "PA9SOMEONEELSE") with
+                {
+                    Metadata = new Dictionary<string, string> { [BrokerageExternalAccountMetadata.AccountIdAliases] = "another-uuid" }
+                }
+            ]);
+            var (service, serviceProvider) = CreateService(
+                root,
+                new FixedPortfolioAdapter(providerId),
+                new FixedActivityAdapter(providerId),
+                includeSecurityLookup: true,
+                catalogs: [catalog]);
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var fundAccountId = Guid.NewGuid();
+            await serviceProvider.GetRequiredService<IFundAccountService>().CreateAccountAsync(
+                new CreateAccountRequest(fundAccountId, AccountTypeDto.Brokerage, "BRK-ALIAS", "BRK-ALIAS", "USD",
+                    DateTimeOffset.UtcNow.AddDays(-1), "tests"),
+                cts.Token);
+            await service.LinkAccountAsync(
+                fundAccountId,
+                new BrokerageAccountLinkRequestDto(providerId, retainedUuid, "Retained under the UUID", "tests"),
+                cts.Token);
+
+            var authorized = await service.DiscoverAccountsAsync(
+                (_, _) => Task.FromResult<IReadOnlySet<Guid>>(new HashSet<Guid> { fundAccountId }), ct: cts.Token);
+            var unauthorized = await service.DiscoverAccountsAsync(
+                (_, _) => Task.FromResult<IReadOnlySet<Guid>>(new HashSet<Guid>()), ct: cts.Token);
+
+            authorized.Should().ContainSingle("only the account behind the caller's own link is visible")
+                .Which.AccountId.Should().Be(accountNumber);
+            unauthorized.Should().BeEmpty("an alias never widens the authorization filter");
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
     public async Task DiscoverAccountsAsync_ReturnsOnlyAuthorizedLinkedAccountsInOneBatch()
     {
         var root = CreateTempRoot();

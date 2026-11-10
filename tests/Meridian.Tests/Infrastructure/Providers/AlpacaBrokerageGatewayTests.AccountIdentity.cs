@@ -46,8 +46,27 @@ public sealed partial class AlpacaBrokerageGatewayTests
         await sut.ConnectAsync();
 
         (await sut.GetAccountInfoAsync()).AccountId.Should().Be(AccountNumber);
-        (await sut.GetAccountsAsync()).Should().ContainSingle().Which.AccountId.Should().Be(AccountNumber);
-        sut.ScopeIdentity.Should().Be($"paper:{AccountNumber}");
+        var listed = (await sut.GetAccountsAsync()).Should().ContainSingle().Subject;
+        listed.AccountId.Should().Be(AccountNumber);
+        listed.Metadata![BrokerageExternalAccountMetadata.AccountIdAliases].Should().Be(ProviderAccountUuid,
+            "discovery must still match a link retained under the UUID");
+    }
+
+    [Fact]
+    public async Task ScopeIdentity_StaysOnTheImmutableUuidSoRetainedJournalsStillBind()
+    {
+        await using var sut = CreateAccountIdentitySut();
+        await using var withoutUuid = CreateAccountIdentitySut(id: null);
+
+        await sut.ConnectAsync();
+        await withoutUuid.ConnectAsync();
+
+        // The OMS recovery journal refuses any scope string but the one it was written under,
+        // and that was the UUID before the account number became the account's name.
+        sut.ScopeIdentity.Should().Be($"paper:{ProviderAccountUuid}");
+        withoutUuid.ScopeIdentity.Should().Be($"paper:{AccountNumber}");
+        (await withoutUuid.GetAccountsAsync()).Single().Metadata!
+            .Should().NotContainKey(BrokerageExternalAccountMetadata.AccountIdAliases);
     }
 
     [Fact]

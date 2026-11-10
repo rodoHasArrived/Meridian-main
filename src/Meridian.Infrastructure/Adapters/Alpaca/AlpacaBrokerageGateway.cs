@@ -141,10 +141,13 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
 
     public bool IsExecutionStreamHealthy => _tradeUpdates?.IsHealthy ?? true;
 
+    // Durable state is bound to this exact string (the OMS recovery journal refuses any other
+    // scope), so it stays on Alpaca's immutable account UUID whenever one is reported. Naming the
+    // account by its account number must not lock an existing installation out of its journal.
     public string? ScopeIdentity => _connected && _connectedCredentials is { } connected && connected == CurrentCredentials
         && !string.IsNullOrWhiteSpace(_connectedAccountId)
         && !string.Equals(_connectedAccountId, "unknown", StringComparison.OrdinalIgnoreCase)
-            ? $"{connected.Environment}:{_connectedAccountId}"
+            ? $"{connected.Environment}:{_connectedProviderAccountId ?? _connectedAccountId}"
             : null;
 
     /// <inheritdoc />

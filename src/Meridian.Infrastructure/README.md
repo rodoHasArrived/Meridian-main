@@ -40,7 +40,8 @@ reconciliation and the trade-update client leave it unnormalized (its legs are s
 cannot fail the durable inbox for other orders, and recovering or amending one is refused.
 The Alpaca gateway identifies the account by its account number, the identifier operators see and
 verification records; the internal UUID from the same response is accepted as an alias on requests,
-answered under the name the caller used, and still scopes durable trade-update state.
+answered under the name the caller used, declared as an alias on the catalog entry, and still
+forms the gateway's durable scope identity (trade-update inbox and OMS recovery journal).
 Alpaca corporate actions are read from the Market Data `v1/corporate-actions` endpoint (cash
 dividends and forward/reverse splits, paged, no currency); a refused or partly failed fetch returns
 nothing rather than a partial history. The provider is review-only: its records are staged for

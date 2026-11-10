@@ -77,6 +77,16 @@ public interface IBrokerageActivitySync
     }
 }
 
+/// <summary>Well-known keys of <see cref="BrokerageExternalAccountDto.Metadata"/>.</summary>
+public static class BrokerageExternalAccountMetadata
+{
+    /// <summary>
+    /// Comma-separated identifiers the provider also uses for the same account. A link retained
+    /// under one of them still refers to this catalog entry.
+    /// </summary>
+    public const string AccountIdAliases = "accountIdAliases";
+}
+
 public sealed record BrokerageExternalAccountDto(
     string ProviderId,
     string AccountId,
