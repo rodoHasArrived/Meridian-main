@@ -9,6 +9,7 @@ import { PrincipalIdInput } from "@/components/meridian/principal-id-input";
 import { Select } from "@/components/ui/select";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { safeReportingHref } from "@/lib/reporting-link-safety";
+import { listTimeZoneOptions, UTC_TIME_ZONE } from "@/lib/time-zone";
 import {
   ReportingCommandStatusView,
   ReportingScheduleField,
@@ -102,7 +103,7 @@ export const reportingScheduleCadences = [
   { value: "0 8 1 1 *", label: "Annually (1 January)" }
 ] as const;
 
-export const REPORTING_SCHEDULE_UTC_TIME_ZONE = "UTC";
+export const REPORTING_SCHEDULE_UTC_TIME_ZONE = UTC_TIME_ZONE;
 
 export const reportingSchedulePeriodFrequencies: ReportingSchedulePeriodFrequency[] = ["Monthly", "Quarterly", "Annually"];
 
@@ -114,20 +115,6 @@ export function normalizeReportingSchedulePeriodFrequency(value: string | null |
 export function parseReportingScheduleDueDays(value: string): number {
   const parsed = Number.parseInt(value, 10);
   return Number.isFinite(parsed) ? Math.min(366, Math.max(0, parsed)) : 0;
-}
-
-/** UTC first, then every IANA zone the browser knows; the current value is always offered. */
-export function buildReportingScheduleTimeZoneOptions(currentTimeZoneId: string): string[] {
-  let supported: string[] = [];
-  try {
-    supported = typeof Intl.supportedValuesOf === "function" ? Intl.supportedValuesOf("timeZone") : [];
-  } catch {
-    supported = [];
-  }
-
-  const options = [REPORTING_SCHEDULE_UTC_TIME_ZONE, ...supported.filter((zone) => zone !== REPORTING_SCHEDULE_UTC_TIME_ZONE)];
-  const current = currentTimeZoneId.trim();
-  return current && !options.includes(current) ? [current, ...options] : options;
 }
 
 export function buildReportingScheduleTemplateOptions(templates: readonly ReportingTemplateRow[]): ReportingTemplateRow[] {
@@ -214,7 +201,7 @@ export function ReportingScheduleManagementPanel({
 }: ReportingScheduleManagementPanelProps) {
   const scheduleTemplateOptions = buildReportingScheduleTemplateOptions(templates);
   const timeZoneOptions = useMemo(
-    () => buildReportingScheduleTimeZoneOptions(scheduleDraft.timeZoneId),
+    () => listTimeZoneOptions(scheduleDraft.timeZoneId),
     [scheduleDraft.timeZoneId]
   );
   // Deleting is permanent, so the row asks for a second click before it calls the server.
