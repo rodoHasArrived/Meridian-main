@@ -1462,8 +1462,10 @@ rows post approval or rejection decisions to the matching `/approve` and `/rejec
 governance endpoints. When the shared payload marks a template with report-writer grids, the browser
 summarizes those grid counts from `reportWriterGrids` and renders a no-code grid designer with
 source fields, row/column zones, metrics, formulas, grid-type and Top-N controls, sort posture, and operator-authored
-custom formula name/label/expression fields plus saved filter controls for field/operator/value
-slicing. Source fields come from the shared report-writer field catalog when present, so the browser
+custom formula name/label/expression fields plus filter controls for field/operator/value
+slicing. Every saved filter is loaded into the draft as its own row, operators can add or remove
+rows, and all complete rows are sent on preview and save (the engine keeps a row only when it
+matches every filter). Source fields come from the shared report-writer field catalog when present, so the browser
 palette can include source-backed portfolio, analytics, consolidation, and generated contribution
 fields even when a saved grid has not already placed those fields. The designer also renders a live layout summary from the current draft zones so operators
 can confirm dimension, metric, formula, filter, and Top-N posture before preview or save. Operators can save the current grid layout as a

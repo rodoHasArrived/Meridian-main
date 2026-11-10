@@ -67,6 +67,16 @@ export interface ReportWriterFormatRuleDraft {
   style: ReportWriterCellStyle;
 }
 
+/** One additional filter row; the first filter lives in the flat filterField/Operator/Value settings. */
+export interface ReportWriterFilterDraft {
+  id: string;
+  field: string;
+  operator: ReportWriterFilterOperator;
+  value: string;
+}
+
+export type ReportWriterFilterDraftField = "field" | "operator" | "value";
+
 export interface ReportWriterDraftSettings {
   name: string;
   displayName: string;
@@ -79,6 +89,8 @@ export interface ReportWriterDraftSettings {
   filterField: string;
   filterOperator: ReportWriterFilterOperator;
   filterValue: string;
+  /** Filters after the first. Every filter must match for a row to be kept (AND). */
+  extraFilters: ReportWriterFilterDraft[];
 }
 
 export interface ReportWriterCustomFormulaDraft {
@@ -260,6 +272,36 @@ export function useReportingReportWriter({
       };
     });
     setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
+  }
+
+  function updateWriterExtraFilters(
+    grid: ReportingWriterGridRow,
+    update: (filters: ReportWriterFilterDraft[]) => ReportWriterFilterDraft[]
+  ) {
+    setWriterDraftSettings((current) => ({
+      ...current,
+      [grid.id]: {
+        ...current[grid.id],
+        extraFilters: update(current[grid.id]?.extraFilters ?? buildDefaultWriterDraftSettings(grid).extraFilters)
+      }
+    }));
+    setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
+  }
+
+  function addWriterFilter(grid: ReportingWriterGridRow) {
+    const id = `filter-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    updateWriterExtraFilters(grid, (filters) => [...filters, { id, field: "", operator: "Equals", value: "" }]);
+  }
+
+  function removeWriterFilter(grid: ReportingWriterGridRow, filterId: string) {
+    updateWriterExtraFilters(grid, (filters) => filters.filter((filter) => filter.id !== filterId));
+  }
+
+  function updateWriterFilter(grid: ReportingWriterGridRow, filterId: string, field: ReportWriterFilterDraftField, value: string) {
+    updateWriterExtraFilters(grid, (filters) => filters.map((filter) =>
+      filter.id === filterId
+        ? { ...filter, [field]: field === "operator" ? normalizeReportWriterFilterOperator(value) : value }
+        : filter));
   }
 
   function addWriterFormatRule(grid: ReportingWriterGridRow) {
@@ -545,6 +587,9 @@ export function useReportingReportWriter({
     updateWriterCustomFormula,
     updateWriterCustomDataset,
     updateWriterChartDraft,
+    addWriterFilter,
+    removeWriterFilter,
+    updateWriterFilter,
     addWriterFormatRule,
     removeWriterFormatRule,
     updateWriterFormatRule,
@@ -652,7 +697,14 @@ function buildDefaultWriterDraftSettings(grid: ReportingWriterGridRow): ReportWr
     principalId: "reporting-ops",
     filterField: firstFilter?.field ?? "",
     filterOperator: normalizeReportWriterFilterOperator(firstFilter?.operator),
-    filterValue: firstFilter?.value ?? ""
+    filterValue: firstFilter?.value ?? "",
+    // Every saved filter is carried into the draft so preview and save keep all of them.
+    extraFilters: grid.filters.slice(1).map((filter) => ({
+      id: `saved-${filter.id}`,
+      field: filter.field,
+      operator: normalizeReportWriterFilterOperator(filter.operator),
+      value: filter.value ?? ""
+    }))
   };
 }
 
@@ -871,6 +923,9 @@ interface ReportWriterDesignerGridProps {
   onCustomFormulaChange: (grid: ReportingWriterGridRow, field: ReportWriterCustomFormulaField, value: string) => void;
   onCustomDatasetChange: (grid: ReportingWriterGridRow, value: string) => void;
   onChartDraftChange: (grid: ReportingWriterGridRow, field: ReportWriterChartDraftField | "enabled", value: string) => void;
+  onFilterAdd: (grid: ReportingWriterGridRow) => void;
+  onFilterRemove: (grid: ReportingWriterGridRow, filterId: string) => void;
+  onFilterChange: (grid: ReportingWriterGridRow, filterId: string, field: ReportWriterFilterDraftField, value: string) => void;
   onFormatRuleAdd: (grid: ReportingWriterGridRow) => void;
   onFormatRuleRemove: (grid: ReportingWriterGridRow, ruleId: string) => void;
   onFormatRuleChange: (grid: ReportingWriterGridRow, ruleId: string, field: keyof Omit<ReportWriterFormatRuleDraft, "id">, value: string) => void;
@@ -900,6 +955,9 @@ export function ReportWriterDesignerGrid({
   onCustomFormulaChange,
   onCustomDatasetChange,
   onChartDraftChange,
+  onFilterAdd,
+  onFilterRemove,
+  onFilterChange,
   onFormatRuleAdd,
   onFormatRuleRemove,
   onFormatRuleChange,
@@ -1159,6 +1217,73 @@ export function ReportWriterDesignerGrid({
               disabled={!settings.filterField || isBlankFilterOperator(settings.filterOperator)}
             />
           </label>
+        </div>
+        {settings.extraFilters.map((filter, index) => {
+          const position = index + 2;
+          return (
+            <div key={filter.id} className="mt-2 grid gap-2 md:grid-cols-[1fr_0.8fr_1fr_auto]">
+              <Select
+                value={filter.field}
+                onChange={(event) => onFilterChange(grid, filter.id, "field", event.target.value)}
+                aria-label={`${grid.title} filter ${position} field`}
+              >
+                <option value="">Choose a field</option>
+                {grid.sourceFields.some((field) => (field.fieldName ?? field.label) === filter.field) || !filter.field ? null : (
+                  <option value={filter.field}>{filter.field}</option>
+                )}
+                {grid.sourceFields.map((field) => (
+                  <option key={field.id} value={field.fieldName ?? field.label}>{field.label}</option>
+                ))}
+              </Select>
+              <Select
+                value={filter.operator}
+                onChange={(event) => onFilterChange(grid, filter.id, "operator", event.target.value)}
+                aria-label={`${grid.title} filter ${position} operator`}
+                disabled={!filter.field}
+              >
+                <option value="Equals">=</option>
+                <option value="NotEquals">!=</option>
+                <option value="Contains">Contains</option>
+                <option value="StartsWith">Starts with</option>
+                <option value="EndsWith">Ends with</option>
+                <option value="GreaterThan">&gt;</option>
+                <option value="GreaterThanOrEqual">&gt;=</option>
+                <option value="LessThan">&lt;</option>
+                <option value="LessThanOrEqual">&lt;=</option>
+                <option value="IsBlank">Is blank</option>
+                <option value="IsNotBlank">Is not blank</option>
+              </Select>
+              <Input
+                value={filter.value}
+                onChange={(event) => onFilterChange(grid, filter.id, "value", event.target.value)}
+                aria-label={`${grid.title} filter ${position} value`}
+                className="font-mono"
+                disabled={!filter.field || isBlankFilterOperator(filter.operator)}
+              />
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                aria-label={`Remove ${grid.title} filter ${position}`}
+                onClick={() => onFilterRemove(grid, filter.id)}
+              >
+                <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+              </Button>
+            </div>
+          );
+        })}
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            aria-label={`Add ${grid.title} filter`}
+            onClick={() => onFilterAdd(grid)}
+          >
+            <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+            Add filter
+          </Button>
+          <span className="text-xs text-muted-foreground">A row is kept only when it matches every filter.</span>
         </div>
       </div>
       <div className="mt-3 grid gap-3 lg:grid-cols-[0.85fr_1.15fr]">
@@ -1794,10 +1919,14 @@ function buildReportWriterDraftLayoutSummary(
   savedFilterCount: number
 ): string {
   const dimensionCount = rowTokens.length + columnTokens.length;
-  const totalFilterCount = settings.filterField ? savedFilterCount + 1 : savedFilterCount;
-  const filterSummary = settings.filterField
-    ? `${totalFilterCount} filter${totalFilterCount === 1 ? "" : "s"} including draft filter`
-    : `${savedFilterCount} saved filter${savedFilterCount === 1 ? "" : "s"}`;
+  // The draft carries every saved filter, so the draft rows are the whole filter set.
+  const draftFilterCount = (settings.filterField ? 1 : 0)
+    + settings.extraFilters.filter((filter) => filter.field).length;
+  const filterSummary = draftFilterCount > 0
+    ? `${draftFilterCount} filter${draftFilterCount === 1 ? "" : "s"} in draft`
+    : savedFilterCount > 0
+      ? `No filters in draft (${savedFilterCount} saved filter${savedFilterCount === 1 ? "" : "s"} removed)`
+      : "No filters";
   return [
     `${settings.gridKind} draft`,
     `${dimensionCount} dimension${dimensionCount === 1 ? "" : "s"}`,

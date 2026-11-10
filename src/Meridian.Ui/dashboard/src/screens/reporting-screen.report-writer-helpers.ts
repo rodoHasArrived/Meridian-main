@@ -137,29 +137,37 @@ export function buildReportAccessPolicy(settings: ReportWriterDraftSettings): Re
 }
 
 export function buildWriterFilters(settings: ReportWriterDraftSettings): ReportWriterFilterDefinition[] | null {
-  const field = normalizeDraftText(settings.filterField, "");
-  if (!field) {
-    return null;
-  }
+  const candidates = [
+    { field: settings.filterField, operator: settings.filterOperator, value: settings.filterValue },
+    ...(settings.extraFilters ?? [])
+  ];
+  const filters: ReportWriterFilterDefinition[] = [];
+  for (const candidate of candidates) {
+    const field = normalizeDraftText(candidate.field, "");
+    if (!field) {
+      continue;
+    }
 
-  const operator = normalizeReportWriterFilterOperator(settings.filterOperator);
-  const value = isBlankFilterOperator(operator)
-    ? null
-    : normalizeDraftText(settings.filterValue, "");
-  if (!isBlankFilterOperator(operator) && !value) {
-    return null;
-  }
+    const operator = normalizeReportWriterFilterOperator(candidate.operator);
+    const value = isBlankFilterOperator(operator)
+      ? null
+      : normalizeDraftText(candidate.value, "");
+    // An incomplete row (a comparison with no value yet) is left out rather than sent.
+    if (!isBlankFilterOperator(operator) && !value) {
+      continue;
+    }
 
-  return [
-    {
+    filters.push({
       field,
       operator,
       value,
       label: isBlankFilterOperator(operator)
         ? `${field} ${formatReportWriterFilterOperator(operator)}`
         : `${field} ${formatReportWriterFilterOperator(operator)} ${value}`
-    }
-  ];
+    });
+  }
+
+  return filters.length > 0 ? filters : null;
 }
 
 export function normalizeWriterMetrics(

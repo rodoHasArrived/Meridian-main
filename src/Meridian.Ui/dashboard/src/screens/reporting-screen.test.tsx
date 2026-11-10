@@ -2322,7 +2322,7 @@ describe("ReportingScreen", () => {
     expect(grid).toHaveTextContent("Descending by pnl");
     expect(grid).toHaveTextContent("1 saved filter");
     expect(within(grid).getByRole("status", { name: "Sector Pivot current report-writer layout" })).toHaveTextContent(
-      "Pivot draft · 2 dimensions · 2 metrics · 1 formula · 2 filters including draft filter"
+      "Pivot draft · 2 dimensions · 2 metrics · 1 formula · 1 filter in draft"
     );
     expect(within(grid).getByLabelText("Sector Pivot saved filters")).toHaveTextContent("strategy = Core");
     expect(within(grid).getByLabelText("Sector Pivot preview dataset")).toHaveValue("portfolioPositions");
@@ -2359,7 +2359,7 @@ describe("ReportingScreen", () => {
 
     expect(within(formulas).getByText("pnl")).toBeInTheDocument();
     expect(within(grid).getByRole("status", { name: "Sector Pivot current report-writer layout" })).toHaveTextContent(
-      "Pivot draft · 2 dimensions · 2 metrics · 2 formulas · 2 filters including draft filter"
+      "Pivot draft · 2 dimensions · 2 metrics · 2 formulas · 1 filter in draft"
     );
     let formulaTokenLabels = within(formulas).getAllByRole("listitem").map((item) => item.textContent ?? "");
     expect(formulaTokenLabels[0]).toContain("Return %");
@@ -2380,12 +2380,12 @@ describe("ReportingScreen", () => {
     expect(within(formulas).queryByText("pnl")).not.toBeInTheDocument();
     expect(within(metrics).getByText("pnl")).toBeInTheDocument();
     expect(within(grid).getByRole("status", { name: "Sector Pivot current report-writer layout" })).toHaveTextContent(
-      "Pivot draft · 2 dimensions · 3 metrics · 1 formula · 2 filters including draft filter"
+      "Pivot draft · 2 dimensions · 3 metrics · 1 formula · 1 filter in draft"
     );
     await user.click(within(metrics).getByRole("button", { name: "Remove pnl" }));
     expect(within(metrics).queryByText("pnl")).not.toBeInTheDocument();
     expect(within(grid).getByRole("status", { name: "Sector Pivot current report-writer layout" })).toHaveTextContent(
-      "Pivot draft · 2 dimensions · 2 metrics · 1 formula · 2 filters including draft filter"
+      "Pivot draft · 2 dimensions · 2 metrics · 1 formula · 1 filter in draft"
     );
     fireEvent.dragStart(sourceField!, { dataTransfer });
     fireEvent.drop(formulas, { dataTransfer });
@@ -3427,6 +3427,46 @@ describe("ReportingScreen", () => {
     });
 
     expect(screen.getByLabelText("Reporting schedule due at UTC")).toHaveValue("2026-07-01T08:00:00Z");
+  });
+
+  it("sends every report-writer filter row to the render endpoint, not just the first", async () => {
+    const user = userEvent.setup();
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      text: async () => JSON.stringify({ templateId: "investor-monthly-statement", grids: [], warnings: [] })
+    });
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting/report-builder"] });
+
+    const writer = screen.getByRole("region", { name: "No-code report writer" });
+    const grid = within(writer).getByRole("group", {
+      name: "Investor Monthly Statement Sector Pivot Pivot report-writer grid"
+    });
+
+    // The saved "strategy = Core" filter pre-fills the first row; add two more.
+    await user.click(within(grid).getByRole("button", { name: "Add Sector Pivot filter" }));
+    await user.selectOptions(within(grid).getByLabelText("Sector Pivot filter 2 field"), "marketValue");
+    await user.selectOptions(within(grid).getByLabelText("Sector Pivot filter 2 operator"), "GreaterThan");
+    fireEvent.change(within(grid).getByLabelText("Sector Pivot filter 2 value"), { target: { value: "1000" } });
+    await user.click(within(grid).getByRole("button", { name: "Add Sector Pivot filter" }));
+    await user.selectOptions(within(grid).getByLabelText("Sector Pivot filter 3 field"), "sector");
+    // Filter 3 has no value yet, so it is incomplete and must be left out.
+    expect(grid).toHaveTextContent("3 filters in draft");
+
+    await user.click(within(grid).getByRole("button", { name: "Preview Sector Pivot report-writer grid" }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(
+      "/api/fund-structure/reporting/templates/render",
+      expect.objectContaining({ method: "POST" })
+    ));
+    const request = JSON.parse((fetchMock.mock.calls[0]?.[1] as RequestInit).body as string);
+    expect(request.grids[0].filters).toEqual([
+      { field: "strategy", operator: "Equals", value: "Core", label: "strategy = Core" },
+      { field: "marketValue", operator: "GreaterThan", value: "1000", label: "marketValue > 1000" }
+    ]);
+
+    await user.click(within(grid).getByRole("button", { name: "Remove Sector Pivot filter 2" }));
+    expect(within(grid).queryByLabelText("Sector Pivot filter 3 field")).not.toBeInTheDocument();
+    expect(within(grid).getByLabelText("Sector Pivot filter 2 field")).toHaveValue("sector");
   });
 
   it("offers daily, semi-monthly, month-end and annual cadence presets", () => {

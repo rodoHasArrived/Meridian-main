@@ -287,6 +287,9 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
     updateWriterCustomFormula,
     updateWriterCustomDataset,
     updateWriterChartDraft,
+    addWriterFilter,
+    removeWriterFilter,
+    updateWriterFilter,
     addWriterFormatRule,
     removeWriterFormatRule,
     updateWriterFormatRule,
@@ -1515,6 +1518,9 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
               customDatasetText={writerCustomDatasetText[grid.id] ?? ""}
               onCustomDatasetChange={updateWriterCustomDataset}
               onChartDraftChange={updateWriterChartDraft}
+              onFilterAdd={addWriterFilter}
+              onFilterRemove={removeWriterFilter}
+              onFilterChange={updateWriterFilter}
               onFormatRuleAdd={addWriterFormatRule}
               onFormatRuleRemove={removeWriterFormatRule}
               onFormatRuleChange={updateWriterFormatRule}
