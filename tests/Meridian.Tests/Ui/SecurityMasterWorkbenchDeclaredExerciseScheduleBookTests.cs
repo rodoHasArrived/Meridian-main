@@ -151,6 +151,20 @@ public sealed class SecurityMasterWorkbenchDeclaredExerciseScheduleBookTests
     }
 
     [Fact]
+    public async Task WithoutAnEconomicDefinition_TheDeclaredRowsStillShow_UnderTheDeclaredScheduleSource()
+    {
+        // No economic document means no winning source, no scalar and no maturity row; the declared
+        // schedule on the stored row is still read.
+        var snapshot = await ReadAsync(BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, 60, "Calendar")]), economic: false);
+
+        var book = snapshot.ScheduleBook!;
+        book.Events.Select(static row => (row.EventType, row.EffectiveDate, row.SourceSystem, row.SourceRecordId)).Should().Equal(
+            ("CallNoticeDeadline", new DateOnly(2026, 12, 16), "declared-exercise-schedule", null),
+            ("Call", new DateOnly(2027, 1, 15), "declared-exercise-schedule", null));
+        book.NextLifecycleDate.Should().Be(new DateOnly(2026, 12, 16));
+    }
+
+    [Fact]
     public async Task BusinessDayNotice_UsesTheCalendarSourceTheServiceWasGiven()
     {
         var snapshot = await ReadAsync(BondExerciseNoticeWatchTests.Bond([EuropeanCall(10, null, "Business")]));
