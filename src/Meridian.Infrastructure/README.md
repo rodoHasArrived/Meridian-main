@@ -11,6 +11,8 @@ last_reviewed: 2026-10-15
 
 # src/Meridian.Infrastructure
 
+IB historical requests ask for epoch-second bar times (`formatDate = 2`) and send UTC, culture-invariant end times; a zone-less TWS-local timestamp is refused rather than read as UTC. `IBDurableResultStore` publishes an update to memory only after the fsynced atomic file replace succeeds. `ProviderRegistry` availability probes rethrow caller cancellation.
+
 Statement importers retain parser revision and upstream executed mapping proof; pre-normalized imports without upstream proof remain non-comparable. Immutable match artifacts retain that mapping fingerprint. Source-generated import and match hashing supports exact completed-checkpoint verification without rewriting legacy bytes.
 
 Broker amendment and cancellation failures retain the broker-observed order status and use
@@ -505,12 +507,10 @@ paths and original file names remain provenance metadata, not duplicate-detectio
 read provider credentials first and construct inside the prepared scope. The synchronous
 `CreateAndRegisterAll` and `CreateStreamingClient` remain for callers that cannot await.
 
-**Brokerage and IB hardening.** The Alpaca, Robinhood and Template gateways wait on a full
+**Brokerage hardening.** The Alpaca, Robinhood and Template gateways wait on a full
 execution-report channel instead of dropping the oldest report. One Alpaca path cannot wait: a
 pending-modification report is returned to its caller and, if the stream is full, logged as not
-published. `IBDurableResultStore` flushes
-before the rename and updates its in-memory view only after the write succeeds. IB daily-bar
-requests send UTC. `RateLimiter` guards its timestamp queue and last-request time with one lock.
+published. `RateLimiter` guards its timestamp queue and last-request time with one lock.
 
 ## Diagrams
 

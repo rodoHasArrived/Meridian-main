@@ -389,6 +389,12 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
                     return provider;
                 }
             }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                // A cancelled caller must see cancellation, not probe every remaining provider
+                // and then report "no provider available".
+                throw;
+            }
             catch (Exception ex)
             {
                 _log.Debug(ex, "Provider {Name} availability check failed", registered.Name);
@@ -449,7 +455,11 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
                     await CheckProviderAvailabilityAsync(registered.Provider, ct, typeof(T));
                 results[registered.Name] = isAvailable && results.GetValueOrDefault(registered.Name, true);
             }
-            catch
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception)
             {
                 results[registered.Name] = false;
             }

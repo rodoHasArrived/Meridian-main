@@ -139,6 +139,10 @@ public sealed class CredentialService : ICredentialService, IDisposable
     private readonly object _vaultLock = new();
     private readonly object _metadataLock = new();
     private Dictionary<string, StoredCredential> _vault = new();
+
+    // Set when an existing vault file could not be read or decrypted. The unreadable file is
+    // preserved (moved aside) before the next save instead of being silently overwritten.
+    private bool _vaultLoadFailed;
     private Dictionary<string, CredentialMetadata> _metadataCache = new();
     private bool _disposed;
     private bool _metadataLoaded;
@@ -235,9 +239,18 @@ public sealed class CredentialService : ICredentialService, IDisposable
                     _vault = JsonSerializer.Deserialize<Dictionary<string, StoredCredential>>(json) ?? new();
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                // Fail closed: start with an empty in-memory vault, but remember the failure so the
+                // next save moves the unreadable file aside instead of permanently erasing every
+                // stored credential (a torn write or transient DPAPI error is often recoverable).
                 _vault = new();
+                _vaultLoadFailed = true;
+                Interlocked.Increment(ref _vaultAccessFailures);
+                LoggingService.Instance.LogWarning(
+                    "Credential vault could not be read; it will be preserved as a backup before the next save.",
+                    ("exception", ex.GetType().Name),
+                    ("message", ex.Message));
             }
         }
     }
@@ -248,10 +261,16 @@ public sealed class CredentialService : ICredentialService, IDisposable
         {
             try
             {
+                if (_vaultLoadFailed)
+                {
+                    PreserveUnreadableVault();
+                    _vaultLoadFailed = false;
+                }
+
                 var json = JsonSerializer.Serialize(_vault);
                 var bytes = Encoding.UTF8.GetBytes(json);
                 var encrypted = ProtectedData.Protect(bytes, null, DataProtectionScope.CurrentUser);
-                File.WriteAllBytes(_vaultPath, encrypted);
+                WriteVaultAtomically(encrypted);
             }
             catch (Exception ex)
             {
@@ -261,6 +280,46 @@ public sealed class CredentialService : ICredentialService, IDisposable
                     ("exception", ex.GetType().Name),
                     ("message", ex.Message));
             }
+        }
+    }
+
+    /// <summary>
+    /// Moves an unreadable vault file to a timestamped backup next to it so it can be recovered.
+    /// Throws if the move fails, which aborts the save and leaves the original file untouched.
+    /// </summary>
+    private void PreserveUnreadableVault()
+    {
+        if (!File.Exists(_vaultPath))
+            return;
+
+        var backupPath = $"{_vaultPath}.unreadable-{DateTime.UtcNow:yyyyMMddHHmmssfff}.bak";
+        File.Move(_vaultPath, backupPath);
+        LoggingService.Instance.LogWarning(
+            "Unreadable credential vault preserved before overwrite.",
+            ("backupPath", backupPath));
+    }
+
+    /// <summary>
+    /// Writes the vault through a flushed temp file and an atomic rename so a crash or power loss
+    /// mid-write can never leave a torn vault in place of the previous one.
+    /// </summary>
+    private void WriteVaultAtomically(byte[] encrypted)
+    {
+        var tempPath = $"{_vaultPath}.{Guid.NewGuid():N}.tmp";
+        try
+        {
+            using (var stream = new FileStream(tempPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            {
+                stream.Write(encrypted, 0, encrypted.Length);
+                stream.Flush(flushToDisk: true);
+            }
+
+            File.Move(tempPath, _vaultPath, overwrite: true);
+        }
+        catch
+        {
+            try { File.Delete(tempPath); } catch (IOException) { } catch (UnauthorizedAccessException) { }
+            throw;
         }
     }
 

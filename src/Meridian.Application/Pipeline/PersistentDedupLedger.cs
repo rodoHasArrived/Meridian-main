@@ -302,19 +302,34 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
             // past the TTL the key may describe a different logical occurrence, and the old
             // sink write proves nothing about this newly admitted one, so trust resets to
             // version 1 and WAL recovery replays it until a sink flush re-confirms it.
+            var hadPrevious = _cache.TryGetValue(key, out var previous);
             _cache[key] = new DedupCacheEntry(nowTicks, EntryVersionLegacy);
             var ledgerLine = CreateLedgerLine(key, nowTicks, EntryVersionLegacy);
 
-            // Persist to disk (fire-and-forget the write, but serialize access)
-            await _writeLock.WaitAsync(ct).ConfigureAwait(false);
+            // Persist to disk (serialized). If the ledger write is cancelled or fails, the cache
+            // entry is rolled back: leaving it would make every retry of this event look like a
+            // duplicate and drop it, although nothing durable recorded it. The pending slot is
+            // still held, so no concurrent commit can have replaced the entry meanwhile.
             try
             {
-                await EnsureWriterInitializedAsync(ct).ConfigureAwait(false);
-                await _writer!.WriteLineAsync(ledgerLine.AsMemory(), ct).ConfigureAwait(false);
+                await _writeLock.WaitAsync(ct).ConfigureAwait(false);
+                try
+                {
+                    await EnsureWriterInitializedAsync(ct).ConfigureAwait(false);
+                    await _writer!.WriteLineAsync(ledgerLine.AsMemory(), ct).ConfigureAwait(false);
+                }
+                finally
+                {
+                    _writeLock.Release();
+                }
             }
-            finally
+            catch
             {
-                _writeLock.Release();
+                if (hadPrevious)
+                    _cache[key] = previous;
+                else
+                    _cache.TryRemove(key, out _);
+                throw;
             }
 
             return false;
@@ -883,7 +898,8 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
 
             try
             {
-                await using (var writer = new StreamWriter(tempPath, false, Encoding.UTF8))
+                await using (var tempStream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None))
+                await using (var writer = new StreamWriter(tempStream, Encoding.UTF8))
                 {
                     // Only committed entries are rewritten — pending reservations stay
                     // memory-only — and each entry keeps its recorded version so compaction
@@ -897,6 +913,11 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
                             kept++;
                         }
                     }
+
+                    // Durably persist the compacted contents before the rename replaces the
+                    // ledger; otherwise a crash after the move can leave an empty/torn ledger.
+                    await writer.FlushAsync(ct).ConfigureAwait(false);
+                    tempStream.Flush(flushToDisk: true);
                 }
 
                 File.Move(tempPath, _ledgerPath, overwrite: true);

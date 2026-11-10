@@ -11,6 +11,8 @@ last_reviewed: 2026-07-05
 
 # src/Meridian.Execution.Sdk
 
+`IOrderManager.GetUnitReservingOrders` returns the exposure reservations, except that a pending amendment reserves its larger-quantity outcome rather than its larger-value one, for unit limits.
+
 `CanonicalTaxLotAdapter` now compares explicit retained direction with the execution lot's sign,
 then compares absolute quantity, original date, identity and exact basis. Matching short lots may
 bind; opposite directions cannot net. Symbols remain display evidence and binding grants no

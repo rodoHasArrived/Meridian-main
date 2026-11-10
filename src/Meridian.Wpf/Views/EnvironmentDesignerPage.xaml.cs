@@ -312,17 +312,28 @@ public partial class EnvironmentDesignerPage : Page, INotifyPropertyChanged
             return null;
         }
 
-        var saved = await _designService.SaveDraftAsync(
-            draft with
-            {
-                UpdatedBy = Environment.UserName,
-                Definition = draft.Definition with
+        EnvironmentDraftDto saved;
+        try
+        {
+            saved = await _designService.SaveDraftAsync(
+                draft with
                 {
-                    OrganizationName = string.IsNullOrWhiteSpace(draft.Definition.OrganizationName)
-                        ? "Untitled Organization"
-                        : draft.Definition.OrganizationName.Trim()
-                }
-            }).ConfigureAwait(true);
+                    UpdatedBy = Environment.UserName,
+                    Definition = draft.Definition with
+                    {
+                        OrganizationName = string.IsNullOrWhiteSpace(draft.Definition.OrganizationName)
+                            ? "Untitled Organization"
+                            : draft.Definition.OrganizationName.Trim()
+                    }
+                }).ConfigureAwait(true);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            // Callers are async void click handlers; an escaped exception would crash the app.
+            StatusText = "Draft could not be saved.";
+            ValidationAndDiffText = ex.Message;
+            return null;
+        }
 
         await RefreshAsync(saved.DraftId, SelectedVersion?.VersionId).ConfigureAwait(true);
         return saved;
@@ -337,6 +348,22 @@ public partial class EnvironmentDesignerPage : Page, INotifyPropertyChanged
         {
             draft = JsonSerializer.Deserialize<EnvironmentDraftDto>(DraftJson, JsonOptions)
                 ?? throw new JsonException("Editor content did not deserialize into an environment draft.");
+
+            // System.Text.Json leaves omitted constructor members null even when they are
+            // non-nullable, so a draft without "definition" used to throw a
+            // NullReferenceException from an async void handler and crash the desktop app.
+            if (draft.Definition is null)
+            {
+                error = "Draft JSON must include a \"definition\" object.";
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(draft.Name))
+            {
+                error = "Draft JSON must include a non-empty \"name\".";
+                return false;
+            }
+
             return true;
         }
         catch (Exception ex)

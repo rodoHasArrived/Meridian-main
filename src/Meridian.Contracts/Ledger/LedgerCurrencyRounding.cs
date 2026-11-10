@@ -14,4 +14,12 @@ public static class LedgerCurrencyRounding
     /// </summary>
     public static decimal RoundCurrency(decimal amount)
         => decimal.Round(amount, 2, MidpointRounding.AwayFromZero);
+
+    /// <summary>
+    /// Rounds a monetary amount to the minor-unit precision of <paramref name="currency"/>
+    /// (0 for JPY/KRW, 3 for KWD/BHD, 2 for ordinary currencies) using the same away-from-zero
+    /// midpoint policy as <see cref="RoundCurrency(decimal)"/>.
+    /// </summary>
+    public static decimal RoundCurrency(decimal amount, string currency)
+        => decimal.Round(amount, CurrencyMinorUnits.GetPrecision(currency), MidpointRounding.AwayFromZero);
 }

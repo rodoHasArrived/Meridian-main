@@ -106,9 +106,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IBDurableResultStore>(sp =>
         {
             var root = sp.GetRequiredService<StorageOptions>().RootPath;
-            return new JsonIBDurableResultStore(
-                Path.Combine(root, "providers", "interactive-brokers", "results.json"),
-                sp.GetRequiredService<IAtomicFileWriter>());
+            return new JsonIBDurableResultStore(Path.Combine(root, "providers", "interactive-brokers", "results.json"));
         });
         services.TryAddSingleton<IBResultQueryService>();
 
@@ -548,11 +546,8 @@ public static class WorkstationServiceCollectionExtensions
                     positionTracker,
                     () => operatorControls?.GetSnapshot().DefaultMaxPositionSize,
                     sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Risk.Rules.PositionLimitRule>>(),
-                    // Resolved per evaluation: the order manager depends on this validator, so
-                    // it cannot be captured while the rule set is being composed. The same
-                    // reserving book the exposure ceilings read, so both gates agree on what
-                    // is still working.
-                    workingOrders: () => sp.GetService<Meridian.Execution.Sdk.IOrderManager>()?.GetExposureReservingOrders()));
+                    // Resolved per evaluation: the order manager depends on this validator.
+                    () => sp.GetService<Meridian.Execution.Sdk.IOrderManager>()));
             }
 
             var exposureProvider = sp.GetRequiredService<Meridian.Risk.IPortfolioExposureProvider>();

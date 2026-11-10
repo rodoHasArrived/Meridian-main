@@ -11,6 +11,8 @@ last_reviewed: 2026-08-11
 
 # src/Meridian.Risk
 
+`PositionLimitRule` optionally measures the limit against the filled position plus same-side working orders (via an `IOrderManager` accessor), excluding the order being amended. A pending amendment counts as its larger-quantity outcome (`IOrderManager.GetUnitReservingOrders`).
+
 `BrokeragePortfolioStateRule` requires a current, complete and reconciled account snapshot before
 live admission, independently of configurable exposure ceilings. Scoped exposure uses broker
 holdings, cash, buying power and currency, with remaining working orders reserved in the same
@@ -163,10 +165,10 @@ Risk decisions are log evidence, so the gate renders caller-supplied text throug
 F# position-limit rule embeds the symbol in its reason — and an unconstrained value containing a
 line break would otherwise render as a second log line that reads like a risk decision.
 
-**Position limit and working orders.** `PositionLimitRule` measures an order against the worst case
-its own side can reach: the filled position plus every working order in the same direction, read
-from the order manager's exposure-reserving orders. Opposite-side working orders are not netted off.
-An amendment does not count the order it replaces, and broker-side exit legs of one parent count once.
+**Position limit and bracket legs.** When `PositionLimitRule` sums same-side working orders,
+broker-side exit legs of one parent (`OrderState.ParentOrderId`) are one-cancels-other, so each
+parent contributes only its largest leg. A long protected by a take-profit and a stop-loss is not
+read as an oversized short.
 
 ## Diagrams
 

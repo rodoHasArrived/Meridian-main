@@ -718,7 +718,10 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
                 barSizeSetting,
                 whatToShow,
                 useRTH ? 1 : 0,
-                1, // formatDate: 1 = string format
+                // formatDate 2 = epoch seconds for intraday bars (daily bars stay "yyyyMMdd").
+                // Format 1 returns intraday times in the TWS login time zone, which the parser
+                // cannot know and used to read as UTC.
+                2,
                 false, // keepUpToDate
                 null); // chartOptions
 
@@ -811,8 +814,7 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
         bool useRTH = true,
         CancellationToken ct = default)
     {
-        // The dash-separated "yyyyMMdd-HH:mm:ss" form is IB's UTC notation, so the end time
-        // must be UTC; local time would end the request early by the host's UTC offset.
+        // The dash form is interpreted by IB as UTC, so the end time must be the UTC clock.
         var endDateTime = DateTime.UtcNow.ToString("yyyyMMdd-HH:mm:ss", CultureInfo.InvariantCulture);
         return RequestHistoricalDataAsync(
             cfg,
