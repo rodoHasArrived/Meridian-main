@@ -28,7 +28,12 @@ not sent, and failures after the confirmed cancel but before the replacement POS
 (cancelled, no successor); outcomes after the cancel are always delivered. Reconnect FILL-activity reports carry the broker's `replaces` link so a
 successor's fill stays bound to its original order after a restart. While a replacement is unconfirmed, cancellation also
 cancels the candidate successor and stays pending until it is proven inactive. A candidate that executed before
-that cancellation publishes its cumulative fills through the replacement chain first. Order and
+that cancellation publishes its cumulative fills through the replacement chain first. Once a
+replacement is confirmed, Alpaca refuses to cancel the `replaced` predecessor, so cancellation follows
+the broker's `replaced_by` links to the live successor and stays pending, cancelling nothing, when a
+link cannot be verified. A multi-leg package parent is returned with an empty symbol and side: REST
+reconciliation and the trade-update client leave it unnormalized (its legs are separate orders) so it
+cannot fail the durable inbox for other orders, and recovering or amending one is refused. Order and
 amendment recovery refuse evidence read across a connection change, rechecked before every report, and `accepted_for_bidding` is a valid provisional
 snapshot state. Durable trade-update hashes omit derived metadata
 while serialized pending reports retain it, preserving replay identities across upgrades.
