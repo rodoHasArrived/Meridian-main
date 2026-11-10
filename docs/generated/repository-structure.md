@@ -5424,7 +5424,9 @@ Meridian-main
 │   │   │   ├── OrderFillContext.cs
 │   │   │   ├── OrderFillProcessor.cs
 │   │   │   ├── OrderManagementLifecycleCoordinator.cs
-│   │   │   └── OrderRiskSizingPolicy.cs
+│   │   │   ├── OrderRiskSizingPolicy.cs
+│   │   │   ├── OrderStateTable.cs
+│   │   │   └── OrderStatusFacts.cs
 │   │   ├── PaperMatching
 │   │   │   ├── PaperMarketObservation.cs
 │   │   │   ├── PaperOrderMatchingPolicy.cs
@@ -8466,8 +8468,6 @@ Meridian-main
 │   │   │   │   └── OmsIntegrationServiceCollectionExtensions.cs
 │   │   │   ├── ProviderDiagnostics
 │   │   │   │   └── ProviderDiagnosticsApiClient.cs
-│   │   │   ├── Reconciliation
-│   │   │   │   └── ReconciliationApiService.cs
 │   │   │   ├── Reporting
 │   │   │   │   └── ReportingStatusProjectionService.cs
 │   │   │   ├── ActivityFeedService.cs
@@ -9021,6 +9021,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterSecurityReferenceLookup.cs
 │   │   │   ├── SecurityMasterSnapshotLotEconomics.cs
 │   │   │   ├── SecurityMasterWorkbenchQueryService.cs
+│   │   │   ├── SecurityMasterWorkbenchQueryService.DeclaredExercise.cs
 │   │   │   ├── SensitiveActionGovernance.cs
 │   │   │   ├── StartupRefusalPreflight.cs
 │   │   │   ├── StatementFetchSchedulerService.cs
@@ -9957,7 +9958,8 @@ Meridian-main
 │   │   ├── schedules
 │   │   │   ├── golden
 │   │   │   │   ├── asset-obligation-timeline-undeclared.json
-│   │   │   │   └── face-value-lot-constant-yield.json
+│   │   │   │   ├── face-value-lot-constant-yield.json
+│   │   │   │   └── security-master-schedule-book.json
 │   │   │   └── KNOWN-DEFECTS.md
 │   │   ├── security-master
 │   │   │   ├── governance-payloads
@@ -10416,6 +10418,7 @@ Meridian-main
 │   │   │   │   ├── SecurityMasterStartupTests.cs
 │   │   │   │   ├── SecurityMasterTermsCapabilityFloorTests.cs
 │   │   │   │   ├── SecurityMasterTermsCapabilityStartupTests.cs
+│   │   │   │   ├── SecurityMasterWorkbenchDeclaredExerciseCompositionTests.cs
 │   │   │   │   ├── StartupRefusalPreflightTests.cs
 │   │   │   │   ├── StorageFeatureRegistrationTests.cs
 │   │   │   │   ├── TenantCutoverConfigurationTests.cs
@@ -10850,6 +10853,7 @@ Meridian-main
 │   │   │   ├── OrderBrokerIdentityIndexTests.cs
 │   │   │   ├── OrderDispatchRegistryTests.cs
 │   │   │   ├── OrderFillProcessorTests.cs
+│   │   │   ├── OrderLifecycleServicesTests.cs
 │   │   │   ├── OrderManagementLifecycleCoordinatorTests.cs
 │   │   │   ├── OrderManagementSystemAmendmentHandoffTests.cs
 │   │   │   ├── OrderManagementSystemAmendmentRecoveryTests.cs
@@ -10864,6 +10868,7 @@ Meridian-main
 │   │   │   ├── OrderManagementSystemSubscriptionFailureTests.cs
 │   │   │   ├── OrderManagementSystemTests.cs
 │   │   │   ├── OrderRiskSizingPolicyTests.cs
+│   │   │   ├── OrderStateTableTests.cs
 │   │   │   ├── PaperExecutionGatewayLotSizeTests.cs
 │   │   │   ├── PaperFillEnvelopeRegressionTests.cs
 │   │   │   ├── PaperFuturesSettlementServiceTests.cs
@@ -11828,6 +11833,7 @@ Meridian-main
 │   │   │   ├── LedgerPostgresTestDatabase.cs
 │   │   │   ├── LedgerPostgresTestDatabase.LotReferences.cs
 │   │   │   ├── LifecyclePolicyEngineTests.cs
+│   │   │   ├── MaintenanceFileLockTests.cs
 │   │   │   ├── MaintenancePersistenceTests.cs
 │   │   │   ├── MaintenanceSchedulerTests.cs
 │   │   │   ├── MemoryMappedJsonlReaderTests.cs
@@ -12184,9 +12190,12 @@ Meridian-main
 │   │   │   ├── SecurityMasterTermsCapabilityRefusalEndpointsTests.cs
 │   │   │   ├── SecurityMasterUnderlyingEndpointsTests.cs
 │   │   │   ├── SecurityMasterValidationEndpointsTests.cs
+│   │   │   ├── SecurityMasterWorkbenchDeclaredExerciseScheduleBookTests.cs
 │   │   │   ├── SecurityMasterWorkbenchEndpointsTests.cs
 │   │   │   ├── SecurityMasterWorkbenchOptionsBindingTests.cs
 │   │   │   ├── SecurityMasterWorkbenchQueryServiceCallScheduleTests.cs
+│   │   │   ├── SecurityMasterWorkbenchScheduleBookGoldenTests.cs
+│   │   │   ├── SecurityMasterWorkbenchScheduleBookHarness.cs
 │   │   │   ├── SecurityMasterWriteRefusalEndpointsTests.cs
 │   │   │   ├── SpreadsheetFormulaGuardTests.cs
 │   │   │   ├── StatementImportEvidenceBridgeTests.cs
@@ -12655,6 +12664,7 @@ Meridian-main
 │   │   ├── test_adapter_readiness.py
 │   │   ├── test_agent_toolchain_install.py
 │   │   ├── test_ai_setup_dotnet_channel.py
+│   │   ├── test_analysis_level_baseline.py
 │   │   ├── test_api_contract_coverage_dashboard.py
 │   │   ├── test_archive_code_tombstones.py
 │   │   ├── test_artifact_retention_module.py
@@ -12832,7 +12842,7 @@ Meridian-main
 │   │   │   └── usage.md
 │   │   ├── man
 │   │   │   └── actionlint.1
-│   │   ├── actionlint.exe
+│   │   ├── .gitignore
 │   │   ├── LICENSE.txt
 │   │   └── README.md
 │   ├── codex
