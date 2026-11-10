@@ -350,8 +350,28 @@ public static class LeanEndpoints
                 }, jsonOptions);
             }
 
+            string? leanDataPath = null;
+            if (!string.IsNullOrWhiteSpace(req?.LeanDataPath))
+            {
+                // The export target is written to, so a request may only point it inside the
+                // configured Lean data roots rather than at an arbitrary server directory.
+                var dataRoots = GetConfiguredRoots(configuration, "LEAN_DATA_PATH", "LEAN_PATH");
+                leanDataPath = ResolveUnderRoots(req!.LeanDataPath!, dataRoots);
+                if (leanDataPath is null)
+                {
+                    return Results.BadRequest(new
+                    {
+                        success = false,
+                        error = dataRoots.Count == 0
+                            ? "leanDataPath cannot be changed: configure LEAN_DATA_PATH or LEAN_PATH."
+                            : "leanDataPath must be inside the configured Lean data directory.",
+                        timestamp = DateTimeOffset.UtcNow
+                    });
+                }
+            }
+
             autoExport.Configure(
-                leanDataPath: req?.LeanDataPath,
+                leanDataPath: leanDataPath,
                 enabled: req?.Enabled,
                 intervalSeconds: req?.IntervalSeconds ?? 0,
                 symbols: req?.Symbols);
@@ -387,17 +407,35 @@ public static class LeanEndpoints
                 return Results.BadRequest(new { error = "resultsFilePath is required." });
             }
 
-            if (!File.Exists(req.ResultsFilePath))
+            // The path comes from the request body, so it is confined to the configured Lean
+            // results roots; otherwise any caller could probe for or ingest arbitrary server files.
+            var resultsRoots = GetConfiguredRoots(configuration, "LEAN_RESULTS_PATH", "LEAN_PATH");
+            if (resultsRoots.Count == 0)
             {
-                return Results.NotFound(new
+                return Results.BadRequest(new
                 {
-                    error = $"Results file not found: {req.ResultsFilePath}"
+                    error = "Lean results ingest is disabled: configure LEAN_RESULTS_PATH or LEAN_PATH."
                 });
+            }
+
+            var resultsFilePath = ResolveUnderRoots(req.ResultsFilePath, resultsRoots);
+            if (resultsFilePath is null)
+            {
+                return Results.BadRequest(new
+                {
+                    error = "resultsFilePath must be inside the configured Lean results directory."
+                });
+            }
+
+            if (!File.Exists(resultsFilePath))
+            {
+                // Do not echo the path back: the response must not confirm server file layout.
+                return Results.NotFound(new { error = "Results file not found." });
             }
 
             try
             {
-                var json = await File.ReadAllTextAsync(req.ResultsFilePath).ConfigureAwait(false);
+                var json = await File.ReadAllTextAsync(resultsFilePath).ConfigureAwait(false);
                 using var doc = JsonDocument.Parse(json);
                 var root = doc.RootElement;
 
@@ -436,7 +474,7 @@ public static class LeanEndpoints
                 }
 
                 ingestedResults[backtestId] = new IngestedResultInfo(
-                    backtestId, algorithmName, req.ResultsFilePath,
+                    backtestId, algorithmName, resultsFilePath,
                     totalReturn, sharpe, totalTrades, DateTimeOffset.UtcNow);
 
                 return Results.Json(new
@@ -488,6 +526,60 @@ public static class LeanEndpoints
         })
         .WithName("GetLeanSymbolMap").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces(200);
+    }
+
+    private static IReadOnlyList<string> GetConfiguredRoots(CompositionConfiguration configuration, params string[] keys)
+    {
+        var roots = new List<string>(keys.Length);
+        foreach (var key in keys)
+        {
+            var value = configuration[key];
+            if (string.IsNullOrWhiteSpace(value))
+                continue;
+            try
+            {
+                roots.Add(Path.GetFullPath(value));
+            }
+            catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException)
+            {
+                // An unparseable configured root confines nothing; skip it.
+            }
+        }
+
+        return roots;
+    }
+
+    /// <summary>
+    /// Returns the full path of <paramref name="requested"/> when it resolves strictly inside one
+    /// of <paramref name="roots"/> (after normalising <c>..</c> segments); otherwise <c>null</c>.
+    /// </summary>
+    internal static string? ResolveUnderRoots(string requested, IReadOnlyList<string> roots)
+    {
+        if (string.IsNullOrWhiteSpace(requested) || roots.Count == 0)
+            return null;
+
+        string fullPath;
+        try
+        {
+            fullPath = Path.GetFullPath(requested);
+        }
+        catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException)
+        {
+            return null;
+        }
+
+        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        foreach (var root in roots)
+        {
+            var trimmedRoot = root.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            if (string.Equals(fullPath, trimmedRoot, comparison) ||
+                fullPath.StartsWith(trimmedRoot + Path.DirectorySeparatorChar, comparison))
+            {
+                return fullPath;
+            }
+        }
+
+        return null;
     }
 
     private static string? DetectLeanVersion(string leanPath)

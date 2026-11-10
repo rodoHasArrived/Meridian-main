@@ -10204,39 +10204,6 @@ Meridian-main
 │   │   │       │       ├── 001_banking.sql
 │   │   │       │       ├── 002_bank_transaction_recorded_by.sql
 │   │   │       │       └── 003_payment_intent_integrity.sql
-│   │   │       ├── cs
-│   │   │       │   ├── FSharp.Core.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.CSharp.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.Scripting.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Extensions.MSBuild.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Extensions.Telemetry.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Extensions.VSTestBridge.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Platform.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.AdapterUtilities.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.CommunicationUtilities.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.CoreUtilities.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.CrossPlatEngine.resources.dll
-│   │   │       │   ├── Microsoft.VisualStudio.TestPlatform.Common.resources.dll
-│   │   │       │   └── Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
-│   │   │       ├── de
-│   │   │       │   ├── FSharp.Core.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.CSharp.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.Scripting.resources.dll
-│   │   │       │   ├── Microsoft.Data.SqlClient.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Extensions.MSBuild.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Extensions.Telemetry.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Extensions.VSTestBridge.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Platform.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.AdapterUtilities.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.CommunicationUtilities.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.CoreUtilities.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.CrossPlatEngine.resources.dll
-│   │   │       │   ├── Microsoft.VisualStudio.TestPlatform.Common.resources.dll
-│   │   │       │   └── Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
 │   │   │       ├── DirectLending
 │   │   │       │   └── Migrations
 │   │   │       │       ├── 001_direct_lending.sql
@@ -10250,40 +10217,6 @@ Meridian-main
 │   │   │       │       ├── 006_servicer_statement_intake.sql
 │   │   │       │       ├── 007_direct_lending_command_idempotency.sql
 │   │   │       │       └── 008_direct_lending_pik_accrual.sql
-│   │   │       ├── es
-│   │   │       │   ├── FSharp.Core.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.CSharp.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.Scripting.resources.dll
-│   │   │       │   ├── Microsoft.Data.SqlClient.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Extensions.MSBuild.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Extensions.Telemetry.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Extensions.VSTestBridge.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Platform.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.AdapterUtilities.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.CommunicationUtilities.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.CoreUtilities.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.CrossPlatEngine.resources.dll
-│   │   │       │   ├── Microsoft.VisualStudio.TestPlatform.Common.resources.dll
-│   │   │       │   └── Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
-│   │   │       ├── fr
-│   │   │       │   ├── FSharp.Core.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.CSharp.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.Scripting.resources.dll
-│   │   │       │   ├── Microsoft.Data.SqlClient.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Extensions.MSBuild.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Extensions.Telemetry.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Extensions.VSTestBridge.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Platform.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.AdapterUtilities.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.CommunicationUtilities.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.CoreUtilities.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.CrossPlatEngine.resources.dll
-│   │   │       │   ├── Microsoft.VisualStudio.TestPlatform.Common.resources.dll
-│   │   │       │   └── Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
 │   │   │       ├── FundAccounts
 │   │   │       │   └── Migrations
 │   │   │       │       ├── 001_fund_accounts.sql
@@ -10298,57 +10231,6 @@ Meridian-main
 │   │   │       ├── IdentityAccess
 │   │   │       │   └── Migrations
 │   │   │       │       └── 001_user_access_assignment.sql
-│   │   │       ├── it
-│   │   │       │   ├── FSharp.Core.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.CSharp.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.Scripting.resources.dll
-│   │   │       │   ├── Microsoft.Data.SqlClient.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Extensions.MSBuild.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Extensions.Telemetry.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Extensions.VSTestBridge.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Platform.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.AdapterUtilities.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.CommunicationUtilities.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.CoreUtilities.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.CrossPlatEngine.resources.dll
-│   │   │       │   ├── Microsoft.VisualStudio.TestPlatform.Common.resources.dll
-│   │   │       │   └── Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
-│   │   │       ├── ja
-│   │   │       │   ├── FSharp.Core.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.CSharp.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.Scripting.resources.dll
-│   │   │       │   ├── Microsoft.Data.SqlClient.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Extensions.MSBuild.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Extensions.Telemetry.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Extensions.VSTestBridge.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Platform.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.AdapterUtilities.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.CommunicationUtilities.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.CoreUtilities.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.CrossPlatEngine.resources.dll
-│   │   │       │   ├── Microsoft.VisualStudio.TestPlatform.Common.resources.dll
-│   │   │       │   └── Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
-│   │   │       ├── ko
-│   │   │       │   ├── FSharp.Core.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.CSharp.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.Scripting.resources.dll
-│   │   │       │   ├── Microsoft.Data.SqlClient.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Extensions.MSBuild.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Extensions.Telemetry.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Extensions.VSTestBridge.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Platform.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.AdapterUtilities.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.CommunicationUtilities.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.CoreUtilities.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.CrossPlatEngine.resources.dll
-│   │   │       │   ├── Microsoft.VisualStudio.TestPlatform.Common.resources.dll
-│   │   │       │   └── Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
 │   │   │       ├── Ledger
 │   │   │       │   └── Migrations
 │   │   │       │       ├── V_ledger_001__journal_entries.sql
@@ -10383,39 +10265,6 @@ Meridian-main
 │   │   │       ├── MoneyMarket
 │   │   │       │   └── Migrations
 │   │   │       │       └── 001_money_market.sql
-│   │   │       ├── pl
-│   │   │       │   ├── FSharp.Core.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.CSharp.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.Scripting.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Extensions.MSBuild.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Extensions.Telemetry.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Extensions.VSTestBridge.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Platform.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.AdapterUtilities.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.CommunicationUtilities.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.CoreUtilities.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.CrossPlatEngine.resources.dll
-│   │   │       │   ├── Microsoft.VisualStudio.TestPlatform.Common.resources.dll
-│   │   │       │   └── Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
-│   │   │       ├── pt-BR
-│   │   │       │   ├── FSharp.Core.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.CSharp.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.Scripting.resources.dll
-│   │   │       │   ├── Microsoft.Data.SqlClient.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Extensions.MSBuild.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Extensions.Telemetry.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Extensions.VSTestBridge.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Platform.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.AdapterUtilities.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.CommunicationUtilities.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.CoreUtilities.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.CrossPlatEngine.resources.dll
-│   │   │       │   ├── Microsoft.VisualStudio.TestPlatform.Common.resources.dll
-│   │   │       │   └── Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
 │   │   │       ├── Reporting
 │   │   │       │   └── Migrations
 │   │   │       │       ├── 001_reporting_artifact_blobs.sql
@@ -10431,326 +10280,35 @@ Meridian-main
 │   │   │       │       ├── 011_reporting_delivery_run_read_index.sql
 │   │   │       │       ├── 012_reporting_access_grant_artifact_consumption.sql
 │   │   │       │       └── 013_reporting_statement_reconciliation_authority.sql
-│   │   │       ├── ru
-│   │   │       │   ├── FSharp.Core.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.CSharp.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.Scripting.resources.dll
-│   │   │       │   ├── Microsoft.Data.SqlClient.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Extensions.MSBuild.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Extensions.Telemetry.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Extensions.VSTestBridge.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Platform.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.AdapterUtilities.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.CommunicationUtilities.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.CoreUtilities.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.CrossPlatEngine.resources.dll
-│   │   │       │   ├── Microsoft.VisualStudio.TestPlatform.Common.resources.dll
-│   │   │       │   └── Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
-│   │   │       ├── runtimes
-│   │   │       │   ├── osx
-│   │   │       │   │   └── native
-│   │   │       │   │       └── libduckdb.dylib
-│   │   │       │   ├── unix
-│   │   │       │   │   └── lib
-│   │   │       │   │       └── net8.0
-│   │   │       │   │           └── Microsoft.Data.SqlClient.dll
-│   │   │       │   ├── win
-│   │   │       │   │   └── lib
-│   │   │       │   │       └── net8.0
-│   │   │       │   │           ├── Microsoft.Data.SqlClient.dll
-│   │   │       │   │           └── System.Runtime.Caching.dll
-│   │   │       │   ├── win-arm
-│   │   │       │   │   └── native
-│   │   │       │   │       └── Microsoft.Data.SqlClient.SNI.dll
-│   │   │       │   ├── win-arm64
-│   │   │       │   │   └── native
-│   │   │       │   │       ├── duckdb.dll
-│   │   │       │   │       └── Microsoft.Data.SqlClient.SNI.dll
-│   │   │       │   ├── win-x64
-│   │   │       │   │   └── native
-│   │   │       │   │       ├── duckdb.dll
-│   │   │       │   │       └── Microsoft.Data.SqlClient.SNI.dll
-│   │   │       │   └── win-x86
-│   │   │       │       └── native
-│   │   │       │           └── Microsoft.Data.SqlClient.SNI.dll
-│   │   │       ├── SecurityMaster
-│   │   │       │   └── Migrations
-│   │   │       │       ├── 001_security_master.sql
-│   │   │       │       ├── 002_security_master_fts.sql
-│   │   │       │       ├── 003_security_master_corp_actions.sql
-│   │   │       │       ├── 004_security_master_operator_overrides.sql
-│   │   │       │       ├── 005_security_master_bond_reference_projection.sql
-│   │   │       │       ├── 006_security_master_option_reference_projection.sql
-│   │   │       │       ├── 007_security_master_equity_projection.sql
-│   │   │       │       ├── 008_security_master_future_projection.sql
-│   │   │       │       ├── 009_security_master_fxspot_projection.sql
-│   │   │       │       ├── 010_security_master_swap_projection.sql
-│   │   │       │       ├── 011_security_master_commodity_projection.sql
-│   │   │       │       ├── 012_security_master_crypto_projection.sql
-│   │   │       │       ├── 013_security_master_deposit_projection.sql
-│   │   │       │       ├── 014_security_master_money_market_fund_projection.sql
-│   │   │       │       ├── 015_security_master_certificate_of_deposit_projection.sql
-│   │   │       │       ├── 016_security_master_normalized_identifier_lookup.sql
-│   │   │       │       ├── 017_security_master_bond_clearwater_lifecycle_fields.sql
-│   │   │       │       ├── 018_security_master_cashflow_sources.sql
-│   │   │       │       ├── 019_data_vendor_entitlements.sql
-│   │   │       │       ├── 020_data_vendor_entitlement_scope_metadata.sql
-│   │   │       │       ├── 021_security_master_corp_action_lifecycle.sql
-│   │   │       │       ├── 022_security_master_pricing_hierarchy.sql
-│   │   │       │       ├── 023_security_master_quality_reports.sql
-│   │   │       │       ├── 024_security_master_schema_version_column.sql
-│   │   │       │       ├── 025_security_master_audit_stores.sql
-│   │   │       │       └── 026_security_master_operator_override_approvals.sql
-│   │   │       ├── tr
-│   │   │       │   ├── FSharp.Core.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.CSharp.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.Scripting.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Extensions.MSBuild.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Extensions.Telemetry.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Extensions.VSTestBridge.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Platform.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.AdapterUtilities.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.CommunicationUtilities.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.CoreUtilities.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.CrossPlatEngine.resources.dll
-│   │   │       │   ├── Microsoft.VisualStudio.TestPlatform.Common.resources.dll
-│   │   │       │   └── Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
-│   │   │       ├── zh-Hans
-│   │   │       │   ├── FSharp.Core.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.CSharp.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.Scripting.resources.dll
-│   │   │       │   ├── Microsoft.Data.SqlClient.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Extensions.MSBuild.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Extensions.Telemetry.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Extensions.VSTestBridge.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Platform.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.AdapterUtilities.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.CommunicationUtilities.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.CoreUtilities.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.CrossPlatEngine.resources.dll
-│   │   │       │   ├── Microsoft.VisualStudio.TestPlatform.Common.resources.dll
-│   │   │       │   └── Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
-│   │   │       ├── zh-Hant
-│   │   │       │   ├── FSharp.Core.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.CSharp.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.resources.dll
-│   │   │       │   ├── Microsoft.CodeAnalysis.Scripting.resources.dll
-│   │   │       │   ├── Microsoft.Data.SqlClient.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Extensions.MSBuild.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Extensions.Telemetry.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Extensions.VSTestBridge.resources.dll
-│   │   │       │   ├── Microsoft.Testing.Platform.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.AdapterUtilities.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.CommunicationUtilities.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.CoreUtilities.resources.dll
-│   │   │       │   ├── Microsoft.TestPlatform.CrossPlatEngine.resources.dll
-│   │   │       │   ├── Microsoft.VisualStudio.TestPlatform.Common.resources.dll
-│   │   │       │   └── Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
-│   │   │       ├── Apache.Arrow.dll
-│   │   │       ├── Apache.Arrow.Scalars.dll
-│   │   │       ├── Azure.Core.Amqp.dll
-│   │   │       ├── Azure.Core.dll
-│   │   │       ├── Azure.Identity.dll
-│   │   │       ├── Azure.Messaging.ServiceBus.dll
-│   │   │       ├── CommunityToolkit.HighPerformance.dll
-│   │   │       ├── DuckDB.NET.Bindings.dll
-│   │   │       ├── DuckDB.NET.Data.dll
-│   │   │       ├── Expecto.dll
-│   │   │       ├── Expecto.FsCheck.dll
-│   │   │       ├── Farmer.dll
-│   │   │       ├── FluentValidation.dll
-│   │   │       ├── FsCheck.dll
-│   │   │       ├── FSharp.Control.AsyncSeq.dll
-│   │   │       ├── FSharp.Core.dll
-│   │   │       ├── FSharp.Data.Csv.Core.dll
-│   │   │       ├── FSharp.Data.dll
-│   │   │       ├── FSharp.Data.Html.Core.dll
-│   │   │       ├── FSharp.Data.Http.dll
-│   │   │       ├── FSharp.Data.Json.Core.dll
-│   │   │       ├── FSharp.Data.Runtime.Utilities.dll
-│   │   │       ├── FSharp.Data.WorldBank.Core.dll
-│   │   │       ├── FSharp.Data.Xml.Core.dll
-│   │   │       ├── FSharp.Quotations.Evaluator.dll
-│   │   │       ├── FSharp.SystemTextJson.dll
-│   │   │       ├── FSharpPlus.dll
-│   │   │       ├── FsPickler.dll
-│   │   │       ├── FsPickler.Json.dll
-│   │   │       ├── FsToolkit.ErrorHandling.dll
-│   │   │       ├── K4os.Compression.LZ4.dll
-│   │   │       ├── K4os.Compression.LZ4.Streams.dll
-│   │   │       ├── K4os.Hash.xxHash.dll
-│   │   │       ├── Meridian.Application.dll
-│   │   │       ├── Meridian.Application.pdb
-│   │   │       ├── Meridian.Application.xml
-│   │   │       ├── Meridian.Backtesting.dll
-│   │   │       ├── Meridian.Backtesting.pdb
-│   │   │       ├── Meridian.Backtesting.Sdk.dll
-│   │   │       ├── Meridian.Backtesting.Sdk.pdb
-│   │   │       ├── Meridian.Contracts.dll
-│   │   │       ├── Meridian.Contracts.pdb
-│   │   │       ├── Meridian.Contracts.xml
-│   │   │       ├── Meridian.Core.dll
-│   │   │       ├── Meridian.Core.pdb
-│   │   │       ├── Meridian.Core.xml
-│   │   │       ├── Meridian.DataIntegration.dll
-│   │   │       ├── Meridian.DataIntegration.pdb
-│   │   │       ├── Meridian.DataIntegration.xml
-│   │   │       ├── Meridian.Domain.dll
-│   │   │       ├── Meridian.Domain.pdb
-│   │   │       ├── Meridian.Domain.xml
-│   │   │       ├── Meridian.Entities.dll
-│   │   │       ├── Meridian.Entities.pdb
-│   │   │       ├── Meridian.Entities.xml
-│   │   │       ├── Meridian.Execution.dll
-│   │   │       ├── Meridian.Execution.pdb
-│   │   │       ├── Meridian.Execution.Sdk.dll
-│   │   │       ├── Meridian.Execution.Sdk.pdb
-│   │   │       ├── Meridian.FinancialOperations.dll
-│   │   │       ├── Meridian.FinancialOperations.pdb
-│   │   │       ├── Meridian.FinancialOperations.xml
-│   │   │       ├── Meridian.FSharp.DirectLending.Aggregates.dll
-│   │   │       ├── Meridian.FSharp.DirectLending.Aggregates.pdb
-│   │   │       ├── Meridian.FSharp.DirectLending.Aggregates.xml
-│   │   │       ├── Meridian.FSharp.dll
-│   │   │       ├── Meridian.FSharp.Ledger.dll
-│   │   │       ├── Meridian.FSharp.Ledger.pdb
-│   │   │       ├── Meridian.FSharp.Ledger.xml
-│   │   │       ├── Meridian.FSharp.pdb
-│   │   │       ├── Meridian.FSharp.Trading.dll
-│   │   │       ├── Meridian.FSharp.Trading.pdb
-│   │   │       ├── Meridian.FSharp.Trading.xml
-│   │   │       ├── Meridian.FSharp.xml
-│   │   │       ├── Meridian.Identity.dll
-│   │   │       ├── Meridian.Identity.pdb
-│   │   │       ├── Meridian.Identity.xml
-│   │   │       ├── Meridian.Infrastructure.dll
-│   │   │       ├── Meridian.Infrastructure.pdb
-│   │   │       ├── Meridian.Infrastructure.xml
-│   │   │       ├── Meridian.Instruments.dll
-│   │   │       ├── Meridian.Instruments.pdb
-│   │   │       ├── Meridian.Instruments.xml
-│   │   │       ├── Meridian.Ledger.dll
-│   │   │       ├── Meridian.Ledger.pdb
-│   │   │       ├── Meridian.Platform.dll
-│   │   │       ├── Meridian.Platform.pdb
-│   │   │       ├── Meridian.Platform.xml
-│   │   │       ├── Meridian.PortfolioRecords.dll
-│   │   │       ├── Meridian.PortfolioRecords.pdb
-│   │   │       ├── Meridian.PortfolioRecords.xml
-│   │   │       ├── Meridian.ProcessIsolation.dll
-│   │   │       ├── Meridian.ProcessIsolation.pdb
-│   │   │       ├── Meridian.ProviderSdk.dll
-│   │   │       ├── Meridian.ProviderSdk.pdb
-│   │   │       ├── Meridian.ProviderSdk.xml
-│   │   │       ├── Meridian.QuantScript.dll
-│   │   │       ├── Meridian.QuantScript.pdb
-│   │   │       ├── Meridian.QuantScript.Worker.deps.json
-│   │   │       ├── Meridian.QuantScript.Worker.dll
-│   │   │       ├── Meridian.QuantScript.Worker.exe
-│   │   │       ├── Meridian.QuantScript.Worker.pdb
-│   │   │       ├── Meridian.QuantScript.Worker.runtimeconfig.json
-│   │   │       ├── Meridian.ReferenceData.dll
-│   │   │       ├── Meridian.ReferenceData.pdb
-│   │   │       ├── Meridian.ReferenceData.xml
-│   │   │       ├── Meridian.Reporting.dll
-│   │   │       ├── Meridian.Reporting.pdb
-│   │   │       ├── Meridian.Reporting.xml
-│   │   │       ├── Meridian.Storage.dll
-│   │   │       ├── Meridian.Storage.pdb
-│   │   │       ├── Meridian.Storage.xml
-│   │   │       ├── Meridian.Strategies.dll
-│   │   │       ├── Meridian.Strategies.pdb
-│   │   │       ├── Meridian.Workflow.dll
-│   │   │       ├── Meridian.Workflow.pdb
-│   │   │       ├── Meridian.Workflow.xml
-│   │   │       ├── Microsoft.ApplicationInsights.dll
-│   │   │       ├── Microsoft.Azure.Amqp.dll
-│   │   │       ├── Microsoft.Bcl.AsyncInterfaces.dll
-│   │   │       ├── Microsoft.CodeAnalysis.CSharp.dll
-│   │   │       ├── Microsoft.CodeAnalysis.CSharp.Scripting.dll
-│   │   │       ├── Microsoft.CodeAnalysis.dll
-│   │   │       ├── Microsoft.CodeAnalysis.Scripting.dll
-│   │   │       ├── Microsoft.Data.SqlClient.dll
-│   │   │       ├── Microsoft.Extensions.Caching.SqlServer.dll
-│   │   │       ├── Microsoft.Extensions.DependencyModel.dll
-│   │   │       ├── Microsoft.Extensions.Http.Polly.dll
-│   │   │       ├── Microsoft.Identity.Client.dll
-│   │   │       ├── Microsoft.Identity.Client.Extensions.Msal.dll
-│   │   │       ├── Microsoft.IdentityModel.Abstractions.dll
-│   │   │       ├── Microsoft.IdentityModel.JsonWebTokens.dll
-│   │   │       ├── Microsoft.IdentityModel.Logging.dll
-│   │   │       ├── Microsoft.IdentityModel.Protocols.dll
-│   │   │       ├── Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
-│   │   │       ├── Microsoft.IdentityModel.Tokens.dll
-│   │   │       ├── Microsoft.IO.RecyclableMemoryStream.dll
-│   │   │       ├── Microsoft.SqlServer.Server.dll
-│   │   │       ├── Microsoft.Testing.Extensions.MSBuild.dll
-│   │   │       ├── Microsoft.Testing.Extensions.Telemetry.dll
-│   │   │       ├── Microsoft.Testing.Extensions.TrxReport.Abstractions.dll
-│   │   │       ├── Microsoft.Testing.Extensions.VSTestBridge.dll
-│   │   │       ├── Microsoft.Testing.Platform.dll
-│   │   │       ├── Microsoft.TestPlatform.AdapterUtilities.dll
-│   │   │       ├── Microsoft.TestPlatform.CommunicationUtilities.dll
-│   │   │       ├── Microsoft.TestPlatform.CoreUtilities.dll
-│   │   │       ├── Microsoft.TestPlatform.CrossPlatEngine.dll
-│   │   │       ├── Microsoft.TestPlatform.PlatformAbstractions.dll
-│   │   │       ├── Microsoft.TestPlatform.Utilities.dll
-│   │   │       ├── Microsoft.VisualStudio.CodeCoverage.Shim.dll
-│   │   │       ├── Microsoft.VisualStudio.TestPlatform.Common.dll
-│   │   │       ├── Microsoft.VisualStudio.TestPlatform.ObjectModel.dll
-│   │   │       ├── Mono.Cecil.dll
-│   │   │       ├── Mono.Cecil.Mdb.dll
-│   │   │       ├── Mono.Cecil.Pdb.dll
-│   │   │       ├── Mono.Cecil.Rocks.dll
-│   │   │       ├── MQTTnet.dll
-│   │   │       ├── Newtonsoft.Json.dll
-│   │   │       ├── Npgsql.dll
-│   │   │       ├── Npgsql.FSharp.dll
-│   │   │       ├── OpenTelemetry.Api.dll
-│   │   │       ├── OpenTelemetry.Api.ProviderBuilderExtensions.dll
-│   │   │       ├── OpenTelemetry.dll
-│   │   │       ├── OpenTelemetry.Exporter.Console.dll
-│   │   │       ├── OpenTelemetry.Exporter.OpenTelemetryProtocol.dll
-│   │   │       ├── OpenTelemetry.Exporter.Prometheus.AspNetCore.dll
-│   │   │       ├── OpenTelemetry.Extensions.Hosting.dll
-│   │   │       ├── OpenTelemetry.Instrumentation.AspNetCore.dll
-│   │   │       ├── OpenTelemetry.Instrumentation.Http.dll
-│   │   │       ├── Parquet.dll
-│   │   │       ├── Polly.Core.dll
-│   │   │       ├── Polly.dll
-│   │   │       ├── Polly.Extensions.dll
-│   │   │       ├── Polly.Extensions.Http.dll
-│   │   │       ├── Prometheus.AspNetCore.dll
-│   │   │       ├── Prometheus.NetStandard.dll
-│   │   │       ├── RabbitMQ.Client.dll
-│   │   │       ├── Serilog.dll
-│   │   │       ├── Serilog.Extensions.Logging.dll
-│   │   │       ├── Serilog.Settings.Configuration.dll
-│   │   │       ├── Serilog.Sinks.Console.dll
-│   │   │       ├── Serilog.Sinks.File.dll
-│   │   │       ├── Sharpino.Lib.Core.dll
-│   │   │       ├── Sharpino.Lib.dll
-│   │   │       ├── Skender.Stock.Indicators.dll
-│   │   │       ├── Snappier.dll
-│   │   │       ├── System.ClientModel.dll
-│   │   │       ├── System.Configuration.ConfigurationManager.dll
-│   │   │       ├── System.IdentityModel.Tokens.Jwt.dll
-│   │   │       ├── System.Memory.Data.dll
-│   │   │       ├── System.Reactive.dll
-│   │   │       ├── System.Runtime.Caching.dll
-│   │   │       ├── System.Security.Cryptography.ProtectedData.dll
-│   │   │       ├── testhost.dll
-│   │   │       ├── Websocket.Client.dll
-│   │   │       ├── ZiggyCreatures.FusionCache.dll
-│   │   │       ├── ZiggyCreatures.FusionCache.Serialization.SystemTextJson.dll
-│   │   │       └── ZstdSharp.dll
+│   │   │       └── SecurityMaster
+│   │   │           └── Migrations
+│   │   │               ├── 001_security_master.sql
+│   │   │               ├── 002_security_master_fts.sql
+│   │   │               ├── 003_security_master_corp_actions.sql
+│   │   │               ├── 004_security_master_operator_overrides.sql
+│   │   │               ├── 005_security_master_bond_reference_projection.sql
+│   │   │               ├── 006_security_master_option_reference_projection.sql
+│   │   │               ├── 007_security_master_equity_projection.sql
+│   │   │               ├── 008_security_master_future_projection.sql
+│   │   │               ├── 009_security_master_fxspot_projection.sql
+│   │   │               ├── 010_security_master_swap_projection.sql
+│   │   │               ├── 011_security_master_commodity_projection.sql
+│   │   │               ├── 012_security_master_crypto_projection.sql
+│   │   │               ├── 013_security_master_deposit_projection.sql
+│   │   │               ├── 014_security_master_money_market_fund_projection.sql
+│   │   │               ├── 015_security_master_certificate_of_deposit_projection.sql
+│   │   │               ├── 016_security_master_normalized_identifier_lookup.sql
+│   │   │               ├── 017_security_master_bond_clearwater_lifecycle_fields.sql
+│   │   │               ├── 018_security_master_cashflow_sources.sql
+│   │   │               ├── 019_data_vendor_entitlements.sql
+│   │   │               ├── 020_data_vendor_entitlement_scope_metadata.sql
+│   │   │               ├── 021_security_master_corp_action_lifecycle.sql
+│   │   │               ├── 022_security_master_pricing_hierarchy.sql
+│   │   │               ├── 023_security_master_quality_reports.sql
+│   │   │               ├── 024_security_master_schema_version_column.sql
+│   │   │               ├── 025_security_master_audit_stores.sql
+│   │   │               └── 026_security_master_operator_override_approvals.sql
+│   │   ├── .gitignore
 │   │   ├── BacktestProxyRealismTests.cs
 │   │   ├── ContainedProcessTests.cs
 │   │   ├── GlobalUsings.cs
@@ -12539,6 +12097,7 @@ Meridian-main
 │   │   │   ├── LiveTradingEngineHostRegistrationTests.cs
 │   │   │   ├── LoanPortfolioWireContractTests.cs
 │   │   │   ├── ManualJournalMutationRecoveryStoreTests.cs
+│   │   │   ├── MarginCertificationStoreTests.cs
 │   │   │   ├── MarginControlCenterReadServiceTests.cs
 │   │   │   ├── MultiAssetEvidenceClassRouterTests.cs
 │   │   │   ├── OmsIntegrationServiceTests.cs
