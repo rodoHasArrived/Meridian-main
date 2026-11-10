@@ -328,4 +328,3 @@ function ReportingHubContent({
     </section>
   );
 }
-
