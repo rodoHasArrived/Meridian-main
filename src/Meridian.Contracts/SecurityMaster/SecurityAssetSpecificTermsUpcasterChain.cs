@@ -67,7 +67,7 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     /// fails closed. A module added to the serializer from here on joins this list.
     /// </summary>
     public static IReadOnlyList<string> ModulesAddedAfterIdentityGate { get; } =
-        ["exercise"];
+        ["exercise", "currencyPair"];
 
     /// <summary>
     /// The economic-terms modules the serializer emits that this conversion does not read. Listed
@@ -1052,6 +1052,8 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             Map("exerciseStyle", ("exercise", "exerciseStyle"))
         ]),
         ("Future", [Map("expiry", MaturityDate), Map("multiplier", ("tradingParameters", "contractMultiplier"))]),
+        ("FxSpot", [Map("baseCurrency", ("currencyPair", "baseCurrency")), Map("quoteCurrency", ("currencyPair", "quoteCurrency"))]),
+        ("CryptoCurrency", [Map("baseCurrency", ("currencyPair", "baseCurrency")), Map("quoteCurrency", ("currencyPair", "quoteCurrency"))]),
         ("Bond",
         [
             Map("maturity", MaturityDate),
@@ -1171,8 +1173,23 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             Map("expiry", MaturityDate),
             Map("multiplier", ("tradingParameters", "contractMultiplier"))
         ]),
-        ("FxForward", [Map("tradeDate", ("maturity", "effectiveDate")), Map("valueDate", MaturityDate)]),
-        ("NonDeliverableForward", [Map("fixingDate", ("maturity", "effectiveDate")), Map("valueDate", MaturityDate)]),
+        ("FxForward",
+        [
+            Map("baseCurrency", ("currencyPair", "baseCurrency")),
+            Map("quoteCurrency", ("currencyPair", "quoteCurrency")),
+            Map("forwardRate", ("currencyPair", "forwardRate")),
+            Map("tradeDate", ("maturity", "effectiveDate")),
+            Map("valueDate", MaturityDate)
+        ]),
+        ("NonDeliverableForward",
+        [
+            Map("baseCurrency", ("currencyPair", "baseCurrency")),
+            Map("quoteCurrency", ("currencyPair", "quoteCurrency")),
+            Map("settlementCurrency", ("currencyPair", "settlementCurrency")),
+            Map("forwardRate", ("currencyPair", "forwardRate")),
+            Map("fixingDate", ("maturity", "effectiveDate")),
+            Map("valueDate", MaturityDate)
+        ]),
         ("CreditDefaultSwap",
         [
             Map("effectiveDate", ("maturity", "effectiveDate")),

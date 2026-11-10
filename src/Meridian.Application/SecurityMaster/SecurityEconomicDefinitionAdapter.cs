@@ -531,6 +531,13 @@ internal static class SecurityEconomicDefinitionAdapter
                 exerciseStyle = definition.Terms.Exercise.Value.ExerciseStyle is null ? null : definition.Terms.Exercise.Value.ExerciseStyle.Value,
                 underlyingSecurityId = definition.Terms.Exercise.Value.UnderlyingSecurityId is null ? (Guid?)null : definition.Terms.Exercise.Value.UnderlyingSecurityId.Value.Item,
                 premiumAmount = definition.Terms.Exercise.Value.PremiumAmount
+            },
+            currencyPair = definition.Terms.CurrencyPair is null ? null : new
+            {
+                baseCurrency = definition.Terms.CurrencyPair.Value.BaseCurrency is null ? null : definition.Terms.CurrencyPair.Value.BaseCurrency.Value,
+                quoteCurrency = definition.Terms.CurrencyPair.Value.QuoteCurrency is null ? null : definition.Terms.CurrencyPair.Value.QuoteCurrency.Value,
+                settlementCurrency = definition.Terms.CurrencyPair.Value.SettlementCurrency is null ? null : definition.Terms.CurrencyPair.Value.SettlementCurrency.Value,
+                forwardRate = definition.Terms.CurrencyPair.Value.ForwardRate
             }
         });
         // Keep byte-identical economics for records without a dated history. The additive field

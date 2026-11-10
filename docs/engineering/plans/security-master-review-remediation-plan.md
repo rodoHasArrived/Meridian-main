@@ -463,3 +463,8 @@ and S2-B4 (codec single-purpose) land. Planned increments:
     now tolerates exactly one difference — a module key added after the gate shipped
     (`ModulesAddedAfterIdentityGate`) that an image predates and the rebuild emits null — so
     serializer growth does not re-age stored images into carrying their retained document.
+  - **S3-E2 — currency pairs (implemented 2026-11-10).** New `currencyPair` term module
+    (`CurrencyPairTerms`: base, quote and settlement currencies, forward rate) homes the pair
+    fields of FxSpot, CryptoCurrency, FxForward and NonDeliverableForward. Fifteen rules moved
+    to the definition surface; FxSpot and CryptoCurrency keep no codec-only rule and gained
+    class-aware flattenings, so their economic-only replays recover both required keys.

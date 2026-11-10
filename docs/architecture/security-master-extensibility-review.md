@@ -806,6 +806,31 @@ Validation (local, .NET SDK 10.0.403): `dotnet test tests/Meridian.Tests -c Rele
 active-plus-inactive gauge, and the zero case. The full local `bash scripts/ci.sh` was not run;
 GitHub `Meridian CI / quality-gate` remains authoritative.
 
+### ADR-027 stage-3 S3-E2 — currency pairs gain a module home — 2026-11-10
+
+A new `currencyPair` term module (`CurrencyPairTerms`: `baseCurrency`, `quoteCurrency`,
+`settlementCurrency`, `forwardRate`) homes the pair fields of FxSpot, CryptoCurrency, FxForward
+and NonDeliverableForward; `termsFromKind` feeds it for all four (FxSpot and CryptoCurrency
+previously projected no module at all). The serializer emits the key for every class, and it
+joins `ModulesAddedAfterIdentityGate`, so images written before it keep shedding their carry.
+
+Fifteen codes moved from `validateCodecOnlyKindTerms` to `validateDefinitionTerms` and the
+ledger: the three FxSpot rules, the three CryptoCurrency rules, four FxForward rules (base,
+quote, pair, rate) and five NonDeliverableForward rules (base, quote, settlement, pair, rate).
+FxSpot and CryptoCurrency now have no codec-only rule; FxForward and NonDeliverableForward keep
+only their notional rule, which S3-E3 moves. `ClassFlattenings` gained FxSpot and
+CryptoCurrency entries (they previously fell back to the class-independent bridge) and the
+pair, settlement and rate keys for the two forwards, so an economic-only FxSpot or
+CryptoCurrency replay now recovers every required flat key.
+
+The replay corpus changed only by the appended `"currencyPair":null` key; the write golden by
+that key plus the four classes' module content.
+
+Validation (local, .NET SDK 10.0.403): `Meridian.Tests` SecurityMaster and Architecture
+namespaces — 6,314 passed, 1 skipped (after accepting the two goldens); `Meridian.FSharp.Tests`
+— 611 passed. The full local `bash scripts/ci.sh` was not run; GitHub
+`Meridian CI / quality-gate` remains authoritative.
+
 ### ADR-027 stage-3 S3-E1 — strikes gain a module home — 2026-11-10
 
 First of the S3-E module-home increments the census scoped. A new `exercise` term module

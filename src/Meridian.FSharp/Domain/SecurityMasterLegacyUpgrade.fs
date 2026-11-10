@@ -326,8 +326,17 @@ module SecurityMasterLegacyUpgrade =
                             })
                     StructuredProduct = structuredTerms
             }
-        | SecurityKind.FxSpot _ ->
-            SecurityTermModules.empty
+        | SecurityKind.FxSpot terms ->
+            {
+                SecurityTermModules.empty with
+                    CurrencyPair =
+                        Some {
+                            BaseCurrency = Some terms.BaseCurrency
+                            QuoteCurrency = Some terms.QuoteCurrency
+                            SettlementCurrency = None
+                            ForwardRate = None
+                        }
+            }
         | SecurityKind.Deposit terms ->
             {
                 SecurityTermModules.empty with
@@ -730,8 +739,17 @@ module SecurityMasterLegacyUpgrade =
                             CircuitBreakerThresholdPct = None
                         }
             }
-        | SecurityKind.CryptoCurrency _ ->
-            SecurityTermModules.empty
+        | SecurityKind.CryptoCurrency terms ->
+            {
+                SecurityTermModules.empty with
+                    CurrencyPair =
+                        Some {
+                            BaseCurrency = Some terms.BaseCurrency
+                            QuoteCurrency = Some terms.QuoteCurrency
+                            SettlementCurrency = None
+                            ForwardRate = None
+                        }
+            }
         | SecurityKind.Cfd terms ->
             {
                 SecurityTermModules.empty with
@@ -785,6 +803,13 @@ module SecurityMasterLegacyUpgrade =
                             IssueDate = None
                             MaturityDate = Some terms.ValueDate
                         }
+                    CurrencyPair =
+                        Some {
+                            BaseCurrency = Some terms.BaseCurrency
+                            QuoteCurrency = Some terms.QuoteCurrency
+                            SettlementCurrency = None
+                            ForwardRate = terms.ForwardRate
+                        }
             }
         | SecurityKind.NonDeliverableForward terms ->
             {
@@ -794,6 +819,13 @@ module SecurityMasterLegacyUpgrade =
                             EffectiveDate = Some terms.FixingDate
                             IssueDate = None
                             MaturityDate = Some terms.ValueDate
+                        }
+                    CurrencyPair =
+                        Some {
+                            BaseCurrency = Some terms.BaseCurrency
+                            QuoteCurrency = Some terms.QuoteCurrency
+                            SettlementCurrency = Some terms.SettlementCurrency
+                            ForwardRate = terms.ForwardRate
                         }
             }
         | SecurityKind.CreditDefaultSwap terms ->

@@ -319,7 +319,7 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
 
     // The S3-E module keys the serializer appends after sinkingFund; null for every class these
     // fixtures cover. One constant, so a new module home extends every fixture in one place.
-    private const string S3ENullModules = ",\"exercise\":null";
+    private const string S3ENullModules = ",\"exercise\":null,\"currencyPair\":null";
 
     private const string NullAccrual = "\"accrual\":null";
 

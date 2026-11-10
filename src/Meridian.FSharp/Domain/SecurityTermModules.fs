@@ -460,6 +460,17 @@ type ExerciseTerms = {
     PremiumAmount: decimal option
 }
 
+/// The currency pair of an FX or crypto instrument, with the agreed rate when the instrument
+/// fixes one. The home for the pair fields the flat codec alone carried before S3-E.
+type CurrencyPairTerms = {
+    BaseCurrency: string option
+    QuoteCurrency: string option
+    /// Currency the net difference is paid in (non-deliverable forward).
+    SettlementCurrency: string option
+    /// Agreed forward rate, quote currency per unit of base currency.
+    ForwardRate: decimal option
+}
+
 type SecurityTermModules = {
     // --- Original 15 modules ---
     Maturity: MaturityTerms option
@@ -495,6 +506,8 @@ type SecurityTermModules = {
     // --- ADR-027 stage 3 (S3-E) module homes ---
     /// Strike, right, style and underlying for options, warrants, swaptions and caps/floors.
     Exercise: ExerciseTerms option
+    /// Base/quote (and settlement) currencies and the agreed rate for FX and crypto instruments.
+    CurrencyPair: CurrencyPairTerms option
 }
 
 [<RequireQualifiedAccess>]
@@ -625,4 +638,5 @@ module SecurityTermModules =
         InflationLinked = None
         SinkingFund = None
         Exercise = None
+        CurrencyPair = None
     }

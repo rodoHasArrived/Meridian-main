@@ -147,12 +147,8 @@ module SecurityMaster =
                 (error
                     "bond_inflation_index_values_invalid"
                     "Inflation-linked base index value and index ratio must be greater than zero when present — a non-positive ratio zeroes or inverts index-adjusted principal.")
-        | SecurityKind.FxSpot terms ->
+        | SecurityKind.FxSpot _ ->
             []
-            @ requireNotBlank "fx_base_currency_required" "BaseCurrency" terms.BaseCurrency
-            @ requireNotBlank "fx_quote_currency_required" "QuoteCurrency" terms.QuoteCurrency
-            @ require (not (String.Equals(terms.BaseCurrency, terms.QuoteCurrency, StringComparison.OrdinalIgnoreCase)))
-                (error "fx_currency_pair_invalid" "BaseCurrency and QuoteCurrency must differ.")
         | SecurityKind.Deposit terms ->
             []
         | SecurityKind.MoneyMarketFund terms ->
@@ -266,12 +262,8 @@ module SecurityMaster =
         | SecurityKind.Commodity terms ->
             []
             @ requireNotBlank "commodity_type_required" "CommodityType" terms.CommodityType
-        | SecurityKind.CryptoCurrency terms ->
+        | SecurityKind.CryptoCurrency _ ->
             []
-            @ requireNotBlank "crypto_base_currency_required" "BaseCurrency" terms.BaseCurrency
-            @ requireNotBlank "crypto_quote_currency_required" "QuoteCurrency" terms.QuoteCurrency
-            @ require (not (String.Equals(terms.BaseCurrency, terms.QuoteCurrency, StringComparison.OrdinalIgnoreCase)))
-                (error "crypto_currency_pair_invalid" "BaseCurrency and QuoteCurrency must differ.")
         | SecurityKind.Cfd terms ->
             []
             @ requireNotBlank "cfd_underlying_asset_class_required" "UnderlyingAssetClass" terms.UnderlyingAssetClass
@@ -279,25 +271,12 @@ module SecurityMaster =
             []
         | SecurityKind.FxForward terms ->
             []
-            @ requireNotBlank "fx_forward_base_currency_required" "BaseCurrency" terms.BaseCurrency
-            @ requireNotBlank "fx_forward_quote_currency_required" "QuoteCurrency" terms.QuoteCurrency
-            @ require (not (String.Equals(terms.BaseCurrency, terms.QuoteCurrency, StringComparison.OrdinalIgnoreCase)))
-                (error "fx_forward_currency_pair_invalid" "FxForward BaseCurrency and QuoteCurrency must differ.")
             @ require (terms.Notional |> Option.forall (fun n -> n > 0m))
                 (error "fx_forward_notional_invalid" "FxForward Notional must be greater than zero when present.")
-            @ require (terms.ForwardRate |> Option.forall (fun r -> r > 0m))
-                (error "fx_forward_rate_invalid" "FxForward ForwardRate must be greater than zero when present.")
         | SecurityKind.NonDeliverableForward terms ->
             []
-            @ requireNotBlank "ndf_base_currency_required" "BaseCurrency" terms.BaseCurrency
-            @ requireNotBlank "ndf_quote_currency_required" "QuoteCurrency" terms.QuoteCurrency
-            @ requireNotBlank "ndf_settlement_currency_required" "SettlementCurrency" terms.SettlementCurrency
-            @ require (not (String.Equals(terms.BaseCurrency, terms.QuoteCurrency, StringComparison.OrdinalIgnoreCase)))
-                (error "ndf_currency_pair_invalid" "NonDeliverableForward BaseCurrency and QuoteCurrency must differ.")
             @ require (terms.Notional |> Option.forall (fun n -> n > 0m))
                 (error "ndf_notional_invalid" "NonDeliverableForward Notional must be greater than zero when present.")
-            @ require (terms.ForwardRate |> Option.forall (fun r -> r > 0m))
-                (error "ndf_rate_invalid" "NonDeliverableForward ForwardRate must be greater than zero when present.")
         | SecurityKind.CreditDefaultSwap terms ->
             []
             @ requireNotBlank "cds_reference_entity_required" "ReferenceEntity" terms.ReferenceEntity
@@ -431,7 +410,21 @@ module SecurityMaster =
         let strikePrice = modules.Exercise |> Option.bind (fun e -> e.StrikePrice)
         let isOneOf (values: string list) (value: string) =
             values |> List.exists (fun candidate -> String.Equals(candidate, value, StringComparison.OrdinalIgnoreCase))
+        let baseCurrency = moduleString (modules.CurrencyPair |> Option.bind (fun p -> p.BaseCurrency))
+        let quoteCurrency = moduleString (modules.CurrencyPair |> Option.bind (fun p -> p.QuoteCurrency))
+        let pairDiffers = not (String.Equals(baseCurrency, quoteCurrency, StringComparison.OrdinalIgnoreCase))
+        let forwardRate = modules.CurrencyPair |> Option.bind (fun p -> p.ForwardRate)
         match typeName with
+        | "FxSpot" ->
+            []
+            @ requireNotBlank "fx_base_currency_required" "BaseCurrency" baseCurrency
+            @ requireNotBlank "fx_quote_currency_required" "QuoteCurrency" quoteCurrency
+            @ require pairDiffers (error "fx_currency_pair_invalid" "BaseCurrency and QuoteCurrency must differ.")
+        | "CryptoCurrency" ->
+            []
+            @ requireNotBlank "crypto_base_currency_required" "BaseCurrency" baseCurrency
+            @ requireNotBlank "crypto_quote_currency_required" "QuoteCurrency" quoteCurrency
+            @ require pairDiffers (error "crypto_currency_pair_invalid" "BaseCurrency and QuoteCurrency must differ.")
         | "Option" ->
             []
             @ requireNotBlank "option_put_call_required" "PutCall" optionRight
@@ -589,10 +582,22 @@ module SecurityMaster =
             []
             @ requireOrderedWhenBoth effectiveDate maturityDate
                 (error "ndf_fixing_date_invalid" "NonDeliverableForward FixingDate must be on or before ValueDate.")
+            @ requireNotBlank "ndf_base_currency_required" "BaseCurrency" baseCurrency
+            @ requireNotBlank "ndf_quote_currency_required" "QuoteCurrency" quoteCurrency
+            @ requireNotBlank "ndf_settlement_currency_required" "SettlementCurrency"
+                (moduleString (modules.CurrencyPair |> Option.bind (fun p -> p.SettlementCurrency)))
+            @ require pairDiffers (error "ndf_currency_pair_invalid" "NonDeliverableForward BaseCurrency and QuoteCurrency must differ.")
+            @ require (forwardRate |> Option.forall (fun rate -> rate > 0m))
+                (error "ndf_rate_invalid" "NonDeliverableForward ForwardRate must be greater than zero when present.")
         | "FxForward" ->
             []
             @ requireOrderedWhenBoth effectiveDate maturityDate
                 (error "fx_forward_trade_date_invalid" "FxForward TradeDate must be on or before ValueDate when present.")
+            @ requireNotBlank "fx_forward_base_currency_required" "BaseCurrency" baseCurrency
+            @ requireNotBlank "fx_forward_quote_currency_required" "QuoteCurrency" quoteCurrency
+            @ require pairDiffers (error "fx_forward_currency_pair_invalid" "FxForward BaseCurrency and QuoteCurrency must differ.")
+            @ require (forwardRate |> Option.forall (fun rate -> rate > 0m))
+                (error "fx_forward_rate_invalid" "FxForward ForwardRate must be greater than zero when present.")
         | "StructuredNote" ->
             []
             @ requireNotBlank "structured_note_issuer_required" "IssuerName" (moduleString issuerName)
@@ -809,8 +814,14 @@ module SecurityMaster =
               "cap_floor_premium_invalid" ]
             "Swap", [ "swap_date_range_invalid" ]
             "CreditDefaultSwap", [ "cds_date_range_invalid"; "cds_fixed_coupon_invalid" ]
-            "NonDeliverableForward", [ "ndf_fixing_date_invalid" ]
-            "FxForward", [ "fx_forward_trade_date_invalid" ]
+            "FxSpot", [ "fx_base_currency_required"; "fx_quote_currency_required"; "fx_currency_pair_invalid" ]
+            "CryptoCurrency", [ "crypto_base_currency_required"; "crypto_quote_currency_required"; "crypto_currency_pair_invalid" ]
+            "NonDeliverableForward",
+            [ "ndf_fixing_date_invalid"; "ndf_base_currency_required"; "ndf_quote_currency_required"
+              "ndf_settlement_currency_required"; "ndf_currency_pair_invalid"; "ndf_rate_invalid" ]
+            "FxForward",
+            [ "fx_forward_trade_date_invalid"; "fx_forward_base_currency_required"; "fx_forward_quote_currency_required"
+              "fx_forward_currency_pair_invalid"; "fx_forward_rate_invalid" ]
             "StructuredNote", [ "structured_note_issuer_required"; "structured_note_issue_date_invalid"; "structured_note_coupon_invalid" ]
             "CommitmentGuarantee", [ "commitment_guarantee_counterparty_required"; "commitment_guarantee_date_range_invalid" ]
             "DirectLoan", [ "direct_loan_borrower_required" ]
