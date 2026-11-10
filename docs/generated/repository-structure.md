@@ -9024,7 +9024,6 @@ Meridian-main
 │   │   │   ├── SecurityMasterWorkbenchQueryService.cs
 │   │   │   ├── SecurityMasterWorkbenchQueryService.DeclaredExercise.cs
 │   │   │   ├── SensitiveActionGovernance.cs
-│   │   │   ├── SpreadsheetFormulaGuard.cs
 │   │   │   ├── StartupRefusalPreflight.cs
 │   │   │   ├── StatementFetchSchedulerService.cs
 │   │   │   ├── StatementReconciliationCaseworkHandoffService.cs
