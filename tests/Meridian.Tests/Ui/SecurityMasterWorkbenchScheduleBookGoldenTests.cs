@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Meridian.Application.SecurityMaster;
+using Meridian.Contracts.Calendars;
 using Meridian.Contracts.SecurityMaster;
 using static Meridian.Tests.Ui.SecurityMasterWorkbenchScheduleBookHarness;
 
@@ -12,11 +13,11 @@ namespace Meridian.Tests.Ui;
 /// Golden schedule summaries and schedule books of the Security Master workbench snapshot. It freezes
 /// the two serialized read models for records that declare no call or put schedule the read path
 /// decodes (Bond with and without scalar call terms, a Bond stamped below the arrays' terms version, a
-/// Bond whose array holds only unset entries, CertificateOfDeposit and StructuredCredit), so a change
-/// to how declaring bonds are read can prove every other record's output is byte-identical. It also
+/// Bond whose array holds only unset entries, CertificateOfDeposit and StructuredCredit): increment 8b,
+/// which moved declaring bonds to the declared schedule, left those nine cases byte-identical. It also
 /// holds four declaring bonds (a call and a put with a scalar call date that agrees with the declared
 /// one, the same with a scalar that contradicts it, one without conventions, and one recovered from an
-/// economic document by the real conversion), whose cases change on purpose when that reading changes.
+/// economic document by the real conversion), whose cases that increment changed on purpose.
 /// </summary>
 /// <remarks>
 /// <para>The workbench reads the system clock. Every fixture date is either before 2026 or after 2088,
@@ -32,6 +33,8 @@ public sealed class SecurityMasterWorkbenchScheduleBookGoldenTests
     private const string ReceivedFileName = "security-master-schedule-book.received.json";
     private const int ExpectedCaseCount = 13;
     private static readonly DateTimeOffset RecordedAt = new(2025, 1, 2, 0, 0, 0, TimeSpan.Zero);
+    private static readonly IBusinessDayCalendarSource Calendars =
+        new StaticBusinessDayCalendarSource([BusinessDayCalendars.WeekendsOnly]);
     private static readonly JsonSerializerOptions Indented = new() { WriteIndented = true };
 
     [Fact]
@@ -58,7 +61,7 @@ public sealed class SecurityMasterWorkbenchScheduleBookGoldenTests
         var cases = new List<(string Key, JsonNode Value)>();
         foreach (var (key, projection, corporateActions) in Cases())
         {
-            var snapshot = await CreateService(new StoredRowSecurityMasterQueryService(projection, corporateActions))
+            var snapshot = await CreateService(new StoredRowSecurityMasterQueryService(projection, corporateActions), Calendars)
                 .GetTrustSnapshotAsync(projection.SecurityId, fundProfileId: null);
             Assert.NotNull(snapshot);
             Assert.NotNull(snapshot.ScheduleSummary);

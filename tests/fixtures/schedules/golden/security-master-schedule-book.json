@@ -1008,9 +1008,9 @@
         "HasEconomicScheduleTerms": true,
         "CurrentFactor": null,
         "CurrentFactorDate": null,
-        "NextLifecycleDate": "2090-01-15",
+        "NextLifecycleDate": "2089-12-16",
         "SourceSummary": "Schedules follow golden-edm record edm-book-13 as of 2025-01-02 00:00 UTC.",
-        "Summary": "Cash-flow schedule support is available. Next lifecycle date 2090-01-15."
+        "Summary": "Cash-flow schedule support is available. Next lifecycle date 2089-12-16."
       },
       "scheduleBook": {
         "SupportsCashflowSchedule": true,
@@ -1019,10 +1019,32 @@
         "Currency": "USD",
         "CurrentFactor": null,
         "CurrentFactorDate": null,
-        "NextLifecycleDate": "2090-01-15",
+        "NextLifecycleDate": "2089-12-16",
         "SourceSummary": "Schedules follow golden-edm record edm-book-13 as of 2025-01-02 00:00 UTC.",
-        "Summary": "Cash-flow schedule support is available. Next lifecycle date 2090-01-15.",
+        "Summary": "Cash-flow schedule support is available. Next lifecycle date 2089-12-16.",
         "Events": [
+          {
+            "EventId": "callnoticedeadline-20891216-20900115",
+            "EventType": "CallNoticeDeadline",
+            "EffectiveDate": "2089-12-16",
+            "PayDate": null,
+            "AccrualStartDate": null,
+            "AccrualEndDate": null,
+            "ExpectedAmount": null,
+            "ActualAmount": null,
+            "VarianceAmount": null,
+            "FactorStart": null,
+            "FactorEnd": null,
+            "Currency": "USD",
+            "PostingStatus": "Projected",
+            "SourceSystem": "golden-edm",
+            "SourceRecordId": "edm-book-13",
+            "SourceAsOfUtc": "2025-01-02T00:00:00\u002B00:00",
+            "SourceUpdatedBy": "steward",
+            "SourceReason": "Last day to give notice for the 2090-01-15 declared call date. The notice window opens on 2089-11-16.",
+            "IsDerivedFromEconomicTerms": false,
+            "IsCurrentProjection": true
+          },
           {
             "EventId": "call-20900115",
             "EventType": "Call",
@@ -1041,8 +1063,30 @@
             "SourceRecordId": "edm-book-13",
             "SourceAsOfUtc": "2025-01-02T00:00:00\u002B00:00",
             "SourceUpdatedBy": "steward",
-            "SourceReason": null,
-            "IsDerivedFromEconomicTerms": true,
+            "SourceReason": "Issuer may redeem at 101 percent of par on this declared call date.",
+            "IsDerivedFromEconomicTerms": false,
+            "IsCurrentProjection": true
+          },
+          {
+            "EventId": "put-20910115",
+            "EventType": "Put",
+            "EffectiveDate": "2091-01-15",
+            "PayDate": "2091-01-15",
+            "AccrualStartDate": null,
+            "AccrualEndDate": null,
+            "ExpectedAmount": null,
+            "ActualAmount": null,
+            "VarianceAmount": null,
+            "FactorStart": null,
+            "FactorEnd": null,
+            "Currency": "USD",
+            "PostingStatus": "Projected",
+            "SourceSystem": "golden-edm",
+            "SourceRecordId": "edm-book-13",
+            "SourceAsOfUtc": "2025-01-02T00:00:00\u002B00:00",
+            "SourceUpdatedBy": "steward",
+            "SourceReason": "Holder may put at 100 percent of par on this declared put date.",
+            "IsDerivedFromEconomicTerms": false,
             "IsCurrentProjection": true
           },
           {
@@ -1084,6 +1128,19 @@
             "EventType": "Maturity"
           },
           {
+            "ProvenanceId": "event-put-20910115",
+            "Category": "ScheduleEvent",
+            "Summary": "Put effective 2091-01-15.",
+            "EffectiveDate": "2091-01-15",
+            "SourceSystem": "golden-edm",
+            "SourceRecordId": "edm-book-13",
+            "SourceAsOfUtc": "2025-01-02T00:00:00\u002B00:00",
+            "SourceUpdatedBy": "steward",
+            "SourceReason": "Holder may put at 100 percent of par on this declared put date.",
+            "StreamVersion": null,
+            "EventType": "Put"
+          },
+          {
             "ProvenanceId": "event-call-20900115",
             "Category": "ScheduleEvent",
             "Summary": "Call effective 2090-01-15.",
@@ -1092,9 +1149,22 @@
             "SourceRecordId": "edm-book-13",
             "SourceAsOfUtc": "2025-01-02T00:00:00\u002B00:00",
             "SourceUpdatedBy": "steward",
-            "SourceReason": null,
+            "SourceReason": "Issuer may redeem at 101 percent of par on this declared call date.",
             "StreamVersion": null,
             "EventType": "Call"
+          },
+          {
+            "ProvenanceId": "event-callnoticedeadline-20891216-20900115",
+            "Category": "ScheduleEvent",
+            "Summary": "CallNoticeDeadline effective 2089-12-16.",
+            "EffectiveDate": "2089-12-16",
+            "SourceSystem": "golden-edm",
+            "SourceRecordId": "edm-book-13",
+            "SourceAsOfUtc": "2025-01-02T00:00:00\u002B00:00",
+            "SourceUpdatedBy": "steward",
+            "SourceReason": "Last day to give notice for the 2090-01-15 declared call date. The notice window opens on 2089-11-16.",
+            "StreamVersion": null,
+            "EventType": "CallNoticeDeadline"
           },
           {
             "ProvenanceId": "winning-source",
@@ -1119,9 +1189,9 @@
         "HasEconomicScheduleTerms": true,
         "CurrentFactor": null,
         "CurrentFactorDate": null,
-        "NextLifecycleDate": "2089-07-15",
-        "SourceSummary": "Schedules follow golden-edm record edm-book-10 as of 2025-01-02 00:00 UTC.",
-        "Summary": "Cash-flow schedule support is available. Next lifecycle date 2089-07-15."
+        "NextLifecycleDate": "2096-01-15",
+        "SourceSummary": "Schedules follow golden-edm record edm-book-10 as of 2025-01-02 00:00 UTC. Declared call/put schedule is blocked (ExerciseScheduleRefused): Declared exercise schedule could not be evaluated: Invalid declared schedule terms: callDate must equal the earliest declared call date so scalar consumers agree with it. No call or put event is shown and the scalar call date is not used.",
+        "Summary": "Cash-flow schedule support is available. Next lifecycle date 2096-01-15. Declared call/put schedule is blocked (ExerciseScheduleRefused): Declared exercise schedule could not be evaluated: Invalid declared schedule terms: callDate must equal the earliest declared call date so scalar consumers agree with it. No call or put event is shown and the scalar call date is not used."
       },
       "scheduleBook": {
         "SupportsCashflowSchedule": true,
@@ -1130,32 +1200,10 @@
         "Currency": "USD",
         "CurrentFactor": null,
         "CurrentFactorDate": null,
-        "NextLifecycleDate": "2089-07-15",
-        "SourceSummary": "Schedules follow golden-edm record edm-book-10 as of 2025-01-02 00:00 UTC.",
-        "Summary": "Cash-flow schedule support is available. Next lifecycle date 2089-07-15.",
+        "NextLifecycleDate": "2096-01-15",
+        "SourceSummary": "Schedules follow golden-edm record edm-book-10 as of 2025-01-02 00:00 UTC. Declared call/put schedule is blocked (ExerciseScheduleRefused): Declared exercise schedule could not be evaluated: Invalid declared schedule terms: callDate must equal the earliest declared call date so scalar consumers agree with it. No call or put event is shown and the scalar call date is not used.",
+        "Summary": "Cash-flow schedule support is available. Next lifecycle date 2096-01-15. Declared call/put schedule is blocked (ExerciseScheduleRefused): Declared exercise schedule could not be evaluated: Invalid declared schedule terms: callDate must equal the earliest declared call date so scalar consumers agree with it. No call or put event is shown and the scalar call date is not used.",
         "Events": [
-          {
-            "EventId": "call-20890715",
-            "EventType": "Call",
-            "EffectiveDate": "2089-07-15",
-            "PayDate": "2089-07-15",
-            "AccrualStartDate": null,
-            "AccrualEndDate": null,
-            "ExpectedAmount": null,
-            "ActualAmount": null,
-            "VarianceAmount": null,
-            "FactorStart": null,
-            "FactorEnd": null,
-            "Currency": "USD",
-            "PostingStatus": "Projected",
-            "SourceSystem": "golden-edm",
-            "SourceRecordId": "edm-book-10",
-            "SourceAsOfUtc": "2025-01-02T00:00:00\u002B00:00",
-            "SourceUpdatedBy": "steward",
-            "SourceReason": null,
-            "IsDerivedFromEconomicTerms": true,
-            "IsCurrentProjection": true
-          },
           {
             "EventId": "maturity-20960115",
             "EventType": "Maturity",
@@ -1193,19 +1241,6 @@
             "SourceReason": null,
             "StreamVersion": null,
             "EventType": "Maturity"
-          },
-          {
-            "ProvenanceId": "event-call-20890715",
-            "Category": "ScheduleEvent",
-            "Summary": "Call effective 2089-07-15.",
-            "EffectiveDate": "2089-07-15",
-            "SourceSystem": "golden-edm",
-            "SourceRecordId": "edm-book-10",
-            "SourceAsOfUtc": "2025-01-02T00:00:00\u002B00:00",
-            "SourceUpdatedBy": "steward",
-            "SourceReason": null,
-            "StreamVersion": null,
-            "EventType": "Call"
           },
           {
             "ProvenanceId": "winning-source",
@@ -1230,9 +1265,9 @@
         "HasEconomicScheduleTerms": true,
         "CurrentFactor": null,
         "CurrentFactorDate": null,
-        "NextLifecycleDate": "2089-07-15",
-        "SourceSummary": "Schedules follow golden-edm record edm-book-11 as of 2025-01-02 00:00 UTC.",
-        "Summary": "Cash-flow schedule support is available. Next lifecycle date 2089-07-15."
+        "NextLifecycleDate": "2096-01-15",
+        "SourceSummary": "Schedules follow golden-edm record edm-book-11 as of 2025-01-02 00:00 UTC. Declared call/put schedule is blocked (DeclaredScheduleRequired): Exercise notice windows require reviewed explicit schedule conventions; legacy defaults are not inferred. No call or put event is shown and the scalar call date is not used.",
+        "Summary": "Cash-flow schedule support is available. Next lifecycle date 2096-01-15. Declared call/put schedule is blocked (DeclaredScheduleRequired): Exercise notice windows require reviewed explicit schedule conventions; legacy defaults are not inferred. No call or put event is shown and the scalar call date is not used."
       },
       "scheduleBook": {
         "SupportsCashflowSchedule": true,
@@ -1241,32 +1276,10 @@
         "Currency": "USD",
         "CurrentFactor": null,
         "CurrentFactorDate": null,
-        "NextLifecycleDate": "2089-07-15",
-        "SourceSummary": "Schedules follow golden-edm record edm-book-11 as of 2025-01-02 00:00 UTC.",
-        "Summary": "Cash-flow schedule support is available. Next lifecycle date 2089-07-15.",
+        "NextLifecycleDate": "2096-01-15",
+        "SourceSummary": "Schedules follow golden-edm record edm-book-11 as of 2025-01-02 00:00 UTC. Declared call/put schedule is blocked (DeclaredScheduleRequired): Exercise notice windows require reviewed explicit schedule conventions; legacy defaults are not inferred. No call or put event is shown and the scalar call date is not used.",
+        "Summary": "Cash-flow schedule support is available. Next lifecycle date 2096-01-15. Declared call/put schedule is blocked (DeclaredScheduleRequired): Exercise notice windows require reviewed explicit schedule conventions; legacy defaults are not inferred. No call or put event is shown and the scalar call date is not used.",
         "Events": [
-          {
-            "EventId": "call-20890715",
-            "EventType": "Call",
-            "EffectiveDate": "2089-07-15",
-            "PayDate": "2089-07-15",
-            "AccrualStartDate": null,
-            "AccrualEndDate": null,
-            "ExpectedAmount": null,
-            "ActualAmount": null,
-            "VarianceAmount": null,
-            "FactorStart": null,
-            "FactorEnd": null,
-            "Currency": "USD",
-            "PostingStatus": "Projected",
-            "SourceSystem": "golden-edm",
-            "SourceRecordId": "edm-book-11",
-            "SourceAsOfUtc": "2025-01-02T00:00:00\u002B00:00",
-            "SourceUpdatedBy": "steward",
-            "SourceReason": null,
-            "IsDerivedFromEconomicTerms": true,
-            "IsCurrentProjection": true
-          },
           {
             "EventId": "maturity-20960115",
             "EventType": "Maturity",
@@ -1304,19 +1317,6 @@
             "SourceReason": null,
             "StreamVersion": null,
             "EventType": "Maturity"
-          },
-          {
-            "ProvenanceId": "event-call-20890715",
-            "Category": "ScheduleEvent",
-            "Summary": "Call effective 2089-07-15.",
-            "EffectiveDate": "2089-07-15",
-            "SourceSystem": "golden-edm",
-            "SourceRecordId": "edm-book-11",
-            "SourceAsOfUtc": "2025-01-02T00:00:00\u002B00:00",
-            "SourceUpdatedBy": "steward",
-            "SourceReason": null,
-            "StreamVersion": null,
-            "EventType": "Call"
           },
           {
             "ProvenanceId": "winning-source",
@@ -1341,9 +1341,9 @@
         "HasEconomicScheduleTerms": true,
         "CurrentFactor": null,
         "CurrentFactorDate": null,
-        "NextLifecycleDate": "2090-01-15",
-        "SourceSummary": "Schedules follow golden-edm record edm-book-12 as of 2025-01-02 00:00 UTC.",
-        "Summary": "Cash-flow schedule support is available. Next lifecycle date 2090-01-15."
+        "NextLifecycleDate": "2096-01-15",
+        "SourceSummary": "Schedules follow golden-edm record edm-book-12 as of 2025-01-02 00:00 UTC. Declared call/put schedule is blocked (DeclaredScheduleRequired): Exercise notice windows require reviewed explicit schedule conventions; legacy defaults are not inferred. No call or put event is shown and the scalar call date is not used.",
+        "Summary": "Cash-flow schedule support is available. Next lifecycle date 2096-01-15. Declared call/put schedule is blocked (DeclaredScheduleRequired): Exercise notice windows require reviewed explicit schedule conventions; legacy defaults are not inferred. No call or put event is shown and the scalar call date is not used."
       },
       "scheduleBook": {
         "SupportsCashflowSchedule": true,
@@ -1352,32 +1352,10 @@
         "Currency": "USD",
         "CurrentFactor": null,
         "CurrentFactorDate": null,
-        "NextLifecycleDate": "2090-01-15",
-        "SourceSummary": "Schedules follow golden-edm record edm-book-12 as of 2025-01-02 00:00 UTC.",
-        "Summary": "Cash-flow schedule support is available. Next lifecycle date 2090-01-15.",
+        "NextLifecycleDate": "2096-01-15",
+        "SourceSummary": "Schedules follow golden-edm record edm-book-12 as of 2025-01-02 00:00 UTC. Declared call/put schedule is blocked (DeclaredScheduleRequired): Exercise notice windows require reviewed explicit schedule conventions; legacy defaults are not inferred. No call or put event is shown and the scalar call date is not used.",
+        "Summary": "Cash-flow schedule support is available. Next lifecycle date 2096-01-15. Declared call/put schedule is blocked (DeclaredScheduleRequired): Exercise notice windows require reviewed explicit schedule conventions; legacy defaults are not inferred. No call or put event is shown and the scalar call date is not used.",
         "Events": [
-          {
-            "EventId": "call-20900115",
-            "EventType": "Call",
-            "EffectiveDate": "2090-01-15",
-            "PayDate": "2090-01-15",
-            "AccrualStartDate": null,
-            "AccrualEndDate": null,
-            "ExpectedAmount": null,
-            "ActualAmount": null,
-            "VarianceAmount": null,
-            "FactorStart": null,
-            "FactorEnd": null,
-            "Currency": "USD",
-            "PostingStatus": "Projected",
-            "SourceSystem": "golden-edm",
-            "SourceRecordId": "edm-book-12",
-            "SourceAsOfUtc": "2025-01-02T00:00:00\u002B00:00",
-            "SourceUpdatedBy": "steward",
-            "SourceReason": null,
-            "IsDerivedFromEconomicTerms": true,
-            "IsCurrentProjection": true
-          },
           {
             "EventId": "maturity-20960115",
             "EventType": "Maturity",
@@ -1415,19 +1393,6 @@
             "SourceReason": null,
             "StreamVersion": null,
             "EventType": "Maturity"
-          },
-          {
-            "ProvenanceId": "event-call-20900115",
-            "Category": "ScheduleEvent",
-            "Summary": "Call effective 2090-01-15.",
-            "EffectiveDate": "2090-01-15",
-            "SourceSystem": "golden-edm",
-            "SourceRecordId": "edm-book-12",
-            "SourceAsOfUtc": "2025-01-02T00:00:00\u002B00:00",
-            "SourceUpdatedBy": "steward",
-            "SourceReason": null,
-            "StreamVersion": null,
-            "EventType": "Call"
           },
           {
             "ProvenanceId": "winning-source",

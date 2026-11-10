@@ -24,7 +24,7 @@ namespace Meridian.Ui.Shared.Services;
 /// The endpoint is selection-scoped and additive, so the heavier downstream checks only run
 /// when the operator explicitly loads or refreshes a security drill-in.
 /// </summary>
-public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkbenchQueryService
+public sealed partial class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkbenchQueryService
 {
     private readonly Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService _queryService;
     private readonly ISecurityValidationService _validationService;
@@ -57,7 +57,10 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         IDataVendorEntitlementService? entitlementService = null,
         ISecurityMasterDataQualityService? dataQualityService = null,
         IFundProfileTenancyRegistry? tenancyRegistry = null,
-        IHttpContextAccessor? httpContextAccessor = null)
+        IHttpContextAccessor? httpContextAccessor = null,
+        Meridian.Contracts.Calendars.IBusinessDayCalendarSource? calendars = null,
+        Meridian.Contracts.FixedIncome.IBondCalculationPolicy? bondCalculationPolicy = null,
+        TimeProvider? timeProvider = null)
     {
         _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
         _validationService = validationService ?? throw new ArgumentNullException(nameof(validationService));
@@ -74,6 +77,9 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         _dataQualityService = dataQualityService;
         _tenancyRegistry = tenancyRegistry;
         _httpContextAccessor = httpContextAccessor;
+        _calendars = calendars;
+        _bondCalculationPolicy = bondCalculationPolicy;
+        _timeProvider = timeProvider ?? TimeProvider.System;
     }
 
     public async Task<SecurityMasterTrustSnapshotDto?> GetTrustSnapshotAsync(
@@ -82,7 +88,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
-        var nowUtc = DateTimeOffset.UtcNow;
+        var nowUtc = _timeProvider.GetUtcNow();
 
         // Tenant isolation (SEC-005): sanitize the operator-supplied fund scope ONCE here so every
         // fund-scoped evidence path the snapshot and its instrument passport fan out to — downstream
@@ -141,9 +147,10 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         var identifierSummary = BuildIdentifierSummary(detail);
         var schemaCompatibility = BuildSchemaCompatibility(detail, economic);
         var changeHistory = BuildChangeHistory(history);
-        var scheduleSummary = BuildScheduleSummary(detail, economic, corporateActions, winningSource);
+        var declaredExercise = await ResolveDeclaredExerciseAsync(detail, nowUtc, ct).ConfigureAwait(false);
+        var scheduleSummary = BuildScheduleSummary(detail, economic, corporateActions, winningSource, declaredExercise);
         var lotModel = BuildLotModel(detail, economic, trading);
-        var scheduleBook = BuildScheduleBook(detail, economic, corporateActions, history, winningSource, scheduleSummary);
+        var scheduleBook = BuildScheduleBook(detail, economic, corporateActions, history, winningSource, scheduleSummary, declaredExercise);
         var openLotReadModel = await BuildOpenLotReadModelAsync(detail, economic, trading, fundProfileId, nowUtc, ct).ConfigureAwait(false);
         var corporateActionDescriptors = BuildCorporateActionDescriptors(corporateActions, nowUtc);
 
@@ -3044,7 +3051,8 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         SecurityDetailDto detail,
         SecurityEconomicDefinitionRecord? economic,
         IReadOnlyList<CorporateActionDto> corporateActions,
-        WinningSourceInfo? winningSource)
+        WinningSourceInfo? winningSource,
+        Meridian.Contracts.FixedIncome.BondExerciseNoticeWatchResult? declaredExercise)
     {
         var assetCapability = GetAssetCapability(detail.AssetClass);
         var economicTerms = economic?.EconomicTerms;
@@ -3067,7 +3075,9 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             .OrderBy(static action => action.ExDate)
             .Select(static action => (DateOnly?)action.ExDate)
             .FirstOrDefault();
-        var nextLifecycleDate = new[] { nextCorporateAction, firstCallDate, maturityDate }
+        var nextLifecycleDate = (declaredExercise is null
+                ? new[] { nextCorporateAction, firstCallDate, maturityDate }
+                : DeclaredLifecycleCandidates(declaredExercise, nextCorporateAction, maturityDate))
             .Where(static value => value.HasValue)
             .Select(static value => value!.Value)
             .OrderBy(static value => value)
@@ -3101,6 +3111,8 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         {
             summary = "Factor history is available without a projected cash-flow schedule.";
         }
+
+        (summary, sourceSummary) = WithDeclaredExerciseOutcome(summary, sourceSummary, declaredExercise);
 
         return new SecurityMasterScheduleSummaryDto(
             SupportsCashflowSchedule: supportsCashflowSchedule,
@@ -3159,7 +3171,8 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         IReadOnlyList<CorporateActionDto> corporateActions,
         IReadOnlyList<SecurityMasterEventEnvelope> history,
         WinningSourceInfo? winningSource,
-        SecurityMasterScheduleSummaryDto summary)
+        SecurityMasterScheduleSummaryDto summary,
+        Meridian.Contracts.FixedIncome.BondExerciseNoticeWatchResult? declaredExercise)
     {
         var economicTerms = economic?.EconomicTerms;
         var currency = economic?.Currency ?? detail.Currency;
@@ -3202,7 +3215,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
                 IsCurrentProjection: point.IsCurrentFactor));
         }
 
-        AppendLifecycleEvent(events, "Call", TryGetNestedJsonDateOnly(economicTerms, "call", "firstCallDate"), currency, winningSource);
+        AppendCallAndPutEvents(events, declaredExercise, economicTerms, currency, winningSource);
         AppendLifecycleEvent(events, "Maturity", TryGetNestedJsonDateOnly(economicTerms, "maturity", "maturityDate"), currency, winningSource);
 
         foreach (var action in corporateActions)

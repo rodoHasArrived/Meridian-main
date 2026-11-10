@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.Calendars;
 using Meridian.Contracts.FixedIncome;
 using Meridian.Contracts.SecurityMaster;
 
@@ -40,27 +41,81 @@ public sealed partial class AssetObligationProjectionService
     public BondExerciseNoticeWatchResult? ResolveDeclaredExercise(
         SecurityDetailDto security, BondCalculationContext context, string? policyBlocker = null)
     {
-        ArgumentNullException.ThrowIfNull(security);
         ArgumentNullException.ThrowIfNull(context);
+        return ResolveDeclaredExercise(security, context.AsOf, _calendars, policyBlocker);
+    }
+
+    /// <summary>
+    /// The declared exercise outcome of <paramref name="security"/> at <paramref name="asOf"/>, for a
+    /// caller that already holds the cutover policy's blocker (or has none to ask). This is the one
+    /// place the gates and their order live; the obligation timeline and the Security Master workbench
+    /// schedule book both read through it, so one record reports one outcome on both.
+    /// </summary>
+    /// <returns>Null when the record declares no decoded call or put schedule.</returns>
+    public static BondExerciseNoticeWatchResult? ResolveDeclaredExercise(
+        SecurityDetailDto security, DateTimeOffset asOf, IBusinessDayCalendarSource? calendars, string? policyBlocker = null)
+    {
+        ArgumentNullException.ThrowIfNull(security);
         if (!DeclaresExerciseSchedule(security))
         {
             return null;
         }
 
-        var asOf = DateOnly.FromDateTime(context.AsOf.UtcDateTime.Date);
-        if (security.EffectiveFrom > context.AsOf || (security.EffectiveTo is { } effectiveTo && context.AsOf >= effectiveTo))
-        {
-            return BondExerciseNoticeWatch.Blocked(security, asOf, 0, "TermsNotEffective",
-                "The selected retained terms are not effective at the evaluation date; a historically eligible terms version is required.");
-        }
-
-        if (policyBlocker is not null)
-        {
-            return BondExerciseNoticeWatch.Blocked(security, asOf, 0, "CalculationPolicyBlocked", policyBlocker);
-        }
-
-        return BondExerciseNoticeWatch.EvaluateToMaturity(security, _calendars, asOf);
+        return TermsNotEffective(security, asOf) ?? ResolveEffectiveTerms(security, asOf, calendars, policyBlocker);
     }
+
+    /// <summary>
+    /// As <see cref="ResolveDeclaredExercise(SecurityDetailDto, DateTimeOffset, IBusinessDayCalendarSource?, string?)"/>,
+    /// asking <paramref name="policy"/> itself, the way the notice-watch read service does: only for a
+    /// declaring record whose terms are effective, and with a policy that throws
+    /// <see cref="SecurityScheduleValidationException"/> reported as an <c>InvalidEconomicSchedule</c>
+    /// blocker rather than a fault. For read models, such as the workbench schedule book, that must not
+    /// fail because one bond's owned schedule is malformed.
+    /// </summary>
+    public static async Task<BondExerciseNoticeWatchResult?> ResolveDeclaredExerciseAsync(
+        SecurityDetailDto security, DateTimeOffset asOf, IBusinessDayCalendarSource? calendars,
+        IBondCalculationPolicy? policy, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(security);
+        if (!DeclaresExerciseSchedule(security))
+        {
+            return null;
+        }
+
+        if (TermsNotEffective(security, asOf) is { } notEffective)
+        {
+            return notEffective;
+        }
+
+        string? policyBlocker = null;
+        if (policy is not null)
+        {
+            try
+            {
+                policyBlocker = await policy.GetBlockerAsync(security, ct).ConfigureAwait(false);
+            }
+            catch (SecurityScheduleValidationException exception)
+            {
+                return BondExerciseNoticeWatch.Blocked(security, EvaluationDate(asOf), 0, "InvalidEconomicSchedule", exception.Message);
+            }
+        }
+
+        return ResolveEffectiveTerms(security, asOf, calendars, policyBlocker);
+    }
+
+    private static DateOnly EvaluationDate(DateTimeOffset asOf) => DateOnly.FromDateTime(asOf.UtcDateTime.Date);
+
+    private static BondExerciseNoticeWatchResult? TermsNotEffective(SecurityDetailDto security, DateTimeOffset asOf)
+        => security.EffectiveFrom > asOf || (security.EffectiveTo is { } effectiveTo && asOf >= effectiveTo)
+            ? BondExerciseNoticeWatch.Blocked(security, EvaluationDate(asOf), 0, "TermsNotEffective",
+                "The selected retained terms are not effective at the evaluation date; a historically eligible terms version is required.")
+            : null;
+
+    private static BondExerciseNoticeWatchResult ResolveEffectiveTerms(
+        SecurityDetailDto security, DateTimeOffset asOf, IBusinessDayCalendarSource? calendars, string? policyBlocker)
+        => policyBlocker is not null
+            ? BondExerciseNoticeWatch.Blocked(security, EvaluationDate(asOf), 0, "CalculationPolicyBlocked", policyBlocker)
+            : BondExerciseNoticeWatch.EvaluateToMaturity(security, calendars, EvaluationDate(asOf));
 
     /// <summary>
     /// Whether a bond-coupon-structure record carries a <c>callSchedule</c> or <c>putSchedule</c> with
@@ -92,8 +147,11 @@ public sealed partial class AssetObligationProjectionService
                && rows.EnumerateArray().Any(static row => !ScheduleTermsWriteRules.IsUnsetScheduleEntry(row));
     }
 
-    /// <summary>The warnings a declared exercise outcome adds to the timeline and to readiness.</summary>
-    internal static IEnumerable<string> DeclaredExerciseWarnings(BondExerciseNoticeWatchResult? declaredExercise)
+    /// <summary>
+    /// The warnings a declared exercise outcome adds to the timeline, to readiness and to the Security
+    /// Master workbench schedule summary: one per blocker, then the elapsed-deadline diagnostic.
+    /// </summary>
+    public static IEnumerable<string> DeclaredExerciseWarnings(BondExerciseNoticeWatchResult? declaredExercise)
     {
         if (declaredExercise is null)
         {
@@ -127,22 +185,21 @@ public sealed partial class AssetObligationProjectionService
             }
         });
 
-    private static void AddDeclaredExerciseObligations(
-        List<AssetTermsObligationTimelineEventDto> events,
-        AssetOperationSubjectDto subject,
-        AssetTermsVersionDto term,
-        DateOnly projectionAsOf,
-        string currency,
-        string? ledgerReference,
-        BondExerciseNoticeWatchResult declaredExercise)
+    /// <summary>
+    /// The rows a declared exercise outcome yields, in the watch's order: for each window its exercise
+    /// date, then its notice deadline when the entry states notice bounds. A blocked outcome carries no
+    /// windows and yields nothing. The obligation timeline and the Security Master workbench schedule
+    /// book both lay their call and put rows out from this, so they list the same dates.
+    /// </summary>
+    public static IEnumerable<DeclaredExerciseRow> DeclaredExerciseRows(BondExerciseNoticeWatchResult declaredExercise)
     {
+        ArgumentNullException.ThrowIfNull(declaredExercise);
+
         // Exercise dates are business-day adjusted, so two declared entries (or a Bermudan grid date and
         // the next entry's start) can land on one date with the same kind. The occurrence of a
         // (kind, exercise date) pair in the watch's order tells them apart. That order is by notice
         // deadline and then by declared date, and entries on other dates never change it.
         var occurrences = new Dictionary<(string Kind, DateOnly ExerciseDate), int>();
-
-        // A blocked outcome carries no windows: the timeline reports the blocker and shows no option event.
         foreach (var window in declaredExercise.Windows)
         {
             var pair = (window.Kind, window.ExerciseDate);
@@ -150,17 +207,13 @@ public sealed partial class AssetObligationProjectionService
             occurrences[pair] = occurrence;
             var isCall = string.Equals(window.Kind, "Call", StringComparison.Ordinal);
             var price = window.RedemptionPrice.ToString("G29", CultureInfo.InvariantCulture);
-            events.Add(BuildDeclaredExerciseEvent(
-                subject, term, projectionAsOf, window, occurrence,
+            yield return new(window, occurrence,
                 isCall ? IssuerCallExerciseEventKind : HolderPutExerciseEventKind,
+                false,
                 window.ExerciseDate,
-                currency,
                 isCall
                     ? $"Issuer may redeem at {price} percent of par on this declared call date."
-                    : $"Holder may put at {price} percent of par on this declared put date.",
-                "Contractual exercise date resolved from the declared schedule by the bond exercise notice watch; not an exercise forecast.",
-                ledgerReference,
-                "Review the declared exercise and downstream ledger treatment; this event grants no exercise, notice, payment or posting authority."));
+                    : $"Holder may put at {price} percent of par on this declared put date.");
 
             if (window.LatestNoticeDate is not { } deadline)
             {
@@ -170,15 +223,35 @@ public sealed partial class AssetObligationProjectionService
             var opens = window.EarliestNoticeDate is { } earliest
                 ? $" The notice window opens on {earliest:yyyy-MM-dd}."
                 : string.Empty;
-            events.Add(BuildDeclaredExerciseEvent(
-                subject, term, projectionAsOf, window, occurrence,
+            yield return new(window, occurrence,
                 isCall ? IssuerCallNoticeDeadlineEventKind : HolderPutNoticeDeadlineEventKind,
+                true,
                 deadline,
-                currency,
-                $"Last day to give notice for the {window.ExerciseDate:yyyy-MM-dd} declared {(isCall ? "call" : "put")} date.{opens}",
-                "Notice bounds counted back from the exercise date in the declared notice day type.",
+                $"Last day to give notice for the {window.ExerciseDate:yyyy-MM-dd} declared {(isCall ? "call" : "put")} date.{opens}");
+        }
+    }
+
+    private static void AddDeclaredExerciseObligations(
+        List<AssetTermsObligationTimelineEventDto> events,
+        AssetOperationSubjectDto subject,
+        AssetTermsVersionDto term,
+        DateOnly projectionAsOf,
+        string currency,
+        string? ledgerReference,
+        BondExerciseNoticeWatchResult declaredExercise)
+    {
+        // A blocked outcome yields no rows: the timeline reports the blocker and shows no option event.
+        foreach (var row in DeclaredExerciseRows(declaredExercise))
+        {
+            events.Add(BuildDeclaredExerciseEvent(
+                subject, term, projectionAsOf, row.Window, row.Occurrence, row.EventKind, row.Date, currency, row.Summary,
+                row.IsNoticeDeadline
+                    ? "Notice bounds counted back from the exercise date in the declared notice day type."
+                    : "Contractual exercise date resolved from the declared schedule by the bond exercise notice watch; not an exercise forecast.",
                 ledgerReference,
-                "Retain notice evidence for the declared exercise; it decides the actual exercise status."));
+                row.IsNoticeDeadline
+                    ? "Retain notice evidence for the declared exercise; it decides the actual exercise status."
+                    : "Review the declared exercise and downstream ledger treatment; this event grants no exercise, notice, payment or posting authority."));
         }
     }
 
@@ -242,3 +315,15 @@ public sealed partial class AssetObligationProjectionService
         };
     }
 }
+
+/// <summary>
+/// One row of a resolved declared call or put schedule: an exercise date, or the notice deadline of one.
+/// </summary>
+/// <param name="Window">The notice-watch window the row comes from.</param>
+/// <param name="Occurrence">1 for the first window of its kind on its exercise date, 2 for the next, and so on; part of a row's identity.</param>
+/// <param name="EventKind">One of the four declared event kinds of <see cref="AssetObligationProjectionService"/>.</param>
+/// <param name="IsNoticeDeadline">True for a notice-deadline row, false for an exercise row.</param>
+/// <param name="Date">The exercise date, or the latest notice date for a notice-deadline row.</param>
+/// <param name="Summary">The operator-facing sentence for the row.</param>
+public readonly record struct DeclaredExerciseRow(
+    BondExerciseNoticeWindow Window, int Occurrence, string EventKind, bool IsNoticeDeadline, DateOnly Date, string Summary);

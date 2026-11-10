@@ -1,4 +1,6 @@
 using Meridian.Application.SecurityMaster;
+using Meridian.Contracts.Calendars;
+using Meridian.Contracts.FixedIncome;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Reporting;
 using Meridian.Strategies.Interfaces;
@@ -16,7 +18,11 @@ namespace Meridian.Tests.Ui;
 /// </summary>
 internal static class SecurityMasterWorkbenchScheduleBookHarness
 {
-    internal static SecurityMasterWorkbenchQueryService CreateService(StoredRowSecurityMasterQueryService queryService) =>
+    internal static SecurityMasterWorkbenchQueryService CreateService(
+        StoredRowSecurityMasterQueryService queryService,
+        IBusinessDayCalendarSource? calendars = null,
+        IBondCalculationPolicy? policy = null,
+        DateTimeOffset? now = null) =>
         new(
             queryService,
             new EmptySecurityValidationService(),
@@ -25,14 +31,48 @@ internal static class SecurityMasterWorkbenchScheduleBookHarness
             Substitute.For<IStrategyRepository>(),
             new PortfolioReadService(),
             new LedgerReadService(),
-            new ReportGenerationService(queryService));
+            new ReportGenerationService(queryService),
+            calendars: calendars,
+            bondCalculationPolicy: policy,
+            timeProvider: now is { } instant ? new FixedTimeProvider(instant) : null);
+
+    /// <summary>The stored row a detail is read from, so the economic definition is the adapter's read of the same terms.</summary>
+    internal static SecurityProjectionRecord ProjectionOf(SecurityDetailDto detail)
+        => new(
+            SecurityId: detail.SecurityId,
+            AssetClass: detail.AssetClass,
+            Status: detail.Status,
+            DisplayName: detail.DisplayName,
+            Currency: detail.Currency,
+            PrimaryIdentifierKind: "InternalCode",
+            PrimaryIdentifierValue: "BOOK-ROW",
+            CommonTerms: System.Text.Json.JsonSerializer.SerializeToElement(new { displayName = detail.DisplayName, currency = detail.Currency }),
+            AssetSpecificTerms: detail.AssetSpecificTerms,
+            Provenance: System.Text.Json.JsonSerializer.SerializeToElement(new
+            {
+                sourceSystem = "golden-edm",
+                sourceRecordId = "edm-book-row",
+                asOf = "2026-01-15T00:00:00+00:00",
+                updatedBy = "steward"
+            }),
+            Version: detail.Version,
+            EffectiveFrom: detail.EffectiveFrom,
+            EffectiveTo: detail.EffectiveTo,
+            Identifiers: detail.Identifiers,
+            Aliases: detail.Aliases);
+
+    internal sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => now;
+    }
 
     /// <summary>
     /// Serves one stored row the way a deployed node reads it: the detail is the projection's, and the
     /// economic definition is the adapter's read of the same terms.
     /// </summary>
     internal sealed class StoredRowSecurityMasterQueryService(
-        SecurityProjectionRecord projection, IReadOnlyList<CorporateActionDto>? corporateActions = null)
+        SecurityProjectionRecord projection, IReadOnlyList<CorporateActionDto>? corporateActions = null,
+        bool withEconomicDefinition = true)
         : ContractSecurityMasterQueryService
     {
         public Task<SecurityDetailDto?> GetByIdAsync(Guid requestedSecurityId, CancellationToken ct = default)
@@ -67,7 +107,7 @@ internal static class SecurityMasterWorkbenchScheduleBookHarness
         public Task<SecurityEconomicDefinitionRecord?> GetEconomicDefinitionByIdAsync(Guid requestedSecurityId, CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
-            return Task.FromResult<SecurityEconomicDefinitionRecord?>(requestedSecurityId == projection.SecurityId
+            return Task.FromResult<SecurityEconomicDefinitionRecord?>(withEconomicDefinition && requestedSecurityId == projection.SecurityId
                 ? SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection)
                 : null);
         }
