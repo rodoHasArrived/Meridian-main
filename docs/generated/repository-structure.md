@@ -5428,6 +5428,7 @@ Meridian-main
 │   │   │   ├── OrderFillProcessor.cs
 │   │   │   ├── OrderManagementLifecycleCoordinator.cs
 │   │   │   ├── OrderRiskSizingPolicy.cs
+│   │   │   ├── OrderStateTable.cs
 │   │   │   └── OrderStatusFacts.cs
 │   │   ├── PaperMatching
 │   │   │   ├── PaperMarketObservation.cs
