@@ -1465,7 +1465,10 @@ source fields, row/column zones, metrics, formulas, grid-type and Top-N controls
 custom formula name/label/expression fields plus filter controls for field/operator/value
 slicing. Every saved filter is loaded into the draft as its own row, operators can add or remove
 rows, and all complete rows are sent on preview and save (the engine keeps a row only when it
-matches every filter). Source fields come from the shared report-writer field catalog when present, so the browser
+matches every filter). The access-policy principal ID field and the
+schedule recipient principal ID field use `PrincipalIdInput`, which suggests role and role-profile
+names for `Group` principals and usernames for `User` principals (when the caller may list
+accounts) on first focus, while still accepting typed IDs. Source fields come from the shared report-writer field catalog when present, so the browser
 palette can include source-backed portfolio, analytics, consolidation, and generated contribution
 fields even when a saved grid has not already placed those fields. The designer also renders a live layout summary from the current draft zones so operators
 can confirm dimension, metric, formula, filter, and Top-N posture before preview or save. Operators can save the current grid layout as a

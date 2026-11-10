@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { PrincipalIdInput } from "@/components/meridian/principal-id-input";
 import { ReportWriterChartPreview } from "@/components/meridian/report-writer-chart-preview";
 import { ReportWriterGridDiffView } from "@/components/meridian/report-writer-grid-diff-view";
 import { buildReportWriterGridDiff } from "@/lib/report-writer-grid-diff";
@@ -1111,7 +1112,8 @@ export function ReportWriterDesignerGrid({
           </label>
           <label className="space-y-1">
             <span className={cn("text-[10px] text-muted-foreground", usesTrackedCaps(accessPrincipalIdLabel) && "uppercase tracking-[0.14em]")}>{accessPrincipalIdLabel}</span>
-            <Input
+            <PrincipalIdInput
+              principalKind={settings.principalKind}
               value={settings.principalId}
               onChange={(event) => onSettingsChange(grid, "principalId", event.target.value)}
               aria-label={`${grid.title} draft principal id`}

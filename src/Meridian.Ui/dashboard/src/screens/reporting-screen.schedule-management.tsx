@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { PrincipalIdInput } from "@/components/meridian/principal-id-input";
 import { Select } from "@/components/ui/select";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { safeReportingHref } from "@/lib/reporting-link-safety";
@@ -319,11 +320,11 @@ export function ReportingScheduleManagementPanel({
             </label>
             <label className="min-w-0 space-y-1">
               <span className="text-xs font-medium text-muted-foreground">Recipient principal ID</span>
-              <Input
+              <PrincipalIdInput
+                principalKind={scheduleDraft.recipientPrincipalKind}
                 value={scheduleDraft.recipientPrincipalId}
                 onChange={(event) => onDraftChange("recipientPrincipalId", event.target.value)}
                 aria-label="Reporting schedule recipient principal ID"
-                autoComplete="off"
                 required
               />
             </label>
