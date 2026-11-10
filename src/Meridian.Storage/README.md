@@ -31,6 +31,12 @@ V3 remaining-face amortization verifies each immutable paydown receipt before wa
 partial-disposal/amortization history. The current/booked factor scales surviving face once;
 booked durable quantity and acquisition FX stay retained. V1/v2 keep the historical paydown gate.
 
+The Security Master store also answers the ADR-024 decision-5 retirement-gate count
+(`CountUntaggedAssetSpecificTermsAsync`): one SQL aggregate over `securities` for rows whose
+terms payload is not an object or whose `termsFormat` member is absent or non-string, pinned to
+the C# `SecurityTermsEnvelope.GetDeclaredFormat` verdict by `SecurityMasterPostgresRoundTripTests`
+— the gauge never loads projections.
+
 Security Master projection writes validate dated economic schedules through Contracts-owned
 `SecurityEconomicScheduleParser` before mutation. Invalid schedules raise source/row diagnostics
 and roll back rather than deleting prior projections or publishing partial schedules. Principal and
@@ -1163,6 +1169,10 @@ mapping evidence for the same instrument. This prevents an accounting entry from
 symbol at the journal level while posting a different instrument line underneath it. Until durable
 journal writes carry line-level Security Master ids, one journal entry may not combine multiple
 instrument symbols behind one entry-level Security Master id.
+
+Direct-lending loan accounts (`LoanPrincipal`, the interest, fee and penalty receivables, and since
+PRD-115 `PrepaidInterestLiability` and `UnappliedCashLiability`) are on the guard's instrument-account
+list, so a line on any of them needs Security Master evidence even if it arrives without a symbol.
 
 Ledger journal writes that opt into treasury-ledger metadata also fail closed. When a posting carries
 effective-date, idempotency, fund-event, capital-account, investor, payment-intent, or settlement

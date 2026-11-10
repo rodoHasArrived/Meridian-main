@@ -1,6 +1,6 @@
 # Direct Lending: Term-Driven Excess Payment Application
 
-**Status:** Approved design (owner decisions recorded 2026-11-02). Implementation proceeds by [increment](#increments); increments 1 (terms rule) and 2 (balances and migration 010) are implemented.
+**Status:** Approved design (owner decisions recorded 2026-11-02). Implementation proceeds by [increment](#increments); increments 1 (terms rule), 2 (balances and migration 010), 3 (excess routing), 4 (accrual consumption), 5 (split journals) and 7 (apply/refund commands, backend and API) are implemented; increment 6 (read models and UI) is in review.
 **Owner:** Direct Lending + Ledger
 **Reviewed:** 2026-11-02
 **Registered in:** [`docs/engineering/blueprints/README.md`](README.md)
@@ -95,9 +95,9 @@ public sealed record OutstandingBalancesDto(
   `numeric NOT NULL DEFAULT 0` to the servicing-state table and its snapshot. `PostgresDirectLendingStateStore`
   reads and writes both.
 - **Replay:** `DirectLendingEventRebuilder` derives both balances from events, so a rebuilt loan
-  matches the live one. Older events carry no excess payload, and their balances stay 0. The
-  rebuilder does not yet handle `loan.mixed-payment-applied` at all (it rejects unknown event
-  types), so increment 3 must add that case when it writes the excess payload.
+  matches the live one. Older events carry no excess payload, and their balances stay 0. Since
+  increment 3 the rebuilder replays `loan.mixed-payment-applied` from the recorded resolution;
+  before that it rejected the event, so any loan with a mixed payment could not be rebuilt.
 - **Loan value:** neither balance is a receivable. Both are amounts owed *to* the borrower, so
   read models must not add them to outstanding balance (see the `LoanPortfolioSummaryBuilder` review below).
 
@@ -121,11 +121,29 @@ UnappliedAmount`, so there is no separate field that could drift. The DTO adds:
 public decimal ExcessToPrincipal { get; init; }
 public decimal ExcessToPrepaidInterest { get; init; }
 public ExcessPaymentApplication? ExcessRuleApplied { get; init; }
-public string? ExcessRuleNote { get; init; }        // e.g. "prepayment not allowed; held unapplied"
+public string? ExcessRuleNote { get; init; }        // ExcessPaymentRuleNotes, shared by C# and F#
+public decimal PrepaymentPenaltyCharged { get; init; }
 ```
 
 These fields are written into the `loan.mixed-payment-applied` event payload, so replay and journals
 can read them.
+
+**As implemented (increment 3):**
+
+- **Interest-only period.** The automatic waterfall still pays no scheduled principal during the
+  interest-only period, but the rule still applies to the excess: a voluntary prepayment is allowed
+  then when `PrepaymentAllowed` is true. The C# resolver previously ignored the interest-only period
+  and paid principal; it now matches the F# aggregate.
+- **Allocation rows.** Routed excess gets its own `payment_allocation` rows (`PrincipalPrepayment`,
+  `PrepaidInterest`, `UnappliedCash`, rule `Excess<Rule>`), so allocations always sum to the cash
+  received. Principal reductions apply to drawdown lots earliest first in both services; the
+  in-memory service previously used booking order.
+- **Penalty in the same event.** The store saves one event per command, and its command-id
+  idempotency check rejects a second event under the same id. The penalty is therefore recorded on
+  the resolution (`PrepaymentPenaltyCharged`), added to `PenaltyAccruedUnpaid` in the same state
+  transition, and journaled in the mixed-payment entry (Dr `PenaltyReceivable` / Cr
+  `PenaltyIncome`) by `DirectLendingOutboxDispatcher`, the same lines `loan.prepayment-penalty-charged`
+  posts. `LoanAccountingProjector` journals neither penalty form today; that gap predates PRD-115.
 
 ### 4. Accrual consumes prepaid interest
 
@@ -140,6 +158,16 @@ InterestAccruedUnpaid += dailyInterest - consumed
 
 The accrual event records `prepaidInterestConsumed`, and the journal reflects it (§5). PIK
 accrual is left unchanged: PIK interest does not consume prepaid interest ([Decision 4](#decisions)).
+
+**As implemented (increment 4):** `dailyInterest` is the day's *cash* interest (`InterestAmount`,
+after any PIK share), so a PIK capitalization policy's deferred share and the legacy PIK toggle
+consume nothing. The consumed amount is on the F# `DailyAccrualDecision` and the event payload
+(`prepaidInterestConsumed`), not on `DailyAccrualEntryDto`, which is also stored in
+`accrual_entry_projection` and would need a column. Entry income (`InterestAmount`) is unchanged.
+The rebuilder treats accrual events without the field as consuming nothing. The accrual journal
+still debits `AccruedInterestReceivable` for the full day until increment 5 splits it. The
+in-memory lane posts accruals unrounded where the F# aggregate rounds to cents, a pre-existing
+difference left to a separate change.
 
 ### 5. Journals
 
@@ -162,6 +190,17 @@ they already exist.
 **Accrual with prepaid consumption.** Dr `PrepaidInterestLiability` for `consumed`; Dr
 `AccruedInterestReceivable` for the rest; Cr `InterestIncome` for the full day.
 
+**As implemented (increment 5):** `DirectLendingJournalLines` builds both entries and is shared by
+`LoanAccountingProjector` (in the command transaction) and `DirectLendingOutboxDispatcher`, so the
+two journal paths cannot post differently. The mixed-payment entry also carries the prepayment
+penalty charged on excess (Dr `PenaltyReceivable` / Cr `PenaltyIncome`). A payment counts as
+"new" when its resolution carries the PRD-115 excess members; older payments keep Dr `Cash` / Cr
+`LoanAndAccrualsClearing`. A resolution that does not sum to the receipt is rejected rather than
+posted unbalanced. `PrepaidInterestLiability` and `UnappliedCashLiability` are liability accounts
+and are on `LedgerPeriodPostingGuard`'s instrument-account list, so they need Security Master
+evidence like the other loan accounts. `AccrualLedgerService.AccrueAsync` takes the consumed amount
+as an optional argument.
+
 **Migration of the clearing account.** Historical `LoanAndAccrualsClearing` postings are not
 rewritten. A one-off reconciliation report lists the residual clearing balance per loan, so the
 owner can decide whether to reclass it.
@@ -172,7 +211,25 @@ owner can decide whether to reclass it.
   against `UnappliedCash`.
 - `RefundUnappliedCash(loanId, amount, externalRef)`: Dr `UnappliedCashLiability` / Cr `Cash`.
 
-Both are maker-checker governed like other direct-lending commands.
+Both are governed like the other direct-lending commands: the `ManageDirectLending` permission,
+the direct-lending mutation rate limit, fund-scoped write tenancy and command-id idempotency. (This
+originally said "maker-checker"; no direct-lending command has a maker-checker step, and the owner
+chose to keep these consistent on 2026-11-09.)
+
+**As implemented (increment 7):** `POST /api/loans/{loanId}/unapplied-cash/apply` and
+`/unapplied-cash/refund`. Apply allocates up to the requested amount by the automatic waterfall
+(interest-only aware) or a manual breakdown capped at what is owed; only the allocated part leaves
+`UnappliedCash`, and no cash is received (`LastPaymentDate` is unchanged). Refund requires an
+external reference and records an `UnappliedCashRefund` cash transaction. Both refuse amounts that
+are not positive or exceed the held cash. Events `loan.unapplied-cash-applied` and
+`loan.unapplied-cash-refunded` are replayed by the rebuilder and journaled by
+`DirectLendingJournalLines` in both journal paths.
+
+**Workstations (owner decision, 2026-11-09):** loan servicing commands stay desktop-owned, as the
+browser's direct-lending API module already documents. The WPF Direct Lending page has an
+*Unapplied cash* panel (held balance, amount, external reference, Apply and Refund) that validates
+like the server; the browser loan book shows both balances read-only (increment 6). This replaces
+"commands available on both workstations" in the increment table.
 
 ## Decisions
 
@@ -185,7 +242,8 @@ The owner decided all four on 2026-11-02, each as recommended.
    excess goes to `UnappliedCash` and `ExcessRuleNote` records why. Cash posting never fails for
    this reason.
 3. **Prepayment penalty: charged automatically.** When excess is applied to principal, the same
-   command emits `loan.prepayment-penalty-charged` for `PrepaymentPenaltyRate × excess applied to
+   command charges it (recorded on the mixed-payment event, see §3 "As implemented"; originally
+   specified as a separate `loan.prepayment-penalty-charged` event) for `PrepaymentPenaltyRate × excess applied to
    principal`, journaled as today (Dr `PenaltyReceivable` / Cr `PenaltyIncome`). A zero or missing
    rate charges nothing.
 4. **Prepaid-interest consumption: by daily accruals, uncapped.** Each daily accrual is offset from
@@ -201,7 +259,7 @@ The owner decided all four on 2026-11-02, each as recommended.
 | 4 | Accrual prepaid consumption | Consumption to zero, partial day, PIK unaffected | Balances match a hand-computed schedule |
 | 5 | Split mixed-payment and accrual journals in both journal paths | Every entry balances; account mapping resolves; reconciliation sees no clearing residue for new payments | Journal and reconciliation tests pass |
 | 6 | Read models + UI (browser and WPF parity) show prepaid and unapplied | Shared read model returns both; screens render them | Both workstations display the same values |
-| 7 | `ApplyUnappliedCash` / `RefundUnappliedCash` commands | Governance, idempotency, journals | Commands available on both workstations |
+| 7 | `ApplyUnappliedCash` / `RefundUnappliedCash` commands | Governance, idempotency, journals | Commands available on the WPF workstation (desktop-owned); balances visible on both |
 
 Increments 1–3 are worth shipping on their own: they make the excess visible and stop money from
 going untracked, before any journal change.

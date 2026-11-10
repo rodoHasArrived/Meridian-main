@@ -853,8 +853,9 @@ public sealed class SecurityTermsVersioningTests
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
             SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("Bond", original));
 
-        // An older event: economic terms only, carrying a call schedule and redemption the flat
-        // Bond keys have no slot for.
+        // An older event: economic terms only, carrying a call schedule (which the flat Bond keys
+        // recover into the declared callSchedule array since ADR-027 stage 1 increment 1) and a
+        // redemption module the flat family still has no slot for.
         var terms = JsonNode.Parse(economic.EconomicTerms.GetRawText())!.AsObject();
         terms["call"]!["callSchedule"] = JsonNode.Parse("""[{"callDt":"2030-06-15","callPx":102.0,"isParCall":false,"callType":"Discrete"}]""");
         terms["redemption"] = JsonNode.Parse("""{"redemptionType":"Par","redemptionPrice":100.0,"isBullet":false,"isAmortizing":true}""");
@@ -865,10 +866,16 @@ public sealed class SecurityTermsVersioningTests
         };
 
         terms["call"]!["callSchedule"]!.AsArray().Should().ContainSingle();
-        FluentActions.Invoking(() => SecurityEconomicDefinitionAdapter.ToProjection(olderEvent))
-            .Should().Throw<InvalidOperationException>().WithMessage("*Declared schedule economic replay requires retained legacy asset-specific terms*");
+        // Economic-only replay recovers the declared calls into the flat array at its terms
+        // version instead of refusing; the source document stays retained beside the flat keys.
+        var recovered = SecurityEconomicDefinitionAdapter.ToProjection(olderEvent);
+        recovered.AssetSpecificTerms.GetProperty("callSchedule").GetArrayLength().Should().Be(1);
+        recovered.AssetSpecificTerms.GetProperty("callSchedule")[0].GetProperty("callPrice").GetDecimal().Should().Be(102.0m);
+        recovered.AssetSpecificTerms.GetProperty("callSchedule")[0].GetProperty("exerciseStyle").ValueKind
+            .Should().Be(JsonValueKind.Null, "'Discrete' names no frozen exercise style");
+        SecurityTermsEnvelope.TryGetRetainedEconomicTerms(recovered.AssetSpecificTerms, out _).Should().BeTrue();
         // Ordinary scalar economics remain recoverable and retain unexpressible scalar/redemption
-        // fields. Exercise-window information above requires the authoritative retained flat terms.
+        // fields.
         terms["call"]!["callSchedule"] = new JsonArray();
         terms["call"]!["putSchedule"] = new JsonArray();
         terms["call"]!["callPrice"] = 102m;

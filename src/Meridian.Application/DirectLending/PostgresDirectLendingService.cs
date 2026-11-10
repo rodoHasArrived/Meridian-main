@@ -81,6 +81,12 @@ public sealed partial class PostgresDirectLendingService : IDirectLendingService
     public async Task<LoanServicingStateDto?> ApplyWriteOffAsync(Guid loanId, ApplyWriteOffRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
         => DirectLendingServiceSupport.RequireSuccess(await _commandService.ApplyWriteOffAsync(loanId, request, metadata, ct).ConfigureAwait(false));
 
+    public async Task<LoanServicingStateDto?> ApplyUnappliedCashAsync(Guid loanId, ApplyUnappliedCashRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+        => DirectLendingServiceSupport.RequireSuccess(await _commandService.ApplyUnappliedCashAsync(loanId, request, metadata, ct).ConfigureAwait(false));
+
+    public async Task<LoanServicingStateDto?> RefundUnappliedCashAsync(Guid loanId, RefundUnappliedCashRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+        => DirectLendingServiceSupport.RequireSuccess(await _commandService.RefundUnappliedCashAsync(loanId, request, metadata, ct).ConfigureAwait(false));
+
     public async Task<LoanServicingStateDto?> ChargePrepaymentPenaltyAsync(Guid loanId, ChargePrepaymentPenaltyRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
         => DirectLendingServiceSupport.RequireSuccess(await _commandService.ChargePrepaymentPenaltyAsync(loanId, request, metadata, ct).ConfigureAwait(false));
 
