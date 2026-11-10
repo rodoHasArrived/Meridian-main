@@ -30,8 +30,9 @@ Meridian is a .NET 10 trading and operational-finance platform with fund operati
 9. For broad generation, domain modeling, workflow design, or architecture-sensitive refactors, load the MDIF spine in `docs/architecture/meridian-development-intelligence-framework.md`, `docs/architecture/meridian-vision.md`, `docs/architecture/meridian-domain-model.md`, `docs/domain/README.md`, and `docs/ai/context/README.md`.
 10. Local work may happen on `main` when the user explicitly requests it or the checkout is
     intentionally operating there. Do not bypass GitHub branch protections; for PR-ready publishing,
-    use a `codex/<short-task-name>` branch, open a PR to `main`, and treat GitHub Actions
-    `Meridian CI / quality-gate` as the authoritative merge gate.
+    use a `codex/<short-task-name>` or `claude/<short-task-name>` branch (either agent prefix is
+    accepted), open a PR to `main`, and treat GitHub Actions `Meridian CI / quality-gate` as the
+    authoritative merge gate.
 
 ## Current Product Direction
 
@@ -47,9 +48,6 @@ Meridian is a .NET 10 trading and operational-finance platform with fund operati
   `src/Meridian.Ui/dashboard/` and the reactivated WPF desktop workstation in `src/Meridian.Wpf/`.
   The WPF lane's immediate focus is closing web-UI parity gaps (`W8-WPF-PARITY-001`); see
   `docs/engineering/plans/wpf-web-ui-alignment-plan.md`.
-- Built browser-workstation assets live in `src/Meridian.Ui/wwwroot/workstation/`.
-- Shared read-model and endpoint support belongs in `src/Meridian.Ui.Services/` and
-  `src/Meridian.Ui.Shared/`.
 - Keep both the browser and WPF workflows backed by shared contracts, read models, and API seams so
   neither client forks product state; new WPF parity surfaces consume the shared seam before
   composing presentation.
@@ -103,7 +101,7 @@ gh workflow run targeted-test.yml --ref <branch> -f mode=dotnet-filtered -f dotn
 ## Repository Layout
 
 - `src/Meridian.Ui/dashboard/` - active browser-based operator workstation
-- `src/Meridian.Ui/wwwroot/workstation/` - built workstation assets served by `Meridian.Ui`
+- `src/Meridian.Ui/wwwroot/workstation/` - built workstation assets served by the `src/Meridian` host
 - `src/Meridian.Ui.Services/`, `src/Meridian.Ui.Shared/` - shared UI/API read-model surface
 - `src/Meridian.Wpf/` - active Windows desktop workstation (co-equal UI lane); current focus is web-UI parity
 - `src/Meridian.Application/` - orchestration and pipelines
@@ -138,37 +136,23 @@ Route work by scope. Use a single specialist agent (blueprint, test-writer, code
 single-domain tasks. For work that crosses subsystems, needs an approval gate, or requires evidence
 synthesis, compose multiple specialist agents and hold to the provider-agnostic Human-in-the-loop
 Gates in `docs/ai/assistant-workflow-contract.md`; those gates define when to pause and confirm
-before an action proceeds. Treat the following as signals that a task needs the gated, multi-agent
-path:
+before an action proceeds. Readiness reviews, reconciliation summaries, and report-pack approvals
+are typical gated work.
 
-- The request crosses multiple subsystems and needs evidence from more than one source.
-- The request requires an approval gate or operator sign-off before an action can proceed.
-- The request needs a structured briefing with trace/evidence retention (e.g. readiness reviews,
-  reconciliation summaries, report-pack approvals).
-
-> Note: the out-of-process Chief of Staff (CoS) ADK runtime that previously owned this heavy-duty
-> path was archived in commit `7ee19e38f`, and the archive copies of its code and plan were
-> removed from the tree by the 2026-09-11 archive cleanup (`982eea2d`). For historical reference
-> only, recover them from the parent commit, e.g. `git show 8a420730:archive/docs/plans/chief-of-staff-runtime.md`. Do not wire new work to it — use specialist agents plus the
-> workflow-contract gates instead.
+> The archived Chief of Staff (CoS) ADK runtime no longer owns this path and its code was removed
+> from the tree (`982eea2d`). Do not wire new work to it.
 
 ### Agent Design Patterns
 
-When composing multiple agents, choose the right topology for the work:
+- **Parallel** — independent subtasks with no output dependency (separate subsystems, review
+  alongside a security scan).
+- **Sequential** — each step feeds the next; the default single-domain lane is Repo Navigation →
+  Specialist → Implementation → Review → Assurance.
+- **Hierarchical** — a coordinating session delegates to specialists, aggregates their evidence,
+  and enforces the workflow-contract gates. Use it for multi-domain, gated, or evidence-synthesis
+  work.
 
-- **Parallel** — subtasks are independent with no output dependency between them. Use when
-  investigating separate subsystems concurrently, or running review and security scan
-  simultaneously.
-- **Sequential** — each step's output feeds the next. Use for the default single-domain lane:
-  Repo Navigation → Specialist → Implementation → Review → Assurance.
-- **Hierarchical** — a coordinating session delegates to specialist agents, aggregates their
-  evidence, and enforces the workflow-contract approval gates before proceeding. Use this pattern
-  whenever a task is multi-domain, gated, or requires structured evidence synthesis.
-
-Key resources:
-- `docs/ai/assistant-workflow-contract.md` — Human-in-the-loop Gates and shared assistant policy.
-- `docs/ai/work-modes.md` — select a work mode before implementation.
-- `docs/ai/agent-handoff-checklist.md` — required handoff format for multi-agent/lane workflows.
+The handoff format and work-mode selection are Critical Rules 7 and 8.
 
 ## Skills
 
@@ -201,8 +185,6 @@ Do not embed the generated repository tree in `CLAUDE.md`. Use these maintained 
 - `docs/documentation-ownership.md` for docs ownership, generated-doc, and archive rules.
 - `docs/architecture/project-structure.md` for the maintained repository map.
 - `docs/architecture/module-map.md` for layer ownership and dependency boundaries.
-- `docs/architecture/meridian-development-intelligence-framework.md`, `docs/architecture/meridian-vision.md`, `docs/architecture/meridian-domain-model.md`, `docs/domain/README.md`, and `docs/ai/context/README.md` for MDIF grounding before broad AI-assisted generation or architecture-sensitive work.
-- `docs/start/README.md` and `docs/engineering/README.md` for current local build, test, and run commands.
 - `docs/prompts/repo-maintenance-prompts.md` for prompt, agent, and skill maintenance rules.
 - `docs/ai/navigation/README.md` for the generated repo-navigation workflow.
 - `docs/ai/generated/repo-navigation.md` for subsystem routing and entrypoints.

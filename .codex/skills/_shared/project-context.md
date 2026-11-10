@@ -176,7 +176,7 @@ validation.
 - `src/Meridian.QuantScript/`: strategy analytics scripting and charting-oriented tooling
 - `src/Meridian.Mcp/`: active MCP host, tools, and resources
 - `src/Meridian.Ui/dashboard/`: browser-based operator workstation
-- `src/Meridian.Ui/wwwroot/workstation/`: built web workstation assets served by `Meridian.Ui`
+- `src/Meridian.Ui/wwwroot/workstation/`: built web workstation assets served by the `src/Meridian` host
 - `src/Meridian.Ui.Services/`, `src/Meridian.Ui.Shared/`, `src/Meridian.Wpf/`: shared UI
   services, workstation endpoints, and the active WPF desktop shell
 - `tests/`: cross-platform, F#, UI-service, and WPF test projects
