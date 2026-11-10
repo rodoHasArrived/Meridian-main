@@ -26,6 +26,7 @@ import {
   type FamilyOfficeTone
 } from "@/screens/family-office-screen.view-model";
 import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
+import { pluralizeCount } from "@/lib/format";
 
 const panelIconMap: Record<string, typeof Landmark> = {
   "total-family-net-worth": Landmark,
@@ -221,7 +222,7 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
           tone: resolvedStructure ? "ready" : "blocked"
         }}
         scope={{
-          value: resolvedStructure ? `${resolvedStructure.entities.length} entities` : "No family entities",
+          value: resolvedStructure ? pluralizeCount(resolvedStructure.entities.length, "entity", { plural: "entities" }) : "No family entities",
           detail: resolvedStructure ? `${resolvedStructure.baseCurrency} consolidated scope` : "Complete entity setup to establish scope",
           tone: resolvedStructure?.entities.length ? "ready" : "blocked"
         }}
@@ -232,7 +233,7 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
         }}
         completeness={{
           value: resolvedStructure
-            ? `${resolvedStructure.privateAssets.length} private assets · ${resolvedStructure.commitments.length} commitments`
+            ? `${pluralizeCount(resolvedStructure.privateAssets.length, "private asset")} · ${pluralizeCount(resolvedStructure.commitments.length, "commitment")}`
             : "No records loaded",
           detail: "Private-asset and commitment coverage",
           tone: resolvedStructure ? "ready" : "blocked"
