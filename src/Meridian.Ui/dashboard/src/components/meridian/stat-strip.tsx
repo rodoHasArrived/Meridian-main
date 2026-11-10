@@ -2,8 +2,8 @@ import { Clock3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { normalizeFinancialLabel } from "@/lib/format";
 import { buildMetricTrust, describeMetricProvenance, sharedMetricProvenance, withMetricContext, worstMetricFreshness } from "@/lib/metric-trust";
-import { useWorkspaceFigureContext } from "@/lib/workspace-figure-context";
-import type { MetricFreshness, MetricSnapshot } from "@/types";
+import { resolveWorkspaceFigures, useWorkspaceFigureContext } from "@/lib/workspace-figure-context";
+import type { MetricFreshness, MetricSnapshot, WorkspaceKey } from "@/types";
 import { usesTrackedCaps } from "@/design-system/label-case";
 
 const statToneClass: Record<MetricSnapshot["tone"], string> = {
@@ -28,9 +28,11 @@ const degradedStripLabel: Record<Exclude<MetricFreshness, "fresh">, string> = {
  * carries a clock, and the source, as-of time and scope the figures share are stated once under
  * the row (each figure's own provenance is on hover when they differ).
  *
- * Pass `source` (and `scope` when the page has one) for a strip fed by the workstation load: the
- * as-of time and freshness then come from the shell. A screen with its own freshness evidence
- * stamps its metrics with `withMetricContext` instead and leaves `source` off.
+ * Pass `source` and `workspace` (and `scope` when the page has one) for a strip fed by the
+ * workstation load: the as-of time and freshness then come from the shell, per workspace, so a
+ * workspace whose refresh failed shows stale figures even while others refreshed. A screen with
+ * its own freshness evidence stamps its metrics with `withMetricContext` instead and leaves
+ * `source` off.
  */
 export function StatStrip({
   metrics: suppliedMetrics,
@@ -38,6 +40,7 @@ export function StatStrip({
   className,
   compact = false,
   source,
+  workspace: workspaceKey,
   scope
 }: {
   metrics: MetricSnapshot[];
@@ -46,6 +49,8 @@ export function StatStrip({
   compact?: boolean;
   /** The read model behind the strip, e.g. "Strategy workspace". */
   source?: string;
+  /** The workspace whose load feeds the strip, so its own refresh outcome decides freshness. */
+  workspace?: WorkspaceKey;
   /** The accounts, fund or run the strip covers. */
   scope?: string | null;
 }) {
@@ -54,10 +59,11 @@ export function StatStrip({
     return null;
   }
 
+  const loaded = resolveWorkspaceFigures(workspace, workspaceKey);
   const stamped = source
     ? withMetricContext(suppliedMetrics, {
-        provenance: { source, asOf: workspace?.asOf ?? null, scope: scope ?? null },
-        freshness: workspace?.freshness ?? null
+        provenance: { source, asOf: loaded.asOf, scope: scope ?? null },
+        freshness: loaded.freshness
       })
     : suppliedMetrics;
   // A session that is not on real data says so in every figure's source.

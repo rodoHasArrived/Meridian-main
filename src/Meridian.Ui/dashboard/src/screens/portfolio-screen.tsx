@@ -595,12 +595,14 @@ export function PortfolioScreen({
         : heartbeat
           ? "ready"
           : "unknown";
-  // The headline figures carry the same source, scope and freshness the confidence summary
-  // states, so a stale workspace cannot show figures that look current.
+  // The headline figures carry the same source and freshness the confidence summary states, so
+  // a stale workspace cannot show figures that look current. Their scope is every position in the
+  // workspace read model: selecting a brokerage account filters the brokerage table, not these
+  // totals, so the selected account must not be named as their scope.
   const headlineProvenance = {
     source: vm.metricsFromTrading ? "Trading workspace" : vm.positionSourceLabel,
     asOf: (hasRefreshEvidence ? refreshStatus?.lastSucceededAt : null) ?? brokeragePortfolio?.asOf ?? heartbeat,
-    scope: vm.selectedBrokerageAccount.title
+    scope: "All workspace positions"
   };
   const headlineMetrics = withMetricContext(vm.metricsFromTrading ? vm.metricCards : vm.fallbackStats, {
     provenance: headlineProvenance,

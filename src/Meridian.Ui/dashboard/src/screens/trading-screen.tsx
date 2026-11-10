@@ -84,6 +84,7 @@ import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
 import { applyCrossScreenCounts, selectCrossScreenCounts } from "@/lib/cross-screen-counts";
 import { pluralizeCount } from "@/lib/format";
 import { withMetricContext } from "@/lib/metric-trust";
+import { useWorkspaceFigureContext } from "@/lib/workspace-figure-context";
 import { useSharedCrossScreenCounts } from "@/lib/cross-screen-counts-context";
 
 interface TradingScreenProps {
@@ -443,6 +444,7 @@ function TradingLoadingPanel({ state }: { state: TradingLoadingState }) {
 export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: TradingScreenProps) {
   const { pathname, search } = useLocation();
   const sharedCounts = useSharedCrossScreenCounts();
+  const figureContext = useWorkspaceFigureContext();
   // One open-order count for the headline card, the completeness card and every other screen.
   const crossCounts = selectCrossScreenCounts({ shared: sharedCounts, openOrders: data?.openOrders });
   const headlineMetrics = applyCrossScreenCounts(data?.metrics ?? [], crossCounts);
@@ -574,11 +576,16 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
   // refresh in flight does not mute them: the last observation is still the evidence on screen.
   const headlineScope = fundAccountId ?? data.brokerage.account ?? "All loaded accounts";
   const headlineAsOf = (hasRecoveryProjection ? recoveryPortfolio?.observedAt : data.brokerage.lastHeartbeat) || null;
-  const headlineFreshness: MetricFreshness = hasRecoveryProjection
-    ? recoveryPortfolio?.isFresh === false
-      ? "stale"
-      : recoveryPortfolio?.isFresh && !tradingReadiness.errorText ? "fresh" : "unverified"
-    : sourceTone === "ready" ? "fresh" : "unverified";
+  // A failed Trading refresh keeps the previous payload on screen: those figures are stale
+  // whatever the broker evidence says.
+  const tradingRefreshFailed = figureContext?.staleWorkspaces.includes("trading") ?? false;
+  const headlineFreshness: MetricFreshness = tradingRefreshFailed
+    ? "stale"
+    : hasRecoveryProjection
+      ? recoveryPortfolio?.isFresh === false
+        ? "stale"
+        : recoveryPortfolio?.isFresh && !tradingReadiness.errorText ? "fresh" : "unverified"
+      : sourceTone === "ready" ? "fresh" : "unverified";
   const trustedHeadlineMetrics = withMetricContext(headlineMetrics, {
     provenance: { source: "Trading workspace", asOf: headlineAsOf, scope: headlineScope },
     freshness: headlineFreshness

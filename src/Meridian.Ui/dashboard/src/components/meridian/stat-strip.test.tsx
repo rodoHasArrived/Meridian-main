@@ -96,7 +96,7 @@ describe("StatStrip", () => {
 
   it("takes the as-of time, freshness and data label from the shell for a workspace-fed strip", () => {
     render(
-      <WorkspaceFigureContextProvider value={{ asOf: "2026-06-30T18:05:00Z", freshness: "stale", dataLabel: "seeded demo data" }}>
+      <WorkspaceFigureContextProvider value={{ asOf: "2026-06-30T18:05:00Z", freshness: "stale", dataLabel: "seeded demo data", staleWorkspaces: [], staleAsOf: "2026-06-30T18:05:00Z" }}>
         <StatStrip label="Strategy headline metrics" source="Strategy workspace" metrics={[metric({ id: "runs", label: "Runs", value: "24" })]} />
       </WorkspaceFigureContextProvider>
     );
@@ -105,6 +105,28 @@ describe("StatStrip", () => {
       "Stale figures · Source: Strategy workspace (seeded demo data) · As of Jun 30, 2026, 18:05 UTC"
     );
     expect(screen.getByText("24")).toHaveClass("text-muted-foreground");
+  });
+
+  it("shows a workspace's retained figures as stale after a partial refresh while others stay fresh", () => {
+    const context = {
+      asOf: "2026-06-30T18:10:00Z",
+      freshness: "fresh" as const,
+      dataLabel: null,
+      staleWorkspaces: ["accounting" as const],
+      staleAsOf: "2026-06-30T18:05:00Z"
+    };
+    render(
+      <WorkspaceFigureContextProvider value={context}>
+        <StatStrip label="Accounting headline metrics" source="Accounting workspace" workspace="accounting" metrics={[metric({ id: "breaks", label: "Open breaks", value: "5" })]} />
+        <StatStrip label="Strategy headline metrics" source="Strategy workspace" workspace="strategy" metrics={[metric({ id: "runs", label: "Runs", value: "24" })]} />
+      </WorkspaceFigureContextProvider>
+    );
+
+    const [accounting, strategy] = screen.getAllByTestId("stat-strip-provenance");
+    expect(accounting).toHaveTextContent("Stale figures · Source: Accounting workspace · As of Jun 30, 2026, 18:05 UTC");
+    expect(screen.getByText("5")).toHaveClass("text-muted-foreground");
+    expect(strategy).toHaveTextContent(/^Source: Strategy workspace · As of Jun 30, 2026, 18:10 UTC$/);
+    expect(screen.getByText("24")).toHaveClass("text-foreground");
   });
 
   it("names the source of a workspace-fed strip outside the shell without claiming freshness", () => {
