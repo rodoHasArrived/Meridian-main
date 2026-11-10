@@ -714,7 +714,10 @@ module SecurityMasterLegacyUpgrade =
                             LotSize = None
                             TickSize = None
                             ContractMultiplier = None
-                            MarginRequirementPct = terms.Leverage |> Option.map (fun l -> 1m / l * 100m)
+                            // Total for every input: zero leverage carries as a zero margin so the
+                            // definition validator can refuse it (cfd_leverage_invalid) instead of
+                            // this projection throwing before validation runs.
+                            MarginRequirementPct = terms.Leverage |> Option.map (fun l -> if l = 0m then 0m else 1m / l * 100m)
                             TradingHoursUtc = None
                             CircuitBreakerThresholdPct = None
                         }
@@ -851,6 +854,11 @@ module SecurityMasterLegacyUpgrade =
             // Custom-asset terms are an opaque profile-governed document; no structural
             // economic-term modules can be extracted without interpreting the profile.
             SecurityTermModules.empty
+
+    /// ADR-027 stage 2: the kind → modules projection as a first-class seam. S2-B1's equivalence
+    /// tests reach it directly, and S2-B2 derives the economic definition from commands at
+    /// mapping time through it.
+    let modulesFromKind (kind: SecurityKind) = termsFromKind kind
 
     let toEconomicDefinition (record: SecurityMasterRecord) =
         {

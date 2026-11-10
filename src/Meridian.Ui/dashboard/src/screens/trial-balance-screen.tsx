@@ -17,6 +17,7 @@ import { ScreenLayout, type FocusSignal } from "@/components/ui/screen-layout";
 import { Select } from "@/components/ui/select";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
+import { withoutOpaqueIdentifiers } from "@/lib/identifiers";
 import { cn } from "@/lib/utils";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import { DENSE_VIRTUALIZATION_THRESHOLD } from "@/lib/dense-table-virtualization";
@@ -191,7 +192,9 @@ export function TrialBalanceScreen() {
   // The selected book names the fund-structure node it belongs to. Hard-coding "All entities"
   // presented an entity-scoped governed balance as an all-entity one.
   const entityScope = postedLedger.view.bookScopeLabel ?? "All entities";
-  const trialBalanceScope = `${entityScope} · ${postedLedger.view.selectedBookLabel ?? ledgerBook} · ${selectedPeriodLabel ?? "No period selected"}`;
+  // The heading names the scope in words. A structure node known only by its identifier is named
+  // by its kind there; the exact node stays in the read-only scope field below.
+  const trialBalanceScope = `${withoutOpaqueIdentifiers(entityScope)} · ${postedLedger.view.selectedBookLabel ?? ledgerBook} · ${selectedPeriodLabel ?? "No period selected"}`;
 
   // Retained on the closed-period summary. Claiming none was kept asserted an evidence gap that
   // is not there, and left freshness permanently "needs review" on a perfectly good period.

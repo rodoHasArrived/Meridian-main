@@ -47,12 +47,12 @@ public sealed class DirectLendingServicingScheduleScenarioTests
         }
 
         var beforeCapitalization = await service.GetServicingStateAsync(loan.LoanId);
-        // 89 days at 3.5%: 1,000,000 x 3.5% / 360 = 97.2222 per day; PIK 50% = 48.61 (rounded) per day.
-        // 2026-04-15 accrues at 6.75%: 187.50 per day, PIK 93.75. PIK = 89 x 48.61 + 93.75 = 4,420.04.
-        // Total interest = 8,840.28 (the in-memory service keeps unrounded daily cash interest).
+        // 89 days at 3.5%: 1,000,000 x 3.5% / 360 = 97.2222, posted as 97.22 per day (rounded to
+        // cents, as the F# aggregate does); PIK 50% = 48.61 and cash 48.61 per day.
+        // 2026-04-15 accrues at 6.75%: 187.50 per day, PIK 93.75, cash 93.75.
+        // PIK = cash = 89 x 48.61 + 93.75 = 4,420.04; total interest = 8,840.08.
         beforeCapitalization!.PikInterestAccruedUnpaid.Should().Be(4_420.04m);
-        (beforeCapitalization.Balances.InterestAccruedUnpaid + beforeCapitalization.PikInterestAccruedUnpaid)
-            .Should().BeApproximately(8_840.28m, 0.01m);
+        beforeCapitalization.Balances.InterestAccruedUnpaid.Should().Be(4_420.04m);
         beforeCapitalization.Balances.PrincipalOutstanding.Should().Be(1_000_000m);
 
         var capitalized = await service.CapitalizePikAsync(loan.LoanId, new CapitalizePikRequest(new DateOnly(2026, 4, 15)));
