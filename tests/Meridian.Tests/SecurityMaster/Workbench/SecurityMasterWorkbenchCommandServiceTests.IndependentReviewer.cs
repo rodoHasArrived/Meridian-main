@@ -174,6 +174,33 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
     }
 
     [Fact]
+    public async Task InstitutionalProfile_AReloadBackToStandard_StillRefusesSelfReviewAndSelfApproval()
+    {
+        var workflowId = Guid.NewGuid();
+        var options = new MutableWorkbenchOptionsMonitor(new SecurityMasterWorkbenchOptions
+        {
+            GovernanceProfile = SecurityMasterGovernanceProfile.Institutional
+        });
+        var requirements = GovernanceRequirementsFor.NonProduction(options);
+        var drafting = new Harness(currentVersion: 2, governanceRequirements: requirements);
+        var draftId = await drafting.SeedRevisionAsync(SecurityMasterRevisionStateDto.Draft, actor: "ops.drafter");
+        var approving = new Harness(currentVersion: 4, governanceRequirements: requirements);
+        var submittedId = await approving.SeedRevisionAsync(
+            SecurityMasterRevisionStateDto.Submitted, actor: "ops.analyst", workflowId: workflowId);
+
+        // The reload removes the profile and leaves every setting at its default.
+        options.Set(new SecurityMasterWorkbenchOptions());
+
+        await drafting.Service.Invoking(s => s.SubmitForApprovalAsync(Submit(draftId, workflowId, submitter: "ops.submitter", reviewer: "ops.drafter")))
+            .Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*drafted the revision*");
+        await approving.Service.Invoking(s => s.ApproveRevisionAsync(Approve(submittedId, workflowId, approver: "ops.analyst")))
+            .Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*submitted the revision*");
+        (await approving.Revisions.GetAsync(submittedId))!.State.Should().Be(SecurityMasterRevisionStateDto.Submitted);
+    }
+
+    [Fact]
     public void RequireIndependentReviewer_DefaultsOff()
         => new SecurityMasterWorkbenchOptions().RequireIndependentReviewer.Should().BeFalse(
             "turning the check on is a deployment decision; the sample configuration opts in");

@@ -66,8 +66,10 @@ public sealed class SecurityMasterWorkbenchOptions
     /// drafter, so only its submitter is excluded from approving it. An asset-profile draft without a
     /// recorded <c>DraftedBy</c> is checked against its recorded author and drafted audit events;
     /// no maker is invented for either.</para>
-    /// <para>Changing this value on a running host takes effect at the next read, like the three
-    /// settings it governs.</para>
+    /// <para>A restart is required to leave the Institutional profile. A reload that sets this to
+    /// Institutional takes effect at the next read; once a running host has been Institutional, a
+    /// reload that sets this back to Standard or removes the key is ignored and logged, and the
+    /// profile and all three requirements stay in force until the process restarts.</para>
     /// </remarks>
     public SecurityMasterGovernanceProfile GovernanceProfile { get; init; }
 

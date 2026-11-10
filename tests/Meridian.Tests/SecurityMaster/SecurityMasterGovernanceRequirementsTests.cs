@@ -264,26 +264,151 @@ public sealed class SecurityMasterGovernanceRequirementsTests
     }
 
     [Fact]
-    public void OrdinaryHost_AReloadChangingTheDeclaredProfile_TakesEffectAndIsLogged()
+    public void Latch_StandardToInstitutionalByReload_TakesEffect_AndAReloadBackDoesNotRelaxIt()
     {
-        // The declared profile is configuration, so on a host that is not a production composition a
-        // reload can change it in either direction. What a reload cannot do is keep the Institutional
-        // profile and switch one of its requirements off. Relaxing to Standard is logged as a warning.
         var options = new MutableWorkbenchOptionsMonitor(new SecurityMasterWorkbenchOptions());
         var log = new RecordingLogger<SecurityMasterGovernanceRequirements>();
         var requirements = GovernanceRequirementsFor.NonProduction(options, log);
         requirements.Current.Profile.Should().Be(SecurityMasterGovernanceProfile.Standard);
+        requirements.Current.IsProfileLatched.Should().BeFalse();
 
         options.Set(new SecurityMasterWorkbenchOptions { GovernanceProfile = SecurityMasterGovernanceProfile.Institutional });
+        requirements.Current.Profile.Should().Be(SecurityMasterGovernanceProfile.Institutional);
+        requirements.Current.ProfileSource.Should().Be(SecurityMasterGovernanceProfileSource.Configuration);
+        requirements.Current.IsProfileLatched.Should().BeFalse("configuration currently declares the profile");
         requirements.Current.RequireGovernedTermAmendments.Should().BeTrue();
         log.Entries.Should().ContainSingle().Which.LogLevel.Should().Be(LogLevel.Information);
 
         options.Set(new SecurityMasterWorkbenchOptions());
-        requirements.Current.Profile.Should().Be(SecurityMasterGovernanceProfile.Standard);
-        requirements.Current.RequireGovernedTermAmendments.Should().BeFalse();
+        var latched = requirements.Current;
+        latched.Profile.Should().Be(SecurityMasterGovernanceProfile.Institutional, "a restart is required to leave the profile");
+        latched.ProfileSource.Should().Be(SecurityMasterGovernanceProfileSource.Latched);
+        latched.IsProfileLatched.Should().BeTrue();
+        latched.GovernedTermAmendments.Should().Be(SecurityMasterGovernanceRequirementBasis.Profile);
+        latched.IndependentReviewer.Should().Be(SecurityMasterGovernanceRequirementBasis.Profile);
+        latched.IndependentProfileApprover.Should().Be(SecurityMasterGovernanceRequirementBasis.Profile);
+        latched.ContradictedKeys.Should().Equal(SecurityMasterGovernanceRequirements.GovernanceProfileKey);
         log.Entries.Should().HaveCount(2);
         log.Entries[1].LogLevel.Should().Be(LogLevel.Warning);
-        log.Entries[1].Message.Should().Contain("from Institutional to Standard");
+        log.Entries[1].Message.Should().Contain(SecurityMasterGovernanceRequirements.GovernanceProfileKey);
+
+        options.Set(new SecurityMasterWorkbenchOptions { GovernanceProfile = SecurityMasterGovernanceProfile.Institutional });
+        requirements.Current.IsProfileLatched.Should().BeFalse("configuration declares the profile again");
+        requirements.Current.ContradictedKeys.Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("Standard")]
+    [InlineData(null)]
+    public void Latch_InstitutionalByOption_AConfigurationReloadToStandardOrRemovingTheKey_StaysInstitutional(string? reloadedProfile)
+    {
+        var configuration = Configuration(($"{Section}:GovernanceProfile", "Institutional"));
+        var log = new RecordingLogger<SecurityMasterGovernanceRequirements>();
+        var services = Compose(configuration);
+        services.AddSingleton<ILogger<SecurityMasterGovernanceRequirements>>(log);
+        using var provider = services.BuildServiceProvider();
+        var requirements = provider.GetRequiredService<ISecurityMasterGovernanceRequirements>();
+        requirements.Current.ProfileSource.Should().Be(SecurityMasterGovernanceProfileSource.Configuration);
+
+        configuration[$"{Section}:GovernanceProfile"] = reloadedProfile;
+        configuration.Reload();
+
+        provider.GetRequiredService<IOptionsMonitor<SecurityMasterWorkbenchOptions>>().CurrentValue.GovernanceProfile
+            .Should().Be(SecurityMasterGovernanceProfile.Standard, "the configuration itself no longer declares the profile");
+        var current = requirements.Current;
+        current.Profile.Should().Be(SecurityMasterGovernanceProfile.Institutional);
+        current.IsProfileLatched.Should().BeTrue();
+        current.RequireGovernedTermAmendments.Should().BeTrue();
+        current.RequireIndependentReviewer.Should().BeTrue();
+        current.RequireIndependentProfileApprover.Should().BeTrue();
+        current.ContradictedKeys.Should().Equal(SecurityMasterGovernanceRequirements.GovernanceProfileKey);
+        provider.GetRequiredService<IGovernedTermAmendmentPolicy>().RefusalReason.Should().NotBeNull();
+        var warning = log.Entries.Should().ContainSingle().Subject;
+        warning.LogLevel.Should().Be(LogLevel.Warning);
+        warning.Message.Should().Contain(SecurityMasterGovernanceRequirements.GovernanceProfileKey);
+    }
+
+    [Fact]
+    public void Latch_AReloadBeforeAnythingReadTheSeam_StillFindsTheStartingProfileLatched()
+    {
+        var options = new MutableWorkbenchOptionsMonitor(new SecurityMasterWorkbenchOptions
+        {
+            GovernanceProfile = SecurityMasterGovernanceProfile.Institutional
+        });
+        var requirements = GovernanceRequirementsFor.NonProduction(options);
+
+        options.Set(new SecurityMasterWorkbenchOptions());
+
+        requirements.Current.Profile.Should().Be(SecurityMasterGovernanceProfile.Institutional);
+        requirements.Current.IsProfileLatched.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Latch_AFreshInstanceOverStandardConfiguration_IsStandard()
+    {
+        // A restart composes a new instance, and that is the only way out of the profile.
+        var options = new MutableWorkbenchOptionsMonitor(new SecurityMasterWorkbenchOptions
+        {
+            GovernanceProfile = SecurityMasterGovernanceProfile.Institutional
+        });
+        var running = GovernanceRequirementsFor.NonProduction(options);
+        options.Set(new SecurityMasterWorkbenchOptions());
+        running.Current.Profile.Should().Be(SecurityMasterGovernanceProfile.Institutional);
+
+        var restarted = GovernanceRequirementsFor.NonProduction(options);
+
+        restarted.Current.Profile.Should().Be(SecurityMasterGovernanceProfile.Standard);
+        restarted.Current.IsProfileLatched.Should().BeFalse();
+        restarted.Current.RequireGovernedTermAmendments.Should().BeFalse();
+        restarted.Current.RequireIndependentReviewer.Should().BeFalse();
+        restarted.Current.RequireIndependentProfileApprover.Should().BeFalse();
+        restarted.Current.ContradictedKeys.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Latch_AnExplicitFalseUnderALatchedProfile_IsContradictedToo()
+    {
+        var snapshot = SecurityMasterGovernanceRequirements.Evaluate(
+            new SecurityMasterWorkbenchOptions(),
+            isProductionComposition: false,
+            configuredValue: static key => key == SecurityMasterGovernanceRequirements.RequireIndependentReviewerKey ? "false" : null,
+            institutionalLatched: true);
+
+        snapshot.Profile.Should().Be(SecurityMasterGovernanceProfile.Institutional);
+        snapshot.RequireIndependentReviewer.Should().BeTrue();
+        snapshot.ContradictedKeys.Should().Equal(
+            SecurityMasterGovernanceRequirements.GovernanceProfileKey,
+            SecurityMasterGovernanceRequirements.RequireIndependentReviewerKey);
+    }
+
+    [Fact]
+    public void Latch_OnAProductionComposition_ThePostureIsReportedNotTheLatch()
+    {
+        var snapshot = SecurityMasterGovernanceRequirements.Evaluate(
+            new SecurityMasterWorkbenchOptions(), isProductionComposition: true, institutionalLatched: true);
+
+        snapshot.ProfileSource.Should().Be(SecurityMasterGovernanceProfileSource.ProductionComposition);
+        snapshot.IsProfileLatched.Should().BeFalse();
+        snapshot.ContradictedKeys.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Latch_TheGuardRunAgainAfterAReloadToStandard_RefusesNamingTheProfileKey()
+    {
+        var configuration = Configuration(($"{Section}:GovernanceProfile", "Institutional"));
+        await using var provider = Compose(configuration).BuildServiceProvider();
+        await StartHostedServices(provider).Should().NotThrowAsync();
+
+        configuration[$"{Section}:GovernanceProfile"] = "Standard";
+        configuration.Reload();
+
+        var refusal = await StartHostedServices(provider).Should().ThrowAsync<StartupRefusedException>();
+        refusal.Which.Message.Should().Be(
+            "Security Master governance configuration contradicts the Institutional governance profile, which is in force "
+            + "because this process has already run it and it stays in force until restart. "
+            + $"'{Section}:GovernanceProfile' no longer declares Institutional; set it to Institutional, or restart the host "
+            + "to leave the profile. Under the Institutional profile governed term amendments, independent field-edit review and "
+            + "independent profile approval are always in force and cannot be turned off.");
     }
 
     [Theory]
@@ -581,30 +706,41 @@ public sealed class SecurityMasterGovernanceRequirementsTests
     }
 
     [Fact]
-    public void SampleConfiguration_IsAStandardProfile_ThatAProductionCompositionWouldRefuse()
+    public async Task SampleConfiguration_StartsOnAProductionComposition_WithEveryRequirementInForce()
     {
-        // The sample keeps RequireGovernedTermAmendments explicitly false, which suits the
-        // single-operator workstation it is written for. Copied unchanged onto a production posture it
-        // is a contradiction, so that host refuses to start naming the key.
+        // The sample leaves RequireGovernedTermAmendments out, so the code default applies on the
+        // single-operator workstation it is written for, and a production posture started from an
+        // unchanged copy has nothing to contradict: it starts with governance in force.
         var sample = new ConfigurationBuilder()
             .AddJsonFile(Path.Combine(RepositoryRoot(), "config", "appsettings.sample.json"), optional: false)
             .Build();
+        sample[SecurityMasterGovernanceRequirements.RequireGovernedTermAmendmentsKey].Should().BeNull();
+        sample[SecurityMasterGovernanceRequirements.GovernanceProfileKey].Should().BeNull("the sample only documents the key");
+        sample[SecurityMasterGovernanceRequirements.RequireIndependentReviewerKey].Should().Be("True");
         var options = new SecurityMasterWorkbenchOptions();
         sample.GetSection(Section).Bind(options);
 
         var workstation = SecurityMasterGovernanceRequirements.Evaluate(
             options, isProductionComposition: false, key => sample[key]);
         workstation.Profile.Should().Be(SecurityMasterGovernanceProfile.Standard);
-        workstation.ProfileSource.Should().Be(SecurityMasterGovernanceProfileSource.Default, "the sample only documents the key");
+        workstation.ProfileSource.Should().Be(SecurityMasterGovernanceProfileSource.Default);
         workstation.IndependentReviewer.Should().Be(SecurityMasterGovernanceRequirementBasis.Setting);
         workstation.RequireGovernedTermAmendments.Should().BeFalse();
         workstation.RequireIndependentProfileApprover.Should().BeFalse();
         workstation.ContradictedKeys.Should().BeEmpty();
 
-        var production = SecurityMasterGovernanceRequirements.Evaluate(
-            options, isProductionComposition: true, key => sample[key]);
+        var services = Compose(sample);
+        services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.ProductionApi);
+        await using var provider = services.BuildServiceProvider();
+
+        await StartHostedServices(provider).Should().NotThrowAsync();
+        var production = provider.GetRequiredService<ISecurityMasterGovernanceRequirements>().Current;
+        production.Profile.Should().Be(SecurityMasterGovernanceProfile.Institutional);
+        production.ProfileSource.Should().Be(SecurityMasterGovernanceProfileSource.ProductionComposition);
         production.RequireGovernedTermAmendments.Should().BeTrue();
-        production.ContradictedKeys.Should().Equal(SecurityMasterGovernanceRequirements.RequireGovernedTermAmendmentsKey);
+        production.RequireIndependentReviewer.Should().BeTrue();
+        production.RequireIndependentProfileApprover.Should().BeTrue();
+        production.ContradictedKeys.Should().BeEmpty();
     }
 
     [Fact]

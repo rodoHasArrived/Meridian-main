@@ -334,6 +334,34 @@ public sealed class SecurityMasterGovernedWriteAuthorityTests
         canonical.Appended.Should().BeEmpty();
     }
 
+    [Fact]
+    public async Task InstitutionalProfile_AReloadBackToStandard_DoesNotReopenTheDirectPath_UntilARestart()
+    {
+        var options = new MutableWorkbenchOptionsMonitor(new SecurityMasterWorkbenchOptions
+        {
+            GovernanceProfile = SecurityMasterGovernanceProfile.Institutional
+        });
+        var running = new CanonicalAmendHarness(
+            _projectionStore,
+            governedTermAmendmentPolicy: new GovernedTermAmendmentPolicy(GovernanceRequirementsFor.NonProduction(options)),
+            revisionStore: _revisions);
+
+        // The reload removes the profile and leaves every setting at its default.
+        options.Set(new SecurityMasterWorkbenchOptions());
+
+        await running.Service.Invoking(s => s.AmendTermsAsync(AmendPar(1000m, "desk-tool")))
+            .Should().ThrowAsync<GovernedTermAmendmentRequiredException>("the Institutional profile latches until restart");
+        running.Appended.Should().BeEmpty();
+
+        // A restart composes a new seam over the same, now Standard, configuration.
+        var restarted = new CanonicalAmendHarness(
+            _projectionStore,
+            governedTermAmendmentPolicy: new GovernedTermAmendmentPolicy(GovernanceRequirementsFor.NonProduction(options)),
+            revisionStore: _revisions);
+        await restarted.Service.AmendTermsAsync(AmendPar(1000m, "desk-tool"));
+        restarted.Upserted.Should().ContainSingle();
+    }
+
     private CanonicalAmendHarness Harness()
         => new(_projectionStore, governedTermAmendmentPolicy: new GovernedTermAmendmentPolicy(GovernanceRequirementsFor.NonProduction(_options)), revisionStore: _revisions);
 

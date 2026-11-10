@@ -203,6 +203,23 @@ public sealed class SecurityAssetProfileGovernanceServiceTests
     }
 
     [Fact]
+    public async Task ApproveProfileAsync_InstitutionalProfile_AReloadBackToStandard_StillRefusesSelfApproval()
+    {
+        var options = new MutableWorkbenchOptionsMonitor(new SecurityMasterWorkbenchOptions
+        {
+            GovernanceProfile = SecurityMasterGovernanceProfile.Institutional
+        });
+        var service = new SecurityAssetProfileGovernanceService(
+            new StorageOptions { RootPath = NewDataRoot() }, GovernanceRequirementsFor.NonProduction(options));
+        var draft = await service.DraftProfileAsync(CreateDraftRequest("custom-latched", fieldLabel: "NAV date"), "settings-admin");
+
+        options.Set(new SecurityMasterWorkbenchOptions());
+
+        await service.Invoking(s => s.ApproveProfileAsync(Approval("custom-latched", draft.Profile.Version), "settings-admin"))
+            .Should().ThrowAsync<ArgumentException>("the Institutional profile latches until restart");
+    }
+
+    [Fact]
     public async Task ApproveProfileAsync_InstitutionalProfile_HandlesALegacyDraftAsTheSettingDoes()
     {
         // The profile adds no recheck and invents no maker: a draft without DraftedBy is still

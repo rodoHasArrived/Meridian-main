@@ -7,9 +7,10 @@ namespace Meridian.Application.Composition;
 
 /// <summary>
 /// Refuses to start a host whose configuration contradicts its Security Master governance profile:
-/// an Institutional profile with one of the three requirements explicitly set to false, or a
+/// an Institutional profile with one of the three requirements explicitly set to false, a
 /// production composition with <c>SecurityMasterWorkbench:GovernanceProfile</c> explicitly set to
-/// <c>Standard</c>. The refusal names each contradicted key.
+/// <c>Standard</c>, or a profile key that stopped declaring Institutional after this process had
+/// already run it. The refusal names each contradicted key.
 /// </summary>
 /// <remarks>
 /// An <see cref="IStartupRefusalGuard"/>: it asks <see cref="ISecurityMasterGovernanceRequirements"/>
@@ -66,13 +67,19 @@ public sealed class SecurityMasterGovernanceProfileGuard : IStartupRefusalGuard
             return null;
         }
 
-        var reason = snapshot.ProfileSource == SecurityMasterGovernanceProfileSource.ProductionComposition
-            ? "this host is a production composition"
-            : $"'{SecurityMasterGovernanceRequirements.GovernanceProfileKey}' is Institutional";
-        var findings = snapshot.ContradictedKeys.Select(static key =>
-            string.Equals(key, SecurityMasterGovernanceRequirements.GovernanceProfileKey, StringComparison.Ordinal)
-                ? $"'{key}' is explicitly Standard, but a production composition always runs the Institutional profile; remove the key or set it to Institutional."
-                : $"'{key}' is explicitly false; remove the key or set it to true.");
+        var latched = snapshot.IsProfileLatched;
+        var reason = snapshot.ProfileSource switch
+        {
+            SecurityMasterGovernanceProfileSource.ProductionComposition => "this host is a production composition",
+            SecurityMasterGovernanceProfileSource.Latched => "this process has already run it and it stays in force until restart",
+            _ => $"'{SecurityMasterGovernanceRequirements.GovernanceProfileKey}' is Institutional"
+        };
+        var findings = snapshot.ContradictedKeys.Select(key =>
+            !string.Equals(key, SecurityMasterGovernanceRequirements.GovernanceProfileKey, StringComparison.Ordinal)
+                ? $"'{key}' is explicitly false; remove the key or set it to true."
+                : latched
+                    ? $"'{key}' no longer declares Institutional; set it to Institutional, or restart the host to leave the profile."
+                    : $"'{key}' is explicitly Standard, but a production composition always runs the Institutional profile; remove the key or set it to Institutional.");
 
         return
             "Security Master governance configuration contradicts the Institutional governance profile, "

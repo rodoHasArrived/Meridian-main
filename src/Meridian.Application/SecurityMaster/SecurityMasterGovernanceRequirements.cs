@@ -18,7 +18,14 @@ public enum SecurityMasterGovernanceProfileSource
     /// The host is a production composition, which always runs the Institutional profile. Reported in
     /// preference to <see cref="Configuration"/> because configuration cannot change it.
     /// </summary>
-    ProductionComposition = 2
+    ProductionComposition = 2,
+
+    /// <summary>
+    /// This process ran the Institutional profile earlier and configuration no longer declares it.
+    /// The profile stays in force until the process restarts; the current configuration is ignored
+    /// and <c>SecurityMasterWorkbench:GovernanceProfile</c> is reported as contradicted.
+    /// </summary>
+    Latched = 3
 }
 
 /// <summary>Whether one governance requirement is in force, and what puts it in force.</summary>
@@ -55,6 +62,13 @@ public sealed record SecurityMasterGovernanceSnapshot(
     SecurityMasterGovernanceRequirementBasis IndependentProfileApprover,
     IReadOnlyList<string> ContradictedKeys)
 {
+    /// <summary>
+    /// True when the Institutional profile is in force only because this process ran it earlier
+    /// (<see cref="SecurityMasterGovernanceProfileSource.Latched"/>), not because the current
+    /// configuration or posture declares it. A restart is required to leave it.
+    /// </summary>
+    public bool IsProfileLatched => ProfileSource == SecurityMasterGovernanceProfileSource.Latched;
+
     /// <summary>Effective <see cref="SecurityMasterWorkbenchOptions.RequireGovernedTermAmendments"/>.</summary>
     public bool RequireGovernedTermAmendments => GovernedTermAmendments != SecurityMasterGovernanceRequirementBasis.NotInForce;
 
@@ -99,6 +113,11 @@ public sealed record SecurityMasterGovernanceHostPosture(bool IsProductionCompos
 /// <see cref="SecurityMasterWorkbenchOptions.GovernanceProfile"/> says so or the host is a production
 /// composition. Under it all three requirements are in force whatever their own settings say. Under
 /// the Standard profile each requirement follows its own setting, read from the current options value.</para>
+/// <para>The Institutional profile latches. Once an instance has read it as in force (at start, or
+/// after a reload that turned it on), a later reload cannot return the instance to Standard: setting
+/// <c>GovernanceProfile</c> to Standard or removing the key leaves the profile and all three
+/// requirements in force, reported as <see cref="SecurityMasterGovernanceProfileSource.Latched"/> with
+/// the profile key contradicted. Only a restart, which composes a new instance, leaves the profile.</para>
 /// <para>A configuration value that contradicts the effective profile never relaxes a requirement:
 /// it is reported in <see cref="SecurityMasterGovernanceSnapshot.ContradictedKeys"/>, logged once per
 /// options value, and refused at host start by the governance profile guard. Whether a key was set
@@ -126,8 +145,12 @@ public sealed class SecurityMasterGovernanceRequirements : ISecurityMasterGovern
     private readonly Func<string, string?> _configuredValue;
     private readonly ILogger<SecurityMasterGovernanceRequirements> _logger;
     private readonly IDisposable? _reloadSubscription;
+    // Guards the latch together with the reading it was decided from, so two reads racing a reload
+    // cannot cache a Standard reading after the profile has latched.
+    private readonly object _gate = new();
     private Reading? _lastReading;
     private SecurityMasterWorkbenchOptions? _lastReportedContradiction;
+    private bool _institutionalLatched;
 
     /// <param name="options">The bound workbench options; read at each decision.</param>
     /// <param name="hostPosture">Whether the host is a production composition.</param>
@@ -147,6 +170,17 @@ public sealed class SecurityMasterGovernanceRequirements : ISecurityMasterGovern
         _isProductionComposition = (hostPosture ?? throw new ArgumentNullException(nameof(hostPosture))).IsProductionComposition;
         _configuredValue = configuration is null ? static _ => null : key => configuration[key];
         _logger = logger ?? NullLogger<SecurityMasterGovernanceRequirements>.Instance;
+        // Read the starting value now, so an Institutional start latches even if a reload arrives
+        // before anything asks. Options that cannot be bound are left for the first caller of
+        // Current, which gets the binder's own failure (the startup guard turns it into a refusal).
+        try
+        {
+            Read(_options.CurrentValue);
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or OptionsValidationException)
+        {
+        }
+
         // Evaluate on reload so a contradictory value is logged when it arrives, not on the next write.
         _reloadSubscription = _options.OnChange(reloaded => Read(reloaded));
     }
@@ -165,10 +199,15 @@ public sealed class SecurityMasterGovernanceRequirements : ISecurityMasterGovern
     /// The raw configuration value for a key such as <see cref="GovernanceProfileKey"/>, or null when
     /// the key is absent. Omit it when no configuration is known; no key is then reported as contradicted.
     /// </param>
+    /// <param name="institutionalLatched">
+    /// Whether the Institutional profile was already in force earlier in this process. When it was,
+    /// options that would yield Standard yield Institutional instead, with the profile key contradicted.
+    /// </param>
     public static SecurityMasterGovernanceSnapshot Evaluate(
         SecurityMasterWorkbenchOptions options,
         bool isProductionComposition,
-        Func<string, string?>? configuredValue = null)
+        Func<string, string?>? configuredValue = null,
+        bool institutionalLatched = false)
     {
         ArgumentNullException.ThrowIfNull(options);
         configuredValue ??= static _ => null;
@@ -176,19 +215,24 @@ public sealed class SecurityMasterGovernanceRequirements : ISecurityMasterGovern
         // Anything other than Standard is treated as Institutional, so an undefined numeric value
         // bound from configuration cannot select a weaker profile.
         var declaredInstitutional = options.GovernanceProfile != SecurityMasterGovernanceProfile.Standard;
-        var institutional = isProductionComposition || declaredInstitutional;
+        var latchedOnly = institutionalLatched && !isProductionComposition && !declaredInstitutional;
+        var institutional = isProductionComposition || declaredInstitutional || institutionalLatched;
         var profileSource = isProductionComposition
             ? SecurityMasterGovernanceProfileSource.ProductionComposition
-            : declaredInstitutional || configuredValue(GovernanceProfileKey) is not null
-                ? SecurityMasterGovernanceProfileSource.Configuration
-                : SecurityMasterGovernanceProfileSource.Default;
+            : latchedOnly
+                ? SecurityMasterGovernanceProfileSource.Latched
+                : declaredInstitutional || configuredValue(GovernanceProfileKey) is not null
+                    ? SecurityMasterGovernanceProfileSource.Configuration
+                    : SecurityMasterGovernanceProfileSource.Default;
 
         // A contradiction is what configuration says, parsed as the binder parses it. A value the
-        // binder cannot parse is its failure to report, not a contradiction.
+        // binder cannot parse is its failure to report, not a contradiction. A latched profile is
+        // contradicted by whatever the profile key now says, an absent key included.
         List<string>? contradicted = null;
-        if (isProductionComposition
-            && Enum.TryParse<SecurityMasterGovernanceProfile>(configuredValue(GovernanceProfileKey), ignoreCase: true, out var configuredProfile)
-            && configuredProfile == SecurityMasterGovernanceProfile.Standard)
+        if (latchedOnly
+            || (isProductionComposition
+                && Enum.TryParse<SecurityMasterGovernanceProfile>(configuredValue(GovernanceProfileKey), ignoreCase: true, out var configuredProfile)
+                && configuredProfile == SecurityMasterGovernanceProfile.Standard))
         {
             (contradicted ??= []).Add(GovernanceProfileKey);
         }
@@ -234,26 +278,41 @@ public sealed class SecurityMasterGovernanceRequirements : ISecurityMasterGovern
             return last.Snapshot;
         }
 
-        var snapshot = Evaluate(options, _isProductionComposition, _configuredValue);
-        Volatile.Write(ref _lastReading, new Reading(options, snapshot));
-
-        // A declared profile is configuration, so a reload can change it on a host that is not a
-        // production composition. Leave a record either way; relaxing to Standard is the one to notice.
-        if (last is not null && last.Snapshot.Profile != snapshot.Profile)
+        SecurityMasterGovernanceSnapshot snapshot;
+        bool turnedOn;
+        bool reportContradiction;
+        lock (_gate)
         {
-            _logger.Log(
-                snapshot.Profile == SecurityMasterGovernanceProfile.Standard ? LogLevel.Warning : LogLevel.Information,
-                "Security Master governance profile changed from {PreviousGovernanceProfile} to {GovernanceProfile} by a configuration reload; requirements in force now: governed term amendments {RequireGovernedTermAmendments}, independent reviewer {RequireIndependentReviewer}, independent profile approver {RequireIndependentProfileApprover}",
-                last.Snapshot.Profile,
-                snapshot.Profile,
-                snapshot.RequireGovernedTermAmendments,
-                snapshot.RequireIndependentReviewer,
-                snapshot.RequireIndependentProfileApprover);
+            last = _lastReading;
+            if (last is not null && ReferenceEquals(last.Options, options))
+            {
+                return last.Snapshot;
+            }
+
+            snapshot = Evaluate(options, _isProductionComposition, _configuredValue, _institutionalLatched);
+            // The latch: from the first Institutional reading on, this instance never reads Standard again.
+            _institutionalLatched |= snapshot.Profile == SecurityMasterGovernanceProfile.Institutional;
+            turnedOn = last is not null
+                && last.Snapshot.Profile == SecurityMasterGovernanceProfile.Standard
+                && snapshot.Profile == SecurityMasterGovernanceProfile.Institutional;
+            // Once per options value: the monitor hands back the same instance until the next reload.
+            reportContradiction = snapshot.ContradictedKeys.Count > 0 && !ReferenceEquals(_lastReportedContradiction, options);
+            if (reportContradiction)
+            {
+                _lastReportedContradiction = options;
+            }
+
+            Volatile.Write(ref _lastReading, new Reading(options, snapshot));
         }
 
-        // Once per options value: the monitor hands back the same instance until the next reload.
-        if (snapshot.ContradictedKeys.Count > 0
-            && !ReferenceEquals(Interlocked.Exchange(ref _lastReportedContradiction, options), options))
+        if (turnedOn)
+        {
+            _logger.LogInformation(
+                "Security Master governance profile changed from Standard to Institutional by a configuration reload ({GovernanceProfileSource}); it stays in force until this process restarts",
+                snapshot.ProfileSource);
+        }
+
+        if (reportContradiction)
         {
             _logger.LogWarning(
                 "Security Master governance configuration contradicts the {GovernanceProfile} profile ({GovernanceProfileSource}); the contradicted keys are ignored and every requirement stays in force: {ContradictedKeys}",
