@@ -64,6 +64,7 @@ import type {
   FinancialRecordExplorerDto,
   EquityCurveSummary,
   FinancialRecordExplorerSavedViewSaveRequestDto,
+  MetricFreshness,
   MultiAssetCoverageSummary,
   PortfolioWorkspaceResponse,
   StrategyWorkspaceResponse,
@@ -72,7 +73,7 @@ import type {
 import { eyebrowClassName } from "@/design-system/label-case";
 import { formatCount } from "@/lib/format";
 import { metricFreshnessFromTrustTone, withMetricContext } from "@/lib/metric-trust";
-import { resolveWorkspaceFigures, useWorkspaceFigureContext } from "@/lib/workspace-figure-context";
+import { resolveFigureEvidence, useWorkspaceFigureContext } from "@/lib/workspace-figure-context";
 import { FigureDifferenceNote } from "@/components/meridian/figure-difference-note";
 import { buildPortfolioFigureDifferenceNote } from "@/screens/portfolio-screen.figure-differences";
 
@@ -592,9 +593,9 @@ export function PortfolioScreen({
   // supplies them failed: the shell lists that workspace as stale, or the Portfolio poll settled
   // as partial (its Portfolio request was rejected). A recent settle time does not make those
   // figures current.
-  const headlineWorkspace = vm.metricsFromTrading ? "trading" : "portfolio";
-  const headlineFigures = resolveWorkspaceFigures(figureContext, headlineWorkspace);
-  const headlineRefreshFailed = (figureContext?.staleWorkspaces.includes(headlineWorkspace) ?? false)
+  const headlineSource = vm.metricsFromTrading ? "trading" : "portfolio";
+  const headlineFigures = resolveFigureEvidence(figureContext, headlineSource);
+  const headlineRefreshFailed = (figureContext?.staleSources.includes(headlineSource) ?? false)
     || (!vm.metricsFromTrading && refreshStatus?.phase === "partial");
   const evidenceTone: OperationalTrustTone = freshnessVm?.state === "failing"
     ? "blocked"
@@ -606,24 +607,33 @@ export function PortfolioScreen({
           ? "ready"
           : "unknown";
   const freshnessTone: OperationalTrustTone = headlineRefreshFailed && evidenceTone !== "blocked" ? "review" : evidenceTone;
-  // The headline figures carry the same source and freshness the confidence summary states, so
-  // a stale workspace cannot show figures that look current. Their scope is every position in the
-  // workspace read model: selecting a brokerage account filters the brokerage table, not these
-  // totals, so the selected account must not be named as their scope.
-  // As-of is when the payload supplying the totals last loaded: the shell's recorded load time
-  // for that workspace (Trading's when the totals are borrowed from it), else the Portfolio
-  // lifecycle, which keeps its last successful load through a partial refresh.
+  // The headline totals state the evidence of the payload that supplies them, so a stale
+  // workspace cannot show figures that look current and another payload's time is not borrowed.
+  // That payload last loaded at the shell's recorded time for it (Trading's when the totals come
+  // from Trading), else, for Portfolio's own totals, at the Portfolio lifecycle's last success,
+  // which survives a partial refresh. The brokerage snapshot and the readiness evidence date
+  // other things and are used only when no load of the supplying payload is known at all.
+  const headlineLoadedAt = headlineFigures.asOf
+    ?? (!vm.metricsFromTrading && hasRefreshEvidence ? refreshStatus?.lastSucceededAt ?? null : null);
+  const headlinePastBudget = headlineLoadedAt !== null
+    && Date.now() - new Date(headlineLoadedAt).getTime() > PORTFOLIO_FRESHNESS_BUDGET_MS;
+  const headlineFreshness: MetricFreshness = headlineRefreshFailed || headlinePastBudget
+    ? "stale"
+    : headlineFigures.freshness === "stale" || headlineFigures.freshness === "unverified"
+      ? headlineFigures.freshness
+      : headlineLoadedAt !== null
+        ? "fresh"
+        : metricFreshnessFromTrustTone(freshnessTone);
+  // Their scope is every position in the workspace read model: selecting a brokerage account
+  // filters the brokerage table, not these totals, so that account must not be named as scope.
   const headlineProvenance = {
     source: vm.metricsFromTrading ? "Trading workspace" : vm.positionSourceLabel,
-    asOf: headlineFigures.asOf
-      ?? (hasRefreshEvidence ? refreshStatus?.lastSucceededAt : null)
-      ?? brokeragePortfolio?.asOf
-      ?? heartbeat,
+    asOf: headlineLoadedAt ?? brokeragePortfolio?.asOf ?? heartbeat,
     scope: "All workspace positions"
   };
   const headlineMetrics = withMetricContext(vm.metricsFromTrading ? vm.metricCards : vm.fallbackStats, {
     provenance: headlineProvenance,
-    freshness: headlineRefreshFailed ? "stale" : metricFreshnessFromTrustTone(freshnessTone)
+    freshness: headlineFreshness
   });
   const figureDifferenceNote = showBrokerageSync
     ? null

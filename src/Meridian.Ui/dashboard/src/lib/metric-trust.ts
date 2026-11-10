@@ -3,7 +3,7 @@
 // what is its change measured against. This module is the one place those rules live; the shared
 // StatStrip and MetricCard render whatever it resolves, so a screen cannot show a baseline-less
 // delta or a stale figure dressed as a fresh one by accident.
-import { formatUtcTimestamp } from "@/lib/format";
+import { formatUtcTimestamp, normalizeFinancialLabel } from "@/lib/format";
 import type { MetricFreshness, MetricProvenance, MetricSnapshot } from "@/types";
 
 export type MetricDeltaKind = "change" | "caption";
@@ -141,6 +141,43 @@ export function sharedMetricProvenance(metrics: readonly MetricSnapshot[]): Metr
 
   const firstText = describeMetricProvenance(first);
   return firstText !== null && rest.every((provenance) => describeMetricProvenance(provenance) === firstText) ? first : null;
+}
+
+function describeProvenanceEvidence(provenance: MetricProvenance): string {
+  const asOf = formatMetricAsOf(provenance.asOf);
+  const scope = provenance.scope?.trim();
+  return [asOf ? `As of ${asOf}` : null, scope ? `Scope: ${scope}` : null].filter(Boolean).join(" · ");
+}
+
+/**
+ * One line for a strip whose figures come from different sources: each source with the figures
+ * it supplies, largest group first, e.g. "Active runs, Open positions from System overview;
+ * Providers healthy from Cross-screen counts · As of Jun 30, 2026, 18:05 UTC". The as-of time and
+ * scope are stated once when every source shares them and per source otherwise. Null unless
+ * every figure states its provenance, so a strip never implies a source for a figure with none.
+ */
+export function describeGroupedMetricProvenance(metrics: readonly MetricSnapshot[]): string | null {
+  const groups = new Map<string, { provenance: MetricProvenance; labels: string[] }>();
+  for (const metric of metrics) {
+    const key = describeMetricProvenance(metric.provenance);
+    if (!key || !metric.provenance) {
+      return null;
+    }
+    const group = groups.get(key) ?? { provenance: metric.provenance, labels: [] };
+    group.labels.push(normalizeFinancialLabel(metric.label));
+    groups.set(key, group);
+  }
+  if (groups.size === 0) {
+    return null;
+  }
+
+  const ordered = [...groups.values()].sort((a, b) => b.labels.length - a.labels.length);
+  const supplied = ordered.map((group) => `${group.labels.join(", ")} from ${group.provenance.source.trim()}`);
+  const evidence = ordered.map((group) => describeProvenanceEvidence(group.provenance));
+  if (evidence.every((text) => text === evidence[0])) {
+    return [supplied.join("; "), evidence[0]].filter(Boolean).join(" · ");
+  }
+  return supplied.map((text, index) => [text, evidence[index]].filter(Boolean).join(" · ")).join("; ");
 }
 
 /** The worst freshness in a strip: stale outranks unverified, which outranks fresh. */

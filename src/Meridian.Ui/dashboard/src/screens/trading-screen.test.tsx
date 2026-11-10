@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { resolveTradingRouteView, TradingScreen } from "@/screens/trading-screen";
 import * as api from "@/lib/api";
 import { renderWithRouter, TestMemoryRouter, waitForAsyncEffects } from "@/test/render";
+import { WorkspaceFigureContextProvider } from "@/lib/workspace-figure-context";
 import type { PaperSessionSummary, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
 
 const paperPromotionEvidenceReferences = [
@@ -667,6 +668,33 @@ describe("TradingScreen", () => {
     rerender(<TestMemoryRouter initialEntries={["/trading"]}><TradingScreen data={{ ...data, readiness }} fundAccountId="22222222-2222-2222-2222-222222222222" /></TestMemoryRouter>);
     expect(within(confidence).queryByText("Connected · healthy")).not.toBeInTheDocument();
     expect(within(confidence).getAllByText("Broker unavailable")[0]).toBeInTheDocument();
+  });
+
+  it("dates the headline figures from the Trading payload's load, not a newer brokerage observation", async () => {
+    // The readiness projection observed the broker at 15:30; the Trading payload that supplies
+    // the headline values was last loaded at 15:00 and has not been reloaded since.
+    const accountId = "11111111-1111-1111-1111-111111111111";
+    const readiness: TradingOperatorReadiness = {
+      ...serverReadinessData.readiness!,
+      asOf: "2026-10-05T15:30:00Z",
+      brokerageRecovery: {
+        fundAccountId: accountId, providerId: "alpaca", externalAccountId: "PA-404", status: "Ready", detail: "Synchronized", blockingReasons: [], affectedRuns: [],
+        portfolio: { cash: 100, buyingPower: 200, portfolioValue: 300, currency: "USD", positionCount: 1, observedAt: "2026-10-05T15:30:00Z", expiresAt: "2026-10-05T15:30:30Z", lastAttemptedAt: null, lastSuccessfulAt: null, isComplete: true, isFresh: true, isConsistent: true, warnings: [] }
+      }
+    };
+    renderWithRouter(
+      <WorkspaceFigureContextProvider
+        value={{ freshness: "fresh", dataLabel: null, staleSources: [], sourceLoadedAt: { trading: "2026-10-05T15:00:00Z" } }}
+      >
+        <TradingScreen data={{ ...data, readiness }} fundAccountId={accountId} />
+      </WorkspaceFigureContextProvider>,
+      { initialEntries: ["/trading"] }
+    );
+    await waitForAsyncEffects();
+
+    const provenance = screen.getByLabelText("Trading headline metrics").parentElement!;
+    expect(provenance).toHaveTextContent("Source: Trading workspace · As of Oct 5, 2026, 15:00 UTC");
+    expect(provenance).not.toHaveTextContent("15:30 UTC");
   });
 
   it("refreshes shared readiness and surfaces account brokerage posture", async () => {

@@ -445,8 +445,8 @@ function AppShell({
     loading,
     error,
     workspaceErrors,
-    workspaceFiguresLoadedAt,
-    workspaceFiguresStale,
+    figureSourceLoadedAt,
+    figureSourcesStale,
     refreshStatus,
     portfolioRefreshStatus,
     refresh,
@@ -469,10 +469,10 @@ function AppShell({
     () => deriveWorkspaceFigureContext({
       status: refreshStatus,
       provenance: dataProvenance,
-      staleWorkspaces: workspaceFiguresStale,
-      workspaceLoadedAt: workspaceFiguresLoadedAt
+      staleSources: figureSourcesStale,
+      sourceLoadedAt: figureSourceLoadedAt
     }),
-    [refreshStatus, dataProvenance, workspaceFiguresStale, workspaceFiguresLoadedAt]
+    [refreshStatus, dataProvenance, figureSourcesStale, figureSourceLoadedAt]
   );
   const handleWorkflowPresetUsed = (presetId: string) =>
     markWorkflowPresetUsed(presetId).then((preset) => {

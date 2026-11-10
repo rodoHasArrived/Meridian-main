@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildFigureDifferenceNote,
   buildMetricTrust,
+  describeGroupedMetricProvenance,
   describeMetricProvenance,
   formatMetricAsOf,
   metricFreshnessFromTrustTone,
@@ -138,6 +139,30 @@ describe("parseDisplayedNumber", () => {
     expect(parseDisplayedNumber("1/2")).toBeNull();
     expect(parseDisplayedNumber("Observe")).toBeNull();
     expect(parseDisplayedNumber(null)).toBeNull();
+  });
+});
+
+describe("describeGroupedMetricProvenance", () => {
+  const overview = { source: "System overview", asOf: "2026-06-30T18:05:00Z" };
+
+  it("names each source with its figures and states a shared as-of time once", () => {
+    expect(describeGroupedMetricProvenance([
+      metric({ id: "providers", label: "Providers healthy", provenance: { source: "Cross-screen counts", asOf: "2026-06-30T18:05:00Z" } }),
+      metric({ id: "runs", label: "Active runs", provenance: overview }),
+      metric({ id: "positions", label: "Open positions", provenance: overview })
+    ])).toBe("Active runs, Open positions from System overview; Providers healthy from Cross-screen counts · As of Jun 30, 2026, 18:05 UTC");
+  });
+
+  it("states each source's own as-of time when they differ", () => {
+    expect(describeGroupedMetricProvenance([
+      metric({ id: "providers", label: "Providers healthy", provenance: { source: "Cross-screen counts", asOf: "2026-06-30T17:40:00Z" } }),
+      metric({ id: "runs", label: "Active runs", provenance: overview })
+    ])).toBe("Providers healthy from Cross-screen counts · As of Jun 30, 2026, 17:40 UTC; Active runs from System overview · As of Jun 30, 2026, 18:05 UTC");
+  });
+
+  it("says nothing when a figure states no source", () => {
+    expect(describeGroupedMetricProvenance([metric({ provenance: overview }), metric({ id: "other" })])).toBeNull();
+    expect(describeGroupedMetricProvenance([])).toBeNull();
   });
 });
 

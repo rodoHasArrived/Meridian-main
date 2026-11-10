@@ -78,7 +78,7 @@ describe("StatStrip", () => {
     expect(screen.getByTestId("stat-strip-provenance")).toHaveTextContent(/^Stale figures · Source: Portfolio workspace/);
   });
 
-  it("keeps each figure's own provenance available when the figures come from different sources", () => {
+  it("states each source with the figures it covers when the figures come from different sources", () => {
     render(
       <StatStrip
         label="Mixed metrics"
@@ -89,15 +89,73 @@ describe("StatStrip", () => {
       />
     );
 
-    expect(screen.getByTestId("stat-strip-provenance")).toHaveTextContent(/^Unverified figures$/);
-    expect(screen.getByText("Source: Trading workspace")).toHaveClass("sr-only");
+    expect(screen.getByTestId("stat-strip-provenance")).toHaveTextContent(
+      "Unverified figures · Cash from Portfolio workspace · As of Jun 30, 2026, 18:05 UTC · Scope: All accounts; Orders from Trading workspace"
+    );
+    expect(screen.getByText("2").closest("[data-freshness]")).toHaveAttribute(
+      "title",
+      "Unverified: no current evidence backs this figure. Source: Trading workspace"
+    );
     expect(screen.getByText("Unverified: no current evidence backs this figure.")).toHaveClass("sr-only");
+  });
+
+  it("keeps a figure's own provenance for screen readers when another figure states none", () => {
+    render(
+      <StatStrip
+        label="Partly sourced metrics"
+        metrics={[
+          metric({ id: "a", label: "Cash", value: "$1" }),
+          metric({ id: "b", label: "Orders", value: "2", provenance: { source: "Trading workspace" } })
+        ]}
+      />
+    );
+
+    expect(screen.queryByTestId("stat-strip-provenance")).not.toBeInTheDocument();
+    expect(screen.getByText("Source: Trading workspace")).toHaveClass("sr-only");
+  });
+
+  it("gives a figure supplied by another payload that payload's evidence inside a workspace-fed strip", () => {
+    // Settings: the overview reloaded at 18:10, the cross-screen counts reload failed and its
+    // provider-health figure is still the 17:40 one.
+    render(
+      <WorkspaceFigureContextProvider
+        value={{
+          freshness: "fresh",
+          dataLabel: null,
+          staleSources: ["crossScreenCounts"],
+          sourceLoadedAt: { overview: "2026-06-30T18:10:00Z", crossScreenCounts: "2026-06-30T17:40:00Z" }
+        }}
+      >
+        <StatStrip
+          label="Operator control posture metrics"
+          source="System overview"
+          figureSource="overview"
+          metrics={[
+            metric({
+              id: "providers-healthy",
+              label: "Providers healthy",
+              value: "3 / 4",
+              provenance: { source: "Cross-screen counts", asOf: "2026-06-30T17:40:00Z" },
+              freshness: "stale"
+            }),
+            metric({ id: "active-runs", label: "Active runs", value: "7" }),
+            metric({ id: "open-positions", label: "Open positions", value: "12" })
+          ]}
+        />
+      </WorkspaceFigureContextProvider>
+    );
+
+    expect(screen.getByTestId("stat-strip-provenance")).toHaveTextContent(
+      "Stale figures · Active runs, Open positions from System overview · As of Jun 30, 2026, 18:10 UTC; Providers healthy from Cross-screen counts · As of Jun 30, 2026, 17:40 UTC"
+    );
+    expect(screen.getByText("3 / 4")).toHaveClass("text-muted-foreground");
+    expect(screen.getByText("7")).toHaveClass("text-foreground");
   });
 
   it("takes the as-of time, freshness and data label from the shell for a workspace-fed strip", () => {
     render(
-      <WorkspaceFigureContextProvider value={{ freshness: "stale", dataLabel: "seeded demo data", staleWorkspaces: [], workspaceLoadedAt: { strategy: "2026-06-30T18:05:00Z" } }}>
-        <StatStrip label="Strategy headline metrics" source="Strategy workspace" workspace="strategy" metrics={[metric({ id: "runs", label: "Runs", value: "24" })]} />
+      <WorkspaceFigureContextProvider value={{ freshness: "stale", dataLabel: "seeded demo data", staleSources: [], sourceLoadedAt: { strategy: "2026-06-30T18:05:00Z" } }}>
+        <StatStrip label="Strategy headline metrics" source="Strategy workspace" figureSource="strategy" metrics={[metric({ id: "runs", label: "Runs", value: "24" })]} />
       </WorkspaceFigureContextProvider>
     );
 
@@ -111,13 +169,13 @@ describe("StatStrip", () => {
     const context = {
       freshness: "fresh" as const,
       dataLabel: null,
-      staleWorkspaces: ["accounting" as const],
-      workspaceLoadedAt: { accounting: "2026-06-30T18:05:00Z", strategy: "2026-06-30T18:10:00Z" }
+      staleSources: ["accounting" as const],
+      sourceLoadedAt: { accounting: "2026-06-30T18:05:00Z", strategy: "2026-06-30T18:10:00Z" }
     };
     render(
       <WorkspaceFigureContextProvider value={context}>
-        <StatStrip label="Accounting headline metrics" source="Accounting workspace" workspace="accounting" metrics={[metric({ id: "breaks", label: "Open breaks", value: "5" })]} />
-        <StatStrip label="Strategy headline metrics" source="Strategy workspace" workspace="strategy" metrics={[metric({ id: "runs", label: "Runs", value: "24" })]} />
+        <StatStrip label="Accounting headline metrics" source="Accounting workspace" figureSource="accounting" metrics={[metric({ id: "breaks", label: "Open breaks", value: "5" })]} />
+        <StatStrip label="Strategy headline metrics" source="Strategy workspace" figureSource="strategy" metrics={[metric({ id: "runs", label: "Runs", value: "24" })]} />
       </WorkspaceFigureContextProvider>
     );
 
@@ -133,13 +191,13 @@ describe("StatStrip", () => {
     const context = {
       freshness: "fresh" as const,
       dataLabel: null,
-      staleWorkspaces: [],
-      workspaceLoadedAt: { accounting: "2026-06-30T17:40:00Z", strategy: "2026-06-30T18:10:00Z" }
+      staleSources: [],
+      sourceLoadedAt: { accounting: "2026-06-30T17:40:00Z", strategy: "2026-06-30T18:10:00Z" }
     };
     render(
       <WorkspaceFigureContextProvider value={context}>
-        <StatStrip label="Accounting headline metrics" source="Accounting workspace" workspace="accounting" metrics={[metric({ id: "breaks", label: "Open breaks", value: "5" })]} />
-        <StatStrip label="Strategy headline metrics" source="Strategy workspace" workspace="strategy" metrics={[metric({ id: "runs", label: "Runs", value: "24" })]} />
+        <StatStrip label="Accounting headline metrics" source="Accounting workspace" figureSource="accounting" metrics={[metric({ id: "breaks", label: "Open breaks", value: "5" })]} />
+        <StatStrip label="Strategy headline metrics" source="Strategy workspace" figureSource="strategy" metrics={[metric({ id: "runs", label: "Runs", value: "24" })]} />
       </WorkspaceFigureContextProvider>
     );
 
@@ -150,8 +208,8 @@ describe("StatStrip", () => {
 
   it("states no as-of time when the workspace's load was never recorded", () => {
     render(
-      <WorkspaceFigureContextProvider value={{ freshness: "fresh", dataLabel: null, staleWorkspaces: [], workspaceLoadedAt: {} }}>
-        <StatStrip label="Data headline metrics" source="Data workspace" workspace="data" metrics={[metric({ id: "runs", label: "Runs", value: "24" })]} />
+      <WorkspaceFigureContextProvider value={{ freshness: "fresh", dataLabel: null, staleSources: [], sourceLoadedAt: {} }}>
+        <StatStrip label="Data headline metrics" source="Data workspace" figureSource="data" metrics={[metric({ id: "runs", label: "Runs", value: "24" })]} />
       </WorkspaceFigureContextProvider>
     );
 

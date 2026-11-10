@@ -480,8 +480,8 @@ describe("useWorkstationData", () => {
       await flushAsync();
     });
     await waitFor(() => expect(result.current.refreshStatus.inFlight).toBe(false));
-    const initialLoadedAt = result.current.workspaceFiguresLoadedAt;
-    expect(Object.keys(initialLoadedAt).sort()).toEqual(["accounting", "data", "portfolio", "reporting", "settings", "strategy", "trading"]);
+    const initialLoadedAt = result.current.figureSourceLoadedAt;
+    expect(Object.keys(initialLoadedAt).sort()).toEqual(["accounting", "crossScreenCounts", "data", "overview", "portfolio", "reporting", "strategy", "trading"]);
     await new Promise<void>((resolve) => setTimeout(resolve, 5));
 
     now = 32_000;
@@ -507,12 +507,12 @@ describe("useWorkstationData", () => {
 
     expect(result.current.data).toEqual({ marker: "navigation data" });
     // Only the payloads that were reloaded get a new figure load time: Data and the system
-    // overview (Settings). The workspaces this refresh did not touch keep theirs.
-    const loadedAt = result.current.workspaceFiguresLoadedAt;
+    // overview. The payloads this refresh did not touch keep theirs.
+    const loadedAt = result.current.figureSourceLoadedAt;
     expect(Date.parse(loadedAt.data!)).toBeGreaterThan(Date.parse(initialLoadedAt.data!));
-    expect(Date.parse(loadedAt.settings!)).toBeGreaterThan(Date.parse(initialLoadedAt.settings!));
-    for (const workspace of ["accounting", "portfolio", "reporting", "strategy", "trading"] as const) {
-      expect(loadedAt[workspace]).toBe(initialLoadedAt[workspace]);
+    expect(Date.parse(loadedAt.overview!)).toBeGreaterThan(Date.parse(initialLoadedAt.overview!));
+    for (const source of ["accounting", "portfolio", "reporting", "strategy", "trading"] as const) {
+      expect(loadedAt[source]).toBe(initialLoadedAt[source]);
     }
   });
 
@@ -530,7 +530,7 @@ describe("useWorkstationData", () => {
       await flushAsync();
     });
     await waitFor(() => expect(result.current.refreshStatus.inFlight).toBe(false));
-    const initialLoadedAt = result.current.workspaceFiguresLoadedAt;
+    const initialLoadedAt = result.current.figureSourceLoadedAt;
     const initialSucceededAt = result.current.refreshStatus.lastSucceededAt;
     await new Promise<void>((resolve) => setTimeout(resolve, 5));
 
@@ -543,7 +543,9 @@ describe("useWorkstationData", () => {
     expect(api.getAccountingWorkspace).toHaveBeenCalledTimes(1);
     expect(api.getSystemStatus).toHaveBeenCalledTimes(1);
     expect(result.current.refreshStatus.phase).toBe("succeeded");
-    expect(result.current.workspaceFiguresLoadedAt).toEqual(initialLoadedAt);
+    // The cross-screen counts are empty in this harness, so they alone are requested again.
+    expect({ ...result.current.figureSourceLoadedAt, crossScreenCounts: undefined })
+      .toEqual({ ...initialLoadedAt, crossScreenCounts: undefined });
   });
 
   it("preserves unrelated workspace errors during scoped refresh replacement", async () => {
@@ -590,7 +592,7 @@ describe("useWorkstationData", () => {
 
     expect(result.current.workspaceErrors.trading).toBe("Trading scoped failure.");
     expect(result.current.workspaceErrors.data).toBe("Data scoped failure.");
-    expect([...result.current.workspaceFiguresStale].sort()).toEqual(["data", "trading"]);
+    expect([...result.current.figureSourcesStale].sort()).toEqual(["data", "trading"]);
   });
 
   it("keeps a workspace's figures stale across an unrelated refresh until its own payload reloads", async () => {
@@ -602,8 +604,8 @@ describe("useWorkstationData", () => {
       await flushAsync();
     });
     await waitFor(() => expect(result.current.refreshStatus.inFlight).toBe(false));
-    expect(result.current.workspaceFiguresStale).toEqual([]);
-    const dataLoadedAt = result.current.workspaceFiguresLoadedAt.data;
+    expect(result.current.figureSourcesStale).toEqual([]);
+    const dataLoadedAt = result.current.figureSourceLoadedAt.data;
 
     // `bootstrapIndex` counts every refresh; `dataIndex` only the ones that reload Data's slices.
     const resolveDataRefresh = (bootstrapIndex: number, dataIndex: number, data: () => void) => {
@@ -632,7 +634,7 @@ describe("useWorkstationData", () => {
       resolveDataRefresh(1, 1, () => rejectRequest("data", 1, new Error("Data scoped failure.")));
       await failedDataRefresh;
     });
-    expect(result.current.workspaceFiguresStale).toEqual(["data"]);
+    expect(result.current.figureSourcesStale).toEqual(["data"]);
 
     // A shell refresh on Trading clears the error map and reloads only Trading's payloads. Data
     // was not reloaded, so its figures must stay stale and keep their load time.
@@ -648,8 +650,8 @@ describe("useWorkstationData", () => {
     expect(api.getDataWorkspace).toHaveBeenCalledTimes(2);
     expect(result.current.refreshStatus.phase).toBe("succeeded");
     expect(result.current.workspaceErrors.data).toBeUndefined();
-    expect(result.current.workspaceFiguresStale).toEqual(["data"]);
-    expect(result.current.workspaceFiguresLoadedAt.data).toBe(dataLoadedAt);
+    expect(result.current.figureSourcesStale).toEqual(["data"]);
+    expect(result.current.figureSourceLoadedAt.data).toBe(dataLoadedAt);
 
     // Only Data's own successful reload clears it.
     let recoveredDataRefresh!: Promise<void>;
@@ -661,7 +663,7 @@ describe("useWorkstationData", () => {
       resolveDataRefresh(3, 2, () => resolveRequest<DataWorkspaceResponse>("data", 2, { marker: "recovered data" } as unknown as DataWorkspaceResponse));
       await recoveredDataRefresh;
     });
-    expect(result.current.workspaceFiguresStale).toEqual([]);
+    expect(result.current.figureSourcesStale).toEqual([]);
     expect(result.current.data).toEqual({ marker: "recovered data" });
   });
 
@@ -1202,7 +1204,7 @@ describe("useWorkstationData", () => {
       "Portfolio refresh failed.; Brokerage portfolio refresh failed."
     );
     expect(result.current.error).toBe(result.current.workspaceErrors.portfolio);
-    expect(result.current.workspaceFiguresStale).toEqual(["portfolio"]);
+    expect(result.current.figureSourcesStale).toEqual(["portfolio"]);
   });
 
   it("keeps the Portfolio workspace current when only a side feed of its poll fails", async () => {
@@ -1236,7 +1238,7 @@ describe("useWorkstationData", () => {
     expect(result.current.workspaceErrors.portfolio).toBe("Brokerage portfolio refresh failed.");
     expect(result.current.portfolioRefreshStatus.phase).toBe("succeeded");
     expect(result.current.portfolioRefreshStatus.lastSucceededAt).not.toBeNull();
-    expect(result.current.workspaceFiguresStale).toEqual([]);
+    expect(result.current.figureSourcesStale).toEqual([]);
   });
 
   it("clears the portfolio-only refresh failure after a later portfolio refresh succeeds", async () => {
@@ -1303,7 +1305,7 @@ describe("useWorkstationData", () => {
     expect(result.current.error).toBeNull();
     expect(result.current.portfolioRefreshStatus.phase).toBe("succeeded");
     expect(result.current.portfolioRefreshStatus.lastSucceededAt).not.toBeNull();
-    expect(result.current.workspaceFiguresStale).toEqual([]);
+    expect(result.current.figureSourcesStale).toEqual([]);
   });
 
   it("refreshes reporting live-view payloads with the portfolio refresh lane", async () => {
