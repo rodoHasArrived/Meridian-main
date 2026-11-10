@@ -577,6 +577,53 @@ public sealed class ReportWriterGridEngineTests
     }
 
     [Theory]
+    // Each unselected branch would overflow decimal if its arithmetic were performed.
+    [InlineData("if(1, 42, percent(1, 0.0000000000000000000000000001))")]
+    [InlineData("if(1, 42, basisPoints(1, 0.0000000000000000000000000001))")]
+    [InlineData("if(1, 42, safeDivide(1, 0.0000000000000000000000000001) * 100)")]
+    [InlineData("if(1, 42, 79228162514264337593543950335 + 79228162514264337593543950335)")]
+    [InlineData("if(1, 42, 79228162514264337593543950335 * 2)")]
+    [InlineData("if(0, 0 - 79228162514264337593543950335 - 79228162514264337593543950335, 42)")]
+    public void RenderGrids_IfFormula_DoesNotPerformArithmeticInTheBranchNotTaken(string expression)
+    {
+        var grid = new ReportWriterGridDefinitionDto(
+            "if-overflow",
+            "If overflow",
+            ReportWriterGridKindDto.Detail,
+            RowFields: ["symbol"],
+            Metrics: [new ReportWriterMetricDefinitionDto("a", "a")],
+            Formulas: [new ReportWriterFormulaDefinitionDto("result", expression)]);
+
+        var rendered = ReportWriterGridEngine.RenderGrids(
+            [grid],
+            [Row(("symbol", "AAA"), ("a", "3"))]).Single();
+
+        rendered.Warnings.Should().BeEmpty();
+        decimal.Parse(rendered.Rows.Single().Values["result"], CultureInfo.InvariantCulture).Should().Be(42m);
+    }
+
+    [Fact]
+    public void RenderGrids_FormulaOverflowInTheSelectedBranch_IsAWarningNotACrash()
+    {
+        var grid = new ReportWriterGridDefinitionDto(
+            "overflow",
+            "Overflow",
+            ReportWriterGridKindDto.Detail,
+            RowFields: ["symbol"],
+            Metrics: [new ReportWriterMetricDefinitionDto("a", "a")],
+            Formulas: [new ReportWriterFormulaDefinitionDto("result", "percent(1, 0.0000000000000000000000000001)")]);
+
+        var render = () => ReportWriterGridEngine.RenderGrids(
+            [grid],
+            [Row(("symbol", "AAA"), ("a", "3"))]).Single();
+
+        var rendered = render.Should().NotThrow().Subject;
+        rendered.Warnings.Should().Contain(warning =>
+            warning.StartsWith("Formula 'result' could not be evaluated:", StringComparison.Ordinal));
+        rendered.Rows.Single().Values["result"].Should().BeEmpty();
+    }
+
+    [Theory]
     [InlineData("{a} = {b}", "0")]
     [InlineData("{a} == 3", "1")]
     [InlineData("{a} <> {b}", "1")]

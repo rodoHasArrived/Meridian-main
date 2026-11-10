@@ -807,7 +807,7 @@ public static class ReportWriterGridEngine
                     row.NumericValues[formula.Name] = value;
                     row.Values[formula.Name] = FormatDecimal(value);
                 }
-                catch (Exception ex) when (ex is InvalidOperationException or DivideByZeroException)
+                catch (Exception ex) when (ex is InvalidOperationException or DivideByZeroException or OverflowException)
                 {
                     warnings.Add($"Formula '{formula.Name}' could not be evaluated: {ex.Message}");
                     row.Values[formula.Name] = string.Empty;
@@ -1334,11 +1334,13 @@ public static class ReportWriterGridEngine
                 SkipWhitespace();
                 if (TryConsume('+'))
                 {
-                    value += ParseTerm();
+                    var operand = ParseTerm();
+                    value = _skipDepth > 0 ? 0m : value + operand;
                 }
                 else if (TryConsume('-'))
                 {
-                    value -= ParseTerm();
+                    var operand = ParseTerm();
+                    value = _skipDepth > 0 ? 0m : value - operand;
                 }
                 else
                 {
@@ -1355,7 +1357,8 @@ public static class ReportWriterGridEngine
                 SkipWhitespace();
                 if (TryConsume('*'))
                 {
-                    value *= ParseFactor();
+                    var operand = ParseFactor();
+                    value = _skipDepth > 0 ? 0m : value * operand;
                 }
                 else if (TryConsume('/'))
                 {
@@ -1508,12 +1511,20 @@ public static class ReportWriterGridEngine
         private decimal EvaluateSafeDivide()
         {
             var values = ParseExpressionArgumentList(minimumCount: 2, maximumCount: 3);
-            return DivideOrFallback(values[0], values[1], values.Count == 3 ? values[2] : 0m);
+            return _skipDepth > 0
+                ? 0m
+                : DivideOrFallback(values[0], values[1], values.Count == 3 ? values[2] : 0m);
         }
 
         private decimal EvaluateRatio(decimal scale)
         {
             var values = ParseExpressionArgumentList(minimumCount: 2, maximumCount: 3);
+            if (_skipDepth > 0)
+            {
+                // An unselected if(...) branch is parsed for syntax only; no arithmetic runs.
+                return 0m;
+            }
+
             var ratio = DivideOrFallback(values[0], values[1], values.Count == 3 ? values[2] : 0m);
             return ratio * scale;
         }
