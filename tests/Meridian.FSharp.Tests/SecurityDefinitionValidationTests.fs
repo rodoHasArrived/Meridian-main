@@ -92,6 +92,64 @@ let ``zero CFD leverage is refused on both surfaces instead of throwing`` () =
     Assert.Contains("cfd_leverage_invalid", kindCodes)
     Assert.Contains("cfd_leverage_invalid", definitionCodes)
 
+let private customAsset profileId version termsJson : SecurityKind =
+    SecurityKind.CustomAsset {
+        CustomProfileId = profileId
+        ProfileVersion = version
+        TermsJson = termsJson
+    }
+
+let private validEnvelope =
+    """{"schemaVersion":3,"customProfileId":"co-invest-spv","profileVersion":2,"profileFields":{"vehicle":"SPV I"}}"""
+
+let private customAssetCodes kind =
+    let kindCodes = SecurityMaster.validateKindInvariants kind |> List.map (fun e -> e.Code)
+    let definitionCodes =
+        SecurityMaster.validateDefinitionInvariants "CustomAsset" (SecurityMasterLegacyUpgrade.modulesFromKind kind)
+        |> List.map (fun e -> e.Code)
+    kindCodes, definitionCodes
+
+/// ADR-027 stage 3 (S3-E4): the envelope codes the codec gate keeps off the JSON route — a blank
+/// profile id reads as the OtherSecurity salvage, and a non-object or unparseable document never
+/// decodes to a CustomAsset kind — proven on both surfaces by mutating the record directly.
+[<Fact>]
+let ``a valid custom-asset envelope passes both surfaces`` () =
+    let kindCodes, definitionCodes = customAssetCodes (customAsset "co-invest-spv" 2 validEnvelope)
+    Assert.Empty kindCodes
+    Assert.Empty definitionCodes
+
+[<Theory>]
+[<InlineData("custom_asset_profile_required")>]
+[<InlineData("custom_asset_terms_required")>]
+[<InlineData("custom_asset_terms_invalid")>]
+let ``an invalid custom-asset envelope trips both surfaces with the same code`` (code: string) =
+    let kind =
+        match code with
+        | "custom_asset_profile_required" -> customAsset " " 2 validEnvelope
+        | "custom_asset_terms_required" -> customAsset "co-invest-spv" 2 " "
+        | _ -> customAsset "co-invest-spv" 2 "[]"
+
+    let kindCodes, definitionCodes = customAssetCodes kind
+    Assert.Contains(code, kindCodes)
+    Assert.Contains(code, definitionCodes)
+    for definitionCode in definitionCodes do
+        Assert.Contains(definitionCode, kindCodes)
+
+[<Fact>]
+let ``unparseable custom-asset terms are refused, not thrown`` () =
+    let kindCodes, definitionCodes = customAssetCodes (customAsset "co-invest-spv" 2 "{not json")
+    Assert.Contains("custom_asset_terms_invalid", kindCodes)
+    Assert.Contains("custom_asset_terms_invalid", definitionCodes)
+
+[<Fact>]
+let ``a custom-asset definition without the envelope module is refused as an empty envelope`` () =
+    let codes =
+        SecurityMaster.validateDefinitionInvariants "CustomAsset" SecurityTermModules.empty
+        |> List.map (fun e -> e.Code)
+    Assert.Contains("custom_asset_profile_required", codes)
+    Assert.Contains("custom_asset_profile_version_invalid", codes)
+    Assert.Contains("custom_asset_terms_required", codes)
+
 [<Fact>]
 let ``positive CFD leverage passes both surfaces`` () =
     let kind = cfd (Some 5m)

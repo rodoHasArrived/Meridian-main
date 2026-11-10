@@ -839,6 +839,126 @@ Validation (local, .NET SDK 10.0.403): `dotnet test tests/Meridian.Tests -c Rele
 active-plus-inactive gauge, and the zero case. The full local `bash scripts/ci.sh` was not run;
 GitHub `Meridian CI / quality-gate` remains authoritative.
 
+### ADR-027 stage-3 S3-E4 — the profile envelope gains a module home — 2026-11-10
+
+The last of the four themes the census named. A new `profileEnvelope` term module
+(`ProfileEnvelopeTerms`: `CustomProfileId`, `ProfileVersion`, `TermsJson`) mirrors
+`CustomAssetTerms` field for field: profile fields are dynamic and governed by the approved
+profile version, so the module carries the document opaquely rather than modelling per-profile
+shapes. `termsFromKind` feeds it for the CustomAsset kind, which previously projected no module.
+
+| Surface | Change |
+| --- | --- |
+| Economic document | `profileEnvelope` is `{ customProfileId, profileVersion, terms }`, where `terms` is the governed document embedded as JSON (so it stays one queryable document); text that does not parse is carried as a JSON string so the envelope validation can refuse it rather than the serializer dropping it. The key is emitted for every class, null for all but the CustomAsset kind, and joins `ModulesAddedAfterIdentityGate`. |
+| Validation ledger | All seven CustomAsset rules moved to `validateDefinitionTerms` through one shared `validateProfileEnvelope` function; CustomAsset keeps no codec-only rule. Four codes are proven through the codec by the mutation table; `custom_asset_profile_required`, `custom_asset_terms_required` and `custom_asset_terms_invalid` are codec-gated on that route (a blank profile id reads as the OtherSecurity salvage; a non-object document never decodes to a CustomAsset kind) and are proven on both surfaces by record-level F# tests. A CustomAsset definition with no envelope module is refused as an empty envelope. |
+| Economic-only replay | For a class that must pin a profile (`RequiresProfileReference`), an object-valued `profileEnvelope.terms` that names its profile is returned as the row's asset-specific terms, as stored: no flattening, no `flattenedFromEconomicTermsSchemaVersion` marker and no retained carry, because nothing was reconstructed and nothing is left behind — and because a marker would be written into a profile-governed document and carried into every later revision. Before the module, such a replay had no document at all and read as the OtherSecurity salvage. A null module (every document written before this change), a non-document or a document without its profile id takes the former route unchanged. |
+
+Two limits, stated so they are not mistaken for coverage. The module homes the CustomAsset
+*kind's* record fields: a profile-backed row that resolves to a first-class class (a
+StructuredCredit pinned through a reclassifying profile, for example) decodes to that class's
+kind, and its profile pin is a property of the stored document, not a record field — it stays
+document-level and is not recovered from the economic document
+(`ProfileBackedFirstClassRow_DoesNotGainAProfileEnvelopeModule` pins this). And the economic
+document now carries the profile document a second time beside the legacy asset-specific terms;
+every surface that passes the economic document through whole — the certified reporting
+snapshot is one — therefore carries the governed profile fields from the next write on.
+
+The replay corpus gained two CustomAsset cases — an image that recovers the document with a
+byte-identical next event, and a pre-module document that keeps the salvage route — and
+otherwise changed only by the appended `"profileEnvelope":null` key; the write golden changed
+by that key plus the CustomAsset module content.
+
+Validation (local, .NET SDK 10.0.403): `Meridian.Tests` SecurityMaster and Architecture
+namespaces — 6,338 passed, 1 skipped; `Meridian.FSharp.Tests` — 617 passed;
+`Meridian.Contracts.UnitTests` SecurityMaster — 45 passed. The full local `bash scripts/ci.sh`
+was not run; GitHub `Meridian CI / quality-gate` remains authoritative.
+
+### ADR-027 stage-3 S3-E3 — notionals gain a module home — 2026-11-10
+
+A new `notional` term module (`NotionalTerms`: `notional`, `denomination`, `committedAmount`,
+`fundedAmount`, `unfundedAmount`) homes the amounts a contract is written on: the contract
+notional of FxForward, NonDeliverableForward, CreditDefaultSwap, Swaption and CapFloor; the
+StructuredNote denomination; and the commitment of PrivateFundInterest and CommitmentGuarantee
+with its funded and unfunded split. A structured-credit tranche's original face stays on
+`structuredProduct.notionalBalance`, and swap leg notionals stay on the legs, which remain a
+structural decode.
+
+Eleven codes moved from `validateCodecOnlyKindTerms` to `validateDefinitionTerms` and the
+ledger: the five contract-notional rules, `structured_note_denomination_invalid`, the three
+PrivateFundInterest amount rules and the two CommitmentGuarantee amount rules. FxForward,
+NonDeliverableForward and CapFloor now keep no codec-only rule. `ClassFlattenings` inverts
+each home, so economic-only replay recovers the amounts at their declared flat keys.
+
+What S3-E1 to E3 leave codec-only, by class: Future (root symbol, contract month), Bond
+(subclass canonicality, principal schedule, step and inflation coupon structure), OtherSecurity
+(category), Swap (the legs), DirectLoan and CommitmentGuarantee (covenant entries, fee rate),
+StructuredCredit (attachment and detachment points, CLO period ends), PrivateFundInterest
+(vintage), PrivateCompanyEquity (ownership, cost basis, valuation), RealEstateHolding (market,
+ownership, appraisal), Commodity (type), Cfd (underlying asset class), CreditDefaultSwap
+(reference entity, protection side, recovery rate), Swaption (the underlying swap's dates),
+StructuredNote (underlying and payoff terms) and CustomAsset (the profile envelope).
+
+The replay corpus changed only by the appended `"notional":null` key; the write golden by that
+key plus the eight classes' module content.
+
+Validation (local, .NET SDK 10.0.403): `Meridian.Tests` SecurityMaster and Architecture
+namespaces — 6,327 passed, 1 skipped (after accepting the two goldens); `Meridian.FSharp.Tests`
+— 611 passed. The full local `bash scripts/ci.sh` was not run; GitHub
+`Meridian CI / quality-gate` remains authoritative.
+
+### ADR-027 stage-3 S3-E2 — currency pairs gain a module home — 2026-11-10
+
+A new `currencyPair` term module (`CurrencyPairTerms`: `baseCurrency`, `quoteCurrency`,
+`settlementCurrency`, `forwardRate`) homes the pair fields of FxSpot, CryptoCurrency, FxForward
+and NonDeliverableForward; `termsFromKind` feeds it for all four (FxSpot and CryptoCurrency
+previously projected no module at all). The serializer emits the key for every class, and it
+joins `ModulesAddedAfterIdentityGate`, so images written before it keep shedding their carry.
+
+Fifteen codes moved from `validateCodecOnlyKindTerms` to `validateDefinitionTerms` and the
+ledger: the three FxSpot rules, the three CryptoCurrency rules, four FxForward rules (base,
+quote, pair, rate) and five NonDeliverableForward rules (base, quote, settlement, pair, rate).
+FxSpot and CryptoCurrency now have no codec-only rule; FxForward and NonDeliverableForward keep
+only their notional rule, which S3-E3 moves. `ClassFlattenings` gained FxSpot and
+CryptoCurrency entries (they previously fell back to the class-independent bridge) and the
+pair, settlement and rate keys for the two forwards, so an economic-only FxSpot or
+CryptoCurrency replay now recovers every required flat key.
+
+The replay corpus changed only by the appended `"currencyPair":null` key; the write golden by
+that key plus the four classes' module content.
+
+Validation (local, .NET SDK 10.0.403): `Meridian.Tests` SecurityMaster and Architecture
+namespaces — 6,314 passed, 1 skipped (after accepting the two goldens); `Meridian.FSharp.Tests`
+— 611 passed. The full local `bash scripts/ci.sh` was not run; GitHub
+`Meridian CI / quality-gate` remains authoritative.
+
+### ADR-027 stage-3 S3-E1 — strikes gain a module home — 2026-11-10
+
+First of the S3-E module-home increments the census scoped. A new `exercise` term module
+(`ExerciseTerms` in `SecurityTermModules.fs`) carries what only the flat codec held: the right
+(`optionRight` — Put/Call for options and warrants, Payer/Receiver for swaptions,
+Cap/Floor/Collar for caps and floors), `strikePrice`, `strikeRate`, `exerciseStyle`,
+`underlyingSecurityId` and `premiumAmount`. `termsFromKind` feeds it for Option, Warrant,
+Swaption and CapFloor, and feeds the Option and Future multipliers into the existing
+`tradingParameters.contractMultiplier` (cap and floor strike rates were already homed on
+`floatingRate`). The economic serializer emits the `exercise` key for every class, null when
+unset, as it does every other module.
+
+| Surface | Change |
+| --- | --- |
+| Validation ledger | Fourteen codes moved from `validateCodecOnlyKindTerms` to `validateDefinitionTerms` and joined `definitionExpressibleCodes`: the four Option rules, `future_multiplier_invalid`, three Warrant rules, two Swaption rules and four CapFloor rules. Option and Warrant now have no codec-only rule left. The equivalence suite's mutation table proves each code on both surfaces. |
+| Economic-only replay | `ClassFlattenings` inverts the new homes: an Option recovers `underlyingId`, `putCall`, `strike`, `multiplier` and `exerciseStyle`; Future its `multiplier`; Warrant `underlyingId`, `warrantType` and `strike`; Swaption `payerReceiver`, `exerciseStyle` and `strikeRate`; CapFloor `capFloorType` and `premiumAmount`. Option's unrecoverable set is now the listing detail only (`optChainId`, `settlementType`, `lastTradingDt`). |
+| Identity gate | Adding a module key would have made every stored image fail the gate's byte equality — the committed CertificateOfDeposit corpus image caught it, flipping from carry-free back to carrying its retained document. The gate now tolerates exactly that case: a key in `ModulesAddedAfterIdentityGate` that the source image lacks and the rebuild emits null. A key the gate shipped with, or a later key the source itself carries, is still compared as written, and every other difference still fails closed. Three corpus-suite cases pin the tolerance and its two limits. |
+
+The replay corpus changed only by the appended `"exercise":null` key (the image case is
+byte-identical); the write golden changed by that key plus the five classes' new module content.
+
+Validation (local, .NET SDK 10.0.403): `Meridian.Tests` filtered to the SecurityMaster and
+Architecture namespaces — 6,297 passed, 1 skipped; the SecurityMaster-named suites outside that
+namespace plus AssetOperations, kind-mapping, workstation-endpoint and report-generation suites —
+2,340 passed; `Meridian.FSharp.Tests` — 611 passed; `Meridian.Contracts.UnitTests`
+SecurityMaster — 45 passed. The full local `bash scripts/ci.sh` was not run; GitHub
+`Meridian CI / quality-gate` remains authoritative.
+
 ### ADR-027 stage-3 S3-D complete; S3-E scoped by census — 2026-11-09
 
 S3-D closed with 28 of 32 classes' scalar decodes schema-bound (`SchemaBoundDecodeClasses`);
