@@ -270,6 +270,83 @@ public sealed class AlpacaOptionsChainProviderTests
         chain.Puts.Should().ContainSingle();
     }
 
+    [Fact]
+    public void SelectStrikesAroundTheMoney_WithUnevenSpacing_KeepsBothSidesOfTheMoney()
+    {
+        // By distance alone 101 and 102 are both nearer 100 than 90 is, which would drop the
+        // only strike below the money.
+        AlpacaOptionsChainProvider.SelectStrikesAroundTheMoney([90m, 100m, 101m, 102m], 100m, strikeRange: 1)
+            .Should().Equal(90m, 100m, 101m);
+    }
+
+    [Theory]
+    // The money is below, above and beyond the listing: the range is clipped, never wrapped.
+    [InlineData(80, 1, new[] { 90, 100 })]
+    [InlineData(500, 1, new[] { 110, 120 })]
+    [InlineData(104, 2, new[] { 90, 100, 110, 120 })]
+    // Equidistant between two strikes: the lower one is at the money.
+    [InlineData(105, 1, new[] { 90, 100, 110 })]
+    [InlineData(100, int.MaxValue, new[] { 90, 100, 110, 120 })]
+    public void SelectStrikesAroundTheMoney_ClipsTheRangeToTheListing(int underlyingPrice, int strikeRange, int[] expected)
+    {
+        AlpacaOptionsChainProvider.SelectStrikesAroundTheMoney([90m, 100m, 110m, 120m], underlyingPrice, strikeRange)
+            .Should().Equal(expected.Select(strike => (decimal)strike));
+    }
+
+    [Theory]
+    [InlineData("transport")]
+    [InlineData("timeout")]
+    [InlineData("unreadable")]
+    public async Task GetChainSnapshotAsync_WhenTheOpenInterestListingCannotBeRead_StillReturnsTheChain(string failure)
+    {
+        using var handler = new StubHttpMessageHandler(request => request.RequestUri!.AbsolutePath switch
+        {
+            "/v2/stocks/CVX/trades/latest" => Json(LatestTrade),
+            "/v1beta1/options/snapshots/CVX" => Json(ChainSnapshots),
+            _ => failure switch
+            {
+                "transport" => throw new HttpRequestException("connection reset"),
+                "timeout" => throw new TaskCanceledException("The request timed out."),
+                _ => Json("<html>not a listing</html>"),
+            },
+        });
+        using var provider = CreateSut(handler, useSandbox: true);
+
+        var chain = await provider.GetChainSnapshotAsync("CVX", new DateOnly(2026, 12, 18));
+
+        (chain is not null).Should().BeTrue("open interest is an enrichment; losing it must not discard fetched quotes");
+        chain!.Strikes.Should().Equal(145m, 150m, 155m, 160m);
+        chain.Calls.Should().HaveCount(4).And.OnlyContain(call => call.OpenInterest == null);
+        chain.Puts.Should().ContainSingle().Which.OpenInterest.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetChainSnapshotAsync_WhenTheCallerCancelsDuringTheOpenInterestLookup_PropagatesTheCancellation()
+    {
+        using var cancellation = new CancellationTokenSource();
+        using var handler = new StubHttpMessageHandler(request =>
+        {
+            switch (request.RequestUri!.AbsolutePath)
+            {
+                case "/v2/stocks/CVX/trades/latest":
+                    return Json(LatestTrade);
+                case "/v1beta1/options/snapshots/CVX":
+                    return Json(ChainSnapshots);
+                default:
+                    cancellation.Cancel();
+                    throw new OperationCanceledException(cancellation.Token);
+            }
+        });
+        var httpClient = new HttpClient(handler, disposeHandler: false);
+        var provider = new AlpacaOptionsChainProvider(
+            Substitute.For<IHttpClientFactory>(), KeyId, SecretKey, httpClient, useSandbox: true);
+
+        var act = () => provider.GetChainSnapshotAsync("CVX", new DateOnly(2026, 12, 18), ct: cancellation.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
+        httpClient.Dispose();
+    }
+
     [Theory]
     [InlineData(HttpStatusCode.NotFound, "{\"message\":\"no trade found for CVX\"}")]
     [InlineData(HttpStatusCode.OK, "{\"symbol\":\"CVX\",\"trade\":null}")]

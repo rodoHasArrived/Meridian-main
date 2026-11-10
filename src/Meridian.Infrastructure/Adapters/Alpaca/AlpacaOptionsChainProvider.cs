@@ -432,7 +432,20 @@ public sealed class AlpacaOptionsChainProvider : IOptionsChainProvider
         CancellationToken ct)
     {
         var openInterest = new Dictionary<string, long>(StringComparer.Ordinal);
-        var contracts = await FetchContractsAsync(underlyingSymbol, expiration, ct).ConfigureAwait(false);
+        IReadOnlyList<AlpacaContractInfo>? contracts;
+        try
+        {
+            contracts = await FetchContractsAsync(underlyingSymbol, expiration, ct).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+        {
+            // A transport failure, timeout or unreadable listing costs the enrichment only; the
+            // prices and snapshots already fetched are still a usable chain.
+            _log.Warning(ex, "Alpaca open interest lookup failed for {Symbol} {Expiration}; returning the chain without it",
+                underlyingSymbol, FormatContractDate(expiration));
+            return openInterest;
+        }
+
         if (contracts is null)
             return openInterest;
 
@@ -511,6 +524,35 @@ public sealed class AlpacaOptionsChainProvider : IOptionsChainProvider
 
     private bool IsConfigured => IsCredentialsConfigured;
 
+    /// <summary>
+    /// The strike closest to the money and up to <paramref name="strikeRange"/> listed strikes on
+    /// each side of it. Sides are counted by position in the listing, not by distance, so
+    /// unevenly spaced strikes cannot crowd one side out of the result.
+    /// </summary>
+    internal static IReadOnlyList<decimal> SelectStrikesAroundTheMoney(
+        IReadOnlyList<decimal> ascendingStrikes, decimal underlyingPrice, int strikeRange)
+    {
+        if (ascendingStrikes.Count == 0 || strikeRange <= 0)
+            return ascendingStrikes;
+
+        var atTheMoney = 0;
+        for (var index = 1; index < ascendingStrikes.Count; index++)
+        {
+            // Strictly closer only: of two equidistant strikes the lower one is at the money.
+            if (Math.Abs(ascendingStrikes[index] - underlyingPrice) < Math.Abs(ascendingStrikes[atTheMoney] - underlyingPrice))
+                atTheMoney = index;
+        }
+
+        // Bounding the reach by the listing keeps an oversized range from overflowing the index.
+        var reach = Math.Min(strikeRange, ascendingStrikes.Count);
+        var first = Math.Max(0, atTheMoney - reach);
+        var last = Math.Min(ascendingStrikes.Count - 1, atTheMoney + reach);
+        var kept = new decimal[last - first + 1];
+        for (var index = first; index <= last; index++)
+            kept[index - first] = ascendingStrikes[index];
+        return kept;
+    }
+
     private static OptionChainSnapshot? MapToChainSnapshot(
         string underlyingSymbol,
         DateOnly expiration,
@@ -560,12 +602,11 @@ public sealed class AlpacaOptionsChainProvider : IOptionsChainProvider
         IReadOnlyList<decimal> strikes = strikeSet.ToArray();
         if (strikeRange is > 0)
         {
-            // Keep the strikes nearest the money: strikeRange on each side of the closest strike.
-            var kept = strikes.OrderBy(strike => Math.Abs(strike - underlyingPrice)).ThenBy(strike => strike)
-                .Take(strikeRange.Value * 2 + 1).ToHashSet();
-            calls = calls.Where(call => kept.Contains(call.Contract.Strike)).ToList();
-            puts = puts.Where(put => kept.Contains(put.Contract.Strike)).ToList();
-            strikes = kept.OrderBy(strike => strike).ToArray();
+            var kept = SelectStrikesAroundTheMoney(strikes, underlyingPrice, strikeRange.Value);
+            var keptSet = kept.ToHashSet();
+            calls = calls.Where(call => keptSet.Contains(call.Contract.Strike)).ToList();
+            puts = puts.Where(put => keptSet.Contains(put.Contract.Strike)).ToList();
+            strikes = kept;
         }
 
         return new OptionChainSnapshot(

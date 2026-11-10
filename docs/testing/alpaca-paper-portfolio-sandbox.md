@@ -124,7 +124,10 @@ and dollar-sized orders are refused. Orders carry a per-run `meridian-sandbox-` 
 prefix and trade a different symbol from the gateway check. Cleanup is measured from the broker's
 record of the run's own orders, and a run that otherwise passed fails if an order or position of
 its own could not be cleared. It tolerates open orders it does not own: readiness is then reported
-as withheld by foreign orders instead of asserted.
+as withheld by foreign orders instead of asserted. That exception is narrow. Every reconciliation
+break must be a broker order the order manager does not track, with identifiers that are not the
+run's, and it must be the only reason readiness is withheld; a broker book that could not be read,
+or any other blocker, fails the run.
 
 ## Run the real market-data check
 
@@ -224,8 +227,9 @@ Observed against the paper Trading API on 2026-11-10 and now covered by determin
 - **Option snapshots carry no underlying price and no open interest.** The chain snapshot and
   option quote previously passed an underlying price of zero, which the domain records reject, so
   both returned nothing. The underlying's latest trade is read first, and open interest is joined
-  from the contract listing. The per-underlying chain route refuses a `symbols` filter; single
-  contracts are read from their own route.
+  from the contract listing. That join is best effort: a listing that cannot be read leaves open
+  interest unknown and the chain is still returned. The per-underlying chain route refuses a
+  `symbols` filter; single contracts are read from their own route.
 - **Listings trail lookups.** The open-order listing can still show an order for a moment after
   its own lookup reports it cancelled, and a `FILL` activity can appear a moment after the order
   reports filled. Until the activity lands, the order snapshot carries the fill at its average

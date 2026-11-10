@@ -524,8 +524,11 @@ public sealed class AlpacaPaperSandboxOrderLifecycleTests(ITestOutputHelper outp
 
     /// <summary>
     /// A paper account is not necessarily dedicated to this run. Readiness is required unless
-    /// the only reconciliation breaks are open orders this run does not own, which the order
-    /// manager is right to refuse to adopt; anything else that blocks readiness is a failure.
+    /// the only thing withholding it is open orders this run does not own, which the order
+    /// manager is right to refuse to adopt. That has to be shown, not inferred: every break must
+    /// be a broker order the order manager does not track, carrying identifiers that are not
+    /// this run's, and it must be the single reason readiness is withheld. A broker book that
+    /// could not be read has no identifiers at all and is a failure, as is any other blocker.
     /// </summary>
     private void AssertReadyUnlessBlockedByForeignOrders(
         LiveBrokeragePortfolioStatus status, IReadOnlyCollection<string> ownClientOrderIds,
@@ -535,13 +538,18 @@ public sealed class AlpacaPaperSandboxOrderLifecycleTests(ITestOutputHelper outp
             return;
 
         var breaks = status.Reconciliation?.Breaks ?? [];
-        var ownBreaks = breaks.Count(candidate =>
-            candidate.ClientOrderId is { } clientOrderId && ownClientOrderIds.Contains(clientOrderId)
-            || candidate.LocalOrderId is { } localOrderId && ownClientOrderIds.Contains(localOrderId)
-            || candidate.BrokerOrderId is { } brokerOrderId && ownBrokerOrderIds.Contains(brokerOrderId));
-        (breaks.Count > 0 && ownBreaks == 0).Should().BeTrue(
-            "{0}; not ready with {1} break(s), {2} on this run's own orders; blockers: {3}",
-            because, breaks.Count, ownBreaks, string.Join(" | ", status.BlockingReasons));
+        var foreignOrderBreaks = breaks.Count(candidate =>
+            candidate.Kind == BrokerageExecutionReconciliationBreakKind.MissingInOrderManager
+            && candidate.BrokerOrderId is { Length: > 0 } brokerOrderId && !ownBrokerOrderIds.Contains(brokerOrderId)
+            && candidate.ClientOrderId is { Length: > 0 } clientOrderId && !ownClientOrderIds.Contains(clientOrderId)
+            && (candidate.LocalOrderId is not { } localOrderId || !ownClientOrderIds.Contains(localOrderId)));
+        // Unreconciled orders account for exactly one blocking reason; a second one is something else.
+        var withheldOnlyByReconciliation = status is { IsConnected: true, IsFresh: true, IsComplete: true, BlockingReasons.Count: 1 };
+        (withheldOnlyByReconciliation && breaks.Count > 0 && foreignOrderBreaks == breaks.Count).Should().BeTrue(
+            "{0}; not ready with {1} break(s), {2} of them open orders this run does not own; break kinds: {3}; blockers: {4}",
+            because, breaks.Count, foreignOrderBreaks,
+            string.Join(", ", breaks.Select(candidate => candidate.Kind).Distinct()),
+            string.Join(" | ", status.BlockingReasons));
         output.WriteLine("Readiness withheld only by {0} open order(s) this run does not own; use a dedicated paper account to certify the ready path.",
             breaks.Count);
     }
@@ -653,6 +661,8 @@ public sealed class AlpacaPaperSandboxOrderLifecycleTests(ITestOutputHelper outp
         AlpacaBrokerageGateway gateway, string buyClientOrderId, string sellClientOrderId, Guid localAccountId)
     {
         var problems = new List<string>();
+        string? closingClientOrderId = null;
+        var closed = false;
         using var cleanup = new CancellationTokenSource(TimeSpan.FromSeconds(90));
         try
         {
@@ -664,7 +674,7 @@ public sealed class AlpacaPaperSandboxOrderLifecycleTests(ITestOutputHelper outp
             if (remainder == 0m)
                 return problems;
 
-            var closingClientOrderId = NewClientOrderId();
+            closingClientOrderId = NewClientOrderId();
             await gateway.SubmitOrderAsync(new OrderRequest
             {
                 Symbol = Symbol,
@@ -679,20 +689,22 @@ public sealed class AlpacaPaperSandboxOrderLifecycleTests(ITestOutputHelper outp
             var closing = await PollAsync(
                 () => gateway.GetOrderForRecoveryAsync(closingClientOrderId, cleanup.Token),
                 report => report?.OrderStatus is OrderStatus.Filled, TimeSpan.FromSeconds(45), cleanup.Token);
-            if (closing?.OrderStatus is OrderStatus.Filled)
-            {
+            closed = closing?.OrderStatus is OrderStatus.Filled;
+            if (closed)
                 output.WriteLine("Cleanup closed the {0} share(s) this run still held.", Math.Abs(remainder));
-            }
             else
-            {
                 problems.Add($"the cleanup order for {Math.Abs(remainder)} share(s) was {closing?.OrderStatus.ToString() ?? "not found"}, not filled");
-                problems.AddRange(await CancelOwnedOrdersAsync(gateway, closingClientOrderId, []));
-            }
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
             problems.Add($"position cleanup stopped on {ex.GetType().Name}");
         }
+
+        // A closing order that was sent and not seen to fill may still be working, including one
+        // whose acknowledgement was lost or whose status could not be read. It is cancelled by
+        // its own client id on a budget of its own, whatever stopped the attempt above.
+        if (closingClientOrderId is not null && !closed)
+            problems.AddRange(await CancelOwnedOrdersAsync(gateway, closingClientOrderId, []));
 
         foreach (var problem in problems)
             output.WriteLine("CLEANUP INCOMPLETE: {0}; the paper account may hold '{1}' shares from this run.", problem, Symbol);
