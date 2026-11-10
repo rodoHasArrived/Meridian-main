@@ -1260,7 +1260,6 @@ Meridian-main
 │       │   ├── validate-doc-hashes.py
 │       │   ├── validate-docs-structure.py
 │       │   ├── validate-examples.py
-│       │   ├── validate-golden-path.sh
 │       │   ├── validate-roadmap-registry.py
 │       │   ├── validate-skill-packages.py
 │       │   ├── validate-source-readmes.py
@@ -3996,7 +3995,6 @@ Meridian-main
 │   │   ├── validate-operator-inbox-route.ps1
 │   │   ├── validate-position-blotter-route.ps1
 │   │   ├── validate-screenshot-captures.py
-│   │   ├── validate-screenshot-contract.py
 │   │   ├── validate-workflow-profile.ps1
 │   │   ├── validate-wpf-dev.ps1
 │   │   ├── validate_workstation_cockpit_acceptance_matrix.py
@@ -4011,8 +4009,6 @@ Meridian-main
 │   ├── lib
 │   │   ├── ui-diagram-generator.mjs
 │   │   └── ui-diagram-generator.test.mjs
-│   ├── load
-│   │   └── synthetic_load_harness.py
 │   ├── check_contract_compatibility_gate.py
 │   ├── check_program_state_consistency.py
 │   ├── check_status_delivery_claims.py
@@ -4021,11 +4017,9 @@ Meridian-main
 │   ├── ci.sh
 │   ├── compare_benchmarks.py
 │   ├── compare_run_contract.py
-│   ├── example-sharpe.csx
 │   ├── generate-diagrams.mjs
 │   ├── generate_contract_review_packet.py
 │   ├── generate_program_state_summary.py
-│   ├── report_canonicalization_drift.py
 │   ├── update_coverage_report.py
 │   └── wpf_finance_ux_checks.py
 ├── src
