@@ -18,7 +18,7 @@ public sealed class MarginCertificationStore(string dataRoot)
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            return await ReadCoreAsync(ct).ConfigureAwait(false);
+            return await ReadCoreAsync(strict: false, ct).ConfigureAwait(false);
         }
         finally
         {
@@ -33,7 +33,9 @@ public sealed class MarginCertificationStore(string dataRoot)
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            var records = (await ReadCoreAsync(ct).ConfigureAwait(false)).ToList();
+            // Strict read: an unreadable file must abort the upsert. Treating it as empty and then
+            // writing would replace every retained certification with this single record.
+            var records = (await ReadCoreAsync(strict: true, ct).ConfigureAwait(false)).ToList();
             records.RemoveAll(item =>
                 string.Equals(item.ProviderId, certification.ProviderId, StringComparison.OrdinalIgnoreCase) &&
                 string.Equals(item.AccountId, certification.AccountId, StringComparison.OrdinalIgnoreCase) &&
@@ -54,7 +56,7 @@ public sealed class MarginCertificationStore(string dataRoot)
         }
     }
 
-    private async Task<IReadOnlyList<MarginCertificationResultDto>> ReadCoreAsync(CancellationToken ct)
+    private async Task<IReadOnlyList<MarginCertificationResultDto>> ReadCoreAsync(bool strict, CancellationToken ct)
     {
         if (!File.Exists(_path))
             return [];
@@ -64,12 +66,14 @@ public sealed class MarginCertificationStore(string dataRoot)
             return await JsonSerializer.DeserializeAsync<List<MarginCertificationResultDto>>(stream, JsonOptions, ct).ConfigureAwait(false)
                 ?? [];
         }
-        catch (JsonException)
+        catch (Exception ex) when (ex is JsonException or IOException)
         {
-            return [];
-        }
-        catch (IOException)
-        {
+            if (strict)
+            {
+                throw new InvalidDataException(
+                    "Margin certification evidence could not be read; refusing to overwrite it.", ex);
+            }
+
             return [];
         }
     }
