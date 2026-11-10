@@ -90,6 +90,12 @@ shared seam before the ledger can show them.
 
 Meridian.Ui contains the browser workstation source folder and built host-served workstation assets.
 
+This folder is not a .NET project: it has no project file and nothing references it as one. The
+`src/Meridian` host (`Meridian.csproj`) links `wwwroot/` as content, copies it beside the
+executable, and serves it. Host-side serving code lives in `src/Meridian/UiServer.cs` and
+`src/Meridian/WorkstationAssetTree.cs`; the .NET projects named `Meridian.Ui.Services` and
+`Meridian.Ui.Shared` are separate sibling folders.
+
 ## Layer responsibility
 
 This folder owns browser workstation packaging and host-served assets. Active source work belongs under `src/Meridian.Ui/dashboard`.
@@ -97,7 +103,7 @@ This folder owns browser workstation packaging and host-served assets. Active so
 ## Key folders and files
 
 - `dashboard/` - active browser workstation application.
-- `wwwroot/workstation/` - built workstation assets served by the Meridian host.
+- `wwwroot/workstation/` - built workstation assets served by the `src/Meridian` host.
 
 ## Important workflows
 

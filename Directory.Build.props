@@ -68,6 +68,14 @@
   <PropertyGroup>
     <NoWarn>$(NoWarn);@(MeridianGlobalNoWarn->'%(Identity)')</NoWarn>
   </PropertyGroup>
+  <PropertyGroup Label="Nullable warnings-as-errors ratchet">
+    <!-- Nullable-reference warnings (CS86xx) are build errors in every C# project except the
+         baseline below, which lists the projects that still emitted them when the ratchet was
+         introduced. Remove a project once it builds clean; never add one. The list is pinned by
+         tests/scripts/test_nullable_warning_ratchet.py. F# projects are out of scope. -->
+    <MeridianNullableWarningBaseline>;Meridian.Application;Meridian.Contracts;Meridian.DataIntegration;Meridian.Execution;Meridian.FinancialOperations;Meridian.FundStructure.Tests;Meridian.Infrastructure;Meridian.Reporting;Meridian.Storage;Meridian.Tests;Meridian.Ui.Shared;</MeridianNullableWarningBaseline>
+    <WarningsAsErrors Condition="'$(MSBuildProjectExtension)' == '.csproj' and !$(MeridianNullableWarningBaseline.Contains(';$(MSBuildProjectName);'))">$(WarningsAsErrors);nullable</WarningsAsErrors>
+  </PropertyGroup>
   <ItemGroup Label="Runtime integrity defaults">
     <RuntimeHostConfigurationOption Include="System.IO.Compression.UseStrictValidation" Value="true" />
   </ItemGroup>
