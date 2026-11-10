@@ -180,7 +180,7 @@ function OperationsRecordStatusBand({ vm }: { vm: OperationsRecordReleaseViewMod
         <div className={eyebrowClassName(vm.eyebrow)}>{vm.eyebrow}</div>
         <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
-            <h1 className="font-display text-[1.25rem] font-semibold leading-tight text-foreground">{vm.title}</h1>
+            <h2 className="font-display text-[1.25rem] font-semibold leading-tight text-foreground">{vm.title}</h2>
             <p className="mt-2 max-w-4xl text-sm leading-6 text-muted-foreground">{vm.summary}</p>
           </div>
           <SeverityBadge status={readinessToneToSeverityStatus(vm.tone)} label={vm.statusLabel} />

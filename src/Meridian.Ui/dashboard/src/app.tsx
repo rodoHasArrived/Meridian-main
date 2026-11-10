@@ -31,7 +31,7 @@ import {
   readStoredOperatingScope,
   writeStoredOperatingScope
 } from "@/lib/operating-scope/persistence";
-import { WorkflowContinuityDock } from "@/components/meridian/workflow-continuity-dock";
+import { OperatingScopeChip, WorkflowContextDisclosure } from "@/components/meridian/workflow-continuity-dock";
 import { DecisionBriefPill } from "@/components/meridian/decision-brief-pill";
 import { WorkspaceViewsMenu } from "@/components/meridian/workspace-views-menu";
 import { WorkspaceStatus } from "@/components/meridian/workspace-status";
@@ -835,26 +835,25 @@ function AppShell({
         >
           <WorkspaceHeader
             actions={(
-              <>
-                <CopyLinkButton operatingScope={operatingScopeInput} />
-                <WorkspaceViewsMenu routeKey={`${shell.routeFocus.routeKey}:${layoutRestoreSequence}`}>
-                  <LayoutSwitcher
-                    route={`${pathname}${search}`}
-                    operatingScope={operatingScopeInput}
-                    onRestore={handleRestoreLayout}
-                    showLabel
-                  />
-                  <SaveViewButton
-                    workflowLibrary={workflowLibrary}
-                    workflowError={workflowError}
-                    onPresetSaved={upsertWorkflowPreset}
-                    showLabel
-                  />
-                </WorkspaceViewsMenu>
-              </>
+              <WorkspaceViewsMenu routeKey={`${shell.routeFocus.routeKey}:${layoutRestoreSequence}`}>
+                <LayoutSwitcher
+                  route={`${pathname}${search}`}
+                  operatingScope={operatingScopeInput}
+                  onRestore={handleRestoreLayout}
+                  showLabel
+                />
+                <SaveViewButton
+                  workflowLibrary={workflowLibrary}
+                  workflowError={workflowError}
+                  onPresetSaved={upsertWorkflowPreset}
+                  showLabel
+                />
+              </WorkspaceViewsMenu>
             )}
-            context={(
-              <WorkflowContinuityDock
+            overflowActions={<CopyLinkButton operatingScope={operatingScopeInput} />}
+            routeKey={shell.routeFocus.routeKey}
+            scope={(
+              <OperatingScopeChip
                 viewModel={shell.workflowContinuity}
                 onEditOperatingContext={() => setScopePickerOpen(true)}
                 scopeDimensionsInEffect={scopeDimensionsInEffect}
@@ -1000,6 +999,7 @@ function AppShell({
         recentScopes={recentScopes}
         defaultScope={defaultScope}
         onSaveDefault={handleSaveDefaultScope}
+        workflowContext={<WorkflowContextDisclosure viewModel={shell.workflowContinuity} />}
       />
       <Sheet open={navOpen} onOpenChange={setNavOpen} side="left">
         <SheetContent
@@ -1124,19 +1124,17 @@ function buildWorkspaceBreadcrumbItems(
   workspace: WorkspaceSummary,
   navigate: ReturnType<typeof useNavigate>
 ): BreadcrumbItem[] {
+  // The masthead already says "Meridian", so the trail starts at the workspace and ends in the
+  // page name, which the header renders as the page heading.
   if (pathname === "/") {
     // The Daily Control Tower is the workstation's front door, named "Today" in the sidebar.
-    return [{ label: "Workstation" }, { label: "Today", current: true }];
+    return [{ label: "Today", current: true }];
   }
 
   const routeLabel = resolveWorkstationRouteBreadcrumbLabel(pathname, workspace);
   const workspaceIsCurrent = routeLabel === workspace.label;
 
   return [
-    {
-      label: "Workstation",
-      onClick: () => navigate("/")
-    },
     {
       label: workspace.label,
       current: workspaceIsCurrent,

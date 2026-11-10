@@ -41,6 +41,19 @@ describe("ScopePicker", () => {
     vi.useRealTimers();
   });
 
+  it("hosts workflow context under the scope controls and closes when one of its links is followed", () => {
+    const { onOpenChange, onApply } = renderPicker({
+      workflowContext: <a href="#next-step" onClick={(event) => event.preventDefault()}>Next workflow step</a>
+    });
+
+    const dialog = screen.getByRole("dialog", { name: "Operating scope" });
+    const link = screen.getByRole("link", { name: "Next workflow step" });
+    expect(dialog).toContainElement(link);
+    fireEvent.click(link);
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+    expect(onApply).not.toHaveBeenCalled();
+  });
+
   it("seeds the fields from the active scope when opened", () => {
     renderPicker({ scope: { symbol: "AAPL", fundAccountId: "fund-a", provider: "alpaca" } });
 

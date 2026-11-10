@@ -12,7 +12,7 @@
       "name": "web-daily-control-tower",
       "path": "/",
       "docLabel": "Daily Control Tower",
-      "waitForText": "Daily Control Tower Workstation",
+      "waitForText": "What needs an operator decision now",
       "requiredApiRoutes": [
         "/api/workstation/first-run/",
         "/api/demo/mode",
@@ -657,7 +657,7 @@
       "name": "web-reporting-workspace",
       "path": "/reporting",
       "docLabel": "Reporting",
-      "waitForText": "Reporting Workstation",
+      "waitForText": "Daily Reporting Cockpit",
       "requiredApiRoutes": [
         "/api/workstation/reporting"
       ],
@@ -706,7 +706,7 @@
       "name": "web-reporting-exports",
       "path": "/reporting/exports",
       "docLabel": "Reporting \u2014 Exports",
-      "waitForText": "Reporting Workstation",
+      "waitForText": "Governed export queue",
       "requiredApiRoutes": [
         "/api/workstation/reporting"
       ],

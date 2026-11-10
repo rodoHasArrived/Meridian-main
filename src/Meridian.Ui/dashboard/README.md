@@ -94,13 +94,20 @@ and Trading blotters retain their existing interaction models.
 
 ## Shared workstation header
 
-The browser shell combines `WorkspaceHeader` and its persistent operating scope in one compact
-two-row header: the breadcrumb with the operating scope and `Workflow context` beside it, then the
-title with the shell actions. `Workflow context` starts collapsed and opens its workflow steps and
-decision evidence as a popover rather than widening the header.
-`Views` discloses existing saved-layout and save-current-view controls; Copy link and Refresh stay
-visible. Workspace descriptions are available under the About information disclosure. Live,
-simulated/seeded, unknown-provenance and degraded warnings remain outside disclosures.
+The browser shell renders `WorkspaceHeader` as one row above every route:
+
+- **Left:** the breadcrumb, ending in the page name as the page's only `h1` (`Trading > Orders`;
+  a workspace root reads `Trading`, the front door reads `Today`). The masthead shows only
+  `Meridian` and announces the workspace to assistive technology, so the location is stated once.
+- **Centre:** the operating-scope chip. It shows the scope values (`All funds` when nothing is
+  set; dimensions the current screen does not apply are muted) and opens the scope picker.
+- **Right:** Refresh, `Views` (saved-layout and save-current-view controls) and an overflow menu
+  holding Copy link and the workspace's About text.
+
+The route body carries the task title as an `h2` (`Orders blotter`); routes do not render their
+own `h1` or repeat the workspace name. `Workflow context` lives in the scope picker, collapsed
+under the scope controls; following one of its links closes the picker. Live, simulated/seeded,
+unknown-provenance and degraded warnings remain outside disclosures.
 
 The scope picker stages all changes, including Clear scope, until Apply scope. Cancel and Escape
 leave the active URL and stored scope unchanged. Run and date dimensions remain inspectable;
@@ -1733,8 +1740,8 @@ event labels also normalize retained source names before entering the visible ev
 The browser workstation root (`/`) now opens the Daily Control Tower, a read-only shell projection
 of workflow continuity, trust posture, linked context, and timestamped evidence. Its landing model
 is a shell-level Home location rather than an eighth workspace: none of the seven root workspace
-items is marked current (the pinned sidebar `Today` entry is), the breadcrumb reads
-`Workstation > Today`, and the operating-context copy identifies the Daily Control Tower instead
+items is marked current (the pinned sidebar `Today` entry is), the breadcrumb heading reads
+`Today`, and the operating-context copy identifies the Daily Control Tower instead
 of falling back to Trading. Before the combined finance queue is shown, operators choose an
 operating scope or explicitly opt into cross-scope review.
 The landing model

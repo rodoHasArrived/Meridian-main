@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it } from "vitest";
 import { buildWorkflowContinuityViewModel } from "@/app-shell.workflow-continuity-view-model";
-import { WorkflowContinuityDock } from "@/components/meridian/workflow-continuity-dock";
+import { OperatingScopeChip, WorkflowContextDisclosure } from "@/components/meridian/workflow-continuity-dock";
 import { workspaceForPath } from "@/lib/workspace";
 
 function buildViewModel(pathname: string) {
@@ -15,19 +15,20 @@ function buildViewModel(pathname: string) {
   );
 }
 
-describe("WorkflowContinuityDock route modes", () => {
+describe("Operating scope and workflow context route modes", () => {
   it("renders neutral task choice without an empty route workflow navigation", async () => {
     const user = userEvent.setup();
     const viewModel = buildViewModel("/settings");
 
     render(
       <MemoryRouter>
-        <WorkflowContinuityDock viewModel={viewModel} />
+        <OperatingScopeChip viewModel={viewModel} onEditOperatingContext={() => undefined} />
+        <WorkflowContextDisclosure viewModel={viewModel} />
       </MemoryRouter>
     );
 
     expect(screen.getByRole("region", { name: "Settings task choice" })).toBeTruthy();
-    expect(screen.getByText("Operating scope")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Operating scope: All funds" })).toBeInTheDocument();
     expect(screen.queryByRole("navigation", { name: "Settings task workflow steps" })).toBeNull();
 
     await user.click(screen.getByText("Workflow context"));
@@ -42,7 +43,8 @@ describe("WorkflowContinuityDock route modes", () => {
     const viewModel = buildViewModel("/unknown");
     const { container } = render(
       <MemoryRouter>
-        <WorkflowContinuityDock viewModel={viewModel} />
+        <OperatingScopeChip viewModel={viewModel} onEditOperatingContext={() => undefined} />
+        <WorkflowContextDisclosure viewModel={viewModel} />
       </MemoryRouter>
     );
 

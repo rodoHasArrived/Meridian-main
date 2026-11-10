@@ -1,11 +1,21 @@
 import { useEffect, useId, useRef, type ReactNode } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, MoreHorizontal } from "lucide-react";
 
-/** A disclosure of existing view controls, not an ARIA menu of immediate commands.
+interface HeaderDisclosureMenuProps {
+  children: ReactNode;
+  routeKey?: string;
+  summary: ReactNode;
+  summaryAriaLabel?: string;
+  panelLabel: string;
+  /** Close after a button inside the panel is activated (one-shot commands such as Copy link). */
+  closeOnAction?: boolean;
+}
+
+/** A disclosure of existing header controls, not an ARIA menu of immediate commands.
  * Keep children mounted within a route so dialogs restore focus to their trigger.
  * Navigation disposes their overlay state before the closed disclosure can hide it.
  */
-export function WorkspaceViewsMenu({ children, routeKey }: { children: ReactNode; routeKey?: string }) {
+function HeaderDisclosureMenu({ children, routeKey, summary, summaryAriaLabel, panelLabel, closeOnAction = false }: HeaderDisclosureMenuProps) {
   const detailsRef = useRef<HTMLDetailsElement>(null);
   const contentId = useId();
 
@@ -40,12 +50,51 @@ export function WorkspaceViewsMenu({ children, routeKey }: { children: ReactNode
         }
       }}
     >
-      <summary aria-controls={contentId}>
-        Views <ChevronDown aria-hidden="true" className="size-4" />
+      <summary aria-controls={contentId} aria-label={summaryAriaLabel} title={summaryAriaLabel}>
+        {summary}
       </summary>
-      <div key={routeKey} id={contentId} role="region" aria-label="View controls" className="workstation-views-panel">
+      <div
+        key={routeKey}
+        id={contentId}
+        role="region"
+        aria-label={panelLabel}
+        className="workstation-views-panel"
+        onClick={closeOnAction ? (event) => {
+          if ((event.target as Element).closest("button") && detailsRef.current) {
+            detailsRef.current.open = false;
+          }
+        } : undefined}
+      >
         {children}
       </div>
     </details>
+  );
+}
+
+/** Saved-layout and save-current-view controls. */
+export function WorkspaceViewsMenu({ children, routeKey }: { children: ReactNode; routeKey?: string }) {
+  return (
+    <HeaderDisclosureMenu
+      routeKey={routeKey}
+      panelLabel="View controls"
+      summary={<>Views <ChevronDown aria-hidden="true" className="size-4" /></>}
+    >
+      {children}
+    </HeaderDisclosureMenu>
+  );
+}
+
+/** Rarely used header actions (Copy link, About this workspace) behind one overflow control. */
+export function WorkspaceOverflowMenu({ children, routeKey }: { children: ReactNode; routeKey?: string }) {
+  return (
+    <HeaderDisclosureMenu
+      routeKey={routeKey}
+      panelLabel="More actions"
+      summaryAriaLabel="More actions"
+      summary={<MoreHorizontal aria-hidden="true" className="size-4" />}
+      closeOnAction
+    >
+      {children}
+    </HeaderDisclosureMenu>
   );
 }

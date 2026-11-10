@@ -20,11 +20,11 @@ describe("workspace header view model", () => {
       refreshing: true
     });
 
-    expect(model.title).toBe("Trading Workstation");
+    expect(model.title).toBe("Trading");
     expect(model.eyebrow).toBe("Workspace");
     expect(model.badges).toEqual([]);
     expect(model.maturityNote).toBe("Product maturity: Available.");
-    expect(model.aboutTitle).toBe("About Trading · Available product maturity");
+    expect(model.aboutLabel).toBe("About Trading");
     expect(model.metaItems).toEqual([]);
     expect(model.sessionLabel).toBe("Ops Desk");
     expect(model.sessionRoleLabel).toBe("Operator");
@@ -38,6 +38,18 @@ describe("workspace header view model", () => {
     });
     expect(model.liveAnnouncement).toBe("Refreshing Trading workspace data.");
     expect(model.ariaBusy).toBe(true);
+  });
+
+  it("uses the page name that ends the breadcrumb as the heading", () => {
+    const model = buildWorkspaceHeaderViewModel({
+      workspace: workspaceForKey("trading"),
+      session,
+      canRefresh: false,
+      pageTitle: "Orders"
+    });
+
+    expect(model.title).toBe("Orders");
+    expect(model.aboutLabel).toBe("About Trading");
   });
 
   it("keeps pending session and setup status explicit", () => {

@@ -198,7 +198,7 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
         <div className="flex items-center gap-3">
           <Layers3 className="size-5 text-muted-foreground" aria-hidden />
           <div>
-            <h1 className="text-lg font-semibold text-foreground">Cash Ladder</h1>
+            <h2 className="text-lg font-semibold text-foreground">Cash Ladder</h2>
             <p className="text-sm text-muted-foreground">
               Projected portfolio inflows and outflows by source, joined with opening cash and capital activity.
             </p>

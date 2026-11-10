@@ -174,7 +174,7 @@ export function CapitalCallIssuanceScreen() {
         <div className="flex items-center gap-3">
           <HandCoins className="size-5 text-muted-foreground" aria-hidden />
           <div>
-            <h1 className="text-lg font-semibold text-foreground">Capital Call Issuance</h1>
+            <h2 className="text-lg font-semibold text-foreground">Capital Call Issuance</h2>
             <p className="text-sm text-muted-foreground">
               Plan a fund-level capital call over the attested commitment register and queue governed
               per-LP issuance drafts for approval. This surface never posts.
