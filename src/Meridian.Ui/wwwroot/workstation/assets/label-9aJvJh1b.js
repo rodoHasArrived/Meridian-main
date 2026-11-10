@@ -1,0 +1,1 @@
+import{d as e,f as t,j as n,k as r,u as i}from"./button-BbEzzFtS.js";var a=n(r(),1),o=e(),s=(0,a.forwardRef)(({className:e,children:n,...r},a)=>(0,o.jsx)(`label`,{ref:a,className:t(`text-xs font-medium text-muted-foreground`,i(n)&&`uppercase tracking-[0.14em]`,e),...r,children:n}));s.displayName=`Label`;export{s as t};
