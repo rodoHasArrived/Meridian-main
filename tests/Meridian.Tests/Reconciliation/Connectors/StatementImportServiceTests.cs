@@ -982,6 +982,21 @@ public sealed class StatementImportServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task Commit_SameStatementForAnotherFundAccount_KeepsEachImportsRecordedOwner()
+    {
+        var document = FixtureDocument("csv-mixed-kinds.csv");
+
+        var first = await _service.CommitAsync(CommitRequest(document, fundAccountId: "FUND-OWNER-1"));
+        var second = await _service.CommitAsync(CommitRequest(document, fundAccountId: "FUND-OWNER-2"));
+
+        first.RetainedCanonicalPath.Should().NotBe(second.RetainedCanonicalPath,
+            "the evidence sidecar records its owning fund account, so another owner must not overwrite it");
+        var owners = (await new StatementCanonicalEvidenceReader(_root).ListAsync())
+            .Select(static envelope => envelope.Artifact.FundAccountId);
+        owners.Should().BeEquivalentTo(["FUND-OWNER-1", "FUND-OWNER-2"]);
+    }
+
+    [Fact]
     public async Task Commit_SameStatementForDifferentLedgerBooks_RetainsDistinctScopedImports()
     {
         var document = FixtureDocument("csv-mixed-kinds.csv");
