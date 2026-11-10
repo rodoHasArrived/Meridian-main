@@ -1,3 +1,4 @@
+using Meridian.Execution.OrderManagement;
 using Meridian.Execution.Sdk;
 
 
@@ -86,7 +87,7 @@ public sealed partial class OrderManagementSystem
             // returning the failed cancellation, so a synchronous result cannot be lost if the
             // adapter's observer stream is absent, delayed, or racing this call.
             if (report.ReportType is ExecutionReportType.CancelRejected
-                || IsTerminalStatus(report.OrderStatus)
+                || OrderStatusFacts.IsTerminal(report.OrderStatus)
                 || HasCumulativeFillEvidence(report))
             {
                 await ProcessGatewayReportAsync(report, CancellationToken.None).ConfigureAwait(false);
