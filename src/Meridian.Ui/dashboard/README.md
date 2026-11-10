@@ -331,7 +331,10 @@ not been recorded.
     counts, not the overview), and a strip that names no payload states no as-of time. A screen
     with its own freshness evidence stamps its metrics with `withMetricContext`, still dated
     from the payload that supplies the values (`resolveFigureEvidence`): Trading's totals follow
-    the Trading payload, not a newer brokerage observation.
+    the Trading payload, not a newer brokerage observation. Their scope is the fund account that
+    payload was loaded for (`figureSourceScope`, `resolveFigureScope`), not the selected one:
+    after an account switch the previous account's figures stay labelled as that account's, and
+    stale, until the new payload loads.
   - *Change*: a bare change (`+8%`, `0%`, `+2`) is shown only with the `baseline` it is
     measured against (`+8% vs prior session`) and is dropped otherwise. A change that names
     its comparison (`3 new since your last visit`) and descriptive captions pass through.
@@ -343,9 +346,10 @@ not been recorded.
     workspace clears the shell's error map but not this. An unconfirmed session keeps every
     figure unverified, and a screen's own evidence (Trading's broker observation) can lower a
     figure's verdict but never raise it (`combineMetricFreshness`). Portfolio's totals go stale when the payload that
-    supplies them is listed, when the Portfolio poll settles as `partial` (its Portfolio request
-    was rejected; a failing side feed such as an unconnected brokerage does not count), or when
-    that payload's load is past the freshness budget.
+    supplies them is listed or its load is past the freshness budget. Outside the shell, where no
+    per-payload record exists, the Portfolio poll settling as `partial` is the evidence (its
+    Portfolio request was rejected; a failing side feed such as an unconnected brokerage does
+    not count).
   - *Disagreement*: when two panels on one page report different values for the same
     quantity, `buildFigureDifferenceNote` and `FigureDifferenceNote` show "Why these differ"
     with both values and each panel's source. Portfolio uses it for the header strip and the

@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { deriveWorkspaceFigureContext, resolveFigureEvidence } from "@/lib/workspace-figure-context";
+import { deriveWorkspaceFigureContext, resolveFigureEvidence, resolveFigureScope } from "@/lib/workspace-figure-context";
 
 const loaded = { phase: "succeeded", inFlight: false, lastSucceededAt: "2026-06-30T18:05:00Z", settledAt: "2026-06-30T18:05:00Z" } as const;
 
 describe("deriveWorkspaceFigureContext", () => {
   it("reports a loaded real-data session as fresh", () => {
     expect(deriveWorkspaceFigureContext({ status: loaded, provenance: "real" }))
-      .toEqual({ freshness: "fresh", dataLabel: null, staleSources: [], sourceLoadedAt: {} });
+      .toEqual({ freshness: "fresh", dataLabel: null, staleSources: [], sourceLoadedAt: {}, sourceScope: {} });
   });
 
   it("leaves staleness to each payload's own reload outcome when a refresh failed", () => {
@@ -93,6 +93,19 @@ describe("resolveFigureEvidence", () => {
 
     expect(resolveFigureEvidence(later, "trading").freshness).toBe("stale");
     expect(resolveFigureEvidence(later, "portfolio").freshness).toBe("fresh");
+  });
+
+  it("reports the account a payload was loaded for, distinguishing every account from not recorded", () => {
+    const scoped = deriveWorkspaceFigureContext({
+      status: loaded,
+      provenance: "real",
+      sourceScope: { trading: "11111111-1111-1111-1111-111111111111", crossScreenCounts: null }
+    });
+
+    expect(resolveFigureScope(scoped, "trading")).toBe("11111111-1111-1111-1111-111111111111");
+    expect(resolveFigureScope(scoped, "crossScreenCounts")).toBeNull();
+    expect(resolveFigureScope(scoped, "portfolio")).toBeUndefined();
+    expect(resolveFigureScope(null, "trading")).toBeUndefined();
   });
 
   it("resolves nothing outside the shell", () => {

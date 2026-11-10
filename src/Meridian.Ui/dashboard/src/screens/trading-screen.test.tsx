@@ -750,6 +750,32 @@ describe("TradingScreen", () => {
     expect(screen.getByLabelText("Trading headline metrics").parentElement).not.toHaveTextContent(/Unverified figures|Stale figures/);
   });
 
+  it("keeps naming the account the retained figures belong to after another account is selected", async () => {
+    // The payload on screen was loaded for account A; the operator has selected account B and
+    // its payload has not loaded.
+    const accountA = "11111111-1111-1111-1111-111111111111";
+    const accountB = "22222222-2222-2222-2222-222222222222";
+    renderWithRouter(
+      <WorkspaceFigureContextProvider
+        value={{
+          freshness: "fresh",
+          dataLabel: null,
+          staleSources: [],
+          sourceLoadedAt: { trading: "2026-10-05T15:00:00Z" },
+          sourceScope: { trading: accountA }
+        }}
+      >
+        <TradingScreen data={data} fundAccountId={accountB} />
+      </WorkspaceFigureContextProvider>,
+      { initialEntries: ["/trading"] }
+    );
+    await waitForAsyncEffects();
+
+    const provenance = screen.getByLabelText("Trading headline metrics").parentElement!;
+    expect(provenance).toHaveTextContent(`Stale figures · Source: Trading workspace · As of Oct 5, 2026, 15:00 UTC · Scope: ${accountA}`);
+    expect(provenance).not.toHaveTextContent(accountB);
+  });
+
   it("refreshes shared readiness and surfaces account brokerage posture", async () => {
     const user = userEvent.setup();
     vi.mocked(api.getTradingReadiness).mockResolvedValueOnce({

@@ -669,6 +669,43 @@ describe("PortfolioScreen", () => {
     expect(strip.parentElement).not.toHaveTextContent("Stale figures");
   });
 
+  it("does not keep the totals stale for an earlier failed poll once the payload has reloaded", async () => {
+    // The Portfolio poll failed and its lifecycle is still `partial`; a shell refresh has since
+    // reloaded the Portfolio payload, which is the authoritative evidence.
+    const now = new Date();
+    const reloadedAt = now.toISOString();
+    await renderPortfolioScreen(
+      <WorkspaceFigureContextProvider
+        value={{ freshness: "fresh", dataLabel: null, staleSources: [], sourceLoadedAt: { portfolio: reloadedAt } }}
+      >
+        <PortfolioScreen
+          portfolio={portfolio}
+          trading={trading}
+          strategy={strategy}
+          accounting={accounting}
+          refreshStatus={{
+            operation: "portfolio refresh",
+            phase: "partial",
+            inFlight: false,
+            version: 2,
+            message: "Portfolio workspace refresh failed.",
+            error: "Portfolio workspace refresh failed.",
+            startedAt: new Date(now.getTime() - 30_000).toISOString(),
+            settledAt: new Date(now.getTime() - 30_000).toISOString(),
+            lastSucceededAt: new Date(now.getTime() - 90_000).toISOString(),
+            staleDiscardCount: 0,
+            backoff: { attempt: 1, retryCount: 0, nextRetryDelayMs: null, maxRetries: 0 }
+          }}
+        />
+      </WorkspaceFigureContextProvider>
+    );
+
+    const strip = screen.getByLabelText("Portfolio headline metrics");
+    expect(within(strip).getByText("+$120")).toHaveClass("text-success");
+    expect(strip.parentElement).toHaveTextContent(`As of ${formatUtcTimestamp(new Date(reloadedAt))}`);
+    expect(strip.parentElement).not.toHaveTextContent("Stale figures");
+  });
+
   it("keeps fresh headline figures in their P&L tone", async () => {
     const now = new Date().toISOString();
     await renderPortfolioScreen(
