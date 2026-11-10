@@ -880,7 +880,7 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
             return new DirectLendingCommandResult<LoanServicingStateDto>(null, activeError);
         }
 
-        var replay = await TryReplayCommittedCommandAsync(loanId, stored, metadata, "loan.unapplied-cash-applied", ct).ConfigureAwait(false);
+        var replay = await TryReplayCommittedCommandAsync(loanId, stored, metadata, "loan.unapplied-cash-applied", request.Amount, request.EffectiveDate, request.ExternalRef, ct).ConfigureAwait(false);
         if (replay is not null)
         {
             return replay;
@@ -930,6 +930,9 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
         PersistedDirectLendingState stored,
         DirectLendingCommandMetadataDto? metadata,
         string eventType,
+        decimal amount,
+        DateOnly effectiveDate,
+        string? externalRef,
         CancellationToken ct)
     {
         if (metadata?.CommandId is not Guid commandId || commandId == Guid.Empty)
@@ -944,11 +947,51 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
             return null;
         }
 
+        // Only the same request is a replay: same mutation and the same caller inputs. Reusing a
+        // command id for a different amount, date or reference is refused like any other mismatch.
         return string.Equals(committed.EventType, eventType, StringComparison.Ordinal)
+                && RecordedRequestMatches(committed.PayloadJson, amount, effectiveDate, externalRef)
             ? DirectLendingCommandResult<LoanServicingStateDto>.Success(stored.Servicing)
             : DirectLendingCommandResult<LoanServicingStateDto>.Failure(
                 DirectLendingErrorCode.Conflict,
                 $"Direct lending command id {commandId} was already used for a different mutation on loan {loanId}.");
+    }
+
+    internal static bool RecordedRequestMatches(string payloadJson, decimal amount, DateOnly effectiveDate, string? externalRef)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(payloadJson);
+            var root = document.RootElement;
+            static JsonElement? Find(JsonElement element, string name)
+            {
+                foreach (var property in element.EnumerateObject())
+                {
+                    if (string.Equals(property.Name, name, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return property.Value;
+                    }
+                }
+
+                return null;
+            }
+
+            static string? Normalize(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+            var recordedAmount = Find(root, "amount");
+            var recordedDate = Find(root, "effectiveDate");
+            var recordedRef = Find(root, "externalRef");
+            return recordedAmount is { ValueKind: JsonValueKind.Number } a && a.GetDecimal() == amount
+                && recordedDate is { ValueKind: JsonValueKind.String } d && DateOnly.TryParse(d.GetString(), System.Globalization.CultureInfo.InvariantCulture, out var date) && date == effectiveDate
+                && string.Equals(
+                    Normalize(recordedRef is { ValueKind: JsonValueKind.String } r ? r.GetString() : null),
+                    Normalize(externalRef),
+                    StringComparison.Ordinal);
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
     }
 
     public async Task<DirectLendingCommandResult<LoanServicingStateDto>> RefundUnappliedCashAsync(Guid loanId, RefundUnappliedCashRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
@@ -966,7 +1009,7 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
             return new DirectLendingCommandResult<LoanServicingStateDto>(null, activeError);
         }
 
-        var replay = await TryReplayCommittedCommandAsync(loanId, stored, metadata, "loan.unapplied-cash-refunded", ct).ConfigureAwait(false);
+        var replay = await TryReplayCommittedCommandAsync(loanId, stored, metadata, "loan.unapplied-cash-refunded", request.Amount, request.EffectiveDate, request.ExternalRef, ct).ConfigureAwait(false);
         if (replay is not null)
         {
             return replay;

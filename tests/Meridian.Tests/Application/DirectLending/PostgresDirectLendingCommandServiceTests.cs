@@ -386,9 +386,10 @@ public sealed partial class PostgresDirectLendingCommandServiceTests
     }
 
     [Theory]
-    [InlineData("loan.unapplied-cash-applied", true)]
-    [InlineData("loan.mixed-payment-applied", false)]
-    public async Task ApplyUnappliedCashAsync_RetryOfACommittedCommand_ReturnsTheCommittedStateWithoutSaving(string recordedEventType, bool isReplay)
+    [InlineData("loan.unapplied-cash-applied", 100, true)]
+    [InlineData("loan.mixed-payment-applied", 100, false)]
+    [InlineData("loan.unapplied-cash-applied", 200, false)]
+    public async Task ApplyUnappliedCashAsync_RetryOfACommittedCommand_ReturnsTheCommittedStateWithoutSaving(string recordedEventType, int recordedAmount, bool isReplay)
     {
         // PRD-115: the retry carries the same command id. Recomputing it would report a second,
         // unsaved application (or a payload the store refuses as a conflict).
@@ -403,7 +404,8 @@ public sealed partial class PostgresDirectLendingCommandServiceTests
         queryService.GetHistoryAsync(loanId, Arg.Any<CancellationToken>()).Returns(
         [
             new LoanEventLineageDto(Guid.NewGuid(), 7, recordedEventType, 3, new DateOnly(2026, 4, 1), DateTimeOffset.UtcNow,
-                "{}", null, null, commandId, "meridian.wpf", false)
+                $$"""{"loanId":"{{loanId}}","amount":{{recordedAmount}},"appliedAmount":{{recordedAmount}},"effectiveDate":"2026-04-01","externalRef":null}""",
+                null, null, commandId, "meridian.wpf", false)
         ]);
         var service = new PostgresDirectLendingCommandService(
             stateStore,
