@@ -45,6 +45,7 @@ import { applyDensity, writeStoredDensity } from "@/lib/density";
 import { ScopePickerOpenerProvider } from "@/lib/operating-scope/scope-picker-context";
 import { readRecentScopes, rememberRecentScope } from "@/lib/operating-scope/recent-scopes";
 import { CrossScreenCountsProvider } from "@/lib/cross-screen-counts-context";
+import { PageTrustProvider, usePageTrustRegistry } from "@/lib/page-trust-context";
 import { buildLayoutRestorePlan, readUserLayouts, type LayoutRestorePlan } from "@/lib/saved-layouts";
 import { WorkspaceNav } from "@/components/meridian/workspace-nav";
 import { Skeleton } from "@/components/data/skeleton";
@@ -618,6 +619,7 @@ function AppShell({
     return () => window.removeEventListener("pagehide", handlePageHide);
   }, []);
 
+  const { registry: pageTrustRegistry, pageFreshness } = usePageTrustRegistry();
   const shell = useMemo(() => buildAppShellViewState({
     pathname,
     search,
@@ -780,6 +782,7 @@ function AppShell({
   return (
     <ScopePickerOpenerProvider open={openScopePicker}>
     <CrossScreenCountsProvider counts={crossScreenCounts}>
+    <PageTrustProvider registry={pageTrustRegistry}>
     <div className="workstation-frame">
       <a className="skip-link" href="#workbench-content">Skip to workbench</a>
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
@@ -973,7 +976,8 @@ function AppShell({
           workspaceLabel: headerWorkspace.label,
           refreshing: loading || refreshStatus.inFlight,
           hasError: Boolean(error),
-          providerTrust: shell.trustStrip.items.find((item) => item.id === "providers") ?? null
+          providerTrust: shell.trustStrip.items.find((item) => item.id === "providers") ?? null,
+          pageFreshness
         })}
       />
 
@@ -1026,6 +1030,7 @@ function AppShell({
         </SheetContent>
       </Sheet>
     </div>
+    </PageTrustProvider>
     </CrossScreenCountsProvider>
     </ScopePickerOpenerProvider>
   );

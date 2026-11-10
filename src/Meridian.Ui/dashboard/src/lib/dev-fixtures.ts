@@ -4395,7 +4395,7 @@ const fixtureOperationsContinuityWorkflow: OperationsContinuityWorkflow = {
       fromGateStatus: "NotStarted",
       toGateStatus: "InProgress",
       actor: "ops-user",
-      rationale: "Open monthly close lane.",
+      rationale: "Open monthly close.",
       correlationId: "dev-continuity",
       references: [],
       previousHash: null,

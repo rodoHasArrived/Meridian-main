@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { OperationalTrustSummary } from "@/components/meridian/operational-trust-summary";
+import { PageTrustProvider, usePageTrustRegistry } from "@/lib/page-trust-context";
 
 describe("OperationalTrustSummary", () => {
   it("keeps scope and warnings visible while supporting facts can be expanded", async () => {
@@ -91,7 +92,8 @@ describe("OperationalTrustSummary", () => {
     );
 
     const region = screen.getByRole("region", { name: "Data confidence" });
-    expect(screen.getAllByText("Unknown")).toHaveLength(4);
+    // Source, freshness and completeness each say "Unknown". Scope is a name, not a verdict.
+    expect(screen.getAllByText("Unknown")).toHaveLength(3);
     expect(region.querySelector("dl")).toHaveClass("grid-cols-[repeat(auto-fit,minmax(min(100%,12rem),1fr))]");
   });
 
@@ -169,5 +171,47 @@ describe("OperationalTrustSummary", () => {
       expect(element).toHaveClass("break-words");
       expect(element).not.toHaveClass("truncate");
     }
+  });
+  it("names the scope without a verdict unless the scope itself needs attention", () => {
+    const facts = {
+      source: { value: "Interactive Brokers · paper", tone: "ready" as const },
+      freshness: { value: "2s ago", tone: "ready" as const },
+      completeness: { value: "1 position", tone: "ready" as const }
+    };
+    const { rerender, container } = render(
+      <OperationalTrustSummary disclosure {...facts} scope={{ label: "Account", value: "DU1009034", tone: "ready" }} />
+    );
+    const scopeFact = () => within(container.querySelector("summary")!).getByText("DU1009034").parentElement as HTMLElement;
+
+    // Three "Ready" verdicts, one each for source, freshness and completeness; none for scope.
+    expect(within(container.querySelector("summary")!).getAllByText("Ready")).toHaveLength(3);
+    expect(scopeFact()).toHaveTextContent("Account");
+    expect(scopeFact()).not.toHaveTextContent("Ready");
+
+    rerender(
+      <OperationalTrustSummary disclosure {...facts} scope={{ value: "No operating scope selected", tone: "review" }} />
+    );
+    expect(within(container.querySelector("summary")!).getByText("Needs review")).toBeInTheDocument();
+  });
+
+  it("reports the freshness it shows to the shell so the status bar repeats the same answer", () => {
+    function FreshnessProbe() {
+      const { registry, pageFreshness } = usePageTrustRegistry();
+      return (
+        <PageTrustProvider registry={registry}>
+          <output data-testid="page-freshness">{pageFreshness ? `${pageFreshness.tone}:${pageFreshness.value}` : "none"}</output>
+          <OperationalTrustSummary
+            source={{ value: "Retained portfolio", tone: "ready" }}
+            scope={{ value: "All brokerage accounts", tone: "ready" }}
+            freshness={{ value: "Stale · 187d ago", tone: "review" }}
+            completeness={{ value: "2 positions", tone: "ready" }}
+          />
+        </PageTrustProvider>
+      );
+    }
+
+    const { unmount } = render(<FreshnessProbe />);
+    expect(screen.getByTestId("page-freshness")).toHaveTextContent("review:Stale · 187d ago");
+    unmount();
   });
 });

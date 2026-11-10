@@ -732,6 +732,8 @@ export function PortfolioScreen({
           tone: vm.positionSourceLabel === "Unavailable" ? "blocked" : "ready"
         }}
         scope={{
+          // A brokerage account, not the operating scope chosen in the header.
+          label: "Account",
           value: vm.selectedBrokerageAccount.title,
           detail: routeView === "brokerage-sync" ? "Selected brokerage account" : "Current portfolio account scope",
           tone: vm.selectedBrokerageAccount.statusTone === "danger"

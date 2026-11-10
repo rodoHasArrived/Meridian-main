@@ -160,6 +160,11 @@ export function ProviderOwnershipPanel({ providerId, displayName, connection, on
             {busy === "preview" ? "Previewing…" : "Preview migration"}
           </Button>
           <Button size="sm" disabled={!selected || !generation || busy !== null} aria-busy={busy === "migrate"}
+            disabledReason={!selected
+              ? "Select an owned connection first."
+              : !generation
+                ? "Nothing to migrate: no retained provider-wide record carries a credential generation."
+                : "Wait for the current ownership request to finish."}
             onClick={() => void run("migrate", async () => {
               const next = await migrate(selected!.connectionId, { providerId, migrationId, expectedGeneration: generation });
               if (next.scope.connectionId.toLowerCase() !== selected!.connectionId.toLowerCase()) throw new Error("The receipt names another connection.");

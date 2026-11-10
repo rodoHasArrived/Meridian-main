@@ -1153,16 +1153,16 @@ describe("operator readiness console view model", () => {
       inboxError: null
     });
 
-    expect(state.overallDetail).toContain("Strategy, Data, Accounting, or Reporting payloads");
+    expect(state.overallDetail).toContain("Strategy, Data, Accounting, or Reporting data");
     expect(state.reportPackFacts[0]).toEqual(expect.objectContaining({
       label: "Report-pack readiness",
-      detail: "Reporting payload has not loaded.",
+      detail: "Reporting data has not loaded.",
       meta: "Wait for the Reporting capability and durability checks to recover.",
       level: "review"
     }));
     expect(state.panels.find((panel) => panel.id === "reporting-report-packs")).toEqual(expect.objectContaining({
       title: "Reporting report packs",
-      emptyText: "No reporting readiness payload loaded."
+      emptyText: "No reporting readiness data loaded."
     }));
   });
 
@@ -1250,16 +1250,16 @@ describe("operator readiness console view model", () => {
       accounting,
       operatorInbox: null,
       inboxLoading: false,
-      inboxError: "Request failed for /api/workstation/operator/inbox (503)"
+      inboxError: "Meridian could not complete this request. Try again."
     });
 
-    expect(state.inboxErrorText).toContain("503");
+    expect(state.inboxErrorText).toContain("could not complete this request");
     expect(state.workItems).toHaveLength(1);
     expect(state.overallDetail).toContain("operator inbox failed to load");
     expect(state.statusAnnouncement).toContain("Operator inbox failed");
     expect(state.inboxErrorRecovery).toEqual({
       title: "Operator inbox unavailable",
-      detail: "Request failed for /api/workstation/operator/inbox (503). Retry the shared inbox before accepting readiness; fallback rows remain visible for triage.",
+      detail: "Meridian could not complete this request. Try again. Retry the shared inbox before accepting readiness; fallback rows remain visible for triage.",
       actionLabel: "Retry inbox",
       actionAriaLabel: "Retry loading operator inbox work items after failure"
     });
@@ -1296,7 +1296,7 @@ describe("operator readiness console view model", () => {
       accounting: cleanGovernance,
       operatorInbox: null,
       inboxLoading: false,
-      inboxError: "Request failed for /api/workstation/operator/inbox (503)"
+      inboxError: "Meridian could not complete this request. Try again."
     });
 
     const readyState = buildOperatorReadinessConsoleState({
@@ -1446,7 +1446,7 @@ describe("operator readiness console view model", () => {
       expect.objectContaining({ signal: expect.any(Object) })
     ));
     await waitFor(() => expect(result.current.inboxLoadingLabel).toBe("Loading operator inbox..."));
-    expect(result.current.inboxSummary).toBe("Operator inbox not loaded; using workstation payload fallbacks where available.");
+    expect(result.current.inboxSummary).toBe("Operator inbox not loaded; using workstation data where available.");
     expect(result.current.workItems.map((item) => item.id)).not.toContain("reconciliation-break-run-1-cash");
 
     requirePresent<(value: OperatorInbox) => void>(resolveFundTwoInbox, "fund-two inbox resolver")(cleanInbox);

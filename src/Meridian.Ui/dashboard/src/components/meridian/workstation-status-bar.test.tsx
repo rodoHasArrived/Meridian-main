@@ -65,4 +65,40 @@ describe("WorkstationStatusBar", () => {
     expect(build({ value: "Pending", tone: "pending" }).map((item) => item.key)).toEqual(["sync", "workspace"]);
     expect(build(null).map((item) => item.key)).toEqual(["sync", "workspace"]);
   });
+  it("never says up to date while the page's own freshness needs review", () => {
+    const build = (pageFreshness: Parameters<typeof buildWorkstationStatusItems>[0]["pageFreshness"]) =>
+      buildWorkstationStatusItems({ workspaceLabel: "Portfolio", refreshing: false, hasError: false, pageFreshness });
+
+    // The Portfolio posture strip says "Freshness: Stale · 187d ago"; the footer repeats it.
+    expect(build({ tone: "review", value: "Stale · 187d ago" })).toEqual([
+      { key: "sync", status: "ok", label: "Sync", value: "connected" },
+      { key: "freshness", status: "warn", label: "Freshness", value: "Stale · 187d ago" },
+      { key: "workspace", label: "Workspace", value: "Portfolio", push: true }
+    ]);
+    expect(build({ tone: "blocked", value: null })[1])
+      .toEqual({ key: "freshness", status: "err", label: "Freshness", value: "blocked" });
+    for (const items of [build({ tone: "review", value: "Stale" }), build({ tone: "blocked", value: "Unavailable" })]) {
+      expect(items.map((item) => item.value)).not.toContain("up to date");
+    }
+
+    // A fresh page, a page with no posture strip, and an unreported tone leave Sync as it was.
+    expect(build({ tone: "ready", value: "2s ago" })[0].value).toBe("up to date");
+    expect(build({ tone: "unknown", value: "Not available" })[0].value).toBe("up to date");
+    expect(build(null).map((item) => item.key)).toEqual(["sync", "workspace"]);
+  });
+
+  it("keeps a long freshness sentence to one footer line", () => {
+    const [, freshness] = buildWorkstationStatusItems({
+      workspaceLabel: "Reporting",
+      refreshing: false,
+      hasError: false,
+      pageFreshness: {
+        tone: "review",
+        value: "Loaded runs do not retain an as-of date; confirm the reporting period before release"
+      }
+    });
+
+    expect(freshness.value.length).toBeLessThanOrEqual(56);
+    expect(freshness.value.endsWith("…")).toBe(true);
+  });
 });

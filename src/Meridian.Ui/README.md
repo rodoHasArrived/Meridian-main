@@ -68,6 +68,17 @@ fails a route whose rendered content shows a raw identifier or a "1 rows" style 
 contract changed; Operations Continuity still shows fund-account identifiers because its shared
 summary carries no account name.
 
+It also carries the first Phase 3 increment of the
+[UX review plan](../../docs/engineering/plans/web-workstation-ux-review-plan-2026-11.md): a failed
+request shows a plain sentence with the request path collapsed under "Technical details"; the
+status bar repeats the page's own freshness instead of "up to date" when the posture strip needs
+review; the strip names a scope without a "Ready" verdict; disabled buttons share one readable
+style and carry their reason; and "Cancel all" sits in an overflow menu. The screenshot harness
+additionally fails a route that renders a request path, "lane", "payload", "mutation",
+"caller-visible", a slug-shaped identifier, an unexplained disabled primary button, or a status
+bar that contradicts the page. No shared contract changed; routes whose read models name records
+only by key are listed with reasons in `scripts/dev/web-screenshot-routes.json`.
+
 The host-served bundle carries the browser presentation correctness fixes: font stacks that end
 in a generic family (no serif fallback for data text), Ledger Explorer amounts at currency
 precision with journal-ID links, no invented Strategy metrics, and a masthead activation chip that

@@ -41,16 +41,26 @@ export interface WorkstationStatusProviderTrust {
   tone: "ready" | "review" | "blocked" | "pending";
 }
 
+/** The current page's freshness fact, as its posture strip reports it. */
+export interface WorkstationStatusPageFreshness {
+  tone: "ready" | "review" | "blocked" | "unknown";
+  value: string | null;
+}
+
+const MAX_FRESHNESS_VALUE_LENGTH = 56;
+
 export function buildWorkstationStatusItems({
   workspaceLabel,
   refreshing,
   hasError,
-  providerTrust = null
+  providerTrust = null,
+  pageFreshness = null
 }: {
   workspaceLabel: string;
   refreshing: boolean;
   hasError: boolean;
   providerTrust?: WorkstationStatusProviderTrust | null;
+  pageFreshness?: WorkstationStatusPageFreshness | null;
 }): WorkstationStatusBarItem[] {
   // "Sync" only says the workstation's own read of the API is current. When provider trust needs
   // review or is blocked, the footer repeats that posture beside it so a green sync dot is never
@@ -66,13 +76,33 @@ export function buildWorkstationStatusItems({
       }]
       : [];
 
+  // The page's posture strip owns the freshness answer. When it says the data on screen needs
+  // review or is blocked, "Sync" drops to the narrower claim it can still make (the workstation
+  // reached the service) and the footer repeats the strip's own words beside it.
+  const pageDataNeedsReview = pageFreshness?.tone === "review" || pageFreshness?.tone === "blocked";
+  const freshnessItems: WorkstationStatusBarItem[] = pageDataNeedsReview
+    ? [{
+      key: "freshness",
+      status: pageFreshness.tone === "blocked" ? "err" : "warn",
+      label: "Freshness",
+      value: truncateStatusValue(pageFreshness.value ?? (pageFreshness.tone === "blocked" ? "blocked" : "needs review"))
+    }]
+    : [];
+
   return [
     {
       key: "sync",
       status: hasError ? "err" : refreshing ? "warn" : "ok",
       label: "Sync",
-      value: hasError ? "attention required" : refreshing ? "refreshing..." : "up to date"
+      value: hasError
+        ? "attention required"
+        : refreshing
+          ? "refreshing..."
+          : pageDataNeedsReview
+            ? "connected"
+            : "up to date"
     },
+    ...freshnessItems,
     ...providerItems,
     {
       key: "workspace",
@@ -81,4 +111,11 @@ export function buildWorkstationStatusItems({
       push: true
     }
   ];
+}
+
+function truncateStatusValue(value: string): string {
+  const trimmed = value.trim();
+  return trimmed.length > MAX_FRESHNESS_VALUE_LENGTH
+    ? `${trimmed.slice(0, MAX_FRESHNESS_VALUE_LENGTH - 1).trimEnd()}…`
+    : trimmed;
 }

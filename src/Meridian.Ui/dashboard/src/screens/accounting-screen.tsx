@@ -2361,7 +2361,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
           <div className="min-w-0">
             <p className="eyebrow-label">Posture</p>
             <h3 id="accounting-posture-heading" className="workspace-section-title">Accounting close posture</h3>
-            <p className="workspace-section-summary">Close metrics, control center, cash flow, and lane context stay grouped for monitoring.</p>
+            <p className="workspace-section-summary">Close metrics, control center, cash flow, and workspace context stay grouped for monitoring.</p>
           </div>
           <a className="workspace-section-jump" href="#accounting-exceptions">Exceptions</a>
         </div>
@@ -2429,7 +2429,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
       <section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
         <Card className="panel-surface">
           <CardHeader>
-            <div className="eyebrow-label">{workspace.label} Lane</div>
+            <div className="eyebrow-label">{workspace.label}</div>
             <CardTitle className="flex items-center gap-2">
               <ShieldCheck className="h-5 w-5 text-primary" />
               {focus.label}
@@ -5413,7 +5413,7 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
         <Card className="panel-surface">
           <CardHeader>
             <CardTitle>Validation and audit trail</CardTitle>
-            <CardDescription>Configuration readiness and append-only mutation evidence stay visible before activation.</CardDescription>
+            <CardDescription>Configuration readiness and the append-only change history stay visible before activation.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">

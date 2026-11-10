@@ -208,7 +208,7 @@ function AccountMarginCard({ account, onCertified }: { account: MarginControlAcc
               Certification note
               <Input className="mt-1" value={note} onChange={(event) => setNote(event.target.value)} placeholder="Explain the EOD evidence reviewed" />
             </label>
-            <Button size="sm" onClick={() => void certify()} disabled={!note.trim()} busy={certifying} busyLabel="Certifying…">Certify EOD snapshot</Button>
+            <Button size="sm" onClick={() => void certify()} disabled={!note.trim()} disabledReason="Enter a certification note first." busy={certifying} busyLabel="Certifying…">Certify EOD snapshot</Button>
             {certificationError ? <p className="text-xs text-destructive" role="alert">{certificationError}</p> : null}
           </div>
         ) : account.certificationState === "Certified" ? (

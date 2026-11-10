@@ -3380,7 +3380,7 @@ describe("ReportingScreen", () => {
       name: "Approve reporting run service reference retained for diagnostics"
     })).not.toBeInTheDocument();
     expect(screen.getByLabelText("investor-monthly-statement-20260501 governed workflow continuation")).toHaveTextContent(
-      "Legacy pack mutations are retired"
+      "Report packs can no longer be changed here"
     );
     expect(screen.getByRole("link", { name: "Open governed run" })).toHaveAttribute(
       "href",

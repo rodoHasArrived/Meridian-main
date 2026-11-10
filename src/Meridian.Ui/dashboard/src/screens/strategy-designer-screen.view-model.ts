@@ -1417,7 +1417,7 @@ export function buildStrategyBuilderWorkbenchViewModel({
       },
       {
         id: "builder-proof",
-        label: "Proof lane",
+        label: "Proof path",
         value: "Backtest",
         detail: "No live trading from builder v1",
         tone: "default"

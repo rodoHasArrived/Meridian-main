@@ -512,7 +512,7 @@ function DataOperationsLoadingPanel({ state }: { state: DataOperationsLoadingSta
       className="panel-surface-strong grid gap-4 px-4 py-4 lg:grid-cols-[1fr_auto]"
     >
       <div className="min-w-0">
-        <div className="eyebrow-label">Data lane</div>
+        <div className="eyebrow-label">Data</div>
         <div className="mt-2 flex flex-wrap items-center gap-2">
           <span className="inline-flex h-2.5 w-2.5 animate-pulse rounded-full bg-primary" aria-hidden="true" />
           <h2 className="font-display text-[1.375rem] font-semibold leading-tight text-foreground">

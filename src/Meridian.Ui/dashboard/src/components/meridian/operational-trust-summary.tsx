@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { ChevronDown } from "lucide-react";
+import { useReportPageFreshness } from "@/lib/page-trust-context";
 import { cn } from "@/lib/utils";
 
 export type OperationalTrustTone = "ready" | "review" | "blocked" | "unknown";
@@ -44,6 +45,14 @@ const toneLabels: Record<OperationalTrustTone, string> = {
 };
 
 /**
+ * Scope is a name, not a judgement: the header scope picker is where scope is chosen, and the strip
+ * only says which one the page is answering for. A scope that needs attention still says so.
+ */
+function showsVerdict(factId: string, tone: OperationalTrustTone): boolean {
+  return factId !== "scope" || tone === "review" || tone === "blocked";
+}
+
+/**
  * Compact, reusable source-of-truth summary for financially material screens.
  *
  * It keeps source, operating scope, freshness, completeness, and any blocker in
@@ -62,6 +71,13 @@ export function OperationalTrustSummary({
   className,
   disclosure = false
 }: OperationalTrustSummaryProps) {
+  // The status bar repeats this exact fact, so the footer never says "up to date" over a page
+  // whose own freshness needs review.
+  useReportPageFreshness(
+    freshness.tone ?? "unknown",
+    typeof freshness.value === "string" || typeof freshness.value === "number" ? String(freshness.value) : null
+  );
+
   const facts: Array<{ id: string; label: string; fact: OperationalTrustFact }> = [
     { id: "source", label: source.label ?? "Source", fact: source },
     { id: "scope", label: scope.label ?? "Scope", fact: scope },
@@ -78,8 +94,14 @@ export function OperationalTrustSummary({
       <dl className="grid min-w-0 flex-1 grid-cols-[repeat(auto-fit,minmax(min(100%,12rem),1fr))] gap-2">
         {facts.map(({ id, label: factLabel, fact }) => {
           const tone = fact.tone ?? "unknown";
+          const showVerdict = showsVerdict(id, tone);
           return (
-            <div key={id} className="min-w-0 rounded-[2px] border border-border/70 bg-secondary/20 px-3 py-2">
+            <div
+              key={id}
+              className="min-w-0 rounded-[2px] border border-border/70 bg-secondary/20 px-3 py-2"
+              data-trust-fact={id}
+              data-trust-tone={tone}
+            >
               <dt className="text-xs font-medium text-muted-foreground">{factLabel}</dt>
               <dd className="mt-1 min-w-0">
                 {/*
@@ -96,11 +118,13 @@ export function OperationalTrustSummary({
                   `break-words` stays as the last resort for a genuinely unbreakable token.
                 */}
                 <div className="flex min-w-0 flex-wrap items-start gap-x-2 gap-y-1">
-                  <span
-                    className={cn("inline-flex shrink-0 rounded-full border px-2 py-0.5 text-xs font-medium", toneClasses[tone])}
-                  >
-                    {toneLabels[tone]}
-                  </span>
+                  {showVerdict ? (
+                    <span
+                      className={cn("inline-flex shrink-0 rounded-full border px-2 py-0.5 text-xs font-medium", toneClasses[tone])}
+                    >
+                      {toneLabels[tone]}
+                    </span>
+                  ) : null}
                   <span className="min-w-0 grow basis-28 break-words text-sm font-semibold leading-5 text-foreground">{fact.value}</span>
                 </div>
                 {fact.detail ? (
@@ -138,11 +162,18 @@ export function OperationalTrustSummary({
               financially material, so a long one wraps onto another line; it never truncates. */}
           <span className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-5 gap-y-0.5">
             {facts.map(({ id, label: factLabel, fact }) => (
-              <span key={id} className="inline-flex min-w-0 max-w-full items-baseline gap-x-1.5 text-xs leading-5">
+              <span
+                key={id}
+                className="inline-flex min-w-0 max-w-full items-baseline gap-x-1.5 text-xs leading-5"
+                data-trust-fact={id}
+                data-trust-tone={fact.tone ?? "unknown"}
+              >
                 <span className="shrink-0 text-muted-foreground">{factLabel}</span>
-                <span className={cn("inline-flex shrink-0 rounded-full border px-1.5 text-[11px]", toneClasses[fact.tone ?? "unknown"])}>
-                  {toneLabels[fact.tone ?? "unknown"]}
-                </span>
+                {showsVerdict(id, fact.tone ?? "unknown") ? (
+                  <span className={cn("inline-flex shrink-0 rounded-full border px-1.5 text-[11px]", toneClasses[fact.tone ?? "unknown"])}>
+                    {toneLabels[fact.tone ?? "unknown"]}
+                  </span>
+                ) : null}
                 <span className="min-w-0 break-words font-medium text-foreground">{fact.value}</span>
               </span>
             ))}

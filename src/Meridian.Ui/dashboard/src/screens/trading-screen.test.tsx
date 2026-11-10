@@ -820,9 +820,12 @@ describe("TradingScreen", () => {
   it("renders VM-owned disabled reasons for blocked trading commands", async () => {
     await renderTradingScreen({ ...data, openOrders: [] }, "/trading/orders");
 
-    const cancelAll = screen.getByRole("button", { name: "No open orders to cancel" });
+    // Cancel all lives behind "More order actions"; its disabled reason is shown in the menu itself.
+    expect(screen.queryByRole("button", { name: /cancel all/i })).not.toBeInTheDocument();
+    await userEvent.setup().click(screen.getByRole("button", { name: "More order actions" }));
+    const cancelAll = screen.getByRole("menuitem", { name: /cancel all open orders/i });
     expect(cancelAll).toBeDisabled();
-    expect(cancelAll).toHaveAttribute("title", "No open orders require cancellation.");
+    expect(cancelAll).toHaveTextContent("No open orders require cancellation.");
   });
 
   it("rejects direct order-ticket submits until the preview is acknowledged", async () => {
@@ -1059,7 +1062,13 @@ describe("TradingScreen", () => {
     await renderTradingScreen(data, "/trading/orders");
 
     expect(screen.getByRole("button", { name: /cancel order po-1/i })).toHaveClass("text-danger");
-    expect(screen.getByRole("button", { name: /cancel all .* open orders/i })).toHaveClass("text-danger");
+    await userEvent.setup().click(screen.getByRole("button", { name: "More order actions" }));
+    const cancelAll = screen.getByRole("menuitem", { name: /cancel all open orders/i });
+    expect(cancelAll).toHaveClass("text-danger");
+    await userEvent.setup().click(cancelAll);
+    // Choosing it opens the same confirmation step; nothing is cancelled yet.
+    expect(api.cancelAllOrders).not.toHaveBeenCalled();
+    expect(await screen.findByRole("button", { name: /confirm cancel all open orders/i })).toBeDisabled();
     expect(screen.getByLabelText("Trading data confidence")).toHaveTextContent(/\d+ positions?/);
     expect(screen.getByLabelText("Trading data confidence")).toHaveTextContent("Latest brokerage heartbeat");
   });
