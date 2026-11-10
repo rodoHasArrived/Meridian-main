@@ -334,4 +334,35 @@ public sealed class WorkspaceServicePersistenceTests : IDisposable
             "a reload must not apply a file read from before a change that has since been made");
         (await File.ReadAllTextAsync(_settingsFilePath)).Should().Contain("Created during reload");
     }
+
+    [Fact]
+    public async Task Reload_DoesNotRollBackAChangeThatIsQueuedButNotYetWritten()
+    {
+        var service = CreateService();
+        var write = new HeldWrite();
+        service.PersistWriterForTests = write.WriteAsync;
+
+        // One write is in flight and holds the persistence gate.
+        var first = service.CreateWorkspaceAsync("Written first", "test", default);
+        await write.Started.WaitAsync(Patience);
+
+        // A reload queues behind it, and then a second change queues behind the reload. That
+        // change is applied in memory and counted, but is not on disk when the reload reads.
+        var reload = service.LoadWorkspacesAsync();
+        await Task.Delay(100);
+        var second = service.CreateWorkspaceAsync("Queued behind the reload", "test", default);
+        var deadline = DateTime.UtcNow + Patience;
+        while (!service.Workspaces.Any(workspace => workspace.Name == "Queued behind the reload"))
+        {
+            DateTime.UtcNow.Should().BeBefore(deadline);
+            await Task.Delay(10);
+        }
+
+        write.Release();
+        await Task.WhenAll(first, reload, second).WaitAsync(Patience);
+
+        service.Workspaces.Select(workspace => workspace.Name).Should()
+            .Contain(["Written first", "Queued behind the reload"],
+                "a reload must treat a queued, unwritten change as newer than the file");
+    }
 }

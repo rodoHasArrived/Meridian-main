@@ -45,13 +45,18 @@ public sealed class WorkspaceService
     private string? _pendingSaveJson;
     // State tokens queued under the state gate and saved to the token store after it is released.
     private readonly System.Collections.Concurrent.ConcurrentQueue<WorkspaceStateToken> _pendingStateTokens = new();
-    // The workspace file as read before the state gate was taken, for the load to consume.
-    private string? _preloadedJson;
-    private volatile bool _hasPreload;
+    // The workspace state as read before the state gate was taken, for the load to consume. One
+    // immutable object, published and taken atomically: the preload runs under the persistence
+    // gate and the load under the state gate, so separate fields could be mixed between two
+    // overlapping reloads.
+    private PreloadedWorkspaceText? _preload;
     // Counts queued saves, i.e. changes to in-memory state. A preload records the count it
     // started from, so a load can tell whether the text it read predates a later change.
     private long _stateRevision;
-    private long _preloadRevision;
+
+    /// <param name="Json">The state text, or <see langword="null"/> when no file exists.</param>
+    /// <param name="Revision">The state revision the read started from.</param>
+    private sealed record PreloadedWorkspaceText(string? Json, long Revision);
     private IServiceScopeFactory? _serviceScopeFactory;
     private volatile bool _isInitialized;
 
@@ -116,24 +121,27 @@ public sealed class WorkspaceService
     /// that synchronous readers wait on.
     /// </summary>
     private Task PreloadIfNeededAsync(CancellationToken ct)
-        => _isInitialized || _hasPreload ? Task.CompletedTask : PreloadWorkspaceFileAsync(ct);
+        => _isInitialized || Volatile.Read(ref _preload) is not null ? Task.CompletedTask : PreloadWorkspaceFileAsync(ct);
 
     private async Task PreloadWorkspaceFileAsync(CancellationToken ct)
     {
         await _persistGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
+            // The revision is read first, so a change made at any point after this line makes
+            // the preload stale. A change queued before it but not yet written is newer than the
+            // file: holding the persistence gate means no flush is mid-write, so that change is
+            // either still queued here or already in the file.
             var revision = Volatile.Read(ref _stateRevision);
-            _preloadedJson = await ReadWorkspaceFileTextAsync(ct).ConfigureAwait(false);
-            Volatile.Write(ref _preloadRevision, revision);
-            _hasPreload = true;
+            var json = Volatile.Read(ref _pendingSaveJson)
+                ?? await ReadWorkspaceFileTextAsync(ct).ConfigureAwait(false);
+            Volatile.Write(ref _preload, new PreloadedWorkspaceText(json, revision));
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             // Leave nothing preloaded: the load falls back to reading the file itself and
             // handles the failure through its existing resilient path.
-            _preloadedJson = null;
-            _hasPreload = false;
+            Volatile.Write(ref _preload, null);
         }
         finally
         {
@@ -145,30 +153,30 @@ public sealed class WorkspaceService
     /// Returns the preloaded workspace file text (null when the file does not exist). Only when
     /// nothing was preloaded does it read the file here, under the state gate.
     /// </summary>
-    private async Task<string?> TakeWorkspaceFileTextAsync(CancellationToken ct)
+    private async Task<string?> TakeWorkspaceFileTextAsync()
     {
-        if (_hasPreload)
+        // The preload was read without the state gate. If state changed after it started,
+        // applying it would roll that change back in memory, and the next save would persist the
+        // rollback. Use it only when nothing has changed since; the revision compared is the one
+        // carried by this preload, never one published by another reload.
+        if (Interlocked.Exchange(ref _preload, null) is { } preloaded
+            && preloaded.Revision == Volatile.Read(ref _stateRevision))
         {
-            var preloaded = _preloadedJson;
-            _preloadedJson = null;
-            _hasPreload = false;
-            // The preload was read without the state gate. If state changed while it was being
-            // read, applying it would roll that change back in memory, and the next save would
-            // persist the rollback. Use it only when nothing has changed since it started.
-            if (Volatile.Read(ref _preloadRevision) == Volatile.Read(ref _stateRevision))
-            {
-                return preloaded;
-            }
+            return preloaded.Json;
         }
 
         // Nothing usable was preloaded. Read behind the persistence gate so no write is in
         // flight: a change that is queued but not yet written is the newest state, and
         // otherwise the file is. This is the one path that waits on storage under the state gate.
-        await _persistGate.WaitAsync(ct).ConfigureAwait(false);
+        //
+        // Not cancellable: the load treats every failure as "start from defaults" and then
+        // marks the service initialised, so a cancelled read here would leave it initialised
+        // with empty state, and the next save would overwrite the workspace file with that.
+        await _persistGate.WaitAsync(CancellationToken.None).ConfigureAwait(false);
         try
         {
             return Volatile.Read(ref _pendingSaveJson)
-                ?? await ReadWorkspaceFileTextAsync(ct).ConfigureAwait(false);
+                ?? await ReadWorkspaceFileTextAsync(CancellationToken.None).ConfigureAwait(false);
         }
         finally
         {
@@ -379,7 +387,7 @@ public sealed class WorkspaceService
     {
         try
         {
-            var json = await TakeWorkspaceFileTextAsync(ct).ConfigureAwait(false);
+            var json = await TakeWorkspaceFileTextAsync().ConfigureAwait(false);
             if (json is not null)
             {
                 var data = JsonSerializer.Deserialize<WorkspaceData>(json, UiServices.DesktopJsonOptions.Compact);
@@ -1307,8 +1315,11 @@ public sealed class WorkspaceService
         => WithStateLock(() =>
         {
             _isInitialized = false;
-            _preloadedJson = null;
-            _hasPreload = false;
+            Volatile.Write(ref _preload, null);
+            Volatile.Write(ref _pendingSaveJson, null);
+            while (_pendingStateTokens.TryDequeue(out _))
+            {
+            }
             _activeWorkspace = null;
             _lastSession = null;
             LastSelectedFundProfileId = null;
