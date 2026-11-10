@@ -491,13 +491,13 @@ describe("App", () => {
     renderWithRouter(<App />, { initialEntries: ["/trading"] });
 
     // The operator applies an empty scope while the default is still loading.
-    await user.click(screen.getByRole("button", { name: /(Set|Change) operating scope/ }));
+    await user.click(screen.getByRole("button", { name: /^Operating scope:/ }));
     await user.click(screen.getByRole("button", { name: "Clear scope" }));
     await user.click(screen.getByRole("button", { name: "Apply scope" }));
     await act(async () => release());
 
     expect(window.localStorage.getItem(OPERATING_CONTEXT_STORAGE_KEY) ?? "").not.toContain("MSFT");
-    expect(screen.getByText("No scope selected")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Operating scope: All funds" })).toBeInTheDocument();
     vi.mocked(getOperatorScopePreference).mockReset().mockResolvedValue({ defaultScope: null, updatedAt: null });
   });
 
@@ -576,9 +576,9 @@ describe("App", () => {
       { name: "What needs an operator decision now" },
       { timeout: 10_000 }
     )).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Daily Control Tower Workstation" })).toBeInTheDocument();
-    // The front door is no longer orphaned: its breadcrumb and the pinned sidebar entry name it Today.
-    expect(within(screen.getByRole("navigation", { name: /breadcrumb/i })).getByText("Today")).toBeInTheDocument();
+    // The front door is no longer orphaned: its breadcrumb heading and the pinned sidebar entry name it Today.
+    expect(within(screen.getByRole("navigation", { name: /breadcrumb/i })).getByRole("heading", { name: "Today" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /Workstation$/ })).not.toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: /^Today, Daily Control Tower, current route/ }).length).toBeGreaterThan(0);
     expect(screen.getByRole("region", { name: "Daily Control Tower continuity" })).toBeInTheDocument();
     const confidence = screen.getByRole("region", { name: "Daily control tower confidence" });
@@ -685,7 +685,7 @@ describe("App", () => {
     renderWithRouter(<App />, { initialEntries: ["/data/providers"] });
 
     expect(document.querySelector('[data-design-system-component="Masthead"]')).toHaveClass("mds-masthead");
-    expect(screen.getByText("Data", { selector: ".sub" })).toBeInTheDocument();
+    expect(screen.getByText("Current workspace: Data")).toHaveClass("sr-only");
     const strip = screen.getByRole("region", { name: "Workstation build, environment, provenance, and provider posture" });
     await userEvent.click(strip.querySelector("summary") as HTMLElement);
     const trustDetails = within(strip).getByRole("group", {
@@ -770,12 +770,15 @@ describe("App", () => {
     renderWithRouter(<App />, { initialEntries: ["/data/quotes?symbol=MSFT"] });
 
     expect(screen.getByRole("region", { name: "Market Data To Paper continuity" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Change operating scope" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Operating scope")).toHaveTextContent("MSFT");
+    expect(screen.getByRole("button", { name: /^Operating scope:/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^Operating scope:/ })).toHaveTextContent("MSFT");
     expect(screen.queryByText("/data/quotes?symbol=MSFT")).not.toBeInTheDocument();
+    // Workflow context lives in the scope chip's popover, not in the header row.
+    expect(screen.queryByText("Workflow context")).not.toBeInTheDocument();
     expect(screen.queryByText("Import -> Validate -> Reconcile -> Investigate -> Approve -> Report")).not.toBeInTheDocument();
     expect(screen.queryByRole("navigation", { name: "Market Data To Paper workflow steps" })).not.toBeInTheDocument();
 
+    await user.click(screen.getByRole("button", { name: /^Operating scope:/ }));
     await user.click(screen.getByText("Workflow context"));
 
     expect(screen.getByText("Current workflow")).toBeInTheDocument();
@@ -798,7 +801,7 @@ describe("App", () => {
       "href",
       "/trading/readiness?symbol=MSFT"
     );
-    expect(screen.getByRole("button", { name: "Change operating scope" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^Operating scope:/ })).toBeInTheDocument();
   });
 
   it("renders and clears the global operating scope across the workstation shell", async () => {
@@ -839,18 +842,16 @@ describe("App", () => {
       initialEntries: ["/portfolio?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"]
     });
 
-    const operatingScope = screen.getByLabelText("Operating scope");
-    expect(within(operatingScope).getByText("Subject")).toBeInTheDocument();
-    expect(within(operatingScope).getByText("MSFT")).toBeInTheDocument();
-    expect(within(operatingScope).getByText("Account")).toBeInTheDocument();
-    expect(within(operatingScope).getByText("fund-1")).toBeInTheDocument();
-    expect(within(operatingScope).getByText("Run")).toBeInTheDocument();
-    expect(within(operatingScope).getByText("Selected run")).toBeInTheDocument();
+    const operatingScope = screen.getByRole("button", { name: /^Operating scope:/ });
+    expect(operatingScope).toHaveAccessibleName(
+      "Operating scope: MSFT · fund-1 · Selected run · Alpaca · 2026-05-01 to 2026-05-15"
+    );
+    expect(within(operatingScope).getByText("MSFT")).toHaveAttribute("title", expect.stringMatching(/^Subject: /));
+    expect(within(operatingScope).getByText("fund-1")).toHaveAttribute("title", expect.stringMatching(/^Account: /));
+    expect(within(operatingScope).getByText("Selected run")).toHaveAttribute("title", expect.stringMatching(/^Run: /));
     expect(within(operatingScope).queryByText("run-9")).not.toBeInTheDocument();
-    expect(within(operatingScope).getByText("Provider")).toBeInTheDocument();
-    expect(within(operatingScope).getByText("Alpaca")).toBeInTheDocument();
-    expect(within(operatingScope).getByText("Window")).toBeInTheDocument();
-    expect(within(operatingScope).getByText("2026-05-01 to 2026-05-15")).toBeInTheDocument();
+    expect(within(operatingScope).getByText("Alpaca")).toHaveAttribute("title", expect.stringMatching(/^Provider: /));
+    expect(within(operatingScope).getByText("2026-05-01 to 2026-05-15")).toHaveAttribute("title", expect.stringMatching(/^Window: /));
     expect(window.localStorage.getItem("meridian.workstation.operatingContext.v1")).toContain("\"fundAccountId\":\"fund-1\"");
 
     await user.keyboard("{Control>}k{/Control}");
@@ -861,13 +862,13 @@ describe("App", () => {
     );
 
     await user.keyboard("{Escape}");
-    await user.click(screen.getByRole("button", { name: "Change operating scope" }));
+    await user.click(screen.getByRole("button", { name: /^Operating scope:/ }));
     await user.click(screen.getByRole("button", { name: "Clear scope" }));
     expect(window.localStorage.getItem("meridian.workstation.operatingContext.v1")).toContain("fund-1");
     await user.click(screen.getByRole("button", { name: "Apply scope" }));
 
     expect(window.localStorage.getItem("meridian.workstation.operatingContext.v1")).toBeNull();
-    expect(screen.queryByLabelText("Operating scope")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Operating scope: All funds" })).toBeInTheDocument();
   });
 
   it("removes a cleared scope dimension from the URL and storage without restoring it from the old route", async () => {
@@ -896,7 +897,7 @@ describe("App", () => {
     expect(JSON.parse(window.localStorage.getItem(storageKey) ?? "{}")).toMatchObject({
       symbol: "MSFT", fundAccountId: "fund-1", provider: "Alpaca"
     });
-    await user.click(screen.getByRole("button", { name: "Change operating scope" }));
+    await user.click(screen.getByRole("button", { name: /^Operating scope:/ }));
     await user.clear(screen.getByLabelText("Fund account"));
     await user.click(screen.getByRole("button", { name: "Apply scope" }));
 
@@ -910,7 +911,7 @@ describe("App", () => {
       expect(stored).toMatchObject({ symbol: "MSFT", provider: "Alpaca" });
       expect(stored).not.toHaveProperty("fundAccountId");
     });
-    expect(screen.getByLabelText("Operating scope")).not.toHaveTextContent("fund-1");
+    expect(screen.getByRole("button", { name: /^Operating scope:/ })).not.toHaveTextContent("fund-1");
   });
 
   it("surfaces ranked operator focus and evidence while preserving command palette actions", async () => {
@@ -1060,7 +1061,7 @@ describe("App", () => {
 
     renderWithRouter(<App />, { initialEntries: ["/portfolio"] });
 
-    expect(screen.getByLabelText("Operating scope")).toHaveTextContent("MSFT");
+    expect(screen.getByRole("button", { name: /^Operating scope:/ })).toHaveTextContent("MSFT");
     await user.keyboard("{Control>}k{/Control}");
 
     expect(screen.getAllByText("Subject: MSFT").length).toBeGreaterThan(0);
@@ -1074,11 +1075,11 @@ describe("App", () => {
     );
 
     await user.keyboard("{Escape}");
-    await user.click(screen.getByRole("button", { name: "Change operating scope" }));
+    await user.click(screen.getByRole("button", { name: /^Operating scope:/ }));
     await user.click(screen.getByRole("button", { name: "Clear scope" }));
     await user.click(screen.getByRole("button", { name: "Apply scope" }));
 
-    expect(screen.getByText("No scope selected")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Operating scope: All funds" })).toBeInTheDocument();
     expect(window.localStorage.getItem("meridian.workstation.operatingContext.v1")).toBeNull();
   });
 
@@ -1217,6 +1218,7 @@ describe("App", () => {
     await waitFor(() => expect(document.getElementById("alpaca-provider-setup")).not.toBeNull(), { timeout: 15000 });
     const alpacaSetup = document.getElementById("alpaca-provider-setup");
     await waitFor(() => expect(alpacaSetup).toHaveFocus(), { timeout: 5000 });
+    await user.click(screen.getByRole("button", { name: /^Operating scope:/ }));
     await user.click(screen.getByText("Workflow context"));
     expect(screen.getByRole("link", { name: /Provider setup, current workflow step/ })).toHaveAttribute(
       "aria-current",

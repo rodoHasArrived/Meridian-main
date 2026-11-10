@@ -40,7 +40,7 @@ export function MarginControlCenterScreen() {
         <div>
           <div className="flex items-center gap-2">
             <ShieldAlert className="h-4 w-4 text-primary" aria-hidden="true" />
-            <h1 className="text-base font-semibold text-foreground">Margin Control Center</h1>
+            <h2 className="text-base font-semibold text-foreground">Margin Control Center</h2>
           </div>
           <p className="mt-1 max-w-3xl text-xs leading-5 text-muted-foreground">
             Compare broker-reported margin to Meridian shadow estimates across accounts and primes. Provider figures
