@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using FluentAssertions;
 using Meridian.Core.Config;
@@ -12,7 +14,12 @@ internal static class AlpacaPaperSandbox
 {
     public const string OptInVariable = "MERIDIAN_RUN_ALPACA_PAPER_SANDBOX";
     public const string OrdersOptInVariable = "MERIDIAN_RUN_ALPACA_PAPER_SANDBOX_ORDERS";
+    public const string MarketDataOptInVariable = "MERIDIAN_RUN_ALPACA_MARKET_DATA";
     public const string PaperHost = "paper-api.alpaca.markets";
+    public const string MarketDataHost = "data.alpaca.markets";
+
+    /// <summary>Largest order quantity the transport lets an order run submit or amend to.</summary>
+    public const decimal MaxOrderQuantity = 2m;
 
     public static bool IsOptedIn(string variable) =>
         string.Equals(Environment.GetEnvironmentVariable(variable), "1", StringComparison.Ordinal);
@@ -42,8 +49,16 @@ internal enum AlpacaPaperSandboxAccess
     ReadOnly,
 
     /// <summary>
-    /// Additionally submit, replace and cancel individual orders. Bulk cancellation, position
-    /// liquidation, account configuration and every other mutation stay refused.
+    /// <see cref="ReadOnly"/> plus GET requests for stock and option market data on the
+    /// market-data host. Nothing on that host is a mutation.
+    /// </summary>
+    ReadOnlyWithMarketData,
+
+    /// <summary>
+    /// Additionally submit, replace and cancel individual orders of at most
+    /// <see cref="AlpacaPaperSandbox.MaxOrderQuantity"/> shares sized by quantity. Bulk
+    /// cancellation, position liquidation, dollar-sized orders, account configuration and every
+    /// other mutation stay refused.
     /// </summary>
     IndividualOrders,
 }
@@ -51,7 +66,8 @@ internal enum AlpacaPaperSandboxAccess
 /// <summary>
 /// <see cref="IHttpClientFactory"/> whose clients refuse, before any credential leaves the
 /// process, every request that is not an allowed method on an allowed path of the paper Trading
-/// API over HTTPS, and that never follows a redirect.
+/// API (or, when the run asks for it, a read of the market-data host) over HTTPS, and that never
+/// follows a redirect.
 /// </summary>
 internal sealed partial class AlpacaPaperSandboxHttpClientFactory(AlpacaPaperSandboxAccess access)
     : IHttpClientFactory, IDisposable
@@ -80,12 +96,17 @@ internal sealed partial class AlpacaPaperSandboxHttpClientFactory(AlpacaPaperSan
     public void Dispose() => _handler.Dispose();
 
     [GeneratedRegex(
-        @"^/v2/(account|account/activities(/[A-Z_]+)?|positions|orders|orders:by_client_order_id|orders/[0-9a-f-]{36}|assets|assets/[A-Za-z0-9./]+|options/contracts|corporate_actions/announcements)$",
+        @"^/v2/(account|account/activities(/[A-Z_]+)?|positions|orders|orders:by_client_order_id|orders/[0-9a-f-]{36}|assets|assets/[A-Za-z0-9./]+|options/contracts|corporate_actions/announcements)\z",
         RegexOptions.CultureInvariant)]
     private static partial Regex ReadablePath();
 
-    [GeneratedRegex(@"^/v2/orders/[0-9a-f-]{36}$", RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"^/v2/orders/[0-9a-f-]{36}\z", RegexOptions.CultureInvariant)]
     private static partial Regex SingleOrderPath();
+
+    [GeneratedRegex(
+        @"^/(v2/stocks/(bars|trades|quotes|auctions)|v2/stocks/[A-Za-z0-9.]+/(bars|trades|quotes|auctions|trades/latest)|v1beta1/options/snapshots(/[A-Za-z0-9.]+)?)\z",
+        RegexOptions.CultureInvariant)]
+    private static partial Regex MarketDataPath();
 
     private sealed class GuardHandler(AlpacaPaperSandboxAccess access)
         : DelegatingHandler(new HttpClientHandler { AllowAutoRedirect = false })
@@ -106,19 +127,25 @@ internal sealed partial class AlpacaPaperSandboxHttpClientFactory(AlpacaPaperSan
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             var uri = request.RequestUri;
-            if (uri is null || uri.Scheme != Uri.UriSchemeHttps || uri.Port != 443
-                || !string.Equals(uri.Host, AlpacaPaperSandbox.PaperHost, StringComparison.OrdinalIgnoreCase))
-                throw new InvalidOperationException("Sandbox certification reaches only the paper Trading API over HTTPS.");
+            var isPaperHost = uri is not null && string.Equals(uri.Host, AlpacaPaperSandbox.PaperHost, StringComparison.OrdinalIgnoreCase);
+            var isMarketDataHost = uri is not null && access == AlpacaPaperSandboxAccess.ReadOnlyWithMarketData
+                && string.Equals(uri.Host, AlpacaPaperSandbox.MarketDataHost, StringComparison.OrdinalIgnoreCase);
+            if (uri is null || uri.Scheme != Uri.UriSchemeHttps || uri.Port != 443 || !(isPaperHost || isMarketDataHost))
+                throw new InvalidOperationException("Sandbox certification reaches only the hosts this run declared, over HTTPS.");
 
             var path = uri.AbsolutePath;
-            var isRead = request.Method == HttpMethod.Get && ReadablePath().IsMatch(path);
+            var isRead = request.Method == HttpMethod.Get
+                && (isPaperHost ? ReadablePath().IsMatch(path) : MarketDataPath().IsMatch(path));
             // DELETE /v2/orders (cancel everything) and DELETE /v2/positions (liquidate) never match.
-            var isOrderMutation = access == AlpacaPaperSandboxAccess.IndividualOrders
+            var isOrderMutation = isPaperHost && access == AlpacaPaperSandboxAccess.IndividualOrders
                 && (request.Method == HttpMethod.Post && path == "/v2/orders"
                     || (request.Method == HttpMethod.Patch || request.Method == HttpMethod.Delete) && SingleOrderPath().IsMatch(path));
             if (!isRead && !isOrderMutation)
                 throw new InvalidOperationException(
-                    $"Sandbox certification refuses {request.Method} {path}; it is outside this run's allowed paper Trading API surface.");
+                    $"Sandbox certification refuses {request.Method} {path}; it is outside this run's allowed surface.");
+
+            if (isOrderMutation && request.Method != HttpMethod.Delete)
+                await RefuseOversizedOrderAsync(request, cancellationToken).ConfigureAwait(false);
 
             Interlocked.Increment(ref _requestCount);
             if (isOrderMutation)
@@ -135,6 +162,31 @@ internal sealed partial class AlpacaPaperSandboxHttpClientFactory(AlpacaPaperSan
             }
 
             return response;
+        }
+
+        /// <summary>
+        /// Bounds what an order submission or amendment may ask for, whatever built the request:
+        /// a quantity no larger than the sandbox ceiling, and never a dollar-sized order.
+        /// </summary>
+        private static async Task RefuseOversizedOrderAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            var body = request.Content is null
+                ? string.Empty
+                : await request.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            using var document = JsonDocument.Parse(string.IsNullOrWhiteSpace(body) ? "{}" : body);
+            var root = document.RootElement;
+            var hasQuantity = root.TryGetProperty("qty", out var quantity) && quantity.ValueKind != JsonValueKind.Null;
+            var sizedInDollars = root.TryGetProperty("notional", out var notional) && notional.ValueKind != JsonValueKind.Null;
+            var quantityText = hasQuantity
+                ? quantity.ValueKind == JsonValueKind.String ? quantity.GetString() : quantity.GetRawText()
+                : null;
+            var withinCeiling = !hasQuantity
+                || decimal.TryParse(quantityText, NumberStyles.Number, CultureInfo.InvariantCulture, out var parsed)
+                    && parsed > 0m && parsed <= AlpacaPaperSandbox.MaxOrderQuantity;
+            // A submission must state a quantity; an amendment may leave it unchanged.
+            if (sizedInDollars || !withinCeiling || request.Method == HttpMethod.Post && !hasQuantity)
+                throw new InvalidOperationException(
+                    "Sandbox certification refuses an order that is dollar-sized or larger than its share ceiling.");
         }
     }
 }

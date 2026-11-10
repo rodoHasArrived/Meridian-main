@@ -126,6 +126,7 @@ public sealed class AlpacaPaperSandboxOrderLifecycleTests(ITestOutputHelper outp
         var sync = CreateSync(gateway, oms);
         var clientOrderId = NewClientOrderId();
         var ownedBrokerOrderIds = new HashSet<string>(StringComparer.Ordinal);
+        var cleanupProblems = new List<string>();
         try
         {
             var request = RestingBuy(clientOrderId, localAccountId);
@@ -161,8 +162,8 @@ public sealed class AlpacaPaperSandboxOrderLifecycleTests(ITestOutputHelper outp
             var brokerDuplicate = () => gateway.SubmitOrderAsync(request, ct);
             await brokerDuplicate.Should().ThrowAsync<HttpRequestException>(
                 "the broker refuses a reused client id, which the gateway reports as an unresolved dispatch to recover");
-            (await OpenOrdersOnceSettledAsync(gateway, order => order.ClientOrderId == clientOrderId, expected: 1, ct))
-                .Should().ContainSingle("the refused duplicate left exactly the original order working");
+            (await OpenOrderCountOnceSettledAsync(gateway, order => order.ClientOrderId == clientOrderId, expected: 1, ct))
+                .Should().Be(1, "the refused duplicate left exactly the original order working");
 
             var ready = await SynchronizeUntilSettledAsync(sync, localAccountId, externalAccountId, ct);
             AssertReadyUnlessBlockedByForeignOrders(ready, [clientOrderId], ownedBrokerOrderIds,
@@ -196,8 +197,8 @@ public sealed class AlpacaPaperSandboxOrderLifecycleTests(ITestOutputHelper outp
                 retained!.Quantity.Should().Be(1m);
                 retained.LimitPrice.Should().Be(RestingLimit);
             }
-            (await OpenOrdersOnceSettledAsync(gateway, order => ownedBrokerOrderIds.Contains(order.OrderId), expected: 1, ct))
-                .Should().ContainSingle("an amendment never leaves both the predecessor and the successor working");
+            (await OpenOrderCountOnceSettledAsync(gateway, order => ownedBrokerOrderIds.Contains(order.OrderId), expected: 1, ct))
+                .Should().Be(1, "an amendment never leaves both the predecessor and the successor working");
             output.WriteLine("Amendment {0}; broker holds quantity {1} at {2}.",
                 amended.Success ? "replaced the order" : "was refused by the venue (no session routing the order)",
                 afterAmendment.OrderQuantity, afterAmendment.OrderLimitPrice);
@@ -210,16 +211,18 @@ public sealed class AlpacaPaperSandboxOrderLifecycleTests(ITestOutputHelper outp
             terminal!.OrderStatus.Should().Be(OrderStatus.Cancelled);
             terminal.FilledQuantity.Should().Be(0m);
             oms.GetOrder(clientOrderId)!.Status.Should().Be(OrderStatus.Cancelled);
-            (await OpenOrdersOnceSettledAsync(gateway, order => ownedBrokerOrderIds.Contains(order.OrderId), expected: 0, ct))
-                .Should().BeEmpty("a cancelled order leaves the broker's open book");
+            (await OpenOrderCountOnceSettledAsync(gateway, order => ownedBrokerOrderIds.Contains(order.OrderId), expected: 0, ct))
+                .Should().Be(0, "a cancelled order leaves the broker's open book");
 
             output.WriteLine("Resting order lifecycle verified: {0} submission(s), {1} order mutation(s), {2} request(s).",
                 clients.SubmissionCount, clients.MutationCount, clients.RequestCount);
         }
         finally
         {
-            await CancelOwnedOrdersAsync(gateway, clientOrderId, ownedBrokerOrderIds);
+            cleanupProblems.AddRange(await CancelOwnedOrdersAsync(gateway, clientOrderId, ownedBrokerOrderIds));
         }
+
+        cleanupProblems.Should().BeEmpty("the run must leave the paper account as it found it");
     }
 
     [AlpacaPaperSandboxOrdersFact]
@@ -240,6 +243,7 @@ public sealed class AlpacaPaperSandboxOrderLifecycleTests(ITestOutputHelper outp
             orderManagerAccessor: () => oms, livePortfolioAccessor: () => sync);
         var clientOrderId = NewClientOrderId();
         var ownedBrokerOrderIds = new HashSet<string>(StringComparer.Ordinal);
+        var cleanupProblems = new List<string>();
         try
         {
             var request = RestingBuy(clientOrderId, localAccountId);
@@ -272,8 +276,8 @@ public sealed class AlpacaPaperSandboxOrderLifecycleTests(ITestOutputHelper outp
             retained.Quantity.Should().Be(1m);
             retained.FilledQuantity.Should().Be(0m);
             clients.SubmissionCount.Should().Be(1, "recovery looks the order up; it never submits again");
-            (await OpenOrdersOnceSettledAsync(gateway, order => order.ClientOrderId == clientOrderId, expected: 1, ct))
-                .Should().ContainSingle("recovery found the one order the broker holds");
+            (await OpenOrderCountOnceSettledAsync(gateway, order => order.ClientOrderId == clientOrderId, expected: 1, ct))
+                .Should().Be(1, "recovery found the one order the broker holds");
             AssertReadyUnlessBlockedByForeignOrders(recovered, [clientOrderId], ownedBrokerOrderIds,
                 "the recovered order reconciles with the broker's open book");
 
@@ -281,16 +285,18 @@ public sealed class AlpacaPaperSandboxOrderLifecycleTests(ITestOutputHelper outp
             var cancelled = await oms.CancelOrderAsync(clientOrderId, ct);
             cancelled.Success.Should().BeTrue("the recovered order must be cancellable; error: {0}", cancelled.ErrorMessage);
             oms.GetOrder(clientOrderId)!.Status.Should().Be(OrderStatus.Cancelled);
-            (await OpenOrdersOnceSettledAsync(gateway, order => order.ClientOrderId == clientOrderId, expected: 0, ct))
-                .Should().BeEmpty("a cancelled order leaves the broker's open book");
+            (await OpenOrderCountOnceSettledAsync(gateway, order => order.ClientOrderId == clientOrderId, expected: 0, ct))
+                .Should().Be(0, "a cancelled order leaves the broker's open book");
 
             output.WriteLine("Lost acknowledgement recovered with {0} submission(s); ready after recovery={1}; requests={2}.",
                 clients.SubmissionCount, recovered.IsReady, clients.RequestCount);
         }
         finally
         {
-            await CancelOwnedOrdersAsync(gateway, clientOrderId, ownedBrokerOrderIds);
+            cleanupProblems.AddRange(await CancelOwnedOrdersAsync(gateway, clientOrderId, ownedBrokerOrderIds));
         }
+
+        cleanupProblems.Should().BeEmpty("the run must leave the paper account as it found it");
     }
 
     [AlpacaPaperSandboxOrdersFact]
@@ -307,8 +313,8 @@ public sealed class AlpacaPaperSandboxOrderLifecycleTests(ITestOutputHelper outp
         var buyClientOrderId = NewClientOrderId();
         var sellClientOrderId = NewClientOrderId();
         var ownedBrokerOrderIds = new HashSet<string>(StringComparer.Ordinal);
+        var cleanupProblems = new List<string>();
         var startedAt = DateTimeOffset.UtcNow.AddMinutes(-1);
-        decimal boughtQuantity = 0m, soldQuantity = 0m;
         await using var gateway = CreateGateway(clients, key, secret);
         try
         {
@@ -342,8 +348,7 @@ public sealed class AlpacaPaperSandboxOrderLifecycleTests(ITestOutputHelper outp
                 (filled?.OrderStatus is OrderStatus.Filled).Should().BeTrue(
                     "the paper venue fills marketable orders only while an equity session (overnight, pre-market, regular or after-hours) is open; " +
                     "re-run during a session. Last observed status: {0}", filled?.OrderStatus);
-                boughtQuantity = filled!.FilledQuantity;
-                boughtQuantity.Should().Be(1m);
+                filled!.FilledQuantity.Should().Be(1m);
                 (filled.FillPrice > 0m).Should().BeTrue("a fill carries its execution price");
                 fillPrice = filled.FillPrice!.Value;
                 buyBrokerOrderId = filled.GatewayOrderId!;
@@ -355,7 +360,7 @@ public sealed class AlpacaPaperSandboxOrderLifecycleTests(ITestOutputHelper outp
                         .Where(report => report.Source == "rest-fill-activity" && report.Report.GatewayOrderId == buyBrokerOrderId)
                         .Select(report => report.Report).ToArray(),
                     reports => reports.Length > 0, TimeSpan.FromSeconds(30), ct);
-                exactFill.Should().ContainSingle("a one-share order fills in one execution");
+                exactFill.Length.Should().Be(1, "a one-share order fills in one execution");
                 exactFill[0].ReportType.Should().Be(ExecutionReportType.Fill);
                 exactFill[0].ClientOrderId.Should().Be(buyClientOrderId);
                 exactFill[0].FilledQuantity.Should().Be(1m);
@@ -384,16 +389,16 @@ public sealed class AlpacaPaperSandboxOrderLifecycleTests(ITestOutputHelper outp
 
                 var activity = await gateway.GetActivitySnapshotAsync(externalAccountId, startedAt, ct);
                 var fillActivity = activity.Fills.Where(fill => fill.OrderId == buyBrokerOrderId).ToArray();
-                fillActivity.Should().ContainSingle();
+                fillActivity.Length.Should().Be(1, "the activity snapshot carries the order's one fill");
                 fillActivity[0].Symbol.Should().Be(Symbol);
                 fillActivity[0].Side.Should().Be(OrderSide.Buy);
                 fillActivity[0].Quantity.Should().Be(1m);
                 fillActivity[0].Price.Should().Be(fillPrice);
-                activity.Activities.Should().Contain(candidate =>
+                activity.Activities.Count(candidate =>
                     candidate.OrderId == buyBrokerOrderId
                     && candidate.Subtype == BrokerageActivitySubtype.TradeFill
                     && candidate.Currency == "USD"
-                    && candidate.Quantity == 1m);
+                    && candidate.Quantity == 1m).Should().Be(1, "the canonical activity stream carries the same fill in USD");
             }
 
             // Restart: a new gateway connection and order manager over the same retained journal.
@@ -436,7 +441,7 @@ public sealed class AlpacaPaperSandboxOrderLifecycleTests(ITestOutputHelper outp
             if (closed?.GatewayOrderId is { Length: > 0 } closingBrokerOrderId)
                 ownedBrokerOrderIds.Add(closingBrokerOrderId);
             (closed?.OrderStatus is OrderStatus.Filled).Should().BeTrue("the closing order must fill; last observed status: {0}", closed?.OrderStatus);
-            soldQuantity = closed!.FilledQuantity;
+            closed!.FilledQuantity.Should().Be(1m);
             var flattened = await PollAsync(
                 async () => PositionQuantity(await restartedGateway.GetPositionsAsync(ct)),
                 quantity => quantity == baselineQuantity, TimeSpan.FromSeconds(20), ct);
@@ -447,12 +452,14 @@ public sealed class AlpacaPaperSandboxOrderLifecycleTests(ITestOutputHelper outp
         }
         finally
         {
-            await CancelOwnedOrdersAsync(gateway, buyClientOrderId, ownedBrokerOrderIds);
-            await CancelOwnedOrdersAsync(gateway, sellClientOrderId, ownedBrokerOrderIds);
-            await FlattenRemainderAsync(gateway, boughtQuantity - soldQuantity, localAccountId);
+            cleanupProblems.AddRange(await CancelOwnedOrdersAsync(gateway, buyClientOrderId, ownedBrokerOrderIds));
+            cleanupProblems.AddRange(await CancelOwnedOrdersAsync(gateway, sellClientOrderId, ownedBrokerOrderIds));
+            cleanupProblems.AddRange(await FlattenOwnFillsAsync(gateway, buyClientOrderId, sellClientOrderId, localAccountId));
             if (Directory.Exists(recoveryRoot))
                 Directory.Delete(recoveryRoot, recursive: true);
         }
+
+        cleanupProblems.Should().BeEmpty("the run must leave the paper account as it found it");
     }
 
     private static AlpacaBrokerageGateway CreateGateway(IHttpClientFactory clients, string key, string secret) =>
@@ -562,15 +569,16 @@ public sealed class AlpacaPaperSandboxOrderLifecycleTests(ITestOutputHelper outp
     }
 
     /// <summary>
-    /// Reads this run's orders from the broker's open-order list once it shows the expected
+    /// Counts this run's orders in the broker's open-order list once it shows the expected
     /// number. The list is eventually consistent with single-order reads: a just-cancelled order
     /// can still be listed as working for a moment after its own record reports it cancelled.
+    /// Only the count is returned so a failed assertion cannot print broker order records.
     /// </summary>
-    private static Task<BrokerOrder[]> OpenOrdersOnceSettledAsync(
+    private static Task<int> OpenOrderCountOnceSettledAsync(
         AlpacaBrokerageGateway gateway, Func<BrokerOrder, bool> owned, int expected, CancellationToken ct) =>
         PollAsync(
-            async () => (await gateway.GetOpenOrdersAsync(ct)).Where(owned).ToArray(),
-            orders => orders.Length == expected, TimeSpan.FromSeconds(20), ct);
+            async () => (await gateway.GetOpenOrdersAsync(ct)).Count(owned),
+            count => count == expected, TimeSpan.FromSeconds(20), ct);
 
     private static async Task<BrokerOrder> WaitForBrokerOrderAsync(
         AlpacaBrokerageGateway gateway, string clientOrderId, Func<BrokerOrder, bool> ready, CancellationToken ct)
@@ -597,10 +605,13 @@ public sealed class AlpacaPaperSandboxOrderLifecycleTests(ITestOutputHelper outp
     /// <summary>
     /// Cancels only orders this run created: those carrying its client id and the broker ids it
     /// recorded (a replacement gets a broker-assigned client id). Cleanup has its own deadline so
-    /// a timed-out test still tidies up.
+    /// a timed-out test still tidies up, and it reports every order it could not prove cancelled
+    /// so a run that otherwise passed fails rather than leave a working order behind.
     /// </summary>
-    private async Task CancelOwnedOrdersAsync(AlpacaBrokerageGateway gateway, string clientOrderId, HashSet<string> ownedBrokerOrderIds)
+    private async Task<IReadOnlyList<string>> CancelOwnedOrdersAsync(
+        AlpacaBrokerageGateway gateway, string clientOrderId, HashSet<string> ownedBrokerOrderIds)
     {
+        var problems = new List<string>();
         using var cleanup = new CancellationTokenSource(TimeSpan.FromSeconds(45));
         try
         {
@@ -610,44 +621,82 @@ public sealed class AlpacaPaperSandboxOrderLifecycleTests(ITestOutputHelper outp
                 ownedBrokerOrderIds.Add(current.GatewayOrderId);
             foreach (var order in await gateway.GetOpenOrdersAsync(cleanup.Token))
             {
-                if (order.ClientOrderId == clientOrderId || ownedBrokerOrderIds.Contains(order.OrderId))
-                    await gateway.CancelOrderAsync(order.OrderId, cleanup.Token);
+                if (order.ClientOrderId != clientOrderId && !ownedBrokerOrderIds.Contains(order.OrderId))
+                    continue;
+                // The gateway reports a refused or unverified cancel instead of throwing. A
+                // terminal state of any kind means nothing is left working; a fill is settled by
+                // the flatten step.
+                var report = await gateway.CancelOrderAsync(order.OrderId, cleanup.Token);
+                if (report.OrderStatus is not (OrderStatus.Cancelled or OrderStatus.Filled or OrderStatus.Expired or OrderStatus.Rejected))
+                    problems.Add($"an order of this run was still {report.OrderStatus} after its cleanup cancel");
             }
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
             // Type only: a provider exception message can carry request detail.
-            output.WriteLine("CLEANUP INCOMPLETE ({0}): check the paper account for open '{1}' orders.", ex.GetType().Name, Symbol);
+            problems.Add($"order cleanup stopped on {ex.GetType().Name}");
         }
+
+        foreach (var problem in problems)
+            output.WriteLine("CLEANUP INCOMPLETE: {0}; check the paper account for open '{1}' orders.", problem, Symbol);
+        return problems;
     }
 
-    private async Task FlattenRemainderAsync(AlpacaBrokerageGateway gateway, decimal remainder, Guid localAccountId)
+    /// <summary>
+    /// Closes whatever this run's own two orders left in the account, measured from the broker's
+    /// record of those orders rather than from what the test body got to observe: a buy that
+    /// fills after the test stopped watching is still sold, and a sell that did fill is not
+    /// sold a second time. Only this run's fills are counted, so another actor's trades in the
+    /// same symbol are left alone.
+    /// </summary>
+    private async Task<IReadOnlyList<string>> FlattenOwnFillsAsync(
+        AlpacaBrokerageGateway gateway, string buyClientOrderId, string sellClientOrderId, Guid localAccountId)
     {
-        if (remainder <= 0m)
-            return;
-        using var cleanup = new CancellationTokenSource(TimeSpan.FromSeconds(45));
+        var problems = new List<string>();
+        using var cleanup = new CancellationTokenSource(TimeSpan.FromSeconds(90));
         try
         {
             if (!gateway.IsConnected)
                 await gateway.ConnectAsync(cleanup.Token);
+            var bought = (await gateway.GetOrderForRecoveryAsync(buyClientOrderId, cleanup.Token))?.FilledQuantity ?? 0m;
+            var sold = (await gateway.GetOrderForRecoveryAsync(sellClientOrderId, cleanup.Token))?.FilledQuantity ?? 0m;
+            var remainder = bought - sold;
+            if (remainder == 0m)
+                return problems;
+
+            var closingClientOrderId = NewClientOrderId();
             await gateway.SubmitOrderAsync(new OrderRequest
             {
                 Symbol = Symbol,
-                Side = OrderSide.Sell,
+                Side = remainder > 0m ? OrderSide.Sell : OrderSide.Buy,
                 Type = OrderType.Limit,
-                Quantity = remainder,
-                LimitPrice = MarketableSellFloor,
-                ClientOrderId = NewClientOrderId(),
+                Quantity = Math.Abs(remainder),
+                LimitPrice = remainder > 0m ? MarketableSellFloor : MarketableBuyCap,
+                ClientOrderId = closingClientOrderId,
                 FundAccountId = localAccountId,
                 Metadata = SandboxOrderMetadata,
             }, cleanup.Token);
-            output.WriteLine("Cleanup submitted a closing order for the {0} share(s) this run still held.", remainder);
+            var closing = await PollAsync(
+                () => gateway.GetOrderForRecoveryAsync(closingClientOrderId, cleanup.Token),
+                report => report?.OrderStatus is OrderStatus.Filled, TimeSpan.FromSeconds(45), cleanup.Token);
+            if (closing?.OrderStatus is OrderStatus.Filled)
+            {
+                output.WriteLine("Cleanup closed the {0} share(s) this run still held.", Math.Abs(remainder));
+            }
+            else
+            {
+                problems.Add($"the cleanup order for {Math.Abs(remainder)} share(s) was {closing?.OrderStatus.ToString() ?? "not found"}, not filled");
+                problems.AddRange(await CancelOwnedOrdersAsync(gateway, closingClientOrderId, []));
+            }
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
-            output.WriteLine("CLEANUP INCOMPLETE ({0}): the paper account may still hold {1} '{2}' share(s) from this run.",
-                ex.GetType().Name, remainder, Symbol);
+            problems.Add($"position cleanup stopped on {ex.GetType().Name}");
         }
+
+        foreach (var problem in problems)
+            output.WriteLine("CLEANUP INCOMPLETE: {0}; the paper account may hold '{1}' shares from this run.", problem, Symbol);
+        return problems;
     }
 }
 
