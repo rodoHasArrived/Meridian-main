@@ -11,6 +11,8 @@ last_reviewed: 2026-10-15
 
 # src/Meridian.Infrastructure
 
+The backfill worker's connectivity handler is documented as logging only; offline-queued requests resume on the worker's next poll (at most `EmptyPollMaxDelay`).
+
 `RateLimiter` serialises its expired-timestamp cleanup, so concurrent callers cannot dequeue a fresh timestamp and undercount the window.
 
 IB historical requests ask for epoch-second bar times (`formatDate = 2`) and send UTC, culture-invariant end times; a zone-less TWS-local timestamp is refused rather than read as UTC. `IBDurableResultStore` publishes an update to memory only after the fsynced atomic file replace succeeds. `ProviderRegistry` availability probes rethrow caller cancellation.
@@ -30,7 +32,18 @@ not sent, and failures after the confirmed cancel but before the replacement POS
 (cancelled, no successor); outcomes after the cancel are always delivered. Reconnect FILL-activity reports carry the broker's `replaces` link so a
 successor's fill stays bound to its original order after a restart. While a replacement is unconfirmed, cancellation also
 cancels the candidate successor and stays pending until it is proven inactive. A candidate that executed before
-that cancellation publishes its cumulative fills through the replacement chain first. Order and
+that cancellation publishes its cumulative fills through the replacement chain first. Once a
+replacement is confirmed, Alpaca refuses to cancel the `replaced` predecessor, so cancellation follows
+the broker's `replaced_by` links to the live successor and stays pending, cancelling nothing, when a
+link cannot be verified. A multi-leg package parent is returned with an empty symbol and side: REST
+reconciliation and the trade-update client leave it unnormalized (its legs are separate orders) so it
+cannot fail the durable inbox for other orders, and recovering or amending one is refused.
+Alpaca corporate actions are read from the Market Data `v1/corporate-actions` endpoint (cash
+dividends and forward/reverse splits, paged, no currency); a refused or partly failed fetch returns
+nothing rather than a partial history. Alpaca historical quotes, trades and auctions always use the
+symbol-keyed routes, accept numeric trade ids, treat a caller's limit as a bound on the result, and
+send no feed for auctions, which exist only on SIP. Tick windows are sent as UTC instants, and an
+auction range ends on the requested date, which Alpaca treats as inclusive. Order and
 amendment recovery refuse evidence read across a connection change, rechecked before every report, and `accepted_for_bidding` is a valid provisional
 snapshot state. Durable trade-update hashes omit derived metadata
 while serialized pending reports retain it, preserving replay identities across upgrades.

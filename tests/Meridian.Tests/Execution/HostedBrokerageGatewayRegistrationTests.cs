@@ -129,7 +129,7 @@ public sealed class HostedBrokerageGatewayRegistrationTests
     }
 
     [Fact]
-    public async Task RegisterOptionalStockSharpGateway_WhenRuntimeTypeExists_RegistersKeyedGatewayAndSyncAdapters()
+    public async Task RegisterOptionalStockSharpGateway_WhenRuntimeTypeExists_RegistersKeyedGatewayWithoutPlaceholderSync()
     {
         var services = CreateServices();
 
@@ -141,18 +141,20 @@ public sealed class HostedBrokerageGatewayRegistrationTests
         var gateway = provider.GetRequiredKeyedService<IBrokerageGateway>("stocksharp");
 
         gateway.Should().BeOfType<FakeStockSharpBrokerageGateway>();
+        // The gateway has no account sync; a placeholder adapter used to advertise it and then
+        // return no accounts and throw NotSupportedException.
         provider.GetServices<IBrokerageAccountCatalog>()
             .Select(catalog => catalog.ProviderId)
             .Should()
-            .Contain("stocksharp");
+            .NotContain("stocksharp");
         provider.GetServices<IBrokeragePortfolioSync>()
             .Select(sync => sync.ProviderId)
             .Should()
-            .Contain("stocksharp");
+            .NotContain("stocksharp");
         provider.GetServices<IBrokerageActivitySync>()
             .Select(sync => sync.ProviderId)
             .Should()
-            .Contain("stocksharp");
+            .NotContain("stocksharp");
 
         var surfaces = HostedBrokerageGatewayRuntimeSurfaceCatalog.Build(provider);
         surfaces.Should().Contain(surface =>
@@ -161,10 +163,12 @@ public sealed class HostedBrokerageGatewayRegistrationTests
             surface.DeclaredGatewayId == "stocksharp" &&
             surface.GatewayType == typeof(FakeStockSharpBrokerageGateway).FullName &&
             surface.GatewayIdMatchesRuntimeKey &&
-            surface.SupportsAccountCatalog &&
-            surface.SupportsPortfolioSync &&
-            surface.SupportsActivitySync &&
-            surface.ValidationIssues.Count == 0);
+            !surface.SupportsAccountCatalog &&
+            !surface.SupportsPortfolioSync &&
+            !surface.SupportsActivitySync &&
+            surface.ValidationIssues.Contains("account-catalog-missing") &&
+            surface.ValidationIssues.Contains("portfolio-sync-missing") &&
+            surface.ValidationIssues.Contains("activity-sync-missing"));
     }
 
     [Fact]

@@ -29,8 +29,9 @@ env:
 
 jobs:
   # Keep the existing check identity, but do not start a second checkout/toolchain.
-  # The same-run producer below owns every validation purpose. No cross-run cache,
-  # privileged event, polling runner, or successful-skip shortcut is involved.
+  # The same-run producer below owns this workflow's validation purposes. No cross-run
+  # cache, privileged event or polling runner is involved. Generation and freshness run
+  # here only for events Meridian CI `verify-docs` does not receive (see the job env).
   validate-docs:
     needs: regenerate-docs
     if: always()
@@ -52,6 +53,12 @@ jobs:
   regenerate-docs:
     runs-on: ubuntu-latest
     timeout-minutes: 35
+    env:
+      # Meridian CI `verify-docs` runs the same maintained-generation pass and freshness
+      # check for pull requests to main, main pushes and merge groups. Generate here only
+      # for the events that lane does not receive, so each event is validated exactly once.
+      # The unique validators and the dashboard regression gate below run on every event.
+      MERIDIAN_CI_OWNS_GENERATION: ${{ github.event_name == 'merge_group' || github.event_name == 'push' || (github.event_name == 'pull_request' && github.base_ref == 'main') }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -84,6 +91,7 @@ jobs:
           python -m unittest build.scripts.docs.tests.test_check_codex_memory
 
       - name: Set up Node.js
+        if: env.MERIDIAN_CI_OWNS_GENERATION != 'true'
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "24"
@@ -91,12 +99,14 @@ jobs:
           cache-dependency-path: "package-lock.json"
 
       - name: Install diagram dependencies
+        if: env.MERIDIAN_CI_OWNS_GENERATION != 'true'
         run: npm ci --no-fund --no-audit
 
       # One catalog owns required producers and advisory UML rendering for this
       # workflow, scripts/ci.sh, and isolated repair. Its bounded passes account for
       # generated markdown consumed by health/structure reports.
       - name: Converge maintained documentation
+        if: env.MERIDIAN_CI_OWNS_GENERATION != 'true'
         run: python3 build/scripts/run-maintained-generation.py --docs-only --report artifacts/docs/generation.json
 
       - name: Compare dashboard readiness deltas vs previous commit
@@ -169,9 +179,11 @@ jobs:
           print(json.dumps(payload, indent=2))
 
       - name: Check generated docs are current
+        if: env.MERIDIAN_CI_OWNS_GENERATION != 'true'
         run: python3 build/scripts/ci/check-generated-output.py
 
       - name: Check whitespace
+        if: env.MERIDIAN_CI_OWNS_GENERATION != 'true'
         run: git diff --check
 
       - name: Upload documentation repair evidence
