@@ -590,6 +590,79 @@ describe("useWorkstationData", () => {
 
     expect(result.current.workspaceErrors.trading).toBe("Trading scoped failure.");
     expect(result.current.workspaceErrors.data).toBe("Data scoped failure.");
+    expect([...result.current.workspaceFiguresStale].sort()).toEqual(["data", "trading"]);
+  });
+
+  it("keeps a workspace's figures stale across an unrelated refresh until its own payload reloads", async () => {
+    const { result } = renderHook(() => useWorkstationData({ activeWorkspace: "trading" }));
+
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
+    await act(async () => {
+      await resolveRefreshBatch(0, "initial");
+      await flushAsync();
+    });
+    await waitFor(() => expect(result.current.refreshStatus.inFlight).toBe(false));
+    expect(result.current.workspaceFiguresStale).toEqual([]);
+    const dataLoadedAt = result.current.workspaceFiguresLoadedAt.data;
+
+    // `bootstrapIndex` counts every refresh; `dataIndex` only the ones that reload Data's slices.
+    const resolveDataRefresh = (bootstrapIndex: number, dataIndex: number, data: () => void) => {
+      resolveRequest<SessionInfo>("session", bootstrapIndex, {
+        activeWorkspace: "data",
+        commandCount: 2,
+        displayName: "data session",
+        environment: "paper",
+        role: "Operator"
+      });
+      resolveRequest<SystemOverviewResponse>("overview", bootstrapIndex, { marker: "data overview" } as unknown as SystemOverviewResponse);
+      data();
+      resolveRequest<ProviderConnectionRow[]>("providerConnections", dataIndex, []);
+      resolveRequest<ProviderReadinessSummary>("providerReadiness", dataIndex, buildProviderReadiness("data"));
+      resolveRequest<WorkflowLibrary>("workflowLibrary", bootstrapIndex, { marker: "data workflows" } as unknown as WorkflowLibrary);
+      resolveRequest<WorkflowPresetLibrary>("workflowPresets", bootstrapIndex, { generatedAt: "2026-01-01T00:03:00Z", presets: [] });
+    };
+
+    // The Data reload fails: its retained figures are stale.
+    let failedDataRefresh!: Promise<void>;
+    act(() => {
+      failedDataRefresh = result.current.refreshWorkspace("data");
+    });
+    await waitFor(() => expect(api.getDataWorkspace).toHaveBeenCalledTimes(2));
+    await act(async () => {
+      resolveDataRefresh(1, 1, () => rejectRequest("data", 1, new Error("Data scoped failure.")));
+      await failedDataRefresh;
+    });
+    expect(result.current.workspaceFiguresStale).toEqual(["data"]);
+
+    // A shell refresh on Trading clears the error map and reloads only Trading's payloads. Data
+    // was not reloaded, so its figures must stay stale and keep their load time.
+    let shellRefresh!: Promise<void>;
+    act(() => {
+      shellRefresh = result.current.refresh();
+    });
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(3));
+    await act(async () => {
+      await resolveRefreshBatchWithIndexes({ marker: "shell", defaultIndex: 2, tradingIndex: 1 });
+      await shellRefresh;
+    });
+    expect(api.getDataWorkspace).toHaveBeenCalledTimes(2);
+    expect(result.current.refreshStatus.phase).toBe("succeeded");
+    expect(result.current.workspaceErrors.data).toBeUndefined();
+    expect(result.current.workspaceFiguresStale).toEqual(["data"]);
+    expect(result.current.workspaceFiguresLoadedAt.data).toBe(dataLoadedAt);
+
+    // Only Data's own successful reload clears it.
+    let recoveredDataRefresh!: Promise<void>;
+    act(() => {
+      recoveredDataRefresh = result.current.refreshWorkspace("data");
+    });
+    await waitFor(() => expect(api.getDataWorkspace).toHaveBeenCalledTimes(3));
+    await act(async () => {
+      resolveDataRefresh(3, 2, () => resolveRequest<DataWorkspaceResponse>("data", 2, { marker: "recovered data" } as unknown as DataWorkspaceResponse));
+      await recoveredDataRefresh;
+    });
+    expect(result.current.workspaceFiguresStale).toEqual([]);
+    expect(result.current.data).toEqual({ marker: "recovered data" });
   });
 
   it("passes account scope into the shared workflow summary request", async () => {
@@ -1129,6 +1202,41 @@ describe("useWorkstationData", () => {
       "Portfolio refresh failed.; Brokerage portfolio refresh failed."
     );
     expect(result.current.error).toBe(result.current.workspaceErrors.portfolio);
+    expect(result.current.workspaceFiguresStale).toEqual(["portfolio"]);
+  });
+
+  it("keeps the Portfolio workspace current when only a side feed of its poll fails", async () => {
+    const { result } = renderHook(() => useWorkstationData());
+
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
+    await act(async () => {
+      await resolveRefreshBatch(0, "initial");
+      await flushAsync();
+    });
+
+    let portfolioRefresh!: Promise<void>;
+    act(() => {
+      portfolioRefresh = result.current.refreshPortfolio();
+    });
+    await waitFor(() => expect(api.getReportingWorkspace).toHaveBeenCalledTimes(2));
+    await act(async () => {
+      resolveRequest<PortfolioWorkspaceResponse>("portfolio", 1, { marker: "refreshed portfolio" } as unknown as PortfolioWorkspaceResponse);
+      resolveRequest<MultiAssetCoverageSummary>(
+        "portfolioMultiAssetCoverage",
+        1,
+        { marker: "refreshed portfolio coverage" } as unknown as MultiAssetCoverageSummary
+      );
+      // An unconnected brokerage rejects on every poll; the positions still reloaded.
+      rejectRequest("brokeragePortfolio", 1, new Error("Brokerage portfolio refresh failed."));
+      resolveRequest<ReportingWorkspaceResponse>("reporting", 1, { marker: "refreshed reporting" } as unknown as ReportingWorkspaceResponse);
+      await portfolioRefresh;
+    });
+
+    expect(result.current.portfolio).toEqual({ marker: "refreshed portfolio" });
+    expect(result.current.workspaceErrors.portfolio).toBe("Brokerage portfolio refresh failed.");
+    expect(result.current.portfolioRefreshStatus.phase).toBe("succeeded");
+    expect(result.current.portfolioRefreshStatus.lastSucceededAt).not.toBeNull();
+    expect(result.current.workspaceFiguresStale).toEqual([]);
   });
 
   it("clears the portfolio-only refresh failure after a later portfolio refresh succeeds", async () => {
@@ -1195,6 +1303,7 @@ describe("useWorkstationData", () => {
     expect(result.current.error).toBeNull();
     expect(result.current.portfolioRefreshStatus.phase).toBe("succeeded");
     expect(result.current.portfolioRefreshStatus.lastSucceededAt).not.toBeNull();
+    expect(result.current.workspaceFiguresStale).toEqual([]);
   });
 
   it("refreshes reporting live-view payloads with the portfolio refresh lane", async () => {
