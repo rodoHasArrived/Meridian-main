@@ -698,7 +698,16 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
         };
         return next;
       });
-      portfolioRefreshLifecycle.succeed(token);
+      // A rejected Portfolio feed leaves its previous payload on screen, so the refresh did not
+      // succeed: settling it as partial keeps `lastSucceededAt` at the last complete refresh,
+      // which is the evidence time of what the page still shows. Reporting has its own status.
+      const failedPortfolioFeed = [portfolio, portfolioMultiAssetCoverage, brokeragePortfolio]
+        .find((result) => result.status === "rejected");
+      if (failedPortfolioFeed?.status === "rejected") {
+        portfolioRefreshLifecycle.partial(token, failedPortfolioFeed.reason, { fallback: "Portfolio refresh did not complete." });
+      } else {
+        portfolioRefreshLifecycle.succeed(token);
+      }
     } finally {
       portfolioRefreshLifecycle.finish(token);
       refreshingPortfolio.current = false;
@@ -706,6 +715,7 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
   }, [
     portfolioRefreshLifecycle.finish,
     portfolioRefreshLifecycle.markStale,
+    portfolioRefreshLifecycle.partial,
     portfolioRefreshLifecycle.start,
     portfolioRefreshLifecycle.succeed
   ]);

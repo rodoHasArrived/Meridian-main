@@ -53,22 +53,69 @@ describe("buildPortfolioFigureDifferenceNote", () => {
     });
   });
 
-  it("compares the host explorer's net exposure with the header exposure", () => {
+  const hostScope = [
+    { label: "Source", value: "Portfolio workspace", tone: "Default" },
+    { label: "Run", value: "run-1", tone: "Info" }
+  ] as FinancialRecordExplorerDto["scopeItems"];
+
+  it("does not report the header's gross exposure against the explorer's net exposure as a conflict", () => {
+    // Same records with a short position: gross and net legitimately differ.
     const note = buildPortfolioFigureDifferenceNote({
       headerMetrics,
       headerProvenance,
       explorer: explorer({
-        scopeItems: [{ label: "Source", value: "Portfolio workspace", tone: "Default" }, { label: "Run", value: "run-1", tone: "Info" }],
+        scopeItems: hostScope,
         summaryItems: [
           { label: "Positions", value: "1", detail: "", tone: "Success" },
           { label: "Equity", value: "$375,000", detail: "", tone: "Default" },
+          { label: "Net Exposure", value: "$12,400", detail: "", tone: "Default" }
+        ]
+      })
+    });
+
+    expect(note).toBeNull();
+  });
+
+  it("names the gross and net bases when exposure is listed beside a like-for-like difference", () => {
+    const note = buildPortfolioFigureDifferenceNote({
+      headerMetrics,
+      headerProvenance,
+      explorer: explorer({
+        scopeItems: hostScope,
+        summaryItems: [
+          { label: "Positions", value: "3", detail: "", tone: "Success" },
           { label: "Net Exposure", value: "$21,400", detail: "", tone: "Default" }
         ]
       })
     });
 
-    expect(note?.rows).toEqual([{ key: "exposure", label: "Total exposure", first: "$18,900", second: "$21,400" }]);
+    expect(note?.rows).toEqual([
+      {
+        key: "exposure",
+        label: "Total exposure",
+        first: "$18,900",
+        second: "$21,400",
+        detail: "Header strip is gross, Portfolio Explorer is net: different measures, so these would differ on the same records."
+      },
+      { key: "positions", label: "Open positions", first: "1", second: "3" }
+    ]);
     expect(note?.sources[1]).toEqual({ name: "Portfolio Explorer", text: "Source: Retained run records · Scope: run-1" });
+  });
+
+  it("compares a gross explorer exposure with the header like for like", () => {
+    const note = buildPortfolioFigureDifferenceNote({
+      headerMetrics,
+      headerProvenance,
+      explorer: explorer({
+        scopeItems: hostScope,
+        summaryItems: [
+          { label: "Positions", value: "1", detail: "", tone: "Success" },
+          { label: "Gross Exposure", value: "$21,400", detail: "", tone: "Default" }
+        ]
+      })
+    });
+
+    expect(note?.rows).toEqual([{ key: "exposure", label: "Total exposure", first: "$18,900", second: "$21,400" }]);
   });
 
   it("stays silent when the figures agree, the explorer is blocked or it has not loaded", () => {

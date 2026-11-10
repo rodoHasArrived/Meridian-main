@@ -1120,6 +1120,12 @@ describe("useWorkstationData", () => {
       await failedRefresh;
     });
 
+    // The failed poll kept the previous Portfolio payload, so it must not read as a success or
+    // move the time of the last complete refresh.
+    expect(result.current.portfolioRefreshStatus.phase).toBe("partial");
+    expect(result.current.portfolioRefreshStatus.error).toBe("Portfolio refresh failed.");
+    expect(result.current.portfolioRefreshStatus.lastSucceededAt).toBeNull();
+
     let recoveryRefresh!: Promise<void>;
     act(() => {
       recoveryRefresh = result.current.refreshPortfolio();
@@ -1146,6 +1152,8 @@ describe("useWorkstationData", () => {
     expect(result.current.workspaceErrors.portfolio).toBeUndefined();
     expect(result.current.workspaceErrors.reporting).toBeUndefined();
     expect(result.current.error).toBeNull();
+    expect(result.current.portfolioRefreshStatus.phase).toBe("succeeded");
+    expect(result.current.portfolioRefreshStatus.lastSucceededAt).not.toBeNull();
   });
 
   it("refreshes reporting live-view payloads with the portfolio refresh lane", async () => {

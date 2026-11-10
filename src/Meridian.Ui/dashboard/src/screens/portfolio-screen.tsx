@@ -72,6 +72,7 @@ import type {
 import { eyebrowClassName } from "@/design-system/label-case";
 import { formatCount } from "@/lib/format";
 import { metricFreshnessFromTrustTone, withMetricContext } from "@/lib/metric-trust";
+import { useWorkspaceFigureContext } from "@/lib/workspace-figure-context";
 import { FigureDifferenceNote } from "@/components/meridian/figure-difference-note";
 import { buildPortfolioFigureDifferenceNote } from "@/screens/portfolio-screen.figure-differences";
 
@@ -346,6 +347,7 @@ export function PortfolioScreen({
 }: PortfolioScreenProps) {
   const location = useLocation();
   const navigate = useNavigate();
+  const figureContext = useWorkspaceFigureContext();
   const routeView = resolvePortfolioRouteView(location.pathname);
   const routeCopy = portfolioRouteViewCopy[routeView];
   const showOverview = routeView === "overview";
@@ -586,7 +588,13 @@ export function PortfolioScreen({
         })
       : null;
   const heartbeat = portfolio?.brokerage.lastHeartbeat ?? trading?.brokerage.lastHeartbeat ?? null;
-  const freshnessTone: OperationalTrustTone = freshnessVm?.state === "failing"
+  // The totals on screen are a retained payload when the refresh of the workspace that supplies
+  // them did not complete: the Portfolio poll settled as partial, or the shell recorded a refresh
+  // error for that workspace. A recent settle time does not make those figures current.
+  const headlineWorkspace = vm.metricsFromTrading ? "trading" : "portfolio";
+  const headlineRefreshFailed = (figureContext?.staleWorkspaces.includes(headlineWorkspace) ?? false)
+    || (!vm.metricsFromTrading && refreshStatus?.phase === "partial");
+  const evidenceTone: OperationalTrustTone = freshnessVm?.state === "failing"
     ? "blocked"
     : freshnessVm?.state === "aging"
       ? "review"
@@ -595,18 +603,25 @@ export function PortfolioScreen({
         : heartbeat
           ? "ready"
           : "unknown";
+  const freshnessTone: OperationalTrustTone = headlineRefreshFailed && evidenceTone !== "blocked" ? "review" : evidenceTone;
   // The headline figures carry the same source and freshness the confidence summary states, so
   // a stale workspace cannot show figures that look current. Their scope is every position in the
   // workspace read model: selecting a brokerage account filters the brokerage table, not these
   // totals, so the selected account must not be named as their scope.
+  // As-of is when the totals' payload was last loaded. The Portfolio lifecycle keeps its last
+  // complete refresh through a partial one; totals borrowed from Trading after its refresh
+  // failed date from the shell's last full load.
   const headlineProvenance = {
     source: vm.metricsFromTrading ? "Trading workspace" : vm.positionSourceLabel,
-    asOf: (hasRefreshEvidence ? refreshStatus?.lastSucceededAt : null) ?? brokeragePortfolio?.asOf ?? heartbeat,
+    asOf: (headlineRefreshFailed && vm.metricsFromTrading ? figureContext?.staleAsOf : null)
+      ?? (hasRefreshEvidence ? refreshStatus?.lastSucceededAt : null)
+      ?? brokeragePortfolio?.asOf
+      ?? heartbeat,
     scope: "All workspace positions"
   };
   const headlineMetrics = withMetricContext(vm.metricsFromTrading ? vm.metricCards : vm.fallbackStats, {
     provenance: headlineProvenance,
-    freshness: metricFreshnessFromTrustTone(freshnessTone)
+    freshness: headlineRefreshFailed ? "stale" : metricFreshnessFromTrustTone(freshnessTone)
   });
   const figureDifferenceNote = showBrokerageSync
     ? null
@@ -769,7 +784,9 @@ export function PortfolioScreen({
         }}
         freshness={{
           value: freshnessVm?.text ?? heartbeat ?? "Unavailable",
-          detail: freshnessVm?.title ?? (heartbeat ? "Latest brokerage heartbeat" : "Latest loaded portfolio evidence"),
+          detail: headlineRefreshFailed
+            ? "The latest refresh did not complete; the last loaded figures are shown."
+            : freshnessVm?.title ?? (heartbeat ? "Latest brokerage heartbeat" : "Latest loaded portfolio evidence"),
           tone: freshnessTone
         }}
         completeness={{

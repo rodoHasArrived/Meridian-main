@@ -179,6 +179,26 @@ describe("buildFigureDifferenceNote", () => {
     });
   });
 
+  it("treats figures on different bases as different measures, not a conflict", () => {
+    const gross = { ...header, figures: [{ key: "exposure", label: "Total exposure", value: "$18,900", basis: "gross" }, header.figures[2]!] };
+    const net = (positions: string) => ({
+      ...explorer,
+      figures: [{ key: "positions", label: "Positions", value: positions }, { key: "exposure", label: "Net Exposure", value: "$12,400", basis: "Net" }]
+    });
+
+    expect(buildFigureDifferenceNote(gross, net("1"))).toBeNull();
+    expect(buildFigureDifferenceNote(gross, net("2"))?.rows).toEqual([
+      {
+        key: "exposure",
+        label: "Total exposure",
+        first: "$18,900",
+        second: "$12,400",
+        detail: "Header strip is gross, Portfolio Explorer is net: different measures, so these would differ on the same records."
+      },
+      { key: "positions", label: "Open positions", first: "1", second: "2" }
+    ]);
+  });
+
   it("returns nothing when the shared figures agree at the coarser displayed precision", () => {
     expect(buildFigureDifferenceNote(header, {
       ...explorer,

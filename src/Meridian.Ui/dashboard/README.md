@@ -330,11 +330,16 @@ not been recorded.
     the strip "Stale figures"/"Unverified figures" and explains the age on hover and to
     assistive technology. A failed workstation refresh marks every workspace-fed strip stale; a
     refresh that fails for some workspaces only marks just those (a strip names its workspace
-    with `workspace="…"`), while the ones that did refresh stay fresh.
+    with `workspace="…"`), while the ones that did refresh stay fresh. A screen that stamps its
+    own freshness checks the same failure list: Portfolio's totals go stale when the Portfolio
+    poll settles as `partial` or the shell reports a Portfolio refresh error, dated from the
+    last complete refresh.
   - *Disagreement*: when two panels on one page report different values for the same
     quantity, `buildFigureDifferenceNote` and `FigureDifferenceNote` show "Why these differ"
     with both values and each panel's source. Portfolio uses it for the header strip and the
-    Portfolio Explorer.
+    Portfolio Explorer. Give a figure a `basis` when panels can measure it differently (the
+    header's exposure is gross, the explorer's is net): a gross-against-net gap is not reported
+    by itself, and is labelled with both bases when listed beside a like-for-like difference.
 - **Tables.** `DenseDataTable` (`components/meridian/ui-kit-primitives.tsx`) provides:
   - a sticky header inside a bounded scroll area;
   - `aria-sort` sorting, either built in from a column's `sortValue` (numbers start
