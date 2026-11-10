@@ -223,6 +223,9 @@ public static partial class SecurityAssetPackRegistry
             ["Purchase", "Sale", "Coupon", "Draw", "Repayment", "Default", "Amendment", "Impairment", "Maturity", "Fee"],
             ["DiscountedCashFlow", "AmortizedCost", "Appraisal", "UserEstimate", "ExternalModel"],
             ["interest accrual", "principal draw", "principal repayment", "fee income", "impairment", "default"],
+            // CreditFacility is planned here alone (decided 2026-11-10): Direct Lending already
+            // services commitment, draws and commitment fees for a loan, and this is the only loan
+            // pack with a Fee event. The undrawn part of a facility is a CommitmentGuarantee record.
             plannedAssetClasses: ["PrivateCredit", "CreditFacility"]),
         DeepAutomation(
             "real-estate",
@@ -246,7 +249,7 @@ public static partial class SecurityAssetPackRegistry
             ["Purchase", "Sale", "Coupon", "Draw", "Repayment", "Default", "Amendment", "Maturity", "Impairment"],
             ["DiscountedCashFlow", "AmortizedCost", "Appraisal", "UserEstimate", "ExternalModel"],
             ["interest accrual", "principal draw", "principal repayment", "intercompany elimination", "impairment"],
-            plannedAssetClasses: ["Mortgage", "CreditFacility", "IntercompanyLoan"]),
+            plannedAssetClasses: ["Mortgage", "IntercompanyLoan"]),
         DeepAutomation(
             "commitment-guarantee",
             "Unfunded commitments and guarantees",
@@ -254,7 +257,7 @@ public static partial class SecurityAssetPackRegistry
             ["Purchase", "Sale", "Draw", "Repayment", "Coupon", "CapitalCall", "Distribution", "Default", "Amendment", "Maturity", "Fee"],
             ["UserEstimate", "ExternalModel", "DiscountedCashFlow"],
             ["commitment recognition", "guarantee exposure", "drawdown", "fee accrual", "release"],
-            plannedAssetClasses: ["UnfundedCommitment", "Guarantee", "CreditFacility"]),
+            plannedAssetClasses: ["UnfundedCommitment", "Guarantee"]),
         WideCapture(
             "controlled-other-asset",
             "Controlled other asset",

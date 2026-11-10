@@ -13,12 +13,7 @@ public static partial class SecurityAssetPackRegistry
             "DirectLoan",
             ["private-loan-credit", "mortgage-facility-intercompany"],
             "DirectLoan is the only modeled loan class, so it carries private credit and also the "
-            + "mortgages and intercompany loans whose own classes are still planned."),
-        new(
-            "CreditFacility",
-            ["private-loan-credit", "mortgage-facility-intercompany", "commitment-guarantee"],
-            "Planned, not modeled. Three packs anticipate it as drawn credit, as a facility and as "
-            + "unfunded exposure. No owning pack is chosen; settle that before the class enters the catalog.")
+            + "mortgages and intercompany loans whose own classes are still planned.")
     ];
 
     /// <summary>
