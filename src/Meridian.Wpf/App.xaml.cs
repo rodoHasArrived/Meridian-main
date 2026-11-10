@@ -129,6 +129,9 @@ public partial class App : System.Windows.Application
     public static WpfServices.PendingOperationsQueueService OperationsQueue => WpfServices.PendingOperationsQueueService.Instance;
 
     private async void OnStartup(object sender, StartupEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => StartupCoreAsync(sender, e), nameof(OnStartup)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task StartupCoreAsync(object sender, StartupEventArgs e)
     {
         WpfServices.LoggingService.Instance.LogInfo("WPF application startup beginning");
         try

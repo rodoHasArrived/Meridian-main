@@ -70,6 +70,43 @@ public sealed class PersistentDedupLedgerTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Initialize_Synchronous_LoadsTheSameStateAsInitializeAsync()
+    {
+        var seen = CreateTradeEvent("AAPL", 1);
+        var unseen = CreateTradeEvent("AAPL", 2);
+
+        _firstLedger = new PersistentDedupLedger(_ledgerDirectory);
+        await _firstLedger.InitializeAsync();
+        (await _firstLedger.IsDuplicateAsync(seen, CancellationToken.None)).Should().BeFalse();
+        await _firstLedger.FlushAsync(CancellationToken.None);
+        await _firstLedger.DisposeAsync();
+        _firstLedger = null;
+
+        // The synchronous load is what the DI composition uses; it must restore the persisted
+        // identities exactly as the asynchronous load does.
+        _secondLedger = new PersistentDedupLedger(_ledgerDirectory);
+        _secondLedger.Initialize();
+
+        (await _secondLedger.IsDuplicateAsync(seen, CancellationToken.None)).Should().BeTrue();
+        (await _secondLedger.IsDuplicateAsync(unseen, CancellationToken.None)).Should().BeFalse();
+    }
+
+    [Fact]
+    public void Initialize_Synchronous_WithNoLedgerFileOrMalformedLines_StartsUsable()
+    {
+        _firstLedger = new PersistentDedupLedger(_ledgerDirectory);
+        var noFile = () => _firstLedger.Initialize();
+        noFile.Should().NotThrow();
+
+        File.WriteAllLines(
+            Path.Combine(_ledgerDirectory, "dedup_ledger.jsonl"),
+            ["not json", "", "{\"k\":null}"]);
+        _secondLedger = new PersistentDedupLedger(_ledgerDirectory);
+        var malformed = () => _secondLedger.Initialize();
+        malformed.Should().NotThrow("malformed lines are skipped, as in the asynchronous load");
+    }
+
+    [Fact]
     public async Task IsDuplicateAsync_TradeMiss_PersistsLineAndReloadsAsDuplicate()
     {
         var evt = CreateTradeEvent("AAPL", 1);

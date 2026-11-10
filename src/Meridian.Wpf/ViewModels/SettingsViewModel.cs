@@ -954,7 +954,12 @@ public sealed class FeatureCapabilityToggleViewModel : BindableBase
             }
 
             RaisePropertyChanged(nameof(StateText));
-            _gate.SetEnabled(CapabilityKey, value);
+            // A property setter cannot await, and persisting the override can wait on the
+            // configuration file lock, so the save runs off the UI thread. A failed save is
+            // logged and shown to the operator by the guard.
+            _ = global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(
+                () => _gate.SetEnabledAsync(CapabilityKey, value),
+                nameof(IsEnabled));
         }
     }
 

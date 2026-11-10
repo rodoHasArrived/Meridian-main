@@ -113,6 +113,9 @@ public partial class WorkspaceDeepPageHostPage : Page
     }
 
     private async void OnShellSignalsChanged(object? sender, EventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => ShellSignalsChangedCoreAsync(sender, e), nameof(OnShellSignalsChanged)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task ShellSignalsChangedCoreAsync(object? sender, EventArgs e)
     {
         if (_presentationMode != WorkspaceChromePresentationMode.Standalone || _shellContextService is null)
         {

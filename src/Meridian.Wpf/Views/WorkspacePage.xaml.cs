@@ -39,6 +39,9 @@ public partial class WorkspacePage : Page
     }
 
     private async void ExportWorkspace_Click(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => ExportWorkspace_ClickCoreAsync(sender, e), nameof(ExportWorkspace_Click)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task ExportWorkspace_ClickCoreAsync(object sender, RoutedEventArgs e)
     {
         if (sender is Button button && button.Tag is string workspaceId)
         {
@@ -76,6 +79,9 @@ public partial class WorkspacePage : Page
     }
 
     private async void ImportWorkspace_Click(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => ImportWorkspace_ClickCoreAsync(sender, e), nameof(ImportWorkspace_Click)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task ImportWorkspace_ClickCoreAsync(object sender, RoutedEventArgs e)
     {
         var dialog = new Microsoft.Win32.OpenFileDialog
         {
