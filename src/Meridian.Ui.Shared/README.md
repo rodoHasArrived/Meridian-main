@@ -3032,7 +3032,8 @@ See the [Security Master extensibility review](../../docs/architecture/security-
 
 **Brokerage sync carry-forward.** A failed or partial brokerage sync keeps the last good positions,
 balance and activity for whichever half returned nothing, with an explicit warning, and a
-carried-forward balance is not recorded as a new balance snapshot. **Package files.** Package
+carried-forward balance is not recorded as a new balance snapshot. A projection that carries
+state forward is marked stale, so reconciliation does not treat it as a fresh provider observation. **Package files.** Package
 download and delete require the resolved file to be a direct child of the selected packages
 directory (the packages root, or a requested directory under it).
 

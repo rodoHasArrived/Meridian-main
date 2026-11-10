@@ -292,4 +292,46 @@ public sealed class WorkspaceServicePersistenceTests : IDisposable
         restored!.Token.WorkspaceId.Should().Be(workspaceId);
         restored.Token.PageTag.Should().Be(pageTag);
     }
+
+    [Fact]
+    public async Task Reload_DoesNotRollBackAChangeMadeWhileTheFileWasBeingRead()
+    {
+        var service = CreateService();
+        var beforeChange = File.Exists(_settingsFilePath) ? await File.ReadAllTextAsync(_settingsFilePath) : null;
+        var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var release = new TaskCompletionSource<string?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var reads = 0;
+        // The reload's own read is held open and answers with the file as it was before the
+        // change. Any later read sees the real file.
+        service.PersistReaderForTests = async path =>
+        {
+            if (Interlocked.Increment(ref reads) == 1)
+            {
+                started.TrySetResult();
+                return await release.Task.ConfigureAwait(false);
+            }
+
+            return File.Exists(path) ? await File.ReadAllTextAsync(path).ConfigureAwait(false) : null;
+        };
+
+        var reload = service.LoadWorkspacesAsync();
+        await started.Task.WaitAsync(Patience);
+
+        // A workspace is created while the reload is still reading the old file.
+        var create = service.CreateWorkspaceAsync("Created during reload", "test", default);
+        var deadline = DateTime.UtcNow + Patience;
+        while (!service.Workspaces.Any(workspace => workspace.Name == "Created during reload"))
+        {
+            DateTime.UtcNow.Should().BeBefore(deadline, "the create must apply in memory while the reload reads");
+            await Task.Delay(10);
+        }
+
+        release.SetResult(beforeChange);
+        await reload.WaitAsync(Patience);
+        await create.WaitAsync(Patience);
+
+        service.Workspaces.Should().Contain(workspace => workspace.Name == "Created during reload",
+            "a reload must not apply a file read from before a change that has since been made");
+        (await File.ReadAllTextAsync(_settingsFilePath)).Should().Contain("Created during reload");
+    }
 }

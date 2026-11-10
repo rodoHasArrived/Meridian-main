@@ -1011,8 +1011,9 @@ failure is logged and shown as a notification (at most one per handler per minut
 ignored, and fatal runtime exceptions still propagate. **Blocking calls.**
 `FeatureCapabilityGateService.SetEnabledAsync` applies an override in memory and persists it off the
 UI thread; `WorkspaceService` writes the workspace file and reads and saves state tokens outside
-its state gate, and preloads the workspace file before taking it; only a failed preload falls back
-to reading under the gate. **Live data routes.** Order book, ticker strip, quote float, live data
+its state gate, and preloads the workspace file before taking it. A preload that failed, or that
+was read before a change made in the meantime, is not applied: the load then reads behind the
+persistence gate, under the state gate, so a reload cannot roll back a concurrent change. **Live data routes.** Order book, ticker strip, quote float, live data
 viewer and corporate-action recording call routes built from `UiApiRoutes`;
 `DesktopClientRouteContractTests` fails on a desktop `/api/` literal the server does not map,
 apart from three listed exceptions (`/api/logs`, `/api/watchlists`, `/api/archive/health`).

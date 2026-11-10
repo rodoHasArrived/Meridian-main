@@ -987,6 +987,15 @@ public sealed class BrokeragePortfolioSyncService
             status = status with { LastSuccessfulSyncAt = priorSuccess };
         }
 
+        // Carried-forward state is not a new observation. The projection's SyncedAt is this
+        // attempt, and reconciliation judges provider freshness from SyncedAt and IsStale alone,
+        // so without this flag repeatedly failing syncs would keep arbitrarily old balances and
+        // positions passing as current provider evidence.
+        if (!ReferenceEquals(result, current))
+        {
+            status = status with { IsStale = true };
+        }
+
         return result with { Status = status with { Warnings = warnings } };
     }
 

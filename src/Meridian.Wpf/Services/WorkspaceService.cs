@@ -48,6 +48,10 @@ public sealed class WorkspaceService
     // The workspace file as read before the state gate was taken, for the load to consume.
     private string? _preloadedJson;
     private volatile bool _hasPreload;
+    // Counts queued saves, i.e. changes to in-memory state. A preload records the count it
+    // started from, so a load can tell whether the text it read predates a later change.
+    private long _stateRevision;
+    private long _preloadRevision;
     private IServiceScopeFactory? _serviceScopeFactory;
     private volatile bool _isInitialized;
 
@@ -119,12 +123,9 @@ public sealed class WorkspaceService
         await _persistGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            var filePath = GetSettingsFilePath();
-            _preloadedJson = PersistReaderForTests is { } reader
-                ? await reader(filePath).ConfigureAwait(false)
-                : File.Exists(filePath)
-                    ? await File.ReadAllTextAsync(filePath, ct).ConfigureAwait(false)
-                    : null;
+            var revision = Volatile.Read(ref _stateRevision);
+            _preloadedJson = await ReadWorkspaceFileTextAsync(ct).ConfigureAwait(false);
+            Volatile.Write(ref _preloadRevision, revision);
             _hasPreload = true;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
@@ -151,10 +152,38 @@ public sealed class WorkspaceService
             var preloaded = _preloadedJson;
             _preloadedJson = null;
             _hasPreload = false;
-            return preloaded;
+            // The preload was read without the state gate. If state changed while it was being
+            // read, applying it would roll that change back in memory, and the next save would
+            // persist the rollback. Use it only when nothing has changed since it started.
+            if (Volatile.Read(ref _preloadRevision) == Volatile.Read(ref _stateRevision))
+            {
+                return preloaded;
+            }
         }
 
+        // Nothing usable was preloaded. Read behind the persistence gate so no write is in
+        // flight: a change that is queued but not yet written is the newest state, and
+        // otherwise the file is. This is the one path that waits on storage under the state gate.
+        await _persistGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            return Volatile.Read(ref _pendingSaveJson)
+                ?? await ReadWorkspaceFileTextAsync(ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            _persistGate.Release();
+        }
+    }
+
+    private async Task<string?> ReadWorkspaceFileTextAsync(CancellationToken ct)
+    {
         var filePath = GetSettingsFilePath();
+        if (PersistReaderForTests is { } reader)
+        {
+            return await reader(filePath).ConfigureAwait(false);
+        }
+
         return File.Exists(filePath)
             ? await File.ReadAllTextAsync(filePath, ct).ConfigureAwait(false)
             : null;
@@ -463,6 +492,7 @@ public sealed class WorkspaceService
             // Only the snapshot is taken here, under the state gate. The file write happens in
             // FlushPendingSaveAsync once the gate is released.
             Volatile.Write(ref _pendingSaveJson, JsonSerializer.Serialize(data, UiServices.DesktopJsonOptions.PrettyPrint));
+            Interlocked.Increment(ref _stateRevision);
         }
         catch (OperationCanceledException)
         {

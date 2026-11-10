@@ -1414,6 +1414,11 @@ public sealed class BrokeragePortfolioSyncServiceTests
             view.Balance.Should().NotBeNull();
             status.PositionCount.Should().Be(goodPositions.Count);
             status.Warnings.Should().Contain(warning => warning.Contains("carried forward", StringComparison.OrdinalIgnoreCase));
+            // Reconciliation judges provider freshness from the sync time and this flag alone,
+            // so carried-forward state must not look like a new observation.
+            good.IsStale.Should().BeFalse();
+            status.IsStale.Should().BeTrue("carried-forward balances and positions are not a fresh provider observation");
+            view.Status.IsStale.Should().BeTrue();
             if (activityFails)
             {
                 status.LastSuccessfulSyncAt.Should().Be(good.LastSuccessfulSyncAt,
