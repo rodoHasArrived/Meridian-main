@@ -1,3 +1,4 @@
+using Meridian.Execution.OrderManagement;
 using Meridian.Execution.Logging;
 using Meridian.Execution.Sdk;
 using Microsoft.Extensions.Logging;
@@ -30,7 +31,7 @@ public sealed partial class OrderManagementSystem
         foreach (var child in childOrders)
         {
             var childOrderId = string.IsNullOrWhiteSpace(child.ClientOrderId) ? child.OrderId : child.ClientOrderId;
-            if (string.IsNullOrWhiteSpace(childOrderId) || IsTerminal(child.Status))
+            if (string.IsNullOrWhiteSpace(childOrderId) || OrderStatusFacts.IsTerminal(child.Status))
             {
                 continue;
             }

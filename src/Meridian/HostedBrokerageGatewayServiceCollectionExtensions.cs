@@ -106,13 +106,9 @@ internal static class HostedBrokerageGatewayServiceCollectionExtensions
 
         services.TryAddSingleton(gatewayType);
         services.AddBrokerageGateway("stocksharp", sp => (IBrokerageGateway)sp.GetRequiredService(gatewayType));
-        services.TryAddSingleton(sp => new StockSharpBrokerageGatewayAccessor(sp, gatewayType));
-        services.TryAddSingleton(sp =>
-            new StockSharpBrokerageSyncAdapter(sp.GetRequiredService<StockSharpBrokerageGatewayAccessor>()));
-        // Only the account catalog is registered. StockSharp has no portfolio or activity sync
-        // implementation, and registering an adapter that throws would make the runtime catalog
-        // advertise a capability every sync run then fails on.
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokerageAccountCatalog, StockSharpBrokerageSyncAdapter>());
+        // No account catalog, portfolio or activity sync is registered: the StockSharp gateway has
+        // none. A placeholder adapter used to advertise all three while returning no accounts and
+        // throwing NotSupportedException, so the runtime surface reported sync it could not do.
     }
 
     private sealed class AlpacaBrokerageSyncAdapter(AlpacaBrokerageGateway gateway) :
@@ -178,18 +174,5 @@ internal static class HostedBrokerageGatewayServiceCollectionExtensions
             DateTimeOffset? since,
             CancellationToken ct)
             => _activitySync.GetActivitySnapshotAsync(externalAccountId, since, ct);
-    }
-
-    private sealed class StockSharpBrokerageGatewayAccessor(IServiceProvider services, Type gatewayType)
-    {
-        public IBrokerageGateway GetGateway() => (IBrokerageGateway)services.GetRequiredService(gatewayType);
-    }
-
-    private sealed class StockSharpBrokerageSyncAdapter(StockSharpBrokerageGatewayAccessor gatewayAccessor) :
-        IBrokerageAccountCatalog
-    {
-        public string ProviderId => "stocksharp";
-        public string ProviderDisplayName => gatewayAccessor.GetGateway().BrokerDisplayName;
-        public Task<IReadOnlyList<BrokerageExternalAccountDto>> GetAccountsAsync(CancellationToken ct) => Task.FromResult<IReadOnlyList<BrokerageExternalAccountDto>>([]);
     }
 }

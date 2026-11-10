@@ -1,14 +1,17 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.Reconciliation.Connectors;
 using Meridian.Identity.Auth;
+using Meridian.PortfolioRecords.Accounts;
 using Meridian.Ui.Shared.Evidence;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -30,11 +33,19 @@ public static partial class WorkstationEndpoints
             if (marginControl is null)
                 return StatementConnectorsNotRegistered();
 
-            var result = await marginControl.GetAsync(context.RequestAborted).ConfigureAwait(false);
+            var visibleAccounts = await ResolveTenantMarginAccountIdsAsync(context).ConfigureAwait(false);
+            if (visibleAccounts is null)
+                return EndpointHelpers.Forbidden();
+
+            var result = await marginControl.GetAsync(
+                owner => IsMarginEvidenceVisible(visibleAccounts, owner),
+                context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
         .WithName("GetMarginControlCenter").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
-        .Produces<MarginControlCenterDto>(200);
+        .Produces<MarginControlCenterDto>(200)
+        .Produces(403)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationMarginCertifications), async (
             MarginCertificationRequestDto request,
@@ -46,11 +57,16 @@ public static partial class WorkstationEndpoints
             if (marginControl is null)
                 return StatementConnectorsNotRegistered();
 
+            var visibleAccounts = await ResolveTenantMarginAccountIdsAsync(context).ConfigureAwait(false);
+            if (visibleAccounts is null)
+                return EndpointHelpers.Forbidden();
+
             try
             {
                 var result = await marginControl.CertifyAsync(
                     request,
                     ResolveCurrentActor(context),
+                    owner => IsMarginEvidenceVisible(visibleAccounts, owner),
                     context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
@@ -73,7 +89,8 @@ public static partial class WorkstationEndpoints
         .Produces(403)
         .Produces(404)
         .Produces(409)
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .RequireWorkstationTenantCompanyScope();
 
         MapStatementReconciliationReportEndpoints(group, jsonOptions);
 
@@ -859,4 +876,103 @@ public static partial class WorkstationEndpoints
            && string.Equals(schedule.ExternalAccountId, request.ExternalAccountId?.Trim(), StringComparison.OrdinalIgnoreCase)
            && string.Equals(schedule.FundAccountId, request.FundAccountId?.Trim(), StringComparison.OrdinalIgnoreCase)
            && string.Equals(schedule.SourceInstitution, request.SourceInstitution?.Trim(), StringComparison.OrdinalIgnoreCase);
+    /// <summary>
+    /// Retained margin evidence is visible only when the fund account it was imported for (an
+    /// import is ownership-checked before evidence is retained) belongs to the caller, and the
+    /// snapshot's external account id is one of that same fund account's identifiers. Matching on
+    /// the external id alone is not enough: ids are unique only within a provider, so another
+    /// tenant's evidence for a different provider can carry the same id. Evidence with no
+    /// recorded fund account is never shown.
+    /// </summary>
+    internal static bool IsMarginEvidenceVisible(
+        IReadOnlyDictionary<Guid, HashSet<string>> ownedAccountIdentifiers,
+        Meridian.Ui.Shared.Services.MarginEvidenceOwner owner)
+        => Guid.TryParse(owner.FundAccountId, out var fundAccountId)
+           && ownedAccountIdentifiers.TryGetValue(fundAccountId, out var identifiers)
+           && !string.IsNullOrWhiteSpace(owner.AccountId)
+           && identifiers.Contains(owner.AccountId.Trim());
+
+    /// <summary>
+    /// The caller's tenant- and company-owned active fund accounts, each with its external
+    /// identifiers (account code, custodian sub-account, bank account number or IBAN). Returns
+    /// <c>null</c> (forbidden) when the tenant context or the ownership registries are unavailable.
+    /// </summary>
+    private static async Task<Dictionary<Guid, HashSet<string>>?> ResolveTenantMarginAccountIdsAsync(HttpContext context)
+    {
+        var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+        var accounts = context.RequestServices.GetService<IAccountQueryService>();
+        var tenancy = context.RequestServices.GetService<IFundProfileTenancyRegistry>();
+        if (string.IsNullOrWhiteSpace(tenant.TenantId)
+            || string.IsNullOrWhiteSpace(tenant.CompanyId)
+            || accounts is null
+            || tenancy is null)
+        {
+            return null;
+        }
+
+        var activeAccounts = await accounts
+            .ListAccountsAsync(accountType: null, isActive: true, currency: null, context.RequestAborted)
+            .ConfigureAwait(false);
+        var visible = new Dictionary<Guid, HashSet<string>>();
+        var ownedFunds = new Dictionary<Guid, bool>();
+        foreach (var account in activeAccounts)
+        {
+            if (account.FundId is not { } fundId || fundId == Guid.Empty)
+                continue;
+
+            if (!ownedFunds.TryGetValue(fundId, out var owned))
+            {
+                owned = await IsFundOwnedByTenantAsync(fundId, tenant, tenancy, context).ConfigureAwait(false);
+                ownedFunds[fundId] = owned;
+            }
+
+            if (!owned)
+                continue;
+
+            var identifiers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            visible[account.AccountId] = identifiers;
+            foreach (var externalId in new[]
+                     {
+                         account.AccountCode,
+                         account.CustodianDetails?.SubAccountNumber,
+                         account.BankDetails?.AccountNumber,
+                         account.BankDetails?.Iban
+                     })
+            {
+                if (!string.IsNullOrWhiteSpace(externalId))
+                    identifiers.Add(externalId.Trim());
+            }
+        }
+
+        return visible;
+    }
+
+    private static async Task<bool> IsFundOwnedByTenantAsync(
+        Guid fundId,
+        WorkstationTenantContext tenant,
+        IFundProfileTenancyRegistry tenancy,
+        HttpContext context)
+    {
+        FundProfileOwnership? ownership;
+        try
+        {
+            ownership = await tenancy
+                .ResolveAsync(fundId.ToString("D"), context.RequestAborted)
+                .ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch
+        {
+            // Fail closed: an unresolvable fund contributes no visible margin accounts.
+            return false;
+        }
+
+        return ownership is not null
+            && ownership.IsHeldBy(tenant.TenantId)
+            && !string.IsNullOrWhiteSpace(ownership.CompanyId)
+            && string.Equals(ownership.CompanyId.Trim(), tenant.CompanyId!.Trim(), StringComparison.OrdinalIgnoreCase);
+    }
 }

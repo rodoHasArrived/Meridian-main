@@ -129,7 +129,7 @@ public sealed class HostedBrokerageGatewayRegistrationTests
     }
 
     [Fact]
-    public async Task RegisterOptionalStockSharpGateway_WhenRuntimeTypeExists_RegistersKeyedGatewayWithoutThrowingSyncAdapters()
+    public async Task RegisterOptionalStockSharpGateway_WhenRuntimeTypeExists_RegistersKeyedGatewayWithoutPlaceholderSync()
     {
         var services = CreateServices();
 
@@ -141,12 +141,12 @@ public sealed class HostedBrokerageGatewayRegistrationTests
         var gateway = provider.GetRequiredKeyedService<IBrokerageGateway>("stocksharp");
 
         gateway.Should().BeOfType<FakeStockSharpBrokerageGateway>();
+        // The gateway has no account sync; a placeholder adapter used to advertise it and then
+        // return no accounts and throw NotSupportedException.
         provider.GetServices<IBrokerageAccountCatalog>()
             .Select(catalog => catalog.ProviderId)
             .Should()
-            .Contain("stocksharp");
-        // StockSharp has no portfolio/activity sync implementation; it must not be registered
-        // as one, or the catalog would advertise a capability that throws on every sync run.
+            .NotContain("stocksharp");
         provider.GetServices<IBrokeragePortfolioSync>()
             .Select(sync => sync.ProviderId)
             .Should()
@@ -163,10 +163,12 @@ public sealed class HostedBrokerageGatewayRegistrationTests
             surface.DeclaredGatewayId == "stocksharp" &&
             surface.GatewayType == typeof(FakeStockSharpBrokerageGateway).FullName &&
             surface.GatewayIdMatchesRuntimeKey &&
-            surface.SupportsAccountCatalog &&
+            !surface.SupportsAccountCatalog &&
             !surface.SupportsPortfolioSync &&
             !surface.SupportsActivitySync &&
-            surface.ValidationIssues.Contains("portfolio-sync-missing"));
+            surface.ValidationIssues.Contains("account-catalog-missing") &&
+            surface.ValidationIssues.Contains("portfolio-sync-missing") &&
+            surface.ValidationIssues.Contains("activity-sync-missing"));
     }
 
     [Fact]
