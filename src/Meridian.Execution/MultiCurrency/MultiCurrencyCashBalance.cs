@@ -52,16 +52,61 @@ public sealed class MultiCurrencyCashBalance
     public void Subtract(string currency, decimal amount) => Add(currency, -amount);
 
     /// <summary>
-    /// Converts all currency balances to a single base-currency total using the provided
-    /// <paramref name="fxRates"/> dictionary (keyed by currency, valued as rate to base).
-    /// Currencies with no rate are treated as 1:1 with the base currency (a safe fallback
-    /// for the base currency itself).
+    /// Converts all currency balances to a single <paramref name="baseCurrency"/> total using
+    /// the provided <paramref name="fxRates"/> dictionary (keyed by currency, valued as rate to
+    /// base). The base currency itself converts at 1:1 when no rate is supplied for it.
     /// </summary>
-    public decimal ToBaseCurrency(IReadOnlyDictionary<string, decimal> fxRates)
+    /// <exception cref="InvalidOperationException">
+    /// A non-zero balance is held in a currency that has no rate. Treating a missing rate as 1:1
+    /// would silently misstate the total (1,000,000 JPY is not 1,000,000 USD), so the conversion
+    /// fails instead.
+    /// </exception>
+    public decimal ToBaseCurrency(IReadOnlyDictionary<string, decimal> fxRates, string baseCurrency)
     {
         ArgumentNullException.ThrowIfNull(fxRates);
-        return _balances.Sum(kvp =>
-            kvp.Value * (fxRates.TryGetValue(kvp.Key, out var rate) ? rate : 1m));
+        ArgumentException.ThrowIfNullOrWhiteSpace(baseCurrency);
+
+        var total = 0m;
+        foreach (var (currency, amount) in _balances)
+        {
+            if (amount == 0m)
+                continue;
+
+            if (TryGetRate(fxRates, currency, out var rate))
+            {
+                total += amount * rate;
+            }
+            else if (string.Equals(currency, baseCurrency.Trim(), StringComparison.OrdinalIgnoreCase))
+            {
+                total += amount;
+            }
+            else
+            {
+                throw new InvalidOperationException(
+                    $"No FX rate to {baseCurrency.Trim().ToUpperInvariant()} was supplied for the {currency} cash balance.");
+            }
+        }
+
+        return total;
+    }
+
+    private static bool TryGetRate(IReadOnlyDictionary<string, decimal> fxRates, string currency, out decimal rate)
+    {
+        if (fxRates.TryGetValue(currency, out rate))
+            return true;
+
+        // Balances are keyed upper-case; tolerate a caller-supplied map with different casing.
+        foreach (var (key, value) in fxRates)
+        {
+            if (string.Equals(key, currency, StringComparison.OrdinalIgnoreCase))
+            {
+                rate = value;
+                return true;
+            }
+        }
+
+        rate = 0m;
+        return false;
     }
 
     /// <summary>Returns a snapshot copy of the current balances.</summary>

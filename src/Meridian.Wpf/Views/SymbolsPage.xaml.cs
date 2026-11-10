@@ -115,6 +115,9 @@ public partial class SymbolsPage : Page
     }
 
     private async void BulkDelete_Click(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => BulkDelete_ClickCoreAsync(sender, e), nameof(BulkDelete_Click)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task BulkDelete_ClickCoreAsync(object sender, RoutedEventArgs e)
     {
         var selected = _vm.FilteredSymbols.Where(s => s.IsSelected).ToList();
         var result = MessageBox.Show(
@@ -186,6 +189,9 @@ public partial class SymbolsPage : Page
     }
 
     private async void SaveSymbol_Click(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => SaveSymbol_ClickCoreAsync(sender, e), nameof(SaveSymbol_Click)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task SaveSymbol_ClickCoreAsync(object sender, RoutedEventArgs e)
     {
         var symbolName = SymbolBox.Text?.Trim().ToUpper();
         if (string.IsNullOrEmpty(symbolName))
@@ -229,6 +235,9 @@ public partial class SymbolsPage : Page
     }
 
     private async void DeleteSymbol_Click(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => DeleteSymbol_ClickCoreAsync(sender, e), nameof(DeleteSymbol_Click)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task DeleteSymbol_ClickCoreAsync(object sender, RoutedEventArgs e)
     {
         if (_selectedSymbol == null)
             return;
@@ -280,12 +289,18 @@ public partial class SymbolsPage : Page
     }
 
     private async void LoadWatchlist_Click(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => LoadWatchlist_ClickCoreAsync(sender, e), nameof(LoadWatchlist_Click)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task LoadWatchlist_ClickCoreAsync(object sender, RoutedEventArgs e)
     {
         var watchlistId = (sender is Button b && b.Tag is string id) ? id : null;
         await _vm.LoadWatchlistSymbolsAsync(watchlistId);
     }
 
     private async void SaveWatchlist_Click(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => SaveWatchlist_ClickCoreAsync(sender, e), nameof(SaveWatchlist_Click)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task SaveWatchlist_ClickCoreAsync(object sender, RoutedEventArgs e)
     {
         if (_vm.Symbols.Count == 0)
             return;
@@ -299,6 +314,9 @@ public partial class SymbolsPage : Page
         _navigationService.NavigateTo(typeof(WatchlistPage));
 
     private async void RefreshList_Click(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => RefreshList_ClickCoreAsync(sender, e), nameof(RefreshList_Click)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task RefreshList_ClickCoreAsync(object sender, RoutedEventArgs e)
     {
         await _vm.LoadSymbolsFromConfigAsync();
         LastRefreshText.Text = "Last refreshed: just now";

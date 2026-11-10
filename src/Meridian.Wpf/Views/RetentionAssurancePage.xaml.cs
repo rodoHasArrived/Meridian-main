@@ -88,6 +88,9 @@ public partial class RetentionAssurancePage : Page
     }
 
     private async void CreateHold_Click(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => CreateHold_ClickCoreAsync(sender, e), nameof(CreateHold_Click)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task CreateHold_ClickCoreAsync(object sender, RoutedEventArgs e)
     {
         var name = HoldNameBox.Text?.Trim();
         var reason = HoldReasonBox.Text?.Trim();
@@ -119,6 +122,9 @@ public partial class RetentionAssurancePage : Page
     }
 
     private async void ReleaseHold_Click(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => ReleaseHold_ClickCoreAsync(sender, e), nameof(ReleaseHold_Click)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task ReleaseHold_ClickCoreAsync(object sender, RoutedEventArgs e)
     {
         if (sender is Button button && button.Tag is string holdId)
         {
