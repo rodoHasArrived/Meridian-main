@@ -197,11 +197,11 @@ public sealed class WorkspaceService
     /// </summary>
     private async Task FlushPendingSaveAsync()
     {
-        if (Volatile.Read(ref _pendingSaveJson) is null && _pendingStateTokens.IsEmpty)
-        {
-            return;
-        }
-
+        // Always pass through the persistence gate, even when nothing looks pending. Another
+        // operation's flush may already have taken this operation's snapshot or token and still
+        // be writing it; returning early then would complete the caller before its change is on
+        // disk. Waiting for the gate means every write that could carry this operation's change
+        // has finished.
         await _persistGate.WaitAsync().ConfigureAwait(false);
         try
         {
