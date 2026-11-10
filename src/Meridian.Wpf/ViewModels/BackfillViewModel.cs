@@ -585,7 +585,7 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
                     JobId = job.JobId,
                     Provider = job.Provider,
                     Status = job.Status.ToString(),
-                    CreatedAt = job.CreatedAt.ToLocalTime().ToString("g"),
+                    CreatedAt = FormatHelpers.FormatUtcTimestamp(job.CreatedAt),
                     SymbolsSummary = $"{job.CompletedCount}/{job.SymbolCheckpoints.Count} symbols done, {pendingSymbols.Length} remaining",
                     PendingCount = pendingSymbols.Length,
                     TotalBarsDownloaded = job.TotalBarsDownloaded,
@@ -678,7 +678,7 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
         IsBackfillActive = response.IsActive;
         OverallProgressPercent = Math.Clamp(snapshot.OverallPercentComplete, 0d, 100d);
         OverallProgressText = $"Overall: {snapshot.CompletedSymbols:N0} / {snapshot.TotalSymbols:N0} symbols complete · {OverallProgressPercent:N1}%";
-        ProviderProgressObservedText = $"Observed {snapshot.Timestamp.ToLocalTime():g} · {snapshot.DroppedProviderNotifications:N0} provider notification(s) dropped";
+        ProviderProgressObservedText = $"Observed {FormatHelpers.FormatUtcTimestamp(snapshot.Timestamp)} · {snapshot.DroppedProviderNotifications:N0} provider notification(s) dropped";
 
         if (response.IsActive)
         {
@@ -729,8 +729,8 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
             ? string.Join(", ", status.Symbols)
             : "N/A";
         LastRunBarsWrittenText = status.BarsWritten.ToString("N0");
-        LastRunStartedText = status.StartedUtc?.LocalDateTime.ToString("g") ?? "Unknown";
-        LastRunCompletedText = status.CompletedUtc?.LocalDateTime.ToString("g") ?? "N/A";
+        LastRunStartedText = FormatHelpers.FormatUtcTimestamp(status.StartedUtc, "Unknown");
+        LastRunCompletedText = FormatHelpers.FormatUtcTimestamp(status.CompletedUtc, "N/A");
         ApplyBackfillStats(BuildBackfillStats(status));
     }
 
@@ -768,13 +768,13 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
 
         var runWindowText = (status.StartedUtc, status.CompletedUtc) switch
         {
-            ({ } started, { } completed) => $"{started.LocalDateTime:g} to {completed.LocalDateTime:g}",
-            ({ } started, null) => $"Started {started.LocalDateTime:g}",
+            ({ } started, { } completed) => $"{FormatHelpers.FormatUtcTimestamp(started)} to {FormatHelpers.FormatUtcTimestamp(completed)}",
+            ({ } started, null) => $"Started {FormatHelpers.FormatUtcTimestamp(started)}",
             _ => "Window unavailable"
         };
 
         var lastSuccessfulRunText = status.Success
-            ? status.CompletedUtc?.LocalDateTime.ToString("g") ?? "Completed; timestamp unavailable"
+            ? FormatHelpers.FormatUtcTimestamp(status.CompletedUtc, "Completed; timestamp unavailable")
             : "Latest run failed";
 
         return new BackfillStatsPresentation(

@@ -10,7 +10,7 @@ import {
   type CanonicalSymbolRegistryFetcher,
   type CanonicalSymbolRegistryRow
 } from "@/screens/data-screen.canonical-symbols.view-model";
-import { formatCount, formatLocalDateTime } from "@/lib/format";
+import { formatCount, formatUtcTimestamp } from "@/lib/format";
 
 const badgeVariantByTone: Record<CanonicalSymbolModeTone, BadgeProps["variant"]> = {
   success: "success",
@@ -27,7 +27,7 @@ const bannerToneByModeTone: Record<CanonicalSymbolModeTone, StatusBannerTone> = 
 };
 
 function formatTimestamp(value: string | null): string {
-  return value ? formatLocalDateTime(new Date(value)) : "No mismatch observed";
+  return value ? formatUtcTimestamp(new Date(value)) : "No mismatch observed";
 }
 
 function symbolSubtitle(symbol: CanonicalSymbolRegistryRow): string {
