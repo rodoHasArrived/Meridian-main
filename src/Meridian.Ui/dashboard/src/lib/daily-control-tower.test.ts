@@ -152,6 +152,9 @@ describe("daily control tower model", () => {
     const row = model.queueRows[0];
 
     expect(row?.proof?.label).toBe("Report pack approval waiting");
+    // The hero names the event correlated with the leading row, so it agrees with the row's
+    // Freshness fact rather than quoting whichever event is newest in the workstation.
+    expect(model.evidenceLabel).toBe("Linked evidence: Reporting 2026-05-14 21:00 UTC");
     expect(row?.proofPassportItems.map((item) => item.label)).toEqual(dailyControlTowerProofPassportLabels());
     expect(row?.proofPassportItems.find((item) => item.label === "Source")?.value).toBe("Reporting");
     expect(row?.proofPassportItems.find((item) => item.label === "Freshness")?.value).toBe("2026-05-14 21:00 UTC");
@@ -175,9 +178,16 @@ describe("daily control tower model", () => {
       )
     };
 
-    const row = buildDailyControlTowerModel(viewModel, shell.trustStrip).queueRows[0];
+    const model = buildDailyControlTowerModel(viewModel, shell.trustStrip);
+    const row = model.queueRows[0];
 
     expect(row?.proof).toBeNull();
+    // The newest remaining event belongs to another item. The hero may mention it as workstation
+    // context but must not present it as this decision's evidence.
+    expect(viewModel.evidenceTimelineItems.length).toBeGreaterThan(0);
+    expect(model.evidenceLabel).toMatch(/^No evidence linked to this item\. Latest workstation evidence: /);
+    expect(buildDailyControlTowerModel({ ...viewModel, evidenceTimelineItems: [] }, shell.trustStrip).evidenceLabel)
+      .toBe("No evidence linked to this item");
     expect(row?.proofPassportItems.find((item) => item.label === "Freshness")?.value)
       .toBe("No timestamped evidence");
     expect(row?.proofPassportItems.find((item) => item.label === "Evidence Packet")?.value)

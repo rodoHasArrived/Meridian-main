@@ -1155,7 +1155,7 @@ describe("app shell view model", () => {
       ["match-records", "Current / 1 open break", "review"],
       ["resolve-exceptions", "Next / 1 open break", "review"],
       ["approve-results", "1 open break", "review"],
-      ["produce-evidence", "1 recipients", "ready"],
+      ["produce-evidence", "1 recipient", "ready"],
       ["close-support", "Review", "review"]
     ]);
     expect(state.workflowContinuity.steps.find((step) => step.id === "match-records")?.ariaLabel)
@@ -1216,7 +1216,7 @@ describe("app shell view model", () => {
     expect(state.workflowContinuity.steps.map((step) => [step.id, step.statusLabel, step.statusTone])).toEqual([
       ["receive-activity", "Complete", "ready"],
       ["match-records", "Current / Complete", "ready"],
-      ["resolve-exceptions", "Next / 1 breaks", "review"],
+      ["resolve-exceptions", "Next / 1 break", "review"],
       ["approve-results", "Waiting", "pending"],
       ["produce-evidence", "Waiting", "pending"],
       ["close-support", "Waiting", "pending"]
