@@ -963,10 +963,19 @@ module SecurityMasterLegacyUpgrade =
                             LiquidityFeeEligible = None
                         }
             }
-        | SecurityKind.CustomAsset _ ->
+        | SecurityKind.CustomAsset terms ->
             // Custom-asset terms are an opaque profile-governed document; no structural
-            // economic-term modules can be extracted without interpreting the profile.
-            SecurityTermModules.empty
+            // economic-term modules can be extracted without interpreting the profile. The
+            // envelope and the document it pins travel whole on the profile-envelope module.
+            {
+                SecurityTermModules.empty with
+                    ProfileEnvelope =
+                        Some {
+                            CustomProfileId = terms.CustomProfileId
+                            ProfileVersion = terms.ProfileVersion
+                            TermsJson = terms.TermsJson
+                        }
+            }
 
     /// ADR-027 stage 2: the kind → modules projection as a first-class seam. S2-B1's equivalence
     /// tests reach it directly, and S2-B2 derives the economic definition from commands at

@@ -122,8 +122,8 @@ internal static class SecurityEconomicDefinitionAdapter
         // The flat family is keyed per asset class, so the fallback flattens against the record's
         // asset class: every value the economic document carries (call dates, pool factors, issuer
         // identity, sweep, fund and financing terms) lands at that class's declared flat key. It is
-        // still lossy for what the economic document never held — an option's strike, a swap's
-        // legs, a bond's subclass (SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.UnrecoverableKeys)
+        // still lossy for what the economic document never held — a swap's legs, a bond's
+        // subclass, an option's listing detail (SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.UnrecoverableKeys)
         // — so the payload is stamped with FlattenedFromMarkerProperty and a projection rebuilt
         // through this route stays distinguishable from one whose flat terms were always present.
         // Retained flat terms are read at the class's current terms version (ADR-024); the flattened
@@ -546,6 +546,12 @@ internal static class SecurityEconomicDefinitionAdapter
                 committedAmount = definition.Terms.Notional.Value.CommittedAmount,
                 fundedAmount = definition.Terms.Notional.Value.FundedAmount,
                 unfundedAmount = definition.Terms.Notional.Value.UnfundedAmount
+            },
+            profileEnvelope = definition.Terms.ProfileEnvelope is null ? null : new
+            {
+                customProfileId = definition.Terms.ProfileEnvelope.Value.CustomProfileId,
+                profileVersion = definition.Terms.ProfileEnvelope.Value.ProfileVersion,
+                terms = EmbedProfileDocument(definition.Terms.ProfileEnvelope.Value.TermsJson)
             }
         });
         // Keep byte-identical economics for records without a dated history. The additive field
@@ -562,6 +568,29 @@ internal static class SecurityEconomicDefinitionAdapter
             return JsonSerializer.SerializeToElement(expanded);
         }
         return document;
+    }
+
+    /// <summary>
+    /// The profile-governed terms document as the economic document carries it: embedded as JSON
+    /// when it is JSON, so it stays one queryable document rather than a string inside one. Text
+    /// that does not parse is carried as a JSON string, so an invalid document is preserved for
+    /// the envelope validation to refuse instead of being dropped here.
+    /// </summary>
+    private static JsonElement EmbedProfileDocument(string termsJson)
+    {
+        if (!string.IsNullOrWhiteSpace(termsJson))
+        {
+            try
+            {
+                using var document = JsonDocument.Parse(termsJson);
+                return document.RootElement.Clone();
+            }
+            catch (JsonException)
+            {
+            }
+        }
+
+        return JsonSerializer.SerializeToElement(termsJson ?? string.Empty);
     }
 
     /// Maps a <see cref="VotingRightsCat"/> DU to a stable wire token.

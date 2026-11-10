@@ -486,6 +486,20 @@ type NotionalTerms = {
     UnfundedAmount: decimal option
 }
 
+/// The governance envelope of a profile-backed custom asset together with the profile-governed
+/// terms document it pins, carried opaquely exactly as CustomAssetTerms carries it: profile
+/// fields are dynamic and governed by the approved profile version, so the module holds the
+/// document rather than modelling per-profile shapes. The home for the envelope the flat codec
+/// alone carried before S3-E.
+type ProfileEnvelopeTerms = {
+    /// Identifier of the approved custom-asset profile governing the record.
+    CustomProfileId: string
+    /// Version of the approved profile the record's fields were validated against.
+    ProfileVersion: int
+    /// The complete terms document (envelope, profileFields and any additional governed keys).
+    TermsJson: string
+}
+
 type SecurityTermModules = {
     // --- Original 15 modules ---
     Maturity: MaturityTerms option
@@ -525,6 +539,8 @@ type SecurityTermModules = {
     CurrencyPair: CurrencyPairTerms option
     /// Notional, denomination and commitment amounts.
     Notional: NotionalTerms option
+    /// Profile pin and governed terms document of a profile-backed custom asset.
+    ProfileEnvelope: ProfileEnvelopeTerms option
 }
 
 [<RequireQualifiedAccess>]
@@ -657,4 +673,5 @@ module SecurityTermModules =
         Exercise = None
         CurrencyPair = None
         Notional = None
+        ProfileEnvelope = None
     }

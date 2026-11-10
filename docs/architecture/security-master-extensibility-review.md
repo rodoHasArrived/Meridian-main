@@ -806,6 +806,40 @@ Validation (local, .NET SDK 10.0.403): `dotnet test tests/Meridian.Tests -c Rele
 active-plus-inactive gauge, and the zero case. The full local `bash scripts/ci.sh` was not run;
 GitHub `Meridian CI / quality-gate` remains authoritative.
 
+### ADR-027 stage-3 S3-E4 — the profile envelope gains a module home — 2026-11-10
+
+The last of the four themes the census named. A new `profileEnvelope` term module
+(`ProfileEnvelopeTerms`: `CustomProfileId`, `ProfileVersion`, `TermsJson`) mirrors
+`CustomAssetTerms` field for field: profile fields are dynamic and governed by the approved
+profile version, so the module carries the document opaquely rather than modelling per-profile
+shapes. `termsFromKind` feeds it for the CustomAsset kind, which previously projected no module.
+
+| Surface | Change |
+| --- | --- |
+| Economic document | `profileEnvelope` is `{ customProfileId, profileVersion, terms }`, where `terms` is the governed document embedded as JSON (so it stays one queryable document); text that does not parse is carried as a JSON string so the envelope validation can refuse it rather than the serializer dropping it. The key is emitted for every class, null for all but the CustomAsset kind, and joins `ModulesAddedAfterIdentityGate`. |
+| Validation ledger | All seven CustomAsset rules moved to `validateDefinitionTerms` through one shared `validateProfileEnvelope` function; CustomAsset keeps no codec-only rule. Four codes are proven through the codec by the mutation table; `custom_asset_profile_required`, `custom_asset_terms_required` and `custom_asset_terms_invalid` are codec-gated on that route (a blank profile id reads as the OtherSecurity salvage; a non-object document never decodes to a CustomAsset kind) and are proven on both surfaces by record-level F# tests. A CustomAsset definition with no envelope module is refused as an empty envelope. |
+| Economic-only replay | For a class that must pin a profile (`RequiresProfileReference`), an object-valued `profileEnvelope.terms` that names its profile is returned as the row's asset-specific terms, as stored: no flattening, no `flattenedFromEconomicTermsSchemaVersion` marker and no retained carry, because nothing was reconstructed and nothing is left behind — and because a marker would be written into a profile-governed document and carried into every later revision. Before the module, such a replay had no document at all and read as the OtherSecurity salvage. A null module (every document written before this change), a non-document or a document without its profile id takes the former route unchanged. |
+
+Two limits, stated so they are not mistaken for coverage. The module homes the CustomAsset
+*kind's* record fields: a profile-backed row that resolves to a first-class class (a
+StructuredCredit pinned through a reclassifying profile, for example) decodes to that class's
+kind, and its profile pin is a property of the stored document, not a record field — it stays
+document-level and is not recovered from the economic document
+(`ProfileBackedFirstClassRow_DoesNotGainAProfileEnvelopeModule` pins this). And the economic
+document now carries the profile document a second time beside the legacy asset-specific terms;
+every surface that passes the economic document through whole — the certified reporting
+snapshot is one — therefore carries the governed profile fields from the next write on.
+
+The replay corpus gained two CustomAsset cases — an image that recovers the document with a
+byte-identical next event, and a pre-module document that keeps the salvage route — and
+otherwise changed only by the appended `"profileEnvelope":null` key; the write golden changed
+by that key plus the CustomAsset module content.
+
+Validation (local, .NET SDK 10.0.403): `Meridian.Tests` SecurityMaster and Architecture
+namespaces — 6,338 passed, 1 skipped; `Meridian.FSharp.Tests` — 617 passed;
+`Meridian.Contracts.UnitTests` SecurityMaster — 45 passed. The full local `bash scripts/ci.sh`
+was not run; GitHub `Meridian CI / quality-gate` remains authoritative.
+
 ### ADR-027 stage-3 S3-E3 — notionals gain a module home — 2026-11-10
 
 A new `notional` term module (`NotionalTerms`: `notional`, `denomination`, `committedAmount`,

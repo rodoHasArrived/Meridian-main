@@ -297,66 +297,72 @@ module SecurityMaster =
                 (error "structured_note_barrier_invalid" "StructuredNote BarrierLevel must be greater than zero when present.")
         | SecurityKind.InvestmentFund _ ->
             []
-        | SecurityKind.CustomAsset terms ->
-            // Write-path envelope validation: the DOCUMENT must declare the governance envelope the
-            // schema requires (numeric profileVersion, object-valued profileFields), so a tolerant
-            // read-side default can never let an incomplete envelope become a canonical record.
-            // Reads stay tolerant — this validation runs only on create/amend commands.
-            let envelopeErrors =
-                if String.IsNullOrWhiteSpace terms.TermsJson then
-                    []
-                else
-                    try
-                        use document = JsonDocument.Parse terms.TermsJson
-                        let root = document.RootElement
-                        if root.ValueKind <> JsonValueKind.Object then
-                            [ error "custom_asset_terms_invalid" "CustomAsset terms must be a JSON object." ]
-                        else
-                            []
-                            @ (let namesSecuritizedProduct (element: JsonElement) =
-                                   [ "category"; "subType"; "accountingClassification" ]
-                                   |> List.exists (fun key ->
-                                       match element.TryGetProperty key with
-                                       | true, value when value.ValueKind = JsonValueKind.String ->
-                                           Meridian.Contracts.SecurityMaster.SecurityCanonicalAssetHomes.IsSecuritizedLabel(value.GetString())
-                                       | _ -> false)
-                               let noncanonical =
-                                   namesSecuritizedProduct root
-                                   || (match root.TryGetProperty "profileFields" with
-                                       | true, fields when fields.ValueKind = JsonValueKind.Object -> namesSecuritizedProduct fields
-                                       | _ -> false)
-                               let resolvesToStructuredCredit =
-                                   not (String.IsNullOrWhiteSpace terms.CustomProfileId)
-                                   && (match Meridian.Contracts.SecurityMaster.SecurityAssetPackRegistry.ProfileAssetClasses.TryGetValue terms.CustomProfileId with
-                                       | true, assetClass -> assetClass = "StructuredCredit"
-                                       | _ -> false)
-                               require (not noncanonical || resolvesToStructuredCredit)
-                                   (error "custom_asset_securitized_noncanonical" "Securitized products must resolve to StructuredCredit through a reclassifying profile or a first-class StructuredCredit definition."))
-                            @ (match root.TryGetProperty "profileVersion" with
-                               | true, value when value.ValueKind = JsonValueKind.Number ->
-                                   // A JSON number is not enough: a fractional value such as 1.5
-                                   // would pass here, persist verbatim in the canonical document,
-                                   // and then read back through the tolerant default as version 1.
-                                   // Require an actual positive integer on the write path.
-                                   (match value.TryGetInt32() with
-                                    | true, version when version > 0 -> []
-                                    | _ ->
-                                        [ error
-                                              "custom_asset_profile_version_invalid"
-                                              "CustomAsset terms profileVersion must be a positive integer." ])
-                               | _ -> [ error "custom_asset_profile_version_missing" "CustomAsset terms must declare a numeric profileVersion." ])
-                            @ (match root.TryGetProperty "profileFields" with
-                               | true, value when value.ValueKind = JsonValueKind.Object -> []
-                               | _ -> [ error "custom_asset_profile_fields_missing" "CustomAsset terms must declare an object-valued profileFields." ])
-                    with :? JsonException ->
-                        [ error "custom_asset_terms_invalid" "CustomAsset terms must be valid JSON." ]
-
+        | SecurityKind.CustomAsset _ ->
             []
-            @ requireNotBlank "custom_asset_profile_required" "CustomProfileId" terms.CustomProfileId
-            @ require (terms.ProfileVersion > 0)
-                (error "custom_asset_profile_version_invalid" "CustomAsset ProfileVersion must be greater than zero.")
-            @ requireNotBlank "custom_asset_terms_required" "TermsJson" terms.TermsJson
-            @ envelopeErrors
+
+    /// The CustomAsset envelope rules, over the three values CustomAssetTerms and the
+    /// profile-envelope module both carry. ADR-027 stage 3 (S3-E4) moved them onto the
+    /// definition surface when the envelope gained its module home.
+    let private validateProfileEnvelope (customProfileId: string) (profileVersion: int) (termsJson: string) =
+        // Write-path envelope validation: the DOCUMENT must declare the governance envelope the
+        // schema requires (numeric profileVersion, object-valued profileFields), so a tolerant
+        // read-side default can never let an incomplete envelope become a canonical record.
+        // Reads stay tolerant — this validation runs only on create/amend commands.
+        let envelopeErrors =
+            if String.IsNullOrWhiteSpace termsJson then
+                []
+            else
+                try
+                    use document = JsonDocument.Parse termsJson
+                    let root = document.RootElement
+                    if root.ValueKind <> JsonValueKind.Object then
+                        [ error "custom_asset_terms_invalid" "CustomAsset terms must be a JSON object." ]
+                    else
+                        []
+                        @ (let namesSecuritizedProduct (element: JsonElement) =
+                               [ "category"; "subType"; "accountingClassification" ]
+                               |> List.exists (fun key ->
+                                   match element.TryGetProperty key with
+                                   | true, value when value.ValueKind = JsonValueKind.String ->
+                                       Meridian.Contracts.SecurityMaster.SecurityCanonicalAssetHomes.IsSecuritizedLabel(value.GetString())
+                                   | _ -> false)
+                           let noncanonical =
+                               namesSecuritizedProduct root
+                               || (match root.TryGetProperty "profileFields" with
+                                   | true, fields when fields.ValueKind = JsonValueKind.Object -> namesSecuritizedProduct fields
+                                   | _ -> false)
+                           let resolvesToStructuredCredit =
+                               not (String.IsNullOrWhiteSpace customProfileId)
+                               && (match Meridian.Contracts.SecurityMaster.SecurityAssetPackRegistry.ProfileAssetClasses.TryGetValue customProfileId with
+                                   | true, assetClass -> assetClass = "StructuredCredit"
+                                   | _ -> false)
+                           require (not noncanonical || resolvesToStructuredCredit)
+                               (error "custom_asset_securitized_noncanonical" "Securitized products must resolve to StructuredCredit through a reclassifying profile or a first-class StructuredCredit definition."))
+                        @ (match root.TryGetProperty "profileVersion" with
+                           | true, value when value.ValueKind = JsonValueKind.Number ->
+                               // A JSON number is not enough: a fractional value such as 1.5
+                               // would pass here, persist verbatim in the canonical document,
+                               // and then read back through the tolerant default as version 1.
+                               // Require an actual positive integer on the write path.
+                               (match value.TryGetInt32() with
+                                | true, version when version > 0 -> []
+                                | _ ->
+                                    [ error
+                                          "custom_asset_profile_version_invalid"
+                                          "CustomAsset terms profileVersion must be a positive integer." ])
+                           | _ -> [ error "custom_asset_profile_version_missing" "CustomAsset terms must declare a numeric profileVersion." ])
+                        @ (match root.TryGetProperty "profileFields" with
+                           | true, value when value.ValueKind = JsonValueKind.Object -> []
+                           | _ -> [ error "custom_asset_profile_fields_missing" "CustomAsset terms must declare an object-valued profileFields." ])
+                with :? JsonException ->
+                    [ error "custom_asset_terms_invalid" "CustomAsset terms must be valid JSON." ]
+
+        []
+        @ requireNotBlank "custom_asset_profile_required" "CustomProfileId" customProfileId
+        @ require (profileVersion > 0)
+            (error "custom_asset_profile_version_invalid" "CustomAsset ProfileVersion must be greater than zero.")
+        @ requireNotBlank "custom_asset_terms_required" "TermsJson" termsJson
+        @ envelopeErrors
 
     // ── ADR-027 stage 2 (S2-B1): the validation surface over the economic definition ────────────
     //
@@ -630,6 +636,11 @@ module SecurityMaster =
         | "RealEstateHolding" ->
             []
             @ requireNotBlank "real_estate_property_type_required" "PropertyType" (moduleString (modules.Issuer |> Option.bind (fun i -> i.IssuerProgram)))
+        | "CustomAsset" ->
+            // A definition without the module fails exactly as an empty envelope would.
+            match modules.ProfileEnvelope with
+            | Some envelope -> validateProfileEnvelope envelope.CustomProfileId envelope.ProfileVersion envelope.TermsJson
+            | None -> validateProfileEnvelope String.Empty 0 String.Empty
         | _ -> []
 
     /// ADR-027 stage 2 (S2-B2): the kind rule set, recomposed. The definition surface
@@ -839,6 +850,10 @@ module SecurityMaster =
               "private_fund_funded_invalid"; "private_fund_unfunded_invalid" ]
             "PrivateCompanyEquity", [ "private_company_issuer_required"; "private_company_share_class_required"; "private_company_round_required" ]
             "RealEstateHolding", [ "real_estate_property_type_required" ]
+            "CustomAsset",
+            [ "custom_asset_profile_required"; "custom_asset_profile_version_invalid"; "custom_asset_terms_required"
+              "custom_asset_terms_invalid"; "custom_asset_securitized_noncanonical"
+              "custom_asset_profile_version_missing"; "custom_asset_profile_fields_missing" ]
         ]
 
     let create (command: CreateSecurity) =

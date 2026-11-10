@@ -475,3 +475,16 @@ and S2-B4 (codec single-purpose) land. Planned increments:
     PrivateFundInterest and CommitmentGuarantee. Eleven rules moved to the definition surface;
     FxForward, NonDeliverableForward and CapFloor keep no codec-only rule. Swap leg notionals
     stay with the structural leg decode.
+  - **S3-E4 — the profile envelope (implemented 2026-11-10).** New `profileEnvelope` term
+    module (`ProfileEnvelopeTerms`: profile id, profile version and the governed terms
+    document) homes the three `CustomAssetTerms` fields; the economic document embeds the
+    document as JSON. All seven CustomAsset envelope rules moved to the definition surface.
+    An economic-only CustomAsset replay now returns the stored profile document whole (no
+    marker, no retained carry) instead of reading as the OtherSecurity salvage; a document
+    written before the module keeps the former route. The profile pin of a profile-backed
+    row that resolves to a first-class class is not a record field and stays document-level.
+  - **Remaining for S3-E.** The record-field contraction itself (removing per-class record
+    fields now that they have homes) and the residual codec-only complement listed in the
+    review record (structural decodes — bond coupon structures and principal schedules, swap
+    legs, covenant entries — plus the scalar remainder: CDS reference terms, structured-note
+    payoff terms, private-asset valuations, listing detail). Both wait on owner sequencing.

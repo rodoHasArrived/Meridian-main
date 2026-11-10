@@ -97,6 +97,22 @@
       "economicTerms": {"schemaVersion":2,"termsFormat":"economic","maturity":null,"coupon":null,"discount":null,"accrual":null,"payment":null,"redemption":null,"call":null,"auction":null,"sweep":null,"financing":null,"issuer":null,"equityBehavior":{"shareClass":"Common","votingRights":"FullVoting","distributionType":null},"fund":null,"structuredProduct":null},
       "legacyAssetSpecificTerms": null,
       "expectRefusal": true
+    },
+    {
+      "name": "customasset-image-profile-envelope",
+      "assetClass": "Other",
+      "typeName": "CustomAsset",
+      "legacyAssetClass": "CustomAsset",
+      "economicTerms": {"schemaVersion":2,"termsFormat":"economic","maturity":null,"coupon":null,"discount":null,"accrual":null,"payment":null,"redemption":null,"call":null,"auction":null,"sweep":null,"financing":null,"issuer":null,"equityBehavior":null,"fund":null,"structuredProduct":null,"floatingRate":null,"tradingParameters":null,"creditRating":null,"depositaryReceipt":null,"dividendSchedule":null,"covenants":null,"esg":null,"venue":null,"multiCalendar":null,"inflationLinked":null,"sinkingFund":null,"exercise":null,"currencyPair":null,"notional":null,"profileEnvelope":{"customProfileId":"co-invest-spv","profileVersion":2,"terms":{"schemaVersion":3,"customProfileId":"co-invest-spv","profileVersion":2,"category":"PrivateEquity","subType":"CoInvestVehicle","profileFields":{"vehicle":"Meridian Co-Invest SPV I","commitment":2500000,"sponsor":"Meridian Capital"}}}},
+      "legacyAssetSpecificTerms": null
+    },
+    {
+      "name": "customasset-predates-profile-envelope",
+      "assetClass": "Other",
+      "typeName": "CustomAsset",
+      "legacyAssetClass": "CustomAsset",
+      "economicTerms": {"schemaVersion":2,"termsFormat":"economic","maturity":null,"coupon":null,"discount":null,"accrual":null,"payment":null,"redemption":null,"call":null,"auction":null,"sweep":null,"financing":null,"issuer":null,"equityBehavior":null,"fund":null,"structuredProduct":null,"floatingRate":null,"tradingParameters":null,"creditRating":null,"depositaryReceipt":null,"dividendSchedule":null,"covenants":null,"esg":null,"venue":null,"multiCalendar":null,"inflationLinked":null,"sinkingFund":null},
+      "legacyAssetSpecificTerms": null
     }
   ]
 }

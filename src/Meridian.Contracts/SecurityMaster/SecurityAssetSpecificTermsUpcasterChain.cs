@@ -53,6 +53,12 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     /// <summary>The economic module that carries <see cref="FactorScheduleEntriesKey"/>.</summary>
     private const string StructuredProductModule = "structuredProduct";
 
+    /// <summary>
+    /// The economic module that carries a profile-backed custom asset's envelope and its governed
+    /// terms document (ADR-027 stage 3, S3-E4).
+    /// </summary>
+    private const string ProfileEnvelopeModule = "profileEnvelope";
+
     /// <summary>The economic-terms modules this conversion reads. Order is the flattening order.</summary>
     public static IReadOnlyList<string> BridgedModules { get; } =
         ["maturity", "coupon", "payment", "accrual", "discount"];
@@ -67,7 +73,7 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     /// fails closed. A module added to the serializer from here on joins this list.
     /// </summary>
     public static IReadOnlyList<string> ModulesAddedAfterIdentityGate { get; } =
-        ["exercise", "currencyPair", "notional"];
+        ["exercise", "currencyPair", "notional", ProfileEnvelopeModule];
 
     /// <summary>
     /// The economic-terms modules the serializer emits that this conversion does not read. Listed
@@ -238,8 +244,9 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     /// written (<c>SecurityEconomicTermsV2BridgeCoverageTests</c> asserts it), so the result reads like
     /// an original v1 write for that class.
     /// <para>
-    /// What remains lost is what the economic-terms document never carried: an option's strike and
-    /// put/call, a swap's legs, and a bond's subclass. Since ADR-027 stage 1 increments 1 and 2,
+    /// What remains lost is what the economic-terms document never carried: a swap's legs, a
+    /// bond's subclass, an option's listing detail (the S3-E module homes carry strikes, currency
+    /// pairs, notionals and the custom-asset profile document). Since ADR-027 stage 1 increments 1 and 2,
     /// the Call module's call and put lists land in the flat callSchedule and putSchedule arrays,
     /// and the Accrual module's business-day convention and joint payment calendar land in the
     /// scheduleConventions block, for a class that declares those homes — stamped at the held
@@ -256,6 +263,17 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     /// </summary>
     public static SecurityAssetSpecificTerms Convert(JsonElement economicTerms, string? assetClass)
     {
+        // ADR-027 stage 3 (S3-E4): a class that must pin a custom profile carries its whole
+        // governed terms document on the profile-envelope module. That document IS the row's
+        // asset-specific terms, so it is returned as stored — no flattening, no marker and no
+        // retained carry, because nothing was reconstructed and nothing is left behind. A
+        // document written before the module existed has no such module and takes the routes
+        // below unchanged.
+        if (TryRecoverProfileDocument(economicTerms, assetClass, out var profileDocument))
+        {
+            return SecurityAssetSpecificTermsV0ToCurrentUpcaster.Normalize(profileDocument);
+        }
+
         if (!TryGetClassFlattening(assetClass, out var mappings))
         {
             return Convert(economicTerms);
@@ -421,6 +439,25 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
 
         using var flattened = JsonDocument.Parse(buffer.ToArray());
         return new SecurityAssetSpecificTerms(flattened.RootElement.Clone(), AssetSpecificTermsSchema.Legacy);
+    }
+
+    private static bool TryRecoverProfileDocument(JsonElement economicTerms, string? assetClass, out JsonElement document)
+    {
+        document = default;
+        if (string.IsNullOrWhiteSpace(assetClass)
+            || !SecurityAssetClassCatalog.GetOrDefault(assetClass).RequiresProfileReference
+            || GetObject(economicTerms, ProfileEnvelopeModule) is not JsonElement envelope
+            || !envelope.TryGetProperty("terms", out var terms)
+            || terms.ValueKind != JsonValueKind.Object
+            || !terms.TryGetProperty("customProfileId", out var profileId)
+            || profileId.ValueKind != JsonValueKind.String
+            || string.IsNullOrWhiteSpace(profileId.GetString()))
+        {
+            return false;
+        }
+
+        document = terms;
+        return true;
     }
 
     // An economic-only event cannot recover the complete flat schedule declaration: Accrual

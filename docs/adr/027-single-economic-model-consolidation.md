@@ -85,7 +85,7 @@ stages are ordered so each is independently valuable and the decision can stop a
 | Component | Location | Purpose |
 |-----------|----------|---------|
 | Per-class model | `src/Meridian.FSharp/Domain/SecurityMaster.fs` | `SecurityKind` union and per-class term records |
-| Module model | `src/Meridian.FSharp/Domain/SecurityTermModules.fs` | The 25 term modules |
+| Module model | `src/Meridian.FSharp/Domain/SecurityTermModules.fs` | The term modules (25 at acceptance; 29 since the stage-3 S3-E module homes) |
 | Economic definition | `src/Meridian.FSharp/Domain/SecurityEconomicDefinition.fs` | Classification + modules record events carry |
 | Bridge (upgrade) | `src/Meridian.FSharp/Domain/SecurityMasterLegacyUpgrade.fs` | Flat record → economic definition |
 | Bridge (mapping) | `src/Meridian.Application/SecurityMaster/SecurityMasterMapping.cs` | Commands, DTOs, event envelopes |

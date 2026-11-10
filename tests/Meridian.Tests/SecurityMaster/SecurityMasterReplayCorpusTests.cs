@@ -299,6 +299,79 @@ public sealed class SecurityMasterReplayCorpusTests
                 out _);
     }
 
+    [Fact]
+    public void CustomAsset_EconomicOnlyReplay_RecoversTheProfileDocumentWhole()
+    {
+        // ADR-027 stage 3 (S3-E4): the profile envelope and the governed document it pins ride
+        // on the profileEnvelope module, so the economic document alone rebuilds the row. Before
+        // the module, an economic-only CustomAsset replay had no document at all and read as the
+        // OtherSecurity salvage.
+        var original = SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain(
+            "CustomAsset", SecurityAssetTermsSchemaRoundTripTests.FullPayloads["CustomAsset"]);
+        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("CustomAsset", original));
+
+        var envelope = economic.EconomicTerms.GetProperty("profileEnvelope");
+        envelope.GetProperty("customProfileId").GetString().Should().Be(original.GetProperty("customProfileId").GetString());
+        envelope.GetProperty("profileVersion").GetInt32().Should().Be(original.GetProperty("profileVersion").GetInt32());
+        JsonNode.DeepEquals(JsonNode.Parse(envelope.GetProperty("terms").GetRawText()), JsonNode.Parse(original.GetRawText()))
+            .Should().BeTrue("the module carries the governed document whole");
+
+        var recovered = SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null });
+
+        JsonNode.DeepEquals(JsonNode.Parse(recovered.AssetSpecificTerms.GetRawText()), JsonNode.Parse(original.GetRawText()))
+            .Should().BeTrue("the rebuilt row is the stored profile document, key for key");
+        SecurityTermsEnvelope.TryGetRetainedEconomicTerms(recovered.AssetSpecificTerms, out _)
+            .Should().BeFalse("nothing is left behind for a carry to hold");
+        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.WasFlattenedFromEconomicTerms(recovered.AssetSpecificTerms)
+            .Should().BeFalse("the document was returned as stored, not reconstructed by the lossy route");
+        SecurityTermsEnvelope.ResolveFormat(recovered.AssetSpecificTerms).Should().Be(SecurityTermsFormats.CustomProfile);
+        SecurityMasterMapping.ToRecord(recovered).Kind.IsCustomAsset.Should().BeTrue("the row still decodes as a profile-backed custom asset");
+        SecurityEconomicDefinitionAdapter.ToEconomicRecord(recovered).EconomicTerms.GetRawText()
+            .Should().Be(economic.EconomicTerms.GetRawText(), "the next event reproduces the source document byte for byte");
+    }
+
+    [Theory]
+    [InlineData("null")]
+    [InlineData("""{"customProfileId":"co-invest-spv","profileVersion":2,"terms":"not a document"}""")]
+    [InlineData("""{"customProfileId":"co-invest-spv","profileVersion":2,"terms":{"profileVersion":2,"profileFields":{}}}""")]
+    public void CustomAsset_WithoutARecoverableEnvelopeDocument_KeepsTheFormerRoute(string envelopeModule)
+    {
+        // Only an object-valued document that names its profile is recovered. An absent module
+        // (every document written before S3-E4), a non-document, or a document without its
+        // profile id takes the route it always took: the class-independent bridge with its
+        // marker and retained carry.
+        var original = SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain(
+            "CustomAsset", SecurityAssetTermsSchemaRoundTripTests.FullPayloads["CustomAsset"]);
+        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("CustomAsset", original));
+        var terms = JsonNode.Parse(economic.EconomicTerms.GetRawText())!.AsObject();
+        terms["profileEnvelope"] = JsonNode.Parse(envelopeModule);
+
+        var recovered = SecurityEconomicDefinitionAdapter.ToProjection(
+            economic with { EconomicTerms = JsonSerializer.SerializeToElement(terms), LegacyAssetSpecificTerms = null });
+
+        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.WasFlattenedFromEconomicTerms(recovered.AssetSpecificTerms).Should().BeTrue();
+        SecurityTermsEnvelope.TryGetRetainedEconomicTerms(recovered.AssetSpecificTerms, out _).Should().BeTrue();
+        recovered.AssetSpecificTerms.TryGetProperty("customProfileId", out _).Should().BeFalse();
+    }
+
+    [Fact]
+    public void ProfileBackedFirstClassRow_DoesNotGainAProfileEnvelopeModule()
+    {
+        // The module homes the CustomAsset KIND's record fields. A profile-backed row that
+        // resolves to a first-class class decodes to that class's kind, whose envelope is a
+        // property of the stored document, not a record field — it stays document-level.
+        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(
+                "StructuredCredit",
+                SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain(
+                    "CustomAsset", SecurityAssetTermsSchemaRoundTripTests.FullPayloads["CustomAsset"])));
+
+        economic.EconomicTerms.GetProperty("profileEnvelope").ValueKind.Should().Be(JsonValueKind.Null);
+        economic.EconomicTerms.GetProperty("structuredProduct").ValueKind.Should().Be(JsonValueKind.Object);
+    }
+
     [Theory]
     [MemberData(nameof(DeclaredAssetClasses))]
     public void RecordAwareDerivation_IsByteIdenticalToTheProjectionDecode(string assetClass)

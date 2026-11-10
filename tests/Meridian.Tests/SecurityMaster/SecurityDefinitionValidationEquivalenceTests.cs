@@ -143,6 +143,13 @@ public sealed class SecurityDefinitionValidationEquivalenceTests
         ("PrivateFundInterest", "private_fund_unfunded_invalid", "unfundedAmount", "-1"),
         ("CommitmentGuarantee", "commitment_guarantee_amount_invalid", "committedAmount", "-1"),
         ("CommitmentGuarantee", "commitment_guarantee_exposure_invalid", "unfundedAmount", "-1"),
+        // S3-E4: the profileEnvelope module carries the envelope and its governed document. The
+        // twin pins a profile that resolves to StructuredCredit; repinning it to one that does not
+        // leaves the securitized category noncanonical.
+        ("CustomAsset", "custom_asset_profile_version_missing", "profileVersion", "null"),
+        ("CustomAsset", "custom_asset_profile_version_invalid", "profileVersion", "1.5"),
+        ("CustomAsset", "custom_asset_profile_fields_missing", "profileFields", "null"),
+        ("CustomAsset", "custom_asset_securitized_noncanonical", "customProfileId", "\"co-invest-spv\""),
         ("CapFloor", "cap_floor_reference_index_required", "referenceIndex", "\" \""),
         ("CapFloor", "cap_floor_strike_order_invalid", "floorStrike", "99999"),
         ("CapFloor", "cap_floor_date_range_invalid", "effectiveDate", "\"2999-01-01\""),
@@ -207,6 +214,14 @@ public sealed class SecurityDefinitionValidationEquivalenceTests
                 "structured_credit_factor_schedule_invalid",
                 "structured_credit_factor_schedule_duplicate_date",
                 "structured_credit_factor_schedule_not_monotonic"
+            ],
+            // A blank profile id reads as the OtherSecurity salvage, and a non-object or
+            // unparseable document never reaches a CustomAsset kind through the codec.
+            ["CustomAsset"] =
+            [
+                "custom_asset_profile_required",
+                "custom_asset_terms_required",
+                "custom_asset_terms_invalid"
             ]
         };
 

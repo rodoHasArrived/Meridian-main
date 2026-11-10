@@ -56,6 +56,19 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
 
         var rebuilt = SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null }).AssetSpecificTerms;
 
+        if (SecurityAssetClassCatalog.GetOrDefault(assetClass).RequiresProfileReference)
+        {
+            // ADR-027 stage 3 (S3-E4): the profile-envelope module carries the governed document
+            // whole, so it comes back as stored rather than flattened key by key — no marker,
+            // because nothing was reconstructed, and nothing added to a profile-governed document.
+            System.Text.Json.Nodes.JsonNode.DeepEquals(
+                    System.Text.Json.Nodes.JsonNode.Parse(rebuilt.GetRawText()),
+                    System.Text.Json.Nodes.JsonNode.Parse(original.GetRawText()))
+                .Should().BeTrue($"the rebuilt {assetClass} payload is the stored profile document");
+            SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.WasFlattenedFromEconomicTerms(rebuilt).Should().BeFalse();
+            return;
+        }
+
         SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.WasFlattenedFromEconomicTerms(rebuilt).Should().BeTrue();
         SecurityTermsEnvelope.ResolveAssetClassTermsVersion(rebuilt).Should().Be(
             SecurityAssetClassCatalog.GetStampFloor(assetClass),
@@ -319,7 +332,7 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
 
     // The S3-E module keys the serializer appends after sinkingFund; null for every class these
     // fixtures cover. One constant, so a new module home extends every fixture in one place.
-    private const string S3ENullModules = ",\"exercise\":null,\"currencyPair\":null,\"notional\":null";
+    private const string S3ENullModules = ",\"exercise\":null,\"currencyPair\":null,\"notional\":null,\"profileEnvelope\":null";
 
     private const string NullAccrual = "\"accrual\":null";
 
