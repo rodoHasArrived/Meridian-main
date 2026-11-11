@@ -4339,7 +4339,8 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
             IEnumerable<ISecurityMasterRevisionPublishedHandler>? handlers = null,
             Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null,
             ISecurityMasterRevisionStore? revisions = null,
-            Microsoft.Extensions.Options.IOptionsMonitor<SecurityMasterWorkbenchOptions>? workbenchOptions = null)
+            Microsoft.Extensions.Options.IOptionsMonitor<SecurityMasterWorkbenchOptions>? workbenchOptions = null,
+            ISecurityMasterGovernanceRequirements? governanceRequirements = null)
         {
             _assetProfileCatalog = assetProfileCatalog
                 ?? Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog.CreateDefault();
@@ -4384,7 +4385,9 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
                 FieldProvenance.Object,
                 ProjectionStore.Object,
                 _assetProfileCatalog,
-                workbenchOptions);
+                // Options reach the service through the governance seam, as in the composed graph.
+                governanceRequirements
+                    ?? (workbenchOptions is null ? null : GovernanceRequirementsFor.NonProduction(workbenchOptions)));
         }
 
         private readonly Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog _assetProfileCatalog;

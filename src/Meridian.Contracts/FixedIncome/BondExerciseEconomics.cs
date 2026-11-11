@@ -110,23 +110,8 @@ public static class BondExerciseEconomics
                 for (var index = 0; index < ordered.Length; index++)
                 {
                     var row = ordered[index];
-                    var prefix = kind == "Call" ? "call" : "put";
-                    var start = Date(row, prefix + "Date");
-                    var next = index + 1 < ordered.Length ? Date(ordered[index + 1], prefix + "Date") : null;
-                    var end = Date(row, prefix + "EndDate") ?? next?.AddDays(-1) ?? terms.MaturityDate;
-                    var style = BondContractualEconomics.Text(row, "exerciseStyle");
-                    var price = Number(row, prefix + "Price");
-                    if (start is null || end is null || price is null or <= 0m
-                        || style is not ("European" or "Bermudan")
-                        || BondContractualEconomics.Text(row, "priceBasis") is not (null or "PercentOfPar")
-                        || BondContractualEconomics.Text(row, "priceType") is not (null or "Fixed")
-                        || BondContractualEconomics.Text(row, "partialRedemption") is not (null or "WholeOnly"))
-                    {
-                        refusal = "Exercise analytics requires dated European/Bermudan whole fixed-price redemption in percent of par; continuous, make-whole and accreted-value exercise is unsupported.";
-                        return false;
-                    }
-                    if (!TryExerciseDates(row, start.Value, end.Value, style, terms.PaymentFrequency,
-                            out var dates, out refusal))
+                    if (!TryReadEntry(ordered, index, kind, terms.MaturityDate, terms.PaymentFrequency,
+                            out var price, out var dates, out refusal))
                         return false;
                     foreach (var unadjusted in dates)
                     {
@@ -189,7 +174,7 @@ public static class BondExerciseEconomics
                                      DayCountConventions.Parse(terms.DayCountConvention), terms.CouponKind == SecurityCouponKind.ZeroCoupon,
                                      convention, out time, out refusal))
                             return false;
-                        result.Add(new(kind, exercise, price.Value, couponAccrued, latestNotice, earliestNotice, time));
+                        result.Add(new(kind, exercise, price, couponAccrued, latestNotice, earliestNotice, time));
                         if (result.Count > 1200)
                         { refusal = "Exercise scenario count exceeds 1200."; return false; }
                     }
@@ -203,6 +188,126 @@ public static class BondExerciseEconomics
         }
         yields = result.OrderBy(static item => item.ExerciseDate).ThenBy(static item => item.Kind, StringComparer.Ordinal).ToArray();
         return true;
+    }
+
+    /// <summary>
+    /// The exercise scenarios of a record whose class declares call and put schedules but has no
+    /// coupon schedule kernel (its terms carry no issue date or payment frequency): each declared
+    /// entry's dates under the entry rules <see cref="TryResolveScenarios(SecurityDetailDto, StructuredCashFlowTerms, DeclaredScheduleResolution, ScheduleGenerationResult, DateOnly, decimal, BondYieldConvention, int, IReadOnlyList{BondAnalyticsCashFlow}, IBusinessDayCalendarSource?, out IReadOnlyList{BondRedemptionScenario}, out string?)"/>
+    /// applies to a bond, with its notice bounds. No coupon is accrued and no discount time is taken,
+    /// so <see cref="BondRedemptionScenario.AccruedPer100"/> and
+    /// <see cref="BondRedemptionScenario.TimeInYears"/> are zero: the result supports notice windows
+    /// and dated rows, not pricing.
+    /// </summary>
+    /// <remarks>
+    /// An exercise date is adjusted only where <paramref name="declared"/> resolved a payment
+    /// adjustment; otherwise it is the declared date. A Bermudan entry needs its own
+    /// <c>exerciseFrequency</c>, because there is no coupon frequency to fall back to. Business-day
+    /// notice needs the declared payment calendars, as for a bond. Dates on or before
+    /// <paramref name="settlement"/> or after <paramref name="maturity"/> are dropped.
+    /// </remarks>
+    public static bool TryResolveDeclaredDates(SecurityDetailDto security, DateOnly maturity,
+        DeclaredScheduleResolution declared, DateOnly settlement, IBusinessDayCalendarSource? calendars,
+        out IReadOnlyList<BondRedemptionScenario> scenarios, out string? refusal)
+    {
+        ArgumentNullException.ThrowIfNull(security);
+        ArgumentNullException.ThrowIfNull(declared);
+        scenarios = [];
+        refusal = null;
+        var payload = security.AssetSpecificTerms;
+        var hasCalls = Array(payload, SecurityVersionedTerms.CallScheduleKey, out var calls);
+        var hasPuts = Array(payload, SecurityVersionedTerms.PutScheduleKey, out var puts);
+        if (!hasCalls && !hasPuts)
+        {
+            return true;
+        }
+
+        // The arrays are read only under a stamp that decodes them, as the terms codec reads them.
+        var decoding = SecurityVersionedTerms.Decoding(security.AssetClass, payload, writeMode: false);
+        foreach (var (present, key) in new[] { (hasCalls, SecurityVersionedTerms.CallScheduleKey), (hasPuts, SecurityVersionedTerms.PutScheduleKey) })
+        {
+            if (present && (SecurityAssetTermsSchema.Field(security.AssetClass, key) is not { } field || !decoding.Decodes(field)))
+            {
+                refusal = SecurityAssetTermsSchema.Field(security.AssetClass, key) is { } declaredField
+                    ? $"Declared exercise schedules require terms version {declaredField.SinceTermsVersion} or later for this asset class."
+                    : "This asset class's terms declare no call or put schedule.";
+                return false;
+            }
+        }
+
+        var result = new List<BondRedemptionScenario>();
+        try
+        {
+            // A stored row read back is its own retained declaration, as for a bond (ADR-025).
+            ScheduleTermsWriteRules.ValidateDeclarations(security.AssetClass, payload,
+                SecurityTermsEnvelope.ResolveAssetClassTermsVersion(payload), retained: payload);
+            var adjustment = declared.Spec?.PaymentAdjustment;
+            var lastDate = adjustment is { Calendar: { } maturityCalendar }
+                ? maturityCalendar.Adjust(maturity, adjustment.Convention)
+                : maturity;
+            foreach (var (kind, rows) in new[] { ("Call", calls), ("Put", puts) })
+            {
+                var ordered = rows.Where(static row => row.ValueKind == JsonValueKind.Object)
+                    .OrderBy(row => Date(row, kind == "Call" ? "callDate" : "putDate")).ToArray();
+                for (var index = 0; index < ordered.Length; index++)
+                {
+                    var row = ordered[index];
+                    if (!TryReadEntry(ordered, index, kind, maturity, couponFrequency: null, out var price, out var dates, out refusal))
+                        return false;
+                    foreach (var unadjusted in dates)
+                    {
+                        var exercise = adjustment is { Calendar: { } calendar }
+                            ? calendar.Adjust(unadjusted, adjustment.Convention) : unadjusted;
+                        if (exercise <= settlement || exercise > lastDate)
+                            continue;
+                        if (!TryNotice(row, exercise, declared, calendars, out var latestNotice, out var earliestNotice, out refusal))
+                            return false;
+                        result.Add(new(kind, exercise, price, 0m, latestNotice, earliestNotice, 0m));
+                        if (result.Count > 1200)
+                        { refusal = "Exercise scenario count exceeds 1200."; return false; }
+                    }
+                }
+            }
+        }
+        catch (Exception exception) when (exception is ArgumentException or InvalidOperationException or OverflowException)
+        {
+            refusal = "Declared exercise schedule could not be evaluated: " + exception.Message;
+            return false;
+        }
+        scenarios = result.OrderBy(static item => item.ExerciseDate).ThenBy(static item => item.Kind, StringComparer.Ordinal).ToArray();
+        return true;
+    }
+
+    /// <summary>
+    /// Reads one declared call or put entry under the supported-entry rules and expands it to its
+    /// unadjusted exercise dates. The rules are the same for every class: a dated European or
+    /// Bermudan entry, a positive fixed price in percent of par, whole redemption only. An entry's
+    /// window ends at its own end date, else the day before the next entry starts, else the maturity.
+    /// </summary>
+    private static bool TryReadEntry(JsonElement[] ordered, int index, string kind, DateOnly? maturity,
+        string? couponFrequency, out decimal price, out IReadOnlyList<DateOnly> dates, out string? refusal)
+    {
+        price = 0m;
+        dates = [];
+        var row = ordered[index];
+        var prefix = kind == "Call" ? "call" : "put";
+        var start = Date(row, prefix + "Date");
+        var next = index + 1 < ordered.Length ? Date(ordered[index + 1], prefix + "Date") : null;
+        var end = Date(row, prefix + "EndDate") ?? next?.AddDays(-1) ?? maturity;
+        var style = BondContractualEconomics.Text(row, "exerciseStyle");
+        var declaredPrice = Number(row, prefix + "Price");
+        if (start is null || end is null || declaredPrice is null or <= 0m
+            || style is not ("European" or "Bermudan")
+            || BondContractualEconomics.Text(row, "priceBasis") is not (null or "PercentOfPar")
+            || BondContractualEconomics.Text(row, "priceType") is not (null or "Fixed")
+            || BondContractualEconomics.Text(row, "partialRedemption") is not (null or "WholeOnly"))
+        {
+            refusal = "Exercise analytics requires dated European/Bermudan whole fixed-price redemption in percent of par; continuous, make-whole and accreted-value exercise is unsupported.";
+            return false;
+        }
+
+        price = declaredPrice.Value;
+        return TryExerciseDates(row, start.Value, end.Value, style, couponFrequency, out dates, out refusal);
     }
 
     /// <summary>

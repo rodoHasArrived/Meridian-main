@@ -76,6 +76,7 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
             violations.AddRange(RunTaxonomyRules(security, now));
             violations.AddRange(RunTermsFormatRules(security, now));
             violations.AddRange(RunConsistencyRules(security, now));
+            violations.AddRange(RunListingIdentityRules(security, now));
             violations.AddRange(RunStalenessRules(security, now));
         }
 
@@ -256,6 +257,31 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
                     $"Active {security.AssetClass} security has expiry {expiry.Value:yyyy-MM-dd} in the past.",
                     DataQualityRuleSeverity.Warning, now);
             }
+        }
+    }
+
+    // ── Listing identity (extensibility review D8) ──────────────────────────
+
+    /// <summary>
+    /// The listing-identity consistency rules (<see cref="SecurityListingIdentity"/>): a stated
+    /// <c>primaryListingMic</c> that is not a MIC (LI001), an <c>exchange</c> label that resolves to
+    /// another market (LI002), and an active primary listing identifier that names another market
+    /// (LI003). Secondary listing identifiers and venue MICs are different concepts and are not compared.
+    /// </summary>
+    private static IEnumerable<DataQualityRuleViolationDto> RunListingIdentityRules(
+        SecurityProjectionRecord security, DateTimeOffset now)
+    {
+        foreach (var finding in SecurityListingIdentity.Evaluate(security.CommonTerms, security.Identifiers, now))
+        {
+            var (name, severity) = finding.Code switch
+            {
+                SecurityListingIdentity.MalformedPrimaryListingMicCode => ("Malformed Primary Listing MIC", DataQualityRuleSeverity.Error),
+                SecurityListingIdentity.ExchangeLabelDisagreesCode => ("Exchange Label Disagrees With Primary Listing MIC", DataQualityRuleSeverity.Warning),
+                _ => ("Primary Listing Identifier Names Another Market", DataQualityRuleSeverity.Error)
+            };
+            yield return Violation(
+                finding.Code, name, DataQualityRuleCategory.ValueConsistency,
+                security.SecurityId, finding.FieldPath, finding.Message, severity, now);
         }
     }
 

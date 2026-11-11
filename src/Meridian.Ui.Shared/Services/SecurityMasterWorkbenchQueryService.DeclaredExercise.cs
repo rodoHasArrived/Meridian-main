@@ -8,9 +8,10 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Services;
 
-// Declared issuer-call and holder-put rows of the schedule book (ADR-025, increment 8b). A Bond whose
-// row decodes a call or put schedule takes its call and put rows, and their share of the next
-// lifecycle date, from the resolution the asset operations obligation timeline uses
+// Declared issuer-call and holder-put rows of the schedule book (ADR-025, increments 8b and 8f). A
+// Bond, CertificateOfDeposit or StructuredCredit whose row decodes a call or put schedule takes its
+// call and put rows, and their share of the next lifecycle date, from the resolution the asset
+// operations obligation timeline uses
 // (AssetObligationProjectionService.ResolveDeclaredExerciseAsync). For one record at one evaluation
 // date the two surfaces then list the same dates, with these exceptions: a timeline served from a
 // same-day published projection is derived from the published terms and keeps the scalar review; a
@@ -78,6 +79,37 @@ public sealed partial class SecurityMasterWorkbenchQueryService
                 DeclaredExerciseUnavailableCode, DeclaredExerciseUnavailableReason);
         }
     }
+
+    /// <summary>
+    /// The typed outcome the schedule summary and schedule book carry for a declaring record, or null
+    /// for a record that declares no schedule. It is the notice watch's result with nothing re-derived:
+    /// blocked when the watch reports a blocker, resolved otherwise.
+    /// </summary>
+    private static SecurityMasterDeclaredExerciseOutcomeDto? ToDeclaredExerciseOutcome(BondExerciseNoticeWatchResult? declaredExercise)
+        => declaredExercise is null
+            ? null
+            : new SecurityMasterDeclaredExerciseOutcomeDto(
+                Status: declaredExercise.IsBlocked
+                    ? SecurityMasterDeclaredExerciseStatus.Blocked
+                    : SecurityMasterDeclaredExerciseStatus.Resolved,
+                AsOf: declaredExercise.AsOf,
+                SecurityVersion: declaredExercise.SecurityVersion,
+                WindowCount: declaredExercise.Windows.Count,
+                Blockers: declaredExercise.Blockers
+                    .Select(static blocker => new SecurityMasterScheduleBlockerDto(blocker.Code, blocker.Reason))
+                    .ToArray(),
+                Diagnostics: declaredExercise.Diagnostics.ToArray());
+
+    /// <summary>
+    /// The blockers of the selected record's declared call and put schedule: empty when it declares no
+    /// schedule or the schedule resolved. The passport's terms, obligation and cash-flow statuses and
+    /// close readiness read this, so a blocked schedule is a status and not only a sentence.
+    /// </summary>
+    private static IReadOnlyList<SecurityMasterScheduleBlockerDto> DeclaredExerciseBlockers(SecurityMasterTrustSnapshotDto snapshot)
+        => (snapshot.ScheduleBook?.DeclaredExercise ?? snapshot.ScheduleSummary?.DeclaredExercise)
+            is { Status: SecurityMasterDeclaredExerciseStatus.Blocked } outcome
+            ? outcome.Blockers
+            : [];
 
     /// <summary>
     /// The dates a declaring bond offers for the next lifecycle date: the next corporate action, every

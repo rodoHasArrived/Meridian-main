@@ -235,6 +235,67 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
     }
 
     [Fact]
+    public async Task MinimalComposition_SecurityMasterGovernanceReadersShareOneSeam_AndAProductionPostureIsInstitutional()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), "meridian-governance-composition-" + Guid.NewGuid().ToString("N"));
+        var configPath = Path.Combine(directory, "appsettings.json");
+        Directory.CreateDirectory(directory);
+        File.WriteAllText(configPath, JsonSerializer.Serialize(new { DataRoot = Path.Combine(directory, "data") }));
+        var options = CompositionOptions.Minimal with
+        {
+            ConfigPath = configPath,
+            EnableProcessWideHostedServices = false,
+            Configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["DOTNET_ENVIRONMENT"] = "Test",
+                ["MERIDIAN_USE_INMEMORY_GOVERNANCE"] = "true"
+            }).Build()
+        };
+        try
+        {
+            var services = new ServiceCollection().AddLogging().AddMarketDataServices(options);
+            services.Should().ContainSingle(sd => sd.ServiceType == typeof(ISecurityMasterGovernanceRequirements));
+            services.Should().ContainSingle(sd => sd.ServiceType == typeof(SecurityMasterGovernanceProfileGuard));
+
+            using (var standard = services.BuildServiceProvider())
+            {
+                var current = standard.GetRequiredService<ISecurityMasterGovernanceRequirements>().Current;
+                current.Profile.Should().Be(SecurityMasterGovernanceProfile.Standard);
+                current.RequireIndependentProfileApprover.Should().BeFalse();
+                standard.GetRequiredService<IGovernedTermAmendmentPolicy>().RefusalReason.Should().BeNull();
+
+                var governance = standard.GetRequiredService<ISecurityAssetProfileGovernanceService>();
+                var draft = await governance.DraftProfileAsync(
+                    Meridian.Tests.SecurityMaster.SecurityAssetProfileGovernanceServiceTests.CreateDraftRequest("custom-composed-standard"), "maker");
+                (await governance.ApproveProfileAsync(
+                        Meridian.Tests.SecurityMaster.SecurityAssetProfileGovernanceServiceTests.Approval("custom-composed-standard", draft.Profile.Version), "maker"))
+                    .Profile.Status.Should().Be(SecurityAssetProfileStatusDto.Approved, "the Standard profile keeps single-operator approval");
+            }
+
+            // Declared after composition, as the final-graph guard also allows for: the seam decides
+            // the posture from the final collection.
+            services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.ProductionApi);
+            using var production = services.BuildServiceProvider();
+
+            var effective = production.GetRequiredService<ISecurityMasterGovernanceRequirements>().Current;
+            effective.Profile.Should().Be(SecurityMasterGovernanceProfile.Institutional);
+            effective.ProfileSource.Should().Be(SecurityMasterGovernanceProfileSource.ProductionComposition);
+            production.GetRequiredService<IGovernedTermAmendmentPolicy>().RefusalReason.Should().NotBeNull();
+
+            var composed = production.GetRequiredService<ISecurityAssetProfileGovernanceService>();
+            var composedDraft = await composed.DraftProfileAsync(
+                Meridian.Tests.SecurityMaster.SecurityAssetProfileGovernanceServiceTests.CreateDraftRequest("custom-composed-production"), "maker");
+            await composed.Invoking(g => g.ApproveProfileAsync(
+                    Meridian.Tests.SecurityMaster.SecurityAssetProfileGovernanceServiceTests.Approval("custom-composed-production", composedDraft.Profile.Version), "maker"))
+                .Should().ThrowAsync<ArgumentException>("the container selected the constructor that reads the seam");
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task Register_UsesCallerSuppliedCanonicalQueryForApplicationValidation()
     {
         var services = new ServiceCollection();

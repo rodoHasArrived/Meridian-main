@@ -7,10 +7,11 @@ using Meridian.Contracts.SecurityMaster;
 
 namespace Meridian.Instruments.AssetOperations;
 
-// Declared issuer-call and holder-put events of the obligation timeline (ADR-025, increment 8a).
-// A Bond whose row decodes a call or put schedule takes its option events from
-// BondExerciseNoticeWatch, so their dates are the ones bond analytics, the cash ladder and the notice
-// watch use. Every other record keeps the scalar CallPutReview probe (SCH-DEF-012) untouched.
+// Declared issuer-call and holder-put events of the obligation timeline (ADR-025, increments 8a and 8f).
+// A record whose row decodes a call or put schedule takes its option events from
+// BondExerciseNoticeWatch: for a Bond their dates are the ones bond analytics, the cash ladder and the
+// notice watch use; for CertificateOfDeposit and StructuredCredit they are the declared dates under the
+// same entry and notice rules. Every other record keeps the scalar CallPutReview probe (SCH-DEF-012).
 public sealed partial class AssetObligationProjectionService
 {
     public const string IssuerCallExerciseEventKind = "IssuerCallExercise";
@@ -119,8 +120,9 @@ public sealed partial class AssetObligationProjectionService
             : BondExerciseNoticeWatch.EvaluateToMaturity(security, calendars, EvaluationDate(asOf));
 
     /// <summary>
-    /// Whether a bond-coupon-structure record carries a <c>callSchedule</c> or <c>putSchedule</c> with
-    /// at least one entry that is not unset, and that its own stamp decodes, through the shared
+    /// Whether a record of a class whose terms declare them carries a <c>callSchedule</c> or
+    /// <c>putSchedule</c> with at least one entry that is not unset, and that its own stamp decodes,
+    /// through the shared
     /// versioned-terms predicate (<see cref="SecurityVersionedTerms.Decoding"/>): never from a profile
     /// envelope and never from a row stamped below the arrays' terms version. "Unset" is the write
     /// rules' notion (<see cref="ScheduleTermsWriteRules.IsUnsetScheduleEntry"/>): an array of nulls
@@ -132,7 +134,8 @@ public sealed partial class AssetObligationProjectionService
         ArgumentNullException.ThrowIfNull(security);
         var descriptor = SecurityAssetClassCatalog.GetOrDefault(security.AssetClass);
         var terms = security.AssetSpecificTerms;
-        if (!descriptor.CarriesBondCouponStructure || terms.ValueKind != JsonValueKind.Object)
+        // The class gate is the schema: Declares() below is false for a class without the arrays.
+        if (terms.ValueKind != JsonValueKind.Object)
         {
             return false;
         }
