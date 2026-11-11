@@ -53,23 +53,43 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     /// <summary>The economic module that carries <see cref="FactorScheduleEntriesKey"/>.</summary>
     private const string StructuredProductModule = "structuredProduct";
 
+    /// <summary>
+    /// The economic module that carries a profile-backed custom asset's envelope and its governed
+    /// terms document (ADR-027 stage 3, S3-E4).
+    /// </summary>
+    private const string ProfileEnvelopeModule = "profileEnvelope";
+
     /// <summary>The economic-terms modules this conversion reads. Order is the flattening order.</summary>
     public static IReadOnlyList<string> BridgedModules { get; } =
         ["maturity", "coupon", "payment", "accrual", "discount"];
 
     /// <summary>
+    /// The module keys the economic serializer gained after the identity gate (ADR-027 stage 1
+    /// increment 6) shipped: the S3-E module homes, in emission order. An image document written
+    /// before a key existed lacks it, while the current serializer emits it — null for a class the
+    /// module does not describe. <c>SecurityEconomicDefinitionAdapter</c>'s gate treats exactly
+    /// that absent-versus-null difference as none, so serializer growth does not re-age every
+    /// stored image into carrying its retained document again; every other difference still
+    /// fails closed. A module added to the serializer from here on joins this list.
+    /// </summary>
+    public static IReadOnlyList<string> ModulesAddedAfterIdentityGate { get; } =
+        ["exercise", "currencyPair", "notional", ProfileEnvelopeModule];
+
+    /// <summary>
     /// The economic-terms modules the serializer emits that this conversion does not read. Listed
     /// here, rather than left implicit, so the loss is enumerated in code and in the coverage test
     /// (<c>SecurityEconomicTermsV2BridgeCoverageTests</c>) instead of discovered in a restatement.
-    /// The last eleven joined when ADR-027 stage 1 increment 5 taught the serializer to emit them;
-    /// the class-aware flattening recovers parts of some dropped modules into declared flat homes
-    /// (call schedules, accrual conventions, factor entries), and the rest ride in
+    /// Eleven joined when ADR-027 stage 1 increment 5 taught the serializer to emit them, and the
+    /// S3-E module homes (<c>exercise</c> onward) follow them; the class-aware flattening recovers
+    /// parts of some dropped modules into declared flat homes (call schedules, accrual
+    /// conventions, factor entries, the S3-E scalar homes), and the rest ride in
     /// <c>retainedEconomicTerms</c> until their own recovery step.
     /// </summary>
     public static IReadOnlyList<string> DroppedModules { get; } =
         ["redemption", "call", "auction", "sweep", "financing", "issuer", "equityBehavior", "fund", "structuredProduct",
          "floatingRate", "tradingParameters", "creditRating", "depositaryReceipt", "dividendSchedule", "covenants",
-         "esg", "venue", "multiCalendar", "inflationLinked", "sinkingFund"];
+         "esg", "venue", "multiCalendar", "inflationLinked", "sinkingFund",
+         .. ModulesAddedAfterIdentityGate];
 
     /// <summary>
     /// Every module key an economic-terms document can carry: the union of the bridged and dropped
@@ -224,8 +244,9 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     /// written (<c>SecurityEconomicTermsV2BridgeCoverageTests</c> asserts it), so the result reads like
     /// an original v1 write for that class.
     /// <para>
-    /// What remains lost is what the economic-terms document never carried: an option's strike and
-    /// put/call, a swap's legs, and a bond's subclass. Since ADR-027 stage 1 increments 1 and 2,
+    /// What remains lost is what the economic-terms document never carried: a swap's legs, a
+    /// bond's subclass, an option's listing detail (the S3-E module homes carry strikes, currency
+    /// pairs, notionals and the custom-asset profile document). Since ADR-027 stage 1 increments 1 and 2,
     /// the Call module's call and put lists land in the flat callSchedule and putSchedule arrays,
     /// and the Accrual module's business-day convention and joint payment calendar land in the
     /// scheduleConventions block, for a class that declares those homes — stamped at the held
@@ -242,6 +263,17 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     /// </summary>
     public static SecurityAssetSpecificTerms Convert(JsonElement economicTerms, string? assetClass)
     {
+        // ADR-027 stage 3 (S3-E4): a class that must pin a custom profile carries its whole
+        // governed terms document on the profile-envelope module. That document IS the row's
+        // asset-specific terms, so it is returned as stored — no flattening, no marker and no
+        // retained carry, because nothing was reconstructed and nothing is left behind. A
+        // document written before the module existed has no such module and takes the routes
+        // below unchanged.
+        if (TryRecoverProfileDocument(economicTerms, assetClass, out var profileDocument))
+        {
+            return SecurityAssetSpecificTermsV0ToCurrentUpcaster.Normalize(profileDocument);
+        }
+
         if (!TryGetClassFlattening(assetClass, out var mappings))
         {
             return Convert(economicTerms);
@@ -407,6 +439,25 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
 
         using var flattened = JsonDocument.Parse(buffer.ToArray());
         return new SecurityAssetSpecificTerms(flattened.RootElement.Clone(), AssetSpecificTermsSchema.Legacy);
+    }
+
+    private static bool TryRecoverProfileDocument(JsonElement economicTerms, string? assetClass, out JsonElement document)
+    {
+        document = default;
+        if (string.IsNullOrWhiteSpace(assetClass)
+            || !SecurityAssetClassCatalog.GetOrDefault(assetClass).RequiresProfileReference
+            || GetObject(economicTerms, ProfileEnvelopeModule) is not JsonElement envelope
+            || !envelope.TryGetProperty("terms", out var terms)
+            || terms.ValueKind != JsonValueKind.Object
+            || !terms.TryGetProperty("customProfileId", out var profileId)
+            || profileId.ValueKind != JsonValueKind.String
+            || string.IsNullOrWhiteSpace(profileId.GetString()))
+        {
+            return false;
+        }
+
+        document = terms;
+        return true;
     }
 
     // An economic-only event cannot recover the complete flat schedule declaration: Accrual
@@ -1026,8 +1077,20 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     private static readonly IReadOnlyList<(string AssetClass, IReadOnlyList<FlatTermMapping> Mappings)> ClassFlattenings =
     [
         ("Equity", [Map("shareClass", ("equityBehavior", "shareClass")), Map("votingRightsCat", ("equityBehavior", "votingRights"))]),
-        ("Option", [Map("expiry", MaturityDate)]),
-        ("Future", [Map("expiry", MaturityDate)]),
+        // ADR-027 stage 3 (S3-E): the exercise module (and the contract multiplier on
+        // tradingParameters) recovers the strike fields termsFromKind now feeds it from.
+        ("Option",
+        [
+            Map("underlyingId", ("exercise", "underlyingSecurityId")),
+            Map("putCall", ("exercise", "optionRight")),
+            Map("strike", ("exercise", "strikePrice")),
+            Map("expiry", MaturityDate),
+            Map("multiplier", ("tradingParameters", "contractMultiplier")),
+            Map("exerciseStyle", ("exercise", "exerciseStyle"))
+        ]),
+        ("Future", [Map("expiry", MaturityDate), Map("multiplier", ("tradingParameters", "contractMultiplier"))]),
+        ("FxSpot", [Map("baseCurrency", ("currencyPair", "baseCurrency")), Map("quoteCurrency", ("currencyPair", "quoteCurrency"))]),
+        ("CryptoCurrency", [Map("baseCurrency", ("currencyPair", "baseCurrency")), Map("quoteCurrency", ("currencyPair", "quoteCurrency"))]),
         ("Bond",
         [
             Map("maturity", MaturityDate),
@@ -1124,7 +1187,14 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
                 ("structuredProduct", "isInterestOnly", "InterestOnly"),
                 ("structuredProduct", "isPrincipalOnly", "PrincipalOnly"))
         ]),
-        ("PrivateFundInterest", [Map("gpSponsor", ("issuer", "issuerName"), ("fund", "fundFamily")), Map("strategy", ("issuer", "issuerProgram"))]),
+        ("PrivateFundInterest",
+        [
+            Map("gpSponsor", ("issuer", "issuerName"), ("fund", "fundFamily")),
+            Map("strategy", ("issuer", "issuerProgram")),
+            Map("commitment", ("notional", "committedAmount")),
+            Map("fundedAmount", ("notional", "fundedAmount")),
+            Map("unfundedAmount", ("notional", "unfundedAmount"))
+        ]),
         ("PrivateCompanyEquity",
         [
             Map("issuer", ("issuer", "issuerName")),
@@ -1137,11 +1207,37 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             Map("counterparty", ("issuer", "issuerName")),
             Map("beneficiary", ("issuer", "issuerProgram")),
             Map("effectiveDate", ("maturity", "effectiveDate")),
-            Map("expiryDate", MaturityDate)
+            Map("expiryDate", MaturityDate),
+            Map("committedAmount", ("notional", "committedAmount")),
+            Map("unfundedAmount", ("notional", "unfundedAmount"))
         ]),
-        ("Warrant", [Map("expiry", MaturityDate), Map("multiplier", ("tradingParameters", "contractMultiplier"))]),
-        ("FxForward", [Map("tradeDate", ("maturity", "effectiveDate")), Map("valueDate", MaturityDate)]),
-        ("NonDeliverableForward", [Map("fixingDate", ("maturity", "effectiveDate")), Map("valueDate", MaturityDate)]),
+        ("Warrant",
+        [
+            Map("underlyingId", ("exercise", "underlyingSecurityId")),
+            Map("warrantType", ("exercise", "optionRight")),
+            Map("strike", ("exercise", "strikePrice")),
+            Map("expiry", MaturityDate),
+            Map("multiplier", ("tradingParameters", "contractMultiplier"))
+        ]),
+        ("FxForward",
+        [
+            Map("baseCurrency", ("currencyPair", "baseCurrency")),
+            Map("quoteCurrency", ("currencyPair", "quoteCurrency")),
+            Map("forwardRate", ("currencyPair", "forwardRate")),
+            Map("notional", ("notional", "notional")),
+            Map("tradeDate", ("maturity", "effectiveDate")),
+            Map("valueDate", MaturityDate)
+        ]),
+        ("NonDeliverableForward",
+        [
+            Map("baseCurrency", ("currencyPair", "baseCurrency")),
+            Map("quoteCurrency", ("currencyPair", "quoteCurrency")),
+            Map("settlementCurrency", ("currencyPair", "settlementCurrency")),
+            Map("forwardRate", ("currencyPair", "forwardRate")),
+            Map("notional", ("notional", "notional")),
+            Map("fixingDate", ("maturity", "effectiveDate")),
+            Map("valueDate", MaturityDate)
+        ]),
         ("CreditDefaultSwap",
         [
             Map("effectiveDate", ("maturity", "effectiveDate")),
@@ -1149,9 +1245,18 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             Map("paymentFrequency", ("coupon", "paymentFrequency")),
             Map("dayCount", ("coupon", "dayCount")),
             // The upgrade stores FixedCouponBps / 10000 as coupon.couponRate.
-            new FlatTermMapping("fixedCouponBps", [("coupon", "couponRate")], Scale: 10000m)
+            new FlatTermMapping("fixedCouponBps", [("coupon", "couponRate")], Scale: 10000m),
+            Map("notional", ("notional", "notional"))
         ]),
-        ("Swaption", [Map("expiry", MaturityDate), Map("underlyingEffectiveDate", ("maturity", "effectiveDate"))]),
+        ("Swaption",
+        [
+            Map("payerReceiver", ("exercise", "optionRight")),
+            Map("exerciseStyle", ("exercise", "exerciseStyle")),
+            Map("strikeRate", ("exercise", "strikeRate")),
+            Map("expiry", MaturityDate),
+            Map("underlyingEffectiveDate", ("maturity", "effectiveDate")),
+            Map("notional", ("notional", "notional"))
+        ]),
         ("CapFloor",
         [
             Map("effectiveDate", ("maturity", "effectiveDate")),
@@ -1161,7 +1266,10 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             Map("referenceIndex", ("floatingRate", "referenceIndex")),
             Map("capStrike", ("floatingRate", "capRate")),
             Map("floorStrike", ("floatingRate", "floorRate")),
-            Map("resetFrequency", ("floatingRate", "resetFrequency"))
+            Map("resetFrequency", ("floatingRate", "resetFrequency")),
+            Map("capFloorType", ("exercise", "optionRight")),
+            Map("premiumAmount", ("exercise", "premiumAmount")),
+            Map("notional", ("notional", "notional"))
         ]),
         ("StructuredNote",
         [
@@ -1169,7 +1277,8 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             Map("issueDate", ("maturity", "issueDate")),
             Map("issuerName", ("issuer", "issuerName")),
             Map("couponRate", ("coupon", "couponRate")),
-            Map("paymentFrequency", ("coupon", "paymentFrequency"))
+            Map("paymentFrequency", ("coupon", "paymentFrequency")),
+            Map("denomination", ("notional", "denomination"))
         ]),
         ("InvestmentFund", [Map("fundFamily", ("fund", "fundFamily"))])
     ];
