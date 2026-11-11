@@ -4,7 +4,7 @@
 
 This document preserves checkpoint-specific evidence. The
 [continuation status](#continuation-status) distinguishes later repairs and
-pending merged-tree verification from the earlier audit results.
+merged-tree verification from the earlier audit results.
 
 The branch advanced to `a81d7afb45` with an existing dashboard palette migration;
 that work is preserved. The initial review covered the package export. The user
@@ -417,6 +417,102 @@ integrity. Those incoming checks closed the selector and synchronous observer
 gaps at that checkpoint. The continuation expands observer isolation and chart
 data alternatives and records the remaining verification separately.
 
+## Incoming developer integration and accessibility evidence
+
+This incoming checkpoint records gallery/workbench and integration verification
+before the continuation and merge of `0c10785dfc03`. Its counts and outstanding
+findings below belong to that checkpoint; the continuation status records later
+repairs and reruns.
+
+The follow-up retains concurrent integration and token-reconciliation commits
+through `27ab256c10`, without rewriting the shared PR history. It preserves the
+4.3.0 identity, component APIs, native adapters, seven root workspaces, operator
+preferences, financial statuses, and production workflows.
+
+- The package gallery reads all 135 cards and their groups/metadata from the
+  manifest. Search and group filters combine, counts and direct links remain
+  visible, catalogue/preview failures offer Retry, and browsing starts with no
+  preview. At most one specimen document is loaded. A loaded document is explicitly
+  distinguished from component conformance and existing specimen runtimes remain.
+- `/workstation/__design-system` is lazy-loaded only in fixture-only Vite
+  development, before application data providers mount. It uses actual native
+  buttons, badges, validation, dense-table and inspector adapters with three fixed
+  synthetic USD records. Appearance, density, explicit-light surface, data state,
+  and button state are URL controls. Reset restores defaults. Runtime probes
+  verify zero API requests, storage reads/writes, and companion broadcasts.
+- Selected rows use interaction-blue rails and surface-specific secondary and
+  semantic text roles. Existing darker semantic shades keep text readable on
+  selected/tinted surfaces without changing status hues or fills. Destructive
+  button text uses the existing red text shade. Actual-cascade probes measured
+  minimum selected semantic contrast 4.63:1 (including badge washes) and
+  destructive label contrast 6.02:1. Ready text on a selected dark row is 4.80:1.
+- `ratchets:update` validates the existing baseline, rejects new offenders and
+  per-file growth even when another file improves, treats equality as a no-op,
+  and writes valid reductions atomically. Rejected updates preserve baseline bytes.
+- `check:design-system` at the root/dashboard verifies locked installed direct
+  dependencies before consistency, focused contracts, gallery, contrast, package
+  freshness and export-integrity checks. It never installs, regenerates checked-in
+  assets, updates a baseline, or launches a browser. Its separate browser command
+  reuses the maintained workstation Playwright smoke infrastructure.
+- Primary-action contrast resolves actual package/workstation base, hover,
+  pressed and foreground roles across automatic/manual dark and forced light.
+  HSL channels, aliases and sRGB color mixes are supported; required unresolved
+  values fail. All 24 required pairs pass, minimum 6.00:1.
+
+The source command passes 23 tooling tests, 126 focused workstation assertions,
+five gallery model tests, 17 contrast-resolution tests and 13 release-integrity
+tests, alongside consistency/freshness gates. Tooling cases cover malformed and
+stale dependencies, stage failure propagation, paths containing spaces and
+shrink-only baseline failure/reduction behavior. The retained ScenarioSelector
+and optimistic-observer source regressions cover keyboard navigation and
+transport/observer fault separation; their public contracts remain unchanged.
+
+The retained whole-package governance gate and broad Python suite remain
+separate from this focused integration command. No baseline was increased or
+rule suppressed to obtain a passing focused result. The full monorepo CI script
+was not run locally. Real Windows builds/tests and required hosted checks remain
+the merge authority; Linux stub builds are not WPF evidence.
+
+At that incoming checkpoint, the full contrast checker reported 18
+retained brand-theme findings (custom focus/dark identity/required branded pairs).
+The whole-package governance result was 67 failures and 25 warnings. The
+unfiltered Python suite ran 45 tests with one legacy contrast failure and 14
+obsolete governance-API errors; the 17 focused contrast and 13 integrity tests
+passed separately. These historical broader findings did not change the
+focused command's scope; their later repairs are recorded below.
+
+
+The incoming dashboard sweep covered **430 test files and 4,947 passing
+assertions**, taking the latest passing result per file. Earlier attempts remain
+in the local evidence: two Trading class assertions were aligned with the
+contrast-corrected destructive variant, and one Reporting accessibility timeout
+passed on retry. The missing-mode workbench gate and incoming Data/Settings
+contrast changes also pass focused regressions. Lint reports zero errors and 97
+existing hook warnings; typography debt remains 539 allowlisted occurrences,
+with no increase.
+
+The merged package passes ScenarioSelector/observer and financial-agency browser
+regressions, 22 standalone accessibility states, four desktop viewports, 200%
+zoom and the 135-card gallery journey. These package scenes report zero remote
+requests and uncaught runtime errors. Workstation build provenance uses the
+committed dashboard lockfile under Node 24; all ten production fonts are WOFF2
+with checked TTF-source provenance and local OFL notices. The native workbench
+module is absent from the production asset closure.
+
+A separate redacted scan of all 29 PR-history commits reports two findings in
+`c77ced17b0` build-provenance files. Both are the independently recomputed public
+`KeyValueGrid.jsx` SHA-256, not a credential. Existing scanner configuration and
+baselines were preserved; hosted Secret Scan passes on the reconciled baseline.
+
+
+The final selected-badge correction strengthens text ten percent toward the
+existing theme ink direction only inside selected rows. Tests and browser probes
+composite each badge wash over the selected surface; the global semantic hue and
+fill contracts remain. The masthead Paper label/dot use the canonical dark-surface
+slate tone regardless of the workspace appearance. The maintained browser profile
+checks their actual composed contrast instead of accepting a root token alone.
+
+
 ## Continuation status
 
 The continuation repairs governance-checker API drift, retained template
@@ -425,21 +521,44 @@ fallbacks, observer fault isolation, and chart keyboard/data alternatives.
 These changes preserve the initial findings above as history instead of
 rewriting that earlier run as green.
 
-Recorded before the final concurrent integration merge:
+Latest package verification after integrating the incoming commits through
+`0c10785dfc03`:
 
-- All seven release gates passed on the repaired pre-merge source.
-- Focused Python checks passed: 25 governance tests, 11 metadata tests and 17
-  fallback-synchronization tests. The old 30-test result above predates those
-  repairs and is not a current-suite result.
-- The focused dashboard matrix passed 196 tests at that checkpoint. Earlier
-  full-dashboard runs retain their own source and scope; they are not combined
-  into a new unrun full-suite claim.
+- All seven release gates and the complete **127-test Python suite** passed.
+  The initial 30-test, incoming 45-test and intermediate 99-test results above
+  retain their checkpoint-specific scope.
+- The full contrast check passed across 8,115 color fallbacks, 10,944 bare
+  variables, 1,882 bundled rules and 29 assets. Token parity passed for 227 shared
+  names with zero divergences. Forced-light inputs now resolve to their light
+  identities under an OS-dark preference without alias cycles; cycle checking
+  includes dependencies inside `var()` fallbacks.
+- Metadata synchronization gives unconditional defaults precedence over
+  conditional dark declarations, including when the old manifest points to the
+  conditional source. Conditional-only tokens remain represented. All 13 focused
+  metadata tests passed as part of the complete suite.
+- The strict full specimen matrix passed **135/135 cards** with zero recorded
+  conformance, runtime, console, asset or unexpected remote-request errors. The
+  generated bundle remained byte-identical through the run. Earlier partial
+  runs and font failures remain historical evidence, not waived assertions.
+- The brand/appearance browser matrix passed 28 states and 1,932 required AA
+  contrast pairs. The latest gallery verification passed five model tests and
+  the 135-card browser journey with zero reported axe violations.
+- The package build/source freshness check passed. Release integrity passed for
+  1,346 curated files. The archive checksum must be associated with the delivered
+  source and final documentation content when the artifact is regenerated.
 
-The final merged-tree release/contrast checks and the full **135-card** specimen
-matrix are pending the remaining parser, alias/default and font-settlement
-repairs. Intermediate card results are not an all-specimen pass. Final build,
-archive, matrix counts and checksum must be associated with the delivered source
-checkpoint after those reruns complete.
+The earlier standalone browser run passed 22 theme/condition accessibility
+states with zero recorded axe, remote-request or runtime errors. The focused
+dashboard matrix passed 196 tests at its checkpoint; the later workstation smoke
+passed 22 cases and nine desktop scenes, and production font checks verified ten
+WOFF2 assets and their licenses. The incoming 4,947-assertion full-dashboard run
+above retains its own source and scope. Latest managed dashboard commands remain
+pending; these results are not combined into a new unrun full-suite count.
+
+The documentation generators were attempted and each generation step exited
+successfully, but the aggregate `verify-docs` check did not converge against the
+uncommitted worktree; it is not recorded as a passing documentation gate. The full
+aggregate .NET validation was not available locally.
 
 The specimen collector uses an explicit local cache of the exact React 18.3.1,
 React DOM 18.3.1 and Babel 7.29.0 peer bytes and verifies their SHA-384 pins.

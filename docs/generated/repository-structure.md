@@ -4423,13 +4423,18 @@ Meridian-main
 │   │   ├── brand-contrast-regression.mjs
 │   │   ├── BROWSER_TEST_PLAN.md
 │   │   ├── chart-accessibility-regression.mjs
+│   │   ├── component-hook-regression.mjs
 │   │   ├── conformance-card-regression.mjs
 │   │   ├── conformance-rules.js
 │   │   ├── conformance-settle-regression.mjs
 │   │   ├── conformance.html
 │   │   ├── decision-preview.html
 │   │   ├── form-field-regression.mjs
+│   │   ├── gallery-browser.mjs
+│   │   ├── gallery.css
 │   │   ├── gallery.html
+│   │   ├── gallery.mjs
+│   │   ├── gallery.test.mjs
 │   │   ├── global-search-focus-regression.mjs
 │   │   ├── interaction-depth-regression.mjs
 │   │   ├── mock-transport.js
@@ -4452,6 +4457,7 @@ Meridian-main
 │   │   ├── test_manifest_metadata.py
 │   │   ├── test_release.py
 │   │   ├── test_sync_color_fallbacks.py
+│   │   ├── test_token_parity.py
 │   │   ├── unit-tests.html
 │   │   ├── unit.html
 │   │   └── verify-new-components.html
@@ -7904,11 +7910,17 @@ Meridian-main
 │   │   │   ├── scripts
 │   │   │   │   ├── eslint-rules
 │   │   │   │   │   └── kebab-filename.mjs
+│   │   │   │   ├── check-design-system.mjs
+│   │   │   │   ├── check-design-system.test.mjs
 │   │   │   │   ├── check-typography-floor.mjs
 │   │   │   │   ├── convert-fonts-to-woff2.py
 │   │   │   │   ├── design-system-ratchets.baseline.json
 │   │   │   │   ├── design-system-ratchets.d.mts
 │   │   │   │   ├── design-system-ratchets.mjs
+│   │   │   │   ├── design-system-smoke-helpers.mjs
+│   │   │   │   ├── design-system-smoke-profile.mjs
+│   │   │   │   ├── design-system-smoke-runner.mjs
+│   │   │   │   ├── design-system-smoke.test.mjs
 │   │   │   │   ├── run-vitest-stable.mjs
 │   │   │   │   ├── smoke-design-system.mjs
 │   │   │   │   ├── smoke-workstation.mjs
@@ -8342,6 +8354,13 @@ Meridian-main
 │   │   │   │   │   ├── tokens.ts
 │   │   │   │   │   ├── trust-strip.tsx
 │   │   │   │   │   └── type-scale.test.tsx
+│   │   │   │   ├── dev
+│   │   │   │   │   ├── design-system-workbench-entry.test.ts
+│   │   │   │   │   ├── design-system-workbench-entry.ts
+│   │   │   │   │   ├── design-system-workbench-state.ts
+│   │   │   │   │   ├── design-system-workbench.css
+│   │   │   │   │   ├── design-system-workbench.test.tsx
+│   │   │   │   │   └── design-system-workbench.tsx
 │   │   │   │   ├── features
 │   │   │   │   │   ├── accounting
 │   │   │   │   │   │   └── accountingCloseModels.ts
@@ -9185,6 +9204,7 @@ Meridian-main
 │   │   │   │   ├── design-system-color-values.test.ts
 │   │   │   │   ├── design-system-contract.test.ts
 │   │   │   │   ├── main.tsx
+│   │   │   │   ├── selected-surface-contrast.test.ts
 │   │   │   │   ├── startup-appearance.test.ts
 │   │   │   │   ├── tailwind-build.test.ts
 │   │   │   │   ├── types.ts

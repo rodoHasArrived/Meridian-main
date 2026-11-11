@@ -61,7 +61,9 @@ try {
   const errors = []; page.on('pageerror', error => errors.push(error.message));
   page.on('console', message => { if (message.type() === 'error') errors.push(message.text() + ' ' + message.location().url); });
   await page.goto('http://127.0.0.1:' + address.port + '/native-adapter-colors');
-  await page.getByRole('heading', { name: 'Native adapter color contract' }).waitFor();
+  await page.getByRole('heading', { name: 'Native adapter color contract' }).waitFor().catch(error => {
+    throw new Error(error.message + '\nBrowser errors: ' + JSON.stringify(errors));
+  });
   for (const theme of ['light', 'dark']) {
     await page.evaluate(async theme => {
       document.documentElement.setAttribute('data-theme', theme);

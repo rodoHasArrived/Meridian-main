@@ -57,7 +57,7 @@ class TokenParityGraphTests(unittest.TestCase):
             ':root[data-theme="light"] {--ink:#FFFFFF;}',
             ':root {--ink:#000000;} @media print { :root {--ink:#EEEEEE;} }',
         ])
-        self.assertEqual("#FFFFFF", parity.resolve_token("--ink", envs["forced-light"]))
+        self.assertEqual("#ffffff", parity.resolve_token("--ink", envs["forced-light"]))
         self.assertEqual("#000000", parity.resolve_token("--ink", envs["light"]))
 
     def test_a_fallback_inside_a_cycle_does_not_make_the_cycle_valid(self):
@@ -70,6 +70,17 @@ class TokenParityGraphTests(unittest.TestCase):
         env = {"--a": "var(--present, var(--b))", "--present": "#FFFFFF", "--b": "var(--a)"}
         self.assertEqual({"--a", "--b"}, parity.cyclic_tokens(env))
         self.assertIsNone(parity.resolve_token("--a", env))
+
+
+    def test_function_fallback_does_not_hide_the_live_color_alias(self):
+        env = {"--ink": "rgba(1,2,3,.4)", "--alias": "var(--ink, rgba(9,8,7,.6))"}
+        self.assertEqual("rgba(1,2,3,.4)", parity.resolve_token("--alias", env))
+        env["--ink"] = "rgba(20,30,40,.7)"
+        self.assertEqual("rgba(20,30,40,.7)", parity.resolve_token("--alias", env))
+
+    def test_nested_function_fallback_and_its_aliases_resolve(self):
+        env = {"--ink": "#000000", "--alias": "var(--missing, color-mix(in srgb, var(--ink) 10%, transparent))"}
+        self.assertEqual("color-mix(in srgb, #000000 10%, transparent)", parity.resolve_token("--alias", env))
 
 
 if __name__ == "__main__":

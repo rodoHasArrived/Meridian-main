@@ -11,6 +11,22 @@ function sourceFiles(dir: string): string[] {
   });
 }
 
+function rawChannelUses(source: string, channelNames: Set<string>) {
+  return [...source.matchAll(/var\(\s*--([\w-]+)(?=\s*[,)])/g)].filter((match) => {
+    if (!channelNames.has(match[1])) return false;
+    const prefix = source.slice(Math.max(0, match.index - 160), match.index);
+    if (/hsla?\(\s*$/.test(prefix)) return false;
+    const assignment = prefix.match(/--([\w-]+):\s*$/);
+    return !assignment || !channelNames.has(assignment[1]);
+  });
+}
+
+it("allows channel aliases while rejecting raw channel colors", () => {
+  const names = new Set(["border", "muted-foreground", "selected-muted-foreground"]);
+  expect(rawChannelUses("--muted-foreground: var(--selected-muted-foreground); color: hsl(var(--muted-foreground));", names)).toHaveLength(0);
+  expect(rawChannelUses("border: 1px solid var(--border); --complete-color: var(--border);", names)).toHaveLength(2);
+});
+
 it("wraps channel-only HSL tokens before using them as CSS colors", () => {
   const src = join(process.cwd(), "src");
   const tokens = readFileSync(join(src, "styles/index.css"), "utf8");
@@ -20,10 +36,7 @@ it("wraps channel-only HSL tokens before using them as CSS colors", () => {
   const invalid: Array<{ file: string; line: number; token: string }> = [];
   for (const file of sourceFiles(src)) {
     const source = readFileSync(file, "utf8");
-    for (const match of source.matchAll(/var\(\s*--([\w-]+)(?=\s*[,)])/g)) {
-      if (!channelNames.has(match[1])) continue;
-      const prefix = source.slice(Math.max(0, match.index - 16), match.index);
-      if (/hsla?\(\s*$/.test(prefix)) continue;
+    for (const match of rawChannelUses(source, channelNames)) {
       invalid.push({ file: relative(src, file), line: source.slice(0, match.index).split("\n").length, token: match[1] });
     }
   }

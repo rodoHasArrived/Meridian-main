@@ -122,6 +122,10 @@
     --chart-compare-1:    #7F9DB8;
     --chart-compare-2:    #9AA2A9;
   }
+  /* A white-label html[data-brand] rule outranks the :root re-point above, so under an OS dark
+     preference --theme-accent kept the brand's LIGHT literal while manual dark gave the dark
+     signal. Same reach as the manual block; forced light is left to the brand. */
+  html[data-brand]:not([data-theme="light"]) { --theme-accent: var(--accent); }
 }
 
 /* ── 2. Manual dark — identical token block, attribute-driven ── */

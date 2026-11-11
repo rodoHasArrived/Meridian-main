@@ -203,6 +203,32 @@ def canonical(value):
     return ("text", re.sub(r"\s*,\s*", ", ", v))
 
 
+def substitute_vars(value, replace):
+    """Replace each innermost-first var(...) call, matching parentheses by depth.
+
+    A regex that forbids parentheses inside the call cannot see `var(--a, rgba(0,0,0,.5))`,
+    which then survives as text and compares equal to itself whatever --a holds.
+    """
+    out, i = "", 0
+    while True:
+        start = value.find("var(", i)
+        if start < 0:
+            return out + value[i:]
+        depth, j = 0, start + 3
+        while j < len(value):
+            if value[j] == "(":
+                depth += 1
+            elif value[j] == ")":
+                depth -= 1
+                if depth == 0:
+                    break
+            j += 1
+        if j >= len(value):
+            return out + value[i:]
+        out += value[i:start] + replace(value[start + 4:j])
+        i = j + 1
+
+
 def cyclic_tokens(env):
     """CSS invalidates every custom property in a cycle, including var() fallback edges."""
     refs = {name: re.findall(r"var\(\s*(--[\w-]+)", value) for name, value in env.items()}
@@ -230,8 +256,8 @@ def resolve_token(name, env, depth=0, cycles=None):
     if value is None or name in cycles or depth > 24:
         return None
 
-    def substitute(match):
-        head, _, fallback = match.group(1).partition(",")
+    def substitute(inner):
+        head, _, fallback = inner.partition(",")
         inner = resolve_token(head.strip(), env, depth + 1, cycles)
         if inner is None:
             return fallback.strip() if fallback.strip() else "unresolved(" + head.strip() + ")"
@@ -240,7 +266,7 @@ def resolve_token(name, env, depth=0, cycles=None):
     previous = None
     while previous != value and "var(" in value:
         previous = value
-        value = VAR.sub(substitute, value)
+        value = substitute_vars(value, substitute)
     return value
 
 

@@ -54,9 +54,14 @@ script references without declared SRI; local byte-pin verification does not
 change that source-integrity limitation or prove live CDN access.
 
 The initial expanded export recorded 67 governance findings and 25 warnings.
-Subsequent repairs passed all seven release gates on the pre-merge checkpoint;
-the final concurrent merge still requires fresh release/contrast and 135-card
-matrix verification. Use the audit's continuation status for that distinction.
+After integration through `0c10785dfc03`, all seven release gates, the complete
+127-test package Python suite and the strict 135/135-card matrix passed. The
+contrast and parity checks passed, including the forced-light cycle correction;
+all 13 metadata tests cover unconditional-default precedence. Build/source
+freshness and release integrity passed for 1,346 curated files. Regenerate the
+artifact after final documentation edits and associate its checksum with the
+delivered source. Use the audit's continuation status for the precise scope,
+historical dashboard evidence and documentation gate that did not converge.
 Build/export integrity validates the curated artifact; it cannot turn a failed
 or unrun gate into release certification. Keep NVDA/VoiceOver, Firefox/WebKit,
 native Windows/Edge and full-monorepo checks explicit when they were not run.

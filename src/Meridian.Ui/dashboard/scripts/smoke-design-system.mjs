@@ -7,24 +7,20 @@
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
+import { chromiumLaunchOptions, parseDesignSystemOptions } from "./design-system-smoke-helpers.mjs";
+import { runExpandedDesignSystemSmoke } from "./design-system-smoke-profile.mjs";
 
 const args = process.argv.slice(2);
 if (args.includes("--help")) {
-  console.log("Start MERIDIAN_DEV_MODE=fixture-only npm run dev -- --port 5178, then:\nnode scripts/smoke-design-system.mjs [--url http://127.0.0.1:5178/workstation] [--output <directory>]\nSet CHROMIUM_EXECUTABLE_PATH when using a system Chromium.");
+  console.log("Start MERIDIAN_DEV_MODE=fixture-only npm run dev -- --port 5178, then:\nnode scripts/smoke-design-system.mjs [--url http://127.0.0.1:5178/workstation] [--output <directory>]\nSet MERIDIAN_CHROMIUM_PATH or CHROMIUM_EXECUTABLE_PATH when using a system Chromium. For the complete maintained matrix, use smoke-workstation.mjs --design-system (starts isolated fixture, backend and production-preview servers).");
   process.exit(0);
 }
-const options = new Map();
-for (let i = 0; i < args.length; i += 2) {
-  if (!["--url", "--output"].includes(args[i]) || !args[i + 1]) throw new Error(`Invalid option: ${args[i]}`);
-  options.set(args[i], args[i + 1]);
-}
-const base = (options.get("--url") || "http://127.0.0.1:5178/workstation").replace(/\/+$/, "");
+const profileOptions = parseDesignSystemOptions(args);
+const { base, output } = profileOptions;
 const origin = new URL(base).origin;
-const output = path.resolve(options.get("--output") || path.join(tmpdir(), "meridian-design-system-smoke"));
 const require = createRequire(import.meta.url);
 const axeSource = await readFile(require.resolve("axe-core/axe.min.js"), "utf8");
 const sourceRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -36,10 +32,7 @@ const themes = {
 };
 const report = { sourceRoot, url: base, browser: "Chromium / Playwright", evidenceScope: "Synthetic fixture-only workstation; no backend or live-account validation", checks: [], accessibility: [], fixtureLimitations: [], consoleErrors: [], exceptions: [], assetFailures: [] };
 await mkdir(output, { recursive: true });
-const browser = await chromium.launch({
-  ...(process.env.CHROMIUM_EXECUTABLE_PATH ? { executablePath: process.env.CHROMIUM_EXECUTABLE_PATH } : {}),
-  args: ["--no-sandbox"]
-});
+const browser = await chromium.launch(chromiumLaunchOptions());
 const pendingResponses = [];
 let fixtureServer = false;
 // Known gaps observed on the unchanged fixture-only baseline. A live server is
@@ -115,18 +108,23 @@ async function tokens(page, expectedTheme) {
   return actual;
 }
 async function fonts(page) {
-  await page.evaluate(async () => {
-    await document.fonts.load('14px "IBM Plex Sans"');
-    await document.fonts.load('14px "IBM Plex Mono"');
+  const faces = await page.evaluate(async () => {
+    const loadedFaces = [];
+    for (const family of ["IBM Plex Sans", "IBM Plex Mono"]) {
+      for (const face of ["400", "italic 400", "500", "600", "700"]) {
+        const loaded = await document.fonts.load(face + ' 14px "' + family + '"', "Meridian 0123456789");
+        loadedFaces.push({ family, face, count: loaded.length, ready: loaded.every(item => item.status === "loaded") });
+      }
+    }
     await document.fonts.ready;
+    return {
+      body: getComputedStyle(document.body).fontFamily,
+      loaded: [...document.fonts].filter(face => face.status === "loaded").map(face => face.family.replace(/["']/g, "")),
+      faces: loadedFaces
+    };
   });
-  const faces = await page.evaluate(() => ({
-    body: getComputedStyle(document.body).fontFamily,
-    loaded: [...document.fonts].filter(face => face.status === "loaded").map(face => face.family.replace(/["']/g, ""))
-  }));
   assert.match(faces.body, /IBM Plex Sans/);
-  assert(faces.loaded.includes("IBM Plex Sans"), "IBM Plex Sans actually loaded");
-  assert(faces.loaded.includes("IBM Plex Mono"), "IBM Plex Mono actually loaded");
+  assert(faces.faces.every(face => face.count > 0 && face.ready), "All ten bundled Plex faces actually load");
   return faces;
 }
 async function screenshot(page, name) {
@@ -344,11 +342,20 @@ try {
   assert.deepEqual(report.unexpectedConsoleErrors, [], "No unexpected console errors");
   // Full-page axe findings are reported for audit. They are not silently relabeled
   // as a conformance pass, and do not replace scoped keyboard/contrast checks.
+  if (profileOptions.expanded) {
+    await runExpandedDesignSystemSmoke({
+      browser, base, output, sourceRoot, report, axeSource,
+      backendBase: profileOptions.backendBase, productionBase: profileOptions.productionBase,
+      timeoutMs: profileOptions.timeoutMs
+    });
+  }
+  report.accessibilityViolations = report.accessibility.reduce((sum, result) => sum + result.violations.length, 0);
   report.result = report.accessibilityViolations ? "FUNCTIONAL PASS; ACCESSIBILITY FINDINGS" : "PASS";
 } catch (error) {
   report.result = "FAIL"; report.failure = error.stack || String(error); process.exitCode = 1;
 } finally {
   await browser.close();
+  report.accessibilityViolations = report.accessibility.reduce((sum, result) => sum + result.violations.length, 0);
   await writeFile(path.join(output, "report.json"), JSON.stringify(report, null, 2) + "\n");
 }
-console.log(JSON.stringify({ result: report.result, cases: report.checks.length, accessibilityViolations: report.accessibilityViolations, fixtureLimitations: report.fixtureLimitations.length, report: path.join(output, "report.json"), failure: report.failure }));
+console.log(JSON.stringify({ result: report.result, cases: report.checks.length, expandedCases: report.expanded?.length ?? 0, accessibilityViolations: report.accessibilityViolations, fixtureLimitations: report.fixtureLimitations.length, report: path.join(output, "report.json"), failure: report.failure }));
