@@ -1,5 +1,5 @@
 // Meridian operator rail — mirrors the light sidebar in ThemeTokens/ThemeControls:
-// 14rem paper rail (#F4F6F8), small-caps section labels, nav items with a 3px teal-blue
+// 14rem paper rail (#EBE8E1), small-caps section labels, nav items with a 3px terracotta
 // left indicator on the active item.
 import React from "react";
 
@@ -9,25 +9,25 @@ function inject() {
   injected = true;
   const css = `
 .op-rail{width:14rem;flex-shrink:0;box-sizing:border-box;height:100%;overflow:auto;
-  background:var(--sidebar-bg,#EDEAE4);border-right:1px solid var(--sidebar-border,#E4E3DE);
+  background:var(--sidebar-bg,#EBE8E1);border-right:1px solid var(--sidebar-border,#D2CDC3);
   padding:10px 8px;font-family:var(--font-body);}
 .op-rail__nav{display:flex;flex-direction:column;gap:2px;}
 .op-rail__section{padding:10px 10px 5px;font-size:10px;font-weight:600;
-  font-variant:all-small-caps;letter-spacing:.04em;color:var(--nav-section-label,#5E666F);}
+  font-variant:all-small-caps;letter-spacing:.04em;color:var(--nav-section-label,#606870);}
 .op-nav-item{display:grid;grid-template-columns:16px minmax(0,1fr) max-content;gap:8px;
   align-items:center;min-height:34px;padding:0 9px;border:none;
   border-left:3px solid transparent;border-radius:0 6px 6px 0;background:transparent;
-  color:var(--nav-item,#4E5258);font-size:13px;text-align:left;cursor:pointer;width:100%;
+  color:var(--nav-item,#535C65);font-size:13px;text-align:left;cursor:pointer;width:100%;
   transition:background-color .1s ease,color .1s ease;}
-.op-nav-item:hover{background:var(--sidebar-hover,#F0EEE9);color:var(--nav-item-hover,#22252A);}
-.op-nav-item.active{background:var(--sidebar-active,#F2E3DB);
-  border-left-color:var(--sidebar-active-ind,#A85436);
-  color:var(--nav-item-active,#22252A);font-weight:600;}
+.op-nav-item:hover{background:var(--sidebar-hover,#EDEFF0);color:var(--nav-item-hover,#20252B);}
+.op-nav-item.active{background:var(--sidebar-active,#E7EDF2);
+  border-left-color:var(--sidebar-active-ind,#C56343);
+  color:var(--nav-item-active,#20252B);font-weight:600;}
 .op-nav-item__icon{width:16px;height:16px;opacity:.7;}
 .op-nav-item.active .op-nav-item__icon{opacity:1;}
 .op-nav-item__shortcut{font-family:var(--font-data);font-size:10px;
-  color:var(--text-muted,#5E666F);border:1px solid var(--border,#E4E3DE);
-  border-radius:var(--radius-chip,2px);padding:1px 5px;background:var(--bg-light,#FBFAF8);}
+  color:var(--text-muted,#606870);border:1px solid var(--border,#D2CDC3);
+  border-radius:var(--radius-chip,2px);padding:1px 5px;background:var(--bg-light,#F8F7F3);}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "navrail");
@@ -35,7 +35,9 @@ function inject() {
   document.head.appendChild(el);
 }
 
-export function NavRail({ sections, activeId, onSelect }) {
+// `sections` defaults to none: a screen that mounts the rail before its navigation model has
+// loaded (the strategy-runs views do, on their first render) drew nothing but threw here.
+export function NavRail({ sections = [], activeId, onSelect }) {
   inject();
   return (
     <nav className="op-rail">
@@ -44,7 +46,7 @@ export function NavRail({ sections, activeId, onSelect }) {
           <div className="op-rail__section">{sec.label}</div>
           <div className="op-rail__nav">
             {sec.items.map((it) => (
-              <button key={it.id} className={`op-nav-item${it.id === activeId ? " active" : ""}`}
+              <button type="button" key={it.id} className={`op-nav-item${it.id === activeId ? " active" : ""}`}
                       onClick={onSelect ? () => onSelect(it.id) : undefined}>
                 {it.icon
                   ? <img className="op-nav-item__icon" src={it.icon} width="16" height="16" alt="" />

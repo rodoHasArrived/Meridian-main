@@ -34,7 +34,7 @@ function highlight(label: string, query: string): ReactNode {
   return (
     <Fragment>
       {label.slice(0, index)}
-      <span className="bg-primary/15 text-primary">{label.slice(index, index + query.length)}</span>
+      <span className="bg-[var(--interaction-selected-surface)] text-foreground">{label.slice(index, index + query.length)}</span>
       {label.slice(index + query.length)}
     </Fragment>
   );
@@ -129,8 +129,8 @@ export function Combobox({
       ) : null}
       <div
         className={cn(
-          "flex h-9 items-center rounded-[2px] border border-border bg-[var(--ws-surface-raised)]",
-          "focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/40",
+          "flex h-9 items-center rounded-[var(--radius-button)] border border-border bg-[var(--ws-surface-raised)]",
+          "focus-within:border-[var(--interaction-focus)] focus-within:ring-2 focus-within:ring-[var(--interaction-focus)]",
           disabled && "cursor-not-allowed opacity-55"
         )}
       >
@@ -160,7 +160,7 @@ export function Combobox({
         <div
           role="listbox"
           id={listboxId}
-          className="absolute left-0 right-0 top-[calc(100%+4px)] z-[100] max-h-60 overflow-y-auto rounded-[2px] border border-border bg-popover shadow-[0_2px_6px_rgba(0,0,0,0.18)]"
+          className="absolute left-0 right-0 top-[calc(100%+4px)] z-[100] max-h-60 overflow-y-auto rounded-[var(--radius-overlay)] border border-border bg-popover shadow-[0_2px_6px_rgba(0,0,0,0.18)]"
         >
           {filtered.length === 0 ? (
             <div className="px-3 py-2.5 text-xs text-muted-foreground">{emptyText}</div>
@@ -178,7 +178,7 @@ export function Combobox({
                   className={cn(
                     "flex cursor-pointer items-center gap-2 px-3 py-2 font-mono text-xs text-foreground",
                     index === highlighted && "bg-[var(--ws-row-hover)]",
-                    isSelected && "font-semibold text-primary"
+                    isSelected && "font-semibold text-[var(--interaction-link)]"
                   )}
                 >
                   {highlight(option.label, query)}

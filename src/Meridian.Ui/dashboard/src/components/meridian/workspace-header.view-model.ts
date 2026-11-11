@@ -1,4 +1,5 @@
 import type { SessionInfo, WorkspaceSummary } from "@/types";
+import type { DataProvenanceKind } from "@/app-shell.data-provenance-badge";
 
 export type WorkspaceHeaderBadgeVariant =
   | "default"
@@ -68,6 +69,7 @@ interface BuildWorkspaceHeaderViewModelOptions {
   refreshing?: boolean;
   /** The page name that ends the breadcrumb and is the header's heading. Defaults to the workspace. */
   pageTitle?: string;
+  dataProvenance?: DataProvenanceKind;
 }
 
 export function buildWorkspaceHeaderViewModel({
@@ -75,9 +77,10 @@ export function buildWorkspaceHeaderViewModel({
   session,
   canRefresh,
   refreshing = false,
-  pageTitle
+  pageTitle,
+  dataProvenance = "unknown"
 }: BuildWorkspaceHeaderViewModelOptions): WorkspaceHeaderViewModel {
-  const isLiveEnvironment = session?.environment === "live";
+  const isLiveEnvironment = session?.environment === "live" && dataProvenance === "real";
   const refreshLabel = refreshing ? "Refreshing" : "Refresh";
   const refreshDisabledReason = refreshing
     ? `${workspace.label} workspace data is refreshing.`

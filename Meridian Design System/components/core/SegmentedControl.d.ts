@@ -25,3 +25,6 @@ export interface SegmentedControlProps extends Omit<React.HTMLAttributes<HTMLDiv
   fullWidth?: boolean;
 }
 export declare function SegmentedControl(props: SegmentedControlProps): JSX.Element;
+
+/** 3.5 · A real radio group: role="radiogroup"/"radio" + aria-checked, roving tabindex (one tab
+ *  stop), Arrow/Home/End move AND select. Migration note: was role="tablist". */

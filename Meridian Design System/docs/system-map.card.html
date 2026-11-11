@@ -1,4 +1,4 @@
-<!-- @dsCard group="Documentation" viewport="1180x720" name="System map" subtitle="Foundations → 154 exported symbols → 22 templates — the whole system at a glance" -->
+<!-- @dsCard group="Documentation" viewport="1180x720" name="System map" subtitle="Foundations → components → templates — the whole system at a glance (counts read live from the manifest)" -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -21,23 +21,23 @@
   .tcols { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
   .tset .k { font-size: 10px; font-weight: 600; font-variant: all-small-caps; letter-spacing: .03em; color: var(--text-primary); margin-bottom: 4px; }
   .tset .c { font-family: var(--font-data); font-size: 10px; line-height: 1.7; color: var(--text-secondary); }
-  .tset .star { color: var(--accent, #A85436); }
+  .tset .star { color: var(--brand-signal,#C56343); }
   .foot { margin-top: 12px; font-size: 11px; color: var(--text-secondary); }
   .foot code { font-family: var(--font-data); font-size: 10px; color: var(--text-primary); }
 </style>
 </head>
 <body>
   <div class="pipe">
-    <div class="stage"><div class="t">Foundations</div><div class="s">styles.css → 370 tokens · colors / type / elevation / density / dark / print</div></div>
+    <div class="stage"><div class="t">Foundations</div><div class="s">styles.css → <span id="m-tok">389</span> tokens · colors / type / elevation / density / dark / print</div></div>
     <div class="arrow">→</div>
-    <div class="stage"><div class="t">Components</div><div class="s">_ds_bundle.js → 154 exports on window.MeridianDesignSystem_4f61be</div></div>
+    <div class="stage"><div class="t">Components</div><div class="s">_ds_bundle.js → <span id="m-comp">166</span> exports on window.MeridianDesignSystem_205d17</div></div>
     <div class="arrow">→</div>
-    <div class="stage"><div class="t">Templates</div><div class="s">templates/ → 22 copy-and-edit workstations (.dc.html)</div></div>
+    <div class="stage"><div class="t">Templates</div><div class="s">templates/ → <span id="m-tmpl">27</span> copy-and-edit workstations (.dc.html)</div></div>
   </div>
 
   <div class="grid">
-    <div class="dom"><div class="h">Core<code>components/core</code></div><div class="c">Button · Input · Select · Combobox · Modal · Tabs · CommandPalette · SplitPane · HotkeysProvider · Toast · FormHooks</div></div>
-    <div class="dom"><div class="h">Data<code>components/data</code></div><div class="c">DenseDataTable · FilteredDataTable · WorksheetGrid · FilterBuilder · ColumnManager · Pagination · MetricCard · TableHooks</div></div>
+    <div class="dom"><div class="h">Core<code>components/core</code></div><div class="c">Button · Input · Select · Combobox · Dialog · Tabs · CommandPalette · SplitPane · HotkeysProvider · Toast · FormHooks</div></div>
+    <div class="dom"><div class="h">Data<code>components/data</code></div><div class="c">DataGrid · WorksheetGrid · FilterBuilder · ColumnManager · Pagination · MetricCard · TableHooks</div></div>
     <div class="dom"><div class="h">Charts<code>components/charts</code></div><div class="c">CandleChart · EquityCurve · DrawdownChart · Histogram · CorrelationHeatmap · PnLCalendar · CoverageMatrix · Sparkline</div></div>
     <div class="dom"><div class="h">Accounting<code>components/accounting</code></div><div class="c">AmountCell · LedgerTable · TrialBalance · ReconciliationPanel · JournalEntryForm · TaxLotTable · AgingTable · Money</div></div>
     <div class="dom"><div class="h">Trading<code>components/trading</code></div><div class="c">OrderTicket · DepthLadder · Blotter · FillsFeed — with the live-mode confirm gate</div></div>
@@ -48,15 +48,22 @@
     <div class="tmpl">
       <div class="h">Templates — copy a folder, edit one file</div>
       <div class="tcols">
-        <div class="tset"><div class="k">Start here</div><div class="c"><span class="star">dashboard-workstation ★</span><br>blank-workstation</div></div>
+        <div class="tset"><div class="k">Start here</div><div class="c"><span class="star">dashboard-workstation ★</span><br>blank-workstation<br>session-start</div></div>
         <div class="tset"><div class="k">Data &amp; analysis</div><div class="c">security-master-registry<br>charting-workstation<br>ingestion-operations<br>alerting-workstation</div></div>
-        <div class="tset"><div class="k">Books &amp; reporting</div><div class="c">accounting-workstation<br>journaling-workstation<br>report-library<br>report-scheduler<br>basket-builder</div></div>
-        <div class="tset"><div class="k">Research suite</div><div class="c">strategy-builder<br>field-formula<br>amx-governance<br>backtest-builder<br>strategy-onboarding<br>strategy-runs</div></div>
-        <div class="tset"><div class="k">Trading &amp; admin</div><div class="c">trading-desk<br>settings-admin</div></div>
+        <div class="tset"><div class="k">Books &amp; reconciliation</div><div class="c">accounting-workstation<br>reconciliation<br>close-management<br>investment-event-ledger<br>ownership-graph</div></div>
+        <div class="tset"><div class="k">Research suite</div><div class="c">strategy-formation<br>field-formula<br>strategy-runs<br>strategy-governance<br>analytical-workbench<br>alm-review</div></div>
+        <div class="tset"><div class="k">Trading &amp; reporting</div><div class="c">trading-desk<br>basket-builder<br>report-library<br>report-scheduler<br>report-pack<br>asset-sheet<br>settings-admin</div></div>
       </div>
     </div>
   </div>
 
-  <p class="foot">Consume: link <code>styles.css</code>, load <code>_ds_bundle.js</code>, then <code>const { Button } = window.MeridianDesignSystem_4f61be</code>. When to reach for what: <code>PATTERNS.md</code>.</p>
+  <p class="foot">Consume: link <code>styles.css</code>, load <code>_ds_bundle.js</code>, then <code>const { Button } = window.MeridianDesignSystem_205d17</code>. When to reach for what: <code>guidelines/PATTERNS.md</code>. How it's organized: <code>docs/ARCHITECTURE.md</code>.</p>
+  <script>
+  fetch('../_ds_manifest.json').then(function(r){return r.json()}).then(function(m){
+  var n=function(v){return Array.isArray(v)?v.length:(typeof v==='number'?v:(v&&typeof v==='object'?Object.keys(v).length:null))};
+  var set=function(id,v){var e=document.getElementById(id);if(e&&v)e.textContent=v};
+  set('m-comp',n(m.components));set('m-tmpl',n(m.templates));set('m-tok',n(m.tokens));
+  }).catch(function(){});
+  </script>
 </body>
 </html>

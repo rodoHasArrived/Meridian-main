@@ -3,7 +3,7 @@
 // carries the meaning; the optional arrow is decoration and aria-hidden.
 import React from "react";
 
-export function Delta({ value, decimals = 2, suffix = "", arrow = false, tone, style = {}, ...rest }) {
+export function Delta({ value, decimals = 2, suffix = "", arrow = false, tone, locale, style = {}, ...rest }) {
   const n = typeof value === "number" ? value : parseFloat(value);
   if (!Number.isFinite(n)) return <span {...rest}>—</span>;
   const dir = n > 0 ? "up" : n < 0 ? "down" : "flat";
@@ -12,7 +12,10 @@ export function Delta({ value, decimals = 2, suffix = "", arrow = false, tone, s
     resolved === "up" ? "var(--green-dim)" :
     resolved === "down" ? "var(--red-dim)" :
     "var(--text-muted)";
-  const text = `${n > 0 ? "+" : n < 0 ? "-" : "±"}${Math.abs(n).toFixed(decimals)}${suffix}`;
+  const mag = locale
+    ? Math.abs(n).toLocaleString(locale, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
+    : Math.abs(n).toFixed(decimals);
+  const text = `${n > 0 ? "+" : n < 0 ? "-" : "±"}${mag}${suffix}`;
   return (
     <span
       style={{ fontFamily: "var(--font-data)", fontVariantNumeric: "slashed-zero tabular-nums", color, whiteSpace: "nowrap", ...style }}

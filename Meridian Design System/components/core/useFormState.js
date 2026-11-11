@@ -98,5 +98,5 @@ export function useWizard(steps, { validate = () => true, onComplete } = {}) {
 // Capitalized carrier so these hooks surface on window.<Namespace> (the compiler only exposes
 // capital-initial exports; React hooks must stay lowercase). Consume as:
 //   const { useDirtyState, useAsyncValidation, useWizard } =
-//     window.MeridianDesignSystem_4f61be.FormHooks;
+//     window.MeridianDesignSystem_205d17.FormHooks;
 export const FormHooks = { useDirtyState, useAsyncValidation, useWizard };

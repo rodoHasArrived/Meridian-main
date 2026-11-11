@@ -1,18 +1,224 @@
 <!DOCTYPE html>
-<html data-theme="light">
+<html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../_scaffold/vendor/react-18.3.1.production.min.js"></script>
+<script src="../_scaffold/vendor/react-dom-18.3.1.production.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
 <script src="./support.js"></script>
 </head>
 <body>
 <x-dc>
-<!-- @template name="Charting Workstation" description="Light charting workstation — OHLC, studies, crosshair readout" -->
+<!-- @template name="Investigate · Charting Workstation" description="PlotTool — candlestick chart with studies rail, crosshair readout, and expression-driven scatter analysis. Frame and rails are editable markup; chart data and study state live in the logic class." -->
 <helmet>
 <script src="./ds-base.js"></script>
 <meta name="dc-template" content="charting-workstation">
+<style>html,body{margin:0;padding:0;height:100%}[data-cw-study="on"]{background:var(--bg-light)}[data-cw-study="on"] [data-cw-state="1"]{color:var(--brand-signal-ink,#944A32)}</style>
 </helmet>
-<x-import component-from-global-scope="ChartingWorkstationScreen" from="./screen.jsx" hint-size="100%,820px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Chart" hint-size="100%,780px">
+<div data-screen-label="Charting workstation" style="height:100vh;display:flex;flex-direction:column;background:var(--bg);color:var(--text-secondary);font-family:var(--font-body);font-size:13px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkstationTopbar" module-label="Charting" environment="{{ envLabel }}" brand-src="../../assets/brand/meridian-mark-light.svg" hint-size="100%,48px"></x-import>
+<div style="display:flex;flex:1;min-height:0">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.NavRail" active-id="charting" sections="{{ navSections }}" on-select="{{ onNav }}" hint-size="224px,100%"></x-import>
+<main style="flex:1;min-width:0;display:flex;flex-direction:column;padding:16px;gap:12px">
+<div style="display:flex;align-items:center;gap:10px">
+<h1 style="font:600 16px var(--font-display);margin:0;color:var(--text-primary)">PlotTool</h1>
+<div style="flex:1"></div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SegmentedControl" size="sm" options="{{ modeOptions }}" value="{{ mode }}" on-change="{{ onMode }}" hint-size="220px,26px"></x-import>
+</div>
+<sc-if value="{{ showChart }}" hint-placeholder-val="{{ true }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ChartCard" title="AAPL · 1D" subtitle="Apple Inc." readout="{{ chartReadout }}" actions="{{ tfActions }}" height="{{ fillHeight }}" style="flex:1;min-height:0" hint-size="100%,420px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.CandleChart" bars="{{ bars }}" overlays="{{ overlays }}" crosshair-index="{{ cross }}" hint-size="100%,380px"></x-import>
+</x-import>
+</sc-if>
+<sc-if value="{{ showScatter }}" hint-placeholder-val="{{ false }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ChartCard" title="Scatter analysis" subtitle="Expression-driven X/Y sample" readout="{{ scatterReadout }}" height="{{ fillHeight }}" style="flex:1;min-height:0" hint-size="100%,420px">
+<div style="display:flex;flex-direction:column;height:100%;gap:10px">
+<div style="display:flex;gap:10px;padding:2px 2px 0">
+<div style="flex:1;display:flex;align-items:center;gap:8px">
+<span style="font-family:var(--font-body);font-size:10px;font-weight:700;color:var(--text-muted);width:14px">X</span>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Input" value="{{ xExpr }}" on-change="{{ onXExpr }}" hint-size="100%,30px"></x-import>
+</div>
+<div style="flex:1;display:flex;align-items:center;gap:8px">
+<span style="font-family:var(--font-body);font-size:10px;font-weight:700;color:var(--text-muted);width:14px">Y</span>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Input" value="{{ yExpr }}" on-change="{{ onYExpr }}" hint-size="100%,30px"></x-import>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Kbd" hint-size="48px,20px">↵ plot</x-import>
+</div>
+<div style="flex:1;min-height:0">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ScatterChart" points="{{ points }}" current="{{ current }}" x-fmt="{{ xFmt }}" y-fmt="{{ yFmt }}" hint-size="100%,320px"></x-import>
+</div>
+</div>
+</x-import>
+</sc-if>
+</main>
+<aside style="width:280px;flex-shrink:0;border-left:1px solid var(--border);background:var(--bg-medium);overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:16px">
+<div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="70px,14px">Crosshair</x-import>
+<div style="margin-top:8px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.KeyValueGrid" columns="{{ 2 }}" items="{{ crosshairItems }}" hint-size="100%,140px"></x-import>
+</div>
+</div>
+<div style="height:1px;background:var(--border)"></div>
+<div>
+<div style="display:flex;align-items:center;justify-content:space-between">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="56px,14px">Studies</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="link" hint-size="32px,20px">Add</x-import>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;margin-top:10px">
+<sc-for list="{{ studies }}" as="s" hint-placeholder-count="5">
+<button onClick="{{ s.toggle }}" data-cw-study="{{ s.state }}" style="display:flex;align-items:center;gap:9px;padding:7px 10px;border:1px solid var(--border);border-radius:6px;cursor:pointer;background:transparent;text-align:left;font-family:var(--font-data);font-size:12px;color:var(--text-primary)">
+{{ s.swatch }}
+<span style="flex:1">{{ s.label }}</span>
+<span data-cw-state="1" style="font-size:10px;font-variant:all-small-caps;color:var(--text-muted)">{{ s.stateLabel }}</span>
+</button>
+</sc-for>
+</div>
+</div>
+</aside>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.StatusBar" items="{{ statusItems }}" hint-size="100%,28px"></x-import>
+</div>
+</x-import>
 </x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1920,&quot;height&quot;:1080},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;default&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;RESEARCH&quot;,&quot;options&quot;:[&quot;RESEARCH&quot;,&quot;PAPER&quot;,&quot;LIVE&quot;,&quot;FIXTURE&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;}}">
+class Component extends DCLogic {
+  // Chrome tweaks — theme and density drive the design system's own token scopes
+  // (<html data-theme>, <body data-theme-density>); environment drives the badge that
+  // ds-base.js guarantees on every surface.
+  applyChrome() {
+    const html = document.documentElement;
+    html.setAttribute("data-theme", (window.MeridianPrefs?window.MeridianPrefs.theme(this.props.theme ?? "light"):(this.props.theme ?? "light")));
+    html.setAttribute("data-environment", (window.MeridianPrefs?window.MeridianPrefs.environment(String(this.props.environment ?? "PAPER").toUpperCase()):(String(this.props.environment ?? "PAPER").toUpperCase())));
+    if (document.body) document.body.setAttribute("data-theme-density", (window.MeridianPrefs?window.MeridianPrefs.density(this.props.density ?? "default"):(this.props.density ?? "default")));
+  }
+  componentDidMount() { this.applyChrome(); }
+  componentDidUpdate() { this.applyChrome(); }
+
+  state = {
+    tf: "1D", mode: "Chart",
+    studies: [
+      { id: "ma20", label: "MA(20)", on: true, color: "var(--brand-signal,#C56343)" },
+      { id: "ma50", label: "MA(50)", on: true, color: "var(--orange)" },
+      { id: "vwap", label: "VWAP", on: false, color: "var(--purple)" },
+      { id: "bb", label: "Bollinger(20,2)", on: false, color: "var(--chart-secondary)" },
+      { id: "rsi", label: "RSI(14)", on: true, color: "var(--green)" },
+    ],
+    xExpr: "AAPL.implied_volatility(3m, atm)",
+    yExpr: "AAPL.credit_spread(5y)",
+  };
+
+  // deterministic pseudo-OHLC
+  bars = (() => {
+    let p = 182; const out = [];
+    for (let i = 0; i < 64; i++) {
+      const drift = Math.sin(i / 5) * 6 + (i / 64) * 22;
+      const o = p; const c = 178 + drift + (i % 3 - 1) * 2.4;
+      const hh = String(9 + Math.floor(i / 7)).padStart(2, "0");
+      out.push({ t: hh + ":30", o, h: Math.max(o, c) + 1.8, l: Math.min(o, c) - 1.8, c, v: 1.1e6 + Math.abs(Math.sin(i)) * 2.6e6 });
+      p = c;
+    }
+    return out;
+  })();
+
+  // deterministic scatter sample — spread (bps) vs 3M implied vol (%)
+  points = (() => {
+    const pts = [];
+    for (let i = 0; i < 260; i++) {
+      const vol = 18 + Math.abs(Math.sin(i / 11)) * 42 + (i / 260) * 8;
+      const spread = 40 + vol * 0.82 + Math.sin(i / 3) * 14 + (i % 5 - 2) * 3.2;
+      pts.push({ x: +vol.toFixed(2), y: +spread.toFixed(1) });
+    }
+    return pts;
+  })();
+
+  linreg(points) {
+    const n = points.length; let sx = 0, sy = 0, sxx = 0, sxy = 0, syy = 0;
+    for (const p of points) { sx += p.x; sy += p.y; sxx += p.x * p.x; sxy += p.x * p.y; syy += p.y * p.y; }
+    const b = (n * sxy - sx * sy) / (n * sxx - sx * sx);
+    const r = (n * sxy - sx * sy) / Math.sqrt((n * sxx - sx * sx) * (n * syy - sy * sy));
+    return { slope: b, r, r2: r * r };
+  }
+
+  ds() { return window.MeridianDesignSystem_205d17 || {}; }
+
+  renderVals() {
+    this.applyChrome();
+    const s = this.state;
+    const { Button } = this.ds();
+    const cross = 44;
+    const bar = this.bars[cross];
+    const chg = bar.c - this.bars[cross - 1].c;
+    const chgColor = chg >= 0 ? "var(--chart-equity)" : "var(--chart-drawdown)";
+    const fit = this.linreg(this.points);
+    const current = this.points[this.points.length - 1];
+    // Timeframe pills render inside ChartCard's actions slot — interactive, so built here.
+    const tfActions = Button && React.createElement("div", { style: { display: "flex", gap: 4 } },
+      ["1m", "5m", "1H", "1D", "1W"].map((t) => React.createElement(Button, {
+        key: t, variant: t === s.tf ? "primary" : "ghost", size: "sm", onClick: () => this.setState({ tf: t }),
+      }, t)));
+    return {
+      dataState: this.props.dataState ?? "ready",
+      navSections: (window.MeridianAppMap ? window.MeridianAppMap.sections("charting") : []),
+      onNav: (id) => window.MeridianAppMap && window.MeridianAppMap.go(id),
+      envLabel: String(this.props.environment ?? "PAPER").toUpperCase(),
+      fillHeight: null,
+      modeOptions: ["Chart", "Scatter Analysis"],
+      mode: s.mode,
+      onMode: (v) => this.setState({ mode: v }),
+      showChart: s.mode === "Chart",
+      showScatter: s.mode === "Scatter Analysis",
+      bars: this.bars,
+      cross,
+      overlays: s.studies.filter((x) => x.win && x.on).map((x) => ({ label: x.label, color: x.color, win: x.win })),
+      chartReadout: [
+        { label: "Last", value: bar.c.toFixed(2), color: chgColor },
+        { label: "Chg", value: (chg >= 0 ? "+" : "") + chg.toFixed(2), color: chgColor },
+        { label: "O", value: bar.o.toFixed(2) },
+        { label: "H", value: bar.h.toFixed(2), color: "var(--chart-equity)" },
+        { label: "L", value: bar.l.toFixed(2), color: "var(--chart-drawdown)" },
+        { label: "Vol", value: "1.92M" },
+      ],
+      tfActions,
+      xExpr: s.xExpr,
+      onXExpr: (e) => this.setState({ xExpr: e.target.value }),
+      yExpr: s.yExpr,
+      onYExpr: (e) => this.setState({ yExpr: e.target.value }),
+      points: this.points,
+      current,
+      xFmt: (v) => v.toFixed(0) + "%",
+      yFmt: (v) => v.toFixed(0) + "bps",
+      scatterReadout: [
+        { label: "Corr (r)", value: fit.r.toFixed(2) },
+        { label: "R²", value: fit.r2.toFixed(2) },
+        { label: "Slope", value: fit.slope.toFixed(2) },
+        { label: "Current", value: current.x.toFixed(1) + "%, " + current.y.toFixed(0) + "bps" },
+      ],
+      crosshairItems: [
+        { label: "Time", value: bar.t + "Z" },
+        { label: "Last", value: bar.c.toFixed(2) },
+        { label: "Open", value: bar.o.toFixed(2) },
+        { label: "High", value: bar.h.toFixed(2) },
+        { label: "Low", value: bar.l.toFixed(2) },
+        { label: "Vol", value: "1.92M" },
+      ],
+      studies: s.studies.map((x) => ({
+        label: x.label,
+        state: x.on ? "on" : "off",
+        swatch: React.createElement("span", { style: { width: 10, height: 3, borderRadius: 2, background: x.color, opacity: x.on ? 1 : 0.25, flexShrink: 0 } }),
+        stateLabel: x.on ? "on" : "off",
+        toggle: () => this.setState((st) => ({ studies: st.studies.map((y) => y.id === x.id ? { ...y, on: !y.on } : y) })),
+      })),
+      statusItems: [
+        { status: "ok", label: "Feed", value: "Polygon · realtime" },
+        { label: "Bars", value: "64 · 1D" },
+        { label: "Studies", value: s.studies.filter((x) => x.on).length + " active" },
+        { status: "ok", label: "Render", value: "60fps", push: true },
+      ],
+    };
+  }
+}
+</script>
 </body>
 </html>

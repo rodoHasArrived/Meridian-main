@@ -12,22 +12,22 @@ function inject() {
   injected = true;
   const css = `
 .mds-prov{display:inline-flex;align-items:center;gap:6px;width:fit-content;max-width:100%;
-  min-height:20px;border:1px solid var(--border,#E4E3DE);border-radius:var(--radius-chip,2px);
-  background:var(--bg-light,#FBFAF8);color:var(--text-secondary,#4E5258);
-  font-family:var(--font-data,"Cascadia Mono",monospace);font-size:9.5px;font-weight:500;line-height:1;
+  min-height:20px;border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-chip,2px);
+  background:var(--bg-light,#F8F7F3);color:var(--text-secondary,#535C65);
+  font-family:var(--font-data,"IBM Plex Mono",monospace);font-size:9.5px;font-weight:500;line-height:1;
   letter-spacing:.02em;padding:0 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 button.mds-prov{cursor:pointer;}
-button.mds-prov:hover{border-color:var(--border-strong,#AFABA1);background:var(--bg-hover,#F0EEE9);}
-button.mds-prov:focus-visible{outline:2px solid var(--focus-ring,#A85436);outline-offset:2px;}
+button.mds-prov:hover{border-color:var(--border-strong,#AAA49A);background:var(--bg-hover,#EDEFF0);}
+button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3);outline-offset:2px;}
 .mds-prov__dot{height:6px;width:6px;border-radius:50%;flex:0 0 auto;}
-.mds-prov__dot--ready{background:var(--severity-ready-fg,#2C5C40);}
-.mds-prov__dot--review{background:var(--severity-review-fg,#8C4429);}
-.mds-prov__dot--action{background:var(--severity-action-fg,#68450E);}
-.mds-prov__dot--blocked{background:var(--severity-blocked-fg,#7E332D);}
-.mds-prov__dot--info{background:var(--severity-info-fg,#5E666F);}
+.mds-prov__dot--ready{background:var(--severity-ready-fg,#225840);}
+.mds-prov__dot--review{background:var(--severity-review-fg,#944A32);}
+.mds-prov__dot--action{background:var(--severity-action-fg,#724D11);}
+.mds-prov__dot--blocked{background:var(--severity-blocked-fg,#883832);}
+.mds-prov__dot--info{background:var(--severity-info-fg,#606870);}
 .mds-prov__src{font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
-.mds-prov__sep{color:var(--text-muted,#5E666F);opacity:.6;}
-.mds-prov__meta{color:var(--text-muted,#5E666F);}
+.mds-prov__sep{color:var(--text-muted,#606870);opacity:.6;}
+.mds-prov__meta{color:var(--text-muted,#606870);}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "provenance-chip");

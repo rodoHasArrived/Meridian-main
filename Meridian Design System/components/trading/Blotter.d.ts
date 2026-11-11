@@ -1,5 +1,5 @@
 /**
- * Blotter — orders blotter preset over `DenseDataTable`. Desk conventions encoded once:
+ * Blotter — orders blotter preset over `DataGrid`. Desk conventions encoded once:
  * side as washed green/red text (never fills), mono right-aligned qty/price, order status
  * through `SeverityBadge` normalization, UTC time-of-day via `Timestamp`.
  *
@@ -30,7 +30,7 @@ export interface BlotterProps {
   sortKey?: string;
   sortDir?: "asc" | "desc";
   onSort?: (key: string) => void;
-  /** Appended DenseDataTable column defs. */
-  extraColumns?: { key: string; label: string; align?: "left" | "right"; render?: (row: BlotterOrder) => React.ReactNode }[];
+  /** Appended DataGrid column defs (`cell` renderer; legacy `render` still accepted). */
+  extraColumns?: { key: string; label: string; align?: "left" | "right"; cell?: (row: BlotterOrder) => React.ReactNode; render?: (row: BlotterOrder) => React.ReactNode }[];
 }
 export declare function Blotter(props: BlotterProps): JSX.Element;

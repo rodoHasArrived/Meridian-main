@@ -1,0 +1,93 @@
+<!-- @dsCard group="Data" viewport="1180x820" name="DataGrid — one tabular primitive" subtitle="Capabilities as props, domain tables as column schemas, and a proof contract that states the table's own arithmetic" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>DataGrid</title>
+<link rel="stylesheet" href="../../styles.css" />
+<script src="../../_preview_runtime.js"></script>
+<script src="../../_preview_jsx.js"></script>
+<script src="../../_ds_bundle.js"></script>
+</head>
+<body style="margin:0;padding:20px;background:var(--bg-canvas);font-family:var(--font-body);">
+<div id="root"></div>
+<script type="text/babel">
+const { DataGrid, GRID_SCHEMAS, ValueEnvelope, Eyebrow } = window.MeridianDesignSystem_205d17;
+function Panel({ eyebrow, title, note, children, style }) {
+  return (
+    <section style={{ background:"var(--bg-light)", border:"1px solid var(--border)", borderRadius:2, padding:14, ...style }}>
+      <Eyebrow>{eyebrow}</Eyebrow>
+      <h2 style={{ font:"600 15px var(--font-display)", color:"var(--text-primary)", margin:"6px 0 4px" }}>{title}</h2>
+      {note ? <p style={{ fontSize:12, lineHeight:"17px", color:"var(--text-muted)", margin:"0 0 12px", maxWidth:"74ch" }}>{note}</p> : null}
+      {children}
+    </section>
+  );
+}
+
+const TB = [
+  { code:"1000", account:"Cash and equivalents", debit:4820115.22, credit:0 },
+  { code:"1200", account:"Investments at fair value", debit:186402881.10, credit:0 },
+  { code:"1400", account:"Accrued income receivable", debit:1182400.00, credit:0 },
+  { code:"2100", account:"Payables to brokers", debit:0, credit:2904118.44 },
+  { code:"3000", account:"Contributed capital", debit:0, credit:171000000.00 },
+  { code:"3900", account:"Retained earnings", debit:0, credit:18501277.88 },
+];
+const LOTS = [
+  { lot:"L-88401", opened:"2024-03-11", qty:12000, basis:1184220.00, unrealized:88410.20, term:"Long", condition:"confirmed", authority:"source" },
+  { lot:"L-88402", opened:"2025-11-02", qty:4500, basis:512300.50, unrealized:-14220.75, term:"Short", condition:"stale", authority:"source", detail:"3d" },
+  { lot:"L-88403", opened:"2026-06-18", qty:8800, basis:998104.00, unrealized:41028.00, term:"Short", condition:"estimated", authority:"estimate" },
+];
+const BLOTTER = [
+  { id:1, time:"09:31:02", symbol:"UST 10Y", side:"Buy", qty:5000, price:99.4141, status:"Filled", desk:"Rates" },
+  { id:2, time:"09:34:55", symbol:"UST 10Y", side:"Sell", qty:2500, price:99.4219, status:"Filled", desk:"Rates" },
+  { id:3, time:"10:02:18", symbol:"MUNI AAA", side:"Buy", qty:1200, price:101.8800, status:"Working", desk:"Credit" },
+  { id:4, time:"10:14:40", symbol:"IG CDX", side:"Sell", qty:9000, price:64.2500, status:"Rejected", desk:"Credit" },
+];
+
+const LOT_COLS = GRID_SCHEMAS.taxLots.columns.map((c) =>
+  c.key === "basis"
+    ? { ...c, cell: (r) => <ValueEnvelope value={r.basis.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}
+        condition={r.condition} detail={r.detail} authority={r.authority} align="right"
+        clocks={{ asOf:"2026-08-11 20:00:00Z" }} evidence={[{ label:"Lot record", ref:r.lot }]} /> }
+    : c);
+
+function Demo() {
+  return (
+    <div style={{ display:"grid", gap:16, maxWidth:1140 }}>
+      <Panel eyebrow="Proof contract" title="A table states its own arithmetic"
+        note="proof is a first-class table feature, not something each domain table re-implements. A trial balance declares Σ debit = Σ credit and the grid reports Balanced or Out by — so an operator never has to add the column up to find out.">
+        <DataGrid schema="trialBalance" rows={TB} rowKey="code" density="dense" />
+        <div style={{ height:12 }} />
+        <DataGrid schema="trialBalance" rowKey="code" density="dense"
+          rows={TB.map((r) => r.code === "3900" ? { ...r, credit: r.credit - 12.4 } : r)} />
+      </Panel>
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, alignItems:"start" }}>
+        <Panel eyebrow="Schema, not module" title="Domain tables are data"
+          note="GRID_SCHEMAS.taxLots supplies the columns and the Σ basis proof. A cell opts into a full value envelope through column.cell — the grid never learns about provenance itself.">
+          <DataGrid columns={LOT_COLS} proof={GRID_SCHEMAS.taxLots.proof} rows={LOTS} rowKey="lot" density="standard" />
+        </Panel>
+        <Panel eyebrow="Capabilities are props" title="One grid, opt-in behaviour"
+          note="select, groupBy, expand, edit, totals and density are props on the same primitive. There is no decision about which table to reach for.">
+          <DataGrid schema="blotter" rows={BLOTTER} rowKey="id" density="dense" select groupBy="desk"
+            expand={(r) => <span>{r.side} {r.qty.toLocaleString()} {r.symbol} @ {r.price.toFixed(4)} · {r.status} · desk {r.desk}</span>} />
+        </Panel>
+      </div>
+      <Panel eyebrow="Density" title="Four row heights, one component"
+        note="Terminal 26px · Dense 28px · Standard 36px · Review 44px — resolved from the registry, so compact and spacious spellings land on the same rows.">
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12 }}>
+          {["terminal","dense","standard","review"].map((d) => (
+            <div key={d}>
+              <div style={{ fontSize:10, fontVariant:"all-small-caps", letterSpacing:".06em", color:"var(--text-muted)", marginBottom:5 }}>{d}</div>
+              <DataGrid rows={BLOTTER} rowKey="id" density={d} proof={null}
+                columns={[{ key:"symbol", label:"Symbol" }, { key:"qty", label:"Qty", format:"num", align:"right" }]} />
+            </div>
+          ))}
+        </div>
+      </Panel>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

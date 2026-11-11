@@ -20,6 +20,7 @@ import {
 import { WORKSPACE_NAVIGATION_FEATURES, type WorkstationFeatureDefinition } from "@/lib/workstation-features";
 import type { WorkspaceAttentionCounts } from "@/lib/daily-control-tower";
 import type { WorkspaceKey, WorkspaceSummary } from "@/types";
+import type { AppShellOperatorFocusItem } from "@/app-shell.workflow-continuity-types";
 
 export interface WorkspaceNavSubItemViewModel {
   label: string;
@@ -51,6 +52,7 @@ export interface WorkspaceNavItemViewModel {
   attentionCount: number;
   subItems: WorkspaceNavSubItemViewModel[];
   subItemGroups: WorkspaceNavSubItemGroupViewModel[];
+  attentionSeverity: "blocked" | "review" | "info" | null;
 }
 
 export interface WorkspaceNavCurrentWorkspaceViewModel {
@@ -108,8 +110,11 @@ export function buildWorkspaceNavViewModel(
   workspaces: WorkspaceSummary[] = WORKSPACES,
   search = "",
   operatingContextScope: AppShellOperatingScopeInput | null = null,
-  attention: WorkspaceAttentionCounts | null = null
+  attention: WorkspaceAttentionCounts | readonly AppShellOperatorFocusItem[] | null = null,
+  suppliedAttentionItems: readonly AppShellOperatorFocusItem[] = []
 ): WorkspaceNavViewModel {
+  const attentionItems: readonly AppShellOperatorFocusItem[] = Array.isArray(attention) ? attention : suppliedAttentionItems;
+  const attentionCounts = attention && !Array.isArray(attention) ? attention as WorkspaceAttentionCounts : null;
   const isHome = pathname === "/";
   const visibleWorkspaces = canonicalizeWorkspaceSummaries(workspaces);
   const currentWorkspace =
@@ -128,7 +133,13 @@ export function buildWorkspaceNavViewModel(
       search
     );
     const workspaceScopeSummary = summarizeOperatingScopeForRoute(workspaceCanonicalRoute, operatingScope);
-    const attentionCount = attention?.byWorkspace[workspace.key] ?? 0;
+    const workspaceAttention = [...new Map(attentionItems.filter((item) => item.tone !== "ready"
+      && ((visibleWorkspaces.find((candidate) => isWorkspacePathActive(item.route.split(/[?#]/)[0], candidate.key))?.key
+        ?? item.workspaceLabel.toLowerCase()) === workspace.key)).map((item) => [item.id, item])).values()];
+    const attentionSeverity = workspaceAttention.some((item) => item.tone === "blocked") ? "blocked" as const
+      : workspaceAttention.some((item) => item.tone === "review") ? "review" as const
+      : workspaceAttention.length ? "info" as const : null;
+    const attentionCount = attentionCounts?.byWorkspace[workspace.key] ?? workspaceAttention.length;
     const buildSubItem = (
       sub: WorkspaceSubrouteDefinition | AccountingNavigationItemDefinition
     ): WorkspaceNavSubItemViewModel => {
@@ -174,7 +185,8 @@ export function buildWorkspaceNavViewModel(
         : `Open ${workspace.label} workspace, ${workspace.maturity} product maturity`}${formatAttentionAriaSuffix(attentionCount)}${formatPreservedScopeAriaSuffix(workspaceScopeSummary)}`,
       attentionCount,
       subItems,
-      subItemGroups
+      subItemGroups,
+      attentionSeverity
     };
   });
   const currentRoute = items.find((item) => item.key === currentWorkspace.key)?.route
@@ -182,7 +194,7 @@ export function buildWorkspaceNavViewModel(
 
   const contextItems = buildContextItems(pathname, currentWorkspace.key, operatingScope, search);
 
-  const todayAttentionCount = attention?.total ?? 0;
+  const todayAttentionCount = attentionCounts?.total ?? new Set(attentionItems.filter((item) => item.tone !== "ready").map((item) => item.id)).size;
   const todayRoute = appendOperatingScopeToRoute("/", operatingScope);
   const today: WorkspaceNavTodayViewModel = {
     label: "Today",

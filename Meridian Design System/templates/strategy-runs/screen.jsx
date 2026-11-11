@@ -3,8 +3,8 @@
 
 const {
   WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge,
-  SegmentedControl, DenseDataTable, SeverityBadge, KeyValueGrid, GateRail, StatusBanner
-} = window.MeridianDesignSystem_4f61be;
+  SegmentedControl, DataGrid, SeverityBadge, KeyValueGrid, GateRail, StatusBanner
+} = window.MeridianDesignSystem_205d17;
 const { useState } = React;
 
 const NAV = [
@@ -102,17 +102,17 @@ function StrategyRunsScreen() {
 
             {/* Runs ledger */}
             <PanelSurface style={{ padding: 0 }}>
-              <DenseDataTable
-                selectedIndex={sel}
-                onRowClick={(_, i) => setSel(i)}
+              <DataGrid
+                activeKey={run.id}
+                onRowClick={(_row, _key, i) => setSel(i)}
                 columns={[
                   { key: "id", label: "Run" },
                   { key: "strat", label: "Strategy" },
-                  { key: "env", label: "Env", render: (r) => <Badge variant={ENV_BADGE[r.env]} dot>{r.env}</Badge> },
+                  { key: "env", label: "Env", cell: (r) => <Badge variant={ENV_BADGE[r.env]} dot>{r.env}</Badge> },
                   { key: "started", label: "Started" },
                   { key: "dur", label: "Dur", align: "right" },
-                  { key: "status", label: "Status", render: (r) => <SeverityBadge status={r.status} /> },
-                  { key: "ret", label: "Return", align: "right", render: (r) => pnl(r.ret) },
+                  { key: "status", label: "Status", cell: (r) => <SeverityBadge status={r.status} /> },
+                  { key: "ret", label: "Return", align: "right", cell: (r) => pnl(r.ret) },
                   { key: "sharpe", label: "Sharpe", align: "right" },
                   { key: "trades", label: "Trades", align: "right" },
                 ]}

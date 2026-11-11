@@ -1,4 +1,4 @@
-// Meridian ColumnChooser — dropdown to toggle column visibility in DenseDataTable/FilteredDataTable.
+// Meridian ColumnChooser — dropdown to toggle column visibility in a DataGrid.
 import React from "react";
 
 let injected = false;
@@ -8,30 +8,30 @@ function inject() {
   const css = `
 .mds-colchz{position:relative;display:inline-block;}
 .mds-colchz__btn{display:inline-flex;align-items:center;gap:6px;padding:6px 11px;
-  border:1px solid var(--border,#E4E3DE);border-radius:var(--radius-button,2px);
-  background:var(--bg-light,#FBFAF8);color:var(--text-secondary,#4E5258);
+  border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-button,2px);
+  background:var(--bg-light,#F8F7F3);color:var(--text-secondary,#535C65);
   font-family:var(--font-body);font-size:12px;cursor:pointer;
   transition:background .1s ease,border-color .1s ease;}
-.mds-colchz__btn:hover{background:var(--bg-active,#F2E3DB);border-color:var(--accent,#A85436);}
-.mds-colchz__btn--active{border-color:var(--accent,#A85436);color:var(--accent,#A85436);}
+.mds-colchz__btn:hover{background:var(--bg-active,#E7EDF2);border-color:var(--brand-signal,#C56343);}
+.mds-colchz__btn--active{border-color:var(--interaction-selected,#496C8F);color:var(--interaction-selected,#496C8F);}
 .mds-colchz__menu{position:absolute;top:calc(100% + 4px);right:0;z-index:200;min-width:180px;
-  background:var(--bg-light,#FBFAF8);border:1px solid var(--border,#E4E3DE);
+  background:var(--bg-light,#F8F7F3);border:1px solid var(--border,#D2CDC3);
   border-radius:var(--radius-button,2px);
   box-shadow:var(--shadow-menu);overflow:hidden;}
 .mds-colchz__head{padding:8px 12px 6px;font-family:var(--font-body);font-size:10px;font-weight:600;
-  font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted,#5E666F);
-  border-bottom:1px solid var(--border,#E4E3DE);}
+  font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted,#606870);
+  border-bottom:1px solid var(--border,#D2CDC3);}
 .mds-colchz__item{display:flex;align-items:center;gap:9px;padding:8px 12px;cursor:pointer;
-  font-family:var(--font-body);font-size:12px;color:var(--text-primary,#22252A);
+  font-family:var(--font-body);font-size:12px;color:var(--text-primary,#20252B);
   transition:background .08s ease;}
-.mds-colchz__item:hover{background:var(--bg-active,#F2E3DB);}
-.mds-colchz__ck{width:14px;height:14px;border:1.5px solid var(--border,#E4E3DE);border-radius:2px;
+.mds-colchz__item:hover{background:var(--bg-active,#E7EDF2);}
+.mds-colchz__ck{width:14px;height:14px;border:1.5px solid var(--border,#D2CDC3);border-radius:2px;
   flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;}
-.mds-colchz__ck--on{background:var(--accent,#A85436);border-color:var(--accent,#A85436);color:var(--text-on-accent,#fff);}
-.mds-colchz__foot{padding:8px 12px;border-top:1px solid var(--border,#E4E3DE);}
+.mds-colchz__ck--on{background:var(--interaction-selected,#496C8F);border-color:var(--interaction-selected,#496C8F);color:var(--text-on-accent,#0D1217);}
+.mds-colchz__foot{padding:8px 12px;border-top:1px solid var(--border,#D2CDC3);}
 .mds-colchz__reset{appearance:none;border:none;background:transparent;
-  font-family:var(--font-body);font-size:11px;color:var(--accent,#A85436);cursor:pointer;padding:0;}
-.mds-colchz__reset:hover{opacity:.75;}
+  font-family:var(--font-body);font-size:11px;color:var(--brand-signal-ink,#944A32);cursor:pointer;padding:0;}
+.mds-colchz__reset:hover{text-decoration:underline;}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds","colchooser");
@@ -84,7 +84,7 @@ export function ColumnChooser({ columns = [], visible, onChange }) {
           ))}
           {hiddenCount > 0 && (
             <div className="mds-colchz__foot">
-              <button className="mds-colchz__reset" onClick={reset}>Reset to default</button>
+              <button type="button" className="mds-colchz__reset" onClick={reset}>Reset to default</button>
             </div>
           )}
         </div>

@@ -1,3 +1,5 @@
+import { TableWorkbench } from "@/components/meridian/table-workbench";
+import { exportTableQuery } from "@/lib/table-workbench";
 /**
  * Archive-maintenance operations panel for Data → Storage assurance.
  *
@@ -88,7 +90,7 @@ export function ArchiveMaintenanceOperations() {
     [status, statistics, scheduleSummary]
   );
   const rows = useMemo(
-    () => executions.map((execution) => buildMaintenanceExecutionRow(execution, taskTypes)),
+    () => executions.map((execution) => ({ ...buildMaintenanceExecutionRow(execution, taskTypes), source: execution })),
     [executions, taskTypes]
   );
   const runnableTaskType = selectedTaskType || taskTypes[0]?.value || "";
@@ -193,58 +195,23 @@ export function ArchiveMaintenanceOperations() {
           </Button>
         </div>
 
-        <table className="w-full text-sm" aria-label="Maintenance execution history">
-          <thead>
-            <tr className="text-left text-xs uppercase tracking-wide text-muted-foreground">
-              <th className="py-2">Task</th>
-              <th>Status</th>
-              <th>Trigger</th>
-              <th>Started</th>
-              <th>Duration</th>
-              <th>Files</th>
-              <th>Issues fixed</th>
-              <th>Reclaimed</th>
-              <th className="sr-only">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.length === 0 ? (
-              <tr>
-                <td colSpan={9} className="py-4 text-center text-muted-foreground">
-                  {failedOnly ? "No failed maintenance executions recorded." : "No maintenance executions recorded."}
-                </td>
-              </tr>
-            ) : rows.map((row) => (
-              <tr key={row.executionId} className="border-t border-border/60">
-                <td className="py-2">{row.taskTypeLabel}</td>
-                <td>
-                  <Badge variant={badgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
-                  {row.errorMessage ? (
-                    <div className="mt-1 text-xs text-danger">{row.errorMessage}</div>
-                  ) : null}
-                </td>
-                <td>{row.triggerLabel}</td>
-                <td className="font-mono text-xs">{formatTimestamp(row.startedAt)}</td>
-                <td>{row.durationLabel}</td>
-                <td>{row.filesProcessed}</td>
-                <td>{row.issuesLabel}</td>
-                <td>{row.bytesSavedLabel}</td>
-                <td className="text-right">
-                  {row.cancellable ? (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      disabled={busy === `cancel:${row.executionId}`}
-                      onClick={() => void cancel(row.executionId)}
-                    >
-                      Cancel
-                    </Button>
-                  ) : null}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <TableWorkbench workbenchId="data-maintenance-executions" sourceKey={failedOnly ? "failed" : "all"}
+          sourceDescription="View shows the latest 25 executions. CSV includes all authorized retained matches; host retention applies."
+          filterState={{ failedOnly: String(failedOnly) }} onRestoreFilters={(filters) => setFailedOnly(filters.failedOnly === "true")}
+          onExportAll={(columns, search, sort, signal) => exportTableQuery("data-maintenance-executions", columns, search, sort?.columnId, sort?.direction, signal, { failedOnly: String(failedOnly) })}
+          rows={rows} getRowId={(row) => row.executionId} getSearchText={(row) => `${row.taskTypeLabel} ${row.statusLabel} ${row.triggerLabel} ${row.errorMessage ?? ""}`}
+          ariaLabel="Maintenance execution history" emptyText={failedOnly ? "No failed maintenance executions recorded." : "No maintenance executions recorded."}
+          columns={[
+            { id: "task", label: "Task", render: (row) => row.taskTypeLabel, exportValue: (row) => row.source.taskType },
+            { id: "status", label: "Status", render: (row) => <><Badge variant={badgeVariant(row.statusTone)}>{row.statusLabel}</Badge>{row.errorMessage ? <p className="text-xs text-danger">{row.errorMessage}</p> : null}</>, exportValue: (row) => row.source.status },
+            { id: "trigger", label: "Trigger", render: (row) => row.triggerLabel, exportValue: (row) => row.source.manualTrigger },
+            { id: "started", label: "Started", render: (row) => formatTimestamp(row.startedAt), exportValue: (row) => row.source.startedAt },
+            { id: "duration", label: "Duration", render: (row) => row.durationLabel, exportValue: (row) => row.source.duration },
+            { id: "files", label: "Files", render: (row) => row.filesProcessed, exportValue: (row) => row.source.filesProcessed },
+            { id: "issues", label: "Issues fixed", render: (row) => row.issuesLabel, exportValue: (row) => row.source.issuesResolved },
+            { id: "reclaimed", label: "Reclaimed", render: (row) => row.bytesSavedLabel, exportValue: (row) => row.source.bytesSaved },
+            { id: "actions", label: "Actions", render: (row) => row.cancellable ? <Button size="sm" variant="outline" disabled={busy === `cancel:${row.executionId}`} onClick={() => void cancel(row.executionId)}>Cancel</Button> : null }
+          ]} />
       </CardContent>
     </section>
   );

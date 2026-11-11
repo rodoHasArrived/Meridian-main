@@ -1,6 +1,7 @@
 import { normalizeFinancialLabel } from "@/lib/format";
 import { buildMetricTrust } from "@/lib/metric-trust";
 import type { MetricSnapshot } from "@/types";
+import { presentMetricChange } from "@/lib/metric-context";
 
 export interface MetricCardViewModel {
   id: string;
@@ -39,7 +40,7 @@ export function buildMetricCardViewModel(metric: MetricSnapshot): MetricCardView
   const label = normalizeFinancialLabel(metric.label.trim());
   const value = metric.value.trim();
   // A bare change with no stated baseline is not shown; see `resolveMetricDelta`.
-  const delta = trust.delta?.text ?? null;
+  const delta = metric.comparisonPeriod ? presentMetricChange(metric) : trust.delta?.text ?? null;
   const deltaAriaLabel = delta ? `Change ${normalizeDeltaForSpeech(delta)}` : null;
   const ariaLabel = [
     `${label} metric`,

@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 // backfill purple, symbol-search spruce-green, brokerage ochre. Colors resolve from tokens
 // (purple is dark-mode aware via --purple) so no raw palette hexes leak into components.
 const CAPABILITY_COLORS: Record<string, string> = {
-  Streaming: "border-primary/40 bg-primary/[0.10] text-primary",
+  Streaming: "border-[var(--semantic-info)] bg-[var(--blue-a10)] text-[var(--semantic-info)]",
   Backfill:
     "border-[color:color-mix(in_srgb,var(--purple)_40%,transparent)] bg-[color:color-mix(in_srgb,var(--purple)_10%,transparent)] text-[color:var(--purple)]",
   SymbolSearch: "border-success/40 bg-success/[0.10] text-success",

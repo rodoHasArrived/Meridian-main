@@ -7,7 +7,7 @@ export function Sparkline({
   width = 80,
   height = 28,
   variant = "line", // "line" | "area" | "bar"
-  color = "var(--chart-equity,#3A7A56)",
+  color = "var(--chart-equity,#2E7655)",
   strokeWidth = 1.5,
   baseline = null, // reference line (e.g. 0 for P&L)
 }) {
@@ -19,7 +19,7 @@ export function Sparkline({
   const range = max - min || 1;
   const padV = 2;
 
-  const xScale = (i) => (i / (n - 1)) * width;
+  const xScale = (i) => (n === 1 ? width / 2 : (i / (n - 1)) * width);
   const yScale = (v) => height - padV - ((v - min) / range) * (height - padV * 2);
 
   const pathD = points.map((v, i) =>
@@ -40,7 +40,7 @@ export function Sparkline({
             <rect key={i}
               x={xScale(i) - barW / 2} y={height - barH}
               width={barW} height={barH}
-              fill={isPos ? color : "var(--chart-drawdown,#A8443C)"}
+              fill={isPos ? color : "var(--chart-drawdown,#B54B42)"}
               opacity="0.85"
             />
           );

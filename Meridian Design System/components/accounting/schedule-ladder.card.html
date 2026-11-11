@@ -1,0 +1,110 @@
+<!-- @dsCard group="Accounting" viewport="1280x1040" name="Schedule ladder" subtitle="ScheduleLadder · ScheduleLadderSet — expected versus actual factor and rate schedules, conditional on security properties" -->
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Schedule ladder</title><link rel="stylesheet" href="../../styles.css"><script src="../../_preview_runtime.js"></script><script src="../../_preview_jsx.js"></script><script src="../../_ds_bundle.js"></script><style>
+body{margin:0;padding:20px;background:var(--bg);font-family:var(--font-body)}
+.wrap{display:grid;grid-template-columns:250px 1fr;gap:16px;max-width:1240px;align-items:start}
+.rail{display:grid;gap:10px;position:sticky;top:0}
+.rail h1{margin:0;font-size:14px;color:var(--text-primary)}
+.rail p{margin:0;font:10px/15px var(--font-body);color:var(--text-muted)}
+.picks{display:grid;gap:4px}
+.picks button{display:grid;gap:1px;text-align:left;padding:7px 9px;border:1px solid var(--border);background:var(--bg-light);cursor:pointer;font:inherit}
+.picks button:hover{background:var(--bg-hover)}
+.picks button[aria-pressed="true"]{border-color:var(--selected);background:var(--bg-active)}
+.picks b{font:600 11px/15px var(--font-body);color:var(--text-primary)}
+.picks span{font:9px/13px var(--font-data);color:var(--text-muted)}
+.props{border:1px solid var(--border);background:var(--bg-light);padding:9px}
+.props h2{margin:0 0 6px;font:600 9px/13px var(--font-data);letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted)}
+.chips{display:flex;flex-wrap:wrap;gap:4px}
+.chips i{font:10px/14px var(--font-data);font-style:normal;padding:1px 5px;border:1px solid var(--border);color:var(--text-secondary);background:var(--bg)}
+.chips i[data-off="true"]{color:var(--text-muted);opacity:.55;text-decoration:line-through}
+.main{display:grid;gap:14px;min-width:0}
+.note{font:10px/15px var(--font-body);color:var(--text-muted);margin:0}
+@media(max-width:1040px){body{padding:12px}.wrap{grid-template-columns:1fr}.rail{position:static}}
+</style></head><body><div id="root"></div><script type="text/babel">
+const {ScheduleLadder,ScheduleLadderSet}=window.MeridianDesignSystem_205d17;
+const AS_OF="2026-08-12";
+
+const factorRows=[
+  {period:"2026-04",date:"2026-04-25",expected:0.94218107,actual:0.94218107,condition:"confirmed"},
+  {period:"2026-05",date:"2026-05-25",expected:0.93641220,actual:0.93641094,condition:"confirmed",note:"Curtailment reported after the agency cut-off; refiled in the June tape."},
+  {period:"2026-06",date:"2026-06-25",expected:0.93065882,actual:0.93065970,condition:"confirmed"},
+  {period:"2026-07",date:"2026-07-25",expected:0.92489341,actual:0.92489341,condition:"provisional"},
+  {period:"2026-08",date:"2026-08-25",current:true,expected:0.91914622,actualDue:"Aug 25, 2026",expectedNote:"100 PSA"},
+  {period:"2026-09",date:"2026-09-25",expected:0.91341887,expectedNote:"100 PSA"},
+  {period:"2026-10",date:"2026-10-25",expected:0.90770994,expectedNote:"100 PSA"},
+  {period:"2026-11",date:"2026-11-25",expected:0.90202048,expectedNote:"100 PSA"},
+];
+const rateRows=[
+  {period:"Reset 3",label:"Semi-annual",date:"2026-02-01",expected:5.3720,actual:5.3750,condition:"confirmed",comparisonLabel:"indenture"},
+  {period:"Reset 4",label:"Semi-annual",date:"2026-08-01",expected:5.1250,actual:5.1875,condition:"confirmed",comparisonLabel:"indenture",note:"Fixing taken on T−1 SOFR; indenture §2.3 specifies T−2. Agent notified."},
+  {period:"Reset 5",label:"Semi-annual",date:"2027-02-01",expected:4.8750,expectedNote:"Forward SOFR + 100 bp",actualDue:"Feb 1, 2027"},
+  {period:"Reset 6",label:"Semi-annual",date:"2027-08-01",expected:4.6250,expectedNote:"Forward SOFR + 100 bp"},
+];
+const sinkerRows=[
+  {period:"2024",label:"Mandatory",date:"2024-06-01",expected:500000,actual:500000,condition:"confirmed"},
+  {period:"2025",label:"Mandatory",date:"2025-06-01",expected:500000,actual:750000,condition:"confirmed",note:"Issuer exercised the optional 1.5× sinker permitted by §6(b). Terms model the mandatory leg only."},
+  {period:"2026",label:"Mandatory",date:"2026-06-01",expected:500000,actual:500000,condition:"confirmed"},
+  {period:"2027",label:"Mandatory",date:"2027-06-01",expected:500000,actualDue:"Jun 1, 2027"},
+  {period:"2028",label:"Final",date:"2028-06-01",expected:1500000,expectedNote:"Balance at maturity"},
+];
+
+const SCHEDULES=[
+  {id:"factor",requires:"amortizes",title:"Amortization factor schedule",kind:"Factor",asOf:AS_OF,
+   notation:"factor",tolerance:0.000001,rows:factorRows,periodLabel:"Factor period",dateLabel:"Factor date",
+   expectedLabel:"Expected",expectedSource:"Modelled from prospectus",actualLabel:"Actual",actualSource:"Agency factor file",
+   basis:"Scheduled principal at 100 PSA, prospectus §4 · half-even to 8 decimals",
+   note:"A factor outside tolerance restates principal, income, and carrying value — it is an exception, not a rounding note."},
+  {id:"rate",requires:["resets","indexSource"],title:"Rate reset schedule",kind:"Rate",asOf:AS_OF,
+   notation:"rate",digits:4,tolerance:0.005,rows:rateRows,periodLabel:"Reset",dateLabel:"Effective",
+   expectedLabel:"Expected",expectedSource:"Index + margin per indenture",actualLabel:"Actual",actualSource:"Calculation agent notice",
+   basis:"SOFR 30-day average + 100 bp, T−2 fixing, 5.00% cap / 1.00% floor",
+   note:"Projected resets use forward index; they are model output and never reconcile."},
+  {id:"sinker",requires:"sinkingFund",title:"Sinking-fund redemption schedule",kind:"Sinking fund",asOf:AS_OF,
+   notation:"currency",currency:"USD",tolerance:0,rows:sinkerRows,periodLabel:"Year",dateLabel:"Redemption",
+   expectedLabel:"Expected",expectedSource:"Mandatory leg per §6(a)",actualLabel:"Actual",actualSource:"Trustee redemption notice",
+   basis:"Mandatory sinking-fund requirement, par, pro rata by lottery",
+   note:"Optional sinker exercise reads as outside tolerance by design — the difference is real and must be seen."},
+];
+
+const SECURITIES=[
+  {id:"mbs",name:"FN 3138WAQP2",kind:"Agency MBS pool · 30-yr fixed",object:"Pool 3138WA · CUSIP 3138WAQP2",
+   properties:{amortizes:true,factorSource:"Fannie Mae",fixedCoupon:true}},
+  {id:"arm",name:"FN 3140J8XR4",kind:"Hybrid ARM MBS · 5/1",object:"Pool 3140J8 · CUSIP 3140J8XR4",
+   properties:{amortizes:true,factorSource:"Fannie Mae",resets:true,indexSource:"SOFR 30-day average"}},
+  {id:"muni",name:"NY DASNY 2028",kind:"Serial revenue bond · sinking fund",object:"CUSIP 64990FZK1",
+   properties:{sinkingFund:true,fixedCoupon:true,callSchedule:true}},
+  {id:"eq",name:"MSFT",kind:"Common equity",object:"US5949181045",
+   properties:{dividendPaying:true}},
+];
+const PROP_KEYS=["amortizes","factorSource","resets","indexSource","sinkingFund","fixedCoupon","callSchedule","dividendPaying"];
+
+function Demo(){
+  const [id,setId]=React.useState("arm");
+  const [row,setRow]=React.useState(null);
+  const sec=SECURITIES.find(s=>s.id===id);
+  const schedules=SCHEDULES.map(s=>({...s,object:sec.object}));
+  return <div className="wrap">
+    <div className="rail">
+      <h1>Schedules on the security screen</h1>
+      <p>Which ladders appear is decided by the security's <b>properties</b>, not by an asset-class label — a hybrid ARM gets both lanes with no special case.</p>
+      <div className="picks">{SECURITIES.map(s=>
+        <button key={s.id} type="button" aria-pressed={id===s.id} onClick={()=>{setId(s.id);setRow(null)}}>
+          <b>{s.name}</b><span>{s.kind}</span>
+        </button>)}
+      </div>
+      <div className="props"><h2>Security properties</h2><div className="chips">
+        {PROP_KEYS.map(k=><i key={k} data-off={sec.properties[k]?undefined:"true"}>{k}</i>)}
+      </div></div>
+      <p className="note">{row?`Selected: ${row.period} — wire this to CalculationTrace and the evidence drawer.`:"Select a delivered period to drive trace and evidence."}</p>
+    </div>
+    <div className="main">
+      <ScheduleLadderSet properties={sec.properties} schedules={schedules.map(s=>({...s,selectedId:row&&row.period,onSelectRow:setRow,onOpenTrace:setRow}))}
+        emptyText={`${sec.object} carries no amortization, reset, or sinking-fund term — there is no schedule to check. Dividends are events, not a term-bearing schedule.`}/>
+      {sec.id==="eq"?<ScheduleLadder title="Amortization factor schedule" requires="amortizes" properties={sec.properties}
+        hideWhenNotApplicable={false} object={sec.object} rows={[]}
+        notApplicableReason="Common equity has no principal to amortize. State the absence only where a reader would expect the panel; otherwise hide it."/>:null}
+      <p className="note">Delivered rows resolve through <b>VarianceCell</b> — tolerance, near-tolerance review band, and the eleven data conditions keep their normal meaning. Projected rows show expected, the delivering source, and the due date; they never resolve to agreement.</p>
+    </div>
+  </div>;
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo/>);
+</script></body></html>

@@ -31,6 +31,7 @@ public static partial class LedgerEndpoints
         MapConsolidationEndpoints(app, jsonOptions);
         MapAccountOversightEndpoints(app, jsonOptions);
         MapPrivateCapitalEndpoints(app, jsonOptions);
+        MapPostedPeriodComparisonEndpoints(app, jsonOptions);
         app.MapGet(UiApiRoutes.LedgerBooks, async (
             string? fundProfileId,
             Guid? fundStructureNodeId,
@@ -322,66 +323,7 @@ public static partial class LedgerEndpoints
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status501NotImplemented);
 
-        app.MapGet(UiApiRoutes.LedgerPeriodAccountRunningBalance, async (
-            Guid periodId,
-            string? account,
-            string? symbol,
-            string? financialAccountId,
-            string? dimensions,
-            HttpContext context) =>
-        {
-            if (!HasLedgerReadPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            if (string.IsNullOrWhiteSpace(account))
-            {
-                return Results.BadRequest(new { error = "Query parameter 'account' is required." });
-            }
-
-            if (!TryParseRunningBalanceDimensionScope(dimensions, jsonOptions, out var dimensionScope))
-            {
-                return Results.BadRequest(new { error = "Query parameter 'dimensions' must be a JSON ledger dimension set." });
-            }
-
-            var journalStore = ResolveJournalStore(context);
-            if (journalStore is null)
-            {
-                return ServiceUnavailable();
-            }
-
-            var period = await journalStore.GetPeriodAsync(periodId, context.RequestAborted).ConfigureAwait(false);
-            if (period is null)
-            {
-                return Results.NotFound(new { error = $"Ledger period '{periodId}' was not found." });
-            }
-
-            if (period.LedgerBookId is not { } bookId)
-            {
-                return Results.BadRequest(new { error = $"Ledger period '{periodId}' is not scoped to a ledger book." });
-            }
-
-            var accountName = account.Trim();
-            var entries = await journalStore
-                .QueryAsync(
-                    new LedgerJournalEntryQuery(LedgerBookId: bookId, PeriodId: periodId, AccountName: accountName),
-                    context.RequestAborted)
-                .ConfigureAwait(false);
-            var book = dimensionScope is null
-                ? null
-                : await journalStore.GetLedgerBookAsync(bookId, context.RequestAborted).ConfigureAwait(false);
-            return Results.Json(
-                BuildAccountRunningBalance(
-                    entries, periodId, bookId, accountName, symbol, financialAccountId, dimensionScope, book?.FundProfileId),
-                jsonOptions);
-        })
-        .WithName("GetLedgerPeriodAccountRunningBalance").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports)
-        .Produces<LedgerAccountRunningBalanceDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status404NotFound)
-        .Produces(StatusCodes.Status501NotImplemented);
+        MapAccountRunningBalanceEndpoint(app, jsonOptions);
 
         app.MapGet(UiApiRoutes.LedgerAggregateJournalEntries, async (
             Guid aggregateId,

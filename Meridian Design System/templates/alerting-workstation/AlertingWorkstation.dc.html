@@ -3,16 +3,390 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../_scaffold/vendor/react-18.3.1.production.min.js"></script>
+<script src="../_scaffold/vendor/react-dom-18.3.1.production.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
 <script src="./support.js"></script>
 </head>
 <body>
 <x-dc>
-<!-- @template name="Alerting Workstation" description="Alert triage — severity table, split inspector, diff audit rail, full data-state ladder" -->
+<!-- @template name="Monitor · Alerting Workstation" description="Alert triage that commits — severity/state filters, bulk acknowledge and silence, a tabbed inspector (detail · history · rule revision) where actions actually move the alert, operator notes, and an approve/reject gate on the pending rule change." -->
 <helmet>
 <script src="./ds-base.js"></script>
 <meta name="dc-template" content="alerting-workstation">
+<style>button[aria-pressed="true"][data-sev]{color:var(--text-primary);border-color:var(--border-strong)}button[aria-pressed="true"][data-sev="Critical"]{background:var(--red-a10,rgba(181,75,66,.10))}button[aria-pressed="true"][data-sev="Warning"]{background:var(--amber-a10,rgba(180,133,45,.12))}button[aria-pressed="true"][data-sev="Info"]{background:var(--card-surface-raised,#FCFBF8)}</style>
 </helmet>
-<x-import component-from-global-scope="AlertingWorkstationScreen" from="./screen.jsx" hint-size="100%,780px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ToastProvider" hint-size="0,0"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.HotkeysProvider" bindings="{{ hotkeys }}" hint-size="0,0"></x-import>
+<div data-screen-label="Alert triage" style="height:100vh;display:flex;flex-direction:column;background:var(--bg);font-family:var(--font-body);color:var(--text-secondary);font-size:13px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkstationTopbar" module-label="Alert Triage" environment="{{ envLabel }}" brand-src="../../assets/brand/meridian-mark-light.svg" hint-size="100%,48px"></x-import>
+<div style="display:flex;flex:1;min-height:0">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.NavRail" active-id="alerting" sections="{{ navSections }}" on-select="{{ onNav }}" hint-size="224px,100%"></x-import>
+<main style="flex:1;min-width:0;box-sizing:border-box;display:flex;flex-direction:column;gap:10px;padding:14px">
+<div style="display:flex;align-items:center;gap:10px;flex:0 0 auto">
+<h1 id="workspace-title" style="font:600 22px var(--font-display);margin:0;color:var(--text-primary);white-space:nowrap">Alerts</h1>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SeverityBadge" status="NeedsAttention" label="{{ openCount }} open" hint-size="64px,18px"></x-import>
+<sc-if value="{{ hasSilenced }}" hint-placeholder-val="{{ false }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SeverityBadge" status="Pending" label="{{ silencedLabel }}" hint-size="80px,18px"></x-import>
+</sc-if>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.FreshnessIndicator" source="alerts-svc" status="{{ freshStatus }}" last-seen="{{ freshLastSeen }}" hint-size="140px,18px"></x-import>
+<span style="margin-left:auto;font:11px var(--font-data);color:var(--text-muted)">{{ mttaLabel }}</span>
+</div>
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex:0 0 auto">
+<div style="flex:0 1 320px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Input" placeholder="Search rule, scope, id…" value="{{ query }}" on-change="{{ onQuery }}" hint-size="100%,30px"></x-import>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SegmentedControl" size="sm" value="{{ stateFilter }}" on-change="{{ onStateFilter }}" options="{{ stateFilterOptions }}" hint-size="290px,26px"></x-import>
+<div style="display:flex;gap:6px">
+<sc-for list="{{ sevChips }}" as="c" hint-placeholder-count="3">
+<button type="button" onClick="{{ c.toggle }}" aria-pressed="{{ c.on }}" data-sev="{{ c.key }}" style="padding:3px 9px;cursor:pointer;font:600 10px var(--font-body);font-variant:all-small-caps;letter-spacing:.05em;background:transparent;color:var(--text-muted);border:1px solid var(--border-divider,#E2DED5)">{{ c.label }}</button>
+</sc-for>
+</div>
+<div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="70px,14px">Data state</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SegmentedControl" size="sm" value="{{ effState }}" on-change="{{ onStateDemo }}" options="{{ stateOptions }}" hint-size="240px,26px"></x-import>
+</div>
+</div>
+<div style="flex:1;min-height:0">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SplitPane" direction="horizontal" primary="end" initial="{{ 400 }}" min="{{ 320 }}" max="{{ 560 }}" persist-key="alerting-inspector" hint-size="100%,520px">
+<div style="padding-right:10px;height:100%;overflow-y:auto">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ effState }}" label="Alerts" action-label="Retry" on-action="{{ onRetry }}" hint-size="100%,400px">
+<sc-if value="{{ hasRows }}" hint-placeholder-val="{{ true }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataGrid" row-key="id" columns="{{ alertColumns }}" rows="{{ alertRows }}" active-key="{{ selectedId }}" on-row-click="{{ onRowClick }}" select="{{ true }}" selected="{{ checked }}" on-selected-change="{{ onChecked }}" hint-size="100%,320px"></x-import>
+</sc-if>
+<sc-if value="{{ noMatch }}" hint-placeholder-val="{{ false }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.EmptyState" icon="search" title="No alerts match" detail="{{ noMatchDetail }}" action="Clear filters" on-action="{{ onClearSearch }}" compact="{{ true }}" hint-size="100%,160px"></x-import>
+</sc-if>
+</x-import>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.PanelSurface" raised="{{ true }}" style="padding:14px;height:100%;box-sizing:border-box;overflow-y:auto;display:flex;flex-direction:column;gap:12px" hint-size="400px,100%">
+<sc-if value="{{ hasRow }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;align-items:center;gap:8px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="70px,14px">{{ selId }}</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SeverityBadge" status="{{ selSeverity }}" hint-size="70px,18px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SeverityBadge" status="{{ selStateBadge }}" label="{{ selState }}" hint-size="70px,18px"></x-import>
+<span style="margin-left:auto;font:11px var(--font-data);color:var(--text-muted)">{{ selAgeLabel }}</span>
+</div>
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" disabled="{{ ackOff }}" on-click="{{ onAck }}" hint-size="110px,28px">Acknowledge</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="secondary" size="sm" disabled="{{ silenceOff }}" on-click="{{ onSilence }}" hint-size="92px,28px">{{ silenceLabel }}</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" disabled="{{ closeOff }}" on-click="{{ onClose }}" hint-size="80px,28px">Resolve</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" disabled="{{ reopenOff }}" on-click="{{ onReopen }}" hint-size="80px,28px">Reopen</x-import>
+</div>
+<sc-if value="{{ outOfFilter }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;align-items:baseline;gap:10px;padding:7px 9px;border:1px solid var(--border-divider,#E2DED5);background:var(--surface-well,#FCFBF8);font-size:11px;line-height:1.45;color:var(--text-muted)">
+<span>{{ outOfFilterNote }}</span>
+<button type="button" onClick="{{ onFollowSel }}" style="margin-left:auto;flex:none;padding:0;background:transparent;border:0;font:inherit;font-weight:500;color:var(--link,#2A5F96);cursor:pointer;text-decoration:underline;text-underline-offset:2px">Show in queue</button>
+</div>
+</sc-if>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Tabs" tabs="{{ tabs }}" value="{{ tab }}" on-change="{{ onTab }}" hint-size="100%,36px"></x-import>
+<sc-if value="{{ tabDetail }}" hint-placeholder-val="{{ true }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.KeyValueGrid" columns="{{ 2 }}" items="{{ inspectorItems }}" hint-size="100%,170px"></x-import>
+<div style="display:flex;flex-direction:column;gap:6px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="120px,14px">Runbook · first steps</x-import>
+<ol style="margin:0;padding-left:18px;font-size:12px;line-height:1.55;color:var(--text-secondary)">
+<sc-for list="{{ runbook }}" as="r" hint-placeholder-count="3">
+<li>{{ r.text }}</li>
+</sc-for>
+</ol>
+</div>
+</sc-if>
+<sc-if value="{{ tabHistory }}" hint-placeholder-val="{{ false }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.EventTimeline" events="{{ selEvents }}" dense="{{ true }}" group-by-day="{{ false }}" hint-size="100%,240px"></x-import>
+<div style="display:flex;gap:8px;align-items:flex-end">
+<div style="flex:1">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Input" label="Operator note" value="{{ note }}" on-change="{{ onNoteChange }}" placeholder="What did you find?" hint-size="100%,52px"></x-import>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="secondary" size="sm" disabled="{{ noteOff }}" on-click="{{ onAddNote }}" hint-size="70px,28px">Add</x-import>
+</div>
+</sc-if>
+<sc-if value="{{ tabRule }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;align-items:center;gap:8px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="190px,14px">Rule revision</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SeverityBadge" status="{{ revBadge }}" label="{{ revState }}" hint-size="90px,18px"></x-import>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DiffView" changes="{{ ruleDiff }}" hint-size="100%,130px"></x-import>
+<p style="margin:0;font-size:11px;line-height:1.45;color:var(--text-muted)">{{ revNote }}</p>
+<sc-if value="{{ revPending }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;gap:8px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" on-click="{{ onApproveRev }}" hint-size="130px,28px">Approve revision</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" on-click="{{ onRejectRev }}" hint-size="80px,28px">Reject</x-import>
+</div>
+</sc-if>
+</sc-if>
+</sc-if>
+<sc-if value="{{ noRow }}" hint-placeholder-val="{{ false }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.EmptyState" icon="inbox" title="No alert selected" detail="Select an alert row to inspect it." compact="{{ true }}" hint-size="100%,120px"></x-import>
+</sc-if>
+</x-import>
+</x-import>
+</div>
+</main>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.StatusBar" items="{{ statusItems }}" hint-size="100%,28px"></x-import>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.BulkActionBar" selected-count="{{ checkedCount }}" actions="{{ bulkActions }}" on-action="{{ onBulk }}" hint-size="0,0"></x-import>
 </x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1920,&quot;height&quot;:1080},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;default&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;PAPER&quot;,&quot;options&quot;:[&quot;PAPER&quot;,&quot;LIVE&quot;,&quot;FIXTURE&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;}}">
+class Component extends DCLogic {
+  applyChrome() {
+    const html = document.documentElement;
+    html.setAttribute("data-theme", (window.MeridianPrefs?window.MeridianPrefs.theme(this.props.theme ?? "light"):(this.props.theme ?? "light")));
+    html.setAttribute("data-environment", (window.MeridianPrefs?window.MeridianPrefs.environment(this.env()):(this.env())));
+    if (document.body) document.body.setAttribute("data-theme-density", (window.MeridianPrefs?window.MeridianPrefs.density(this.props.density ?? "default"):(this.props.density ?? "default")));
+  }
+  componentDidMount() { this.applyChrome(); this._untick = window.MeridianWorld && window.MeridianWorld.tick(this); }
+  componentWillUnmount() { this._untick && this._untick(); }
+  componentDidUpdate() { this.applyChrome(); }
+  ds() { return window.MeridianDesignSystem_205d17 || {}; }
+  env() { return String(this.props.environment ?? "PAPER").toUpperCase(); }
+  toast(kind, title, detail) { const t = window.MeridianToast; if (t && t[kind]) t[kind](title, detail); }
+
+  // Real clock base, so alert ages and SLA countdowns stay honest whenever the screen is
+  // opened — a frozen date makes every open alert look days old.
+  NOW = Date.now();
+  now() { return Date.now(); }
+  clockLabel() { return window.MeridianWorld ? window.MeridianWorld.clock() : new Date(this.NOW).toISOString().slice(11, 19) + " UTC"; }
+  STATE_BADGE = { Open: "NeedsAttention", Acked: "InReview", Silenced: "Pending", Closed: "Complete" };
+
+  seedAlerts = [
+    { id: "ALR-2214", rule: "Drawdown breach", scope: "momentum.v4", severity: "Critical", state: "Open", fired: this.NOW - 372000, value: "-8.4%", threshold: "-8.0%", owner: "r.alvarez", channel: "pager · email", fires24h: 3, silenceUntil: null,
+      runbook: ["Confirm the drawdown against the run ledger's equity curve.", "Check whether the breach is a mark artefact — stale price on any leg.", "If genuine, halt new entries on momentum.v4 and page the PM."],
+      events: [{ ts: this.NOW - 372000, action: "Alert fired", actor: "alerts-svc", severity: "danger", detail: "momentum.v4 drawdown -8.4% against -8.0% threshold · 15m window" }] },
+    { id: "ALR-2213", rule: "Feed gap", scope: "Polygon · XNAS", severity: "Warning", state: "Open", fired: this.NOW - 1260000, value: "42s", threshold: "30s", owner: "ops-oncall", channel: "email", fires24h: 11, silenceUntil: null,
+      runbook: ["Open Ingestion Operations and check the provider freshness strip.", "If the feed is stale, queue a gap backfill for the affected sessions.", "Silence for one hour only while a backfill is actually running."],
+      events: [{ ts: this.NOW - 1260000, action: "Alert fired", actor: "alerts-svc", severity: "warning", detail: "Polygon XNAS quote gap 42s against 30s threshold" }] },
+    { id: "ALR-2212", rule: "Order reject rate", scope: "IBKR paper", severity: "Warning", state: "Acked", fired: this.NOW - 4380000, value: "3.1%", threshold: "2.0%", owner: "k.ito", channel: "email", fires24h: 2, silenceUntil: null,
+      runbook: ["Pull the rejects from the blotter and group by reason code.", "Most paper rejects are entitlement or tick-size — confirm which.", "Raise with the adapter owner if the reason is venue-side."],
+      events: [
+        { ts: this.NOW - 4100000, action: "Acknowledged", actor: "k.ito", severity: "accent", detail: "Investigating tick-size rejects on the paper adapter" },
+        { ts: this.NOW - 4380000, action: "Alert fired", actor: "alerts-svc", severity: "warning", detail: "Reject rate 3.1% over a 30m window" }] },
+    { id: "ALR-2211", rule: "Position limit", scope: "SPY short", severity: "Critical", state: "Acked", fired: this.NOW - 8100000, value: "-200", threshold: "-150", owner: "m.brandt", channel: "pager", fires24h: 1, silenceUntil: null,
+      runbook: ["Confirm the position against the desk blotter.", "Reduce to within limit or obtain a written uplift from the Head of Desk.", "Record the uplift reference on this alert before resolving."],
+      events: [
+        { ts: this.NOW - 7900000, action: "Acknowledged", actor: "m.brandt", severity: "accent", detail: "Uplift requested from Head of Desk" },
+        { ts: this.NOW - 8100000, action: "Alert fired", actor: "alerts-svc", severity: "danger", detail: "SPY short -200 against -150 limit" }] },
+    { id: "ALR-2210", rule: "Stale mark", scope: "TLT", severity: "Info", state: "Closed", fired: this.NOW - 21600000, value: "6m", threshold: "5m", owner: "ops-oncall", channel: "email", fires24h: 4, silenceUntil: null,
+      runbook: ["Check the mark source clock against the venue clock."],
+      events: [
+        { ts: this.NOW - 20000000, action: "Resolved", actor: "ops-oncall", severity: "success", detail: "Mark refreshed at 09:14Z · no valuation impact" },
+        { ts: this.NOW - 21600000, action: "Alert fired", actor: "alerts-svc", severity: null, detail: "TLT mark 6m old against 5m threshold" }] },
+    { id: "ALR-2209", rule: "Backfill overrun", scope: "Databento · daily", severity: "Info", state: "Closed", fired: this.NOW - 43200000, value: "18m", threshold: "15m", owner: "ops-oncall", channel: "email", fires24h: 1, silenceUntil: null,
+      runbook: ["Compare the job's row count against the expected session count."],
+      events: [
+        { ts: this.NOW - 42000000, action: "Resolved", actor: "scheduler", severity: "success", detail: "Job completed 18m over budget · no data loss" },
+        { ts: this.NOW - 43200000, action: "Alert fired", actor: "alerts-svc", severity: null, detail: "backfill-7701 ran 18m against a 15m budget" }] },
+  ];
+
+  ruleDiff = [
+    { field: "Threshold", before: "-5.0%", after: "-8.0%" },
+    { field: "Window", before: "5m", after: "15m" },
+    { field: "Channels", before: "email", after: "email · pager" },
+    { field: "Owner", before: "r.alvarez", after: "r.alvarez" },
+  ];
+
+  state = {
+    alerts: this.seedAlerts, selected: "ALR-2214", query: "", localState: null,
+    stateFilter: "open", sev: { Critical: true, Warning: true, Info: true },
+    checked: [], tab: 0, note: "", revision: "pending",
+  };
+
+  patch(id, fn, event) {
+    this.setState((s) => ({
+      alerts: s.alerts.map((a) => {
+        if (a.id !== id) return a;
+        const next = { ...a, ...fn(a) };
+        if (event) next.events = [event, ...(a.events || [])];
+        return next;
+      }),
+    }));
+  }
+
+  ack(id, actor) {
+    const a = this.state.alerts.find((x) => x.id === id);
+    if (!a || a.state !== "Open") return;
+    this.patch(id, () => ({ state: "Acked", owner: actor }), { ts: this.now(), action: "Acknowledged", actor, severity: "accent", detail: "Ownership taken · " + a.rule + " on " + a.scope });
+  }
+
+  silence(id, actor) {
+    const a = this.state.alerts.find((x) => x.id === id);
+    if (!a || a.state === "Closed") return;
+    const until = this.now() + 3600000;
+    this.patch(id, () => ({ state: "Silenced", silenceUntil: until }), { ts: this.now(), action: "Silenced 1h", actor, severity: "warning", detail: "Suppressed until " + new Date(until).toISOString().slice(11, 19) + "Z · re-fires after expiry" });
+  }
+
+  close(id, actor) {
+    const a = this.state.alerts.find((x) => x.id === id);
+    if (!a || a.state === "Closed") return;
+    this.patch(id, () => ({ state: "Closed", silenceUntil: null }), { ts: this.now(), action: "Resolved", actor, severity: "success", detail: "Closed from triage · condition no longer observed" });
+  }
+
+  renderVals() {
+    this.applyChrome();
+    const s = this.state;
+    const el = React.createElement;
+    const { SeverityBadge, Timestamp, Delta } = this.ds();
+    const effState = s.localState ?? this.props.dataState ?? "ready";
+    const q = s.query.trim().toLowerCase();
+    const inState = (a) => s.stateFilter === "all" ? true
+      : s.stateFilter === "open" ? a.state === "Open" || a.state === "Acked"
+      : s.stateFilter === "silenced" ? a.state === "Silenced"
+      : a.state === "Closed";
+    const rows = effState === "ready"
+      ? s.alerts.filter((a) => s.sev[a.severity] && inState(a) && (!q || (a.rule + a.scope + a.id).toLowerCase().includes(q)))
+      : [];
+    // Selection holds the alert itself, not its row in the current filter. Resolving one drops it
+    // out of "Needs action"; falling through to rows[0] would leave the same buttons in the same
+    // place now pointed at a different alert — the operator's next click or `r` would land there.
+    const held = s.alerts.find((a) => a.id === s.selected) || null;
+    const row = held || rows[0] || null;
+    const outOfFilter = !!(row && !rows.some((a) => a.id === row.id));
+    const open = s.alerts.filter((a) => a.state === "Open").length;
+    const silenced = s.alerts.filter((a) => a.state === "Silenced").length;
+    const acked = s.alerts.filter((a) => a.state === "Acked").length;
+    const mins = (ms) => Math.round(ms / 60000);
+    return {
+      envLabel: this.env(),
+      clockLabel: this.clockLabel(),
+      effState,
+      openCount: String(open),
+      hasSilenced: silenced > 0,
+      silencedLabel: silenced + " silenced",
+      freshStatus: effState === "error" ? "offline" : "live",
+      freshLastSeen: this.NOW - 4000,
+      mttaLabel: "MTTA 4m 12s · " + acked + " acked · " + s.alerts.length + " in window",
+      query: s.query,
+      onQuery: (e) => this.setState({ query: e.target.value }),
+      stateFilter: s.stateFilter,
+      onStateFilter: (v) => this.setState({ stateFilter: v }),
+      stateFilterOptions: [{ value: "open", label: "Needs action" }, { value: "silenced", label: "Silenced" }, { value: "closed", label: "Closed" }, { value: "all", label: "All" }],
+      sevChips: ["Critical", "Warning", "Info"].map((k) => ({
+        key: k, label: k, on: s.sev[k],
+        toggle: () => this.setState({ sev: { ...s.sev, [k]: !s.sev[k] } }),
+      })),
+      stateOptions: [{ value: "ready", label: "Live" }, { value: "loading", label: "Loading" }, { value: "empty", label: "Empty" }, { value: "error", label: "Error" }],
+      onStateDemo: (v) => this.setState({ localState: v }),
+      onRetry: () => this.setState({ localState: "ready" }),
+      hasRows: effState === "ready" && rows.length > 0,
+      noMatch: effState === "ready" && rows.length === 0,
+      noMatchDetail: q ? 'Nothing matches "' + s.query + '" in this filter.' : "No alerts in this state and severity filter.",
+      onClearSearch: () => this.setState({ query: "", stateFilter: "all", sev: { Critical: true, Warning: true, Info: true } }),
+      selectedId: row ? row.id : null,
+      outOfFilter,
+      outOfFilterNote: outOfFilter ? row.id + " is now " + row.state.toLowerCase() + ", so it has left the " + (s.stateFilter === "open" ? "needs-action" : s.stateFilter) + " queue. It stays open here until you pick another alert." : "",
+      onFollowSel: () => this.setState({ stateFilter: row && row.state === "Closed" ? "closed" : row && row.state === "Silenced" ? "silenced" : "all" }),
+      onRowClick: (r) => this.setState({ selected: r.id, tab: 0 }),
+      alertRows: rows,
+      checked: s.checked,
+      checkedCount: s.checked.length,
+      onChecked: (keys) => this.setState({ checked: keys }),
+      bulkActions: [
+        { id: "ack", label: "Acknowledge" },
+        { id: "silence", label: "Silence 1h" },
+        { id: "close", label: "Resolve" },
+        { id: "clear", label: "Clear selection" },
+      ],
+      onBulk: (id) => {
+        const ids = s.checked;
+        if (id === "clear") return this.setState({ checked: [] });
+        ids.forEach((k) => { if (id === "ack") this.ack(k, "k.ito"); else if (id === "silence") this.silence(k, "k.ito"); else this.close(k, "k.ito"); });
+        this.setState({ checked: [] });
+        this.toast("success", ids.length + " alert" + (ids.length === 1 ? "" : "s") + " updated", id === "ack" ? "Acknowledged by k.ito" : id === "silence" ? "Suppressed until 15:32:08Z" : "Resolved from triage");
+      },
+      alertColumns: [
+        { key: "id", label: "Alert" },
+        { key: "severity", label: "Severity", cell: (r) => SeverityBadge && el(SeverityBadge, { status: r.severity }) },
+        { key: "rule", label: "Rule" },
+        { key: "scope", label: "Scope" },
+        { key: "value", label: "Observed", align: "right", cell: (r) => el("span", { style: { fontVariantNumeric: "tabular-nums", color: r.severity === "Critical" ? "var(--red-dim)" : "var(--text-primary)" } }, r.value + " / " + r.threshold) },
+        { key: "fires24h", label: "24h", align: "right", tier: "full" },
+        { key: "owner", label: "Owner", tier: "full" },
+        { key: "state", label: "State", cell: (r) => SeverityBadge && el(SeverityBadge, { status: this.STATE_BADGE[r.state], label: r.state }) },
+        { key: "fired", label: "Fired", align: "right", cell: (r) => Timestamp && el(Timestamp, { value: r.fired, format: "relative" }) },
+      ],
+      hasRow: !!row,
+      noRow: !row,
+      selId: row ? row.id : "",
+      selSeverity: row ? row.severity : "Info",
+      selState: row ? row.state : "",
+      selStateBadge: row ? this.STATE_BADGE[row.state] : "Pending",
+      selAgeLabel: row ? "fired " + mins(this.NOW - row.fired) + "m ago · " + row.fires24h + "× in 24h" : "",
+      ackOff: !row || row.state !== "Open",
+      silenceOff: !row || row.state === "Closed",
+      silenceLabel: row && row.state === "Silenced" ? "Silenced" : "Silence 1h",
+      closeOff: !row || row.state === "Closed",
+      reopenOff: !row || row.state === "Open",
+      onAck: () => { if (!row) return; this.ack(row.id, "k.ito"); this.toast("success", "Alert acknowledged", row.id + " · " + row.rule); },
+      onSilence: () => { if (!row) return; this.silence(row.id, "k.ito"); this.toast("info", "Silenced 1h", row.id + " suppressed until 15:32:08Z"); },
+      onClose: () => { if (!row) return; this.close(row.id, "k.ito"); this.toast("success", "Alert resolved", row.id + " closed"); },
+      onReopen: () => {
+        if (!row) return;
+        this.patch(row.id, () => ({ state: "Open", silenceUntil: null }), { ts: this.now(), action: "Reopened", actor: "k.ito", severity: "warning", detail: "Condition observed again after resolution" });
+        this.toast("warning", "Alert reopened", row.id + " back in the queue");
+      },
+      tabs: [{ label: "Detail" }, { label: "History", count: row ? (row.events || []).length : 0 }, { label: "Rule" }],
+      tab: s.tab,
+      onTab: (i) => this.setState({ tab: i }),
+      tabDetail: s.tab === 0, tabHistory: s.tab === 1, tabRule: s.tab === 2,
+      inspectorItems: row ? [
+        { label: "Rule", value: row.rule },
+        { label: "Scope", value: row.scope },
+        { label: "Observed", value: Delta ? el(Delta, { value: parseFloat(row.value), suffix: row.value.replace(/^[-+0-9.]+/, ""), tone: row.severity === "Critical" ? "down" : "flat" }) : row.value },
+        { label: "Threshold", value: row.threshold },
+        { label: "Fired", value: Timestamp ? el(Timestamp, { value: row.fired, format: "time" }) : "" },
+        { label: "State", value: row.state },
+        { label: "Owner", value: row.owner },
+        { label: "Channels", value: row.channel },
+      ] : [],
+      runbook: row ? (row.runbook || []).map((text, i) => ({ text, i })) : [],
+      selEvents: row ? (row.events || []) : [],
+      note: s.note,
+      onNoteChange: (e) => this.setState({ note: e.target.value }),
+      noteOff: !row || !s.note.trim(),
+      onAddNote: () => {
+        if (!row || !s.note.trim()) return;
+        this.patch(row.id, () => ({}), { ts: this.now(), action: "Operator note", actor: "k.ito", severity: null, detail: s.note.trim() });
+        this.setState({ note: "" });
+      },
+      ruleDiff: this.ruleDiff,
+      revState: s.revision === "pending" ? "Pending approval" : s.revision === "approved" ? "Approved" : "Rejected",
+      revBadge: s.revision === "pending" ? "InReview" : s.revision === "approved" ? "Complete" : "NotStarted",
+      revPending: s.revision === "pending",
+      revNote: s.revision === "pending"
+        ? "Raising the drawdown threshold suppresses roughly 4 fires per month on momentum.v4. Approval is recorded against the alert's audit trail."
+        : s.revision === "approved"
+          ? "Approved by k.ito at 14:32Z — live from the next evaluation window."
+          : "Rejected by k.ito at 14:32Z — the rule keeps its -5.0% threshold.",
+      onApproveRev: () => {
+        this.setState({ revision: "approved" });
+        if (row) this.patch(row.id, () => ({ threshold: "-8.0%" }), { ts: this.now(), action: "Rule revision approved", actor: "k.ito", severity: "success", detail: "Threshold -5.0% → -8.0% · window 5m → 15m · pager added" });
+        this.toast("success", "Revision approved", "momentum.v4 drawdown rule updated");
+      },
+      onRejectRev: () => {
+        this.setState({ revision: "rejected" });
+        if (row) this.patch(row.id, () => ({}), { ts: this.now(), action: "Rule revision rejected", actor: "k.ito", severity: "warning", detail: "Kept -5.0% threshold pending a second opinion from risk" });
+        this.toast("info", "Revision rejected", "Rule left unchanged");
+      },
+      hotkeys: [
+        { keys: "a", label: "Acknowledge selected alert", group: "Alerts", action: () => row && this.ack(row.id, "k.ito") },
+        { keys: "s", label: "Silence selected alert 1h", group: "Alerts", action: () => row && this.silence(row.id, "k.ito") },
+        { keys: "r", label: "Resolve selected alert", group: "Alerts", action: () => row && this.close(row.id, "k.ito") },
+        { keys: "j", label: "Next alert", group: "Navigate", action: () => { const i = rows.findIndex((a) => row && a.id === row.id); this.setState({ selected: rows[Math.min(rows.length - 1, i + 1)].id }); } },
+        { keys: "k", label: "Previous alert", group: "Navigate", action: () => { const i = rows.findIndex((a) => row && a.id === row.id); this.setState({ selected: rows[Math.max(0, i - 1)].id }); } },
+      ],
+      navSections: (window.MeridianAppMap ? window.MeridianAppMap.sections("alerting") : []),
+      onNav: (id) => window.MeridianAppMap && window.MeridianAppMap.go(id),
+      statusItems: [
+        { status: effState === "error" ? "err" : "ok", label: "alerts-svc", value: effState === "error" ? "disconnected" : "streaming" },
+        { label: "Rules", value: "24 active" },
+        { label: "Open", value: String(open) },
+        { label: "Acked", value: String(acked) },
+        { status: silenced ? "warn" : "ok", label: "Silenced", value: String(silenced) },
+        { status: "ok", label: "Latency", value: "9ms", push: true },
+      ],
+    };
+  }
+}
+</script>
 </body>
 </html>

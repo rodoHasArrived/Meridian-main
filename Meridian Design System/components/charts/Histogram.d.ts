@@ -2,7 +2,7 @@
  * Histogram — distribution of a sample (daily returns, slippage, fill latency). Pass raw
  * `values` (auto-binned into `binCount`) or precomputed `bins`. When `signed`, bars left of
  * zero tint red and right of zero green so a returns distribution reads instantly; an optional
- * dashed mean rule overlays. Flat, token-driven.
+ * dashed mean rule overlays. Renders through ChartFrame (real-pixel geometry).
  */
 import * as React from "react";
 
@@ -31,5 +31,13 @@ export interface HistogramProps {
   countFmt?: (c: number) => string;
   /** @default 7 */
   xTicks?: number;
+  /** SVG height in px. @default 300 */
+  height?: number;
+  /** 3.5 · Forwarded to ChartFrame — names the figure (svg role="img"). */
+  ariaLabel?: string;
+  /** 3.5 · Forwarded to ChartFrame — linked description. */
+  ariaDescription?: string;
+  /** 3.5 · Forwarded to ChartFrame — visually-hidden data table/list behind the pixels. */
+  accessibleData?: string | { label: string; value: React.ReactNode }[] | { caption?: string; columns: React.ReactNode[]; rows: React.ReactNode[][] };
 }
 export declare function Histogram(props: HistogramProps): JSX.Element;

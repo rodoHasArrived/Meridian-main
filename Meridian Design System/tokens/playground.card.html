@@ -5,17 +5,17 @@
   <meta charset="UTF-8" />
   <title>Token playground</title>
   <link rel="stylesheet" href="../styles.css" />
+  <script src="../_preview_runtime.js"></script>
+  <script src="../_preview_jsx.js"></script>
   <script src="../_ds_bundle.js"></script>
 </head>
-<body style="margin:0;padding:20px;background:var(--bg-canvas,#F2F0EC);font-family:var(--font-body);color:var(--text-primary);">
+<body style="margin:0;padding:20px;background:var(--bg-canvas,#F2F0EB);font-family:var(--font-body);color:var(--text-primary);">
 <div id="root"></div>
 <script type="text/babel">
-const { MetricCard, Button, Badge, SeverityBadge, DenseDataTable, Sparkline, Input, Select, Toggle, Eyebrow } = window.MeridianDesignSystem_4f61be;
+const { MetricCard, Button, Badge, SeverityBadge, DataGrid, Sparkline, Input, Select, Toggle, Eyebrow } = window.MeridianDesignSystem_205d17;
 
 const BRANDS = [
-  // id "" removes data-brand, so it is the unbranded default and nothing else can hold it.
-  { id: "",        label: "Default", hex: "#A85436" },
-  { id: "steel",   label: "Steel",   hex: "#2F6F8F" },
+  { id: "", label: "Steel",   hex: "#C56343" },
   { id: "indigo",  label: "Indigo",  hex: "#4F46E5" },
   { id: "emerald", label: "Emerald", hex: "#0B7A55" },
   { id: "rose",    label: "Rose",    hex: "#E11D48" },
@@ -39,13 +39,13 @@ const ROWS = [
 
 function Chip({ active, onClick, children, swatch }) {
   return (
-    <button onClick={onClick} style={{
+    <button type="button" onClick={onClick} style={{
       appearance: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6,
       font: "600 11px var(--font-body)", padding: "4px 10px", borderRadius: 2,
-      border: `1px solid ${active ? "var(--accent)" : "var(--border)"}`,
+      border: `1px solid ${active ? "var(--brand-signal,#C56343)" : "var(--border)"}`,
       background: active ? "var(--blue-a10)" : "var(--bg-light)",
-      color: active ? "var(--accent-dim)" : "var(--text-secondary)",
-      boxShadow: active ? "inset 0 0 0 1px var(--accent)" : "none" }}>
+      color: active ? "var(--brand-signal-dim,#CB6E4E)" : "var(--text-secondary)",
+      boxShadow: active ? "inset 0 0 0 1px var(--brand-signal,#C56343)" : "none" }}>
       {swatch && <span style={{ width: 10, height: 10, background: swatch, display: "inline-block" }}></span>}
       {children}
     </button>
@@ -117,7 +117,7 @@ function Playground() {
             <SeverityBadge status="Review" />
             <SeverityBadge status="Blocked" />
           </div>
-          <DenseDataTable
+          <DataGrid rowKey="index"
             columns={[
               { key: "symbol", label: "Symbol" },
               { key: "qty", label: "Qty", align: "right" },

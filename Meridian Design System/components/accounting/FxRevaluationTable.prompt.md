@@ -1,7 +1,7 @@
 Period-end FX reval — foreign balances at booked vs. current rates, per-row unrealized gain/loss, and a net G/L footer. All arithmetic is `Money.fxRevalue` (half-even), so a consumer recomputing the journal entry lands on the same cents.
 
 ```jsx
-const { FxRevaluationTable } = window.MeridianDesignSystem_4f61be;
+const { FxRevaluationTable } = window.MeridianDesignSystem_205d17;
 
 <FxRevaluationTable
   base="USD"

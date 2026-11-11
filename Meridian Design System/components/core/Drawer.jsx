@@ -10,7 +10,10 @@ function inject() {
   injected = true;
   const css = `
 .mds-drawer-overlay {
-  position: fixed; inset: 0; background: var(--scrim, rgba(14,17,19,.5));
+  position: fixed; inset: 0; background: var(--scrim, rgba(17,23,29,.5));
+  /* The scrim carries the drawer's elevation, as Dialog's does. Without it the overlay sits at
+     z:auto and any sticky table header (--z-raised) paints through the open drawer. */
+  z-index: var(--z-drawer, 150);
   animation: mds-drawer-fade-in var(--motion-base, 150ms) var(--ease-standard, ease-out);
 }
 @keyframes mds-drawer-fade-in {
@@ -18,8 +21,8 @@ function inject() {
   to { opacity: 1; }
 }
 .mds-drawer-wrap {
-  position: fixed; background: var(--bg-light, #FBFAF8);
-  display: flex; flex-direction: column; z-index: 1000;
+  position: fixed; background: var(--bg-light, #F8F7F3);
+  display: flex; flex-direction: column; z-index: var(--z-drawer,150);
   box-shadow: var(--shadow-menu);
 }
 /* Positions */
@@ -58,26 +61,26 @@ function inject() {
 .mds-drawer-hd {
   display: flex; align-items: center; justify-content: space-between;
   padding: var(--space-md, 12px) var(--space-lg, 16px);
-  border-bottom: 1px solid var(--border-divider, #DAD8D3);
-  background: var(--bg-medium, #EDEAE4);
+  border-bottom: 1px solid var(--border-divider, #E2DED5);
+  background: var(--bg-medium, #EBE8E1);
 }
 .mds-drawer-title {
   font-family: var(--font-body); font-size: var(--type-card-title, 13px);
-  font-weight: 600; color: var(--text-primary, #22252A); margin: 0;
+  font-weight: 600; color: var(--text-primary, #20252B); margin: 0;
 }
 .mds-drawer-close {
   appearance: none; border: none; background: transparent;
   width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
-  cursor: pointer; color: var(--text-secondary, #4E5258); font-size: 20px; line-height: 1; padding: 0;
+  cursor: pointer; color: var(--text-secondary, #535C65); font-size: 20px; line-height: 1; padding: 0;
 }
-.mds-drawer-close:hover { color: var(--text-primary, #22252A); }
+.mds-drawer-close:hover { color: var(--text-primary, #20252B); }
 .mds-drawer-close:focus-visible {
-  outline: 2px solid var(--border-focus, #A85436); outline-offset: -2px;
+  outline: 2px solid var(--border-focus, #2D6FB3); outline-offset: -2px;
 }
 .mds-drawer-bd {
   flex: 1; overflow-y: auto; padding: var(--space-lg, 16px);
   font-family: var(--font-body); font-size: var(--type-body, 13px);
-  color: var(--text-primary, #22252A);
+  color: var(--text-primary, #20252B);
 }
 `;
   const el = document.createElement("style");
@@ -96,6 +99,7 @@ export function Drawer({
   closeOnBackdrop = true,
   closeOnEsc = true,
 }) {
+  const uid = React.useId();
   inject();
   const ref = useRef(null);
   // Shared overlay focus contract: initial focus, Tab trap at boundaries, restore on close.
@@ -130,7 +134,7 @@ export function Drawer({
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
-        aria-labelledby={title ? "mds-drawer-title" : undefined}
+        aria-labelledby={title ? `${uid}-title` : undefined}
       >
         {title && <DrawerHeader title={title} onClose={onClose} />}
         <DrawerBody>{children}</DrawerBody>
@@ -142,7 +146,7 @@ export function Drawer({
 export function DrawerHeader({ title, onClose }) {
   return (
     <div className="mds-drawer-hd">
-      <h2 className="mds-drawer-title" id="mds-drawer-title">
+      <h2 className="mds-drawer-title" id={`${uid}-title`}>
         {title}
       </h2>
       {onClose && (

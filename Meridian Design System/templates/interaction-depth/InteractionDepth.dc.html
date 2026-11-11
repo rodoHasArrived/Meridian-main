@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../_scaffold/vendor/react-18.3.1.production.min.js"></script>
+<script src="../_scaffold/vendor/react-dom-18.3.1.production.min.js"></script>
+<script src="../../_preview_jsx.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Investigate · Interaction Depth" description="The normative reference for the interaction cluster: a 50,000-row windowed grid with right-click verbs, bulk edit, saved views, column chooser and a keyboard-only path — plus optimistic edits that revert with a reason, annotations versioned with the object, and comparison by selection." -->
+<helmet>
+<script src="./ds-base.js"></script>
+<script src="../_scaffold/operator-layer.js"></script>
+<meta name="dc-template" content="interaction-depth">
+<style>html,body{margin:0;padding:0;height:100%}</style>
+</helmet>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkstationShell" height="100vh" archetype="investigate" labelled-by="screen-title" topbar="{{ topbar }}" status-bar="{{ statusBar }}" hint-size="100%,900px">
+<div data-screen-label="Interaction depth" style="height:100%;display:flex;flex-direction:column;min-height:0;background:var(--bg);font-family:var(--font-body);color:var(--text-secondary)">
+<div style="flex:none;display:flex;align-items:baseline;gap:12px;padding:11px 14px 7px">
+<h1 id="screen-title" style="font:600 20px var(--font-display);margin:0;color:var(--text-primary);white-space:nowrap">Instrument registry · interaction depth</h1>
+<span style="font:11px var(--font-data);color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">50,000 rows · every verb reachable by pointer, keyboard and palette · every write shows its fate</span>
+<div style="flex:1"></div>
+<span style="font:11px var(--font-data);color:var(--text-muted);white-space:nowrap">registry v{{ objectVersion }}</span>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DensityToggle" hint-size="120px,28px"></x-import>
+</div>
+<div style="flex:1;min-height:0;padding:4px 14px 12px;display:flex;flex-direction:column">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Instrument registry" action-label="Retry" on-action="{{ noop }}" hint-size="100%,780px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkspaceLayout" screen-id="interaction-depth" regions="{{ regions }}" layouts="{{ layouts }}" slots="{{ slots }}" direction="column" style="flex:1;min-height:0" hint-size="100%,760px">
+<div style="height:100%;min-height:0">
+<x-import component="InteractionDepthPlane" from="./screen.jsx" row-count="{{ rowCount }}" compare-max="{{ compareMax }}" object-version="{{ objectVersion }}" on-summary="{{ onSummary }}" on-api="{{ onPlaneApi }}" hint-size="100%,700px"></x-import>
+</div>
+<div style="height:100%;overflow:auto;padding:10px 12px;font-size:12px;line-height:1.5;color:var(--text-secondary)">
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px">
+<div><div style="font:600 10px var(--font-data);letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px">Write path</div>An edit renders <b>Provisional</b> until the fixture write (~0.7s) confirms. Set an ack budget to <b>80</b>: the policy rejection comes back with its reason attached and the prior value restored. Hover a confirmed cell for <b>Revert…</b>; select rows for a batch revert under one reason.</div>
+<div><div style="font:600 10px var(--font-data);letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px">Reading depth</div>Hover a symbol and press <b>¶</b> to annotate. Choose <i>follow</i> (stale when the registry is re-imported) or <i>pin</i> to the current version. The panel on the right is what a reviewer reads first — its Stale filter is the point.</div>
+<div><div style="font:600 10px var(--font-data);letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px">Comparison</div>Tick ▢ on up to six rows and press <b>Compare</b>: the 1D–1Y return curves share one domain and one tick set, so a visible difference is a real one. Beyond twelve the contract says table + one focused plate.</div>
+<div><div style="font:600 10px var(--font-data);letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px">Motor economy</div>Right-click a row for verbs. <b>j/k · x · c</b> from the grid, <b>Ctrl K</b> to find a symbol, <b>?</b> for the sheet. Saved views persist filter, sort and columns under <code>mds.interaction-depth</code>; the workspace layout under <code>mds.workspace-layout.interaction-depth</code>. Neither carries data.</div>
+</div>
+</div>
+</x-import>
+</x-import>
+</div>
+</div>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.CommandPalette" commands="{{ paletteCommands }}" group-order="{{ paletteGroups }}" resolve="{{ paletteResolve }}" scope="interaction-depth" placeholder="{{ palettePlaceholder }}" hint-size="0px,0px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.HotkeysProvider" bindings="{{ hotkeyBindings }}" sheet-title="Interaction depth · keyboard shortcuts" hint-size="0px,0px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ToastProvider" hint-size="0px,0px"></x-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1600,&quot;height&quot;:1000},&quot;rowCount&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:50000,&quot;options&quot;:[500,5000,50000],&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Registry&quot;},&quot;compareMax&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:6,&quot;min&quot;:2,&quot;max&quot;:12,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Registry&quot;},&quot;objectVersion&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:3,&quot;min&quot;:1,&quot;max&quot;:20,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Registry&quot;},&quot;guide&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;compact&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;FIXTURE&quot;,&quot;options&quot;:[&quot;PAPER&quot;,&quot;LIVE&quot;,&quot;FIXTURE&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;}}">
+class Component extends DCLogic {
+  applyChrome() {
+    const html = document.documentElement;
+    html.setAttribute("data-theme", (window.MeridianPrefs?window.MeridianPrefs.theme(this.props.theme ?? "light"):(this.props.theme ?? "light")));
+    html.setAttribute("data-environment", (window.MeridianPrefs?window.MeridianPrefs.environment(this.env()):(this.env())));
+    if (document.body) document.body.setAttribute("data-theme-density", (window.MeridianPrefs?window.MeridianPrefs.density(this.props.density ?? "compact"):(this.props.density ?? "compact")));
+  }
+  componentDidMount() {
+    this.applyChrome();
+    if (this.ds().OptimisticCell) return;
+    let tries = 0;
+    this._t = setInterval(() => { if (this.ds().OptimisticCell || ++tries > 80) { clearInterval(this._t); this.forceUpdate(); } }, 60);
+  }
+  componentWillUnmount() { if (this._t) clearInterval(this._t); }
+  componentDidUpdate() { this.applyChrome(); }
+  ds() { return window.MeridianDesignSystem_205d17 || {}; }
+  env() { return String(this.props.environment ?? "FIXTURE").toUpperCase(); }
+
+  state = { summary: { total: 0, shown: 0, selected: 0, sector: "All", active: null } };
+  plane = null;
+
+  operatorLayer() {
+    const L = window.MeridianOperatorLayer;
+    if (!L) return { commands: [], bindings: [], groupOrder: null };
+    const t = (k, a, b) => { const T = window.MeridianToast; if (T && T[k]) T[k](a, b); };
+    const p = () => this.plane || {};
+    return L.build({
+      screenId: "interaction-depth",
+      actions: [
+        { id: "select-all", label: "Select all visible rows", keys: "ctrl+a", run: () => p().selectAll && p().selectAll() },
+        { id: "clear", label: "Clear selection", keys: "shift+x", run: () => p().clear && p().clear() },
+        { id: "bulk-250", label: "Set ack budget → 250 on selection", keys: "b", run: () => p().bulkBudget && p().bulkBudget("250") },
+        { id: "focus", label: "Focus the grid", keys: "g g", group: "Go to", run: () => p().focusGrid && p().focusGrid() },
+        { id: "refresh", label: "Refresh registry", keys: "r", run: () => t("info", "Registry", "Fixture data — nothing to refresh.") },
+      ],
+      objects: [
+        { type: "instrument", typeLabel: "Instrument", id: "AAA-0", label: "AAA Holdings 1 · XNAS", keywords: ["technology"], open: () => p().focusGrid && p().focusGrid() },
+        { type: "view", typeLabel: "Saved view", id: "limits-review", label: "Limits review", open: () => t("info", "Saved view", "Apply it from the View menu above the grid.") },
+      ],
+      verbs: [{ id: "open", label: "Open", run: (o) => o.open && o.open(o) }],
+    });
+  }
+
+  renderVals() {
+    this.applyChrome();
+    const { WorkstationTopbar, StatusBar } = this.ds();
+    const el = React.createElement;
+    const layer = this.operatorLayer();
+    const s = this.state.summary;
+    const F = this.ds().Format;
+    const n = (v) => (F && F.formatNumber ? F.formatNumber(v, { decimals: 0 }) : String(v));
+    return {
+      dataState: this.props.dataState ?? "ready",
+      noop: () => {},
+      rowCount: this.props.rowCount ?? 50000,
+      compareMax: this.props.compareMax ?? 6,
+      objectVersion: this.props.objectVersion ?? 3,
+      onSummary: (sum) => { const c = this.state.summary; if (c.total !== sum.total || c.shown !== sum.shown || c.selected !== sum.selected || c.active !== sum.active || c.sector !== sum.sector) this.setState({ summary: sum }); },
+      onPlaneApi: (api) => { this.plane = api; },
+      regions: [{ id: "plane", size: 3 }, { id: "guide", size: 0.6, collapsed: this.props.guide === false }],
+      layouts: [{ name: "Grid only", regions: { guide: { hidden: true }, plane: { size: 1 } } }, { name: "Teaching", regions: { guide: { collapsed: false, size: 0.9 } } }],
+      slots: [{ id: "plane", label: "Instrument registry · 50k rows", chrome: false, collapsible: false, minSize: 0.5 }, { id: "guide", label: "What this screen demonstrates", minSize: 0.12 }],
+      paletteCommands: layer.commands, paletteGroups: layer.groupOrder, paletteResolve: layer.resolve, palettePlaceholder: layer.placeholder, hotkeyBindings: layer.bindings,
+      topbar: WorkstationTopbar && el(WorkstationTopbar, { moduleLabel: "Interaction Depth", environment: this.env(), clock: "—", brandSrc: "../../assets/brand/meridian-mark-light.svg" }),
+      statusBar: StatusBar && el(StatusBar, { items: [
+        { status: "ok", label: "Rows", value: `${n(s.shown)} of ${n(s.total)}` },
+        { label: "Selected", value: n(s.selected) },
+        { label: "Sector", value: s.sector },
+        { label: "Active", value: s.active ? String(s.active).split("-")[0] : "—" },
+        { label: "Environment", value: this.env(), push: true },
+      ] }),
+    };
+  }
+}
+</script>
+</body>
+</html>

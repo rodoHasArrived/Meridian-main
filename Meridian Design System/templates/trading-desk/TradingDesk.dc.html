@@ -3,16 +3,660 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../_scaffold/vendor/react-18.3.1.production.min.js"></script>
+<script src="../_scaffold/vendor/react-dom-18.3.1.production.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
 <script src="./support.js"></script>
 </head>
 <body>
 <x-dc>
-<!-- @template name="Trading Desk" description="Live trading — watchlist identity chips, depth ladder with ticket prefill, resolution & time-basis toolbar, order ticket with the real-capital confirm gate, blotter & fills tape" -->
+<!-- @template name="Monitor · Trading Desk" description="Live order flow — watchlist, depth ladder that prefills the ticket, guarded order entry, working-order management with cancel/replace, positions and P&L, blotter · fills · prints tape, and a per-order audit drawer. Frame and panels are editable markup." -->
 <helmet>
 <script src="./ds-base.js"></script>
 <meta name="dc-template" content="trading-desk">
+<style>html,body{margin:0;padding:0;height:100%}</style>
 </helmet>
-<x-import component-from-global-scope="TradingDeskScreen" from="./screen.jsx" hint-size="100%,780px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Depth ladder" action-label="Retry" on-action="{{ noop }}" hint-size="100%,780px">
+<div style="height:100vh;display:flex;flex-direction:column;background:var(--bg);font-family:var(--font-body);color:var(--text-secondary);font-size:13px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkstationTopbar" module-label="Trading Desk" environment="{{ envLabel }}" brand-src="../../assets/brand/meridian-mark-light.svg" hint-size="100%,48px"></x-import>
+<div style="display:flex;flex:1;min-height:0">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.NavRail" active-id="trading-desk" on-select="{{ onNav }}" sections="{{ navSections }}" hint-size="224px,100%"></x-import>
+<main data-screen-label="Trading desk" style="flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;gap:10px;padding:14px">
+<div style="display:flex;align-items:center;gap:10px">
+<h1 style="font:600 22px var(--font-display);margin:0;color:var(--text-primary)">Trading Desk</h1>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.FreshnessIndicator" source="NBBO" status="live" last-seen="{{ lastSeen }}" hint-size="120px,20px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SeverityBadge" status="Running" label="{{ workingLabel }}" hint-size="90px,18px"></x-import>
+<sc-if value="{{ hasReplacing }}" hint-placeholder-val="{{ false }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SeverityBadge" status="InReview" label="{{ replacingLabel }}" hint-size="120px,18px"></x-import>
+<button type="button" onClick="{{ onAbandonReplace }}" style="padding:2px 8px;font:inherit;font-size:11px;background:transparent;border:1px solid var(--border-strong);color:var(--text-secondary);cursor:pointer" style-hover="border-color:var(--text-secondary);color:var(--text-primary)">Abandon replace</button>
+</sc-if>
+</div>
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+<div style="display:flex;gap:6px">
+<sc-for list="{{ chips }}" as="w" hint-placeholder-count="4">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.InstrumentChip" symbol="{{ w.symbol }}" venue="{{ w.venue }}" asset-class="{{ w.assetClass }}" selected="{{ w.selected }}" on-click="{{ w.select }}" hint-size="110px,30px"></x-import>
+</sc-for>
+</div>
+<div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+<span style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted)">Depth</span>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SegmentedControl" size="sm" value="{{ detail }}" on-change="{{ onDetail }}" options="{{ detailOptions }}" hint-size="140px,26px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.TimeframeSwitcher" value="{{ tf }}" on-change="{{ onTf }}" hint-size="220px,28px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.AsOfControl" with-date="{{ false }}" hint-size="140px,28px"></x-import>
+</div>
+</div>
+<div style="flex:1;min-height:0;display:flex;flex-direction:column">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkspaceLayout" screen-id="trading-desk" regions="{{ layoutRegions }}" layouts="{{ layoutPresets }}" slots="{{ layoutSlots }}" style="flex:1;min-height:0" hint-size="100%,700px">
+<div style="height:100%;overflow:auto;padding:10px;box-sizing:border-box;background:var(--card-surface,#F8F7F3);border:1px solid var(--border-strong)">
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="90px,14px">Depth · {{ symbol }}</x-import>
+<span style="font:11px var(--font-data);color:var(--text-muted)">{{ spreadLabel }}</span>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DepthLadder" bids="{{ bids }}" asks="{{ asks }}" last-price="{{ lastPrice }}" price-decimals="{{ priceDecimals }}" levels="{{ ladderLevels }}" on-price-click="{{ onPriceClick }}" hint-size="300px,420px"></x-import>
+<div style="display:flex;align-items:center;gap:8px;padding-top:2px;border-top:1px solid var(--border-divider,#E2DED5)">
+<span style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted)">Clip</span>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SegmentedControl" size="sm" value="{{ clip }}" on-change="{{ onClip }}" options="{{ clipOptions }}" hint-size="180px,26px"></x-import>
+</div>
+<div style="display:flex;align-items:center;gap:8px">
+<span style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted)">Intent</span>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SegmentedControl" size="sm" value="{{ intent }}" on-change="{{ onIntent }}" options="{{ intentOptions }}" hint-size="130px,26px"></x-import>
+</div>
+<sc-if value="{{ isJoin }}" hint-placeholder-val="{{ true }}">
+<p style="margin:0;font-size:11px;line-height:1.45;color:var(--text-muted)">Click a level to rest an order there — bid side buys, ask side sells, {{ clipLabel }} shares. Joining the queue, so the order waits for the other side.</p>
+</sc-if>
+<sc-if value="{{ isTake }}" hint-placeholder-val="{{ false }}">
+<p style="margin:0;font-size:11px;line-height:1.45;color:var(--text-muted)">Click a level to cross the spread — bid side sells into it, ask side lifts it, {{ clipLabel }} shares. Marketable, so expect an immediate print.</p>
+</sc-if>
+</div>
+</div>
+<div style="height:100%;overflow:auto;display:flex;flex-direction:column;gap:10px">
+<div style="padding:10px;background:var(--card-surface,#F8F7F3);border:1px solid var(--border-strong);display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;align-items:center;gap:8px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="40px,14px">Tape</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SegmentedControl" size="sm" value="{{ tape }}" on-change="{{ onTape }}" options="{{ tapeOptions }}" hint-size="210px,26px"></x-import>
+<sc-if value="{{ blotterShow }}" hint-placeholder-val="{{ true }}">
+<button type="button" onClick="{{ onCancelAll }}" disabled="{{ noWorking }}" style="margin-left:auto;padding:4px 9px;font:inherit;font-size:11px;background:transparent;border:1px solid var(--border-strong);color:var(--text-secondary);cursor:pointer">Cancel all working</button>
+</sc-if>
+</div>
+<sc-if value="{{ blotterShow }}" hint-placeholder-val="{{ true }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Blotter" orders="{{ orders }}" on-row-click="{{ onOrderClick }}" selected-index="{{ selIndex }}" extra-columns="{{ blotterExtra }}" hint-size="100%,300px"></x-import>
+<p style="margin:0;font-size:11px;color:var(--text-muted)">Row opens the order's audit drawer. Working orders can be cancelled or replaced from there.</p>
+</sc-if>
+<sc-if value="{{ fillsShow }}" hint-placeholder-val="{{ false }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.FillsFeed" fills="{{ fills }}" max-height="{{ 300 }}" hint-size="100%,300px"></x-import>
+</sc-if>
+<sc-if value="{{ printsShow }}" hint-placeholder-val="{{ false }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.TimeAndSalesTape" prints="{{ prints }}" show-symbol="{{ true }}" show-venue="{{ true }}" block-size="{{ 5000 }}" max-height="{{ 300 }}" hint-size="100%,300px"></x-import>
+</sc-if>
+<sc-if value="{{ tapeWithheldShow }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding-top:6px;border-top:1px solid var(--border-divider,#E2DED5);font-size:11px;color:var(--text-muted)">
+<span>{{ tapeWithheldLabel }}</span>
+<button type="button" onClick="{{ onDetailFull }}" style="padding:0;background:transparent;border:0;font:inherit;font-weight:500;color:var(--link,#2A5F96);cursor:pointer;text-decoration:underline;text-underline-offset:2px">Show full detail</button>
+</div>
+</sc-if>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.AnnotationProvider" object-id="positions:desk" object-version="{{ positionsVersion }}" author="you" hint-size="100%,220px">
+<div style="padding:10px;background:var(--card-surface,#F8F7F3);border:1px solid var(--border-strong);display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;align-items:baseline;gap:10px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="70px,14px">Positions</x-import>
+<span style="font:11px var(--font-data);color:var(--text-muted)">{{ exposureLabel }}</span>
+<span style="margin-left:auto;font:11px var(--font-data);color:var(--text-muted)">{{ pnlLabel }}</span>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataGrid" row-key="symbol" columns="{{ posCols }}" rows="{{ positions }}" active-key="{{ symbol }}" on-row-click="{{ onPositionClick }}" hint-size="100%,180px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.AnnotationPanel" title="Notes on positions" on-focus="{{ onAnnotationFocus }}" empty-text="Hover a symbol and press ¶ to leave a note. Follow-notes go stale on the next fill; pinned notes keep their version." hint-size="100%,60px"></x-import>
+</div>
+</x-import>
+</div>
+<div style="height:100%;overflow:auto;display:flex;flex-direction:column;gap:10px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.OrderTicket" symbol="{{ symbol }}" last-price="{{ lastPrice }}" environment="{{ envLower }}" price-decimals="{{ priceDecimals }}" prefill="{{ prefill }}" guards="{{ guards }}" on-draft-change="{{ onDraft }}" on-submit="{{ onSubmit }}" hint-size="340px,520px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ActionEnvelope" label="Submit order" endpoint="POST /v1/orders" idempotency-key="{{ orderKey }}" permission="{{ orderPermission }}" posture="confirmed" failure-surface="Blotter row · status bar · instruction ledger" state="{{ orderState }}" receipt="{{ orderReceipt }}" reason="{{ orderReason }}" on-retry="{{ onRetryOrder }}" hint-size="340px,230px"></x-import>
+<div style="padding:10px;background:var(--card-surface,#F8F7F3);border:1px solid var(--border-strong);display:flex;flex-direction:column;gap:8px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="100px,14px">Desk limits</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.KeyValueGrid" columns="{{ 2 }}" items="{{ riskItems }}" hint-size="100%,120px"></x-import>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.InstructionLedger" instructions="{{ instructions }}" hint-size="100%,110px"></x-import>
+</div>
+</x-import>
+</div>
+</main>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.StatusBar" items="{{ statusItems }}" hint-size="100%,28px"></x-import>
+</div>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Drawer" open="{{ drawerOpen }}" on-close="{{ onCloseDrawer }}" side="right" size="420px" title="{{ drawerTitle }}" hint-size="0px,0px">
+<div style="padding:14px;display:flex;flex-direction:column;gap:14px;font-family:var(--font-body);font-size:13px;color:var(--text-secondary);overflow-y:auto">
+<sc-if value="{{ hasSel }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;align-items:center;gap:8px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SeverityBadge" status="{{ selBadge }}" label="{{ selStatus }}" hint-size="90px,18px"></x-import>
+<span style="font:11px var(--font-data);color:var(--text-muted)">{{ selFillLabel }}</span>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.KeyValueGrid" columns="{{ 2 }}" items="{{ selItems }}" hint-size="100%,170px"></x-import>
+<div style="display:flex;gap:8px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="danger" size="sm" disabled="{{ selTerminal }}" on-click="{{ onCancelSel }}" hint-size="90px,28px">Cancel order</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="secondary" size="sm" disabled="{{ selTerminal }}" on-click="{{ onAmendSel }}" hint-size="110px,28px">Replace…</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" on-click="{{ onCloneSel }}" hint-size="70px,28px">Clone</x-import>
+</div>
+<sc-if value="{{ selTerminal }}" hint-placeholder-val="{{ false }}">
+<p style="margin:0;font-size:11px;line-height:1.45;color:var(--text-muted)">{{ selTerminalNote }}</p>
+</sc-if>
+<div style="display:flex;flex-direction:column;gap:6px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="90px,14px">Order audit</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.EventTimeline" events="{{ selEvents }}" dense="{{ true }}" group-by-day="{{ false }}" hint-size="100%,200px"></x-import>
+</div>
+<sc-if value="{{ selHasFills }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:6px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="60px,14px">Executions</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.FillsFeed" fills="{{ selFills }}" max-height="{{ 160 }}" hint-size="100%,160px"></x-import>
+</div>
+</sc-if>
+</sc-if>
+</div>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ToastProvider" hint-size="0px,0px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.HotkeysProvider" bindings="{{ hotkeys }}" hint-size="0px,0px"></x-import>
 </x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1920,&quot;height&quot;:1080},&quot;detail&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;full&quot;,&quot;options&quot;:[&quot;summary&quot;,&quot;full&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;transport&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;answers&quot;,&quot;options&quot;:[&quot;answers&quot;,&quot;refuses&quot;,&quot;loses the answer&quot;,&quot;silent&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;autoFill&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;orderCapUsd&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:150000,&quot;min&quot;:25000,&quot;max&quot;:1000000,&quot;step&quot;:25000,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;default&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;LIVE&quot;,&quot;options&quot;:[&quot;PAPER&quot;,&quot;LIVE&quot;,&quot;FIXTURE&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;}}">
+class Component extends DCLogic {
+  applyChrome() {
+    const html = document.documentElement;
+    html.setAttribute("data-theme", (window.MeridianPrefs?window.MeridianPrefs.theme(this.props.theme ?? "light"):(this.props.theme ?? "light")));
+    html.setAttribute("data-environment", (window.MeridianPrefs?window.MeridianPrefs.environment(this.env()):(this.env())));
+    if (document.body) document.body.setAttribute("data-theme-density", (window.MeridianPrefs?window.MeridianPrefs.density(this.props.density ?? "default"):(this.props.density ?? "default")));
+  }
+  componentDidMount() { this.applyChrome(); this._untick = window.MeridianWorld && window.MeridianWorld.tick(this); }
+  componentDidUpdate() { this.applyChrome(); }
+  componentWillUnmount() { (this.timers || []).forEach(clearTimeout); this._untick && this._untick(); }
+  env() { return String(this.props.environment ?? "LIVE").toUpperCase(); }
+  ds() { return window.MeridianDesignSystem_205d17 || {}; }
+  noop = () => {};
+  timers = [];
+  toast(kind, title, detail) { const t = window.MeridianToast; if (t && t[kind]) t[kind](title, detail); }
+
+  // Real clock base, so every relative readout ("2m ago", the ladder's freshness) stays honest
+  // whenever the screen is opened — a frozen date makes a live desk look days stale.
+  NOW = Date.now();
+  now() { return Date.now(); }
+  // One instant for the whole suite (_scaffold/world.js) — not this screen's own frozen time.
+  clockLabel() { return window.MeridianWorld ? window.MeridianWorld.clock() : new Date(this.NOW).toISOString().slice(11, 19) + " UTC"; }
+  watchlist = [
+    { symbol: "AAPL", venue: "XNAS", assetClass: "eq", last: 201.11, tick: 0.01, mult: 1 },
+    { symbol: "NVDA", venue: "XNAS", assetClass: "eq", last: 172.44, tick: 0.01, mult: 1 },
+    { symbol: "SPY", venue: "ARCX", assetClass: "etf", last: 618.72, tick: 0.01, mult: 1 },
+    { symbol: "ESU6", venue: "CME", assetClass: "fut", last: 6231.25, tick: 0.25, mult: 50 },
+  ];
+  inst(sym) { return this.watchlist.find((w) => w.symbol === sym); }
+  book(last, tick) {
+    const BID = [1200, 3400, 2650, 5200, 1875, 7400, 2200, 4100], ASK = [900, 2100, 3800, 1450, 6100, 2900, 1700, 5000];
+    return { bids: BID.map((size, i) => ({ price: +(last - tick * (i + 1)).toFixed(4), size })), asks: ASK.map((size, i) => ({ price: +(last + tick * (i + 1)).toFixed(4), size })) };
+  }
+  books = { AAPL: this.book(201.11, 0.01), NVDA: this.book(172.44, 0.01), SPY: this.book(618.72, 0.01), ESU6: this.book(6231.25, 0.25) };
+
+  seedOrders = [
+    { id: "ORD-1209", time: this.NOW - 128000, symbol: "AAPL", side: "Buy", qty: "400", type: "Limit", limit: "201.0500", filled: "0", status: "Working", tif: "DAY", route: "SOR", trader: "k.ito",
+      events: [{ ts: this.NOW - 128000, action: "Order accepted", actor: "gateway", severity: "success", detail: "BUY 400 AAPL LMT 201.0500 DAY · SOR" }] },
+    { id: "ORD-1208", time: this.NOW - 341000, symbol: "NVDA", side: "Sell", qty: "250", type: "Limit", limit: "172.6000", filled: "100", status: "Partially filled", tif: "GTC", route: "XNAS", trader: "k.ito",
+      events: [
+        { ts: this.NOW - 128000, action: "Partial fill", actor: "XNAS", severity: "accent", detail: "100 @ 172.6000 · 150 remaining" },
+        { ts: this.NOW - 341000, action: "Order accepted", actor: "gateway", severity: "success", detail: "SELL 250 NVDA LMT 172.6000 GTC" }] },
+    { id: "ORD-1207", time: this.NOW - 1220000, symbol: "SPY", side: "Buy", qty: "120", type: "Market", limit: null, filled: "120", status: "Filled", tif: "DAY", route: "ARCX", trader: "m.brandt",
+      events: [
+        { ts: this.NOW - 1220000, action: "Filled", actor: "ARCX", severity: "success", detail: "120 @ 618.7067 avg · 2 prints" },
+        { ts: this.NOW - 1220400, action: "Order accepted", actor: "gateway", severity: "success", detail: "BUY 120 SPY MKT DAY" }] },
+    { id: "ORD-1206", time: this.NOW - 2710000, symbol: "ESU6", side: "Sell", qty: "2", type: "Limit", limit: "6233.75", filled: "0", status: "Cancelled", tif: "DAY", route: "CME", trader: "m.brandt",
+      events: [
+        { ts: this.NOW - 2500000, action: "Cancelled by trader", actor: "m.brandt", severity: "warning", detail: "Working 3m 30s · no fill" },
+        { ts: this.NOW - 2710000, action: "Order accepted", actor: "gateway", severity: "success", detail: "SELL 2 ESU6 LMT 6233.75 DAY" }] },
+    { id: "ORD-1205", time: this.NOW - 4150000, symbol: "AAPL", side: "Buy", qty: "1000", type: "Limit", limit: "199.8000", filled: "0", status: "Rejected", tif: "DAY", route: "SOR", trader: "k.ito",
+      events: [
+        { ts: this.NOW - 4150000, action: "Rejected by risk", actor: "pre-trade", severity: "danger", detail: "Single-order notional 199,800 over desk cap 150,000 at 09:23Z" },
+        { ts: this.NOW - 4150400, action: "Order staged", actor: "k.ito", severity: "accent", detail: "BUY 1000 AAPL LMT 199.8000" }] },
+  ];
+  seedFills = [
+    { id: "F-2214", orderId: "ORD-1208", time: this.NOW - 128000, symbol: "NVDA", side: "Sell", qty: "100", price: "172.6000" },
+    { id: "F-2213", orderId: "ORD-1207", time: this.NOW - 1220000, symbol: "SPY", side: "Buy", qty: "120", price: "618.7100" },
+    { id: "F-2212", orderId: "ORD-1207", time: this.NOW - 1220000, symbol: "SPY", side: "Buy", qty: "80", price: "618.7000" },
+    { id: "F-2211", orderId: "ORD-1204", time: this.NOW - 5400000, symbol: "AAPL", side: "Buy", qty: "400", price: "200.9800" },
+    { id: "F-2210", orderId: "ORD-1203", time: this.NOW - 7300000, symbol: "ESU6", side: "Sell", qty: "1", price: "6230.50" },
+  ];
+  seedPrints = (() => {
+    const rows = [], base = { AAPL: 201.11, NVDA: 172.44, SPY: 618.72, ESU6: 6231.25 };
+    const syms = ["AAPL", "SPY", "NVDA", "AAPL", "SPY", "ESU6", "AAPL", "NVDA", "SPY", "AAPL", "NVDA", "SPY", "ESU6", "AAPL"];
+    const ven = { AAPL: "XNAS", NVDA: "XNAS", SPY: "ARCX", ESU6: "CME" };
+    let seed = 7;
+    const rnd = () => (seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648;
+    for (let i = 0; i < syms.length; i++) {
+      const s = syms[i], step = s === "ESU6" ? 0.25 : 0.01;
+      rows.push({ time: this.NOW - i * 1700, symbol: s, venue: ven[s],
+        price: +(base[s] + step * (Math.round(rnd() * 6) - 3)).toFixed(2),
+        size: Math.round(rnd() * 60) * 100 + (i % 5 === 0 ? 5200 : 100) });
+    }
+    return rows;
+  })();
+  seedPositions = [
+    { symbol: "AAPL", qty: 1200, avgPx: 198.42, realized: 4180 },
+    { symbol: "NVDA", qty: -250, avgPx: 174.10, realized: -920 },
+    { symbol: "SPY", qty: 300, avgPx: 615.90, realized: 2260 },
+    { symbol: "ESU6", qty: 2, avgPx: 6208.50, realized: 0 },
+  ];
+
+  state = {
+    instruction: null,
+    symbol: "AAPL", tf: "1m", tape: "blotter", detail: null,
+    orders: this.seedOrders, fills: this.seedFills, prints: this.seedPrints, positions: this.seedPositions,
+    sel: null, drawer: false, prefill: null, draft: null, replacing: null, replacePrev: null, seq: 1210, fseq: 2215, clip: 500, intent: "join",
+  };
+
+  LIVE = ["Working", "Partially filled", "Pending replace"];
+  BADGE = { Working: "Running", "Partially filled": "InProgress", Filled: "Complete", Cancelled: "NotStarted", Rejected: "Rejected", "Pending replace": "Pending" };
+  RESTRICTED = { NVDA: "Research blackout — NVDA under coverage embargo until " + (((window.MeridianDesignSystem_205d17 || {}).LocalDate || { dayOfInstant: (t) => { const d = new Date(t); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); } }).dayOfInstant(Date.now() + 4 * 86400000)) + "." };
+
+  cap() { return Number(this.props.orderCapUsd ?? 150000); }
+  int(v) { return window.MeridianDesignSystem_205d17.Format.number(v, { decimals: 0 }); }
+  // Every number on this screen goes through the numeric authority (core/format.js, reached as
+  // `Format` on the namespace): locale, grouping, minus glyph and price precision belong to the
+  // system, not to this file. Quote precision still follows the instrument's tick.
+  F() { return (window.MeridianDesignSystem_205d17 || {}).Format; }
+  decimals(tick) { const F = this.F(); return F ? F.decimalsForTick(tick) : 2; }
+  num(v) { return Number(String(v).replace(/,/g, "")) || 0; }
+  money(n) { const F = this.F(); return F ? F.money(n, { currency: "USD", decimals: 0 }) : "$" + n; }
+  fmt(n, d) { const F = this.F(); return F ? F.number(n, { decimals: d }) : String(n); }
+
+  patch(id, fn, event) {
+    this.setState((s) => ({
+      orders: s.orders.map((o) => {
+        if (o.id !== id) return o;
+        const next = { ...o, ...fn(o) };
+        if (event) next.events = [event, ...(o.events || [])];
+        return next;
+      }),
+    }));
+  }
+
+  applyFill(positions, symbol, side, qty, price, mult) {
+    const dir = side === "Buy" ? 1 : -1, signed = dir * qty;
+    const i = positions.findIndex((p) => p.symbol === symbol);
+    const p = i < 0 ? { symbol, qty: 0, avgPx: price, realized: 0 } : positions[i];
+    let { qty: q, avgPx, realized } = p;
+    if (q === 0 || Math.sign(q) === Math.sign(signed)) {
+      avgPx = (Math.abs(q) * avgPx + qty * price) / (Math.abs(q) + qty);
+      q += signed;
+    } else {
+      const closed = Math.min(Math.abs(q), qty);
+      realized += (price - avgPx) * closed * Math.sign(q) * (mult || 1);
+      q += signed;
+      if (Math.sign(q) !== Math.sign(p.qty) && q !== 0) avgPx = price;
+    }
+    const next = { symbol, qty: q, avgPx: +avgPx.toFixed(4), realized: Math.round(realized) };
+    const out = positions.slice();
+    if (i < 0) out.push(next); else out[i] = next;
+    return out;
+  }
+
+  fill(id, qty, price, venue) {
+    const order = this.state.orders.find((o) => o.id === id);
+    if (!order || !this.LIVE.includes(order.status)) return;
+    const total = this.num(order.qty), already = this.num(order.filled), now = Math.min(qty, total - already);
+    if (now <= 0) return;
+    const done = already + now >= total;
+    const inst = this.inst(order.symbol);
+    this.setState((s) => ({
+      fseq: s.fseq + 1,
+      fills: [{ id: "F-" + s.fseq, orderId: id, time: this.now(), symbol: order.symbol, side: order.side, qty: String(now), price: this.fmt(price, 4) }, ...s.fills],
+      prints: [{ time: this.now(), symbol: order.symbol, venue: venue || inst.venue, price, size: now }, ...s.prints].slice(0, 40),
+      positions: this.applyFill(s.positions, order.symbol, order.side, now, price, inst.mult),
+    }));
+    this.patch(id, () => ({ filled: String(already + now), status: done ? "Filled" : "Partially filled" }),
+      { ts: this.now(), action: done ? "Filled" : "Partial fill", actor: venue || inst.venue, severity: done ? "success" : "accent",
+        detail: now + " @ " + this.fmt(price, 4) + (done ? " · complete" : " · " + (total - already - now) + " remaining") });
+  }
+
+  // ---- the action contract · guidelines/ACTION_SEMANTICS.md -------------------------------
+  // The desk keeps its fixture; what is new is that a ticket submit is no longer ASSUMED to have
+  // reached the venue. It becomes an instruction whose idempotency key is declared before the
+  // attempt, and only a LANDED instruction reaches the blotter (posture: confirmed). A second
+  // click on the same key is the same instruction; a retry after "unlanded" asks whether the
+  // first one landed rather than sending a second order.
+  orderKey(o) {
+    const raw = o.token || [o.symbol, o.side, o.qty, o.type, o.limitPrice ?? "mkt", o.tif].join(":");
+    return "ORD-TOK-" + String(raw).replace(/[^A-Za-z0-9.:-]/g, "").slice(-24);
+  }
+  landed = new Map(); // the venue's own idempotency store — why a same-key retry is safe
+  instSeq = 0;
+
+  transport(instruction) {
+    const mode = this.props.transport ?? "answers";
+    return new Promise((resolve, reject) => {
+      this.timers.push(setTimeout(() => {
+        const seen = this.landed.get(instruction.idempotencyKey);
+        if (seen) return resolve({ ok: true, id: seen, duplicateOf: seen });
+        if (mode === "refuses") return resolve({ ok: false, reason: "Order exceeds the desk limit · " + this.money(this.cap()) + " notional. Split the order or request a limit increase." });
+        const id = "ORD-" + (this.state.seq + this.instSeq);
+        if (mode === "loses the answer") { this.landed.set(instruction.idempotencyKey, id); return reject(new Error("HTTP 502 · the gateway wrote the order and lost the answer")); }
+        this.landed.set(instruction.idempotencyKey, id);
+        resolve({ ok: true, id });
+      }, mode === "silent" ? 60000 : 620));
+    });
+  }
+
+  async runOrderInstruction(o, attempt) {
+    const key = this.orderKey(o);
+    const open = this.state.instruction;
+    if (attempt === 1 && open && open.idempotencyKey === key && (open.state === "inflight" || open.state === "landed")) {
+      this.toast("info", "Already submitted", key + " · deduped against " + ((open.receipt && open.receipt.id) || key) + " — one instruction, not two");
+      return;
+    }
+    this.instSeq += 1;
+    const started = Date.now();
+    this.setState({ instruction: { id: key, action: "order.submit", label: "Submit order · " + o.symbol, idempotencyKey: key, state: "inflight", reason: null, receipt: { attempt, at: this.stamp() }, draft: o } });
+    let settled;
+    try {
+      const answer = await Promise.race([
+        this.transport({ action: "order.submit", endpoint: "POST /v1/orders", idempotencyKey: key, attempt, posture: "confirmed", payload: o }),
+        new Promise((_, rej) => this.timers.push(setTimeout(() => rej(new Error("no answer within 6000 ms")), 6000))),
+      ]);
+      settled = answer && answer.ok === false
+        ? { state: "rejected", reason: answer.reason, receipt: { attempt, at: this.stamp(), latencyMs: Date.now() - started } }
+        : { state: "landed", reason: null, receipt: { id: answer.id, at: this.stamp(), latencyMs: Date.now() - started, attempt, duplicateOf: answer.duplicateOf } };
+    } catch (e) {
+      // No answer is not a failure: the order may be working. Nothing is written to the blotter.
+      settled = { state: "unlanded", reason: String((e && e.message) || e), receipt: { attempt, at: this.stamp(), latencyMs: Date.now() - started } };
+    }
+    this.setState((s) => ({ instruction: { ...s.instruction, ...settled } }));
+    if (settled.state === "landed") this.accept(o, settled.receipt.id, settled.receipt.duplicateOf);
+    else if (settled.state === "rejected") this.toast("warning", "Order rejected", settled.reason);
+    else this.toast("warning", "Order unlanded", "No answer from the gateway — the fate is unknown. Retry carries the same key; nothing was written to the blotter.");
+  }
+
+  stamp() { return new Date().toISOString().replace("T", " ").replace(/\.\d+Z$/, "Z"); }
+  submit(o) { this.runOrderInstruction(o, 1); }
+  retryOrder() { const i = this.state.instruction; if (i && i.draft) this.runOrderInstruction(i.draft, ((i.receipt && i.receipt.attempt) || 1) + 1); }
+
+  accept(o, receiptId, duplicateOf) {
+    const inst = this.inst(o.symbol);
+    const id = receiptId || "ORD-" + this.state.seq;
+    if (duplicateOf && this.state.orders.some((x) => x.id === id)) return; // replay of an instruction that already landed
+    const side = o.side === "buy" ? "Buy" : "Sell";
+    const replacing = this.state.replacing;
+    const order = {
+      id, time: this.now(), symbol: o.symbol, side, qty: String(o.qty), type: o.type === "limit" ? "Limit" : "Market",
+      limit: o.limitPrice != null ? this.fmt(o.limitPrice, 4) : null, filled: "0", status: "Working", tif: o.tif, route: inst.venue, trader: "k.ito",
+      events: [{ ts: this.now(), action: replacing ? "Replacement accepted" : "Order accepted", actor: "gateway", severity: "success",
+        detail: side.toUpperCase() + " " + o.qty + " " + o.symbol + " " + (o.type === "limit" ? "LMT " + this.fmt(o.limitPrice, 4) : "MKT") + " " + o.tif + (replacing ? " · replaces " + replacing : "") }],
+    };
+    if (replacing) {
+      this.patch(replacing, () => ({ status: "Cancelled" }), { ts: this.now(), action: "Replaced", actor: "k.ito", severity: "warning", detail: "Superseded by " + id });
+    }
+    this.setState((s) => ({ orders: [order, ...s.orders], seq: s.seq + 1, sel: id, replacing: null, replacePrev: null, prefill: null }));
+    this.toast("success", replacing ? "Replacement working" : "Order working", id + " · " + side.toUpperCase() + " " + o.qty + " " + o.symbol + (o.limitPrice ? " @ " + this.fmt(o.limitPrice, 4) : " at market"));
+    if (this.props.autoFill === false) return;
+    const best = o.side === "buy" ? this.books[o.symbol].asks[0].price : this.books[o.symbol].bids[0].price;
+    const marketable = o.type === "market" || (o.side === "buy" ? o.limitPrice >= best : o.limitPrice <= best);
+    const px = o.type === "market" ? best : o.limitPrice;
+    if (!marketable) {
+      this.timers.push(setTimeout(() => this.patch(id, () => ({}), { ts: this.now(), action: "Resting on book", actor: inst.venue, severity: null, detail: "Away from touch by " + this.fmt(Math.abs(best - o.limitPrice), 2) + " · queue position 4" }), 900));
+      return;
+    }
+    const half = Math.max(1, Math.floor(o.qty / 2));
+    this.timers.push(setTimeout(() => this.fill(id, o.qty > 1 ? half : o.qty, px, inst.venue), 700));
+    if (o.qty > 1) this.timers.push(setTimeout(() => this.fill(id, o.qty - half, +(px + (o.side === "buy" ? inst.tick : -inst.tick)).toFixed(4), inst.venue), 1900));
+  }
+
+  cancel(id, reason) {
+    const o = this.state.orders.find((x) => x.id === id);
+    if (!o || !this.LIVE.includes(o.status)) return;
+    // A pulled order is Cancelled even when part of it traded — calling it "Filled" would
+    // overstate the blotter's done quantity. The partial stays visible in the filled column.
+    const done = this.num(o.filled);
+    this.patch(id, () => ({ status: "Cancelled" }),
+      { ts: this.now(), action: "Cancelled by trader", actor: "k.ito", severity: "warning", detail: reason || (done > 0 ? "Cancelled remainder · " + o.filled + " of " + o.qty + " done, " + (this.num(o.qty) - done) + " pulled" : "Working order pulled") });
+    if (this.state.replacing === id) this.setState({ replacing: null, replacePrev: null });
+    this.toast("info", "Cancel sent", id + " · " + o.symbol + (done > 0 ? " · " + o.filled + " already done" : ""));
+  }
+
+  step(dir) {
+    const i = this.watchlist.findIndex((w) => w.symbol === this.state.symbol);
+    this.setState({ symbol: this.watchlist[(i + dir + this.watchlist.length) % this.watchlist.length].symbol });
+  }
+
+  // Session phase is read off the real clock rather than asserted, so the ticket never claims
+  // "5h 28m remaining" on a screen opened at 06:00Z or on a Sunday.
+  session() {
+    const d = new Date(this.NOW), mins = d.getUTCHours() * 60 + d.getUTCMinutes(), wd = d.getUTCDay();
+    const OPEN = 13 * 60 + 30, CLOSE = 20 * 60;
+    const span = (m) => Math.floor(m / 60) + "h " + String(m % 60).padStart(2, "0") + "m";
+    if (wd === 0 || wd === 6) return { phase: "closed", label: "Weekend — market closed", reason: "XNAS next opens " + (wd === 0 ? "Monday" : "Monday") + " 13:30Z · orders stage for the open" };
+    if (mins < OPEN) return { phase: "pre-open", label: "Pre-open — routing deferred", reason: "XNAS opens 13:30Z in " + span(OPEN - mins) + " · orders stage for the open" };
+    if (mins >= CLOSE) return { phase: "closed", label: "Session closed — routing deferred", reason: "Closed 20:00Z · orders stage for the next session" };
+    return { phase: "open", label: "Session open · continuous trading", reason: "XNAS 13:30–20:00Z · " + span(CLOSE - mins) + " remaining" };
+  }
+
+  guardsFor(draft, symbol) {
+    const cap = this.cap();
+    const notional = draft && draft.notional ? draft.notional * (this.inst(symbol)?.mult || 1) : 0;
+    const pos = this.state.positions.find((p) => p.symbol === symbol);
+    const held = pos ? pos.qty : 0;
+    const after = held + (draft && draft.qty ? (draft.side === "sell" ? -draft.qty : draft.qty) : 0);
+    const limitQty = symbol === "ESU6" ? 25 : 2500;
+    const restricted = this.RESTRICTED[symbol];
+    const live = this.env() === "LIVE";
+    const sess = this.session();
+    return [
+      { id: "notional", label: "Single-order notional under " + this.money(cap),
+        state: !notional ? "pending" : notional > cap ? "blocking" : notional > cap * 0.7 ? "warning" : "satisfied",
+        reason: notional > cap ? this.money(notional) + " exceeds the desk cap by " + this.money(notional - cap) : notional ? this.money(notional) + " of " + this.money(cap) : "No draft quantity yet",
+        policyRef: "RISK-04 · desk order cap",
+        remediation: notional > cap ? { label: "Request one-off uplift", actionId: "uplift", requiredRole: "Head of Desk" } : undefined },
+      { id: "position", label: "Post-trade position within " + this.int(limitQty),
+        state: Math.abs(after) > limitQty ? "blocking" : Math.abs(after) > limitQty * 0.8 ? "warning" : "satisfied",
+        reason: this.int(held) + " held → " + this.int(after) + " after fill",
+        policyRef: "RISK-11 · per-symbol cap" },
+      { id: "restricted", label: restricted ? "Restricted list — review required" : "Symbol not restricted",
+        state: restricted ? "warning" : "satisfied", reason: restricted || ("Cleared against the " + new Date(this.NOW).toISOString().slice(5, 10) + " restricted list"),
+        policyRef: "COMP-02 · restricted list",
+        remediation: restricted ? { label: "Attach compliance approval", actionId: "approve", requiredRole: "Compliance" } : undefined },
+      { id: "session", label: live ? sess.label : "Paper session — no capital at risk",
+        state: !live || sess.phase === "open" ? "satisfied" : "warning",
+        reason: live ? sess.reason : "Orders route to the simulator", policyRef: "OPS-01 · session calendar" },
+    ];
+  }
+
+  renderVals() {
+    this.applyChrome();
+    const s = this.state;
+    const el = React.createElement;
+    const { SeverityBadge, Timestamp, AnnotationAnchor } = this.ds();
+    const inst = this.inst(s.symbol);
+    const { bids, asks } = this.books[s.symbol];
+    const detail = s.detail ?? this.props.detail ?? "full";
+    const summary = detail === "summary";
+    const live = s.orders.filter((o) => this.LIVE.includes(o.status));
+    const orders = summary ? live : s.orders;
+    const fills = summary ? s.fills.slice(0, 3) : s.fills;
+    const prints = summary ? s.prints.slice(0, 8) : s.prints;
+    const held = summary
+      ? (s.tape === "blotter" ? s.orders.length - orders.length : s.tape === "fills" ? s.fills.length - fills.length : s.prints.length - prints.length)
+      : 0;
+    const sel = s.orders.find((o) => o.id === s.sel) || null;
+    const selIndex = sel ? orders.findIndex((o) => o.id === sel.id) : -1;
+    const guards = this.guardsFor(s.draft, s.symbol);
+    const positions = s.positions.map((p) => {
+      const w = this.inst(p.symbol);
+      const unreal = (w.last - p.avgPx) * p.qty * w.mult;
+      return { ...p, last: w.last, unreal: Math.round(unreal), exposure: Math.round(Math.abs(p.qty) * w.last * w.mult) };
+    });
+    const exposure = positions.reduce((a, p) => a + p.exposure, 0);
+    const dayPnl = positions.reduce((a, p) => a + p.unreal + p.realized, 0);
+    const pnlCell = (n) => el("span", { style: { fontVariantNumeric: "tabular-nums", color: n > 0 ? "var(--green-dim)" : n < 0 ? "var(--red-dim)" : "var(--text-secondary)" } }, (n > 0 ? "+" : "") + this.money(n));
+    return {
+      detail, onDetail: (v) => this.setState({ detail: v }),
+      onDetailFull: () => this.setState({ detail: "full" }),
+      detailOptions: [{ value: "summary", label: "Summary" }, { value: "full", label: "Full" }],
+      ladderLevels: summary ? 5 : 8,
+      tapeWithheldShow: held > 0,
+      tapeWithheldLabel: held + " row" + (held === 1 ? "" : "s") + " withheld at summary depth",
+      noop: this.noop,
+      // 4.2 · session continuity on a production screen: ladder · tape+positions · ticket are persisted regions
+      // (arrangement only — never symbol, timeframe or as-of), keyed mds.workspace-layout.trading-desk.
+      layoutRegions: [{ id: "ladder", size: 0.9 }, { id: "flow", size: 2.1 }, { id: "ticket", size: 1 }],
+      layoutPresets: [
+        { name: "Execution", regions: { ladder: { size: 1.1 }, flow: { size: 1.6 }, ticket: { size: 1.1 } } },
+        { name: "Watch the tape", regions: { ladder: { collapsed: true }, flow: { size: 3 }, ticket: { collapsed: true } } },
+      ],
+      layoutSlots: [
+        { id: "ladder", label: "Depth ladder", minSize: 0.18 },
+        { id: "flow", label: "Tape · positions", minSize: 0.3 },
+        { id: "ticket", label: "Order ticket · limits · ledger", minSize: 0.2 },
+      ],
+      dataState: this.props.dataState ?? "ready",
+      clockLabel: this.clockLabel(),
+      envLabel: this.env(), envLower: this.env().toLowerCase(),
+      lastSeen: this.now() - 1000,
+      workingLabel: live.length + " working",
+      hasReplacing: !!s.replacing,
+      replacingLabel: "replacing " + s.replacing,
+      // Staging a replace parks the original in Pending replace. Without a way out, an operator
+      // who changes their mind leaves a live order in a state no venue recognises.
+      onAbandonReplace: () => {
+        const id = s.replacing;
+        if (!id) return;
+        const prev = s.replacePrev || "Working";
+        this.patch(id, () => ({ status: prev }), { ts: this.now(), action: "Replace abandoned", actor: "k.ito", severity: null, detail: "Ticket left as drafted — " + id + " restored to " + prev.toLowerCase() });
+        this.setState({ replacing: null, replacePrev: null });
+        this.toast("info", "Replace abandoned", id + " · original order still live");
+      },
+      navSections: (window.MeridianAppMap ? window.MeridianAppMap.sections("trading-desk") : []),
+      onNav: (id) => window.MeridianAppMap && window.MeridianAppMap.go(id),
+      chips: this.watchlist.map((w) => ({ ...w, selected: w.symbol === s.symbol, select: () => this.setState({ symbol: w.symbol }) })),
+      tf: s.tf, onTf: (v) => this.setState({ tf: v }),
+      symbol: s.symbol, lastPrice: inst.last, bids, asks,
+      priceDecimals: this.decimals(inst.tick),
+      spreadLabel: (() => { const d = this.decimals(inst.tick); return this.fmt(bids[0].price, d) + " × " + this.fmt(asks[0].price, d) + " · " + this.fmt(asks[0].price - bids[0].price, d) + " wide"; })(),
+      // Two ways to use a ladder, and a desk means different things by them. Join rests at the
+      // level you clicked (bid buys, ask sells) — the passive read. Take crosses the spread from
+      // that level (click the bid to hit it, the ask to lift it) — the aggressive read. Without
+      // the switch every ladder click produced a resting order and the fill path was unreachable.
+      intent: s.intent, onIntent: (v) => this.setState({ intent: v }),
+      intentOptions: [{ value: "join", label: "Join" }, { value: "take", label: "Take" }],
+      isJoin: s.intent === "join", isTake: s.intent === "take",
+      onPriceClick: (price, side) => {
+        const buy = s.intent === "take" ? side === "ask" : side === "bid";
+        this.setState({ prefill: { side: buy ? "buy" : "sell", qty: s.clip, type: "limit", limitPrice: +price.toFixed(4), token: side + ":" + price + ":" + Date.now() } });
+        this.toast("info", s.intent === "take" ? "Ticket seeded — crossing" : "Ticket seeded — resting",
+          (buy ? "BUY" : "SELL") + " " + this.fmt(this.num(s.clip), 0) + " " + s.symbol + " limit " + this.fmt(price, this.decimals(inst.tick)));
+      },
+      clip: String(s.clip), clipLabel: this.fmt(this.num(s.clip), 0),
+      clipOptions: [100, 500, 1000, 2500].map((n) => ({ value: String(n), label: n.toLocaleString() })),
+      onClip: (v) => this.setState({ clip: +v }),
+      tape: s.tape, onTape: (v) => this.setState({ tape: v }),
+      tapeOptions: [{ value: "blotter", label: "Blotter" }, { value: "fills", label: "Fills" }, { value: "prints", label: "Prints" }],
+      blotterShow: s.tape === "blotter", fillsShow: s.tape === "fills", printsShow: s.tape === "prints",
+      orders, fills, prints,
+      selIndex: selIndex >= 0 ? selIndex : undefined,
+      blotterExtra: [{ key: "act", label: "", cell: (r) => this.LIVE.includes(r.status)
+        ? el("button", { type: "button", onClick: (e) => { e.stopPropagation(); this.cancel(r.id); },
+            style: { padding: "1px 7px", font: "11px var(--font-body)", background: "transparent", border: "1px solid var(--border-strong)", color: "var(--text-secondary)", cursor: "pointer" } }, "Cancel")
+        : el("span", { style: { color: "var(--text-disabled)" } }, "—") }],
+      onOrderClick: (row) => this.setState({ sel: row.id, drawer: true }),
+      onCancelAll: () => { live.forEach((o) => this.cancel(o.id, "Bulk pull · end-of-window flatten")); },
+      noWorking: live.length === 0,
+      // 4.2 · E-1: a position row can be marked up. The object version is the fill count, so a note
+      // written before the next fill reads stale (follow) unless the operator pinned it.
+      positionsVersion: s.fills.length,
+      onAnnotationFocus: (n) => { const sym = String(n.anchor.ref).split(":")[1]; if (sym && this.inst(sym)) this.setState({ symbol: sym }); },
+      posCols: [
+        { key: "symbol", label: "Symbol", cell: (r) => AnnotationAnchor ? el(AnnotationAnchor, { anchor: { kind: "cell", ref: "position:" + r.symbol, label: r.symbol } }, r.symbol) : r.symbol },
+        { key: "qty", label: "Qty", align: "right", cell: (r) => el("span", { style: { fontVariantNumeric: "tabular-nums", color: r.qty < 0 ? "var(--red-dim)" : "var(--text-primary)" } }, this.fmt(r.qty, 0)) },
+        { key: "avgPx", label: "Avg px", align: "right", cell: (r) => this.fmt(r.avgPx, this.decimals((this.inst(r.symbol) || {}).tick ?? 0.01)) },
+        { key: "last", label: "Last", align: "right", cell: (r) => this.fmt(r.last, this.decimals((this.inst(r.symbol) || {}).tick ?? 0.01)) },
+        { key: "exposure", label: "Exposure", align: "right", cell: (r) => this.money(r.exposure), tier: "full" },
+        { key: "unreal", label: "Unrealized", align: "right", cell: (r) => pnlCell(r.unreal) },
+        { key: "realized", label: "Realized", align: "right", cell: (r) => pnlCell(r.realized), tier: "full" },
+      ],
+      positions,
+      onPositionClick: (row) => this.setState({ symbol: row.symbol }),
+      exposureLabel: "gross " + this.money(exposure),
+      pnlLabel: "day P&L " + (dayPnl > 0 ? "+" : "") + this.money(dayPnl),
+      prefill: s.prefill,
+      guards,
+      onDraft: (d) => this.setState({ draft: d }),
+      onSubmit: (o) => this.submit(o),
+      // The fate of the order instruction — declared, not implied (ACTION_SEMANTICS A-1).
+      orderState: s.instruction ? s.instruction.state : "idle",
+      orderReceipt: s.instruction ? s.instruction.receipt : null,
+      orderReason: s.instruction ? s.instruction.reason : null,
+      orderKey: s.instruction ? s.instruction.idempotencyKey : this.orderKey({ ...(s.draft || {}), symbol: s.symbol }),
+      orderPermission: { required: "trade.submit", held: this.env() !== "FIXTURE", actor: "k.ito" },
+      onRetryOrder: () => this.retryOrder(),
+      instructions: s.instruction ? [s.instruction] : [],
+      riskItems: [
+        { label: "Order cap", value: this.money(this.cap()) },
+        { label: "Gross exposure", value: this.money(exposure) },
+        { label: "Buying power", value: this.money(4200000 - exposure) },
+        { label: "Day P&L", value: pnlCell(dayPnl) },
+        { label: "Working", value: String(live.length) },
+        { label: "Fills today", value: String(s.fills.length) },
+      ],
+      drawerOpen: s.drawer && !!sel,
+      drawerTitle: sel ? sel.id + " · " + sel.symbol : "Order",
+      onCloseDrawer: () => this.setState({ drawer: false }),
+      hasSel: !!sel,
+      selBadge: sel ? (this.BADGE[sel.status] || sel.status) : "Pending",
+      selStatus: sel ? sel.status : "",
+      selTerminal: sel ? !this.LIVE.includes(sel.status) : true,
+      // Cancel and replace go dim on a done order; a dead control with no reason reads as broken.
+      selTerminalNote: sel
+        ? (sel.status === "Filled" ? "Filled in full — nothing left to cancel or replace. Clone stages the same order in a fresh ticket."
+          : sel.status === "Rejected" ? "Rejected pre-trade, so it never reached the venue. Clone stages it again once the breach is cleared."
+          : "Cancelled — cancel and replace apply to working orders only. Clone stages the same order in a fresh ticket.")
+        : "",
+      selFillLabel: sel ? sel.filled + " of " + sel.qty + " filled" : "",
+      selItems: sel ? [
+        { label: "Side", value: sel.side },
+        { label: "Quantity", value: sel.qty },
+        { label: "Type", value: sel.type },
+        { label: "Limit", value: sel.limit || "—" },
+        { label: "TIF", value: sel.tif },
+        { label: "Route", value: sel.route },
+        { label: "Trader", value: sel.trader },
+        { label: "Placed", value: Timestamp ? el(Timestamp, { value: sel.time, format: "time" }) : "" },
+      ] : [],
+      selEvents: sel ? (sel.events || []) : [],
+      selFills: sel ? s.fills.filter((f) => f.orderId === sel.id) : [],
+      selHasFills: sel ? s.fills.some((f) => f.orderId === sel.id) : false,
+      onCancelSel: () => sel && this.cancel(sel.id),
+      onAmendSel: () => {
+        if (!sel) return;
+        this.setState({ symbol: sel.symbol, drawer: false, replacing: sel.id, replacePrev: sel.status,
+          prefill: { side: sel.side.toLowerCase(), qty: this.num(sel.qty) - this.num(sel.filled), type: sel.type.toLowerCase(), limitPrice: sel.limit ? this.num(sel.limit) : null, tif: sel.tif, token: "amend:" + sel.id + ":" + Date.now() } });
+        this.patch(sel.id, () => ({ status: "Pending replace" }), { ts: this.now(), action: "Replace staged", actor: "k.ito", severity: "accent", detail: "Ticket seeded with the unfilled remainder — submit to send the replacement" });
+        this.toast("info", "Replace staged", sel.id + " · edit the ticket and submit");
+      },
+      onCloneSel: () => {
+        if (!sel) return;
+        this.setState({ symbol: sel.symbol, drawer: false,
+          prefill: { side: sel.side.toLowerCase(), qty: this.num(sel.qty), type: sel.type.toLowerCase(), limitPrice: sel.limit ? this.num(sel.limit) : null, tif: sel.tif, token: "clone:" + sel.id + ":" + Date.now() } });
+        this.toast("info", "Ticket cloned", sel.id + " copied into the ticket");
+      },
+      statusItems: [
+        { status: "ok", label: "gateway", value: "streaming" },
+        { label: "Working", value: String(live.length) },
+        { label: "Fills", value: String(s.fills.length) },
+        { label: "Gross", value: this.money(exposure) },
+        { status: dayPnl >= 0 ? "ok" : "warn", label: "Day P&L", value: (dayPnl > 0 ? "+" : "") + this.money(dayPnl) },
+        { status: "ok", label: "Latency", value: "7ms", push: true },
+      ],
+      hotkeys: [
+        { keys: "j", label: "Next instrument", group: "Watchlist", action: () => this.step(1) },
+        { keys: "k", label: "Previous instrument", group: "Watchlist", action: () => this.step(-1) },
+        { keys: "b", label: "Show blotter", group: "Tape", action: () => this.setState({ tape: "blotter" }) },
+        { keys: "f", label: "Show fills", group: "Tape", action: () => this.setState({ tape: "fills" }) },
+        { keys: "t", label: "Show prints", group: "Tape", action: () => this.setState({ tape: "prints" }) },
+        { keys: "c", label: "Cancel selected order", group: "Orders", action: () => sel && this.cancel(sel.id) },
+        { keys: "shift+c", label: "Cancel all working", group: "Orders", action: () => live.forEach((o) => this.cancel(o.id, "Bulk pull")) },
+      ],
+    };
+  }
+}
+</script>
 </body>
 </html>

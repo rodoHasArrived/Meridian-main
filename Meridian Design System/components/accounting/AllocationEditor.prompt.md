@@ -1,7 +1,7 @@
 Interactive split of a fixed total across editable weights — cent-exact via `Money.allocateAmount` (largest-remainder), so the footer total always equals the input total, never off by a cent. Amounts and % shares recompute live as weights are typed.
 
 ```jsx
-const { AllocationEditor } = window.MeridianDesignSystem_4f61be;
+const { AllocationEditor } = window.MeridianDesignSystem_205d17;
 
 <AllocationEditor
   total={125000}

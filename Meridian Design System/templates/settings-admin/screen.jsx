@@ -7,7 +7,7 @@ const {
   WorkstationTopbar, StatusBar, PanelSurface, Eyebrow, Button, Badge,
   FormField, Input, Select, Checkbox, Toggle, RadioGroup, NumberInput, TagInput,
   ValidationIssueList, Dialog, DialogBody, DialogFooter, ToastProvider, Callout,
-} = window.MeridianDesignSystem_4f61be;
+} = window.MeridianDesignSystem_205d17;
 const { useState } = React;
 
 const SECTIONS = ["Organization", "Data providers", "Notifications", "Danger zone"];
