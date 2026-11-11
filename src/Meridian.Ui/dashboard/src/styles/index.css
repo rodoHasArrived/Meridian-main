@@ -2085,7 +2085,7 @@
   }
 
   [aria-selected="true"] {
-    box-shadow: inset 3px 0 0 var(--cyan-primary);
+    box-shadow: inset 3px 0 0 var(--interaction-selected);
   }
 
 }

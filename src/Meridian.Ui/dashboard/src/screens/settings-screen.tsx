@@ -434,7 +434,7 @@ const environmentOptionClass = {
   live: {
     selected: "border-live-env/40 bg-live-env/10 text-live-env",
     idle: "border-border/70 bg-secondary/25 text-foreground hover:border-live-env/35 hover:bg-live-env/10",
-    badge: "border-live-env/35 bg-live-env/10 text-live-env"
+    badge: "border-live-env/35 bg-live-env/10 text-[var(--state-live-fg)]"
   }
 } as const;
 

@@ -315,7 +315,7 @@
     <!-- ── Semantic badge tokens ── -->
     <SolidColorBrush x:Key="BadgeInfoBackgroundBrush" Color="{StaticResource ConsoleAccentBlueAlpha10}" />
     <SolidColorBrush x:Key="BadgeInfoBorderBrush"     Color="{StaticResource ConsoleAccentBlue}" />
-    <SolidColorBrush x:Key="BadgeInfoForegroundBrush" Color="{StaticResource ConsoleAccentBlue}" />
+    <SolidColorBrush x:Key="BadgeInfoForegroundBrush" Color="{StaticResource ConsoleAccentBlueDim}" />
     <SolidColorBrush x:Key="BadgeSuccessBackgroundBrush" Color="{StaticResource ConsoleAccentGreenAlpha10}" />
     <SolidColorBrush x:Key="BadgeSuccessBorderBrush"     Color="{StaticResource ConsoleAccentGreen}" />
     <SolidColorBrush x:Key="BadgeSuccessForegroundBrush" Color="{StaticResource ConsoleAccentGreenDim}" />
