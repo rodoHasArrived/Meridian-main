@@ -247,8 +247,8 @@
       "id": "SRC-STORAGE",
       "path": "src/Meridian.Storage",
       "readme": "src/Meridian.Storage/README.md",
-      "readme_hash": "8d55747d74ae5084bd23739ec7bf5a313b7eefa9dca43f336ebaf62a4c8b865e",
-      "source_hash": "d7a994ba95abaa40c64de7fbccea2690b7ee77ac4bffe3ff10251b7745b78f7f"
+      "readme_hash": "e0cae595d949741371ec3ed189b86f5f218b24e55f0a435e74cc49dbf593a981",
+      "source_hash": "35134342d2154c5d69e8aaecbd96202ddbe1eee18c9f5096f637127858b88c40"
     },
     {
       "id": "SRC-STRATEGIES",
