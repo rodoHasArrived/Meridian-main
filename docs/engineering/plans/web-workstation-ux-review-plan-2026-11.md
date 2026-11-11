@@ -544,8 +544,10 @@ Open in Phase 3:
   read-model change, so it needs a matching `W8-WPF-PARITY-001` item. Change figures such as
   "+2.1%" still render without a stated baseline, and "Runs 24" still disagrees with "2 of 2
   loaded".
-- **Content start height.** The first Trading table still starts at about 435px; reaching 300px
-  depends on dropping the "<Workspace> Workstation" title row (C2) and the single blocker slot.
+- **Content start height.** The first Trading card started at about 435px when this increment was
+  written. The page-header simplification that merged alongside it (one header row, no
+  "<Workspace> Workstation" title, a fund picker in place of "No scope selected") brings it to
+  about 400px; reaching 300px still needs the single blocker slot and a shorter seeded banner.
 - **One strip format and one blocker slot.** Run Status still uses four large cards, and blocker
   banners are not yet limited to one slot with "+N more".
 - **Scope in one place.** Screens other than Trading and Portfolio still label a strip fact
