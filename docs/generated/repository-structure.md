@@ -3899,6 +3899,9 @@ Meridian-main
 │   │   │   ├── TimeAndSalesTape.prompt.md
 │   │   │   └── trading.card.html
 │   │   └── README.md
+│   ├── dist
+│   │   ├── meridian-design-system-4.3.0.zip
+│   │   └── meridian-design-system-4.3.0.zip.sha256
 │   ├── docs
 │   │   ├── changelog
 │   │   │   ├── README.md
@@ -4422,9 +4425,11 @@ Meridian-main
 │   │   ├── gallery.html
 │   │   ├── interaction-depth-regression.mjs
 │   │   ├── mock-transport.js
+│   │   ├── optimistic-observer-regression.mjs
 │   │   ├── qa-hifi-pass.html
 │   │   ├── README.md
 │   │   ├── release-browser.mjs
+│   │   ├── scenario-selector-regression.mjs
 │   │   ├── semantic-safety.html
 │   │   ├── smoke.html
 │   │   ├── test_contrast.py

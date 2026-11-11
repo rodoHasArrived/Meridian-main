@@ -39,6 +39,22 @@ function deferred<T>() {
 }
 
 describe("Cash Ladder request scope", () => {
+  it("exposes keyboard bucket selection within a named chart group", async () => {
+    getLadder.mockResolvedValue(ladder("A"));
+    const user = userEvent.setup();
+    render(view("account-a"));
+    const chart = await screen.findByRole("group", { name: /Portfolio cash ladder: stacked/ });
+    const bucket = within(chart).getByRole("button", { name: /Week A/ });
+    expect(bucket).toHaveAttribute("aria-pressed", "false");
+    bucket.focus();
+    await user.keyboard("{Enter}");
+    expect(bucket).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByText("Bond A")).toBeInTheDocument();
+    await user.keyboard(" ");
+    expect(bucket).toHaveAttribute("aria-pressed", "false");
+    expect(screen.queryByText("Bond A")).not.toBeInTheDocument();
+  });
+
   it("retains scenario choices through a delayed and failed refresh without retaining balances", async () => {
     const pending = deferred<PortfolioCashLadder>();
     getLadder.mockResolvedValueOnce(ladder("A")).mockReturnValueOnce(pending.promise)
