@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-11-10
+last_reviewed: 2026-11-11
 ---
 
 # src/Meridian.Application
@@ -16,6 +16,8 @@ last_reviewed: 2026-11-10
 `PersistentDedupLedger` compacts its own file once it holds twice the lines the last rewrite kept (never below 100,000 lines), so the file no longer grows for the life of the deployment. Only an instance that loaded the whole file compacts, and a legacy admission whose own line is not yet appended is left out of the rewrite.
 
 Historical backfill enforces its adaptive concurrency: after a provider rate limit, workers beyond the reduced limit wait for a slot instead of continuing at the original parallelism.
+
+Backfill resume depends on verified date coverage: `HistoricalBackfillService` skips only dates recorded as written by the same provider and feed, fetches every uncovered part of the requested range (before, inside and after that coverage), and ignores date-only checkpoints when deciding what to skip. Corporate-action ingest calls `FetchWithOutcomeAsync` and records an unavailable or incomplete provider fetch in its `Errors` instead of treating it as no actions; staged observations keep the provider's release status (`ReviewOnly` for Alpaca).
 
 Backfill resume checkpoints are written only after the final pipeline flush succeeds, and a flush failure fails the run, so a crash or flush error can no longer skip dates on resume that never reached disk. `PersistentDedupLedger` rolls its cache entry back when the ledger write fails or is cancelled (a retry is no longer dropped as a duplicate) and fsyncs compacted ledgers before the rename. Scheduled catch-up skips an empty window instead of queueing From > To.
 

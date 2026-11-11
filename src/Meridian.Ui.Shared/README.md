@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-10
+last_reviewed: 2026-11-11
 ---
 
 # src/Meridian.Ui.Shared
@@ -546,7 +546,10 @@ health or fallback evidence for that scoped result, including after its credenti
 The shared lifecycle resolves its retained tenant, provider, external account and environment against
 the server session before accessing scoped credentials. Missing, ambiguous, unowned or mismatched
 connections are refused. Scoped Alpaca verification requires the returned account to match retained
-ownership. Other scoped providers remain unverified until a connection-bound live verifier exists;
+ownership. The Alpaca brokerage routes (`/api/brokerage-connections/alpaca*`) have no provider-wide
+path: `AlpacaBrokerageConnectionService` binds connect, status and revoke to the connection named by
+`?connectionId=`, or to the tenant's single owned paper connection when the query is omitted, and
+verifies submitted keys against the retained account and environment before storing them. Other scoped providers remain unverified until a connection-bound live verifier exists;
 provider-wide accounting verifiers are not invoked for scoped requests. Omitting the query retains
 the legacy path during the unfinished workstation/default-runtime cutover.
 
