@@ -100,12 +100,33 @@ def check_manifest():
         src = comp.get("sourcePath")
         if src and not (ROOT / src).exists():
             fail("manifest", f"manifest references missing {src}")
-    for jsx in ROOT.glob("components/*/*.jsx"):
+    # A source export missing from the manifest used to be a warning that it would "recompile at
+    # end of turn". It never does: the build compiles the manifest's export list only, so a
+    # retained source is not revived. Such an export is either declared retired, with its
+    # replacement, in api/retired-exports.json, or it is an unpublished component and fails.
+    retired = {}
+    rf = ROOT / "api" / "retired-exports.json"
+    if rf.exists():
+        try:
+            retired = json.loads(rf.read_text(encoding="utf-8"))["exports"]
+        except Exception as e:
+            fail("manifest", f"api/retired-exports.json unreadable: {e}")
+    for name, rec in sorted(retired.items()):
+        if name in names:
+            fail("manifest", f"{name} is listed as retired but the manifest exports it — drop one")
+        src = ROOT / rec.get("source", "")
+        if not src.is_file() or not re.search(rf"export (?:const|function) {name}\b", src.read_text(encoding="utf-8")):
+            fail("manifest", f"retired export {name}: {rec.get('source')} no longer exports it — "
+                             "drop the entry from api/retired-exports.json")
+        if rec.get("replacement") not in names:
+            fail("manifest", f"retired export {name}: replacement {rec.get('replacement')} is not in the manifest")
+    for jsx in sorted(ROOT.glob("components/*/*.jsx")):
         if jsx.stem[0].isupper():
             exported = re.findall(r"export (?:const|function) ([A-Z]\w+)", jsx.read_text(encoding="utf-8"))
             for e in exported:
-                if e not in names:
-                    warn("manifest", f"{jsx.relative_to(ROOT)} export {e} not in manifest (stale — recompiles at end of turn)")
+                if e not in names and e not in retired:
+                    fail("manifest", f"{jsx.relative_to(ROOT)} export {e} is in neither the manifest nor "
+                                     "api/retired-exports.json — publish it or declare it retired")
 
 def check_templates():
     for folder in sorted(p for p in (ROOT / "templates").iterdir() if p.is_dir() and not p.name.startswith("_")):
