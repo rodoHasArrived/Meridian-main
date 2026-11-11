@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using FluentAssertions;
+using Meridian.Application.Composition;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Identity.Auth;
 using Meridian.Storage.SecurityMaster;
@@ -797,6 +798,56 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
             .Should().Be(Meridian.Application.SecurityMaster.GovernedTermAmendmentPolicy.RefusalDetail);
     }
 
+    [Theory]
+    [InlineData(AmendRoute, false)]
+    [InlineData(TermBlockRoute, false)]
+    [InlineData(PreferredEquityTermsRoute, false)]
+    [InlineData(ConvertibleEquityTermsRoute, false)]
+    [InlineData(LegacyPreferredTermsRoute, false)]
+    [InlineData(AmendRoute, true)]
+    [InlineData(TermBlockRoute, true)]
+    [InlineData(PreferredEquityTermsRoute, true)]
+    [InlineData(ConvertibleEquityTermsRoute, true)]
+    [InlineData(LegacyPreferredTermsRoute, true)]
+    public async Task DirectTermWriteRoute_InstitutionalProfile_Returns403BeforeReachingTheService(
+        string route, bool byProductionComposition)
+    {
+        // RequireGovernedTermAmendments is not configured here: the Institutional profile, declared by
+        // the option or implied by a production composition, is what refuses the direct write.
+        var queryService = Substitute.For<ISecurityMasterQueryService>();
+        var service = Substitute.For<ISecurityMasterService>();
+        using var request = ArrangeServiceThrowing(
+            route, queryService, service, new InvalidOperationException("the service must not be reached"));
+        await using var app = await CreateAppAsync(
+            queryService, service, institutionalByProductionComposition: byProductionComposition);
+
+        using var response = await app.GetTestClient().SendAsync(request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        using var problem = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        problem.RootElement.GetProperty("detail").GetString()
+            .Should().Be(Meridian.Application.SecurityMaster.GovernedTermAmendmentPolicy.RefusalDetail);
+        service.ReceivedCalls().Should().BeEmpty("the route refuses before the amendment");
+        queryService.ReceivedCalls().Should().BeEmpty("and before it reads the request's security");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CreateRoute_InstitutionalProfile_IsNotATermAmendmentAndStillReachesTheService(bool byProductionComposition)
+    {
+        var queryService = Substitute.For<ISecurityMasterQueryService>();
+        var service = Substitute.For<ISecurityMasterService>();
+        using var request = ArrangeServiceThrowing(
+            CreateRoute, queryService, service, new SecurityMasterWriteRefusedException("refusal reason"));
+        await using var app = await CreateAppAsync(
+            queryService, service, institutionalByProductionComposition: byProductionComposition);
+
+        using var response = await app.GetTestClient().SendAsync(request);
+
+        await AssertRefusedAsync(response, "refusal reason");
+    }
+
     private static async Task AssertRefusedAsync(HttpResponseMessage response, string expectedDetail)
     {
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -908,7 +959,8 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
     private static async Task<WebApplication> CreateAppAsync(
         ISecurityMasterQueryService queryService,
         ISecurityMasterService service,
-        ILogger<MeridianApiExceptionHandler>? handlerLog = null)
+        ILogger<MeridianApiExceptionHandler>? handlerLog = null,
+        bool? institutionalByProductionComposition = null)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -917,13 +969,29 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
         builder.WebHost.UseTestServer();
 
         // The option is init-only, so bind it the way the host does. Off, the governed-route
-        // requirement lets the direct term-amendment routes through to the service.
-        builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
+        // requirement lets the direct term-amendment routes through to the service. The Institutional
+        // cases leave the setting unconfigured and reach the profile by the option or by the posture.
+        builder.Configuration.AddInMemoryCollection(institutionalByProductionComposition switch
         {
-            [$"{SecurityMasterWorkbenchOptions.SectionName}:{nameof(SecurityMasterWorkbenchOptions.RequireGovernedTermAmendments)}"] = "false"
+            null => new Dictionary<string, string?>
+            {
+                [$"{SecurityMasterWorkbenchOptions.SectionName}:{nameof(SecurityMasterWorkbenchOptions.RequireGovernedTermAmendments)}"] = "false"
+            },
+            false => new Dictionary<string, string?>
+            {
+                [$"{SecurityMasterWorkbenchOptions.SectionName}:{nameof(SecurityMasterWorkbenchOptions.GovernanceProfile)}"] = "Institutional"
+            },
+            true => [],
         });
+        if (institutionalByProductionComposition == true)
+        {
+            builder.Services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.ProductionApi);
+        }
+
         builder.Services.Configure<SecurityMasterWorkbenchOptions>(
             builder.Configuration.GetSection(SecurityMasterWorkbenchOptions.SectionName));
+        // The seam the routes read the effective requirement from, registered as a host registers it.
+        builder.Services.AddSecurityMasterGovernanceRequirements();
         builder.Services.AddSingleton(queryService);
         builder.Services.AddSingleton(service);
         // The deployed host's Problem Details writer and exception handler, so a refusal and a fault

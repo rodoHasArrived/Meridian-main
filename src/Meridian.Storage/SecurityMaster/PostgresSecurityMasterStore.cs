@@ -1197,16 +1197,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
     /// Migration 048 backfills existing rows with the same rule.
     /// </summary>
     internal static string? ResolveListingMic(JsonElement commonTerms)
-    {
-        if (Meridian.Contracts.Domain.Mic.TryParse(GetOptionalString(commonTerms, "primaryListingMic"), out var primary))
-        {
-            return primary.Value;
-        }
-
-        return Meridian.Contracts.Domain.MicReference.TryResolve(GetOptionalString(commonTerms, "exchange"), out var resolved)
-            ? resolved.Value
-            : null;
-    }
+        => SecurityListingIdentity.ResolvePrimaryListingMic(commonTerms);
 
     internal static string? GetOptionalString(JsonElement json, string propertyName)
         => json.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String

@@ -844,7 +844,17 @@ institution and external-account evidence match the statement source. `AdminMain
 override account scope; other callers require account-scoped `ManageDirectLending` authorization.
 `SecurityMasterWorkbenchQueryService` is published under
 `Meridian.Ui.Shared.Services` and composes Application Security Master services into the shared
-workstation drill-in projection. For a Bond that declares a call or put schedule, the snapshot's schedule
+workstation drill-in projection. It is one class in partial files named for the read model each
+holds (instrument passport, reference-data controls, operating model, handoffs, provider confidence,
+history, downstream impact, conflicts, trust posture, schedules, declared exercise, lots, JSON
+readers). The schedule summary and schedule book carry the declared call/put outcome as a typed
+`DeclaredExercise` member (status, evaluation date, blockers with codes); a blocked outcome puts the
+passport's payment-schedule item, its obligation and cash-flow sections and close readiness under
+review. CertificateOfDeposit and StructuredCredit rows that declare a schedule are read from it as
+Bond rows are. Passport conflict panels and conflict severity are routed by
+`SecurityMasterConflictRouting` and `SecurityMasterConflictFieldCategories` (whole path segments,
+declared kinds, and the term keys the record's asset class declares), not by substrings; the
+classification fallback shows a descriptor label only where it is a domain label. For a Bond that declares a call or put schedule, the snapshot's schedule
 book takes its `Call`, `Put`, `CallNoticeDeadline` and `PutNoticeDeadline` rows and the next lifecycle
 date from the declared outcome the asset-operations obligation timeline uses
 (`AssetObligationProjectionService.ResolveDeclaredExerciseAsync`), not from the economic
@@ -3050,7 +3060,7 @@ registered and it never writes; applying a proposal is a governed amendment.
 ## Security Master governance controls (2026-11)
 
 - **Stale field proposals.** The workbench publish route answers a `StaleFieldProposalException` with 409 `stale-field-proposal`, carrying the base and current versions. A successful publish carries `canonicalMerge`, which says whether the approved edit changed the golden record.
-- **Governed term-amendment refusal.** The Security Master endpoints build their HTTP 403 problem from `GovernedTermAmendmentPolicy.RefusalTitle` and `RefusalDetail`, so the API and the WPF editor show the same guidance when `RequireGovernedTermAmendments` is on. The direct write routes also answer the service's own `GovernedTermAmendmentRequiredException` with that same 403, and the workstation host registers `IGovernedTermAmendmentPolicy`, which `SecurityMasterService` enforces.
+- **Governed term-amendment refusal.** The Security Master endpoints build their HTTP 403 problem from `GovernedTermAmendmentPolicy.RefusalTitle` and `RefusalDetail`, so the API and the WPF editor show the same guidance when governed term amendments are required. The routes read the effective requirement from `ISecurityMasterGovernanceRequirements`, so they refuse when `RequireGovernedTermAmendments` is on or the Institutional governance profile is in force (declared by `SecurityMasterWorkbench:GovernanceProfile`, or implied by a production composition). Once the profile is in force on a running host it stays in force until restart. The direct write routes also answer the service's own `GovernedTermAmendmentRequiredException` with that same 403. `AddWorkstationSharedServices` binds the `SecurityMasterWorkbench` section and calls `AddSecurityMasterGovernanceRequirements`; a host that maps these routes must register that seam.
 
 See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D8) for status and open decisions.
 

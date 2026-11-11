@@ -821,9 +821,19 @@
         "HasEconomicScheduleTerms": true,
         "CurrentFactor": null,
         "CurrentFactorDate": null,
-        "NextLifecycleDate": "2090-01-15",
+        "NextLifecycleDate": "2089-12-16",
         "SourceSummary": "Schedules follow golden-edm record edm-book-8 as of 2025-01-02 00:00 UTC.",
-        "Summary": "Cash-flow schedule support is available. Next lifecycle date 2090-01-15."
+        "Summary": "Cash-flow schedule support is available. Next lifecycle date 2089-12-16.",
+        "DeclaredExercise": {
+          "Status": "Resolved",
+          "AsOf": "2026-11-10",
+          "SecurityVersion": 3,
+          "WindowCount": 1,
+          "Blockers": [],
+          "Diagnostics": [
+            "Notice windows grant no exercise, notice, payment or posting authority."
+          ]
+        }
       },
       "scheduleBook": {
         "SupportsCashflowSchedule": true,
@@ -832,10 +842,32 @@
         "Currency": "USD",
         "CurrentFactor": null,
         "CurrentFactorDate": null,
-        "NextLifecycleDate": "2090-01-15",
+        "NextLifecycleDate": "2089-12-16",
         "SourceSummary": "Schedules follow golden-edm record edm-book-8 as of 2025-01-02 00:00 UTC.",
-        "Summary": "Cash-flow schedule support is available. Next lifecycle date 2090-01-15.",
+        "Summary": "Cash-flow schedule support is available. Next lifecycle date 2089-12-16.",
         "Events": [
+          {
+            "EventId": "callnoticedeadline-20891216-20900115",
+            "EventType": "CallNoticeDeadline",
+            "EffectiveDate": "2089-12-16",
+            "PayDate": null,
+            "AccrualStartDate": null,
+            "AccrualEndDate": null,
+            "ExpectedAmount": null,
+            "ActualAmount": null,
+            "VarianceAmount": null,
+            "FactorStart": null,
+            "FactorEnd": null,
+            "Currency": "USD",
+            "PostingStatus": "Projected",
+            "SourceSystem": "golden-edm",
+            "SourceRecordId": "edm-book-8",
+            "SourceAsOfUtc": "2025-01-02T00:00:00\u002B00:00",
+            "SourceUpdatedBy": "steward",
+            "SourceReason": "Last day to give notice for the 2090-01-15 declared call date. The notice window opens on 2089-11-16.",
+            "IsDerivedFromEconomicTerms": false,
+            "IsCurrentProjection": true
+          },
           {
             "EventId": "call-20900115",
             "EventType": "Call",
@@ -854,8 +886,8 @@
             "SourceRecordId": "edm-book-8",
             "SourceAsOfUtc": "2025-01-02T00:00:00\u002B00:00",
             "SourceUpdatedBy": "steward",
-            "SourceReason": null,
-            "IsDerivedFromEconomicTerms": true,
+            "SourceReason": "Issuer may redeem at 101 percent of par on this declared call date.",
+            "IsDerivedFromEconomicTerms": false,
             "IsCurrentProjection": true
           },
           {
@@ -905,9 +937,22 @@
             "SourceRecordId": "edm-book-8",
             "SourceAsOfUtc": "2025-01-02T00:00:00\u002B00:00",
             "SourceUpdatedBy": "steward",
-            "SourceReason": null,
+            "SourceReason": "Issuer may redeem at 101 percent of par on this declared call date.",
             "StreamVersion": null,
             "EventType": "Call"
+          },
+          {
+            "ProvenanceId": "event-callnoticedeadline-20891216-20900115",
+            "Category": "ScheduleEvent",
+            "Summary": "CallNoticeDeadline effective 2089-12-16.",
+            "EffectiveDate": "2089-12-16",
+            "SourceSystem": "golden-edm",
+            "SourceRecordId": "edm-book-8",
+            "SourceAsOfUtc": "2025-01-02T00:00:00\u002B00:00",
+            "SourceUpdatedBy": "steward",
+            "SourceReason": "Last day to give notice for the 2090-01-15 declared call date. The notice window opens on 2089-11-16.",
+            "StreamVersion": null,
+            "EventType": "CallNoticeDeadline"
           },
           {
             "ProvenanceId": "winning-source",
@@ -922,7 +967,17 @@
             "StreamVersion": null,
             "EventType": null
           }
-        ]
+        ],
+        "DeclaredExercise": {
+          "Status": "Resolved",
+          "AsOf": "2026-11-10",
+          "SecurityVersion": 3,
+          "WindowCount": 1,
+          "Blockers": [],
+          "Diagnostics": [
+            "Notice windows grant no exercise, notice, payment or posting authority."
+          ]
+        }
       }
     },
     "structured-credit/declared-call-and-put-schedule": {
@@ -932,9 +987,19 @@
         "HasEconomicScheduleTerms": true,
         "CurrentFactor": 0.9,
         "CurrentFactorDate": null,
-        "NextLifecycleDate": "2096-01-15",
+        "NextLifecycleDate": "2089-12-16",
         "SourceSummary": "Schedules follow golden-edm record edm-book-9 as of 2025-01-02 00:00 UTC.",
-        "Summary": "Factor-aware cash-flow support is available. Current factor 0.9."
+        "Summary": "Factor-aware cash-flow support is available. Current factor 0.9.",
+        "DeclaredExercise": {
+          "Status": "Resolved",
+          "AsOf": "2026-11-10",
+          "SecurityVersion": 3,
+          "WindowCount": 2,
+          "Blockers": [],
+          "Diagnostics": [
+            "Notice windows grant no exercise, notice, payment or posting authority."
+          ]
+        }
       },
       "scheduleBook": {
         "SupportsCashflowSchedule": true,
@@ -943,10 +1008,76 @@
         "Currency": "USD",
         "CurrentFactor": 0.9,
         "CurrentFactorDate": null,
-        "NextLifecycleDate": "2096-01-15",
+        "NextLifecycleDate": "2089-12-16",
         "SourceSummary": "Schedules follow golden-edm record edm-book-9 as of 2025-01-02 00:00 UTC.",
         "Summary": "Factor-aware cash-flow support is available. Current factor 0.9.",
         "Events": [
+          {
+            "EventId": "callnoticedeadline-20891216-20900115",
+            "EventType": "CallNoticeDeadline",
+            "EffectiveDate": "2089-12-16",
+            "PayDate": null,
+            "AccrualStartDate": null,
+            "AccrualEndDate": null,
+            "ExpectedAmount": null,
+            "ActualAmount": null,
+            "VarianceAmount": null,
+            "FactorStart": null,
+            "FactorEnd": null,
+            "Currency": "USD",
+            "PostingStatus": "Projected",
+            "SourceSystem": "golden-edm",
+            "SourceRecordId": "edm-book-9",
+            "SourceAsOfUtc": "2025-01-02T00:00:00\u002B00:00",
+            "SourceUpdatedBy": "steward",
+            "SourceReason": "Last day to give notice for the 2090-01-15 declared call date. The notice window opens on 2089-11-16.",
+            "IsDerivedFromEconomicTerms": false,
+            "IsCurrentProjection": true
+          },
+          {
+            "EventId": "call-20900115",
+            "EventType": "Call",
+            "EffectiveDate": "2090-01-15",
+            "PayDate": "2090-01-15",
+            "AccrualStartDate": null,
+            "AccrualEndDate": null,
+            "ExpectedAmount": null,
+            "ActualAmount": null,
+            "VarianceAmount": null,
+            "FactorStart": null,
+            "FactorEnd": null,
+            "Currency": "USD",
+            "PostingStatus": "Projected",
+            "SourceSystem": "golden-edm",
+            "SourceRecordId": "edm-book-9",
+            "SourceAsOfUtc": "2025-01-02T00:00:00\u002B00:00",
+            "SourceUpdatedBy": "steward",
+            "SourceReason": "Issuer may redeem at 101 percent of par on this declared call date.",
+            "IsDerivedFromEconomicTerms": false,
+            "IsCurrentProjection": true
+          },
+          {
+            "EventId": "put-20910115",
+            "EventType": "Put",
+            "EffectiveDate": "2091-01-15",
+            "PayDate": "2091-01-15",
+            "AccrualStartDate": null,
+            "AccrualEndDate": null,
+            "ExpectedAmount": null,
+            "ActualAmount": null,
+            "VarianceAmount": null,
+            "FactorStart": null,
+            "FactorEnd": null,
+            "Currency": "USD",
+            "PostingStatus": "Projected",
+            "SourceSystem": "golden-edm",
+            "SourceRecordId": "edm-book-9",
+            "SourceAsOfUtc": "2025-01-02T00:00:00\u002B00:00",
+            "SourceUpdatedBy": "steward",
+            "SourceReason": "Holder may put at 100 percent of par on this declared put date.",
+            "IsDerivedFromEconomicTerms": false,
+            "IsCurrentProjection": true
+          },
           {
             "EventId": "maturity-20960115",
             "EventType": "Maturity",
@@ -986,6 +1117,45 @@
             "EventType": "Maturity"
           },
           {
+            "ProvenanceId": "event-put-20910115",
+            "Category": "ScheduleEvent",
+            "Summary": "Put effective 2091-01-15.",
+            "EffectiveDate": "2091-01-15",
+            "SourceSystem": "golden-edm",
+            "SourceRecordId": "edm-book-9",
+            "SourceAsOfUtc": "2025-01-02T00:00:00\u002B00:00",
+            "SourceUpdatedBy": "steward",
+            "SourceReason": "Holder may put at 100 percent of par on this declared put date.",
+            "StreamVersion": null,
+            "EventType": "Put"
+          },
+          {
+            "ProvenanceId": "event-call-20900115",
+            "Category": "ScheduleEvent",
+            "Summary": "Call effective 2090-01-15.",
+            "EffectiveDate": "2090-01-15",
+            "SourceSystem": "golden-edm",
+            "SourceRecordId": "edm-book-9",
+            "SourceAsOfUtc": "2025-01-02T00:00:00\u002B00:00",
+            "SourceUpdatedBy": "steward",
+            "SourceReason": "Issuer may redeem at 101 percent of par on this declared call date.",
+            "StreamVersion": null,
+            "EventType": "Call"
+          },
+          {
+            "ProvenanceId": "event-callnoticedeadline-20891216-20900115",
+            "Category": "ScheduleEvent",
+            "Summary": "CallNoticeDeadline effective 2089-12-16.",
+            "EffectiveDate": "2089-12-16",
+            "SourceSystem": "golden-edm",
+            "SourceRecordId": "edm-book-9",
+            "SourceAsOfUtc": "2025-01-02T00:00:00\u002B00:00",
+            "SourceUpdatedBy": "steward",
+            "SourceReason": "Last day to give notice for the 2090-01-15 declared call date. The notice window opens on 2089-11-16.",
+            "StreamVersion": null,
+            "EventType": "CallNoticeDeadline"
+          },
+          {
             "ProvenanceId": "winning-source",
             "Category": "WinningSource",
             "Summary": "Golden-copy schedule source golden-edm.",
@@ -998,7 +1168,17 @@
             "StreamVersion": null,
             "EventType": null
           }
-        ]
+        ],
+        "DeclaredExercise": {
+          "Status": "Resolved",
+          "AsOf": "2026-11-10",
+          "SecurityVersion": 3,
+          "WindowCount": 2,
+          "Blockers": [],
+          "Diagnostics": [
+            "Notice windows grant no exercise, notice, payment or posting authority."
+          ]
+        }
       }
     },
     "bond/declaring/call-and-put-with-agreeing-scalar": {
@@ -1010,7 +1190,17 @@
         "CurrentFactorDate": null,
         "NextLifecycleDate": "2089-12-16",
         "SourceSummary": "Schedules follow golden-edm record edm-book-13 as of 2025-01-02 00:00 UTC.",
-        "Summary": "Cash-flow schedule support is available. Next lifecycle date 2089-12-16."
+        "Summary": "Cash-flow schedule support is available. Next lifecycle date 2089-12-16.",
+        "DeclaredExercise": {
+          "Status": "Resolved",
+          "AsOf": "2026-11-10",
+          "SecurityVersion": 3,
+          "WindowCount": 2,
+          "Blockers": [],
+          "Diagnostics": [
+            "Notice windows grant no exercise, notice, payment or posting authority."
+          ]
+        }
       },
       "scheduleBook": {
         "SupportsCashflowSchedule": true,
@@ -1179,7 +1369,17 @@
             "StreamVersion": null,
             "EventType": null
           }
-        ]
+        ],
+        "DeclaredExercise": {
+          "Status": "Resolved",
+          "AsOf": "2026-11-10",
+          "SecurityVersion": 3,
+          "WindowCount": 2,
+          "Blockers": [],
+          "Diagnostics": [
+            "Notice windows grant no exercise, notice, payment or posting authority."
+          ]
+        }
       }
     },
     "bond/declaring/call-and-put-with-contradicting-scalar": {
@@ -1191,7 +1391,22 @@
         "CurrentFactorDate": null,
         "NextLifecycleDate": "2096-01-15",
         "SourceSummary": "Schedules follow golden-edm record edm-book-10 as of 2025-01-02 00:00 UTC. Declared call/put schedule is blocked (ExerciseScheduleRefused): Declared exercise schedule could not be evaluated: Invalid declared schedule terms: callDate must equal the earliest declared call date so scalar consumers agree with it. No call or put event is shown and the scalar call date is not used.",
-        "Summary": "Cash-flow schedule support is available. Next lifecycle date 2096-01-15. Declared call/put schedule is blocked (ExerciseScheduleRefused): Declared exercise schedule could not be evaluated: Invalid declared schedule terms: callDate must equal the earliest declared call date so scalar consumers agree with it. No call or put event is shown and the scalar call date is not used."
+        "Summary": "Cash-flow schedule support is available. Next lifecycle date 2096-01-15. Declared call/put schedule is blocked (ExerciseScheduleRefused): Declared exercise schedule could not be evaluated: Invalid declared schedule terms: callDate must equal the earliest declared call date so scalar consumers agree with it. No call or put event is shown and the scalar call date is not used.",
+        "DeclaredExercise": {
+          "Status": "Blocked",
+          "AsOf": "2026-11-10",
+          "SecurityVersion": 3,
+          "WindowCount": 0,
+          "Blockers": [
+            {
+              "Code": "ExerciseScheduleRefused",
+              "Reason": "Declared exercise schedule could not be evaluated: Invalid declared schedule terms: callDate must equal the earliest declared call date so scalar consumers agree with it."
+            }
+          ],
+          "Diagnostics": [
+            "Notice windows grant no exercise, notice, payment or posting authority."
+          ]
+        }
       },
       "scheduleBook": {
         "SupportsCashflowSchedule": true,
@@ -1255,7 +1470,22 @@
             "StreamVersion": null,
             "EventType": null
           }
-        ]
+        ],
+        "DeclaredExercise": {
+          "Status": "Blocked",
+          "AsOf": "2026-11-10",
+          "SecurityVersion": 3,
+          "WindowCount": 0,
+          "Blockers": [
+            {
+              "Code": "ExerciseScheduleRefused",
+              "Reason": "Declared exercise schedule could not be evaluated: Invalid declared schedule terms: callDate must equal the earliest declared call date so scalar consumers agree with it."
+            }
+          ],
+          "Diagnostics": [
+            "Notice windows grant no exercise, notice, payment or posting authority."
+          ]
+        }
       }
     },
     "bond/declaring/without-conventions": {
@@ -1267,7 +1497,22 @@
         "CurrentFactorDate": null,
         "NextLifecycleDate": "2096-01-15",
         "SourceSummary": "Schedules follow golden-edm record edm-book-11 as of 2025-01-02 00:00 UTC. Declared call/put schedule is blocked (DeclaredScheduleRequired): Exercise notice windows require reviewed explicit schedule conventions; legacy defaults are not inferred. No call or put event is shown and the scalar call date is not used.",
-        "Summary": "Cash-flow schedule support is available. Next lifecycle date 2096-01-15. Declared call/put schedule is blocked (DeclaredScheduleRequired): Exercise notice windows require reviewed explicit schedule conventions; legacy defaults are not inferred. No call or put event is shown and the scalar call date is not used."
+        "Summary": "Cash-flow schedule support is available. Next lifecycle date 2096-01-15. Declared call/put schedule is blocked (DeclaredScheduleRequired): Exercise notice windows require reviewed explicit schedule conventions; legacy defaults are not inferred. No call or put event is shown and the scalar call date is not used.",
+        "DeclaredExercise": {
+          "Status": "Blocked",
+          "AsOf": "2026-11-10",
+          "SecurityVersion": 3,
+          "WindowCount": 0,
+          "Blockers": [
+            {
+              "Code": "DeclaredScheduleRequired",
+              "Reason": "Exercise notice windows require reviewed explicit schedule conventions; legacy defaults are not inferred."
+            }
+          ],
+          "Diagnostics": [
+            "Notice windows grant no exercise, notice, payment or posting authority."
+          ]
+        }
       },
       "scheduleBook": {
         "SupportsCashflowSchedule": true,
@@ -1331,7 +1576,22 @@
             "StreamVersion": null,
             "EventType": null
           }
-        ]
+        ],
+        "DeclaredExercise": {
+          "Status": "Blocked",
+          "AsOf": "2026-11-10",
+          "SecurityVersion": 3,
+          "WindowCount": 0,
+          "Blockers": [
+            {
+              "Code": "DeclaredScheduleRequired",
+              "Reason": "Exercise notice windows require reviewed explicit schedule conventions; legacy defaults are not inferred."
+            }
+          ],
+          "Diagnostics": [
+            "Notice windows grant no exercise, notice, payment or posting authority."
+          ]
+        }
       }
     },
     "bond/declaring/recovered-from-economic-terms": {
@@ -1343,7 +1603,22 @@
         "CurrentFactorDate": null,
         "NextLifecycleDate": "2096-01-15",
         "SourceSummary": "Schedules follow golden-edm record edm-book-12 as of 2025-01-02 00:00 UTC. Declared call/put schedule is blocked (DeclaredScheduleRequired): Exercise notice windows require reviewed explicit schedule conventions; legacy defaults are not inferred. No call or put event is shown and the scalar call date is not used.",
-        "Summary": "Cash-flow schedule support is available. Next lifecycle date 2096-01-15. Declared call/put schedule is blocked (DeclaredScheduleRequired): Exercise notice windows require reviewed explicit schedule conventions; legacy defaults are not inferred. No call or put event is shown and the scalar call date is not used."
+        "Summary": "Cash-flow schedule support is available. Next lifecycle date 2096-01-15. Declared call/put schedule is blocked (DeclaredScheduleRequired): Exercise notice windows require reviewed explicit schedule conventions; legacy defaults are not inferred. No call or put event is shown and the scalar call date is not used.",
+        "DeclaredExercise": {
+          "Status": "Blocked",
+          "AsOf": "2026-11-10",
+          "SecurityVersion": 3,
+          "WindowCount": 0,
+          "Blockers": [
+            {
+              "Code": "DeclaredScheduleRequired",
+              "Reason": "Exercise notice windows require reviewed explicit schedule conventions; legacy defaults are not inferred."
+            }
+          ],
+          "Diagnostics": [
+            "Notice windows grant no exercise, notice, payment or posting authority."
+          ]
+        }
       },
       "scheduleBook": {
         "SupportsCashflowSchedule": true,
@@ -1407,7 +1682,22 @@
             "StreamVersion": null,
             "EventType": null
           }
-        ]
+        ],
+        "DeclaredExercise": {
+          "Status": "Blocked",
+          "AsOf": "2026-11-10",
+          "SecurityVersion": 3,
+          "WindowCount": 0,
+          "Blockers": [
+            {
+              "Code": "DeclaredScheduleRequired",
+              "Reason": "Exercise notice windows require reviewed explicit schedule conventions; legacy defaults are not inferred."
+            }
+          ],
+          "Diagnostics": [
+            "Notice windows grant no exercise, notice, payment or posting authority."
+          ]
+        }
       }
     }
   }

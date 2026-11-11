@@ -130,8 +130,12 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityIdentifierHis
     /// re-added after removal) gets <c>Added</c>; a held identity whose row changed gets
     /// <c>Expired</c> when its valid-to was first set, otherwise <c>Amended</c>. An identity whose
     /// row matches its latest revision appends nothing, so an unchanged replay leaves history as is.
-    /// Recorded times are the transaction-start time, kept strictly after the identity's previous
-    /// revision; they establish eligibility for a recorded cutoff, not commit visibility.
+    /// Every revision one replacement appends carries one recorded time: the transaction-start time,
+    /// moved strictly after the latest revision the security already holds. A replacement is therefore
+    /// either wholly inside a recorded cutoff or wholly outside it, so a recorded-as-of read returns
+    /// only identifier sets the projection actually held; stamping each row on its own could split a
+    /// replacement across a cutoff when a transaction that started earlier committed later (migration
+    /// 062 review, finding F3). Recorded times establish eligibility for a cutoff, not commit visibility.
     /// </summary>
     private async Task SyncIdentifierRevisionsAsync(
         NpgsqlConnection connection,
@@ -139,6 +143,22 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityIdentifierHis
         Guid securityId,
         CancellationToken ct)
     {
+        // The caller holds the parent securities lock, so no other replacement of this security can
+        // append between this read and the inserts below.
+        DateTime recordedAt;
+        await using (var clock = connection.CreateCommand())
+        {
+            clock.Transaction = transaction;
+            clock.CommandText =
+                $"""
+                select greatest(now(), coalesce(max(recorded_at) + interval '1 microsecond', now()))
+                from {Qualified("security_identifier_revisions")}
+                where security_id = @security_id;
+                """;
+            clock.Parameters.Add(new NpgsqlParameter("security_id", NpgsqlDbType.Uuid) { Value = securityId });
+            recordedAt = (DateTime)(await clock.ExecuteScalarAsync(ct).ConfigureAwait(false))!;
+        }
+
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
         command.CommandText =
@@ -149,7 +169,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityIdentifierHis
             select l.security_id, l.identifier_kind, l.identifier_value, l.valid_from, l.revision + 1, 'Removed',
                    l.normalized_identifier_value, l.provider, l.normalized_provider, l.is_primary, l.valid_to,
                    l.source, l.confidence, l.manual_override,
-                   @actor, greatest(now(), l.recorded_at + interval '1 microsecond')
+                   @actor, @recorded_at
             from (
                 select distinct on (identifier_kind, identifier_value, valid_from) *
                 from {Qualified("security_identifier_revisions")}
@@ -174,9 +194,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityIdentifierHis
                         else 'Amended' end,
                    c.normalized_identifier_value, c.provider, c.normalized_provider, c.is_primary, c.valid_to,
                    c.source, c.confidence, c.manual_override,
-                   @actor,
-                   case when l.revision is null then now()
-                        else greatest(now(), l.recorded_at + interval '1 microsecond') end
+                   @actor, @recorded_at
             from {Qualified("security_identifiers")} c
             left join lateral (
                 select r.*
@@ -199,6 +217,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityIdentifierHis
             """;
         command.Parameters.Add(new NpgsqlParameter("security_id", NpgsqlDbType.Uuid) { Value = securityId });
         command.Parameters.Add(new NpgsqlParameter("actor", NpgsqlDbType.Text) { Value = ProjectionReplacementIdentifierActor });
+        command.Parameters.Add(new NpgsqlParameter("recorded_at", NpgsqlDbType.TimestampTz) { Value = recordedAt });
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
     }
 
