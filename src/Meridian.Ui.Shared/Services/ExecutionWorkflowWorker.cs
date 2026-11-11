@@ -149,11 +149,10 @@ public sealed class ExecutionWorkflowWorker(ExecutionJournal journal, ExecutionA
             {
                 var eventId = $"activity:{fill.FillId}";
                 var existing = current.FirstOrDefault(entry => entry.Scope == scope && entry.EventId == eventId);
-                var identity = current.FirstOrDefault(entry => entry.Scope == scope
-                    && (entry.Report?.GatewayOrderId == fill.OrderId || entry.Report?.OrderId == fill.OrderId));
                 var native = evidence.Orders.FirstOrDefault(order => order.OrderId == fill.OrderId);
-                // A later identity lookup cannot rewrite immutable economic evidence.
-                var orderId = existing?.OrderId ?? identity?.OrderId ?? native?.ClientOrderId ?? $"external:{fill.OrderId ?? fill.FillId}";
+                // The journal joins the retained provider order ID to stream reports at read time.
+                // A newly discovered client identity cannot rewrite immutable fill evidence.
+                var orderId = existing?.OrderId ?? native?.ClientOrderId ?? $"external:{fill.OrderId ?? fill.FillId}";
                 await journal.AppendAsync(new(1, eventId, scope, accountId, orderId, "ActivityFill",
                     fill.FilledAt, ActivityFill: fill), ct).ConfigureAwait(false);
             }

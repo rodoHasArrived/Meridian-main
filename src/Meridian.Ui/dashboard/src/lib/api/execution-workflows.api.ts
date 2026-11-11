@@ -14,6 +14,7 @@ export interface JournalEvent {
   activityFill?: { fillId: string; quantity: number; price: number; commission?: number; filledAt: string };
 }
 export interface JournalOrder {
+  attemptId?: string;
   orderId: string; scope: string; accountId: string; symbol: string; side: string; status: string;
   quantity: number; filledQuantity: number; strategyId?: string; runId?: string; tag?: string;
   createdAt: string; updatedAt: string; events: JournalEvent[];
@@ -43,8 +44,10 @@ export function getJournal(accountId: string, filters: { symbol?: string; strate
   Object.entries(filters).forEach(([key, value]) => { if (value) query.set(key, value); });
   return apiGetJson<JournalOrder[]>(`/api/execution/journal/orders?${query}`, { ...options, allowDevelopmentFallback: false });
 }
-export function getJournalOrder(accountId: string, orderId: string, options: ApiRequestOptions = {}) {
-  return apiGetJson<JournalOrder>(`/api/execution/journal/orders/${encodeURIComponent(orderId)}?accountId=${encodeURIComponent(accountId)}`, { ...options, allowDevelopmentFallback: false });
+export function getJournalOrder(accountId: string, orderId: string, options: ApiRequestOptions = {}, attemptId?: string) {
+  const query = new URLSearchParams({ accountId });
+  if (attemptId) query.set("attemptId", attemptId);
+  return apiGetJson<JournalOrder>(`/api/execution/journal/orders/${encodeURIComponent(orderId)}?${query}`, { ...options, allowDevelopmentFallback: false });
 }
 export function getJournalSummary(accountId: string, options: ApiRequestOptions = {}, window: { from?: string; to?: string } = {}) {
   const query = new URLSearchParams({ accountId });

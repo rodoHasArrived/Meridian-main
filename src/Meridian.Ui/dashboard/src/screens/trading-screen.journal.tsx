@@ -5,6 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 const money = (value: number | null | undefined) => value == null ? "Unavailable" : formatCurrency(value);
+type OrderSelection = { orderId: string; attemptId?: string; fromLink?: boolean };
+const matchesSelection = (order: JournalOrder, selected: OrderSelection) =>
+  order.orderId === selected.orderId && (selected.attemptId === undefined || order.attemptId === selected.attemptId);
+
 export function ExecutionJournalPanel({ accountId }: { accountId?: string | null }) {
   const [orders, setOrders] = useState<JournalOrder[]>([]);
   const [summary, setSummary] = useState<JournalSummary | null>(null);
@@ -13,12 +17,14 @@ export function ExecutionJournalPanel({ accountId }: { accountId?: string | null
   const [from, setFrom] = useState(""); const [to, setTo] = useState(""); const [status, setStatus] = useState("");
   const [linkedOrder, setLinkedOrder] = useState<JournalOrder | null>(null);
   const [symbol, setSymbol] = useState(""); const [strategy, setStrategy] = useState(linked.get("runId") ?? ""); const [tag, setTag] = useState("");
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selected, setSelected] = useState<OrderSelection | null>(null);
   const [error, setError] = useState<string | null>(null); const [loading, setLoading] = useState(false);
   const [revision, setRevision] = useState(0);
   const refresh = useCallback(() => setRevision((value) => value + 1), []);
   useEffect(() => {
-    setOrders([]); setSummary(null); setSelected(linked.get("orderId")); setLinkedOrder(null); setError(null);
+    const linkedOrderId = linked.get("orderId");
+    setOrders([]); setSummary(null); setLinkedOrder(null); setError(null);
+    setSelected(linkedOrderId ? { orderId: linkedOrderId, attemptId: linked.get("attemptId") ?? undefined, fromLink: true } : null);
     if (!accountId) return;
     const controller = new AbortController(); setLoading(true);
     const timer = window.setTimeout(() => {
@@ -30,17 +36,20 @@ export function ExecutionJournalPanel({ accountId }: { accountId?: string | null
     }, 200);
     return () => { controller.abort(); window.clearTimeout(timer); };
   }, [accountId, symbol, strategy, tag, from, to, status, revision, linked]);
+  const visibleOrders = orders.filter((order) => order.accountId.toLowerCase() === accountId?.toLowerCase());
+  const selectedInList = selected && (!selected.fromLink || selected.attemptId)
+    ? visibleOrders.find((order) => matchesSelection(order, selected)) : undefined;
   useEffect(() => {
-    if (!accountId || !selected || orders.some((order) => order.orderId === selected)) return;
+    if (!accountId || !selected || selectedInList) return;
     const controller = new AbortController();
-    void getJournalOrder(accountId, selected, { signal: controller.signal }).then((order) => {
+    void getJournalOrder(accountId, selected.orderId, { signal: controller.signal }, selected.attemptId).then((order) => {
       if (!controller.signal.aborted) setLinkedOrder(order);
     }).catch(() => { /* List errors remain visible; a missing deep link grants no authority. */ });
     return () => controller.abort();
-  }, [accountId, selected, orders]);
-  const visibleOrders = orders.filter((order) => order.accountId.toLowerCase() === accountId?.toLowerCase());
+  }, [accountId, selected, selectedInList]);
   const totals = loadedAccount === accountId ? summary : null;
-  const detail = visibleOrders.find((order) => order.orderId === selected) ?? (linkedOrder?.accountId.toLowerCase() === accountId?.toLowerCase() && linkedOrder?.orderId === selected ? linkedOrder : null);
+  const detail = selectedInList ?? (selected && linkedOrder?.accountId.toLowerCase() === accountId?.toLowerCase()
+    && linkedOrder && matchesSelection(linkedOrder, selected) ? linkedOrder : null);
   return <section aria-label="Operational trade journal" aria-busy={loading} className="panel-surface space-y-3 rounded-lg border border-border p-4">
     <div className="flex items-center justify-between gap-3"><div><h3 className="font-semibold">Trade journal</h3><p className="text-xs text-muted-foreground">Retained execution evidence and FIFO operational attribution. Accounting posting remains separate.</p></div><Button size="sm" variant="outline" onClick={refresh} disabled={loading || !accountId}>Refresh journal</Button></div>
     {!accountId ? <p>Select an execution account to inspect its journal.</p> : <>
@@ -54,7 +63,7 @@ export function ExecutionJournalPanel({ accountId }: { accountId?: string | null
       {totals ? <dl className="grid grid-cols-2 gap-2 text-xs md:grid-cols-4"><div><dt>Gross / net realized P&amp;L</dt><dd>{money(totals.realizedPnl)} / {money(totals.netRealizedPnl)}</dd></div><div><dt>Commissions / fees</dt><dd>{money(totals.commissions)} / {money(totals.fees)}</dd></div><div><dt>Execution slippage</dt><dd>{money(totals.slippage)}</dd></div><div><dt>Account coverage for selected dates</dt><dd>{totals.coverage}</dd></div></dl> : null}
       {totals?.attributions?.length ? <div className="text-xs"><h4 className="font-semibold">FIFO attribution to opening strategy and tag</h4><ul>{totals.attributions.map((row, index) => <li key={index}>{row.strategyId ?? "Unattributed"} · {row.runId ?? "No run"} · {row.tag ?? "No tag"}: gross {money(row.grossRealizedPnl)}; net {money(row.netRealizedPnl)}</li>)}</ul></div> : null}
       <p className="text-xs text-muted-foreground">Totals cover the account and date window. Symbol, strategy, tag and status filter the order list.</p>
-      <div className="overflow-x-auto"><table className="w-full text-left text-xs"><caption className="sr-only">Retained orders for the selected account</caption><thead><tr>{["Order", "Symbol", "Side", "Status", "Filled / requested", "Strategy / tag", "Updated"].map((title) => <th key={title} className="p-2">{title}</th>)}</tr></thead><tbody>{visibleOrders.map((order) => <tr key={`${order.scope}:${order.orderId}`} className="border-t border-border"><td className="p-2"><button type="button" className="underline" onClick={() => setSelected(order.orderId)} aria-expanded={selected === order.orderId}>{order.orderId}</button></td><td>{order.symbol}</td><td>{order.side}</td><td>{order.status}</td><td>{order.filledQuantity} / {order.quantity}</td><td>{order.strategyId ?? "Unattributed"} / {order.tag ?? "—"}</td><td>{formatUtcTimestamp(new Date(order.updatedAt))}</td></tr>)}</tbody></table></div>
+      <div className="overflow-x-auto"><table className="w-full text-left text-xs"><caption className="sr-only">Retained orders for the selected account</caption><thead><tr>{["Order", "Symbol", "Side", "Status", "Filled / requested", "Strategy / tag", "Updated"].map((title) => <th key={title} className="p-2">{title}</th>)}</tr></thead><tbody>{visibleOrders.map((order) => <tr key={JSON.stringify([order.scope, order.orderId, order.attemptId])} className="border-t border-border"><td className="p-2"><button type="button" className="underline" onClick={() => setSelected({ orderId: order.orderId, attemptId: order.attemptId })} aria-expanded={detail?.orderId === order.orderId && detail?.attemptId === order.attemptId}>{order.orderId}</button></td><td>{order.symbol}</td><td>{order.side}</td><td>{order.status}</td><td>{order.filledQuantity} / {order.quantity}</td><td>{order.strategyId ?? "Unattributed"} / {order.tag ?? "—"}</td><td>{formatUtcTimestamp(new Date(order.updatedAt))}</td></tr>)}</tbody></table></div>
       {!loading && !error && visibleOrders.length === 0 ? <p className="text-xs">No retained orders match these filters. This does not establish complete historical coverage.</p> : null}
       {detail ? <section aria-label={`Order ${detail.orderId} history`} className="border-t border-border pt-3"><h4 className="text-sm font-semibold">Order evidence: {detail.orderId}</h4><p className="break-all text-xs">Scope: {detail.scope} · Run: {detail.runId ?? "Unattributed"}</p><ol className="mt-2 space-y-2 text-xs">{detail.events.map((event) => <li key={event.eventId}><strong>{event.kind}</strong> · {formatUtcTimestamp(new Date(event.recordedAt))}{event.report ? <p>Broker identity {event.report.gatewayOrderId ?? "unknown"}; predecessor {event.report.replacesOrderId ?? "none"}; cumulative fill {event.report.filledQuantity}; price {event.report.fillPrice ?? "unknown"}; commission {money(event.report.commission)}; fees {money(event.report.fees)}</p> : null}{event.activityFill ? <p>Provider fill {event.activityFill.fillId}: {event.activityFill.quantity} at {event.activityFill.price}; commission {money(event.activityFill.commission)}</p> : null}{event.detail ? <p>{event.detail}</p> : null}</li>)}</ol></section> : null}
     </>}

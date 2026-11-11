@@ -46,6 +46,8 @@ public sealed class EquityOrderSessionPolicy(
         {
             if (request.Type is not (OrderType.Market or OrderType.Limit) || request.TimeInForce is not (TimeInForce.Day or TimeInForce.GoodTilCancelled))
                 return new("QUEUED_ORDER_INELIGIBLE", "blocked", "Next-session queuing supports Day or GTC market and limit orders.");
+            if (status.State == MarketState.Open)
+                return new("QUEUED_SESSION_OPEN", "blocked", "Next-session queuing is available only outside regular trading hours.");
             return new("QUEUED_FOR_SESSION", "warning", "The broker may queue this order for the next eligible regular session. All other checks still apply.");
         }
         else if (status.State != MarketState.Open)

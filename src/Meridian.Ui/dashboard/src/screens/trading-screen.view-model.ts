@@ -3132,6 +3132,8 @@ export interface OrderTicketServices {
   previewOrder?: (request: OrderSubmitRequest, signal?: AbortSignal) => Promise<ServerOrderPreview>;
 }
 
+type OrderSubmissionIdentity = { account: string; id: string };
+
 export interface OrderTicketFieldControl {
   field: OrderTicketField;
   id: string;
@@ -3246,7 +3248,8 @@ export function useOrderTicketViewModel({
   const [errorText, setErrorText] = useState<string | null>(null);
   const [acknowledged, setAcknowledged] = useState(false);
   const submittingRef = useRef(false);
-  const [unconfirmedSubmission, setUnconfirmedSubmission] = useState<{ account: string; id: string } | null>(null);
+  const unconfirmedSubmissionRef = useRef<OrderSubmissionIdentity | null>(null);
+  const [unconfirmedSubmission, setUnconfirmedSubmission] = useState<OrderSubmissionIdentity | null>(null);
   const [serverPreview, setServerPreview] = useState<ServerOrderPreview | null>(null);
   const [serverPreviewError, setServerPreviewError] = useState<string | null>(null);
   const [serverPreviewLoading, setServerPreviewLoading] = useState(false);
@@ -3255,7 +3258,8 @@ export function useOrderTicketViewModel({
   const [previewNow, setPreviewNow] = useState(Date.now());
   const draftClientId = useRef<string | null>(null);
   const serverPreviewExpired = serverPreview !== null && Date.parse(serverPreview.expiresAt) <= previewNow;
-  const serverPreviewBlocked = Boolean(services.previewOrder) && (unconfirmedSubmission !== null || serverPreviewLoading || !serverPreview?.canSubmit || serverPreviewExpired);
+  const serverPreviewBlocked = unconfirmedSubmission !== null
+    || (Boolean(services.previewOrder) && (serverPreviewLoading || !serverPreview?.canSubmit || serverPreviewExpired));
   useEffect(() => {
     setServerPreview(null); setServerPreviewError(null);
     if (services.previewOrder) setAcknowledged(false);
@@ -3352,7 +3356,7 @@ export function useOrderTicketViewModel({
   }, [onOrderAccepted]);
 
   const submitOrderTicket = useCallback(async () => {
-    if (phase === "submitting" || submittingRef.current) {
+    if (phase === "submitting" || submittingRef.current || unconfirmedSubmissionRef.current) {
       return;
     }
 
@@ -3371,22 +3375,30 @@ export function useOrderTicketViewModel({
       return;
     }
 
-    submittingRef.current = true;
-    if (services.previewOrder && (serverPreviewBlocked || !serverPreview || Date.parse(serverPreview.expiresAt) <= Date.now())) {
-      submittingRef.current = false;
+    const request = buildOrderSubmitRequest(form, fundAccountId);
+    const clientOrderId = services.previewOrder ? draftClientId.current : null;
+    const submission = clientOrderId && request.fundAccountId ? { account: request.fundAccountId, id: clientOrderId } : null;
+    if (services.previewOrder && (!submission || serverPreviewBlocked || !serverPreview || Date.parse(serverPreview.expiresAt) <= Date.now())) {
       setErrorText("Refresh and review the authoritative order checks before submitting.");
       setAcknowledged(false);
       return;
     }
+    submittingRef.current = true;
     setPhase("submitting");
     setOrderId(null);
     setEscalationId(null);
     setRiskWarnings([]);
     setErrorText(null);
 
+    let refusal: string;
     try {
-      const result = await services.submitOrder({ ...buildOrderSubmitRequest(form, fundAccountId),
-        ...(services.previewOrder ? { sessionIntent, clientOrderId: draftClientId.current ?? undefined } : {}) });
+      const result = await services.submitOrder(submission ? { ...request, sessionIntent, clientOrderId: submission.id } : request);
+      if (typeof result?.success !== "boolean") {
+        throw new Error("Meridian did not confirm the order submission outcome.");
+      }
+      if (result.requiresOrderReconciliation) {
+        throw new Error(result.errorMessage ?? "Order submission requires reconciliation.");
+      }
       if (result.success) {
         setPhase("submitted");
         setOrderId(result.orderId);
@@ -3418,17 +3430,30 @@ export function useOrderTicketViewModel({
         return;
       }
 
-      setPhase("error");
-      setErrorText(result.errorMessage ?? result.reason ?? "Order failed.");
+      refusal = result.errorMessage ?? result.reason ?? "Order failed.";
     } catch (err) {
-      setPhase("error");
-      if (services.previewOrder && draftClientId.current && fundAccountId) {
-        setUnconfirmedSubmission({ account: fundAccountId, id: draftClientId.current });
-        setErrorText(`Submission outcome is unconfirmed for ${draftClientId.current}. Inspect the journal and use Refresh checks before another submission.`);
-      } else setErrorText(toErrorMessage(err, "Order submission failed."));
+      const confirmedRefusal = workstationApi.readOrderSubmissionRefusal(err);
+      if (submission && confirmedRefusal === null) {
+        unconfirmedSubmissionRef.current = submission;
+        setUnconfirmedSubmission(submission);
+        setPhase("error");
+        setErrorText(`Submission outcome is unconfirmed for ${submission.id}. Inspect the journal and use Refresh checks before another submission.`);
+        return;
+      }
+      refusal = confirmedRefusal ?? toErrorMessage(err, "Order submission failed.");
     } finally {
       submittingRef.current = false;
     }
+
+    if (submission && draftClientId.current === submission.id) {
+      // Retire the refused identity so its journal evidence cannot settle a later attempt.
+      draftClientId.current = null;
+      setServerPreview(null);
+      setAcknowledged(false);
+      setPreviewRevision((value) => value + 1);
+    }
+    setPhase("error");
+    setErrorText(refusal);
   }, [acknowledged, form, fundAccountId, refreshAfterSettledOutcome, phase, services, serverPreviewBlocked, serverPreview, sessionIntent]);
 
   return {
@@ -3438,9 +3463,12 @@ export function useOrderTicketViewModel({
     serverPreviewLoading, serverPreviewExpired, sessionIntent,
     setSessionIntent,
     refreshServerPreview: () => {
-      if (!unconfirmedSubmission) { setPreviewRevision((value) => value + 1); return; }
-      void getJournalOrder(unconfirmedSubmission.account, unconfirmedSubmission.id).then((order) => {
-        if (!["Filled", "Cancelled", "Rejected", "Expired"].includes(order.status)) return;
+      const submission = unconfirmedSubmissionRef.current;
+      if (!submission) { setPreviewRevision((value) => value + 1); return; }
+      void getJournalOrder(submission.account, submission.id).then((order) => {
+        if (unconfirmedSubmissionRef.current !== submission || order.orderId !== submission.id
+          || !["Filled", "Cancelled", "Rejected", "Expired"].includes(order.status)) return;
+        unconfirmedSubmissionRef.current = null;
         setUnconfirmedSubmission(null); setForm(emptyOrderTicketForm); setAcknowledged(false);
         setOrderId(order.orderId); setPhase(order.status === "Filled" ? "submitted" : "error");
         setErrorText(`Retained outcome for ${order.orderId}: ${order.status}. Review its journal before creating a new order.`);

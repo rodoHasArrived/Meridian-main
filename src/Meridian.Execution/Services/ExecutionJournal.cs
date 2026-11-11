@@ -16,7 +16,7 @@ public sealed record ExecutionJournalEntry(
     ExecutionEquityObservation? Equity = null, BrokerageFillSnapshotDto? ActivityFill = null,
     BrokerageActivityCursorDto? ActivityCursor = null, JournalOpeningEvidence? Opening = null,
     string? ReportingAssetClass = null, DateTimeOffset? ReconciledThrough = null,
-    BrokerageActivityEventDto? Activity = null, OrderModification? Modification = null);
+    BrokerageActivityEventDto? Activity = null, OrderModification? Modification = null, Guid? AttemptId = null);
 
 public sealed record JournalOpeningEvidence(bool IsComplete, bool IsFlat, DateTimeOffset ObservedAt, string Source);
 public sealed record JournalAttribution(string? StrategyId, string? RunId, string? Tag, decimal GrossRealizedPnl, decimal? NetRealizedPnl);
@@ -25,7 +25,7 @@ public sealed record JournalOrder(
     string OrderId, string Scope, Guid AccountId, string Symbol, string Side, string Status,
     decimal Quantity, decimal FilledQuantity, decimal? AverageFillPrice, string? StrategyId,
     string? RunId, string? Tag, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt,
-    IReadOnlyList<ExecutionJournalEntry> Events);
+    IReadOnlyList<ExecutionJournalEntry> Events, string? AttemptId = null);
 
 public sealed record JournalSummary(int Orders, int Fills, decimal? RealizedPnl, decimal? Commissions,
     decimal? Fees, decimal? Slippage, string Coverage, string Method = "FIFO operational attribution",
@@ -102,38 +102,167 @@ public sealed class ExecutionJournal : IAsyncDisposable
 
     public async Task<IReadOnlyList<JournalOrder>> OrdersAsync(Guid accountId, string? symbol = null,
         string? strategy = null, string? tag = null, DateTimeOffset? from = null, DateTimeOffset? to = null,
-        int take = 100, CancellationToken ct = default, string? scope = null, string? orderId = null, string? status = null)
+        int take = 100, CancellationToken ct = default, string? scope = null, string? orderId = null, string? status = null,
+        string? attemptId = null)
     {
         var entries = await ReadAsync(accountId, ct).ConfigureAwait(false);
-        return entries.Where(entry => (scope is null || entry.Scope == scope) && (orderId is null || entry.OrderId == orderId)
-                && !string.IsNullOrWhiteSpace(entry.OrderId) && entry.Kind is not ("Notification" or "WebhookDelivered" or "WebhookAttempt"))
-            .GroupBy(entry => (entry.Scope, entry.OrderId)).Select(group =>
-        {
-            var request = group.FirstOrDefault(entry => entry.Request is not null)?.Request;
-            var states = group.Where(entry => entry.State is not null).Select(entry => entry.State!).ToArray();
-            var state = states.OrderBy(state => state.LastUpdatedAt ?? state.CreatedAt)
-                .ThenBy(state => state.FilledQuantity).ThenBy(state => state.Status is OrderStatus.Filled or OrderStatus.Cancelled or OrderStatus.Rejected or OrderStatus.Expired).LastOrDefault();
-            var reports = group.Where(entry => entry.Report is not null).Select(entry => entry.Report!).ToArray();
-            var filled = reports.Select(report => report.FilledQuantity).DefaultIfEmpty(0m).Max();
-            var last = reports.LastOrDefault();
-            var activity = group.LastOrDefault(entry => entry.ActivityFill is not null)?.ActivityFill;
-            var activityQuantity = group.Where(entry => entry.ActivityFill is not null).DistinctBy(entry => entry.ActivityFill!.FillId)
-                .Sum(entry => entry.ActivityFill!.Quantity);
-            return new JournalOrder(group.Key.OrderId, group.Key.Scope, accountId,
-                request?.Symbol ?? state?.Symbol ?? last?.Symbol ?? activity?.Symbol ?? "unknown",
-                (request?.Side ?? state?.Side ?? last?.Side ?? activity?.Side)?.ToString() ?? "unknown",
-                state?.Status.ToString() ?? last?.OrderStatus.ToString() ?? group.Last().Kind,
-                state?.Quantity ?? request?.Quantity ?? last?.OrderQuantity ?? activityQuantity,
-                Math.Max(activityQuantity, Math.Max(filled, state?.FilledQuantity ?? 0m)), state?.AverageFillPrice,
-                request?.StrategyId ?? state?.StrategyId, state?.RunId ?? Metadata(request, "runId"),
-                Metadata(request, "tag"), group.Min(entry => entry.RecordedAt), group.Max(entry => entry.RecordedAt), group.ToArray());
-        }).Where(order => (string.IsNullOrWhiteSpace(status) || order.Status.Equals(status, StringComparison.OrdinalIgnoreCase))
+        var matches = GroupAttempts(entries, scope)
+            .Where(attempt => (orderId is null || attempt.OrderId == orderId) && (attemptId is null || attempt.Id == attemptId))
+            .Select(attempt => (Attempt: attempt, Order: ProjectOrder(accountId, attempt)))
+            .Where(item => Matches(item.Order));
+        var sorted = orderId is null
+            ? matches.OrderByDescending(item => item.Order.UpdatedAt).ThenBy(item => item.Order.OrderId, StringComparer.Ordinal)
+            : matches.OrderBy(item => item.Attempt.IsDuplicateSubmission).ThenByDescending(item => item.Attempt.FirstIndex);
+        return sorted.Take(Math.Max(take, 1)).Select(item => item.Order).ToArray();
+
+        bool Matches(JournalOrder order) => (string.IsNullOrWhiteSpace(status) || order.Status.Equals(status, StringComparison.OrdinalIgnoreCase))
             && (string.IsNullOrWhiteSpace(symbol) || order.Symbol.Equals(symbol, StringComparison.OrdinalIgnoreCase))
             && (string.IsNullOrWhiteSpace(strategy) || order.StrategyId == strategy || order.RunId == strategy)
             && (string.IsNullOrWhiteSpace(tag) || order.Tag == tag)
-            && (from is null || order.UpdatedAt >= from) && (to is null || order.CreatedAt <= to))
-            .OrderByDescending(order => order.UpdatedAt).ThenBy(order => order.OrderId, StringComparer.Ordinal)
-            .Take(Math.Max(take, 1)).ToArray();
+            && (from is null || order.UpdatedAt >= from) && (to is null || order.CreatedAt <= to);
+    }
+
+    private static IReadOnlyList<OrderAttempt> GroupAttempts(IReadOnlyList<ExecutionJournalEntry> entries, string? scope)
+    {
+        var attempts = new List<OrderAttempt>();
+        var byRoot = new Dictionary<(string Scope, string OrderId), List<OrderAttempt>>();
+        var byAttempt = new Dictionary<(string Scope, string OrderId, Guid AttemptId), OrderAttempt>();
+        var byBroker = new Dictionary<(string Scope, string BrokerId), OrderAttempt?>();
+        var activities = new List<(int Index, ExecutionJournalEntry Entry)>();
+
+        for (var index = 0; index < entries.Count; index++)
+        {
+            var entry = entries[index];
+            if ((scope is not null && entry.Scope != scope) || string.IsNullOrWhiteSpace(entry.OrderId)
+                || entry.Kind is "Notification" or "WebhookDelivered" or "WebhookAttempt")
+                continue;
+            if (entry.ActivityFill is not null)
+            {
+                activities.Add((index, entry));
+                continue;
+            }
+
+            var root = (entry.Scope, entry.OrderId);
+            if (!byRoot.TryGetValue(root, out var rootAttempts))
+                byRoot[root] = rootAttempts = [];
+            OrderAttempt attempt;
+            if (entry.AttemptId is { } attemptId)
+            {
+                var key = (entry.Scope, entry.OrderId, attemptId);
+                if (!byAttempt.TryGetValue(key, out var existing))
+                    byAttempt[key] = existing = AddAttempt(entry, attemptId.ToString("N"), index);
+                attempt = existing;
+            }
+            else
+            {
+                // Replay older journals by their retained intent and dispatch boundaries.
+                var existing = rootAttempts.LastOrDefault(item => item.Id.StartsWith("legacy:", StringComparison.Ordinal));
+                attempt = existing is null || entry.Kind == "Intent"
+                    || entry.Kind == "OpeningCheckpoint" && existing.HasPreflightRefusal
+                    || entry.Kind == "Dispatch" && (existing.HasDispatch || existing.HasPreflightRefusal)
+                    ? AddAttempt(entry, $"legacy:{rootAttempts.Count}", index) : existing;
+            }
+            attempt.Events.Add((index, entry));
+            if (BrokerOrderId(entry) is { } brokerId)
+            {
+                var key = (entry.Scope, brokerId);
+                if (!byBroker.TryAdd(key, attempt) && byBroker[key] != attempt)
+                    byBroker[key] = null;
+            }
+        }
+
+        var external = new Dictionary<(string Scope, string OrderId, string ProviderId), OrderAttempt>();
+        foreach (var (index, entry) in activities)
+        {
+            var fill = entry.ActivityFill!;
+            OrderAttempt? attempt = null;
+            if (fill.OrderId is { Length: > 0 } brokerId && !byBroker.TryGetValue((entry.Scope, brokerId), out attempt))
+            {
+                // A snapshot can establish the client ID before an execution report exists.
+                // Link by client ID only when there is a single possible routed incarnation.
+                if (entry.OrderId != $"external:{fill.OrderId ?? fill.FillId}"
+                    && byRoot.TryGetValue((entry.Scope, entry.OrderId), out var rootAttempts))
+                {
+                    var candidates = rootAttempts.Where(item => item.HasDispatchOrLegacyState && !item.HasBrokerIdentity
+                        && item.Matches(fill)).Take(2).ToArray();
+                    if (candidates.Length == 1)
+                        attempt = candidates[0];
+                }
+            }
+            if (attempt is null || !attempt.Matches(fill))
+            {
+                var providerId = fill.OrderId ?? fill.FillId;
+                var key = (entry.Scope, entry.OrderId, providerId);
+                if (!external.TryGetValue(key, out attempt))
+                {
+                    external[key] = attempt = new(entry.Scope, entry.OrderId, $"activity:{providerId}", index);
+                    attempts.Add(attempt);
+                }
+            }
+            attempt.Events.Add((index, entry));
+        }
+        return attempts;
+
+        OrderAttempt AddAttempt(ExecutionJournalEntry entry, string id, int index)
+        {
+            var attempt = new OrderAttempt(entry.Scope, entry.OrderId, id, index);
+            attempts.Add(attempt);
+            byRoot[(entry.Scope, entry.OrderId)].Add(attempt);
+            return attempt;
+        }
+    }
+
+    private static JournalOrder ProjectOrder(Guid accountId, OrderAttempt attempt)
+    {
+        var events = attempt.Events.OrderBy(item => item.Index).Select(item => item.Entry).ToArray();
+        var request = events.FirstOrDefault(entry => entry.Request is not null)?.Request;
+        var state = events.Where(entry => entry.State is not null).Select(entry => entry.State!)
+            .OrderBy(state => state.LastUpdatedAt ?? state.CreatedAt).ThenBy(state => state.FilledQuantity)
+            .ThenBy(state => state.Status is OrderStatus.Filled or OrderStatus.Cancelled or OrderStatus.Rejected or OrderStatus.Expired).LastOrDefault();
+        var reports = events.Where(entry => entry.Report is not null).Select(entry => entry.Report!).ToArray();
+        var filled = reports.Select(report => report.FilledQuantity).DefaultIfEmpty(0m).Max();
+        var last = reports.LastOrDefault();
+        var activity = events.LastOrDefault(entry => entry.ActivityFill is not null)?.ActivityFill;
+        var activityQuantity = events.Where(entry => entry.ActivityFill is not null).DistinctBy(entry => entry.ActivityFill!.FillId)
+            .Sum(entry => entry.ActivityFill!.Quantity);
+        return new JournalOrder(attempt.OrderId, attempt.Scope, accountId,
+            request?.Symbol ?? state?.Symbol ?? last?.Symbol ?? activity?.Symbol ?? "unknown",
+            (request?.Side ?? state?.Side ?? last?.Side ?? activity?.Side)?.ToString() ?? "unknown",
+            state?.Status.ToString() ?? last?.OrderStatus.ToString() ?? (attempt.IsDuplicateSubmission ? "Rejected" : events[^1].Kind),
+            state?.Quantity ?? request?.Quantity ?? last?.OrderQuantity ?? activityQuantity,
+            Math.Max(activityQuantity, Math.Max(filled, state?.FilledQuantity ?? 0m)), state?.AverageFillPrice,
+            request?.StrategyId ?? state?.StrategyId, state?.RunId ?? Metadata(request, "runId"),
+            Metadata(request, "tag"), events.Min(entry => entry.RecordedAt), events.Max(entry => entry.RecordedAt), events, attempt.Id);
+    }
+
+    private static string? BrokerOrderId(ExecutionJournalEntry entry) => entry.Report switch
+    {
+        { GatewayOrderId: { Length: > 0 } brokerId } => brokerId,
+        { OrderId: { Length: > 0 } brokerId } report when brokerId != entry.OrderId && brokerId != report.ClientOrderId => brokerId,
+        _ => null
+    };
+
+    private sealed class OrderAttempt(string scope, string orderId, string id, int firstIndex)
+    {
+        public string Scope { get; } = scope;
+        public string OrderId { get; } = orderId;
+        public string Id { get; } = id;
+        public int FirstIndex { get; } = firstIndex;
+        public List<(int Index, ExecutionJournalEntry Entry)> Events { get; } = [];
+        public bool HasDispatch => Events.Any(item => item.Entry.Kind == "Dispatch");
+        public bool HasPreflightRefusal => !HasDispatch && Events.Any(item => item.Entry.Kind == "Rejected" && item.Entry.Request is not null);
+        public bool HasDispatchOrLegacyState => Events.Any(item => item.Entry.Kind is "Dispatch" or "LegacyOrder");
+        public bool HasBrokerIdentity => Events.Any(item => BrokerOrderId(item.Entry) is not null);
+        public bool IsDuplicateSubmission => Events.Any(item => item.Entry.Kind == "DuplicateSubmission");
+
+        public bool Matches(BrokerageFillSnapshotDto fill)
+        {
+            var request = Events.FirstOrDefault(item => item.Entry.Kind == "Dispatch").Entry?.Request;
+            var state = Events.FirstOrDefault(item => item.Entry.State is not null).Entry?.State;
+            var report = Events.FirstOrDefault(item => item.Entry.Report is not null).Entry?.Report;
+            return string.Equals(request?.Symbol ?? state?.Symbol ?? report?.Symbol, fill.Symbol, StringComparison.OrdinalIgnoreCase)
+                && (request?.Side ?? state?.Side ?? report?.Side) == fill.Side;
+        }
     }
 
     public async Task<JournalSummary> SummaryAsync(Guid accountId, CancellationToken ct = default, string? scope = null,

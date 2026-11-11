@@ -97,25 +97,34 @@ def run_probe(transport, account_id: str, *, max_notional=Decimal("1000"),
     client_id = "meridian-probe-" + uuid.uuid4().hex
     terminal = None
     submit_error = None
+    broker_id = None
     try:
-        transport.request("POST", "/v2/orders", {"symbol": "SPY", "qty": "1", "side": "buy",
+        acknowledgement = transport.request("POST", "/v2/orders", {"symbol": "SPY", "qty": "1", "side": "buy",
             "type": "limit", "limit_price": str(limit), "time_in_force": "day", "client_order_id": client_id})
+        if acknowledgement:
+            broker_id = acknowledgement.get("id")
     except Exception as error:
         # A lost acknowledgement is not permission to resubmit.
         submit_error = error
     finally:
-        order = transport.request("GET", "/v2/orders:by_client_order_id?client_order_id=" + client_id)
-        if order and order.get("client_order_id") != client_id:
-            raise ProbeRefused("Provider returned an inconsistent probe identity.")
-        if order and order.get("status") not in {"filled", "canceled", "expired", "rejected"}:
-            transport.request("DELETE", "/v2/orders/" + order["id"])
-        for _ in range(30):
+        cancel_requested = False
+        remaining_lookups = 30
+        while remaining_lookups:
+            remaining_lookups -= 1
             order = transport.request("GET", "/v2/orders:by_client_order_id?client_order_id=" + client_id)
-            if order and order.get("client_order_id") != client_id:
-                raise ProbeRefused("Provider changed the retained probe identity during cleanup.")
-            if order and order.get("status") in {"filled", "canceled", "expired", "rejected"}:
-                terminal = order
-                break
+            if order:
+                order_id = order.get("id")
+                if order.get("client_order_id") != client_id or not order_id or (broker_id and broker_id != order_id):
+                    raise ProbeRefused("Provider returned an inconsistent probe identity.")
+                broker_id = order_id
+                if order.get("status") in {"filled", "canceled", "expired", "rejected"}:
+                    terminal = order
+                    break
+                if not cancel_requested:
+                    transport.request("DELETE", "/v2/orders/" + broker_id)
+                    cancel_requested = True
+                    # A late discovery still gets a full window to confirm cancellation.
+                    remaining_lookups = 30
             pause(1)
         if terminal is None:
             raise ProbeRefused("Probe outcome is unresolved; retain quarantine and investigate.")

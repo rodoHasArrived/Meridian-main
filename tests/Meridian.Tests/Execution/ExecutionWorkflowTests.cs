@@ -299,6 +299,60 @@ public sealed class ExecutionWorkflowTests
     private static async IAsyncEnumerable<ExecutionReport> EmptyReports() { await Task.CompletedTask; yield break; }
 
     [Fact]
+    public async Task CancelAndCancelAll_ConfirmWorkingOrdersWhenJournalIsUnavailable()
+    {
+        var journal = new ExecutionJournal(Root());
+        var gateway = new Mock<IExecutionGateway>();
+        gateway.SetupGet(value => value.GatewayId).Returns("paper");
+        gateway.Setup(value => value.StreamExecutionReportsAsync(It.IsAny<CancellationToken>())).Returns(EmptyReports());
+        gateway.Setup(value => value.SubmitOrderAsync(It.IsAny<OrderRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((OrderRequest request, CancellationToken _) => new ExecutionReport
+            {
+                OrderId = request.ClientOrderId!,
+                ClientOrderId = request.ClientOrderId,
+                Symbol = request.Symbol,
+                Side = request.Side,
+                ReportType = ExecutionReportType.New,
+                OrderStatus = OrderStatus.Accepted,
+                OrderQuantity = request.Quantity
+            });
+        gateway.Setup(value => value.CancelOrderAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((string orderId, CancellationToken _) => new ExecutionReport
+            {
+                OrderId = orderId,
+                ClientOrderId = orderId,
+                Symbol = "SPY",
+                Side = OrderSide.Buy,
+                ReportType = ExecutionReportType.Cancelled,
+                OrderStatus = OrderStatus.Cancelled,
+                OrderQuantity = 2m,
+                FilledQuantity = orderId == "manual-cancel" ? 1m : 0m,
+                FillPrice = orderId == "manual-cancel" ? 100m : null
+            });
+        var oms = new OrderManagementSystem(gateway.Object, NullLogger<OrderManagementSystem>.Instance, journal: journal);
+        await oms.StartAsync();
+        (await oms.PlaceOrderAsync(Request("manual-cancel"))).Success.Should().BeTrue();
+        (await oms.PlaceOrderAsync(Request("sweep-cancel"))).Success.Should().BeTrue();
+
+        await journal.DisposeAsync();
+
+        var manual = await oms.CancelOrderAsync("manual-cancel");
+        manual.Success.Should().BeTrue();
+        manual.OrderState!.Status.Should().Be(OrderStatus.Cancelled);
+        manual.OrderState.FilledQuantity.Should().Be(1m);
+        var sweep = await oms.CancelAllAsync();
+        sweep.Outcome.Should().Be(KillSwitchSweepOutcome.Completed);
+        sweep.Cancelled.Should().Be(1);
+        sweep.StillWorking.Should().BeEmpty();
+        gateway.Verify(value => value.CancelOrderAsync("manual-cancel", It.IsAny<CancellationToken>()), Times.Once);
+        gateway.Verify(value => value.CancelOrderAsync("sweep-cancel", It.IsAny<CancellationToken>()), Times.Once);
+        var submit = async () => await oms.PlaceOrderAsync(Request("new-order"));
+        await submit.Should().ThrowAsync<InvalidOperationException>();
+        var shutdown = async () => await oms.DisposeAsync();
+        await shutdown.Should().ThrowAsync<ObjectDisposedException>();
+    }
+
+    [Fact]
     public void BrokerEquityEvidence_RejectsMalformedBalances_AndTransfersDuringValuation()
     {
         var balance = new AccountInfo { AccountId = "external", Equity = 800m, PreviousCloseEquity = 1000m, EquityEvidenceComplete = true };

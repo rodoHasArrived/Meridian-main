@@ -114,6 +114,10 @@ internal sealed class OrderAdmissionPolicy
 
         var usesFaceValue = resolved.Sizing is OrderSizing.FaceValuePercentageOfPar;
         var riskRequest = resolved.ToRiskRequest();
+        if (safeRequest.SessionIntent == OrderSessionIntent.QueueNextSession && _gateway is PaperTradingGateway)
+            return new OrderAdmissionDecision(riskRequest, usesFaceValue, null, null,
+                new OrderAdmissionRefusal("The local paper simulator does not support next-session queuing.",
+                    "market session", "QUEUED_SESSION_UNSUPPORTED"));
         if (await EvaluateSessionAsync(safeRequest, ct).ConfigureAwait(false) is { Status: "blocked" } session)
             return new OrderAdmissionDecision(riskRequest, usesFaceValue, null, null,
                 new OrderAdmissionRefusal(session.Message, "market session", session.Code));
@@ -179,10 +183,24 @@ internal sealed class OrderAdmissionPolicy
     internal Task<OrderCheck?> EvaluateSessionAsync(OrderRequest request, CancellationToken ct) =>
         _sessionPolicy is null ? Task.FromResult<OrderCheck?>(null) : EvaluateSessionCoreAsync(request, ct);
 
-    internal async Task<OrderAdmissionRefusal?> EvaluateMarketReferenceAsync(OrderRequest request, CancellationToken ct)
+    internal async Task<OrderAdmissionRefusal?> EvaluateMarketReferenceAsync(OrderRequest request, CancellationToken ct) =>
+        await RequiresMarketReferenceAsync(request, ct).ConfigureAwait(false) ? EvaluateMarketReference(request) : null;
+
+    internal async Task<OrderAdmissionRefusal?> EvaluateDispatchMarketChecksAsync(OrderRequest request, CancellationToken ct)
     {
-        if (_instrumentCoverage is null || !await _instrumentCoverage.IsUsdEquityAsync(request, ct).ConfigureAwait(false))
-            return null;
+        var requiresReference = await RequiresMarketReferenceAsync(request, ct).ConfigureAwait(false);
+        if (request.SessionIntent == OrderSessionIntent.QueueNextSession
+            && await EvaluateSessionAsync(request, ct).ConfigureAwait(false) is { Status: "blocked" } session)
+            return new(session.Message, "market session", session.Code);
+        // Read the quote after the asynchronous session check so it cannot age during that wait.
+        return requiresReference ? EvaluateMarketReference(request) : null;
+    }
+
+    private Task<bool> RequiresMarketReferenceAsync(OrderRequest request, CancellationToken ct) =>
+        _instrumentCoverage?.IsUsdEquityAsync(request, ct) ?? Task.FromResult(false);
+
+    private OrderAdmissionRefusal? EvaluateMarketReference(OrderRequest request)
+    {
         var reference = _marketReferences?.GetReference(request.Symbol, request.Side);
         var now = _clock.GetUtcNow();
         return reference is null || reference.Price <= 0m || reference.ObservedAt > now || now - reference.ObservedAt >= TimeSpan.FromSeconds(30)

@@ -122,12 +122,14 @@ public sealed class ExecutionAlertService(ExecutionJournal journal, TimeProvider
             if (!fill && !rejected && !pending)
                 continue;
             var key = fill ? $"fill:{entry.OrderId}:{report.FilledQuantity.ToString(CultureInfo.InvariantCulture)}" : $"operation:{entry.EventId}";
+            if (fill && entry.AttemptId is { } attemptId)
+                key = $"{key}:{attemptId:N}";
             await PublishAsync(accountId, scope, key, fill ? "success" : pending ? "warning" : "critical",
                 fill ? "Order execution observed" : pending ? "Replacement requires reconciliation" : "Order operation rejected",
                 fill ? $"{report.Symbol}: cumulative execution {report.FilledQuantity.ToString(CultureInfo.InvariantCulture)}. See journal for fill and cost evidence."
                     : report.RejectReason ?? report.ReportType.ToString(), report.Timestamp, entry.OrderId, ct).ConfigureAwait(false);
         }
-        foreach (var entry in entries.Where(entry => entry.Scope == scope && entry.Kind == "Rejected" && entry.Report is null))
+        foreach (var entry in entries.Where(entry => entry.Scope == scope && entry.Kind is ("Rejected" or "DuplicateSubmission") && entry.Report is null))
             await PublishAsync(accountId, scope, $"rejected:{entry.EventId}", "warning", "Order admission rejected",
                 entry.Detail ?? "Order admission was refused.", entry.RecordedAt, entry.OrderId, ct).ConfigureAwait(false);
         foreach (var entry in entries.Where(entry => entry.Scope == scope && entry.Kind is "CancelOutcomeUnconfirmed" or "ReplaceOutcomeUnconfirmed"))

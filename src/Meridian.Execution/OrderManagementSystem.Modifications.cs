@@ -106,8 +106,8 @@ public sealed partial class OrderManagementSystem
             if (RequiresRiskRevalidation(state, modification))
             {
                 var dispatchProbe = BuildAmendmentProbe(state, modification);
-                if (await _admissionPolicy.EvaluateMarketReferenceAsync(dispatchProbe, ct).ConfigureAwait(false) is { } expiredReference)
-                    throw new BrokerageRequestNotSentException(expiredReference.Reason ?? "A current quote is required before replacement dispatch.");
+                if (await _admissionPolicy.EvaluateDispatchMarketChecksAsync(dispatchProbe, ct).ConfigureAwait(false) is { } marketRefusal)
+                    throw new BrokerageRequestNotSentException(marketRefusal.Reason ?? "Current market conditions do not allow replacement dispatch.");
             }
             amendmentDispatchAttempted = true;
             report = _gateway is IExplicitOrderModificationGateway explicitModification

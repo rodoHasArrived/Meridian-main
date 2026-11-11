@@ -582,6 +582,81 @@ public sealed class ExecutionGovernanceEndpointsTests
         result!.Success.Should().BeFalse();
     }
 
+    [Theory]
+    [InlineData(false, HttpStatusCode.BadRequest)]
+    [InlineData(true, HttpStatusCode.BadGateway)]
+    public async Task SubmitOrder_DistinguishesDefinitiveRefusalsFromReconciliation(bool requiresReconciliation, HttpStatusCode expectedStatus)
+    {
+        const string orderId = "client-order-1";
+        var oms = Substitute.For<IOrderManager>();
+        oms.PlaceOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>()).Returns(new OrderResult
+        {
+            Success = false,
+            OrderId = orderId,
+            RequiresOrderReconciliation = requiresReconciliation
+        });
+        await using var app = await CreateAppAsync(services => services.AddSingleton(oms));
+
+        var response = await app.GetTestClient().PostAsync("/api/execution/orders/submit", JsonContent(new
+        {
+            clientOrderId = orderId,
+            symbol = "AAPL",
+            side = 0,
+            type = 0,
+            quantity = 1
+        }));
+
+        response.StatusCode.Should().Be(expectedStatus);
+        using var body = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        body.RootElement.GetProperty("orderId").GetString().Should().Be(orderId);
+        body.RootElement.TryGetProperty("requiresOrderReconciliation", out var flag).Should().Be(requiresReconciliation);
+        if (requiresReconciliation)
+            flag.GetBoolean().Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task SubmitOrder_WhenOrderManagerThrows_ReturnsUnconfirmedOutcome()
+    {
+        var oms = Substitute.For<IOrderManager>();
+        oms.PlaceOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<OrderResult>(new ArgumentException("Could not retain the acknowledgement.")));
+        await using var app = await CreateAppAsync(services => services.AddSingleton(oms));
+
+        var response = await app.GetTestClient().PostAsync("/api/execution/orders/submit", JsonContent(new
+        {
+            symbol = "AAPL",
+            side = 0,
+            type = 0,
+            quantity = 1
+        }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadGateway);
+    }
+
+    [Fact]
+    public async Task SubmitOrder_WhenOrderManagerHasStopped_ReturnsDefinitiveUnavailability()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IExecutionGateway, PaperTradingGateway>();
+            services.AddSingleton<IOrderManager>(sp => new OrderManagementSystem(
+                sp.GetRequiredService<IExecutionGateway>(), NullLogger<OrderManagementSystem>.Instance));
+        });
+        await ((IOrderManagementLifecycle)app.Services.GetRequiredService<IOrderManager>()).StopAsync();
+
+        var response = await app.GetTestClient().PostAsync("/api/execution/orders/submit", JsonContent(new
+        {
+            symbol = "AAPL",
+            side = 0,
+            type = 0,
+            quantity = 1
+        }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+        using var body = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        body.RootElement.GetProperty("type").GetString().Should().Be("https://meridian.io/errors/execution-pre-dispatch-unavailable");
+    }
+
     private static async Task<WebApplication> CreateAppAsync(
         Action<IServiceCollection> configureServices,
         UserPermission permissions = UserPermission.ViewTrades | UserPermission.ExecuteTrades | UserPermission.ManageOrders)

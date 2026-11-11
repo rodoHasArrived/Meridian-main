@@ -1,3 +1,4 @@
+using Meridian.Execution.Logging;
 using Meridian.Execution.OrderManagement;
 using Meridian.Execution.Sdk;
 
@@ -9,7 +10,7 @@ public sealed partial class OrderManagementSystem
     /// <inheritdoc />
     public async Task<OrderResult> CancelOrderAsync(string orderId, CancellationToken ct = default)
     {
-        using var operation = EnterOperation();
+        using var operation = _lifecycle.EnterOperation(allowCancellationAfterFailure: true);
         return await CancelOrderCoreAsync(orderId, ct).ConfigureAwait(false);
     }
 
@@ -44,18 +45,23 @@ public sealed partial class OrderManagementSystem
         var cancellationIdentifier = string.IsNullOrWhiteSpace(gatewayOrderId)
             ? new OrderCancellationIdentifier(orderId, OrderCancellationIdentifierKind.ClientOrderId)
             : new OrderCancellationIdentifier(gatewayOrderId, OrderCancellationIdentifierKind.BrokerOrderId);
-        // After a restart the gateway's in-process replacement bookkeeping is gone, so only the
-        // OMS still knows a retained amendment may have a live successor. Cancel it explicitly.
-        var unresolvedCandidate = await ReconcileRetainedReplacementReferenceAsync(orderId, ct).ConfigureAwait(false)
-            ?? await CancelRetainedReplacementCandidateAsync(orderId, gatewayOrderId, ct).ConfigureAwait(false);
-        await RecordJournalOperationAsync(state, "CancelIntent", ct).ConfigureAwait(false);
+        await RecordCancellationEvidenceAsync(orderId,
+            () => RecordJournalOperationAsync(state, "CancelIntent", ct), ct).ConfigureAwait(false);
+        string? unresolvedCandidate;
         ExecutionReport report;
         try
-        { report = await CancelAtGatewayAsync(cancellationIdentifier, ct).ConfigureAwait(false); }
+        {
+            // After a restart the gateway may have lost its replacement bookkeeping. The
+            // retained successor can also be working and must be included in the cancellation.
+            unresolvedCandidate = await ReconcileRetainedReplacementReferenceAsync(orderId, ct).ConfigureAwait(false)
+                ?? await CancelRetainedReplacementCandidateAsync(state, gatewayOrderId, ct).ConfigureAwait(false);
+            report = await CancelAtGatewayAsync(cancellationIdentifier, ct).ConfigureAwait(false);
+        }
         catch (Exception)
         {
-            await RecordJournalOperationAsync(state, "CancelOutcomeUnconfirmed", CancellationToken.None,
-                detail: "Cancellation acknowledgement unavailable. Reconcile the retained broker identity before retrying.").ConfigureAwait(false);
+            await RecordCancellationEvidenceAsync(orderId,
+                () => RecordJournalOperationAsync(state, "CancelOutcomeUnconfirmed", CancellationToken.None,
+                    detail: "Cancellation acknowledgement unavailable. Reconcile the retained broker identity before retrying.")).ConfigureAwait(false);
             throw;
         }
         if (unresolvedCandidate is not null
@@ -99,7 +105,7 @@ public sealed partial class OrderManagementSystem
                 || OrderStatusFacts.IsTerminal(report.OrderStatus)
                 || HasCumulativeFillEvidence(report))
             {
-                await ProcessGatewayReportAsync(report, CancellationToken.None).ConfigureAwait(false);
+                await ProcessGatewayReportAsync(report, CancellationToken.None, cancellationAcknowledgement: true).ConfigureAwait(false);
             }
 
             var observedState = _orders.TryGetValue(orderId, out var currentState)
@@ -127,7 +133,7 @@ public sealed partial class OrderManagementSystem
         // execution raced the cancel). Route the same authoritative report through the normal
         // fill funnel so portfolio, accounting, session, and report subscribers all receive the
         // execution before the locally tracked order becomes a completed cancellation result.
-        await ProcessGatewayReportAsync(report, CancellationToken.None).ConfigureAwait(false);
+        await ProcessGatewayReportAsync(report, CancellationToken.None, cancellationAcknowledgement: true).ConfigureAwait(false);
         var updated = _orders.TryGetValue(orderId, out var current) ? current : state;
         await _executionAudit.RecordLifecycleAsync(
             action: "OrderCancelled",
@@ -146,11 +152,28 @@ public sealed partial class OrderManagementSystem
         };
     }
 
+    private async Task RecordCancellationEvidenceAsync(string orderId, Func<Task> record, CancellationToken ct = default)
+    {
+        try
+        {
+            await record().ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+        {
+            // Retain and apply the broker response through the normal recovery and accounting
+            // path even if the operational journal cannot record this exposure-reducing action.
+            _logger.LogError(ex, "Execution journal could not retain cancellation evidence for order {OrderId}",
+                LogSanitizer.Sanitize(orderId));
+            _executionFailureState.MarkJournalFailure(ex, "Execution journal retention failed during cancellation.");
+        }
+    }
+
     /// <returns>null when there is no retained candidate or it is proven inactive without fills;
     /// otherwise why the cancellation cannot complete yet.</returns>
     private async Task<string?> CancelRetainedReplacementCandidateAsync(
-        string orderId, string? predecessorBrokerId, CancellationToken ct)
+        OrderState state, string? predecessorBrokerId, CancellationToken ct)
     {
+        var orderId = state.OrderId;
         // Only an amendment restored from the recovery store needs this: in-process, the gateway
         // still holds the replacement attempt and cancels and books the candidate itself, and a
         // second, racing cancellation here would only obscure that authoritative path.
@@ -168,6 +191,9 @@ public sealed partial class OrderManagementSystem
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
+            await RecordCancellationEvidenceAsync(orderId,
+                () => RecordJournalOperationAsync(state, "CancelOutcomeUnconfirmed", CancellationToken.None,
+                    detail: $"Cancellation acknowledgement for replacement candidate {candidateId} is unavailable.")).ConfigureAwait(false);
             return $"Replacement candidate {candidateId} could not be cancelled: {ex.Message}";
         }
         if (candidate.FilledQuantity > 0m)
@@ -203,7 +229,7 @@ public sealed partial class OrderManagementSystem
                 .ConfigureAwait(false);
             if (report is null || report.ReportType is ExecutionReportType.ModificationPending)
                 return $"Replacement {candidateRef} is not proven inactive.";
-            await ReconcileRecoveryOrderAsync(report, ct).ConfigureAwait(false);
+            await ReconcileRecoveryOrderCoreAsync(report, ct, cancellationAcknowledgement: true).ConfigureAwait(false);
             return null;
         }
         catch (Exception ex) when (ex is not OperationCanceledException)

@@ -6,6 +6,8 @@ Implemented scope: single-leg USD US equities, the existing local paper simulato
 
 `POST /api/execution/orders/preview` accepts the same `OrderRequest` as submission. It requires an execution fund account, global order-management permission and account-scoped authorization. The browser waits for a successful, current preview and operator acknowledgement. A client order ID is assigned to the draft and reused for its submission. Changing the draft invalidates its preview.
 
+The ticket captures the submitted account and client order ID before sending the request. A definitive refusal, such as authorization failure or rate limiting, retires that ID and requires a fresh preview before another submission. An unconfirmed response holds the ticket even when the draft or selected account changes. Select **Refresh checks** to look up the submitted identity. The ticket clears the hold when the journal reports a terminal outcome for that order.
+
 The response contains the normalized request, fingerprint, evaluation/expiry timestamps, executable-side quote and source, estimated notional, nullable estimated fees, approval requirement and explicit checks. A preview lasts at most 30 seconds and never outlives its quote. Unsupported instruments, unknown classification, stale quotes, unavailable risk observation and unassessed live readiness cannot yield a green result. Fees remain unknown until evidence exists.
 
 Preview uses observation-only admission/risk evaluation. It does not submit, journal an order, reserve throttle/exposure capacity, consume approval tokens, park an escalation, purge overrides, trip controls or trigger broker recovery. Live readiness is observed from a recent already-evaluated cache; the operator must synchronize readiness separately. Submission always performs current admission and risk validation again. The shared admission policy rechecks the quote at the gateway boundary, after risk and retention waits, and requires a fresh executable-side quote for covered equities on direct submissions and risk-changing amendments as well as previews. Preview is evidence, never a routing capability or price guarantee. Governed escalation is shown as requiring approval and can still reach the existing approval parking path on submission.
@@ -13,7 +15,7 @@ Preview uses observation-only admission/risk evaluation. It does not submit, jou
 `sessionIntent` is additive and omitted from old serialized requests/states when null:
 
 - `RegularOnly` is the default for known equities and refuses submission outside the regular session.
-- `QueueNextSession` explicitly permits eligible Day/GTC market or limit orders to be queued by the broker.
+- `QueueNextSession` permits the broker to queue eligible Day/GTC market or limit orders outside regular trading hours. Preview and submission block this intent during regular trading hours and for the local paper simulator, which matches orders immediately. The OMS checks again before dispatch.
 - `ExtendedHours` requires an eligible Day/GTC limit order in an open premarket, regular or after-hours session. The Alpaca payload maps the intent explicitly.
 
 The shared trading calendar supplies holidays, Eastern time and early closes. Existing policies for other instruments remain in place; the new preview does not claim coverage for them.
@@ -24,16 +26,16 @@ The shared trading calendar supplies holidays, Eastern time and early closes. Ex
 
 The OMS retains intent before admission, an opening-position checkpoint before registering the order, and dispatch evidence before calling the gateway. It retains raw execution evidence before accounting/stream acknowledgement and state evidence before the recovery checkpoint. Once dequeued, financial report retention and accounting finish without caller cancellation; optional session bookkeeping can still stop during shutdown. Retention/accounting failure stops the report pump and closes admission through the existing terminal delivery-failure path, instead of silently consuming a report and restarting its stream. Recovery still requires authoritative broker/session evidence.
 
-Replacement and cancel intents, uncertain operation outcomes, broker predecessor/successor identities, cumulative fills and confirmed states remain linked to the original client order ID. Legacy account-bound OMS and paper-session states are imported as explicitly incomplete history. Missing original tags and individual fills are not invented.
+Replacement and cancel intents, uncertain operation outcomes, broker predecessor/successor identities, cumulative fills and confirmed states remain linked to the original client order ID and its submission attempt. Reused client IDs produce separate attempts, so a refusal or a completed order cannot supply the symbol or strategy tags for a later dispatch. If the operational journal is unavailable, cancellation and the kill-switch sweep still use broker acknowledgements and the ordinary recovery and accounting path. The failure is logged and closes admission pending recovery. Legacy account-bound OMS and paper-session states are imported as explicitly incomplete history. Missing original tags and individual fills are not invented.
 
-The worker reconciles Alpaca activities every minute and on connection-generation changes. It retains fill IDs, canonical activities and complete-page cursors. A retained high watermark with a five-minute overlap supports restart backfill across trading days. Pagination must reach a short page; missing/repeated page tokens fail closed. Account aliases are checked against the connected broker identity. A late client-ID association does not rewrite an already-retained external fill.
+The worker reconciles Alpaca activities every minute and on connection-generation changes. It retains fill IDs, canonical activities and complete-page cursors. A retained high watermark with a five-minute overlap supports restart backfill across trading days. Pagination must reach a short page; missing/repeated page tokens fail closed. Account aliases are checked against the connected broker identity. The journal joins an external fill to its submission attempt when retained execution reports establish the broker order identity, preserving the original fill evidence and counting the execution once.
 
 Read routes, all account-scoped and bound to one captured current environment:
 
 | Route | Purpose |
 | --- | --- |
 | `GET /api/execution/journal/orders?accountId=...` | Orders; optional symbol, strategy/run, tag, status, from, to and take (1–500) |
-| `GET /api/execution/journal/orders/{orderId}?accountId=...` | Complete retained events for an exact root ID, including older orders |
+| `GET /api/execution/journal/orders/{orderId}?accountId=...` | Retained events for the latest attempt under an exact root ID, or for the attempt selected by `attemptId` |
 | `GET /api/execution/journal/summary?accountId=...&from=...&to=...` | Operational aggregates for a half-open UTC date window |
 
 FIFO uses the canonical ledger lot-consumption and basis-relief helpers, without posting accounting entries. Acquisition and disposal costs are allocated to opening strategy/run/tag lots. Reporting replays older lots before calculating a selected time window. Gross P&L, net P&L, commissions, fees and signed executable-reference slippage are separate nullable operands. Unknown cost is never zero. Unpriced execution, missing initial basis, unsupported economics, external/unassociated history, corporate actions, position transfers and trade corrections prevent complete attribution. Those cases require authoritative basis/reconciliation work; this journal does not rebuild tax basis. The UI labels coverage and leaves unavailable values explicit.
@@ -72,7 +74,7 @@ To run deliberately, configure paper credentials in the environment and set both
 python3 scripts/dev/alpaca_paper_order_probe.py --enable-order-probe --account-id <paper-account-uuid>
 ```
 
-The probe checks regular hours and a fresh bounded quote, submits one SPY share at half the bid, cancels its own order by retained identity, and proves final positions and working orders are empty. Non-marketable prices reduce fill likelihood but cannot guarantee no fill. Unexpected fills are cleaned up only when the entire position is provably that probe's single-share SPY exposure. Lost acknowledgement is never retried as a new entry. Failure, ambiguity or process termination leaves a quarantine marker; independently reconcile the account before removing it. A failed submission does not become a passing probe just because cleanup succeeded.
+The probe checks regular hours and a fresh bounded quote, submits one SPY share at half the bid, and cancels its own order as soon as cleanup finds it working under the retained identity. It then proves final positions and working orders are empty. Non-marketable prices reduce fill likelihood but cannot guarantee no fill. Unexpected fills are cleaned up only when the entire position is provably that probe's single-share SPY exposure. Lost acknowledgement is never retried as a new entry. Failure, ambiguity or process termination leaves a quarantine marker; independently reconcile the account before removing it. A failed submission does not become a passing probe just because cleanup succeeded.
 
 ## Verification
 

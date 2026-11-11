@@ -52,13 +52,13 @@ public static partial class ExecutionEndpoints
                 scope: WorkflowScope(context), status: status).ConfigureAwait(false);
             return Results.Json(orders, ExecutionWorkflowJsonContext.Default.IReadOnlyListJournalOrder);
         }).RequirePermission(UserPermission.ViewTrades);
-        group.MapGet("/orders/{orderId}", async (string orderId, Guid accountId, HttpContext context) =>
+        group.MapGet("/orders/{orderId}", async (string orderId, Guid accountId, string? attemptId, HttpContext context) =>
         {
             if (await AuthorizeWorkflowRead(accountId, context, jsonOptions).ConfigureAwait(false) is { } failure)
                 return failure;
             var journal = context.RequestServices.GetRequiredService<ExecutionJournal>();
             var orders = await journal.OrdersAsync(accountId, take: 1, ct: context.RequestAborted,
-                scope: WorkflowScope(context), orderId: orderId).ConfigureAwait(false);
+                scope: WorkflowScope(context), orderId: orderId, attemptId: attemptId).ConfigureAwait(false);
             var order = orders.FirstOrDefault(entry => entry.OrderId == orderId);
             return order is null ? Results.NotFound() : Results.Json(order, ExecutionWorkflowJsonContext.Default.JournalOrder);
         }).RequirePermission(UserPermission.ViewTrades);
