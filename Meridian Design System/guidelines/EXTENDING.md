@@ -65,7 +65,7 @@ html[data-brand="oxblood"] {
   --theme-dark-accent: #D98C8C;
   --theme-dark-accent-dim: #E29C9C;
   --theme-dark-accent-hover: #E8ABAB;
-  --theme-dark-accent-ghost: color-mix(in srgb, var(--theme-dark-accent) 12%, #171E25);
+  --theme-dark-accent-ghost: color-mix(in srgb, var(--theme-dark-accent) 12%, var(--theme-dark-bg-light));
 }
 ```
 

@@ -437,7 +437,7 @@
 
 .dense-data-table th {
   border-bottom: 1px solid var(--ws-border-strong);
-  color: var(--ws-text-muted);
+  color: var(--ws-header-text-secondary);
   padding: var(--dense-head-py) var(--dense-cell-px);
   font-weight: 700;
   letter-spacing: 0;
@@ -461,8 +461,34 @@
 }
 
 .dense-data-table tbody tr.selected {
+  /* Selected metadata needs its own readable ink on the stronger selection wash.
+     Keep semantic status/P&L colors intact while both native and utility text inherit it. */
+  --muted-foreground: var(--ws-row-selected-muted-foreground);
+  --ws-text-muted: var(--ws-row-selected-text-secondary);
+  --theme-muted-text: var(--ws-row-selected-text-secondary);
+  --text-muted: var(--ws-row-selected-text-secondary);
+  --fg-muted: var(--ws-row-selected-text-secondary);
+  /* Tinted severity badges add another wash above selection; strengthen their
+     semantic ink locally while retaining each status hue and fill. */
+  --severity-blocked-fg: color-mix(in srgb, var(--ws-row-selected-danger-text) 90%, var(--dim-mix));
+  --severity-action-fg: color-mix(in srgb, var(--ws-row-selected-warning-text) 90%, var(--dim-mix));
+  --severity-review-fg: color-mix(in srgb, var(--ws-row-selected-warning-text) 90%, var(--dim-mix));
+  --severity-ready-fg: color-mix(in srgb, var(--ws-row-selected-success-text) 90%, var(--dim-mix));
   background: var(--ws-row-selected);
   box-shadow: inset 3px 0 0 var(--interaction-selected);
+}
+
+/* Keep financial/status hues, using their readable text shade on selection. */
+.dense-data-table tbody tr.selected .text-danger {
+  color: var(--ws-row-selected-danger-text);
+}
+
+.dense-data-table tbody tr.selected .text-warning {
+  color: var(--ws-row-selected-warning-text);
+}
+
+.dense-data-table tbody tr.selected .text-success {
+  color: var(--ws-row-selected-success-text);
 }
 
 /* Grouped tables (a ledger entry and its posting lines): child rows sit under their parent,

@@ -19,6 +19,12 @@
   --theme-dark-accent-hover: #E5A088;
   --theme-dark-accent-ghost: #35251F;
   --theme-dark-text-on-accent: #14100E;
+  /* The dark surfaces a brand's dark identity sits on. colors-dark.css owns these values; they
+     are named here so a brand's ghost fill can mix toward the dark panel and so
+     check_contrast.py can measure a brand's dark ghost and the focus ring against them. */
+  --theme-dark-bg-light: #171E25;
+  --theme-dark-primary-text: #F1EFEA;
+  --theme-dark-border-focus: #5C9FE5;
 
   --theme-primary-text: #20252B;
   --theme-secondary-text: #535C65;
@@ -145,7 +151,7 @@ html[data-brand="indigo"] {
   --theme-dark-accent: #9893F0;
   --theme-dark-accent-dim: #A7A2F8;
   --theme-dark-accent-hover: #B0ABFB;
-  --theme-dark-accent-ghost: color-mix(in srgb, var(--theme-dark-accent) 12%, #171E25);
+  --theme-dark-accent-ghost: color-mix(in srgb, var(--theme-dark-accent) 12%, var(--theme-dark-bg-light));
 }
 
 html[data-brand="emerald"] {
@@ -158,7 +164,7 @@ html[data-brand="emerald"] {
   --theme-dark-accent: #10B37D;
   --theme-dark-accent-dim: #1CC28B;
   --theme-dark-accent-hover: #16CC8F;
-  --theme-dark-accent-ghost: color-mix(in srgb, var(--theme-dark-accent) 12%, #171E25);
+  --theme-dark-accent-ghost: color-mix(in srgb, var(--theme-dark-accent) 12%, var(--theme-dark-bg-light));
 }
 
 html[data-brand="rose"] {
@@ -171,7 +177,7 @@ html[data-brand="rose"] {
   --theme-dark-accent: #FF6C8C;
   --theme-dark-accent-dim: #F68BA3;
   --theme-dark-accent-hover: #FF94AB;
-  --theme-dark-accent-ghost: color-mix(in srgb, var(--theme-dark-accent) 12%, #171E25);
+  --theme-dark-accent-ghost: color-mix(in srgb, var(--theme-dark-accent) 12%, var(--theme-dark-bg-light));
 }
 
 html[data-brand="slate"] {
@@ -184,7 +190,7 @@ html[data-brand="slate"] {
   --theme-dark-accent: #899FBE;
   --theme-dark-accent-dim: #95ADCF;
   --theme-dark-accent-hover: #A3B5D0;
-  --theme-dark-accent-ghost: color-mix(in srgb, var(--theme-dark-accent) 12%, #171E25);
+  --theme-dark-accent-ghost: color-mix(in srgb, var(--theme-dark-accent) 12%, var(--theme-dark-bg-light));
 }
 
 html[data-brand="cyan"] {
@@ -197,7 +203,7 @@ html[data-brand="cyan"] {
   --theme-dark-accent: #13AAD6;
   --theme-dark-accent-dim: #15B9E8;
   --theme-dark-accent-hover: #37C2EA;
-  --theme-dark-accent-ghost: color-mix(in srgb, var(--theme-dark-accent) 12%, #171E25);
+  --theme-dark-accent-ghost: color-mix(in srgb, var(--theme-dark-accent) 12%, var(--theme-dark-bg-light));
 }
 
 html[data-brand="amber"] {
@@ -210,7 +216,7 @@ html[data-brand="amber"] {
   --theme-dark-accent: #FF740D;
   --theme-dark-accent-dim: #FB9041;
   --theme-dark-accent-hover: #FD9C55;
-  --theme-dark-accent-ghost: color-mix(in srgb, var(--theme-dark-accent) 12%, #171E25);
+  --theme-dark-accent-ghost: color-mix(in srgb, var(--theme-dark-accent) 12%, var(--theme-dark-bg-light));
 }
 
 /* ── Map theme tokens to component tokens ── */
