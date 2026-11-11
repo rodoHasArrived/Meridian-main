@@ -816,3 +816,19 @@ type SecurityMasterCommandFacade private () =
     /// which can be stricter than the pinned profile's.
     static member ValidateKindInvariants(kind: SecurityKind) =
         SecurityMaster.validateKindInvariants kind |> List.toArray
+
+    /// ADR-027 stage 2 (S2-B1): the module-expressible subset of the kind rule set, evaluated
+    /// over the economic definition's modules and gated by the classification's canonical
+    /// TypeName. The stage-2 equivalence tests pin, per class, that this agrees code-for-code
+    /// with ValidateKindInvariants on the codes DefinitionExpressibleCodes lists; from S2-B2 the
+    /// command write path validates through it.
+    static member ValidateDefinitionInvariants(typeName: string, modules: SecurityTermModules) =
+        SecurityMaster.validateDefinitionInvariants typeName modules |> List.toArray
+
+    /// Per-class ledger of the validateKindTerms error codes the definition can express today;
+    /// every other code is codec-only until its subject data gains a module home.
+    static member DefinitionExpressibleCodes =
+        SecurityMaster.definitionExpressibleCodes
+        |> Map.toSeq
+        |> Seq.map (fun (typeName, codes) -> System.Collections.Generic.KeyValuePair(typeName, codes |> List.toArray))
+        |> fun pairs -> System.Collections.Generic.Dictionary<string, string[]>(pairs) :> System.Collections.Generic.IReadOnlyDictionary<string, string[]>

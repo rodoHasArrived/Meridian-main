@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
@@ -377,7 +378,7 @@ public sealed class SecurityMasterInstrumentPassportTests
         var dataQualityService = Substitute.For<ISecurityMasterDataQualityService>();
         dataQualityService.GetLatestReportAsync(Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<SecurityMasterQualityReportDto?>(new SecurityMasterQualityReportDto(
-                now,
+                now.ToOffset(TimeSpan.FromHours(-4)),
                 1,
                 0,
                 [])));
@@ -403,6 +404,8 @@ public sealed class SecurityMasterInstrumentPassportTests
         sections["cash-flow-source-governance"].Summary.Should().Contain("ClientProvided");
         sections["vendor-entitlements"].Summary.Should().Contain("direct-client contract");
         sections["data-quality-controls"].Status.Should().Be("Ready");
+        sections["data-quality-controls"].Summary.Should().Contain(
+            $"from the {now.UtcDateTime.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture)} UTC run");
         sections["manual-change-review"].Summary.Should().Contain("manual change");
         passport.OperatingModel.Should().NotBeNull();
         passport.OperatingModel!.ManualChangeApproval.PolicyKey.Should().Be("operations-continuity.security-master-override");

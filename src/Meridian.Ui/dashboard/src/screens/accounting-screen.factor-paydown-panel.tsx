@@ -9,7 +9,11 @@ import { createFactorPaydownDraft, prepareFactorPaydown } from "@/lib/api/factor
 import type { AccountingBasisKind } from "@/types";
 import type { FactorPaydownDraftResult, FactorPaydownPreview, FactorPaydownRequest } from "@/types/factor-paydown";
 
-interface Props { periodVersion: number | null; bookId: string; periodId: string | null; fundProfileId: string; accountingBasis?: AccountingBasisKind; active?: boolean }
+interface Props {
+  periodVersion: number | null; bookId: string; periodId: string | null; fundProfileId: string; accountingBasis?: AccountingBasisKind; active?: boolean;
+  /** Display names for the scope line. The identifiers above remain what is sent to the server. */
+  bookLabel?: string | null; periodLabel?: string | null;
+}
 const fields = [
   ["securityId", "Security ID"], ["bookPositionId", "Book position ID"],
   ["effectiveDate", "Paydown effective date", "date"],
@@ -33,7 +37,7 @@ export function FactorPaydownPanel(props: Props) {
   return <FactorPaydownScopePanel key={`${props.bookId}:${props.periodId}:${props.fundProfileId}:${props.accountingBasis}:${props.periodVersion}`} {...props} />;
 }
 
-function FactorPaydownScopePanel({ bookId, periodId, periodVersion, fundProfileId, accountingBasis = "Primary" }: Props) {
+function FactorPaydownScopePanel({ bookId, periodId, periodVersion, fundProfileId, accountingBasis = "Primary", bookLabel, periodLabel }: Props) {
   const id = useId();
   const [form, setForm] = useState<Form>(emptyForm);
   const [evidence, setEvidence] = useState("");
@@ -118,7 +122,7 @@ function FactorPaydownScopePanel({ bookId, periodId, periodVersion, fundProfileI
     <CardHeader><CardTitle>Factor paydown</CardTitle><CardDescription>Prepare principal repayment and lot basis relief from a retained factor observation. Same-currency active long positions only. Retained drafts support review, independent approval and canonical posting when authenticated workflow capabilities permit.</CardDescription></CardHeader>
     <CardContent className="space-y-4">
       {!bookId || !periodId || periodVersion === null || !fundProfileId ? <p role="status">Select a ledger book and period to prepare a factor paydown.</p> : <>
-        <p className="break-all text-xs text-muted-foreground">Book {bookId} · Period {periodId} · {accountingBasis}</p>
+        <p className="break-words text-xs text-muted-foreground" title={`Book ${bookId} · Period ${periodId}`}>Book {bookLabel?.trim() || bookId} · Period {periodLabel?.trim() || periodId} · {accountingBasis}</p>
         <form onSubmit={(event) => { event.preventDefault(); void prepare(); }}>
           <fieldset disabled={locked} className="space-y-3"><legend className="sr-only">Factor observation and posting accounts</legend>
             <FormGrid columns={3}>{fields.map(([field, label, type]) => <FormRow key={field} label={label} labelFor={`${id}-${field}`}>

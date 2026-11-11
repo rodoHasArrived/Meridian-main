@@ -174,7 +174,9 @@ lot conventions and pack membership are held in parity by `SecurityAssetClassReg
 `SecurityAssetClassOperationalWiringTests` extends that guard through actual readiness rows and aliases.
 
 Readiness definitions, depth targets, profile identities and classification keywords are owned by
-`SecurityAssetPackRegistry`. Every catalog class receives a row. A new class without a specialized
+`SecurityAssetPackRegistry`. A class covered by more than one built-in pack, claimed or planned, is
+listed in `DeclaredSharedCoverage` with its reason; `ValidateAll()` reports any other built-in
+overlap. Every catalog class receives a row. A new class without a specialized
 operational profile stays `ReviewRequired`, including after provider evidence is retained; adding a
 class never silently removes it from readiness. Broad operational vocabulary is scoped to readiness,
 while canonical aliases are shared through the asset catalog. MBS, ABS, CLO and CMBS evidence belongs

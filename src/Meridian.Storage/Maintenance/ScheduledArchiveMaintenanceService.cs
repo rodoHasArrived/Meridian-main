@@ -1341,8 +1341,12 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
     public MaintenanceServiceStatus GetStatus()
     {
         var summary = _scheduleManager.GetStatusSummary();
+        // UtcNow.Date is a DateTime of unspecified kind; converting it back to DateTimeOffset
+        // applied the host's local offset, shifting "today" by that offset on non-UTC hosts.
+        var now = DateTimeOffset.UtcNow;
+        var startOfUtcDay = new DateTimeOffset(now.UtcDateTime.Date, TimeSpan.Zero);
         var executionsToday = _scheduleManager.ExecutionHistory
-            .GetExecutionsByTimeRange(DateTimeOffset.UtcNow.Date, DateTimeOffset.UtcNow)
+            .GetExecutionsByTimeRange(startOfUtcDay, now)
             .Count;
 
         return new MaintenanceServiceStatus(

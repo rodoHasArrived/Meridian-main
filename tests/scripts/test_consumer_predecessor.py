@@ -19,7 +19,7 @@ class ConsumerPredecessorTests(unittest.TestCase):
             "consumer_predecessor", ROOT / "build/scripts/ci/resolve-consumer-predecessor.py")
         self.resolver = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(self.resolver)
-        self.temp = tempfile.TemporaryDirectory()
+        self.temp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
         self.args = self.resolver.parse_args([

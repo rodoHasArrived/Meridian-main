@@ -85,7 +85,7 @@ import type {
   ProviderSetupResult
 } from "@/types";
 
-import { formatCount } from "@/lib/format";
+import { formatCount, formatNumber, formatPercent } from "@/lib/format";
 export {
   DATA_BACKFILL_ROUTE_FOCUS_CARD_ID,
   buildDataLoadingState,
@@ -3858,7 +3858,7 @@ export function buildBackfillLiveProgressState(
         ? `Attempt ${symbol.providerAttempt}${symbol.retryRound > 0 ? `, retry ${symbol.retryRound}` : ""}`
         : "Not started",
       status: resolveBackfillProviderProgressStatus(symbol),
-      progress: `${clampBackfillProgress(symbol.percentComplete).toLocaleString(undefined, { maximumFractionDigits: 1 })}%`,
+      progress: `${formatPercent(clampBackfillProgress(symbol.percentComplete), { maximumFractionDigits: 1 })}`,
       error: symbol.error
     }));
   const recentAttempts = snapshot.recentProviderAttempts.slice(-8).reverse().map((attempt) => ({
@@ -3882,9 +3882,9 @@ export function buildBackfillLiveProgressState(
   const observedAt = formatBackfillProgressTimestamp(snapshot.timestamp || response.timestamp);
 
   return {
-    ariaLabel: `Live backfill provider progress. ${snapshot.completedSymbols} of ${snapshot.totalSymbols} symbols complete. ${overallPercent.toLocaleString(undefined, { maximumFractionDigits: 1 })} percent.`,
+    ariaLabel: `Live backfill provider progress. ${snapshot.completedSymbols} of ${snapshot.totalSymbols} symbols complete. ${formatNumber(overallPercent, { maximumFractionDigits: 1 })} percent.`,
     title: active ? "Live provider progress" : "Final provider progress",
-    summary: `${snapshot.completedSymbols} of ${snapshot.totalSymbols} symbols complete · ${snapshot.failedSymbols} failed · ${overallPercent.toLocaleString(undefined, { maximumFractionDigits: 1 })}% overall`,
+    summary: `${snapshot.completedSymbols} of ${snapshot.totalSymbols} symbols complete · ${snapshot.failedSymbols} failed · ${formatPercent(overallPercent, { maximumFractionDigits: 1 })} overall`,
     active,
     overallPercent,
     symbols,

@@ -554,7 +554,8 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
                 entry.PenaltyAmount,
                 entry.AnnualRateApplied,
                 entry.PikInterestAmount,
-                entry.PikCapitalizationDeferred
+                entry.PikCapitalizationDeferred,
+                decision.PrepaidInterestConsumed
             })
             : DirectLendingServiceSupport.CreatePayloadDocument(new
             {
@@ -565,7 +566,8 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
                 entry.CommitmentFeeAmount,
                 entry.PenaltyAmount,
                 entry.AnnualRateApplied,
-                entry.PikInterestAmount
+                entry.PikInterestAmount,
+                decision.PrepaidInterestConsumed
             });
 
         await SaveAsync(
@@ -674,7 +676,8 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
 
         foreach (var flow in flows)
         {
-            var cash = cashTransactions.FirstOrDefault(x => x.SettlementDate == flow.DueDate && x.Amount == flow.Amount);
+            var cash = cashTransactions.FirstOrDefault(x =>
+                DirectLendingServiceSupport.IsIncomingReceipt(x) && x.SettlementDate == flow.DueDate && x.Amount == flow.Amount);
             var matchStatus = cash is null ? "MissingCash" : "Matched";
             var variance = cash is null ? flow.Amount : 0m;
             var result = new ReconciliationResultDto(
@@ -860,6 +863,169 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
         }
 
         return DirectLendingCommandResult<ServicerReportBatchDto>.Success(batch);
+    }
+
+    public async Task<DirectLendingCommandResult<LoanServicingStateDto>> ApplyUnappliedCashAsync(Guid loanId, ApplyUnappliedCashRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        var stored = await _queryService.LoadAggregateAsync(loanId, ct).ConfigureAwait(false);
+        if (stored is null)
+        {
+            return DirectLendingCommandResult<LoanServicingStateDto>.Failure(DirectLendingErrorCode.NotFound, $"Loan '{loanId}' was not found.");
+        }
+
+        var activeError = DirectLendingServiceSupport.EnsureActive(stored.Contract);
+        if (activeError is not null)
+        {
+            return new DirectLendingCommandResult<LoanServicingStateDto>(null, activeError);
+        }
+
+        var replay = await TryReplayCommittedCommandAsync(loanId, stored, metadata, "loan.unapplied-cash-applied", request.Amount, request.EffectiveDate, request.ExternalRef, ct).ConfigureAwait(false);
+        if (replay is not null)
+        {
+            return replay;
+        }
+
+        var amountError = DirectLendingServiceSupport.ValidateUnappliedCashAmount(request.Amount, stored.Servicing.Balances.UnappliedCash, "apply");
+        if (amountError is not null)
+        {
+            return DirectLendingCommandResult<LoanServicingStateDto>.Failure(DirectLendingErrorCode.Validation, amountError);
+        }
+
+        var decision = DirectLendingAggregateInterop.ApplyUnappliedCash(stored.Servicing, stored.Contract.CurrentTerms, request);
+        using var payload = DirectLendingServiceSupport.CreatePayloadDocument(new
+        {
+            loanId,
+            request.Amount,
+            AppliedAmount = decision.Breakdown.TotalAllocated,
+            request.EffectiveDate,
+            request.ExternalRef,
+            decision.Breakdown,
+            decision.ResolutionBasis
+        });
+
+        await SaveAsync(
+            loanId,
+            stored.AggregateVersion,
+            stored.AggregateVersion + 1,
+            stored.Contract,
+            decision.Servicing,
+            eventType: "loan.unapplied-cash-applied",
+            effectiveDate: request.EffectiveDate,
+            payload,
+            metadata,
+            ct: ct).ConfigureAwait(false);
+
+        return DirectLendingCommandResult<LoanServicingStateDto>.Success(decision.Servicing);
+    }
+
+    /// <summary>
+    /// PRD-115: a retry of an Apply or Refund that already committed carries the same command id.
+    /// Recomputing it against the updated balances would describe a second, unsaved movement (the
+    /// store skips the duplicate) or differ from the recorded payload and be refused as a conflict.
+    /// Recognise it up front and return the committed state instead. Null when the command is new.
+    /// </summary>
+    private async Task<DirectLendingCommandResult<LoanServicingStateDto>?> TryReplayCommittedCommandAsync(
+        Guid loanId,
+        PersistedDirectLendingState stored,
+        DirectLendingCommandMetadataDto? metadata,
+        string eventType,
+        decimal amount,
+        DateOnly effectiveDate,
+        string? externalRef,
+        CancellationToken ct)
+    {
+        if (metadata?.CommandId is not Guid commandId || commandId == Guid.Empty)
+        {
+            return null;
+        }
+
+        var history = await _queryService.GetHistoryAsync(loanId, ct).ConfigureAwait(false);
+        return DirectLendingServiceSupport.FindCommittedCommand(history, commandId, eventType, amount, effectiveDate, externalRef) switch
+        {
+            CommittedCommandMatch.Replay => DirectLendingCommandResult<LoanServicingStateDto>.Success(stored.Servicing),
+            CommittedCommandMatch.Conflict => DirectLendingCommandResult<LoanServicingStateDto>.Failure(
+                DirectLendingErrorCode.Conflict,
+                $"Direct lending command id {commandId} was already used for a different mutation on loan {loanId}."),
+            _ => null
+        };
+    }
+
+    public async Task<DirectLendingCommandResult<LoanServicingStateDto>> RefundUnappliedCashAsync(Guid loanId, RefundUnappliedCashRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        var stored = await _queryService.LoadAggregateAsync(loanId, ct).ConfigureAwait(false);
+        if (stored is null)
+        {
+            return DirectLendingCommandResult<LoanServicingStateDto>.Failure(DirectLendingErrorCode.NotFound, $"Loan '{loanId}' was not found.");
+        }
+
+        var activeError = DirectLendingServiceSupport.EnsureActive(stored.Contract);
+        if (activeError is not null)
+        {
+            return new DirectLendingCommandResult<LoanServicingStateDto>(null, activeError);
+        }
+
+        var replay = await TryReplayCommittedCommandAsync(loanId, stored, metadata, "loan.unapplied-cash-refunded", request.Amount, request.EffectiveDate, request.ExternalRef, ct).ConfigureAwait(false);
+        if (replay is not null)
+        {
+            return replay;
+        }
+
+        var amountError = DirectLendingServiceSupport.ValidateUnappliedCashAmount(request.Amount, stored.Servicing.Balances.UnappliedCash, "refund")
+            ?? (string.IsNullOrWhiteSpace(request.ExternalRef) ? "A refund needs an external reference for the outgoing payment." : null);
+        if (amountError is not null)
+        {
+            return DirectLendingCommandResult<LoanServicingStateDto>.Failure(DirectLendingErrorCode.Validation, amountError);
+        }
+
+        // A retry after a lost response must not refund twice. The aggregate's expected-version check
+        // on save rejects a concurrent duplicate; this rejects a sequential one.
+        var duplicate = DirectLendingServiceSupport.FindDuplicateRefund(
+            await _operationsStore.GetCashTransactionsAsync(loanId, ct).ConfigureAwait(false), request.ExternalRef);
+        if (duplicate is not null)
+        {
+            return DirectLendingCommandResult<LoanServicingStateDto>.Failure(DirectLendingErrorCode.Conflict, duplicate);
+        }
+
+        var decision = DirectLendingAggregateInterop.RefundUnappliedCash(stored.Servicing, request);
+        using var payload = DirectLendingServiceSupport.CreatePayloadDocument(new
+        {
+            loanId,
+            request.Amount,
+            request.EffectiveDate,
+            request.ExternalRef
+        });
+
+        await SaveAsync(
+            loanId,
+            stored.AggregateVersion,
+            stored.AggregateVersion + 1,
+            stored.Contract,
+            decision.Servicing,
+            eventType: "loan.unapplied-cash-refunded",
+            effectiveDate: request.EffectiveDate,
+            payload,
+            metadata,
+            ct: ct,
+            persistenceBatch: new DirectLendingPersistenceBatch(
+                [
+                    new DirectLendingCashTransactionWrite(
+                        Guid.NewGuid(),
+                        DirectLendingServiceSupport.UnappliedCashRefundTransactionType,
+                        request.EffectiveDate,
+                        request.EffectiveDate,
+                        request.EffectiveDate,
+                        request.Amount,
+                        stored.Contract.CurrentTerms.BaseCurrency.ToString(),
+                        Counterparty: null,
+                        ExternalRef: request.ExternalRef)
+                ],
+                [],
+                [],
+                [])).ConfigureAwait(false);
+
+        return DirectLendingCommandResult<LoanServicingStateDto>.Success(decision.Servicing);
     }
 
     public async Task<DirectLendingCommandResult<LoanServicingStateDto>> ChargePrepaymentPenaltyAsync(Guid loanId, ChargePrepaymentPenaltyRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)

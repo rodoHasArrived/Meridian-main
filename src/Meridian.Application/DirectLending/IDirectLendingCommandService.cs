@@ -37,6 +37,10 @@ public interface IDirectLendingCommandService
 
     Task<DirectLendingCommandResult<ServicerReportBatchDto>> CreateServicerReportBatchAsync(CreateServicerReportBatchRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);
 
+    Task<DirectLendingCommandResult<LoanServicingStateDto>> ApplyUnappliedCashAsync(Guid loanId, ApplyUnappliedCashRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);
+
+    Task<DirectLendingCommandResult<LoanServicingStateDto>> RefundUnappliedCashAsync(Guid loanId, RefundUnappliedCashRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);
+
     Task<DirectLendingCommandResult<LoanServicingStateDto>> ChargePrepaymentPenaltyAsync(Guid loanId, ChargePrepaymentPenaltyRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);
 
     Task<DirectLendingCommandResult<LoanServicingStateDto>> AddCollateralAsync(Guid loanId, AddCollateralRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);

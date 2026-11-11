@@ -352,6 +352,11 @@ public sealed record ChargePrepaymentPenaltyRequest(
     DateOnly EffectiveDate,
     string? ExternalRef);
 
+/// <summary>
+/// One loan in the portfolio summary. <see cref="PrepaidInterest"/> and <see cref="UnappliedCash"/>
+/// (PRD-115) are owed to the borrower and are shown alongside the receivables, but are never added
+/// to the portfolio's exposure totals.
+/// </summary>
 public sealed record LoanSummaryDto(
     Guid LoanId,
     string FacilityName,
@@ -367,7 +372,9 @@ public sealed record LoanSummaryDto(
     DateOnly OriginationDate,
     DateOnly MaturityDate,
     DateOnly? LastAccrualDate,
-    DateOnly? LastPaymentDate);
+    DateOnly? LastPaymentDate,
+    decimal PrepaidInterest = 0m,
+    decimal UnappliedCash = 0m);
 
 public sealed record LoanPortfolioSummaryDto(
     int TotalLoans,

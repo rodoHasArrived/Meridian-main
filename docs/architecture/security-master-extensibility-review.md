@@ -2,8 +2,8 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-11-06
-**Review history:** post-slice-6 source check 2026-11-06; slice-4 D3 decision 2026-11-05; slice 6 disposition 2026-11-04; slice-4 disposition 2026-11-04; consolidation pass 2026-10-28; resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
+**Reviewed:** 2026-11-09
+**Review history:** increment 8b resolution pass 2026-11-10; increment 8a resolution pass 2026-11-09; dual-model audit reconciliation 2026-11-09; post-slice-6 source check 2026-11-06; slice-4 D3 decision 2026-11-05; slice 6 disposition 2026-11-04; slice-4 disposition 2026-11-04; scheduled institutional-requirements pass 2026-11-01; consolidation pass 2026-10-28; resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -470,6 +470,71 @@ Release --filter FullyQualifiedName~SecurityMasterConflictFieldCategoriesTests` 
 The WPF view model compiles only on Windows, so the hosted Windows lane is its compile and test
 gate.
 
+**2026-11-09 — pack overlap allowances are declared (N4, P3) and the shared pack text is stated as
+descriptive (N5).** `ValidateAll()` could not report an overlap between built-in packs: the rule kept
+only groups containing a candidate, and the built-in path has none. The candidate filter stays, as
+the earlier passes required. What changes is that the built-in overlaps are now a stated list.
+`SecurityAssetPackRegistry.DeclaredSharedCoverage` names each class several built-in packs cover,
+the packs, and the reason: `DirectLoan` (claimed by `private-loan-credit` and
+`mortgage-facility-intercompany`, because it is the only modeled loan class) and `CreditFacility`
+(planned by three packs, with no owner chosen). `ValidateAll()` checks the built-in packs against
+that list in both directions, on the claimed and planned axes together. An overlap missing from the
+list is `asset-pack.shared-coverage-undeclared`; a declaration naming the wrong packs is
+`asset-pack.shared-coverage-mismatch`; one describing an overlap that no longer exists is
+`asset-pack.shared-coverage-stale`. A grandfathered overlap can now be told from an unnoticed one.
+For candidates, the overlap rule gains the planned axis: a candidate that plans a class another pack
+already plans is refused with `asset-pack.planned-asset-class-overlap`. Claimed overlap keeps its
+code and message. Many-to-many coverage is still allowed by contract; no uniqueness or routing rule
+is added, and the `CreditFacility` owner is still undecided. The declaration records that; it does
+not settle it.
+
+N5 takes the informational disposition already applied to the policy text. `ValidationRules`,
+`ReportingTaxonomy` and the prose lists of `ContractSchema` are documented on the registry and on
+their records as one shared descriptive set that `ValidateDescriptor` checks for non-emptiness only.
+The per-pack, checkable parts are named beside them: membership, lifecycle and valuation
+declarations, journal-template bindings (exact names since the substring inference was removed) and
+`ContractSchema.AssetClassTerms`, which canonical admission enforces. A test pins that every
+built-in and candidate pack carries the same descriptive instances, so making one per-pack without a
+real check fails. No check was removed and no readiness field changed. `FindByAssetClass` now has
+production readers (`SecurityAssetPackAdmission`, the default readiness specification); both treat
+the result as a set, so `DirectLoan`'s two packs are each validated and each named.
+Validation: no .NET SDK was available where this was written, so the new
+`SecurityAssetClassCatalogTests` cases were not run locally; the hosted `Meridian CI / quality-gate`
+is their compile and test gate.
+
+**2026-11-10 — `CreditFacility` has one owning pack; Option stays specialized (owner decisions).**
+*`CreditFacility`.* The domain owner chose `private-loan-credit`. It is removed from the planned
+lists of `mortgage-facility-intercompany` and `commitment-guarantee`, and its
+`DeclaredSharedCoverage` entry is deleted, so `DirectLoan` is the only declared overlap and no
+planned class is shared. The reasons are in source: Direct Lending already services commitment,
+available-to-draw, drawdown lots and commitment fees for a loan; `private-loan-credit` is the only
+loan pack with a `Fee` lifecycle event and a fee-income template; and the undrawn part of a facility
+is already a `CommitmentGuarantee` record (`committedAmount`, `unfundedAmount`). The readiness label
+`CreditFacility` now resolves to `DirectLoan` instead of `CommitmentGuarantee`, so readiness requests
+and evidence carrying that label classify with the loan. This reads a credit facility as one the fund
+extends. A facility the fund borrows under (the financing blueprint's borrower-side term debt) has
+no planned class name and is not decided here. The `mortgage-facility-intercompany` pack keeps its
+id and display name.
+
+*Option.* Option stays on its specialized projection, by decision and not by backlog. Its four
+tables are keyed by contract symbol and chain, the quote path writes the same tables, and the
+contract and chain lookups read them. Moving it means re-keying on `security_id` and separating the
+quote path first, for a consistency gain only. A security-keyed option terms table beside the
+existing four remains available if a consumer needs option terms queried like other classes; none
+was identified.
+
+*Known limit, not changed.* Both option writers set `lifecycle_stat` (`Active` or `Expired`) from
+the clock at write time (`PostgresSecurityMasterStore.TryBuildOptionProjection`,
+`PostgresOptionReferenceProjectionStore`), so a contract that expires after its last write stays
+`Active` in `option_contract_projection` and `option_lifecycle_projection`. No code path is affected
+today: `option_lifecycle_projection` has no reader, `OptionProjectionService.MapContract` drops the
+column, and no query filters on it. A direct SQL reader would see the stale value. The remedy when a
+consumer appears is to derive the status at read time from `expiry_date` and an as-of date, as
+`BondProjectionService.ResolveLifecycle` does.
+Validation: no .NET SDK was available where this was written; the hosted
+`Meridian CI / quality-gate` is the compile and test gate for the updated
+`SecurityAssetClassCatalogTests` and `SecurityAssetPackReadinessMappingTests`.
+
 **Validation of this disposition.** Local, on the branch, with
 `MERIDIAN_SECURITY_MASTER_CONNECTION_STRING` pointing at a local PostgreSQL 16 (no Testcontainers):
 
@@ -585,6 +650,642 @@ when the ledger connection string is absent. `BondProjectionGoldenTests.Bond_Key
 the first pass's 45, needed only a reachable PostgreSQL; it is a plain `[Fact]` that uses the
 database fixture. `check-file-size.py` and `dotnet format whitespace --verify-no-changes` pass.
 Hosted checks were not run.
+
+---
+
+## Verification pass — 2026-11-09 — dual-model audit reconciliation
+
+A condensed external audit of the Security Master's dual economic model was submitted for
+reconciliation. This pass checks each of its claims against current source at
+`fc848789e637f3e241698c84b5415a1a9e0ed32d` (main after #3393) and routes its proposals.
+Documentation only: no code was changed by this pass; no tests were run.
+
+### Confirmed against current source
+
+| Claim | Evidence |
+| --- | --- |
+| Two economic models describe the same securities | `SecurityKind` (`src/Meridian.FSharp/Domain/SecurityMaster.fs:945`) carries per-class terms; `SecurityTermModules` (`src/Meridian.FSharp/Domain/SecurityTermModules.fs:439`) carries exactly 25 optional modules |
+| ~2,800 lines of upgrade/mapping bridge | `SecurityMasterLegacyUpgrade.fs` (1,120 lines) + `SecurityMasterMapping.cs` (1,692 lines) = 2,812, plus the 360-line `SecurityEconomicDefinitionAdapter.cs` |
+| Every write round-trips through the legacy model | `SecurityEconomicDefinitionAdapter.ToEconomicRecord` routes through `SecurityMasterLegacyUpgrade.toEconomicDefinition(SecurityMasterMapping.ToRecord(…))`; `CarryRetainedEconomicTerms` preserves fields the per-kind format cannot hold (`SecurityMasterService.cs` amendment paths) |
+| Call, covenant, coupon and dividend structures are defined in both models | `CallScheduleTerm`/`CallPutSchedules` (`SecurityMaster.fs:287/344`) vs `CallScheduleEntry`/`EconomicCallTerms` (`SecurityTermModules.fs:98/112`); `Covenant` (`SecurityMaster.fs:599`) vs `CovenantTerms`; `BondCouponStructure` (`SecurityMaster.fs:219`) vs `CouponTerms`/`FloatingRateTerms`; `DividendType` (`SecurityMaster.fs:55`) vs `DividendFrequency`/`DividendScheduleTerms` (`SecurityTermModules.fs:250/259`) |
+| `DeriveSubType` maps a fixed subset of the catalog | 11 arms (`src/Meridian.Ui.Shared/Services/SecurityMasterSecurityReferenceLookup.cs:176`) |
+| The coverage read model infers the class from keywords | `MultiAssetCoverageReadService.cs:441` returns `Bond` for any evidence shape containing "factor" |
+| Face-value quoting is hard-coded, and no descriptor declares a quote convention | `LotQuantity.ValueAtPrice` divides by 100 for every `FaceValue` lot (`src/Meridian.Contracts/SecurityMaster/LotQuantity.cs:35`); `AssetClassDescriptor` carries no quoting fact |
+| Three payload families share one version key; untagged payloads are shape-detected | `SecurityTermsEnvelope.ResolveFormat` (`SecurityTermsEnvelope.cs:106`) classifies untagged documents by shape, as ADR-024 documents and guards |
+| Adding a class is code-heavy; `CustomAsset` is the only no-code route | `CapFloor` appears in 11 source files plus migration `047_rate_option_and_note_terms_projections.sql` and the schema manifests |
+
+### Corrections to the submitted audit
+
+- The catalog holds **32** asset classes, not 34 (`AssetClassRegistry` descriptors; the slice-6
+  disposition's "32 of 32" projection count). `DeriveSubType` therefore maps 11 of 32.
+- "No test lists everything a new asset class must implement" is **partly stale**: slice 6 landed
+  omission-failing coverage for reverse instrument mapping and readiness projectors, and
+  `SecurityAssetTermsSchemaRoundTripTests` walks every declared class. What remains missing is a
+  single new-class touchpoint checklist spanning codecs, projections, validators, lookups and UI
+  seams; the codec arms also remain hand-written (D1).
+- "No API exposes the terms schema to the browser" is **stale on current source**: the asset-class
+  registry, term fields and UI hints are served at `/api/security-master/asset-classes[/{assetClass}]`
+  (`SecurityMasterEndpoints.cs`, from `SecurityAssetClassRegistry.ToDtos()`), and the dashboard's
+  passport editor builds its term fields from that endpoint (`security-master-schema.api.ts`,
+  `security-passport-schema-fields.view-model.ts`), landed by `8119b637` (2026-11-01). What was
+  true when checked: the browser mirrors `SecurityAssetTermFormModel`'s grouping, choice and
+  validation rules by hand, with nothing asserting the two lanes agree — exactly D9's open
+  parity-contract gap — and the hand-built bond panels (`bond-analytics-panel.tsx`,
+  `bond-reference-ladder-panel.tsx`) predate the schema-driven route.
+
+### Disposition of the audit's five priorities
+
+1. **Merge into one economic model (modules canonical; retire the bridge and
+   `retainedEconomicTerms`).** Not accepted as a slice. This is the audit's largest proposal and it
+   supersedes guarantees this record already pins: D1 requires codec work to preserve retained
+   economic fields and explicit refusals, and slice 3 made historical reads compatible *without*
+   rewriting retained terms. Consolidation first needs a domain-owner decision, a payload-upgrade
+   and backfill design, and replay-compatibility proof. Recorded as the consolidation decision item
+   in the remediation plan.
+2. **Expose the terms schema and form model through the shared API; build the browser editors from
+   it.** Partly superseded: the registry schema is already served and the browser passport editor
+   already builds from it (see the correction above). The remaining substance is D9's parity
+   contract between the C# form model and the TypeScript mirror, taken as remediation slice 7.
+3. **Move the sub-type lookup, keyword inference and quoting rule into the asset-class descriptors,
+   adding a quote-convention fact.** Extends D3/D9 and follows the pattern slice 6 used for
+   `LotUnit`/`LotMultiplierTermKey` and conflict-field categories. Proposed as remediation slice 8.
+4. **Generate per-class projections from the registry; add a touchpoint test.** Partly superseded:
+   the projection registry and the CustomAsset projection (migration 064) already cover 32 of 32,
+   and the slice-6 ratchet tests fail on omission. The remaining substance — generated or
+   schema-asserted codec arms and a single new-class checklist — stays under D1 and the slice-6
+   codec-generation caveats.
+5. **Tag the remaining untagged payloads; retire shape detection.** Partly superseded, and the
+   audit's remedy (this pass initially repeated it) is the alternative ADR-024 explicitly
+   rejected: rewriting stored blobs to add the tag mutates event-sourced history and makes a
+   misclassification permanent. The accepted design already stamps every write (decision 1),
+   records the classification in the `terms_format` column without touching the payload
+   (migration 042, decision 2), and gates retirement on evidence (decision 5): zero untagged
+   rows on every governed deployment plus a replay-only legacy upcaster. What was genuinely
+   missing is the evidence itself — nothing measured the decision-5 count. Taken as remediation
+   slice 9 (see the disposition below); the retirement remains ADR-024's separate, later change.
+
+The consolidation decision item was added to the
+[remediation working plan](../engineering/plans/security-master-review-remediation-plan.md) by
+this pass. Slices 7–9 were re-scoped against current source and implemented, each with its dated
+disposition below:
+
+### Slice 7 disposition — term-form parity contract — 2026-11-09
+
+`SecurityAssetTermFormParityFixtureTests` (`tests/Meridian.Tests/SecurityMaster/`) generates
+`src/Meridian.Ui/dashboard/src/test/fixtures/security-asset-term-form-parity.json` from
+`SecurityAssetClassRegistry.ToDtos()` and `SecurityAssetTermFormModel`: every catalog class's
+served field definitions, pickable scalar fields and closed value choices, plus each editor
+kind's validation verdict (required and optional) over a fixed 33-input corpus. The test fails on
+any drift from the committed fixture and writes a received copy beside the test binaries.
+`security-passport-schema-fields.parity.test.ts` replays the fixture through the browser mirror.
+Parity is asserted on the declared facts: the mirror's pickable set sorted by declared order must
+equal the model's flat order, each browser section must keep declared order internally (grouping
+into sections is the browser's deliberate presentation, not drift), value choices must match per
+field, and every validation verdict must match per input.
+
+Aligning the mirror changed its client-side pre-checks (the server-side governed validator stays
+authoritative): Integer now accepts a leading `+` and enforces `long` range; Date now requires a
+real proleptic-Gregorian calendar date rather than any `\d{4}-\d{2}-\d{2}` string; Decimal now
+follows the model's invariant parsing — sign and `,` group separators accepted, exponent notation
+refused. Known out-of-corpus host-parsing esoterica (misplaced group separators such as `",5"`,
+beyond-`decimal` magnitudes) deliberately stay outside the contract and are documented in the
+generator.
+
+Validation (local, .NET SDK 10.0.403): `dotnet test tests/Meridian.Tests -c Release --filter
+FullyQualifiedName~SecurityAssetTermFormParityFixtureTests` — 1 passed after committing the
+generated fixture (and fails as designed when the fixture is absent or stale). Dashboard:
+`security-passport-schema-fields.parity.test.ts` + `security-passport-schema-fields.view-model.test.ts`
+— 54 passed; `security-passport-editor.test.tsx`, `security-passport-editor-launcher.test.tsx`,
+`security-passport-editor.view-model.test.ts` — 23 passed. The full local `bash scripts/ci.sh` was
+not run; GitHub `Meridian CI / quality-gate` remains authoritative.
+
+### Slice 8 disposition — descriptor-owned consumer rules — 2026-11-09
+
+The three catalog-external rules this pass confirmed now read declared facts.
+
+**Sub-type derivation.** `SecurityMasterSecurityReferenceLookup.DeriveSubType` (shared by
+`WorkstationEndpoints`) reads the F# `AssetClassRegistry` sub-type for every catalog class instead
+of an 11-arm switch. Three legacy workstation spellings stay pinned exceptions — "Bond", "Deposit",
+"MoneyMarket" are the deliberately generic labels reconciliation lines already carry — and Equity
+is declared sub-type-ambiguous (a record may be common, preferred, an ADR or an MLP unit), keeping
+the existing null. The 18 previously-unmapped determinate classes (StructuredCredit, CapFloor,
+CustomAsset, …) and the three previously-null echo classes (FxSpot, CashSweep, OtherSecurity) now
+derive their registry labels: an additive enrichment of workstation reads, with the existing 11
+mappings byte-identical. `WorkstationSecuritySubTypeCoverageTests` pins the full 32-class table
+omission-failing; the file left `SecurityAssetClassLiteralRatchetTests.KnownDispatchSites`, which
+only ever shrinks. The known-divergence pins in `SecurityAssetClassSurfaceParityTests` are
+unchanged.
+
+**Evidence-class routing.** `MultiAssetEvidenceClassRouter` replaces
+`MultiAssetCoverageReadService`'s substring inference: exact-token routes (candidate type, then
+ledger-effect kind with candidate-type fallback) over the closed vocabulary
+`ProviderLedgerReconciliationService.CorporateActions` produces, preserving every in-repo outcome
+(factor, amortization and principal-return evidence reads as Bond; loan schedules as DirectLoan;
+distributions as PrivateFundInterest; equity corporate-action, dividend, interest and plain
+provider evidence stays unresolved). Evidence outside the declared vocabulary is now explicitly
+unresolved instead of substring-guessed — the "mbs/structured/nav/covenant" token groups were
+unreachable with the produced vocabulary and are gone; securitized evidence routes to
+StructuredCredit (ADR-022) by declaring its token when a producer lands.
+`MultiAssetEvidenceClassRouterTests` pins the full vocabulary's routes and that every target is a
+catalog class.
+
+**Quote convention.** `SecurityAssetClassDescriptor.QuoteConvention` declares how a class's raw
+quotes scale into money (`PercentOfPar` / `PerUnit`), defaulting from the lot unit so every
+catalogued class prices identically; `LotQuantity` gains `ValueAtPrice(price, convention)` and
+`QuoteConventionFor(assetClass)`, and the unit-kind overload keeps the legacy rule.
+`SecurityQuoteConventionCoverageTests` pins the declared convention to the legacy conversion for
+every class and both pricing routes to agree, so a future non-percent-of-par class is a visible
+pin change that moves class-aware callers onto the convention overload, never a silent repricing.
+The quote-convention vocabulary itself remains the open domain-owner decision recorded in the
+remediation plan; existing `ValueAtPrice` consumers are deliberately untouched.
+
+Validation (local, .NET SDK 10.0.403, `dotnet test tests/Meridian.Tests -c Release --no-build`
+filtered): the three new suites — 100 passed; `SecurityMasterReferenceLookupTests`,
+`SecurityAssetClassSurfaceParityTests`, `SecurityAssetClassLiteralRatchetTests`,
+`WorkstationMultiAssetCoverageEndpointsTests` and `LotQuantity` suites — 77 passed;
+`SecurityAssetClassRegistryCoverageTests`, behavior-facts, `SecurityKindMappingTests` and
+asset-pack suites — 74 passed; `SecurityTermsWriteGoldenTests` — 51 passed, write golden
+unchanged. The full local `bash scripts/ci.sh` was not run; GitHub `Meridian CI / quality-gate`
+remains authoritative.
+
+### Slice 9 disposition — the ADR-024 retirement gate is now measurable — 2026-11-09
+
+The audit's proposed remedy — backfill `termsFormat` into stored payloads by migration — is the
+alternative ADR-024 explicitly rejected (it mutates event-sourced history and makes a
+misclassification permanent), and this pass's own first framing of slice 9 repeated that
+mistake; the corrections above record it. The accepted design already stamps every write
+(decision 1) and records the classification in the non-destructive `terms_format` column
+(migration 042, decision 2). What no surface measured was decision 5's retirement gate: zero
+untagged rows on every governed deployment.
+
+Implemented: the data-quality scan raises rule `TX003` ("Untagged Terms Payload Format",
+TaxonomyCheck, Warning) for each active record whose asset-specific terms declare no
+`termsFormat`, naming the family the shape rule infers; and
+`SecurityMasterQualityReportDto.UntaggedTermsPayloadCount` gauges the whole stored population —
+inactive rows included — through the store's single aggregate
+(`ISecurityMasterStore.CountUntaggedAssetSpecificTermsAsync`, never a projection load; a Codex
+review finding on the first cut, which counted by loading every projection, was confirmed
+against `LoadAllAsync`'s per-row reads and fixed), with the SQL pinned to the
+`SecurityTermsEnvelope.GetDeclaredFormat` verdict row by row by
+`SecurityMasterPostgresRoundTripTests`. The quality-report endpoint
+already serves both workstations, so each deployment's backlog is readable evidence; the count
+only falls, because every write stamps. No stored payload is rewritten, and the shape rule
+stays load-bearing exactly as decision 5 requires until the evidence reads zero everywhere; its
+removal remains ADR-024's separate, later change behind a replay-only legacy upcaster.
+
+Validation (local, .NET SDK 10.0.403): `dotnet test tests/Meridian.Tests -c Release` filtered to
+`SecurityMasterDataQualityService|SecurityMasterExceptionCaseworkServiceTests|QualityReport` —
+40 passed, 0 failed, covering the untagged/tagged/profile-envelope rule outcomes, the
+active-plus-inactive gauge, and the zero case. The full local `bash scripts/ci.sh` was not run;
+GitHub `Meridian CI / quality-gate` remains authoritative.
+
+### ADR-027 stage-3 S3-E4 — the profile envelope gains a module home — 2026-11-10
+
+The last of the four themes the census named. A new `profileEnvelope` term module
+(`ProfileEnvelopeTerms`: `CustomProfileId`, `ProfileVersion`, `TermsJson`) mirrors
+`CustomAssetTerms` field for field: profile fields are dynamic and governed by the approved
+profile version, so the module carries the document opaquely rather than modelling per-profile
+shapes. `termsFromKind` feeds it for the CustomAsset kind, which previously projected no module.
+
+| Surface | Change |
+| --- | --- |
+| Economic document | `profileEnvelope` is `{ customProfileId, profileVersion, terms }`, where `terms` is the governed document embedded as JSON (so it stays one queryable document); text that does not parse is carried as a JSON string so the envelope validation can refuse it rather than the serializer dropping it. The key is emitted for every class, null for all but the CustomAsset kind, and joins `ModulesAddedAfterIdentityGate`. |
+| Validation ledger | All seven CustomAsset rules moved to `validateDefinitionTerms` through one shared `validateProfileEnvelope` function; CustomAsset keeps no codec-only rule. Four codes are proven through the codec by the mutation table; `custom_asset_profile_required`, `custom_asset_terms_required` and `custom_asset_terms_invalid` are codec-gated on that route (a blank profile id reads as the OtherSecurity salvage; a non-object document never decodes to a CustomAsset kind) and are proven on both surfaces by record-level F# tests. A CustomAsset definition with no envelope module is refused as an empty envelope. |
+| Economic-only replay | For a class that must pin a profile (`RequiresProfileReference`), an object-valued `profileEnvelope.terms` that names its profile is returned as the row's asset-specific terms, as stored: no flattening, no `flattenedFromEconomicTermsSchemaVersion` marker and no retained carry, because nothing was reconstructed and nothing is left behind — and because a marker would be written into a profile-governed document and carried into every later revision. Before the module, such a replay had no document at all and read as the OtherSecurity salvage. A null module (every document written before this change), a non-document or a document without its profile id takes the former route unchanged. |
+
+Two limits, stated so they are not mistaken for coverage. The module homes the CustomAsset
+*kind's* record fields: a profile-backed row that resolves to a first-class class (a
+StructuredCredit pinned through a reclassifying profile, for example) decodes to that class's
+kind, and its profile pin is a property of the stored document, not a record field — it stays
+document-level and is not recovered from the economic document
+(`ProfileBackedFirstClassRow_DoesNotGainAProfileEnvelopeModule` pins this). And the economic
+document now carries the profile document a second time beside the legacy asset-specific terms;
+every surface that passes the economic document through whole — the certified reporting
+snapshot is one — therefore carries the governed profile fields from the next write on.
+
+The replay corpus gained two CustomAsset cases — an image that recovers the document with a
+byte-identical next event, and a pre-module document that keeps the salvage route — and
+otherwise changed only by the appended `"profileEnvelope":null` key; the write golden changed
+by that key plus the CustomAsset module content.
+
+Validation (local, .NET SDK 10.0.403): `Meridian.Tests` SecurityMaster and Architecture
+namespaces — 6,338 passed, 1 skipped; `Meridian.FSharp.Tests` — 617 passed;
+`Meridian.Contracts.UnitTests` SecurityMaster — 45 passed. The full local `bash scripts/ci.sh`
+was not run; GitHub `Meridian CI / quality-gate` remains authoritative.
+
+### ADR-027 stage-3 S3-E3 — notionals gain a module home — 2026-11-10
+
+A new `notional` term module (`NotionalTerms`: `notional`, `denomination`, `committedAmount`,
+`fundedAmount`, `unfundedAmount`) homes the amounts a contract is written on: the contract
+notional of FxForward, NonDeliverableForward, CreditDefaultSwap, Swaption and CapFloor; the
+StructuredNote denomination; and the commitment of PrivateFundInterest and CommitmentGuarantee
+with its funded and unfunded split. A structured-credit tranche's original face stays on
+`structuredProduct.notionalBalance`, and swap leg notionals stay on the legs, which remain a
+structural decode.
+
+Eleven codes moved from `validateCodecOnlyKindTerms` to `validateDefinitionTerms` and the
+ledger: the five contract-notional rules, `structured_note_denomination_invalid`, the three
+PrivateFundInterest amount rules and the two CommitmentGuarantee amount rules. FxForward,
+NonDeliverableForward and CapFloor now keep no codec-only rule. `ClassFlattenings` inverts
+each home, so economic-only replay recovers the amounts at their declared flat keys.
+
+What S3-E1 to E3 leave codec-only, by class: Future (root symbol, contract month), Bond
+(subclass canonicality, principal schedule, step and inflation coupon structure), OtherSecurity
+(category), Swap (the legs), DirectLoan and CommitmentGuarantee (covenant entries, fee rate),
+StructuredCredit (attachment and detachment points, CLO period ends), PrivateFundInterest
+(vintage), PrivateCompanyEquity (ownership, cost basis, valuation), RealEstateHolding (market,
+ownership, appraisal), Commodity (type), Cfd (underlying asset class), CreditDefaultSwap
+(reference entity, protection side, recovery rate), Swaption (the underlying swap's dates),
+StructuredNote (underlying and payoff terms) and CustomAsset (the profile envelope).
+
+The replay corpus changed only by the appended `"notional":null` key; the write golden by that
+key plus the eight classes' module content.
+
+Validation (local, .NET SDK 10.0.403): `Meridian.Tests` SecurityMaster and Architecture
+namespaces — 6,327 passed, 1 skipped (after accepting the two goldens); `Meridian.FSharp.Tests`
+— 611 passed. The full local `bash scripts/ci.sh` was not run; GitHub
+`Meridian CI / quality-gate` remains authoritative.
+
+### ADR-027 stage-3 S3-E2 — currency pairs gain a module home — 2026-11-10
+
+A new `currencyPair` term module (`CurrencyPairTerms`: `baseCurrency`, `quoteCurrency`,
+`settlementCurrency`, `forwardRate`) homes the pair fields of FxSpot, CryptoCurrency, FxForward
+and NonDeliverableForward; `termsFromKind` feeds it for all four (FxSpot and CryptoCurrency
+previously projected no module at all). The serializer emits the key for every class, and it
+joins `ModulesAddedAfterIdentityGate`, so images written before it keep shedding their carry.
+
+Fifteen codes moved from `validateCodecOnlyKindTerms` to `validateDefinitionTerms` and the
+ledger: the three FxSpot rules, the three CryptoCurrency rules, four FxForward rules (base,
+quote, pair, rate) and five NonDeliverableForward rules (base, quote, settlement, pair, rate).
+FxSpot and CryptoCurrency now have no codec-only rule; FxForward and NonDeliverableForward keep
+only their notional rule, which S3-E3 moves. `ClassFlattenings` gained FxSpot and
+CryptoCurrency entries (they previously fell back to the class-independent bridge) and the
+pair, settlement and rate keys for the two forwards, so an economic-only FxSpot or
+CryptoCurrency replay now recovers every required flat key.
+
+The replay corpus changed only by the appended `"currencyPair":null` key; the write golden by
+that key plus the four classes' module content.
+
+Validation (local, .NET SDK 10.0.403): `Meridian.Tests` SecurityMaster and Architecture
+namespaces — 6,314 passed, 1 skipped (after accepting the two goldens); `Meridian.FSharp.Tests`
+— 611 passed. The full local `bash scripts/ci.sh` was not run; GitHub
+`Meridian CI / quality-gate` remains authoritative.
+
+### ADR-027 stage-3 S3-E1 — strikes gain a module home — 2026-11-10
+
+First of the S3-E module-home increments the census scoped. A new `exercise` term module
+(`ExerciseTerms` in `SecurityTermModules.fs`) carries what only the flat codec held: the right
+(`optionRight` — Put/Call for options and warrants, Payer/Receiver for swaptions,
+Cap/Floor/Collar for caps and floors), `strikePrice`, `strikeRate`, `exerciseStyle`,
+`underlyingSecurityId` and `premiumAmount`. `termsFromKind` feeds it for Option, Warrant,
+Swaption and CapFloor, and feeds the Option and Future multipliers into the existing
+`tradingParameters.contractMultiplier` (cap and floor strike rates were already homed on
+`floatingRate`). The economic serializer emits the `exercise` key for every class, null when
+unset, as it does every other module.
+
+| Surface | Change |
+| --- | --- |
+| Validation ledger | Fourteen codes moved from `validateCodecOnlyKindTerms` to `validateDefinitionTerms` and joined `definitionExpressibleCodes`: the four Option rules, `future_multiplier_invalid`, three Warrant rules, two Swaption rules and four CapFloor rules. Option and Warrant now have no codec-only rule left. The equivalence suite's mutation table proves each code on both surfaces. |
+| Economic-only replay | `ClassFlattenings` inverts the new homes: an Option recovers `underlyingId`, `putCall`, `strike`, `multiplier` and `exerciseStyle`; Future its `multiplier`; Warrant `underlyingId`, `warrantType` and `strike`; Swaption `payerReceiver`, `exerciseStyle` and `strikeRate`; CapFloor `capFloorType` and `premiumAmount`. Option's unrecoverable set is now the listing detail only (`optChainId`, `settlementType`, `lastTradingDt`). |
+| Identity gate | Adding a module key would have made every stored image fail the gate's byte equality — the committed CertificateOfDeposit corpus image caught it, flipping from carry-free back to carrying its retained document. The gate now tolerates exactly that case: a key in `ModulesAddedAfterIdentityGate` that the source image lacks and the rebuild emits null. A key the gate shipped with, or a later key the source itself carries, is still compared as written, and every other difference still fails closed. Three corpus-suite cases pin the tolerance and its two limits. |
+
+The replay corpus changed only by the appended `"exercise":null` key (the image case is
+byte-identical); the write golden changed by that key plus the five classes' new module content.
+
+Validation (local, .NET SDK 10.0.403): `Meridian.Tests` filtered to the SecurityMaster and
+Architecture namespaces — 6,297 passed, 1 skipped; the SecurityMaster-named suites outside that
+namespace plus AssetOperations, kind-mapping, workstation-endpoint and report-generation suites —
+2,340 passed; `Meridian.FSharp.Tests` — 611 passed; `Meridian.Contracts.UnitTests`
+SecurityMaster — 45 passed. The full local `bash scripts/ci.sh` was not run; GitHub
+`Meridian CI / quality-gate` remains authoritative.
+
+### ADR-027 stage-3 S3-D complete; S3-E scoped by census — 2026-11-09
+
+S3-D closed with 28 of 32 classes' scalar decodes schema-bound (`SchemaBoundDecodeClasses`);
+the remainder is structural by design (Equity and Bond read through bespoke
+classification/coupon-structure builders, InvestmentFund through fund-profile reads, CustomAsset
+is the profile-envelope exclusion), with their schema conformance asserted externally by the
+sweep suites.
+
+S3-E opened with the consumer census its precondition demands, and the result is far narrower
+than the audit feared: outside the codec and the domain spine (commands, legacy upgrade,
+modules), the per-class term records have exactly four consumers — `BondTerms` in
+`SecurityMasterService` and the asset-class validator registry, and `StructuredCreditTerms` in
+the accounting-event service and the structured-credit reclassification service. Every other
+record type (SwapTerms, CapFloorTerms, DepositTerms, OptionTerms, …) is already codec-and-spine
+only, and no F# file outside the spine touches any of them. The remaining S3-E dependency is
+therefore not consumer migration but module homes: the codec-only field complement (strikes,
+currency pairs, notionals, envelopes) must gain `SecurityTermModules` homes before record
+fields can move, mirroring how the stage-2 validation ledger shrinks. That is domain-shaping
+work in its own right — field-by-field expand/contract with the owner sequencing it — and it
+belongs to a successor PR; this one carries the census as its starting evidence.
+
+### ADR-027 stage-3 S3-C — the encode-arm sweeps — 2026-11-09
+
+`SecurityAssetTermsSchemaEncodeSweepTests` closes the audit's encode-side backlog with 124
+schema-generated cases, all assertions: every written value carries its field's declared JSON
+kind (dates as ISO calendar dates, guids parseable, numbers for decimal and integer fields); a
+minimal required-only submission writes every required key and invents no optional value —
+beyond two committed ledgers: `WrittenOptionalDefaults` (ADR-025's Bond coupon pair: an absent
+coupon writes `couponType: "Fixed"`, `couponRate: 0` by declaration) and
+`ConditionallyRequiredOptionals` (the CapFloor twin's Collar must keep both strikes, the S2-B1
+codec-only rule made visible in the sweep); the written form is a fixed point of the codec for
+minimal rows as well as the fully-populated twins — the per-class property S3-D's table-driven
+extraction must preserve; and the envelope rules (declared format, stamp describing the
+document) hold on minimal rows too. With S3-B and S3-C in place, both codec arms are asserted
+from the schema table, which is the "fully assert" arm of the ADR's stage-3 decision; S3-D can
+now replace hand-written scalar handling class by class under a complete net.
+
+### ADR-027 stage-3 S3-B — the decode-arm sweeps, and their first catch — 2026-11-09
+
+`SecurityAssetTermsSchemaDecodeSweepTests` generates the S3-A backlog from the schema itself
+(387 cases today, growing with the schema): per-alias write equivalence, per-field missing-Req
+refusal, per-field type-mismatch refusal, the full vocabulary sweep, and the convention sweep.
+The sweeps immediately earned their keep: the codec ignored the schema's declared read aliases
+for seven classes (CapFloor, CreditDefaultSwap, StructuredNote, Swaption, NonDeliverableForward,
+FxForward, and Bond's `dayCountConvention`) — a required field submitted under an advertised
+alias refused as missing, and an optional one was silently dropped, even though the registry
+DTOs, the field-edit canonicalizer and the day-count guard all advertise those spellings. The
+fix is schema-driven, in the stage-3 direction: write-mode decode now canonicalizes every
+declared alias once, from the schema table (`CanonicalizeDeclaredAliases`), before the per-class
+decode — and an ambiguous submission carrying two spellings of one field with different values
+refuses rather than letting key order decide. Read mode is untouched: stored rows are canonical.
+
+The sweeps also pinned the decode arm's real contract where it diverges from a naive reading of
+the schema, each divergence now a committed ledger instead of folklore: vocabulary enforcement
+is two-sided (a write may only assert declared values whatever the field's flags; the
+verbatim/escape flags govern reads of odd stored values); eight Required booleans and Bond's
+`subclass` absorb absence with written defaults (`ToleratedAbsenceDefaults` — Required remains
+true of every stored row); and StructuredCredit's legacy `factorSchedule` pointer reads a
+mistyped submission as unset, written null (`ToleratedMistypes`). Tightening any ledgered
+tolerance is an explicit S3-D decision.
+
+### ADR-027 stage-1 increment 6 — the identity gate; stage 1 complete — 2026-11-09
+
+Stage 1's close-out landed: economic-only replay runs a byte-identity gate after the class-aware
+flatten — the candidate without `retainedEconomicTerms` is rebuilt into its next economic
+document, and when that reproduces the source byte-for-byte the carry is dropped, because the
+flat row holds the whole document. The gate fails closed (any byte difference or exception keeps
+the carry and its fold-on-read), never rewrites a stored payload, and leaves refusals refusing.
+The class flattenings gained the inverses for the increment-5 modules (CapFloor's four
+`floatingRate` keys; Warrant's `multiplier`), so those classes' replays recover them. Today's
+verdicts, pinned rather than assumed: CertificateOfDeposit and StructuredCredit image twins shed
+the carry; Bond's floating-coupon twin does not yet rebuild byte-identically and keeps it;
+hand-written corpus literals keep it. The corpus golden's reviewed diff is exactly that story.
+With increments 1–6 landed, ADR-027 stage 1 is complete: every module the serializer emits has
+either a declared flat home with fail-closed recovery or an explicitly pinned carry, and new
+image documents stop carrying `retainedEconomicTerms` the moment their class's codec round-trips
+them completely — the gate turns each remaining carry into a measurable, per-class fact instead
+of a permanent workaround.
+
+### ADR-027 stage-3 S3-A — codec-arm gap audit — 2026-11-09
+
+What the schema-driven guard (`SecurityAssetTermsSchemaRoundTripTests` and companions) already
+proves, per arm:
+
+- **Encode:** every class's serialized key set equals the declared schema field set; the
+  envelope declares its format and asset-class terms version; fully-populated payloads
+  round-trip byte-stably through both codecs (plus Bond coupon-structure variants and the
+  legacy Equity classification read); discriminants use declared values; the write goldens pin
+  the written bytes per class and report surface.
+- **Fixture discipline:** `FullPayloads` cover exactly the declared classes, and each declares
+  every schema field, so schema growth forces the fixtures to grow.
+- **Vocabularies and conventions (hand-picked):** write refusals for Swap leg conventions, Bond
+  `couponType` (undeclared, non-string, explicit-null default), Option `exerciseStyle`,
+  StructuredCredit malformed optional tranche terms and kind-label canonicalization, and the
+  field-edit validator's discriminant handling.
+
+What remains unproven — the S3-B/S3-C backlog, in priority order:
+
+1. **Per-alias acceptance (decode).** The schema declares read aliases
+   (`asOfDate` ← `factorDate`/`effectiveDate`/`date`, `notional` ← `notionalAmount`, …); no test
+   sweeps them. An alias the decoder forgot reads as an absent field today.
+2. **Per-field missing-Req refusal (decode).** A required field absent must refuse naming the
+   field; only incidental coverage exists.
+3. **Per-field type-mismatch refusal (decode).** Hand-picked cases only; no sweep of
+   string-where-decimal, number-where-date, etc. across the declared types.
+4. **Systematic `OneOf` sweep (decode).** Every `ReqOneOf`/`OptOneOf` field, enforcing or
+   escaping exactly per `WithVerbatimUndeclaredValue`, rather than today's named examples.
+5. **`WithConvention` parsing sweep (decode).** Only Swap legs are pinned; the other fields
+   carrying a convention kind are not.
+6. **Canonical written forms (encode).** Value formatting per type, the null/absent policy per
+   `Opt` field, and array stored-order rules are proven only transitively, through one full
+   payload's byte-stable round trip per class — form rules are not asserted as rules.
+
+S3-B/S3-C generate these sweeps from `SecurityAssetTermsSchema` itself, so a field added to the
+schema is swept without a test edit; S3-D (the table-driven extraction) stays gated on stage-1
+increment 6 per the ADR's safety ordering.
+
+### ADR-027 stage-2 S2-B4 — term-block and merge paths verified on the definition — 2026-11-09
+
+The last stage-2 increment needed no plumbing: the workbench term-block and profile-field edit
+validations already flow through `ValidateKindInvariants`, which the S2-B2 recomposition made
+definition-authoritative for every ledgered code, and the approved-merge handler publishes
+through the ordinary amend route — S2-B2's validation and S2-B3's typed-record derivation both
+apply. The one seam those sites keep, `ToRecord(...).Kind` over the staged effective document,
+is the flat → kind codec decode itself (fail-closed, with its own refusal path for documents
+the strict mapping cannot reconstruct) — the boundary stage 3's S3-D shrinks, not a command
+seam. Pinned by extending the workbench invariant test to assert the ledgered
+`structured_credit_current_factor_invalid` code surfaces through the term-block route. With
+this, ADR-027 stage 2 is complete: commands and validation live on `SecurityEconomicDefinition`,
+and `SecurityMasterLegacyUpgrade` is on the write path only as the typed-record projection
+(`modulesFromKind`, `toEconomicDefinition`) — the flat decode remains confined to the codec
+boundary and legacy replay.
+
+### ADR-027 stage-2 S2-B3 — events derived from the typed record — 2026-11-09
+
+The create, amend and deactivate services stop re-decoding the document they just encoded: with
+no profile-backed override in play, the economic record derives from the command result's typed
+`SecurityMasterRecord` through the new `ToEconomicRecord(record, projection)` overload (the
+projection still supplies the retained-terms fold), deleting the per-write
+`ToProjection → ToRecord` round trip the ADR names. Where an override replaces the class or
+terms after the domain command — CustomAsset profile resolution, envelope repinning — the
+overridden document remains authoritative and the projection-decode overload stays, exactly as
+it stays for event replay and aggregate rebuild, which is the decode's permanent read-only
+legacy-upcaster role. `RecordAwareDerivation_IsByteIdenticalToTheProjectionDecode` pins the two
+routes byte-identical over every declared class twin, alongside the corpus and write goldens.
+
+### ADR-027 stage-2 S2-B2 — validation recomposed onto the definition — 2026-11-09
+
+The write path now validates through the definition surface. `validateKindTerms` became a
+composition: `validateDefinitionTerms (assetClassName kind) (modulesFromKind kind)` — the
+authoritative check for all 54 ledgered codes — appended with `validateCodecOnlyKindTerms`, the
+renamed remainder holding exactly the ledger's complement (the 54 moved rules were deleted from
+it, so nothing is checked twice). Every command route flows through the composition: create,
+amend and record validation in the F# aggregate, and the C# workbench term-block and
+profile-field edit validations through `SecurityMasterCommandFacade.ValidateKindInvariants`.
+The switch is proven behavior-neutral by the S2-B1 equivalence suite (whose mutation table pins
+the partition), the byte-identical replay corpus and write goldens, and a full green sweep of
+the F# suite (596) and the C# SecurityMaster namespace (5,593).
+
+### ADR-027 stage-2 S2-B1 — the economic validation surface — 2026-11-09
+
+The first command-path increment landed without touching the write path:
+`validateDefinitionTerms` re-expresses, over `SecurityTermModules` and gated by the
+classification's canonical `TypeName`, every `validateKindTerms` rule whose subject data has a
+module home under `termsFromKind` — 54 error codes across 23 classes, committed as the
+`definitionExpressibleCodes` ledger and exposed through
+`SecurityMasterCommandFacade.ValidateDefinitionInvariants` / `DefinitionExpressibleCodes`.
+Equivalence is pinned twice: `SecurityDefinitionValidationEquivalenceTests` proves every clean
+class twin passes both surfaces, trips both with the same code for every ledgered code via a
+twin mutation (with the table required to cover exactly the ledger), and forbids the definition
+surface from reporting any code the kind surface does not; `SecurityDefinitionValidationTests`
+(F#) proves the three factor-schedule codes whose invalid shapes the codec gate refuses before
+any validator runs — both surfaces carry them as defense in depth. The ledger's complement
+(option strike, swap legs, bond subclass/par/principal schedule/step coupons, currency pairs,
+notionals, type-conditional strike requirements, the CustomAsset envelope) stays codec-side
+until modules gain homes. `SecurityMasterLegacyUpgrade.modulesFromKind` makes the
+kind → modules projection a first-class seam for S2-B2's mapping-time derivation.
+
+### ADR-027 stage-2 opens — the replay-compatibility corpus — 2026-11-09
+
+Stage 2's ADR-named precondition landed first: `SecurityMasterReplayCorpusTests` replays a
+committed corpus of stored-event-shaped records (`tests/fixtures/security-master/replay-corpus/`)
+through the three paths the command-path moves must not disturb — the projection rebuild
+(`ToProjection`), the next-event derivation (`ToEconomicRecord`, retained fold included), and
+the amend-cycle domain-codec round trip (`ToRecord` → snapshot → `ToProjection` → retained
+carry, the seam stage 2 deletes) — and pins the resulting bytes in a committed golden with the
+same received-file workflow as the write goldens. Refusals pin their messages, so the corpus
+also documents today's honest losses: Equity economic-only replay refuses by classification,
+and CapFloor/Commodity/Swap/Warrant economic-only rebuilds refuse the next-event derivation
+because required flat keys (`capFloorType`, `commodityType`, `legs`, `underlyingId`) have no
+economic home yet. Corpus inputs are committed literals and never regenerate, so any serializer
+or bridge change surfaces as a reviewed golden diff — the "byte-identical before and after"
+proof obligation made mechanical. The upcoming increments extend it case by case.
+
+### ADR-027 stage-1 increment 5 — the economic serializer emits all 25 modules — 2026-11-09
+
+The fifth slice-10 increment extends `SecurityEconomicDefinitionAdapter.BuildEconomicTermsJson`
+with the 11 modules it never wrote (`floatingRate`, `tradingParameters`, `creditRating`,
+`depositaryReceipt`, `dividendSchedule`, `covenants`, `esg`, `venue`, `multiCalendar`,
+`inflationLinked`, `sinkingFund`), under the existing contract: every module key emitted, null
+when the definition has no such module, appended after `structuredProduct`. The observable gain
+is for the two modules with producers — `FloatingRate` (StructuredCredit coupon-or-index;
+CapFloor index, strikes and reset) and `TradingParameters` (Commodity contract size, Cfd
+leverage, Warrant multiplier) — whose flat-fed values previously vanished from economic events
+and survived economic-only replay only through the retained flat document. The other nine are
+constant-`None` expansion modules serializing as null until a producer appears. The conversion
+ledger adds all 11 to `DroppedModules` (5 bridged / 20 dropped): the class-independent bridge
+does not read them, they retain verbatim beside the flat keys, and their flat-home recovery
+(including Cfd leverage's reciprocal transform) is increment 6's identity work. New F#
+`DividendFrequency.Label` and `CovenantKind.Label` helpers carry the DU labels. Pinned by the
+extended `SecurityEconomicTermsV2BridgeCoverageTests` (full-fixture inventory, no-trace and
+retained-verbatim theories over all 20 dropped modules, and the producer-backed emission test)
+and the suffix-extended exact-byte twins in `SecurityEconomicTermsClassAwareBridgeTests`; the
+write-golden fixture was regenerated for the widened economic documents (41 of 164 entries, all
+pure suffix appends of the new module keys).
+
+The untagged-payload shape rule did not widen with the serializer: its vocabulary froze as
+`ShapeRuleModules` — exactly the 14 modules the serializer wrote before the `termsFormat` tag
+existed, which are the only keys an untagged payload can carry — and `IsEconomicTermsShape` now
+consults that frozen list, keeping it aligned with shipped migration 042's SQL mirror (pinned by
+the `SecurityTermsVersioningTests` migration test, which also pins the list's frozen count and
+its subset relation to the serializer inventory). The list never grows; it retires with the
+shape rule itself under ADR-024 decision 5.
+
+### ADR-027 stage-1 increment 4 — structured-credit factor schedule recovers — 2026-11-09
+
+The fourth slice-10 increment (increment 3 was verified already complete, no code) recovers the
+economic `structuredProduct.factorScheduleEntries` list into the flat `factorScheduleEntries`
+array for the one class that declares it (StructuredCredit, Since 1, so the stamp floor of 2
+governs), in the frozen two-member entry form (`asOfDate`, `factor`) and in stored order. This
+closes a silent drop rather than lifting a refusal: no guard ever covered the factor schedule,
+so economic-only replay previously kept it alive only inside `retainedEconomicTerms` while the
+flat row — and the amortization/projection readers built from it — lost the dated schedule
+without a trace. Recovery is fail-closed under the flat side's own domain invariants
+(`structured_credit_factor_schedule_*` in `SecurityMasterCommands.fs`): canonical spellings
+only, decodable ISO dates, factors in `[0,1]`, distinct dates, non-increasing in date order;
+anything else that declares content refuses with a factor-specific message, while non-declaring
+classes and the class-independent route keep their pre-existing silent-retain behavior
+unchanged (pinned in `SecurityEconomicCallScheduleFlatteningTests` and
+`SecurityEconomicScheduleReplayRefusalTests`; the cross-module factor-after-maturity rule stays
+with domain validation, as increments 1–2 left notice/window rules).
+
+Shipped alongside, a confirmed Codex review finding on increment 1's recovery: undeclared
+`callType` labels (anything outside "MakeWhole"/"European"/"American"/"Bermudan") were nulled
+in the recovered `exerciseStyle`, silently losing them on the flat → economic → flat
+round-trip even though the flat entry field preserves undeclared style strings
+(`WithVerbatimUndeclaredValue`) and `SecurityMasterLegacyUpgrade.economicCalls` copies them
+into `callType` verbatim. The recovery now carries every non-MakeWhole label back into
+`exerciseStyle` unchanged — the exact inverse of the economic writer — with comparisons still
+ordinal, so a case-variant "makewhole" is a verbatim label, not a price type (pinned in
+`SecurityEconomicCallScheduleFlatteningTests` and the `SecurityTermsVersioningTests` replay
+pin, which moved from null-on-unknown to verbatim).
+
+### ADR-027 stage-1 increment 2 — accrual conventions recover — 2026-11-09
+
+The second slice-10 increment lifts the accrual refusal for classes that declare the
+`scheduleConventions` block (Bond and CertificateOfDeposit at terms version 2; StructuredCredit
+at 3): the economic Accrual module's business-day convention — kept verbatim
+and recovered only when the flat reader's own parser decodes the spelling — and its joint
+calendar, as the block's one payment calendar, land in the frozen twelve-member block, with the
+members the economic family never carried left null under ADR-025's read defaults. The frozen
+fill now holds on recovered documents: at or above the block's Since the key is present, null
+when nothing is declared, so a schedules-only document stamped at 3 carries
+`scheduleConventions: null`. Refusals keep the increment-1 discipline: unrecognized spellings,
+blank or non-string calendars, and case-variant module or member spellings refuse on every
+route, and classes without the declared block refuse as before
+(`SecurityEconomicScheduleReplayRefusalTests`; the recovery is pinned by the conventions cases
+in `SecurityEconomicCallScheduleFlatteningTests`).
+
+### ADR-027 accepted; stage-1 increment 1 — call schedules recover — 2026-11-09
+
+The domain owner accepted [ADR-027](../adr/027-single-economic-model-consolidation.md) (single
+economic model consolidation, three gated stages); stage 1 proceeds as remediation slice 10. Its
+first increment landed: for a class that declares the flat `callSchedule`/`putSchedule` arrays
+(Bond and CertificateOfDeposit at terms version 3, StructuredCredit at 4), the class-aware
+economic→flat conversion recovers the Call module's lists into those arrays in the frozen
+ADR-024 entry form, stamped at the arrays' version, instead of refusing economic-only replay.
+Conversion semantics are declared and pinned (`SecurityEconomicCallScheduleFlatteningTests`);
+refusals narrow but never vanish (`SecurityEconomicScheduleReplayRefusalTests`: accrual
+conventions everywhere; schedule lists on the class-independent route and for non-declaring
+classes; malformed lists, populated-but-dateless entries, undecodable dates and case-variant
+module or key spellings on every route — the latter two added after a Codex review pass caught
+the first cut failing open where the old guard failed closed). The
+`SecurityTermsVersioningTests` economic-replay pin moved from refusal to recovery with the
+retained document still carried. Schema-control contract manifests were re-snapshot and promoted
+(`verify` reproduced CI's staleness locally and passes after promotion).
+
+Validation (local, .NET SDK 10.0.403, plus a local PostgreSQL 16 through
+`MERIDIAN_SECURITY_MASTER_CONNECTION_STRING`): bridge/versioning/upgrader/refusal/golden suites —
+425 passed, 0 failed; `SecurityMasterPostgresRoundTripTests` — 25 passed against the live
+database, the slice-9 gate-count row-by-row SQL parity test now exercised rather than skipped;
+CustomAsset/fan-out/alias-migration/terms-history Postgres suites — 35 passed. The full local
+`bash scripts/ci.sh` was not run; GitHub `Meridian CI / quality-gate` remains authoritative.
+
+---
+
+## Scheduled institutional-requirements pass — 2026-11-01
+
+Source snapshot `9412120c` (main). Interval since the 2026-10-28 consolidation (`6bcc7a02`):
+162 Security Master files, +7,685/−1,504, mostly the declared-schedule, versioned bond economics,
+contractual cash-flow scenario and OTC lifecycle work (migrations 056–058). Static source review
+only; no tests were run.
+
+### New finding
+
+**N1 — Two `ScheduleSpecFactory` mappings with divergent calendar rules.** The public
+[Contracts factory](https://github.com/rodoHasArrived/Meridian-main/blob/9412120c/src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs) is the
+production mapping (cash-flow service, bond analytics/migration, portfolio cash ladder, open-lot
+amortization) and states that it never falls back to the common terms' holiday calendar. The
+internal [Application factory](https://github.com/rodoHasArrived/Meridian-main/blob/9412120c/src/Meridian.Application/SecurityMaster/CashFlow/ScheduleSpecFactory.cs)
+(`e0fc1538`, 2026-10-28) has no production caller — only `ScheduleSpecFactoryTests` — and
+substitutes `commonCalendarId` when the block declares no calendar. A same-named, test-pinned
+mapping with the opposite refusal rule is a wiring hazard. Remove it, or retarget its tests at the
+Contracts factory, after confirming no host composition references it.
+
+### Open dispositions re-checked on this snapshot
+
+| Item | Current evidence | Status |
+| --- | --- | --- |
+| D3 WPF multiplier predicate | `SecurityMasterViewModel.RequiresContractMultiplier` still substring-matches `Option`/`Future`/`Derivative`. | Open |
+| D5 governed writes | `RequireGovernedTermAmendments` is read only in `SecurityMasterEndpoints`; profile approval still records `ApprovedBy` without a drafter comparison. | Open |
+| D6 classification labels | `SecurityEconomicDefinitionAdapter` still persists `Family?.ToString()` / `SubType.ToString()`. | Open |
+| D7 audit/serialization | No append-only trigger on `security_events`; `SecurityGovernanceEventLog` still takes an `object` payload. | Open |
+| D8 identifier normalization | F# `SecurityIdentifier.normalizeValue` (now `SecurityIdentifiers.fs`) remains separate from the C# kind-aware normalizer. | Open |
+| D10 StructuredNote accounting | Catalog entry present; accounting class precedence still unpinned. | Open (decision) |
+
+No roadmap status, policy default, schema or production code is changed by this pass.
 
 ---
 
@@ -8233,6 +8934,33 @@ hosted `schema-control.yml` verify step is authoritative.
 | `run-maintained-generation.py --docs-only` | Converged; only the optional Docker UML render failed |
 | `bash scripts/ci.sh` | Not run as a whole; `Meridian CI / quality-gate` on the pull request is authoritative |
 
+### UPI checksum verification follow-up
+
+[ISO 4914:2021](https://www.iso.org/standard/80506.html) §4 requires `QZ`, nine ASCII digits or
+uppercase consonants excluding `Y`, and one check character from the same 30-symbol alphabet.
+Annex C Table C.1 assigns values in the order `0123456789BCDFGHJKLMNPQRSTVWXZ`. The MOD 31,30
+calculation starts at 30 and processes all 11 characters before the check character, including
+`QZ`. At each step it adds the character value, reduces modulo 30 with zero mapped to 30, doubles
+the result, and reduces modulo 31. The check value makes the final sum congruent to 1 modulo 30.
+The merged implementation matches these steps. The Annex C worked example ends at 17, giving check
+value 14 (`G`) for `QZNX2JD91QCG`. Annex E of [JR/T 0294.1–2024](https://www.csrc.gov.cn/csrc/c106431/c7513047/7513047/files/%E9%99%84%E4%BB%B61%EF%BC%9A%E9%87%91%E8%9E%8D%E5%B8%82%E5%9C%BA%E4%BA%A4%E6%98%93%E6%8A%A5%E5%91%8A%E6%95%B0%E6%8D%AE%E8%A6%81%E7%B4%A0%E6%8C%87%E5%8D%97%20%E7%AC%AC1%E9%83%A8%E5%88%86%EF%BC%9A%E5%85%A8%E7%90%83%E5%94%AF%E4%B8%80%E4%BA%A7%E5%93%81%E8%AF%86%E5%88%AB%E7%A0%81.pdf)
+reproduces the calculation and worked example.
+
+| Published example | Source |
+| --- | --- |
+| `QZNX2JD91QCG` | ISO 4914:2021 Annex C worked example |
+| `QZRBG6ZTKS42` | [ANNA DSB search and create guide](https://www.anna-dsb.com/wp-content/uploads/2023/10/The-UPI-How-to-search-for-and-create-a-UPI.pdf), figure 10. Exercises the zero-to-30 substitution. |
+| `QZVLFS6FH9VZ` | [ANNA DSB-2771](https://www.anna-dsb.com/download/dsb-2771-upi-eq-sw-total-return-swap-single-name-template-definition/), Identifier Section |
+| `QZFTFRVB9S17` | [ANNA DSB-2772](https://www.anna-dsb.com/download/dsb-2772-upi-eq-sw-total-return-swap-single-index-template-definition/), Identifier Section |
+
+The canonical ISO code contains no separators. Meridian's format check applies to the normalized
+candidate after the shared C#/F# import normalizer uppercases the input and strips characters
+outside ASCII `A-Z0-9`. The raw identifier is retained separately. The regressions cover published
+check characters and reject mutations with an incorrect check character, forbidden letters, or an
+incorrect length or prefix. This is an offline format and checksum check. Verifying issuance,
+record status, or product attributes requires a DSB reference data lookup. Meridian treats a UPI
+as shared product reference data and a UTI as transaction-specific.
+
 ## Consumer pass — 2026-11-05 (call/put notice-date watch)
 
 This pass records source on branch `claude/charming-heisenberg-f1a4pl`, based on main at
@@ -8304,3 +9032,364 @@ business-day adjustment) remain open.
 | `Route`, `OpenApi`, `Architecture`, `ServiceRegistration` and `Composition` filters | 1070 passed, 1 skipped |
 | `generate-ui-api-routes-ts.py` | One new route constant |
 | `bash scripts/ci.sh` | Not run as a whole; `Meridian CI / quality-gate` on the pull request is authoritative |
+
+## Resolution pass — 2026-11-09 (priority 5, increment 8a: declared call and put events on the obligation timeline; the increment-6 stamp)
+
+This pass records source on branch `codex/obligation-timeline-declared-call-put`, based on main at
+`53ac1724d`. It changes no dated observation above and establishes no deployment, term write or
+fleet state. It is read-side only: no terms version, write version, stamp floor, declared mapping
+version, migration or route changes.
+
+**What main had.** Analytics, the cash ladder and the notice watch already read declared call and
+put schedules (the consumer pass of 2026-11-05). The asset-operations obligation timeline did not:
+`AssetObligationProjectionService.AddFixedIncomeObligations` raised one `CallPutReview` from the
+first of the scalars `callDate`, `mandatoryPutDate` and `preRefundDate`, so a bond that declared a
+schedule and no scalar had no option event, and the notice watch had no consumer. Separately, the
+legacy bond loop's flow ids had been derived from `SchedulePeriodId` since `4f2e63245`
+(2026-10-29) under an unchanged `fixed-income-cash-flow-projection-v1` stamp.
+
+**What landed.**
+
+| Area | What landed |
+| --- | --- |
+| Declared events on the timeline | A Bond whose row decodes a `callSchedule` or `putSchedule` (terms version 3 or later, through `SecurityVersionedTerms.Decoding`) gets `IssuerCallExercise` and `HolderPutExercise` on every remaining exercise date and `IssuerCallNoticeDeadline` and `HolderPutNoticeDeadline` on the latest notice date where the entry states bounds. Each event's payload carries the price, both notice dates, the window status and the days to the deadline |
+| Source of the dates | `BondExerciseNoticeWatch.EvaluateToMaturity`, a new entry point that is the notice watch without its horizon bound or filter. It runs the same preconditions and `BondExerciseEconomics.TryResolveScenarios`, so the timeline adds no date arithmetic: business-day adjustment, notice bounds, retained-declaration rules and calendars are the watch's |
+| Blocked schedules | The watch's blocked result is carried as it is: the timeline's `ExtensionPayload` holds `declaredExercise` with `status`, `blockers` (code and reason) and `diagnostics`; the timeline and readiness warnings name the code and reason; no option event is raised. An elapsed notice deadline keeps its event, marked `MissingEvidence`, and adds the watch's elapsed diagnostic as a warning |
+| Timeline stamp | `asset-terms-obligations-timeline-declared-v1` when a declared schedule was the authority, resolved or blocked; `asset-terms-obligations-timeline-v1` otherwise |
+| Legacy bond stamp | The legacy loop's run and flow payloads are stamped `fixed-income-cash-flow-projection-v2`. `AssetOperationsEngineVersions` names that stamp, the retained `-v1` value, the declared run and flow stamps (values unchanged) and both timeline stamps |
+| Defect registry | SCH-DEF-012 registers the timeline's scalar conflation, the SCH-DEF-009 shape at a second site, with a `KnownDefect` pin. It stays in force for every record that declares no schedule |
+| Calendars | `AssetObligationProjectionService` and `AssetOperationsReadService` take the host's `IBusinessDayCalendarSource` as an optional constructor argument, resolved from the container that already registers it |
+
+**Owner decisions (2026-11-09).**
+
+- Scope is 8a and the increment-6 stamp only.
+- Records that declare no schedule keep their output byte for byte, the
+  `asset-terms-obligations-timeline-v1` stamp and the scalar behaviour. The conflation is not fixed;
+  it is registered.
+- A declaring bond that also has scalar dates shows each exercise once, and the declared schedule
+  is the authority.
+- A declaring bond whose schedule cannot be resolved is a typed blocked outcome. It never falls back
+  to the scalars and never fails the request.
+- A timeline that used a declared schedule has its own stamp, one named constant.
+- Legacy runs are stamped `fixed-income-cash-flow-projection-v2` from now on; readers keep
+  accepting `-v1` on stored evidence.
+- CertificateOfDeposit and StructuredCredit stay out; consumers gate on
+  `CarriesBondCouponStructure`.
+
+**Choices made inside those decisions.**
+
+- *Duplicates.* When a declared schedule is present the scalar probe is not run at all, so a
+  scalar `callDate` stored beside the schedule raises no second event. A scalar
+  `mandatoryPutDate` or `preRefundDate` beside a declared schedule is refused by the shared resolver,
+  so that bond is blocked, not shown from the scalar.
+- *Unresolvable schedules.* Reported in three places the service already uses: the timeline's
+  extension payload (typed), the timeline warnings (which set `ReviewRequired`) and the readiness
+  warnings. No event of any option kind is raised.
+- *Policy gate.* The timeline follows `BondExerciseNoticeReadService`, in its order: terms that are
+  not effective at the evaluation date block first (`TermsNotEffective`), then the cutover policy
+  (`CalculationPolicyBlocked`), then the watch. One rule is added: a blocked projection run blocks the
+  declared events as well (`ProjectionBlocked`). The read service delivers a policy block as a
+  blocked projection, so a caller that evaluated the policy itself cannot expose exercise dates for
+  a blocked bond.
+- *Horizon.* None. The scalar event showed a call date however far away it was, so the declared
+  events cover every exercise date to maturity. The notice watch route keeps its 1 to 366 day
+  horizon.
+- *Stamp name.* `asset-terms-obligations-timeline-declared-v1`, after the
+  `asset-obligation-declared-v3` family.
+- *The v2 stamp reaches further than bond-reference runs.* The legacy loop also projects the flows
+  of bonds read without a bond reference and of CertificateOfDeposit and StructuredCredit rows.
+  Their run stays `asset-obligation-projection-v1`, and each flow payload now says `-v2`, because
+  the same loop derives their ids.
+
+**Deliberately left out.**
+
+- 8b, the schedule book and workbench lifecycle. `BuildScheduleBook` still raises a Call event only
+  from the economic `call.firstCallDate`, and `SecurityMasterWorkbenchQueryServiceCallScheduleTests`
+  still pins that, so the schedule book and the timeline now disagree about a declaring bond.
+- 8c, a notice-watch screen in either workstation, the join to `FileBondExerciseNoticeStore`
+  evidence and a portfolio sweep.
+- 8e, American windows and make-whole in bond analytics and the cash ladder. The timeline refuses
+  them as the watch does.
+- 8f, CertificateOfDeposit and StructuredCredit consumers.
+- The two id instabilities: a canonical entry with no unadjusted period is keyed on a running
+  ordinal (`AssetOperationsProjectionBuilder.BondCashFlows.cs`), and a legacy bond with no issue
+  date is anchored on the as-of date. Neither is fixed or marked.
+- Published projections. A stored publication is read back as stored, and a timeline derived for it
+  on read comes from its published terms payload and keeps the v1 stamp, so a declaring bond with a
+  publication still shows the scalar `CallPutReview`.
+- Restamping stored `-v1` runs.
+
+**Deviations.**
+
+- ADR-025's amended proposal said Bermudan dates take the roll the schedule factory resolves. The
+  code on main does not: `BondExerciseEconomics.TryExerciseDates` generates an anchored grid on the
+  anchor-day roll of the entry's own start date. The ADR now records that rule as the adopted one
+  and says it differs from the proposal. No code changed.
+- The golden fixture written before the change showed that the legacy stamp sits in the flow
+  payloads of synthesized bonds, CertificateOfDeposit and StructuredCredit as well as in
+  bond-reference runs, so 39 flow payloads changed where the plan counted two call sites.
+
+**Open risks.**
+
+- A declaring bond whose schedule the watch refuses (floating or step coupon, factored principal, a
+  scalar mandatory put beside the schedule, an evaluation date outside the bond's life) loses the
+  scalar `CallPutReview` it had and shows a blocked warning. That is the decision, but it is a
+  visible change for those bonds.
+- A matured or not-yet-issued declaring bond reports `EvaluationOutsideLife` as a blocked warning.
+- Event kinds are open text and neither client branches on them; a client that later filters on
+  `CallPutReview` would miss declaring bonds.
+- The stamp cannot distinguish a `-v1` run generated before 2026-10-29 from one generated between
+  then and this change. ADR-025 records that the generation time decides.
+- WPF tests were not run (they need Windows). No WPF or dashboard source changed.
+
+**Validation record.**
+
+| Check | Result |
+| --- | --- |
+| Baseline at `53ac1724d`, targeted filter on `Meridian.Tests` (AssetObligation, AssetOperations, BondExercise, BondAnalytics, BondCanonicalProjection, BondConsistency, BondProjectionGolden, PortfolioCashLadder, AccountCashForecast, LegacyOracleFidelity, Ratchet, FinancialRecordExplorer, ServiceRegistration, Composition, and `Category=KnownDefect`) | 1,687 passed, 34 skipped, 1 failed: `BondProjectionGoldenTests.Bond_KeysetPagesAreBounded_AndRetainCanonicalStructures`, which needs Docker and fails at the base commit in this environment |
+| Characterization committed before any product change (whole-detail golden of 10 undeclared records, 2 pins of the declaring bond's old output, 5 SCH-DEF-012 rows) | 1,695 passed with the same single Docker failure |
+| Same filter after the change | 1,745 passed, 34 skipped, the same 1 Docker failure; 58 tests added, none removed |
+| Undeclared output | `AssetObligationTimelineGoldenTests` is green against the fixture committed before the timeline change. The stamp change regenerated 43 lines of it, all of them the stamp: 2 run stamps, 2 composed timeline stamps and 39 flow payloads |
+| Declaring bond's old output | The 2 pins were flipped in the change that added the events |
+| Mutation check | 37 of 37 mutations fail a named test: 36 on the first pass, and 1 survivor (the to-maturity read skipping the watch's exception guard) after two tests were added. The 5 constant mutations used a non-incremental build |
+| Broader regression filter (SecurityMaster, FixedIncome, AssetOperations, Architecture, Schedule, Workstation, Endpoint, Contract, OpenApi) | 10,205 passed, 297 skipped, and the same 1 Docker failure (run after the change only; no baseline was taken for this filter) |
+| Guards (test-skip register, duplicate helpers, inline SHA-256, file size, warning suppressions, endpoint cancellation, contract-type parity) and `dotnet format whitespace --verify-no-changes` on the 14 changed C# files | Pass |
+| F# and dashboard suites | Not run: no F# or dashboard source changed |
+| `bash scripts/ci.sh` as a whole, `Meridian CI / quality-gate` | Not run locally as a whole; the lanes are in the final table below and the gate is reported on the pull request |
+
+**Recovered economic rows (added 2026-11-09, after main gained ADR-027 stage 1 increments 1 and 2).**
+The branch was merged with main at `a43c2d891`. Those increments recover an economic document's call
+and put lists into the flat arrays, stamp the row 3 and recover the scalar `callDate`. Such rows are
+therefore a declaring population on the timeline, and their scalar review is no longer shown. Built
+through the real conversion, every recovered shape is blocked today with `DeclaredScheduleRequired`
+and a warning: European with a price and no notice, no exercise style, `MakeWhole`, `American` and
+put-only, each with a null block (no Accrual module) or a partial one (a business-day convention and
+calendars, never `accrualAdjusted` or a coupon unit). Their legacy cash flows are unaffected. A
+recovered European entry resolves to an exercise-only event once a reviewed block is declared; the
+other three stay refused by the exercise rules. None faults and none resolves to nothing silently.
+
+**Review record (2026-11-09).** An independent review raised five findings. Each was checked against
+the code before it was changed.
+
+| Finding | Real | Disposition |
+| --- | --- | --- |
+| 1. `DeclaresExerciseSchedule` counted any non-empty array, so `callSchedule: [null]`, which a write admits as declaring nothing, resolved to zero scenarios and dropped the scalar review with no event and no warning | Yes | Declaring needs at least one entry that is not unset, by the write rules' own `ScheduleTermsWriteRules.IsUnsetScheduleEntry` (made public, not copied). An all-unset array stays on the scalar path and the v1 stamp |
+| 2. Rows recovered by ADR-027 increment 1 now count as declaring | Yes, as a population; no code defect | No shape throws or resolves silently, so no code changed. `AssetObligationRecoveredExerciseTimelineTests` pins each shape through the real conversion, and this section and ADR-025 record the population and what blocks |
+| 3. Event ids could collide, because exercise dates are business-day adjusted | Yes, reproduced with Saturday and Sunday entries rolled onto one Monday | A repeat of a kind and adjusted exercise date carries its occurrence in the watch's order (notice deadline, then declared date). The first occurrence keeps the plain key, and entries on other dates never change an id. The watch contract was not widened to carry the unadjusted date |
+| 4. The gate order differed from the read service's, and the comment said it matched | Yes | Effectiveness is now checked before the policy; a record failing both reports `TermsNotEffective` on both surfaces. A policy that throws while asked escapes `ProjectFromSecurityMasterAsync`; that is true at the base commit for every bond, so it is unchanged, and the sentences that said nothing throws now say what is caught |
+| 5. The explorer's "next timeline event" could be an elapsed notice deadline | Yes, reproduced. The scalar review did not behave this way: it is not raised for a past call date | The terms cell passes over a declared call or put notice deadline dated before the timeline's as-of. Open deadlines, undeclared bonds and past-due rows of other kinds lead as before; a test pins a past-due `BorrowerNotice` still leading |
+
+| Check after the review fixes | Result |
+| --- | --- |
+| Targeted filter on the merged tree before the fixes | 1,745 passed, 34 skipped, the same 1 Docker failure |
+| Targeted filter after the fixes | 1,775 passed, 34 skipped, the same 1 Docker failure; 30 tests added |
+| Mutation check of the fixes | 8 of 8 caught: the predicate reverted, the unset notion narrowed to null, the occurrence dropped from the id, the gate order reverted, and four mutations of the explorer rule |
+| Guards and `dotnet format whitespace --verify-no-changes` on the changed C# files | Pass |
+| Broader regression filter on the tree merged with main at `18affe503`, after the fixes | 10,368 passed, 298 skipped, the same 1 Docker failure |
+| PostgreSQL-backed tests against scratch PostgreSQL 16 Security Master and ledger databases (Postgres, Security Master integration, AssetOperations, AssetObligation, BondExercise) | 1,516 passed, 0 failed, 146 skipped |
+| Schema-control `verify` against main | Pass; no manifest change was needed |
+| Maintained generation, `check-generated-output`, `validate-doc-hashes` | Generation converges (the UML step is advisory and needs Docker); generated output is clean; 0 hash errors after the Contracts, Instruments and Ui.Shared modules were re-reviewed |
+| `verify-docs` lane and the generated-output repair pre-check against main | Pass; the pre-check reports `ready` with no changes |
+
+## Resolution pass — 2026-11-10 (priority 5, increment 8b: declared call and put events in the schedule book)
+
+This pass records source on branch `codex/schedule-book-declared-call-put`, based on main at
+`5bb05a845`. It changes no dated observation above and establishes no deployment, term write or
+fleet state. It is read-side only: no terms version, write version, stamp floor, declared mapping
+version, migration, route or contract member changes.
+
+**What main had.** Increment 8a put declared call and put events on the asset-operations obligation
+timeline and recorded that the Security Master workbench still disagreed with it.
+`SecurityMasterWorkbenchQueryService.BuildScheduleBook` raised a `Call` row only from the economic
+`call.firstCallDate`, and `BuildScheduleSummary` used the same scalar for the next lifecycle date.
+For a declaring bond the book therefore showed one call date at most, no put, no notice deadline,
+and for a bond whose declared schedule the timeline reports as blocked it still showed the scalar
+date.
+
+**What landed.**
+
+| Area | What landed |
+| --- | --- |
+| Declared rows in the schedule book | A Bond whose row decodes a `callSchedule` or `putSchedule` with at least one entry that is not unset (8a's `DeclaresExerciseSchedule`) gets a `Call` or `Put` row on every remaining exercise date and a `CallNoticeDeadline` or `PutNoticeDeadline` row on the latest notice date where the entry states bounds. The economic `call.firstCallDate` is not read for such a bond |
+| Next lifecycle date | For a declaring bond: the earliest of the next corporate action, the declared exercise dates, the notice deadlines on or after the evaluation date, and the maturity. The scalar call date is not a candidate and an elapsed notice deadline never is |
+| Blocked schedules | No call or put row and no scalar fallback. The blocker's code and reason are appended to `Summary` and `SourceSummary` of the schedule summary and of the schedule book, in the sentence the timeline uses |
+| Source of the dates | `AssetObligationProjectionService.ResolveDeclaredExerciseAsync`: the timeline's gates in the timeline's order (terms effective, cutover policy, `BondExerciseNoticeWatch.EvaluateToMaturity`), with the policy asked inside it and a policy that throws `SecurityScheduleValidationException` reported as `InvalidEconomicSchedule`. The book adds no date arithmetic |
+| Shared code | The gate order moved into one static method that the timeline's instance method now calls. The loop that turns windows into exercise and deadline rows, with its occurrence rule and its sentences, moved into `AssetObligationProjectionService.DeclaredExerciseRows`; the timeline and the book both map its rows to their own contracts. `DeclaredExerciseWarnings` is public for the same reason. The timeline's output is unchanged (its tests and golden are green without edits) |
+| Composition | `SecurityMasterWorkbenchQueryService` takes `IBusinessDayCalendarSource`, `IBondCalculationPolicy` and `TimeProvider` as optional constructor arguments (and, since the review fixes below, a logger). Its one production registration is by type in `AddWorkstationSharedServices`, so the container supplies the registered ones; a composition test pins that. The evaluation date is the snapshot's time, read once from the clock |
+| File size | The new code is in `SecurityMasterWorkbenchQueryService.DeclaredExercise.cs`; the main file grew by 13 lines and stays under its recorded cap |
+
+**Owner decisions (2026-11-10).**
+
+- The next pull request is 8b: the schedule book's call and put events and the workbench's next
+  lifecycle date come from the declared schedule for declaring Bond rows.
+- A declaring bond whose schedule is blocked gets no scalar `Call` row; the blocked code and reason
+  are shown instead. This includes every row recovered from economic terms by ADR-027, which block
+  with `DeclaredScheduleRequired`.
+- Notice deadlines appear as their own rows, as on the timeline.
+- No contract shape changes while pull request #3439 is open: the blocked reason goes in existing
+  text fields.
+- Bonds that declare no schedule, CertificateOfDeposit and StructuredCredit keep their output byte
+  for byte.
+- The gates and their order are 8a's.
+
+**Choices made inside those decisions.**
+
+- *Row types.* `Call`, `Put`, `CallNoticeDeadline` and `PutNoticeDeadline`, one for each of the
+  timeline's `IssuerCallExercise`, `HolderPutExercise`, `IssuerCallNoticeDeadline` and
+  `HolderPutNoticeDeadline`. `Call` is the type the book already uses for a call date and that the
+  browser labels, so the timeline's longer names were not copied. The four names are constants on
+  the service.
+- *Row fields.* An exercise row's pay date is its exercise date, as on the scalar row; a deadline
+  row has no pay date. No row has an amount. `SourceReason` carries the timeline's sentence for the
+  event (the price, or the exercise date a deadline belongs to and when its window opens). The
+  source system, record, time and editor are the winning source's, as on the scalar row; with no
+  winning source the system is `declared-exercise-schedule`. `IsDerivedFromEconomicTerms` is false,
+  because the row is read from the declared schedule on the stored row and not from the economic
+  document.
+- *Row ids.* `call-<date>` and `put-<date>`, the scalar row's format, so a resolved bond's first
+  call keeps the id it had. A deadline row's id carries its exercise date. A repeat of a type and
+  adjusted exercise date carries 8a's occurrence number.
+- *Elapsed events.* The book already keeps a past scalar call date as a row with posting status
+  `Reference`. An elapsed notice deadline is treated the same way, with the watch's elapsed
+  diagnostic at the end of its reason text and in the schedule summary. The watch returns no
+  exercise date before the evaluation date, so the book shows none, as the timeline shows none.
+- *Where the blocked reason goes.* `Summary`, because the WPF schedule section and the instrument
+  passport's cash-flow sections print it, and `SourceSummary`, because the browser's schedule
+  panel prints only that one. The elapsed diagnostic goes to `Summary` only.
+- *Policy that throws.* The workbench uses the notice-watch read service's rule (a blocker), not
+  the asset-operations entry points' (the exception escapes), because a failed snapshot would take
+  the whole Security Master drill-in down for one bond.
+- *Clock.* The snapshot time is now read from an injected `TimeProvider` so the evaluation date can
+  be fixed in tests. The corporate-action rows and the scalar rows still read `DateTime.UtcNow`;
+  those reads are increment 7's.
+
+**Behaviour changes for declaring bonds.**
+
+- A resolved declaring bond gains rows: every remaining exercise date, puts, and notice deadlines.
+  The shared resolver refuses a row whose scalar `callDate` is not its earliest declared call date,
+  so the `Call` row such a bond showed before is one of the declared rows, with the same id and
+  date. Its `SourceReason` and `IsDerivedFromEconomicTerms` differ.
+- Its next lifecycle date can be earlier than before: an open notice deadline or a put date now
+  counts.
+- A blocked declaring bond loses its `Call` row and its next lifecycle date no longer uses the
+  scalar. Its summary and source summary name the blocker. That is every recovered row, every
+  declaring row without a reviewed conventions block, and every declaring row the watch refuses
+  (floating or step coupon, factored principal, `American` or make-whole entries, a scalar
+  mandatory put or pre-refund date, a scalar call date that contradicts the schedule, terms not
+  effective, a cutover policy block, an evaluation date outside the bond's life).
+- The instrument passport's terms-and-obligations section counts schedule-book rows, so its count
+  and sentence follow the new rows; its cash-flow readiness summary repeats the schedule summary,
+  blocker included.
+
+**Consumers checked.**
+
+- C# readers of the book (`BuildInstrumentPassportAsync` and the passport section builders in the
+  same service) use only `Events.Count`, `SupportsCashflowSchedule` and the summary text. None
+  switches on an event type. A bond with economic terms keeps its `Maturity` row, so no count that
+  was positive becomes zero.
+- The browser (`accounting-screen.view-model.ts`) types the event type as a string, maps
+  `payDate ?? effectiveDate` and falls back to the raw type where it has no label. It labels
+  `Call`; `Put`, `CallNoticeDeadline` and `PutNoticeDeadline` are shown by their type name. It
+  does not print the book's `Summary` or its next lifecycle date. No dashboard source changed,
+  because pull request #3423 has two `accounting-screen` files open.
+- WPF binds the rows to a grid with a Reason column and prints `Summary`, `SourceSummary` and the
+  next lifecycle date as fields. It orders by effective date with a stable sort. No WPF source
+  changed.
+
+**Deliberately left out.**
+
+- Increment 7 (cash-flow rows from the engine) and the remaining `DateTime.UtcNow` reads.
+- 8c, 8e and 8f. CertificateOfDeposit and StructuredCredit keep the scalar read.
+- A typed blocked-outcome member on the schedule book contract, until #3439 has merged.
+- Browser labels for the three new row types.
+- The scalar path's next lifecycle date, which can still name a past call date for a bond that
+  declares no schedule.
+- As-of and historical workbench reads: the book is evaluated at the snapshot's time only.
+- Published asset-operations projections, which still show the scalar `CallPutReview` on the
+  timeline (8a's open item). For a declaring bond with a publication the book and that published
+  timeline can still differ.
+
+**Open risks.**
+
+- The change is visible in both workstations for the whole declaring population, and for recovered
+  rows it removes a date operators see today until a conventions block is reviewed.
+- The blocked sentence appears twice in the WPF schedule fields (Summary and Source).
+- A Bermudan schedule adds up to two rows per exercise date for the bond's remaining life, bounded
+  by the resolver's 1,200-scenario cap.
+- Each workbench snapshot of a declaring bond now asks the cutover policy and the calendar source.
+  A host without them gets the watch's refusal as a blocker, not a fault.
+- The book has no engine stamp, so nothing on a stored or exported snapshot says which rule
+  produced its call rows.
+- WPF and dashboard tests were not run; neither source changed.
+- A blocked declaring bond still reads terms `Ready`. The passport's Terms panel (`economics`,
+  `payment-schedule`), its terms-and-obligations and cash-flow readiness sections and close
+  readiness count schedule rows and economic terms, and the `Maturity` row keeps them positive.
+  The blocker is in the passport only as text: the `payment-schedule` item's detail and the
+  cash-flow readiness section's summary, which repeat the schedule summary. No status was flipped.
+- For a blocked declaring bond the next lifecycle date moves from the scalar call date to the
+  maturity, or to the next corporate action when one is earlier.
+- `EvaluationOutsideLife` blocks a declaring bond before its issue date and at or after maturity,
+  so a not-yet-issued or matured callable bond shows the blocker and no call row.
+- The book and the timeline can differ for one record in four cases, listed in ADR-025: a
+  same-day published projection on the timeline (scalar review), a blocked projection run
+  (`ProjectionBlocked` on the timeline only), a cutover policy that throws
+  `SecurityScheduleValidationException` (a blocker in the book, an escaping exception on the
+  asset-operations path), and any other fault while resolving (a logged
+  `DeclaredExerciseUnavailable` blocker in the book, an escaping exception there).
+- In the browser the three new row types are shown by their raw type names, and a notice
+  deadline's date appears under "Payment date", because the view model maps
+  `payDate ?? effectiveDate` (`accounting-screen.view-model.ts`). Deferred while pull request
+  #3423 edits those files.
+- The WPF "Schedule model" evidence item and the schedule fields print both `Summary` and the
+  source summary, so the blocker sentence appears twice there.
+- Clock injection is partial. The snapshot time and the declared rows use the injected clock; the
+  next corporate action, the `Maturity` and scalar rows' posting status and the corporate-action
+  status still read `DateTime.UtcNow`, as before.
+- Declared rows are not deduplicated against `Call` events from the economic `cashflowSchedule`,
+  `cashflows` or `paymentSchedule` arrays, where the scalar row is. No production producer of
+  economic terms emits those arrays (`SecurityEconomicDefinitionAdapter`).
+
+**Validation record.**
+
+| Check | Result |
+| --- | --- |
+| Baseline at `5bb05a845`, targeted filter on `Meridian.Tests` (SecurityMasterWorkbench, SecurityMasterInstrumentPassport, AssetObligation, AssetOperations, BondExercise, FinancialRecordExplorer, Ratchet, Composition, ServiceRegistration, and `Category=KnownDefect`) | 1,824 passed, 32 skipped, 0 failed |
+| Characterization committed before any product change: `SecurityMasterWorkbenchScheduleBookGoldenTests`, the serialized schedule summary and schedule book of 13 records (7 undeclared Bond shapes, CertificateOfDeposit, StructuredCredit, 4 declaring bonds) | 1,825 passed |
+| Same filter after the change | 1,886 passed, 32 skipped, 0 failed; 62 tests added, none removed; 1 existing pin flipped on purpose (`SecurityMasterWorkbenchQueryServiceCallScheduleTests`, the Bond case) |
+| Undeclared output | The 9 undeclared, CertificateOfDeposit and StructuredCredit cases of the golden are unchanged from the fixture committed before the change. The 4 declaring cases changed: one resolved (a notice deadline, a call and a put where there was one call), three blocked (scalar contradicts the schedule, no conventions, recovered from economic terms) |
+| Timeline output after the shared-code extraction | `AssetObligationTimelineGoldenTests` and the 8a timeline tests are green with no fixture or assertion changed |
+| Same dates on both surfaces | `ScheduleBookAndObligationTimeline_ListTheSameExerciseAndNoticeDates_ForTheSameRecord`, 8 records, resolved and blocked |
+| Composition | `SecurityMasterWorkbenchDeclaredExerciseCompositionTests`: the workstation's own registration, resolved beside the storage feature, receives the file calendar source and the registered cutover policy |
+| Mutation check | 53 of 53 mutations fail a named test: 34 in the workbench service and 19 in the shared Instruments code. 52 were caught on the first pass. The survivor swapped the timeline's formula-trace sentences between exercise and deadline rows, a line 8a had not pinned; an assertion was added and it is caught |
+| Broader regression filter (SecurityMaster, FixedIncome, AssetOperations, AssetObligation, Architecture, Schedule, Workstation, Endpoint, Contract, OpenApi), after the change only | 10,409 passed, 298 skipped, 1 failed: `BondProjectionGoldenTests.Bond_KeysetPagesAreBounded_AndRetainCanonicalStructures`, which needs Docker and fails at the base commit in this environment |
+| Guards (test-skip register, duplicate helpers, inline SHA-256, file size, warning suppressions, endpoint cancellation, contract-type parity) and `dotnet format whitespace --verify-no-changes` on the 9 changed C# files | Pass |
+| F#, dashboard and WPF suites | Not run: no F#, dashboard or WPF source changed |
+| Generated outputs (generated docs, reviewed hashes, health dashboard) and `Meridian CI / quality-gate` | Not regenerated or run in this pass; reported on the pull request. New public members that the generated inventories will pick up: `ResolveDeclaredExerciseAsync`, the static `ResolveDeclaredExercise` overload, `DeclaredExerciseRows`, `DeclaredExerciseRow`, `DeclaredExerciseWarnings` (was internal), four event-type constants and three constructor arguments on `SecurityMasterWorkbenchQueryService`, and one new fixture file |
+
+**Review record (2026-11-10).** The branch was merged with main at `22a8c8046`. An independent
+review found no blocking defect and raised five items. Each was checked against the code first.
+
+| Finding | Real | Disposition |
+| --- | --- | --- |
+| A. A blocked declaring bond still reads terms `Ready` in the passport and close readiness; the blocker is only free text | Yes | No code change. The passport has two collections that other conditions add to. The Terms panel's items take conflict rows, but a panel item either sets the panel to `Review` (any item that is not ready or has a blocking count does) or would state a blocker under a `Ready` status. Recommended actions are typed by a closed enum with no kind for this. Neither fits without flipping a status or changing the contract, which were both ruled out. `BlockedDeclaringBond_PassportStillReadsTermsReady_AndCarriesTheBlockerOnlyAsText` pins what the passport says, and the risks above record it |
+| B. "Both surfaces read one outcome" was stated without its exceptions | Yes | ADR-025, the file comment, the Instruments README, the known-defects note and this section now state the cases where the two differ. The consistency theory gained a permitting-policy and a blocking-policy case. The asset-operations path was not changed |
+| C. A fault other than the two the watch converts would fail the whole trust snapshot | Yes | In the workbench only: exceptions other than `OperationCanceledException` around the resolution are logged with structured logging and become a `DeclaredExerciseUnavailable` blocker with a fixed reason; the exception text is not shown. The service had no logger, so it takes an optional `ILogger<SecurityMasterWorkbenchQueryService>` constructor argument and falls back to the null logger. The shared resolver and the timeline are unchanged |
+| D. `DeclaredExerciseRows` checked its argument on enumeration | Yes | Split into a checking method and a private iterator |
+| E. Browser labels and "Payment date", the doubled WPF sentence, partial clock injection, no deduplication against array events | Yes, all four | Recorded in the risks above; no code change |
+
+| Check after the review fixes | Result |
+| --- | --- |
+| Targeted filter (the one above) on the merged tree | 1,894 passed, 32 skipped, 0 failed; 8 test cases added |
+| Mutation check of the fixes | 6 of 6 caught: the catch removed, cancellation caught too, the exception text used as the reason, the log call removed, the logger dropped in the constructor, and the null check moved back into the iterator |
+| Guards and `dotnet format whitespace --verify-no-changes` on the 9 changed C# files | Pass |
+| Broader regression filter after the fixes | Not rerun in this pass |
+
+**Final validation (2026-11-10, tree merged with main at `db46c5ada`).**
+
+| Check | Result |
+| --- | --- |
+| Broad regression filter (SecurityMaster, FixedIncome, AssetOperations, AssetObligation, BondExercise, Architecture, Schedule, Workstation, Endpoint, Contract, OpenApi, FinancialRecordExplorer, Ratchet, Composition, ServiceRegistration, `Category=KnownDefect`) | 11,689 passed, 298 skipped, 1 failed: `BondProjectionGoldenTests.Bond_KeysetPagesAreBounded_AndRetainCanonicalStructures`, which needs Docker and fails the same way on main |
+| PostgreSQL-backed tests against scratch PostgreSQL 16 Security Master and ledger databases | 1,780 passed, 0 failed, 146 skipped |
+| Schema-control `verify` against main | Pass; no manifest change was needed |
+| Maintained generation, `check-generated-output`, `validate-doc-hashes` | Generation converges (the UML step is advisory and needs Docker); generated output is clean; 0 hash errors after the Instruments, Ui, dashboard, Ui.Shared and Wpf modules were re-reviewed |
+| `verify-docs` lane and the generated-output repair pre-check against main | Pass; the pre-check reports `ready` with no changes |

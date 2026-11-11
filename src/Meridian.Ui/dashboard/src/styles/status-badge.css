@@ -12,7 +12,7 @@
   background: var(--severity-info-bg, #EDEAE4);
   color: var(--severity-info-fg, #5E666F);
   font-family: var(--font-data, "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace);
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 700;
   line-height: 1;
   letter-spacing: 0.04em;
@@ -26,7 +26,7 @@
 /* Counts and sentences read in normal case; tracked caps are for one- or two-word badges. */
 .mds-sev--sentence {
   font-family: var(--font-body, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: 0;
   text-transform: none;

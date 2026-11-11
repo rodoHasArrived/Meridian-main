@@ -37,6 +37,7 @@ import type {
 } from "@/types/archive-maintenance.types";
 import { cn } from "@/lib/utils";
 import { usesTrackedCaps } from "@/design-system/label-case";
+import { formatUtcTimestamp } from "@/lib/format";
 
 const EXECUTION_LIMIT = 25;
 
@@ -173,7 +174,12 @@ export function ArchiveMaintenanceOperations() {
               ))}
             </select>
           </label>
-          <Button size="sm" disabled={!runnableTaskType || busy === "execute"} onClick={() => void runMaintenance()}>
+          <Button
+            size="sm"
+            disabled={!runnableTaskType || busy === "execute"}
+            disabledReason={!runnableTaskType ? "No maintenance task types are available to run." : "A maintenance run is starting."}
+            onClick={() => void runMaintenance()}
+          >
             <Wrench className="mr-2 h-4 w-4" />
             {busy === "execute" ? "Starting…" : "Run maintenance now"}
           </Button>
@@ -262,7 +268,7 @@ function badgeVariant(tone: MaintenanceTone): "default" | "success" | "warning" 
 }
 
 function formatTimestamp(value: string): string {
-  return new Date(value).toLocaleString();
+  return formatUtcTimestamp(new Date(value));
 }
 
 function errorMessage(reason: unknown): string {

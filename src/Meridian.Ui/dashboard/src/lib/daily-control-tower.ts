@@ -8,6 +8,7 @@ import type {
   AppShellWorkflowContinuityStatusTone,
   AppShellWorkflowContinuityViewModel
 } from "@/app-shell.view-model";
+import { summarizeStatusSignals } from "@/lib/status-signals";
 import { normalizeWorkspacePath, WORKSPACES } from "@/lib/workspace";
 import type { WorkspaceKey } from "@/types";
 
@@ -51,6 +52,8 @@ export interface DailyControlTowerModel {
   evidenceLabel: string;
   driverItems: DailyControlTowerDriverItem[];
   queueRows: DailyControlTowerFocusRow[];
+  /** The row for the decision the headline names; its evidence is shown until a row is chosen. */
+  leadingRow: DailyControlTowerFocusRow | null;
   trustItems: AppShellTrustStripItem[];
   linkedContextItems: AppShellLinkedContextItem[];
   evidenceTimelineItems: AppShellEvidenceTimelineItem[];
@@ -77,6 +80,21 @@ export function selectDailyControlTowerQueueItems(viewModel: AppShellWorkflowCon
   return viewModel.operatorFocusCommandItems.length > 0
     ? viewModel.operatorFocusCommandItems
     : viewModel.operatorFocusItems;
+}
+
+/**
+ * The queued item every status surface leads with: the one the view model ranked worst, or the
+ * first of the worst tone when the view model names none. The masthead attention pill and the
+ * Control Tower's headline both read this, so they name the same decision on every route.
+ */
+export function selectLeadingDecisionItem(viewModel: AppShellWorkflowContinuityViewModel): AppShellOperatorFocusItem | null {
+  const queue = selectDailyControlTowerQueueItems(viewModel);
+  const worst = summarizeStatusSignals(queue).worst ?? queue[0] ?? null;
+  if (!worst) {
+    return null;
+  }
+  const named = queue.find((item) => item.id === viewModel.leadingOperatorFocusItemId);
+  return named && named.tone === worst.tone ? named : worst;
 }
 
 export interface WorkspaceAttentionCounts {
@@ -118,7 +136,8 @@ export function buildDailyControlTowerModel(
 ): DailyControlTowerModel {
   const focusItems = selectDailyControlTowerQueueItems(viewModel);
   const queueRows = focusItems.map((item) => buildFocusRow(item, viewModel));
-  const leadingRow = queueRows[0] ?? null;
+  const leadingItemId = selectLeadingDecisionItem(viewModel)?.id ?? null;
+  const leadingRow = queueRows.find((row) => row.item.id === leadingItemId) ?? queueRows[0] ?? null;
   const decision = viewModel.decisionBrief;
 
   return {
@@ -131,7 +150,7 @@ export function buildDailyControlTowerModel(
     nextActionLabel: decision.actionLabel,
     nextActionHref: decision.actionHref,
     nextActionAriaLabel: decision.actionAriaLabel,
-    evidenceLabel: decision.evidenceLabel ?? leadingRow?.proof?.label ?? "No evidence linked",
+    evidenceLabel: buildDecisionEvidenceLabel(decision.evidenceLabel, leadingRow, viewModel.evidenceTimelineItems[0] ?? null),
     driverItems: buildDriverItems({
       viewModel,
       queueRows,
@@ -140,6 +159,7 @@ export function buildDailyControlTowerModel(
       evidenceTimelineItems: viewModel.evidenceTimelineItems
     }),
     queueRows,
+    leadingRow,
     trustItems: trustStrip.items,
     linkedContextItems: viewModel.linkedContextItems,
     evidenceTimelineItems: viewModel.evidenceTimelineItems,
@@ -311,6 +331,31 @@ function buildProofPassportItems({
       detail: proof?.route ?? item.route
     }
   ];
+}
+
+/**
+ * The hero's evidence line for the leading decision. Evidence association is fail-closed (see
+ * findProofForItem): the workstation's latest evidence event is this decision's evidence only
+ * when it is the event correlated with the leading row. Without a correlated event the line says
+ * so and names the latest event as workstation context, which is the same answer the Freshness
+ * card gives for the row instead of a timestamp that reads as proof for it.
+ */
+function buildDecisionEvidenceLabel(
+  decisionEvidenceLabel: string | null,
+  leadingRow: DailyControlTowerFocusRow | null,
+  latestEvidence: AppShellEvidenceTimelineItem | null
+): string {
+  if (!leadingRow) {
+    return decisionEvidenceLabel ?? "No evidence linked";
+  }
+
+  if (leadingRow.proof) {
+    return `Linked evidence: ${leadingRow.proof.workspaceLabel} ${leadingRow.proof.timestampLabel}`;
+  }
+
+  return latestEvidence
+    ? `No evidence linked to this item. Latest workstation evidence: ${latestEvidence.workspaceLabel} ${latestEvidence.timestampLabel}`
+    : "No evidence linked to this item";
 }
 
 function findProofForItem(

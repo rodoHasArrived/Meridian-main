@@ -27,6 +27,7 @@ public sealed class HistoricalBackfillService
     private readonly ILogger _log;
     private readonly IEventMetrics _metrics;
     private readonly BackfillJobsConfig _jobsConfig;
+    private static readonly TimeSpan AdaptiveConcurrencyRetryDelay = TimeSpan.FromMilliseconds(100);
     private readonly BackfillStatusStore? _checkpointStore;
     private readonly Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver? _symbolTimelineResolver;
 
@@ -132,6 +133,9 @@ public sealed class HistoricalBackfillService
         var skippedSymbols = new ConcurrentBag<string>();
         var perSymbolBars = new System.Collections.Concurrent.ConcurrentDictionary<string, long>(StringComparer.OrdinalIgnoreCase);
         var validationSignals = new ConcurrentBag<SymbolValidationSignal>();
+        // Resume checkpoints are only durable evidence once the bars behind them are on disk, so
+        // they are collected here and written after the final pipeline flush succeeds.
+        var pendingCheckpoints = new ConcurrentBag<(string Symbol, DateOnly LastBarDate, long Bars)>();
 
         // Pre-load bar counts from checkpoint sidecar for skip reconciliation.
         IReadOnlyDictionary<string, long>? checkpointBarCounts = null;
@@ -141,10 +145,24 @@ public sealed class HistoricalBackfillService
         // Adaptive concurrency gate: starts at maxConcurrent, decrements by 1 on RateLimitException
         int currentConcurrency = maxConcurrent;
         var semaphore = new SemaphoreSlim(maxConcurrent, maxConcurrent);
+        // Workers currently past the admission gate. The semaphore caps them at maxConcurrent; the
+        // gate below also holds them at currentConcurrency, which shrinks after a rate limit. The
+        // reduced value used to be logged but never enforced, so a throttled provider kept getting
+        // the full parallel load.
+        int activeWorkers = 0;
 
         async Task ProcessSymbolAsync(string symbol, CancellationToken ct = default)
         {
             await semaphore.WaitAsync(ct).ConfigureAwait(false);
+            while (Interlocked.Increment(ref activeWorkers) > Volatile.Read(ref currentConcurrency))
+            {
+                // Over the adaptive limit: hand the slot back and retry shortly.
+                Interlocked.Decrement(ref activeWorkers);
+                semaphore.Release();
+                await Task.Delay(AdaptiveConcurrencyRetryDelay, ct).ConfigureAwait(false);
+                await semaphore.WaitAsync(ct).ConfigureAwait(false);
+            }
+
             try
             {
                 ct.ThrowIfCancellationRequested();
@@ -247,16 +265,11 @@ public sealed class HistoricalBackfillService
 
                 perSymbolBars[symbol] = symbolBars;
 
-                // Persist per-symbol checkpoint after successful completion.
+                // Queue the per-symbol checkpoint; it is persisted only after the pipeline flush
+                // confirms these bars reached storage (a checkpoint written while bars are still
+                // queued lets a crash or flush failure skip dates that were never written).
                 if (_checkpointStore is not null && lastBarDate.HasValue)
-                {
-                    await _checkpointStore.WriteSymbolCheckpointAsync(
-                        symbol,
-                        request.Granularity,
-                        lastBarDate.Value,
-                        symbolBars,
-                        ct).ConfigureAwait(false);
-                }
+                    pendingCheckpoints.Add((symbol, lastBarDate.Value, symbolBars));
 
                 // Emit validation signal. Recency comes first: a provider whose dataset is
                 // frozen (e.g. Nasdaq WIKI ended March 2018) can return plenty of bars that
@@ -387,6 +400,7 @@ public sealed class HistoricalBackfillService
             }
             finally
             {
+                Interlocked.Decrement(ref activeWorkers);
                 semaphore.Release();
             }
         }
@@ -394,21 +408,39 @@ public sealed class HistoricalBackfillService
         var tasks = sortedSymbols.Select(s => ProcessSymbolAsync(s, ct)).ToArray();
         await Task.WhenAll(tasks).ConfigureAwait(false);
 
+        string? flushError = null;
         try
         {
             await pipeline.FlushAsync(ct).ConfigureAwait(false);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            _log.Error(ex, "Pipeline flush failed after backfill");
+            _log.Error(ex, "Pipeline flush failed after backfill; resume checkpoints were not advanced");
+            flushError = $"Pipeline flush failed: {ex.Message}";
+        }
+
+        if (flushError is null && _checkpointStore is not null)
+        {
+            foreach (var (cpSymbol, cpLastBarDate, cpBars) in pendingCheckpoints)
+            {
+                await _checkpointStore.WriteSymbolCheckpointAsync(
+                    cpSymbol,
+                    request.Granularity,
+                    cpLastBarDate,
+                    cpBars,
+                    ct).ConfigureAwait(false);
+            }
         }
 
         var completed = DateTimeOffset.UtcNow;
         var failedList = failedSymbols.ToArray();
-        var allSucceeded = failedList.Length == 0;
-        var errorSummary = failedList.Length > 0
-            ? $"Failed symbols ({failedList.Length}/{symbols.Length}): {string.Join("; ", errorMessages)}"
-            : null;
+        var allSucceeded = failedList.Length == 0 && flushError is null;
+        var errorParts = new List<string>(2);
+        if (failedList.Length > 0)
+            errorParts.Add($"Failed symbols ({failedList.Length}/{symbols.Length}): {string.Join("; ", errorMessages)}");
+        if (flushError is not null)
+            errorParts.Add(flushError);
+        var errorSummary = errorParts.Count > 0 ? string.Join(" | ", errorParts) : null;
 
         _log.Information("Backfill complete: {Count} bars written across {Total} symbols ({Failed} failed, {Skipped} skipped)",
             barsWritten, symbols.Length, failedList.Length, skippedSymbols.Count);

@@ -141,8 +141,7 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
             }
 
             var fillRecords = await _store.LoadFillRecordsAsync(record.SessionId, ct).ConfigureAwait(false);
-            var replayLedger = new Meridian.Ledger.Ledger();
-            var portfolio = new PaperTradingPortfolio(record.InitialCash, replayLedger);
+            var settlements = await LoadValidatedSettlementsAsync(record.SessionId, ct).ConfigureAwait(false);
             var appliedFillHashes = new Dictionary<Guid, string>();
             var fillHistory = new List<ExecutionReport>(fillRecords.Count);
             var hasUnappliedFill = false;
@@ -156,7 +155,6 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
                 }
 
                 var fillSnapshot = CloneExecutionReport(fillRecord.Fill);
-                portfolio.ApplyFill(fillSnapshot);
                 fillHistory.Add(fillSnapshot);
                 if (!fillRecord.IsApplied)
                 {
@@ -164,6 +162,9 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
                     unapplied.Add((record.SessionId, fillRecord));
                 }
             }
+
+            var portfolio = new PaperTradingPortfolio(record.InitialCash, new Meridian.Ledger.Ledger());
+            ReplayInto(portfolio, fillHistory, settlements);
 
             var ledgerEntries = await _store.LoadLedgerJournalAsync(record.SessionId, ct).ConfigureAwait(false);
             var reconstruction = ReconstructLedger(ledgerEntries);
@@ -187,6 +188,7 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
             foreach (var appliedFill in appliedFillHashes)
                 session.AppliedFillHashes.Add(appliedFill.Key, appliedFill.Value);
             session.FillHistory.AddRange(fillHistory);
+            session.SettlementHistory.AddRange(settlements);
             session.OrderHistory.AddRange(orders.Select(CloneOrderState));
             if (!candidate.TryAdd(record.SessionId, session))
             {
@@ -771,6 +773,107 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
     }
 
     /// <summary>
+    /// The latest trading date a session has settled for <paramref name="symbol"/> in
+    /// <paramref name="accountId"/>, or <see langword="null"/> when it has never been settled.
+    /// </summary>
+    public DateOnly? GetLastSettlementDate(string sessionId, string accountId, string symbol)
+    {
+        ThrowIfDisposed();
+        if (!CurrentSessions.TryGetValue(sessionId, out var session))
+            return null;
+
+        var normalizedSymbol = symbol.Trim();
+        lock (session.SyncRoot)
+        {
+            DateOnly? latest = null;
+            foreach (var settlement in session.SettlementHistory)
+            {
+                if (string.Equals(settlement.AccountId, accountId, StringComparison.Ordinal)
+                    && string.Equals(settlement.Symbol.Trim(), normalizedSymbol, StringComparison.OrdinalIgnoreCase)
+                    && (latest is null || settlement.TradingDate > latest))
+                {
+                    latest = settlement.TradingDate;
+                }
+            }
+
+            return latest;
+        }
+    }
+
+    /// <summary>
+    /// Durably records one daily variation-margin settlement for an active session, then applies
+    /// it to the session's book. The record is appended before the book changes (the same
+    /// persist-then-apply order fills use), and its key (account, symbol, trading date) makes the
+    /// call idempotent: settling the same day again at the same price changes nothing and returns
+    /// <see langword="false"/>; at a different price it fails closed.
+    /// </summary>
+    /// <returns><see langword="true"/> when this call applied a new settlement.</returns>
+    public async Task<bool> RecordSettlementAsync(
+        string sessionId,
+        PaperSessionSettlementRecord settlement,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(settlement);
+        settlement.Validate();
+
+        using var operation = EnterOperation(ct);
+        ct = operation.Token;
+        await InitialiseAsync(ct).ConfigureAwait(false);
+        ThrowIfDisposed();
+        var sessions = CurrentSessions;
+        var gate = GetSessionGate(sessionId);
+        await gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            if (!sessions.TryGetValue(sessionId, out var session))
+            {
+                throw new InvalidOperationException(
+                    $"Cannot record settlement '{settlement.Key}' because session '{sessionId}' is not loaded.");
+            }
+
+            lock (session.SyncRoot)
+            {
+                if (!session.IsActive)
+                    return false;
+                if (session.SettlementHistory.Find(existing => string.Equals(existing.Key, settlement.Key, StringComparison.Ordinal)) is { } applied)
+                {
+                    return applied.SettlementPrice == settlement.SettlementPrice
+                        ? false
+                        : throw new InvalidDataException(
+                            $"Settlement '{settlement.Key}' was already applied at {applied.SettlementPrice}, not {settlement.SettlementPrice}.");
+                }
+            }
+
+            if (_store is not null)
+            {
+                var status = await _store.TryAppendSettlementAsync(sessionId, settlement, ct).ConfigureAwait(false);
+                if (status == PaperSessionSettlementAppendStatus.Conflict)
+                {
+                    throw new InvalidDataException(
+                        $"Settlement '{settlement.Key}' is already recorded at a different price.");
+                }
+            }
+
+            var replacementPortfolio = BuildPortfolioProjection(session, candidateSettlement: settlement);
+            ct.ThrowIfCancellationRequested();
+            lock (session.SyncRoot)
+            {
+                session.Portfolio = replacementPortfolio;
+                session.SettlementHistory.Add(settlement);
+            }
+
+            if (_store is not null)
+                await PersistSessionLedgerAsync(session, ct).ConfigureAwait(false);
+
+            return true;
+        }
+        finally
+        {
+            gate.Release();
+        }
+    }
+
+    /// <summary>
     /// Replays the persisted fill log for <paramref name="sessionId"/> through a
     /// fresh <see cref="PaperTradingPortfolio"/> and returns the reconstructed
     /// portfolio snapshot.
@@ -806,9 +909,9 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
                 return null;
 
             var fills = await _store.LoadFillRecordsAsync(sessionId, ct).ConfigureAwait(false);
+            var settlements = await LoadValidatedSettlementsAsync(sessionId, ct).ConfigureAwait(false);
             var portfolio = new PaperTradingPortfolio(session.InitialCash);
-            foreach (var fill in fills)
-                portfolio.ApplyFill(CloneExecutionReport(fill.Fill));
+            ReplayInto(portfolio, fills.Select(fill => CloneExecutionReport(fill.Fill)).ToArray(), settlements);
 
             return CreatePortfolioSnapshot(portfolio);
         }
@@ -1164,22 +1267,78 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
 
     private static PaperTradingPortfolio BuildPortfolioProjection(
         PaperSession session,
-        ExecutionReport? candidate = null)
+        ExecutionReport? candidate = null,
+        PaperSessionSettlementRecord? candidateSettlement = null)
     {
         ExecutionReport[] fills;
+        PaperSessionSettlementRecord[] settlements;
         lock (session.SyncRoot)
         {
             var snapshots = session.FillHistory.Select(CloneExecutionReport);
             if (candidate is not null)
                 snapshots = snapshots.Append(CloneExecutionReport(candidate));
             fills = snapshots.ToArray();
+            settlements = candidateSettlement is null
+                ? session.SettlementHistory.ToArray()
+                : [.. session.SettlementHistory, candidateSettlement];
         }
 
         var ledger = new Meridian.Ledger.Ledger();
         var portfolio = new PaperTradingPortfolio(session.InitialCash, ledger);
-        foreach (var fill in fills)
-            portfolio.ApplyFill(fill);
+        ReplayInto(portfolio, fills, settlements);
         return portfolio;
+    }
+
+    /// <summary>
+    /// Rebuilds a book from a session's fills and daily settlements. Fills keep their recorded
+    /// order; each settlement, in <see cref="PaperSessionSettlementRecord.SettledAt"/> order, is
+    /// applied before the first fill stamped after it (fills first on a tie). Every path that
+    /// builds a session book (live projection, restart, replay) goes through here, so they agree.
+    /// </summary>
+    private static void ReplayInto(
+        PaperTradingPortfolio portfolio,
+        IReadOnlyList<ExecutionReport> fills,
+        IReadOnlyList<PaperSessionSettlementRecord> settlements)
+    {
+        var ordered = settlements
+            .Select(static (settlement, index) => (settlement, index))
+            .OrderBy(static item => item.settlement.SettledAt)
+            .ThenBy(static item => item.index)
+            .Select(static item => item.settlement)
+            .ToArray();
+        var next = 0;
+        foreach (var fill in fills)
+        {
+            while (next < ordered.Length && ordered[next].SettledAt < fill.Timestamp)
+                ApplySettlement(portfolio, ordered[next++]);
+            portfolio.ApplyRecordedFill(fill);
+        }
+
+        while (next < ordered.Length)
+            ApplySettlement(portfolio, ordered[next++]);
+
+        static void ApplySettlement(PaperTradingPortfolio target, PaperSessionSettlementRecord settlement)
+            => target.ApplyVariationMarginSettlement(
+                settlement.AccountId, settlement.Symbol, settlement.SettlementPrice, settlement.SettledAt);
+    }
+
+    private async Task<IReadOnlyList<PaperSessionSettlementRecord>> LoadValidatedSettlementsAsync(
+        string sessionId,
+        CancellationToken ct)
+    {
+        var settlements = await _store!.LoadSettlementsAsync(sessionId, ct).ConfigureAwait(false);
+        var keys = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var settlement in settlements)
+        {
+            settlement.Validate();
+            if (!keys.Add(settlement.Key))
+            {
+                throw new InvalidDataException(
+                    $"Paper session '{sessionId}' records settlement '{settlement.Key}' more than once.");
+            }
+        }
+
+        return settlements;
     }
 
     private static IReadOnlyLedger CreateLedgerSnapshot(IReadOnlyList<JournalEntry> journal)
@@ -1622,6 +1781,7 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
         public PaperTradingPortfolio? Portfolio { get; set; }
         public List<OrderState> OrderHistory { get; } = [];
         public List<ExecutionReport> FillHistory { get; } = [];
+        public List<PaperSessionSettlementRecord> SettlementHistory { get; } = [];
         public Dictionary<Guid, string> AppliedFillHashes { get; } = [];
 
         /// <summary>

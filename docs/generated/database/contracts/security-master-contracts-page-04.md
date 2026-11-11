@@ -2,11 +2,13 @@
 
 # `security-master-contracts` data objects - page 4 of 7
 
-Objects 241-320 of 502. References crossing pages remain available in the dependency manifest.
+Objects 241-320 of 504. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_OtcValuationStatus["OtcValuationStatus"] {
+    }
     class Meridian_Contracts_SecurityMaster_PayloadCorporateActionTerms["PayloadCorporateActionTerms"] {
         +string EventType
         +JsonElement? Payload
@@ -497,13 +499,6 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecurityAssetProfileStatusDto["SecurityAssetProfileStatusDto"] {
     }
-    class Meridian_Contracts_SecurityMaster_SecurityAssetProfileTermsDto["SecurityAssetProfileTermsDto"] {
-        +string CustomProfileId
-        +IReadOnlyList~SecurityEvidenceLinkDto~ EvidenceLinks
-        +SecurityAssetProfileApprovalMetadataDto ProfileApproval
-        +IReadOnlyDictionary~string__JsonElement~ ProfileFields
-        +int ProfileVersion
-    }
     Meridian_Contracts_SecurityMaster_RateUnitResolution_OutOfRange --> Meridian_Contracts_SecurityMaster_RateUnit
     Meridian_Contracts_SecurityMaster_RateUnitResolution_OutOfRange --> Meridian_Contracts_SecurityMaster_RateUnitResolution
     Meridian_Contracts_SecurityMaster_RateUnitResolution_OutOfRange --> Meridian_Contracts_SecurityMaster_RateUnitSource
@@ -550,5 +545,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionCandidateDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionReadinessDto
     Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionCandidateDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionSignalDto
     Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionSignalDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionSignalSeverityDto
-    Meridian_Contracts_SecurityMaster_SecurityAssetProfileTermsDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileApprovalMetadataDto
 ```

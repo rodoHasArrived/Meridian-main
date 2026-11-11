@@ -192,15 +192,15 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
                 break;
 
             case "loan.daily-accrual-posted":
-                var interest = GetRequiredDecimal(payload.RootElement, "interestAmount", "InterestAmount");
+                GetRequiredDecimal(payload.RootElement, "interestAmount", "InterestAmount");
                 var commitmentFee = GetRequiredDecimal(payload.RootElement, "commitmentFeeAmount", "CommitmentFeeAmount");
                 var penalty = GetDecimal(payload.RootElement, "penaltyAmount", "PenaltyAmount");
                 var pikInterest = GetDecimal(payload.RootElement, "pikInterestAmount", "PikInterestAmount");
                 description = "Daily accrual";
-                if (interest > 0m)
+                // PRD-115: interest settled from prepaid interest first (shared with LoanAccountingProjector).
+                foreach (var line in DirectLendingJournalLines.ForAccruedInterest(payload.RootElement))
                 {
-                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "AccruedInterestReceivable", interest, 0m, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
-                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "InterestIncome", 0m, interest, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
+                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, line.Account, line.Debit, line.Credit, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
                 }
 
                 // Capitalization policy: PIK waits in a PIK receivable until a capitalization date.
@@ -234,10 +234,25 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
                 break;
 
             case "loan.mixed-payment-applied":
-                var paymentAmount = GetRequiredDecimal(payload.RootElement, "amount", "Amount");
+                GetRequiredDecimal(payload.RootElement, "amount", "Amount");
                 description = "Mixed payment";
-                lines.Add(new JournalLineDto(Guid.NewGuid(), 1, "Cash", paymentAmount, 0m, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
-                lines.Add(new JournalLineDto(Guid.NewGuid(), 2, "LoanAndAccrualsClearing", 0m, paymentAmount, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
+                // PRD-115: split by allocation (shared with LoanAccountingProjector).
+                foreach (var line in DirectLendingJournalLines.ForMixedPayment(payload.RootElement))
+                {
+                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, line.Account, line.Debit, line.Credit, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
+                }
+                break;
+
+            case "loan.unapplied-cash-applied":
+            case "loan.unapplied-cash-refunded":
+                description = sourceEvent.EventType == "loan.unapplied-cash-applied" ? "Unapplied cash applied" : "Unapplied cash refund";
+                // PRD-115 increment 7 (shared with LoanAccountingProjector).
+                foreach (var line in sourceEvent.EventType == "loan.unapplied-cash-applied"
+                    ? DirectLendingJournalLines.ForUnappliedCashApplied(payload.RootElement)
+                    : DirectLendingJournalLines.ForUnappliedCashRefunded(payload.RootElement))
+                {
+                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, line.Account, line.Debit, line.Credit, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
+                }
                 break;
 
             case "loan.fee-assessed":

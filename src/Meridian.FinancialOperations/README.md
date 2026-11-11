@@ -6,10 +6,12 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-14
+last_reviewed: 2026-11-10
 ---
 
 # src/Meridian.FinancialOperations
+
+The reconciliation engine rethrows caller cancellation during Security Master lookups instead of logging a warning per remaining security and returning a partial lookup.
 
 `AccountingSystemIntegrationService.GetLatestImportAsync` returns the latest persisted import; when
 none exists it returns an unpersisted `Previewed` result and does not cache it, so the GET-backed
@@ -34,6 +36,9 @@ liability credits/debits to positive retained quantities. The atomic store certi
 cash/liability/result economics; approvals, period control and exact replay remain shared.
 Projection retains explicit direction before drafting; the candidate cannot change it or use an
 opposite-side position. The canonical relief guard also checks the carrying account's type.
+A short-correction reversal must invert the posted journal line for line:
+`ShortCorrectionGuard.IsExactInverse` consumes each reversal line at most once, so duplicate
+economic lines need distinct inverses and one reversal line cannot satisfy two posted lines.
 
 All six shipped statement connectors capture executed mapping semantics at parse time. Display labels and review notes do not change that fingerprint; fields, activity mappings, culture, date formats and CSV options do. The retained import supplies comparison proof on replay. Legacy artifact upgrade verifies the original shape and adopts retained bytes without inventing mapping evidence.
 
@@ -528,7 +533,7 @@ Use this README to understand the module before editing source files. Update the
 
 Statement reconciliation also lives here. Broker/custodian statement intake, mapping profiles, validation, duplicate detection, matching, break classification, reconciliation decision journals, statement-run persistence, and durable case materialization are Financial Operations behavior. Application commands and shared UI services invoke the module workflow, but they do not own reconciliation state, matching rules, or statement-run persistence.
 
-The statement connector library (`Reconciliation/Connectors/`, ADR-018) extends that intake seam: connectors parse CSV, OFX, uploaded or Web-Service-fetched IB Flex XML, and Alpaca snapshot sources into canonical records classified per kind (position, transaction, cash balance, fee, dividend), driven by declarative, operator-editable mapping-profile documents rather than code. Institutional bank cash statements are also ingested directly by the profile-less ISO 20022 camt.053 and BAI2 connectors (content-sniffed, closing-balance and signed entries mapped straight to canonical records) so most bank statements reconcile without hand-conversion. Commit renders a deterministic canonical-CSV artifact and hands it to `IStatementRunWorkflowService`, so the downstream matching, break, and case pipeline is unchanged and duplicate-key idempotency is preserved. A sibling `canonical-evidence.json` retains provider account margin, activity subtype and cursor completeness, option lifecycle, tax-lot, and securities-borrow evidence without widening the legacy reconciliation CSV seam. Profiles record the last accepted column layout for format-drift warnings, and fetch-capable connectors reuse the existing brokerage gateways and provider credential store — never a new secret store. Alpaca activity retrieval pages to a bounded complete cursor and fails closed if the provider cannot prove continuity. IB Flex uses the documented v3 request/retrieve flow with bounded polling and trusted-host enforcement. Persisted schedules retain an explicit broker/custodian source classification, support operator run-now and background cadence, and default legacy snapshots to broker; a failed fetch records only the exception type and advances a separate attempt/cadence watermark so provider or configuration failures do not retry every scheduler tick while the last-successful-fetch cursor remains available for recovery.
+The statement connector library (`Reconciliation/Connectors/`, ADR-018) extends that intake seam: connectors parse CSV, OFX, uploaded or Web-Service-fetched IB Flex XML, and Alpaca snapshot sources into canonical records classified per kind (position, transaction, cash balance, fee, dividend), driven by declarative, operator-editable mapping-profile documents rather than code. Institutional bank cash statements are also ingested directly by the profile-less ISO 20022 camt.053 and BAI2 connectors (content-sniffed, closing-balance and signed entries mapped straight to canonical records) so most bank statements reconcile without hand-conversion. Commit renders a deterministic canonical-CSV artifact and hands it to `IStatementRunWorkflowService`, so the downstream matching, break, and case pipeline is unchanged and duplicate-key idempotency is preserved. A sibling `canonical-evidence.json` records the ownership-checked fund account the import was committed for (the retained directory is keyed by fund account as well as content, so importing the same statement for another fund account cannot overwrite that owner) and retains provider account margin, activity subtype and cursor completeness, option lifecycle, tax-lot, and securities-borrow evidence without widening the legacy reconciliation CSV seam. Profiles record the last accepted column layout for format-drift warnings, and fetch-capable connectors reuse the existing brokerage gateways and provider credential store — never a new secret store. Alpaca activity retrieval pages to a bounded complete cursor and fails closed if the provider cannot prove continuity. IB Flex uses the documented v3 request/retrieve flow with bounded polling and trusted-host enforcement. Persisted schedules retain an explicit broker/custodian source classification, support operator run-now and background cadence, and default legacy snapshots to broker; a failed fetch records only the exception type and advances a separate attempt/cadence watermark so provider or configuration failures do not retry every scheduler tick while the last-successful-fetch cursor remains available for recovery.
 
 Statement ingress is bounded (PRD-010). Before this bound a caller-supplied `StatementSourceDocument`
 sized the parse rather than the operator: `Camt053StatementConnector` built a whole-document

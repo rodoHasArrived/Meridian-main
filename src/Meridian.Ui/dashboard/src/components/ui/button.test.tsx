@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { vi } from "vitest";
 import { Button } from "@/components/ui/button";
@@ -125,4 +127,65 @@ describe("Button", () => {
     expect(cancelled).toBe(true);
     expect(onClick).not.toHaveBeenCalled();
   });
+  it("keeps a disabled button at full opacity and carries its reason", () => {
+    render(
+      <>
+        <Button disabled disabledReason="Validate before submitting.">Submit approval</Button>
+        <Button variant="destructive" disabled>Cancel order</Button>
+      </>
+    );
+
+    const submit = screen.getByRole("button", { name: "Submit approval" });
+    expect(submit).toBeDisabled();
+    // The reason is the tooltip and, because the name comes from the label, the description.
+    expect(submit).toHaveAttribute("title", "Validate before submitting.");
+    expect(submit).toHaveAccessibleDescription("Validate before submitting.");
+    // No variant halves its opacity any more: the shared rule in styles/index.css owns the look.
+    for (const button of screen.getAllByRole("button")) {
+      expect(button.className).not.toMatch(/opacity-50/);
+      expect(button).toHaveClass("mds-btn");
+    }
+  });
+
+  it("defines one disabled look with a visible edge for every variant", () => {
+    const css = readFileSync(resolve(process.cwd(), "src/styles/index.css"), "utf8");
+    const rule = css.slice(css.indexOf(".mds-btn:disabled,"));
+
+    expect(rule).toMatch(/background-color: var\(--ws-disabled-bg\)/);
+    expect(rule).toMatch(/border-color: var\(--ws-disabled-border\)/);
+    expect(rule).toMatch(/color: var\(--ws-disabled-fg\)/);
+    expect(rule).toMatch(/opacity: 1/);
+    // Each theme block defines the three tokens.
+    for (const token of ["--ws-disabled-bg:", "--ws-disabled-fg:", "--ws-disabled-border:"]) {
+      expect(css.split(token).length - 1).toBe(4);
+    }
+  });
+
+  it.each([
+    ["light", "#EDEAE4", "#5E666F", "#85807A", ["#F2F0EC", "#FBFAF8", "#F6F4F0", "#EDEAE4", "#FFFFFF"]],
+    ["dark", "#292520", "#9A9289", "#857D71", ["#14120F", "#201D19", "#252119", "#292520"]]
+  ])("meets contrast for the %s disabled tokens", (_theme, fill, label, edge, surfaces) => {
+    const css = readFileSync(resolve(process.cwd(), "src/styles/index.css"), "utf8");
+    for (const value of [fill, label, edge]) {
+      expect(css).toContain(value);
+    }
+    // Label on the disabled fill reads as text (4.5:1); the edge is a 3:1 boundary on every surface.
+    expect(contrastRatio(label, fill)).toBeGreaterThanOrEqual(4.5);
+    for (const surface of surfaces) {
+      expect(contrastRatio(edge, surface)).toBeGreaterThanOrEqual(3);
+    }
+  });
 });
+
+function relativeLuminance(hex: string): number {
+  const [red, green, blue] = [0, 2, 4].map((offset) => {
+    const channel = Number.parseInt(hex.replace("#", "").slice(offset, offset + 2), 16) / 255;
+    return channel <= 0.03928 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+}
+
+function contrastRatio(first: string, second: string): number {
+  const [lighter, darker] = [relativeLuminance(first), relativeLuminance(second)].sort((a, b) => b - a);
+  return (lighter + 0.05) / (darker + 0.05);
+}

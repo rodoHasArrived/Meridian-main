@@ -1,3 +1,4 @@
+import { DetailFields } from "@/components/meridian/detail-pane";
 import { Activity, ArrowRight, ClipboardList, FileCheck2, RadioTower, RefreshCcw, ShieldCheck, TrendingUp } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -29,7 +30,6 @@ import type {
   StrategyWorkspaceResponse,
   TradingWorkspaceResponse
 } from "@/types";
-import { usesTrackedCaps } from "@/design-system/label-case";
 
 interface OperatorReadinessConsoleProps {
   strategy: StrategyWorkspaceResponse | null;
@@ -553,19 +553,7 @@ function ReadinessRow({ row }: { row: ReadinessConsoleRow }) {
 }
 
 function DetailFieldList({ fields }: { fields: ReadinessConsoleSelectedWorkItemDetail["fields"] }) {
-  return (
-    <dl className="mt-3 grid gap-2">
-      {fields.map((field) => (
-        <div
-          key={field.label}
-          className="grid grid-cols-[minmax(0,0.42fr)_minmax(0,0.58fr)] gap-3 rounded-sm border border-border/60 bg-background/25 px-2.5 py-2"
-        >
-          <dt className={cn("text-[10px] text-muted-foreground", usesTrackedCaps(field.label) && "uppercase tracking-[0.14em]")}>{field.label}</dt>
-          <dd className="break-words text-right font-mono text-xs text-foreground">{field.value}</dd>
-        </div>
-      ))}
-    </dl>
-  );
+  return <DetailFields fields={fields} className="mt-3" />;
 }
 
 function InboxErrorRecovery({

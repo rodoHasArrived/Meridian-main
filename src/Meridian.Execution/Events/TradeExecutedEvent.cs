@@ -37,6 +37,12 @@ namespace Meridian.Execution.Events;
 ///     so <see cref="GrossValue"/> applies the same multiplier; one contract at 3.00 with multiplier
 ///     100 is $300 of proceeds. Events serialized before this member existed read as 1.
 /// </param>
+/// <param name="SettlesVariationMargin">
+///     The paper book booked the fill under daily variation margin (futures): no notional changed
+///     hands, and <paramref name="RealizedPnl"/> is the whole cash movement (the change since the
+///     last settlement on a reduce or close, zero on an open). Booking consumers must post that
+///     cash flow rather than a securities purchase or sale at <see cref="GrossValue"/>.
+/// </param>
 public sealed record TradeExecutedEvent(
     Guid FillId,
     string OrderId,
@@ -50,7 +56,8 @@ public sealed record TradeExecutedEvent(
     DateTimeOffset OccurredAt,
     string? FinancialAccountId = null,
     bool UsesFaceValuePercentageOfPar = false,
-    decimal ContractMultiplier = 1m)
+    decimal ContractMultiplier = 1m,
+    bool SettlesVariationMargin = false)
 {
     /// <summary>
     /// Gross trade value, always positive. For a face-value fill the clean price is a

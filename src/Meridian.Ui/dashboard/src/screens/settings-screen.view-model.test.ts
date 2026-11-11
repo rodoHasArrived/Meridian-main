@@ -472,7 +472,7 @@ describe("buildSettingsScreenViewModel", () => {
       endpointHref: "/api/auth/roles"
     });
     expect(vm.operationsControlCenter.cards.find((card) => card.id === "approval-policy")).toMatchObject({
-      statusLabel: "1 rules",
+      statusLabel: "1 rule",
       endpointHref: "/api/workstation/operations/continuity/approval-policy-matrix"
     });
     expect(vm.operationsControlCenter.cards.find((card) => card.id === "close-calendar")).toMatchObject({

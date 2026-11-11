@@ -434,17 +434,24 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
             var isPikAccrual = policy is null && stored.Servicing.IsPikToggled;
             // Date-aware day count: Act/Act accrues against the actual year length of the
             // accrual date (366 in leap years); other conventions keep fixed denominators.
-            var accruedInterest = isPikAccrual
-                ? DirectLendingInterop.CalculatePikAccrual(
-                    stored.Servicing.Balances.PrincipalOutstanding,
-                    annualRate,
-                    (int)terms.DayCountBasis,
-                    request.AccrualDate)
-                : DirectLendingInterop.CalculateDailyAccrualAmountForDate(
-                    stored.Servicing.Balances.PrincipalOutstanding,
-                    annualRate,
-                    (int)terms.DayCountBasis,
-                    request.AccrualDate);
+            // Rounded to cents, half away from zero, exactly as the F# servicing aggregate (the
+            // Postgres path) posts it, so both lanes accrue identical amounts.
+            var accruedInterest = stored.Servicing.Balances.PrincipalOutstanding > 0m
+                ? Math.Round(
+                    isPikAccrual
+                        ? DirectLendingInterop.CalculatePikAccrual(
+                            stored.Servicing.Balances.PrincipalOutstanding,
+                            annualRate,
+                            (int)terms.DayCountBasis,
+                            request.AccrualDate)
+                        : DirectLendingInterop.CalculateDailyAccrualAmountForDate(
+                            stored.Servicing.Balances.PrincipalOutstanding,
+                            annualRate,
+                            (int)terms.DayCountBasis,
+                            request.AccrualDate),
+                    2,
+                    MidpointRounding.AwayFromZero)
+                : 0m;
             // Capitalization policy: the PIK share is deferred to the policy's capitalization dates.
             var pikShare = policy is not null && (policy.Mode == PikElection.Always || stored.Servicing.IsPikToggled)
                 ? RateUnitNormalizer.ToFraction(policy.PikShare, DirectLendingRateField.PikShare)
@@ -455,13 +462,19 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
             var interestAmount = isPikAccrual ? 0m : accruedInterest - deferredPik;
             var pikInterestAmount = isPikAccrual ? accruedInterest : deferredPik;
             var capitalizedToday = isPikAccrual ? pikInterestAmount : 0m;
+            // PRD-115: the day's cash interest is settled from prepaid interest first; PIK never consumes it.
+            var prepaidInterestConsumed = Math.Min(Math.Max(0m, stored.Servicing.Balances.PrepaidInterest), Math.Max(0m, interestAmount));
 
-            var commitmentFeeAmount = terms.CommitmentFeeRate is { } feeRate && feeRate > 0m
-                ? DirectLendingInterop.CalculateDailyAccrualAmountForDate(
-                    stored.Servicing.AvailableToDraw,
-                    feeRate,
-                    (int)terms.DayCountBasis,
-                    request.AccrualDate)
+            // Undrawn commitment, rounded to cents, as the F# aggregate computes it.
+            var commitmentFeeAmount = terms.CommitmentFeeRate is { } feeRate
+                ? Math.Round(
+                    DirectLendingInterop.CalculateDailyAccrualAmountForDate(
+                        Math.Max(0m, stored.Servicing.CurrentCommitment - stored.Servicing.TotalDrawn),
+                        feeRate,
+                        (int)terms.DayCountBasis,
+                        request.AccrualDate),
+                    2,
+                    MidpointRounding.AwayFromZero)
                 : 0m;
 
             var entry = new DailyAccrualEntryDto(
@@ -481,8 +494,9 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
                 Balances = stored.Servicing.Balances with
                 {
                     PrincipalOutstanding = stored.Servicing.Balances.PrincipalOutstanding + capitalizedToday,
-                    InterestAccruedUnpaid = stored.Servicing.Balances.InterestAccruedUnpaid + interestAmount,
-                    CommitmentFeeAccruedUnpaid = stored.Servicing.Balances.CommitmentFeeAccruedUnpaid + commitmentFeeAmount
+                    InterestAccruedUnpaid = stored.Servicing.Balances.InterestAccruedUnpaid + interestAmount - prepaidInterestConsumed,
+                    CommitmentFeeAccruedUnpaid = stored.Servicing.Balances.CommitmentFeeAccruedUnpaid + commitmentFeeAmount,
+                    PrepaidInterest = stored.Servicing.Balances.PrepaidInterest - prepaidInterestConsumed
                 },
                 PikInterestAccruedUnpaid = stored.Servicing.PikInterestAccruedUnpaid + deferredPik,
                 LastAccrualDate = request.AccrualDate
@@ -506,7 +520,8 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
                     entry.PenaltyAmount,
                     entry.AnnualRateApplied,
                     entry.PikInterestAmount,
-                    entry.PikCapitalizationDeferred
+                    entry.PikCapitalizationDeferred,
+                    PrepaidInterestConsumed = prepaidInterestConsumed
                 }
                 : (object)new
                 {
@@ -517,7 +532,8 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
                     entry.CommitmentFeeAmount,
                     entry.PenaltyAmount,
                     entry.AnnualRateApplied,
-                    entry.PikInterestAmount
+                    entry.PikInterestAmount,
+                    PrepaidInterestConsumed = prepaidInterestConsumed
                 }, metadata);
             return Task.FromResult<DailyAccrualEntryDto?>(entry);
         }
@@ -623,7 +639,9 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
                     terms.OriginationDate,
                     terms.MaturityDate,
                     s.LastAccrualDate,
-                    s.LastPaymentDate);
+                    s.LastPaymentDate,
+                    s.Balances.PrepaidInterest,
+                    s.Balances.UnappliedCash);
             }).ToList();
 
             var collateral = _loans.Values.SelectMany(loan => loan.Servicing.Collateral ?? []).ToArray();
@@ -811,9 +829,17 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
 
     private static void ApplyPaymentToLots(List<DrawdownLotDto> lots, decimal appliedAmount)
     {
+        // Earliest drawdown first, as the F# aggregate and the event rebuilder apply it; lots are
+        // stored in booking order, which can differ from drawdown order.
         var remaining = appliedAmount;
-        for (var i = 0; i < lots.Count && remaining > 0m; i++)
+        var earliestFirst = Enumerable.Range(0, lots.Count).OrderBy(index => lots[index].DrawdownDate).ToArray();
+        foreach (var i in earliestFirst)
         {
+            if (remaining <= 0m)
+            {
+                break;
+            }
+
             var lot = lots[i];
             if (lot.RemainingPrincipal <= 0m)
             {

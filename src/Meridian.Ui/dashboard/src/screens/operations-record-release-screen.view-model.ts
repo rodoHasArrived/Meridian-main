@@ -232,8 +232,8 @@ function buildSourcePanel(data: DataWorkspaceResponse | null): OperationsRecordR
   if (!data) {
     return {
       title: "Source data",
-      description: "Source data payload is unavailable; the release path must fail closed until provider posture loads.",
-      statusLabel: "Payload pending",
+      description: "Source data is unavailable; the release path must fail closed until provider posture loads.",
+      statusLabel: "Data pending",
       tone: "blocked",
       badgeVariant: "danger",
       primaryHref: WORKSTATION_ROUTE_CATALOG.dataProviders,
@@ -275,7 +275,7 @@ function buildSourcePanel(data: DataWorkspaceResponse | null): OperationsRecordR
         value: `${data.backfills.length} job${data.backfills.length === 1 ? "" : "s"}`,
         detail: backfillReviewCount > 0
           ? `${backfillReviewCount} backfill job${backfillReviewCount === 1 ? "" : "s"} require review before downstream reporting.`
-          : "Backfill queue has no review-state jobs in the loaded payload.",
+          : "Backfill queue has no review-state jobs in the loaded data.",
         href: WORKSTATION_ROUTE_CATALOG.dataOperations,
         routeLabel: "Backfill queues",
         tone: backfillReviewCount > 0 ? "review" : "ready",

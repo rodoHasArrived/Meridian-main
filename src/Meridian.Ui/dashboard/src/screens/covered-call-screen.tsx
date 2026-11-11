@@ -19,6 +19,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { categoricalVariantToSeverityStatus } from "@/lib/shared-tone-mappings";
+import { formatPrefixedCurrency } from "@/lib/format";
 
 const chainPreviewColumns: DenseDataTableColumn<CoveredCallChainPreviewRowViewModel>[] = [
   {
@@ -130,7 +131,7 @@ const tradeTimelineColumns: DenseDataTableColumn<CoveredCallTradeTimelineRowView
   },
   {
     id: "pnl",
-    label: "PnL",
+    label: "P&L",
     align: "right",
     render: (row) => <span className={`font-mono ${row.pnlClassName}`}>{row.pnlLabel}</span>
   },
@@ -166,7 +167,7 @@ export function CoveredCallScreen() {
           Covered Call Backtest
         </span>
       }
-      scope="Strategy Lane"
+      scope="Strategy"
       description="Run the existing CoveredCallOverwriteStrategy against historical bars. Pick an underlying, configure filters, preview the live option chain, then evaluate equity curve, position timeline, and payoff."
     >
       <Card>
@@ -628,7 +629,7 @@ function MetricsTable({ result }: { result: NonNullable<CoveredCallScreenViewMod
     ["Assignment rate", fmtPct(result.metrics.assignmentRate)],
     ["Total trades", String(result.metrics.totalOptionTrades)],
     ["Total premium", fmtMoney(result.metrics.totalPremiumCollected)],
-    ["Option PnL", fmtMoney(result.metrics.totalOptionPnl)],
+    ["Option P&L", fmtMoney(result.metrics.totalOptionPnl)],
     ["Up capture", fmtPct(result.metrics.upCapture)],
     ["Down capture", fmtPct(result.metrics.downCapture)]
   ];
@@ -865,6 +866,5 @@ function fmtPct(value: number): string {
 
 function fmtMoney(value: number): string {
   if (!Number.isFinite(value)) return "—";
-  const sign = value < 0 ? "-$" : "$";
-  return `${sign}${Math.abs(value).toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
+  return formatPrefixedCurrency(value, { maximumFractionDigits: 2 });
 }

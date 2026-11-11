@@ -62,10 +62,8 @@ export function DesignSystemMasthead({
           <img src={brandMarkSrc} alt="" aria-hidden="true" />
           <div className="workstation-brand-copy min-w-0">
             <div className="name ws-brand__name">Meridian</div>
-            <div className="sub ws-brand__mod" aria-hidden="true">
-              <span className="workstation-brand-sep ws-brand__sep">/</span>
-              {workspaceLabel}
-            </div>
+            {/* The workspace is named once, visibly, by the header breadcrumb below; the
+                masthead only announces it so the banner landmark still states the location. */}
             <span className="sr-only">Current workspace: {workspaceLabel}</span>
           </div>
         </div>
@@ -96,8 +94,8 @@ export function DesignSystemMasthead({
             aria-label={`Current session: ${session.environment}, ${session.displayName}, ${session.role}`}
             title={`${session.displayName} · ${session.role}`}
           >
-            {/* The environment badge lives in the trust pill (its leading, never-shrinking
-                segment) so the masthead fits one row; the group label still names it. */}
+            {/* The environment is the masthead environment badge's leading, never-shrinking
+                segment, so the masthead fits one row; the group label still names it. */}
             <span className="workstation-session-name">{session.displayName}</span>
             <span className="workstation-session-role text-muted-foreground">{session.role}</span>
           </div>

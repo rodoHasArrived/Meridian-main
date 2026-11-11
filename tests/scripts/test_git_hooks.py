@@ -28,7 +28,7 @@ class GitHooksTests(unittest.TestCase):
     """Run the real hooks against disposable Git indexes, without a .NET SDK."""
 
     def setUp(self) -> None:
-        self.temporary = tempfile.TemporaryDirectory(prefix="meridian hook tests ")
+        self.temporary = tempfile.TemporaryDirectory(prefix="meridian hook tests ", ignore_cleanup_errors=True)
         self.addCleanup(self.temporary.cleanup)
         self.base = Path(self.temporary.name)
         self.repo = self.base / "ordinary checkout"

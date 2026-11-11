@@ -1,10 +1,12 @@
+import { DetailFieldItem } from "@/components/meridian/detail-pane";
 import { selectSharedProviderHealth } from "@/lib/cross-screen-counts";
 import { useSharedCrossScreenCounts } from "@/lib/cross-screen-counts-context";
+import { resolveFigureEvidence, useWorkspaceFigureContext } from "@/lib/workspace-figure-context";
 import { OwnedProviderCredentialPanel } from "./settings-owned-provider-credentials";
 import { Activity, ArrowRight, ExternalLink, GitBranch, KeyRound, LoaderCircle, MonitorCheck, RefreshCcw, Save, Search, ShieldCheck, Trash2, User } from "lucide-react";
 import { ProviderSetupPanel } from "@/components/data/provider-setup-panel";
 import { LifecycleControlPanel } from "@/components/meridian/lifecycle-control-panel";
-import { formatNumber as formatNumberAmount, formatUtcTimestamp } from "@/lib/format";
+import { formatCount, formatNumber as formatNumberAmount, formatUtcDate, formatUtcTimestamp } from "@/lib/format";
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { StatStrip } from "@/components/meridian/stat-strip";
@@ -614,7 +616,13 @@ export function SettingsScreen({
 }: SettingsScreenProps) {
   const location = useLocation();
   const sharedCounts = useSharedCrossScreenCounts();
+  const figureContext = useWorkspaceFigureContext();
   const providerHealth = selectSharedProviderHealth(sharedCounts, data?.providers);
+  // Provider health is not an overview figure: it comes from the shared cross-screen counts, or
+  // from the Data rows when those counts are unavailable. It states that payload's evidence, so a
+  // failed counts reload shows as stale here even when the overview reloaded.
+  const providerHealthFromSharedCounts = Boolean(sharedCounts?.providers);
+  const providerHealthEvidence = resolveFigureEvidence(figureContext, providerHealthFromSharedCounts ? "crossScreenCounts" : "data");
   const vm = buildSettingsScreenViewModel({
     session,
     overview,
@@ -893,7 +901,17 @@ export function SettingsScreen({
       delta: "",
       tone: !providerHealth
         ? "default" as const
-        : providerHealth.total > 0 && providerHealth.healthy === providerHealth.total ? "success" as const : "warning" as const
+        : providerHealth.total > 0 && providerHealth.healthy === providerHealth.total ? "success" as const : "warning" as const,
+      ...(providerHealth
+        ? {
+            provenance: {
+              source: providerHealthFromSharedCounts ? "Cross-screen counts" : "Data workspace",
+              // Outside the shell the counts payload's own as-of time is the only one it carries.
+              asOf: providerHealthEvidence.asOf ?? (providerHealthFromSharedCounts ? sharedCounts?.asOf ?? null : null)
+            },
+            ...(providerHealthEvidence.freshness ? { freshness: providerHealthEvidence.freshness } : {})
+          }
+        : {})
     },
     { id: "active-runs", label: "Active runs", value: overview ? String(overview.activeRuns) : "—", delta: "", tone: "default" as const },
     { id: "open-positions", label: "Open positions", value: overview ? String(overview.openPositions) : "—", delta: "", tone: "default" as const },
@@ -2419,7 +2437,7 @@ export function SettingsScreen({
         </div>
       </section>
 
-      <StatStrip metrics={settingsStatMetrics} label="Operator control posture metrics" />
+      <StatStrip metrics={settingsStatMetrics} label="Operator control posture metrics" source="System overview" figureSource="overview" />
 
       {showChooserSection ? <SettingsTaskChooser /> : null}
 
@@ -4882,10 +4900,7 @@ function SettingsFieldRow({
   tone: keyof typeof itemToneClass;
 }) {
   return (
-    <div className="grid grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)] items-start gap-3 rounded-md border border-border/60 bg-secondary/25 px-3 py-2">
-      <dt className="min-w-0 break-words text-xs text-muted-foreground">{label}</dt>
-      <dd className={cn("min-w-0 break-words text-right font-mono text-xs", itemToneClass[tone])}>{value}</dd>
-    </div>
+    <DetailFieldItem label={label} value={value} tone={tone} />
   );
 }
 
@@ -5101,12 +5116,7 @@ function formatScopedAccessDate(value?: string | null): string | null {
     return value;
   }
 
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    timeZone: "UTC"
-  }).format(parsed);
+  return formatUtcDate(parsed);
 }
 
 function FilterSelect({
@@ -6692,7 +6702,7 @@ function providerRuntimePromotionVariant(status: string): "outline" | "success" 
 }
 
 function formatProviderRuntimeNumber(value: number): string {
-  return value.toLocaleString("en-US");
+  return formatCount(value);
 }
 
 function formatProviderRuntimeUtcMinute(value: string | Date | null | undefined, unavailableLabel = "Not synced"): string {

@@ -456,6 +456,35 @@ public sealed class AssetObligationProjectionServiceTests
             ("FactorUpdate", Day(2026, 6, 1)),
             ("CallPutReview", Day(2027, 1, 15)));
 
+    [Theory]
+    [Trait("Category", "KnownDefect")]
+    [InlineData("{\"mandatoryPutDate\":\"2027-03-15\"}", "2027-03-15")]
+    [InlineData("{\"preRefundDate\":\"2027-05-15\"}", "2027-05-15")]
+    [InlineData("{\"preRefundDate\":\"2027-05-15\",\"mandatoryPutDate\":\"2027-03-15\"}", "2027-03-15")]
+    [InlineData("{\"preRefundDate\":\"2027-05-15\",\"mandatoryPutDate\":\"2027-03-15\",\"callDate\":\"2027-07-15\"}", "2027-07-15")]
+    [InlineData("{\"mandatoryPutDate\":\"2027-03-15\",\"callDate\":\"2026-01-15\"}", null)]
+    public void BuildProjectedObligationEvents_FixedIncome_ScalarOptionDates_CurrentBehavior_AreConflatedIntoOneReview_SCH_DEF_012(
+        string payloadJson, string? expected)
+    {
+        // SCH-DEF-012. TARGET: an issuer call, a mandatory put and a pre-refunding are separate events,
+        // each on its own date, driven by declared call and put schedules. Today one CallPutReview is
+        // raised from the first of callDate, mandatoryPutDate and preRefundDate that is present, so a
+        // mandatory put is reported as the same review as a call, a later call hides an earlier
+        // mandatory put, and a call date already past hides every other date.
+        var reviews = ProjectSteps("Bond", JsonSerializer.Deserialize<JsonElement>(payloadJson), StepAsOf)
+            .Where(static row => row.Kind == "CallPutReview")
+            .ToArray();
+
+        if (expected is null)
+        {
+            reviews.Should().BeEmpty("CURRENT defective behavior: the elapsed call date is the only date probed");
+        }
+        else
+        {
+            reviews.Should().Equal(("CallPutReview", ParseDay(expected)));
+        }
+    }
+
     [Fact]
     public void BuildProjectedObligationEvents_DirectLoan_CovenantTestOnTheNextQuarterStart_PaymentEventsOneFrequencyStepOut()
         => ProjectSteps(

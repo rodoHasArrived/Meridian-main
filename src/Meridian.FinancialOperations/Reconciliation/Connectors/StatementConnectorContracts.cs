@@ -160,6 +160,11 @@ public sealed record StatementParseResult(
 /// stable row-ingestion contract; this sidecar preserves account, cursor, options, borrow,
 /// and tax-lot detail without flattening missing values into zeroes.
 /// </summary>
+/// <param name="FundAccountId">
+/// The ownership-checked fund account the import was committed for. Readers that expose this
+/// evidence across tenants scope it by this owner; evidence retained before it was recorded has
+/// no owner and is shown to no tenant.
+/// </param>
 public sealed record StatementCanonicalEvidenceArtifact(
     string ConnectorId,
     string? ProfileId,
@@ -170,7 +175,8 @@ public sealed record StatementCanonicalEvidenceArtifact(
     IReadOnlyList<BrokerageActivityEventDto> ActivityEvents,
     IReadOnlyList<BrokerageActivityCursorDto> ActivityCursors,
     IReadOnlyList<BrokerageTaxLotSnapshotDto> TaxLots,
-    IReadOnlyList<BrokerageBorrowPositionSnapshotDto> BorrowPositions);
+    IReadOnlyList<BrokerageBorrowPositionSnapshotDto> BorrowPositions,
+    string? FundAccountId = null);
 
 /// <summary>
 /// Parses a source statement document into normalized statement entities and parse issues.

@@ -1734,6 +1734,12 @@ export interface SecurityMasterQualityReport {
   securitiesScanned: number;
   violationCount: number;
   violations: SecurityMasterQualityViolation[];
+  /**
+   * Stored rows (active and inactive) whose asset-specific terms declare no termsFormat tag —
+   * the ADR-024 decision-5 retirement gate for the payload shape rule. Absent on reports
+   * persisted before the gauge existed.
+   */
+  untaggedTermsPayloadCount?: number | null;
 }
 
 // --- Security master coverage drafts ---

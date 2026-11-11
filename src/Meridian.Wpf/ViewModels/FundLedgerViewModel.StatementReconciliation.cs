@@ -4,6 +4,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Contracts.Reconciliation;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Workstation.Models;
+using UtcFormat = Meridian.Ui.Services.FormatHelpers;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -167,7 +168,7 @@ public sealed partial class FundLedgerViewModel
         StatementValidationIssuesText = issueRows.Length.ToString("N0");
         StatementUnresolvedBreaksText = breakRows.Length.ToString("N0");
         StatementCasesText = snapshot.OpenCases.Count.ToString("N0");
-        StatementLastRefreshText = snapshot.RefreshedAt.LocalDateTime.ToString("g");
+        StatementLastRefreshText = UtcFormat.FormatUtcTimestamp(snapshot.RefreshedAt);
         StatementStatusText = runRows.Length == 0 && issueRows.Length == 0 && breakRows.Length == 0
             ? "No statement reconciliation evidence is currently exposed by the shared workstation endpoints."
             : $"Loaded {runRows.Length} statement run(s), {issueRows.Length} validation issue(s), and {breakRows.Length} unresolved statement break(s).";
@@ -390,7 +391,7 @@ public sealed partial class FundLedgerViewModel
         => FormatDateTimeText(ParseDateTimeOffset(value));
 
     private static string FormatDateTimeText(DateTimeOffset? value)
-        => value?.LocalDateTime.ToString("g") ?? "-";
+        => value is { } timestamp ? UtcFormat.FormatUtcTimestamp(timestamp) : "-";
 
     private static DateTimeOffset? ParseDateTimeOffset(string? value)
         => DateTimeOffset.TryParse(value, out var parsed) ? parsed : null;

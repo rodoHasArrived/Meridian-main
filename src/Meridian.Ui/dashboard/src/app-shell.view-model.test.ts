@@ -452,7 +452,9 @@ describe("app shell view model", () => {
           id: "source",
           label: "Provenance",
           value: "SEEDED",
-          tone: "review",
+          // Declared demo data on a Paper session is named by the environment badge; it is not
+          // also raised as a warning.
+          tone: "ready",
           detail: "Seeded demo data. This is seeded demo data shipped without live credentials. It is not real market or account data.",
           href: "/data/providers",
           actionLabel: "Connect live source"
@@ -501,16 +503,20 @@ describe("app shell view model", () => {
       }
     });
 
+    // LIVE is identity, announced by the alarm-red badge, not a warning on its own...
     expect(liveSimulatedState.trustStrip.items.find((item) => item.id === "mode")).toMatchObject({
       value: "Live",
-      tone: "review",
+      tone: "ready",
       href: "/trading/readiness"
     });
+    // ...but simulated data inside a LIVE session is the one provenance state that blocks.
     expect(liveSimulatedState.trustStrip.items.find((item) => item.id === "source")).toMatchObject({
       value: "SIMULATED",
-      tone: "review",
+      tone: "blocked",
+      detail: expect.stringContaining("Simulated data in a LIVE session."),
       href: "/data/providers"
     });
+    expect(liveSimulatedState.trustStrip.environment).toEqual({ label: "LIVE", variant: "live", dataLabel: "SIMULATED" });
     expect(liveSimulatedState.trustStrip.items.find((item) => item.id === "providers")).toMatchObject({
       value: "1 blocked",
       tone: "blocked",
@@ -628,7 +634,7 @@ describe("app shell view model", () => {
 
     expect(state.trustStrip.items.find((item) => item.id === "mode")).toMatchObject({
       value: "Live",
-      tone: "review",
+      tone: "ready",
       href: "/trading/readiness",
       actionLabel: "Review readiness"
     });
@@ -1155,7 +1161,7 @@ describe("app shell view model", () => {
       ["match-records", "Current / 1 open break", "review"],
       ["resolve-exceptions", "Next / 1 open break", "review"],
       ["approve-results", "1 open break", "review"],
-      ["produce-evidence", "1 recipients", "ready"],
+      ["produce-evidence", "1 recipient", "ready"],
       ["close-support", "Review", "review"]
     ]);
     expect(state.workflowContinuity.steps.find((step) => step.id === "match-records")?.ariaLabel)
@@ -1216,7 +1222,7 @@ describe("app shell view model", () => {
     expect(state.workflowContinuity.steps.map((step) => [step.id, step.statusLabel, step.statusTone])).toEqual([
       ["receive-activity", "Complete", "ready"],
       ["match-records", "Current / Complete", "ready"],
-      ["resolve-exceptions", "Next / 1 breaks", "review"],
+      ["resolve-exceptions", "Next / 1 break", "review"],
       ["approve-results", "Waiting", "pending"],
       ["produce-evidence", "Waiting", "pending"],
       ["close-support", "Waiting", "pending"]

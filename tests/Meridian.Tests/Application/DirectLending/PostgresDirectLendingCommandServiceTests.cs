@@ -353,6 +353,87 @@ public sealed partial class PostgresDirectLendingCommandServiceTests
     }
 
     [Fact]
+    public async Task RefundUnappliedCashAsync_RetryUnderARecordedExternalReference_IsRefusedWithoutSaving()
+    {
+        // PRD-115: a refund whose response was lost is retried with a fresh command id. The cash
+        // transaction write would be skipped as a duplicate, but the state, event and journal would not.
+        var loanId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var servicing = BuildServicing(loanId);
+        servicing = servicing with { Balances = servicing.Balances with { UnappliedCash = 2_000m } };
+        var stateStore = Substitute.For<IDirectLendingStateStore>();
+        var queryService = Substitute.For<IDirectLendingQueryService>();
+        queryService.LoadAggregateAsync(loanId, Arg.Any<CancellationToken>())
+            .Returns(new PersistedDirectLendingState(loanId, 7, BuildContract(loanId), servicing));
+        var operations = Substitute.For<IDirectLendingOperationsStore>();
+        operations.GetCashTransactionsAsync(loanId, Arg.Any<CancellationToken>()).Returns(
+        [
+            new CashTransactionDto(Guid.NewGuid(), loanId, "UnappliedCashRefund", new DateOnly(2026, 4, 1), new DateOnly(2026, 4, 1),
+                new DateOnly(2026, 4, 1), 500m, CurrencyCode.USD, "wire-out-1", Guid.NewGuid(), DateTimeOffset.UtcNow, false)
+        ]);
+        var service = new PostgresDirectLendingCommandService(
+            stateStore,
+            operations,
+            queryService,
+            new LoanAccountingProjector(null, new AccountingPolicyService(), BuildSecurityMasterQueryService()),
+            new DirectLendingOptions { CurrentEventSchemaVersion = 3 });
+
+        var result = await service.RefundUnappliedCashAsync(loanId, new RefundUnappliedCashRequest(500m, new DateOnly(2026, 4, 1), "wire-out-1"));
+
+        result.IsSuccess.Should().BeFalse();
+        result.Error!.Code.Should().Be(DirectLendingErrorCode.Conflict);
+        await stateStore.DidNotReceiveWithAnyArgs().SaveAsync(
+            default, default, default, default!, default!, default!, default, default, default!, default!, default, default, default, default);
+    }
+
+    [Theory]
+    [InlineData("loan.unapplied-cash-applied", 100, true)]
+    [InlineData("loan.mixed-payment-applied", 100, false)]
+    [InlineData("loan.unapplied-cash-applied", 200, false)]
+    public async Task ApplyUnappliedCashAsync_RetryOfACommittedCommand_ReturnsTheCommittedStateWithoutSaving(string recordedEventType, int recordedAmount, bool isReplay)
+    {
+        // PRD-115: the retry carries the same command id. Recomputing it would report a second,
+        // unsaved application (or a payload the store refuses as a conflict).
+        var loanId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var commandId = Guid.NewGuid();
+        var servicing = BuildServicing(loanId);
+        servicing = servicing with { Balances = servicing.Balances with { UnappliedCash = 900m } };
+        var stateStore = Substitute.For<IDirectLendingStateStore>();
+        var queryService = Substitute.For<IDirectLendingQueryService>();
+        queryService.LoadAggregateAsync(loanId, Arg.Any<CancellationToken>())
+            .Returns(new PersistedDirectLendingState(loanId, 7, BuildContract(loanId), servicing));
+        queryService.GetHistoryAsync(loanId, Arg.Any<CancellationToken>()).Returns(
+        [
+            new LoanEventLineageDto(Guid.NewGuid(), 7, recordedEventType, 3, new DateOnly(2026, 4, 1), DateTimeOffset.UtcNow,
+                $$"""{"loanId":"{{loanId}}","amount":{{recordedAmount}},"appliedAmount":{{recordedAmount}},"effectiveDate":"2026-04-01","externalRef":null}""",
+                null, null, commandId, "meridian.wpf", false)
+        ]);
+        var service = new PostgresDirectLendingCommandService(
+            stateStore,
+            Substitute.For<IDirectLendingOperationsStore>(),
+            queryService,
+            new LoanAccountingProjector(null, new AccountingPolicyService(), BuildSecurityMasterQueryService()),
+            new DirectLendingOptions { CurrentEventSchemaVersion = 3 });
+
+        var result = await service.ApplyUnappliedCashAsync(
+            loanId,
+            new ApplyUnappliedCashRequest(100m, new DateOnly(2026, 4, 1), null, null),
+            new DirectLendingCommandMetadataDto(commandId, null, null, "meridian.wpf", false));
+
+        if (isReplay)
+        {
+            result.IsSuccess.Should().BeTrue();
+            result.Value.Should().BeSameAs(servicing, "the committed state is returned, not a second application");
+        }
+        else
+        {
+            result.Error!.Code.Should().Be(DirectLendingErrorCode.Conflict);
+        }
+
+        await stateStore.DidNotReceiveWithAnyArgs().SaveAsync(
+            default, default, default, default!, default!, default!, default, default, default!, default!, default, default, default, default);
+    }
+
+    [Fact]
     public async Task AddCollateralAsync_PersistsServicingStateInsteadOfReturningPostgresNoOp()
     {
         var loanId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");

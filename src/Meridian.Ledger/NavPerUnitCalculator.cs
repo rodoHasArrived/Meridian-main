@@ -4,7 +4,8 @@ namespace Meridian.Ledger;
 
 /// <summary>
 /// Converts between total class NAV, units outstanding, NAV per unit, subscription cash, and units.
-/// Units round to 6 decimal places; NAV per unit rounds to 6 decimal places; cash rounds to 2.
+/// Units round to 6 decimal places; NAV per unit rounds to 6 decimal places; cash rounds to 2,
+/// or to the class currency's minor units where a currency is supplied.
 /// </summary>
 public static class NavPerUnitCalculator
 {
@@ -48,6 +49,22 @@ public static class NavPerUnitCalculator
             throw new ArgumentOutOfRangeException(nameof(navPerUnit), navPerUnit, "NAV per unit must be positive.");
 
         return RoundCurrency(units * navPerUnit);
+    }
+
+    /// <summary>
+    /// Cash paid for a redemption of <paramref name="units"/> at <paramref name="navPerUnit"/>,
+    /// rounded to the minor-unit precision of <paramref name="currency"/>. Rounding every class to
+    /// two decimals invented sub-yen amounts for JPY and dropped the third decimal for KWD/BHD.
+    /// </summary>
+    public static decimal CashForRedemption(decimal units, decimal navPerUnit, string currency)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(currency);
+        if (units < 0m)
+            throw new ArgumentOutOfRangeException(nameof(units), units, "Redemption units cannot be negative.");
+        if (navPerUnit <= 0m)
+            throw new ArgumentOutOfRangeException(nameof(navPerUnit), navPerUnit, "NAV per unit must be positive.");
+
+        return RoundCurrency(units * navPerUnit, currency);
     }
 
     public static decimal RoundUnits(decimal units) => Math.Round(units, UnitDecimals, MidpointRounding.ToEven);

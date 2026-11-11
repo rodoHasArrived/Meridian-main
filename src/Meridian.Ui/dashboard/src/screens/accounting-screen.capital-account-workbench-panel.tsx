@@ -11,7 +11,7 @@ import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { accountingToolingBadgeVariant, accountingToolingBorderClass } from "@/screens/accounting-screen.styles";
 import { AccountingChip } from "@/screens/accounting-screen.workbench-context";
 import type { CapitalAccountWorkbenchViewModel } from "@/screens/accounting-screen.view-model";
-import { formatCount } from "@/lib/format";
+import { pluralizeCount } from "@/lib/format";
 import { usesTrackedCaps } from "@/design-system/label-case";
 
 export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWorkbenchViewModel }) {
@@ -102,7 +102,7 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
           <section className="space-y-2" aria-labelledby="capital-account-fund-event-command-heading">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h4 id="capital-account-fund-event-command-heading" className="text-sm font-semibold text-foreground">Fund-event command centers</h4>
-              <Badge variant="outline">{formatCount(view.fundEventCommandRows.length)} events</Badge>
+              <Badge variant="outline">{pluralizeCount(view.fundEventCommandRows.length, "event", { localizeCount: true })}</Badge>
             </div>
             <div className="overflow-x-auto rounded-md border border-border/70">
               <table className="w-full min-w-[940px] text-sm" aria-label="Capital-account fund-event command centers">
@@ -175,7 +175,7 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
           <section className="min-w-0 space-y-2" aria-labelledby="capital-account-investor-heading">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h4 id="capital-account-investor-heading" className="text-sm font-semibold text-foreground">Investor capital accounts</h4>
-              <Badge variant="outline">{formatCount(view.investorAccounts.length)} rows</Badge>
+              <Badge variant="outline">{pluralizeCount(view.investorAccounts.length, "row", { localizeCount: true })}</Badge>
             </div>
             <div className="overflow-x-auto rounded-md border border-border/70">
               <table className="w-full min-w-[880px] text-sm">
@@ -226,7 +226,7 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
           <section className="min-w-0 space-y-2" aria-labelledby="capital-account-allocation-heading">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h4 id="capital-account-allocation-heading" className="text-sm font-semibold text-foreground">Allocation rules</h4>
-              <Badge variant="outline">{formatCount(view.allocationRules.length)} checks</Badge>
+              <Badge variant="outline">{pluralizeCount(view.allocationRules.length, "check", { localizeCount: true })}</Badge>
             </div>
             <div className="grid gap-2">
               {view.allocationRules.map((row) => (
@@ -266,7 +266,7 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
           <section className="space-y-2" aria-labelledby="capital-account-statement-heading">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h4 id="capital-account-statement-heading" className="text-sm font-semibold text-foreground">Statement lineage</h4>
-              <Badge variant="outline">{formatCount(view.statementLineage.length)} statements</Badge>
+              <Badge variant="outline">{pluralizeCount(view.statementLineage.length, "statement", { localizeCount: true })}</Badge>
             </div>
             <div className="grid gap-2">
               {view.statementLineage.map((row) => (
@@ -306,7 +306,7 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
           <section className="space-y-2" aria-labelledby="capital-account-audit-heading">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h4 id="capital-account-audit-heading" className="text-sm font-semibold text-foreground">Audit drill-through</h4>
-              <Badge variant="outline">{formatCount(view.auditDrillThroughs.length)} targets</Badge>
+              <Badge variant="outline">{pluralizeCount(view.auditDrillThroughs.length, "target", { localizeCount: true })}</Badge>
             </div>
             <div className="grid gap-2">
               {view.auditDrillThroughs.map((row) => (

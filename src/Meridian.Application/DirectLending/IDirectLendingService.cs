@@ -47,6 +47,12 @@ public interface IDirectLendingService
 
     Task<LoanServicingStateDto?> ApplyWriteOffAsync(Guid loanId, ApplyWriteOffRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);
 
+    /// <summary>PRD-115: applies held unapplied cash to amounts owed.</summary>
+    Task<LoanServicingStateDto?> ApplyUnappliedCashAsync(Guid loanId, ApplyUnappliedCashRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);
+
+    /// <summary>PRD-115: returns held unapplied cash to the borrower.</summary>
+    Task<LoanServicingStateDto?> RefundUnappliedCashAsync(Guid loanId, RefundUnappliedCashRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);
+
     Task<LoanServicingStateDto?> ChargePrepaymentPenaltyAsync(Guid loanId, ChargePrepaymentPenaltyRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);
 
     Task<DailyAccrualEntryDto?> PostDailyAccrualAsync(Guid loanId, PostDailyAccrualRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);

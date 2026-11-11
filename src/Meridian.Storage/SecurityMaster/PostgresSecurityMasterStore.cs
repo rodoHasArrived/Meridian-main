@@ -379,6 +379,27 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         return results;
     }
 
+    /// <summary>
+    /// One aggregate over <c>securities</c> (ADR-024 decision 5): a row is untagged when its
+    /// payload is not a JSON object or its <c>termsFormat</c> member is absent or not a string —
+    /// the same verdict <c>SecurityTermsEnvelope.GetDeclaredFormat</c> reaches, without loading a
+    /// single projection. <c>SecurityMasterPostgresRoundTripTests</c> pins the SQL to the C#
+    /// semantics row by row.
+    /// </summary>
+    public async Task<int> CountUntaggedAssetSpecificTermsAsync(CancellationToken ct = default)
+    {
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+            select count(*) from {Qualified("securities")}
+            where jsonb_typeof(asset_specific_terms) is distinct from 'object'
+               or jsonb_typeof(asset_specific_terms -> 'termsFormat') is distinct from 'string';
+            """;
+        var result = await command.ExecuteScalarAsync(ct).ConfigureAwait(false);
+        return Convert.ToInt32(result, System.Globalization.CultureInfo.InvariantCulture);
+    }
+
     public async Task<long?> GetCheckpointAsync(string projectionName, CancellationToken ct = default)
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);

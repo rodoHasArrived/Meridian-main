@@ -48,9 +48,15 @@ public partial class DataCalendarPage : Page
         }
     }
 
-    private async void PreviousYear_Click(object sender, RoutedEventArgs e) =>
-        await _viewModel.PreviousYearAsync();
+    private async void PreviousYear_Click(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => PreviousYear_ClickCoreAsync(sender, e), nameof(PreviousYear_Click)).ConfigureAwait(true);
 
-    private async void NextYear_Click(object sender, RoutedEventArgs e) =>
-        await _viewModel.NextYearAsync();
+    private async System.Threading.Tasks.Task PreviousYear_ClickCoreAsync(object sender, RoutedEventArgs e)
+        => await _viewModel.PreviousYearAsync();
+
+    private async void NextYear_Click(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => NextYear_ClickCoreAsync(sender, e), nameof(NextYear_Click)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task NextYear_ClickCoreAsync(object sender, RoutedEventArgs e)
+        => await _viewModel.NextYearAsync();
 }

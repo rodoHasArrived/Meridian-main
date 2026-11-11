@@ -6,10 +6,18 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-31
+last_reviewed: 2026-11-10
 ---
 
 # src/Meridian.Storage
+
+`JsonlBackfillBarWriter` gives every granularity its own file prefix (`bar_4hour`, `bar_weekly`, `bar_monthly` alongside the existing ones) and throws for an unknown granularity instead of writing it as `bar_daily`.
+
+`SharedStorageCoordinationStore` accepts an optional `TimeProvider` for lease expiry and takeover decisions (system clock by default).
+
+Maintenance schedule and history stores bound their cross-process lock acquisition (default 30 seconds) and throw a `TimeoutException` naming the lock, instead of retrying forever during construction.
+
+Archive maintenance status counts today's executions from the start of the UTC day rather than a host-offset-shifted midnight.
 
 `CompositeSink` tolerates individual sink failures under `ContinueOnPartialFailure` only while at least
 one sink accepts the write. When no sink accepts an append, or no sink can be flushed because every
@@ -28,6 +36,12 @@ history projector continues to refuse an inferred opening-age character.
 V3 remaining-face amortization verifies each immutable paydown receipt before walking prior
 partial-disposal/amortization history. The current/booked factor scales surviving face once;
 booked durable quantity and acquisition FX stay retained. V1/v2 keep the historical paydown gate.
+
+The Security Master store also answers the ADR-024 decision-5 retirement-gate count
+(`CountUntaggedAssetSpecificTermsAsync`): one SQL aggregate over `securities` for rows whose
+terms payload is not an object or whose `termsFormat` member is absent or non-string, pinned to
+the C# `SecurityTermsEnvelope.GetDeclaredFormat` verdict by `SecurityMasterPostgresRoundTripTests`
+— the gauge never loads projections.
 
 Security Master projection writes validate dated economic schedules through Contracts-owned
 `SecurityEconomicScheduleParser` before mutation. Invalid schedules raise source/row diagnostics
@@ -1162,6 +1176,10 @@ symbol at the journal level while posting a different instrument line underneath
 journal writes carry line-level Security Master ids, one journal entry may not combine multiple
 instrument symbols behind one entry-level Security Master id.
 
+Direct-lending loan accounts (`LoanPrincipal`, the interest, fee and penalty receivables, and since
+PRD-115 `PrepaidInterestLiability` and `UnappliedCashLiability`) are on the guard's instrument-account
+list, so a line on any of them needs Security Master evidence even if it arrives without a symbol.
+
 Ledger journal writes that opt into treasury-ledger metadata also fail closed. When a posting carries
 effective-date, idempotency, fund-event, capital-account, investor, payment-intent, or settlement
 metadata, `LedgerPeriodPostingGuard` requires an effective date inside the target accounting period
@@ -1428,6 +1446,8 @@ authority.
 - **Portable packages.** `PortableDataPackager` writes through `AtomicFileWriter.WriteStreamAsync`, so a cancelled or failed run never leaves a truncated `.zip` under the final name. The package checksum and size are recorded only on the returned manifest and `PackageResult`, and they match the file on disk. The manifest embedded in the zip leaves them empty, because a file cannot contain its own hash; `ListPackageContentsAsync` reports the size from the file on disk. The embedded manifest is written as the last entry, so it includes the supplementary-file inventory.
 - **Parquet conversion.** `ParquetConversionService` writes atomically and throws on cancellation, so a partial output can never be mistaken for a completed conversion.
 - **ETL audit and reject logs.** `EtlAuditStore` and `EtlRejectSink` append through `DurableLineAppender`. Appends to one file are serialized by striped locks, hashed case-insensitively on Windows and macOS, and each line is flushed to disk. When a log file or job directory is newly created, its directory entry is fsynced before the append is acknowledged.
+
+`ScheduledArchiveMaintenanceService` computes its "executions today" window in UTC.
 
 ## Diagrams
 

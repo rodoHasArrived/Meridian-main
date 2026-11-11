@@ -24,6 +24,55 @@ public sealed class SimulatedPortfolioTests
     }
 
     [Fact]
+    public void ProcessFill_SellLargerThanLong_ShortSellingDisabled_RejectsWithoutChangingState()
+    {
+        // Long 100, sell 150 would leave a 50-share short. The guard used to fire only when the
+        // account started flat or short, so this flip opened a short on a long-only account.
+        var portfolio = CreateLongOnlyPortfolio();
+        portfolio.ProcessFill(new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "SPY", 100L, 50m, 0m, DateTimeOffset.UtcNow, "long-only"));
+        var cashBeforeSell = portfolio.Cash;
+
+        var act = () => portfolio.ProcessFill(
+            new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "SPY", -150L, 55m, 0m, DateTimeOffset.UtcNow, "long-only"));
+
+        act.Should().Throw<InvalidOperationException>().WithMessage("*does not permit short selling*");
+        portfolio.Cash.Should().Be(cashBeforeSell);
+        portfolio.GetCurrentPositions()["SPY"].Quantity.Should().Be(100);
+    }
+
+    [Theory]
+    [InlineData(-40L, 60L)]
+    [InlineData(-100L, 0L)]
+    public void ProcessFill_SellWithinLong_ShortSellingDisabled_IsAllowed(long sellQuantity, long expectedRemaining)
+    {
+        var portfolio = CreateLongOnlyPortfolio();
+        portfolio.ProcessFill(new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "SPY", 100L, 50m, 0m, DateTimeOffset.UtcNow, "long-only"));
+
+        portfolio.ProcessFill(
+            new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "SPY", sellQuantity, 55m, 0m, DateTimeOffset.UtcNow, "long-only"));
+
+        var positions = portfolio.GetCurrentPositions();
+        if (expectedRemaining == 0)
+            positions.Should().NotContainKey("SPY");
+        else
+            positions["SPY"].Quantity.Should().Be(expectedRemaining);
+    }
+
+    private static SimulatedPortfolio CreateLongOnlyPortfolio()
+        => new(
+            [
+                new FinancialAccount(
+                    "long-only",
+                    "Long Only",
+                    FinancialAccountKind.Brokerage,
+                    "Broker",
+                    10_000m,
+                    new FinancialAccountRules(AllowMargin: false, AllowShortSelling: false))
+            ],
+            "long-only",
+            new FixedCommissionModel(0m));
+
+    [Fact]
     public void ProcessFill_SellOrder_AddsCashAndRemovesPosition()
     {
         var portfolio = CreatePortfolio(10_000m);

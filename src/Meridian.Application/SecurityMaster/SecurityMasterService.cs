@@ -238,7 +238,12 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
         // amendment must not read incumbents while this one sits between its committed projection
         // and its not-yet-written attribution — it would pair the previous source with this
         // amendment's value in a durably recorded conflict.
-        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
+        // S2-B3: no override means the carried projection's terms are the codec serialization of
+        // the amend result's typed record (the retained carry adds only the reserved key the
+        // codec ignores), so the economic record derives from that record without re-decoding.
+        var economic = assetClassOverride is null && assetTermsOverride is null
+            ? SecurityEconomicDefinitionAdapter.ToEconomicRecord(result.Snapshot!.Record, projection)
+            : SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
         var amendmentGate = await AmendmentGates.AcquireAsync(request.SecurityId, ct).ConfigureAwait(false);
         SecurityProjectionRecord? persistedProjection = null;
         try
@@ -426,44 +431,6 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
         }
     }
 
-    public async Task DeactivateAsync(DeactivateSecurityRequest request, CancellationToken ct = default)
-    {
-        await _termsCapabilityVerifier.VerifyAsync(ct).ConfigureAwait(false);
-        var aliasProjection = await _store.GetProjectionAsync(request.SecurityId, ct).ConfigureAwait(false);
-        var current = await _rebuilder.RebuildEconomicDefinitionAsync(request.SecurityId, aliasProjection, ct).ConfigureAwait(false)
-            ?? throw new InvalidOperationException($"Security '{request.SecurityId}' was not found.");
-
-        var currentProjection = SecurityEconomicDefinitionAdapter.ToProjection(current, aliasProjection?.Aliases);
-        // Ordered as in an amendment: the class check, the decode, then the round-trip guards.
-        EnsureAssetClassIsRecognizedHere(currentProjection);
-        var currentRecord = SecurityMasterMapping.ToRecord(currentProjection);
-        EnsureAssetClassRoundTripsSafely(currentProjection);
-        var result = SecurityMasterCommandFacade.Deactivate(currentRecord, SecurityMasterMapping.ToDeactivateCommand(request));
-        var projection = SecurityEconomicDefinitionAdapter.CarryRetainedEconomicTerms(
-            currentProjection,
-            CreateProjectionFromResult(
-                result,
-                currentProjection.Aliases,
-                GetProfileBackedAssetClassOverride(currentProjection),
-                GetProfileBackedAssetSpecificTermsOverride(currentProjection, assetSpecificTermsPatch: null)));
-        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
-        var envelope = SecurityMasterMapping.ToEventEnvelope(
-            economic,
-            "SecurityDeactivated",
-            request.UpdatedBy,
-            request.SourceSystem,
-            request.Reason,
-            projection.Version);
-
-        await _canonicalWriteScope.ExecuteAsync(request.SecurityId, async () =>
-        {
-            await _eventStore.AppendAsync(request.SecurityId, request.ExpectedVersion, [envelope], ct).ConfigureAwait(false);
-            await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
-            return true;
-        }, ct).ConfigureAwait(false);
-        await OnProjectionCommittedAsync(projection.SecurityId).ConfigureAwait(false);
-        await SaveSnapshotIfNeededAsync(economic, _serviceCts.Token).ConfigureAwait(false);
-    }
 
     public Task<SecurityAliasDto> UpsertAliasAsync(UpsertSecurityAliasRequest request, CancellationToken ct = default)
     {

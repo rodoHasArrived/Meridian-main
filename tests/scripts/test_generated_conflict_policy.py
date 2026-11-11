@@ -30,7 +30,7 @@ class GeneratedConflictPolicyTests(unittest.TestCase):
         self.policy = resolver.load_conflict_policy()
 
     def validate_fixture(self, policy):
-        with tempfile.TemporaryDirectory() as temporary:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temporary:
             root = Path(temporary)
             # Only inert files are needed to prove that reviewed producer paths
             # exist; none of these copied scripts are executed.

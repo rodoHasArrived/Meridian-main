@@ -14,6 +14,7 @@ import {
   formatReadinessUtcMinute,
   levelFromReadiness,
   levelFromTone,
+  sentence,
   toErrorMessage
 } from "@/screens/operator-readiness-console.presentation";
 import type {
@@ -476,7 +477,7 @@ export function buildOperatorReadinessConsoleState({
 
   return {
     title: "Operator Readiness Console",
-    subtitle: "Runs, paper sessions, provider trust, reconciliation, promotion, and report-pack posture from shared readiness payloads.",
+    subtitle: "Runs, paper sessions, provider trust, reconciliation, promotion, and report-pack posture from shared readiness data.",
     overallLabel,
     overallDetail: buildOverallDetail({
       readiness,
@@ -488,7 +489,7 @@ export function buildOperatorReadinessConsoleState({
     overallLevel,
     asOf,
     statusAnnouncement: buildStatusAnnouncement(overallLabel, asOf, inboxLoading, inboxError),
-    inboxSummary: operatorInbox?.summary ?? "Operator inbox not loaded; using workstation payload fallbacks where available.",
+    inboxSummary: operatorInbox?.summary ?? "Operator inbox not loaded; using workstation data where available.",
     inboxLoadingLabel: inboxLoading ? "Loading operator inbox..." : null,
     inboxErrorText: inboxError,
     inboxRefreshLabel: inboxLoading ? "Refreshing inbox" : "Refresh inbox",
@@ -644,7 +645,7 @@ function buildConsolePanels({
     buildConsolePanel({
       id: "reporting-report-packs",
       title: "Reporting report packs",
-      emptyText: "No reporting readiness payload loaded.",
+      emptyText: "No reporting readiness data loaded.",
       rows: reportPackFacts,
       selectedRowId: selectedPanelRowIds["reporting-report-packs"] ?? null,
       selectPanelRow
@@ -921,7 +922,7 @@ function buildReportPackFacts(reportingPayload: AccountingReportingSummary | nul
       id: "report-pack",
       label: "Report-pack readiness",
       value: "Unavailable",
-      detail: "Reporting payload has not loaded.",
+      detail: "Reporting data has not loaded.",
       meta: "Wait for the Reporting capability and durability checks to recover.",
       level: "review"
     }];
@@ -984,7 +985,7 @@ function buildCockpitGateRows({
       fallbackValue: activeSession?.isActive ? "Ready" : "Review required",
       fallbackDetail: activeSession
         ? `${activeSession.sessionId} is ${activeSession.isActive ? "active" : "not active"} with ${activeSession.orderCount} orders and ${activeSession.symbolCount} symbols.`
-        : "No active paper session is present in the readiness payload.",
+        : "No active paper session is present in the readiness data.",
       fallbackMeta: activeSession?.sessionId ?? "No session id",
       fallbackLevel: activeSession?.isActive ? "ready" : "review",
       gate: gateById.get("session"),
@@ -1019,7 +1020,7 @@ function buildCockpitGateRows({
       fallbackDetail: controls
         ? controls.circuitBreakerOpen
           ? controls.circuitBreakerReason ?? "Execution circuit breaker is open."
-          : `${controls.manualOverrideCount} manual overrides, ${controls.symbolLimitCount} symbol limits, and ${controls.defaultMaxPositionSize ?? "no"} default max-position limit are visible.`
+          : `${pluralizeCount(controls.manualOverrideCount, "manual override")}, ${pluralizeCount(controls.symbolLimitCount, "symbol limit")}, and ${controls.defaultMaxPositionSize ?? "no"} default max-position limit are visible.`
         : "Execution-control evidence has not loaded.",
       fallbackMeta: controls?.circuitBreakerChangedBy ?? controls?.circuitBreakerChangedAt ?? "Execution controls",
       fallbackLevel: controls?.circuitBreakerOpen ? "blocked" : controls ? "ready" : "review",
@@ -1035,7 +1036,7 @@ function buildCockpitGateRows({
       id: "promotion-trace-complete",
       label: "Promotion review trace complete",
       fallbackValue: promotion?.requiresReview ? "Review required" : promotion ? "Ready" : "Review required",
-      fallbackDetail: promotion?.reason ?? "Promotion trace evidence is not attached to the readiness payload.",
+      fallbackDetail: promotion?.reason ?? "Promotion trace evidence is not attached to the readiness data.",
       fallbackMeta: promotion
         ? [promotion.sourceRunId, promotion.targetRunId, promotion.auditReference].filter(Boolean).join(" - ") || "No promotion audit reference"
         : "No promotion record",
@@ -1077,7 +1078,7 @@ function buildCockpitGateRows({
       fallbackDetail: brokerageRow?.detail ?? "No account-scoped brokerage sync posture is attached to readiness.",
       fallbackMeta: brokerage
         ? [brokerage.fundAccountId, brokerage.providerId, brokerage.externalAccountId].filter(Boolean).join(" - ") || "No provider linked"
-        : "No brokerage sync payload",
+        : "No brokerage sync data",
       fallbackLevel: brokerageRow?.level ?? "review",
       action: {
         label: "Open brokerage sync",
@@ -1098,7 +1099,7 @@ function buildCockpitGateRows({
       fallbackDetail: executionReconciliation?.detail ?? "Broker/OMS open-order reconciliation evidence is not attached to readiness.",
       fallbackMeta: executionReconciliation
         ? `${executionReconciliation.brokerDisplayName} · ${executionReconciliation.matchedOpenOrderCount} matched · ${executionReconciliation.breakCount} breaks`
-        : "No broker execution reconciliation payload",
+        : "No broker execution reconciliation data",
       fallbackLevel: executionReconciliation ? levelFromReadiness(executionReconciliation.status) : "review",
       gate: executionReconciliationGate,
       action: {
@@ -1136,7 +1137,7 @@ function buildCockpitGateRows({
       fallbackDetail: reportPackReviewCount === 0
         ? "Governed report-pack recipients and recommended profiles are available."
         : "Report-pack recipients or recommended profiles are incomplete.",
-      fallbackMeta: reportPackFacts[0]?.meta ?? "Reporting payload unavailable",
+      fallbackMeta: reportPackFacts[0]?.meta ?? "Reporting data unavailable",
       fallbackLevel: reportPackReviewCount === 0 ? "ready" : "review",
       action: {
         label: "Open report packs",
@@ -1402,7 +1403,7 @@ function buildWorkItemsEmptyText(
     return "No operator work items need attention. Continue monitoring the paper cockpit and readiness evidence before accepting new live risk.";
   }
 
-  return "No operator work items returned. Continue from the primary next action while shared readiness payloads finish loading.";
+  return "No operator work items returned. Continue from the primary next action while shared readiness data finishes loading.";
 }
 
 function buildWorkItemsEmptyAction(nextAction: ReadinessConsoleNextAction): ReadinessConsoleRowAction {
@@ -1460,7 +1461,7 @@ function buildInboxErrorRecovery(inboxError: string | null): ReadinessConsoleRec
 
   return {
     title: "Operator inbox unavailable",
-    detail: `${inboxError}. Retry the shared inbox before accepting readiness; fallback rows remain visible for triage.`,
+    detail: `${sentence(inboxError)} Retry the shared inbox before accepting readiness; fallback rows remain visible for triage.`,
     actionLabel: "Retry inbox",
     actionAriaLabel: "Retry loading operator inbox work items after failure"
   };
@@ -1720,7 +1721,7 @@ function buildMetrics({
       id: "report-packs",
       label: "Report-pack recipients",
       value: String(reportDistributions.length),
-      detail: `${pendingReportDistributions} report-pack distributions pending.`,
+      detail: `${pluralizeCount(pendingReportDistributions, "report-pack distribution")} pending.`,
       level: reportDistributions.length > 0 && pendingReportDistributions === 0 ? "ready" : "review"
     }
   ];
@@ -1854,7 +1855,7 @@ function buildOverallDetail({
   }
 
   if (inboxError) {
-    return `Trading readiness is ${sourceStatus}, but the operator inbox failed to load: ${inboxError}. Review fallback work items before accepting readiness.`;
+    return `Trading readiness is ${sourceStatus}, but the operator inbox failed to load: ${sentence(inboxError)} Review fallback work items before accepting readiness.`;
   }
 
   const reviewCount = operatorInbox?.reviewCount ?? readiness.workItems.length;
@@ -1937,7 +1938,7 @@ function formatEffectiveOverallLabel(
   readinessStatusLabel: string,
   overallLevel: ReadinessConsoleLevel
 ): string {
-  if (readinessStatusLabel === "Awaiting readiness payload") {
+  if (readinessStatusLabel === "Awaiting readiness data") {
     return overallLevel === "blocked" ? "Blocked" : readinessStatusLabel;
   }
 
@@ -1962,7 +1963,7 @@ function buildMissingReadinessDetail(
   }
 
   if (inboxError) {
-    return `Trading readiness has not loaded yet, and the operator inbox failed to load: ${inboxError}. Review any visible fallback work items before accepting readiness.`;
+    return `Trading readiness has not loaded yet, and the operator inbox failed to load: ${sentence(inboxError)} Review any visible fallback work items before accepting readiness.`;
   }
 
   if (operatorInbox) {
@@ -1983,10 +1984,10 @@ function buildMissingReadinessDetail(
       return `Trading readiness has not loaded yet, but the operator inbox reports ${severitySummary}. Resolve the primary next action before accepting readiness.`;
     }
 
-    return "Trading readiness has not loaded yet. The operator inbox is clean, but readiness cannot be accepted until the trading readiness payload loads.";
+    return "Trading readiness has not loaded yet. The operator inbox is clean, but readiness cannot be accepted until the trading readiness data loads.";
   }
 
-  return "Trading readiness has not loaded yet. The console can still show any available Strategy, Data, Accounting, or Reporting payloads.";
+  return "Trading readiness has not loaded yet. The console can still show any available Strategy, Data, Accounting, or Reporting data.";
 }
 
 function hasCriticalOperatorInbox(operatorInbox: OperatorInbox | null): boolean {

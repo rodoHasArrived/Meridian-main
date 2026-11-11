@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.Calendars;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.FixedIncome;
 using Meridian.Contracts.SecurityMaster;
@@ -17,11 +18,14 @@ public sealed partial class AssetObligationProjectionService
     private const string SecurityMasterSourceDomain = "SecurityMaster";
     private readonly IBondCalculationPolicy? _bondPolicy;
     private readonly TimeProvider _clock;
+    private readonly IBusinessDayCalendarSource? _calendars;
 
-    public AssetObligationProjectionService(IBondCalculationPolicy? bondPolicy = null, TimeProvider? clock = null)
+    public AssetObligationProjectionService(
+        IBondCalculationPolicy? bondPolicy = null, TimeProvider? clock = null, IBusinessDayCalendarSource? calendars = null)
     {
         _bondPolicy = bondPolicy;
         _clock = clock ?? TimeProvider.System;
+        _calendars = calendars;
     }
 
     public AssetOperationsDetailDto ProjectFromSecurityMaster(SecurityDetailDto security)
@@ -31,9 +35,17 @@ public sealed partial class AssetObligationProjectionService
     public AssetOperationsDetailDto ProjectFromSecurityMaster(
         SecurityDetailDto security, BondCalculationContext context,
         StructuredCashFlowProjectionDto? calculatedProjection = null)
-        => ProjectCore(security, context, _bondPolicy is null
-            || !SecurityAssetClassCatalog.GetOrDefault(security.AssetClass).CarriesBondCouponStructure ? calculatedProjection
-            : BlockedProjection(security, context, "Live bond policy requires the asynchronous obligation projection entry point."));
+    {
+        ArgumentNullException.ThrowIfNull(security);
+        ArgumentNullException.ThrowIfNull(context);
+        var blocker = _bondPolicy is null
+            || !SecurityAssetClassCatalog.GetOrDefault(security.AssetClass).CarriesBondCouponStructure
+            ? null
+            : "Live bond policy requires the asynchronous obligation projection entry point.";
+        return ProjectCore(security, context,
+            blocker is null ? calculatedProjection : BlockedProjection(security, context, blocker),
+            ResolveDeclaredExercise(security, context, blocker));
+    }
 
     /// <summary>Evaluates live cutover policy before exposing projected obligation economics.</summary>
     public async Task<AssetOperationsDetailDto> ProjectFromSecurityMasterAsync(
@@ -44,7 +56,9 @@ public sealed partial class AssetObligationProjectionService
         ArgumentNullException.ThrowIfNull(context);
         ct.ThrowIfCancellationRequested();
         var blocker = _bondPolicy is null ? null : await _bondPolicy.GetBlockerAsync(security, ct).ConfigureAwait(false);
-        return ProjectCore(security, context, blocker is null ? calculatedProjection : BlockedProjection(security, context, blocker));
+        return ProjectCore(security, context,
+            blocker is null ? calculatedProjection : BlockedProjection(security, context, blocker),
+            ResolveDeclaredExercise(security, context, blocker));
     }
 
     private static StructuredCashFlowProjectionDto BlockedProjection(
@@ -54,7 +68,8 @@ public sealed partial class AssetObligationProjectionService
 
     private static AssetOperationsDetailDto ProjectCore(
         SecurityDetailDto security, BondCalculationContext context,
-        StructuredCashFlowProjectionDto? calculatedProjection)
+        StructuredCashFlowProjectionDto? calculatedProjection,
+        BondExerciseNoticeWatchResult? declaredExercise)
     {
         ArgumentNullException.ThrowIfNull(security);
         ArgumentNullException.ThrowIfNull(context);
@@ -105,11 +120,19 @@ public sealed partial class AssetObligationProjectionService
             ?? (declaresConventions && calculatedProjection is null
                 ? "Declared bond economics require the shared cash-flow calculation; legacy fallback is disabled."
                 : null);
+        // A blocked run exposes no projected economics, declared exercise dates included. The cutover
+        // policy reaches this method as a blocked projection, so the gate cannot be bypassed by a caller
+        // that evaluated the policy itself.
+        if (blockedReason is not null && declaredExercise is { IsBlocked: false })
+        {
+            declaredExercise = BondExerciseNoticeWatch.Blocked(security, projectionAsOf, 0, "ProjectionBlocked", blockedReason);
+        }
+
         var run = new AssetCashFlowProjectionRunDto(
             projectionRunId,
             security.SecurityId,
             projectionAsOf,
-            calculatedProjection?.ScheduleEvidence is null ? EngineVersion : "asset-obligation-declared-v3",
+            calculatedProjection?.ScheduleEvidence is null ? EngineVersion : AssetOperationsEngineVersions.DeclaredObligation,
             blockedReason is null ? "Completed" : "Blocked",
             generatedAt,
             SecurityMasterSourceDomain,
@@ -143,7 +166,8 @@ public sealed partial class AssetObligationProjectionService
             additionalWarnings:
             [
                 "Only Expected/Projected support was synthesized from Security Master. Publish a reviewed Asset Operations projection and attach accepted retained evidence before downstream use.",
-                .. (blockedReason is null ? Array.Empty<string>() : new[] { blockedReason })
+                .. (blockedReason is null ? Array.Empty<string>() : new[] { blockedReason }),
+                .. DeclaredExerciseWarnings(declaredExercise)
             ],
             allowReady: false,
             evaluatedAt: context.AsOf);
@@ -162,14 +186,15 @@ public sealed partial class AssetObligationProjectionService
             lifecycle);
         // The calculation context's economic cutoff is the deterministic "now" for a projection
         // built from retained terms; it keeps the obligation timeline replayable without a wall clock.
-        return AssetOperationsProjectionBuilder.WithTermsObligationsTimeline(detail, context.AsOf);
+        return AssetOperationsProjectionBuilder.WithTermsObligationsTimeline(detail, context.AsOf, declaredExercise);
     }
 
     public static IReadOnlyList<AssetTermsObligationTimelineEventDto> BuildProjectedObligationEvents(
         AssetOperationSubjectDto subject,
         IReadOnlyList<AssetTermsVersionDto> terms,
         DateOnly projectionAsOf,
-        IReadOnlyList<AssetLedgerProjectionDto> ledgerProjections)
+        IReadOnlyList<AssetLedgerProjectionDto> ledgerProjections,
+        BondExerciseNoticeWatchResult? declaredExercise = null)
     {
         ArgumentNullException.ThrowIfNull(subject);
         ArgumentNullException.ThrowIfNull(terms);
@@ -194,7 +219,7 @@ public sealed partial class AssetObligationProjectionService
 
         if (IsFixedIncome(subject.AssetClass))
         {
-            AddFixedIncomeObligations(events, subject, term, payload, projectionAsOf, currency, ledgerReference);
+            AddFixedIncomeObligations(events, subject, term, payload, projectionAsOf, currency, ledgerReference, declaredExercise);
         }
 
         if (IsDirectLoan(subject.AssetClass))
@@ -374,9 +399,16 @@ public sealed partial class AssetObligationProjectionService
         JsonElement payload,
         DateOnly projectionAsOf,
         string currency,
-        string? ledgerReference)
+        string? ledgerReference,
+        BondExerciseNoticeWatchResult? declaredExercise)
     {
-        if (TryReadDate(payload, out var callDate, "callDate", "mandatoryPutDate", "preRefundDate") && callDate >= projectionAsOf)
+        // A declared call or put schedule is the authority for the record's option events; the scalar
+        // probe (SCH-DEF-012) is not consulted for it, resolved or blocked, so no exercise is shown twice.
+        if (declaredExercise is not null)
+        {
+            AddDeclaredExerciseObligations(events, subject, term, projectionAsOf, currency, ledgerReference, declaredExercise);
+        }
+        else if (TryReadDate(payload, out var callDate, "callDate", "mandatoryPutDate", "preRefundDate") && callDate >= projectionAsOf)
         {
             events.Add(BuildObligationEvent(
                 subject,

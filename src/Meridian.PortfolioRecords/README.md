@@ -11,6 +11,8 @@ last_reviewed: 2026-10-28
 
 # src/Meridian.PortfolioRecords
 
+Account reconciliation run summaries total only cash-denominated variances (Cash and Continuity checks) in `BreakAmountTotal`; the position-count check's line-count variance still counts as a break but no longer enters the monetary total.
+
 `BankStatementClosingBalanceAuthority` projects complete highest-revision batches before selecting
 balances or aggregating cash flows. Competing batches at the same account/header-date/revision remain
 unavailable, including when their closing balances happen to agree. Currency filtering follows revision

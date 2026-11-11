@@ -1,10 +1,12 @@
 # Browser Workstation UX Review and Improvement Plan (2026-11)
 
-> **Status:** Proposed · **Created:** 2026-11-06 · **Owner lane:** Workstation Shell and UX
+> **Status:** In progress (Phase 3 started 2026-11-10) · **Created:** 2026-11-06 ·
+> **Extended:** 2026-11-10 · **Owner lane:** Workstation Shell and UX
 > **Builds on:** UI Phase 0–2 (merged 2026-11-04/05: font-fallback fix; A1–A5 task-first routes,
 > one-row masthead, Today front door, single StatusBadge; B2–B4 shared formatting, single table
 > system, three-tier type scale)
-> **Depth:** findings and phased plan; no code in this change
+> **Depth:** findings (P1–P10), the 2026-11-10 extended review (C1–C6, V1–V7, F1–F8) and the
+> Phase 3–7 roadmap that replaces the original Phase 3–6 plan
 
 ## Scope and Evidence
 
@@ -162,68 +164,486 @@ on new rows; a "Changes" filter.
 - Large empty areas below short pages (Today, Settings) could hold the queue or recent activity in
   a two-column layout.
 
+## Extended Review (2026-11-10)
+
+A second pass over the same routes after the 2026-11-10 copy pass, checked against a fresh
+fixture-backed capture of all 80 routes. It adds clarity (C), visual-polish (V) and functionality
+(F) proposals; several extend P1–P10 and say so. Priority: 🔴 critical · 🟠 high · 🟡 medium ·
+⚪ low or needs checking.
+
+### A. Clarity
+
+#### C1 🔴 Status indicators should never contradict each other (extends P1)
+
+**Problem.** Before any work content, a page can show up to six status layers: the PAPER/SEEDED
+chip and the BLOCKED chip in the top bar; the full-width "Seeded demo data" banner; a row of
+headline numbers (KPI strip); a row of Source / Scope / Freshness / Completeness pills (the posture
+strip); a blocker banner; and the status bar at the bottom. On Trading, the first table starts
+about 435px down a 1100px screen. Worse, the layers disagree:
+
+- The bottom bar says "Sync up to date" while Portfolio's posture strip says "Freshness: Stale ·
+  187d ago".
+- The header says "No scope selected" while Trading's posture strip says "Scope: Ready ·
+  DU1009034", and Portfolio's says "All brokerage accounts".
+- Live Quotes shows "Connection: Connected" next to "Coverage 0/0 live".
+- Strategy Lab's KPI strip says "Runs 24", but the Strategy overview list shows "2 of 2 loaded".
+
+**Proposal.** Give each kind of status one fixed place:
+
+| Layer | What it shows | Where |
+|---|---|---|
+| Environment | PAPER/LIVE, seeded data, signed-in operator | Top bar only. The seeded banner shrinks to the chip once it has been dismissed. |
+| Page trust | Source, scope, freshness, completeness | One strip in one format. Today Trading uses a row of pills while Run Status uses four large cards. |
+| Blockers | The single most important blocker, with a "+N more" link | One banner slot |
+| System heartbeat | Sync and provider status | Bottom bar, calculated from the same freshness check the page strip uses |
+
+Scope appears in one place only: the header scope picker. The posture strip shows the scope's
+name, not a separate "Ready" verdict.
+
+**Affected:** every route; `workstation-topbar`, `workstation-status-bar`, `app-shell.trust-strip`,
+`data-provenance-banner`.
+
+**Benefit:** operators can trust the status they see first, and the work starts 150–200px higher.
+
+#### C2 🟠 One name per destination
+
+**Problem.** The sidebar label, the breadcrumb and the page title often disagree:
+
+| Sidebar label | Page title |
+|---|---|
+| Adjustments | Journal Entry |
+| Casework | Reconciliation Casework |
+| Strategy Lab | "PlotTool workstation" |
+| Market data | Live Market Data Workspace |
+
+On Market data, the Watchlist and Price alerts tabs do not appear in the sidebar at all. Every page
+also repeats "<Workspace> Workstation" as its title and starts the breadcrumb with "Workstation".
+
+**Proposal.**
+- Read each route's label from the existing route registry and use it for the sidebar, the
+  breadcrumb, the page heading, the browser tab title and the command palette.
+- Drop the "Workstation" breadcrumb root and the repeated "<X> Workstation" title; the page heading
+  names the destination.
+- Put in-page tabs in the URL and show them as sidebar children.
+
+**Benefit:** the destination clicked is the page landed on; deep links and saved views stay
+meaningful.
+
+#### C3 🟠 Make Accounting navigation lighter and give it one work queue
+
+**Problem.** Accounting has 20 sidebar items in 5 groups; expanded, it pushes Reporting, Strategy
+and Data near the bottom of the screen. Operators also learn at least four overlapping queues:
+Today, Operations continuity, Casework and Exceptions/Approvals.
+
+**Proposal.**
+- Move Accounting's sub-pages into an in-page secondary rail or tab bar, with remembered expansion.
+- Merge the queues into one Accounting work queue that filters by type (break, exception, approval,
+  close task), owner and due date.
+- Keep the existing routes as preset filters of that queue so deep links still work.
+
+**Benefit:** less to scan, and one answer to "what do I work on next?"
+
+#### C4 🔴 Speak operator language, not system language (follows the 11-10 copy pass)
+
+**Problem.**
+- A raw API URL is shown to users. Journal Entry displays "Recurring queue unavailable: Request
+  failed for /api/ledger/journal-automation/recurring/occurrences?fundProfileId=default-fund&…".
+  The text came from `lib/api-errors.ts`.
+- Internal or migration wording remains: "Legacy pack mutations are retired. Continue … from the
+  governed run" (Run Status); "Caller-visible Reporting records"; "Strategy Lane · PlotTool"; "No
+  Strategy PlotTool payload is available. Connect a governed strategy analytics endpoint…" (three
+  times on one screen); "Data Lane".
+- Raw IDs appear as values: `default-fund`, `entity-fund-alpha`, `run-dev-1`.
+
+**Proposal.**
+- An error presenter that maps the HTTP status and error type to a plain sentence, a Retry action
+  and a collapsed "Technical details" section (request path and correlation ID).
+- Extend the screenshot harness's rendered-text check to fail on `/api/` paths, internal terms
+  ("Lane", "payload", "mutation", "caller-visible") and slug-shaped IDs in the main content area.
+
+**Benefit:** fewer support questions, and no leaked internals.
+
+#### C5 🟠 Show time and urgency consistently
+
+**Problem.**
+- Trading shows times in ET ("09:42:00 ET") while Accounting and Reporting show UTC. There are
+  about 10 hard-coded `timeZone: "UTC"` formatters and no timezone preference.
+- Date-only fields show a fake time ("Jan 1, 2026, 00:00 UTC").
+- Due dates have no urgency: "Due Jul 14, 2026" looks the same tomorrow or months overdue.
+
+**Proposal.**
+- A time-display policy in the shared formatters: date-only values render as dates; timestamps
+  render in the operator's chosen timezone with the zone shown; due dates carry a relative chip
+  (`Overdue 3d` danger, `Due today` warning, `Due in 2d`).
+- Timezone and date-format settings.
+
+**Benefit:** fewer cut-off and SLA mistakes; timestamps compare across workspaces.
+
+#### C6 🟡 Overview pages that summarise their workspace
+
+**Problem.**
+- The Strategy and Data overviews are generic Work item / Context / Action tables with an identical
+  "Review run" or "Open Backfill queue" button on every row.
+- Settings › Preferences shows provider and position KPIs unrelated to preferences (P1 noted this).
+- Chart components exist (equity curve, drawdown, heatmap, sparkline) but only 4 screens use them.
+
+**Proposal.** Build overviews for their workspace's purpose. Strategy: a run leaderboard with
+equity sparkline, Sharpe, max drawdown and promotion stage. Data: a provider × capability ×
+freshness health matrix plus backfill progress bars. Portfolio: NAV and exposure trend. Settings ›
+Preferences: remove the KPI strip. Overlaps P9.
+
+### B. Visual polish
+
+#### V1 🟠 One shared detail pane (P2 detail-pane work is still open)
+
+**Problem.** Words still break mid-word ("Interacti / ve / Brokers"); dates still wrap onto three
+lines inside narrow tiles; one selection gets up to three labels ("Selected from open orders" +
+"DETAIL" + "WORKING"); Trading stacks two detail cards, one for each table.
+
+**Proposal.** One `DetailPane` per page, showing whatever was selected last; labels sit above
+values once the pane is narrower than about 360px; no two-column tile grid for values longer than
+two words; one heading line: object type · ID · status badge.
+
+#### V2 🟠 Typography: limit monospace and pick fonts deliberately (extends P4)
+
+**Problem.** About 1,248 monospace references; uppercase, letter-spaced monospace labels ("OPEN
+BREAKS", "DRAFT QUEUE", "THEME") sit next to sentence-case labels. Fonts load only through
+`local()` (Segoe UI and Cascadia), so Linux and macOS fall back to heavier system fonts. Only 45
+files use `tabular-nums`.
+
+**Proposal.** Monospace only for numbers, IDs and code; one eyebrow style (small caps in the sans
+font); either self-host a variable sans and mono pair with tabular figures (check the licence
+first) or officially adopt the system font stack and test it on all platforms; `tabular-nums` for
+all numeric cells through the table and KPI primitives.
+
+#### V3 🟡 One badge system (P6; adoption is incomplete)
+
+**Problem.** At least four badge styles are visible: pill in sentence case ("Needs review"), boxed
+uppercase monospace ("REVIEW REQUIRED", "OPEN"), dotted uppercase ("• AWAITING APPROVAL") and a
+tinted chip ("Selected detail"). Some items show redundant pairs ("AWAITING APPROVAL" next to
+"APPROVAL NEEDED").
+
+**Proposal.** Only the existing `StatusBadge`, with a ratchet counting other badge styles, and one
+status badge per object.
+
+#### V4 🟠 Show financial numbers like a finance tool
+
+**Problem.**
+- In Ledger Explorer, debit and credit amounts are terracotta, underlined links. In finance, red
+  reads as negative or loss, and the brand accent clashes with that meaning.
+- Journal Entry inputs show "1250" with no thousands separator.
+- There is no running debit / credit / difference total at the bottom of the journal grid; balance
+  shows only as a chip at the top.
+- 7 `formatCurrency`, 11 `formatCount` and 6 `formatTimestamp` functions still exist alongside the
+  B2 shared formatters.
+
+**Proposal.** Amounts as neutral text with a proof icon or hover affordance that opens the Number
+Passport; colour only for sign and variance; a negative-number style setting (minus sign or
+parentheses); a sticky totals row on the journal grid; format numbers in inputs on blur; remove the
+local formatter copies behind a ratchet.
+
+#### V5 🟠 Disabled and destructive controls
+
+**Problem.** Disabled primary buttons ("Submit approval", "Add symbol set") are washed-out accent
+colour with unreadable text, and nothing says why they are disabled. "Cancel all" is still a
+prominent red button next to "New order".
+
+**Proposal.** A disabled style that keeps at least 3:1 contrast on the button edge and readable
+text; the reason inline or in a tooltip ("Validate before submitting"); "Cancel all" in an overflow
+menu with a confirmation step.
+
+#### V6 🟡 Page layout templates and breakpoints
+
+**Problem.** Run Status uses a half-width column and leaves the right half empty; Today,
+Preferences and the Data overview have large dead areas. Strategy Lab nests cards three deep, each
+repeating the "not connected" message. The CSS uses six breakpoints: 720, 900, 980, 1100, 1199 and
+1279px.
+
+**Proposal.** Four page templates (Queue–Detail, Overview dashboard, Form/Settings, Document);
+cards nested no more than two deep; three named breakpoint tokens.
+
+#### V7 ⚪ Focus outline after navigation (likely; needs checking)
+
+**Problem.** The Ledger screenshot shows a heavy dark outline around the whole main area, probably
+the focus the app sets on the main region after a route change.
+
+**Proposal.** Keep moving focus to the main region (it helps keyboard and screen-reader users), but
+show the outline only for `:focus-visible` and keep the skip link's outline.
+
+### C. Functionality
+
+| # | Priority | Proposal | Problem → solution → benefit |
+|---|---|---|---|
+| F1 | 🟠 | "My work" inbox across workspaces (extends P3, P8) | Work is spread across six workspaces' queues, and Today needs a scope selected first. → One inbox with assignment, aging, snooze and bulk actions, scope as a filter, and an "Assigned to me" default. → Each operator starts the day in one place. |
+| F2 | 🟠 | Shared as-of date and period in the scope picker | Ledger has its own period picker (June 2026), the Close Cockpit shows 2026-05, and Reporting says "No as-of date retained". → Period and as-of date in the operating scope so every workspace answers for the same date, with a visible "viewing as of…" mode for past dates. → Numbers agree, and audits can replay a past date. |
+| F3 | 🟡 | Drill-through everywhere | Number Passport and proof drawers exist but appear unevenly. → Any symbol, account, entity, journal or KPI figure opens the same passport drawer. → Every number can be traced to its source. |
+| F4 | 🟡 | Period-over-period variance views | There is no comparison view. → Prior-period columns, variance and variance %, and threshold highlighting on trial balance, NAV, P&L attribution and cash ladder. → The core controller and fund-accountant review step. |
+| F5 | 🟡 | Table power features (extends P7) | `lib/csv.ts` is used only by SQL query. → CSV/XLSX export of visible columns using the shared formatters, a totals row, a sticky first column, saved column sets per view, and filter chips. |
+| F6 | ⚪ | Live Quotes start state | The page opens empty, the "NO DATA · NO DATA" chips have no labels, and connection and coverage are mixed together. → Seed the list from the watchlist, label every chip, and separate connection from coverage. |
+| F7 | ⚪ | Record activity timeline (extends P10) | Comments, approvals and edits on a record are not shown in one place. → A per-record timeline in the detail pane plus "N new since you last looked". |
+| F8 | 🟡 | Fuller Preferences | The page has only theme and density. → Timezone, date and number format, negative-number style, default landing page, per-workspace density and notification rules. |
+
 ## Phased Plan
 
-Phases continue the Phase 0–2 numbering already in history.
+Phase numbers continue the Phase 0–2 sequence already in history. This roadmap replaces the
+original Phase 3–6 plan: its items are carried forward under the proposals they belong to (P1 KPI
+definitions and "Cancel all" in Phase 3; P2 and P4 in Phase 5 as V1 and V2; P3, P7 and P8 in
+Phase 6; P5 in Phase 4 with C2; P6 in Phase 5 as V3; P9 and P10 in Phase 7).
 
-### Phase 3 — Trust and readability (~1 week) · P1, P2, P4, Cancel-all
+Each phase ends with:
 
-1. KPI definition registry in the shared read model; move all strips onto it.
-2. `DetailPane` primitive; migrate Trading, Portfolio, Accounting, Reporting, Settings.
-3. Monospace-scope ratchet; convert key-value tiles, breadcrumbs, date cells.
-4. "Cancel all" into an overflow menu with a confirm step.
+- `npm --prefix src/Meridian.Ui/dashboard run test`, `run build`, `run lint` and `run ratchets`;
+- the axe accessibility suites;
+- regenerated `docs/screenshots/web` plus the freshness validator;
+- WPF-parity backlog items filed under `W8-WPF-PARITY-001` for any change to a shared read model
+  (see [WPF / Web-UI Alignment Plan](wpf-web-ui-alignment-plan.md)).
 
-**Acceptance criteria**
-- On one fixture, any same-named KPI shows the same value on every route (vitest cross-route
-  assertion).
-- Every delta shows its basis; none renders without a baseline.
-- At 1440×1100 and 1024px width: no mid-word breaks or wrapped dates in detail panes; no raw UUIDs
-  outside "Technical details" (fresh screenshots).
-- Non-numeric `font-mono` count below recorded baseline; ratchet fails CI on increase.
-- `npm run test`, `npm run build`, `npm run ratchets` and axe a11y suites pass.
+### Phase 3 — Trust and coherence (about 1.5 weeks) · C1, C4, V5, P1 KPI definitions
 
-### Phase 4 — Navigation and hierarchy (~1 week) · P3, P5, P6
+1. Status layer model: top bar for environment, one posture strip, one blocker slot, and a bottom
+   bar fed from the same freshness check.
+2. A KPI definition registry in the shared read model (P1 item 1), with the comparison basis shown
+   on every change figure.
+3. The error presenter and the extended rendered-text check.
+4. Disabled-button style with reasons, and "Cancel all" moved to an overflow menu.
 
-1. Today: combined queue by default, scope as filter, posture cards merged into the strip,
-   "Assigned to me" filter.
-2. Fixed page order in `workspace-workbench-shell`; single H1.
-3. Status vocabulary map per object type in `shared-tone-mappings`; identifier-first columns.
+**Done when**
+- On a fixture with stale data, no route shows both "up to date" and "stale", and scope is stated
+  in one place. A vitest test across routes checks both.
+- KPIs with the same name show the same value on every route, and no change figure appears without
+  a baseline.
+- No rendered main content contains `/api/`, a slug ID or a banned internal term; the screenshot
+  harness fails the route otherwise.
+- With a provider warning on Trading, content starts at or above 300px at 1440×1100.
+- Disabled buttons pass axe contrast checks, and every disabled primary button has an accessible
+  reason.
 
-**Acceptance criteria**
-- With no scope selected, Today lists every ranked item and the count equals the sum of sidebar
-  badges.
-- Every route has exactly one `h1`; section order matches the shell contract (snapshot test).
-- No column mixes caps and sentence-case status labels; unknown marks show one hint.
-- `docs/screenshots/web` regenerated and the freshness validator passes.
+### Phase 4 — Wayfinding and time (about 1 week) · C2, C3, C5, F8 (time-zone part)
 
-### Phase 5 — Tables and throughput (1–2 weeks) · P7, P8
+1. Labels read from the route registry; drop the "Workstation" breadcrumb root and the repeated
+   title; in-page tabs in the URL.
+2. Accounting secondary navigation; one Accounting work queue with preset filters for the old
+   routes.
+3. Time policy in the shared formatters (date-only, timezone, relative due chips) plus timezone and
+   date-format settings.
 
-1. Contained scroll, sticky first column, totals footer, CSV export in `DenseDataTable`.
-2. Migrate remaining hand-built tables behind a ratchet.
-3. Multi-select with a governed bulk bar on Casework, Exceptions, Approvals, Reporting triage.
+**Done when**
+- For every route, the sidebar label, breadcrumb leaf, heading and document title match (snapshot
+  test).
+- Expanding Accounting adds no more than 7 sidebar rows, and every old Accounting URL resolves to
+  an equivalent filtered queue.
+- No hard-coded `timeZone:` remains outside the formatter module (ratchet), and date-only fields
+  never render a time.
+- Overdue items show a danger chip with a day count, checked with frozen-time tests.
 
-**Acceptance criteria**
-- No table toolbar or header clipped at 1280px.
-- Totals equal the sum of visible filtered rows (unit test).
-- CSV export has visible columns in display order, formatted by B2 formatters.
-- A bulk action yields one governed confirmation and one audit entry per item; bulk resolve
-  requires a per-item note.
-- Keyboard: Space toggles a row, Shift+Arrow extends selection; axe reports no violations.
+### Phase 5 — Visual system convergence (about 2 weeks) · V1, V2, V3, V4, V6, V7
 
-### Phase 6 — Insight (1–2 weeks) · P9, P10
+1. A `DetailPane` primitive, migrated into Trading, Portfolio, Accounting, Reporting and Strategy.
+2. Monospace limited to numbers, IDs and code; one eyebrow style; a font decision implemented;
+   `tabular-nums` built into the table and KPI primitives.
+3. Only `StatusBadge` for status; neutral amounts plus a proof affordance; journal totals row;
+   negative-number style setting.
+4. Four page templates and three breakpoint tokens; cards no more than two deep; outline only on
+   `:focus-visible`.
 
-1. Break-aging histogram, close burn-down, NAV/cash sparkline, report on-time trend.
-2. Per-viewer last-viewed markers, "N new since…", Changes filter.
+**Done when**
+- At 1440 and 1024px wide: no mid-word breaks, no dates wrapped onto more than one line, and one
+  selection label per pane (screenshot review plus a DOM check for word-break on values).
+- Non-numeric monospace usage and badge styles other than `StatusBadge` are below their recorded
+  baselines and ratcheted to zero for the migrated routes.
+- No financial amount uses danger or accent colour unless it is negative or a variance.
+- The journal grid shows a debit / credit / difference footer that equals the sum of its lines
+  (unit test).
+- Breakpoint literals appear only in the token file (lint).
 
-**Acceptance criteria**
-- Each chart is fed from a shared read-model endpoint, has an accessible data-table alternative,
-  and passes light/dark contrast checks.
-- Chart values reconcile with the table beneath on the same fixture.
-- New-since markers survive reloads, stay per-viewer, and clear when viewed.
-- Before closing, file matching WPF-parity backlog items over the same contracts
-  (`W8-WPF-PARITY-001`, see [WPF / Web-UI Alignment Plan](wpf-web-ui-alignment-plan.md)).
+### Phase 6 — Throughput (about 2 weeks) · F1, F5, F3, P8
+
+1. A "My work" inbox across workspaces, filtered by scope, with assignment, aging and snooze.
+2. Governed bulk actions on Casework, Exceptions, Approvals and Reporting triage.
+3. CSV/XLSX export, totals, sticky first column and saved column sets in `DenseDataTable`.
+4. Drill-through to the passport drawer from every financial figure and entity cell.
+
+**Done when**
+- With no scope selected, the inbox count equals the sum of the sidebar badges.
+- A bulk action produces one confirmation and one audit entry per item, and bulk resolve requires a
+  note for each item.
+- Exported files contain the visible columns, in display order, formatted the same way as the
+  screen; totals equal the visible filtered rows.
+- Every KPI tile and amount cell on migrated routes opens a passport drawer by keyboard and
+  pointer, with no axe violations.
+
+### Phase 7 — Insight (about 2 weeks) · C6, F2, F4, F7, P9, P10
+
+1. Purpose-built Strategy, Data and Portfolio overviews using the existing chart components.
+2. Period and as-of date in the operating scope, including a past-date view.
+3. Variance columns on trial balance, NAV, P&L and cash ladder.
+4. Per-record activity timeline and "new since you last looked" markers.
+
+**Done when**
+- Each chart comes from a shared read-model endpoint, has an accessible data-table alternative, and
+  matches the table beneath it on the same fixture.
+- Changing the as-of date in scope changes the period on Ledger, Close Cockpit and Reporting
+  together; a past-date view shows a persistent banner and disables writes.
+- Variance equals current minus prior, and the variance-% rules for zero and sign are unit-tested.
+- "New since" markers survive reloads, are kept per viewer, and clear when the item is viewed.
+
+## Progress
+
+**2026-11-10 — operator-copy pass (parts of P2 and P6).** Checked against a fresh fixture-backed
+capture of all 80 routes rather than the 2026-10-28 catalog.
+
+- P2 raw IDs: display names replace GUID-shaped identifiers on the close cockpit (blocker label and
+  evidence count; record IDs move under Audit details), the trial balance heading, the
+  factor-paydown scope line and the loan-book facility selector. `lib/identifiers.ts` is the shared
+  helper.
+- P6 unknown marks: a position with no shared mark assessment shows one "No mark observed" hint in
+  the table cell and one row in the detail pane.
+- Counts agree with their nouns on the eight routes that rendered "1 rows"-style text, and on the
+  workspace posture and navigation summaries.
+- Status agreement: the status bar repeats a provider-trust warning beside Sync, and the Control
+  Tower evidence line names only evidence correlated with the leading row.
+- Guard: the screenshot harness fails a route whose rendered main content shows a raw identifier
+  or a count of one before a plural noun.
+
+Still open from P2: Operations Continuity names a close workflow by period and fund-account
+identifier because `OperationsContinuityWorkflowSummary` carries no account display name. Adding
+one is a shared-contract change for both workstations; the route holds the only
+`allowedContentIssues` entry until then. The detail-pane primitive, wrapped dates and mid-word
+breaks in P2 are untouched.
+
+**2026-11-10 — headline-figure trust rules (P1, browser side).** `@/lib/metric-trust` holds the
+rules and the shared `StatStrip` and `MetricCard` apply them, so a screen cannot opt out.
+
+- Source: every workspace strip (Trading, Portfolio, Accounting, Strategy, Data, Settings) prints
+  its source and as-of time under the row, with scope where the page has one. The shell supplies
+  the as-of time and data label (seeded, simulated, unverified) for strips fed by the workstation
+  load; Trading and Portfolio use their own broker and refresh evidence.
+- Deltas: a bare change is shown only with a stated baseline. The read models still send
+  placeholders (`0%`, `+N`, `+session`) with no comparison behind them, so the strips now show
+  none; "N new since your last visit" and descriptive captions are unchanged.
+- Stale data: figures fed by stale or unverified data are muted, carry a clock and say why on
+  hover and to screen readers. Portfolio's "Stale · 187d ago" now reaches its headline figures; a
+  failed workstation refresh marks every workspace-fed strip.
+- Disagreement: Portfolio shows "Why these differ" when the header strip (open positions in the
+  workspace read model) and the Portfolio Explorer (records retained for a run) report different
+  exposure, unrealized P&L or position counts, with both values and each source.
+- Number style: `formatPnl`, `pnlToneForValue` and `normalizeFinancialLabel` in `@/lib/format`;
+  "P&L" replaces "PnL" in browser labels and in the portfolio explorer read model. Two new
+  ratchets hold the rest: `handRolledNumberFormatting` (88 `.toFixed(` calls in 27 screen files)
+  and `localMoneyFormatters` (24 definitions in 13 files).
+
+Still open from P1:
+
+- The KPI definition registry (Phase 3 item 2) and the cross-route same-value assertion. Strips
+  still take values from each workspace's read model; this change makes the source visible, it
+  does not make the numbers agree.
+- Real baselines and a page-level "Compare to" control. No read model carries a comparison period;
+  `WorkstationMetricCard.Delta` needs a baseline (or a prior value) before either can exist. The
+  browser `MetricSnapshot.baseline` field is ready to receive it.
+- Variance direction. The break queue's `Variance` is an absolute amount for statement breaks and
+  signed for shadow-NAV and provider breaks, and the reconciliation measures use actual minus
+  expected (statement minus book). The browser renders it with a sign, so a statement break always
+  reads "+". Labelling a direction needs the queue item to carry its basis first.
+- WPF still spells "PnL" in its own view models (`RunRiskViewModel`,
+  `StrategyRunPortfolioViewModel`, `QuantScriptViewModel`, `StrategyRunBrowserViewModel`).
+
+**2026-11-10 — detail panes (P2).** `DetailPane` is the shared primitive; `EntitySummary` applies
+the same heading and rows, which carries the change to the panels already built on it.
+
+- One heading line (object type, name, one status badge) on Trading positions and the shared
+  order/fill pane, Portfolio holdings and brokerage positions, the Reporting work pane and the task
+  workbench used by Settings, Strategy and Data. The "Selected from …" pill is no longer drawn for
+  any panel, and the "Detail" chips are gone.
+- Values are left-aligned and whole. Rows put the label beside the value and stack below about
+  290px; figures and dates stay on one line. The right-aligned two-column tiles on Trading,
+  Portfolio, Strategy, Reporting, Settings, the journal-entry detail and the readiness console use
+  the shared row. The reconciliation inspector's title is no longer flush against its border.
+- Opaque identifiers in any field list move to a copyable "Technical details" disclosure.
+- Trading orders and fills share one pane keyed to the table selected last, with Cancel order as
+  its next action; panes omit the columns the selected row always shows.
+- Checked at 1440×1100 and 1024px on the Trading, Portfolio, Accounting, Reporting, Settings and
+  Strategy routes: no right-aligned values, wrapped dates or figures in any detail panel; the only
+  values that may wrap mid-token are identifiers.
+
+Still open from P2:
+
+- Panels with bespoke bodies keep their own wrappers and only took the shared rows: Portfolio run
+  evidence and brokerage account, the Security Master panels, the corporate-action case workspace
+  and the control-tower evidence summary.
+- "Show only fields not in the selected row" is applied where the table's always-visible columns
+  are known (Trading, Portfolio). Other panes still repeat row values.
+- Dates arrive preformatted from view models; the panes keep them on one line but do not reformat
+  them, so two routes can still show different date styles.
+- The checked-in screenshot catalog has not been regenerated.
+
+**2026-11-10 — Phase 3, first increment (C4, V5, the freshness and scope parts of C1).** Checked
+against a fixture-backed capture of all 80 routes before and after.
+
+Done:
+
+- **C4 error presenter.** `ApiError.message` is now operator copy (the service's reason, or a plain
+  sentence for the status) and never carries the request path or status code, which removes the
+  leak from every call site that renders `error.message`. `presentApiError` adds whether Retry can
+  help and the status, request path and correlation identifier as technical details; `ErrorNotice`
+  renders them with the details collapsed. The Recurring journals queue uses it. Unreadable
+  responses raise `ApiResponseFormatError` instead of a message with the path in it.
+- **C4 rendered-text check.** The harness fails a route on `api-path`, `internal-term` ("lane",
+  "payload", "mutation", "caller-visible") and `slug-identifier`. Copy was rewritten on the 20
+  routes that showed the terms ("Data Lane", "Strategy Lane · PlotTool", "Caller-visible Reporting
+  records", "Legacy pack mutations are retired", the PlotTool "payload" messages and others).
+- **C1 status layers.** The status-signal consolidation that merged alongside this increment
+  supplies most of C1: one rule (`lib/status-signals.ts`) and one shell attention state feed the
+  masthead pill, every page status row, Today and the status bar; a page row reads "All sources
+  current" or names only the facts that are not ready. This increment sits on top of it.
+- **C1 freshness.** The shell attention state covers shell-wide sources, not the freshness of the
+  data on a page. The page status row reports the freshness fact it renders to the shell; when it
+  needs review or is blocked the status bar says "Sync connected" and repeats the row's words as
+  a Freshness item. Portfolio now reads "Stale · 187d ago" in both places. The harness's
+  `status-contradiction` rule checks every route.
+- **C1 scope.** Trading and Portfolio label a brokerage account "Account", so the row does not
+  state a second "scope" beside the header's fund picker. The earlier change that dropped the
+  "Ready" verdict from the scope fact is superseded: the new status row does not list ready facts.
+- **V5.** One disabled style for every button variant (neutral fill, dashed edge, muted label at
+  full opacity; label 4.8:1, edge at least 3:1 on every surface, asserted in a unit test). The
+  harness fails a route with a disabled primary button that carries no reason; the six it found
+  now have one. "Cancel all open orders…" moved into a "More order actions" overflow menu and still
+  opens the confirmation step.
+
+Open in Phase 3:
+
+- **KPI definition registry (P1 item 1).** Not started; see "Still open from P1" above. The
+  headline-figure trust rules now hide a change figure that has no baseline, but same-named
+  numbers still come from each workspace's own read model, so "Runs 24" can still disagree with
+  "2 of 2 loaded". The registry is a shared read-model change and needs a matching
+  `W8-WPF-PARITY-001` item.
+- **Content start height.** The first Trading card started at about 435px when this increment was
+  written. Two changes that merged alongside it bring it to about 350px: the page-header
+  simplification (one header row, no "<Workspace> Workstation" title, a fund picker in place of
+  "No scope selected") and the status-signal consolidation (the seeded banner becomes a stripe).
+  Portfolio's first card now starts at about 290px. Reaching 300px on Trading still needs the
+  single blocker slot.
+- **One blocker slot.** Page status rows now share one format; blocker banners are not yet limited
+  to one slot with "+N more".
+- **Scope in one place.** Screens other than Trading and Portfolio still label a strip fact
+  "Scope"; the cross-route check covers freshness, not scope.
+- **Excused routes.** Fifteen routes hold `allowedContentIssues` entries for the new rules. Twelve
+  name records by slug key because their read models carry no display name (approval inbox,
+  configure, ledger, margin control, operations continuity, trial-balance detail, operator
+  readiness, run detail, Alpaca advanced setup, strategy run ledger, strategy overview, trading
+  overview); three Settings diagnostics pages list backend routes by design; Operations Continuity
+  shows "lane" in server-written summaries. Display names and the "lane" rename are shared-contract
+  changes for both workstations.
+- **Raw `<button disabled>` elements** outside the `Button` primitive keep their own dimmed styles.
+- **Catalog.** `docs/screenshots/web` was not regenerated in this increment; that is a phase-end
+  step.
+
+No shared read model changed in this increment, so no WPF-parity item was filed.
 
 ## Recommended Next Step
 
-Start with Phase 3 item 1: disagreeing KPI numbers are the largest trust problem and an
-inexpensive fix.
+Finish Phase 3 with the KPI definition registry: the strips now say where each number comes from
+and no longer show a change without a baseline, and the registry is what makes same-named numbers
+agree and gives deltas a real baseline. Add label, scope, as-of time and comparison basis to the
+shared read model, move every strip onto it, and file the matching `W8-WPF-PARITY-001` item. Then
+add display names to the read models behind the twelve excused routes so their
+`allowedContentIssues` entries can be removed.

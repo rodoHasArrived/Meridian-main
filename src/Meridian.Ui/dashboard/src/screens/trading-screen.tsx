@@ -1,9 +1,9 @@
 import { WorkspaceWorkbenchShell } from "@/components/meridian/workspace-workbench-shell";
 import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, FastForward, FlaskConical, Layers, PauseCircle, PlayCircle, PlusCircle, RotateCcw, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
-import React from "react";
+import React, { type ReactNode } from "react";
 import { MarkFreshnessCell } from "@/components/meridian/mark-freshness-cell";
 import { useLocation } from "react-router-dom";
-import { StatusBadge, toneToSeverity } from "@/design-system/status";
+import { StatusBadge } from "@/design-system/status";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { GuardrailPanelBody } from "@/components/ui/guardrail-utilization";
 import { Input } from "@/components/ui/input";
+import { OverflowMenu } from "@/components/ui/overflow-menu";
 import { OrderStatusBanner } from "@/components/ui/order-status-banner";
 import { Select } from "@/components/ui/select";
 import { TechnicalDetails } from "@/components/ui/technical-details";
@@ -36,7 +37,7 @@ import {
   SheetHeader,
   SheetTitle
 } from "@/components/ui/sheet";
-import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
+import { DetailPane } from "@/components/meridian/detail-pane";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { OperationalTrustSummary, type OperationalTrustTone } from "@/components/meridian/operational-trust-summary";
 import { StatStrip } from "@/components/meridian/stat-strip";
@@ -79,10 +80,12 @@ import {
 import { ExecutionControlsHeader } from "@/screens/trading-screen.execution-controls-header";
 import { BrokerageRecoveryPanel } from "@/screens/trading-screen.brokerage-recovery";
 import { LIVE_GOVERNED_APPROVAL_SERVICES, useGovernedApprovalsViewModel } from "@/screens/trading-screen.governed-approvals";
-import type { ExecutionAuditEntry, ExecutionControlSnapshot, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
-import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
+import type { ExecutionAuditEntry, ExecutionControlSnapshot, MetricFreshness, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
+import { usesTrackedCaps } from "@/design-system/label-case";
 import { applyCrossScreenCounts, selectCrossScreenCounts } from "@/lib/cross-screen-counts";
 import { pluralizeCount } from "@/lib/format";
+import { useWorkspaceFigureContext } from "@/lib/workspace-figure-context";
+import { withTradingHeadlineEvidence } from "@/screens/trading-screen.headline-evidence";
 import { useSharedCrossScreenCounts } from "@/lib/cross-screen-counts-context";
 
 interface TradingScreenProps {
@@ -442,6 +445,7 @@ function TradingLoadingPanel({ state }: { state: TradingLoadingState }) {
 export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: TradingScreenProps) {
   const { pathname, search } = useLocation();
   const sharedCounts = useSharedCrossScreenCounts();
+  const figureContext = useWorkspaceFigureContext();
   // One open-order count for the headline card, the completeness card and every other screen.
   const crossCounts = selectCrossScreenCounts({ shared: sharedCounts, openOrders: data?.openOrders });
   const headlineMetrics = applyCrossScreenCounts(data?.metrics ?? [], crossCounts);
@@ -475,6 +479,8 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
       ]);
     }
   });
+  const selectedPositionRow = blotterVm.positionRows.find((row) => row.id === blotterVm.selectedPositionRowId) ?? null;
+  const selectedOrderRow = blotterVm.orderRows.find((row) => row.id === blotterVm.selectedOrderRowId) ?? null;
   const positionColumns = React.useMemo(() => buildPositionColumns(confirmVm), [confirmVm]);
   const orderColumns = React.useMemo(() => buildOrderColumns(confirmVm), [confirmVm]);
 
@@ -568,6 +574,23 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
         ? "review"
         : "unknown";
 
+  // Headline figures are marked when the broker evidence behind them is stale or cannot be
+  // confirmed. A readiness refresh in flight does not mute them: the last observation is still
+  // the evidence on screen. Scope, as-of and the combined verdict: `withTradingHeadlineEvidence`.
+  const brokerFreshness: MetricFreshness = hasRecoveryProjection
+    ? recoveryPortfolio?.isFresh === false
+      ? "stale"
+      : recoveryPortfolio?.isFresh && !tradingReadiness.errorText ? "fresh" : "unverified"
+    : sourceTone === "ready" ? "fresh" : "unverified";
+  const trustedHeadlineMetrics = withTradingHeadlineEvidence(headlineMetrics, {
+    figureContext,
+    operatingFundAccountId,
+    fundAccountId,
+    brokerageAccount: data.brokerage.account,
+    lastHeartbeat: data.brokerage.lastHeartbeat,
+    brokerFreshness
+  });
+
   return (
     <div className="space-y-5">
       {/* The route answers "where am I?" first; workspace-wide metrics follow. Sub-route
@@ -586,11 +609,10 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
         </p>
       </section>
 
-      <StatStrip metrics={headlineMetrics} label="Trading headline metrics" />
+      <StatStrip metrics={trustedHeadlineMetrics} label="Trading headline metrics" />
 
       <OperationalTrustSummary
         label="Trading data confidence"
-        disclosure
         source={{
           value: hasRecoveryProjection ? reconciliation?.brokerDisplayName ?? scopedRecovery?.providerId ?? "Broker unavailable" : `${data.brokerage.provider} · ${data.brokerage.environment}`,
           detail: hasRecoveryProjection
@@ -599,6 +621,9 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
           tone: sourceTone
         }}
         scope={{
+          // "Scope" means the operating scope chosen in the header. Without one the page answers
+          // for a brokerage account, and says so, instead of a second "scope" the header denies.
+          label: fundAccountId ? "Scope" : "Account",
           value: fundAccountId ?? data.brokerage.account ?? "All loaded accounts",
           detail: fundAccountId ? "Operating fund account" : "Brokerage account scope",
           tone: fundAccountId || data.brokerage.account ? "ready" : "unknown"
@@ -609,8 +634,8 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
           tone: hasRecoveryProjection ? recoveryPortfolio?.isFresh === false ? "blocked" : recoveryUnavailable ? "unknown" : recoveryPortfolio?.isFresh ? "ready" : "blocked" : sourceTone
         }}
         completeness={{
-          value: hasRecoveryProjection ? recoveryPortfolio ? `${recoveryPortfolio.positionCount} positions · ${reconciliation?.matchedOpenOrderCount ?? "Unknown"} matched open orders` : "Unavailable" : `${pluralizeCount(data.positions.length, "position")} · ${pluralizeCount(crossCounts.openOrders ?? 0, "open order")} · ${pluralizeCount(data.fills.length, "fill")}`,
-          detail: hasRecoveryProjection ? recoveryUnavailable ? "Current account evidence unverified" : recoveryPortfolio?.isComplete && recoveryPortfolio.isConsistent ? "Complete and consistent broker evidence" : "Incomplete or inconsistent broker evidence" : `${completenessCount} execution records loaded`,
+          value: hasRecoveryProjection ? recoveryPortfolio ? `${pluralizeCount(recoveryPortfolio.positionCount, "position")} · ${typeof reconciliation?.matchedOpenOrderCount === "number" ? pluralizeCount(reconciliation.matchedOpenOrderCount, "matched open order") : "Unknown matched open orders"}` : "Unavailable" : `${pluralizeCount(data.positions.length, "position")} · ${pluralizeCount(crossCounts.openOrders ?? 0, "open order")} · ${pluralizeCount(data.fills.length, "fill")}`,
+          detail: hasRecoveryProjection ? recoveryUnavailable ? "Current account evidence unverified" : recoveryPortfolio?.isComplete && recoveryPortfolio.isConsistent ? "Complete and consistent broker evidence" : "Incomplete or inconsistent broker evidence" : `${pluralizeCount(completenessCount, "execution record")} loaded`,
           tone: hasRecoveryProjection ? recoveryUnavailable ? "unknown" : recoveryPortfolio?.isComplete && recoveryPortfolio.isConsistent ? "ready" : "blocked" : completenessCount > 0 ? "ready" : "review"
         }}
         blocker={readinessStatus ? {
@@ -768,7 +793,22 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
       <section id="trading-actions" className="workspace-section-band" aria-label="Position book and selected detail">
       <WorkspaceWorkbenchShell label="Trading positions workbench" switchInspector inspectorRole="region" inspector={(
 <div className="min-w-0">
-          <TradingBlotterDetailPanel id={blotterVm.positionDetailId} detail={blotterVm.selectedPosition} emptyText={blotterVm.positionEmptyText} selectedSourceLabel="Selected from live positions" />
+          <TradingBlotterDetailPanel
+            id={blotterVm.positionDetailId}
+            objectType="Position"
+            detail={blotterVm.selectedPosition}
+            emptyText={blotterVm.positionEmptyText}
+            action={selectedPositionRow ? (
+              <Button
+                size="sm"
+                variant="destructive"
+                aria-label={selectedPositionRow.closeAriaLabel}
+                onClick={() => confirmVm.openConfirm({ kind: "close-position", positionKey: selectedPositionRow.positionKey, symbol: selectedPositionRow.symbol })}
+              >
+                {selectedPositionRow.closeTitleLabel}
+              </Button>
+            ) : null}
+          />
         </div>
       )}>
 
@@ -813,9 +853,24 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
       {showOrders ? (
       <section id="trading-actions" className="workspace-section-band" aria-label="Order blotter and selected detail">
       <WorkspaceWorkbenchShell label="Trading orders workbench" switchInspector inspectorRole="region" inspector={(
-<div className="min-w-0 space-y-4">
-          <TradingBlotterDetailPanel id={blotterVm.orderDetailId} detail={blotterVm.selectedOrder} emptyText={blotterVm.orderEmptyText} selectedSourceLabel="Selected from open orders" />
-          <TradingBlotterDetailPanel id={blotterVm.fillDetailId} detail={blotterVm.selectedFill} emptyText={blotterVm.fillEmptyText} selectedSourceLabel="Selected from recent fills" />
+<div className="min-w-0">
+          {/* Orders and fills share one pane keyed to the row selected last. */}
+          <TradingBlotterDetailPanel
+            id={blotterVm.executionDetailId}
+            objectType={blotterVm.selectedExecutionKind === "fill" ? "Fill" : "Order"}
+            detail={blotterVm.selectedExecution}
+            emptyText={blotterVm.executionEmptyText}
+            action={blotterVm.selectedExecutionKind === "order" && selectedOrderRow ? (
+              <Button
+                size="sm"
+                variant="destructive"
+                aria-label={selectedOrderRow.cancelAriaLabel}
+                onClick={() => confirmVm.openConfirm({ kind: "cancel-order", orderId: selectedOrderRow.orderId })}
+              >
+                {selectedOrderRow.cancelTitleLabel}
+              </Button>
+            ) : null}
+          />
         </div>
       )}>
 
@@ -830,18 +885,6 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               <div className="panel-action-zone">
                 <Button
                   size="sm"
-                  variant="destructive"
-                  onClick={() => confirmVm.openConfirm({ kind: "cancel-all" })}
-                  disabled={blotterVm.cancelAllDisabled}
-                  disabledReason={blotterVm.cancelAllDisabledReason}
-                  aria-label={blotterVm.cancelAllAriaLabel}
-                  title="Cancel all open orders"
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Cancel all
-                </Button>
-                <Button
-                  size="sm"
                   variant="outline"
                   onClick={orderTicket.toggleTicket}
                   aria-expanded={orderTicket.open}
@@ -850,6 +893,20 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                   <PlusCircle className="mr-2 h-4 w-4" />
                   {orderTicket.openButtonLabel}
                 </Button>
+                {/* Cancelling every open order is rare and destructive, so it sits behind "more
+                    actions" instead of beside New order. Choosing it still opens the confirmation. */}
+                <OverflowMenu
+                  label="More order actions"
+                  items={[{
+                    id: "cancel-all",
+                    label: "Cancel all open orders…",
+                    description: blotterVm.cancelAllDisabledReason ?? "Asks for confirmation before anything is cancelled.",
+                    icon: <Trash2 className="h-4 w-4" aria-hidden="true" />,
+                    danger: true,
+                    disabled: blotterVm.cancelAllDisabled,
+                    onSelect: () => confirmVm.openConfirm({ kind: "cancel-all" })
+                  }]}
+                />
               </div>
             </div>
           </CardHeader>
@@ -2272,49 +2329,33 @@ function SessionCloseConfirmationDialog({
 
 function TradingBlotterDetailPanel({
   id,
+  objectType,
   detail,
   emptyText,
-  selectedSourceLabel
+  action
 }: {
   id: string;
+  objectType: string;
   detail: TradingBlotterDetail | null;
   emptyText: string;
-  selectedSourceLabel: string;
+  /** The next action for the selected row, e.g. cancel the order. */
+  action?: ReactNode;
 }) {
   return (
-    <DenseRowDetailPanel
+    <DetailPane
       id={id}
       ariaLabel={detail?.ariaLabel ?? "Trading blotter detail"}
-      selectedSourceLabel={selectedSourceLabel}
-      className={cn(
-        "rounded-md border bg-background/70 p-3",
-        detail ? dataTonePanelClass[detail.statusTone] : "border-border/70"
-      )}
-    >
-      {detail ? (
-        <>
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div className="min-w-0">
-              <div className={eyebrowClassName(detail.statusLabel)}>{detail.statusLabel}</div>
-              <h3 className="mt-1 break-words text-sm font-semibold text-foreground">{detail.title}</h3>
-              <p className="mt-1 font-mono text-xs text-muted-foreground">{detail.subtitle}</p>
-            </div>
-            <StatusBadge status={detail.statusTone === "default" ? "info" : toneToSeverity(detail.statusTone)} dot={false} label="Detail" />
-          </div>
-          <p className="mt-2 text-xs leading-5 text-foreground/80">{detail.detail}</p>
-          <dl className="mt-3 grid gap-2 sm:grid-cols-2">
-            {detail.fields.map((field) => (
-              <div key={field.label} className="grid grid-cols-[minmax(0,0.8fr)_minmax(0,1fr)] items-start gap-3 rounded-md border border-border/60 bg-secondary/20 px-3 py-2">
-                <dt className="text-xs text-muted-foreground">{field.label}</dt>
-                <dd className={cn("break-words text-right font-mono text-xs", dataToneClass[field.tone])}>{field.value}</dd>
-              </div>
-            ))}
-          </dl>
-        </>
-      ) : (
-        <div role="status" className="text-sm text-muted-foreground">{emptyText}</div>
-      )}
-    </DenseRowDetailPanel>
+      objectType={detail?.objectType ?? objectType}
+      title={detail?.title}
+      status={detail ? { label: detail.statusLabel, tone: detail.statusTone } : null}
+      subtitle={detail?.subtitle}
+      summary={detail?.detail}
+      actions={detail ? action : null}
+      fields={detail?.fields}
+      shownInRow={detail?.shownInRow}
+      empty={{ text: emptyText }}
+      className={detail ? dataTonePanelClass[detail.statusTone] : undefined}
+    />
   );
 }
 

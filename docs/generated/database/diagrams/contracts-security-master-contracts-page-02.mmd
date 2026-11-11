@@ -1,5 +1,7 @@
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_CorporateActionPayloadSchemaCatalog["CorporateActionPayloadSchemaCatalog"] {
+    }
     class Meridian_Contracts_SecurityMaster_CorporateActionPayloadSchemaDescriptor["CorporateActionPayloadSchemaDescriptor"] {
         +string EventType
         +IReadOnlyList~CorporateActionPayloadFieldDescriptor~ Fields
@@ -449,8 +451,6 @@ classDiagram
     class Meridian_Contracts_SecurityMaster_ISecurityCoverageSymbolSource["ISecurityCoverageSymbolSource"] {
     }
     class Meridian_Contracts_SecurityMaster_ISecurityCurveStore["ISecurityCurveStore"] {
-    }
-    class Meridian_Contracts_SecurityMaster_ISecurityForwardCurveProvider["ISecurityForwardCurveProvider"] {
     }
     Meridian_Contracts_SecurityMaster_CorporateActionProcessingOptionMutationResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionProcessingCaseDto
     Meridian_Contracts_SecurityMaster_CorporateActionProcessingOptionMutationResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionProcessingOptionDto

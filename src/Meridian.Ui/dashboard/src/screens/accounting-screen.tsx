@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import "@/styles/accounting-screen.css";
 import { useAccountingCloseSources, type CloseWorkflowQuery } from "./accounting-screen.close-sources";
 import { useValuationMarkPreview, ValuationMarkPreviewPanel } from "./accounting-screen.mark-preview";
-import { formatCount, formatCurrency as formatCurrencyAmount } from "@/lib/format";
+import { formatCount, formatCurrency as formatCurrencyAmount, formatUtcDate, formatUtcTimestamp } from "@/lib/format";
 import { StatStrip } from "@/components/meridian/stat-strip";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
@@ -285,12 +285,7 @@ function formatExternalGlPeriodDate(value: string): string {
     return value;
   }
 
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    timeZone: "UTC"
-  }).format(date);
+  return formatUtcDate(date);
 }
 
 function formatExternalGlTimestamp(value: string | null | undefined): string {
@@ -303,16 +298,7 @@ function formatExternalGlTimestamp(value: string | null | undefined): string {
     return value;
   }
 
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-    timeZone: "UTC",
-    timeZoneName: "short"
-  }).format(date);
+  return formatUtcTimestamp(date);
 }
 
 function AccountingSystemReconciliationPanel({
@@ -1561,6 +1547,9 @@ function AccountingCaseWorkbench({
                 <AccountingValue label="Run reference" value={selectedBreak?.runId ?? "No run selected"} />
                 <AccountingValue label="Route" value={selectedBreakDetail?.routingActionHref ?? selectedBlocker?.href ?? "No route"} />
                 <AccountingValue label="Raw category" value={selectedBreakDetail?.rawCategoryLabel ?? "No category"} />
+                {selectedBlocker?.sourceRecordIds?.length ? (
+                  <AccountingValue label="Source records" value={selectedBlocker.sourceRecordIds.join(", ")} />
+                ) : null}
                 <AccountingValue label="Audit packet" value={detailActions?.auditPacketLabel ?? "Open after selecting a break"} />
               </div>
               <BreakAuditRebuildCheck breakId={selectedBreak?.breakId ?? null} />
@@ -2173,6 +2162,8 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
           sinceLastVisitDelta(summarizeSinceLastVisit(data.breakQueue ?? [], breakQueueVisit.baseline))
         )}
         label="Accounting headline metrics"
+        source="Accounting workspace"
+        figureSource="accounting"
       />
       {currentDailyValuationSchedule && (sectionVisibility.showCloseCockpitLanding || sectionVisibility.showWorkflowDetails) ? <ValuationMarkPreviewPanel preview={valuationMarkPreview} /> : null}
 
@@ -2372,7 +2363,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
           <div className="min-w-0">
             <p className="eyebrow-label">Posture</p>
             <h3 id="accounting-posture-heading" className="workspace-section-title">Accounting close posture</h3>
-            <p className="workspace-section-summary">Close metrics, control center, cash flow, and lane context stay grouped for monitoring.</p>
+            <p className="workspace-section-summary">Close metrics, control center, cash flow, and workspace context stay grouped for monitoring.</p>
           </div>
           <a className="workspace-section-jump" href="#accounting-exceptions">Exceptions</a>
         </div>
@@ -2440,7 +2431,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
       <section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
         <Card className="panel-surface">
           <CardHeader>
-            <div className="eyebrow-label">{workspace.label} Lane</div>
+            <div className="eyebrow-label">{workspace.label}</div>
             <CardTitle className="flex items-center gap-2">
               <ShieldCheck className="h-5 w-5 text-primary" />
               {focus.label}
@@ -5424,7 +5415,7 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
         <Card className="panel-surface">
           <CardHeader>
             <CardTitle>Validation and audit trail</CardTitle>
-            <CardDescription>Configuration readiness and append-only mutation evidence stay visible before activation.</CardDescription>
+            <CardDescription>Configuration readiness and the append-only change history stay visible before activation.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">

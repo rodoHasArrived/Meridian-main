@@ -534,9 +534,31 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
             }
 
             var write = AccountingPostingCommandValidator.NormalizeAndValidate(BuildDurableWrite(evt, expectedJournal));
+            // A buy-to-cover fill posted before cover accounting retained a two-line journal under
+            // this same journal id. Offer that exact earlier shape so a fill interrupted across
+            // the upgrade can finish replay; it is only ever matched against a journal that is
+            // already retained, never appended.
+            var earlierShape = BuildPreCoverAccountingTradeJournal(evt, securityGate, expectedJournal) is { } earlierJournal
+                ? AccountingPostingCommandValidator.NormalizeAndValidate(BuildDurableWrite(evt, earlierJournal))
+                : null;
             var confirmation = await _postingTarget
-                .PostAndConfirmAsync(write, ct)
+                .PostAndConfirmAsync(write, earlierShape, ct)
                 .ConfigureAwait(false);
+            if (!confirmation.WasAppended
+                && earlierShape is not null
+                && confirmation.RetainedRecord.Entry.Lines.Count == earlierShape.Entry.Lines.Count
+                && confirmation.RetainedRecord.Entry.Lines.Count != write.Entry.Lines.Count)
+            {
+                // Everything below still compares the retained record exactly, now against the
+                // earlier shape. The retained journal is not rewritten: it keeps the pre-change
+                // booking, which this replay does not correct.
+                _logger.LogWarning(
+                    "Fill {FillId} on {Symbol} replays against a buy-to-cover journal retained before cover accounting; the retained journal is kept as posted.",
+                    evt.FillId,
+                    evt.Symbol);
+                write = earlierShape;
+            }
+
             var comparisonJournal = confirmation.WasAppended ? write.Entry
                 : TradeFillCashFlowReplayCompatibility.SelectCandidate(write.Entry, confirmation.RetainedRecord.Entry);
             DurableLedgerPostingTarget.VerifyRetainedEntry(confirmation.RetainedRecord, write with { Entry = comparisonJournal });
@@ -572,20 +594,42 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
             throw new InvalidDataException($"Fill '{evt.FillId:D}' has non-positive price {evt.FillPrice}.");
         if (evt.Commission < 0m)
             throw new InvalidDataException($"Fill '{evt.FillId:D}' has negative commission {evt.Commission}.");
+        if (evt.ContractMultiplier <= 0m)
+            throw new InvalidDataException($"Fill '{evt.FillId:D}' has non-positive contract multiplier {evt.ContractMultiplier}.");
 
-        var journals = new List<JournalEntry>(evt.Commission > 0m ? 2 : 1)
-        {
-            BuildTradeJournal(evt, securityGate)
-        };
+        var journals = new List<JournalEntry>(evt.Commission > 0m ? 2 : 1);
+        if (!evt.SettlesVariationMargin)
+            journals.Add(BuildTradeJournal(evt, securityGate));
+        else if (evt.RealizedPnl != 0m)
+            journals.Add(BuildVariationMarginJournal(evt, securityGate));
+        // A variation-margin open moves no cash (no notional changes hands), so it posts only
+        // its commission, if any.
         if (evt.Commission > 0m)
             journals.Add(BuildCommissionJournal(evt, securityGate));
 
         return journals;
     }
 
+    /// <summary>
+    /// The trade journal a buy-to-cover fill produced before cover accounting: every buy debited
+    /// Securities and credited Cash at gross value, whatever its realized P&amp;L. Returns
+    /// <see langword="null"/> for any fill whose journal that change did not alter.
+    /// </summary>
+    private JournalEntry? BuildPreCoverAccountingTradeJournal(
+        TradeExecutedEvent evt,
+        LedgerPostingSecurityGateResult securityGate,
+        JournalEntry expectedJournal)
+        => evt.Side == Sdk.OrderSide.Buy
+            && evt.RealizedPnl != 0m
+            && !evt.SettlesVariationMargin
+            && string.Equals(expectedJournal.Metadata.ActivityType, TradeFillActivityType, StringComparison.Ordinal)
+            ? BuildTradeJournal(evt, securityGate, preCoverAccountingShape: true)
+            : null;
+
     private JournalEntry BuildTradeJournal(
         TradeExecutedEvent evt,
-        LedgerPostingSecurityGateResult securityGate)
+        LedgerPostingSecurityGateResult securityGate,
+        bool preCoverAccountingShape = false)
     {
         const string activityType = TradeFillActivityType;
         var journalId = CreateDeterministicGuid(evt.FillId, activityType, "journal");
@@ -603,7 +647,37 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
         var securitiesAccount = LedgerAccounts.Securities(evt.Symbol, accountId);
         var lines = new List<(LedgerAccount Account, decimal Debit, decimal Credit)>();
 
-        if (evt.Side == Sdk.OrderSide.Buy)
+        if (evt.Side == Sdk.OrderSide.Buy && preCoverAccountingShape)
+        {
+            lines.Add((securitiesAccount, evt.GrossValue, 0m));
+            lines.Add((cashAccount, 0m, evt.GrossValue));
+        }
+        else if (evt.Side == Sdk.OrderSide.Buy && evt.RealizedPnl > 0m)
+        {
+            // Buy-to-cover at a gain: the short was opened with Cr Securities at the sale
+            // proceeds, so the cover must debit Securities by those proceeds (cash paid plus the
+            // gain) for a flat position to leave a zero Securities balance.
+            var gainAccount = accountId is null
+                ? LedgerAccounts.RealizedGain
+                : LedgerAccounts.RealizedGainFor(accountId);
+            lines.Add((securitiesAccount, evt.GrossValue + evt.RealizedPnl, 0m));
+            lines.Add((cashAccount, 0m, evt.GrossValue));
+            lines.Add((gainAccount, 0m, evt.RealizedPnl));
+        }
+        else if (evt.Side == Sdk.OrderSide.Buy && evt.RealizedPnl < 0m)
+        {
+            // Buy-to-cover at a loss: cash paid exceeds the short-sale proceeds being relieved.
+            var lossAccount = accountId is null
+                ? LedgerAccounts.RealizedLoss
+                : LedgerAccounts.RealizedLossFor(accountId);
+            var relievedProceeds = evt.GrossValue + evt.RealizedPnl;
+            if (relievedProceeds <= 0m)
+                throw new InvalidDataException($"Fill '{evt.FillId:D}' has non-positive buy-to-cover proceeds basis {relievedProceeds}.");
+            lines.Add((securitiesAccount, relievedProceeds, 0m));
+            lines.Add((lossAccount, -evt.RealizedPnl, 0m));
+            lines.Add((cashAccount, 0m, evt.GrossValue));
+        }
+        else if (evt.Side == Sdk.OrderSide.Buy)
         {
             lines.Add((securitiesAccount, evt.GrossValue, 0m));
             lines.Add((cashAccount, 0m, evt.GrossValue));
@@ -636,6 +710,29 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
             lines.Add((securitiesAccount, 0m, evt.GrossValue));
         }
 
+        return CreateJournal(evt, securityGate, activityType, journalId, description, lines);
+    }
+
+    /// <summary>
+    /// The cash a variation-margin fill moved: the change since the last settlement on the
+    /// contracts it reduced or closed, which the paper book also posts against the futures
+    /// settlement account. No securities are bought or sold at notional.
+    /// </summary>
+    private JournalEntry BuildVariationMarginJournal(
+        TradeExecutedEvent evt,
+        LedgerPostingSecurityGateResult securityGate)
+    {
+        const string activityType = "trade-variation-margin";
+        var journalId = CreateDeterministicGuid(evt.FillId, activityType, "journal");
+        var description = FormattableString.Invariant(
+            $"Variation margin on {evt.Side} {evt.FilledQuantity} {evt.Symbol} @ {evt.FillPrice:F4}");
+        var accountId = NormalizeOptional(evt.FinancialAccountId);
+        var cashAccount = accountId is null ? LedgerAccounts.Cash : LedgerAccounts.CashAccount(accountId);
+        var settlementAccount = LedgerAccounts.FuturesMtmSettlement(evt.Symbol, accountId);
+        var amount = Math.Abs(evt.RealizedPnl);
+        IReadOnlyList<(LedgerAccount Account, decimal Debit, decimal Credit)> lines = evt.RealizedPnl > 0m
+            ? [(cashAccount, amount, 0m), (settlementAccount, 0m, amount)]
+            : [(settlementAccount, amount, 0m), (cashAccount, 0m, amount)];
         return CreateJournal(evt, securityGate, activityType, journalId, description, lines);
     }
 

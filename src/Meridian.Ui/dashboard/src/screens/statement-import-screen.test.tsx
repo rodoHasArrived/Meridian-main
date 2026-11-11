@@ -67,7 +67,7 @@ describe("StatementImportScreen", () => {
   it("loads the connector library through the shared statement API", async () => {
     renderScreen();
 
-    expect(screen.getByRole("heading", { level: 1, name: "Import statement" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: "Import statement" })).toBeInTheDocument();
     await waitFor(() => expect(screen.getByLabelText("Connector")).toBeEnabled());
     expect(screen.getByRole("option", { name: "Generic CSV" })).toBeInTheDocument();
     expect(api.getStatementConnectors).toHaveBeenCalledTimes(1);

@@ -10,6 +10,7 @@ and evidence available to each author; they do not establish current delivery or
 
 ## Planning and Acceptance Records
 
+- [Single-principal attestation policy proposal (2026-11-02)](single-principal-attestation-policy-proposal-2026-11-02.md) and [synthetic acceptance matrix](single-principal-attestation-acceptance-matrix-2026-11-02.md) are draft decision inputs for `W14-ATTEST-001`, registered by merged PR #3358. They compare eligibility and exclusions, preserve existing approval controls, and leave owner adoption and independent Security/Accounting review outstanding; they implement no exception or metric.
 - [Product Plans](plans/README.md#next-work-determinations) owns the latest prioritization pointer
   and retained next-work determinations, including [2026-10-02](plans/next-work-determination-2026-10-02.md)
   and [2026-09-27](plans/next-work-determination-2026-09-27.md).
