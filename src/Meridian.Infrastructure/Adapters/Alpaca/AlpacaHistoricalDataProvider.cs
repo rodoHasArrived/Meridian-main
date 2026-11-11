@@ -624,7 +624,7 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
     private string BuildAuctionsUrl(IReadOnlyList<string> symbols, DateOnly start, DateOnly end, string? pageToken)
     {
         var symbolsParam = string.Join(",", symbols);
-        var startStr = start.ToString("yyyy-MM-dd");
+        var startStr = start.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         // A date-only end already covers that whole session. Asking for the day after reaches
         // into today when the range ends yesterday, which plans without recent SIP data refuse.
         var endStr = end.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
@@ -658,8 +658,9 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
 
     private string BuildUrl(string symbol, DateOnly? from, DateOnly? to, string? pageToken)
     {
-        var startDate = from?.ToString("yyyy-MM-dd") ?? "2000-01-01";
-        var endDate = to?.AddDays(1).ToString("yyyy-MM-dd") ?? DateTime.UtcNow.AddDays(1).ToString("yyyy-MM-dd");
+        var startDate = from?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "2000-01-01";
+        var endDate = to?.AddDays(1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
+            ?? DateTime.UtcNow.AddDays(1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
         var url = $"{BaseUrl}/{symbol}/bars?timeframe=1Day&start={startDate}&end={endDate}&limit=10000&feed={Uri.EscapeDataString(_feed)}&adjustment={Uri.EscapeDataString(_adjustment)}";
 
