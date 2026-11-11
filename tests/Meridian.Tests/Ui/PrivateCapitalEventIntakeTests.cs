@@ -175,6 +175,45 @@ public sealed class PrivateCapitalEventIntakeTests : IDisposable
     }
 
     [Fact]
+    public async Task Distribution_PostedWithEditedAmounts_BlocksTheNextDeclaration()
+    {
+        var first = await CreateFixtureAsync([], []);
+        var declared = (await first.Runner.RunDistributionDeclarationIntakeAsync(DistributionRequest("dist-1", new(2026, 4, 30)))).Intake.Created.Single();
+        // The operator cut the distribution to 100,000 before posting; the retained tiers say 600,000.
+        await first.Drafts.SaveAsync(declared with
+        {
+            Status = ManualJournalEntryStatusDto.Posted,
+            PostedAtUtc = AsOf,
+            PostedBy = "controller",
+            TotalDebits = 100_000m,
+            TotalCredits = 100_000m
+        });
+
+        var next = await (await CreateFixtureAsync([], [])).Runner.RunDistributionDeclarationIntakeAsync(DistributionRequest("dist-2", new(2026, 5, 31)));
+
+        next.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Blocked);
+        next.ReadinessBlockers.Should().ContainSingle().Which.Should().Contain("no longer matches its retained waterfall");
+    }
+
+    [Fact]
+    public async Task DefaultInterest_TwoAccrualsAtOnce_OnlyOneIsAdmitted()
+    {
+        var fixture = await CreateFixtureAsync(
+            [CapitalCallFundingTestData.PostedIssuanceEvent(Fund, CallId, "cmt-1", "lp-1", 1_000_000m, NoticeDate, AsOf)],
+            [CapitalCallFundingTestData.PostedIssuanceImpact(Fund, CallId, "cmt-1", "lp-1", 1_000_000m, NoticeDate)]);
+
+        var results = await Task.WhenAll(
+            Task.Run(() => fixture.Runner.RunCapitalCallDefaultInterestIntakeAsync(DefaultRequest(new(2026, 4, 29)))),
+            Task.Run(() => fixture.Runner.RunCapitalCallDefaultInterestIntakeAsync(DefaultRequest(new(2026, 5, 29)))));
+
+        // Whichever runs second sees the first one's pending draft and is refused.
+        results.Should().ContainSingle(result => result.Readiness == AutomatedJournalIntakeReadiness.Ready)
+            .Which.Intake.Created.Should().ContainSingle();
+        results.Should().ContainSingle(result => result.Readiness == AutomatedJournalIntakeReadiness.Blocked);
+        (await fixture.Drafts.ListAsync(Fund, BookId)).Should().ContainSingle();
+    }
+
+    [Fact]
     public async Task Distribution_TwoDeclarationsAtOnce_OnlyOneIsAdmitted()
     {
         var fixture = await CreateFixtureAsync([], []);

@@ -15,11 +15,18 @@ public sealed class FundAdministrationRegisterTests : IDisposable
     public async Task FixedAssetRegister_SurvivesRestart_ReplacesByAssetId_AndKeepsBooksApart()
     {
         var id = Guid.NewGuid();
-        await new FileFixedAssetRegister(_root).UpsertAsync(Entry(id, 36_000m));
         await new FileFixedAssetRegister(_root).UpsertAsync(Entry(id, 48_000m));
+        await new FileFixedAssetRegister(_root).UpsertAsync(Entry(id, 48_000m) with { RetiredOn = new DateOnly(2027, 6, 30) });
 
         var restarted = new FileFixedAssetRegister(_root);
-        (await restarted.ListAsync("tenant", "company", "fund", Book)).Should().ContainSingle().Which.Asset.Cost.Should().Be(48_000m);
+        // Depreciation already posted on the registered terms is never recomputed, so the terms are fixed.
+        var reprice = () => restarted.UpsertAsync(Entry(id, 36_000m));
+        var extend = () => restarted.UpsertAsync(Entry(id, 48_000m, months: 72));
+        await reprice.Should().ThrowAsync<InvalidOperationException>().WithMessage("*cannot be changed*");
+        await extend.Should().ThrowAsync<InvalidOperationException>().WithMessage("*cannot be changed*");
+        var entry = (await restarted.ListAsync("tenant", "company", "fund", Book)).Should().ContainSingle().Subject;
+        entry.Asset.Cost.Should().Be(48_000m);
+        entry.RetiredOn.Should().Be(new DateOnly(2027, 6, 30));
         (await restarted.ListAsync("tenant", "company", "fund", Guid.NewGuid())).Should().BeEmpty();
         (await restarted.ListAsync("other-tenant", "company", "fund", Book)).Should().BeEmpty();
         var move = () => restarted.UpsertAsync(Entry(id, 48_000m) with { LedgerBookId = Guid.NewGuid() });

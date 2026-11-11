@@ -299,7 +299,7 @@ internal static class DistributionDeclarationDraftProducer
         var drafts = new List<AutomatedJournalDraft>();
         var records = new List<DistributionDeclarationRecord>();
         var assessments = new Dictionary<string, AutomatedJournalEvidenceAssessmentDto>(StringComparer.OrdinalIgnoreCase);
-        var statusById = queueDrafts.GroupBy(static draft => draft.JournalEntryId).ToDictionary(static group => group.Key, static group => group.First().Status);
+        var draftById = queueDrafts.GroupBy(static draft => draft.JournalEntryId).ToDictionary(static group => group.Key, static group => group.First());
 
         foreach (var input in request.Investors.OrderBy(static line => line.InvestorId, StringComparer.Ordinal))
         {
@@ -332,11 +332,26 @@ internal static class DistributionDeclarationDraftProducer
             var blocked = false;
             foreach (var prior in registered.Where(record => !ReferenceEquals(record, same)))
             {
-                var status = statusById.TryGetValue(prior.JournalEntryId, out var found) ? found : (ManualJournalEntryStatusDto?)null;
+                var priorDraft = draftById.GetValueOrDefault(prior.JournalEntryId);
+                var status = priorDraft?.Status;
                 if (status is ManualJournalEntryStatusDto.Rejected)
                     continue;
                 if (status is ManualJournalEntryStatusDto.Posted or ManualJournalEntryStatusDto.CloseLocked)
                 {
+                    // A draft can be edited before it is posted. Its tiers count only while the
+                    // posted amounts still equal the waterfall that was retained for it.
+                    var gpTotal = prior.GpCatchUp + prior.GpCarry;
+                    var total = prior.ReturnOfCapital + prior.PreferredReturn + prior.LpCatchUp + prior.LpCarry + gpTotal;
+                    var postedGp = priorDraft!.Lines.Where(static line => line.Side == AccountingTemplateLineSideDto.Debit && IsCarriedInterest(line.AccountPath))
+                        .Sum(static line => line.Amount);
+                    if (Math.Abs(priorDraft.TotalDebits - total) > LedgerToleranceConstants.Balance ||
+                        Math.Abs(postedGp - gpTotal) > LedgerToleranceConstants.Balance)
+                    {
+                        blockers.Add(FormattableString.Invariant(
+                            $"Posted distribution '{prior.DistributionId}' to investor '{investorId}' ({priorDraft.TotalDebits:0.00}, GP {postedGp:0.00}) no longer matches its retained waterfall ({total:0.00}, GP {gpTotal:0.00}); its tiers cannot be relied on. Reverse and redeclare it before declaring another."));
+                        blocked = true;
+                        continue;
+                    }
                     priors.Add(prior);
                     continue;
                 }
@@ -382,6 +397,13 @@ internal static class DistributionDeclarationDraftProducer
         }
 
         return (new(blockers.Distinct(StringComparer.OrdinalIgnoreCase).ToArray(), drafts, assessments, []), records);
+    }
+
+    private static bool IsCarriedInterest(string? accountPath)
+    {
+        var path = accountPath?.Trim() ?? string.Empty;
+        var separator = path.LastIndexOf(':');
+        return string.Equals(separator >= 0 ? path[(separator + 1)..].Trim() : path, "Carried Interest Allocation", StringComparison.OrdinalIgnoreCase);
     }
 
     private static void Validate(RunDistributionDeclarationDraftIntakeRequest request)

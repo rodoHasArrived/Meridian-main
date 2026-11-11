@@ -87,6 +87,13 @@ public interface IRecurringJournalCalculation
     /// </summary>
     bool DependsOnPostedHistory => false;
 
+    /// <summary>
+    /// True when the amount is measured from balances or holdings at the close of the effective
+    /// date. Such an occurrence is calculated only after that day has ended, so journals posted
+    /// later the same day are not left out of an amount that is then never recalculated.
+    /// </summary>
+    bool ReadsClosingState => DependsOnPostedHistory;
+
     Task<RecurringJournalCalculationResult> CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);
 }
 
@@ -347,6 +354,8 @@ public sealed class FixedIncomeAccrualCalculation(
 
     public string Kind => CalculationKind;
 
+    public bool ReadsClosingState => true;
+
     public async Task<RecurringJournalCalculationResult> CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct)
     {
         if (bridge is null || cashFlows is null)
@@ -420,8 +429,8 @@ public sealed class FixedIncomeAccrualCalculation(
 }
 
 /// <summary>
-/// Unrealized FX revaluation of foreign-currency asset and liability accounts at the effective
-/// date. An account's foreign balance is the sum of its journal legs recorded in that currency; its
+/// Unrealized FX revaluation of foreign-currency monetary asset and liability accounts (accounts
+/// with no security symbol) at the effective date. An account's foreign balance is the sum of its journal legs recorded in that currency; its
 /// carrying value is its book-currency balance, which already includes earlier revaluations, so each
 /// occurrence drafts only the change since the last one. The rate must come with its evidence
 /// (quote date, derivation and table revision) and be no older than the schedule term
@@ -452,7 +461,9 @@ public sealed class FxRevaluationCalculation(
         var foreignLegs = ledger.Journal
             .Where(journal => journal.Timestamp <= asOf)
             .SelectMany(journal => journal.Lines)
-            .Where(line => line.Currency is { IsFunctionalCurrency: false } &&
+            // Monetary accounts only. A security's account also carries fair-value marks in book
+            // currency, so its balance cannot be compared with its foreign cost legs.
+            .Where(line => line.Currency is { IsFunctionalCurrency: false } && string.IsNullOrWhiteSpace(line.Account.Symbol) &&
                 line.Account.AccountType is LedgerAccountType.Asset or LedgerAccountType.Liability)
             .GroupBy(line => line.Account)
             .ToArray();

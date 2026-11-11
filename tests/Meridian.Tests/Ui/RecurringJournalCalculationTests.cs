@@ -52,7 +52,7 @@ public sealed class RecurringJournalCalculationTests : IDisposable
             new() { ["annualRate"] = 0.02m, ["yearBasisDays"] = 365m });
         var fixture = await CreateFixtureAsync();
 
-        var results = await fixture.Runner.RunDueAsync(At(JanuaryEnd));
+        var results = await fixture.Runner.RunDueAsync(Due(JanuaryEnd));
 
         results.Should().ContainSingle().Which.State.Should().Be(AutomatedJournalScheduleStateDto.DraftReady);
         var january = (await fixture.Drafts.ListAsync(Fund, Book)).Should().ContainSingle().Subject;
@@ -75,8 +75,8 @@ public sealed class RecurringJournalCalculationTests : IDisposable
             (LedgerAccounts.ManagementFeePayableFor(Fund), 0m, 16_986.30m));
         await fixture.Drafts.SaveAsync(january with { Status = ManualJournalEntryStatusDto.Posted, PostedAtUtc = Registered, PostedBy = "controller" });
         january = (await fixture.Drafts.ListAsync(Fund, Book)).Single();
-        await (await CreateFixtureAsync()).Runner.RunDueAsync(At(FebruaryEnd));
-        await (await CreateFixtureAsync()).Runner.RunDueAsync(At(FebruaryEnd).AddHours(1));
+        await (await CreateFixtureAsync()).Runner.RunDueAsync(Due(FebruaryEnd));
+        await (await CreateFixtureAsync()).Runner.RunDueAsync(Due(FebruaryEnd).AddHours(1));
 
         var drafts = await fixture.Drafts.ListAsync(Fund, Book);
         drafts.Should().HaveCount(2);
@@ -95,7 +95,7 @@ public sealed class RecurringJournalCalculationTests : IDisposable
         await SeedAsync(ManagementFeeAccrualCalculation.CalculationKind, new() { ["annualRate"] = 0.02m });
         var fixture = await CreateFixtureAsync();
 
-        var result = (await fixture.Runner.RunDueAsync(At(JanuaryEnd))).Should().ContainSingle().Subject;
+        var result = (await fixture.Runner.RunDueAsync(Due(JanuaryEnd))).Should().ContainSingle().Subject;
 
         result.State.Should().Be(AutomatedJournalScheduleStateDto.Blocked);
         result.Blockers.Should().ContainSingle().Which.Should().Contain("yearBasisDays");
@@ -108,7 +108,7 @@ public sealed class RecurringJournalCalculationTests : IDisposable
         await SeedAsync("not-a-calculation", new());
         var fixture = await CreateFixtureAsync();
 
-        var result = (await fixture.Runner.RunDueAsync(At(JanuaryEnd))).Should().ContainSingle().Subject;
+        var result = (await fixture.Runner.RunDueAsync(Due(JanuaryEnd))).Should().ContainSingle().Subject;
 
         result.State.Should().Be(AutomatedJournalScheduleStateDto.Blocked);
         result.Blockers.Should().ContainSingle().Which.Should().Contain("not-a-calculation");
@@ -129,7 +129,7 @@ public sealed class RecurringJournalCalculationTests : IDisposable
         });
         var fixture = await CreateFixtureAsync();
 
-        await fixture.Runner.RunDueAsync(At(JanuaryEnd));
+        await fixture.Runner.RunDueAsync(Due(JanuaryEnd));
 
         var january = (await fixture.Drafts.ListAsync(Fund, Book)).Should().ContainSingle().Subject;
         january.TotalDebits.Should().Be(200_000m, "20% of the 1,000,000 above the high-water mark");
@@ -140,7 +140,7 @@ public sealed class RecurringJournalCalculationTests : IDisposable
             (LedgerAccounts.PerformanceFeePayableFor(Fund), 0m, 200_000m));
         await fixture.Drafts.SaveAsync(january with { Status = ManualJournalEntryStatusDto.Posted, PostedAtUtc = Registered, PostedBy = "controller" });
         Post(new(2026, 2, 10), (LedgerAccounts.Cash, 500_000m, 0m), (LedgerAccounts.RealizedGain, 0m, 500_000m));
-        await (await CreateFixtureAsync()).Runner.RunDueAsync(At(FebruaryEnd));
+        await (await CreateFixtureAsync()).Runner.RunDueAsync(Due(FebruaryEnd));
 
         var february = (await fixture.Drafts.ListAsync(Fund, Book)).Single(draft => draft.AccountingDate == FebruaryEnd);
         february.TotalDebits.Should().Be(100_000m);
@@ -162,10 +162,10 @@ public sealed class RecurringJournalCalculationTests : IDisposable
         }, endsOn: JanuaryEnd);
         var fixture = await CreateFixtureAsync();
 
-        var first = (await fixture.Runner.RunDueAsync(At(JanuaryEnd))).Should().ContainSingle().Subject;
+        var first = (await fixture.Runner.RunDueAsync(Due(JanuaryEnd))).Should().ContainSingle().Subject;
         // A gain recorded afterwards belongs to a later occurrence, not to the settled one.
         Post(new(2026, 1, 25), (LedgerAccounts.Cash, 1_000_000m, 0m), (LedgerAccounts.RealizedGain, 0m, 1_000_000m));
-        var retry = (await (await CreateFixtureAsync()).Runner.RunDueAsync(At(JanuaryEnd).AddHours(2))).Should().ContainSingle().Subject;
+        var retry = (await (await CreateFixtureAsync()).Runner.RunDueAsync(Due(JanuaryEnd).AddHours(2))).Should().ContainSingle().Subject;
 
         first.State.Should().Be(AutomatedJournalScheduleStateDto.NoDraftRequired);
         retry.State.Should().Be(AutomatedJournalScheduleStateDto.NoDraftRequired);
@@ -185,7 +185,7 @@ public sealed class RecurringJournalCalculationTests : IDisposable
             new() { ["expenseId"] = "audit-2026" });
         var fixture = await CreateFixtureAsync();
 
-        await fixture.Runner.RunDueAsync(At(JanuaryEnd));
+        await fixture.Runner.RunDueAsync(Due(JanuaryEnd));
 
         var draft = (await fixture.Drafts.ListAsync(Fund, Book)).Should().ContainSingle().Subject;
         draft.TotalDebits.Should().Be(3_100m);
@@ -204,8 +204,8 @@ public sealed class RecurringJournalCalculationTests : IDisposable
         await SeedAsync(FixedAssetDepreciationCalculation.CalculationKind, new());
         var fixture = await CreateFixtureAsync(assets: register);
 
-        await fixture.Runner.RunDueAsync(At(FebruaryEnd));
-        await (await CreateFixtureAsync(assets: register)).Runner.RunDueAsync(At(FebruaryEnd).AddHours(1));
+        await fixture.Runner.RunDueAsync(Due(FebruaryEnd));
+        await (await CreateFixtureAsync(assets: register)).Runner.RunDueAsync(Due(FebruaryEnd).AddHours(1));
 
         var drafts = await fixture.Drafts.ListAsync(Fund, Book);
         drafts.Should().HaveCount(2);
@@ -229,7 +229,7 @@ public sealed class RecurringJournalCalculationTests : IDisposable
         await SeedAsync(FixedAssetDepreciationCalculation.CalculationKind, new(), endsOn: JanuaryEnd);
         var fixture = await CreateFixtureAsync(assets: register);
 
-        var result = (await fixture.Runner.RunDueAsync(At(JanuaryEnd))).Should().ContainSingle().Subject;
+        var result = (await fixture.Runner.RunDueAsync(Due(JanuaryEnd))).Should().ContainSingle().Subject;
 
         result.State.Should().Be(AutomatedJournalScheduleStateDto.NoDraftRequired);
         (await fixture.Drafts.ListAsync(Fund, Book)).Should().BeEmpty();
@@ -247,12 +247,22 @@ public sealed class RecurringJournalCalculationTests : IDisposable
                 currency: new LedgerEntryCurrency("EUR", "USD", 100_000m, 0m, 1.08m)),
             new(Guid.NewGuid(), purchase, At(new(2026, 1, 10)), LedgerAccounts.Cash, 0m, 108_000m, "Buy EUR")
         ]));
+        // A EUR security bought at par and marked up in USD: a price move, not an FX exposure.
+        var security = LedgerAccounts.Securities("SAP");
+        var buy = Guid.NewGuid();
+        _ledger.Post(new JournalEntry(buy, At(new(2026, 1, 12)), "Buy SAP",
+        [
+            new(Guid.NewGuid(), buy, At(new(2026, 1, 12)), security, 100m, 0m, "Buy SAP",
+                currency: new LedgerEntryCurrency("EUR", "USD", 100m, 0m, 1m)),
+            new(Guid.NewGuid(), buy, At(new(2026, 1, 12)), LedgerAccounts.Cash, 0m, 100m, "Buy SAP")
+        ]));
+        Post(new(2026, 1, 20), (security, 20m, 0m), (LedgerAccounts.RealizedGain, 0m, 20m));
         await SeedAsync(FxRevaluationCalculation.CalculationKind, new() { ["maxRateAgeDays"] = 3m });
         // The January quote is 28 days old by the end of February, so it cannot stand in for one.
         var quotes = new List<ReconciliationFxQuote> { new("EUR", "USD", 1.10m, JanuaryEnd) };
         var fixture = await CreateFixtureAsync(Rates(quotes));
 
-        var results = await fixture.Runner.RunDueAsync(At(FebruaryEnd));
+        var results = await fixture.Runner.RunDueAsync(Due(FebruaryEnd));
 
         // February is not measured while January's revaluation is still an open draft.
         results.Single(result => result.RunKey == RecurringJournalIdentity.OccurrenceKey(ScheduleId, FebruaryEnd))
@@ -270,11 +280,11 @@ public sealed class RecurringJournalCalculationTests : IDisposable
         // must draft a 1,000 loss, not a second gain against the original 108,000.
         Post(JanuaryEnd, (EuroCash, 2_000m, 0m), (LedgerAccounts.UnrealizedFxGain, 0m, 2_000m));
         await fixture.Drafts.SaveAsync(january with { Status = ManualJournalEntryStatusDto.Posted, PostedAtUtc = Registered, PostedBy = "controller" });
-        var stale = await (await CreateFixtureAsync(Rates(quotes))).Runner.RunDueAsync(At(FebruaryEnd).AddMinutes(30));
+        var stale = await (await CreateFixtureAsync(Rates(quotes))).Runner.RunDueAsync(Due(FebruaryEnd).AddMinutes(30));
         stale.Single(result => result.RunKey == RecurringJournalIdentity.OccurrenceKey(ScheduleId, FebruaryEnd))
             .Blockers.Should().ContainSingle().Which.Should().Contain("dated 2026-01-31, 28 day(s)");
         quotes.Add(new("EUR", "USD", 1.09m, FebruaryEnd.AddDays(-1)));
-        await (await CreateFixtureAsync(Rates(quotes))).Runner.RunDueAsync(At(FebruaryEnd).AddHours(1));
+        await (await CreateFixtureAsync(Rates(quotes))).Runner.RunDueAsync(Due(FebruaryEnd).AddHours(1));
 
         var february = (await fixture.Drafts.ListAsync(Fund, Book)).Single(draft => draft.AccountingDate == FebruaryEnd);
         february.Lines.Select(line => (line.AccountPath, line.Side, line.Amount)).Should().BeEquivalentTo(new[]
@@ -298,7 +308,7 @@ public sealed class RecurringJournalCalculationTests : IDisposable
         await SeedAsync(FxRevaluationCalculation.CalculationKind, new() { ["maxRateAgeDays"] = 3m }, endsOn: JanuaryEnd);
         var fixture = await CreateFixtureAsync(new UndatedRates());
 
-        var result = (await fixture.Runner.RunDueAsync(At(JanuaryEnd))).Should().ContainSingle().Subject;
+        var result = (await fixture.Runner.RunDueAsync(Due(JanuaryEnd))).Should().ContainSingle().Subject;
 
         result.State.Should().Be(AutomatedJournalScheduleStateDto.Blocked);
         result.Blockers.Should().ContainSingle().Which.Should().Contain("quote date and source");
@@ -315,8 +325,8 @@ public sealed class RecurringJournalCalculationTests : IDisposable
             new() { ["securityId"] = SecurityId.ToString("D"), ["ticker"] = Ticker });
         var fixture = await CreateFixtureAsync(lots: [lot], cashFlows: MonthlyCouponCashFlows());
 
-        await fixture.Runner.RunDueAsync(At(JanuaryEnd));
-        await (await CreateFixtureAsync(lots: [lot], cashFlows: MonthlyCouponCashFlows())).Runner.RunDueAsync(At(FebruaryEnd));
+        await fixture.Runner.RunDueAsync(Due(JanuaryEnd));
+        await (await CreateFixtureAsync(lots: [lot], cashFlows: MonthlyCouponCashFlows())).Runner.RunDueAsync(Due(FebruaryEnd));
 
         var drafts = await fixture.Drafts.ListAsync(Fund, Book);
         drafts.Should().HaveCount(2);
@@ -347,14 +357,14 @@ public sealed class RecurringJournalCalculationTests : IDisposable
         { UnitKind = SecurityLotUnitKind.FaceValue, Multiplier = 100m };
         var held = await CreateFixtureAsync(lots: [quarter], cashFlows: MonthlyCouponCashFlows());
 
-        await held.Runner.RunDueAsync(At(JanuaryEnd));
+        await held.Runner.RunDueAsync(Due(JanuaryEnd));
 
         var january = (await held.Drafts.ListAsync(Fund, Book)).Should().ContainSingle().Subject;
         january.Lines.Single(line => line.AccountPath == "Assets:Accrued Interest Receivable UST30").Amount.Should().Be(604.84m);
 
         // The position is sold before February: no lot, no entitlement, no draft.
         var sold = await CreateFixtureAsync(lots: [], cashFlows: MonthlyCouponCashFlows());
-        var february = (await sold.Runner.RunDueAsync(At(FebruaryEnd)))
+        var february = (await sold.Runner.RunDueAsync(Due(FebruaryEnd)))
             .Single(result => result.RunKey == RecurringJournalIdentity.OccurrenceKey(ScheduleId, FebruaryEnd));
         february.State.Should().Be(AutomatedJournalScheduleStateDto.NoDraftRequired);
         (await sold.Drafts.ListAsync(Fund, Book)).Should().ContainSingle();
@@ -374,7 +384,7 @@ public sealed class RecurringJournalCalculationTests : IDisposable
         });
         var fixture = await CreateFixtureAsync();
 
-        var results = await fixture.Runner.RunDueAsync(At(FebruaryEnd));
+        var results = await fixture.Runner.RunDueAsync(Due(FebruaryEnd));
 
         // Without the wait both months would draft the same 200,000.
         var draft = (await fixture.Drafts.ListAsync(Fund, Book)).Should().ContainSingle().Subject;
@@ -384,8 +394,32 @@ public sealed class RecurringJournalCalculationTests : IDisposable
 
         // A rejected January fee was never owed, so February may then accrue the whole amount.
         await fixture.Drafts.SaveAsync(draft with { Status = ManualJournalEntryStatusDto.Rejected });
-        await (await CreateFixtureAsync()).Runner.RunDueAsync(At(FebruaryEnd).AddHours(1));
+        await (await CreateFixtureAsync()).Runner.RunDueAsync(Due(FebruaryEnd).AddHours(1));
         (await fixture.Drafts.ListAsync(Fund, Book)).Single(item => item.AccountingDate == FebruaryEnd).TotalDebits.Should().Be(200_000m);
+    }
+
+    [Fact]
+    public async Task PerformanceFee_WaitsForTheEffectiveDayToEnd_SoSameDayGainsAreCounted()
+    {
+        Capitalize(10_000_000m);
+        await SeedAsync(PerformanceFeeAccrualCalculation.CalculationKind, new()
+        {
+            ["performanceFeeRate"] = 0.20m,
+            ["highWaterMark"] = 10_000_000m,
+            ["hurdleAmount"] = 0m,
+            ["crystallize"] = 0m
+        }, endsOn: JanuaryEnd);
+        var fixture = await CreateFixtureAsync();
+
+        var early = (await fixture.Runner.RunDueAsync(At(JanuaryEnd))).Should().ContainSingle().Subject;
+        early.State.Should().Be(AutomatedJournalScheduleStateDto.Blocked);
+        early.Blockers.Should().ContainSingle().Which.Should().Contain("once that day has ended");
+        (await fixture.Drafts.ListAsync(Fund, Book)).Should().BeEmpty();
+
+        // A gain posted later on the effective date is in the amount drafted the next morning.
+        Post(JanuaryEnd, (LedgerAccounts.Cash, 1_000_000m, 0m), (LedgerAccounts.RealizedGain, 0m, 1_000_000m));
+        await (await CreateFixtureAsync()).Runner.RunDueAsync(Due(JanuaryEnd));
+        (await fixture.Drafts.ListAsync(Fund, Book)).Should().ContainSingle().Which.TotalDebits.Should().Be(200_000m);
     }
 
     [Fact]
@@ -401,7 +435,7 @@ public sealed class RecurringJournalCalculationTests : IDisposable
             ["crystallize"] = 0m
         });
         var fixture = await CreateFixtureAsync();
-        await fixture.Runner.RunDueAsync(At(JanuaryEnd));
+        await fixture.Runner.RunDueAsync(Due(JanuaryEnd));
         var january = (await fixture.Drafts.ListAsync(Fund, Book)).Should().ContainSingle().Subject;
         await fixture.Drafts.SaveAsync(january with { Status = ManualJournalEntryStatusDto.Posted });
         Post(JanuaryEnd, (new LedgerAccount("Performance Fee Expense", LedgerAccountType.Expense), 200_000m, 0m),
@@ -410,7 +444,7 @@ public sealed class RecurringJournalCalculationTests : IDisposable
 
         // Closing January marks its occurrence blocked; its posted draft still settles it.
         _closedMonths.Add(1);
-        var results = await (await CreateFixtureAsync()).Runner.RunDueAsync(At(FebruaryEnd));
+        var results = await (await CreateFixtureAsync()).Runner.RunDueAsync(Due(FebruaryEnd));
 
         results.Single(result => result.RunKey == RecurringJournalIdentity.OccurrenceKey(ScheduleId, JanuaryEnd))
             .State.Should().Be(AutomatedJournalScheduleStateDto.Blocked);
@@ -427,7 +461,7 @@ public sealed class RecurringJournalCalculationTests : IDisposable
         await SeedAsync(FixedAssetDepreciationCalculation.CalculationKind, new(), endsOn: JanuaryEnd);
         var fixture = await CreateFixtureAsync(assets: new FileFixedAssetRegister(Path.Combine(_root, "registers")));
 
-        var result = (await fixture.Runner.RunDueAsync(At(JanuaryEnd))).Should().ContainSingle().Subject;
+        var result = (await fixture.Runner.RunDueAsync(Due(JanuaryEnd))).Should().ContainSingle().Subject;
 
         result.State.Should().Be(AutomatedJournalScheduleStateDto.Blocked);
         result.Blockers.Should().ContainSingle().Which.Should().Contain("could not complete");
@@ -441,7 +475,7 @@ public sealed class RecurringJournalCalculationTests : IDisposable
             new() { ["securityId"] = SecurityId.ToString("D"), ["ticker"] = Ticker });
         var fixture = await CreateFixtureAsync(cashFlows: MonthlyCouponCashFlows(StructuredCashFlowStaleness.Stale));
 
-        var result = (await fixture.Runner.RunDueAsync(At(JanuaryEnd))).Should().ContainSingle().Subject;
+        var result = (await fixture.Runner.RunDueAsync(Due(JanuaryEnd))).Should().ContainSingle().Subject;
 
         result.State.Should().Be(AutomatedJournalScheduleStateDto.Blocked);
         result.Blockers.Should().ContainSingle().Which.Should().Contain("cannot be posted");
@@ -455,7 +489,7 @@ public sealed class RecurringJournalCalculationTests : IDisposable
         await SeedAsync(ManagementFeeAccrualCalculation.CalculationKind,
             new() { ["annualRate"] = 0.02m, ["yearBasisDays"] = 365m }, endsOn: JanuaryEnd);
         var fixture = await CreateFixtureAsync();
-        await fixture.Runner.RunDueAsync(At(JanuaryEnd));
+        await fixture.Runner.RunDueAsync(Due(JanuaryEnd));
         var draft = (await fixture.Drafts.ListAsync(Fund, Book)).Single();
         draft.ApprovalId.Should().BeNull();
         draft.PostedAtUtc.Should().BeNull();
@@ -482,6 +516,9 @@ public sealed class RecurringJournalCalculationTests : IDisposable
         => _ledger.PostLines(At(date), $"Seeded {date:yyyy-MM-dd}", lines);
 
     private static DateTimeOffset At(DateOnly date) => new(date.ToDateTime(new TimeOnly(12, 0)), TimeSpan.Zero);
+
+    // The worker's first run after the effective day has ended.
+    private static DateTimeOffset Due(DateOnly date) => new(date.AddDays(1).ToDateTime(new TimeOnly(0, 30)), TimeSpan.Zero);
 
     private static string Evidence(string intent, Guid journalEntryId)
         => $"evidence://{intent}/journal/{journalEntryId:D}/ledger-book/{Book:D}/tenant/{Tenant}/company/{Company}";

@@ -87,7 +87,13 @@ public sealed class RecurringJournalRunner(
                     AutomatedJournalDraft? calculated = null;
                     if (claim.TemplateDefinition.Template.Calculation is { } calculation && existing is null)
                     {
-                        if (index > 0 && _calculations.TryGetValue(calculation.Kind, out var dependent) && dependent.DependsOnPostedHistory)
+                        _calculations.TryGetValue(calculation.Kind, out var dependent);
+                        // Closing balances are not final until the effective day is over.
+                        if (dependent is { ReadsClosingState: true } &&
+                            now < new DateTimeOffset(date.AddDays(1).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero))
+                            throw new InvalidOperationException(
+                                $"This amount is measured at the close of {date:yyyy-MM-dd}; it is calculated once that day has ended.");
+                        if (index > 0 && dependent is { DependsOnPostedHistory: true })
                             await RequirePreviousOccurrenceSettledAsync(session, definition, schedule.EffectiveDateFor(index - 1), ct).ConfigureAwait(false);
                         var outcome = await CalculateAsync(calculation, claim, period,
                             index == 0 ? period.StartDate : schedule.EffectiveDateFor(index - 1).AddDays(1), ct).ConfigureAwait(false);

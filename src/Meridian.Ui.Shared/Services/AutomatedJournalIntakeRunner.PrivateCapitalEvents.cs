@@ -5,9 +5,9 @@ namespace Meridian.Ui.Shared.Services;
 
 public sealed partial class AutomatedJournalIntakeRunner
 {
-    // Two overlapping declarations would both read the same earlier tiers before either is
-    // admitted. Declarations are rare, so one at a time per host is enough.
-    private static readonly SemaphoreSlim DistributionDeclarationGate = new(1, 1);
+    // Two overlapping requests would both read the same queue and posted amounts before either
+    // is admitted. These events are rare, so one at a time per host is enough.
+    private static readonly SemaphoreSlim PrivateCapitalEventGate = new(1, 1);
 
     /// <summary>
     /// Admits default-interest drafts for the unfunded part of a posted capital call into the
@@ -23,16 +23,24 @@ public sealed partial class AutomatedJournalIntakeRunner
         var code = CapitalCallDefaultInterestDraftProducer.AssessmentCode;
         var runKey = CapitalCallDefaultInterestDraftProducer.BuildRunAssessmentKey(request.FundProfileId, request.CallId);
         var evaluatedAtUtc = (request.AsOf ?? _timeProvider.GetUtcNow()).ToUniversalTime();
-        var (workbench, blocker) = await LoadPrivateCapitalWorkbenchAsync(request.FundProfileId, request.LedgerBookId,
-            request.TenantId, request.CompanyId, ct).ConfigureAwait(false);
-        if (workbench is null)
-            return BuildBlockedCapitalCallResult(runKey, code, lane, blocker ?? "The posted private-capital activity is unavailable.");
-        var (drafts, activity) = workbench.Value;
+        await PrivateCapitalEventGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            var (workbench, blocker) = await LoadPrivateCapitalWorkbenchAsync(request.FundProfileId, request.LedgerBookId,
+                request.TenantId, request.CompanyId, ct).ConfigureAwait(false);
+            if (workbench is null)
+                return BuildBlockedCapitalCallResult(runKey, code, lane, blocker ?? "The posted private-capital activity is unavailable.");
+            var (drafts, activity) = workbench.Value;
 
-        var production = CapitalCallDefaultInterestDraftProducer.Produce(request, activity.FundEvents, activity.LedgerImpacts,
-            drafts, evaluatedAtUtc);
-        return await AdmitPrivateCapitalEventDraftsAsync(production, runKey, code, lane, request.FundProfileId, request.Currency,
-            request.Actor, request.LedgerBookId, request.PeriodId, request.EntityId, request.TenantId, request.CompanyId, ct).ConfigureAwait(false);
+            var production = CapitalCallDefaultInterestDraftProducer.Produce(request, activity.FundEvents, activity.LedgerImpacts,
+                drafts, evaluatedAtUtc);
+            return await AdmitPrivateCapitalEventDraftsAsync(production, runKey, code, lane, request.FundProfileId, request.Currency,
+                request.Actor, request.LedgerBookId, request.PeriodId, request.EntityId, request.TenantId, request.CompanyId, ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            PrivateCapitalEventGate.Release();
+        }
     }
 
     /// <summary>
@@ -53,7 +61,7 @@ public sealed partial class AutomatedJournalIntakeRunner
             return BuildBlockedCapitalCallResult(runKey, code, lane, "The distribution register is unavailable, so earlier waterfall tiers cannot be read.");
         if (string.IsNullOrWhiteSpace(request.TenantId) || string.IsNullOrWhiteSpace(request.CompanyId))
             return BuildBlockedCapitalCallResult(runKey, code, lane, "A distribution needs its tenant and company scope.");
-        await DistributionDeclarationGate.WaitAsync(ct).ConfigureAwait(false);
+        await PrivateCapitalEventGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
             var (workbench, blocker) = await LoadPrivateCapitalWorkbenchAsync(request.FundProfileId, request.LedgerBookId,
@@ -97,7 +105,7 @@ public sealed partial class AutomatedJournalIntakeRunner
         }
         finally
         {
-            DistributionDeclarationGate.Release();
+            PrivateCapitalEventGate.Release();
         }
     }
 

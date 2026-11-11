@@ -126,6 +126,11 @@ public sealed class FileFixedAssetRegister(string directory)
             var owner = snapshot.Assets.FirstOrDefault(existing => existing.Asset.AssetId == normalized.Asset.AssetId);
             if (owner is not null && !InScope(owner, normalized.TenantId, normalized.CompanyId, normalized.FundProfileId, normalized.LedgerBookId))
                 throw new InvalidOperationException("This fixed asset is registered to a different fund book.");
+            // Earlier periods were depreciated on the registered terms and are not recomputed, so
+            // new terms would charge more or less than the asset's depreciable cost.
+            if (owner is not null && owner.Asset with { DisplayName = normalized.Asset.DisplayName, FinancialAccountId = normalized.Asset.FinancialAccountId } != normalized.Asset)
+                throw new InvalidOperationException(
+                    "A registered fixed asset's cost, salvage value, life, method, currency and in-service date cannot be changed. Retire it and register the revised asset under a new id.");
             var assets = snapshot.Assets.Where(existing => existing.Asset.AssetId != normalized.Asset.AssetId).Append(normalized).ToArray();
             return (new Snapshot(assets), normalized);
         }, ct);

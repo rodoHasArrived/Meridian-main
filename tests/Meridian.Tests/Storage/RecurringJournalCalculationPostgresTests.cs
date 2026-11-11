@@ -75,7 +75,7 @@ public sealed class RecurringJournalCalculationPostgresTests
             var fixture = await CreateFixtureAsync(root, database, book, recurring);
             var golden = LoadGolden();
 
-            await fixture.Runner.RunDueAsync(At(JanuaryEnd), ct: ct);
+            await fixture.Runner.RunDueAsync(Due(JanuaryEnd), ct: ct);
             var januaryDrafts = (await fixture.Drafts.ListAsync(Fund, book.LedgerBookId, ct)).ToArray();
             Project(januaryDrafts).Should().BeEquivalentTo(golden["2026-01-31"], options => options.WithStrictOrdering());
             (await store.GetByPeriodAsync(january.PeriodId, ct)).Should().HaveCount(2, "drafting never posts");
@@ -89,8 +89,8 @@ public sealed class RecurringJournalCalculationPostgresTests
             // A restarted host calculates February from the posted January journals, and
             // repeating the run creates nothing further.
             var restarted = await CreateFixtureAsync(root, database, book, recurring);
-            await restarted.Runner.RunDueAsync(At(FebruaryEnd), ct: ct);
-            await restarted.Runner.RunDueAsync(At(FebruaryEnd).AddHours(6), ct: ct);
+            await restarted.Runner.RunDueAsync(Due(FebruaryEnd), ct: ct);
+            await restarted.Runner.RunDueAsync(Due(FebruaryEnd).AddHours(6), ct: ct);
 
             var all = await restarted.Drafts.ListAsync(Fund, book.LedgerBookId, ct);
             all.Should().HaveCount(6);
@@ -166,7 +166,7 @@ public sealed class RecurringJournalCalculationPostgresTests
                     Microsoft.Extensions.Logging.Abstractions.NullLogger<Meridian.Application.SecurityMaster.SecurityMasterAmortizationLedgerBridge>.Instance),
                 cashFlows.Object));
 
-            await fixture.Runner.RunDueAsync(At(JanuaryEnd), ct: ct);
+            await fixture.Runner.RunDueAsync(Due(JanuaryEnd), ct: ct);
 
             var draft = (await fixture.Drafts.ListAsync(Fund, book.LedgerBookId, ct)).Should().ContainSingle().Subject;
             draft.Lines.Select(line => (line.AccountPath, line.Side.ToString(), line.Amount)).Should().BeEquivalentTo(new[]
@@ -300,6 +300,7 @@ public sealed class RecurringJournalCalculationPostgresTests
     }
 
     private static DateTimeOffset At(DateOnly date) => new(date.ToDateTime(new TimeOnly(12, 0)), TimeSpan.Zero);
+    private static DateTimeOffset Due(DateOnly date) => new(date.AddDays(1).ToDateTime(new TimeOnly(0, 30)), TimeSpan.Zero);
 
     private sealed record GoldenLine(string AccountPath, string Side, decimal Amount);
 

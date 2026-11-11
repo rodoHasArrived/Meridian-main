@@ -75,6 +75,9 @@ Rules that keep an amount from being drafted twice:
   together therefore cannot both be measured against a ledger that holds neither. The previous
   occurrence's retained draft decides, so one that was posted and whose period has since closed
   still counts as settled.
+- **Closing balances wait for the day to end.** Fees, FX revaluation and bond accruals are
+  measured at the close of the effective date, so they are calculated only once that day (UTC)
+  has ended; until then the occurrence is blocked and retried. The accounting date is unchanged.
 - **One accrual window per occurrence.** The window ends on the effective date and starts the day
   after the previous occurrence; the first window starts at the covering period's start date.
 - **Calculated once.** A retained draft is never recalculated. An occurrence that correctly has
@@ -82,11 +85,15 @@ Rules that keep an amount from being drafted twice:
 - **Performance fee is cumulative.** The fee above the high-water mark and hurdle is compared with
   the performance fee already payable, and only the difference is drafted (a reversal when it has
   fallen). After a fee is crystallized and settled, register a schedule version with the new mark.
-- **FX revaluation is incremental.** An account's carrying value is its book-currency balance,
+- **FX revaluation covers monetary accounts.** Accounts with a security symbol are left out:
+  they also carry fair-value marks in book currency, which are price moves, not FX variance.
+  For the accounts it covers it is incremental: an account's carrying value is its book-currency balance,
   which includes earlier posted revaluations, so each occurrence drafts only the change.
 - **A depreciation period belongs to one window.** Each registered asset's scheduled monthly
   charge is drafted by the occurrence whose window contains its period end, and stops at
-  retirement. Assets are registered through `/api/ledger/fixed-assets`.
+  retirement. Assets are registered through `/api/ledger/fixed-assets`. A registered asset's cost,
+  salvage value, life, method, currency and in-service date cannot be changed, because periods
+  already depreciated are not recomputed; retire it and register the revised asset under a new id.
 - **A coupon accrues across windows, once.** The bond calculation drafts the day-count share of
   each coupon period that falls inside the window and the premium or discount amortized over the
   same days. Each share is a difference of rounded cumulative amounts, so the windows covering a
@@ -135,12 +142,14 @@ intakes that admit approval drafts the same way:
   date, rate, day-count convention and grace days
   are operator-attested with retained evidence. Interest is accrued to its cumulative amount
   through the requested date and only the part not already posted is drafted; an earlier
-  default-interest draft still awaiting approval blocks a further accrual.
+  default-interest draft still awaiting approval blocks a further accrual, and requests are
+  handled one at a time on a host.
 - **Distribution waterfall** (`/api/ledger/journal-automation/distribution-intake`). Each
   investor's distribution is split by the European waterfall. The tiers already paid come from
   the distribution register for posted distributions, so return of capital, preferred return and
   GP catch-up are each paid once. An earlier distribution that is not yet posted blocks the next;
-  a rejected one is ignored. A distribution draft found without its register record (an
+  a rejected one is ignored. A posted distribution whose amounts were edited away from its
+  retained waterfall blocks the next until it is reversed and redeclared. A distribution draft found without its register record (an
   interrupted request) also blocks further declarations until that declaration is repeated,
   which restores the record against the same draft. Declarations are handled one at a time on a
   host, so two overlapping requests cannot both read the same earlier tiers.
