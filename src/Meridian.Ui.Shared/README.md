@@ -11,7 +11,7 @@ last_reviewed: 2026-10-31
 
 # src/Meridian.Ui.Shared
 
-Margin Control Center reads and certifications are tenant-scoped: `GET /api/workstation/reconciliation/margin-control` and the certification POST require tenant and company scope and show only retained snapshots whose import was recorded against an active fund account owned by the caller's tenant and company, and whose external account id is one of that same fund account's identifiers. External ids are unique only within a provider, so an id match alone never admits another tenant's evidence; evidence retained before the importing fund account was recorded is not shown (fail closed).
+Margin Control Center reads and certifications are tenant-scoped: `GET /api/workstation/reconciliation/margin-control` and the certification POST require tenant and company scope and show only retained snapshots whose import was recorded against an active fund account owned by the caller's tenant and company, and whose external account id is one of that same fund account's identifiers. External ids are unique only within a provider, so an id match alone never admits another tenant's evidence; evidence retained before the importing fund account was recorded is not shown (fail closed). Both routes answer 403 when the tenant context, the account query service or the fund-profile tenancy registry is unavailable, and a fund whose ownership cannot be resolved contributes no visible accounts.
 
 Sampling endpoints bound `sampleSize` to 1..100,000, reject confidence or margin-of-error values outside (0, 1), keep at most 50 saved samples in memory, report `no_data` instead of inventing a population of 100,000, honour cancellation while counting, and no longer echo the storage root.
 
