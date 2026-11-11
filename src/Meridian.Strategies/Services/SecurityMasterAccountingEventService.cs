@@ -151,6 +151,25 @@ public sealed record SecurityMasterAccountingEventResult(
     IReadOnlyList<SecurityMasterAccountingIssueDto> Issues);
 
 /// <summary>Indicates that no Security Master accounting-event request is available from the configured source.</summary>
+/// <summary>
+/// Supplies the cash a provider, custodian or statement actually reported for held securities, so
+/// expected coupon and paydown events are judged against evidence instead of always reading as
+/// missing.
+/// </summary>
+public interface ISecurityActualCashActivitySource
+{
+    /// <summary>
+    /// Returns income and principal cash reported for <paramref name="positions"/> with a pay date
+    /// inside <paramref name="periodStart"/>..<paramref name="periodEnd"/> (inclusive). Rows the
+    /// source cannot attribute to a held security and account are omitted, never guessed.
+    /// </summary>
+    Task<IReadOnlyList<SecurityActualCashActivity>> GetActualActivityAsync(
+        IReadOnlyList<SecurityMasterAccountingPosition> positions,
+        DateOnly periodStart,
+        DateOnly periodEnd,
+        CancellationToken ct = default);
+}
+
 public sealed class NullSecurityMasterAccountingEventSourceAdapter : ISecurityMasterAccountingEventSourceAdapter
 {
     public Task<SecurityMasterAccountingEventRequest?> BuildRequestAsync(
