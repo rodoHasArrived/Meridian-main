@@ -2035,8 +2035,12 @@ surface). Light, auto-dark, manual-dark, and forced-light scopes take their valu
 `tokens/` files.
 
 `main.tsx` loads `src/design-system/fonts.css`, synchronized from the package,
-before the workstation stylesheet. IBM Plex Sans and Mono TTFs ship under
-`src/assets/fonts/`; their OFL notices ship through `public/licenses/`. Brand
+before the workstation stylesheet. The package ships IBM Plex Sans and Mono as TTF; the sync serves
+them as WOFF2 under `src/assets/fonts/` (about a third of the size) and rewrites the projected
+`fonts.css` sources to match. `woff2-sources.json` records each source TTF and WOFF2 SHA-256, so check
+mode stays pure Node while `npm run design-system:sync` reconverts changed fonts through
+`scripts/convert-fonts-to-woff2.py` (Python with `fonttools` and `brotli`; set `MERIDIAN_PYTHON` to
+pick an interpreter). Their OFL notices ship through `public/licenses/`. Brand
 marks, lockups, the identity sheet, and module icons use the canonical copied
 assets in `src/assets/` and the typed asset bridge. Vite bundles these local
 assets for hosted and offline-capable deployments.
