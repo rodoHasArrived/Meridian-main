@@ -4,7 +4,14 @@ import { cn } from "@/lib/utils";
 
 export type ToastTone = "success" | "warning" | "danger" | "info";
 
+export interface ToastAction {
+  label: string;
+  /** Runs when the action is clicked; the toast is dismissed afterwards. */
+  onAction: () => void;
+}
+
 export interface ToastOptions {
+  action?: ToastAction;
   detail?: ReactNode;
   durationMs?: number;
   id?: string;
@@ -13,6 +20,7 @@ export interface ToastOptions {
 }
 
 interface ToastEntry extends Required<Pick<ToastOptions, "id" | "tone">> {
+  action?: ToastAction;
   detail?: ReactNode;
   title: ReactNode;
 }
@@ -45,6 +53,7 @@ export function ToastProvider({ children, maxToasts = 5 }: { children?: ReactNod
   const show = useCallback((toast: ToastOptions) => {
     const id = toast.id ?? `${Date.now()}-${Math.random().toString(16).slice(2)}`;
     const entry: ToastEntry = {
+      action: toast.action,
       detail: toast.detail,
       id,
       title: toast.title,
@@ -95,6 +104,18 @@ export function Toast({ className, onDismiss, toast }: { className?: string; onD
         <div className="text-sm font-semibold">{toast.title}</div>
         {toast.detail ? <div className="mt-0.5 font-mono text-xs leading-5 text-muted-foreground">{toast.detail}</div> : null}
       </div>
+      {toast.action ? (
+        <button
+          type="button"
+          className="shrink-0 rounded-[2px] border border-border px-2 py-0.5 text-xs font-semibold text-primary hover:bg-secondary/60 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+          onClick={() => {
+            toast.action?.onAction();
+            onDismiss?.();
+          }}
+        >
+          {toast.action.label}
+        </button>
+      ) : null}
       {onDismiss ? (
         <button
           type="button"
