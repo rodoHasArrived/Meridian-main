@@ -951,6 +951,25 @@ Four choices worth recording:
   floating bond's index is not carried by the document and an other-security's category is not
   carried by a pre-`taxonomy` image, so those trial decodes fail closed and keep the carry, as before.
 
+**Retained-document fold (review follow-up, 2026-11-11).** Making these values recoverable
+exposed a gap in `SecurityTermsEnvelope.FoldRetainedEconomicTerms`, raised by automated review
+on the pull request. The fold fills any module or field the rebuild has empty from the retained
+document, on the reasoning that empty means the flat row could not carry it. For a value the
+row now carries, empty can also mean an amendment cleared it; a row that kept its retained
+document (a floating bond, or a document holding a module no flat row expresses) would then
+have had its cleared covenants or principal schedule written back into the next economic
+event, and recovered again on the next replay. The fold now takes the class's
+`FlatAuthoritativeFields` and never fills one of those; a retained module left with nothing
+else is not folded. The list is deliberately the S3-E homes only: fields from modules added
+after the identity gate that a flattening copies one-to-one, plus the older-module fields this
+stage first fed (`sinkingFund.schedule`, the three `inflationLinked` members,
+`covenants.covenants`). A document holds one of those only because the current serializer
+wrote it from the same record the flat row is written from. Fields the economic document
+carried before stage 3 keep the old fill, because historical and hand-shaped documents hold
+values there that the flat decode does not reproduce; an amendment that clears one of those
+(a bond's scalar call date, an issuer name) on a row with a retained document is therefore
+still refilled, as it was before this stage. No corpus or golden byte changed.
+
 What stays codec-only after this: Swap (the legs). What the economic document still does not
 carry for a bond is its floating-rate terms (index, spread, cap and floor), its seniority and
 its alternative maturity dates; no validation rule depends on a home for them.

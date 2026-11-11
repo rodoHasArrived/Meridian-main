@@ -684,6 +684,98 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
     }
 
     [Theory]
+    [InlineData("DirectLoan", "covenants", "covenants")]
+    [InlineData("Bond", "principalSchedule", "sinkingFund")]
+    public void RetainedEconomicTerms_DoNotResurrectAValueTheFlatRowCarriesAndAnAmendmentCleared(
+        string assetClass, string flatKey, string module)
+    {
+        // Codex review on #3475: S3-E7 made these values recoverable, so a row rebuilt from an
+        // economic-only document carries them at the flat key. When that row also keeps its retained
+        // document (here because the document holds an ESG module no flat row can express) and an
+        // amendment then clears the value, the fold must not put the old value back: the row could
+        // carry it, so empty means cleared.
+        var original = SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain(
+            assetClass, SecurityAssetTermsSchemaRoundTripTests.FullPayloads[assetClass]);
+        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(assetClass, original));
+        var document = JsonNode.Parse(economic.EconomicTerms.GetRawText())!.AsObject();
+        document[module].Should().NotBeNull($"precondition: the {assetClass} twin feeds the {module} module");
+        document["esg"] = JsonNode.Parse(
+            """{"esgScore":72.5,"esgProvider":"MSCI","esgRating":"AA","esgAsOf":"2025-11-30","isGreenBond":true,"isSocialBond":false,"isSustainabilityLinked":false,"unSdgAlignments":["SDG 7"],"paiIndicatorFlags":["GHG"]}""");
+
+        var replayed = SecurityEconomicDefinitionAdapter.ToProjection(
+            economic with { EconomicTerms = ToElement(document), LegacyAssetSpecificTerms = null });
+        SecurityTermsEnvelope.TryGetRetainedEconomicTerms(replayed.AssetSpecificTerms, out _)
+            .Should().BeTrue("precondition: a document the flat row cannot hold completely keeps its carry");
+        replayed.AssetSpecificTerms.GetProperty(flatKey).GetArrayLength()
+            .Should().BeGreaterThan(0, "precondition: the value is recovered at its flat key");
+
+        // The amendment: the complete terms again, with the value cleared. The retained document
+        // travels with the row, as the service carries it.
+        var amendedTerms = JsonNode.Parse(original.GetRawText())!.AsObject();
+        amendedTerms[flatKey] = new JsonArray();
+        var amended = SecurityEconomicDefinitionAdapter.CarryRetainedEconomicTerms(
+            replayed,
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(assetClass, ToElement(amendedTerms)));
+        SecurityTermsEnvelope.TryGetRetainedEconomicTerms(amended.AssetSpecificTerms, out _).Should().BeTrue();
+
+        var next = SecurityEconomicDefinitionAdapter.ToEconomicRecord(amended);
+
+        next.EconomicTerms.GetProperty(module).ValueKind.Should().Be(JsonValueKind.Null,
+            "the flat revision cleared the value, and the flat row is the authority for it");
+        next.EconomicTerms.GetProperty("esg").GetProperty("esgRating").GetString().Should().Be("AA",
+            "what the flat row cannot hold still folds back from the retained document");
+
+        var replayedAgain = SecurityEconomicDefinitionAdapter.ToProjection(next with { LegacyAssetSpecificTerms = null });
+        (replayedAgain.AssetSpecificTerms.TryGetProperty(flatKey, out var recovered) && recovered.GetArrayLength() > 0)
+            .Should().BeFalse("the cleared value must not come back on the next replay");
+    }
+
+    [Fact]
+    public void FoldRetainedEconomicTerms_LeavesAFlatAuthoritativeFieldCleared_AndStillFillsTheRest()
+    {
+        using var rebuilt = JsonDocument.Parse(
+            """{"schemaVersion":2,"termsFormat":"economic","covenants":null,"sinkingFund":{"schedule":[],"sinkFrequency":null,"isProRata":false},"esg":null}""");
+        using var retained = JsonDocument.Parse(
+            """{"schemaVersion":2,"termsFormat":"economic","covenants":{"covenants":[{"covenantType":"MaxLeverage","notes":null,"threshold":"4.5x"}]},"sinkingFund":{"schedule":[{"sinkDate":"2030-06-15","amount":400}],"sinkFrequency":"Annual","isProRata":false},"esg":{"esgRating":"AA"}}""");
+
+        var folded = SecurityTermsEnvelope.FoldRetainedEconomicTerms(
+            rebuilt.RootElement,
+            retained.RootElement,
+            [("covenants", "covenants"), ("sinkingFund", "schedule")]);
+
+        folded.GetProperty("covenants").ValueKind.Should().Be(JsonValueKind.Null,
+            "a retained module that holds nothing but flat-authoritative content is not folded");
+        folded.GetProperty("sinkingFund").GetProperty("schedule").GetArrayLength().Should().Be(0,
+            "an authoritative schedule the row has empty stays empty");
+        folded.GetProperty("sinkingFund").GetProperty("sinkFrequency").GetString().Should().Be("Annual",
+            "a field of the same module the row cannot carry is still filled");
+        folded.GetProperty("esg").GetProperty("esgRating").GetString().Should().Be("AA");
+
+        // Without the authority list the fold is unchanged: it fills whatever is empty.
+        var unscoped = SecurityTermsEnvelope.FoldRetainedEconomicTerms(rebuilt.RootElement, retained.RootElement);
+        unscoped.GetProperty("covenants").GetProperty("covenants").GetArrayLength().Should().Be(1);
+        unscoped.GetProperty("sinkingFund").GetProperty("schedule").GetArrayLength().Should().Be(1);
+    }
+
+    [Fact]
+    public void FlatAuthoritativeFields_AreTheStageThreeHomes_NotTheFieldsHistoricalDocumentsHold()
+    {
+        var bond = SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.FlatAuthoritativeFields("Bond");
+        bond.Should().Contain([
+            ("taxonomy", "subclass"), ("notional", "denomination"), ("couponSchedule", "steps"),
+            ("sinkingFund", "schedule"), ("inflationLinked", "inflationIndex")]);
+        bond.Should().NotContain([("issuer", "issuerName"), ("call", "firstCallDate"), ("call", "isCallable")],
+            "fields the economic document carried before stage 3 keep the fold: historical documents hold values there the flat decode does not reproduce");
+        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.FlatAuthoritativeFields("Swap")
+            .Should().BeEquivalentTo([("legStructure", "legs")]);
+        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.FlatAuthoritativeFields("Cfd")
+            .Should().NotContain(pair => pair.Module == "tradingParameters",
+                "a scaled mapping is not an exact carrier");
+        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.FlatAuthoritativeFields("NotAClass").Should().BeEmpty();
+    }
+
+    [Theory]
     [InlineData("2032-12-15")]
     [InlineData(null)]
     public void ReplayWithoutLegacyTerms_RecoversDeclaredExerciseLists_RegardlessOfScalarCallDate(string? callDate)

@@ -522,7 +522,9 @@ and S2-B4 (codec single-purpose) land. Planned increments:
     OtherSecurity, two covenant codes on each loan class). The identity gate's tolerance widens
     from "a later module key the rebuild emits null" to "a later module key the image
     predates", because a bond always restates its subclass. Swap legs are the only codec-only
-    rules left.
+    rules left. Review follow-up: the retained-document fold no longer refills a value the
+    flat row carries exactly (`FlatAuthoritativeFields`, the S3-E homes), so an amendment that
+    clears covenants or a principal schedule is not undone by a row's retained document.
   - **S3-E8 — swap legs (implemented 2026-11-11).** A `legStructure` module carries a swap's
     legs, each written by the flat family's own leg writer, including the leg's
     `scheduleConventions` block. The ten leg rules moved to the definition surface, which

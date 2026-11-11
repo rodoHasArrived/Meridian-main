@@ -1153,6 +1153,38 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             : [];
 
     /// <summary>
+    /// The module fields for which the flat row of <paramref name="assetClass"/> is the authority:
+    /// when a row rebuilt from flat terms has such a field empty, the flat revision cleared it, so
+    /// a retained economic document must not put the old value back
+    /// (<see cref="SecurityTermsEnvelope.FoldRetainedEconomicTerms"/>).
+    /// <para>
+    /// These are the homes ADR-027 stage 3 (S3-E) gave to values the economic document had never
+    /// carried: every field a flattening copies, one field to one flat key with no label, flag or
+    /// scale transform, from a module added after the identity gate
+    /// (<see cref="ModulesAddedAfterIdentityGate"/>), and the fields of older modules the stage
+    /// first fed (a bond's principal schedule and inflation index terms, the loan covenants). A
+    /// document carries one of them only because the current serializer wrote it from the same
+    /// record the flat row is written from, so the row and the module always agree. Fields the
+    /// economic document carried before the stage are deliberately not listed: historical and
+    /// hand-shaped documents hold values there that the flat decode does not reproduce, and the
+    /// fold goes on restoring those.
+    /// </para>
+    /// </summary>
+    public static IReadOnlyList<(string Module, string Field)> FlatAuthoritativeFields(string? assetClass)
+        => TryGetClassFlattening(assetClass, out var mappings)
+            ? mappings
+                .Where(static mapping => mapping.Sources.Length == 1
+                                         && mapping.EqualsLabel is null
+                                         && mapping.LabelFromFlags is null
+                                         && mapping.Scale is null
+                                         && (mapping.FlatAuthoritative
+                                             || ModulesAddedAfterIdentityGate.Contains(mapping.Sources[0].Module, StringComparer.Ordinal)))
+                .Select(static mapping => mapping.Sources[0])
+                .Distinct()
+                .ToArray()
+            : [];
+
+    /// <summary>
     /// The declared flat keys for <paramref name="assetClass"/> that no economic-terms module
     /// carries, so a projection rebuilt through this route cannot recover them. Required keys in
     /// this list are why the rebuilt record still carries the <see cref="FlattenedFromMarkerProperty"/>.
@@ -1202,9 +1234,17 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
         (string Module, string Field, string Label)[]? LabelFromFlags = null,
         decimal? Scale = null,
         (string From, string To)[]? ElementMembers = null,
-        string? VersionedElementMember = null);
+        string? VersionedElementMember = null,
+        bool FlatAuthoritative = false);
 
     private static FlatTermMapping Map(string flatKey, params (string Module, string Field)[] sources) => new(flatKey, sources);
+
+    /// <summary>
+    /// A mapping to a module that predates ADR-027 stage 3 but that the stage first fed for this
+    /// class, so the flat row is the authority for it (<see cref="FlatAuthoritativeFields"/>).
+    /// </summary>
+    private static FlatTermMapping Home(string flatKey, (string Module, string Field) source)
+        => new(flatKey, [source], FlatAuthoritative: true);
 
     /// <summary>
     /// The inverse of <see cref="EqualsLabel"/>: the first flag that is <c>true</c> writes its label
@@ -1268,10 +1308,14 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             Map("subclass", ("taxonomy", "subclass")),
             Map("par", ("notional", "denomination")),
             Map("stepSchedule", ("couponSchedule", "steps")),
-            Map("inflationIndex", ("inflationLinked", "inflationIndex")),
-            Map("inflationBaseIndexValue", ("inflationLinked", "baseIndexValue")),
-            Map("inflationIndexRatio", ("inflationLinked", "currentFactor")),
-            new FlatTermMapping("principalSchedule", [("sinkingFund", "schedule")], ElementMembers: [("amount", "amount"), ("sinkDate", "paymentDate")])
+            Home("inflationIndex", ("inflationLinked", "inflationIndex")),
+            Home("inflationBaseIndexValue", ("inflationLinked", "baseIndexValue")),
+            Home("inflationIndexRatio", ("inflationLinked", "currentFactor")),
+            new FlatTermMapping(
+                "principalSchedule",
+                [("sinkingFund", "schedule")],
+                ElementMembers: [("amount", "amount"), ("sinkDate", "paymentDate")],
+                FlatAuthoritative: true)
         ]),
         ("Deposit",
         [
@@ -1344,7 +1388,7 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             // ADR-027 stage 3 (S3-E8): the legs, as the flat family writes them.
             new FlatTermMapping("legs", [("legStructure", "legs")], VersionedElementMember: SecurityVersionedTerms.ScheduleConventionsKey)
         ]),
-        ("DirectLoan", [Map("borrower", ("issuer", "issuerName")), Map("maturity", MaturityDate), Map("covenants", ("covenants", "covenants"))]),
+        ("DirectLoan", [Map("borrower", ("issuer", "issuerName")), Map("maturity", MaturityDate), Home("covenants", ("covenants", "covenants"))]),
         ("StructuredCredit",
         [
             Map("tranche", ("structuredProduct", "trancheClass")),
@@ -1414,7 +1458,7 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             Map("unfundedAmount", ("notional", "unfundedAmount")),
             Map("feeRate", ("creditProtection", "feeRate")),
             Map("collateral", ("creditProtection", "collateral")),
-            Map("covenants", ("covenants", "covenants"))
+            Home("covenants", ("covenants", "covenants"))
         ]),
         ("Warrant",
         [

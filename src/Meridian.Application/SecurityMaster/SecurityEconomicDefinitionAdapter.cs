@@ -54,11 +54,17 @@ internal static class SecurityEconomicDefinitionAdapter
         // the flat family cannot express (call and put schedules a row does not declare, redemption,
         // issuer identity, fund and structured-product detail) are written into the next economic
         // event instead of being erased by it. Values the flat revision does express always win, so a
-        // declared, non-empty call or put list replaces the retained one.
+        // declared, non-empty call or put list replaces the retained one. And a field the class's
+        // flat row carries exactly is never filled from the retained document: empty there means
+        // the flat revision cleared it (covenants removed, a principal schedule dropped), not that
+        // the row could not hold it.
         var economicTerms = BuildEconomicTermsJson(definition);
         if (SecurityTermsEnvelope.TryGetRetainedEconomicTerms(projection.AssetSpecificTerms, out var retained))
         {
-            economicTerms = SecurityTermsEnvelope.FoldRetainedEconomicTerms(economicTerms, retained);
+            economicTerms = SecurityTermsEnvelope.FoldRetainedEconomicTerms(
+                economicTerms,
+                retained,
+                SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.FlatAuthoritativeFields(projection.AssetClass));
         }
 
         return new SecurityEconomicDefinitionRecord(
