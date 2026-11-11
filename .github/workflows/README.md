@@ -47,6 +47,13 @@ matched historical evidence. `dependency-locks.yml` produces isolated, native OS
 candidates and proves locked restore before any profile can be adopted. Neither workflow pushes
 changes or modifies repository rules.
 
+`design-system-package.yml` checks the vendored design-system package when its paths change:
+generated-file freshness, export integrity, the dashboard asset projection and Chromium
+regressions in `package-integrity`, and the whole-release validator plus retained Python suite
+in `release-governance`, which reports its open findings as a failure. Neither job is a
+required check and the canonical lanes are unchanged. Its workflow changes require **human
+governance review**. See [ownership](../../docs/engineering/ci-cd-optimization.md#design-system-package).
+
 Documentation Automation and canonical `verify-docs` share the maintained generation catalog and
 comprehensive freshness checker. Generated conflict recovery has a separate explicit policy;
 protected prose and reviewed hashes retain their own merge and review rules. See the

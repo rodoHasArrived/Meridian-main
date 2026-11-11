@@ -1,6 +1,6 @@
 # TODO / FIXME / HACK / NOTE Scan
 
-Total items: **239**
+Total items: **238**
 
 | File | Line | Tag | Linked Issue | Text |
 | --- | ---: | --- | :---: | --- |
@@ -15,7 +15,6 @@ Total items: **239**
 | `Meridian Design System/components/decision/DecisionSnapshot.d.ts` | 78 | `NOTE` | ❌ | note: string; |
 | `Meridian Design System/templates/position-detail/positions-data.js` | 223 | `NOTE` | ❌ | note: "Contributions are measured against the General Account portfolio of $2.146B market value, as of Jun 30, 2026, risk run RA-2026-06-30.", |
 | `Meridian Design System/templates/position-detail/positions-data.js` | 467 | `NOTE` | ❌ | note: "Contributions are measured against the VUL sub-account of $412.0M market value. The instrument column is identical to the general-account holding — only the contribution column differs.", |
-| `Meridian Design System/tests/test_design_system_governance.py` | 28 | `NOTE` | ❌ | # NOTE: this exercises the real, current tree (ROOT), not a synthetic fixture. If this |
 | `benchmarks/run-bottleneck-benchmarks.sh` | 111 | `NOTE` | ❌ | # Note: --filter is intentionally not added here; each phase below supplies its own |
 | `config/appsettings.sample.json` | 439 | `NOTE` | ❌ | // NOTE: This key is a duplicate of the one near the top of this file for documentation purposes. |
 | `config/appsettings.sample.json` | 448 | `NOTE` | ❌ | // NOTE: Credentials are resolved from environment variables - do NOT add them here. |

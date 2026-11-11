@@ -1,0 +1,209 @@
+name: Design System Package
+
+# Hosted checks for the vendored Meridian Design System package and its projection into the
+# browser workstation. Path-filtered and not a required check: it does not change the identity
+# or inputs of Meridian CI `quality-gate` or `integration-gate`.
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "Meridian Design System/**"
+      - "src/Meridian.Ui/dashboard/scripts/sync-design-system-assets*"
+      - ".github/workflows/design-system-package.yml"
+  push:
+    branches: [main]
+    paths:
+      - "Meridian Design System/**"
+      - "src/Meridian.Ui/dashboard/scripts/sync-design-system-assets*"
+      - ".github/workflows/design-system-package.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: design-system-package-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}-${{ github.event_name == 'workflow_dispatch' && github.run_id || 'latest' }}
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
+
+env:
+  PYTHONUNBUFFERED: "1"
+  PACKAGE_DIR: "Meridian Design System"
+  PLAYWRIGHT_INSTALL_ATTEMPTS: 3
+  PLAYWRIGHT_INSTALL_TIMEOUT_SECONDS: 600
+
+jobs:
+  # Generated-file freshness, export integrity, the asset projection into the dashboard and the
+  # Chromium regressions. Everything here is expected to pass.
+  package-integrity:
+    name: package-integrity
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: Meridian Design System/package-lock.json
+
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: Install package dependencies
+        working-directory: ${{ env.PACKAGE_DIR }}
+        run: npm ci
+
+      - name: Generated bundle and manifest match their sources
+        working-directory: ${{ env.PACKAGE_DIR }}
+        run: npm run build:check
+
+      - name: Release export is reproducible and complete
+        working-directory: ${{ env.PACKAGE_DIR }}
+        run: npm run release:check
+
+      - name: Release integrity tests
+        working-directory: ${{ env.PACKAGE_DIR }}
+        run: npm run test:release
+
+      - name: Dashboard asset projection matches the package
+        run: |
+          node src/Meridian.Ui/dashboard/scripts/sync-design-system-assets.mjs --check
+          node --test src/Meridian.Ui/dashboard/scripts/sync-design-system-assets.test.mjs
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-design-system-playwright-${{ hashFiles('Meridian Design System/package-lock.json') }}
+
+      # The Chromium build is fixed by the Playwright version in the package lockfile. No apt
+      # step: the hosted image already carries the shared libraries a headless Chromium needs,
+      # and an apt mirror outage must not fail a check that never reached a test.
+      - name: Install the lockfile-pinned Chromium
+        working-directory: ${{ env.PACKAGE_DIR }}
+        run: |
+          set -euo pipefail
+          attempt=1
+          while true; do
+            echo "[INFO] Installing Playwright Chromium (attempt ${attempt}/${PLAYWRIGHT_INSTALL_ATTEMPTS})."
+            if timeout "$PLAYWRIGHT_INSTALL_TIMEOUT_SECONDS" npx playwright install chromium; then
+              break
+            fi
+            if [ "$attempt" -ge "$PLAYWRIGHT_INSTALL_ATTEMPTS" ]; then
+              echo "::error::Playwright Chromium install failed after ${attempt} attempts; no browser test ran."
+              exit 1
+            fi
+            attempt=$((attempt + 1))
+            sleep 10
+          done
+          chromium_path="$(node -e "import('playwright').then((p) => console.log(p.chromium.executablePath()))")"
+          test -x "$chromium_path"
+          {
+            echo "MERIDIAN_CHROMIUM_PATH=$chromium_path"
+            echo "CHROMIUM_EXECUTABLE_PATH=$chromium_path"
+          } >> "$GITHUB_ENV"
+
+      - name: Local-patch and component regressions
+        working-directory: ${{ env.PACKAGE_DIR }}
+        run: npm run test:patches
+
+      - name: Agency regressions
+        working-directory: ${{ env.PACKAGE_DIR }}
+        run: npm run test:agency
+
+      - name: Standalone reference states and accessibility scan
+        working-directory: ${{ env.PACKAGE_DIR }}
+        env:
+          MERIDIAN_PREVIEW_URL: http://127.0.0.1:8766
+          MERIDIAN_QA_OUTPUT: ${{ runner.temp }}/design-system-qa
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8766 --bind 127.0.0.1 > "$RUNNER_TEMP/design-system-preview.log" 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for _ in $(seq 1 30); do
+            if curl --silent --fail --output /dev/null "$MERIDIAN_PREVIEW_URL/preview/release-readiness.html"; then
+              break
+            fi
+            sleep 1
+          done
+          npm run test:browser
+
+      - name: Upload browser evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: design-system-package-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/design-system-qa
+            ${{ runner.temp }}/design-system-preview.log
+          if-no-files-found: ignore
+          retention-days: 14
+          compression-level: 1
+
+  # The whole-release validator and the retained Python suite. Both have open, tracked findings
+  # (issues #3505 and #3506), so this job is red until they are closed. It reports the true
+  # result on purpose: no continue-on-error, no baseline, no skipped test. It is not a required
+  # check, so it informs a merge without blocking it.
+  release-governance:
+    name: release-governance (open findings reported)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: Whole-release validator (seven gates)
+        id: validator
+        working-directory: ${{ env.PACKAGE_DIR }}
+        run: |
+          set -uo pipefail
+          python3 scripts/validate_release.py 2>&1 | tee "$RUNNER_TEMP/validate-release.log"
+          status=${PIPESTATUS[0]}
+          {
+            echo "### Whole-release validator"
+            echo '```text'
+            grep -E '^(PASS|FAIL)  scripts/|failures · ' "$RUNNER_TEMP/validate-release.log" || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
+
+      - name: Retained Python suite
+        id: suite
+        if: ${{ always() }}
+        working-directory: ${{ env.PACKAGE_DIR }}
+        run: |
+          set -uo pipefail
+          python3 -m unittest discover -s tests -p "test_*.py" 2>&1 | tee "$RUNNER_TEMP/python-suite.log"
+          status=${PIPESTATUS[0]}
+          {
+            echo "### Retained Python suite"
+            echo '```text'
+            grep -E '^(ERROR|FAIL): |^Ran |^OK|^FAILED' "$RUNNER_TEMP/python-suite.log" || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
+
+      - name: Upload gate logs
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: design-system-governance-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/validate-release.log
+            ${{ runner.temp }}/python-suite.log
+          if-no-files-found: ignore
+          retention-days: 14
+          compression-level: 1
