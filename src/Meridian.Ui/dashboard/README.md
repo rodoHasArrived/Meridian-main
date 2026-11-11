@@ -2032,6 +2032,7 @@ surface). Light, auto-dark, manual-dark, and forced-light scopes take their valu
 `tokens/` files. Primary hover/pressed states remain structural; the Paper environment uses Field
 slate, and chart observations/comparisons use graphite/slate/neutral roles. All ten licensed IBM
 Plex font faces and their OFL notices are bundled from `src/assets/fonts/`; no font CDN is used.
+The Vite production build emits both OFL notices under `assets/fonts/` in the published workstation.
 The startup shell and SVG chart labels use the same faces. Operator-selected density and the
 existing control/table sizes remain unchanged.
 Live shell chrome and Accounting adapters remain dashboard-native TypeScript: `WorkstationTopbar`,
