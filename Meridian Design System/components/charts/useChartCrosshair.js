@@ -59,7 +59,7 @@ export function useSyncedCursor(count, opts) {
     if (i != null) ctx.setIndex(i);
   };
   return {
-    index: ctx.index !== null && ctx.index >= 0 && ctx.index < count ? ctx.index : null,
+    index: Number.isInteger(count) && count > 0 && Number.isInteger(ctx.index) && ctx.index >= 0 && ctx.index < count ? ctx.index : null,
     setIndex: ctx.setIndex,
     clear: () => ctx.setIndex(null),
     bind: { onMouseMove: onMove, onMouseLeave: () => ctx.setIndex(null), style: { position: "relative" } },

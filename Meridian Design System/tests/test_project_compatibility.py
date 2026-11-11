@@ -37,10 +37,16 @@ class CompatibilityTests(unittest.TestCase):
         self.write("api/template-eligibility.json", {"templates": {}})
         self.inventory = {
             "schemaVersion": 1, "namespace": "SyntheticDS",
+            "counts": {"exports": 1, "modules": 1, "cards": 0, "publishedTemplates": 0,
+                       "templateDirectories": 0, "templateEntries": 0, "browserSurfaces": 0},
             "basis": {p: COMPAT.digest(self.root / p) for p in
                       ("_ds_manifest.json", "api/families.json", "api/template-eligibility.json")},
             "exports": [{"name": "Button", "source": "components/core/Button.jsx",
                          "sourceHash": COMPAT.digest(source), "family": "primitives", "maturity": "stable", "dependencies": [],
+                         "behaviorCoverage": {"reviewedSourceHash": COMPAT.digest(source), "ownsInteraction": True,
+                                              "coverageStatus": "complete", "remainingApplicableStates": [],
+                                              "applicableStates": ["enabled", "disabled"], "testedStates": ["enabled", "disabled"],
+                                              "cases": [{"path": "tests/synthetic-regression.mjs", "name": "callback and disabled guard", "status": "passed"}]},
                          "review": {"kind": "component", "decision": "retain-existing", "rationale": "Synthetic source contract reviewed",
                                     "applicableStates": ["enabled", "disabled"], "reviewedSourceHash": COMPAT.digest(source),
                                     "issues": [], "evidence": [{"kind": "source-review", "reference": "components/core/Button.jsx", "status": "reviewed"}]}}],
@@ -48,9 +54,20 @@ class CompatibilityTests(unittest.TestCase):
             "browserEvidence": {"source": {"manifestSha256": COMPAT.digest(self.root / "_ds_manifest.json"),
                                            "bundleSha256": COMPAT.digest(self.root / "_ds_bundle.js"),
                                            "runtimeSourceHashes": {"components/core/Button.jsx": COMPAT.digest(source)},
-                                           "runtimeSourceHashesStable": True, "changedRuntimeSources": []},
+                                           "runtimeSourceHashesStable": True, "changedRuntimeSources": [],
+                                           "run": {"kind": "all", "matrix": "full", "only": None, "limit": None}},
                                 "cards": {}, "templates": {}, "exports": {"Button": {"cases": [{"name": "value exists", "status": "passed"}]}},
-                                "harnesses": harnesses, "themes": []},
+                                "harnesses": harnesses, "themes": [],
+                                "integrity": {"cases": [{"name": name, "status": "passed"} for name in
+                                                         ("media query", "physical size", "overflow negative", "source stability")]}},
+            "sourceEvidence": {"status": "passed", "sourceStable": True, "changedSources": [],
+                               "sourceHashes": {"components/core/Button.jsx": COMPAT.digest(source),
+                                                **{p: COMPAT.digest(self.root / p) for p in harnesses}},
+                               "suites": [{"path": f"tests/{name}", "status": "passed", "exitCode": 0}
+                                          for name in ("public-contract-types.mjs", "token-defaults.test.mjs")]},
+        }
+        self.inventory["sourceEvidence"]["sourceHashes"] = {
+            path.relative_to(self.root).as_posix(): COMPAT.digest(path) for path in COMPAT.source_evidence_paths(self.root)
         }
 
     def write(self, path, value):
@@ -141,6 +158,64 @@ class CompatibilityTests(unittest.TestCase):
         value = copy.deepcopy(self.inventory)
         value["browserEvidence"]["source"]["runtimeSourceHashesStable"] = False
         self.assertIn("Browser sources changed during execution", self.errors(value))
+
+    def test_missing_or_failed_source_contracts_cannot_be_certified(self):
+        value = copy.deepcopy(self.inventory)
+        value["sourceEvidence"] = None
+        self.assertIn("Missing executed source-contract evidence", self.errors(value))
+        value = copy.deepcopy(self.inventory)
+        value["sourceEvidence"]["suites"][0]["exitCode"] = 1
+        self.assertIn("Failed source-contract suite", self.errors(value))
+
+    def test_the_report_cannot_claim_an_invented_census(self):
+        value = copy.deepcopy(self.inventory)
+        value["counts"]["exports"] = 999
+        self.assertIn("Compatibility census differs from source contracts", self.errors(value))
+
+    def test_each_interactive_export_needs_actual_state_cases(self):
+        value = copy.deepcopy(self.inventory)
+        coverage = value["exports"][0]["behaviorCoverage"]
+        coverage["cases"][0]["path"] = "tests/public-contract-types.mjs"
+        self.assertIn("Type compilation is not interaction proof: Button", self.errors(value))
+        coverage["remainingApplicableStates"] = ["disabled"]
+        coverage["testedStates"] = ["enabled"]
+        self.assertIn("Incomplete applicable-state coverage: Button", self.errors(value))
+        self.assertIn("Untested declared export states: Button", self.errors(value))
+
+    def test_filtered_runs_and_failed_zoom_controls_do_not_certify_the_library(self):
+        value = copy.deepcopy(self.inventory)
+        value["browserEvidence"]["source"]["run"]["only"] = "Button"
+        self.assertIn("Filtered browser runs cannot certify full compatibility", self.errors(value))
+        value = copy.deepcopy(self.inventory)
+        value["browserEvidence"]["integrity"]["cases"][0]["status"] = "failed"
+        self.assertIn("Missing or failed browser integrity/zoom controls", self.errors(value))
+
+    def test_dashboard_proof_rejects_partial_skipped_or_stale_results(self):
+        source = self.repo / "src/Meridian.Ui/dashboard/src/screens"
+        source.mkdir(parents=True)
+        code, test = source / "Screen.tsx", source / "Screen.test.tsx"
+        code.write_text("export const Screen = () => null;")
+        test.write_text("// Synthetic executed test fixture")
+        identity = test.relative_to(self.repo).as_posix()
+        proof = {"counts": {"files": 1, "passed": 1, "failed": 0, "skipped": 0},
+                 "sourceHashes": {p.relative_to(self.repo).as_posix(): COMPAT.digest(p) for p in (code, test)},
+                 "results": [{"path": identity, "sha256": COMPAT.digest(test), "status": "passed", "passed": 1, "failed": 0, "skipped": 0}],
+                 "maintainedBrowser": {"result": "PASS", "accessibilityViolations": 0},
+                 "primaryAdoptionBrowser": {"summary": {"cases": 24, "axeScans": 24, "failed": 0, "axeViolations": 0, "exceptions": 0, "networkFailures": 0},
+                                            "cases": [{"status": "passed"}]}}
+        self.assertEqual([], COMPAT.validate_dashboard_evidence(proof, self.repo))
+        partial = copy.deepcopy(proof)
+        partial["results"] = []
+        self.assertIn("Full dashboard test-file coverage differs", COMPAT.validate_dashboard_evidence(partial, self.repo))
+        proof["results"][0]["skipped"] = 1
+        self.assertIn(f"Incomplete dashboard test evidence: {identity}", COMPAT.validate_dashboard_evidence(proof, self.repo))
+        code.write_text("export const Screen = () => 'changed';")
+        self.assertTrue(any("Stale dashboard source" in error for error in COMPAT.validate_dashboard_evidence(proof, self.repo)))
+
+    def test_declaration_contracts_cannot_replace_interactive_state_proof(self):
+        value = copy.deepcopy(self.inventory)
+        value["exports"][0]["behaviorCoverage"].update(coverageStatus="declaration-contract-only", cases=[])
+        self.assertIn("Declaration-only proof cannot cover owned behavior: Button", self.errors(value))
 
 
 if __name__ == "__main__":

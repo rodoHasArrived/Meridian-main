@@ -13,11 +13,14 @@
   body { margin: 0; padding: 16px; background: var(--bg); }
   .lbl { font-family: var(--font-body); font-size: 10px; font-weight: 600; font-variant: all-small-caps;
     letter-spacing: .03em; color: var(--text-muted); margin: 0 0 8px; }
-  .enc { display: grid; grid-template-columns: auto 1fr; gap: 6px 18px; align-items: baseline;
+  .enc { display: grid; grid-template-columns: auto minmax(0,1fr); gap: 6px 18px; align-items: baseline;
     font-family: var(--font-body); font-size: 11px; color: var(--text-secondary); }
   .enc .k { color: var(--text-muted); font-variant: all-small-caps; letter-spacing: .03em; }
-  .col { display: flex; flex-direction: column; gap: 8px; }
-  .grid { display: grid; grid-template-columns: 240px 1fr; gap: 20px; align-items: start; }
+  .col { min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+  .grid { display: grid; grid-template-columns: minmax(0,240px) minmax(0,1fr); gap: 20px; align-items: start; }
+</style>
+<style>
+@media(max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
 </style>
 </head>
 <body class="meridian">

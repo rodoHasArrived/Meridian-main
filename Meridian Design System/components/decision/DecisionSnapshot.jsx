@@ -13,9 +13,10 @@ import React from "react";
 
 const SECTIONS = ["object", "context", "time", "evidence", "calculations", "materiality", "guards", "consequences", "decision"];
 
-function deepFreeze(value) {
-  if (value == null || typeof value !== "object" || Object.isFrozen(value)) return value;
-  Object.getOwnPropertyNames(value).forEach((k) => deepFreeze(value[k]));
+function deepFreeze(value, visited = new WeakSet()) {
+  if (value == null || typeof value !== "object" || React.isValidElement(value) || visited.has(value)) return value;
+  visited.add(value);
+  Object.getOwnPropertyNames(value).forEach((k) => deepFreeze(value[k], visited));
   return Object.freeze(value);
 }
 

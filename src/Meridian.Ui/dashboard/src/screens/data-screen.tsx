@@ -1533,7 +1533,7 @@ function ProviderSetupInstitutionSearch({
         </div>
       ) : null}
       {state.selectedInstitutionLabel ? (
-        <div className="mt-3 rounded-md border border-success/30 bg-success/10 px-3 py-2 text-xs leading-5 text-success">
+        <div className="mt-3 rounded-md border border-success/30 bg-success/10 px-3 py-2 text-xs leading-5 text-[var(--severity-ready-fg)]">
           {state.selectedInstitutionLabel} is selected for the next bank connection step.
         </div>
       ) : null}
@@ -1569,7 +1569,7 @@ function ProviderSetupInstitutionSearch({
         ) : null}
         {state.linkedEvidence ? (
           <div
-            className="mt-3 rounded-md border border-success/30 bg-success/10 px-3 py-3 text-xs leading-5 text-success"
+            className="mt-3 rounded-md border border-success/30 bg-success/10 px-3 py-3 text-xs leading-5 text-[var(--severity-ready-fg)]"
             role="status"
             aria-label="Plaid linked account evidence"
           >
@@ -1597,7 +1597,7 @@ function ProviderSetupInstitutionSearch({
           </div>
         ) : null}
         {state.sandboxGuide ? (
-          <div className="mt-3 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-xs leading-5 text-warning">
+          <div className="mt-3 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-xs leading-5 text-[var(--severity-action-fg)]">
             <div className="font-medium">{state.sandboxGuide.title}</div>
             <p className="mt-1">{state.sandboxGuide.detail}</p>
             <dl className="mt-2 grid gap-1 sm:grid-cols-2">
@@ -1613,7 +1613,7 @@ function ProviderSetupInstitutionSearch({
           </div>
         ) : null}
         {state.linkTokenPhase === "error" && state.linkTokenStatusLabel ? (
-          <p className="mt-3 rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-xs leading-5 text-danger">
+          <p className="mt-3 rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-xs leading-5 text-[var(--severity-blocked-fg)]">
             {state.linkTokenStatusLabel}
           </p>
         ) : null}

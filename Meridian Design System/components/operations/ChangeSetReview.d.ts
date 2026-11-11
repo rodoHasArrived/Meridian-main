@@ -6,6 +6,7 @@ export type ChangeSetStatus="clean"|"draft"|"validating"|"invalid"|"validation-f
 export interface ChangeSetApi<T=Record<string,any>>{id?:string;version?:number|string;original:T;draft:T;setDraft(value:T):void;setField(key:string,value:any):void;discard():void;changes:ChangeItem[];issues:ChangeIssue[];errors:ChangeIssue[];reasons:Record<string,string>;setReason(key:string,value:string):void;status:ChangeSetStatus;dirty:boolean;}
 export declare function ChangeSetProvider<T=Record<string,any>>(props:{original:T;value?:T;onChange?:(value:T)=>void;version?:number|string;id?:string;fields?:Record<string,ChangeFieldMeta>;validate?:(draft:T,changes:ChangeItem[])=>ChangeIssue[];children?:React.ReactNode}):React.JSX.Element;
 export declare function useChangeSet<T=Record<string,any>>():ChangeSetApi<T>;
+export declare namespace ChangeSetProvider { const use: typeof useChangeSet; }
 export declare const ChangeSetHooks:{useChangeSet<T=Record<string,any>>():ChangeSetApi<T>};
 export declare function ChangeSetDiff(props:{changes:ChangeItem[];labels?:Record<string,string>;fields?:Record<string,ChangeFieldMeta>;issues?:ChangeIssue[];reasons?:Record<string,string>;onReason?:(key:string,value:string)=>void;requireReason?:boolean;grouped?:boolean}):React.JSX.Element;
 export declare function ChangeReviewBar(props:{changes?:ChangeItem[];warnings?:React.ReactNode[];errors?:ChangeIssue[];status?:ChangeSetStatus;onDiscard?:()=>void;onReviewImpact?:()=>void;onSave?:()=>void;onSubmit?:()=>void;saveLabel?:string;submitLabel?:string;disabled?:boolean}):React.JSX.Element;

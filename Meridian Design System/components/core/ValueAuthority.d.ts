@@ -3,7 +3,7 @@ export type AuthorityStage="source"|"calculated"|"override"|"approved"|"posted"|
 export type AuthorityCondition="confirmed"|"provisional"|"estimated"|"stale"|"overridden"|"missing"|"pending"|"na"|"exception"|"reconciled"|"restricted";
 export interface AuthorityCandidate<T=number>{stage:AuthorityStage;value:T;version?:string|number;effectiveAt?:string;sourceRef?:string;actorId?:string;condition?:AuthorityCondition|string;}
 export interface ValueAuthorityValue<T=number>{candidates:AuthorityCandidate<T>[];authoritativeStage?:AuthorityStage;rationale?:string;policyRef?:string;}
-export interface ResolvedValueAuthority<T=number> extends ValueAuthorityValue<T>{authoritativeStage:AuthorityStage;authoritative:AuthorityCandidate<T>|null;}
+export interface ResolvedValueAuthority<T=number> extends Omit<ValueAuthorityValue<T>,"authoritativeStage">{authoritativeStage:AuthorityStage|null;authoritative:AuthorityCandidate<T>|null;}
 export declare function resolveAuthority<T=number>(authority?:ValueAuthorityValue<T>|null):ResolvedValueAuthority<T>|null;
 export interface AuthorityChipProps extends React.HTMLAttributes<HTMLSpanElement>{stage:AuthorityStage;authoritative?:boolean;version?:string|number;}
 export declare function AuthorityChip(props:AuthorityChipProps):React.JSX.Element;

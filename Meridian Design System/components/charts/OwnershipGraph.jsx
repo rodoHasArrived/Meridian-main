@@ -11,6 +11,7 @@ function inject() {
   injected = true;
   const css = `
 .mds-own{position:relative;padding:18px 12px;overflow:auto;display:flex;flex-direction:column;align-items:flex-start;}
+.mds-own__relationships{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
 .mds-own__svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;}
 .mds-own__edge{fill:none;stroke:var(--border-strong,#AAA49A);stroke-width:1.25;}
 .mds-own__pct{font-family:var(--font-data,"IBM Plex Mono",monospace);font-size:9px;font-weight:700;
@@ -97,6 +98,7 @@ export function OwnershipGraph({
 
   const { N, E } = norm(nodes, edges);
   const rows = layer(N, E);
+  const labelById = new Map(N.map(node => [node.id, node.label]));
 
   useLayoutEffect(() => {
     const wrap = wrapRef.current;
@@ -139,6 +141,7 @@ export function OwnershipGraph({
       <svg className="mds-own__svg" aria-hidden="true">
         {paths.map((p) => (
           <g key={p.id}>
+            {p.title ? <title>{p.title}</title> : null}
             <path className="mds-own__edge" d={p.d} />
             {p.label ? (
               <g>
@@ -149,6 +152,9 @@ export function OwnershipGraph({
           </g>
         ))}
       </svg>
+      <ul className="mds-own__relationships" aria-label="Ownership relationships">
+        {E.map(edge => <li key={edge.id}>{labelById.get(edge.from) ?? edge.from} → {labelById.get(edge.to) ?? edge.to}{edge.relationship ? ` · ${edge.relationship}` : ""}{edge.percent != null ? ` · ${edge.percent}% ownership` : " · Ownership percentage unavailable"}</li>)}
+      </ul>
       {rows.map((row, i) => (
         <div className="mds-own__row" key={i}>
           {row.map((n) => {
@@ -157,7 +163,7 @@ export function OwnershipGraph({
             return (
               <Tag
                 key={n.id}
-                {...(clickable ? { type: "button", onClick: () => onSelectNode(n.id, n) } : {})}
+                {...(clickable ? { type: "button", "aria-pressed": n.id === selectedId, onClick: () => onSelectNode(n.id, n) } : {})}
                 ref={(el) => { nodeRefs.current[n.id] = el; }}
                 className={`mds-own__node${clickable ? " mds-own__node--click" : ""}${n.id === selectedId ? " mds-own__node--sel" : ""}`}
               >

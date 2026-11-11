@@ -213,8 +213,13 @@ class LegacyGateCompatibilityTest(unittest.TestCase):
             (root / "components/Button.jsx").write_text("const css = `.label { color: var(--text-primary, #FFFFFF); }`;")
             with contextlib.redirect_stdout(io.StringIO()):
                 failures = mod.check_fallbacks(root)
-            self.assertEqual(len(failures), 1, failures)
-            self.assertIn("token resolves to #20252B", failures[0])
+            # A defined alias prevents its fallback rendering; equality with an unused
+            # literal is not CSS contrast evidence. An invalid alias remains a real failure.
+            self.assertEqual(failures, [])
+            (root / "tokens/colors.css").write_text(":root { --text-primary: var(--missing-ink); }")
+            with contextlib.redirect_stdout(io.StringIO()):
+                invalid = mod.check_var_chains(root)
+            self.assertTrue(any("--missing-ink" in failure for failure in invalid), invalid)
 
 
 class TokenContrastTest(unittest.TestCase):
@@ -276,18 +281,17 @@ class ContrastGuardRegressionTest(unittest.TestCase):
         failures = self.quiet(mod.check_brands, self.root)
         self.assertTrue(any("brand broken" in failure and "primary button label" in failure for failure in failures))
 
-    def test_auto_dark_brand_cascade_rejects_a_weaker_os_selector(self):
-        dark = self.root / "tokens/colors-dark.css"
-        content = dark.read_text(encoding="utf-8")
-        content = re.sub(r"(@media\s*\(prefers-color-scheme:\s*dark\)\s*\{\s*)[^{}]+\{", r"\1:root {", content, count=1)
-        dark.write_text(content, encoding="utf-8")
+    def test_auto_dark_brand_cascade_rejects_an_unsafe_winning_label(self):
+        theme = self.root / "tokens/theme.css"
+        with theme.open("a", encoding="utf-8") as out:
+            out.write('\n@media (prefers-color-scheme: dark) { :root[data-brand="indigo"]:not([data-theme="light"]) { --text-on-accent:#FFFFFF; } }\n')
         failures = self.quiet(mod.check_brands, self.root)
         self.assertTrue(any("auto-dark · brand indigo" in failure and "signal-fill label" in failure for failure in failures))
 
     def test_forced_light_preserves_brand_identity_instead_of_default_signal(self):
         dark = self.root / "tokens/colors-dark.css"
         with dark.open("a", encoding="utf-8") as out:
-            out.write('\n:root[data-theme="light"] { --accent:#C56343; --text-on-accent:#0D1217; }\n')
+            out.write('\n:root[data-brand="indigo"][data-theme="light"] { --accent:#C56343; --text-on-accent:#0D1217; }\n')
         failures = self.quiet(mod.check_brands, self.root)
         self.assertTrue(any("forced-light · brand indigo" in failure and "identity is overridden" in failure for failure in failures))
 
@@ -295,6 +299,11 @@ class ContrastGuardRegressionTest(unittest.TestCase):
         target = self.repo / mod.WS_INDEX
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text('''
+:root {
+ --brand-axis: #29323A; --ink-inverse: #F5F3EE; --ws-surface: #F8F7F3;
+ --ws-primary-hover: color-mix(in srgb, var(--brand-axis) 88%, var(--ws-surface));
+ --ws-primary-pressed: color-mix(in srgb, var(--brand-axis) 78%, var(--ws-surface));
+}
 :root[data-theme="light"] {
  --brand-axis: #29323A; --ink-inverse: #F5F3EE; --ws-surface: #F8F7F3;
  --ws-primary-hover: color-mix(in srgb, var(--brand-axis) 88%, var(--ws-surface));
@@ -307,13 +316,16 @@ class ContrastGuardRegressionTest(unittest.TestCase):
  --ws-primary-pressed: color-mix(in srgb, var(--brand-axis) 78%, var(--ws-surface));
 }
 ''', encoding="utf-8")
+        button = self.repo / mod.WS_BUTTON
+        button.parent.mkdir(parents=True, exist_ok=True)
+        button.write_text('const buttonVariantClasses = {default: "mds-btn--primary bg-[var(--brand-axis)] text-[var(--ink-inverse)] hover:bg-[var(--ws-primary-hover)] active:bg-[var(--ws-primary-pressed)]"};', encoding="utf-8")
         self.assertEqual(self.quiet(mod.check_workstation, self.root), [])
         target.write_text(target.read_text().replace("color-mix(in srgb, var(--brand-axis) 88%, var(--ws-surface))", "#F5F3EE", 1), encoding="utf-8")
         failures = self.quiet(mod.check_workstation, self.root)
         self.assertTrue(any("light · workstation" in failure and "hover" in failure for failure in failures))
         button = self.repo / mod.WS_BUTTON
         button.parent.mkdir(parents=True, exist_ok=True)
-        button.write_text('const primary = "mds-btn--primary hover:bg-[var(--ws-accent)]";', encoding="utf-8")
+        button.write_text('const buttonVariantClasses = {default: "mds-btn--primary bg-[var(--brand-axis)] text-[var(--ink-inverse)] hover:bg-[var(--ws-accent)]"};', encoding="utf-8")
         self.assertTrue(any("primary button paints an accent" in failure for failure in self.quiet(mod.check_workstation, self.root)))
 
     def test_defined_token_fallback_need_not_equal_light_color(self):

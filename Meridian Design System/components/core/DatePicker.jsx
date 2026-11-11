@@ -108,6 +108,7 @@ export function DatePicker({
   const maxD = React.useMemo(() => fromISO(max), [max]);
 
   const [open, setOpen] = React.useState(false);
+  React.useEffect(() => { if (disabled) setOpen(false); }, [disabled]);
   const [draft, setDraft] = React.useState(value || "");
   const [cursor, setCursor] = React.useState(() => selected || new Date());
   const [placement, setPlacement] = React.useState("");
@@ -157,7 +158,7 @@ export function DatePicker({
   };
 
   const pick = (d) => {
-    if (isBlocked(d)) return;
+    if (disabled || isBlocked(d)) return;
     onChange?.(toISO(d));
     setDraft(toISO(d));
     close();
@@ -190,7 +191,7 @@ export function DatePicker({
     else if (k === "End") next = addDays(cursor, 6 - ((cursor.getDay() - weekStartsOn + 7) % 7));
     else if (k === "PageUp") next = addMonths(cursor, e.shiftKey ? -12 : -1);
     else if (k === "PageDown") next = addMonths(cursor, e.shiftKey ? 12 : 1);
-    else if (k === "Enter" || k === " ") { e.preventDefault(); pick(cursor); return; }
+    else if (k === "Enter" || k === " ") return; // Native day button commits its own date.
     else if (k === "Escape") { e.preventDefault(); e.stopPropagation(); close(); return; }
     else if (k === "Tab") { close(); return; }
     if (next) { e.preventDefault(); setCursor(next); }
@@ -277,6 +278,7 @@ export function DatePicker({
                             aria-current={sameDay(d, today) ? "date" : undefined}
                             aria-label={longDate(d)}
                             className={`mds-date-day${other ? " mds-date-day--other" : ""}${isSel ? " mds-date-day--selected" : ""}${sameDay(d, today) && !isSel ? " mds-date-day--today" : ""}`}
+                            onFocus={() => { if (!sameDay(d, cursor)) setCursor(d); }}
                             onClick={() => pick(d)}
                           >{d.getDate()}</button>
                         </td>

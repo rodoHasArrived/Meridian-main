@@ -25,7 +25,7 @@ function inject() {
 .mds-ann__mark--has{border-color:var(--purple,#2F648A);color:var(--purple,#2F648A);}
 .mds-ann__mark--stale{border-style:dashed;border-color:var(--cond-stale-fg,#986717);color:var(--cond-stale-fg,#986717);}
 .mds-ann__glyph{font-size:9px;line-height:1;}
-.mds-ann__pop{position:absolute;z-index:7;top:100%;right:0;margin-top:4px;width:320px;box-sizing:border-box;text-align:left;
+.mds-ann__pop{position:fixed;z-index:7;top:0;right:auto;margin-top:0;width:min(320px,calc(100vw - 16px));max-height:calc(100vh - 16px);overflow:auto;box-sizing:border-box;text-align:left;
   background:var(--surface-overlay-base,#FFF);border:1px solid var(--border-strong,#AAA49A);border-radius:var(--radius-overlay,6px);
   box-shadow:0 2px 8px rgba(0,0,0,.16);font:12px var(--font-body);color:var(--text-primary,#20252B);}
 .mds-ann__pop--left{right:auto;left:0;}
@@ -190,10 +190,29 @@ export function AnnotationAnchor({ anchor, block = false, popover = "right", rea
   const [open, setOpen] = React.useState(false);
   const [adding, setAdding] = React.useState(false);
   const root = React.useRef(null);
+  const popup = React.useRef(null);
+  const [placement, setPlacement] = React.useState({left:8,top:8});
   const validAnchor=anchor&&typeof anchor.ref==="string"&&anchor.ref.trim()!=="";
   const mine = validAnchor?layer.notes.filter((n) => n.anchor && n.anchor.ref === anchor.ref):[];
   React.useEffect(()=>{setOpen(false);setAdding(false)},[anchor?.ref,layer.objectId]);
   const stale = mine.some((n) => n.stale);
+  React.useLayoutEffect(() => {
+    if (!open || !validAnchor || !root.current || !popup.current) return;
+    const place = () => {
+      if (!root.current || !popup.current) return;
+      const anchorRect = root.current.getBoundingClientRect(), box = popup.current.getBoundingClientRect();
+      const left = Math.max(8, Math.min(popover === "left" ? anchorRect.left : anchorRect.right - box.width, window.innerWidth - box.width - 8));
+      const below = anchorRect.bottom + 4;
+      const top = Math.max(8, Math.min(below + box.height > window.innerHeight - 8 && anchorRect.top - box.height - 4 >= 8 ? anchorRect.top - box.height - 4 : below, window.innerHeight - box.height - 8));
+      setPlacement(previous => previous.left === left && previous.top === top ? previous : {left,top});
+    };
+    place();
+    const observer = typeof ResizeObserver !== "undefined" ? new ResizeObserver(place) : null;
+    observer?.observe(root.current); observer?.observe(popup.current);
+    window.addEventListener("resize", place);
+    window.addEventListener("scroll", place, true);
+    return () => { observer?.disconnect(); window.removeEventListener("resize", place); window.removeEventListener("scroll", place, true); };
+  }, [open, adding, popover, validAnchor, anchor?.ref, layer.objectId, mine.length]);
   React.useEffect(() => {
     if (!open || !validAnchor) return;
     const off = (e) => { if (root.current && !root.current.contains(e.target)) { setOpen(false); setAdding(false); } };
@@ -210,7 +229,7 @@ export function AnnotationAnchor({ anchor, block = false, popover = "right", rea
         <span className="mds-ann__glyph" aria-hidden="true">¶</span>{mine.length ? mine.length : ""}
       </button>
       {open && (
-        <div className={`mds-ann__pop ${popover === "left" ? "mds-ann__pop--left" : ""}`} role="dialog" aria-label={`Annotations · ${anchor.label || anchor.ref}`} onClick={(e) => e.stopPropagation()}>
+        <div ref={popup} style={{left:placement.left,top:placement.top,right:"auto"}} className={`mds-ann__pop ${popover === "left" ? "mds-ann__pop--left" : ""}`} role="dialog" aria-label={`Annotations · ${anchor.label || anchor.ref}`} onClick={(e) => e.stopPropagation()}>
           <div className="mds-ann__pop-h"><span>{KIND_LABEL[anchor.kind] || anchor.kind}</span><span>{anchor.label || anchor.ref}</span><span>v{layer.current}</span></div>
           {mine.length > 0 && <div className="mds-ann__list">{mine.map((n) => <NoteItem key={n.id} n={n} current={layer.current} onRemove={readOnly ? null : layer.remove} onRepin={readOnly ? null : layer.repin} />)}</div>}
           {!readOnly && (adding
@@ -241,16 +260,16 @@ export function AnnotationPanel({ title = "Annotations", onFocus, emptyText = "N
           {[["all", "All"], ["stale", "Stale"], ["pin", "Pinned"]].map(([k, l]) => <button type="button" key={k} className="mds-annpanel__f" aria-pressed={filter === k} onClick={() => setFilter(k)}>{l}</button>)}
         </div>
       </div>
-      <div className="mds-annpanel__list">
+      <div className="mds-annpanel__list" role="region" aria-label="Object annotations" tabIndex={0}>
         {notes.length === 0 && <div className="mds-annpanel__empty">{layer.notes.length ? "Nothing matches this filter." : emptyText}</div>}
-        {notes.map((n) => (
-          <button type="button" key={n.id} className={`mds-annpanel__item ${n.stale ? "mds-annpanel__item--stale" : ""}`} onClick={() => focus && focus(n)}>
+        {notes.map((n) => {const Item=focus?"button":"div";return (
+          <Item type={focus?"button":undefined} key={n.id} className={`mds-annpanel__item ${n.stale ? "mds-annpanel__item--stale" : ""}`} onClick={focus?() => focus(n):undefined}>
             <span className="mds-annpanel__anchor">{(n.anchor && n.anchor.label) || (n.anchor && n.anchor.ref) || "—"}</span>
             <span className="mds-annpanel__kind">{KIND_LABEL[n.anchor && n.anchor.kind] || ""} · {n.lifecycle === "pin" ? `pinned v${n.version}` : n.stale ? `stale v${n.version}→v${layer.current}` : `v${n.version}`}</span>
             <span className="mds-annpanel__txt">{n.text}</span>
             <span className="mds-annpanel__kind" style={{ gridColumn: "1 / -1" }}>{n.author} · {fmtAt(n.at)}</span>
-          </button>
-        ))}
+          </Item>
+        )})}
       </div>
     </section>
   );

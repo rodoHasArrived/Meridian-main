@@ -9,3 +9,5 @@ Who owns what — the family-office / fund entity structure as a layered top-dow
 ```
 
 Layout is automatic (level = deepest parent + 1, cycle-safe) — don't pre-sort. `onSelectNode` makes nodes clickable; pair with a `KeyValueGrid` or `Drawer` inspector showing the selected entity's accounts and evidence links. For flat parent→child trees with no percentages, prefer `TreeView`.
+
+A visually hidden semantic relationship list states normalized source/target names, relationship types and supplied ownership percentages. Explicit zero remains 0%; missing percentages are unavailable. The list adds no controls or Tab stops. Native assistive-technology announcement checks remain a separate verification task.

@@ -396,8 +396,8 @@ class Component extends DCLogic {
         { key: "priority", label: "Priority", cell: (r) => OptimisticCell
           ? el(OptimisticCell, { rowId: r.id, field: "priority", value: r.priority, hint: "high · normal · low", disabled: r.state === "Complete",
               validator: (v) => /^(high|normal|low)$/i.test(v.trim()) ? true : "high · normal · low",
-              format: (v) => el("span", { style: { fontVariant: "all-small-caps", letterSpacing: ".03em", color: String(v) === "high" ? "var(--brand-signal-dim,#CB6E4E)" : "var(--text-muted)" } }, String(v)) })
-          : el("span", { style: { fontVariant: "all-small-caps", letterSpacing: ".03em", color: r.priority === "high" ? "var(--brand-signal-dim,#CB6E4E)" : "var(--text-muted)" } }, r.priority) },
+              format: (v) => el("span", { style: { fontVariant: "all-small-caps", letterSpacing: ".03em", color: String(v) === "high" ? "var(--brand-signal-text,#A4472A)" : "var(--text-muted)" } }, String(v)) })
+          : el("span", { style: { fontVariant: "all-small-caps", letterSpacing: ".03em", color: r.priority === "high" ? "var(--brand-signal-text,#A4472A)" : "var(--text-muted)" } }, r.priority) },
         { key: "eta", label: "ETA", align: "right" },
         { key: "act", label: "", cell: (r) => {
           const label = r.state === "Stalled" ? "Retry" : r.state === "Queued" ? "Start now" : r.state === "Running" ? "Pause" : null;

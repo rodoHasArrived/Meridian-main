@@ -2129,6 +2129,13 @@ the source-level interaction suites. These synthetic checks establish component
 and browser behavior. Live providers, backend writes, native Windows/Edge and
 assistive-technology announcement journeys require their own evidence.
 
+`node scripts/smoke-design-system-adoption.mjs --url http://127.0.0.1:5173/workstation --output /tmp/meridian-adoption`
+reproduces the institution, maintenance and report-token acceptance matrix against
+the fixture-only server. Its defaults run both themes at three desktop sizes and
+a 200% desktop zoom layout equivalent, with exact request/selection/cancellation
+IDs, keyboard ordering, drag actions and scoped accessibility checks. The optional
+`--only` and `--sizes` filters produce explicitly focused evidence.
+
 ### Workspace-specific styling
 
 Accounting uses one local navigation model in the workspace sidebar. Unique destinations are grouped

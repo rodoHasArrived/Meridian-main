@@ -155,7 +155,7 @@ export function StorageAssuranceWorkstream() {
   }
 
   return (
-    <section aria-labelledby="storage-assurance-title" className="workspace-region space-y-3">
+    <section aria-labelledby="storage-assurance-title" className="workspace-region min-w-0 space-y-3">
       <CardHeader><div className="flex flex-wrap items-start justify-between gap-3"><div><CardTitle id="storage-assurance-title">Storage &amp; Data Assurance</CardTitle><CardDescription>One posture for storage health, data quality, canonicalization, capacity, and safe maintenance.</CardDescription></div><Button size="sm" variant="outline" onClick={() => void refresh()}><RefreshCcw className="mr-2 h-4 w-4" />Refresh</Button></div></CardHeader>
       <CardContent className="space-y-4">
         {error ? <StatusBanner tone="danger" title="Storage assurance action needs attention" detail={error} /> : null}

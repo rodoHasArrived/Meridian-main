@@ -18,7 +18,7 @@ import * as React from "react";
  */
 export interface ConnectionStateProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Connection condition. */
-  state?: "live" | "delayed" | "partial" | "offline" | "error";
+  state?: "live" | "delayed" | "partial" | "offline" | "error" | "unknown";
   /** What is connected ("Prices", "Custodian feed") — prefixes the label. */
   subject?: string;
   /** Age or timestamp of the last good data ("42s", "11:29:42 UTC"). */

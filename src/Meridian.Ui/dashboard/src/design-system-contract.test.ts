@@ -10,10 +10,17 @@ function readDashboardStyles() {
   return readFileSync(resolve(process.cwd(), "src/styles/index.css"), "utf8");
 }
 
+function matchesRootSelector(selector: string, attributes: Record<string, string> = {}) {
+  const root = document.implementation.createHTMLDocument("").documentElement;
+  for (const [name, value] of Object.entries(attributes)) root.setAttribute(name, value);
+  return root.matches(selector);
+}
+
 function scopedDeclarations(css: string, selector: string, automaticDark = false) {
   const declarations = new Map<string, string>();
   postcss.parse(css).walkRules((rule) => {
-    if (!rule.selectors.includes(selector)) return;
+    if (!rule.selectors.includes(selector)
+      && !(automaticDark && selector === ":root" && rule.selectors.some((candidate) => matchesRootSelector(candidate)))) return;
     let parent: AnyNode | undefined = rule.parent;
     let inAutomaticDark = false;
     while (parent) {
@@ -146,6 +153,20 @@ function readDashboardPrimitive(path: string) {
 }
 
 describe("dashboard design-system contract", () => {
+  it("matches automatic-dark root selectors while excluding forced-light attributes", () => {
+    const selector = ':root:not([data-theme="light"])';
+    expect(matchesRootSelector(selector)).toBe(true);
+    expect(matchesRootSelector(selector, { "data-theme": "dark" })).toBe(true);
+    expect(matchesRootSelector(selector, { "data-theme": "light" })).toBe(false);
+    const css = `
+      :root { --focus: light; }
+      @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --focus: dark; } }
+      :root[data-theme="light"] { --focus: forced-light; }
+    `;
+    expect(scopedDeclarations(css, ":root", true).get("--focus")).toBe("dark");
+    expect(scopedDeclarations(css, ':root[data-theme="light"]').get("--focus")).toBe("forced-light");
+    expect(scopedDeclarations(css, ":root").get("--focus")).toBe("light");
+  });
   it("vendors the Meridian design-system source package beside the dashboard bridge", () => {
     const manifest = JSON.parse(readDesignSystemPackageFile("_ds_manifest.json")) as {
       components: Array<{ name: string; sourcePath: string }>;
@@ -367,7 +388,8 @@ describe("dashboard design-system contract", () => {
     const applicationLight = baseScope(styles);
     const applicationDark = withoutComments(styles).match(/:root\[data-theme="dark"\]\s*\{([^}]+)\}/)?.[1] ?? "";
     const packageLight = baseScope(readDesignSystemPackageFile("tokens/colors.css"));
-    const packageDark = baseScope(readDesignSystemPackageFile("tokens/colors-dark.css"));
+    const packageDark = [...scopedDeclarations(readDesignSystemPackageFile("tokens/colors-dark.css"), ":root", true)]
+      .map(([token, value]) => `${token}: ${value};`).join("\n");
     const pairs = [
       ["--ws-page-bg", "--bg"], ["--ws-surface", "--bg-light"],
       ["--ws-surface-subtle", "--bg-medium"], ["--ws-surface-raised", "--card-surface-raised"],

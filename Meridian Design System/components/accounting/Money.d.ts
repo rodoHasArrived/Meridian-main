@@ -4,6 +4,9 @@
  * accounting components use internally, so consumer arithmetic always matches rendered figures.
  */
 export interface MoneyHelpers {
+  /** Shared formatter default; restore the previous locale after a scoped override. */
+  setDefaultLocale(locale: string): void;
+  getDefaultLocale(): string;
   /** Format a money value — { currency, decimals=2, parens, zeroDash, signed }. */
   formatMoney(value: number | string, opts?: {
     currency?: string; decimals?: number; parens?: boolean; zeroDash?: boolean; signed?: boolean;

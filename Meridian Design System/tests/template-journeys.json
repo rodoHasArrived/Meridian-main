@@ -62,7 +62,7 @@
           "action": "click",
           "target": {
             "role": "button",
-            "name": "Posting export,",
+          "name": "Posting export",
             "exact": false
           }
         },
@@ -457,6 +457,50 @@
             "exact": true
           },
           "reasonContains": "application ownership instruction"
+        },
+        {
+          "action": "assertCount",
+          "target": {
+            "css": ".cm-overlay:visible"
+          },
+          "count": 0
+        },
+        {
+          "action": "click",
+          "target": {
+            "role": "button",
+            "name": "Open resolution",
+            "exact": true
+          }
+        },
+        {
+          "action": "assertCount",
+          "target": {
+            "css": ".cm-overlay:visible"
+          },
+          "count": 1
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": ".cm-overlay:visible"
+          },
+          "contains": "Price approval C-118 failed validation"
+        },
+        {
+          "action": "click",
+          "target": {
+            "role": "button",
+            "name": "Back to close",
+            "exact": true
+          }
+        },
+        {
+          "action": "assertCount",
+          "target": {
+            "css": ".cm-overlay:visible"
+          },
+          "count": 0
         }
       ],
       "failureStates": [
@@ -678,6 +722,14 @@
       "description": "Change accounting basis while keeping generated journal facts separate from unavailable posting/override instructions.",
       "steps": [
         {
+          "action": "assertVisible",
+          "target": {
+            "role": "heading",
+            "name": "Investment event ledger \u00b7 EVT-2026-08421",
+            "exact": true
+          }
+        },
+        {
           "action": "click",
           "target": {
             "role": "radio",
@@ -858,23 +910,30 @@
           "action": "click",
           "target": {
             "role": "button",
-            "name": "Matcher",
+            "name": "Run matcher",
             "exact": true
           }
         },
         {
-          "action": "assertText",
+          "action": "assertCount",
           "target": {
-            "css": "body"
+            "css": "[data-screen-label^=\"Reconciliation \u2014\"]:visible"
           },
-          "contains": "Custodian statement"
+          "count": 1
         },
         {
           "action": "assertText",
           "target": {
             "css": "body"
           },
-          "contains": "Internal ledger"
+          "contains": "Custodian Statement"
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "Internal Ledger"
         },
         {
           "action": "assertVisible",
@@ -1603,6 +1662,19 @@
           }
         },
         {
+          "action": "assertCount",
+          "target": {
+            "css": "[data-books-view]:visible"
+          },
+          "count": 1
+        },
+        {
+          "action": "assertVisible",
+          "target": {
+            "css": "[data-books-view=\"trial\"]"
+          }
+        },
+        {
           "action": "assertText",
           "target": {
             "css": "body"
@@ -1624,6 +1696,19 @@
             "css": "body"
           },
           "contains": "General ledger \u00b7"
+        },
+        {
+          "action": "assertCount",
+          "target": {
+            "css": "[data-books-view]:visible"
+          },
+          "count": 1
+        },
+        {
+          "action": "assertVisible",
+          "target": {
+            "css": "[data-books-view=\"ledger\"]"
+          }
         }
       ],
       "failureStates": [

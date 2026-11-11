@@ -37,13 +37,13 @@ const bundle = await readFile(resolve(root, '_ds_bundle.js'), 'utf8');
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 async function snapshotRuntimeSources() {
   const filenames = ['styles.css','_preview_runtime.js'];
-  const extensions = new Set(['.js','.jsx','.html','.css','.svg','.woff2']);
+  const extensions = new Set(['.js','.jsx','.html','.css','.svg','.woff2','.woff','.ttf','.png','.jpg','.jpeg','.webp','.avif','.gif','.ico','.thumbnail']);
   async function walk(relative) {
     const entries=await readdir(resolve(root,relative),{withFileTypes:true});
     for(const entry of entries) {
       const child=`${relative}/${entry.name}`;
       if(entry.isDirectory()) await walk(child);
-      else if(entry.isFile()&&extensions.has(extname(entry.name).toLowerCase())) filenames.push(child);
+      else if(entry.isFile()&&(extensions.has(extname(entry.name).toLowerCase())||entry.name==='.thumbnail')) filenames.push(child);
     }
   }
   for(const directory of ['components','tokens','templates','docs','guidelines','assets']) await walk(directory);
@@ -52,6 +52,7 @@ async function snapshotRuntimeSources() {
   return Object.fromEntries(filenames.map(filename=>[filename,hashes[filename]]));
 }
 const runtimeSourceHashes=await snapshotRuntimeSources();
+const zoomControlSha256=hash(await readFile(resolve(root,'tests/desktop-zoom-control.html')));
 await mkdir(out, { recursive: true });
 await mkdir(resolve(out, 'screenshots'), { recursive: true });
 
@@ -129,7 +130,7 @@ const server = createServer(async (request, response) => {
 await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
 const base = `http://127.0.0.1:${server.address().port}`;
 const browser = await chromium.launch({ executablePath: process.env.MERIDIAN_CHROMIUM_PATH || process.env.CHROMIUM_EXECUTABLE_PATH || '/usr/bin/chromium', headless: true, args: ['--no-sandbox'] });
-const results = { schemaVersion: 1, source: { manifestSha256: hash(manifestBytes), bundleSha256: hash(bundle), recipeFileSha256: hash(journeyBytes), runtimeSourceHashes, auditedAt: new Date().toISOString(), syntheticTime: '2026-09-10T14:32:08Z', runtime: 'Local React 19 and Babel 7.29.0; authored JSX transpiled by local test server', run: {kind:selection,matrix,only,limit:Number.isFinite(limit)?limit:null,workers:concurrency} }, cards: {}, templates: {}, exports: {}, harnesses: {}, themes: [], integrity: {cases:[]}, limitations: ['Namespace access and element creation are coverage observations, not proof of every applicable state.', 'The 200% sizing case uses CSS zoom; native Windows browser-toolbar zoom is not run.', 'Native Windows/Edge and assistive-technology announcement journeys are not run by this harness.'] };
+const results = { schemaVersion: 1, source: { manifestSha256: hash(manifestBytes), bundleSha256: hash(bundle), recipeFileSha256: hash(journeyBytes), zoomControlSha256, runtimeSourceHashes, auditedAt: new Date().toISOString(), syntheticTime: '2026-09-10T14:32:08Z', runtime: 'Local React 19 and Babel 7.29.0; authored JSX transpiled by local test server', run: {kind:selection,matrix,only,limit:Number.isFinite(limit)?limit:null,workers:concurrency} }, cards: {}, templates: {}, exports: {}, harnesses: {}, themes: [], integrity: {cases:[]}, limitations: ['Namespace access and element creation are coverage observations, not proof of every applicable state.', 'The 200% desktop zoom layout equivalent uses 683×384 CSS pixels at DPR2 for a 1366×768 physical viewport; native Windows browser-toolbar zoom is not run.', 'Native Windows/Edge and assistive-technology announcement journeys are not run by this harness.'] };
 const jobs = [
   ...(selection === 'all' || selection === 'cards' ? manifest.cards.map(card => ({ kind: 'cards', path: card.path, published: true })) : []),
   ...(selection === 'all' || selection === 'templates' ? Object.entries(eligibility.templates).flatMap(([folder, record]) => record.entries.map(entry => ({ kind: 'templates', path: `templates/${folder}/${entry}`, published: manifest.templates.some(template => template.entryPath === `templates/${folder}/${entry}`) }))) : [])
@@ -139,12 +140,44 @@ if (selection !== 'contracts' && jobs.length === 0) {
   throw new Error('No declared specimen or template matched the audit selection');
 }
 const recordCase = (record, name, kind, status, detail) => record.cases.push({ name, kind, status, detail });
+const metricsSessions=new WeakMap();
+async function setDesktopZoomEquivalent(page,enabled) {
+  await page.setViewportSize({width:enabled?683:1366,height:enabled?384:768});
+  let session=metricsSessions.get(page);
+  if(!session){session=await page.context().newCDPSession(page);metricsSessions.set(page,session);}
+  await session.send('Emulation.setDeviceMetricsOverride',{width:enabled?683:1366,height:enabled?384:768,deviceScaleFactor:enabled?2:1,mobile:false,screenWidth:1366,screenHeight:768});
+}
+async function captureDesktopZoom(page,path) {
+  // Playwright's screenshot helper restores its context's DPR1 viewport. Direct
+  // CDP capture preserves the emulated DPR2 metrics and physical image size.
+  const captured=await metricsSessions.get(page).send('Page.captureScreenshot',{format:'png',fromSurface:true,captureBeyondViewport:false});
+  const bytes=Buffer.from(captured.data,'base64'); await writeFile(path,bytes); return bytes;
+}
+async function auditZoomControls() {
+  const context=await browser.newContext({viewport:{width:1366,height:768}}), page=await context.newPage();
+  try {
+    await page.goto(`${base}/tests/desktop-zoom-control.html`);
+    const columns=()=>page.locator('#responsive').evaluate(node=>getComputedStyle(node).gridTemplateColumns.split(/\s+/).length);
+    assert.equal(await columns(),2,'The normal desktop fixture starts with two columns');
+    await setDesktopZoomEquivalent(page,true); await settleAppearance(page);
+    const layout=await page.evaluate(()=>({width:innerWidth,height:innerHeight,dpr:devicePixelRatio,narrow:matchMedia('(max-width:800px)').matches,scrollWidth:document.documentElement.scrollWidth}));
+    const screenshot=resolve(out,'screenshots','desktop-zoom-negative-control.png');
+    const png=await captureDesktopZoom(page,screenshot);
+    recordCase(results.integrity,'200% desktop zoom layout equivalent activates authored narrow media queries','layout',layout.width===683&&layout.height===384&&layout.dpr===2&&layout.narrow&&await columns()===1&&layout.scrollWidth<=683?'passed':'failed',layout);
+    recordCase(results.integrity,'desktop zoom screenshot preserves 1366×768 physical pixels','layout',png.readUInt32BE(16)===1366&&png.readUInt32BE(20)===768?'passed':'failed',{width:png.readUInt32BE(16),height:png.readUInt32BE(20),screenshot});
+    await page.locator('#forced-overflow').evaluate(node=>{node.style.display='block';});
+    const overflow=await page.evaluate(()=>({width:innerWidth,scrollWidth:document.documentElement.scrollWidth}));
+    recordCase(results.integrity,'desktop zoom negative control detects genuine overflow beyond 683 CSS pixels','layout',overflow.width===683&&overflow.scrollWidth>683?'passed':'failed',overflow);
+  }catch(error){recordCase(results.integrity,'desktop zoom controls execute','layout','failed',error.message);}
+  finally{await context.close();}
+}
 
 async function contentFrame(page) {
   const iframe = page.locator('iframe[data-meridian-compatibility-target]').first();
   if (await iframe.count()) {
     const frame = await iframe.elementHandle().then(handle => handle.contentFrame());
     if (frame) {
+      await frame.waitForURL(url=>url.origin===base,{timeout:8000,waitUntil:'domcontentloaded'});
       await frame.waitForLoadState('domcontentloaded', { timeout: 8000 });
       if (new URL(frame.url()).origin === base) { await frame.waitForFunction(inspectContent, null, { timeout: 8000 }); return frame; }
     }
@@ -165,13 +198,24 @@ async function waitForContent(page) {
   // Imported JSX DC modules resolve independently of the document load event.
   await page.waitForTimeout(180);
 }
-async function setAppearance(frame, theme, density = 'default') {
+async function setAppearance(frame, theme, density = 'default', template = false) {
   await frame.evaluate(({ theme, density }) => {
     if (window.__dcSetProps && window.__dcRootName) window.__dcSetProps(window.__dcRootName(), { theme, density });
     document.documentElement.dataset.theme = theme;
     document.body.dataset.themeDensity = density;
   }, { theme, density });
   await settleAppearance(frame);
+  if(template) {
+    const expectsReady=await frame.evaluate(()=>window.__dcRegistry?.[window.__dcRootName?.()]?.propsMeta?.dataState?.default==='ready');
+    if(expectsReady) {
+      // Some DC entries asynchronously re-bootstrap after host prop updates.
+      // A ready fixture must finish that loading phase; permanent loading fails.
+      await frame.waitForFunction(()=>document.readyState==='complete'&&![...document.querySelectorAll('.mds-dss--loading')].some(node=>{
+        const bounds=node.getBoundingClientRect(); return bounds.width>0&&bounds.height>0&&getComputedStyle(node).visibility!=='hidden';
+      }),null,{timeout:8000});
+      await settleAppearance(frame);
+    }
+  }
 }
 async function settleAppearance(frame) {
   await frame.evaluate(async () => {
@@ -333,11 +377,22 @@ async function auditJob(job) {
     recordCase(record, 'authored content renders with local runtime', 'render', record.runtimeErrors.length === 0 && overlay.length === 0 && meaningful ? 'passed' : 'failed', { excerpt: text.slice(0, 450), meaningfulMediaOrText: meaningful, overlays: overlay });
     if (!record.runtimeErrors.length && !overlay.length) {
       if (job.kind === 'templates') await probePrimaryJourney(frame, record, job.path);
+      if(job.path==='components/charts/viz-workbench.card.html') {
+        try {
+          const trigger=frame.getByRole('button',{name:'Open lineage',exact:true});
+          await trigger.click();
+          await frame.getByRole('dialog',{name:'Synthetic curve lineage',exact:true}).waitFor({state:'visible'});
+          await page.keyboard.press('Escape');
+          await frame.getByRole('dialog',{name:'Synthetic curve lineage',exact:true}).waitFor({state:'hidden'});
+          assert(await trigger.evaluate(node=>node===document.activeElement),'Closing the lineage drawer restores its actual trigger focus');
+          recordCase(record,'Open lineage opens its named shared Drawer; Escape closes and restores trigger focus','keyboard','passed');
+        }catch(error){recordCase(record,'Open lineage opens its named shared Drawer; Escape closes and restores trigger focus','keyboard','failed',error.message);}
+      }
       await probeKeyboard(frame, record);
       if (job.kind === 'templates' && !compatibility) await probeTemplateStates(frame, record);
       const themes = ['light', 'dark'];
       for (const theme of themes) {
-        await setAppearance(frame, theme);
+        await setAppearance(frame, theme,'default',job.kind==='templates');
         await frame.addScriptTag({ content: axe });
         const a11y = await frame.evaluate(async () => {
           const result = await axe.run(document, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] } });
@@ -355,18 +410,19 @@ async function auditJob(job) {
           recordCase(record, `${theme} ${width}×${height} root overflow`, 'layout', layout.scrollWidth <= layout.width ? 'passed' : 'failed', layout);
         }
         if (matrix !== 'smoke') {
-          await frame.evaluate(() => { document.body.style.zoom = '2'; });
+          await setDesktopZoomEquivalent(page,true);
           await settleAppearance(frame);
           const zoom = await frame.evaluate(() => ({ width: innerWidth, scrollWidth: document.documentElement.scrollWidth, overflow: [...document.querySelectorAll('body *')].filter(node=>node.getBoundingClientRect().right>innerWidth+1).sort((a,b)=>b.getBoundingClientRect().width-a.getBoundingClientRect().width).slice(0,12).map(node=>({tag:node.tagName,role:node.getAttribute('role'),className:typeof node.className==='string'?node.className:'svg',text:node.textContent.slice(0,70),right:node.getBoundingClientRect().right,width:node.getBoundingClientRect().width,scrollWidth:node.scrollWidth,clientWidth:node.clientWidth,html:node.outerHTML.slice(0,300)})) }));
+          zoom.topViewport=await page.evaluate(()=>({width:innerWidth,scrollWidth:document.documentElement.scrollWidth,dpr:devicePixelRatio}));
           const screenshot = resolve(out, 'screenshots', `${job.path.replace(/[^a-z0-9.-]/gi, '_')}.${theme}.200percent.png`);
-          await page.screenshot({path:screenshot,fullPage:false});
-          record.layouts.push({theme,zoom:2,...zoom,screenshot});
-          recordCase(record, `${theme} 200% zoom root overflow`, 'layout', zoom.scrollWidth <= zoom.width ? 'passed' : 'failed', zoom);
-          await frame.evaluate(() => { document.body.style.zoom = ''; });
+          await captureDesktopZoom(page,screenshot);
+          record.layouts.push({theme,zoom:2,model:'desktop zoom layout equivalent',physicalWidth:1366,physicalHeight:768,...zoom,screenshot});
+          recordCase(record, `${theme} 200% desktop zoom layout equivalent root overflow`, 'layout', zoom.topViewport.width===683&&zoom.topViewport.scrollWidth<=683&&zoom.scrollWidth<=zoom.width ? 'passed' : 'failed', zoom);
+          await setDesktopZoomEquivalent(page,false); await settleAppearance(frame);
         }
       }
       for (const density of ['terminal', 'compact', 'default', 'spacious']) {
-        await setAppearance(frame, 'light', density);
+        await setAppearance(frame, 'light', density,job.kind==='templates');
         const geometry = await frame.evaluate(() => {
           const firstControl = [...document.querySelectorAll('button,input,select,textarea,[role="row"]')].find(node => node.getBoundingClientRect().height > 0);
           return { density: document.body.dataset.themeDensity, hasContent: document.body.innerText.trim().length > 0, width: innerWidth, scrollWidth: document.documentElement.scrollWidth, firstControlHeight: firstControl?.getBoundingClientRect().height ?? null };
@@ -469,6 +525,7 @@ async function auditExistingHarnesses() {
 }
 
 try {
+  if(matrix==='full') await auditZoomControls();
   let cursor = 0;
   await Promise.all(Array.from({ length: Math.min(concurrency, jobs.length) }, async () => { while (cursor < jobs.length) await auditJob(jobs[cursor++]); }));
   if (selection === 'all' || selection === 'contracts') { await auditThemes(); await auditExistingHarnesses(); }

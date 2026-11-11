@@ -21,14 +21,17 @@ const STATUS={
 
 export function ChangeSetProvider({original={},value,onChange,version,id,fields={},validate,children}){
   const controlled=value!==undefined;
-  const[draft,setDraft]=React.useState(()=>({...original}));
-  const[reasons,setReasons]=React.useState({});
-  React.useEffect(()=>{if(!controlled)setDraft({...original})},[original]);
-  const current=controlled?value:draft;
-  const set=next=>{if(!controlled)setDraft(next);onChange?.(next)};
+  const binding=JSON.stringify([id??null,version??null]);
+  const[draft,setDraft]=React.useState(()=>({scope:binding,value:{...original}}));
+  const[reasonState,setReasons]=React.useState(()=>({scope:binding,values:{}}));
+  const reasons=reasonState.scope===binding?reasonState.values:{};
+  React.useEffect(()=>{if(!controlled)setDraft({scope:binding,value:{...original}})},[original,binding]);
+  React.useEffect(()=>{setReasons(previous=>previous.scope===binding?previous:{scope:binding,values:{}})},[binding]);
+  const current=controlled?value:draft.scope===binding?draft.value:{...original};
+  const set=next=>{if(!controlled)setDraft({scope:binding,value:next});onChange?.(next)};
   const setField=(key,v)=>set({...current,[key]:v});
-  const setReason=(key,v)=>setReasons(r=>({...r,[key]:v}));
-  const discard=()=>{set({...original});setReasons({})};
+  const setReason=(key,v)=>setReasons(previous=>({scope:binding,values:{...(previous.scope===binding?previous.values:{}),[key]:v}}));
+  const discard=()=>{set({...original});setReasons({scope:binding,values:{}})};
   const changes=Object.keys({...original,...current}).filter(k=>!equal(original[k],current[k])).map(k=>({key:k,before:original[k],after:current[k],group:fields[k]?.group,label:fields[k]?.label,impact:fields[k]?.impact,reason:reasons[k]}));
   const issues=(validate?validate(current,changes):[])||[];
   const errors=issues.filter(i=>i.severity==="error");
@@ -156,8 +159,12 @@ export function ChangeSetReview({
   const missingReasons=requireReason&&cs.changes.some(change=>!(cs.reasons[change.key]||change.reason||"").trim());
   const tone=STATUS[status]?.tone||"neutral";
   const impacts=normalizeImpact(impact);
-  const[confirming,setConfirming]=React.useState(false);
   const ver=version??cs.version??basedOnVersion;
+  const confirmationScope=JSON.stringify([changeSetId??cs.id??null,ver??null]);
+  const[confirmation,setConfirmation]=React.useState(null);
+  const confirming=confirmation===confirmationScope;
+  const setConfirming=next=>setConfirmation(next?confirmationScope:null);
+  React.useEffect(()=>setConfirmation(null),[confirmationScope]);
   const scopeItems=[changeSetId||cs.id?{k:"Change set",v:changeSetId||cs.id}:null,scope?{k:"Scope",v:scope}:null,affectedRecords!=null?{k:"Affected records",v:formatNumber(Number(affectedRecords), { decimals: 0 })}:null,initiatedBy?{k:"Initiated by",v:initiatedBy}:null,ver!=null?{k:"Based on version",v:ver}:null].filter(Boolean);
 
   return <section className={`mds-cs${className?" "+className:""}`} {...rest}>

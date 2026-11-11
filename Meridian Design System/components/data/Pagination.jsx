@@ -43,7 +43,6 @@ export function Pagination({
 }) {
   inject();
   const [jumpValue, setJumpValue] = React.useState(String(currentPage));
-  React.useEffect(() => { setJumpValue(String(currentPage)); }, [currentPage]);
 
   // Keep the jump box in step with paging done through the buttons (or the parent).
   React.useEffect(() => {
@@ -65,7 +64,7 @@ export function Pagination({
   const handleJump = () => {
     const page = Math.max(1, Math.min(totalPages, parseInt(jumpValue, 10) || 1));
     setJumpValue(String(page));
-    onPageChange(page);
+    if (page !== currentPage) onPageChange(page);
   };
 
   // Calculate page range to display
@@ -124,7 +123,6 @@ export function Pagination({
             <button type="button"
               key={idx}
               className={`pgn-btn ${page === currentPage ? "pgn-btn--active" : ""}`}
-              aria-current={page === currentPage ? "page" : undefined}
               onClick={() => handlePageClick(page)}
               aria-label={`Page ${page}`}
               aria-current={page === currentPage ? "page" : undefined}

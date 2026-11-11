@@ -7,6 +7,7 @@ import React from "react";
 const { useState } = React;
 import { AmountCell } from "./AmountCell";
 import { toNumber } from "../core/format.js";
+import { knownAmount } from "./knownAmounts.js";
 
 let injected = false;
 function inject() {
@@ -48,7 +49,7 @@ function inject() {
 
 function rollup(node) {
   const present=node.balance!==null&&node.balance!==undefined&&!(typeof node.balance==="string"&&node.balance.trim()==="");
-  if(present) return Number.isFinite(toNumber(node.balance))?toNumber(node.balance):null;
+  if(present) return knownAmount(node.balance);
   if(node.children?.length){
     const balances=node.children.map(rollup);
     return balances.every(value=>value!==null)?balances.reduce((sum,value)=>sum+value,0):null;

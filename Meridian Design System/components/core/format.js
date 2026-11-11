@@ -44,11 +44,11 @@ export function getNumberDefaults() { return { ...DEFAULTS }; }
 const CACHE = new Map();
 export function numberFormatter(locale, opts = {}) {
   const loc = locale || DEFAULTS.locale;
-  // An explicit locale is a bound surface, including its own numeral system.
-  // Process defaults apply only when the caller did not declare a local surface.
+  // A bound surface's explicit numeral system wins. Other calls retain the
+  // process numeral default, including callers that only override their locale.
   let tag = loc;
-  if (!locale && DEFAULTS.numerals) {
-    try { tag = new Intl.Locale(loc, { numberingSystem: DEFAULTS.numerals }).toString(); } catch { /* NumberFormat below owns fallback. */ }
+  if (DEFAULTS.numerals) {
+    try { if (!new Intl.Locale(loc).numberingSystem) tag = new Intl.Locale(loc, { numberingSystem: DEFAULTS.numerals }).toString(); } catch { /* NumberFormat below owns fallback. */ }
   }
   const key = tag + "\u0000" + JSON.stringify(opts);
   let f = CACHE.get(key);

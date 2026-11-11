@@ -4,7 +4,7 @@
 // threshold. Footer rolls up basis, value, and total gain. Light institutional grid.
 import React from "react";
 import { AmountCell } from "./AmountCell";
-import { sumKnown, displayAmount } from "./knownAmounts.js";
+import { knownAmount, sumKnown, displayAmount } from "./knownAmounts.js";
 import { toNumber, formatNumber } from "../core/format.js";
 
 let injected = false;
@@ -93,10 +93,10 @@ export function TaxLotTable({
   const gainHead = mode === "realized" ? "Realized P&L" : "Unrealized P&L";
 
   const computed = lots.map((l) => {
-    const basis = toNumber(l.costBasis);
-    const value = toNumber(mode === "realized" ? l.proceeds : l.marketValue);
-    const gain = isFinite(basis) && isFinite(value) ? value - basis : NaN;
-    const pct = isFinite(gain) && basis !== 0 ? (gain / Math.abs(basis)) * 100 : NaN;
+    const basis = knownAmount(l.costBasis);
+    const value = knownAmount(mode === "realized" ? l.proceeds : l.marketValue);
+    const gain = basis!==null&&value!==null ? value-basis : null;
+    const pct = Number.isFinite(gain) && basis !== 0 ? (gain / Math.abs(basis)) * 100 : NaN;
     const held = l.daysHeld != null ? l.daysHeld : daysHeld(l.acquired, asOf);
     const long = l.term ? l.term === "long" : held != null && held >= longTermDays;
     return { ...l, basis, value, gain, pct, held, long };

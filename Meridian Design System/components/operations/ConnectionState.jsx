@@ -32,7 +32,7 @@ function inject() {
 .mds-link--offline .mds-link__label{color:var(--text-secondary);}
 .mds-link--error{border-color:var(--cond-exception-bd);background:var(--cond-exception-bg);}
 .mds-link--error .mds-link__dot{background:var(--link-error-fg);}
-.mds-link--error .mds-link__label{color:var(--link-error-fg);}
+.mds-link--error .mds-link__label,.mds-link--error .mds-link__meta{color:var(--text-primary);}
 .mds-link--live .mds-link__dot{box-shadow:0 0 0 3px color-mix(in srgb,var(--link-live-fg) 16%,transparent);}
 `;
   const el = document.createElement("style");
@@ -42,6 +42,7 @@ function inject() {
 }
 
 const COPY = {
+  unknown: { label: "Unknown", verb: "last known" },
   live:    { label: "Live",    verb: "updated" },
   delayed: { label: "Delayed", verb: "last update" },
   partial: { label: "Partial", verb: "as of" },
@@ -53,7 +54,7 @@ export function ConnectionState({
   state = "live", subject, age, cadence, detail, actionLabel, onAction, block = false, className = "", ...rest
 }) {
   inject();
-  const key = COPY[state] ? state : "live";
+  const key = COPY[state] ? state : "unknown";
   const c = COPY[key];
   const meta = [
     age ? `${c.verb} ${age}` : null,

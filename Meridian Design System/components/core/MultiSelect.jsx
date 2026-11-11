@@ -35,7 +35,7 @@ function inject() {
 .mds-ms-more{font-family:var(--font-data);font-size:11px;color:var(--text-muted,#606870);padding:0 2px;}
 .mds-ms-input{flex:1;min-width:60px;height:24px;border:none;background:transparent;outline:none;
   color:var(--text-primary,#20252B);font-family:var(--font-data);font-size:13px;}
-.mds-ms-input::placeholder{color:var(--text-disabled,#A4ABB2);}
+.mds-ms-input::placeholder{color:var(--text-muted,#606870);opacity:1;}
 .mds-ms-btn{flex:0 0 auto;height:24px;padding:0 6px;border:0;background:none;margin:0;
   color:var(--text-muted,#606870);font-size:11px;cursor:pointer;display:inline-flex;align-items:center;}
 .mds-ms-btn:hover{color:var(--text-primary,#20252B);}

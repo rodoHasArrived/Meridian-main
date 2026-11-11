@@ -4,12 +4,8 @@
 // when the underlying object version changes underneath a review that has already been performed.
 import React from "react";
 
-const rank = { satisfied: 0, warning: 1, blocking: 2 };
-function summarize(guards) {
-  const g = guards || [], blocking = g.filter(x => x.state === "blocking"), warning = g.filter(x => x.state === "warning");
-  return { total: g.length, blocking: blocking.length, warning: warning.length, blocked: blocking.length > 0, firstBlocking: blocking[0] || null,
-    sentence: blocking.length ? `${blocking.length} blocking ${blocking.length === 1 ? "guard" : "guards"}` : warning.length ? `${warning.length} ${warning.length === 1 ? "warning" : "warnings"}` : g.length ? "All guards satisfied" : "No guards declared" };
-}
+import { summarizeGuards as summarize } from "./ActionGuard";
+
 const REVERSIBILITY = {
   reversible:    { label: "Reversible",    note: "Can be undone without creating a compensating record" },
   compensatable: { label: "Compensatable", note: "The original record remains; a reversal creates a new one" },
@@ -83,28 +79,52 @@ export function DecisionFlowProvider({
   onValidate, onTransition, actorId, children,
 }) {
   inject();
-  const [stepId, setStepId] = React.useState(() => readInitial({ urlParam, persistedKey, steps, initialStep }));
+  const [requestedStepId, setStepId] = React.useState(() => readInitial({ urlParam, persistedKey, steps, initialStep }));
+  const stepId=steps.some(step=>step.id===requestedStepId)?requestedStepId:steps[0]?.id;
+  React.useEffect(()=>{if(steps.length&&requestedStepId!==stepId)setStepId(stepId)},[requestedStepId,stepId,steps.length]);
   const [completed, setCompleted] = React.useState({});
   const [guards, setGuards] = React.useState({});
+  const [validating, setValidating] = React.useState({});
   const [transitions, setTransitions] = React.useState([]);
   const [versionChanged, setVersionChanged] = React.useState(null);
   const version = object ? object.version : undefined;
-  const seen = React.useRef(version);
+  const objectKey = JSON.stringify([object?.type ?? null, object?.id ?? null]);
+  const scopeKey = JSON.stringify([objectKey, version ?? null]);
+  const scope = React.useRef({ key: scopeKey, generation: 0 });
+  const validated = React.useRef({});
+  const validationTickets = React.useRef({});
+  const entryTickets = React.useRef({});
+  const entryFailures = React.useRef({});
+  // Invalidate pending work as soon as the new binding renders, before passive effects run.
+  if (scope.current.key !== scopeKey) {
+    scope.current = { key: scopeKey, generation: scope.current.generation + 1 };
+    validated.current = {};
+    entryFailures.current = {};
+  }
+  const seen = React.useRef({ objectKey, version });
+  React.useEffect(() => () => { scope.current.generation += 1; validated.current = {}; }, []);
 
   React.useEffect(() => {
-    if (seen.current === version) return;
-    const from = seen.current; seen.current = version;
+    const previous = seen.current;
+    if (previous.objectKey === objectKey && previous.version === version) return;
+    seen.current = { objectKey, version };
+    const sameObject = previous.objectKey === objectKey;
     setCompleted(prev => {
       const next = {};
-      steps.forEach(s => { if (prev[s.id] && s.stableAcrossVersions) next[s.id] = prev[s.id]; });
+      if (sameObject) steps.forEach(s => { if (prev[s.id] && s.stableAcrossVersions) next[s.id] = prev[s.id]; });
       return next;
     });
     setGuards({});
-    setVersionChanged({ from, to: version });
-  }, [version]); // eslint-disable-line react-hooks/exhaustive-deps
+    setValidating({});
+    if (!sameObject) {
+      setStepId(initialStep && steps.some(step => step.id === initialStep) ? initialStep : steps[0]?.id);
+      setTransitions([]);
+    }
+    setVersionChanged({ from: previous.version, to: version });
+  }, [scopeKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   React.useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined"||stepId==null) return;
     if (urlParam) {
       const u = new URL(window.location.href);
       if (u.searchParams.get(urlParam) !== stepId) { u.searchParams.set(urlParam, stepId); window.history.replaceState(null, "", u); }
@@ -117,28 +137,56 @@ export function DecisionFlowProvider({
   const stepGuards = React.useCallback(id => guards[id] || (byId[id] || {}).guards || [], [guards, byId]);
 
   const validate = React.useCallback(async id => {
-    if (!onValidate) return stepGuards(id);
-    const result = (await onValidate(id)) || [];
+    const generation = scope.current.generation;
+    const ticket = (validationTickets.current[id] || 0) + 1;
+    validationTickets.current[id] = ticket;
+    if (!onValidate) {
+      setValidating(current => current[id] ? {...current,[id]:false} : current);
+      return stepGuards(id);
+    }
+    setValidating(current => ({...current,[id]:true}));
+    let result;
+    try { result = (await onValidate(id)) || []; }
+    catch (error) { result = [{ id: `${id}:validation-unavailable`, state: "blocking", label: "Validation unavailable", reason: String(error?.message || error) }]; }
+    if (generation !== scope.current.generation || validationTickets.current[id] !== ticket) {
+      return [{ id: `${id}:validation-superseded`, state: "blocking", label: "Validation superseded", reason: "The object changed or a newer validation replaced this result." }];
+    }
+    if (entryFailures.current[id]) result = [...result,entryFailures.current[id]];
     setGuards(g => ({ ...g, [id]: result }));
+    setValidating(current => ({...current,[id]:false}));
     return result;
   }, [onValidate, stepGuards]);
 
   // Entering a step validates it: a step's guards must be legible before the user works in it,
   // not only after an attempt. Cached results are reused until the object version invalidates them.
-  const validated = React.useRef({});
   React.useEffect(() => {
-    if (!onValidate || validated.current[stepId]) return;
+    if (!onValidate || !stepId || validated.current[stepId]) return;
     validated.current[stepId] = true;
     validate(stepId);
-  }, [stepId, onValidate, validate]);
-  React.useEffect(() => { validated.current = {}; }, [version]);
+  }, [stepId, onValidate, validate, scopeKey]);
 
   const goTo = React.useCallback(async (id, opts = {}) => {
     const step = byId[id]; if (!step) return false;
     if (!opts.force && unmet(id).length) return false;
+    const generation = scope.current.generation;
+    const ticket = (entryTickets.current[id] || 0) + 1;
+    entryTickets.current[id] = ticket;
     const from = stepId;
+    const previousFailure = entryFailures.current[id];
     setStepId(id);
-    if (step.onEnter) await step.onEnter();
+    try { if (step.onEnter) await step.onEnter(); }
+    catch (error) {
+      if (generation !== scope.current.generation || entryTickets.current[id] !== ticket) return false;
+      const finding = {id:`${id}:entry-unavailable`,state:"blocking",label:"Step entry unavailable",reason:String(error?.message || error)};
+      entryFailures.current[id] = finding;
+      setGuards(g => ({...g,[id]:[...(g[id] || step.guards || []).filter(item=>item!==previousFailure),finding]}));
+      return false;
+    }
+    if (generation !== scope.current.generation || entryTickets.current[id] !== ticket) return false;
+    if (previousFailure) {
+      delete entryFailures.current[id];
+      setGuards(g => ({...g,[id]:(g[id] || step.guards || []).filter(item=>item!==previousFailure)}));
+    }
     const t = { from, to: id, at: new Date().toISOString(), actorId, reason: opts.reason };
     setTransitions(list => [...list, t]);
     if (onTransition) onTransition(t);
@@ -146,7 +194,12 @@ export function DecisionFlowProvider({
   }, [byId, unmet, stepId, actorId, onTransition]);
 
   const complete = React.useCallback(async (id = stepId, detail) => {
-    const g = await validate(id);
+    if(!byId[id]||unmet(id).length)return false;
+    const generation = scope.current.generation;
+    const validation = validate(id);
+    const ticket = validationTickets.current[id];
+    const g = await validation;
+    if (generation !== scope.current.generation || validationTickets.current[id] !== ticket) return false;
     if (summarize(g).blocked) return false;
     setCompleted(c => ({ ...c, [id]: { at: new Date().toISOString(), actorId, ...detail } }));
     (byId[id] || {}).invalidates && setCompleted(c => {
@@ -155,17 +208,20 @@ export function DecisionFlowProvider({
     const order = steps.map(s => s.id), i = order.indexOf(id);
     const nextId = order.slice(i + 1).find(n => !unmet(n).length || (byId[n].requires || []).every(r => r === id || completed[r]));
     if (nextId) await goTo(nextId, { force: true });
+    if (generation !== scope.current.generation) return false;
     return true;
   }, [stepId, validate, actorId, byId, steps, unmet, completed, goTo]);
 
   const acknowledgeVersionChange = React.useCallback(() => setVersionChanged(null), []);
   const current = byId[stepId] || steps[0] || null;
-  const summary = summarize(stepGuards(stepId));
+  const checking = stepId != null && !!onValidate && (validating[stepId] || !validated.current[stepId]);
+  const summary = {...summarize(stepGuards(stepId))};
+  if (checking) summary.sentence = "Validation in progress";
 
   const value = {
     object, snapshotId, steps, stepId, step: current, index: steps.findIndex(s => s.id === stepId),
     completed, guards, stepGuards, summary, transitions, versionChanged, acknowledgeVersionChange,
-    unmet, goTo, complete, validate, isBlocked: summary.blocked,
+    unmet, goTo, complete, validate, isBlocked: summary.blocked || checking,
   };
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
@@ -211,7 +267,7 @@ export function DecisionFlowStage({ title, children, showVersionNotice = true, c
   return <section className={`mds-df mds-dfstage${className ? " " + className : ""}`} aria-label={`${(f.step || {}).label || "Step"} — decision step ${f.index + 1} of ${f.steps.length}`} {...rest}>
     <header className="mds-dfstage__hd">
       <span className="mds-dfstage__ttl">{title || (f.step || {}).label}</span>
-      <span className="mds-dfstage__pos">Step {f.index + 1} of {f.steps.length}{f.snapshotId ? ` · ${f.snapshotId}` : ""}</span>
+      <span className="mds-dfstage__pos">{f.steps.length?`Step ${f.index+1} of ${f.steps.length}`:"No decision steps declared"}{f.snapshotId ? ` · ${f.snapshotId}` : ""}</span>
     </header>
     {showVersionNotice && vc ? <div className="mds-dfstale" role="status">
       <span className="mds-dfstale__t">The object changed underneath this review</span>
@@ -231,17 +287,17 @@ export function DecisionConsequenceBar({
   const g = guards || f.stepGuards(f.stepId);
   const s = summarize(g);
   const unmet = f.unmet(f.stepId);
-  const disabled = s.blocked || (requireCompletion && unmet.length > 0);
+  const disabled = !f.step||!onPrimary||f.isBlocked||s.blocked||(requireCompletion&&unmet.length>0);
   const rev = reversibility ? REVERSIBILITY[reversibility] || { label: reversibility, note: "" } : null;
   return <div className={`mds-df mds-dfbar${className ? " " + className : ""}`} {...rest}>
     <span className="mds-dfbar__l">
       <span className="mds-dfbar__st" data-blocked={s.blocked ? "true" : undefined}>
-        {s.blocked ? `${s.sentence} — ${s.firstBlocking.label}` : unmet.length ? `Requires ${unmet.map(r => (f.steps.find(x => x.id === r) || {}).label || r).join(", ")}` : s.sentence}</span>
+        {!f.step?"No decision steps declared":s.blocked ? `${s.sentence} — ${s.firstBlocking.label}` : f.isBlocked ? f.summary.sentence : unmet.length ? `Requires ${unmet.map(r => (f.steps.find(x => x.id === r) || {}).label || r).join(", ")}` : s.sentence}</span>
       {f.object ? <span className="mds-dfbar__ob">{f.object.type} {f.object.id} · version {f.object.version}{f.snapshotId ? ` · snapshot ${f.snapshotId}` : ""}</span> : null}
       {rev ? <span className="mds-dfbar__rev">Reversibility · {rev.label}{rev.note ? ` — ${rev.note}` : ""}</span> : null}
     </span>
     <span className="mds-dfbar__acts">
-      {secondaryLabel ? <button type="button" className="mds-dfbtn mds-dfbtn--ghost" onClick={onSecondary}>{secondaryLabel}</button> : null}
+      {secondaryLabel ? <button type="button" className="mds-dfbtn mds-dfbtn--ghost" onClick={onSecondary} disabled={!onSecondary}>{secondaryLabel}</button> : null}
       {primaryLabel ? <button type="button" className="mds-dfbtn" aria-disabled={disabled ? "true" : undefined}
         onClick={() => { if (!disabled && onPrimary) onPrimary({ object: f.object, snapshotId: f.snapshotId, stepId: f.stepId, guards: g }); }}>{primaryLabel}</button> : null}
     </span>

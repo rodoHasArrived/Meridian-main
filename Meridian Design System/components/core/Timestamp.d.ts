@@ -13,6 +13,8 @@ export interface TimestampProps extends React.TimeHTMLAttributes<HTMLTimeElement
   value: Date | number | string;
   /** "utc" full stamp · "time" time-of-day · "relative" auto-ticking "6m ago". @default "utc" */
   format?: "utc" | "time" | "relative";
+  /** Locale digit and date ordering. The instant and displayed timezone remain UTC. */
+  locale?: string;
   /** Re-render interval for relative format, ms. @default 1000 */
   tickMs?: number;
 }

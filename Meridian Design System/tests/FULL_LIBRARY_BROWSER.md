@@ -21,7 +21,8 @@ node tests/full-library-browser.mjs --kind=cards --only=docs/,guidelines/,tokens
 `--only` accepts comma-separated path fragments. `--limit` and `--workers` are
 useful for diagnosis; default concurrency is three. `--matrix=smoke` keeps one
 desktop viewport but retains light/dark accessibility checks. The full matrix
-uses 1920×1080, 1440×900 and 1366×768, 200% CSS zoom, and supported density
+uses 1920×1080, 1440×900 and 1366×768, a 200% desktop zoom layout equivalent,
+and supported density
 scopes. `MERIDIAN_CHROMIUM_PATH` selects a browser; otherwise the system
 Chromium is used. Outputs default to `/tmp/pr3501-full-audit` and include
 `browser-results.json` and screenshots for every measured theme/viewport/zoom.
@@ -33,6 +34,20 @@ Each page gets isolated storage and a fixed synthetic date. Pictorial specimens
 are considered rendered only when meaningful named SVGs or images with alt text
 have successfully loaded and have visible geometry. No fake text is added to
 make image-only pages pass.
+
+The zoom equivalent uses CDP metrics of 683×384 CSS pixels at DPR2, retaining a
+1366×768 physical screenshot. Authored narrow media queries therefore activate,
+as they do at 200% desktop browser zoom. `desktop-zoom-control.html` proves the
+800px breakpoint collapses a two-column layout and that a genuine 800px child
+still fails the 683px overflow check. The report records both controls and image
+dimensions. This emulates layout; native Windows browser-toolbar zoom remains
+unrun.
+
+Appearance changes settle fonts and finite CSS transitions. A template whose
+authored data-state contract defaults to `ready` also gets an eight-second bound
+for any asynchronous loading wrapper to clear after host prop updates. Permanent
+loading fails; informative loading copy retains its independent source contrast
+and behavior checks.
 
 ## Evidence levels
 

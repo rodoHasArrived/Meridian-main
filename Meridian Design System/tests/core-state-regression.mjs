@@ -111,7 +111,7 @@ try {
     await page.waitForFunction(before => document.querySelectorAll('.mds-wctx > .mds-wctx__item').length < before, before); assert(await page.getByRole('button', { name: /^More/ }).isVisible());
   });
   await check('ObjectTrail exact identity, branch history, moved versions, pinning and retained notices', async () => {
-    await mount('trail', { persist: false }); await page.getByRole('button', { name: 'Pin this object' }).press('Space'); await page.evaluate(() => window.api.visit(window.entries.beta));
+    await mount('trail', { persist: false }); await page.getByRole('button', { name: 'Pin this object' }).press('Space'); await page.evaluate(() => window.api.visit(window.entries.beta)); await page.waitForFunction(() => window.api.current?.id === 'entry-B' && window.api.canBack);
     await page.getByRole('button', { name: 'Back to the previous object' }).press('Enter'); assert.equal((await state()).current.id, 'entry-A'); assert.equal((await state()).notice.type, 'version-moved');
     assert.equal(await page.evaluate(() => window.events.at(-1)[1].versionMoved), true); assert(await page.getByRole('status').getByText('Version moved', { exact: true }).isVisible());
     await page.getByRole('button', { name: 'Dismiss', exact: true }).click(); assert.equal((await state()).notice, null); await page.getByRole('button', { name: 'Forward', exact: true }).press('Enter');
@@ -170,6 +170,8 @@ try {
     assert.deepEqual(await page.evaluate(() => window.events.filter(event => event.type === 'compare')), [{ type: 'compare', ids: ['a', 'b'] }]);
     assert(await dialog.evaluate(node => node.contains(document.activeElement))); await page.getByRole('button', { name: 'Close comparison' }).focus(); await page.keyboard.press('Tab'); assert(await dialog.evaluate(node => node.contains(document.activeElement)));
     await page.keyboard.press('Escape'); assert.equal(await dialog.count(), 0); assert(await compare.evaluate(node => node === document.activeElement)); await page.getByRole('button', { name: 'Remove Alpha from comparison' }).click(); assert.equal((await state()).items.length, 1);
+    await page.getByRole('region', { name: 'Comparison set', exact: true }).getByRole('button', { name: 'Clear', exact: true }).press('Space'); assert.equal((await state()).items.length, 0); assert(await page.getByText('Select records', { exact: true }).isVisible());
+    await alpha.press('Enter'); await page.getByRole('button', { name: 'In compare: Alpha; remove from comparison' }).press('Space'); assert.equal((await state()).items.length, 0);
   });
   await check('SelectionCompare compact toggles retain a minimum 24 by 24 keyboard target', async () => {
     await mount('compare', { compact: true }); const toggle = page.getByRole('button', { name: 'Compare: Alpha; add to comparison' }); const box = await toggle.boundingBox(); assert(box.width >= 24); assert(box.height >= 24); await toggle.press('Space'); assert.equal((await state()).items[0].id, 'a');

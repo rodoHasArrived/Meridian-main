@@ -24,7 +24,7 @@ function inject() {
   text-overflow:ellipsis;}
 .mds-cb-input::placeholder{color:var(--text-disabled,#A4ABB2);}
 .mds-cb-input:disabled{cursor:not-allowed;}
-.mds-cb-btn{flex:0 0 auto;height:100%;padding:0 8px;border:0;background:none;margin:0;
+.mds-cb-btn{flex:0 0 auto;height:100%;min-width:24px;min-height:24px;box-sizing:border-box;padding:0 8px;border:0;background:none;margin:0;
   color:var(--text-muted,#606870);font-family:var(--font-data);font-size:11px;cursor:pointer;
   display:inline-flex;align-items:center;}
 .mds-cb-btn:hover{color:var(--text-primary,#20252B);}
@@ -228,7 +228,7 @@ export function Combobox({
             onKeyDown={handleKey}
           />
           {clearable && selected && !disabled && (
-            <button type="button" className="mds-cb-btn" onClick={clear} tabIndex={-1} aria-label="Clear selection">✕</button>
+            <button type="button" className="mds-cb-btn" onClick={clear} aria-label="Clear selection">✕</button>
           )}
           <button
             type="button"

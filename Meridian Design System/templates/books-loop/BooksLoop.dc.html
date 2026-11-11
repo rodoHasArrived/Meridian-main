@@ -13,7 +13,7 @@
 <script src="./ds-base.js"></script>
 <meta name="dc-template" content="books-loop">
 <style>html,body{margin:0;padding:0;height:100%}
-[data-bl-show="off"]{display:none}
+[data-bl-show="off"]{display:none!important}
 tbody[data-bl-pick] tr{cursor:pointer}
 tbody[data-bl-pick] tr:hover td{background:var(--bg-hover,#EDEFF0)}
 tr[data-bl-sel="on"] td{background:var(--blue-a10,rgba(47,100,138,.10))}
@@ -45,7 +45,7 @@ tr[data-bl-sel="on"] td:first-child{box-shadow:inset 3px 0 0 var(--brand-signal,
 </div>
 <main style="flex:1;min-height:0;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px">
 <h1 style="position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)">Books review</h1>
-<div data-bl-show="{{ tieoutShow }}" style="display:flex;flex-direction:column;gap:12px">
+<div data-bl-show="{{ tieoutShow }}" data-books-view="tieout" style="display:flex;flex-direction:column;gap:12px">
 <div style="display:flex;gap:10px;flex-wrap:wrap">
 <div style="flex:1;min-width:210px;border:1px solid var(--border-strong);background:var(--card-surface-raised,#FCFBF8);padding:11px 13px">
 <span style="display:block;font:600 10px/1.4 var(--font-data);letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted)">Actual residual</span>
@@ -93,7 +93,7 @@ tr[data-bl-sel="on"] td:first-child{box-shadow:inset 3px 0 0 var(--brand-signal,
 </div>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.ReconciliationPanel" left="{{ reconLeft }}" right="{{ reconRight }}" currency="USD" statement-balance="{{ stmtBalance }}" book-balance="{{ bookBalance }}" hint-size="100%,420px"></x-import>
 </div>
-<div data-bl-show="{{ journalShow }}" style="display:flex;flex-direction:column;gap:12px">
+<div data-bl-show="{{ journalShow }}" data-books-view="journal" style="display:flex;flex-direction:column;gap:12px">
 <div data-bl-show="{{ noDraftShow }}">
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.Callout" tone="info" title="No journal drafted" hint-size="100%,86px">Select a break on the tie-out and choose <b>Draft correcting journal</b>. The draft is seeded from the break's own statement line, so the thing reviewed here is the thing the break describes.</x-import>
 </div>
@@ -134,7 +134,7 @@ tr[data-bl-sel="on"] td:first-child{box-shadow:inset 3px 0 0 var(--brand-signal,
 </div>
 </div>
 </div>
-<div data-bl-show="{{ ledgerShow }}" style="display:flex;flex-direction:column;gap:10px">
+<div data-bl-show="{{ ledgerShow }}" data-books-view="ledger" style="display:flex;flex-direction:column;gap:10px">
 <h2 style="font:600 13px var(--font-display);margin:0;color:var(--text-primary)">General ledger · {{ scopeLabel }}</h2>
 <p style="margin:0;font-size:11.5px;color:var(--text-muted);text-wrap:pretty">Every line here is the same object the tie-out and the trial balance read. A staged journal shows as <b>pending</b> and is excluded from the posted totals until its receipt arrives.</p>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.LedgerTable" rows="{{ ledgerRows }}" currency="USD" show-account="{{ true }}" caption="General ledger" selected-index="{{ ledgerSelectedIndex }}" on-row-click="{{ onLedgerRow }}" hint-size="100%,460px"></x-import>
@@ -142,12 +142,12 @@ tr[data-bl-sel="on"] td:first-child{box-shadow:inset 3px 0 0 var(--brand-signal,
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.Callout" tone="info" title="Excluded by basis" hint-size="100%,80px">{{ excludedNote }}</x-import>
 </div>
 </div>
-<div data-bl-show="{{ trialShow }}" style="display:flex;flex-direction:column;gap:10px">
+<div data-bl-show="{{ trialShow }}" data-books-view="trial" style="display:flex;flex-direction:column;gap:10px">
 <h2 style="font:600 13px var(--font-display);margin:0;color:var(--text-primary)">Trial balance · {{ scopeLabel }}</h2>
 <p style="margin:0;font-size:11.5px;color:var(--text-muted);text-wrap:pretty">Balances are <b>actual</b>. The trailing column names the accounts a staged journal would move — a projected figure is never printed in the balance column.</p>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.TrialBalance" rows="{{ tbRows }}" currency="USD" caption="Trial balance" trailing="{{ tbTrailing }}" trailing-label="If posted" selected-index="{{ tbSelectedIndex }}" on-row-click="{{ onTbRow }}" hint-size="100%,520px"></x-import>
 </div>
-<div data-bl-show="{{ accountShow }}" style="display:flex;flex-direction:column;gap:10px">
+<div data-bl-show="{{ accountShow }}" data-books-view="account" style="display:flex;flex-direction:column;gap:10px">
 <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
 <h2 style="font:600 13px var(--font-display);margin:0;color:var(--text-primary)">Account sheet</h2>
 <select value="{{ account }}" on-change="{{ onAccount }}" aria-label="Account" style="font:12px var(--font-data);color:var(--text-primary);background:var(--surface-input);border:1px solid var(--border-strong);border-radius:3px;padding:5px 8px">

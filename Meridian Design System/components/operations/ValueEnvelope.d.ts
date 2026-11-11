@@ -59,12 +59,14 @@ export interface ValueEnvelopeProps extends MeridianValueEnvelope, React.HTMLAtt
   onInspect?: () => void;
 }
 export declare function ValueEnvelope(props: ValueEnvelopeProps): React.JSX.Element;
+export declare namespace ValueEnvelope { const check: typeof envelopeCheck; }
 
 export interface EnvelopePanelProps extends React.HTMLAttributes<HTMLDivElement> {
   envelope: MeridianValueEnvelope;
   title?: string;
 }
 export declare function EnvelopePanel(props: EnvelopePanelProps): React.JSX.Element;
+export declare namespace EnvelopePanel { const check: typeof envelopeCheck; }
 
 export interface EnvelopeMarkProps {
   kind?: "condition" | "authority" | "evidence" | "clock" | "material";

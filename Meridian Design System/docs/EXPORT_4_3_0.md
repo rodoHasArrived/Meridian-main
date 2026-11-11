@@ -26,6 +26,9 @@ npm ci
 npm run build
 npm run build:check
 npm run test:release
+npm run test:source -- --out=api/source-contract-results.json
+npm run test:library -- --out=/tmp/meridian-library
+python scripts/project_compatibility.py
 python scripts/validate_release.py
 python scripts/export_release.py --check
 python scripts/export_release.py
@@ -44,11 +47,13 @@ contracts and `npm run test:browser` exercises the standalone reference. Set
 have their own synthetic-data scope; they do not replace workstation integration
 or live-backend validation.
 
-The retained whole-package governance gate currently reports 67 legacy/template
-findings and 25 warnings, so `validate_release.py` returns a failure while its
-other six gates pass. That result remains visible in the audit. The separate
-build/export integrity checks validate the curated artifact; they do not turn
-the legacy governance result into a passing release certification.
+The full compatibility follow-up repaired the 67 original governance findings.
+All seven release gates now pass, with retained warnings reported separately.
+`api/project-compatibility.json` records all export/template/screen reviews and
+the executed browser matrix. Its validator rejects stale or incomplete proof;
+assembly requires supplied reviewer records and a complete executed report.
+See `tests/README.md` for reconstruction inputs and the source/test freeze rule.
+Package checks establish the scoped artifact and synthetic browser contracts.
 
 ## Archive and verification
 
@@ -87,7 +92,7 @@ publisher trust. Re-exporting unchanged inputs produces the same archive bytes.
   into an existing application.
 - **Styles:** preserve `styles.css` and every imported token stylesheet. Tokens
   are a dependency closure, not optional individual samples.
-- **Fonts:** `tokens/fonts.css` references IBM Plex Sans/Mono TTFs in
+- **Fonts:** `tokens/fonts.css` references local IBM Plex Sans/Mono files in
   `assets/fonts/`; the OFL licenses ship beside them. No Google Fonts request is
   required for this package's type system.
 - **Templates:** `.dc.html`/`x-dc`/`x-import` content retains its Design Component

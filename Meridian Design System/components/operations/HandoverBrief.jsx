@@ -130,7 +130,7 @@ export function HandoverBrief({
 export function HandoverBriefChip({ count = 0, severity, since, label = "Handover", onClick, className = "", ...rest }) {
   inject();
   return <button type="button" className={`mds-hchip${className ? " " + className : ""}`} data-sev={severity || (count ? "action" : "info")}
-    onClick={onClick} aria-label={`${label}: ${count} item${count === 1 ? "" : "s"}${since ? ` since ${since}` : ""}`} {...rest}>
-    <span className="mds-hchip__dot" />{label} {count}{since ? <span style={{ opacity: .7 }}> · since {since}</span> : null}
+    onClick={onClick} aria-description={`${count} handover item${count === 1 ? "" : "s"}`} {...rest}>
+    <span className="mds-hchip__dot" aria-hidden="true" />{label} {count}{since ? <span> · since {since}</span> : null}
   </button>;
 }

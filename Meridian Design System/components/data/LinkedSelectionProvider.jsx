@@ -19,6 +19,11 @@ function toList(value, source) {
     seen.add(entry.id); return true;
   });
 }
+function limitSelection(list, multiple, max) {
+  if (!multiple) return list.slice(0, 1);
+  return typeof max === "number" && Number.isFinite(max)
+    ? list.slice(0, Math.max(0, Math.floor(max))) : list;
+}
 function sameList(a, b) {
   return a.length === b.length && a.every((entry, i) => entry.id === b[i].id);
 }
@@ -46,10 +51,10 @@ export function LinkedSelectionProvider({
 }) {
   const controlled = value !== undefined;
   const [internal, setInternal] = React.useState(
-    () => readUrl(urlParam, multiple) || readStorage(storageKey) || toList(defaultValue, "default")
+    () => limitSelection(readUrl(urlParam, multiple) || readStorage(storageKey) || toList(defaultValue, "default"), multiple, max)
   );
   const [history, setHistory] = React.useState([]);
-  const selections = controlled ? toList(value, "controlled") : internal;
+  const selections = limitSelection(controlled ? toList(value, "controlled") : internal, multiple, max);
   const selectionsRef = React.useRef(selections);
   selectionsRef.current = selections;
 
@@ -72,18 +77,22 @@ export function LinkedSelectionProvider({
 
   const commit = React.useCallback((next, meta = {}) => {
     const previous = selectionsRef.current;
-    let list = toList(next, meta.source || "programmatic");
-    if (!multiple) list = list.slice(0, 1);
-    else if (typeof max === "number") list = list.slice(0, max);
+    const list = limitSelection(toList(next, meta.source || "programmatic"), multiple, max);
     if (sameList(previous, list) && !meta.force) return;
     if (!meta.replaceHistory) {
       setHistory((entries) => [previous, ...entries].slice(0, Math.max(0, historyLimit)));
     }
     if (!controlled) setInternal(list);
     selectionsRef.current = list;
-    persist(list);
+    if (!controlled) persist(list);
     onChange?.(multiple ? list : (list[0] ?? null), { ...meta, selections: list });
   }, [controlled, historyLimit, max, multiple, onChange, persist]);
+
+  // A controlled callback proposes a selection. Only the owner's accepted value is committed
+  // to URL/storage, so a refused proposal cannot restore as a different selection later.
+  React.useEffect(() => {
+    if (controlled) persist(selections);
+  }, [controlled, value, multiple, max, persist]);
 
   const api = React.useMemo(() => {
     const idOf = (candidate) => {

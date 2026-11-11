@@ -1,6 +1,11 @@
 # Current export audit
 
-**Reviewed:** 2026-11-11 · **Source:** PR #3501, initial head `7e580e1729`
+**Reviewed:** 2026-11-11 · **Source:** PR #3501, including concurrent work through `1f01910387`.
+
+The full compatibility audit at the end of this report supersedes the earlier
+phase limitations about 67 governance findings, declaration gaps and partial
+library coverage. Earlier command records below retain their original scope;
+they are historical evidence, not claims about the final tree.
 
 The branch advanced to `a81d7afb45` with an existing dashboard palette migration;
 that work is preserved. The initial review covered the package export. The user
@@ -506,3 +511,98 @@ composite each badge wash over the selected surface; the global semantic hue and
 fill contracts remain. The masthead Paper label/dot use the canonical dark-surface
 slate tone regardless of the workspace appearance. The maintained browser profile
 checks their actual composed contrast instead of accepting a root token alone.
+
+## Full project-compatibility audit
+
+The approved follow-up reviews all **351 public exports in 210 modules**, all
+**135 specimen cards**, all **30 published templates**, and the eligibility
+registry's **49 entry points in 40 directories**. The entry classifications are
+30 published, nine companions, eight compatibility routers and two retained
+legacy examples. Browser source review covers **273 surfaces**, including the
+concurrently introduced fixture-only native component workbench. WPF changes
+from concurrent commits are preserved; this audit adds no WPF implementation.
+
+`api/project-compatibility.json` is the machine-checked inventory. Each export
+records kind, family/maturity, imports, declaration/guidance, dashboard equivalent
+or consumer, applicable states, defects, concrete adoption decision and executed
+cases. Template records distinguish publication from retained compatibility and
+legacy use, record primary journeys and blocked unsupported actions, and hash
+imported sources. Every browser surface has an adoption or retention rationale.
+The separate core/domain behavior maps retain exact test recipes and distinguish
+contracts owned by a function from controls owned by its siblings or callers.
+
+The validator rejects missing identities or reviews, stale sources/companions,
+failed or incomplete state cases, missing template journeys, partial browser
+matrices and changed runtime dependencies. Source review and namespace/render
+observations are explicitly not interaction proof. The source runner executes
+each regression in a fresh process and records source stability and exit codes.
+The library runner captures an immutable compiled bundle and verifies its shared
+runtime dependency snapshot before and after execution.
+
+### Adoption and retained semantics
+
+- Provider institution search uses shared search input and selectable dense
+  results. Requests remain explicit, exact institution IDs remain authoritative,
+  and loading/error/selection behavior retains its server contract.
+- Maintenance history uses shared Select and read-only DenseDataTable. Source
+  order, the 25-row limit, filters and exact cancellation IDs are preserved.
+- Report-writer token actions use shared buttons with adequate targets, focus and
+  disabled reasons. Keyboard ordering/removal, drag movement/copying, duplicate
+  prevention and event handling retain their existing meaning.
+- Other compatible forms, acknowledgments and flat tables use dashboard-native
+  adapters. Specialized accounting tables, grouped headers, native file inputs
+  and embedded row/disclosure actions have explicit retention reasons.
+- The dashboard keeps its React instance, navigation, URL/persistence contracts,
+  service payloads and density. The package namespace, release identity and
+  public names remain stable; accessibility contract additions are additive.
+
+### Defects repaired before adoption
+
+Financial checks now distinguish absent, malformed, restricted and zero amounts
+in balances, totals, tie-outs, ladders and previews. Missing current evidence
+blocks fresh balance/certification proof in the tested safeguards; historical
+signatures retain their original scope. Posting previews reject empty, all-zero or
+invalid journals and expire warning acknowledgments when their reviewed content
+changes. Confirmed receipts, projected results, retries, compensation and missing
+transport remain separate states. Restricted values are withheld from the tested
+labels, titles and evidence previews. These are presentation/interaction
+safeguards, not backend certification.
+
+Interaction repairs cover stale/removed selection, controlled-state updates,
+keyboard commitment, focus return, disabled changes, validation linkage, late
+async responses, storage failures and provider scope/lifecycle changes. The
+strict public type check uses the consuming React declarations. Lowercase helper
+companions avoid Windows case collisions with carrier declarations.
+
+All original 67 governance findings were investigated individually: 63 source
+defects and four checker/discovery assumptions. The checker now validates every
+declared entry rather than guessing a directory's one conventional filename.
+No allowance was increased. Actual theme/cascade/contrast checks and negative
+controls replace obsolete assumptions about primary action fills and unused
+fallback colors; undefined/cyclic dependencies, source/bundle parity, native
+palette/asset parity and contrast thresholds remain enforced.
+
+Template operator journeys also uncovered mutually exclusive planes left visible
+by inline flex/grid styles. Their authored visibility policies now win, and the
+journeys assert one active panel. Unsupported consequential sample actions have
+explicit disabled reasons instead of successful-looking no-ops. Read-only
+exports/navigation use actual synthetic content and release object URLs.
+
+### Final verification and scope
+
+The final command record is joined from the executed library report,
+`api/source-contract-results.json`, the full dashboard results and release
+checks. Reproduction commands are in `tests/README.md`,
+`tests/FULL_LIBRARY_BROWSER.md` and the dashboard README. The final inventory
+validator must pass against the committed sources; a diagnostic or partial run
+cannot satisfy it.
+
+Browser evidence uses isolated synthetic data, storage and clocks with local
+React, Babel, fonts and assets. The matrix covers light/dark, 1920×1080,
+1440×900, 1366×768, all manifest theme selectors and supported densities.
+The 200% desktop zoom layout equivalent uses 683×384 CSS pixels at DPR 2, with
+positive/negative controls proving responsive breakpoints and real overflow; it
+does not claim native Windows browser zoom execution. Native Windows/Edge and
+assistive-technology announcement journeys remain unexecuted by this audit.
+Live providers, backend writes and the complete monorepo CI are not certified by
+these synthetic browser checks. The PR remains draft and unmerged.

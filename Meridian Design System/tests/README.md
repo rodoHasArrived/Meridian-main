@@ -33,6 +33,12 @@ observations are kept separate from interaction and financial contract assertion
 declarations. Source-level Chromium regressions cover the contracts that static
 examples cannot prove:
 
+`npm run test:source -- --out=api/source-contract-results.json` executes all
+`*-regression.mjs` suites, the public type check and token-default checks in fresh
+processes. The result records source hashes, individual exit codes and source
+stability. Generate this only after freezing the component/test sources; changes
+invalidate the evidence. Examples of individual commands include:
+
 ```bash
 node tests/core-control-regression.mjs
 node tests/core-form-regression.mjs
@@ -41,8 +47,12 @@ node tests/core-composition-regression.mjs
 node tests/core-interaction-regression.mjs
 node tests/core-logic-regression.mjs
 node tests/core-state-regression.mjs
+node tests/core-gap-regression.mjs
 node tests/domain-integrity-regression.mjs
 node tests/domain-workflow-regression.mjs
+node tests/domain-evidence-regression.mjs
+node tests/domain-logic-regression.mjs
+node tests/domain-chart-state-regression.mjs
 node tests/accounting-interaction-regression.mjs
 npm run test:chart-trading
 npm run test:components

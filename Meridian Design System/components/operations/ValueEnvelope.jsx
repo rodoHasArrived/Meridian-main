@@ -89,7 +89,7 @@ function inject() {
 .mds-envp__r span:last-child{font-family:var(--font-data,ui-monospace);color:var(--text-primary,#20252B);}
 .mds-envp__bad{display:flex;gap:6px;padding:3px 0;font-size:11px;font-family:var(--font-body,system-ui);color:var(--red, #B54B42);}
 .mds-envp__ev{display:flex;justify-content:space-between;gap:12px;padding:2px 0;font-size:11px;font-family:var(--font-body,system-ui);}
-.mds-envp__ev a{color:var(--link, #2A5F96);text-decoration:none;border-bottom:1px solid transparent;}
+.mds-envp__ev a{display:inline-flex;align-items:center;min-height:24px;min-width:24px;padding:2px 4px;box-sizing:border-box;color:var(--link, #2A5F96);text-decoration:none;border-bottom:1px solid transparent;}
 .mds-envp__ev a:hover{color:var(--link-hover, #1F4A76);border-bottom-color:var(--link-hover, #1F4A76);}`;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "value-envelope");
@@ -116,8 +116,9 @@ function clockRows(clocks = {}) {
 /** Tier 1 + 2: the value, its derived marks, and the hover envelope. */
 export function ValueEnvelope({
   value, condition = "confirmed", detail, authority, evidence = [], clocks = {},
-  materiality, label, align, onInspect, className = "", ...rest
+  materiality, label, align, onInspect, onKeyDown, role, className = "", ...rest
 }) {
+  const uid=React.useId();
   inject();
   const m = conditionMeta(condition);
   const env = { value, condition, authority, evidence, clocks, materiality };
@@ -129,8 +130,11 @@ export function ValueEnvelope({
     <span
       className={`mds-env${align === "right" ? " mds-env--right" : ""}${soft ? " mds-env--soft" : ""}${className ? " " + className : ""}`}
       tabIndex={0}
+      role={role||(onInspect?"button":undefined)}
+      onKeyDown={event=>{onKeyDown?.(event);if(!event.defaultPrevented&&onInspect&&(event.key==="Enter"||event.key===" ")){event.preventDefault();onInspect(event);}}}
       onClick={onInspect}
       {...rest}
+      aria-describedby={[rest["aria-describedby"],uid].filter(Boolean).join(" ")}
     >
       <span className="mds-env__v">{formatConditioned(value, m.key, detail)}</span>
       <span className="mds-env__marks">
@@ -141,7 +145,7 @@ export function ValueEnvelope({
         {materiality && materiality.material ? <EnvelopeMark kind="material" title="Material" /> : null}
         {viol.length ? <EnvelopeMark glyph="▲" bad title={viol[0].text} /> : null}
       </span>
-      <span className="mds-env__pop" role="tooltip">
+      <span id={uid} className="mds-env__pop" role="tooltip">
         {label ? <div className="mds-env__row"><span className="mds-env__k">Figure</span><b>{label}</b></div> : null}
         <div className="mds-env__row"><span className="mds-env__k">Condition</span><b>{m.label}{detail ? " \u00B7 " + detail : ""}</b></div>
         {auth ? <div className="mds-env__row"><span className="mds-env__k">Authority</span><b>{auth.label}</b></div> : null}

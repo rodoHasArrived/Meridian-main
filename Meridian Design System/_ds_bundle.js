@@ -1,4 +1,4 @@
-/* @ds-bundle: {"format":4,"version":"4.3.0","namespace":"MeridianDesignSystem_205d17","components":[{"name":"AccountTree","sourcePath":"components/accounting/AccountTree.jsx"},{"name":"AccountingPeriodSelector","sourcePath":"components/accounting/AccountingPeriodSelector.jsx"},{"name":"AgingTable","sourcePath":"components/accounting/AgingTable.jsx"},{"name":"AllocationEditor","sourcePath":"components/accounting/AllocationEditor.jsx"},{"name":"AmountCell","sourcePath":"components/accounting/AmountCell.jsx"},{"name":"ASSURANCE_STAGES","sourcePath":"components/accounting/Assurance.jsx"},{"name":"AssuranceChip","sourcePath":"components/accounting/Assurance.jsx"},{"name":"CertificationMatrix","sourcePath":"components/accounting/Assurance.jsx"},{"name":"Assurance","sourcePath":"components/accounting/Assurance.jsx"},{"name":"BasisBridge","sourcePath":"components/accounting/BasisBridge.jsx"},{"name":"BasisComparisonMatrix","sourcePath":"components/accounting/BasisComparisonMatrix.jsx"},{"name":"CalculationTrace","sourcePath":"components/accounting/CalculationTrace.jsx"},{"name":"CloseCalendar","sourcePath":"components/accounting/CloseCalendar.jsx"},{"name":"CommitmentBar","sourcePath":"components/accounting/CommitmentBar.jsx"},{"name":"FxRevaluationTable","sourcePath":"components/accounting/FxRevaluationTable.jsx"},{"name":"IncomeSchedule","sourcePath":"components/accounting/IncomeSchedule.jsx"},{"name":"JournalEntryForm","sourcePath":"components/accounting/JournalEntryForm.jsx"},{"name":"LedgerTable","sourcePath":"components/accounting/LedgerTable.jsx"},{"name":"LifecycleRibbon","sourcePath":"components/accounting/LifecycleRibbon.jsx"},{"name":"LifecycleLanes","sourcePath":"components/accounting/LifecycleRibbon.jsx"},{"name":"Money","sourcePath":"components/accounting/Money.jsx"},{"name":"PostingImpactPreview","sourcePath":"components/accounting/PostingImpactPreview.jsx"},{"name":"ReconciliationPanel","sourcePath":"components/accounting/ReconciliationPanel.jsx"},{"name":"RollforwardMatrix","sourcePath":"components/accounting/RollforwardMatrix.jsx"},{"name":"RollforwardTrace","sourcePath":"components/accounting/RollforwardTrace.jsx"},{"name":"ScheduleLadder","sourcePath":"components/accounting/ScheduleLadder.jsx"},{"name":"ScheduleLadderSet","sourcePath":"components/accounting/ScheduleLadder.jsx"},{"name":"StatementTable","sourcePath":"components/accounting/StatementTable.jsx"},{"name":"TaxLotTable","sourcePath":"components/accounting/TaxLotTable.jsx"},{"name":"TieOutPanel","sourcePath":"components/accounting/TieOutPanel.jsx"},{"name":"TrialBalance","sourcePath":"components/accounting/TrialBalance.jsx"},{"name":"VarianceCell","sourcePath":"components/accounting/VarianceCell.jsx"},{"name":"AnalyticalField","sourcePath":"components/charts/AnalyticalField.jsx"},{"name":"AnalyticalFigure","sourcePath":"components/charts/AnalyticalFigure.jsx"},{"name":"AnalyticalFigureGrid","sourcePath":"components/charts/AnalyticalFigure.jsx"},{"name":"BarChart","sourcePath":"components/charts/BarChart.jsx"},{"name":"CandleChart","sourcePath":"components/charts/CandleChart.jsx"},{"name":"CashFlowLadder","sourcePath":"components/charts/CashFlowLadder.jsx"},{"name":"ChartAnnotations","sourcePath":"components/charts/ChartAnnotations.jsx"},{"name":"ChartCard","sourcePath":"components/charts/ChartCard.jsx"},{"name":"AXIS_FONT","sourcePath":"components/charts/ChartFrame.jsx"},{"name":"AxisChip","sourcePath":"components/charts/ChartFrame.jsx"},{"name":"ChartFrame","sourcePath":"components/charts/ChartFrame.jsx"},{"name":"ChartTooltip","sourcePath":"components/charts/ChartTooltip.jsx"},{"name":"ComparisonPlate","sourcePath":"components/charts/ComparisonPlate.jsx"},{"name":"PlateGrid","sourcePath":"components/charts/ComparisonPlate.jsx"},{"name":"ControlDependencyGraph","sourcePath":"components/charts/ControlDependencyGraph.jsx"},{"name":"CorrelationHeatmap","sourcePath":"components/charts/CorrelationHeatmap.jsx"},{"name":"CoverageMatrix","sourcePath":"components/charts/CoverageMatrix.jsx"},{"name":"DepthChart","sourcePath":"components/charts/DepthChart.jsx"},{"name":"DistributionRange","sourcePath":"components/charts/DistributionRange.jsx"},{"name":"DonutChart","sourcePath":"components/charts/DonutChart.jsx"},{"name":"DotMatrix","sourcePath":"components/charts/DotMatrix.jsx"},{"name":"DrawdownChart","sourcePath":"components/charts/DrawdownChart.jsx"},{"name":"DurationContribution","sourcePath":"components/charts/DurationContribution.jsx"},{"name":"EquityCurve","sourcePath":"components/charts/EquityCurve.jsx"},{"name":"FIGURE_ROLES","sourcePath":"components/charts/Figure.jsx"},{"name":"GEOMETRIES","sourcePath":"components/charts/Figure.jsx"},{"name":"Figure","sourcePath":"components/charts/Figure.jsx"},{"name":"FigureSet","sourcePath":"components/charts/Figure.jsx"},{"name":"Histogram","sourcePath":"components/charts/Histogram.jsx"},{"name":"IntervalBar","sourcePath":"components/charts/IntervalBar.jsx"},{"name":"LineageGraph","sourcePath":"components/charts/LineageGraph.jsx"},{"name":"MATURITY_BUCKETS","sourcePath":"components/charts/MaturityLadder.jsx"},{"name":"MaturityLadder","sourcePath":"components/charts/MaturityLadder.jsx"},{"name":"OwnershipGraph","sourcePath":"components/charts/OwnershipGraph.jsx"},{"name":"PeerComparisonStrip","sourcePath":"components/charts/PeerComparisonStrip.jsx"},{"name":"PnLCalendar","sourcePath":"components/charts/PnLCalendar.jsx"},{"name":"ScatterChart","sourcePath":"components/charts/ScatterChart.jsx"},{"name":"ScenarioSelector","sourcePath":"components/charts/ScenarioSelector.jsx"},{"name":"SmallMultiples","sourcePath":"components/charts/SmallMultiples.jsx"},{"name":"Sparkline","sourcePath":"components/charts/Sparkline.jsx"},{"name":"TimeframeSwitcher","sourcePath":"components/charts/TimeframeSwitcher.jsx"},{"name":"AsOfControl","sourcePath":"components/charts/TimeframeSwitcher.jsx"},{"name":"TraceChart","sourcePath":"components/charts/TraceChart.jsx"},{"name":"Treemap","sourcePath":"components/charts/Treemap.jsx"},{"name":"WatchlistStrip","sourcePath":"components/charts/WatchlistStrip.jsx"},{"name":"WaterfallChart","sourcePath":"components/charts/WaterfallChart.jsx"},{"name":"YieldCurve","sourcePath":"components/charts/YieldCurve.jsx"},{"name":"ChartCursorSync","sourcePath":"components/charts/useChartCrosshair.js"},{"name":"ChartCursor","sourcePath":"components/charts/useChartCrosshair.js"},{"name":"ROLES","sourcePath":"components/charts/viz.js"},{"name":"Fmt","sourcePath":"components/charts/viz.js"},{"name":"Accordion","sourcePath":"components/core/Accordion.jsx"},{"name":"AsyncCombobox","sourcePath":"components/core/AsyncCombobox.jsx"},{"name":"Badge","sourcePath":"components/core/Badge.jsx"},{"name":"Breadcrumb","sourcePath":"components/core/Breadcrumb.jsx"},{"name":"Button","sourcePath":"components/core/Button.jsx"},{"name":"Callout","sourcePath":"components/core/Callout.jsx"},{"name":"CapsuleHeader","sourcePath":"components/core/Capsule.jsx"},{"name":"CapsuleBody","sourcePath":"components/core/Capsule.jsx"},{"name":"CapsuleFooter","sourcePath":"components/core/Capsule.jsx"},{"name":"Capsule","sourcePath":"components/core/Capsule.jsx"},{"name":"Checkbox","sourcePath":"components/core/Checkbox.jsx"},{"name":"Toggle","sourcePath":"components/core/Checkbox.jsx"},{"name":"Combobox","sourcePath":"components/core/Combobox.jsx"},{"name":"CommandPalette","sourcePath":"components/core/CommandPalette.jsx"},{"name":"ContextMenu","sourcePath":"components/core/ContextMenu.jsx"},{"name":"ContinuityStatus","sourcePath":"components/core/ContinuityFrame.jsx"},{"name":"ContinuityFrame","sourcePath":"components/core/ContinuityFrame.jsx"},{"name":"DatePicker","sourcePath":"components/core/DatePicker.jsx"},{"name":"DateRangePicker","sourcePath":"components/core/DateRangePicker.jsx"},{"name":"Datum","sourcePath":"components/core/Datum.jsx"},{"name":"DatumGroup","sourcePath":"components/core/Datum.jsx"},{"name":"Delta","sourcePath":"components/core/Delta.jsx"},{"name":"DensityToggle","sourcePath":"components/core/DensityToggle.jsx"},{"name":"Dialog","sourcePath":"components/core/Dialog.jsx"},{"name":"DialogHeader","sourcePath":"components/core/Dialog.jsx"},{"name":"DialogBody","sourcePath":"components/core/Dialog.jsx"},{"name":"DialogFooter","sourcePath":"components/core/Dialog.jsx"},{"name":"DialogForm","sourcePath":"components/core/Dialog.jsx"},{"name":"DETAIL_LEVELS","sourcePath":"components/core/Disclosure.jsx"},{"name":"DisclosureProvider","sourcePath":"components/core/Disclosure.jsx"},{"name":"DetailDial","sourcePath":"components/core/Disclosure.jsx"},{"name":"DisclosureResidue","sourcePath":"components/core/Disclosure.jsx"},{"name":"DisclosureRegion","sourcePath":"components/core/Disclosure.jsx"},{"name":"DetailOnly","sourcePath":"components/core/Disclosure.jsx"},{"name":"DisclosureHooks","sourcePath":"components/core/Disclosure.jsx"},{"name":"Disclosure","sourcePath":"components/core/Disclosure.jsx"},{"name":"Drawer","sourcePath":"components/core/Drawer.jsx"},{"name":"DrawerHeader","sourcePath":"components/core/Drawer.jsx"},{"name":"DrawerBody","sourcePath":"components/core/Drawer.jsx"},{"name":"ErrorBoundary","sourcePath":"components/core/ErrorBoundary.jsx"},{"name":"Eyebrow","sourcePath":"components/core/Eyebrow.jsx"},{"name":"FileUpload","sourcePath":"components/core/FileUpload.jsx"},{"name":"Flex","sourcePath":"components/core/Flex.jsx"},{"name":"FormRow","sourcePath":"components/core/Form.jsx"},{"name":"FormGrid","sourcePath":"components/core/Form.jsx"},{"name":"FormDivider","sourcePath":"components/core/Form.jsx"},{"name":"FormSectionLabel","sourcePath":"components/core/Form.jsx"},{"name":"Form","sourcePath":"components/core/Form.jsx"},{"name":"FormField","sourcePath":"components/core/FormField.jsx"},{"name":"FormValidation","sourcePath":"components/core/FormValidation.jsx"},{"name":"FieldInput","sourcePath":"components/core/FormValidation.jsx"},{"name":"FormErrorSummary","sourcePath":"components/core/FormValidation.jsx"},{"name":"NEGATIVE_STYLES","sourcePath":"components/core/FormatProvider.jsx"},{"name":"FormatProvider","sourcePath":"components/core/FormatProvider.jsx"},{"name":"FormatHooks","sourcePath":"components/core/FormatProvider.jsx"},{"name":"Format","sourcePath":"components/core/FormatProvider.jsx"},{"name":"ConnectionDot","sourcePath":"components/core/FreshnessIndicator.jsx"},{"name":"FreshnessIndicator","sourcePath":"components/core/FreshnessIndicator.jsx"},{"name":"Grid","sourcePath":"components/core/Grid.jsx"},{"name":"HotkeysProvider","sourcePath":"components/core/HotkeysProvider.jsx"},{"name":"Input","sourcePath":"components/core/Input.jsx"},{"name":"InstrumentChip","sourcePath":"components/core/InstrumentChip.jsx"},{"name":"Kbd","sourcePath":"components/core/Kbd.jsx"},{"name":"LocalDate","sourcePath":"components/core/LocalDate.jsx"},{"name":"LocalDateText","sourcePath":"components/core/LocalDate.jsx"},{"name":"MaterialityBadge","sourcePath":"components/core/MaterialityAssessment.jsx"},{"name":"MaterialityAssessment","sourcePath":"components/core/MaterialityAssessment.jsx"},{"name":"MultiSelect","sourcePath":"components/core/MultiSelect.jsx"},{"name":"NotificationCenter","sourcePath":"components/core/NotificationCenter.jsx"},{"name":"NumberInput","sourcePath":"components/core/NumberInput.jsx"},{"name":"OBJECT_TYPES","sourcePath":"components/core/ObjectModel.jsx"},{"name":"ObjectHeader","sourcePath":"components/core/ObjectModel.jsx"},{"name":"ObjectHooks","sourcePath":"components/core/ObjectModel.jsx"},{"name":"ObjectModel","sourcePath":"components/core/ObjectModel.jsx"},{"name":"ANALYTICAL_SCOPES","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ObjectScopeProvider","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ScopeMark","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ScopedValue","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ScopeMismatch","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ScopeHooks","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ObjectScope","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ObjectTrailProvider","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"TrailHooks","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"ObjectTrail","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"ObjectTrailList","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"PanelSurface","sourcePath":"components/core/PanelSurface.jsx"},{"name":"Popover","sourcePath":"components/core/Popover.jsx"},{"name":"ProgressBar","sourcePath":"components/core/ProgressBar.jsx"},{"name":"RadioGroup","sourcePath":"components/core/RadioGroup.jsx"},{"name":"DENSITY","sourcePath":"components/core/Registry.jsx"},{"name":"SEVERITY","sourcePath":"components/core/Registry.jsx"},{"name":"TIME_ROLES","sourcePath":"components/core/TimeContext.jsx"},{"name":"Registry","sourcePath":"components/core/Registry.jsx"},{"name":"RegistryTable","sourcePath":"components/core/Registry.jsx"},{"name":"SegmentedControl","sourcePath":"components/core/SegmentedControl.jsx"},{"name":"Select","sourcePath":"components/core/Select.jsx"},{"name":"Slider","sourcePath":"components/core/Slider.jsx"},{"name":"Spinner","sourcePath":"components/core/Spinner.jsx"},{"name":"SplitPane","sourcePath":"components/core/SplitPane.jsx"},{"name":"Stack","sourcePath":"components/core/Stack.jsx"},{"name":"StatusBanner","sourcePath":"components/core/StatusBanner.jsx"},{"name":"Stepper","sourcePath":"components/core/Stepper.jsx"},{"name":"STRATEGY_LIFECYCLE","sourcePath":"components/core/StrategyModel.jsx"},{"name":"STRATEGY_FORMATION_STEPS","sourcePath":"components/core/StrategyModel.jsx"},{"name":"StrategyModel","sourcePath":"components/core/StrategyModel.jsx"},{"name":"Tabs","sourcePath":"components/core/Tabs.jsx"},{"name":"TabPanel","sourcePath":"components/core/Tabs.jsx"},{"name":"TagInput","sourcePath":"components/core/TagInput.jsx"},{"name":"TextArea","sourcePath":"components/core/TextArea.jsx"},{"name":"TimeContextProvider","sourcePath":"components/core/TimeContext.jsx"},{"name":"TimeHooks","sourcePath":"components/core/TimeContext.jsx"},{"name":"TimeRole","sourcePath":"components/core/TimeContext.jsx"},{"name":"TimeContextPanel","sourcePath":"components/core/TimeContext.jsx"},{"name":"TimeContext","sourcePath":"components/core/TimeContext.jsx"},{"name":"Timestamp","sourcePath":"components/core/Timestamp.jsx"},{"name":"ToastProvider","sourcePath":"components/core/Toast.jsx"},{"name":"Toast","sourcePath":"components/core/Toast.jsx"},{"name":"Tooltip","sourcePath":"components/core/Tooltip.jsx"},{"name":"TreeView","sourcePath":"components/core/TreeView.jsx"},{"name":"Validators","sourcePath":"components/core/Validators.js"},{"name":"AuthorityChip","sourcePath":"components/core/ValueAuthority.jsx"},{"name":"AuthorityStack","sourcePath":"components/core/ValueAuthority.jsx"},{"name":"ValueAuthority","sourcePath":"components/core/ValueAuthority.jsx"},{"name":"AuthorityPanel","sourcePath":"components/core/ValueAuthority.jsx"},{"name":"GLYPHS","sourcePath":"components/core/format.js"},{"name":"DOW","sourcePath":"components/core/localDate.js"},{"name":"FormHooks","sourcePath":"components/core/useFormState.js"},{"name":"BulkActionBar","sourcePath":"components/data/BulkActionBar.jsx"},{"name":"BulkSelectCheckbox","sourcePath":"components/data/BulkActionBar.jsx"},{"name":"ColumnChooser","sourcePath":"components/data/ColumnChooser.jsx"},{"name":"ColumnManager","sourcePath":"components/data/ColumnManager.jsx"},{"name":"CELL_FORMATS","sourcePath":"components/data/DataGrid.jsx"},{"name":"GRID_SCHEMAS","sourcePath":"components/data/DataGrid.jsx"},{"name":"DataGrid","sourcePath":"components/data/DataGrid.jsx"},{"name":"DataStateSwitch","sourcePath":"components/data/DataStateSwitch.jsx"},{"name":"EditableCell","sourcePath":"components/data/EditableCell.jsx"},{"name":"EmptyState","sourcePath":"components/data/EmptyState.jsx"},{"name":"EntitySummary","sourcePath":"components/data/EntitySummary.jsx"},{"name":"FilterBuilder","sourcePath":"components/data/FilterBuilder.jsx"},{"name":"KeyValueGrid","sourcePath":"components/data/KeyValueGrid.jsx"},{"name":"LinkedSelectionProvider","sourcePath":"components/data/LinkedSelectionProvider.jsx"},{"name":"SelectionHooks","sourcePath":"components/data/LinkedSelectionProvider.jsx"},{"name":"LinkedSelectionTarget","sourcePath":"components/data/LinkedSelectionProvider.jsx"},{"name":"MetricCard","sourcePath":"components/data/MetricCard.jsx"},{"name":"OptimisticProvider","sourcePath":"components/data/OptimisticCell.jsx"},{"name":"OptimisticHooks","sourcePath":"components/data/OptimisticCell.jsx"},{"name":"OptimisticCell","sourcePath":"components/data/OptimisticCell.jsx"},{"name":"OptimisticRowBar","sourcePath":"components/data/OptimisticCell.jsx"},{"name":"Pagination","sourcePath":"components/data/Pagination.jsx"},{"name":"SavedViews","sourcePath":"components/data/SavedViews.jsx"},{"name":"SelectionCompareProvider","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"SelectionCompareHooks","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"CompareToggle","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"CompareTray","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"SelectionCompare","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"CompareSheet","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"SelectionToolbar","sourcePath":"components/data/SelectionToolbar.jsx"},{"name":"Skeleton","sourcePath":"components/data/Skeleton.jsx"},{"name":"SkeletonTable","sourcePath":"components/data/Skeleton.jsx"},{"name":"TableHooks","sourcePath":"components/data/TableHooks.js"},{"name":"Toolbar","sourcePath":"components/data/Toolbar.jsx"},{"name":"ToolbarGroup","sourcePath":"components/data/Toolbar.jsx"},{"name":"ToolbarSpacer","sourcePath":"components/data/Toolbar.jsx"},{"name":"ToolbarDivider","sourcePath":"components/data/Toolbar.jsx"},{"name":"VirtualizedList","sourcePath":"components/data/VirtualizedList.jsx"},{"name":"WorksheetGrid","sourcePath":"components/data/WorksheetGrid.jsx"},{"name":"CONSEQUENCE_KINDS","sourcePath":"components/decision/ConsequenceRail.jsx"},{"name":"ConsequenceRail","sourcePath":"components/decision/ConsequenceRail.jsx"},{"name":"DecisionSnapshotPanel","sourcePath":"components/decision/DecisionSnapshot.jsx"},{"name":"DecisionSnapshot","sourcePath":"components/decision/DecisionSnapshot.jsx"},{"name":"SnapshotHooks","sourcePath":"components/decision/DecisionSnapshot.jsx"},{"name":"EVIDENCE_SECTIONS","sourcePath":"components/decision/EvidenceRail.jsx"},{"name":"EvidenceRail","sourcePath":"components/decision/EvidenceRail.jsx"},{"name":"ACTION_STATES","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"ActionStateChip","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"ActionEnvelope","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"InstructionLedger","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"ActionEnvelopeProvider","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"ActionHooks","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"ActionGuardList","sourcePath":"components/operations/ActionGuard.jsx"},{"name":"ActionGuard","sourcePath":"components/operations/ActionGuard.jsx"},{"name":"ActionAvailability","sourcePath":"components/operations/ActionGuard.jsx"},{"name":"QUEUE_RUNGS","sourcePath":"components/operations/ActionQueue.jsx"},{"name":"ActionQueue","sourcePath":"components/operations/ActionQueue.jsx"},{"name":"ActionQueueChip","sourcePath":"components/operations/ActionQueue.jsx"},{"name":"ADAPTER_POSTURES","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"AdapterPostureChip","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"AdapterDiagnostics","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"AdapterHooks","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"AnnotationProvider","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"AnnotationHooks","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"AnnotationAnchor","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"AnnotationLayer","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"AnnotationPanel","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"AttestationPanel","sourcePath":"components/operations/AttestationPanel.jsx"},{"name":"CaseQueue","sourcePath":"components/operations/CaseQueue.jsx"},{"name":"ChangeSetProvider","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"ChangeSetHooks","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"ChangeSetDiff","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"ChangeReviewBar","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"ChangeSetReview","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"ClaimHeader","sourcePath":"components/operations/ClaimHeader.jsx"},{"name":"ConnectionState","sourcePath":"components/operations/ConnectionState.jsx"},{"name":"DataCondition","sourcePath":"components/operations/DataCondition.jsx"},{"name":"DataConditionValue","sourcePath":"components/operations/DataCondition.jsx"},{"name":"DataConditionLegend","sourcePath":"components/operations/DataCondition.jsx"},{"name":"DecisionFlowProvider","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"DecisionFlow","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"DecisionFlowRail","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"DecisionFlowStage","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"DecisionConsequenceBar","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"DiffView","sourcePath":"components/operations/DiffView.jsx"},{"name":"EventTimeline","sourcePath":"components/operations/EventTimeline.jsx"},{"name":"EvidenceInspector","sourcePath":"components/operations/EvidenceInspector.jsx"},{"name":"EvidenceSection","sourcePath":"components/operations/EvidenceInspector.jsx"},{"name":"ProvenanceTrace","sourcePath":"components/operations/EvidenceInspector.jsx"},{"name":"EvidenceLink","sourcePath":"components/operations/EvidenceLink.jsx"},{"name":"EvidencePreview","sourcePath":"components/operations/EvidencePreview.jsx"},{"name":"GateRail","sourcePath":"components/operations/GateRail.jsx"},{"name":"HandoverBrief","sourcePath":"components/operations/HandoverBrief.jsx"},{"name":"HandoverBriefChip","sourcePath":"components/operations/HandoverBrief.jsx"},{"name":"LogTail","sourcePath":"components/operations/LogTail.jsx"},{"name":"ProvenanceChip","sourcePath":"components/operations/ProvenanceChip.jsx"},{"name":"ReadinessPanel","sourcePath":"components/operations/ReadinessPanel.jsx"},{"name":"ResolutionDrawer","sourcePath":"components/operations/ResolutionDrawer.jsx"},{"name":"SeverityBadge","sourcePath":"components/operations/SeverityBadge.jsx"},{"name":"SlaChip","sourcePath":"components/operations/SlaChip.jsx"},{"name":"SourceCoverageSummary","sourcePath":"components/operations/SourceCoverageSummary.jsx"},{"name":"Status","sourcePath":"components/operations/Status.jsx"},{"name":"STRATEGY_RUN_AXES","sourcePath":"components/operations/StrategyRunModel.jsx"},{"name":"StrategyRunModel","sourcePath":"components/operations/StrategyRunModel.jsx"},{"name":"TrustStrip","sourcePath":"components/operations/TrustStrip.jsx"},{"name":"ValidationIssueList","sourcePath":"components/operations/ValidationIssueList.jsx"},{"name":"ENVELOPE_MARKS","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"AUTHORITIES","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"EnvelopeMark","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"ValueEnvelope","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"EnvelopePanel","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"EnvelopeCoherence","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"VersionConflictNotice","sourcePath":"components/operations/VersionConflictNotice.jsx"},{"name":"WorkspaceSection","sourcePath":"components/operations/WorkspaceSection.jsx"},{"name":"GlobalSearch","sourcePath":"components/shell/GlobalSearch.jsx"},{"name":"NavRail","sourcePath":"components/shell/NavRail.jsx"},{"name":"ReturnPath","sourcePath":"components/shell/ReturnPath.jsx"},{"name":"ARCHETYPES","sourcePath":"components/shell/ScreenComposition.jsx"},{"name":"ScreenComposition","sourcePath":"components/shell/ScreenComposition.jsx"},{"name":"UserMenu","sourcePath":"components/shell/SessionControls.jsx"},{"name":"RoleBadge","sourcePath":"components/shell/SessionControls.jsx"},{"name":"ReadOnlyBanner","sourcePath":"components/shell/SessionControls.jsx"},{"name":"SessionControls","sourcePath":"components/shell/SessionControls.jsx"},{"name":"StatusBar","sourcePath":"components/shell/StatusBar.jsx"},{"name":"WorkspaceContextProvider","sourcePath":"components/shell/WorkspaceContextBar.jsx"},{"name":"WorkspaceHooks","sourcePath":"components/shell/WorkspaceContextBar.jsx"},{"name":"WorkspaceContextBar","sourcePath":"components/shell/WorkspaceContextBar.jsx"},{"name":"WorkspaceLayoutProvider","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"LayoutHooks","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"WorkspaceLayoutBar","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"WorkspaceLayoutGrid","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"WorkspaceLayout","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"LayoutRegion","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"WorkstationShell","sourcePath":"components/shell/WorkstationShell.jsx"},{"name":"WorkstationTopbar","sourcePath":"components/shell/WorkstationTopbar.jsx"},{"name":"Blotter","sourcePath":"components/trading/Blotter.jsx"},{"name":"DepthLadder","sourcePath":"components/trading/DepthLadder.jsx"},{"name":"FillsFeed","sourcePath":"components/trading/FillsFeed.jsx"},{"name":"OptionChainTable","sourcePath":"components/trading/OptionChainTable.jsx"},{"name":"OrderTicket","sourcePath":"components/trading/OrderTicket.jsx"},{"name":"TimeAndSalesTape","sourcePath":"components/trading/TimeAndSalesTape.jsx"}],"sourceHashAlgorithm":"sha256","sourceHashes":{"api/accounting.js":"32a06149bbd3e32d60456970b7d0a25fef31aed21cffc2d01b999eb3aeab13f4","api/analytics.js":"93324c43ff214c4fa63c40715e531989d37d79bf693e9d492fde823e8fa6b437","api/coordination.js":"071d33c712dd84bd1d755b9d74515a6336697f90ffecc2ca92ac80314aefc3d1","api/data.js":"89acfb7da4c585ba655b3901a5bba7f367184b614dbce79653bed62b243c788e","api/decision.js":"f07458ea2956126c59e37a23159369b06bf06da74a1e50581a53318a8ffd1fa5","api/evidence.js":"c767f680e87df8a92edfb6a7f14150bb789a67b64525272d9ef622cba736063f","api/legacy.js":"560b474515b04c2cf068955403659d74d05fc388feded136177b50836b81300a","api/primitives.js":"4c180a2daabd16d496cecccd86369fac40e6cacc51e3d44ab87e7c0285a0b78e","api/shell.js":"033c09bc4874371584610596234a7f5d43168702e24ecf1e5430c0e3b49028ba","api/trading.js":"d1e4efaf7268e3ab4da5faa0ec091a61b1842ee377823620d829585fefbc6802","components/accounting/AccountTree.jsx":"a68cae03ea5e15290b7f9ca9cafe02ae2baf9da9230a958395826b30e7c90526","components/accounting/AccountingPeriodSelector.jsx":"2a6b872a19c85ce7725b4081f475f91491f181e42e642739b70fbd011206814c","components/accounting/AgingTable.jsx":"4827dccb31bb114062428d0193742dea68f7122587d779ffffc140836814a61a","components/accounting/AllocationEditor.jsx":"ee151fa8aadb4d68625acccdc0c8bb8eb10b4ab221fea446e01cbd907eaf69d9","components/accounting/AmountCell.jsx":"cf075e06cd3672359810daf9d0e03c9efa2b012ef266e2bbcd656f6e4c998d45","components/accounting/Assurance.jsx":"97e4f4ba2e21bc51b5dfe74c706172eb832e9fc56ba265b0f67cfc457641c640","components/accounting/BasisBridge.jsx":"ab4d212327170d45265eb9fe6f3a205503cee8bd2395e9ec7e8e7cd74c6b7ad7","components/accounting/BasisComparisonMatrix.jsx":"d9b335208c327bd44804c7b83275236316a3c01b28438e1e3d29c22c2379e879","components/accounting/CalculationTrace.jsx":"965ee8d556b8c63c8aa5058fe54f6b38eec2aa726a391c8f7ca14f48f69b151e","components/accounting/CloseCalendar.jsx":"6363ae63d3e521df17ffa8ec848657957ad267a9997420aa60e14d408c0ec49d","components/accounting/CommitmentBar.jsx":"8eb6553280b6345fc6b58c5fc9cc1e53d35d2d074bfa6a93cdeb7d82f05b5ae0","components/accounting/FxRevaluationTable.jsx":"8875a2e1dc4f8d8e142757f03eb73ed6ae28c67a05d841aa2189f5b42b8ec863","components/accounting/IncomeSchedule.jsx":"2f250a831b75e163901382523181eab2839ce1b6223c72c448aad88e6dc038b7","components/accounting/JournalEntryForm.jsx":"9ac44e9fc88279fe366efb9f68470ba7562713d457c5fe7a1e1420b1dd8e7140","components/accounting/LedgerTable.jsx":"2e6da33d995ec7ffa29e96f26304d0f1af01bbf604c534d589a3711c49db6adb","components/accounting/LifecycleRibbon.jsx":"13404beefa15be74401b170f5a338216649cededb559117de72619075e690ef8","components/accounting/Money.jsx":"398838b8e99b76f2022a5dbf6365a94989d25970ab4de99e9d71dd40d5ee10e0","components/accounting/PostingImpactPreview.jsx":"541c9b6cfa1b09c15553bf54f0798cc701d82b90b678ac647ec4cd8c264f660b","components/accounting/ReconciliationPanel.jsx":"6c88043d8ffbebf78225e65f88eadc63e14259e854068bba0d05458989238211","components/accounting/RollforwardMatrix.jsx":"4ef5eae7ce466840b6afdba8f5aa140cdf97019eab736c1adba720aad98934b0","components/accounting/RollforwardTrace.jsx":"a8f2c444a8cc247c5c6e9bd75cd013562f60a4237e2c77b706085ca0100f6be0","components/accounting/ScheduleLadder.jsx":"3fdb3d3185ec4819f4063b8e9553a4cf791c402959c1d57165cf422e12889485","components/accounting/StatementTable.jsx":"2e486a5ae299b2a7ca65ea8c8bc4e6d621774f91027e8d17b4dc6301ca489f26","components/accounting/TaxLotTable.jsx":"96b13313e4165342faeb9acbd18f860ff9a11f1370471be6d27268140dc23b7f","components/accounting/TieOutPanel.jsx":"afe0d8bc6c105b0c05cbc5a26143667c1ff63e1db9e582e3b1a9282e059a3cd4","components/accounting/TrialBalance.jsx":"6b6b958adaf29d5fe5746af99de6730471d0e10e869aad3cae2e4d18aaf45162","components/accounting/VarianceCell.jsx":"878a6777c8936d922d6e73f6510a7a8431620e43e5a4943172a5c7764194ca0b","components/accounting/knownAmounts.js":"89c06926b58107be28432566243e5f9dc9c2a8180735b34e0b6d628abb1a8da1","components/accounting/money.js":"d9373bff6f5102341cad7e9449501cc577ad5c256af79a6d13730c6d1ffe7676","components/charts/AnalyticalField.jsx":"95a616f1d9d91e777a1de950eb51ef3dfaf14f92f4d3131c8ca75d4531011332","components/charts/AnalyticalFigure.jsx":"4854d1e5568c239ab97d4dc59c611902c6a925041c8f55b6826a4622cb22020e","components/charts/BarChart.jsx":"331663e52d569d0dd4ca0e83c16d0d02f36a3b2fb90ff053297b030dab5345e2","components/charts/CandleChart.jsx":"1e8a2fed53f4502e5a7c79d47a75fb1f9dfd3f246ccf855cacb47ed5c91e77a9","components/charts/CashFlowLadder.jsx":"6c402aea4d58a136e289614dfd4bd3a0b453baf5a684345421b204bbf4016d1a","components/charts/ChartAnnotations.jsx":"212e9e98999c80105092282b84d2fd8605bd4caba7b76a01018e6da2a818c046","components/charts/ChartCard.jsx":"6effbc549d35f377e92d82e94c3d809493b47c22669995bd2d5a8eeb8107e2d6","components/charts/ChartFrame.jsx":"2f75ef6888d6b1bbb5dc3b104e5454b0d6b2d6333462889dd4703ea91adf8a22","components/charts/ChartTooltip.jsx":"558b3f58559f782769242398762de488effff4d6471f8f20708e0712d42c6832","components/charts/ComparisonPlate.jsx":"dc127875e2749c7126122494fe1a1e814ae641591bda35cb6498689950b573fd","components/charts/ControlDependencyGraph.jsx":"3250775e6c487993458f8306fd6dcd5416b2da192ae925aa13b0a0a0d5280a53","components/charts/CorrelationHeatmap.jsx":"609fea70f2470bc55601f9a0ecb4e8213b44f8e9d4da7c5ac5ea8599f536fc8f","components/charts/CoverageMatrix.jsx":"19cf7a6444da996be272d9cf5beb2d82addfad0fece43b3bdc781a5027277a3a","components/charts/DepthChart.jsx":"9f17864422da12ea133295989d5c3e39b3717d835bcc9e044c21a775cbee83f4","components/charts/DistributionRange.jsx":"3d506a855b8c626b165b5544f3dfabaa29d2cafff33534add51d9d049b2d81a4","components/charts/DonutChart.jsx":"9170151975a1b012503828d1c500c5799963859a650f6ae5a6098dae54798667","components/charts/DotMatrix.jsx":"e86e509908716f09979e28a8560bc4bd215a9f3fca2a13c8d37d17a1d64bd5ff","components/charts/DrawdownChart.jsx":"b92f936c1824e0a37835d85d29174b022438a6f7d2a473dab005f2dd752ac14a","components/charts/DurationContribution.jsx":"2f1a2bcaa58be33bba37a58c0f1c7a4ff68e0c621b1e4d2513827dcf1410a01e","components/charts/EquityCurve.jsx":"a02cea3ad44e1a7ee699545d27ef2799a9ac546c564e7b48a9d763e755394956","components/charts/Figure.jsx":"c7afd6b40237b1a01537773c031a734c5e65a9aba56069d4f654ec2a53c4223d","components/charts/Histogram.jsx":"86f0a48f4257ea524646201972ca0e7130a4808474c7b337ab0af6005e46ed17","components/charts/IntervalBar.jsx":"4257d6cd0f701310751bdbf2ee6b1eafbc3cf0d75c593222df7e814c9691d9c4","components/charts/LineageGraph.jsx":"193add1802f299f7637647dd0e09df4d773ceeab666012174dd61acb67469168","components/charts/MaturityLadder.jsx":"1d41bba71470d0c0936c2b9176cfca9892533d77f6c634e5e56fc877226828e9","components/charts/OwnershipGraph.jsx":"ec348e422a0d9298b8650c7a1ac24010f07e0be0dc500aaff1e3ef77d5756114","components/charts/PeerComparisonStrip.jsx":"2029cd50717d2ee343ff7a7020ebf3d41829aae83e9fb3816841bb2c3d23e826","components/charts/PnLCalendar.jsx":"90260760bde4ecc11b456158661a827f884e2a1a3ae4594af44c120acee57abc","components/charts/ScatterChart.jsx":"772c981326d6c1bf74c8359548109c18b04634160333c23a54ad53c6f976cb51","components/charts/ScenarioSelector.jsx":"3345d0b3e3adaa6880b52bdb4a37c589b99af0460be42a7e30e7b9db919853a7","components/charts/SmallMultiples.jsx":"d91f942d02c134069d4c5a1f4240802a295d4cf0571d6e7f9c24aaeb241aa21e","components/charts/Sparkline.jsx":"657a89467f21fba260d7d86379c5277c7585e3223532234b68a889808977da06","components/charts/TimeframeSwitcher.jsx":"9aa9cf999f19d5d19e017715b5564569f31aff420d86ad1521a93ada08bc6191","components/charts/TraceChart.jsx":"4202a2b610805906d916cf6c5f94fc21156416ab13ff1c4f25bebf7a44963472","components/charts/Treemap.jsx":"d4538a5226e3ede5ca3fca4f67cbdb8dd13a177e358321f7461e679dffa0c961","components/charts/WatchlistStrip.jsx":"30c287ef4265f327d0c2c70014484494ffd1d54e1cd51afe3b112bdcd77eaf53","components/charts/WaterfallChart.jsx":"7083c9626ef0c481791e776b391af262c05c659c11f5f874b12c7b708d37d442","components/charts/YieldCurve.jsx":"f5194121f5a0bedf9a3a4772fa2c85d944b3aa6f36cb74a8908e74b9ae05eebd","components/charts/useChartCrosshair.js":"605741e2562d5d8ffa98a1e8a691cf0bb10ece4a9e4a83a54cd99aacd187c79d","components/charts/viz.js":"cc385e67e88e4ec4e184501395920359070adf2e8e773c2d9a43d364f9d4ceb2","components/core/Accordion.jsx":"469797802ae061c3b61736a19a4485ba77a604572b65e2172abafb116099b4b6","components/core/AsyncCombobox.jsx":"ee1b7f4915ee162380189730ae2b34f7bad7468182738ac8a28f33aea06bf358","components/core/Badge.jsx":"c10b37bfbcffdf53f48112a8cca3b5e2b11c8f1f61fe816f104fa9628ab8e014","components/core/Breadcrumb.jsx":"f3df3f2e8e9683d43fa6be71bf7e41196c0a682d5dca0f3925118bbb42afabad","components/core/Button.jsx":"18311af4ebf702ed9aa541e5ab9148a2fb9bfe635e95ff8e651bed6a6aed0e6b","components/core/Callout.jsx":"0a4f98838ea77025f4033b0b4df883c7035cabe765963e3ae86f32c5d759f0a9","components/core/Capsule.jsx":"5005f4a38645f4fe993664db3990e78035fee899d951e183192bcd7c278a927c","components/core/Checkbox.jsx":"87cbcd1da99489298c5f54b5d3be2f2132b583753b56676d89e92fea9d36222c","components/core/Combobox.jsx":"fb9aef8e5e86fffa2fc4e989ae3ca4e97d8c9a5960973bdaadf64d8576674579","components/core/CommandPalette.jsx":"0b55f81f8fa6847e2cba21dc8098b9f99038f570db260cc223aebaa964b0228b","components/core/ContextMenu.jsx":"e7f0a1f3d76d2c89c44dee645dee439ac3878c93e013905a63440299bbdd7916","components/core/ContinuityFrame.jsx":"fe0b61cee73fcbc9e2f3a2a8a784c9220142b080bab2779f495d88d341a2d08e","components/core/DatePicker.jsx":"a7c74cb4f136f36e4eb527a6926963a7c1f2fd6f487bfc63c735f457eff035e0","components/core/DateRangePicker.jsx":"dffd22b803b0ad1ffbbc205261d39efaa74ccaf0ea9c4b8c1ee629e6113ef8b0","components/core/Datum.jsx":"85138d4318055747e56b94ac22cdcd6724b970d000ed4c87032f5277fea9effa","components/core/Delta.jsx":"b7edf8e380ca42227fbc95ee671c2a6851b8883cfb389a7744e9823a104d8218","components/core/DensityToggle.jsx":"3772d220111d66b3a447af867e5171943426ccb346647be2ecd2b5d07d4f5d9c","components/core/Dialog.jsx":"6760f120328805ad4381a15e58e8bd9169875b863d9612fda74e979a8f0bfd24","components/core/Disclosure.jsx":"8d7ebc97e74b23c188573892403aca9c4930bb10518eebedf0eb1ed3b07ab117","components/core/Drawer.jsx":"18a2108d4481a16c6f5c165872dacf0cab58648f52a215357c552f6fcc88e166","components/core/ErrorBoundary.jsx":"e77ed377ba50a689052c6791c31f33f5ff2e879645ec4caa6bfd828b69cd4089","components/core/Eyebrow.jsx":"df412a943581ec3cdf5399122d98308b25329c3598e511560bf7c8c76b1dba1f","components/core/FileUpload.jsx":"d50a29ed887d722054edd5490c1639b3d5e64ec6bbde8aae36b73fd768587cc3","components/core/Flex.jsx":"cb320fab89ab54e971633763c1757a047f61d022d99df38a7db22a319af8c3d6","components/core/Form.jsx":"28cd4aafe7a26501be5c519b443a6c4ddc374d2ff6bef093bbb21cc07c736b47","components/core/FormField.jsx":"89e422156aca449eefb259e654257acdeef0cbb3ab67505cfa1b67899d47ce09","components/core/FormValidation.jsx":"22b040248657ec9e109071b28b248abb01280838ae0372b0033d6274b59f692c","components/core/FormatProvider.jsx":"b05d4707e67fb88360af7e541b9e001fc4562b6208db795e05aa7d274dc3ddc3","components/core/FreshnessIndicator.jsx":"ba8234a524f4730ebd8985c9dc1da505f29baa8e3cefedcedd4ca741332f2ed9","components/core/Gauge.jsx":"91cce969ee0bb9bfce58450b08bf16c04ed12ff6c53000f3e73b9628a93e37db","components/core/Grid.jsx":"01128532601bcc0712748d3de2c4a109e002f96f3a1ed6b2f5f9b89e4d583f2d","components/core/HotkeysProvider.jsx":"4aaca98852c6d8b9fd8d0a31294bc9240cf3b1fc38a7cc73d8eb441be99a903d","components/core/Input.jsx":"34c8b0826c15004d197def79d156cb1344c7f1390f39b3232712b1aa0ab9c88f","components/core/InstrumentChip.jsx":"3eb39312c583688d6ae4c7afcb719f3df87382351d557f5a5912eca1a5104a5c","components/core/Kbd.jsx":"bc655e224a6aa339de369de3baf229b77db6f691a72f881f4e5f1c9d78bfa6e4","components/core/LinearGauge.jsx":"dd33e65ab2d6ed553b1ce751f64d0cd2775ce52c6503246208de74fa51ee5604","components/core/LocalDate.jsx":"39340da0bc1cc4f7b00b425ae640861106fc9e598884ed5628a46f67147f82a3","components/core/MaterialityAssessment.jsx":"25893c510667b0d736d31c625809d55de96fb8e01ec8371823577645bb64992a","components/core/Modal.jsx":"78f47bfbc03ab983e43c3346a8a94345872aedc83fa8fb57db74a55561f6f80d","components/core/MultiSelect.jsx":"5dcfe5c7627c0c42fc7493d83494ac9d4586a31eee563f853670a73ae92450e6","components/core/NotificationCenter.jsx":"13d93c0d57ba3767f09b1d87b3d2b985ff0ebcc02a07aad0f70f67d5f91bb35a","components/core/NumberInput.jsx":"9503311436be534fa1e7b6b3220f7a952a628dcd9f5171d75b4ba8f2196cc249","components/core/ObjectModel.jsx":"acc7f714fbea4bc7e2bfeeb6cb8b1f17a540228ffb4965baa9fee516fb949b31","components/core/ObjectScope.jsx":"3f6d471e11ea0be02ab0dcade6a8c51afefe75e9b6cbd82d457bfd360163aadf","components/core/ObjectTrail.jsx":"8ab82030526bd3d4edc2d3ebc43b17186ad43aaba9e2e6b8cb12a657b5bb7c29","components/core/PanelSurface.jsx":"8fcc4b13e00578443d50a1bafe037f64d17cbd99824e672764146cbe886e8b82","components/core/Popover.jsx":"27274df827256917366aaacfdf9aab94639f991ed751a43856d48c937d4b311a","components/core/ProgressBar.jsx":"21a9ae3c77d41a9cdd2b5a02816c825b80a2b8de669b462c924d02d30ea95c02","components/core/RadioGroup.jsx":"23ce1b4bf58fee4ff4b70034e9dcd4a3a878e70f2a0f79784b12e4e6741830a8","components/core/Registry.jsx":"b0197a4f81b2b64c4bba49662572abe979eb78d3f4ed58166a85cb2c648d28cb","components/core/SegmentedControl.jsx":"d46c240a96332ba89a76d6ff55ccf7e7a39ae3daa1f192350d79149aa809448d","components/core/Select.jsx":"901764f3426034461b8c38a51b85f1e60114b19e1b996ce538e74459fa3bb51b","components/core/Slider.jsx":"0ad5194e536e1b1de079c932066e447bb1e7e5dbcd0b933fbdda399ee6352449","components/core/Spinner.jsx":"58f9edc70ed8652a611190c5d2aa16fa38203caa4f3e694dd0ee8289292c0a43","components/core/SplitPane.jsx":"58035a38f439fd7e6a97042da9be88a60de128c6fe579de4f0618902d752afaf","components/core/Stack.jsx":"35e22a8758b9a3ffd35e370fa16f1a22f5c64d95c49dd287a74ab48c424e8727","components/core/StatusBanner.jsx":"8812bff035b4e77b60dd47f56bada971fbf85afbec86ca4ac2f9ad170af01251","components/core/Stepper.jsx":"e89f0eba8314a47cab20645d2bcf4d6ad5bda992e53e52ab738036399ef08eec","components/core/StrategyModel.jsx":"0af0e36c74809ca1960646333325f3a7de2594422cc225bf6de55c16df1141d8","components/core/Tabs.jsx":"28b66ec7119fba2c7aed3740dc6432c6ae634123f10733686f90555b7004ddc9","components/core/TagInput.jsx":"0bded2859bf5e6d93e9854bec255ea608798e89c04eb2104db549201c13611ef","components/core/TextArea.jsx":"5e0eac849c24e01a1525179167cf87d46ad316b83ae2cd42a232277bd500a930","components/core/TimeContext.jsx":"f9a1fafde007dd549ba95d4e837da70b2624f9ca113cdcfb227cc863b0532f0d","components/core/Timestamp.jsx":"983e59f6bfcd523572f41ea9002df109da75ea73bb92b5346b80eaecf1947cb9","components/core/Toast.jsx":"971662ad43f8cb5f2788c3f4a40d85c9d96a967c1d8f6710ec4fc677f061bdfb","components/core/Tooltip.jsx":"b5e716f82cce768d641013c188e2b434ad7f77cdfd9feecf602bf6cab88ed6d2","components/core/TreeView.jsx":"8c1f26f183e0606b33309796c89cd8fd1220fd3feab741d64a2a76f84f75d6cd","components/core/Validators.js":"579b4cdb4df7f50f0e33e77f4394c99cf5d59f12c0b3884ee5f7c74c656858d0","components/core/ValueAuthority.jsx":"1b934305ace5b42abe2f434c85b15fd957c4453166be903da2830fdbc0b68b39","components/core/format.js":"aa9c32be7266f932663d8cb2ec96f8b0c55358d29b7e986fe4e45a24952a9fb0","components/core/localDate.js":"7f055f64cefd8478be169b657cc8ad8dd71600dea2a55798a7805362af0e64cd","components/core/useFormState.js":"797da291fe2b851944458baee93d9f723cf711435f6c4e8e1549f19a0f138105","components/core/useOverlayFocus.js":"9301635fc0a563174eee78fd1cbd20f8c820666cde01b2f89be55dece41135dd","components/data/BulkActionBar.jsx":"94292608b348fd364cb469fe320f0f892869ccdc49cab1a1c179a3e12085204d","components/data/ColumnChooser.jsx":"b172e9a6012c8c7f3044d0162a01d6c3f09f3e75be5dcff35071e60870af77c5","components/data/ColumnManager.jsx":"7c06cc93769065bebbd7f0ad33f8b28d5190726e2261f8f705bb816263e7babd","components/data/DataGrid.jsx":"b9cce1d5c5acdc419561c82476dd2645678a5ccbdc7604f8904b6e931eb2df3c","components/data/DataStateSwitch.jsx":"563cb6d362ea88a579eb002a46c8b054764884f2e77929ed228892f874579136","components/data/DenseDataTable.jsx":"555a249c4975a1835a11da541de453c8245cd49d4d247f2144ae0860ac6261b7","components/data/EditableCell.jsx":"d199f4635684071e880d57178ceca1500f2bc16efd86e18813ad0c22904d6b3c","components/data/EmptyState.jsx":"861bdde9494aeabb4dbb7e8082902ba8a4bd735be2329b364b3a091bcade1ed6","components/data/EntitySummary.jsx":"8ad6e5d756fab1844044c0e9a66464cf6faef87826a2e09bf85a91af54273686","components/data/ExpandableDataTable.jsx":"1ef8f00c5dea92151a7fc616cdd373649448f55c6204fc51468cfbe0ca602f59","components/data/FilterBuilder.jsx":"0f36bd83ca2d3cf16a8feda63bb0f0367a6b249b4ffd0a91fb932f77ee81e4cb","components/data/FilteredDataTable.jsx":"3cc9b8716fd6c726d4eaac81c0e45d896a65e33da36f54eac99278697931a46b","components/data/KeyValueGrid.jsx":"94656a4ba732dfcae2adc551d11e548d0fae2c6a4d067e7578b5ec13dd0be9c7","components/data/LinkedSelectionProvider.jsx":"d2b7a6b16dd6358c284637cca02847ed33f3b751b721033648bc6c0462605a8e","components/data/MetricCard.jsx":"33cfbc354d7a564236ce4320ca28dbe612614462058f993404b103a6d8a92082","components/data/OptimisticCell.jsx":"5e8cb56aa087c90e2d6142bbf858274ccf86be19a15fa4a1f91b663ba7246867","components/data/Pagination.jsx":"15a773461555aed04ebac5e18564cc736c23a2b48196a5c09a2a26604466ba64","components/data/SavedViews.jsx":"5bf23a3f8498a99cab6090f861d95e8091753b8416cd5b87b5220ac5aea8ddd8","components/data/SelectionCompare.jsx":"716f9621814fd10241092d8124f427a9b603d2a23f0b1f564822bf8797a8e3d8","components/data/SelectionToolbar.jsx":"9e213785d57a09602f4a3d4b7c254a614bd7c74d90eef1446c2e9ae59d791557","components/data/Skeleton.jsx":"5f9652eda4d6c5ff9e90577f8c477711b88cfce44a3bd7a8f74704f25354593f","components/data/TableHooks.js":"533bff5b26899d68a8312bea0845929509c19aebbc84801f207f79dd200080d9","components/data/Toolbar.jsx":"1a14df32a8f9ad6542ebba299587c3cf1da8de6c0a8c9a05234d1f805142bcdb","components/data/VirtualizedList.jsx":"7d4b2fb86e609be1988255d758dfda402694c5cf458d9c0180e3971548ceabf6","components/data/WorksheetGrid.jsx":"f419364dd37a1768b312d082ec5dfe68fdc318e599f817492b4bf9782498c9c6","components/data/gridFormat.js":"fd436c00da97a70961de0dcc2ebfa852a5e7d6bec8a831e58effd1aa86044bb8","components/data/useAsyncTableData.js":"d929b2c36aca251d9acf134d546df750f87682d319c20d49d843c1d6c5c7cf1d","components/data/useRowSelection.js":"3db0978903f50ab6d7cb3752d2bfd4d1e5086d4a9317c4ffbcbd5b34c4f22162","components/data/useTableColumns.js":"4e3b7effccf10c0555c0b37739e51fb8edb2c8c258e5ec11d554a1e91ca192ea","components/data/useTableState.js":"604b680c60937900f41e7b69b69e5a9b0b1b22d348470d8f2e019e8f580ca968","components/data/useThemeRowHeight.js":"b57e448018c5d78247f7b3244ef772db24faf6e8b7884031e43926875d2a3c95","components/decision/ConsequenceRail.jsx":"49f87423d5308b41e6e71a332f01442ee18a89332ee74dd21b0c503a9b346062","components/decision/DecisionSnapshot.jsx":"935af49ec07d187a92627ab2dfb7db19f672637b165b89d9e36817e63c29f355","components/decision/EvidenceRail.jsx":"59037a7f78c9b0f3198a9977f744b201dbbbacc62178e20465262c039a4dc4d9","components/operations/ActionEnvelope.jsx":"c8f2de141664ca8666a587914429d9efc620b0f946a1b7dc521d0be25c29bab1","components/operations/ActionGuard.jsx":"62ef30669836300c866148cb20bb1db527821583eeb1ef5b71ed0f7076784213","components/operations/ActionQueue.jsx":"c12a2d4e83557ab6dbc8a75f558eb0b02b90e46ebac05e20cf825037d1f54928","components/operations/AdapterDiagnostics.jsx":"041884e87dbf44735a80eafcdb7962c4e1716f0d603e7df6cd8fe6c756ff4673","components/operations/AnnotationLayer.jsx":"678a504f860096433cff1f7eeb01d5268ea0be6567a0c9f49379efbfc8f2581a","components/operations/AttestationPanel.jsx":"5393909f41fc12a18d1a49d7e985a80aa2b29e3cc1ce4ccf89d4ef26f7e5ff40","components/operations/CaseQueue.jsx":"fdbbf472652ce747103ab3344c629059c5736728495bc6345642aeadc9081c7a","components/operations/ChangeSetReview.jsx":"5e34a932dfc52e4ceeba6707e51655667609e8d8d2d63f173d75e421be97dc5c","components/operations/ClaimHeader.jsx":"34868b38e34e5c0ff27b6eb8a890d82cf80c76ecb75ba3fa8aebb4e922b8eedf","components/operations/ConnectionState.jsx":"7ecc32060102e42a6d4ce7022203feb76dcc1d82731d8e0825ddbb2863611147","components/operations/DataCondition.jsx":"f016bf0b977122e728c7daa1f1efd2d7e70d608de8bbc517ffb53025d35cafed","components/operations/DecisionFlow.jsx":"65a3bac199bb41c3b34fac5bc9dad16d7ea4a4536553a445123c2f3ea75defd6","components/operations/DiffView.jsx":"e09846493e01cc98859fc82b6dd44156416ad649e57c096c498bc2ee99b8c0a3","components/operations/EventTimeline.jsx":"053781b7305139f7ab8a6af012fa3ce0d92dc7dd26a6b4ebe292a53ff53ae0a6","components/operations/EvidenceInspector.jsx":"288a13cc31ad4ce07862019dba06621c03b0d7486eb5b22f130870bba2c2b6e1","components/operations/EvidenceLink.jsx":"fecc8185115abbabc06791fd80ce10a7c000c05b9c4fa59a518ab863129bc4b2","components/operations/EvidencePreview.jsx":"2dccc4190cfdf05f63f428a8441ca539f7d2245f6e2287a6d3ceb1464d1aa89a","components/operations/GateRail.jsx":"bb9fd79d6e9c1db5edde1f7d3ede5e7337fb7583cba3bb775e768c138f1fbb7a","components/operations/HandoverBrief.jsx":"8e9befbbf0c55ea8be256998b2d9133adebc24922fffcf773a1f6016ed916ad5","components/operations/LogTail.jsx":"4e39617b21a7388130a91260c8d596549e6674b0e245bc04758dcb021cef5c76","components/operations/ProvenanceChip.jsx":"723664c7d5de36d0dff63bbb02fc7557d519a0fe592f8abc314cd7648fa6a35c","components/operations/ReadinessPanel.jsx":"20b8c64f6f1d431dd827366df4e884f86345e044fd7405f899da5e8df06581ce","components/operations/ResolutionDrawer.jsx":"195dccf27d3d89b9ebe8f3a2ccdc4d69e7264b9cd09f9ae922f2659e0dfd4803","components/operations/SeverityBadge.jsx":"eb4c8f70ad821b0d2e03ae3921313d523ed340d6303ca9c3b053e2d36c80bb64","components/operations/SlaChip.jsx":"e4b2087d82f6f7a8a88dd9cd70cbd7e36cdeb99fdbbcbb540761a9d1f286c60f","components/operations/SourceCoverageSummary.jsx":"a2fabf3d0eb247f994bf48f5d100046ff5dc392105d54668675a707b86ffe886","components/operations/Status.jsx":"80a6a41ec8ea52a3394be43c5917f920d080ed9fe45aaff6c6b3cfdfa0b36dc6","components/operations/StrategyRunModel.jsx":"e594758074094a58f1cd2b09886cb68a8c3c5ad0d73f4d940345fc162946266e","components/operations/TrustStrip.jsx":"7e72cc58a46c7e34f777fedd421e3e2cee9c86e673d1214044148fb0c9924aa2","components/operations/ValidationIssueList.jsx":"37c2aff178363ee9da7a30ea5dabe6e554fa9102dcf7a6e2cb252ad7a4f4477f","components/operations/ValueEnvelope.jsx":"ff4c5fe7a38a00e67ac0b3d867946f012aff7a987223d9ffb678577afc1e6f49","components/operations/VersionConflictNotice.jsx":"57a17117c292f00604eaa962c233f6cb7d99d5be53d1f0c469aaded49e30c785","components/operations/WorkspaceSection.jsx":"d7adcf15f139ab8122f177baaf2bf88226c8b119c52d525d260364e77dfcc0e8","components/operations/conditions.js":"eafb0436c6328f60d2d604aa561afb6cf9a783084aab9dc325ab854160fd9cdf","components/operations/status.js":"3653187e0b7fedc3ad1f22065e1cecbff432cd06a353ea4dd3a5881fe2c5dae8","components/shell/GlobalSearch.jsx":"a03e856723baf1bbe90764f1cccb49ebc42d214a9d2a39e2c0453f8c152840eb","components/shell/NavRail.jsx":"53da459725d42cc997d2254ddde223653f083766393915df977e0d2f106a427a","components/shell/ReturnPath.jsx":"387b79052b3e009dd22c201814e772b9ad804c0a726444e5c5b3b9ef9214ea74","components/shell/ScreenComposition.jsx":"9dc9b4f19b793078a185b46a5a19f49b5aa3ac8fca74d91a5689d4395afca85f","components/shell/SessionControls.jsx":"6d6fccb4a5e29d1f865f0f2f0e145de7d0d06b29a90e8c5cb97273cbbae9b622","components/shell/StatusBar.jsx":"2f6c7150f4b67c1f7433dbd2e959ea1e788835bf6080feb8df48fbde5d92f17a","components/shell/WorkspaceContextBar.jsx":"030a128a235c8d00ca0d77b38dd1637f0e7aee10ddde5636823c5bec726d6f72","components/shell/WorkspaceLayout.jsx":"85085497742478ce47e24bed1dfd6cef3866b7114a7d15799f5afa8ba82f732c","components/shell/WorkstationShell.jsx":"cdcc7b628fa0bdea92479d7b470651eb584bc8bc3de8becadeec9d4aef2a2863","components/shell/WorkstationTopbar.jsx":"c116ffc89e0fe12d27cb0c7a2d01ee34822700681d1404af8323e32bddaebaff","components/trading/Blotter.jsx":"9a8a721922ea8cc1e54568d679deb518ae60e93b756baf65fc7641dbd06f6bd8","components/trading/DepthLadder.jsx":"0c962c1c38a556974feaf2c2408955a423d1eb7d106094f94c27db8ba9b9d3fa","components/trading/FillsFeed.jsx":"6367363b03bf400e5b199441a3efdf7f183ea8894038f334e8f8ea60d90449a0","components/trading/OptionChainTable.jsx":"3325a946138f4431b29f8a74ced1b6df9e74b8f6d72412aecd3240289947965c","components/trading/OrderTicket.jsx":"e7bd28d3356af90cda7c23aefbcb34f87e42dda380c4fabd43278503dc9b081e","components/trading/TimeAndSalesTape.jsx":"93f74f4df502d45219f6fbef2a7373c42e1a181423dedd44f04cd6417e0eea0c","tests/conformance-rules.js":"399c6558d14628fcfdc11020a41b15c958e2201654dab3d990a98a5b53c5aa0e","tests/mock-transport.js":"238c83d10a66d6b1b35d9edb2597cf6d7e7ace816a60ab0d8bbd0259e1588ec5"},"inlinedExternals":[],"unexposedExports":[{"name":"accountNormalSide","sourcePath":"components/accounting/money.js"},{"name":"adapterPosture","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"adapterScheduleMissing","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"addDays","sourcePath":"components/core/localDate.js"},{"name":"addMonths","sourcePath":"components/core/localDate.js"},{"name":"agingBucketIndex","sourcePath":"components/accounting/money.js"},{"name":"allocateAmount","sourcePath":"components/accounting/money.js"},{"name":"amortizeStraightLine","sourcePath":"components/accounting/money.js"},{"name":"assuranceCoverage","sourcePath":"components/accounting/Assurance.jsx"},{"name":"assuranceHistory","sourcePath":"components/accounting/Assurance.jsx"},{"name":"assuranceState","sourcePath":"components/accounting/Assurance.jsx"},{"name":"assuranceVerb","sourcePath":"components/accounting/Assurance.jsx"},{"name":"atDepth","sourcePath":"components/core/Disclosure.jsx"},{"name":"bandPath","sourcePath":"components/charts/viz.js"},{"name":"buildTrialBalance","sourcePath":"components/accounting/money.js"},{"name":"checkTimeCoherence","sourcePath":"components/core/TimeContext.jsx"},{"name":"clampDate","sourcePath":"components/core/localDate.js"},{"name":"conditionMeta","sourcePath":"components/operations/conditions.js"},{"name":"conditionsVocabulary","sourcePath":"components/operations/conditions.js"},{"name":"convertAmount","sourcePath":"components/accounting/money.js"},{"name":"currencyDecimals","sourcePath":"components/core/format.js"},{"name":"currencySymbol","sourcePath":"components/core/format.js"},{"name":"dayOfInstant","sourcePath":"components/core/localDate.js"},{"name":"daysBetween","sourcePath":"components/accounting/money.js"},{"name":"decimalsForTick","sourcePath":"components/core/format.js"},{"name":"defineScreen","sourcePath":"components/shell/ScreenComposition.jsx"},{"name":"deriveMetrics","sourcePath":"components/operations/StrategyRunModel.jsx"},{"name":"describeObject","sourcePath":"components/core/ObjectModel.jsx"},{"name":"domainOf","sourcePath":"components/charts/viz.js"},{"name":"dowLabels","sourcePath":"components/core/localDate.js"},{"name":"effectiveYieldSchedule","sourcePath":"components/accounting/money.js"},{"name":"elbow","sourcePath":"components/charts/viz.js"},{"name":"envelopeCheck","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"fixtureTransport","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"formatAccounting","sourcePath":"components/core/format.js"},{"name":"formatBp","sourcePath":"components/operations/conditions.js"},{"name":"formatBps","sourcePath":"components/core/format.js"},{"name":"formatCompact","sourcePath":"components/core/format.js"},{"name":"formatConditioned","sourcePath":"components/operations/conditions.js"},{"name":"formatGridSigned","sourcePath":"components/data/gridFormat.js"},{"name":"formatMoney","sourcePath":"components/core/format.js"},{"name":"formatMoneyCompact","sourcePath":"components/core/format.js"},{"name":"formatNumber","sourcePath":"components/core/format.js"},{"name":"formatPercent","sourcePath":"components/core/format.js"},{"name":"formatPrice","sourcePath":"components/core/format.js"},{"name":"formatQuantity","sourcePath":"components/core/format.js"},{"name":"formatSigned","sourcePath":"components/operations/conditions.js"},{"name":"formatSignedDelta","sourcePath":"components/core/format.js"},{"name":"formatSlaDuration","sourcePath":"components/operations/SlaChip.jsx"},{"name":"fromISO","sourcePath":"components/core/localDate.js"},{"name":"fxRevalue","sourcePath":"components/accounting/money.js"},{"name":"getDefaultLocale","sourcePath":"components/accounting/money.js"},{"name":"getNumberDefaults","sourcePath":"components/core/format.js"},{"name":"gridProof","sourcePath":"components/data/DataGrid.jsx"},{"name":"humanizeStatus","sourcePath":"components/operations/status.js"},{"name":"isEnvelopeValue","sourcePath":"components/accounting/AmountCell.jsx"},{"name":"linePath","sourcePath":"components/charts/viz.js"},{"name":"longDate","sourcePath":"components/core/localDate.js"},{"name":"monthTitle","sourcePath":"components/core/localDate.js"},{"name":"nextAssuranceStage","sourcePath":"components/accounting/Assurance.jsx"},{"name":"niceTicks","sourcePath":"components/charts/viz.js"},{"name":"normalizeCondition","sourcePath":"components/operations/conditions.js"},{"name":"normalizeSeverity","sourcePath":"components/operations/status.js"},{"name":"numberFormatter","sourcePath":"components/core/format.js"},{"name":"objectMeta","sourcePath":"components/core/ObjectModel.jsx"},{"name":"observeWidth","sourcePath":"components/charts/viz.js"},{"name":"pad","sourcePath":"components/core/localDate.js"},{"name":"parseLoose","sourcePath":"components/core/localDate.js"},{"name":"rangePresets","sourcePath":"components/core/localDate.js"},{"name":"resetNumberDefaults","sourcePath":"components/core/format.js"},{"name":"resolve","sourcePath":"components/core/Registry.jsx"},{"name":"resolveAuthority","sourcePath":"components/core/ValueAuthority.jsx"},{"name":"roleStyle","sourcePath":"components/charts/viz.js"},{"name":"roundMoney","sourcePath":"components/accounting/money.js"},{"name":"rungFor","sourcePath":"components/operations/ActionQueue.jsx"},{"name":"sameDay","sourcePath":"components/core/localDate.js"},{"name":"scale","sourcePath":"components/charts/viz.js"},{"name":"scheduleApplies","sourcePath":"components/accounting/ScheduleLadder.jsx"},{"name":"scopeMeta","sourcePath":"components/core/ObjectScope.jsx"},{"name":"scopeRelation","sourcePath":"components/core/ObjectScope.jsx"},{"name":"setDefaultLocale","sourcePath":"components/accounting/money.js"},{"name":"setNumberDefaults","sourcePath":"components/core/format.js"},{"name":"severityKeys","sourcePath":"components/operations/status.js"},{"name":"severityLabels","sourcePath":"components/operations/status.js"},{"name":"severityOf","sourcePath":"components/core/Disclosure.jsx"},{"name":"signAssurance","sourcePath":"components/accounting/Assurance.jsx"},{"name":"splitEnvelopeValue","sourcePath":"components/accounting/AmountCell.jsx"},{"name":"sumAmounts","sourcePath":"components/accounting/money.js"},{"name":"summarizeGuards","sourcePath":"components/operations/ActionGuard.jsx"},{"name":"toISO","sourcePath":"components/core/localDate.js"},{"name":"toNumber","sourcePath":"components/core/format.js"},{"name":"trailMoved","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"trailRef","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"useAnnotations","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"useAsyncTableData","sourcePath":"components/data/useAsyncTableData.js"},{"name":"useAsyncValidation","sourcePath":"components/core/useFormState.js"},{"name":"useChangeSet","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"useChartCrosshair","sourcePath":"components/charts/useChartCrosshair.js"},{"name":"useCommandPalette","sourcePath":"components/core/CommandPalette.jsx"},{"name":"useContextMenu","sourcePath":"components/core/ContextMenu.jsx"},{"name":"useDecisionFlow","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"useDirtyState","sourcePath":"components/core/useFormState.js"},{"name":"useDisclosure","sourcePath":"components/core/Disclosure.jsx"},{"name":"useFormat","sourcePath":"components/core/FormatProvider.jsx"},{"name":"useLinkedSelection","sourcePath":"components/data/LinkedSelectionProvider.jsx"},{"name":"useMeasuredWidth","sourcePath":"components/charts/viz.js"},{"name":"useObjectTrail","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"useOptimistic","sourcePath":"components/data/OptimisticCell.jsx"},{"name":"useOverlayEscape","sourcePath":"components/core/useOverlayFocus.js"},{"name":"useOverlayFocus","sourcePath":"components/core/useOverlayFocus.js"},{"name":"useRowSelection","sourcePath":"components/data/useRowSelection.js"},{"name":"useSelectionCompare","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"useSyncedCursor","sourcePath":"components/charts/useChartCrosshair.js"},{"name":"useTableColumns","sourcePath":"components/data/useTableColumns.js"},{"name":"useTableState","sourcePath":"components/data/useTableState.js"},{"name":"useThemeRowHeight","sourcePath":"components/data/useThemeRowHeight.js"},{"name":"useTimeContext","sourcePath":"components/core/TimeContext.jsx"},{"name":"useToast","sourcePath":"components/core/Toast.jsx"},{"name":"useWizard","sourcePath":"components/core/useFormState.js"},{"name":"useWorkspaceContext","sourcePath":"components/shell/WorkspaceContextBar.jsx"},{"name":"useWorkspaceLayout","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"weeksFor","sourcePath":"components/core/localDate.js"}]} */
+/* @ds-bundle: {"format":4,"version":"4.3.0","namespace":"MeridianDesignSystem_205d17","components":[{"name":"AccountTree","sourcePath":"components/accounting/AccountTree.jsx"},{"name":"AccountingPeriodSelector","sourcePath":"components/accounting/AccountingPeriodSelector.jsx"},{"name":"AgingTable","sourcePath":"components/accounting/AgingTable.jsx"},{"name":"AllocationEditor","sourcePath":"components/accounting/AllocationEditor.jsx"},{"name":"AmountCell","sourcePath":"components/accounting/AmountCell.jsx"},{"name":"ASSURANCE_STAGES","sourcePath":"components/accounting/Assurance.jsx"},{"name":"AssuranceChip","sourcePath":"components/accounting/Assurance.jsx"},{"name":"CertificationMatrix","sourcePath":"components/accounting/Assurance.jsx"},{"name":"Assurance","sourcePath":"components/accounting/Assurance.jsx"},{"name":"BasisBridge","sourcePath":"components/accounting/BasisBridge.jsx"},{"name":"BasisComparisonMatrix","sourcePath":"components/accounting/BasisComparisonMatrix.jsx"},{"name":"CalculationTrace","sourcePath":"components/accounting/CalculationTrace.jsx"},{"name":"CloseCalendar","sourcePath":"components/accounting/CloseCalendar.jsx"},{"name":"CommitmentBar","sourcePath":"components/accounting/CommitmentBar.jsx"},{"name":"FxRevaluationTable","sourcePath":"components/accounting/FxRevaluationTable.jsx"},{"name":"IncomeSchedule","sourcePath":"components/accounting/IncomeSchedule.jsx"},{"name":"JournalEntryForm","sourcePath":"components/accounting/JournalEntryForm.jsx"},{"name":"LedgerTable","sourcePath":"components/accounting/LedgerTable.jsx"},{"name":"LifecycleRibbon","sourcePath":"components/accounting/LifecycleRibbon.jsx"},{"name":"LifecycleLanes","sourcePath":"components/accounting/LifecycleRibbon.jsx"},{"name":"Money","sourcePath":"components/accounting/Money.jsx"},{"name":"PostingImpactPreview","sourcePath":"components/accounting/PostingImpactPreview.jsx"},{"name":"ReconciliationPanel","sourcePath":"components/accounting/ReconciliationPanel.jsx"},{"name":"RollforwardMatrix","sourcePath":"components/accounting/RollforwardMatrix.jsx"},{"name":"RollforwardTrace","sourcePath":"components/accounting/RollforwardTrace.jsx"},{"name":"ScheduleLadder","sourcePath":"components/accounting/ScheduleLadder.jsx"},{"name":"ScheduleLadderSet","sourcePath":"components/accounting/ScheduleLadder.jsx"},{"name":"StatementTable","sourcePath":"components/accounting/StatementTable.jsx"},{"name":"TaxLotTable","sourcePath":"components/accounting/TaxLotTable.jsx"},{"name":"TieOutPanel","sourcePath":"components/accounting/TieOutPanel.jsx"},{"name":"TrialBalance","sourcePath":"components/accounting/TrialBalance.jsx"},{"name":"VarianceCell","sourcePath":"components/accounting/VarianceCell.jsx"},{"name":"AnalyticalField","sourcePath":"components/charts/AnalyticalField.jsx"},{"name":"AnalyticalFigure","sourcePath":"components/charts/AnalyticalFigure.jsx"},{"name":"AnalyticalFigureGrid","sourcePath":"components/charts/AnalyticalFigure.jsx"},{"name":"BarChart","sourcePath":"components/charts/BarChart.jsx"},{"name":"CandleChart","sourcePath":"components/charts/CandleChart.jsx"},{"name":"CashFlowLadder","sourcePath":"components/charts/CashFlowLadder.jsx"},{"name":"ChartAnnotations","sourcePath":"components/charts/ChartAnnotations.jsx"},{"name":"ChartCard","sourcePath":"components/charts/ChartCard.jsx"},{"name":"AXIS_FONT","sourcePath":"components/charts/ChartFrame.jsx"},{"name":"AxisChip","sourcePath":"components/charts/ChartFrame.jsx"},{"name":"ChartFrame","sourcePath":"components/charts/ChartFrame.jsx"},{"name":"ChartTooltip","sourcePath":"components/charts/ChartTooltip.jsx"},{"name":"ComparisonPlate","sourcePath":"components/charts/ComparisonPlate.jsx"},{"name":"PlateGrid","sourcePath":"components/charts/ComparisonPlate.jsx"},{"name":"ControlDependencyGraph","sourcePath":"components/charts/ControlDependencyGraph.jsx"},{"name":"CorrelationHeatmap","sourcePath":"components/charts/CorrelationHeatmap.jsx"},{"name":"CoverageMatrix","sourcePath":"components/charts/CoverageMatrix.jsx"},{"name":"DepthChart","sourcePath":"components/charts/DepthChart.jsx"},{"name":"DistributionRange","sourcePath":"components/charts/DistributionRange.jsx"},{"name":"DonutChart","sourcePath":"components/charts/DonutChart.jsx"},{"name":"DotMatrix","sourcePath":"components/charts/DotMatrix.jsx"},{"name":"DrawdownChart","sourcePath":"components/charts/DrawdownChart.jsx"},{"name":"DurationContribution","sourcePath":"components/charts/DurationContribution.jsx"},{"name":"EquityCurve","sourcePath":"components/charts/EquityCurve.jsx"},{"name":"FIGURE_ROLES","sourcePath":"components/charts/Figure.jsx"},{"name":"GEOMETRIES","sourcePath":"components/charts/Figure.jsx"},{"name":"Figure","sourcePath":"components/charts/Figure.jsx"},{"name":"FigureSet","sourcePath":"components/charts/Figure.jsx"},{"name":"Histogram","sourcePath":"components/charts/Histogram.jsx"},{"name":"IntervalBar","sourcePath":"components/charts/IntervalBar.jsx"},{"name":"LineageGraph","sourcePath":"components/charts/LineageGraph.jsx"},{"name":"MATURITY_BUCKETS","sourcePath":"components/charts/MaturityLadder.jsx"},{"name":"MaturityLadder","sourcePath":"components/charts/MaturityLadder.jsx"},{"name":"OwnershipGraph","sourcePath":"components/charts/OwnershipGraph.jsx"},{"name":"PeerComparisonStrip","sourcePath":"components/charts/PeerComparisonStrip.jsx"},{"name":"PnLCalendar","sourcePath":"components/charts/PnLCalendar.jsx"},{"name":"ScatterChart","sourcePath":"components/charts/ScatterChart.jsx"},{"name":"ScenarioSelector","sourcePath":"components/charts/ScenarioSelector.jsx"},{"name":"SmallMultiples","sourcePath":"components/charts/SmallMultiples.jsx"},{"name":"Sparkline","sourcePath":"components/charts/Sparkline.jsx"},{"name":"TimeframeSwitcher","sourcePath":"components/charts/TimeframeSwitcher.jsx"},{"name":"AsOfControl","sourcePath":"components/charts/TimeframeSwitcher.jsx"},{"name":"TraceChart","sourcePath":"components/charts/TraceChart.jsx"},{"name":"Treemap","sourcePath":"components/charts/Treemap.jsx"},{"name":"WatchlistStrip","sourcePath":"components/charts/WatchlistStrip.jsx"},{"name":"WaterfallChart","sourcePath":"components/charts/WaterfallChart.jsx"},{"name":"YieldCurve","sourcePath":"components/charts/YieldCurve.jsx"},{"name":"ChartCursorSync","sourcePath":"components/charts/useChartCrosshair.js"},{"name":"ChartCursor","sourcePath":"components/charts/useChartCrosshair.js"},{"name":"ROLES","sourcePath":"components/charts/viz.js"},{"name":"Fmt","sourcePath":"components/charts/viz.js"},{"name":"Accordion","sourcePath":"components/core/Accordion.jsx"},{"name":"AsyncCombobox","sourcePath":"components/core/AsyncCombobox.jsx"},{"name":"Badge","sourcePath":"components/core/Badge.jsx"},{"name":"Breadcrumb","sourcePath":"components/core/Breadcrumb.jsx"},{"name":"Button","sourcePath":"components/core/Button.jsx"},{"name":"Callout","sourcePath":"components/core/Callout.jsx"},{"name":"CapsuleHeader","sourcePath":"components/core/Capsule.jsx"},{"name":"CapsuleBody","sourcePath":"components/core/Capsule.jsx"},{"name":"CapsuleFooter","sourcePath":"components/core/Capsule.jsx"},{"name":"Capsule","sourcePath":"components/core/Capsule.jsx"},{"name":"Checkbox","sourcePath":"components/core/Checkbox.jsx"},{"name":"Toggle","sourcePath":"components/core/Checkbox.jsx"},{"name":"Combobox","sourcePath":"components/core/Combobox.jsx"},{"name":"CommandPalette","sourcePath":"components/core/CommandPalette.jsx"},{"name":"ContextMenu","sourcePath":"components/core/ContextMenu.jsx"},{"name":"ContinuityStatus","sourcePath":"components/core/ContinuityFrame.jsx"},{"name":"ContinuityFrame","sourcePath":"components/core/ContinuityFrame.jsx"},{"name":"DatePicker","sourcePath":"components/core/DatePicker.jsx"},{"name":"DateRangePicker","sourcePath":"components/core/DateRangePicker.jsx"},{"name":"Datum","sourcePath":"components/core/Datum.jsx"},{"name":"DatumGroup","sourcePath":"components/core/Datum.jsx"},{"name":"Delta","sourcePath":"components/core/Delta.jsx"},{"name":"DensityToggle","sourcePath":"components/core/DensityToggle.jsx"},{"name":"Dialog","sourcePath":"components/core/Dialog.jsx"},{"name":"DialogHeader","sourcePath":"components/core/Dialog.jsx"},{"name":"DialogBody","sourcePath":"components/core/Dialog.jsx"},{"name":"DialogFooter","sourcePath":"components/core/Dialog.jsx"},{"name":"DialogForm","sourcePath":"components/core/Dialog.jsx"},{"name":"DETAIL_LEVELS","sourcePath":"components/core/Disclosure.jsx"},{"name":"DisclosureProvider","sourcePath":"components/core/Disclosure.jsx"},{"name":"DetailDial","sourcePath":"components/core/Disclosure.jsx"},{"name":"DisclosureResidue","sourcePath":"components/core/Disclosure.jsx"},{"name":"DisclosureRegion","sourcePath":"components/core/Disclosure.jsx"},{"name":"DetailOnly","sourcePath":"components/core/Disclosure.jsx"},{"name":"DisclosureHooks","sourcePath":"components/core/Disclosure.jsx"},{"name":"Disclosure","sourcePath":"components/core/Disclosure.jsx"},{"name":"Drawer","sourcePath":"components/core/Drawer.jsx"},{"name":"DrawerHeader","sourcePath":"components/core/Drawer.jsx"},{"name":"DrawerBody","sourcePath":"components/core/Drawer.jsx"},{"name":"ErrorBoundary","sourcePath":"components/core/ErrorBoundary.jsx"},{"name":"Eyebrow","sourcePath":"components/core/Eyebrow.jsx"},{"name":"FileUpload","sourcePath":"components/core/FileUpload.jsx"},{"name":"Flex","sourcePath":"components/core/Flex.jsx"},{"name":"FormRow","sourcePath":"components/core/Form.jsx"},{"name":"FormGrid","sourcePath":"components/core/Form.jsx"},{"name":"FormDivider","sourcePath":"components/core/Form.jsx"},{"name":"FormSectionLabel","sourcePath":"components/core/Form.jsx"},{"name":"Form","sourcePath":"components/core/Form.jsx"},{"name":"FormField","sourcePath":"components/core/FormField.jsx"},{"name":"FormValidation","sourcePath":"components/core/FormValidation.jsx"},{"name":"FieldInput","sourcePath":"components/core/FormValidation.jsx"},{"name":"FormErrorSummary","sourcePath":"components/core/FormValidation.jsx"},{"name":"NEGATIVE_STYLES","sourcePath":"components/core/FormatProvider.jsx"},{"name":"FormatProvider","sourcePath":"components/core/FormatProvider.jsx"},{"name":"FormatHooks","sourcePath":"components/core/FormatProvider.jsx"},{"name":"Format","sourcePath":"components/core/FormatProvider.jsx"},{"name":"ConnectionDot","sourcePath":"components/core/FreshnessIndicator.jsx"},{"name":"FreshnessIndicator","sourcePath":"components/core/FreshnessIndicator.jsx"},{"name":"Grid","sourcePath":"components/core/Grid.jsx"},{"name":"HotkeysProvider","sourcePath":"components/core/HotkeysProvider.jsx"},{"name":"Input","sourcePath":"components/core/Input.jsx"},{"name":"InstrumentChip","sourcePath":"components/core/InstrumentChip.jsx"},{"name":"Kbd","sourcePath":"components/core/Kbd.jsx"},{"name":"LocalDate","sourcePath":"components/core/LocalDate.jsx"},{"name":"LocalDateText","sourcePath":"components/core/LocalDate.jsx"},{"name":"MaterialityBadge","sourcePath":"components/core/MaterialityAssessment.jsx"},{"name":"MaterialityAssessment","sourcePath":"components/core/MaterialityAssessment.jsx"},{"name":"MultiSelect","sourcePath":"components/core/MultiSelect.jsx"},{"name":"NotificationCenter","sourcePath":"components/core/NotificationCenter.jsx"},{"name":"NumberInput","sourcePath":"components/core/NumberInput.jsx"},{"name":"OBJECT_TYPES","sourcePath":"components/core/ObjectModel.jsx"},{"name":"ObjectHeader","sourcePath":"components/core/ObjectModel.jsx"},{"name":"ObjectHooks","sourcePath":"components/core/ObjectModel.jsx"},{"name":"ObjectModel","sourcePath":"components/core/ObjectModel.jsx"},{"name":"ANALYTICAL_SCOPES","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ObjectScopeProvider","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ScopeMark","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ScopedValue","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ScopeMismatch","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ScopeHooks","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ObjectScope","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ObjectTrailProvider","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"TrailHooks","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"ObjectTrail","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"ObjectTrailList","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"PanelSurface","sourcePath":"components/core/PanelSurface.jsx"},{"name":"Popover","sourcePath":"components/core/Popover.jsx"},{"name":"ProgressBar","sourcePath":"components/core/ProgressBar.jsx"},{"name":"RadioGroup","sourcePath":"components/core/RadioGroup.jsx"},{"name":"DENSITY","sourcePath":"components/core/Registry.jsx"},{"name":"SEVERITY","sourcePath":"components/core/Registry.jsx"},{"name":"TIME_ROLES","sourcePath":"components/core/TimeContext.jsx"},{"name":"Registry","sourcePath":"components/core/Registry.jsx"},{"name":"RegistryTable","sourcePath":"components/core/Registry.jsx"},{"name":"SegmentedControl","sourcePath":"components/core/SegmentedControl.jsx"},{"name":"Select","sourcePath":"components/core/Select.jsx"},{"name":"Slider","sourcePath":"components/core/Slider.jsx"},{"name":"Spinner","sourcePath":"components/core/Spinner.jsx"},{"name":"SplitPane","sourcePath":"components/core/SplitPane.jsx"},{"name":"Stack","sourcePath":"components/core/Stack.jsx"},{"name":"StatusBanner","sourcePath":"components/core/StatusBanner.jsx"},{"name":"Stepper","sourcePath":"components/core/Stepper.jsx"},{"name":"STRATEGY_LIFECYCLE","sourcePath":"components/core/StrategyModel.jsx"},{"name":"STRATEGY_FORMATION_STEPS","sourcePath":"components/core/StrategyModel.jsx"},{"name":"StrategyModel","sourcePath":"components/core/StrategyModel.jsx"},{"name":"Tabs","sourcePath":"components/core/Tabs.jsx"},{"name":"TabPanel","sourcePath":"components/core/Tabs.jsx"},{"name":"TagInput","sourcePath":"components/core/TagInput.jsx"},{"name":"TextArea","sourcePath":"components/core/TextArea.jsx"},{"name":"TimeContextProvider","sourcePath":"components/core/TimeContext.jsx"},{"name":"TimeHooks","sourcePath":"components/core/TimeContext.jsx"},{"name":"TimeRole","sourcePath":"components/core/TimeContext.jsx"},{"name":"TimeContextPanel","sourcePath":"components/core/TimeContext.jsx"},{"name":"TimeContext","sourcePath":"components/core/TimeContext.jsx"},{"name":"Timestamp","sourcePath":"components/core/Timestamp.jsx"},{"name":"ToastProvider","sourcePath":"components/core/Toast.jsx"},{"name":"Toast","sourcePath":"components/core/Toast.jsx"},{"name":"Tooltip","sourcePath":"components/core/Tooltip.jsx"},{"name":"TreeView","sourcePath":"components/core/TreeView.jsx"},{"name":"Validators","sourcePath":"components/core/Validators.js"},{"name":"AuthorityChip","sourcePath":"components/core/ValueAuthority.jsx"},{"name":"AuthorityStack","sourcePath":"components/core/ValueAuthority.jsx"},{"name":"ValueAuthority","sourcePath":"components/core/ValueAuthority.jsx"},{"name":"AuthorityPanel","sourcePath":"components/core/ValueAuthority.jsx"},{"name":"GLYPHS","sourcePath":"components/core/format.js"},{"name":"DOW","sourcePath":"components/core/localDate.js"},{"name":"FormHooks","sourcePath":"components/core/useFormState.js"},{"name":"BulkActionBar","sourcePath":"components/data/BulkActionBar.jsx"},{"name":"BulkSelectCheckbox","sourcePath":"components/data/BulkActionBar.jsx"},{"name":"ColumnChooser","sourcePath":"components/data/ColumnChooser.jsx"},{"name":"ColumnManager","sourcePath":"components/data/ColumnManager.jsx"},{"name":"CELL_FORMATS","sourcePath":"components/data/DataGrid.jsx"},{"name":"GRID_SCHEMAS","sourcePath":"components/data/DataGrid.jsx"},{"name":"DataGrid","sourcePath":"components/data/DataGrid.jsx"},{"name":"DataStateSwitch","sourcePath":"components/data/DataStateSwitch.jsx"},{"name":"EditableCell","sourcePath":"components/data/EditableCell.jsx"},{"name":"EmptyState","sourcePath":"components/data/EmptyState.jsx"},{"name":"EntitySummary","sourcePath":"components/data/EntitySummary.jsx"},{"name":"FilterBuilder","sourcePath":"components/data/FilterBuilder.jsx"},{"name":"KeyValueGrid","sourcePath":"components/data/KeyValueGrid.jsx"},{"name":"LinkedSelectionProvider","sourcePath":"components/data/LinkedSelectionProvider.jsx"},{"name":"SelectionHooks","sourcePath":"components/data/LinkedSelectionProvider.jsx"},{"name":"LinkedSelectionTarget","sourcePath":"components/data/LinkedSelectionProvider.jsx"},{"name":"MetricCard","sourcePath":"components/data/MetricCard.jsx"},{"name":"OptimisticProvider","sourcePath":"components/data/OptimisticCell.jsx"},{"name":"OptimisticHooks","sourcePath":"components/data/OptimisticCell.jsx"},{"name":"OptimisticCell","sourcePath":"components/data/OptimisticCell.jsx"},{"name":"OptimisticRowBar","sourcePath":"components/data/OptimisticCell.jsx"},{"name":"Pagination","sourcePath":"components/data/Pagination.jsx"},{"name":"SavedViews","sourcePath":"components/data/SavedViews.jsx"},{"name":"SelectionCompareProvider","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"SelectionCompareHooks","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"CompareToggle","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"CompareTray","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"SelectionCompare","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"CompareSheet","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"SelectionToolbar","sourcePath":"components/data/SelectionToolbar.jsx"},{"name":"Skeleton","sourcePath":"components/data/Skeleton.jsx"},{"name":"SkeletonTable","sourcePath":"components/data/Skeleton.jsx"},{"name":"TableHooks","sourcePath":"components/data/TableHooks.js"},{"name":"Toolbar","sourcePath":"components/data/Toolbar.jsx"},{"name":"ToolbarGroup","sourcePath":"components/data/Toolbar.jsx"},{"name":"ToolbarSpacer","sourcePath":"components/data/Toolbar.jsx"},{"name":"ToolbarDivider","sourcePath":"components/data/Toolbar.jsx"},{"name":"VirtualizedList","sourcePath":"components/data/VirtualizedList.jsx"},{"name":"WorksheetGrid","sourcePath":"components/data/WorksheetGrid.jsx"},{"name":"CONSEQUENCE_KINDS","sourcePath":"components/decision/ConsequenceRail.jsx"},{"name":"ConsequenceRail","sourcePath":"components/decision/ConsequenceRail.jsx"},{"name":"DecisionSnapshotPanel","sourcePath":"components/decision/DecisionSnapshot.jsx"},{"name":"DecisionSnapshot","sourcePath":"components/decision/DecisionSnapshot.jsx"},{"name":"SnapshotHooks","sourcePath":"components/decision/DecisionSnapshot.jsx"},{"name":"EVIDENCE_SECTIONS","sourcePath":"components/decision/EvidenceRail.jsx"},{"name":"EvidenceRail","sourcePath":"components/decision/EvidenceRail.jsx"},{"name":"ACTION_STATES","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"ActionStateChip","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"ActionEnvelope","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"InstructionLedger","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"ActionEnvelopeProvider","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"ActionHooks","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"ActionGuardList","sourcePath":"components/operations/ActionGuard.jsx"},{"name":"ActionGuard","sourcePath":"components/operations/ActionGuard.jsx"},{"name":"ActionAvailability","sourcePath":"components/operations/ActionGuard.jsx"},{"name":"QUEUE_RUNGS","sourcePath":"components/operations/ActionQueue.jsx"},{"name":"ActionQueue","sourcePath":"components/operations/ActionQueue.jsx"},{"name":"ActionQueueChip","sourcePath":"components/operations/ActionQueue.jsx"},{"name":"ADAPTER_POSTURES","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"AdapterPostureChip","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"AdapterDiagnostics","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"AdapterHooks","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"AnnotationProvider","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"AnnotationHooks","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"AnnotationAnchor","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"AnnotationLayer","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"AnnotationPanel","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"AttestationPanel","sourcePath":"components/operations/AttestationPanel.jsx"},{"name":"CaseQueue","sourcePath":"components/operations/CaseQueue.jsx"},{"name":"ChangeSetProvider","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"ChangeSetHooks","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"ChangeSetDiff","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"ChangeReviewBar","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"ChangeSetReview","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"ClaimHeader","sourcePath":"components/operations/ClaimHeader.jsx"},{"name":"ConnectionState","sourcePath":"components/operations/ConnectionState.jsx"},{"name":"DataCondition","sourcePath":"components/operations/DataCondition.jsx"},{"name":"DataConditionValue","sourcePath":"components/operations/DataCondition.jsx"},{"name":"DataConditionLegend","sourcePath":"components/operations/DataCondition.jsx"},{"name":"DecisionFlowProvider","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"DecisionFlow","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"DecisionFlowRail","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"DecisionFlowStage","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"DecisionConsequenceBar","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"DiffView","sourcePath":"components/operations/DiffView.jsx"},{"name":"EventTimeline","sourcePath":"components/operations/EventTimeline.jsx"},{"name":"EvidenceInspector","sourcePath":"components/operations/EvidenceInspector.jsx"},{"name":"EvidenceSection","sourcePath":"components/operations/EvidenceInspector.jsx"},{"name":"ProvenanceTrace","sourcePath":"components/operations/EvidenceInspector.jsx"},{"name":"EvidenceLink","sourcePath":"components/operations/EvidenceLink.jsx"},{"name":"EvidencePreview","sourcePath":"components/operations/EvidencePreview.jsx"},{"name":"GateRail","sourcePath":"components/operations/GateRail.jsx"},{"name":"HandoverBrief","sourcePath":"components/operations/HandoverBrief.jsx"},{"name":"HandoverBriefChip","sourcePath":"components/operations/HandoverBrief.jsx"},{"name":"LogTail","sourcePath":"components/operations/LogTail.jsx"},{"name":"ProvenanceChip","sourcePath":"components/operations/ProvenanceChip.jsx"},{"name":"ReadinessPanel","sourcePath":"components/operations/ReadinessPanel.jsx"},{"name":"ResolutionDrawer","sourcePath":"components/operations/ResolutionDrawer.jsx"},{"name":"SeverityBadge","sourcePath":"components/operations/SeverityBadge.jsx"},{"name":"SlaChip","sourcePath":"components/operations/SlaChip.jsx"},{"name":"SourceCoverageSummary","sourcePath":"components/operations/SourceCoverageSummary.jsx"},{"name":"Status","sourcePath":"components/operations/Status.jsx"},{"name":"STRATEGY_RUN_AXES","sourcePath":"components/operations/StrategyRunModel.jsx"},{"name":"StrategyRunModel","sourcePath":"components/operations/StrategyRunModel.jsx"},{"name":"TrustStrip","sourcePath":"components/operations/TrustStrip.jsx"},{"name":"ValidationIssueList","sourcePath":"components/operations/ValidationIssueList.jsx"},{"name":"ENVELOPE_MARKS","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"AUTHORITIES","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"EnvelopeMark","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"ValueEnvelope","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"EnvelopePanel","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"EnvelopeCoherence","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"VersionConflictNotice","sourcePath":"components/operations/VersionConflictNotice.jsx"},{"name":"WorkspaceSection","sourcePath":"components/operations/WorkspaceSection.jsx"},{"name":"GlobalSearch","sourcePath":"components/shell/GlobalSearch.jsx"},{"name":"NavRail","sourcePath":"components/shell/NavRail.jsx"},{"name":"ReturnPath","sourcePath":"components/shell/ReturnPath.jsx"},{"name":"ARCHETYPES","sourcePath":"components/shell/ScreenComposition.jsx"},{"name":"ScreenComposition","sourcePath":"components/shell/ScreenComposition.jsx"},{"name":"UserMenu","sourcePath":"components/shell/SessionControls.jsx"},{"name":"RoleBadge","sourcePath":"components/shell/SessionControls.jsx"},{"name":"ReadOnlyBanner","sourcePath":"components/shell/SessionControls.jsx"},{"name":"SessionControls","sourcePath":"components/shell/SessionControls.jsx"},{"name":"StatusBar","sourcePath":"components/shell/StatusBar.jsx"},{"name":"WorkspaceContextProvider","sourcePath":"components/shell/WorkspaceContextBar.jsx"},{"name":"WorkspaceHooks","sourcePath":"components/shell/WorkspaceContextBar.jsx"},{"name":"WorkspaceContextBar","sourcePath":"components/shell/WorkspaceContextBar.jsx"},{"name":"WorkspaceLayoutProvider","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"LayoutHooks","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"WorkspaceLayoutBar","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"WorkspaceLayoutGrid","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"WorkspaceLayout","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"LayoutRegion","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"WorkstationShell","sourcePath":"components/shell/WorkstationShell.jsx"},{"name":"WorkstationTopbar","sourcePath":"components/shell/WorkstationTopbar.jsx"},{"name":"Blotter","sourcePath":"components/trading/Blotter.jsx"},{"name":"DepthLadder","sourcePath":"components/trading/DepthLadder.jsx"},{"name":"FillsFeed","sourcePath":"components/trading/FillsFeed.jsx"},{"name":"OptionChainTable","sourcePath":"components/trading/OptionChainTable.jsx"},{"name":"OrderTicket","sourcePath":"components/trading/OrderTicket.jsx"},{"name":"TimeAndSalesTape","sourcePath":"components/trading/TimeAndSalesTape.jsx"}],"sourceHashAlgorithm":"sha256","sourceHashes":{"api/accounting.js":"32a06149bbd3e32d60456970b7d0a25fef31aed21cffc2d01b999eb3aeab13f4","api/analytics.js":"93324c43ff214c4fa63c40715e531989d37d79bf693e9d492fde823e8fa6b437","api/coordination.js":"071d33c712dd84bd1d755b9d74515a6336697f90ffecc2ca92ac80314aefc3d1","api/data.js":"89acfb7da4c585ba655b3901a5bba7f367184b614dbce79653bed62b243c788e","api/decision.js":"f07458ea2956126c59e37a23159369b06bf06da74a1e50581a53318a8ffd1fa5","api/evidence.js":"c767f680e87df8a92edfb6a7f14150bb789a67b64525272d9ef622cba736063f","api/legacy.js":"560b474515b04c2cf068955403659d74d05fc388feded136177b50836b81300a","api/primitives.js":"4c180a2daabd16d496cecccd86369fac40e6cacc51e3d44ab87e7c0285a0b78e","api/shell.js":"033c09bc4874371584610596234a7f5d43168702e24ecf1e5430c0e3b49028ba","api/trading.js":"d1e4efaf7268e3ab4da5faa0ec091a61b1842ee377823620d829585fefbc6802","components/accounting/AccountTree.jsx":"ed175e9c1fb2c03cafb8b0f1b30a6fb276745498e9f75cce28301d51c04b5228","components/accounting/AccountingPeriodSelector.jsx":"2a6b872a19c85ce7725b4081f475f91491f181e42e642739b70fbd011206814c","components/accounting/AgingTable.jsx":"4827dccb31bb114062428d0193742dea68f7122587d779ffffc140836814a61a","components/accounting/AllocationEditor.jsx":"6e7b8bcb67de8dcec5e6dede1a6a84932b7983caba3dac14173007234fae5c06","components/accounting/AmountCell.jsx":"cf075e06cd3672359810daf9d0e03c9efa2b012ef266e2bbcd656f6e4c998d45","components/accounting/Assurance.jsx":"82ad813e108a5d6b299452cd78616878c1c708a2d5f9d6bd900f0af29d48d018","components/accounting/BasisBridge.jsx":"ab4d212327170d45265eb9fe6f3a205503cee8bd2395e9ec7e8e7cd74c6b7ad7","components/accounting/BasisComparisonMatrix.jsx":"d9b335208c327bd44804c7b83275236316a3c01b28438e1e3d29c22c2379e879","components/accounting/CalculationTrace.jsx":"965ee8d556b8c63c8aa5058fe54f6b38eec2aa726a391c8f7ca14f48f69b151e","components/accounting/CloseCalendar.jsx":"51a1b6de6b273d87a44facce007313a8eb138521b1cc55ffa95cf9a3e69f1fd4","components/accounting/CommitmentBar.jsx":"8eb6553280b6345fc6b58c5fc9cc1e53d35d2d074bfa6a93cdeb7d82f05b5ae0","components/accounting/FxRevaluationTable.jsx":"feeae5c16136e538fd70810166ec9e2ab9ca5e156bfdaeb20d1f98c40ca3f137","components/accounting/IncomeSchedule.jsx":"2f250a831b75e163901382523181eab2839ce1b6223c72c448aad88e6dc038b7","components/accounting/JournalEntryForm.jsx":"9055b6a05dd2340926e7eed1604c1a6ab0e0aeaadc0c4c42b17d10da99bf6064","components/accounting/LedgerTable.jsx":"8b860bf77cac154bb83db7907d3718fdf57a4616eaebb1fe6f2871c0254f710d","components/accounting/LifecycleRibbon.jsx":"13404beefa15be74401b170f5a338216649cededb559117de72619075e690ef8","components/accounting/Money.jsx":"b0e20f9ff2ef1853df35b6dc4686a254407bbed0c4acbf0d7f436fad1130e491","components/accounting/PostingImpactPreview.jsx":"4316a6160070194846c57bde75d77cc7db7b86f9a856bd47e8eab006a499fe93","components/accounting/ReconciliationPanel.jsx":"be504887b15af7d24852523a17a9ee1474e9c91f344b86a9cb74fd36893e8917","components/accounting/RollforwardMatrix.jsx":"4ef5eae7ce466840b6afdba8f5aa140cdf97019eab736c1adba720aad98934b0","components/accounting/RollforwardTrace.jsx":"a8f2c444a8cc247c5c6e9bd75cd013562f60a4237e2c77b706085ca0100f6be0","components/accounting/ScheduleLadder.jsx":"7c650139c64ae5139c846bd4358b59d75c43ad6bd907a8e435d891ae29bd247d","components/accounting/StatementTable.jsx":"2e486a5ae299b2a7ca65ea8c8bc4e6d621774f91027e8d17b4dc6301ca489f26","components/accounting/TaxLotTable.jsx":"f27e3596d3abe6eca6add2a7e7f9f8b925bb2f3aa69758a4be16eac27405ceac","components/accounting/TieOutPanel.jsx":"afe0d8bc6c105b0c05cbc5a26143667c1ff63e1db9e582e3b1a9282e059a3cd4","components/accounting/TrialBalance.jsx":"05bb42e80a3651478f7305ce39c37806faed30ce8d90db504f976f7a9d715295","components/accounting/VarianceCell.jsx":"878a6777c8936d922d6e73f6510a7a8431620e43e5a4943172a5c7764194ca0b","components/accounting/knownAmounts.js":"f3e06c375125f99bed31d726b575f4c912b76c76a379fb34f49fb259574735e8","components/accounting/money.js":"d9373bff6f5102341cad7e9449501cc577ad5c256af79a6d13730c6d1ffe7676","components/charts/AnalyticalField.jsx":"95a616f1d9d91e777a1de950eb51ef3dfaf14f92f4d3131c8ca75d4531011332","components/charts/AnalyticalFigure.jsx":"334a6e68aad9fb6c1474c7fd48dfc6e12345d475e451f68a8c1da32c1c4bc87d","components/charts/BarChart.jsx":"331663e52d569d0dd4ca0e83c16d0d02f36a3b2fb90ff053297b030dab5345e2","components/charts/CandleChart.jsx":"1e8a2fed53f4502e5a7c79d47a75fb1f9dfd3f246ccf855cacb47ed5c91e77a9","components/charts/CashFlowLadder.jsx":"6c402aea4d58a136e289614dfd4bd3a0b453baf5a684345421b204bbf4016d1a","components/charts/ChartAnnotations.jsx":"212e9e98999c80105092282b84d2fd8605bd4caba7b76a01018e6da2a818c046","components/charts/ChartCard.jsx":"6effbc549d35f377e92d82e94c3d809493b47c22669995bd2d5a8eeb8107e2d6","components/charts/ChartFrame.jsx":"2f75ef6888d6b1bbb5dc3b104e5454b0d6b2d6333462889dd4703ea91adf8a22","components/charts/ChartTooltip.jsx":"558b3f58559f782769242398762de488effff4d6471f8f20708e0712d42c6832","components/charts/ComparisonPlate.jsx":"dc127875e2749c7126122494fe1a1e814ae641591bda35cb6498689950b573fd","components/charts/ControlDependencyGraph.jsx":"f438595977e518e50d6e9972d9778a29373abdf9150018644207f822e202f42e","components/charts/CorrelationHeatmap.jsx":"609fea70f2470bc55601f9a0ecb4e8213b44f8e9d4da7c5ac5ea8599f536fc8f","components/charts/CoverageMatrix.jsx":"19cf7a6444da996be272d9cf5beb2d82addfad0fece43b3bdc781a5027277a3a","components/charts/DepthChart.jsx":"9f17864422da12ea133295989d5c3e39b3717d835bcc9e044c21a775cbee83f4","components/charts/DistributionRange.jsx":"3d506a855b8c626b165b5544f3dfabaa29d2cafff33534add51d9d049b2d81a4","components/charts/DonutChart.jsx":"9170151975a1b012503828d1c500c5799963859a650f6ae5a6098dae54798667","components/charts/DotMatrix.jsx":"e86e509908716f09979e28a8560bc4bd215a9f3fca2a13c8d37d17a1d64bd5ff","components/charts/DrawdownChart.jsx":"b92f936c1824e0a37835d85d29174b022438a6f7d2a473dab005f2dd752ac14a","components/charts/DurationContribution.jsx":"b7f91919c1430fa010b281d743d8d46fa2f7848577ee47415b7fe1379e7d6185","components/charts/EquityCurve.jsx":"a02cea3ad44e1a7ee699545d27ef2799a9ac546c564e7b48a9d763e755394956","components/charts/Figure.jsx":"9c1a1489fb3d0c0987d61416f331138e8c8aa8908107b6e6e0fc5056eece678c","components/charts/Histogram.jsx":"86f0a48f4257ea524646201972ca0e7130a4808474c7b337ab0af6005e46ed17","components/charts/IntervalBar.jsx":"4257d6cd0f701310751bdbf2ee6b1eafbc3cf0d75c593222df7e814c9691d9c4","components/charts/LineageGraph.jsx":"193add1802f299f7637647dd0e09df4d773ceeab666012174dd61acb67469168","components/charts/MaturityLadder.jsx":"1d41bba71470d0c0936c2b9176cfca9892533d77f6c634e5e56fc877226828e9","components/charts/OwnershipGraph.jsx":"740f72f0c14b6c14cc960d29b557646f5f2b9043990a5a6b8d0c3d17e0e7a9bf","components/charts/PeerComparisonStrip.jsx":"2029cd50717d2ee343ff7a7020ebf3d41829aae83e9fb3816841bb2c3d23e826","components/charts/PnLCalendar.jsx":"90260760bde4ecc11b456158661a827f884e2a1a3ae4594af44c120acee57abc","components/charts/ScatterChart.jsx":"772c981326d6c1bf74c8359548109c18b04634160333c23a54ad53c6f976cb51","components/charts/ScenarioSelector.jsx":"3345d0b3e3adaa6880b52bdb4a37c589b99af0460be42a7e30e7b9db919853a7","components/charts/SmallMultiples.jsx":"d91f942d02c134069d4c5a1f4240802a295d4cf0571d6e7f9c24aaeb241aa21e","components/charts/Sparkline.jsx":"657a89467f21fba260d7d86379c5277c7585e3223532234b68a889808977da06","components/charts/TimeframeSwitcher.jsx":"c1664a21697141bc2accc0c978673daa4df71e7f3aeef519a6ccc9c2661a797c","components/charts/TraceChart.jsx":"4202a2b610805906d916cf6c5f94fc21156416ab13ff1c4f25bebf7a44963472","components/charts/Treemap.jsx":"d4538a5226e3ede5ca3fca4f67cbdb8dd13a177e358321f7461e679dffa0c961","components/charts/WatchlistStrip.jsx":"30c287ef4265f327d0c2c70014484494ffd1d54e1cd51afe3b112bdcd77eaf53","components/charts/WaterfallChart.jsx":"7083c9626ef0c481791e776b391af262c05c659c11f5f874b12c7b708d37d442","components/charts/YieldCurve.jsx":"f5194121f5a0bedf9a3a4772fa2c85d944b3aa6f36cb74a8908e74b9ae05eebd","components/charts/useChartCrosshair.js":"4b076a77f05526e5e529ab4336f128a47a6869c2e32aa9eca1991a0c1120e41f","components/charts/viz.js":"cc385e67e88e4ec4e184501395920359070adf2e8e773c2d9a43d364f9d4ceb2","components/core/Accordion.jsx":"469797802ae061c3b61736a19a4485ba77a604572b65e2172abafb116099b4b6","components/core/AsyncCombobox.jsx":"ee1b7f4915ee162380189730ae2b34f7bad7468182738ac8a28f33aea06bf358","components/core/Badge.jsx":"c10b37bfbcffdf53f48112a8cca3b5e2b11c8f1f61fe816f104fa9628ab8e014","components/core/Breadcrumb.jsx":"f3df3f2e8e9683d43fa6be71bf7e41196c0a682d5dca0f3925118bbb42afabad","components/core/Button.jsx":"18311af4ebf702ed9aa541e5ab9148a2fb9bfe635e95ff8e651bed6a6aed0e6b","components/core/Callout.jsx":"0a4f98838ea77025f4033b0b4df883c7035cabe765963e3ae86f32c5d759f0a9","components/core/Capsule.jsx":"5005f4a38645f4fe993664db3990e78035fee899d951e183192bcd7c278a927c","components/core/Checkbox.jsx":"87cbcd1da99489298c5f54b5d3be2f2132b583753b56676d89e92fea9d36222c","components/core/Combobox.jsx":"ac5ee3784941ee6ef0a7673136dd3accd26466a2f444e42e63340e9ac7ddcac9","components/core/CommandPalette.jsx":"0b55f81f8fa6847e2cba21dc8098b9f99038f570db260cc223aebaa964b0228b","components/core/ContextMenu.jsx":"e7f0a1f3d76d2c89c44dee645dee439ac3878c93e013905a63440299bbdd7916","components/core/ContinuityFrame.jsx":"fe0b61cee73fcbc9e2f3a2a8a784c9220142b080bab2779f495d88d341a2d08e","components/core/DatePicker.jsx":"9b82d922ad6b2211649f84be6aff287d9a9f2d217fc5fa982b8316d545d67aa5","components/core/DateRangePicker.jsx":"92070aec60d2246d04f447be58356001d7d4fb2b257327f88f0fbe8661165b76","components/core/Datum.jsx":"85138d4318055747e56b94ac22cdcd6724b970d000ed4c87032f5277fea9effa","components/core/Delta.jsx":"b7edf8e380ca42227fbc95ee671c2a6851b8883cfb389a7744e9823a104d8218","components/core/DensityToggle.jsx":"3772d220111d66b3a447af867e5171943426ccb346647be2ecd2b5d07d4f5d9c","components/core/Dialog.jsx":"6760f120328805ad4381a15e58e8bd9169875b863d9612fda74e979a8f0bfd24","components/core/Disclosure.jsx":"4689709c892fb67316f281670e9b2eec5ccb0f4fe8c785318f8c6043fd58a2c9","components/core/Drawer.jsx":"18a2108d4481a16c6f5c165872dacf0cab58648f52a215357c552f6fcc88e166","components/core/ErrorBoundary.jsx":"e77ed377ba50a689052c6791c31f33f5ff2e879645ec4caa6bfd828b69cd4089","components/core/Eyebrow.jsx":"df412a943581ec3cdf5399122d98308b25329c3598e511560bf7c8c76b1dba1f","components/core/FileUpload.jsx":"d50a29ed887d722054edd5490c1639b3d5e64ec6bbde8aae36b73fd768587cc3","components/core/Flex.jsx":"cb320fab89ab54e971633763c1757a047f61d022d99df38a7db22a319af8c3d6","components/core/Form.jsx":"28cd4aafe7a26501be5c519b443a6c4ddc374d2ff6bef093bbb21cc07c736b47","components/core/FormField.jsx":"89e422156aca449eefb259e654257acdeef0cbb3ab67505cfa1b67899d47ce09","components/core/FormValidation.jsx":"22b040248657ec9e109071b28b248abb01280838ae0372b0033d6274b59f692c","components/core/FormatProvider.jsx":"b05d4707e67fb88360af7e541b9e001fc4562b6208db795e05aa7d274dc3ddc3","components/core/FreshnessIndicator.jsx":"a9c91e365b257da35572d624486c0789905b67e75b66a8fbf566be837bfae12d","components/core/Gauge.jsx":"91cce969ee0bb9bfce58450b08bf16c04ed12ff6c53000f3e73b9628a93e37db","components/core/Grid.jsx":"01128532601bcc0712748d3de2c4a109e002f96f3a1ed6b2f5f9b89e4d583f2d","components/core/HotkeysProvider.jsx":"4aaca98852c6d8b9fd8d0a31294bc9240cf3b1fc38a7cc73d8eb441be99a903d","components/core/Input.jsx":"34c8b0826c15004d197def79d156cb1344c7f1390f39b3232712b1aa0ab9c88f","components/core/InstrumentChip.jsx":"3eb39312c583688d6ae4c7afcb719f3df87382351d557f5a5912eca1a5104a5c","components/core/Kbd.jsx":"bc655e224a6aa339de369de3baf229b77db6f691a72f881f4e5f1c9d78bfa6e4","components/core/LinearGauge.jsx":"dd33e65ab2d6ed553b1ce751f64d0cd2775ce52c6503246208de74fa51ee5604","components/core/LocalDate.jsx":"39340da0bc1cc4f7b00b425ae640861106fc9e598884ed5628a46f67147f82a3","components/core/MaterialityAssessment.jsx":"25893c510667b0d736d31c625809d55de96fb8e01ec8371823577645bb64992a","components/core/Modal.jsx":"78f47bfbc03ab983e43c3346a8a94345872aedc83fa8fb57db74a55561f6f80d","components/core/MultiSelect.jsx":"9ea0741d102e606787e4721072ec310daa6ed44ddbdfcb4464a85fa314ba40b5","components/core/NotificationCenter.jsx":"13d93c0d57ba3767f09b1d87b3d2b985ff0ebcc02a07aad0f70f67d5f91bb35a","components/core/NumberInput.jsx":"9503311436be534fa1e7b6b3220f7a952a628dcd9f5171d75b4ba8f2196cc249","components/core/ObjectModel.jsx":"b022a619f9d528de059af78d5396f06b77be2b56337f2804580357751e06b0f2","components/core/ObjectScope.jsx":"3f6d471e11ea0be02ab0dcade6a8c51afefe75e9b6cbd82d457bfd360163aadf","components/core/ObjectTrail.jsx":"8ab82030526bd3d4edc2d3ebc43b17186ad43aaba9e2e6b8cb12a657b5bb7c29","components/core/PanelSurface.jsx":"8fcc4b13e00578443d50a1bafe037f64d17cbd99824e672764146cbe886e8b82","components/core/Popover.jsx":"27274df827256917366aaacfdf9aab94639f991ed751a43856d48c937d4b311a","components/core/ProgressBar.jsx":"21a9ae3c77d41a9cdd2b5a02816c825b80a2b8de669b462c924d02d30ea95c02","components/core/RadioGroup.jsx":"23ce1b4bf58fee4ff4b70034e9dcd4a3a878e70f2a0f79784b12e4e6741830a8","components/core/Registry.jsx":"b0197a4f81b2b64c4bba49662572abe979eb78d3f4ed58166a85cb2c648d28cb","components/core/SegmentedControl.jsx":"d46c240a96332ba89a76d6ff55ccf7e7a39ae3daa1f192350d79149aa809448d","components/core/Select.jsx":"901764f3426034461b8c38a51b85f1e60114b19e1b996ce538e74459fa3bb51b","components/core/Slider.jsx":"0ad5194e536e1b1de079c932066e447bb1e7e5dbcd0b933fbdda399ee6352449","components/core/Spinner.jsx":"58f9edc70ed8652a611190c5d2aa16fa38203caa4f3e694dd0ee8289292c0a43","components/core/SplitPane.jsx":"58035a38f439fd7e6a97042da9be88a60de128c6fe579de4f0618902d752afaf","components/core/Stack.jsx":"35e22a8758b9a3ffd35e370fa16f1a22f5c64d95c49dd287a74ab48c424e8727","components/core/StatusBanner.jsx":"8812bff035b4e77b60dd47f56bada971fbf85afbec86ca4ac2f9ad170af01251","components/core/Stepper.jsx":"e89f0eba8314a47cab20645d2bcf4d6ad5bda992e53e52ab738036399ef08eec","components/core/StrategyModel.jsx":"f8cba88cd75baa2a71c76eeb95ef9aa0a18e32d057ca8e2e82d079a0185e6823","components/core/Tabs.jsx":"28b66ec7119fba2c7aed3740dc6432c6ae634123f10733686f90555b7004ddc9","components/core/TagInput.jsx":"0bded2859bf5e6d93e9854bec255ea608798e89c04eb2104db549201c13611ef","components/core/TextArea.jsx":"5e0eac849c24e01a1525179167cf87d46ad316b83ae2cd42a232277bd500a930","components/core/TimeContext.jsx":"f9a1fafde007dd549ba95d4e837da70b2624f9ca113cdcfb227cc863b0532f0d","components/core/Timestamp.jsx":"983e59f6bfcd523572f41ea9002df109da75ea73bb92b5346b80eaecf1947cb9","components/core/Toast.jsx":"971662ad43f8cb5f2788c3f4a40d85c9d96a967c1d8f6710ec4fc677f061bdfb","components/core/Tooltip.jsx":"b5e716f82cce768d641013c188e2b434ad7f77cdfd9feecf602bf6cab88ed6d2","components/core/TreeView.jsx":"8c1f26f183e0606b33309796c89cd8fd1220fd3feab741d64a2a76f84f75d6cd","components/core/Validators.js":"579b4cdb4df7f50f0e33e77f4394c99cf5d59f12c0b3884ee5f7c74c656858d0","components/core/ValueAuthority.jsx":"1b934305ace5b42abe2f434c85b15fd957c4453166be903da2830fdbc0b68b39","components/core/format.js":"42cda7ab68620e665f9cec840cf044fcbde0d1e2b28d9d5f7fa63d81c4693409","components/core/localDate.js":"7f055f64cefd8478be169b657cc8ad8dd71600dea2a55798a7805362af0e64cd","components/core/useFormState.js":"797da291fe2b851944458baee93d9f723cf711435f6c4e8e1549f19a0f138105","components/core/useOverlayFocus.js":"9301635fc0a563174eee78fd1cbd20f8c820666cde01b2f89be55dece41135dd","components/data/BulkActionBar.jsx":"94292608b348fd364cb469fe320f0f892869ccdc49cab1a1c179a3e12085204d","components/data/ColumnChooser.jsx":"b172e9a6012c8c7f3044d0162a01d6c3f09f3e75be5dcff35071e60870af77c5","components/data/ColumnManager.jsx":"7c06cc93769065bebbd7f0ad33f8b28d5190726e2261f8f705bb816263e7babd","components/data/DataGrid.jsx":"b9cce1d5c5acdc419561c82476dd2645678a5ccbdc7604f8904b6e931eb2df3c","components/data/DataStateSwitch.jsx":"57a22cac3c6143c2d695ea0c159d599d16dfd13ff946c22c8ba59e02884e7bcd","components/data/DenseDataTable.jsx":"555a249c4975a1835a11da541de453c8245cd49d4d247f2144ae0860ac6261b7","components/data/EditableCell.jsx":"d199f4635684071e880d57178ceca1500f2bc16efd86e18813ad0c22904d6b3c","components/data/EmptyState.jsx":"861bdde9494aeabb4dbb7e8082902ba8a4bd735be2329b364b3a091bcade1ed6","components/data/EntitySummary.jsx":"8ad6e5d756fab1844044c0e9a66464cf6faef87826a2e09bf85a91af54273686","components/data/ExpandableDataTable.jsx":"1ef8f00c5dea92151a7fc616cdd373649448f55c6204fc51468cfbe0ca602f59","components/data/FilterBuilder.jsx":"0f36bd83ca2d3cf16a8feda63bb0f0367a6b249b4ffd0a91fb932f77ee81e4cb","components/data/FilteredDataTable.jsx":"3cc9b8716fd6c726d4eaac81c0e45d896a65e33da36f54eac99278697931a46b","components/data/KeyValueGrid.jsx":"94656a4ba732dfcae2adc551d11e548d0fae2c6a4d067e7578b5ec13dd0be9c7","components/data/LinkedSelectionProvider.jsx":"0ad3828bb9d6198f45cf0952f2e8cb3f457b19c937889ace5994b99b953e8591","components/data/MetricCard.jsx":"33cfbc354d7a564236ce4320ca28dbe612614462058f993404b103a6d8a92082","components/data/OptimisticCell.jsx":"5e8cb56aa087c90e2d6142bbf858274ccf86be19a15fa4a1f91b663ba7246867","components/data/Pagination.jsx":"8aab26727cb6b1872f0b10a3d9dd639fd0831b9d97948625472149b595abc412","components/data/SavedViews.jsx":"5bf23a3f8498a99cab6090f861d95e8091753b8416cd5b87b5220ac5aea8ddd8","components/data/SelectionCompare.jsx":"716f9621814fd10241092d8124f427a9b603d2a23f0b1f564822bf8797a8e3d8","components/data/SelectionToolbar.jsx":"9e213785d57a09602f4a3d4b7c254a614bd7c74d90eef1446c2e9ae59d791557","components/data/Skeleton.jsx":"5f9652eda4d6c5ff9e90577f8c477711b88cfce44a3bd7a8f74704f25354593f","components/data/TableHooks.js":"533bff5b26899d68a8312bea0845929509c19aebbc84801f207f79dd200080d9","components/data/Toolbar.jsx":"1a14df32a8f9ad6542ebba299587c3cf1da8de6c0a8c9a05234d1f805142bcdb","components/data/VirtualizedList.jsx":"7d4b2fb86e609be1988255d758dfda402694c5cf458d9c0180e3971548ceabf6","components/data/WorksheetGrid.jsx":"f419364dd37a1768b312d082ec5dfe68fdc318e599f817492b4bf9782498c9c6","components/data/gridFormat.js":"fd436c00da97a70961de0dcc2ebfa852a5e7d6bec8a831e58effd1aa86044bb8","components/data/useAsyncTableData.js":"d929b2c36aca251d9acf134d546df750f87682d319c20d49d843c1d6c5c7cf1d","components/data/useRowSelection.js":"3db0978903f50ab6d7cb3752d2bfd4d1e5086d4a9317c4ffbcbd5b34c4f22162","components/data/useTableColumns.js":"4e3b7effccf10c0555c0b37739e51fb8edb2c8c258e5ec11d554a1e91ca192ea","components/data/useTableState.js":"604b680c60937900f41e7b69b69e5a9b0b1b22d348470d8f2e019e8f580ca968","components/data/useThemeRowHeight.js":"b57e448018c5d78247f7b3244ef772db24faf6e8b7884031e43926875d2a3c95","components/decision/ConsequenceRail.jsx":"006eb47fc065fd3886c59bfea670f909f3e1eb10770878f6bc01b1a39694d685","components/decision/DecisionSnapshot.jsx":"32b1bea7ce46e6bc9c52efd77654bf6ccab571196b382f6e296e7c9e8774c7b3","components/decision/EvidenceRail.jsx":"59037a7f78c9b0f3198a9977f744b201dbbbacc62178e20465262c039a4dc4d9","components/operations/ActionEnvelope.jsx":"c8f2de141664ca8666a587914429d9efc620b0f946a1b7dc521d0be25c29bab1","components/operations/ActionGuard.jsx":"d4c4535a18d7478d0ae935d02059f74a48c120980ac37404c2987d9e557ed832","components/operations/ActionQueue.jsx":"c12a2d4e83557ab6dbc8a75f558eb0b02b90e46ebac05e20cf825037d1f54928","components/operations/AdapterDiagnostics.jsx":"f35ba783c9cd5e8b837ec744ccfefe1b15b49eca270f4201147b0fb31b1e9205","components/operations/AnnotationLayer.jsx":"b00fa3435f5f65b2d4388c6da0ac05569f65debc088f7350e8803b013a6fea79","components/operations/AttestationPanel.jsx":"5393909f41fc12a18d1a49d7e985a80aa2b29e3cc1ce4ccf89d4ef26f7e5ff40","components/operations/CaseQueue.jsx":"4ddc4124c1ca7a4e471ebaec35e3d383be9e00b8ed403334839523ff2a98cca5","components/operations/ChangeSetReview.jsx":"5e34a932dfc52e4ceeba6707e51655667609e8d8d2d63f173d75e421be97dc5c","components/operations/ClaimHeader.jsx":"34868b38e34e5c0ff27b6eb8a890d82cf80c76ecb75ba3fa8aebb4e922b8eedf","components/operations/ConnectionState.jsx":"5a3dae923a0164a520d4f9e633be9d4fee1ec5f4088709385f28b59c90f54a19","components/operations/DataCondition.jsx":"f016bf0b977122e728c7daa1f1efd2d7e70d608de8bbc517ffb53025d35cafed","components/operations/DecisionFlow.jsx":"1368db98b284653d61969d3736f6676977592b0be08b5ec69a45ec6a8cc088fa","components/operations/DiffView.jsx":"e09846493e01cc98859fc82b6dd44156416ad649e57c096c498bc2ee99b8c0a3","components/operations/EventTimeline.jsx":"053781b7305139f7ab8a6af012fa3ce0d92dc7dd26a6b4ebe292a53ff53ae0a6","components/operations/EvidenceInspector.jsx":"490fd3da34ecdbcc19fd8095a246fa5d40bf2427701c09af98d37194c2e87a34","components/operations/EvidenceLink.jsx":"55a6db918befbeb2b2a9b865fd99de2b78af9f4355d781bd097debea3f4b6e8a","components/operations/EvidencePreview.jsx":"2dccc4190cfdf05f63f428a8441ca539f7d2245f6e2287a6d3ceb1464d1aa89a","components/operations/GateRail.jsx":"bb9fd79d6e9c1db5edde1f7d3ede5e7337fb7583cba3bb775e768c138f1fbb7a","components/operations/HandoverBrief.jsx":"8a631ad71f9e7d02824b77da0247619033afc38a55e9846a1a8c5fc340fe3aef","components/operations/LogTail.jsx":"5b79c4af04a72eaa5ebd9402d1adfdece61d7c026e871d7a15aa121cbc6eb15c","components/operations/ProvenanceChip.jsx":"723664c7d5de36d0dff63bbb02fc7557d519a0fe592f8abc314cd7648fa6a35c","components/operations/ReadinessPanel.jsx":"20b8c64f6f1d431dd827366df4e884f86345e044fd7405f899da5e8df06581ce","components/operations/ResolutionDrawer.jsx":"4c70300f005393ffe544a619ae14fd4eae93a8184c884653432f5412f528f21b","components/operations/SeverityBadge.jsx":"eb4c8f70ad821b0d2e03ae3921313d523ed340d6303ca9c3b053e2d36c80bb64","components/operations/SlaChip.jsx":"2d5551c6c3350cc819d4c0661b4a4dde733fedff6c266acb196a40cd2515673a","components/operations/SourceCoverageSummary.jsx":"a2fabf3d0eb247f994bf48f5d100046ff5dc392105d54668675a707b86ffe886","components/operations/Status.jsx":"80a6a41ec8ea52a3394be43c5917f920d080ed9fe45aaff6c6b3cfdfa0b36dc6","components/operations/StrategyRunModel.jsx":"6f6e1319f383a308f391b444e7b55b72d4f6773ba9f48262f6bece438a1ecaf5","components/operations/TrustStrip.jsx":"9f4a99c7d74396772e6834d9470b221f158508aba69beaf950bf8a8f7ee8d96a","components/operations/ValidationIssueList.jsx":"37c2aff178363ee9da7a30ea5dabe6e554fa9102dcf7a6e2cb252ad7a4f4477f","components/operations/ValueEnvelope.jsx":"7202a3d546c0a0f1cecb8190b89da95b1bc134b4b3c363f23271e7883893be04","components/operations/VersionConflictNotice.jsx":"57a17117c292f00604eaa962c233f6cb7d99d5be53d1f0c469aaded49e30c785","components/operations/WorkspaceSection.jsx":"918566d9d735953c1e1a449afdb168b2b6073955b61a07c448c2e5d6328f9616","components/operations/conditions.js":"eafb0436c6328f60d2d604aa561afb6cf9a783084aab9dc325ab854160fd9cdf","components/operations/status.js":"3653187e0b7fedc3ad1f22065e1cecbff432cd06a353ea4dd3a5881fe2c5dae8","components/shell/GlobalSearch.jsx":"a03e856723baf1bbe90764f1cccb49ebc42d214a9d2a39e2c0453f8c152840eb","components/shell/NavRail.jsx":"53da459725d42cc997d2254ddde223653f083766393915df977e0d2f106a427a","components/shell/ReturnPath.jsx":"387b79052b3e009dd22c201814e772b9ad804c0a726444e5c5b3b9ef9214ea74","components/shell/ScreenComposition.jsx":"9dc9b4f19b793078a185b46a5a19f49b5aa3ac8fca74d91a5689d4395afca85f","components/shell/SessionControls.jsx":"6d6fccb4a5e29d1f865f0f2f0e145de7d0d06b29a90e8c5cb97273cbbae9b622","components/shell/StatusBar.jsx":"2f6c7150f4b67c1f7433dbd2e959ea1e788835bf6080feb8df48fbde5d92f17a","components/shell/WorkspaceContextBar.jsx":"d5b0209b21eaba70ca45b57017072188c776477e2470169686fbcc785830740e","components/shell/WorkspaceLayout.jsx":"85085497742478ce47e24bed1dfd6cef3866b7114a7d15799f5afa8ba82f732c","components/shell/WorkstationShell.jsx":"cdcc7b628fa0bdea92479d7b470651eb584bc8bc3de8becadeec9d4aef2a2863","components/shell/WorkstationTopbar.jsx":"c116ffc89e0fe12d27cb0c7a2d01ee34822700681d1404af8323e32bddaebaff","components/trading/Blotter.jsx":"9a8a721922ea8cc1e54568d679deb518ae60e93b756baf65fc7641dbd06f6bd8","components/trading/DepthLadder.jsx":"0c962c1c38a556974feaf2c2408955a423d1eb7d106094f94c27db8ba9b9d3fa","components/trading/FillsFeed.jsx":"6367363b03bf400e5b199441a3efdf7f183ea8894038f334e8f8ea60d90449a0","components/trading/OptionChainTable.jsx":"2c5ebd771e40fb4b987c87f20cba7dc64bdedd048df242472866c290025aef9f","components/trading/OrderTicket.jsx":"e7bd28d3356af90cda7c23aefbcb34f87e42dda380c4fabd43278503dc9b081e","components/trading/TimeAndSalesTape.jsx":"93f74f4df502d45219f6fbef2a7373c42e1a181423dedd44f04cd6417e0eea0c","tests/conformance-rules.js":"399c6558d14628fcfdc11020a41b15c958e2201654dab3d990a98a5b53c5aa0e","tests/mock-transport.js":"238c83d10a66d6b1b35d9edb2597cf6d7e7ace816a60ab0d8bbd0259e1588ec5"},"inlinedExternals":[],"unexposedExports":[{"name":"accountNormalSide","sourcePath":"components/accounting/money.js"},{"name":"adapterPosture","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"adapterScheduleMissing","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"addDays","sourcePath":"components/core/localDate.js"},{"name":"addMonths","sourcePath":"components/core/localDate.js"},{"name":"agingBucketIndex","sourcePath":"components/accounting/money.js"},{"name":"allocateAmount","sourcePath":"components/accounting/money.js"},{"name":"amortizeStraightLine","sourcePath":"components/accounting/money.js"},{"name":"assuranceCoverage","sourcePath":"components/accounting/Assurance.jsx"},{"name":"assuranceHistory","sourcePath":"components/accounting/Assurance.jsx"},{"name":"assuranceState","sourcePath":"components/accounting/Assurance.jsx"},{"name":"assuranceVerb","sourcePath":"components/accounting/Assurance.jsx"},{"name":"atDepth","sourcePath":"components/core/Disclosure.jsx"},{"name":"bandPath","sourcePath":"components/charts/viz.js"},{"name":"buildTrialBalance","sourcePath":"components/accounting/money.js"},{"name":"checkTimeCoherence","sourcePath":"components/core/TimeContext.jsx"},{"name":"clampDate","sourcePath":"components/core/localDate.js"},{"name":"conditionMeta","sourcePath":"components/operations/conditions.js"},{"name":"conditionsVocabulary","sourcePath":"components/operations/conditions.js"},{"name":"convertAmount","sourcePath":"components/accounting/money.js"},{"name":"currencyDecimals","sourcePath":"components/core/format.js"},{"name":"currencySymbol","sourcePath":"components/core/format.js"},{"name":"dayOfInstant","sourcePath":"components/core/localDate.js"},{"name":"daysBetween","sourcePath":"components/accounting/money.js"},{"name":"decimalsForTick","sourcePath":"components/core/format.js"},{"name":"defineScreen","sourcePath":"components/shell/ScreenComposition.jsx"},{"name":"deriveMetrics","sourcePath":"components/operations/StrategyRunModel.jsx"},{"name":"describeObject","sourcePath":"components/core/ObjectModel.jsx"},{"name":"domainOf","sourcePath":"components/charts/viz.js"},{"name":"dowLabels","sourcePath":"components/core/localDate.js"},{"name":"effectiveYieldSchedule","sourcePath":"components/accounting/money.js"},{"name":"elbow","sourcePath":"components/charts/viz.js"},{"name":"envelopeCheck","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"fixtureTransport","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"formatAccounting","sourcePath":"components/core/format.js"},{"name":"formatBp","sourcePath":"components/operations/conditions.js"},{"name":"formatBps","sourcePath":"components/core/format.js"},{"name":"formatCompact","sourcePath":"components/core/format.js"},{"name":"formatConditioned","sourcePath":"components/operations/conditions.js"},{"name":"formatGridSigned","sourcePath":"components/data/gridFormat.js"},{"name":"formatMoney","sourcePath":"components/core/format.js"},{"name":"formatMoneyCompact","sourcePath":"components/core/format.js"},{"name":"formatNumber","sourcePath":"components/core/format.js"},{"name":"formatPercent","sourcePath":"components/core/format.js"},{"name":"formatPrice","sourcePath":"components/core/format.js"},{"name":"formatQuantity","sourcePath":"components/core/format.js"},{"name":"formatSigned","sourcePath":"components/operations/conditions.js"},{"name":"formatSignedDelta","sourcePath":"components/core/format.js"},{"name":"formatSlaDuration","sourcePath":"components/operations/SlaChip.jsx"},{"name":"fromISO","sourcePath":"components/core/localDate.js"},{"name":"fxRevalue","sourcePath":"components/accounting/money.js"},{"name":"getDefaultLocale","sourcePath":"components/accounting/money.js"},{"name":"getNumberDefaults","sourcePath":"components/core/format.js"},{"name":"gridProof","sourcePath":"components/data/DataGrid.jsx"},{"name":"humanizeStatus","sourcePath":"components/operations/status.js"},{"name":"isEnvelopeValue","sourcePath":"components/accounting/AmountCell.jsx"},{"name":"linePath","sourcePath":"components/charts/viz.js"},{"name":"longDate","sourcePath":"components/core/localDate.js"},{"name":"monthTitle","sourcePath":"components/core/localDate.js"},{"name":"nextAssuranceStage","sourcePath":"components/accounting/Assurance.jsx"},{"name":"niceTicks","sourcePath":"components/charts/viz.js"},{"name":"normalizeCondition","sourcePath":"components/operations/conditions.js"},{"name":"normalizeSeverity","sourcePath":"components/operations/status.js"},{"name":"numberFormatter","sourcePath":"components/core/format.js"},{"name":"objectMeta","sourcePath":"components/core/ObjectModel.jsx"},{"name":"observeWidth","sourcePath":"components/charts/viz.js"},{"name":"pad","sourcePath":"components/core/localDate.js"},{"name":"parseLoose","sourcePath":"components/core/localDate.js"},{"name":"rangePresets","sourcePath":"components/core/localDate.js"},{"name":"resetNumberDefaults","sourcePath":"components/core/format.js"},{"name":"resolve","sourcePath":"components/core/Registry.jsx"},{"name":"resolveAuthority","sourcePath":"components/core/ValueAuthority.jsx"},{"name":"roleStyle","sourcePath":"components/charts/viz.js"},{"name":"roundMoney","sourcePath":"components/accounting/money.js"},{"name":"rungFor","sourcePath":"components/operations/ActionQueue.jsx"},{"name":"sameDay","sourcePath":"components/core/localDate.js"},{"name":"scale","sourcePath":"components/charts/viz.js"},{"name":"scheduleApplies","sourcePath":"components/accounting/ScheduleLadder.jsx"},{"name":"scopeMeta","sourcePath":"components/core/ObjectScope.jsx"},{"name":"scopeRelation","sourcePath":"components/core/ObjectScope.jsx"},{"name":"setDefaultLocale","sourcePath":"components/accounting/money.js"},{"name":"setNumberDefaults","sourcePath":"components/core/format.js"},{"name":"severityKeys","sourcePath":"components/operations/status.js"},{"name":"severityLabels","sourcePath":"components/operations/status.js"},{"name":"severityOf","sourcePath":"components/core/Disclosure.jsx"},{"name":"signAssurance","sourcePath":"components/accounting/Assurance.jsx"},{"name":"splitEnvelopeValue","sourcePath":"components/accounting/AmountCell.jsx"},{"name":"sumAmounts","sourcePath":"components/accounting/money.js"},{"name":"summarizeGuards","sourcePath":"components/operations/ActionGuard.jsx"},{"name":"toISO","sourcePath":"components/core/localDate.js"},{"name":"toNumber","sourcePath":"components/core/format.js"},{"name":"trailMoved","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"trailRef","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"useAnnotations","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"useAsyncTableData","sourcePath":"components/data/useAsyncTableData.js"},{"name":"useAsyncValidation","sourcePath":"components/core/useFormState.js"},{"name":"useChangeSet","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"useChartCrosshair","sourcePath":"components/charts/useChartCrosshair.js"},{"name":"useCommandPalette","sourcePath":"components/core/CommandPalette.jsx"},{"name":"useContextMenu","sourcePath":"components/core/ContextMenu.jsx"},{"name":"useDecisionFlow","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"useDirtyState","sourcePath":"components/core/useFormState.js"},{"name":"useDisclosure","sourcePath":"components/core/Disclosure.jsx"},{"name":"useFormat","sourcePath":"components/core/FormatProvider.jsx"},{"name":"useLinkedSelection","sourcePath":"components/data/LinkedSelectionProvider.jsx"},{"name":"useMeasuredWidth","sourcePath":"components/charts/viz.js"},{"name":"useObjectTrail","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"useOptimistic","sourcePath":"components/data/OptimisticCell.jsx"},{"name":"useOverlayEscape","sourcePath":"components/core/useOverlayFocus.js"},{"name":"useOverlayFocus","sourcePath":"components/core/useOverlayFocus.js"},{"name":"useRowSelection","sourcePath":"components/data/useRowSelection.js"},{"name":"useSelectionCompare","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"useSyncedCursor","sourcePath":"components/charts/useChartCrosshair.js"},{"name":"useTableColumns","sourcePath":"components/data/useTableColumns.js"},{"name":"useTableState","sourcePath":"components/data/useTableState.js"},{"name":"useThemeRowHeight","sourcePath":"components/data/useThemeRowHeight.js"},{"name":"useTimeContext","sourcePath":"components/core/TimeContext.jsx"},{"name":"useToast","sourcePath":"components/core/Toast.jsx"},{"name":"useWizard","sourcePath":"components/core/useFormState.js"},{"name":"useWorkspaceContext","sourcePath":"components/shell/WorkspaceContextBar.jsx"},{"name":"useWorkspaceLayout","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"weeksFor","sourcePath":"components/core/localDate.js"}]} */
 (() => {
   // api/accounting.js
   (function(global) {
@@ -784,9 +784,9 @@
   function numberFormatter(locale, opts = {}) {
     const loc = locale || DEFAULTS.locale;
     let tag = loc;
-    if (!locale && DEFAULTS.numerals) {
+    if (DEFAULTS.numerals) {
       try {
-        tag = new Intl.Locale(loc, { numberingSystem: DEFAULTS.numerals }).toString();
+        if (!new Intl.Locale(loc).numberingSystem) tag = new Intl.Locale(loc, { numberingSystem: DEFAULTS.numerals }).toString();
       } catch {
       }
     }
@@ -1104,7 +1104,7 @@
 .mds-envp__r span:last-child{font-family:var(--font-data,ui-monospace);color:var(--text-primary,#20252B);}
 .mds-envp__bad{display:flex;gap:6px;padding:3px 0;font-size:11px;font-family:var(--font-body,system-ui);color:var(--red, #B54B42);}
 .mds-envp__ev{display:flex;justify-content:space-between;gap:12px;padding:2px 0;font-size:11px;font-family:var(--font-body,system-ui);}
-.mds-envp__ev a{color:var(--link, #2A5F96);text-decoration:none;border-bottom:1px solid transparent;}
+.mds-envp__ev a{display:inline-flex;align-items:center;min-height:24px;min-width:24px;padding:2px 4px;box-sizing:border-box;color:var(--link, #2A5F96);text-decoration:none;border-bottom:1px solid transparent;}
 .mds-envp__ev a:hover{color:var(--link-hover, #1F4A76);border-bottom-color:var(--link-hover, #1F4A76);}`;
     const el = document.createElement("style");
     el.setAttribute("data-mds", "value-envelope");
@@ -1134,9 +1134,12 @@
     label: label2,
     align,
     onInspect,
+    onKeyDown,
+    role,
     className = "",
     ...rest
   }) {
+    const uid5 = react_default.useId();
     inject();
     const m2 = conditionMeta(condition2);
     const env = { value, condition: condition2, authority, evidence, clocks, materiality };
@@ -1149,12 +1152,21 @@
       {
         className: `mds-env${align === "right" ? " mds-env--right" : ""}${soft ? " mds-env--soft" : ""}${className ? " " + className : ""}`,
         tabIndex: 0,
+        role: role || (onInspect ? "button" : void 0),
+        onKeyDown: (event) => {
+          onKeyDown?.(event);
+          if (!event.defaultPrevented && onInspect && (event.key === "Enter" || event.key === " ")) {
+            event.preventDefault();
+            onInspect(event);
+          }
+        },
         onClick: onInspect,
-        ...rest
+        ...rest,
+        "aria-describedby": [rest["aria-describedby"], uid5].filter(Boolean).join(" ")
       },
       /* @__PURE__ */ window.React.createElement("span", { className: "mds-env__v" }, formatConditioned(value, m2.key, detail)),
       /* @__PURE__ */ window.React.createElement("span", { className: "mds-env__marks" }, m2.key === "confirmed" ? null : /* @__PURE__ */ window.React.createElement(EnvelopeMark, { glyph: m2.glyph, bad: m2.key === "exception" || m2.key === "missing", title: m2.label }), auth ? /* @__PURE__ */ window.React.createElement(EnvelopeMark, { kind: "authority", bad: !!viol.find((v) => v.rule === "override-unattributed"), title: auth.label }) : null, evidence.length ? /* @__PURE__ */ window.React.createElement(EnvelopeMark, { kind: "evidence", title: `${evidence.length} evidence item${evidence.length > 1 ? "s" : ""}` }) : null, clock ? /* @__PURE__ */ window.React.createElement(EnvelopeMark, { kind: "clock", title: `As of ${clock}` }) : null, materiality && materiality.material ? /* @__PURE__ */ window.React.createElement(EnvelopeMark, { kind: "material", title: "Material" }) : null, viol.length ? /* @__PURE__ */ window.React.createElement(EnvelopeMark, { glyph: "▲", bad: true, title: viol[0].text }) : null),
-      /* @__PURE__ */ window.React.createElement("span", { className: "mds-env__pop", role: "tooltip" }, label2 ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-env__row" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-env__k" }, "Figure"), /* @__PURE__ */ window.React.createElement("b", null, label2)) : null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-env__row" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-env__k" }, "Condition"), /* @__PURE__ */ window.React.createElement("b", null, m2.label, detail ? " · " + detail : "")), auth ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-env__row" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-env__k" }, "Authority"), /* @__PURE__ */ window.React.createElement("b", null, auth.label)) : null, clockRows(clocks).slice(0, 4).map((r) => /* @__PURE__ */ window.React.createElement("div", { className: "mds-env__row", key: r.key }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-env__k" }, r.label), /* @__PURE__ */ window.React.createElement("b", null, r.text))), evidence.length ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-env__row" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-env__k" }, "Evidence"), /* @__PURE__ */ window.React.createElement("b", null, evidence.length, " linked")) : null, materiality ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-env__row" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-env__k" }, "Materiality"), /* @__PURE__ */ window.React.createElement("b", null, materiality.material ? "Material" : "Below threshold", materiality.threshold ? " · " + materiality.threshold : "")) : null, viol.map((v) => /* @__PURE__ */ window.React.createElement("div", { className: "mds-env__viol", key: v.rule }, "▲ ", v.text)))
+      /* @__PURE__ */ window.React.createElement("span", { id: uid5, className: "mds-env__pop", role: "tooltip" }, label2 ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-env__row" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-env__k" }, "Figure"), /* @__PURE__ */ window.React.createElement("b", null, label2)) : null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-env__row" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-env__k" }, "Condition"), /* @__PURE__ */ window.React.createElement("b", null, m2.label, detail ? " · " + detail : "")), auth ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-env__row" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-env__k" }, "Authority"), /* @__PURE__ */ window.React.createElement("b", null, auth.label)) : null, clockRows(clocks).slice(0, 4).map((r) => /* @__PURE__ */ window.React.createElement("div", { className: "mds-env__row", key: r.key }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-env__k" }, r.label), /* @__PURE__ */ window.React.createElement("b", null, r.text))), evidence.length ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-env__row" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-env__k" }, "Evidence"), /* @__PURE__ */ window.React.createElement("b", null, evidence.length, " linked")) : null, materiality ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-env__row" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-env__k" }, "Materiality"), /* @__PURE__ */ window.React.createElement("b", null, materiality.material ? "Material" : "Below threshold", materiality.threshold ? " · " + materiality.threshold : "")) : null, viol.map((v) => /* @__PURE__ */ window.React.createElement("div", { className: "mds-env__viol", key: v.rule }, "▲ ", v.text)))
     );
   }
   function EnvelopePanel({ envelope = {}, title, className = "", ...rest }) {
@@ -1297,6 +1309,36 @@
     );
   }
 
+  // components/accounting/knownAmounts.js
+  function knownAmount(input) {
+    const envelope = input && typeof input === "object" && "value" in input ? input : null;
+    if (envelope?.condition && ["missing", "na", "restricted"].includes(conditionMeta(envelope.condition).key)) return null;
+    const value = envelope ? envelope.value : input;
+    if (value == null || typeof value === "string" && value.trim() === "") return null;
+    if (typeof value === "number") return Number.isFinite(value) ? value : null;
+    if (typeof value !== "string") return null;
+    let text = value.trim().replace(/\u2212/g, "-");
+    const negative = text.startsWith("(") && text.endsWith(")");
+    if (negative) text = text.slice(1, -1).trim();
+    const match = /^([+-]?)\s*([$€£¥]?)\s*((?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d*)?|\.\d+)$/.exec(text);
+    if (!match || negative && match[1]) return null;
+    const number = Number((negative ? "-" : match[1]) + match[3].replace(/,/g, ""));
+    return Number.isFinite(number) ? number : null;
+  }
+  function sumKnown(values) {
+    const numbers = values.map(knownAmount);
+    return numbers.some((number) => number === null) ? null : numbers.reduce((sum, number) => sum + number, 0);
+  }
+  function displayAmount(value) {
+    if (knownAmount(value) !== null) return value;
+    const envelope = value && typeof value === "object" && "value" in value ? value : null;
+    if (envelope && conditionMeta(envelope.condition).key !== "restricted") return { ...envelope, value: null, condition: envelope.condition || "missing" };
+    return { value: null, condition: envelope?.condition || "missing" };
+  }
+  function optionalSide(value) {
+    return value === void 0 || typeof value === "string" && value.trim() === "" ? 0 : knownAmount(value);
+  }
+
   // components/accounting/AccountTree.jsx
   var { useState: useState2 } = react_default;
   var injected2 = false;
@@ -1338,7 +1380,7 @@
   }
   function rollup(node) {
     const present = node.balance !== null && node.balance !== void 0 && !(typeof node.balance === "string" && node.balance.trim() === "");
-    if (present) return Number.isFinite(toNumber(node.balance)) ? toNumber(node.balance) : null;
+    if (present) return knownAmount(node.balance);
     if (node.children?.length) {
       const balances = node.children.map(rollup);
       return balances.every((value) => value !== null) ? balances.reduce((sum, value) => sum + value, 0) : null;
@@ -1551,26 +1593,6 @@
     const explanation = current.explanation || (key === "locked" || key === "hard-closed" ? `${s.label} · ${current.lockedAfter ? `locked ${current.lockedAfter}` : s.note}. Editing and posting are unavailable; the period remains inspectable.` : s.note);
     const dateRoles = dates ? Object.entries(dates).filter(([, v]) => v) : [];
     return /* @__PURE__ */ window.React.createElement("div", { className: `mds-aps${className ? " " + className : ""}`, ...rest }, /* @__PURE__ */ window.React.createElement("label", { className: "mds-aps__label", htmlFor: void 0 }, label2), /* @__PURE__ */ window.React.createElement("span", { className: "mds-aps__control" }, /* @__PURE__ */ window.React.createElement("select", { "aria-label": label2, value: value ?? current.value ?? "", onChange: (e) => onChange?.(e.target.value, periods.find((p) => String(p.value) === e.target.value)), disabled }, periods.map((p) => /* @__PURE__ */ window.React.createElement("option", { key: p.value, value: p.value }, p.label, p.state && norm(p.state) !== "open" ? ` — ${STATES[norm(p.state)].label}` : ""))), /* @__PURE__ */ window.React.createElement("span", { className: "mds-aps__state", "data-tone": s.tone, "data-state": key }, s.label)), showDetail ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-aps__meta" }, current.fiscalYear ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-aps__kv" }, /* @__PURE__ */ window.React.createElement("span", null, "Fiscal year"), /* @__PURE__ */ window.React.createElement("b", null, current.fiscalYear)) : null, /* @__PURE__ */ window.React.createElement("span", { className: "mds-aps__kv" }, /* @__PURE__ */ window.React.createElement("span", null, "Reporting period"), /* @__PURE__ */ window.React.createElement("b", null, current.reportingPeriod || current.label || "—")), /* @__PURE__ */ window.React.createElement("span", { className: "mds-aps__kv" }, /* @__PURE__ */ window.React.createElement("span", null, "Posting period"), /* @__PURE__ */ window.React.createElement("b", null, current.postingPeriod || "—")), current.asOf ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-aps__kv" }, /* @__PURE__ */ window.React.createElement("span", null, "As-of date"), /* @__PURE__ */ window.React.createElement("b", null, current.asOf)) : null, current.lockedAfter ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-aps__kv" }, /* @__PURE__ */ window.React.createElement("span", null, "Locked after"), /* @__PURE__ */ window.React.createElement("b", null, current.lockedAfter)) : null, current.lateEntryPolicy ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-aps__kv" }, /* @__PURE__ */ window.React.createElement("span", null, "Late-entry policy"), /* @__PURE__ */ window.React.createElement("b", null, current.lateEntryPolicy)) : null, current.permission ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-aps__kv" }, /* @__PURE__ */ window.React.createElement("span", null, "Your permission"), /* @__PURE__ */ window.React.createElement("b", null, current.permission)) : null, current.adjustmentPeriod ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-aps__kv" }, /* @__PURE__ */ window.React.createElement("span", null, "Adjustment period"), /* @__PURE__ */ window.React.createElement("b", null, current.adjustmentPeriod)) : null) : null, showDetail && (explanation || current.description) ? /* @__PURE__ */ window.React.createElement("p", { className: "mds-aps__note", "data-tone": s.tone === "open" || s.tone === "idle" ? void 0 : s.tone }, current.description || explanation) : null, dateRoles.length ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-aps__dates" }, /* @__PURE__ */ window.React.createElement("h4", null, "Dates in effect"), dateRoles.map(([k, v]) => /* @__PURE__ */ window.React.createElement("span", { className: "mds-aps__kv", key: k }, /* @__PURE__ */ window.React.createElement("span", null, DATE_LABELS[k] || k), /* @__PURE__ */ window.React.createElement("b", null, v)))) : null);
-  }
-
-  // components/accounting/knownAmounts.js
-  function knownAmount(input) {
-    const envelope = input && typeof input === "object" && "value" in input ? input : null;
-    if (envelope?.condition && ["missing", "na", "restricted"].includes(conditionMeta(envelope.condition).key)) return null;
-    const value = envelope ? envelope.value : input;
-    if (value == null || typeof value === "string" && value.trim() === "") return null;
-    const number = toNumber(value);
-    return Number.isFinite(number) ? number : null;
-  }
-  function sumKnown(values) {
-    const numbers = values.map(knownAmount);
-    return numbers.some((number) => number === null) ? null : numbers.reduce((sum, number) => sum + number, 0);
-  }
-  function displayAmount(value) {
-    return knownAmount(value) === null ? { value: null, condition: value?.condition || "missing" } : value;
-  }
-  function optionalSide(value) {
-    return value === void 0 || typeof value === "string" && value.trim() === "" ? 0 : knownAmount(value);
   }
 
   // components/accounting/AgingTable.jsx
@@ -1854,18 +1876,20 @@
     caption
   }) {
     inject5();
-    const [weights, setWeights] = useState3(() => lines.map((l) => toNumber(l.weight) || 0));
+    const [weights, setWeights] = useState3(() => lines.map((l) => knownAmount(l.weight) ?? 0));
     react_default.useEffect(() => {
-      setWeights(lines.map((l) => toNumber(l.weight) || 0));
+      setWeights(lines.map((l) => knownAmount(l.weight) ?? 0));
     }, [lines.length]);
-    const amounts = allocateAmount(total, weights, decimals);
+    const knownTotal = knownAmount(total);
+    const amounts = knownTotal === null ? [] : allocateAmount(knownTotal, weights, decimals);
     const wSum = weights.reduce((a, b) => a + (b > 0 ? b : 0), 0);
     const setWeight = (i, v) => {
       const next = weights.slice();
-      next[i] = Math.max(0, toNumber(v) || 0);
+      next[i] = Math.max(0, knownAmount(v) ?? 0);
       setWeights(next);
-      onChange?.(allocateAmount(total, next, decimals), next);
+      if (knownTotal !== null) onChange?.(allocateAmount(knownTotal, next, decimals), next);
     };
+    if (knownTotal === null) return /* @__PURE__ */ window.React.createElement("div", { className: "alc-wrap", role: "status" }, "Allocation unavailable — total is missing or invalid. No allocated amount can be proved.");
     return /* @__PURE__ */ window.React.createElement("div", { className: "alc-wrap", role: "region", "aria-label": caption || "Allocation" }, /* @__PURE__ */ window.React.createElement("table", { className: "alc" }, /* @__PURE__ */ window.React.createElement("thead", null, /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("th", { className: "alc--l", scope: "col" }, "Line"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Weight"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Share"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Amount"))), /* @__PURE__ */ window.React.createElement("tbody", null, lines.length === 0 && /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("td", { className: "alc__empty", colSpan: 4 }, "No allocation lines")), lines.map((l, i) => /* @__PURE__ */ window.React.createElement("tr", { key: i }, /* @__PURE__ */ window.React.createElement("td", { className: "alc--l alc__label" }, l.label), /* @__PURE__ */ window.React.createElement("td", null, /* @__PURE__ */ window.React.createElement(
       "input",
       {
@@ -1877,7 +1901,7 @@
         "aria-label": `${l.label} weight`,
         onChange: (e) => setWeight(i, e.target.value)
       }
-    )), /* @__PURE__ */ window.React.createElement("td", { className: "alc__share" }, wSum > 0 && weights[i] > 0 ? `${(weights[i] / wSum * 100).toFixed(1)}%` : "—"), /* @__PURE__ */ window.React.createElement("td", null, /* @__PURE__ */ window.React.createElement(AmountCell, { value: amounts[i], currency, zeroDash: true }))))), /* @__PURE__ */ window.React.createElement("tfoot", null, /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("td", { className: "alc--l alc__foot-label", colSpan: 3 }, "Allocated", /* @__PURE__ */ window.React.createElement("span", { className: "alc__foot-note" }, "largest-remainder · sums to ", formatMoney(total, { currency, decimals }), " exactly")), /* @__PURE__ */ window.React.createElement("td", null, /* @__PURE__ */ window.React.createElement(AmountCell, { value: amounts.reduce((a, b) => a + b, 0), currency, strong: true }))))));
+    )), /* @__PURE__ */ window.React.createElement("td", { className: "alc__share" }, wSum > 0 ? `${(weights[i] / wSum * 100).toFixed(1)}%` : `${(100 / lines.length).toFixed(1)}%`), /* @__PURE__ */ window.React.createElement("td", null, /* @__PURE__ */ window.React.createElement(AmountCell, { value: amounts[i], currency, zeroDash: true }))))), /* @__PURE__ */ window.React.createElement("tfoot", null, /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("td", { className: "alc--l alc__foot-label", colSpan: 3 }, "Allocated", /* @__PURE__ */ window.React.createElement("span", { className: "alc__foot-note" }, lines.length ? `${wSum > 0 ? "Largest-remainder" : "Equal split because all weights are zero"} · sums to ${formatMoney(total, { currency, decimals })} exactly` : `No lines; ${formatMoney(total, { currency, decimals })} remains unallocated`)), /* @__PURE__ */ window.React.createElement("td", null, /* @__PURE__ */ window.React.createElement(AmountCell, { value: amounts.reduce((a, b) => a + b, 0), currency, strong: true }))))));
   }
 
   // components/accounting/Assurance.jsx
@@ -1908,11 +1932,19 @@
       history
     };
   }
+  function currentAssuranceState(record, balance) {
+    const value = knownAmount(balance);
+    const historical = assuranceState(record);
+    if (value === null) return { ...historical, stage: "unprepared", voided: false, live: [], currentMissing: true };
+    const state = assuranceState(record, value);
+    if (state.live.some((signature) => knownAmount(signature.balance) === null)) return { ...state, stage: "unprepared", voided: false, live: [], unbound: true };
+    return state;
+  }
   function assuranceCoverage(accounts, records, currentBalances = {}, { requiredStage = "certified", materialOnly = true } = {}) {
     const need = STAGE[requiredStage].rank;
     const rows = accounts.map((a) => {
-      const st3 = assuranceState(records[a.code], currentBalances[a.code]);
-      return { ...a, stage: st3.stage, voided: st3.voided, covered: STAGE[st3.stage].rank >= need };
+      const st3 = currentAssuranceState(records[a.code], currentBalances[a.code]);
+      return { ...a, stage: st3.stage, voided: st3.voided, currentMissing: !!st3.currentMissing, unbound: !!st3.unbound, covered: STAGE[st3.stage].rank >= need };
     });
     const inScope = materialOnly ? rows.filter((r) => r.material) : rows;
     const uncovered = inScope.filter((r) => !r.covered);
@@ -1941,7 +1973,7 @@
 .mds-asr[data-stage="certified"]{color:var(--green-dim,#225840);border-color:var(--green,#2E7655);background:var(--green-a10,rgba(46,118,85,.1))}
 .mds-asr[data-voided="true"]{text-decoration:line-through;text-decoration-color:var(--red,#B54B42)}
 .mds-asr__by{text-transform:none;letter-spacing:0;font-weight:500;color:var(--text-secondary,#535C65)}
-.mds-cert{border:1px solid var(--border,#D2CDC3);background:var(--bg-light,#F8F7F3);font-family:var(--font-data,monospace);font-size:11.5px}
+.mds-cert{overflow:auto;max-width:100%;min-width:0;box-sizing:border-box;border:1px solid var(--border,#D2CDC3);background:var(--bg-light,#F8F7F3);font-family:var(--font-data,monospace);font-size:11.5px}
 .mds-cert table{width:100%;border-collapse:collapse}
 .mds-cert th{padding:7px 10px;text-align:left;font:600 9.5px var(--font-body);font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted,#606870);background:var(--bg-medium,#EBE8E1);border-bottom:1px solid var(--border-strong,#AAA49A)}
 .mds-cert th.c,.mds-cert td.c{text-align:center;width:88px}
@@ -1973,10 +2005,10 @@
     inject6();
     const cov = assuranceCoverage(accounts, records, balances, { requiredStage, materialOnly: false });
     const stages = ASSURANCE_STAGES.slice(1);
-    return /* @__PURE__ */ window.React.createElement("div", { className: `mds-cert${className ? " " + className : ""}`, role: "region", "aria-label": caption, ...rest }, /* @__PURE__ */ window.React.createElement("table", null, /* @__PURE__ */ window.React.createElement("thead", null, /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Account"), /* @__PURE__ */ window.React.createElement("th", { scope: "col", style: { textAlign: "right" } }, "Balance"), stages.map((s) => /* @__PURE__ */ window.React.createElement("th", { key: s.id, scope: "col", className: "c" }, s.label)), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Last signature"))), /* @__PURE__ */ window.React.createElement("tbody", null, cov.rows.map((r) => {
-      const st3 = assuranceState(records[r.code], balances[r.code]);
+    return /* @__PURE__ */ window.React.createElement("div", { className: `mds-cert${className ? " " + className : ""}`, role: "region", "aria-label": caption, tabIndex: 0, ...rest }, /* @__PURE__ */ window.React.createElement("table", null, /* @__PURE__ */ window.React.createElement("thead", null, /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Account"), /* @__PURE__ */ window.React.createElement("th", { scope: "col", style: { textAlign: "right" } }, "Balance"), stages.map((s) => /* @__PURE__ */ window.React.createElement("th", { key: s.id, scope: "col", className: "c" }, s.label)), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Last signature"))), /* @__PURE__ */ window.React.createElement("tbody", null, cov.rows.map((r) => {
+      const st3 = currentAssuranceState(records[r.code], balances[r.code]);
       const top = st3.signatures[st3.signatures.length - 1];
-      const rank2 = STAGE[st3.stage].rank;
+      const rank = STAGE[st3.stage].rank;
       return /* @__PURE__ */ window.React.createElement(
         "tr",
         {
@@ -1992,11 +2024,11 @@
           } : void 0
         },
         /* @__PURE__ */ window.React.createElement("td", null, r.code, " · ", r.name, r.material ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-cert__mat", title: "Material — required for lock" }, "MATERIAL") : null),
-        /* @__PURE__ */ window.React.createElement("td", { className: "r" }, formatMoney(Math.abs(balances[r.code] ?? 0), { currency })),
-        stages.map((s) => /* @__PURE__ */ window.React.createElement("td", { key: s.id, className: "c" }, /* @__PURE__ */ window.React.createElement("span", { role: "img", className: "mds-cert__dot", "data-on": rank2 >= s.rank ? "true" : void 0, "data-void": st3.voided && top && STAGE[top.stage].rank >= s.rank ? "true" : void 0, "aria-label": `${s.label}: ${rank2 >= s.rank ? "done" : st3.voided && top && STAGE[top.stage].rank >= s.rank ? "void — balance moved" : "not yet"}` }))),
-        /* @__PURE__ */ window.React.createElement("td", { style: { color: "var(--text-secondary)" } }, top ? `${top.actor} · ${top.at.replace("T", " ").slice(0, 16)}Z${st3.voided ? " · void — balance moved" : ""}` : "—")
+        /* @__PURE__ */ window.React.createElement("td", { className: "r" }, knownAmount(balances[r.code]) === null ? "Missing" : formatMoney(Math.abs(knownAmount(balances[r.code])), { currency })),
+        stages.map((s) => /* @__PURE__ */ window.React.createElement("td", { key: s.id, className: "c" }, /* @__PURE__ */ window.React.createElement("span", { role: "img", className: "mds-cert__dot", "data-on": rank >= s.rank ? "true" : void 0, "data-void": st3.voided && top && STAGE[top.stage].rank >= s.rank ? "true" : void 0, "aria-label": `${s.label}: ${rank >= s.rank ? "done" : st3.voided && top && STAGE[top.stage].rank >= s.rank ? "void — balance moved" : "not yet"}` }))),
+        /* @__PURE__ */ window.React.createElement("td", { style: { color: "var(--text-secondary)" } }, top ? `${top.actor} · ${top.at.replace("T", " ").slice(0, 16)}Z${st3.currentMissing ? " · current balance missing" : st3.unbound ? " · balance not bound" : st3.voided ? " · void — balance moved" : ""}` : "—")
       );
-    }))), /* @__PURE__ */ window.React.createElement("div", { className: "mds-cert__foot" }, /* @__PURE__ */ window.React.createElement("span", null, /* @__PURE__ */ window.React.createElement("b", null, cov.rows.filter((r) => r.covered).length), " of ", cov.rows.length, " accounts ", STAGE[requiredStage].label.toLowerCase()), /* @__PURE__ */ window.React.createElement("span", null, /* @__PURE__ */ window.React.createElement("b", null, cov.rows.filter((r) => r.material && r.covered).length), " of ", cov.rows.filter((r) => r.material).length, " material"), cov.rows.some((r) => r.voided) ? /* @__PURE__ */ window.React.createElement("span", { style: { color: "var(--red-dim,#883832)" } }, /* @__PURE__ */ window.React.createElement("b", null, cov.rows.filter((r) => r.voided).length), " signature", cov.rows.filter((r) => r.voided).length === 1 ? "" : "s", " void — balance moved since signing") : null));
+    }))), /* @__PURE__ */ window.React.createElement("div", { className: "mds-cert__foot" }, /* @__PURE__ */ window.React.createElement("span", null, /* @__PURE__ */ window.React.createElement("b", null, cov.rows.filter((r) => r.covered).length), " of ", cov.rows.length, " accounts ", STAGE[requiredStage].label.toLowerCase()), /* @__PURE__ */ window.React.createElement("span", null, /* @__PURE__ */ window.React.createElement("b", null, cov.rows.filter((r) => r.material && r.covered).length), " of ", cov.rows.filter((r) => r.material).length, " material"), cov.rows.some((row) => row.currentMissing) ? /* @__PURE__ */ window.React.createElement("span", null, cov.rows.filter((row) => row.currentMissing).length, " current balances missing") : null, cov.rows.some((r) => r.voided) ? /* @__PURE__ */ window.React.createElement("span", { style: { color: "var(--red-dim,#883832)" } }, /* @__PURE__ */ window.React.createElement("b", null, cov.rows.filter((r) => r.voided).length), " signature", cov.rows.filter((r) => r.voided).length === 1 ? "" : "s", " void — balance moved since signing") : null));
   }
   var Assurance = { STAGES: ASSURANCE_STAGES, state: assuranceState, coverage: assuranceCoverage, sign: signAssurance, history: assuranceHistory, next: nextAssuranceStage, verb: assuranceVerb, Chip: AssuranceChip, Matrix: CertificationMatrix };
 
@@ -2614,7 +2646,7 @@
   function TaskRow({ t: t2, depth = 0, selectedId, onSelect, tasks }) {
     const s = st(t2.status);
     const requires = (t2.dependsOn || []).map((id) => tasks.find((x) => String(x.id) === String(id))?.title || id);
-    return /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-close__row mds-close__depth", style: { "--depth": depth }, "data-tone": s.tone, "data-selected": String(t2.id) === String(selectedId) ? "true" : void 0, onClick: () => onSelect?.(t2) }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-close__mark", "aria-hidden": "true" }, s.glyph), /* @__PURE__ */ window.React.createElement("span", null, /* @__PURE__ */ window.React.createElement("strong", null, t2.title), requires.length ? /* @__PURE__ */ window.React.createElement("small", null, "Requires: ", requires.join(", ")) : null, t2.blocker ? /* @__PURE__ */ window.React.createElement("small", null, "Blocked: ", t2.blocker) : null), /* @__PURE__ */ window.React.createElement("span", null, t2.evidence ? /* @__PURE__ */ window.React.createElement("small", null, "Evidence: ", t2.evidence) : null, t2.signoff ? /* @__PURE__ */ window.React.createElement("small", null, "Sign-off: ", t2.signoff) : null), /* @__PURE__ */ window.React.createElement("span", { className: "mds-close__due" }, t2.due || "No due time"), /* @__PURE__ */ window.React.createElement("span", null, t2.owner || "Unassigned"), /* @__PURE__ */ window.React.createElement("span", { className: "mds-close__status" }, s.label));
+    return /* @__PURE__ */ window.React.createElement("button", { type: "button", disabled: !onSelect, title: onSelect ? void 0 : "Task inspection is unavailable in this view", className: "mds-close__row mds-close__depth", style: { "--depth": depth }, "data-tone": s.tone, "data-selected": String(t2.id) === String(selectedId) ? "true" : void 0, onClick: () => onSelect?.(t2) }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-close__mark", "aria-hidden": "true" }, s.glyph), /* @__PURE__ */ window.React.createElement("span", null, /* @__PURE__ */ window.React.createElement("strong", null, t2.title), requires.length ? /* @__PURE__ */ window.React.createElement("small", null, "Requires: ", requires.join(", ")) : null, t2.blocker ? /* @__PURE__ */ window.React.createElement("small", null, "Blocked: ", t2.blocker) : null), /* @__PURE__ */ window.React.createElement("span", null, t2.evidence ? /* @__PURE__ */ window.React.createElement("small", null, "Evidence: ", t2.evidence) : null, t2.signoff ? /* @__PURE__ */ window.React.createElement("small", null, "Sign-off: ", t2.signoff) : null), /* @__PURE__ */ window.React.createElement("span", { className: "mds-close__due" }, t2.due || "No due time"), /* @__PURE__ */ window.React.createElement("span", null, t2.owner || "Unassigned"), /* @__PURE__ */ window.React.createElement("span", { className: "mds-close__status" }, s.label));
   }
   function CloseCalendar({
     days = [],
@@ -2673,7 +2705,7 @@
     }, [tasks]);
     return /* @__PURE__ */ window.React.createElement("section", { className: `mds-close${className ? " " + className : ""}`, ...rest }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-close__toolbar" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-close__title" }, title), /* @__PURE__ */ window.React.createElement("span", { className: "mds-close__stats" }, period ? `${period} · ` : "", tasks.length, " tasks · ", counts.complete || 0, " complete", blocked ? ` · ${blocked} blocked or at risk` : "", currentTime ? ` · now ${currentTime}` : ""), /* @__PURE__ */ window.React.createElement("div", { className: "mds-close__views", role: "group", "aria-label": "Close view" }, VIEWS.map((v) => /* @__PURE__ */ window.React.createElement("button", { key: v.id, type: "button", "aria-pressed": view === v.id, onClick: () => setView(v.id) }, v.label)))), view === "calendar" ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-close__grid", style: { "--close-cols": days.length || 1 } }, days.map((day2, i) => /* @__PURE__ */ window.React.createElement("div", { className: "mds-close__day", key: day2.date, "data-past": dayIndex >= 0 && i < dayIndex ? "true" : void 0 }, day2.date === currentDate ? /* @__PURE__ */ window.React.createElement(Datum, { role: "current-time", orientation: "vertical", position: 0, label: currentTime ? `Now · ${currentTime}` : "Current period" }) : null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-close__date" }, /* @__PURE__ */ window.React.createElement("span", null, day2.label || day2.date), /* @__PURE__ */ window.React.createElement("span", null, tasks.filter((t2) => t2.date === day2.date).length || "")), /* @__PURE__ */ window.React.createElement("div", { className: "mds-close__tasks" }, tasks.filter((t2) => t2.date === day2.date).map((t2) => {
       const s = st(t2.status);
-      return /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-close__task", "data-tone": s.tone, "data-status": s.key, "data-selected": String(t2.id) === String(selectedId) ? "true" : void 0, key: t2.id, onClick: () => onSelect?.(t2) }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-close__name" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-close__mark", "aria-hidden": "true" }, s.glyph), t2.title), /* @__PURE__ */ window.React.createElement("span", { className: "mds-close__meta" }, t2.due || "No due time", " · ", t2.owner || "Unassigned"), /* @__PURE__ */ window.React.createElement("span", { className: "mds-close__meta" }, s.label, t2.evidence ? ` · ${t2.evidence}` : ""), t2.blocker ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-close__meta" }, "Blocked: ", t2.blocker) : null, t2.completedAt ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-close__meta" }, "Completed ", t2.completedAt) : null);
+      return /* @__PURE__ */ window.React.createElement("button", { type: "button", disabled: !onSelect, title: onSelect ? void 0 : "Task inspection is unavailable in this view", className: "mds-close__task", "data-tone": s.tone, "data-status": s.key, "data-selected": String(t2.id) === String(selectedId) ? "true" : void 0, key: t2.id, onClick: () => onSelect?.(t2) }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-close__name" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-close__mark", "aria-hidden": "true" }, s.glyph), t2.title), /* @__PURE__ */ window.React.createElement("span", { className: "mds-close__meta" }, t2.due || "No due time", " · ", t2.owner || "Unassigned"), /* @__PURE__ */ window.React.createElement("span", { className: "mds-close__meta" }, s.label, t2.evidence ? ` · ${t2.evidence}` : ""), t2.blocker ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-close__meta" }, "Blocked: ", t2.blocker) : null, t2.completedAt ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-close__meta" }, "Completed ", t2.completedAt) : null);
     }))))) : null, view === "dependency" ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-close__rows" }, ordered.map(({ t: t2, depth }) => /* @__PURE__ */ window.React.createElement(TaskRow, { key: t2.id, t: t2, depth, tasks, selectedId, onSelect }))) : null, view === "owner" ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-close__rows" }, owners.map(([owner, list]) => /* @__PURE__ */ window.React.createElement("div", { key: owner }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-close__group" }, /* @__PURE__ */ window.React.createElement("span", null, owner), /* @__PURE__ */ window.React.createElement("span", null, list.filter((t2) => st(t2.status).key === "complete").length, " of ", list.length, " complete")), list.map((t2) => /* @__PURE__ */ window.React.createElement(TaskRow, { key: t2.id, t: t2, tasks, selectedId, onSelect }))))) : null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-close__legend" }, Object.entries(STATUS).map(([k, v]) => /* @__PURE__ */ window.React.createElement("span", { key: k }, v.glyph, " ", v.label, counts[k] ? ` ${counts[k]}` : ""))));
   }
 
@@ -2790,13 +2822,17 @@
   }) {
     inject13();
     const showAcct = rows.some((r) => r.account != null && r.account !== "");
-    const computed = rows.map((r, i) => ({ ...r, ...fxRevalue(r.local, r.bookedRate, r.currentRate), _i: i }));
+    const computed = rows.map((row, index) => {
+      const local = knownAmount(row.local), bookedRate = knownAmount(row.bookedRate), currentRate = knownAmount(row.currentRate);
+      const result = local === null || bookedRate === null || currentRate === null ? { booked: NaN, current: NaN, gainLoss: NaN } : fxRevalue(local, bookedRate, currentRate);
+      return { ...row, ...result, _i: index };
+    });
     const totBooked = sumKnown(computed.map((row) => row.booked));
     const totCurrent = sumKnown(computed.map((row) => row.current));
     const totGL = sumKnown(computed.map((row) => row.gainLoss));
     const rate = (v) => {
-      const n = toNumber(v);
-      return isFinite(n) ? n.toFixed(rateDecimals) : "—";
+      const n = knownAmount(v);
+      return n !== null ? n.toFixed(rateDecimals) : "Missing";
     };
     return /* @__PURE__ */ window.React.createElement("div", { className: "fxr-wrap", role: "region", "aria-label": caption || "FX revaluation" }, /* @__PURE__ */ window.React.createElement("table", { className: "fxr" }, /* @__PURE__ */ window.React.createElement("thead", null, /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("th", { className: "fxr--l", scope: "col" }, "Ccy"), showAcct && /* @__PURE__ */ window.React.createElement("th", { className: "fxr--l", scope: "col" }, "Account"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Local balance"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Booked rate"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Current rate"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Base @ booked"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Base @ current"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Unrealized G/L"))), /* @__PURE__ */ window.React.createElement("tbody", null, computed.length === 0 && /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("td", { className: "fxr__empty", colSpan: showAcct ? 8 : 7 }, "No foreign-currency balances")), computed.map((r) => {
       const cls = [
@@ -3384,6 +3420,9 @@
     const minD = react_default.useMemo(() => fromISO(min), [min]);
     const maxD = react_default.useMemo(() => fromISO(max), [max]);
     const [open, setOpen] = react_default.useState(false);
+    react_default.useEffect(() => {
+      if (disabled) setOpen(false);
+    }, [disabled]);
     const [draft, setDraft] = react_default.useState(value || "");
     const [cursor, setCursor] = react_default.useState(() => selected || /* @__PURE__ */ new Date());
     const [placement, setPlacement] = react_default.useState("");
@@ -3432,7 +3471,7 @@
       if (refocus) inputRef.current?.focus();
     };
     const pick = (d) => {
-      if (isBlocked(d)) return;
+      if (disabled || isBlocked(d)) return;
       onChange?.(toISO(d));
       setDraft(toISO(d));
       close();
@@ -3481,11 +3520,8 @@
       else if (k === "End") next = addDays(cursor, 6 - (cursor.getDay() - weekStartsOn + 7) % 7);
       else if (k === "PageUp") next = addMonths(cursor, e.shiftKey ? -12 : -1);
       else if (k === "PageDown") next = addMonths(cursor, e.shiftKey ? 12 : 1);
-      else if (k === "Enter" || k === " ") {
-        e.preventDefault();
-        pick(cursor);
-        return;
-      } else if (k === "Escape") {
+      else if (k === "Enter" || k === " ") return;
+      else if (k === "Escape") {
         e.preventDefault();
         e.stopPropagation();
         close();
@@ -3598,6 +3634,9 @@
             "aria-current": sameDay(d, today) ? "date" : void 0,
             "aria-label": longDate(d),
             className: `mds-date-day${other ? " mds-date-day--other" : ""}${isSel ? " mds-date-day--selected" : ""}${sameDay(d, today) && !isSel ? " mds-date-day--today" : ""}`,
+            onFocus: () => {
+              if (!sameDay(d, cursor)) setCursor(d);
+            },
             onClick: () => pick(d)
           },
           d.getDate()
@@ -3702,10 +3741,13 @@
       setLines(l);
       emit(header, l);
     };
-    const totalD = lines.reduce((a, r) => a + (toNumber(r.debit) || 0), 0);
-    const totalC = lines.reduce((a, r) => a + (toNumber(r.credit) || 0), 0);
-    const diff = totalD - totalC;
-    const balanced = Math.abs(diff) <= tolerance && (totalD > 0 || totalC > 0);
+    const sides2 = lines.map((row) => ({ debit: optionalSide(row.debit), credit: optionalSide(row.credit) }));
+    const totalD = sumKnown(sides2.map((row) => row.debit));
+    const totalC = sumKnown(sides2.map((row) => row.credit));
+    const amountsKnown = totalD !== null && totalC !== null;
+    const validSides = sides2.every((row) => row.debit !== null && row.credit !== null && row.debit >= 0 && row.credit >= 0 && !(row.debit > 0 && row.credit > 0));
+    const diff = amountsKnown ? totalD - totalC : null;
+    const balanced = amountsKnown && validSides && Math.abs(diff) <= tolerance && (totalD > 0 || totalC > 0);
     const blocks = (blockers || []).filter(Boolean).map((b) => typeof b === "string" ? { label: b } : b);
     const postable = balanced && blocks.length === 0;
     const dlId = accounts && accounts.length ? `${uid5}-accts` : void 0;
@@ -3771,7 +3813,7 @@
         onClick: () => delLine(i)
       },
       "×"
-    ))))), /* @__PURE__ */ window.React.createElement("tfoot", null, /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("td", { className: "jnl__foot-lbl" }, "Totals"), /* @__PURE__ */ window.React.createElement("td", { className: "jnl--r" }, /* @__PURE__ */ window.React.createElement(AmountCell, { value: totalD, currency, strong: true })), /* @__PURE__ */ window.React.createElement("td", { className: "jnl--r" }, /* @__PURE__ */ window.React.createElement(AmountCell, { value: totalC, currency, strong: true })), /* @__PURE__ */ window.React.createElement("td", null)))), blocks.length ? /* @__PURE__ */ window.React.createElement("div", { className: "jnl__block", role: "status" }, /* @__PURE__ */ window.React.createElement("span", null, /* @__PURE__ */ window.React.createElement("b", null, "Cannot post."), " ", blocks.length === 1 ? "One condition" : `${blocks.length} conditions`, " outside the arithmetic ", blocks.length === 1 ? "is" : "are", " unsatisfied."), blocks.map((b, i) => /* @__PURE__ */ window.React.createElement("span", { key: b.id || b.label || i }, "· ", b.label, b.detail ? /* @__PURE__ */ window.React.createElement("small", null, " — ", b.detail) : null))) : null, /* @__PURE__ */ window.React.createElement("div", { className: "jnl__bar" }, /* @__PURE__ */ window.React.createElement("div", { className: "jnl__actions" }, /* @__PURE__ */ window.React.createElement(Button, { variant: "ghost", onClick: addLine }, "+ Add line")), /* @__PURE__ */ window.React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 10 } }, /* @__PURE__ */ window.React.createElement("span", { className: `jnl__status ${balanced ? "jnl__status--bal" : "jnl__status--out"}`, role: "status" }, /* @__PURE__ */ window.React.createElement("span", { className: "jnl__dot", "aria-hidden": "true" }), balanced ? "Balanced" : /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, "Out by ", /* @__PURE__ */ window.React.createElement(AmountCell, { value: Math.abs(diff), currency, strong: true, style: { color: "inherit" } }))), onPost && /* @__PURE__ */ window.React.createElement(
+    ))))), /* @__PURE__ */ window.React.createElement("tfoot", null, /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("td", { className: "jnl__foot-lbl" }, "Totals"), /* @__PURE__ */ window.React.createElement("td", { className: "jnl--r" }, /* @__PURE__ */ window.React.createElement(AmountCell, { value: displayAmount(totalD), currency, strong: true })), /* @__PURE__ */ window.React.createElement("td", { className: "jnl--r" }, /* @__PURE__ */ window.React.createElement(AmountCell, { value: displayAmount(totalC), currency, strong: true })), /* @__PURE__ */ window.React.createElement("td", null)))), blocks.length ? /* @__PURE__ */ window.React.createElement("div", { className: "jnl__block", role: "status" }, /* @__PURE__ */ window.React.createElement("span", null, /* @__PURE__ */ window.React.createElement("b", null, "Cannot post."), " ", blocks.length === 1 ? "One condition" : `${blocks.length} conditions`, " outside the arithmetic ", blocks.length === 1 ? "is" : "are", " unsatisfied."), blocks.map((b, i) => /* @__PURE__ */ window.React.createElement("span", { key: b.id || b.label || i }, "· ", b.label, b.detail ? /* @__PURE__ */ window.React.createElement("small", null, " — ", b.detail) : null))) : null, /* @__PURE__ */ window.React.createElement("div", { className: "jnl__bar" }, /* @__PURE__ */ window.React.createElement("div", { className: "jnl__actions" }, /* @__PURE__ */ window.React.createElement(Button, { variant: "ghost", onClick: addLine }, "+ Add line")), /* @__PURE__ */ window.React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 10 } }, /* @__PURE__ */ window.React.createElement("span", { className: `jnl__status ${balanced ? "jnl__status--bal" : "jnl__status--out"}`, role: "status" }, /* @__PURE__ */ window.React.createElement("span", { className: "jnl__dot", "aria-hidden": "true" }), !amountsKnown ? "Input amount unavailable" : !validSides ? "Invalid debit/credit lines" : balanced ? "Balanced" : /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, "Out by ", /* @__PURE__ */ window.React.createElement(AmountCell, { value: Math.abs(diff), currency, strong: true, style: { color: "inherit" } }))), onPost && /* @__PURE__ */ window.React.createElement(
       Button,
       {
         variant: "primary",
@@ -3784,7 +3826,7 @@
 
   // components/accounting/LedgerTable.jsx
   var { useState: useState5 } = react_default;
-  var amt = (v) => toNumber(splitEnvelopeValue(v).value);
+  var amt = (value) => knownAmount(value);
   var fig = (v) => splitEnvelopeValue(v).value;
   function sideEnvelope(r, side) {
     const v = r[side];
@@ -3908,31 +3950,34 @@
       setSortDir(dir);
       onSort?.(key, dir);
     };
-    let bal = isFinite(toNumber(open)) ? toNumber(open) : 0;
-    let canCompute = isFinite(toNumber(open));
-    const computed = rows.map((r, i) => {
-      const isVoid = r.status === "void";
-      const d = isVoid ? 0 : amt(r.debit) || 0;
-      const c = isVoid ? 0 : amt(r.credit) || 0;
-      const delta = normalSide === "credit" ? c - d : d - c;
-      if (!isVoid && r.balance != null && isFinite(amt(r.balance))) {
-        bal = amt(r.balance);
-        canCompute = true;
-      } else if (canCompute) {
-        bal += delta;
+    let bal = knownAmount(open);
+    const rowSide = (row, key) => {
+      if (row[key] === void 0 || typeof row[key] === "string" && row[key].trim() === "") return 0;
+      return knownAmount({ ...sideEnvelope(row, key), value: fig(row[key]) });
+    };
+    const computed = rows.map((row, index) => {
+      const isVoid = row.status === "void";
+      const hasSides = row.debit !== void 0 || row.credit !== void 0;
+      const debit = isVoid ? 0 : hasSides ? rowSide(row, "debit") : null;
+      const credit = isVoid ? 0 : hasSides ? rowSide(row, "credit") : null;
+      if (!isVoid) {
+        if (row.balance !== void 0) bal = knownAmount(row.balance);
+        else if (bal === null || debit === null || credit === null) bal = null;
+        else bal += normalSide === "credit" ? credit - debit : debit - credit;
       }
-      return { ...r, _bal: bal, _hasBal: canCompute, _void: isVoid, _i: i };
+      return { ...row, _bal: bal, _balanceKnown: bal !== null, _debit: debit, _credit: credit, _void: isVoid, _i: index };
     });
     let display = computed;
     if (sortKey && !onSort) {
       display = [...computed].sort((a, b) => sortDir * compareRows(a, b, sortKey));
     }
     const live = computed.filter((r) => !r._void);
-    const totalD = live.reduce((a, r) => a + (amt(r.debit) || 0), 0);
-    const totalC = live.reduce((a, r) => a + (amt(r.credit) || 0), 0);
+    const totalD = sumKnown(live.map((row) => row._debit));
+    const totalC = sumKnown(live.map((row) => row._credit));
     const voided = computed.length - live.length;
+    const net = totalD === null || totalC === null ? null : totalD - totalC;
     const hp = { sortKey, sortDir, onSort: handleSort };
-    return /* @__PURE__ */ window.React.createElement("div", { className: "ldg-wrap", tabIndex: 0, role: "region", "aria-label": caption || "General ledger" }, /* @__PURE__ */ window.React.createElement("table", { className: "ldg" }, /* @__PURE__ */ window.React.createElement("thead", null, /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement(Head, { k: "date", ...hp }, "Date"), /* @__PURE__ */ window.React.createElement(Head, { k: "ref", ...hp }, "Ref"), showAccount && /* @__PURE__ */ window.React.createElement(Head, { k: "account", ...hp }, "Account"), /* @__PURE__ */ window.React.createElement(Head, { k: "memo", ...hp }, "Description"), /* @__PURE__ */ window.React.createElement(Head, { k: "debit", right: true, ...hp }, "Debit"), /* @__PURE__ */ window.React.createElement(Head, { k: "credit", right: true, ...hp }, "Credit"), /* @__PURE__ */ window.React.createElement(Head, { k: "balance", right: true, ...hp }, "Balance"))), /* @__PURE__ */ window.React.createElement("tbody", null, isFinite(toNumber(open)) && /* @__PURE__ */ window.React.createElement("tr", { className: "ldg__open" }, /* @__PURE__ */ window.React.createElement("td", { className: "ldg__date" }), /* @__PURE__ */ window.React.createElement("td", null), showAccount && /* @__PURE__ */ window.React.createElement("td", null), /* @__PURE__ */ window.React.createElement("td", { className: "ldg__memo" }, "Opening balance"), /* @__PURE__ */ window.React.createElement("td", { className: "ldg--r" }), /* @__PURE__ */ window.React.createElement("td", { className: "ldg--r" }), /* @__PURE__ */ window.React.createElement("td", { className: "ldg--r" }, /* @__PURE__ */ window.React.createElement(AmountCell, { value: toNumber(open), currency, mode: "muted" }))), display.length === 0 && /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("td", { className: "ldg__empty", colSpan: showAccount ? 7 : 6 }, "No journal entries")), display.map((r) => {
+    return /* @__PURE__ */ window.React.createElement("div", { className: "ldg-wrap", tabIndex: 0, role: "region", "aria-label": caption || "General ledger" }, /* @__PURE__ */ window.React.createElement("table", { className: "ldg" }, /* @__PURE__ */ window.React.createElement("thead", null, /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement(Head, { k: "date", ...hp }, "Date"), /* @__PURE__ */ window.React.createElement(Head, { k: "ref", ...hp }, "Ref"), showAccount && /* @__PURE__ */ window.React.createElement(Head, { k: "account", ...hp }, "Account"), /* @__PURE__ */ window.React.createElement(Head, { k: "memo", ...hp }, "Description"), /* @__PURE__ */ window.React.createElement(Head, { k: "debit", right: true, ...hp }, "Debit"), /* @__PURE__ */ window.React.createElement(Head, { k: "credit", right: true, ...hp }, "Credit"), /* @__PURE__ */ window.React.createElement(Head, { k: "balance", right: true, ...hp }, "Balance"))), /* @__PURE__ */ window.React.createElement("tbody", null, knownAmount(open) !== null && /* @__PURE__ */ window.React.createElement("tr", { className: "ldg__open" }, /* @__PURE__ */ window.React.createElement("td", { className: "ldg__date" }), /* @__PURE__ */ window.React.createElement("td", null), showAccount && /* @__PURE__ */ window.React.createElement("td", null), /* @__PURE__ */ window.React.createElement("td", { className: "ldg__memo" }, "Opening balance"), /* @__PURE__ */ window.React.createElement("td", { className: "ldg--r" }), /* @__PURE__ */ window.React.createElement("td", { className: "ldg--r" }), /* @__PURE__ */ window.React.createElement("td", { className: "ldg--r" }, /* @__PURE__ */ window.React.createElement(AmountCell, { value: displayAmount(open), currency, mode: "muted" }))), display.length === 0 && /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("td", { className: "ldg__empty", colSpan: showAccount ? 7 : 6 }, "No journal entries")), display.map((r) => {
       const status = r.status && r.status !== "posted" ? r.status : null;
       const cls = [
         status ? `ldg__row--${status}` : "",
@@ -3960,7 +4005,7 @@
         /* @__PURE__ */ window.React.createElement("td", { className: "ldg--r" }, /* @__PURE__ */ window.React.createElement(
           AmountCell,
           {
-            value: fig(r.debit),
+            value: r.debit === void 0 ? 0 : displayAmount(r.debit),
             currency,
             zeroDash: true,
             mode: r._void ? "muted" : void 0,
@@ -3970,21 +4015,21 @@
         /* @__PURE__ */ window.React.createElement("td", { className: "ldg--r" }, /* @__PURE__ */ window.React.createElement(
           AmountCell,
           {
-            value: fig(r.credit),
+            value: r.credit === void 0 ? 0 : displayAmount(r.credit),
             currency,
             zeroDash: true,
             mode: r._void ? "muted" : void 0,
             envelope: sideEnvelope(r, "credit")
           }
         )),
-        /* @__PURE__ */ window.React.createElement("td", { className: "ldg--r" }, r._void || !r._hasBal ? /* @__PURE__ */ window.React.createElement("span", { style: { color: "var(--text-disabled,#A4ABB2)" } }, "—") : /* @__PURE__ */ window.React.createElement(AmountCell, { value: r._bal, currency, parens: true }))
+        /* @__PURE__ */ window.React.createElement("td", { className: "ldg--r" }, r._void ? /* @__PURE__ */ window.React.createElement("span", { style: { color: "var(--text-disabled,#A4ABB2)" } }, "—") : /* @__PURE__ */ window.React.createElement(AmountCell, { value: displayAmount(r._bal), currency, parens: true }))
       );
-    })), /* @__PURE__ */ window.React.createElement("tfoot", null, /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("td", { className: "ldg__foot-label", colSpan: showAccount ? 4 : 3 }, "Totals", voided > 0 && /* @__PURE__ */ window.React.createElement("span", { className: "ldg__foot-note" }, voided, " void ", voided === 1 ? "entry" : "entries", " excluded")), /* @__PURE__ */ window.React.createElement("td", { className: "ldg--r" }, /* @__PURE__ */ window.React.createElement(AmountCell, { value: totalD, currency, strong: true })), /* @__PURE__ */ window.React.createElement("td", { className: "ldg--r" }, /* @__PURE__ */ window.React.createElement(AmountCell, { value: totalC, currency, strong: true })), /* @__PURE__ */ window.React.createElement("td", { className: "ldg--r" }, /* @__PURE__ */ window.React.createElement(
+    })), /* @__PURE__ */ window.React.createElement("tfoot", null, /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("td", { className: "ldg__foot-label", colSpan: showAccount ? 4 : 3 }, "Totals", voided > 0 && /* @__PURE__ */ window.React.createElement("span", { className: "ldg__foot-note" }, voided, " void ", voided === 1 ? "entry" : "entries", " excluded")), /* @__PURE__ */ window.React.createElement("td", { className: "ldg--r" }, /* @__PURE__ */ window.React.createElement(AmountCell, { value: displayAmount(totalD), currency, strong: true })), /* @__PURE__ */ window.React.createElement("td", { className: "ldg--r" }, /* @__PURE__ */ window.React.createElement(AmountCell, { value: displayAmount(totalC), currency, strong: true })), /* @__PURE__ */ window.React.createElement("td", { className: "ldg--r" }, /* @__PURE__ */ window.React.createElement(
       AmountCell,
       {
-        value: totalD - totalC,
+        value: displayAmount(net),
         currency,
-        mode: Math.abs(totalD - totalC) < 5e-3 ? "muted" : "pnl",
+        mode: net !== null && Math.abs(net) < 5e-3 ? "muted" : "pnl",
         parens: true,
         strong: true
       }
@@ -4130,7 +4175,7 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
 `;
     document.head.appendChild(el);
   }
-  var m = (v) => formatNumber(Number(v) || 0, { decimals: 2 });
+  var m = (value) => knownAmount(value) === null ? "Missing" : formatNumber(value, { decimals: 2 });
   var acct2 = (v) => formatAccounting(Number(v) || 0, { decimals: 2 });
   function PostingImpactPreview({
     title = "Posting impact",
@@ -4156,12 +4201,19 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
     ...rest
   }) {
     inject22();
-    const debit = lines.reduce((n, x) => n + (Number(x.debit) || 0), 0);
-    const credit = lines.reduce((n, x) => n + (Number(x.credit) || 0), 0);
-    const balanced = Math.abs(debit - credit) < 5e-3;
+    const sides2 = lines.map((line) => ({ debit: optionalSide(line.debit), credit: optionalSide(line.credit) }));
+    const debit = sumKnown(sides2.map((side) => side.debit));
+    const credit = sumKnown(sides2.map((side) => side.credit));
+    const inputsKnown = debit !== null && credit !== null;
+    const invalidSides = sides2.some((side) => side.debit === null || side.credit === null || side.debit < 0 || side.credit < 0 || side.debit > 0 && side.credit > 0);
+    const hasActivity = sides2.some((side) => side.debit > 0 || side.credit > 0);
+    const balanced = inputsKnown && Math.abs(debit - credit) < 5e-3;
     const periodOpen = OPEN.includes(String(periodState).toLowerCase().replace(/[_\s]+/g, "-")) || String(periodState).toLowerCase().includes("soft");
     const derived = [
-      !balanced && { id: "balance", severity: "blocking", label: "Debits do not equal credits", detail: `Out by ${m(Math.abs(debit - credit))}` },
+      !inputsKnown && { id: "inputs", severity: "blocking", label: "Posting amounts are unavailable", detail: "Missing amounts are not zero; supply valid journal amounts before posting" },
+      invalidSides && { id: "sides", severity: "blocking", label: "Journal lines contain invalid debit or credit amounts", detail: "Use nonnegative amounts on a single side of each line" },
+      !hasActivity && { id: "activity", severity: "blocking", label: "Journal has no nonzero postings", detail: "An empty or all-zero preview cannot be posted" },
+      inputsKnown && !balanced && { id: "balance", severity: "blocking", label: "Debits do not equal credits", detail: `Out by ${m(Math.abs(debit - credit))}` },
       !periodOpen && { id: "period", severity: "blocking", label: `Period is ${periodState}`, detail: "Reopen authorization required before posting" },
       periodOpen && String(periodState).toLowerCase().includes("soft") && { id: "soft", severity: "warning", label: "Soft-closed period", detail: "Late entry requires controller approval" },
       authority === false && { id: "authority", severity: "blocking", label: "User lacks posting authority", detail: "Request a signatory with posting rights" }
@@ -4170,12 +4222,20 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
     const blockers = all.filter((c) => c.severity === "blocking");
     const warnings = all.filter((c) => c.severity === "warning");
     const needsAck = (requireAcknowledgement ?? warnings.length > 0) && warnings.length > 0;
-    const [ack, setAck] = react_default.useState(false);
+    let draftKey;
+    try {
+      draftKey = JSON.stringify({ period, periodState, postingPeriod, asOf, lines, effects, statements, positions, downstream, controls, checks, reversal, requireAcknowledgement, authority }, (key, value) => key === "_owner" || typeof value === "function" ? void 0 : typeof value === "bigint" ? String(value) : value);
+    } catch {
+      draftKey = null;
+    }
+    const [ackKey, setAckKey] = react_default.useState(null);
+    const ack = draftKey !== null && ackKey === draftKey;
     const blocked = blockers.length > 0 || needsAck && !ack;
+    const sideText = (value) => value === void 0 || typeof value === "string" && value.trim() === "" || knownAmount(value) === 0 ? "—" : m(value);
     return /* @__PURE__ */ window.React.createElement("section", { className: `mds-post${className ? " " + className : ""}`, ...rest }, /* @__PURE__ */ window.React.createElement("header", { className: "mds-post__head" }, /* @__PURE__ */ window.React.createElement("div", null, /* @__PURE__ */ window.React.createElement("h3", null, title), subtitle ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-post__sub" }, subtitle) : null), /* @__PURE__ */ window.React.createElement("div", { className: "mds-post__period" }, /* @__PURE__ */ window.React.createElement("b", null, period || "No reporting period"), postingPeriod ? /* @__PURE__ */ window.React.createElement("span", null, "Posting ", postingPeriod, /* @__PURE__ */ window.React.createElement("br", null)) : null, /* @__PURE__ */ window.React.createElement("span", null, periodState), asOf ? /* @__PURE__ */ window.React.createElement("span", null, " · as of ", asOf) : null)), all.length ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-post__checks" }, all.map((c, i) => {
       const k = CLASSES[c.severity === "blocking" ? "blocking" : c.severity === "warning" ? "warning" : "info"];
       return /* @__PURE__ */ window.React.createElement("div", { className: "mds-post__check", key: c.id || i, "data-tone": k.tone }, /* @__PURE__ */ window.React.createElement("span", { "aria-hidden": "true" }, k.glyph), /* @__PURE__ */ window.React.createElement("span", null, c.label, c.detail ? /* @__PURE__ */ window.React.createElement("small", null, c.detail) : null), /* @__PURE__ */ window.React.createElement("span", { className: "mds-post__class" }, k.label));
-    })) : null, /* @__PURE__ */ window.React.createElement("table", null, /* @__PURE__ */ window.React.createElement("caption", { className: "mds-post__section", style: { captionSide: "top", textAlign: "left" } }, "Journal lines"), /* @__PURE__ */ window.React.createElement("thead", null, /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Account"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Description"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Debit"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Credit"))), /* @__PURE__ */ window.React.createElement("tbody", null, lines.map((x, i) => /* @__PURE__ */ window.React.createElement("tr", { key: x.id || i }, /* @__PURE__ */ window.React.createElement("td", null, x.account), /* @__PURE__ */ window.React.createElement("td", null, x.description || "—"), /* @__PURE__ */ window.React.createElement("td", null, x.debit ? m(x.debit) : "—"), /* @__PURE__ */ window.React.createElement("td", null, x.credit ? m(x.credit) : "—"))), /* @__PURE__ */ window.React.createElement("tr", { "data-total": "true" }, /* @__PURE__ */ window.React.createElement("td", { colSpan: "2" }, balanced ? "Balanced" : "Out of balance"), /* @__PURE__ */ window.React.createElement("td", null, m(debit)), /* @__PURE__ */ window.React.createElement("td", null, m(credit))))), effects.length ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-post__section" }, "Reporting-basis impact"), effects.map((x, i) => /* @__PURE__ */ window.React.createElement("div", { className: "mds-post__effect", key: x.id || x.label || i }, /* @__PURE__ */ window.React.createElement("span", null, x.label, x.basis ? /* @__PURE__ */ window.React.createElement("small", null, x.basis) : null), /* @__PURE__ */ window.React.createElement("span", null, x.before == null ? "—" : typeof x.before === "number" ? acct2(x.before) : x.before), /* @__PURE__ */ window.React.createElement("span", { "aria-hidden": "true" }, "→"), /* @__PURE__ */ window.React.createElement("span", null, x.after == null ? "—" : typeof x.after === "number" ? acct2(x.after) : x.after)))) : null, statements.length ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-post__section" }, "Statement impact"), /* @__PURE__ */ window.React.createElement("ul", { className: "mds-post__list" }, statements.map((s, i) => /* @__PURE__ */ window.React.createElement("li", { key: i }, typeof s === "string" ? s : `${s.label} · ${s.value}`)))) : null, positions.length ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-post__section" }, "Position and lot impact"), /* @__PURE__ */ window.React.createElement("ul", { className: "mds-post__list" }, positions.map((s, i) => /* @__PURE__ */ window.React.createElement("li", { key: i }, typeof s === "string" ? s : `${s.label} · ${s.value}`)))) : null, controls.length || downstream.length ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-post__section" }, "Downstream reports and controls"), /* @__PURE__ */ window.React.createElement("ul", { className: "mds-post__list" }, [...controls, ...downstream].map((s, i) => /* @__PURE__ */ window.React.createElement("li", { key: i }, typeof s === "string" ? s : `${s.label}${s.value ? ` · ${s.value}` : ""}`)))) : null, reversal ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-post__section" }, "Reversal behavior"), /* @__PURE__ */ window.React.createElement("ul", { className: "mds-post__list" }, /* @__PURE__ */ window.React.createElement("li", null, reversal))) : null, needsAck ? /* @__PURE__ */ window.React.createElement("label", { className: "mds-post__ack" }, /* @__PURE__ */ window.React.createElement("input", { type: "checkbox", checked: ack, onChange: (e) => setAck(e.target.checked) }), /* @__PURE__ */ window.React.createElement("span", null, "I acknowledge ", warnings.length, " warning", warnings.length === 1 ? "" : "s", " on this posting.")) : null, /* @__PURE__ */ window.React.createElement("footer", { className: "mds-post__foot" }, /* @__PURE__ */ window.React.createElement("span", null, blockers.length ? `${blockers.length} blocking condition${blockers.length === 1 ? "" : "s"}` : balanced ? "Ready to post" : "Not ready", warnings.length ? ` · ${warnings.length} warning${warnings.length === 1 ? "" : "s"}` : ""), /* @__PURE__ */ window.React.createElement("div", { className: "mds-post__actions" }, onCancel ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "ghost", onClick: onCancel }, "Cancel") : null, onPost ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", disabled: blocked, onClick: onPost, title: blockers.length ? blockers[0].label : needsAck && !ack ? "Acknowledge the warnings first" : void 0 }, postLabel) : null)));
+    })) : null, /* @__PURE__ */ window.React.createElement("table", null, /* @__PURE__ */ window.React.createElement("caption", { className: "mds-post__section", style: { captionSide: "top", textAlign: "left" } }, "Journal lines"), /* @__PURE__ */ window.React.createElement("thead", null, /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Account"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Description"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Debit"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Credit"))), /* @__PURE__ */ window.React.createElement("tbody", null, lines.map((x, i) => /* @__PURE__ */ window.React.createElement("tr", { key: x.id || i }, /* @__PURE__ */ window.React.createElement("td", null, x.account), /* @__PURE__ */ window.React.createElement("td", null, x.description || "—"), /* @__PURE__ */ window.React.createElement("td", null, sideText(x.debit)), /* @__PURE__ */ window.React.createElement("td", null, sideText(x.credit)))), /* @__PURE__ */ window.React.createElement("tr", { "data-total": "true" }, /* @__PURE__ */ window.React.createElement("td", { colSpan: "2" }, !inputsKnown ? "Inputs unavailable" : balanced ? "Balanced" : "Out of balance"), /* @__PURE__ */ window.React.createElement("td", null, m(debit)), /* @__PURE__ */ window.React.createElement("td", null, m(credit))))), effects.length ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-post__section" }, "Reporting-basis impact"), effects.map((x, i) => /* @__PURE__ */ window.React.createElement("div", { className: "mds-post__effect", key: x.id || x.label || i }, /* @__PURE__ */ window.React.createElement("span", null, x.label, x.basis ? /* @__PURE__ */ window.React.createElement("small", null, x.basis) : null), /* @__PURE__ */ window.React.createElement("span", null, x.before == null ? "—" : typeof x.before === "number" ? acct2(x.before) : x.before), /* @__PURE__ */ window.React.createElement("span", { "aria-hidden": "true" }, "→"), /* @__PURE__ */ window.React.createElement("span", null, x.after == null ? "—" : typeof x.after === "number" ? acct2(x.after) : x.after)))) : null, statements.length ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-post__section" }, "Statement impact"), /* @__PURE__ */ window.React.createElement("ul", { className: "mds-post__list" }, statements.map((s, i) => /* @__PURE__ */ window.React.createElement("li", { key: i }, typeof s === "string" ? s : `${s.label} · ${s.value}`)))) : null, positions.length ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-post__section" }, "Position and lot impact"), /* @__PURE__ */ window.React.createElement("ul", { className: "mds-post__list" }, positions.map((s, i) => /* @__PURE__ */ window.React.createElement("li", { key: i }, typeof s === "string" ? s : `${s.label} · ${s.value}`)))) : null, controls.length || downstream.length ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-post__section" }, "Downstream reports and controls"), /* @__PURE__ */ window.React.createElement("ul", { className: "mds-post__list" }, [...controls, ...downstream].map((s, i) => /* @__PURE__ */ window.React.createElement("li", { key: i }, typeof s === "string" ? s : `${s.label}${s.value ? ` · ${s.value}` : ""}`)))) : null, reversal ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-post__section" }, "Reversal behavior"), /* @__PURE__ */ window.React.createElement("ul", { className: "mds-post__list" }, /* @__PURE__ */ window.React.createElement("li", null, reversal))) : null, needsAck ? /* @__PURE__ */ window.React.createElement("label", { className: "mds-post__ack" }, /* @__PURE__ */ window.React.createElement("input", { type: "checkbox", checked: ack, onChange: (e) => setAckKey(e.target.checked ? draftKey : null) }), /* @__PURE__ */ window.React.createElement("span", null, "I acknowledge ", warnings.length, " warning", warnings.length === 1 ? "" : "s", " on this posting.")) : null, /* @__PURE__ */ window.React.createElement("footer", { className: "mds-post__foot" }, /* @__PURE__ */ window.React.createElement("span", null, blockers.length ? `${blockers.length} blocking condition${blockers.length === 1 ? "" : "s"}` : balanced ? "Ready to post" : "Not ready", warnings.length ? ` · ${warnings.length} warning${warnings.length === 1 ? "" : "s"}` : ""), /* @__PURE__ */ window.React.createElement("div", { className: "mds-post__actions" }, onCancel ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "ghost", onClick: onCancel }, "Cancel") : null, onPost ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", disabled: blocked, onClick: onPost, title: blockers.length ? blockers[0].label : needsAck && !ack ? "Acknowledge the warnings first" : void 0 }, postLabel) : null)));
   }
 
   // components/core/Checkbox.jsx
@@ -4444,7 +4504,6 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
       {
         "aria-label": "Filter reconciliation items",
         placeholder: "Filter memo, ref…",
-        "aria-label": "Filter reconciliation items",
         value: query,
         onChange: (e) => setQuery(e.target.value)
       }
@@ -4737,6 +4796,7 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
 .mds-sl__wait span{font:10px/14px var(--font-body);color:var(--text-muted,#606870)}
 .mds-sl__mark{display:inline-block;width:8px;margin-right:3px;text-align:center}
 .mds-sl tbody tr[data-projected="true"] .mds-sl__period,.mds-sl tbody tr[data-projected="true"] .mds-sl__exp{font-weight:400}
+.mds-sl tbody tr[data-current="true"] .mds-sl__date,.mds-sl tbody tr[data-current="true"] .mds-sl__sub,.mds-sl tbody tr[data-current="true"] .mds-sl__wait>span{color:var(--text-primary,#20252B)}
 .mds-sl tbody tr[data-current="true"]{background:var(--bg-active,#E7EDF2)}
 .mds-sl__rule td{padding:5px 11px;background:var(--bg,#F2F0EB);font:10px/14px var(--font-data,monospace);color:var(--text-muted,#606870);border-top:1px solid var(--border,#D2CDC3)}
 .mds-sl__trace{background:none;border:0;padding:0;font:10px/14px var(--font-body);color:var(--link,#2A5F96);cursor:pointer;text-align:left}
@@ -5015,10 +5075,10 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
     const valueHead = mode === "realized" ? "Proceeds" : "Market value";
     const gainHead = mode === "realized" ? "Realized P&L" : "Unrealized P&L";
     const computed = lots.map((l) => {
-      const basis = toNumber(l.costBasis);
-      const value = toNumber(mode === "realized" ? l.proceeds : l.marketValue);
-      const gain = isFinite(basis) && isFinite(value) ? value - basis : NaN;
-      const pct3 = isFinite(gain) && basis !== 0 ? gain / Math.abs(basis) * 100 : NaN;
+      const basis = knownAmount(l.costBasis);
+      const value = knownAmount(mode === "realized" ? l.proceeds : l.marketValue);
+      const gain = basis !== null && value !== null ? value - basis : null;
+      const pct3 = Number.isFinite(gain) && basis !== 0 ? gain / Math.abs(basis) * 100 : NaN;
       const held = l.daysHeld != null ? l.daysHeld : daysHeld(l.acquired, asOf);
       const long = l.term ? l.term === "long" : held != null && held >= longTermDays;
       return { ...l, basis, value, gain, pct: pct3, held, long };
@@ -5405,15 +5465,20 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
     return "Other";
   }
   function sides(row) {
-    const d = toNumber(fig2(row.debit));
-    const c = toNumber(fig2(row.credit));
-    if (isFinite(d) || isFinite(c)) return { debit: isFinite(d) ? d : 0, credit: isFinite(c) ? c : 0 };
-    const b = toNumber(fig2(row.balance));
-    if (!isFinite(b)) return { debit: 0, credit: 0 };
+    const sideValue = (key) => {
+      const split2 = splitEnvelopeValue(row[key]);
+      const facets = { ...row.envelope, ...split2.envelope };
+      if (row[key] === void 0 || typeof row[key] === "string" && row[key].trim() === "") return 0;
+      return knownAmount({ ...facets, value: split2.value });
+    };
+    const hasSide = row.debit !== void 0 || row.credit !== void 0;
+    if (hasSide) return { debit: sideValue("debit"), credit: sideValue("credit") };
+    const split = splitEnvelopeValue(row.balance);
+    const balance = knownAmount({ ...row.envelope, ...split.envelope, value: split.value });
+    if (balance === null) return { debit: null, credit: null };
     const normal = accountNormalSide(row.type);
-    const onNormal = b >= 0;
-    const side = onNormal === (normal === "debit") ? "debit" : "credit";
-    return { debit: side === "debit" ? Math.abs(b) : 0, credit: side === "credit" ? Math.abs(b) : 0 };
+    const side = balance >= 0 === (normal === "debit") ? "debit" : "credit";
+    return { debit: side === "debit" ? Math.abs(balance) : 0, credit: side === "credit" ? Math.abs(balance) : 0 };
   }
   function TrialBalance({
     rows = [],
@@ -5429,9 +5494,10 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
     const showCode = rows.some((r) => r.code != null && r.code !== "");
     const cols = (showCode ? 4 : 3) + (trailing ? 1 : 0);
     const computed = rows.map((r, i) => ({ ...r, ...sides(r), _i: i, _sec: sectionOf(r.type) }));
-    const totalD = computed.reduce((a, r) => a + r.debit, 0);
-    const totalC = computed.reduce((a, r) => a + r.credit, 0);
-    const balanced = Math.abs(totalD - totalC) < 5e-3;
+    const totalD = sumKnown(computed.map((row) => row.debit));
+    const totalC = sumKnown(computed.map((row) => row.credit));
+    const complete = totalD !== null && totalC !== null;
+    const balanced = complete && Math.abs(totalD - totalC) < 5e-3;
     const groups = grouped ? SECTIONS.map((s) => [s, computed.filter((r) => r._sec === s)]).filter(([, rs]) => rs.length) : [[null, computed]];
     const Row3 = (r) => {
       const env = r.envelope ? { ...r.envelope, label: r.envelope.label || r.account } : void 0;
@@ -5455,12 +5521,12 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
         },
         showCode && /* @__PURE__ */ window.React.createElement("td", { className: "tbl__code" }, r.code),
         /* @__PURE__ */ window.React.createElement("td", { className: "tbl__acct" }, r.account),
-        /* @__PURE__ */ window.React.createElement("td", { className: "tbl--r" }, /* @__PURE__ */ window.React.createElement(AmountCell, { value: r.debit, currency, zeroDash: true, envelope: r.debit ? env : void 0 })),
-        /* @__PURE__ */ window.React.createElement("td", { className: "tbl--r" }, /* @__PURE__ */ window.React.createElement(AmountCell, { value: r.credit, currency, zeroDash: true, envelope: r.credit ? env : void 0 })),
+        /* @__PURE__ */ window.React.createElement("td", { className: "tbl--r" }, /* @__PURE__ */ window.React.createElement(AmountCell, { value: displayAmount(r.debit), currency, zeroDash: true, envelope: r.debit ? env : void 0 })),
+        /* @__PURE__ */ window.React.createElement("td", { className: "tbl--r" }, /* @__PURE__ */ window.React.createElement(AmountCell, { value: displayAmount(r.credit), currency, zeroDash: true, envelope: r.credit ? env : void 0 })),
         trailing && /* @__PURE__ */ window.React.createElement("td", { className: "tbl__trail" }, trailing(rows[r._i], r._i))
       );
     };
-    return /* @__PURE__ */ window.React.createElement("div", { className: "tbl-wrap", tabIndex: 0, role: "region", "aria-label": caption || "Trial balance" }, /* @__PURE__ */ window.React.createElement("table", { className: "tbl" }, /* @__PURE__ */ window.React.createElement("thead", null, /* @__PURE__ */ window.React.createElement("tr", null, showCode && /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Code"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Account"), /* @__PURE__ */ window.React.createElement("th", { className: "tbl--r", scope: "col" }, "Debit"), /* @__PURE__ */ window.React.createElement("th", { className: "tbl--r", scope: "col" }, "Credit"), trailing && /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, trailingLabel))), /* @__PURE__ */ window.React.createElement("tbody", null, computed.length === 0 && /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("td", { className: "tbl__empty", colSpan: cols }, "No accounts")), groups.map(([sec, rs]) => /* @__PURE__ */ window.React.createElement(react_default.Fragment, { key: sec || "all" }, sec && /* @__PURE__ */ window.React.createElement("tr", { className: "tbl__sec" }, /* @__PURE__ */ window.React.createElement("td", { colSpan: cols }, sec)), rs.map(Row3), sec && rs.length > 1 && /* @__PURE__ */ window.React.createElement("tr", { className: "tbl__sub" }, /* @__PURE__ */ window.React.createElement("td", { colSpan: cols - 2 - (trailing ? 1 : 0) }, sec, " subtotal"), /* @__PURE__ */ window.React.createElement("td", { className: "tbl--r" }, /* @__PURE__ */ window.React.createElement(AmountCell, { value: rs.reduce((a, r) => a + r.debit, 0), currency, zeroDash: true, mode: "muted" })), /* @__PURE__ */ window.React.createElement("td", { className: "tbl--r" }, /* @__PURE__ */ window.React.createElement(AmountCell, { value: rs.reduce((a, r) => a + r.credit, 0), currency, zeroDash: true, mode: "muted" })), trailing && /* @__PURE__ */ window.React.createElement("td", null))))), /* @__PURE__ */ window.React.createElement("tfoot", null, /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("td", { className: "tbl__foot-label", colSpan: cols - 2 - (trailing ? 1 : 0) }, "Totals", !balanced && /* @__PURE__ */ window.React.createElement("span", { className: "tbl__foot-note", style: { color: "var(--red-dim,#883832)" } }, "out of balance by ", ""), !balanced && /* @__PURE__ */ window.React.createElement(AmountCell, { value: totalD - totalC, currency, mode: "pnl", parens: true })), /* @__PURE__ */ window.React.createElement("td", { className: "tbl--r" }, /* @__PURE__ */ window.React.createElement(AmountCell, { value: totalD, currency, strong: true })), /* @__PURE__ */ window.React.createElement("td", { className: "tbl--r" }, /* @__PURE__ */ window.React.createElement(AmountCell, { value: totalC, currency, strong: true })), trailing && /* @__PURE__ */ window.React.createElement("td", null)))));
+    return /* @__PURE__ */ window.React.createElement("div", { className: "tbl-wrap", tabIndex: 0, role: "region", "aria-label": caption || "Trial balance" }, /* @__PURE__ */ window.React.createElement("table", { className: "tbl" }, /* @__PURE__ */ window.React.createElement("thead", null, /* @__PURE__ */ window.React.createElement("tr", null, showCode && /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Code"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Account"), /* @__PURE__ */ window.React.createElement("th", { className: "tbl--r", scope: "col" }, "Debit"), /* @__PURE__ */ window.React.createElement("th", { className: "tbl--r", scope: "col" }, "Credit"), trailing && /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, trailingLabel))), /* @__PURE__ */ window.React.createElement("tbody", null, computed.length === 0 && /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("td", { className: "tbl__empty", colSpan: cols }, "No accounts")), groups.map(([sec, rs]) => /* @__PURE__ */ window.React.createElement(react_default.Fragment, { key: sec || "all" }, sec && /* @__PURE__ */ window.React.createElement("tr", { className: "tbl__sec" }, /* @__PURE__ */ window.React.createElement("td", { colSpan: cols }, sec)), rs.map(Row3), sec && rs.length > 1 && /* @__PURE__ */ window.React.createElement("tr", { className: "tbl__sub" }, /* @__PURE__ */ window.React.createElement("td", { colSpan: cols - 2 - (trailing ? 1 : 0) }, sec, " subtotal"), /* @__PURE__ */ window.React.createElement("td", { className: "tbl--r" }, /* @__PURE__ */ window.React.createElement(AmountCell, { value: displayAmount(sumKnown(rs.map((row) => row.debit))), currency, zeroDash: true, mode: "muted" })), /* @__PURE__ */ window.React.createElement("td", { className: "tbl--r" }, /* @__PURE__ */ window.React.createElement(AmountCell, { value: displayAmount(sumKnown(rs.map((row) => row.credit))), currency, zeroDash: true, mode: "muted" })), trailing && /* @__PURE__ */ window.React.createElement("td", null))))), /* @__PURE__ */ window.React.createElement("tfoot", null, /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("td", { className: "tbl__foot-label", colSpan: cols - 2 - (trailing ? 1 : 0) }, "Totals", !complete && /* @__PURE__ */ window.React.createElement("span", { className: "tbl__foot-note" }, " Input missing — balance cannot be proved"), complete && !balanced && /* @__PURE__ */ window.React.createElement("span", { className: "tbl__foot-note", style: { color: "var(--red-dim,#883832)" } }, "out of balance by ", ""), complete && !balanced && /* @__PURE__ */ window.React.createElement(AmountCell, { value: totalD - totalC, currency, mode: "pnl", parens: true })), /* @__PURE__ */ window.React.createElement("td", { className: "tbl--r" }, /* @__PURE__ */ window.React.createElement(AmountCell, { value: displayAmount(totalD), currency, strong: true })), /* @__PURE__ */ window.React.createElement("td", { className: "tbl--r" }, /* @__PURE__ */ window.React.createElement(AmountCell, { value: displayAmount(totalC), currency, strong: true })), trailing && /* @__PURE__ */ window.React.createElement("td", null)))));
   }
 
   // components/charts/AnalyticalField.jsx
@@ -5704,7 +5770,7 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
   function AnalyticalFigure({ title, question, subtitle, unit, asOf, source, condition: condition2 = "confirmed", variant = "standard", continuityState, age, coverage, actions, selectedLabel, selectedValue, annotation, note, method, fallback, children, className = "", ...rest }) {
     inject35();
     const plot = /* @__PURE__ */ window.React.createElement("div", { className: "mds-figure__plot" }, children);
-    return /* @__PURE__ */ window.React.createElement("figure", { className: `mds-figure mds-figure--${variant}${className ? " " + className : ""}`, "data-variant": variant, ...rest }, /* @__PURE__ */ window.React.createElement("figcaption", { className: "mds-figure__head" }, /* @__PURE__ */ window.React.createElement("div", null, question ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-figure__question" }, question) : null, /* @__PURE__ */ window.React.createElement("h2", { className: "mds-figure__title" }, title), subtitle ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-figure__subtitle" }, subtitle) : null), /* @__PURE__ */ window.React.createElement("div", { className: "mds-figure__meta" }, unit ? /* @__PURE__ */ window.React.createElement("span", null, unit) : null, asOf ? /* @__PURE__ */ window.React.createElement("span", null, "As of ", asOf) : null, /* @__PURE__ */ window.React.createElement("span", { className: "mds-figure__cond", "data-condition": condition2 }, condition2), actions)), continuityState || ["stale", "partial", "offline", "delayed"].includes(condition2) ? /* @__PURE__ */ window.React.createElement(ContinuityFrame, { state: continuityState || continuity(condition2), subject: title, snapshotAt: asOf, age, coverage }, plot) : plot, selectedLabel || selectedValue ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-figure__readout" }, /* @__PURE__ */ window.React.createElement("span", null, selectedLabel), /* @__PURE__ */ window.React.createElement("strong", null, selectedValue), annotation ? /* @__PURE__ */ window.React.createElement("span", null, annotation) : null) : null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-figure__foot" }, /* @__PURE__ */ window.React.createElement("span", null, note || method || ""), /* @__PURE__ */ window.React.createElement("span", null, source ? `Source: ${source}` : "Source not supplied")), fallback ? /* @__PURE__ */ window.React.createElement("details", { className: "mds-figure__fallback", open: variant === "print" || void 0 }, /* @__PURE__ */ window.React.createElement("summary", null, "Review exact values and text alternative"), /* @__PURE__ */ window.React.createElement("div", null, fallback)) : null);
+    return /* @__PURE__ */ window.React.createElement("figure", { className: `mds-figure mds-figure--${variant}${className ? " " + className : ""}`, "data-variant": variant, ...rest }, /* @__PURE__ */ window.React.createElement("figcaption", { className: "mds-figure__head" }, /* @__PURE__ */ window.React.createElement("div", null, question ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-figure__question" }, question) : null, /* @__PURE__ */ window.React.createElement("h2", { className: "mds-figure__title" }, title), subtitle ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-figure__subtitle" }, subtitle) : null), /* @__PURE__ */ window.React.createElement("div", { className: "mds-figure__meta" }, unit ? /* @__PURE__ */ window.React.createElement("span", null, unit) : null, asOf ? /* @__PURE__ */ window.React.createElement("span", null, "As of ", asOf) : null, /* @__PURE__ */ window.React.createElement("span", { className: "mds-figure__cond", "data-condition": condition2 }, condition2), actions)), continuityState || ["stale", "partial", "offline", "delayed"].includes(condition2) ? /* @__PURE__ */ window.React.createElement(ContinuityFrame, { state: continuityState || continuity(condition2), subject: title, snapshotAt: asOf, age, coverage }, plot) : plot, selectedLabel || selectedValue !== null && selectedValue !== void 0 && selectedValue !== "" ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-figure__readout" }, /* @__PURE__ */ window.React.createElement("span", null, selectedLabel), /* @__PURE__ */ window.React.createElement("strong", null, selectedValue), annotation ? /* @__PURE__ */ window.React.createElement("span", null, annotation) : null) : null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-figure__foot" }, /* @__PURE__ */ window.React.createElement("span", null, note || method || ""), /* @__PURE__ */ window.React.createElement("span", null, source ? `Source: ${source}` : "Source not supplied")), fallback ? /* @__PURE__ */ window.React.createElement("details", { className: "mds-figure__fallback", open: variant === "print" || void 0 }, /* @__PURE__ */ window.React.createElement("summary", null, "Review exact values and text alternative"), /* @__PURE__ */ window.React.createElement("div", null, fallback)) : null);
   }
   function AnalyticalFigureGrid({ title, sharedScale, columns = 3, source, note, actions, children, className = "", style, ...rest }) {
     inject35();
@@ -6664,6 +6730,7 @@ button.mds-plate:focus-visible{outline:2px solid var(--border-focus);outline-off
     className = "",
     ...rest
   }) {
+    const uid5 = react_default.useId();
     inject39();
     const [own, setOwn] = react_default.useState(defaultView);
     const view = viewProp || own;
@@ -6737,7 +6804,7 @@ button.mds-plate:focus-visible{outline:2px solid var(--border-focus);outline-off
       const onPath = critical.has(String(e.from)) && critical.has(String(e.to));
       const p = mid(e.from, e.to);
       return /* @__PURE__ */ window.React.createElement("g", { key: e.id || i }, /* @__PURE__ */ window.React.createElement("path", { d: path(e.from, e.to), className: `mds-cdg__edge${onPath ? " mds-cdg__edge--critical" : ""}${blocked ? " mds-cdg__edge--blocked" : ""} mds-cdg__edge--${type}` }), showEdgeLabels && p ? /* @__PURE__ */ window.React.createElement("text", { className: "mds-cdg__edgelabel", x: p.x + 4, y: p.y }, EDGE[type] || type) : null);
-    }), nodes.map((n) => {
+    }), nodes.map((n, nodeIndex) => {
       const p = pos[String(n.id)];
       if (!p) return null;
       const s = st2(n.status);
@@ -6750,7 +6817,9 @@ button.mds-plate:focus-visible{outline:2px solid var(--border-focus);outline-off
           className: "mds-cdg__hit",
           tabIndex: onSelect ? 0 : void 0,
           role: onSelect ? "button" : void 0,
-          "aria-label": `${s.glyph} ${String(n.label).slice(0, 24)} ${TYPES2[String(n.type || "").toLowerCase()] || n.type || "Task"} · ${s.label} ${[n.owner, n.due].filter(Boolean).join(" · ") || (down ? "Impeded upstream" : "—")}. ${n.label}${down ? ", impeded by an upstream block" : ""}`,
+          "aria-pressed": onSelect ? sel : void 0,
+          "aria-labelledby": onSelect ? `${uid5}-node-${nodeIndex}-label ${uid5}-node-${nodeIndex}-state ${uid5}-node-${nodeIndex}-owner` : void 0,
+          "aria-describedby": onSelect ? `${uid5}-node-${nodeIndex}-description` : void 0,
           onClick: () => onSelect?.(n),
           onKeyDown: (e) => {
             if ((e.key === "Enter" || e.key === " ") && onSelect) {
@@ -6759,11 +6828,12 @@ button.mds-plate:focus-visible{outline:2px solid var(--border-focus);outline-off
             }
           }
         },
+        /* @__PURE__ */ window.React.createElement("desc", { id: `${uid5}-node-${nodeIndex}-description` }, n.label, down ? ", impeded by an upstream block" : ""),
         /* @__PURE__ */ window.React.createElement("rect", { width: p.w, height: p.h }),
         sel ? /* @__PURE__ */ window.React.createElement("rect", { className: "mds-cdg__datum", x: "-3", y: "-3", width: p.w + 6, height: p.h + 6 }) : null,
-        /* @__PURE__ */ window.React.createElement("text", { className: "label", x: "9", y: "18" }, s.glyph, " ", String(n.label).slice(0, 24)),
-        /* @__PURE__ */ window.React.createElement("text", { className: "meta", x: "9", y: "31" }, TYPES2[String(n.type || "").toLowerCase()] || n.type || "Task", " · ", s.label),
-        /* @__PURE__ */ window.React.createElement("text", { className: "meta", x: "9", y: "42" }, [n.owner, n.due].filter(Boolean).join(" · ") || (down ? "Impeded upstream" : "—"))
+        /* @__PURE__ */ window.React.createElement("text", { id: `${uid5}-node-${nodeIndex}-label`, className: "label", x: "9", y: "18" }, s.glyph, " ", String(n.label).slice(0, 24), " "),
+        /* @__PURE__ */ window.React.createElement("text", { id: `${uid5}-node-${nodeIndex}-state`, className: "meta", x: "9", y: "31" }, TYPES2[String(n.type || "").toLowerCase()] || n.type || "Task", " · ", s.label, " "),
+        /* @__PURE__ */ window.React.createElement("text", { id: `${uid5}-node-${nodeIndex}-owner`, className: "meta", x: "9", y: "42" }, [n.owner, n.due].filter(Boolean).join(" · ") || (down ? "Impeded upstream" : "—"))
       ));
     })), /* @__PURE__ */ window.React.createElement("div", { className: "mds-cdg__legend" }, [...new Set(nodes.map((n) => st2(n.status).key))].map((k) => /* @__PURE__ */ window.React.createElement("span", { key: k }, STATUS2[k].glyph, " ", STATUS2[k].label)), critical.size ? /* @__PURE__ */ window.React.createElement("span", null, "Heavier stroke · critical path") : null, impeded.size ? /* @__PURE__ */ window.React.createElement("span", null, "Dashed border · impeded by upstream block") : null), /* @__PURE__ */ window.React.createElement("details", { className: "mds-cdg__outline", open: view === "outline" }, /* @__PURE__ */ window.React.createElement("summary", null, "Relationship outline"), /* @__PURE__ */ window.React.createElement("ol", null, ordered.map((n) => {
       const s = st2(n.status);
@@ -7364,6 +7434,7 @@ button.mds-covm__cell{cursor:pointer;}
 .mds-dc__bar{position:absolute;top:3px;height:6px;min-width:1px;background:var(--series-actual,var(--brand-axis,#29323A))}
 .mds-dc__bar[data-negative="true"]{background:var(--series-prior,#7890A4)}
 .mds-dc__cmp{position:absolute;bottom:2px;height:0;border-top:2px dashed var(--series-scenario,var(--scenario-signal,#C56343))}
+.mds-dc__row[aria-selected="true"] .mds-dc__label small,.mds-dc__row[aria-selected="true"] .mds-dc__num{color:var(--text-primary,#20252B)}
 .mds-dc__row[aria-selected="true"] .mds-dc__bar{background:var(--selected,#496C8F)}
 .mds-dc__mark{display:inline-block;width:9px;text-align:center;margin-right:3px;color:var(--text-muted,#606870)}
 .mds-dc__totals{display:grid;grid-template-columns:minmax(118px,1.3fr) 64px 64px 1.5fr 76px 76px;gap:10px;align-items:baseline;padding-top:5px;border-top:2px solid var(--border-strong,#AAA49A);font:600 11px var(--font-data,monospace);font-variant-numeric:tabular-nums;color:var(--text-primary,#20252B)}
@@ -7413,7 +7484,7 @@ button.mds-covm__cell{cursor:pointer;}
   }) {
     inject42();
     const [own, setOwn] = react_default.useState(defaultRank);
-    const rank2 = rankProp || own;
+    const rank = rankProp || own;
     const setRank = (r) => {
       if (rankProp === void 0) setOwn(r);
       if (onRankChange) onRankChange(r);
@@ -7431,12 +7502,12 @@ button.mds-covm__cell{cursor:pointer;}
     });
     const sorted = react_default.useMemo(() => {
       const c = [...rows];
-      if (rank2 === "contribution") c.sort((a, b) => Math.abs(b.contribution ?? 0) - Math.abs(a.contribution ?? 0));
-      else if (rank2 === "difference") c.sort((a, b) => Math.abs(b.diff ?? 0) - Math.abs(a.diff ?? 0));
-      else if (rank2 === "weight") c.sort((a, b) => (Number(b.weight) || 0) - (Number(a.weight) || 0));
+      if (rank === "contribution") c.sort((a, b) => Math.abs(b.contribution ?? 0) - Math.abs(a.contribution ?? 0));
+      else if (rank === "difference") c.sort((a, b) => Math.abs(b.diff ?? 0) - Math.abs(a.diff ?? 0));
+      else if (rank === "weight") c.sort((a, b) => (Number(b.weight) || 0) - (Number(a.weight) || 0));
       else c.sort((a, b) => String(a.label).localeCompare(String(b.label)));
       return c;
-    }, [rows, rank2]);
+    }, [rows, rank]);
     const sum = rows.reduce((n, r) => n + (r.contribution || 0), 0);
     const sumCmp = rows.reduce((n, r) => n + (r.cmp || 0), 0);
     const sumW = rows.reduce((n, r) => n + (Number(r.weight) || 0), 0);
@@ -7473,7 +7544,7 @@ button.mds-covm__cell{cursor:pointer;}
       const withheld = items.some((item) => item.condition && conditionMeta(item.condition).key === "restricted");
       return /* @__PURE__ */ window.React.createElement("div", { className: "mds-exposure-unavailable", role: "status", "aria-label": description, style: { fontFamily: "var(--font-body)", color: "var(--text-primary)", padding: 12, border: "1px solid var(--border)", background: "var(--surface-plate,var(--bg-light))" } }, /* @__PURE__ */ window.React.createElement("strong", null, description), /* @__PURE__ */ window.React.createElement("p", null, withheld ? "Restricted inputs are withheld. Totals and comparisons are unavailable." : "Input data is unavailable or invalid. Totals and comparisons cannot be computed; missing values are not zero."));
     }
-    return /* @__PURE__ */ window.React.createElement("div", { className: `mds-dc${showTable ? "" : " mds-dc--sr"}${className ? " " + className : ""}`, ...rest }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-dc__head" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-dc__def" }, durationDefinition, scenario ? ` · Scenario: ${scenario}` : ""), /* @__PURE__ */ window.React.createElement("div", { className: "mds-dc__ranks", role: "group", "aria-label": "Rank by" }, RANKS.filter((r) => r.id !== "difference" || showComparison).map((r) => /* @__PURE__ */ window.React.createElement("button", { key: r.id, type: "button", "aria-pressed": rank2 === r.id, onClick: () => setRank(r.id) }, r.label))), /* @__PURE__ */ window.React.createElement("span", { className: "mds-dc__unit" }, "Duration in ", durationUnit, " · contribution in ", contributionUnit, " · weight in percent of ", unit || "market value", groupBy ? ` · grouped by ${groupBy}` : "", asOf ? ` · as of ${asOf}` : "", scenario ? " · scenario values are scenarios, not forecasts" : "")), /* @__PURE__ */ window.React.createElement("div", { className: "mds-dc__colhead" }, /* @__PURE__ */ window.React.createElement("span", null, groupBy || "Entity"), /* @__PURE__ */ window.React.createElement("span", null, "Weight"), /* @__PURE__ */ window.React.createElement("span", null, "Duration"), /* @__PURE__ */ window.React.createElement("span", null, "Contribution · zero datum"), /* @__PURE__ */ window.React.createElement("span", null, "Contribution"), /* @__PURE__ */ window.React.createElement("span", null, showComparison ? "vs " + comparisonLabel : "Share")), /* @__PURE__ */ window.React.createElement("div", { className: "mds-dc__rows", role: "listbox", "aria-label": description }, sorted.map((r, i) => {
+    return /* @__PURE__ */ window.React.createElement("div", { className: `mds-dc${showTable ? "" : " mds-dc--sr"}${className ? " " + className : ""}`, ...rest }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-dc__head" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-dc__def" }, durationDefinition, scenario ? ` · Scenario: ${scenario}` : ""), /* @__PURE__ */ window.React.createElement("div", { className: "mds-dc__ranks", role: "group", "aria-label": "Rank by" }, RANKS.filter((r) => r.id !== "difference" || showComparison).map((r) => /* @__PURE__ */ window.React.createElement("button", { key: r.id, type: "button", "aria-pressed": rank === r.id, onClick: () => setRank(r.id) }, r.label))), /* @__PURE__ */ window.React.createElement("span", { className: "mds-dc__unit" }, "Duration in ", durationUnit, " · contribution in ", contributionUnit, " · weight in percent of ", unit || "market value", groupBy ? ` · grouped by ${groupBy}` : "", asOf ? ` · as of ${asOf}` : "", scenario ? " · scenario values are scenarios, not forecasts" : "")), /* @__PURE__ */ window.React.createElement("div", { className: "mds-dc__colhead" }, /* @__PURE__ */ window.React.createElement("span", null, groupBy || "Entity"), /* @__PURE__ */ window.React.createElement("span", null, "Weight"), /* @__PURE__ */ window.React.createElement("span", null, "Duration"), /* @__PURE__ */ window.React.createElement("span", null, "Contribution · zero datum"), /* @__PURE__ */ window.React.createElement("span", null, "Contribution"), /* @__PURE__ */ window.React.createElement("span", null, showComparison ? "vs " + comparisonLabel : "Share")), /* @__PURE__ */ window.React.createElement("div", { className: "mds-dc__rows", role: "listbox", "aria-label": description }, sorted.map((r, i) => {
       const selected = String(selectedId) === String(r.id);
       const g = glyph2(r.condition);
       const bar = barOf(r.contribution ?? 0);
@@ -7605,7 +7676,7 @@ button.mds-covm__cell{cursor:pointer;}
     el.textContent = css;
     document.head.appendChild(el);
   }
-  function Ladder({ series, width, height, zero = true }) {
+  function Ladder({ series, width, height, zero = true, ariaLabel }) {
     const s = series[0] || { points: [] };
     const pts = s.points || [];
     const n = Math.max(pts.length, 1);
@@ -7615,7 +7686,7 @@ button.mds-covm__cell{cursor:pointer;}
     const bw = Math.max(4, w / n - 6);
     const mid = zero ? padT + h / 2 : padT + h;
     const scale2 = zero ? h / 2 / max : h / max;
-    return /* @__PURE__ */ window.React.createElement("svg", { width, height, role: "img" }, /* @__PURE__ */ window.React.createElement("line", { x1: padL, y1: mid, x2: padL + w, y2: mid, stroke: RULE, strokeWidth: "1" }), [max, 0, zero ? -max : null].filter((v) => v !== null).map((v, i) => /* @__PURE__ */ window.React.createElement("text", { key: i, className: "mds-fig__ax", x: padL - 6, y: mid - v * scale2 + 3, textAnchor: "end" }, formatNumber(v))), pts.map((p, i) => {
+    return /* @__PURE__ */ window.React.createElement("svg", { width, height, role: ariaLabel ? "img" : void 0, "aria-label": ariaLabel, "aria-hidden": ariaLabel ? void 0 : true }, /* @__PURE__ */ window.React.createElement("line", { x1: padL, y1: mid, x2: padL + w, y2: mid, stroke: RULE, strokeWidth: "1" }), [max, 0, zero ? -max : null].filter((v) => v !== null).map((v, i) => /* @__PURE__ */ window.React.createElement("text", { key: i, className: "mds-fig__ax", x: padL - 6, y: mid - v * scale2 + 3, textAnchor: "end" }, formatNumber(v))), pts.map((p, i) => {
       const r = roleOf(p.role || s.role);
       const v = p.value || 0;
       const bh = Math.abs(v) * scale2;
@@ -7624,14 +7695,14 @@ button.mds-covm__cell{cursor:pointer;}
       return /* @__PURE__ */ window.React.createElement("g", { key: p.label || i }, /* @__PURE__ */ window.React.createElement("rect", { x, y, width: bw, height: Math.max(1, bh), fill: r.fill, opacity: p.role === "estimated" ? 0.55 : 0.9 }), p.role === "estimated" ? /* @__PURE__ */ window.React.createElement("rect", { x, y, width: bw, height: Math.max(1, bh), fill: "none", stroke: r.stroke, strokeDasharray: "3 2" }) : null, /* @__PURE__ */ window.React.createElement("text", { className: "mds-fig__ax", x: x + bw / 2, y: height - 6, textAnchor: "middle" }, p.label));
     }));
   }
-  function Trace({ series, width, height }) {
+  function Trace({ series, width, height, ariaLabel }) {
     const all = series.flatMap((s) => (s.points || []).map((p) => p.value));
     const max = Math.max(...all, 1), min = Math.min(...all, 0);
     const padL = 54, padB = 20, padT = 6;
     const w = width - padL - 8, h = height - padB - padT;
     const sx = (i, n) => padL + (n <= 1 ? 0 : i * w / (n - 1));
     const sy = (v) => padT + h - (v - min) / (max - min || 1) * h;
-    return /* @__PURE__ */ window.React.createElement("svg", { width, height, role: "img" }, /* @__PURE__ */ window.React.createElement("line", { x1: padL, y1: padT + h, x2: padL + w, y2: padT + h, stroke: RULE }), /* @__PURE__ */ window.React.createElement("line", { x1: padL, y1: padT, x2: padL, y2: padT + h, stroke: RULE }), [max, (max + min) / 2, min].map((v, i) => /* @__PURE__ */ window.React.createElement("text", { key: i, className: "mds-fig__ax", x: padL - 6, y: sy(v) + 3, textAnchor: "end" }, Number(v).toFixed(2))), series.map((s, si) => {
+    return /* @__PURE__ */ window.React.createElement("svg", { width, height, role: ariaLabel ? "img" : void 0, "aria-label": ariaLabel, "aria-hidden": ariaLabel ? void 0 : true }, /* @__PURE__ */ window.React.createElement("line", { x1: padL, y1: padT + h, x2: padL + w, y2: padT + h, stroke: RULE }), /* @__PURE__ */ window.React.createElement("line", { x1: padL, y1: padT, x2: padL, y2: padT + h, stroke: RULE }), [max, (max + min) / 2, min].map((v, i) => /* @__PURE__ */ window.React.createElement("text", { key: i, className: "mds-fig__ax", x: padL - 6, y: sy(v) + 3, textAnchor: "end" }, Number(v).toFixed(2))), series.map((s, si) => {
       const r = roleOf(s.role);
       const pts = s.points || [];
       const d = pts.map((p, i) => `${i ? "L" : "M"}${sx(i, pts.length)},${sy(p.value)}`).join(" ");
@@ -7649,7 +7720,7 @@ button.mds-covm__cell{cursor:pointer;}
       ) : null, /* @__PURE__ */ window.React.createElement("path", { d, fill: "none", stroke: r.stroke, strokeWidth: "1.5", strokeDasharray: r.dash || void 0 }));
     }));
   }
-  function Distribution({ series, width, height }) {
+  function Distribution({ series, width, height, ariaLabel }) {
     const s = series[0] || { points: [] };
     const pts = s.points || [];
     const max = Math.max(1, ...pts.map((p) => p.value || 0));
@@ -7657,7 +7728,7 @@ button.mds-covm__cell{cursor:pointer;}
     const w = width - padL - 8, h = height - padB - padT;
     const bw = Math.max(2, w / Math.max(pts.length, 1) - 2);
     const r = roleOf(s.role);
-    return /* @__PURE__ */ window.React.createElement("svg", { width, height, role: "img" }, /* @__PURE__ */ window.React.createElement("line", { x1: padL, y1: padT + h, x2: padL + w, y2: padT + h, stroke: RULE }), /* @__PURE__ */ window.React.createElement("text", { className: "mds-fig__ax", x: padL - 6, y: padT + 8, textAnchor: "end" }, max), pts.map((p, i) => {
+    return /* @__PURE__ */ window.React.createElement("svg", { width, height, role: ariaLabel ? "img" : void 0, "aria-label": ariaLabel, "aria-hidden": ariaLabel ? void 0 : true }, /* @__PURE__ */ window.React.createElement("line", { x1: padL, y1: padT + h, x2: padL + w, y2: padT + h, stroke: RULE }), /* @__PURE__ */ window.React.createElement("text", { className: "mds-fig__ax", x: padL - 6, y: padT + 8, textAnchor: "end" }, max), pts.map((p, i) => {
       const bh = (p.value || 0) / max * h;
       return /* @__PURE__ */ window.React.createElement("rect", { key: i, x: padL + i * (w / pts.length), y: padT + h - bh, width: bw, height: Math.max(1, bh), fill: r.fill, opacity: ".85" });
     }), pts.filter((p) => p.label).map((p, i) => /* @__PURE__ */ window.React.createElement("text", { key: "l" + i, className: "mds-fig__ax", x: padL + pts.indexOf(p) * (w / pts.length) + bw / 2, y: height - 6, textAnchor: "middle" }, p.label)));
@@ -7684,7 +7755,8 @@ button.mds-covm__cell{cursor:pointer;}
     ...rest
   }) {
     inject43();
-    const body = geometry === "ladder" ? /* @__PURE__ */ window.React.createElement(Ladder, { series, width, height, zero: zero !== false }) : geometry === "distribution" ? /* @__PURE__ */ window.React.createElement(Distribution, { series, width, height }) : geometry === "plate" ? /* @__PURE__ */ window.React.createElement(Plate, { rows, columns, cells }) : /* @__PURE__ */ window.React.createElement(Trace, { series, width, height });
+    const ariaLabel = rest["aria-label"] || title;
+    const body = geometry === "ladder" ? /* @__PURE__ */ window.React.createElement(Ladder, { ariaLabel, series, width, height, zero: zero !== false }) : geometry === "distribution" ? /* @__PURE__ */ window.React.createElement(Distribution, { ariaLabel, series, width, height }) : geometry === "plate" ? /* @__PURE__ */ window.React.createElement(Plate, { rows, columns, cells }) : /* @__PURE__ */ window.React.createElement(Trace, { ariaLabel, series, width, height });
     const legendItems = geometry === "plate" ? (columns || []).filter((c) => c.role) : series.filter((s) => s.role || s.label);
     return /* @__PURE__ */ window.React.createElement("figure", { className: `mds-fig${className ? " " + className : ""}`, style: { margin: 0 }, ...rest }, title || clocks ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-fig__hd" }, /* @__PURE__ */ window.React.createElement("figcaption", { className: "mds-fig__ti" }, title), clocks ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-fig__cl" }, clocks) : null) : null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-fig__bd", style: small ? { padding: 6 } : void 0 }, body), legend && legendItems.length ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-fig__lg" }, legendItems.map((s, i) => {
       const r = roleOf(s.role);
@@ -8241,14 +8313,14 @@ button.mds-covm__cell{cursor:pointer;}
       return () => ro.disconnect();
     }, [JSON.stringify(nodes), JSON.stringify(edges)]);
     const clickable = !!onSelectNode;
-    return /* @__PURE__ */ window.React.createElement("div", { className: `mds-own${className ? " " + className : ""}`, ref: wrapRef, ...rest }, /* @__PURE__ */ window.React.createElement("svg", { className: "mds-own__svg", "aria-hidden": "true" }, paths.map((p) => /* @__PURE__ */ window.React.createElement("g", { key: p.id }, /* @__PURE__ */ window.React.createElement("path", { className: "mds-own__edge", d: p.d }), p.label ? /* @__PURE__ */ window.React.createElement("g", null, /* @__PURE__ */ window.React.createElement("rect", { className: "mds-own__pctbg", x: p.lx - 17, y: p.ly - 8, width: "34", height: "14", rx: "2" }), /* @__PURE__ */ window.React.createElement("text", { className: "mds-own__pct", x: p.lx, y: p.ly + 3, textAnchor: "middle" }, p.label)) : null))), rows.map((row, i) => /* @__PURE__ */ window.React.createElement("div", { className: "mds-own__row", key: i }, row.map((n) => {
+    return /* @__PURE__ */ window.React.createElement("div", { className: `mds-own${className ? " " + className : ""}`, ref: wrapRef, ...rest }, /* @__PURE__ */ window.React.createElement("svg", { className: "mds-own__svg", "aria-hidden": "true" }, paths.map((p) => /* @__PURE__ */ window.React.createElement("g", { key: p.id }, p.title ? /* @__PURE__ */ window.React.createElement("title", null, p.title) : null, /* @__PURE__ */ window.React.createElement("path", { className: "mds-own__edge", d: p.d }), p.label ? /* @__PURE__ */ window.React.createElement("g", null, /* @__PURE__ */ window.React.createElement("rect", { className: "mds-own__pctbg", x: p.lx - 17, y: p.ly - 8, width: "34", height: "14", rx: "2" }), /* @__PURE__ */ window.React.createElement("text", { className: "mds-own__pct", x: p.lx, y: p.ly + 3, textAnchor: "middle" }, p.label)) : null))), rows.map((row, i) => /* @__PURE__ */ window.React.createElement("div", { className: "mds-own__row", key: i }, row.map((n) => {
       const Tag = clickable ? "button" : "div";
       const meta5 = [n.jurisdiction, n.currency].filter(Boolean).join(" · ");
       return /* @__PURE__ */ window.React.createElement(
         Tag,
         {
           key: n.id,
-          ...clickable ? { type: "button", onClick: () => onSelectNode(n.id, n) } : {},
+          ...clickable ? { type: "button", "aria-pressed": n.id === selectedId, onClick: () => onSelectNode(n.id, n) } : {},
           ref: (el) => {
             nodeRefs.current[n.id] = el;
           },
@@ -8277,8 +8349,8 @@ button.mds-covm__cell{cursor:pointer;}
     const declared = metric.domain;
     const domain = declared && finite4(declared[0]) && finite4(declared[1]) && declared[1] >= declared[0] ? declared : pool.length ? [Math.min(...pool), Math.max(...pool)] : [0, 1];
     const med = finite4(metric.median) ? metric.median : peers.length ? median(peers) : null;
-    const rank2 = value !== null && peers.length ? peers.filter((peer) => metric.higherIsBetter === false ? peer < value : peer > value).length + 1 : null;
-    return { value, peers, domain, med, rank: rank2 };
+    const rank = value !== null && peers.length ? peers.filter((peer) => metric.higherIsBetter === false ? peer < value : peer > value).length + 1 : null;
+    return { value, peers, domain, med, rank };
   }
   function PeerComparisonStrip({
     metrics = [],
@@ -8293,17 +8365,17 @@ button.mds-covm__cell{cursor:pointer;}
   }) {
     return /* @__PURE__ */ window.React.createElement("div", { role: ariaLabel ? "group" : void 0, "aria-label": ariaLabel, style: { position: "relative", display: "flex", flexDirection: "column", gap: 2 } }, metrics.map((m2, mi) => {
       const f = m2.fmt || fmt6;
-      const { value, peers, domain: [lo, hi], med, rank: rank2 } = comparison(m2);
+      const { value, peers, domain: [lo, hi], med, rank } = comparison(m2);
       const span = hi - lo || 1;
       const pct3 = (v) => `${((v - lo) / span * 100).toFixed(2)}%`;
       const better = m2.higherIsBetter;
       const above = value !== null && med !== null && value > med;
       const tone = better == null || value === null || med === null || value === med ? "var(--series-actual)" : above === !!better ? "var(--series-positive)" : "var(--series-negative)";
-      return /* @__PURE__ */ window.React.createElement("div", { key: m2.id || m2.label || mi, style: { display: "flex", alignItems: "center", gap: 12, padding: "7px 0", borderBottom: mi < metrics.length - 1 ? "1px solid var(--border-divider,var(--border))" : "none" } }, /* @__PURE__ */ window.React.createElement("div", { style: { width: labelWidth2, flex: "0 0 auto", minWidth: 0 } }, /* @__PURE__ */ window.React.createElement("div", { style: { fontSize: "var(--viz-type-label,12px)", color: "var(--text-primary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, m2.label), m2.note && /* @__PURE__ */ window.React.createElement("div", { style: { fontSize: "var(--viz-type-micro,10px)", color: "var(--text-muted)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, m2.note)), /* @__PURE__ */ window.React.createElement("div", { style: { flex: "1 1 auto", minWidth: 120, position: "relative", height: 22 } }, /* @__PURE__ */ window.React.createElement("div", { style: { position: "absolute", left: 0, right: 0, top: 10, height: 2, background: "var(--viz-grid,var(--chart-grid))" } }), peers.map((p, i) => /* @__PURE__ */ window.React.createElement("span", { key: i, title: `peer ${f(p)}`, style: { position: "absolute", left: pct3(p), top: 5, width: 1, height: 12, marginLeft: -0.5, background: "var(--series-prior)", opacity: 0.55 } })), med != null && /* @__PURE__ */ window.React.createElement("span", { title: `median ${f(med)}`, style: { position: "absolute", left: pct3(med), top: 1, width: 0, height: 20, marginLeft: -0.5, borderLeft: "1px dashed var(--series-benchmark)", opacity: 0.9 } }), value !== null && /* @__PURE__ */ window.React.createElement("span", { title: `${subjectLabel} ${f(value)}`, style: { position: "absolute", left: pct3(value), top: 4, width: 14, height: 14, marginLeft: -7, borderRadius: "50%", background: tone, border: "2px solid var(--surface-plate,var(--bg-light))", boxSizing: "border-box" } }), /* @__PURE__ */ window.React.createElement("span", { style: { ...MONO3, position: "absolute", left: 0, top: -2, fontSize: "var(--viz-type-micro,10px)", color: "var(--text-muted)" }, "aria-hidden": "true" }, f(lo)), /* @__PURE__ */ window.React.createElement("span", { style: { ...MONO3, position: "absolute", right: 0, top: -2, fontSize: "var(--viz-type-micro,10px)", color: "var(--text-muted)" }, "aria-hidden": "true" }, f(hi))), /* @__PURE__ */ window.React.createElement("div", { style: { ...MONO3, width: valueWidth, flex: "0 0 auto", textAlign: "right" } }, /* @__PURE__ */ window.React.createElement("div", { style: { fontSize: "var(--viz-type-label,12px)", fontWeight: 600, color: tone } }, value === null ? "—" : f(value)), showRank && rank2 != null && /* @__PURE__ */ window.React.createElement("div", { style: { fontSize: "var(--viz-type-micro,10px)", color: "var(--text-muted)" } }, rank2, " of ", peers.length + 1)));
+      return /* @__PURE__ */ window.React.createElement("div", { key: m2.id || m2.label || mi, style: { display: "flex", alignItems: "center", gap: 12, padding: "7px 0", borderBottom: mi < metrics.length - 1 ? "1px solid var(--border-divider,var(--border))" : "none" } }, /* @__PURE__ */ window.React.createElement("div", { style: { width: labelWidth2, flex: "0 0 auto", minWidth: 0 } }, /* @__PURE__ */ window.React.createElement("div", { style: { fontSize: "var(--viz-type-label,12px)", color: "var(--text-primary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, m2.label), m2.note && /* @__PURE__ */ window.React.createElement("div", { style: { fontSize: "var(--viz-type-micro,10px)", color: "var(--text-muted)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, m2.note)), /* @__PURE__ */ window.React.createElement("div", { style: { flex: "1 1 auto", minWidth: 120, position: "relative", height: 22 } }, /* @__PURE__ */ window.React.createElement("div", { style: { position: "absolute", left: 0, right: 0, top: 10, height: 2, background: "var(--viz-grid,var(--chart-grid))" } }), peers.map((p, i) => /* @__PURE__ */ window.React.createElement("span", { key: i, title: `peer ${f(p)}`, style: { position: "absolute", left: pct3(p), top: 5, width: 1, height: 12, marginLeft: -0.5, background: "var(--series-prior)", opacity: 0.55 } })), med != null && /* @__PURE__ */ window.React.createElement("span", { title: `median ${f(med)}`, style: { position: "absolute", left: pct3(med), top: 1, width: 0, height: 20, marginLeft: -0.5, borderLeft: "1px dashed var(--series-benchmark)", opacity: 0.9 } }), value !== null && /* @__PURE__ */ window.React.createElement("span", { title: `${subjectLabel} ${f(value)}`, style: { position: "absolute", left: pct3(value), top: 4, width: 14, height: 14, marginLeft: -7, borderRadius: "50%", background: tone, border: "2px solid var(--surface-plate,var(--bg-light))", boxSizing: "border-box" } }), /* @__PURE__ */ window.React.createElement("span", { style: { ...MONO3, position: "absolute", left: 0, top: -2, fontSize: "var(--viz-type-micro,10px)", color: "var(--text-muted)" }, "aria-hidden": "true" }, f(lo)), /* @__PURE__ */ window.React.createElement("span", { style: { ...MONO3, position: "absolute", right: 0, top: -2, fontSize: "var(--viz-type-micro,10px)", color: "var(--text-muted)" }, "aria-hidden": "true" }, f(hi))), /* @__PURE__ */ window.React.createElement("div", { style: { ...MONO3, width: valueWidth, flex: "0 0 auto", textAlign: "right" } }, /* @__PURE__ */ window.React.createElement("div", { style: { fontSize: "var(--viz-type-label,12px)", fontWeight: 600, color: tone } }, value === null ? "—" : f(value)), showRank && rank != null && /* @__PURE__ */ window.React.createElement("div", { style: { fontSize: "var(--viz-type-micro,10px)", color: "var(--text-muted)" } }, rank, " of ", peers.length + 1)));
     }), ariaLabel && /* @__PURE__ */ window.React.createElement("table", { style: SR4 }, /* @__PURE__ */ window.React.createElement("caption", null, caption || ariaLabel), /* @__PURE__ */ window.React.createElement("thead", null, /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Metric"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, subjectLabel), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Peer median"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Rank"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Peer values"))), /* @__PURE__ */ window.React.createElement("tbody", null, metrics.map((m2, i) => {
       const f = m2.fmt || fmt6;
-      const { value, peers, med, rank: rank2 } = comparison(m2);
-      return /* @__PURE__ */ window.React.createElement("tr", { key: i }, /* @__PURE__ */ window.React.createElement("th", { scope: "row" }, m2.label), /* @__PURE__ */ window.React.createElement("td", null, value === null ? "no data" : f(value)), /* @__PURE__ */ window.React.createElement("td", null, med === null ? "no peers" : f(med)), /* @__PURE__ */ window.React.createElement("td", null, !showRank || rank2 === null ? "—" : `${rank2} of ${peers.length + 1}`), /* @__PURE__ */ window.React.createElement("td", null, peers.length ? peers.map(f).join(", ") : "no peers"));
+      const { value, peers, med, rank } = comparison(m2);
+      return /* @__PURE__ */ window.React.createElement("tr", { key: i }, /* @__PURE__ */ window.React.createElement("th", { scope: "row" }, m2.label), /* @__PURE__ */ window.React.createElement("td", null, value === null ? "no data" : f(value)), /* @__PURE__ */ window.React.createElement("td", null, med === null ? "no peers" : f(med)), /* @__PURE__ */ window.React.createElement("td", null, !showRank || rank === null ? "—" : `${rank} of ${peers.length + 1}`), /* @__PURE__ */ window.React.createElement("td", null, peers.length ? peers.map(f).join(", ") : "no peers"));
     }))), caption && /* @__PURE__ */ window.React.createElement("p", { style: { margin: "10px 0 0", fontSize: "var(--viz-type-annotation,12px)", color: "var(--text-secondary)", maxWidth: "62ch" } }, caption));
   }
   PeerComparisonStrip.displayName = "PeerComparisonStrip";
@@ -8887,10 +8959,11 @@ button.mds-covm__cell{cursor:pointer;}
     react_default.useEffect(() => {
       if (asOf != null) setFrozen(new Date(asOf));
     }, [asOf]);
+    const displayedFrozen = asOf != null ? new Date(asOf) : frozen;
     const set = (nextMode, nextAsOf) => {
       if (!isControlled) setInternalMode(nextMode);
-      if (nextAsOf) setFrozen(nextAsOf);
-      onChange && onChange({ mode: nextMode, asOf: nextMode === "asof" ? nextAsOf || frozen : null });
+      if (nextAsOf && asOf == null) setFrozen(nextAsOf);
+      onChange && onChange({ mode: nextMode, asOf: nextMode === "asof" ? nextAsOf || displayedFrozen : null });
     };
     const live = mode === "live";
     const now = /* @__PURE__ */ new Date();
@@ -8908,13 +8981,13 @@ button.mds-covm__cell{cursor:pointer;}
           type: "datetime-local",
           className: "mds-asof__input",
           "aria-label": "As-of time (UTC)",
-          value: toLocalInput(frozen),
+          value: toLocalInput(displayedFrozen),
           onChange: (e) => {
             const d = /* @__PURE__ */ new Date(e.target.value + "Z");
             if (!isNaN(d.getTime())) set("asof", d);
           }
         }
-      ), /* @__PURE__ */ window.React.createElement("span", { className: "mds-asof__time", title: utcStamp(frozen, true) }, "UTC"), /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-asof__btn", onClick: () => set("live") }, "Return to live"))
+      ), /* @__PURE__ */ window.React.createElement("span", { className: "mds-asof__time", title: utcStamp(displayedFrozen, true) }, "UTC"), /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-asof__btn", onClick: () => set("live") }, "Return to live"))
     );
   }
   AsOfControl.displayName = "AsOfControl";
@@ -9603,7 +9676,7 @@ button.mds-covm__cell{cursor:pointer;}
       if (i != null) ctx.setIndex(i);
     };
     return {
-      index: ctx.index !== null && ctx.index >= 0 && ctx.index < count ? ctx.index : null,
+      index: Number.isInteger(count) && count > 0 && Number.isInteger(ctx.index) && ctx.index >= 0 && ctx.index < count ? ctx.index : null,
       setIndex: ctx.setIndex,
       clear: () => ctx.setIndex(null),
       bind: { onMouseMove: onMove, onMouseLeave: () => ctx.setIndex(null), style: { position: "relative" } }
@@ -10103,7 +10176,7 @@ button.mds-covm__cell{cursor:pointer;}
   text-overflow:ellipsis;}
 .mds-cb-input::placeholder{color:var(--text-disabled,#A4ABB2);}
 .mds-cb-input:disabled{cursor:not-allowed;}
-.mds-cb-btn{flex:0 0 auto;height:100%;padding:0 8px;border:0;background:none;margin:0;
+.mds-cb-btn{flex:0 0 auto;height:100%;min-width:24px;min-height:24px;box-sizing:border-box;padding:0 8px;border:0;background:none;margin:0;
   color:var(--text-muted,#606870);font-family:var(--font-data);font-size:11px;cursor:pointer;
   display:inline-flex;align-items:center;}
 .mds-cb-btn:hover{color:var(--text-primary,#20252B);}
@@ -10339,7 +10412,7 @@ button.mds-covm__cell{cursor:pointer;}
         },
         onKeyDown: handleKey
       }
-    ), clearable && selected && !disabled && /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-cb-btn", onClick: clear, tabIndex: -1, "aria-label": "Clear selection" }, "✕"), /* @__PURE__ */ window.React.createElement(
+    ), clearable && selected && !disabled && /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-cb-btn", onClick: clear, "aria-label": "Clear selection" }, "✕"), /* @__PURE__ */ window.React.createElement(
       "button",
       {
         type: "button",
@@ -10900,7 +10973,7 @@ button.mds-covm__cell{cursor:pointer;}
 .mds-dr-input{flex:1;min-width:0;height:100%;padding:7px 10px;border:none;background:transparent;
   color:var(--text-primary,#20252B);font-family:var(--font-data);font-size:13px;outline:none;
   font-variant-numeric:tabular-nums;text-align:left;cursor:pointer;display:flex;align-items:center;}
-.mds-dr-input--empty{color:var(--text-disabled,#A4ABB2);}
+.mds-dr-input--empty{color:var(--text-muted,#606870);}
 .mds-dr-btn{flex:0 0 auto;height:100%;padding:0 9px;border:0;background:none;margin:0;
   color:var(--text-muted,#606870);font-size:12px;cursor:pointer;display:inline-flex;align-items:center;}
 .mds-dr-btn:hover{color:var(--text-primary,#20252B);}
@@ -11000,6 +11073,13 @@ button.mds-covm__cell{cursor:pointer;}
     const [cursor, setCursor] = react_default.useState(() => startD || /* @__PURE__ */ new Date());
     const [anchor, setAnchor] = react_default.useState(null);
     const [hover, setHover] = react_default.useState(null);
+    react_default.useEffect(() => {
+      if (disabled) {
+        setOpen(false);
+        setAnchor(null);
+        setHover(null);
+      }
+    }, [disabled]);
     const [placement, setPlacement] = react_default.useState("");
     const rootRef = react_default.useRef(null);
     const calRef = react_default.useRef(null);
@@ -11045,7 +11125,7 @@ button.mds-covm__cell{cursor:pointer;}
       if (refocus) triggerRef.current?.focus();
     };
     const pick = (d) => {
-      if (isBlocked(d)) return;
+      if (disabled || isBlocked(d)) return;
       const iso = toISO(d);
       if (anchor == null) {
         setAnchor(iso);
@@ -11058,7 +11138,12 @@ button.mds-covm__cell{cursor:pointer;}
       setHover(null);
       close();
     };
+    const presetBlocked = (p) => {
+      const a = fromISO(p.start), b = fromISO(p.end);
+      return disabled || !a || !b || isBlocked(a) || isBlocked(b);
+    };
     const applyPreset = (p) => {
+      if (presetBlocked(p)) return;
       onChange?.({ start: p.start, end: p.end });
       setAnchor(null);
       close();
@@ -11082,11 +11167,8 @@ button.mds-covm__cell{cursor:pointer;}
       else if (k === "End") next = addDays(focusDay, 6 - (focusDay.getDay() - weekStartsOn + 7) % 7);
       else if (k === "PageUp") next = addMonths(focusDay, e.shiftKey ? -12 : -1);
       else if (k === "PageDown") next = addMonths(focusDay, e.shiftKey ? 12 : 1);
-      else if (k === "Enter" || k === " ") {
-        e.preventDefault();
-        pick(focusDay);
-        return;
-      } else if (k === "Escape") {
+      else if (k === "Enter" || k === " ") return;
+      else if (k === "Escape") {
         e.preventDefault();
         e.stopPropagation();
         close();
@@ -11099,8 +11181,11 @@ button.mds-covm__cell{cursor:pointer;}
         e.preventDefault();
         setFocusDay(next);
         setHover(toISO(next));
-        if (next.getMonth() !== cursor.getMonth() && next < cursor) setCursor(addMonths(cursor, -1));
-        else if (next > addMonths(cursor, months - 1)) setCursor(addMonths(cursor, 1));
+        const nextMonth = new Date(next.getFullYear(), next.getMonth(), 1);
+        const firstMonth = new Date(cursor.getFullYear(), cursor.getMonth(), 1);
+        const lastMonth = addMonths(firstMonth, months - 1);
+        if (nextMonth < firstMonth) setCursor(nextMonth);
+        else if (nextMonth > lastMonth) setCursor(addMonths(nextMonth, -(months - 1)));
       }
     };
     const lo = anchor && hover ? hover < anchor ? hover : anchor : start;
@@ -11164,6 +11249,7 @@ button.mds-covm__cell{cursor:pointer;}
         {
           key: p.id,
           type: "button",
+          disabled: presetBlocked(p),
           className: `mds-dr-preset${activePreset?.id === p.id ? " mds-dr-preset--on" : ""}`,
           "aria-pressed": activePreset?.id === p.id,
           onClick: () => applyPreset(p)
@@ -11932,7 +12018,14 @@ button.mds-covm__cell{cursor:pointer;}
     const d = useDisc();
     const value = region ? d.detailFor(region) : d.detail;
     const overridden = region ? d.overridden(region) : false;
-    return /* @__PURE__ */ window.React.createElement("span", { className: `mds-disc__dial${className ? " " + className : ""}`, ...rest }, /* @__PURE__ */ window.React.createElement(
+    const dialRef = react_default.useRef(null), restoreResetFocus = react_default.useRef(false);
+    react_default.useLayoutEffect(() => {
+      if (restoreResetFocus.current && !overridden) {
+        restoreResetFocus.current = false;
+        dialRef.current?.querySelector('[role="radio"][aria-checked="true"]')?.focus();
+      }
+    }, [overridden, value]);
+    return /* @__PURE__ */ window.React.createElement("span", { ref: dialRef, className: `mds-disc__dial${className ? " " + className : ""}`, ...rest }, /* @__PURE__ */ window.React.createElement(
       SegmentedControl,
       {
         size,
@@ -11942,7 +12035,10 @@ button.mds-covm__cell{cursor:pointer;}
         options: DETAIL_LEVELS.map((l) => ({ value: l, label: labels[l] || l })),
         onChange: (v) => region ? d.setDetailFor(region, v) : d.setDetail(v)
       }
-    ), region && showReset ? overridden ? /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-disc__inherit", onClick: () => d.setDetailFor(region, null) }, "↺", " screen") : /* @__PURE__ */ window.React.createElement("span", { className: "mds-disc__kicker" }, resetLabel) : null);
+    ), region && showReset ? overridden ? /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-disc__inherit", onClick: (event) => {
+      restoreResetFocus.current = document.activeElement === event.currentTarget;
+      d.setDetailFor(region, null);
+    } }, "↺", " screen") : /* @__PURE__ */ window.React.createElement("span", { className: "mds-disc__kicker" }, resetLabel) : null);
   }
   function severityOf(list = []) {
     return list.reduce((worst2, s) => (SEVERITY_RANK[s] || 0) > (SEVERITY_RANK[worst2] || 0) ? s : worst2, "none");
@@ -12010,14 +12106,35 @@ button.mds-covm__cell{cursor:pointer;}
   function DetailOnly({ region, label: label2, children, notice = true }) {
     inject63();
     const d = useDisc();
-    if (d.detailFor(region) === "full") return /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, children);
+    const full = d.detailFor(region) === "full";
+    const noticeRef = react_default.useRef(null), revealFocus = react_default.useRef(null);
+    react_default.useLayoutEffect(() => {
+      if (!full || !revealFocus.current) return;
+      const { parent, index } = revealFocus.current;
+      revealFocus.current = null;
+      const node = parent?.childNodes[index];
+      const content = node?.nodeType === 1 ? node : parent;
+      const target = content?.matches?.("button,a[href],input,select,textarea,[tabindex]") ? content : content?.querySelector?.("button,a[href],input,select,textarea,[tabindex]") || content;
+      if (!target?.focus) return;
+      const temporary = !target.hasAttribute("tabindex") && !target.matches("button,a[href],input,select,textarea");
+      if (temporary) {
+        target.setAttribute("tabindex", "-1");
+        target.addEventListener("blur", () => target.removeAttribute("tabindex"), { once: true });
+      }
+      target.focus();
+    }, [full]);
+    if (full) return /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, children);
     if (!notice) return null;
-    return /* @__PURE__ */ window.React.createElement("div", { className: "mds-disc__withheld" }, /* @__PURE__ */ window.React.createElement("span", null, label2 || "Detail withheld at summary depth"), /* @__PURE__ */ window.React.createElement(
+    return /* @__PURE__ */ window.React.createElement("div", { ref: noticeRef, className: "mds-disc__withheld" }, /* @__PURE__ */ window.React.createElement("span", null, label2 || "Detail withheld at summary depth"), /* @__PURE__ */ window.React.createElement(
       "button",
       {
         type: "button",
         className: "mds-disc__reveal",
-        onClick: () => region ? d.setDetailFor(region, "full") : d.setDetail("full")
+        onClick: (event) => {
+          const node = noticeRef.current, parent = node?.parentNode;
+          if (parent && document.activeElement === event.currentTarget) revealFocus.current = { parent, index: Array.prototype.indexOf.call(parent.childNodes, node) };
+          region ? d.setDetailFor(region, "full") : d.setDetail("full");
+        }
       },
       "Show"
     ));
@@ -12630,7 +12747,7 @@ button.mds-covm__cell{cursor:pointer;}
   };
   function relativeTime(then) {
     const t2 = then instanceof Date ? then.getTime() : typeof then === "number" ? then : Date.parse(then);
-    if (!t2 || Number.isNaN(t2)) return null;
+    if (!Number.isFinite(t2)) return null;
     const s = Math.max(0, Math.round((Date.now() - t2) / 1e3));
     if (s < 5) return "just now";
     if (s < 60) return `${s}s ago`;
@@ -13096,7 +13213,7 @@ button.mds-mat:focus-visible{outline:2px solid var(--interaction-focus,var(--foc
 .mds-ms-more{font-family:var(--font-data);font-size:11px;color:var(--text-muted,#606870);padding:0 2px;}
 .mds-ms-input{flex:1;min-width:60px;height:24px;border:none;background:transparent;outline:none;
   color:var(--text-primary,#20252B);font-family:var(--font-data);font-size:13px;}
-.mds-ms-input::placeholder{color:var(--text-disabled,#A4ABB2);}
+.mds-ms-input::placeholder{color:var(--text-muted,#606870);opacity:1;}
 .mds-ms-btn{flex:0 0 auto;height:24px;padding:0 6px;border:0;background:none;margin:0;
   color:var(--text-muted,#606870);font-size:11px;cursor:pointer;display:inline-flex;align-items:center;}
 .mds-ms-btn:hover{color:var(--text-primary,#20252B);}
@@ -13680,7 +13797,7 @@ button.mds-mat:focus-visible{outline:2px solid var(--interaction-focus,var(--foc
     return map;
   }, {});
   function objectMeta(type) {
-    return BY_ID[type] || { id: type, label: type || "Object", identifierLabel: "Id", nameLabel: "Name", material: "Value", lifecycle: [], context: [] };
+    return BY_ID[type] || { id: type, label: type || "Object", plural: type || "Objects", identifierLabel: "Id", nameLabel: "Name", material: "Value", lifecycle: [], context: [] };
   }
   function describeObject(object = {}) {
     const meta5 = objectMeta(object.type);
@@ -15466,11 +15583,11 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
   function acknowledgeReview(draft, opts = {}) {
     return { ...draft, review: { ...draft.review || {}, acknowledged: true, acknowledgedHash: formationHash(draft), notes: opts.notes ?? (draft.review || {}).notes ?? null, acknowledgedAt: opts.at ?? Date.now(), acknowledgedBy: opts.actor ?? null }, updatedAt: opts.at ?? Date.now() };
   }
-  function deepFreeze(v) {
-    if (v && typeof v === "object" && !Object.isFrozen(v)) {
-      Object.freeze(v);
-      Object.keys(v).forEach((k) => deepFreeze(v[k]));
-    }
+  function deepFreeze(v, seen = /* @__PURE__ */ new WeakSet()) {
+    if (!v || typeof v !== "object" || seen.has(v)) return v;
+    seen.add(v);
+    Object.freeze(v);
+    Object.keys(v).forEach((key) => deepFreeze(v[key], seen));
     return v;
   }
   function lifecycleMeta(id) {
@@ -17478,7 +17595,7 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
 .mds-dss--error .mds-dss__glyph{border-color:var(--red,#B54B42);color:var(--red-dim,#883832);background:var(--red-a10,rgba(181,75,66,.10));}
 .mds-dss--error .mds-dss__title{color:var(--red-dim,#883832);}
 .mds-dss__btn{margin-top:2px;padding:7px 16px;background:var(--brand-signal,#C56343);color:var(--text-on-fill,#fff);border:none;border-radius:var(--radius-button,2px);font:600 12px var(--font-body);cursor:pointer;}
-.mds-dss__note{font:11px var(--font-data,monospace);color:var(--text-disabled,#A4ABB2);}
+.mds-dss__note{font:11px var(--font-data,monospace);color:var(--text-muted,#606870);}
 @keyframes mds-dss-sweep{100%{transform:translateX(100%);}}
 @media (prefers-reduced-motion:reduce){.mds-dss__bar::after{animation:none;}}
 `;
@@ -18091,6 +18208,10 @@ select.mds-fb__ctl{appearance:auto;}
       return true;
     });
   }
+  function limitSelection(list, multiple, max) {
+    if (!multiple) return list.slice(0, 1);
+    return typeof max === "number" && Number.isFinite(max) ? list.slice(0, Math.max(0, Math.floor(max))) : list;
+  }
   function sameList(a, b) {
     return a.length === b.length && a.every((entry, i) => entry.id === b[i].id);
   }
@@ -18129,10 +18250,10 @@ select.mds-fb__ctl{appearance:auto;}
   }) {
     const controlled = value !== void 0;
     const [internal, setInternal] = react_default.useState(
-      () => readUrl2(urlParam, multiple) || readStorage(storageKey) || toList(defaultValue, "default")
+      () => limitSelection(readUrl2(urlParam, multiple) || readStorage(storageKey) || toList(defaultValue, "default"), multiple, max)
     );
     const [history, setHistory] = react_default.useState([]);
-    const selections = controlled ? toList(value, "controlled") : internal;
+    const selections = limitSelection(controlled ? toList(value, "controlled") : internal, multiple, max);
     const selectionsRef = react_default.useRef(selections);
     selectionsRef.current = selections;
     const persist = react_default.useCallback((list) => {
@@ -18154,18 +18275,19 @@ select.mds-fb__ctl{appearance:auto;}
     }, [multiple, storageKey, urlParam]);
     const commit = react_default.useCallback((next, meta5 = {}) => {
       const previous = selectionsRef.current;
-      let list = toList(next, meta5.source || "programmatic");
-      if (!multiple) list = list.slice(0, 1);
-      else if (typeof max === "number") list = list.slice(0, max);
+      const list = limitSelection(toList(next, meta5.source || "programmatic"), multiple, max);
       if (sameList(previous, list) && !meta5.force) return;
       if (!meta5.replaceHistory) {
         setHistory((entries) => [previous, ...entries].slice(0, Math.max(0, historyLimit)));
       }
       if (!controlled) setInternal(list);
       selectionsRef.current = list;
-      persist(list);
+      if (!controlled) persist(list);
       onChange?.(multiple ? list : list[0] ?? null, { ...meta5, selections: list });
     }, [controlled, historyLimit, max, multiple, onChange, persist]);
+    react_default.useEffect(() => {
+      if (controlled) persist(selections);
+    }, [controlled, value, multiple, max, persist]);
     const api = react_default.useMemo(() => {
       const idOf = (candidate) => {
         if (candidate == null) return null;
@@ -18684,9 +18806,6 @@ select.mds-fb__ctl{appearance:auto;}
     react_default.useEffect(() => {
       setJumpValue(String(currentPage));
     }, [currentPage]);
-    react_default.useEffect(() => {
-      setJumpValue(String(currentPage));
-    }, [currentPage]);
     const handlePrev = () => {
       if (currentPage > 1) onPageChange(currentPage - 1);
     };
@@ -18699,7 +18818,7 @@ select.mds-fb__ctl{appearance:auto;}
     const handleJump = () => {
       const page = Math.max(1, Math.min(totalPages, parseInt(jumpValue, 10) || 1));
       setJumpValue(String(page));
-      onPageChange(page);
+      if (page !== currentPage) onPageChange(page);
     };
     const getPageRange = () => {
       const delta = siblingCount;
@@ -18735,7 +18854,6 @@ select.mds-fb__ctl{appearance:auto;}
           type: "button",
           key: idx,
           className: `pgn-btn ${page === currentPage ? "pgn-btn--active" : ""}`,
-          "aria-current": page === currentPage ? "page" : void 0,
           onClick: () => handlePageClick(page),
           "aria-label": `Page ${page}`,
           "aria-current": page === currentPage ? "page" : void 0
@@ -20008,6 +20126,10 @@ select.mds-fb__ctl{appearance:auto;}
     supersedable: { label: "Supersedable", note: "Stands until a later version replaces it.", tone: "warn" },
     irreversible: { label: "Irreversible", note: "Cannot be undone, compensated, or superseded.", tone: "danger" }
   };
+  var guardState = (guard) => {
+    const state = guard?.state || guard?.status;
+    return ["blocking", "warning", "pending", "satisfied"].includes(state) ? state : "pending";
+  };
   var GUARD_TONE = { blocking: "danger", warning: "warn", pending: "info", satisfied: "ok" };
   var injected110 = false;
   function inject110() {
@@ -20073,13 +20195,13 @@ select.mds-fb__ctl{appearance:auto;}
     const rev = consequences.reversibility ? REVERSIBILITY[consequences.reversibility] || { label: String(consequences.reversibility), note: "", tone: "neutral" } : null;
     const groups = CONSEQUENCE_KINDS.map((k) => ({ kind: k, items: Array.isArray(consequences[k.id]) ? consequences[k.id] : [] })).filter((g) => g.items.length);
     const tally = guards.reduce((a, g) => {
-      const s = g && g.status ? g.status : "satisfied";
+      const s = guardState(g);
       a[s] = (a[s] || 0) + 1;
       return a;
     }, {});
     const blocking = tally.blocking || 0;
     const outstanding = blocking + (tally.warning || 0) + (tally.pending || 0);
-    const guardLabel = blocking ? `${blocking} blocking ${blocking === 1 ? "guard" : "guards"}${outstanding > blocking ? ` · ${outstanding - blocking} more outstanding` : ""}` : outstanding ? `${outstanding} ${outstanding === 1 ? "guard" : "guards"} outstanding` : `All ${guards.length} guards satisfied`;
+    const guardLabel = !guards.length ? "No guards supplied" : blocking ? `${blocking} blocking ${blocking === 1 ? "guard" : "guards"}${outstanding > blocking ? ` · ${outstanding - blocking} more outstanding` : ""}` : outstanding ? `${outstanding} ${outstanding === 1 ? "guard" : "guards"} outstanding` : `All ${guards.length} guards satisfied`;
     return /* @__PURE__ */ window.React.createElement("section", { className: `mds-crail${dense ? " mds-crail--dense" : ""}${className ? " " + className : ""}`, "aria-labelledby": `${uid5}-t`, ...rest }, /* @__PURE__ */ window.React.createElement("header", { className: "mds-crail__head" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-crail__eyebrow" }, "If this proceeds"), /* @__PURE__ */ window.React.createElement("h3", { className: "mds-crail__title", id: `${uid5}-t` }, title), proposal || object ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-crail__prop" }, [
       proposal && proposal.id,
       proposal && proposal.changes ? `${proposal.changes.length} field ${proposal.changes.length === 1 ? "change" : "changes"}` : null,
@@ -20101,17 +20223,18 @@ select.mds-fb__ctl{appearance:auto;}
         /* @__PURE__ */ window.React.createElement("span", { className: "mds-crail__rlabel" }, item.label || item.id, item.effect ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-crail__reffect" }, item.effect) : null),
         amount != null ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-crail__rval", "data-sign": sign2(amount) }, item.formatted != null ? item.formatted : amount, item.currency ? ` ${item.currency}` : "") : null
       ));
-    })))) : /* @__PURE__ */ window.React.createElement("p", { className: "mds-crail__empty" }, "No consequence declared. An action with no stated consequence is not ready for review.")), guards.length ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-crail__guards" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-crail__gname" }, guardLabel), /* @__PURE__ */ window.React.createElement("ul", { className: "mds-crail__glist" }, guards.map((g, i) => {
-      const status = g && g.status || "satisfied";
+    })))) : /* @__PURE__ */ window.React.createElement("p", { className: "mds-crail__empty" }, "No consequence declared. An action with no stated consequence is not ready for review.")), /* @__PURE__ */ window.React.createElement("div", { className: "mds-crail__guards" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-crail__gname" }, guardLabel), /* @__PURE__ */ window.React.createElement("ul", { className: "mds-crail__glist" }, guards.map((g, i) => {
+      const status = guardState(g);
       return /* @__PURE__ */ window.React.createElement("li", { className: "mds-crail__guard", key: g.id || i, "data-tone": GUARD_TONE[status] || "info" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-crail__gmark", "aria-hidden": "true" }, status === "blocking" ? "!" : status === "warning" ? "▲" : status === "pending" ? "◐" : "✓"), /* @__PURE__ */ window.React.createElement("span", null, g.label || g.id, g.detail ? ` — ${g.detail}` : "", /* @__PURE__ */ window.React.createElement("span", { className: "mds-crail__reffect" }, status)));
-    }))) : null);
+    }))));
   }
 
   // components/decision/DecisionSnapshot.jsx
   var SECTIONS2 = ["object", "context", "time", "evidence", "calculations", "materiality", "guards", "consequences", "decision"];
-  function deepFreeze2(value) {
-    if (value == null || typeof value !== "object" || Object.isFrozen(value)) return value;
-    Object.getOwnPropertyNames(value).forEach((k) => deepFreeze2(value[k]));
+  function deepFreeze2(value, visited = /* @__PURE__ */ new WeakSet()) {
+    if (value == null || typeof value !== "object" || react_default.isValidElement(value) || visited.has(value)) return value;
+    visited.add(value);
+    Object.getOwnPropertyNames(value).forEach((k) => deepFreeze2(value[k], visited));
     return Object.freeze(value);
   }
   var captureSnapshot = (input = {}) => {
@@ -20656,7 +20779,7 @@ select.mds-fb__ctl{appearance:auto;}
   function summarizeGuards(guards) {
     const g = guards || [];
     const blocking = g.filter((x) => x.state === "blocking"), warning = g.filter((x) => x.state === "warning");
-    const pending = g.filter((x) => x.state === "pending");
+    const pending = g.filter((x) => x.state === "pending" || !Object.prototype.hasOwnProperty.call(STATE2, x.state));
     return {
       total: g.length,
       satisfied: g.filter((x) => x.state === "satisfied").length,
@@ -20720,6 +20843,8 @@ select.mds-fb__ctl{appearance:auto;}
         {
           type: "button",
           className: "mds-guard__fix",
+          disabled: !onRemediate,
+          title: onRemediate ? void 0 : "Remediation is unavailable in this view",
           onClick: () => onRemediate && onRemediate(g.remediation, g)
         },
         g.remediation.label,
@@ -20747,6 +20872,8 @@ select.mds-fb__ctl{appearance:auto;}
         type: "button",
         className: "mds-guard__fix",
         style: { marginTop: 0 },
+        disabled: !onRemediate,
+        title: onRemediate ? void 0 : "Remediation is unavailable in this view",
         onClick: () => onRemediate && onRemediate(fix, blocker)
       },
       fix.label
@@ -21045,12 +21172,12 @@ select.mds-fb__ctl{appearance:auto;}
     const el = document.createElement("style");
     el.setAttribute("data-mds", "adapter-diagnostics");
     el.textContent = `
-.mds-adpt{font-family:var(--font-body);color:var(--text-primary,#20252B);border:1px solid var(--border,#D2CDC3);background:var(--bg-light,#F8F7F3)}
-.mds-adpt__head{display:grid;grid-template-columns:1fr auto;gap:6px 14px;align-items:end;padding:11px 13px;border-bottom:1px solid var(--border-strong,#AAA49A);background:var(--bg-medium,#EBE8E1)}
+.mds-adpt{min-width:0;max-width:100%;box-sizing:border-box;overflow-wrap:anywhere;font-family:var(--font-body);color:var(--text-primary,#20252B);border:1px solid var(--border,#D2CDC3);background:var(--bg-light,#F8F7F3)}
+.mds-adpt__head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 14px;align-items:end;padding:11px 13px;border-bottom:1px solid var(--border-strong,#AAA49A);background:var(--bg-medium,#EBE8E1)}
 .mds-adpt__eyebrow{font:600 9px var(--font-data,monospace);letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted,#606870)}
 .mds-adpt__title{font-size:14px;font-weight:650;margin:2px 0 0;letter-spacing:-.005em}
 .mds-adpt__sub{font:10.5px var(--font-data,monospace);color:var(--text-secondary,#535C65);margin-top:3px}
-.mds-adpt__tally{display:flex;gap:0;align-self:end}
+.mds-adpt__tally{display:flex;flex-wrap:wrap;gap:0;align-self:end}
 .mds-adpt__t{display:grid;gap:1px;justify-items:end;padding:0 0 0 16px}
 .mds-adpt__t b{font:600 15px var(--font-data,monospace);font-variant-numeric:tabular-nums;line-height:1.1}
 .mds-adpt__t span{font:600 9px var(--font-data,monospace);letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted,#606870)}
@@ -21058,10 +21185,10 @@ select.mds-fb__ctl{appearance:auto;}
 .mds-adpt__t[data-sev="action"] b{color:var(--severity-action-fg,#724D11)}
 .mds-adpt__t[data-sev="review"] b{color:var(--severity-review-fg,#8E4730)}
 .mds-adpt__t[data-sev="ready"] b{color:var(--severity-ready-fg,#225840)}
-.mds-adpt__cols,.mds-adpt__row{display:grid;grid-template-columns:104px minmax(150px,1fr) 96px 118px 116px 122px;gap:10px;align-items:baseline}
+.mds-adpt__cols,.mds-adpt__row{display:grid;grid-template-columns:minmax(64px,.8fr) minmax(90px,1.3fr) minmax(60px,.75fr) minmax(70px,.9fr) minmax(70px,.9fr) minmax(75px,1fr);gap:10px;align-items:baseline}
 .mds-adpt__cols{padding:5px 13px;border-bottom:1px solid var(--border-divider,#E2DED5);background:var(--card-surface-raised,#FCFBF8);font:600 9px var(--font-data,monospace);letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted,#606870)}
 .mds-adpt__cols span:nth-child(n+3){text-align:right}
-.mds-adpt__row{width:100%;padding:8px 13px;min-height:var(--row-review,40px);border:0;border-bottom:1px solid var(--border-divider,#E2DED5);border-left:2px solid transparent;background:transparent;text-align:left;font-family:inherit;color:inherit;cursor:pointer}
+.mds-adpt__row{box-sizing:border-box;width:100%;padding:8px 13px;min-height:var(--row-review,40px);border:0;border-bottom:1px solid var(--border-divider,#E2DED5);border-left:2px solid transparent;background:transparent;text-align:left;font-family:inherit;color:inherit;cursor:pointer}
 .mds-adpt__row:hover{background:var(--bg-hover,#EDEFF0)}
 .mds-adpt__row:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
 .mds-adpt__row[aria-expanded="true"]{background:var(--selected-surface,#E7EDF2);border-left-color:var(--interaction-selected,#496C8F)}
@@ -21070,18 +21197,18 @@ select.mds-fb__ctl{appearance:auto;}
 .mds-adpt__name{display:grid;gap:1px;min-width:0}
 .mds-adpt__name b{font-size:12.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mds-adpt__name em{font-style:normal;font:600 9px var(--font-data,monospace);letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted,#606870)}
-.mds-adpt__n{font:11px var(--font-data,monospace);font-variant-numeric:tabular-nums;color:var(--text-secondary,#535C65);text-align:right;white-space:nowrap}
+.mds-adpt__n{font:11px var(--font-data,monospace);font-variant-numeric:tabular-nums;color:var(--text-secondary,#535C65);text-align:right;min-width:0;overflow-wrap:anywhere;white-space:normal}
 .mds-adpt__n b{font-weight:600;color:var(--text-primary,#20252B)}
 .mds-adpt__n s{text-decoration:none;display:block;font-size:9.5px;color:var(--text-muted,#606870)}
 .mds-adpt__n[data-over="true"] b{color:var(--severity-action-fg,#724D11)}
 .mds-adpt__n[data-bad="true"] b{color:var(--severity-blocked-fg,#883832)}
-.mds-adpt__detail{padding:11px 13px 12px;border-bottom:1px solid var(--border-divider,#E2DED5);background:var(--card-surface-raised,#FCFBF8);display:grid;grid-template-columns:repeat(auto-fit,minmax(228px,1fr));gap:12px 18px}
-.mds-adpt__block{display:grid;gap:4px;align-content:start}
+.mds-adpt__detail{padding:11px 13px 12px;border-bottom:1px solid var(--border-divider,#E2DED5);background:var(--card-surface-raised,#FCFBF8);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(228px,100%),1fr));gap:12px 18px}
+.mds-adpt__block{min-width:0;display:grid;gap:4px;align-content:start}
 .mds-adpt__blabel{font:600 9px var(--font-data,monospace);letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted,#606870)}
 .mds-adpt__kv{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;font:11px var(--font-data,monospace);color:var(--text-secondary,#535C65)}
 .mds-adpt__kv dt{color:var(--text-muted,#606870)}
-.mds-adpt__kv dd{margin:0;color:var(--text-primary,#20252B);font-variant-numeric:tabular-nums}
-.mds-adpt__err{font:11px var(--font-data,monospace);line-height:1.5;color:var(--severity-blocked-fg,#883832);background:var(--severity-blocked-bg,#B54B42);border:1px solid var(--severity-blocked-bd,#B54B42);padding:6px 8px;white-space:pre-wrap;word-break:break-word}
+.mds-adpt__kv dd{min-width:0;overflow-wrap:anywhere;margin:0;color:var(--text-primary,#20252B);font-variant-numeric:tabular-nums}
+.mds-adpt__err{font:11px var(--font-data,monospace);line-height:1.5;color:var(--severity-blocked-fg,#883832);background:linear-gradient(var(--severity-blocked-bg,rgba(181,75,66,.10)),var(--severity-blocked-bg,rgba(181,75,66,.10))),var(--bg-light,#F8F7F3);border:1px solid var(--severity-blocked-bd,#B54B42);padding:6px 8px;white-space:pre-wrap;word-break:break-word}
 .mds-adpt__errmeta{font:9.5px var(--font-data,monospace);color:var(--text-muted,#606870)}
 .mds-adpt__acts{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .mds-adpt__btn{height:26px;padding:0 10px;border:1px solid var(--border-strong,#AAA49A);border-radius:2px;background:var(--bg-light,#F8F7F3);color:var(--text-primary,#20252B);font:600 11px var(--font-body);cursor:pointer;white-space:nowrap}
@@ -21089,19 +21216,19 @@ select.mds-fb__ctl{appearance:auto;}
 .mds-adpt__btn:disabled{opacity:.5;cursor:not-allowed}
 .mds-adpt__btn:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:1px}
 .mds-adpt__says{font-size:11.5px;line-height:1.45;color:var(--text-secondary,#535C65);text-wrap:pretty}
-.mds-adpt__flag{grid-column:1/-1;font:600 10.5px var(--font-data,monospace);color:var(--severity-blocked-fg,#883832);background:var(--severity-blocked-bg,#B54B42);border-left:2px solid var(--severity-blocked-fg,#883832);padding:5px 8px}
+.mds-adpt__flag{grid-column:1/-1;font:600 10.5px var(--font-data,monospace);color:var(--severity-blocked-fg,#883832);background:linear-gradient(var(--severity-blocked-bg,rgba(181,75,66,.10)),var(--severity-blocked-bg,rgba(181,75,66,.10))),var(--bg-light,#F8F7F3);border-left:2px solid var(--severity-blocked-fg,#883832);padding:5px 8px}
 .mds-adpt__stale{grid-column:1/-1;font:10.5px var(--font-data,monospace);color:var(--severity-action-fg,#724D11)}
 .mds-adpt__foot{padding:7px 13px;border-top:1px solid var(--border-divider,#E2DED5);font:10px var(--font-data,monospace);color:var(--text-muted,#606870)}
 .mds-adpt__empty{padding:16px 13px;font-size:12px;color:var(--text-secondary,#535C65)}
 .mds-apc{display:inline-flex;align-items:center;gap:5px;height:20px;padding:0 7px;border:1px solid var(--border,#D2CDC3);border-radius:2px;background:var(--bg-light,#F8F7F3);font:600 10px var(--font-data,monospace);letter-spacing:.04em;text-transform:uppercase;color:var(--text-secondary,#535C65);white-space:nowrap}
 .mds-apc__dot{width:6px;height:6px;border-radius:50%;background:var(--text-muted,#606870)}
-.mds-apc[data-sev="blocked"]{color:var(--severity-blocked-fg,#883832);border-color:var(--severity-blocked-bd,#B54B42);background:var(--severity-blocked-bg,#B54B42)}
+.mds-apc[data-sev="blocked"]{color:var(--severity-blocked-fg,#883832);border-color:var(--severity-blocked-bd,#B54B42);background:linear-gradient(var(--severity-blocked-bg,rgba(181,75,66,.10)),var(--severity-blocked-bg,rgba(181,75,66,.10))),var(--bg-light,#F8F7F3)}
 .mds-apc[data-sev="blocked"] .mds-apc__dot{background:var(--severity-blocked-fg,#883832)}
-.mds-apc[data-sev="action"]{color:var(--severity-action-fg,#724D11);border-color:var(--severity-action-bd,#986717);background:var(--severity-action-bg,#986717)}
+.mds-apc[data-sev="action"]{color:var(--severity-action-fg,#724D11);border-color:var(--severity-action-bd,#986717);background:linear-gradient(var(--severity-action-bg,rgba(152,103,23,.11)),var(--severity-action-bg,rgba(152,103,23,.11))),var(--bg-light,#F8F7F3)}
 .mds-apc[data-sev="action"] .mds-apc__dot{background:var(--severity-action-fg,#724D11)}
-.mds-apc[data-sev="review"]{color:var(--severity-review-fg,#8E4730);border-color:var(--severity-review-bd,#C56343);background:var(--severity-review-bg,#C56343)}
+.mds-apc[data-sev="review"]{color:var(--severity-review-fg,#8E4730);border-color:var(--severity-review-bd,#C56343);background:linear-gradient(var(--severity-review-bg,rgba(197,99,67,.10)),var(--severity-review-bg,rgba(197,99,67,.10))),var(--bg-light,#F8F7F3)}
 .mds-apc[data-sev="review"] .mds-apc__dot{background:var(--severity-review-fg,#8E4730)}
-.mds-apc[data-sev="ready"]{color:var(--severity-ready-fg,#225840);border-color:var(--severity-ready-bd,#2E7655);background:var(--severity-ready-bg,#2E7655)}
+.mds-apc[data-sev="ready"]{color:var(--severity-ready-fg,#225840);border-color:var(--severity-ready-bd,#2E7655);background:linear-gradient(var(--severity-ready-bg,rgba(46,118,85,.10)),var(--severity-ready-bg,rgba(46,118,85,.10))),var(--bg-light,#F8F7F3)}
 .mds-apc[data-sev="ready"] .mds-apc__dot{background:var(--severity-ready-fg,#225840)}
 .mds-apc.mds-apc{color:var(--text-primary,#20252B)}
 .mds-apc__next{font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-primary,#20252B)}
@@ -21215,7 +21342,7 @@ select.mds-fb__ctl{appearance:auto;}
 .mds-ann__mark--has{border-color:var(--purple,#2F648A);color:var(--purple,#2F648A);}
 .mds-ann__mark--stale{border-style:dashed;border-color:var(--cond-stale-fg,#986717);color:var(--cond-stale-fg,#986717);}
 .mds-ann__glyph{font-size:9px;line-height:1;}
-.mds-ann__pop{position:absolute;z-index:7;top:100%;right:0;margin-top:4px;width:320px;box-sizing:border-box;text-align:left;
+.mds-ann__pop{position:fixed;z-index:7;top:0;right:auto;margin-top:0;width:min(320px,calc(100vw - 16px));max-height:calc(100vh - 16px);overflow:auto;box-sizing:border-box;text-align:left;
   background:var(--surface-overlay-base,#FFF);border:1px solid var(--border-strong,#AAA49A);border-radius:var(--radius-overlay,6px);
   box-shadow:0 2px 8px rgba(0,0,0,.16);font:12px var(--font-body);color:var(--text-primary,#20252B);}
 .mds-ann__pop--left{right:auto;left:0;}
@@ -21373,6 +21500,8 @@ select.mds-fb__ctl{appearance:auto;}
     const [open, setOpen] = react_default.useState(false);
     const [adding, setAdding] = react_default.useState(false);
     const root = react_default.useRef(null);
+    const popup = react_default.useRef(null);
+    const [placement, setPlacement] = react_default.useState({ left: 8, top: 8 });
     const validAnchor = anchor && typeof anchor.ref === "string" && anchor.ref.trim() !== "";
     const mine = validAnchor ? layer2.notes.filter((n) => n.anchor && n.anchor.ref === anchor.ref) : [];
     react_default.useEffect(() => {
@@ -21380,6 +21509,28 @@ select.mds-fb__ctl{appearance:auto;}
       setAdding(false);
     }, [anchor?.ref, layer2.objectId]);
     const stale = mine.some((n) => n.stale);
+    react_default.useLayoutEffect(() => {
+      if (!open || !validAnchor || !root.current || !popup.current) return;
+      const place = () => {
+        if (!root.current || !popup.current) return;
+        const anchorRect = root.current.getBoundingClientRect(), box = popup.current.getBoundingClientRect();
+        const left = Math.max(8, Math.min(popover === "left" ? anchorRect.left : anchorRect.right - box.width, window.innerWidth - box.width - 8));
+        const below = anchorRect.bottom + 4;
+        const top = Math.max(8, Math.min(below + box.height > window.innerHeight - 8 && anchorRect.top - box.height - 4 >= 8 ? anchorRect.top - box.height - 4 : below, window.innerHeight - box.height - 8));
+        setPlacement((previous) => previous.left === left && previous.top === top ? previous : { left, top });
+      };
+      place();
+      const observer = typeof ResizeObserver !== "undefined" ? new ResizeObserver(place) : null;
+      observer?.observe(root.current);
+      observer?.observe(popup.current);
+      window.addEventListener("resize", place);
+      window.addEventListener("scroll", place, true);
+      return () => {
+        observer?.disconnect();
+        window.removeEventListener("resize", place);
+        window.removeEventListener("scroll", place, true);
+      };
+    }, [open, adding, popover, validAnchor, anchor?.ref, layer2.objectId, mine.length]);
     react_default.useEffect(() => {
       if (!open || !validAnchor) return;
       const off = (e) => {
@@ -21414,7 +21565,7 @@ select.mds-fb__ctl{appearance:auto;}
       },
       /* @__PURE__ */ window.React.createElement("span", { className: "mds-ann__glyph", "aria-hidden": "true" }, "¶"),
       mine.length ? mine.length : ""
-    ), open && /* @__PURE__ */ window.React.createElement("div", { className: `mds-ann__pop ${popover === "left" ? "mds-ann__pop--left" : ""}`, role: "dialog", "aria-label": `Annotations · ${anchor.label || anchor.ref}`, onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-ann__pop-h" }, /* @__PURE__ */ window.React.createElement("span", null, KIND_LABEL2[anchor.kind] || anchor.kind), /* @__PURE__ */ window.React.createElement("span", null, anchor.label || anchor.ref), /* @__PURE__ */ window.React.createElement("span", null, "v", layer2.current)), mine.length > 0 && /* @__PURE__ */ window.React.createElement("div", { className: "mds-ann__list" }, mine.map((n) => /* @__PURE__ */ window.React.createElement(NoteItem, { key: n.id, n, current: layer2.current, onRemove: readOnly ? null : layer2.remove, onRepin: readOnly ? null : layer2.repin }))), !readOnly && (adding ? /* @__PURE__ */ window.React.createElement(NoteForm, { current: layer2.current, onCancel: () => {
+    ), open && /* @__PURE__ */ window.React.createElement("div", { ref: popup, style: { left: placement.left, top: placement.top, right: "auto" }, className: `mds-ann__pop ${popover === "left" ? "mds-ann__pop--left" : ""}`, role: "dialog", "aria-label": `Annotations · ${anchor.label || anchor.ref}`, onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-ann__pop-h" }, /* @__PURE__ */ window.React.createElement("span", null, KIND_LABEL2[anchor.kind] || anchor.kind), /* @__PURE__ */ window.React.createElement("span", null, anchor.label || anchor.ref), /* @__PURE__ */ window.React.createElement("span", null, "v", layer2.current)), mine.length > 0 && /* @__PURE__ */ window.React.createElement("div", { className: "mds-ann__list" }, mine.map((n) => /* @__PURE__ */ window.React.createElement(NoteItem, { key: n.id, n, current: layer2.current, onRemove: readOnly ? null : layer2.remove, onRepin: readOnly ? null : layer2.repin }))), !readOnly && (adding ? /* @__PURE__ */ window.React.createElement(NoteForm, { current: layer2.current, onCancel: () => {
       setAdding(false);
       if (!mine.length) setOpen(false);
     }, onAdd: (n) => {
@@ -21432,7 +21583,10 @@ select.mds-fb__ctl{appearance:auto;}
     const focus = onFocus || layer2.onFocus;
     const notes = layer2.notes.filter((n) => filter === "all" || (filter === "stale" ? n.stale : n.lifecycle === "pin"));
     const nStale = layer2.notes.filter((n) => n.stale).length;
-    return /* @__PURE__ */ window.React.createElement("section", { className: `mds-annpanel ${className}`, "aria-label": title, ...rest }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-annpanel__h" }, /* @__PURE__ */ window.React.createElement("span", null, title), /* @__PURE__ */ window.React.createElement("span", { style: { fontWeight: 400 } }, layer2.notes.length, nStale ? ` · ${nStale} stale` : ""), /* @__PURE__ */ window.React.createElement("div", { className: "mds-annpanel__filters", role: "group", "aria-label": "Filter annotations" }, [["all", "All"], ["stale", "Stale"], ["pin", "Pinned"]].map(([k, l]) => /* @__PURE__ */ window.React.createElement("button", { type: "button", key: k, className: "mds-annpanel__f", "aria-pressed": filter === k, onClick: () => setFilter(k) }, l)))), /* @__PURE__ */ window.React.createElement("div", { className: "mds-annpanel__list" }, notes.length === 0 && /* @__PURE__ */ window.React.createElement("div", { className: "mds-annpanel__empty" }, layer2.notes.length ? "Nothing matches this filter." : emptyText), notes.map((n) => /* @__PURE__ */ window.React.createElement("button", { type: "button", key: n.id, className: `mds-annpanel__item ${n.stale ? "mds-annpanel__item--stale" : ""}`, onClick: () => focus && focus(n) }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-annpanel__anchor" }, n.anchor && n.anchor.label || n.anchor && n.anchor.ref || "—"), /* @__PURE__ */ window.React.createElement("span", { className: "mds-annpanel__kind" }, KIND_LABEL2[n.anchor && n.anchor.kind] || "", " · ", n.lifecycle === "pin" ? `pinned v${n.version}` : n.stale ? `stale v${n.version}→v${layer2.current}` : `v${n.version}`), /* @__PURE__ */ window.React.createElement("span", { className: "mds-annpanel__txt" }, n.text), /* @__PURE__ */ window.React.createElement("span", { className: "mds-annpanel__kind", style: { gridColumn: "1 / -1" } }, n.author, " · ", fmtAt(n.at))))));
+    return /* @__PURE__ */ window.React.createElement("section", { className: `mds-annpanel ${className}`, "aria-label": title, ...rest }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-annpanel__h" }, /* @__PURE__ */ window.React.createElement("span", null, title), /* @__PURE__ */ window.React.createElement("span", { style: { fontWeight: 400 } }, layer2.notes.length, nStale ? ` · ${nStale} stale` : ""), /* @__PURE__ */ window.React.createElement("div", { className: "mds-annpanel__filters", role: "group", "aria-label": "Filter annotations" }, [["all", "All"], ["stale", "Stale"], ["pin", "Pinned"]].map(([k, l]) => /* @__PURE__ */ window.React.createElement("button", { type: "button", key: k, className: "mds-annpanel__f", "aria-pressed": filter === k, onClick: () => setFilter(k) }, l)))), /* @__PURE__ */ window.React.createElement("div", { className: "mds-annpanel__list", role: "region", "aria-label": "Object annotations", tabIndex: 0 }, notes.length === 0 && /* @__PURE__ */ window.React.createElement("div", { className: "mds-annpanel__empty" }, layer2.notes.length ? "Nothing matches this filter." : emptyText), notes.map((n) => {
+      const Item2 = focus ? "button" : "div";
+      return /* @__PURE__ */ window.React.createElement(Item2, { type: focus ? "button" : void 0, key: n.id, className: `mds-annpanel__item ${n.stale ? "mds-annpanel__item--stale" : ""}`, onClick: focus ? () => focus(n) : void 0 }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-annpanel__anchor" }, n.anchor && n.anchor.label || n.anchor && n.anchor.ref || "—"), /* @__PURE__ */ window.React.createElement("span", { className: "mds-annpanel__kind" }, KIND_LABEL2[n.anchor && n.anchor.kind] || "", " · ", n.lifecycle === "pin" ? `pinned v${n.version}` : n.stale ? `stale v${n.version}→v${layer2.current}` : `v${n.version}`), /* @__PURE__ */ window.React.createElement("span", { className: "mds-annpanel__txt" }, n.text), /* @__PURE__ */ window.React.createElement("span", { className: "mds-annpanel__kind", style: { gridColumn: "1 / -1" } }, n.author, " · ", fmtAt(n.at)));
+    })));
   }
 
   // components/operations/AttestationPanel.jsx
@@ -21601,7 +21755,8 @@ select.mds-fb__ctl{appearance:auto;}
 `;
     const el = document.createElement("style");
     el.setAttribute("data-mds", "sla-chip");
-    el.textContent = css;
+    el.textContent = css + `
+.mds-sla--blocked,.mds-sla--blocked span,.mds-sla--blocked .mds-sla__val{color:var(--text-primary,#20252B);}`;
     document.head.appendChild(el);
   }
   function formatSlaDuration(ms2) {
@@ -21674,7 +21829,8 @@ select.mds-fb__ctl{appearance:auto;}
 `;
     const el = document.createElement("style");
     el.setAttribute("data-mds", "case-queue");
-    el.textContent = css;
+    el.textContent = css + `
+.mds-caseq__row[aria-selected="true"] .mds-caseq__id,.mds-caseq__row[aria-selected="true"] .mds-caseq__sub{color:var(--text-primary,#20252B);}`;
     document.head.appendChild(el);
   }
   function railClass(priority) {
@@ -22061,7 +22217,7 @@ select.mds-fb__ctl{appearance:auto;}
 .mds-link--offline .mds-link__label{color:var(--text-secondary);}
 .mds-link--error{border-color:var(--cond-exception-bd);background:var(--cond-exception-bg);}
 .mds-link--error .mds-link__dot{background:var(--link-error-fg);}
-.mds-link--error .mds-link__label{color:var(--link-error-fg);}
+.mds-link--error .mds-link__label,.mds-link--error .mds-link__meta{color:var(--text-primary);}
 .mds-link--live .mds-link__dot{box-shadow:0 0 0 3px color-mix(in srgb,var(--link-live-fg) 16%,transparent);}
 `;
     const el = document.createElement("style");
@@ -22070,6 +22226,7 @@ select.mds-fb__ctl{appearance:auto;}
     document.head.appendChild(el);
   }
   var COPY = {
+    unknown: { label: "Unknown", verb: "last known" },
     live: { label: "Live", verb: "updated" },
     delayed: { label: "Delayed", verb: "last update" },
     partial: { label: "Partial", verb: "as of" },
@@ -22089,7 +22246,7 @@ select.mds-fb__ctl{appearance:auto;}
     ...rest
   }) {
     inject124();
-    const key = COPY[state] ? state : "live";
+    const key = COPY[state] ? state : "unknown";
     const c = COPY[key];
     const meta5 = [
       age ? `${c.verb} ${age}` : null,
@@ -22191,18 +22348,6 @@ ${perKey}`;
   }
 
   // components/operations/DecisionFlow.jsx
-  var rank = { satisfied: 0, warning: 1, blocking: 2 };
-  function summarize(guards) {
-    const g = guards || [], blocking = g.filter((x) => x.state === "blocking"), warning = g.filter((x) => x.state === "warning");
-    return {
-      total: g.length,
-      blocking: blocking.length,
-      warning: warning.length,
-      blocked: blocking.length > 0,
-      firstBlocking: blocking[0] || null,
-      sentence: blocking.length ? `${blocking.length} blocking ${blocking.length === 1 ? "guard" : "guards"}` : warning.length ? `${warning.length} ${warning.length === 1 ? "warning" : "warnings"}` : g.length ? "All guards satisfied" : "No guards declared"
-    };
-  }
   var REVERSIBILITY2 = {
     reversible: { label: "Reversible", note: "Can be undone without creating a compensating record" },
     compensatable: { label: "Compensatable", note: "The original record remains; a reversal creates a new one" },
@@ -22291,29 +22436,47 @@ ${perKey}`;
     children
   }) {
     inject126();
-    const [stepId, setStepId] = react_default.useState(() => readInitial({ urlParam, persistedKey, steps, initialStep }));
+    const [requestedStepId, setStepId] = react_default.useState(() => readInitial({ urlParam, persistedKey, steps, initialStep }));
+    const stepId = steps.some((step) => step.id === requestedStepId) ? requestedStepId : steps[0]?.id;
+    react_default.useEffect(() => {
+      if (steps.length && requestedStepId !== stepId) setStepId(stepId);
+    }, [requestedStepId, stepId, steps.length]);
     const [completed, setCompleted] = react_default.useState({});
     const [guards, setGuards] = react_default.useState({});
     const [transitions, setTransitions] = react_default.useState([]);
     const [versionChanged, setVersionChanged] = react_default.useState(null);
     const version = object ? object.version : void 0;
-    const seen = react_default.useRef(version);
+    const objectKey = JSON.stringify([object?.type ?? null, object?.id ?? null]);
+    const scopeKey = JSON.stringify([objectKey, version ?? null]);
+    const scope = react_default.useRef({ key: scopeKey, generation: 0 });
+    if (scope.current.key !== scopeKey) scope.current = { key: scopeKey, generation: scope.current.generation + 1 };
+    const seen = react_default.useRef({ objectKey, version });
+    const validated = react_default.useRef({});
+    react_default.useEffect(() => () => {
+      scope.current.generation += 1;
+    }, []);
     react_default.useEffect(() => {
-      if (seen.current === version) return;
-      const from = seen.current;
-      seen.current = version;
+      const previous = seen.current;
+      if (previous.objectKey === objectKey && previous.version === version) return;
+      seen.current = { objectKey, version };
+      const sameObject = previous.objectKey === objectKey;
       setCompleted((prev) => {
         const next = {};
-        steps.forEach((s) => {
+        if (sameObject) steps.forEach((s) => {
           if (prev[s.id] && s.stableAcrossVersions) next[s.id] = prev[s.id];
         });
         return next;
       });
       setGuards({});
-      setVersionChanged({ from, to: version });
-    }, [version]);
+      validated.current = {};
+      if (!sameObject) {
+        setStepId(initialStep && steps.some((step) => step.id === initialStep) ? initialStep : steps[0]?.id);
+        setTransitions([]);
+      }
+      setVersionChanged({ from: previous.version, to: version });
+    }, [scopeKey]);
     react_default.useEffect(() => {
-      if (typeof window === "undefined") return;
+      if (typeof window === "undefined" || stepId == null) return;
       if (urlParam) {
         const u = new URL(window.location.href);
         if (u.searchParams.get(urlParam) !== stepId) {
@@ -22333,34 +22496,37 @@ ${perKey}`;
     const stepGuards = react_default.useCallback((id) => guards[id] || (byId[id] || {}).guards || [], [guards, byId]);
     const validate = react_default.useCallback(async (id) => {
       if (!onValidate) return stepGuards(id);
+      const generation = scope.current.generation;
       const result = await onValidate(id) || [];
+      if (generation !== scope.current.generation) return [];
       setGuards((g) => ({ ...g, [id]: result }));
       return result;
     }, [onValidate, stepGuards]);
-    const validated = react_default.useRef({});
     react_default.useEffect(() => {
-      if (!onValidate || validated.current[stepId]) return;
+      if (!onValidate || !stepId || validated.current[stepId]) return;
       validated.current[stepId] = true;
       validate(stepId);
-    }, [stepId, onValidate, validate]);
-    react_default.useEffect(() => {
-      validated.current = {};
-    }, [version]);
+    }, [stepId, onValidate, validate, scopeKey]);
     const goTo = react_default.useCallback(async (id, opts = {}) => {
       const step = byId[id];
       if (!step) return false;
       if (!opts.force && unmet(id).length) return false;
+      const generation = scope.current.generation;
       const from = stepId;
       setStepId(id);
       if (step.onEnter) await step.onEnter();
+      if (generation !== scope.current.generation) return false;
       const t2 = { from, to: id, at: (/* @__PURE__ */ new Date()).toISOString(), actorId, reason: opts.reason };
       setTransitions((list) => [...list, t2]);
       if (onTransition) onTransition(t2);
       return true;
     }, [byId, unmet, stepId, actorId, onTransition]);
     const complete = react_default.useCallback(async (id = stepId, detail) => {
+      if (!byId[id] || unmet(id).length) return false;
+      const generation = scope.current.generation;
       const g = await validate(id);
-      if (summarize(g).blocked) return false;
+      if (generation !== scope.current.generation) return false;
+      if (summarizeGuards(g).blocked) return false;
       setCompleted((c) => ({ ...c, [id]: { at: (/* @__PURE__ */ new Date()).toISOString(), actorId, ...detail } }));
       (byId[id] || {}).invalidates && setCompleted((c) => {
         const next = { ...c };
@@ -22376,7 +22542,7 @@ ${perKey}`;
     }, [stepId, validate, actorId, byId, steps, unmet, completed, goTo]);
     const acknowledgeVersionChange = react_default.useCallback(() => setVersionChanged(null), []);
     const current = byId[stepId] || steps[0] || null;
-    const summary = summarize(stepGuards(stepId));
+    const summary = summarizeGuards(stepGuards(stepId));
     const value = {
       object,
       snapshotId,
@@ -22412,7 +22578,7 @@ ${perKey}`;
     const f = useDecisionFlow();
     return /* @__PURE__ */ window.React.createElement("div", { className: `mds-df${className ? " " + className : ""}`, ...rest }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-dfrail__hd" }, label2, f.object ? ` · ${f.object.type} ${f.object.id} v${f.object.version}` : ""), /* @__PURE__ */ window.React.createElement("ol", { className: "mds-dfrail" }, f.steps.map((s, i) => {
       const blocked = f.unmet(s.id).length > 0;
-      const g = summarize(f.stepGuards(s.id));
+      const g = summarizeGuards(f.stepGuards(s.id));
       const state = f.completed[s.id] ? "done" : g.blocked ? "blocked" : blocked ? "locked" : "open";
       const mark2 = state === "done" ? "✓" : state === "blocked" ? "▲" : state === "locked" ? "·" : String(i + 1);
       const meta5 = [
@@ -22438,7 +22604,7 @@ ${perKey}`;
   function DecisionFlowStage({ title, children, showVersionNotice = true, className = "", ...rest }) {
     const f = useDecisionFlow();
     const vc = f.versionChanged;
-    return /* @__PURE__ */ window.React.createElement("section", { className: `mds-df mds-dfstage${className ? " " + className : ""}`, "aria-label": `${(f.step || {}).label || "Step"} — decision step ${f.index + 1} of ${f.steps.length}`, ...rest }, /* @__PURE__ */ window.React.createElement("header", { className: "mds-dfstage__hd" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-dfstage__ttl" }, title || (f.step || {}).label), /* @__PURE__ */ window.React.createElement("span", { className: "mds-dfstage__pos" }, "Step ", f.index + 1, " of ", f.steps.length, f.snapshotId ? ` · ${f.snapshotId}` : "")), showVersionNotice && vc ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-dfstale", role: "status" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-dfstale__t" }, "The object changed underneath this review"), /* @__PURE__ */ window.React.createElement("span", { className: "mds-dfstale__b" }, f.object ? `${f.object.type} ${f.object.id} moved from version ${vc.from} to version ${vc.to}. ` : "", "Completed review, impact preview and approval state generated against the earlier version have been invalidated. Re-run validation before continuing."), /* @__PURE__ */ window.React.createElement("span", null, /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-dfbtn mds-dfbtn--ghost", onClick: f.acknowledgeVersionChange }, "Acknowledge and re-validate"))) : null, children);
+    return /* @__PURE__ */ window.React.createElement("section", { className: `mds-df mds-dfstage${className ? " " + className : ""}`, "aria-label": `${(f.step || {}).label || "Step"} — decision step ${f.index + 1} of ${f.steps.length}`, ...rest }, /* @__PURE__ */ window.React.createElement("header", { className: "mds-dfstage__hd" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-dfstage__ttl" }, title || (f.step || {}).label), /* @__PURE__ */ window.React.createElement("span", { className: "mds-dfstage__pos" }, f.steps.length ? `Step ${f.index + 1} of ${f.steps.length}` : "No decision steps declared", f.snapshotId ? ` · ${f.snapshotId}` : "")), showVersionNotice && vc ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-dfstale", role: "status" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-dfstale__t" }, "The object changed underneath this review"), /* @__PURE__ */ window.React.createElement("span", { className: "mds-dfstale__b" }, f.object ? `${f.object.type} ${f.object.id} moved from version ${vc.from} to version ${vc.to}. ` : "", "Completed review, impact preview and approval state generated against the earlier version have been invalidated. Re-run validation before continuing."), /* @__PURE__ */ window.React.createElement("span", null, /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-dfbtn mds-dfbtn--ghost", onClick: f.acknowledgeVersionChange }, "Acknowledge and re-validate"))) : null, children);
   }
   function DecisionConsequenceBar({
     primaryLabel,
@@ -22453,11 +22619,11 @@ ${perKey}`;
   }) {
     const f = useDecisionFlow();
     const g = guards || f.stepGuards(f.stepId);
-    const s = summarize(g);
+    const s = summarizeGuards(g);
     const unmet = f.unmet(f.stepId);
-    const disabled = s.blocked || requireCompletion && unmet.length > 0;
+    const disabled = !f.step || !onPrimary || s.blocked || requireCompletion && unmet.length > 0;
     const rev = reversibility ? REVERSIBILITY2[reversibility] || { label: reversibility, note: "" } : null;
-    return /* @__PURE__ */ window.React.createElement("div", { className: `mds-df mds-dfbar${className ? " " + className : ""}`, ...rest }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-dfbar__l" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-dfbar__st", "data-blocked": s.blocked ? "true" : void 0 }, s.blocked ? `${s.sentence} — ${s.firstBlocking.label}` : unmet.length ? `Requires ${unmet.map((r) => (f.steps.find((x) => x.id === r) || {}).label || r).join(", ")}` : s.sentence), f.object ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-dfbar__ob" }, f.object.type, " ", f.object.id, " · version ", f.object.version, f.snapshotId ? ` · snapshot ${f.snapshotId}` : "") : null, rev ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-dfbar__rev" }, "Reversibility · ", rev.label, rev.note ? ` — ${rev.note}` : "") : null), /* @__PURE__ */ window.React.createElement("span", { className: "mds-dfbar__acts" }, secondaryLabel ? /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-dfbtn mds-dfbtn--ghost", onClick: onSecondary }, secondaryLabel) : null, primaryLabel ? /* @__PURE__ */ window.React.createElement(
+    return /* @__PURE__ */ window.React.createElement("div", { className: `mds-df mds-dfbar${className ? " " + className : ""}`, ...rest }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-dfbar__l" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-dfbar__st", "data-blocked": s.blocked ? "true" : void 0 }, !f.step ? "No decision steps declared" : s.blocked ? `${s.sentence} — ${s.firstBlocking.label}` : unmet.length ? `Requires ${unmet.map((r) => (f.steps.find((x) => x.id === r) || {}).label || r).join(", ")}` : s.sentence), f.object ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-dfbar__ob" }, f.object.type, " ", f.object.id, " · version ", f.object.version, f.snapshotId ? ` · snapshot ${f.snapshotId}` : "") : null, rev ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-dfbar__rev" }, "Reversibility · ", rev.label, rev.note ? ` — ${rev.note}` : "") : null), /* @__PURE__ */ window.React.createElement("span", { className: "mds-dfbar__acts" }, secondaryLabel ? /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-dfbtn mds-dfbtn--ghost", onClick: onSecondary, disabled: !onSecondary }, secondaryLabel) : null, primaryLabel ? /* @__PURE__ */ window.React.createElement(
       "button",
       {
         type: "button",
@@ -22536,8 +22702,8 @@ ${perKey}`;
   function EvidenceLink({ label: label2, status = "info", route, href, onOpen, className = "", ...rest }) {
     inject128();
     const sev = normalizeSeverity(status);
-    const Tag = href ? "a" : "button";
-    const extra = href ? { href } : { type: "button" };
+    const Tag = href ? "a" : onOpen ? "button" : "span";
+    const extra = href ? { href } : onOpen ? { type: "button" } : {};
     return /* @__PURE__ */ window.React.createElement(
       Tag,
       {
@@ -22652,7 +22818,7 @@ ${perKey}`;
 .mds-sec__t{display:flex;align-items:center;gap:8px;font-size:var(--type-label,10px);
   font-weight:var(--weight-semibold,600);font-variant:all-small-caps;letter-spacing:.05em;
   color:var(--text-muted);margin-bottom:8px;}
-.mds-sec__t button{margin-left:auto;font:inherit;font-size:10px;color:var(--brand-signal,#C56343);background:none;
+.mds-sec__t button{margin-left:auto;font:inherit;font-size:10px;color:var(--interaction-link,var(--link,#2A5F96));background:none;
   border:0;padding:0;cursor:pointer;text-transform:none;letter-spacing:0;}
 .mds-sec__note{font-size:11px;line-height:15px;color:var(--text-muted);margin-top:8px;text-wrap:pretty;}
 .mds-fields{display:grid;grid-template-columns:auto 1fr;gap:5px 12px;align-items:baseline;}
@@ -22672,7 +22838,7 @@ ${perKey}`;
 .mds-trace__lbl{font-size:12px;font-weight:var(--weight-medium,500);color:var(--text-primary);}
 .mds-trace__meta{font-family:var(--font-data);font-size:10.5px;color:var(--text-muted);margin-top:2px;}
 button.mds-trace__body{text-align:left;background:none;border:0;padding:0;cursor:pointer;font:inherit;width:100%;}
-button.mds-trace__body:hover .mds-trace__lbl{color:var(--brand-signal,#C56343);}
+button.mds-trace__body:hover .mds-trace__lbl{color:var(--interaction-link,var(--link,#2A5F96));}
 button.mds-trace__body:focus-visible{outline:2px solid var(--border-focus);outline-offset:2px;}
 `;
     const el = document.createElement("style");
@@ -22990,14 +23156,14 @@ button.mds-hand__row:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);o
         className: `mds-hchip${className ? " " + className : ""}`,
         "data-sev": severity || (count ? "action" : "info"),
         onClick,
-        "aria-label": `${label2}: ${count} item${count === 1 ? "" : "s"}${since ? ` since ${since}` : ""}`,
+        "aria-description": `${count} handover item${count === 1 ? "" : "s"}`,
         ...rest
       },
-      /* @__PURE__ */ window.React.createElement("span", { className: "mds-hchip__dot" }),
+      /* @__PURE__ */ window.React.createElement("span", { className: "mds-hchip__dot", "aria-hidden": "true" }),
       label2,
       " ",
       count,
-      since ? /* @__PURE__ */ window.React.createElement("span", { style: { opacity: 0.7 } }, " · since ", since) : null
+      since ? /* @__PURE__ */ window.React.createElement("span", null, " · since ", since) : null
     );
   }
 
@@ -23100,7 +23266,7 @@ button.mds-hand__row:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);o
         style: { height, ...style },
         ...rest
       },
-      /* @__PURE__ */ window.React.createElement("div", { className: "mds-logtail__bar" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-logtail__title" }, title), /* @__PURE__ */ window.React.createElement("span", { className: "mds-logtail__title", style: { opacity: 0.7 } }, "· ", formatNumber(entries.length, { decimals: 0 }), " lines"), /* @__PURE__ */ window.React.createElement("span", { style: { flex: 1 } }), levelFilter && LEVELS3.map((lvl) => /* @__PURE__ */ window.React.createElement(
+      /* @__PURE__ */ window.React.createElement("div", { className: "mds-logtail__bar" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-logtail__title" }, title), /* @__PURE__ */ window.React.createElement("span", { className: "mds-logtail__title", style: { color: "var(--text-secondary)" } }, "· ", formatNumber(entries.length, { decimals: 0 }), " lines"), /* @__PURE__ */ window.React.createElement("span", { style: { flex: 1 } }), levelFilter && LEVELS3.map((lvl) => /* @__PURE__ */ window.React.createElement(
         "button",
         {
           key: lvl,
@@ -23244,7 +23410,7 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
     el.textContent = `
 .mds-res{display:flex;flex-direction:column;min-height:420px;background:var(--surface-overlay,var(--surface-overlay-base,#fff));border-left:1px solid var(--border-strong,#AAA49A);font-family:var(--font-body);color:var(--text-secondary,#535C65)}
 .mds-res--inline{border:1px solid var(--border,#D2CDC3)}
-.mds-res__back{display:none}
+.mds-res__back{display:flex;align-items:center;gap:6px;min-height:32px;padding:7px 12px;border:0;border-bottom:1px solid var(--border-divider,#E2DED5);background:var(--surface-recessed,var(--bg-medium,#EBE8E1));font:10px var(--font-data,monospace);color:var(--interaction-link,#2A5F96);cursor:pointer;width:100%;text-align:left}.mds-res__back:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
 .mds-res__head{padding:11px 12px;border-bottom:1px solid var(--border-divider,#E2DED5)}
 .mds-res__titlerow{display:flex;align-items:flex-start;gap:8px}
 .mds-res__head h3{margin:0;font-size:14px;color:var(--text-primary,#20252B)}
@@ -23335,10 +23501,14 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
     const uid5 = react_default.useId();
     inject137();
     const sev = SEVERITY2[String(severity).toLowerCase()] || SEVERITY2.exception;
-    const [localReason, setLocalReason] = react_default.useState("");
-    const reasonValue = reason !== void 0 ? reason : localReason;
+    const reasonScope = JSON.stringify([caseId ?? null, version ?? null]);
+    const [localReason, setLocalReason] = react_default.useState(() => ({ scope: reasonScope, value: "" }));
+    const reasonValue = reason !== void 0 ? reason : localReason.scope === reasonScope ? localReason.value : "";
+    react_default.useEffect(() => {
+      setLocalReason((previous) => previous.scope === reasonScope ? previous : { scope: reasonScope, value: "" });
+    }, [reasonScope]);
     const setReason = (v) => {
-      if (reason === void 0) setLocalReason(v);
+      if (reason === void 0) setLocalReason({ scope: reasonScope, value: v });
       onReasonChange?.(v);
     };
     const own = ownership || (assignee || sla ? { assignee, due: sla } : null);
@@ -23470,10 +23640,11 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
     return { code, severity, message };
   }
   var toMs = (t2) => typeof t2 === "number" ? t2 : Date.parse(t2);
-  function deepFreeze3(v) {
-    if (v && typeof v === "object" && !Object.isFrozen(v)) {
+  function deepFreeze3(v, visited = /* @__PURE__ */ new WeakSet()) {
+    if (v && typeof v === "object" && !visited.has(v)) {
+      visited.add(v);
+      Object.keys(v).forEach((k) => deepFreeze3(v[k], visited));
       Object.freeze(v);
-      Object.keys(v).forEach((k) => deepFreeze3(v[k]));
     }
     return v;
   }
@@ -23675,7 +23846,7 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
 .mds-trust__item--blocked{border-color:var(--state-danger-bd,rgba(181,75,66,.35));border-left-color:var(--state-danger-fg,#883832);background:var(--state-danger-bg,rgba(181,75,66,.10));}
 .mds-trust__item--pending{border-color:var(--state-pending-bd,rgba(122,107,82,.34));border-left-color:var(--state-pending-fg,#5C503E);background:var(--state-pending-bg,rgba(122,107,82,.10));}
 .mds-trust__label{font-family:var(--font-data,monospace);font-size:9px;font-weight:700;text-transform:uppercase;
-  letter-spacing:.05em;color:var(--text-muted,#606870);white-space:nowrap;}
+  letter-spacing:.05em;color:var(--text-primary,#20252B);white-space:nowrap;}
 .mds-trust__value{font-family:var(--font-body);font-size:12px;font-weight:600;color:var(--text-primary,#20252B);white-space:nowrap;}
 `;
     const el = document.createElement("style");
@@ -23869,7 +24040,7 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
 .mds-wsection__summary{margin:1px 0 0;color:var(--text-muted,#606870);font-size:12px;line-height:1.35;}
 .mds-wsection__jump{display:inline-flex;align-items:center;gap:6px;min-height:30px;
   border:1px solid var(--brand-signal,#C56343);border-radius:var(--radius-chip,2px);
-  background:var(--blue-a10,rgba(47,100,138,.10));color:var(--brand-signal,#C56343);
+  background:var(--blue-a10,rgba(47,100,138,.10));color:var(--interaction-link,var(--link,#2A5F96));
   padding:4px 10px;font-family:var(--font-body);font-size:11px;font-weight:700;cursor:pointer;text-decoration:none;
   white-space:nowrap;}
 .mds-wsection__jump:hover{background:var(--bg-active,#E7EDF2);}
@@ -23882,7 +24053,7 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
   }
   function WorkspaceSection({ id, title, summary, jump, onJump, jumpHref, children, className = "" }) {
     inject142();
-    return /* @__PURE__ */ window.React.createElement("section", { id, className: `mds-wsection${className ? " " + className : ""}` }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-wsection__head" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-wsection__heading" }, title && /* @__PURE__ */ window.React.createElement("h3", { className: "mds-wsection__title" }, title), summary && /* @__PURE__ */ window.React.createElement("p", { className: "mds-wsection__summary" }, summary)), jump && (jumpHref ? /* @__PURE__ */ window.React.createElement("a", { className: "mds-wsection__jump", href: jumpHref }, jump) : /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-wsection__jump", onClick: onJump }, jump))), /* @__PURE__ */ window.React.createElement("div", { className: "mds-wsection__body" }, children));
+    return /* @__PURE__ */ window.React.createElement("section", { id, className: `mds-wsection${className ? " " + className : ""}` }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-wsection__head" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-wsection__heading" }, title && /* @__PURE__ */ window.React.createElement("h3", { className: "mds-wsection__title" }, title), summary && /* @__PURE__ */ window.React.createElement("p", { className: "mds-wsection__summary" }, summary)), jump && (jumpHref ? /* @__PURE__ */ window.React.createElement("a", { className: "mds-wsection__jump", href: jumpHref }, jump) : /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-wsection__jump", onClick: onJump, disabled: !onJump, title: onJump ? void 0 : "Navigation is unavailable in this view" }, jump))), /* @__PURE__ */ window.React.createElement("div", { className: "mds-wsection__body" }, children));
   }
 
   // components/shell/GlobalSearch.jsx
@@ -24450,7 +24621,7 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
 .mds-wctx__item{display:grid;align-content:center;gap:1px;min-width:max-content;padding:5px 12px;border:0;border-right:1px solid var(--border-divider,#E2DED5);background:transparent;text-align:left;color:inherit;font-family:inherit;}
 button.mds-wctx__item{cursor:pointer}button.mds-wctx__item:hover{background:var(--bg-hover,#EDEFF0)}button.mds-wctx__item:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-3px}
 .mds-wctx__label{font:600 9px var(--font-data,monospace);letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted,#606870)}.mds-wctx__value{font-size:12px;font-weight:600;color:var(--text-primary,#20252B)}.mds-wctx__meta{font:10px var(--font-data,monospace);color:var(--text-muted,#606870)}
-.mds-wctx__spacer{flex:1;min-width:12px}.mds-wctx__actions{display:flex;align-items:center;gap:6px;padding:0 10px;border-left:1px solid var(--border-divider,#E2DED5)}.mds-wctx__lock{font:600 9px var(--font-data,monospace);text-transform:uppercase;color:var(--pending,#7A6B52)}
+.mds-wctx__spacer{flex:1;min-width:12px}.mds-wctx__actions{display:flex;align-items:center;gap:6px;padding:0 10px;border-left:1px solid var(--border-divider,#E2DED5)}.mds-wctx__lock{font:600 9px var(--font-data,monospace);text-transform:uppercase;color:var(--text-secondary,#535C65)}
 .mds-wctx__ghost{position:fixed;top:-9999px;left:0;display:flex;visibility:hidden;pointer-events:none;white-space:nowrap;}
 .mds-wctx__more{display:flex;align-items:center;gap:5px;padding:0 10px;border:0;border-right:1px solid var(--border-divider,#E2DED5);background:transparent;color:var(--text-secondary,#535C65);font:600 10px var(--font-data,monospace);letter-spacing:.04em;text-transform:uppercase;cursor:pointer;white-space:nowrap;}
 .mds-wctx__more:hover{background:var(--bg-hover,#EDEFF0);color:var(--text-primary,#20252B)}.mds-wctx__more:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-3px}
@@ -25392,7 +25563,7 @@ button.mds-ladder__price:focus-visible{outline:var(--focus-ring);outline-offset:
     injected155 = true;
     const css = `
 .mds-ochain{font-family:var(--font-data);font-size:12px;border:1px solid var(--border,#D2CDC3);
-  background:var(--bg-light,#F8F7F3);display:inline-block;min-width:100%;outline:none;}
+  background:var(--bg-light,#F8F7F3);display:block;width:100%;min-width:0;max-width:100%;overflow:auto;box-sizing:border-box;outline:none;}
 .mds-ochain__grid{display:grid;}
 .mds-ochain__group{padding:5px 8px;text-align:center;font-family:var(--font-body);font-size:10px;
   font-weight:600;font-variant:all-small-caps;letter-spacing:.06em;color:var(--text-secondary,#535C65);
@@ -25422,7 +25593,7 @@ button.mds-ladder__price:focus-visible{outline:var(--focus-ring);outline-offset:
 .mds-ochain__spot{grid-column:1/-1;display:flex;align-items:center;gap:8px;height:20px;padding:0 8px;
   background:var(--card-surface-raised,#FCFBF8);border-top:1px solid var(--brand-signal,#C56343);
   border-bottom:1px solid var(--border,#D2CDC3);}
-.mds-ochain__spotlab{font-size:11px;color:var(--brand-signal-dim,#CB6E4E);font-variant-numeric:tabular-nums;font-weight:600;}
+.mds-ochain__spotlab{font-size:11px;color:var(--text-primary,#20252B);font-variant-numeric:tabular-nums;font-weight:600;}
 .mds-ochain__spotrule{flex:1;border-top:1px dashed color-mix(in srgb,var(--brand-signal,#C56343) 45%,transparent);}
 `;
     const el = document.createElement("style");
@@ -25528,11 +25699,11 @@ button.mds-ladder__price:focus-visible{outline:var(--focus-ring);outline-offset:
         className: `mds-ochain${interactive ? " mds-ochain--interactive" : ""}${className ? " " + className : ""}`,
         role: "grid",
         "aria-label": "Option chain",
-        tabIndex: interactive ? 0 : void 0,
+        tabIndex: 0,
         onKeyDown,
         ...rest
       },
-      /* @__PURE__ */ window.React.createElement("div", { className: "mds-ochain__grid", style: { gridTemplateColumns: template } }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-ochain__group", style: { gridColumn: `span ${nC}` } }, "Calls"), /* @__PURE__ */ window.React.createElement("span", { className: "mds-ochain__group mds-ochain__group--strike" }, "Strike"), /* @__PURE__ */ window.React.createElement("span", { className: "mds-ochain__group", style: { gridColumn: `span ${nP}` } }, "Puts"), callCols.map((k) => /* @__PURE__ */ window.React.createElement("span", { key: "ch" + k, className: "mds-ochain__hdr", role: "columnheader" }, (COLS[k] || { label: k }).label)), /* @__PURE__ */ window.React.createElement("span", { className: "mds-ochain__hdr mds-ochain__hdr--strike", role: "columnheader" }, "Strike"), putCols.map((k) => /* @__PURE__ */ window.React.createElement("span", { key: "ph" + k, className: "mds-ochain__hdr", role: "columnheader" }, (COLS[k] || { label: k }).label)), sorted.map((r, i) => {
+      /* @__PURE__ */ window.React.createElement("div", { className: "mds-ochain__grid", role: "rowgroup", style: { gridTemplateColumns: template } }, /* @__PURE__ */ window.React.createElement("div", { role: "row", style: { display: "contents" } }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-ochain__group", role: "columnheader", "aria-colspan": nC, style: { gridColumn: `span ${nC}` } }, "Calls"), /* @__PURE__ */ window.React.createElement("span", { className: "mds-ochain__group mds-ochain__group--strike", role: "columnheader" }, "Strike"), /* @__PURE__ */ window.React.createElement("span", { className: "mds-ochain__group", role: "columnheader", "aria-colspan": nP, style: { gridColumn: `span ${nP}` } }, "Puts")), /* @__PURE__ */ window.React.createElement("div", { role: "row", style: { display: "contents" } }, callCols.map((k) => /* @__PURE__ */ window.React.createElement("span", { key: "ch" + k, className: "mds-ochain__hdr", role: "columnheader" }, (COLS[k] || { label: k }).label)), /* @__PURE__ */ window.React.createElement("span", { className: "mds-ochain__hdr mds-ochain__hdr--strike", role: "columnheader" }, "Strike"), putCols.map((k) => /* @__PURE__ */ window.React.createElement("span", { key: "ph" + k, className: "mds-ochain__hdr", role: "columnheader" }, (COLS[k] || { label: k }).label))), sorted.map((r, i) => {
         const callItm = underlyingPrice != null && r.strike < underlyingPrice;
         const putItm = underlyingPrice != null && r.strike > underlyingPrice;
         const isSel = selected != null && r.strike === selected;
@@ -25551,7 +25722,7 @@ button.mds-ladder__price:focus-visible{outline:var(--focus-ring);outline-offset:
           cells(r, "call", callCols, callItm),
           /* @__PURE__ */ window.React.createElement("span", { className: "mds-ochain__cell mds-ochain__cell--strike", role: "gridcell" }, r.strike.toFixed(strikeDecimals)),
           cells(r, "put", putCols, putItm)
-        ), i === spotAfter && /* @__PURE__ */ window.React.createElement("div", { className: "mds-ochain__spot", role: "row", "aria-label": `${underlyingLabel} ${underlyingPrice}` }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-ochain__spotrule", "aria-hidden": "true" }), /* @__PURE__ */ window.React.createElement("span", { className: "mds-ochain__spotlab" }, underlyingPrice.toFixed(priceDecimals), " · ", underlyingLabel), /* @__PURE__ */ window.React.createElement("span", { className: "mds-ochain__spotrule", "aria-hidden": "true" })));
+        ), i === spotAfter && /* @__PURE__ */ window.React.createElement("div", { className: "mds-ochain__spot", role: "row" }, /* @__PURE__ */ window.React.createElement("span", { role: "gridcell", "aria-colspan": nC + nP + 1, style: { display: "contents" } }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-ochain__spotrule", "aria-hidden": "true" }), /* @__PURE__ */ window.React.createElement("span", { className: "mds-ochain__spotlab" }, underlyingPrice.toFixed(priceDecimals), " · ", underlyingLabel), /* @__PURE__ */ window.React.createElement("span", { className: "mds-ochain__spotrule", "aria-hidden": "true" }))));
       }))
     );
   }

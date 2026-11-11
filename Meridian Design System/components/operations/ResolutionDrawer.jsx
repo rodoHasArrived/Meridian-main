@@ -9,7 +9,7 @@ const SEVERITY={blocked:{label:"Blocked",tone:"exception",mark:"▲"},action:{la
 let injected=false;function inject(){if(injected||typeof document==="undefined")return;injected=true;const el=document.createElement("style");el.setAttribute("data-mds","resolution-drawer");el.textContent=`
 .mds-res{display:flex;flex-direction:column;min-height:420px;background:var(--surface-overlay,var(--surface-overlay-base,#fff));border-left:1px solid var(--border-strong,#AAA49A);font-family:var(--font-body);color:var(--text-secondary,#535C65)}
 .mds-res--inline{border:1px solid var(--border,#D2CDC3)}
-.mds-res__back{display:none}
+.mds-res__back{display:flex;align-items:center;gap:6px;min-height:32px;padding:7px 12px;border:0;border-bottom:1px solid var(--border-divider,#E2DED5);background:var(--surface-recessed,var(--bg-medium,#EBE8E1));font:10px var(--font-data,monospace);color:var(--interaction-link,#2A5F96);cursor:pointer;width:100%;text-align:left}.mds-res__back:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
 .mds-res__head{padding:11px 12px;border-bottom:1px solid var(--border-divider,#E2DED5)}
 .mds-res__titlerow{display:flex;align-items:flex-start;gap:8px}
 .mds-res__head h3{margin:0;font-size:14px;color:var(--text-primary,#20252B)}
@@ -67,9 +67,11 @@ export function ResolutionDrawer({
   const uid = React.useId();
   inject();
   const sev=SEVERITY[String(severity).toLowerCase()]||SEVERITY.exception;
-  const[localReason,setLocalReason]=React.useState("");
-  const reasonValue=reason!==undefined?reason:localReason;
-  const setReason=v=>{if(reason===undefined)setLocalReason(v);onReasonChange?.(v)};
+  const reasonScope=JSON.stringify([caseId??null,version??null]);
+  const[localReason,setLocalReason]=React.useState(()=>({scope:reasonScope,value:""}));
+  const reasonValue=reason!==undefined?reason:localReason.scope===reasonScope?localReason.value:"";
+  React.useEffect(()=>{setLocalReason(previous=>previous.scope===reasonScope?previous:{scope:reasonScope,value:""})},[reasonScope]);
+  const setReason=v=>{if(reason===undefined)setLocalReason({scope:reasonScope,value:v});onReasonChange?.(v)};
   const own=ownership||(assignee||sla?{assignee,due:sla}:null);
   const ownRows=own?[["Assignee",own.assignee],["Team",own.team],["Due",own.due],["Age",own.age],["Escalation",own.escalation],["Prior handoffs",own.handoffs]].filter(([,v])=>v!==undefined&&v!==null&&v!==""):[];
   const canResolve=!requireReason||reasonValue.trim().length>0;

@@ -6,14 +6,23 @@ import { readFile, writeFile, readdir } from 'node:fs/promises';
 import { dirname, resolve, relative, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
-import { rootTokenDefaults } from './token_defaults.mjs';
+import { rootTokenDefaults, refreshScopedTokens } from './token_defaults.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const check = process.argv.includes('--check');
 if (process.argv.slice(2).some(arg => arg !== '--check')) throw new Error('Usage: node scripts/build_package.mjs [--check]');
 const pkg = JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8'));
 const oldManifest = JSON.parse(await readFile(resolve(root, '_ds_manifest.json'), 'utf8'));
-// Preserve the published token identities/scopes while refreshing default values
+// Preserve published specimen identities while keeping their discovery text tied
+// to the authored marker, rather than carrying stale metadata into each rebuild.
+for (const card of oldManifest.cards) {
+  const source = await readFile(resolve(root, card.path), 'utf8');
+  const marker = source.match(/<!--\s*@dsCard\s+([\s\S]*?)-->/)?.[1];
+  if (!marker) throw new Error(`Published specimen marker is missing: ${card.path}`);
+  const attributes = Object.fromEntries([...marker.matchAll(/(\w+)="([^"]*)"/g)].map(match => [match[1], match[2]]));
+  for (const field of ['group', 'viewport', 'subtitle', 'name']) if (attributes[field] !== undefined) card[field] = attributes[field];
+}
+// Preserve base token identities while refreshing default values
 // from their authored stylesheets. A source token repair must not leave the
 // browser's manifest and documentation describing the previous value.
 const tokenSheets = new Map();
@@ -26,6 +35,12 @@ for (const token of oldManifest.tokens) {
   if (!value) throw new Error(`Published token declaration is missing: ${token.name} in ${token.definedIn}`);
   if (value.replace(/\s+/g, ' ') !== token.value.replace(/\s+/g, ' ')) token.value = value;
 }
+const scopes = new Map();
+for (const token of oldManifest.tokens.filter(token => token.scope)) {
+  const key = `${token.definedIn}\0${token.scope}`;
+  if (!scopes.has(key)) scopes.set(key, rootTokenDefaults(await readFile(resolve(root, token.definedIn), 'utf8'), token.scope));
+}
+oldManifest.tokens = refreshScopedTokens(oldManifest.tokens, scopes);
 const identity = JSON.parse(await readFile(resolve(root, 'release.json'), 'utf8'));
 if (pkg.version !== identity.version) throw new Error('package.json must match authoritative release.json');
 const namespace = oldManifest.namespace;

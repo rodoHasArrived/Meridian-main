@@ -19,7 +19,7 @@ function inject() {
 .mds-wsection__summary{margin:1px 0 0;color:var(--text-muted,#606870);font-size:12px;line-height:1.35;}
 .mds-wsection__jump{display:inline-flex;align-items:center;gap:6px;min-height:30px;
   border:1px solid var(--brand-signal,#C56343);border-radius:var(--radius-chip,2px);
-  background:var(--blue-a10,rgba(47,100,138,.10));color:var(--brand-signal,#C56343);
+  background:var(--blue-a10,rgba(47,100,138,.10));color:var(--interaction-link,var(--link,#2A5F96));
   padding:4px 10px;font-family:var(--font-body);font-size:11px;font-weight:700;cursor:pointer;text-decoration:none;
   white-space:nowrap;}
 .mds-wsection__jump:hover{background:var(--bg-active,#E7EDF2);}
@@ -43,7 +43,7 @@ export function WorkspaceSection({ id, title, summary, jump, onJump, jumpHref, c
         {jump && (
           jumpHref
             ? <a className="mds-wsection__jump" href={jumpHref}>{jump}</a>
-            : <button type="button" className="mds-wsection__jump" onClick={onJump}>{jump}</button>
+            : <button type="button" className="mds-wsection__jump" onClick={onJump} disabled={!onJump} title={onJump?undefined:"Navigation is unavailable in this view"}>{jump}</button>
         )}
       </div>
       <div className="mds-wsection__body">{children}</div>

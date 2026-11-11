@@ -9,6 +9,11 @@
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 <script src="../../_ds_bundle.js"></script>
+<style>
+.conditions-grid{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}
+.conditions-grid > *{min-width:0}
+@media(max-width:900px){.conditions-grid{grid-template-columns:minmax(0,1fr)}}
+</style>
 </head>
 <body style="margin:0;padding:20px;background:var(--bg-canvas);font-family:var(--font-body);">
 <div id="root"></div>
@@ -30,7 +35,7 @@ const ROWS = [
 
 function Panel({ eyebrow, title, note, children, style }) {
   return (
-    <section style={{ background:"var(--bg-light)", border:"1px solid var(--border)", borderRadius:2, padding:14, ...style }}>
+    <section style={{ background:"var(--bg-light)", border:"1px solid var(--border)", borderRadius:2, padding:14, minWidth:0, ...style }}>
       <Eyebrow>{eyebrow}</Eyebrow>
       <h2 style={{ font:"600 15px var(--font-display)", color:"var(--text-primary)", margin:"6px 0 4px" }}>{title}</h2>
       {note ? <p style={{ fontSize:12, lineHeight:"17px", color:"var(--text-muted)", margin:"0 0 12px", maxWidth:"72ch" }}>{note}</p> : null}
@@ -41,10 +46,10 @@ function Panel({ eyebrow, title, note, children, style }) {
 
 function Demo() {
   return (
-    <div style={{ display:"grid", gridTemplateColumns:"1.15fr 1fr", gap:16, alignItems:"start", maxWidth:1100 }}>
+    <div className="conditions-grid" style={{ display:"grid", gap:16, alignItems:"start", maxWidth:1100 }}>
       <Panel eyebrow="Vocabulary" title="Eleven conditions, always text plus marker"
         note="Color is never the only signal: each condition carries a glyph and a label, so the state survives grayscale, color-vision deficiency, and a printed export.">
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:8 }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(2,minmax(0,1fr))", gap:8 }}>
           {KEYS.map((k) => <DataCondition key={k} condition={k} chip />)}
         </div>
       </Panel>

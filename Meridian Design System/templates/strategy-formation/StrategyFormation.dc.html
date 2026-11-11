@@ -12,7 +12,7 @@
 <helmet>
 <script src="./ds-base.js"></script>
 <meta name="dc-template" content="strategy-formation">
-<style>html,body{margin:0;padding:0;height:100%}[data-sf-view="off"]{display:none}</style>
+<style>html,body{margin:0;padding:0;height:100%}[data-sf-view="off"]{display:none!important}</style>
 </helmet>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataStateProp }}" label="Workstation preview" action-label="Retry preview" on-action="{{ onPreviewRetry }}" hint-size="100%,100vh">
 <div data-sf-view="{{ formationShow }}" style="min-height:100vh"><dc-import name="StrategyOnboarding" theme="{{ themeProp }}" density="{{ densityProp }}" environment="{{ envProp }}" data-state="{{ dataStateProp }}" hint-size="100%,100vh"></dc-import></div>

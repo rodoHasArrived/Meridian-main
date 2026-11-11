@@ -42,7 +42,7 @@ const STATUS = {
 
 function relativeTime(then) {
   const t = then instanceof Date ? then.getTime() : (typeof then === "number" ? then : Date.parse(then));
-  if (!t || Number.isNaN(t)) return null;
+  if (!Number.isFinite(t)) return null;
   const s = Math.max(0, Math.round((Date.now() - t) / 1000));
   if (s < 5) return "just now";
   if (s < 60) return `${s}s ago`;

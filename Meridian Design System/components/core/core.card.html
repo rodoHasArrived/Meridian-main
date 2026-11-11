@@ -104,7 +104,7 @@
       <table>
         <thead>
           <tr>
-            <th style="width: 40px;"><input type="checkbox" id="select-all" /></th>
+            <th style="width: 40px;"><input type="checkbox" id="select-all" aria-label="Select all synthetic transactions" /></th>
             <th>Transaction</th>
             <th>Amount</th>
             <th>Account</th>
@@ -112,19 +112,19 @@
         </thead>
         <tbody id="selection-table">
           <tr data-id="1">
-            <td><input type="checkbox" class="row-checkbox" /></td>
+            <td><input type="checkbox" class="row-checkbox" aria-label="Select Wire Transfer" /></td>
             <td>Wire Transfer</td>
             <td style="text-align: right; font-family: var(--font-data);">$45,000.00</td>
             <td>US-001</td>
           </tr>
           <tr data-id="2">
-            <td><input type="checkbox" class="row-checkbox" /></td>
+            <td><input type="checkbox" class="row-checkbox" aria-label="Select ACH Debit" /></td>
             <td>ACH Debit</td>
             <td style="text-align: right; font-family: var(--font-data);">$8,250.50</td>
             <td>US-002</td>
           </tr>
           <tr data-id="3">
-            <td><input type="checkbox" class="row-checkbox" /></td>
+            <td><input type="checkbox" class="row-checkbox" aria-label="Select Check Deposit" /></td>
             <td>Check Deposit</td>
             <td style="text-align: right; font-family: var(--font-data);">$15,000.00</td>
             <td>US-001</td>
@@ -143,16 +143,16 @@
     <div class="demo-grid">
       <div class="demo-card">
         <div style="font-size: 12px; font-weight: 600; margin-bottom: 12px; color: var(--text-secondary);">Button</div>
-        <button style="padding: 8px 16px; background: var(--brand-signal,#C56343); color: var(--text-on-accent); border: none; border-radius: 2px; cursor: pointer; font-size: 13px;">
+        <button style="padding: 8px 16px; background: var(--brand-axis); color: var(--ink-inverse); border: none; border-radius: 2px; cursor: pointer; font-size: 13px;">
           Primary
         </button>
-        <button style="padding: 8px 16px; background: transparent; color: var(--brand-signal,#C56343); border: 1px solid var(--border); border-radius: 2px; cursor: pointer; font-size: 13px; margin-left: 8px;">
+        <button style="padding: 8px 16px; background: transparent; color: var(--interaction-link); border: 1px solid var(--border); border-radius: 2px; cursor: pointer; font-size: 13px; margin-left: 8px;">
           Ghost
         </button>
       </div>
       <div class="demo-card">
         <div style="font-size: 12px; font-weight: 600; margin-bottom: 12px; color: var(--text-secondary);">Input</div>
-        <input type="text" placeholder="Enter text…" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 2px; font-size: 13px; font-family: var(--font-body);" />
+        <input type="text" aria-label="Example text input" placeholder="Enter text…" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 2px; font-size: 13px; font-family: var(--font-body);" />
       </div>
       <div class="demo-card">
         <div style="font-size: 12px; font-weight: 600; margin-bottom: 12px; color: var(--text-secondary);">Badge</div>

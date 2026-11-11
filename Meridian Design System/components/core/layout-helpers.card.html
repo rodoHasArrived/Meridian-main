@@ -3,6 +3,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <title>Meridian — Layout helpers</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="../../styles.css">
   <script src="../../_ds_bundle.js"></script>
@@ -76,18 +77,18 @@
       <div class="label">FormField (label + input + error)</div>
       <div style="max-width: 300px;">
         <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px;">
-          <label style="font-size: var(--type-label); font-weight: 600; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.04em;">
-            Email <span style="color: var(--red);">*</span>
+          <label for="layout-email" style="font-size: var(--type-label); font-weight: 600; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.04em;">
+            Email <span aria-hidden="true" style="color: var(--red);">*</span>
           </label>
-          <input type="email" placeholder="user@example.com" style="padding: 8px 12px; font-size: 13px; border: 1px solid var(--border); border-radius: var(--radius-card); color: var(--text-primary); background: var(--bg-light);">
-          <div style="font-size: var(--type-caption); color: var(--text-muted); margin-top: -4px;">Required for account creation</div>
+          <input id="layout-email" type="email" aria-describedby="layout-email-hint" required placeholder="user@example.com" style="padding: 8px 12px; font-size: 13px; border: 1px solid var(--border); border-radius: var(--radius-card); color: var(--text-primary); background: var(--bg-light);">
+          <div id="layout-email-hint" style="font-size: var(--type-caption); color: var(--text-muted); margin-top: -4px;">Required for account creation</div>
         </div>
         <div style="display: flex; flex-direction: column; gap: 6px;">
-          <label style="font-size: var(--type-label); font-weight: 600; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.04em;">
-            Password <span style="color: var(--red);">*</span>
+          <label for="layout-password" style="font-size: var(--type-label); font-weight: 600; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.04em;">
+            Password <span aria-hidden="true" style="color: var(--red);">*</span>
           </label>
-          <input type="password" placeholder="••••••••" style="padding: 8px 12px; font-size: 13px; border: 1px solid var(--red); border-radius: var(--radius-card); color: var(--text-primary); background: var(--bg-light);">
-          <div style="font-size: var(--type-caption); color: var(--red); margin-top: -4px;">Must be at least 8 characters</div>
+          <input id="layout-password" type="password" aria-invalid="true" aria-describedby="layout-password-error" required placeholder="••••••••" style="padding: 8px 12px; font-size: 13px; border: 1px solid var(--red); border-radius: var(--radius-card); color: var(--text-primary); background: var(--bg-light);">
+          <div id="layout-password-error" style="font-size: var(--type-caption); color: var(--red); margin-top: -4px;">Must be at least 8 characters</div>
         </div>
       </div>
     </div>

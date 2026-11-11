@@ -25,7 +25,8 @@ function inject() {
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "sla-chip");
-  el.textContent = css;
+  el.textContent = css + `
+.mds-sla--blocked,.mds-sla--blocked span,.mds-sla--blocked .mds-sla__val{color:var(--text-primary,#20252B);}`;
   document.head.appendChild(el);
 }
 

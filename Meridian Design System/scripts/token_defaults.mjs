@@ -23,3 +23,29 @@ export function rootTokenDefaults(css, rootSelector = ':root') {
   }
   return values;
 }
+
+// Qualified records describe authored declarations in each published selector.
+// Inherited roles remain available through the base record; removed local
+// declarations must not survive as a fictitious theme override.
+export function refreshScopedTokens(tokens, scopes) {
+  const kinds = new Map(tokens.map(token => [token.name, token.kind]));
+  const seen = new Set();
+  const output = tokens.flatMap(token => {
+    if (!token.scope) return [token];
+    const key = `${token.definedIn}\0${token.scope}`;
+    const value = scopes.get(key)?.get(token.name);
+    if (value === undefined) return [];
+    seen.add(`${key}\0${token.name}`);
+    return [{ ...token, value }];
+  });
+  for (const [key, values] of scopes) {
+    const [definedIn, scope] = key.split('\0');
+    for (const [name, value] of [...values].sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)) {
+      if (seen.has(`${key}\0${name}`)) continue;
+      const kind = kinds.get(name);
+      if (!kind) throw new Error(`Classify new scoped token before publication: ${name}`);
+      output.push({ name, value, kind, definedIn, scope });
+    }
+  }
+  return output;
+}

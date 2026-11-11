@@ -36,8 +36,8 @@ function inject() {
 export function EvidenceLink({ label, status = "info", route, href, onOpen, className = "", ...rest }) {
   inject();
   const sev = normalizeSeverity(status);
-  const Tag = href ? "a" : "button";
-  const extra = href ? { href } : { type: "button" };
+  const Tag = href ? "a" : onOpen ? "button" : "span";
+  const extra = href ? { href } : onOpen ? { type: "button" } : {};
   return (
     <Tag
       className={`mds-evidence mds-evidence--${sev}${className ? " " + className : ""}`}

@@ -12,17 +12,20 @@
 <style>
 body{margin:0;padding:16px;background:var(--bg);font-family:var(--font-body);color:var(--text-secondary)}
 .demo-title{font-size:11px;font-weight:600;font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted);margin:0 0 8px}
-.plane{display:grid;grid-template-columns:1fr 300px;gap:12px;align-items:start}
-.panel{border:1px solid var(--border);background:var(--bg-light)}
+.plane{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,300px);gap:12px;align-items:start}
+.panel{min-width:0;border:1px solid var(--border);background:var(--bg-light)}
 .hdr{display:flex;align-items:baseline;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border)}
 .hdr h2{margin:0;font:600 15px var(--font-display);color:var(--text-primary)}
 .hdr code{font:11px var(--font-data);color:var(--text-muted)}
-.line{display:grid;grid-template-columns:84px 1fr 120px;gap:10px;align-items:center;padding:0 12px;min-height:var(--table-row-height);border-bottom:1px solid var(--border-divider);font:12px var(--font-data)}
+.line{display:grid;grid-template-columns:84px minmax(0,1fr) 120px;gap:10px;align-items:center;padding:0 12px;min-height:var(--table-row-height);border-bottom:1px solid var(--border-divider);font:12px var(--font-data)}
 .line .amt{text-align:right;font-variant-numeric:tabular-nums;color:var(--text-primary)}
 .tools{display:flex;gap:8px;align-items:center;margin-bottom:8px}
 .btn{min-height:28px;padding:0 10px;border:1px solid var(--border-strong);border-radius:var(--radius-button);background:var(--bg-light);color:var(--text-primary);font:600 12px var(--font-body);cursor:pointer}
 .note{font-size:11px;color:var(--text-muted);line-height:1.5;margin-top:14px}
 .note b{color:var(--text-secondary)}
+</style>
+<style>
+@media(max-width:900px){.plane{grid-template-columns:minmax(0,1fr)}}
 </style>
 </head>
 <body class="meridian">

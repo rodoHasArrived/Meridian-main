@@ -220,7 +220,7 @@ export function LedgerTable({
                     mode={r._void ? "muted" : undefined} envelope={sideEnvelope(r, "credit")} />
                 </td>
                 <td className="ldg--r">
-                  {r._void || !r._hasBal
+                  {r._void
                     ? <span style={{ color: "var(--text-disabled,#A4ABB2)" }}>&mdash;</span>
                     : <AmountCell value={displayAmount(r._bal)} currency={currency} parens />}
                 </td>

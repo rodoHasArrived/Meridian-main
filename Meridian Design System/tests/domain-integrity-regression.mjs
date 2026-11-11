@@ -34,7 +34,11 @@ const source = await build({ absWorkingDir: root, bundle: true, write: false, re
     import { MaturityLadder } from './components/charts/MaturityLadder.jsx';
     import { CashFlowLadder } from './components/charts/CashFlowLadder.jsx';
     import { DurationContribution } from './components/charts/DurationContribution.jsx';
-    window.Fixture = { MaturityLadder, CashFlowLadder, DurationContribution, AuthorityStack, AuthorityPanel, DecisionSnapshot, DecisionSnapshotPanel, EvidenceInspector, EvidencePreview, AnalyticalField, CoverageMatrix, Treemap, CorrelationHeatmap, TimeframeSwitcher, ChartCursor, PnLCalendar, React, createRoot, VarianceCell, TieOutPanel, BasisComparisonMatrix,
+    import { knownAmount, displayAmount } from './components/accounting/knownAmounts.js';
+    import { FxRevaluationTable } from './components/accounting/FxRevaluationTable.jsx';
+    import { TaxLotTable } from './components/accounting/TaxLotTable.jsx';
+    import { Figure } from './components/charts/Figure.jsx';
+    window.Fixture = { displayAmount, FxRevaluationTable, TaxLotTable, Figure, knownAmount, MaturityLadder, CashFlowLadder, DurationContribution, AuthorityStack, AuthorityPanel, DecisionSnapshot, DecisionSnapshotPanel, EvidenceInspector, EvidencePreview, AnalyticalField, CoverageMatrix, Treemap, CorrelationHeatmap, TimeframeSwitcher, ChartCursor, PnLCalendar, React, createRoot, VarianceCell, TieOutPanel, BasisComparisonMatrix,
       CalculationTrace, ReconciliationPanel, JournalEntryForm, PeerComparisonStrip, ChartFrame, ChartAnnotations };`
   }
 });
@@ -55,6 +59,10 @@ try {
       const cursor=DS.ChartCursor.useChartCrosshair(count);
       return React.createElement('div', { ...cursor.bind, id: 'cursor', style: { ...cursor.bind.style, width: 200, height: 40 } }, cursor.index === null ? 'no cursor' : String(cursor.index));
     }
+    function SyncProbe({ id, count }) {
+      const cursor=DS.ChartCursor.useSyncedCursor(count);
+      return React.createElement('div', { ...cursor.bind, id, style: { ...cursor.bind.style, width: 200, height: 40 } }, cursor.index===null?'no cursor':String(cursor.index));
+    }
     function Fixture({ kind, config, revision }) {
       React.useLayoutEffect(() => { document.getElementById('fixture').dataset.revision = String(revision); }, [revision]);
       if (kind === 'variance') return React.createElement(DS.VarianceCell, { actual: config.restricted ? 987654 : null,
@@ -65,6 +73,10 @@ try {
         sourceB: { label: 'Ledger', value: 987654 },
         items: config.restrictedItem ? [{ label: 'Private adjustment 123456', value: 123456, condition: 'restricted', evidence: 'Private evidence 654321' }] : [],
         defaultExpanded: true, status: 'tied', onAccept: () => window.events.push('accept'), onResolve: () => window.events.push('resolve') });
+      if (kind === 'strict-fx') return React.createElement(DS.FxRevaluationTable, { rows: [{ currency: 'EUR', local: '12oops', bookedRate: 1, currentRate: 1 }] });
+      if (kind === 'strict-lot') return React.createElement(DS.TaxLotTable, { lots: [{ id: 'lot-1', acquired: '2026-01-01', quantity: 1, costBasis: 10, marketValue: '12oops' }], asOf: '2026-06-01' });
+      if (kind === 'figure') return React.createElement(DS.Figure, { title: config.unnamed ? undefined : 'Synthetic exact figure', geometry: config.geometry, series: [] });
+      if (kind === 'sync') return React.createElement(DS.ChartCursor.ChartCursorSync, null, config.hideLeft ? React.createElement('div', { style: { height: 40 }, key: 'placeholder' }) : React.createElement(SyncProbe, { id: 'sync-left', count: 3, key: 'left' }), React.createElement(SyncProbe, { id: 'sync-right', count: config.invalidCount==='fractional'?1.5:config.invalidCount==='infinite'?Infinity:2, key: 'right' }));
       if (kind === 'tie-whitespace') return React.createElement(DS.TieOutPanel, { sourceA: { label: 'Source A', value: config.item ? 0 : '   ' }, sourceB: { label: 'Source B', value: 0 }, items: config.item ? [{ label: 'Adjustment', value: '   ' }] : [], defaultExpanded: true, status: 'tied', onAccept() {}, onResolve() {} });
       if (kind === 'basis') return React.createElement(DS.BasisComparisonMatrix, { title: 'Basis comparison',
         bases: [{ id: 'a', label: 'Tax' }, { id: 'b', label: 'Book' }],
@@ -122,6 +134,41 @@ try {
     const revision = await page.evaluate(({ kind, config }) => window.mount(kind, config), { kind, config });
     await page.waitForFunction(revision => document.getElementById('fixture').dataset.revision === String(revision), revision);
   }
+  const parsedAmounts=await page.evaluate(()=>{
+    const known=window.Fixture.knownAmount;
+    return {valid:[0,-12.5,'12.50','1,234.50','($1,234.50)','−12.5'].map(known),invalid:['12oops','1e3','12.3.4','1,23',true,'   ',Infinity,{value:100,condition:'restricted'}].map(known)};
+  });
+  assert.deepEqual(parsedAmounts.valid,[0,-12.5,12.5,1234.5,-1234.5,-12.5]);
+  assert.deepEqual(parsedAmounts.invalid,Array(8).fill(null));
+  const provenance=await page.evaluate(()=>{const missing={value:null,condition:'missing',authority:'source',evidence:[{label:'Permitted source',ref:'DOC-1'}],clocks:{sourceAsOf:'2026-06-01T00:00:00Z'}};return{missing:window.Fixture.displayAmount(missing),expected:missing,restricted:window.Fixture.displayAmount({value:987654,condition:'restricted',label:'Private identity',evidence:[{label:'Private source'}]})}});
+  assert.deepEqual(provenance.missing,provenance.expected,'Unavailable unrestricted amounts retain permitted provenance facets');
+  assert.deepEqual(provenance.restricted,{value:null,condition:'restricted'},'Restricted display helper withholds numeric and evidence metadata');
+  await mount('strict-fx');
+  assert.equal(await page.locator('tfoot .mds-env__v').filter({ hasText: /^Missing$/ }).count(), 3, 'Malformed FX input cannot turn into a known translated total');
+  await mount('strict-lot');
+  assert.equal(await page.locator('tfoot .mds-env__v').filter({ hasText: /^Missing$/ }).count(), 2, 'Malformed market value cannot produce a partial numeric value/gain total');
+  for (const geometry of ['trace','ladder','distribution']) {
+    await mount('figure', { geometry });
+    assert.equal(await page.getByRole('img', { name: 'Synthetic exact figure', exact: true }).count(), 1);
+  }
+  await mount('figure', { unnamed: true });
+  assert.equal(await page.locator('svg').getAttribute('aria-hidden'), 'true', 'An unnamed plot remains presentational, matching ChartFrame');
+  await mount('sync');
+  await page.locator('#sync-left').hover({ position: { x: 130, y: 10 } });
+  assert.equal(await page.locator('#sync-left').textContent(), '2');
+  assert.equal(await page.locator('#sync-right').textContent(), 'no cursor', 'Shorter sibling never receives an invalid cursor');
+  await page.locator('#sync-right').hover({ position: { x: 130, y: 10 } });
+  assert.equal(await page.locator('#sync-left').textContent(), '1');
+  await mount('sync', { hideLeft: true });
+  assert.equal(await page.locator('#sync-right').textContent(), '1');
+  await page.mouse.move(800,600);
+  assert.equal(await page.locator('#sync-right').textContent(), 'no cursor');
+  for (const invalidCount of ['fractional','infinite']) {
+    await mount('sync', {invalidCount});
+    await page.locator('#sync-left').hover({position:{x:80,y:10}});
+    assert.equal(await page.locator('#sync-left').textContent(),'1');
+    assert.equal(await page.locator('#sync-right').textContent(),'no cursor','Invalid count cannot receive a synchronized index');
+  }
   await mount('variance');
   assert.equal(await page.locator('.mds-var').getAttribute('data-state'), 'missing-actual');
   assert.equal(await page.locator('.mds-var__actual').textContent(), '—');
@@ -129,7 +176,8 @@ try {
   await mount('variance', { restricted: true });
   assert.equal(await page.locator('.mds-var__actual').textContent(), 'Restricted');
   assert.equal(await page.locator('.mds-var__ref').count(), 0);
-  await page.locator('.mds-var').click();
+  await page.locator('.mds-var').focus(); await page.keyboard.press('Enter'); await page.keyboard.press('Space');
+  assert.equal(await page.evaluate(()=>window.events.length),2,'Variance keyboard activates exactly once per key');
   assert.deepEqual(await page.evaluate(() => window.events[0]), { actual: null, expected: null, variance: null, relative: null, state: 'not-comparable', tolerance: 0 });
   assert(!/987[,.]?654|123[,.]?456/.test(await page.locator('#fixture').textContent()));
 
@@ -272,5 +320,5 @@ try {
   await mount('cursor', { count: 0 });
   await page.waitForFunction(() => document.querySelector('#cursor').textContent === 'no cursor');
   assert.deepEqual(errors, [], 'No runtime callback or rendering exceptions');
-  console.log('PASS Domain integrity (25 source exports): absent/restricted values, nonfinite peers, reconciliation identity/boolean callbacks, labels/ids, annotation descriptions and cleanup');
+  console.log('PASS Domain integrity (29 source exports): absent/restricted values, nonfinite peers, reconciliation identity/boolean callbacks, labels/ids, annotation descriptions and cleanup');
 } finally { await browser.close(); }

@@ -4,7 +4,7 @@ import React from "react";
 import { AmountCell } from "./AmountCell";
 import { toNumber } from "../core/format.js";
 import { fxRevalue } from "./money.js";
-import { sumKnown, displayAmount } from "./knownAmounts.js";
+import { knownAmount, sumKnown, displayAmount } from "./knownAmounts.js";
 
 let injected = false;
 function inject() {
@@ -59,14 +59,14 @@ export function FxRevaluationTable({
   inject();
   const showAcct = rows.some((r) => r.account != null && r.account !== "");
 
-  const computed = rows.map((r, i) => ({ ...r, ...fxRevalue(r.local, r.bookedRate, r.currentRate), _i: i }));
+  const computed=rows.map((row,index)=>{const local=knownAmount(row.local),bookedRate=knownAmount(row.bookedRate),currentRate=knownAmount(row.currentRate);const result=local===null||bookedRate===null||currentRate===null?{booked:NaN,current:NaN,gainLoss:NaN}:fxRevalue(local,bookedRate,currentRate);return{...row,...result,_i:index}});
   const totBooked = sumKnown(computed.map(row=>row.booked));
   const totCurrent = sumKnown(computed.map(row=>row.current));
   const totGL = sumKnown(computed.map(row=>row.gainLoss));
 
   const rate = (v) => {
-    const n = toNumber(v);
-    return isFinite(n) ? n.toFixed(rateDecimals) : "\u2014";
+    const n = knownAmount(v);
+    return n!==null ? n.toFixed(rateDecimals) : "Missing";
   };
 
   return (

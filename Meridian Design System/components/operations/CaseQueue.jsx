@@ -39,7 +39,8 @@ function inject() {
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "case-queue");
-  el.textContent = css;
+  el.textContent = css + `
+.mds-caseq__row[aria-selected="true"] .mds-caseq__id,.mds-caseq__row[aria-selected="true"] .mds-caseq__sub{color:var(--text-primary,#20252B);}`;
   document.head.appendChild(el);
 }
 

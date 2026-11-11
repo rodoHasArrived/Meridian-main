@@ -128,10 +128,11 @@ export function AsOfControl({
     if (asOf != null) setFrozen(new Date(asOf));
   }, [asOf]);
 
+  const displayedFrozen=asOf!=null?new Date(asOf):frozen;
   const set = (nextMode, nextAsOf) => {
     if (!isControlled) setInternalMode(nextMode);
-    if (nextAsOf) setFrozen(nextAsOf);
-    onChange && onChange({ mode: nextMode, asOf: nextMode === "asof" ? (nextAsOf || frozen) : null });
+    if (nextAsOf&&asOf==null) setFrozen(nextAsOf);
+    onChange && onChange({ mode: nextMode, asOf: nextMode === "asof" ? (nextAsOf || displayedFrozen) : null });
   };
 
   const live = mode === "live";
@@ -150,12 +151,12 @@ export function AsOfControl({
         <React.Fragment>
           <span className="mds-asof__label">AS-OF</span>
           <input type="datetime-local" className="mds-asof__input" aria-label="As-of time (UTC)"
-            value={toLocalInput(frozen)}
+            value={toLocalInput(displayedFrozen)}
             onChange={(e) => {
               const d = new Date(e.target.value + "Z");
               if (!isNaN(d.getTime())) set("asof", d);
             }} />
-          <span className="mds-asof__time" title={utcStamp(frozen, true)}>UTC</span>
+          <span className="mds-asof__time" title={utcStamp(displayedFrozen, true)}>UTC</span>
           <button type="button" className="mds-asof__btn" onClick={() => set("live")}>Return to live</button>
         </React.Fragment>
       )}

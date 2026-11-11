@@ -24,7 +24,7 @@ for (const [name, file] of Object.entries(sources)) {
   report.exports[name] = { source: file, reviewedSourceHash: createHash('sha256').update(await readFile(resolve(root, file))).digest('hex'), cases: [] };
 }
 report.exports.AnalyticalFigure.scope = 'Owns the native details disclosure and continuity composition. Child actions, fetch/loading/retry and empty explanations are caller-owned; composed state tests do not claim fetch behavior.';
-report.exports.AsOfControl.scope = 'Mode is controlled when supplied; the frozen timestamp can be edited and external asOf changes replace it. Empty edits must not emit an invalid Date. No asynchronous loading/error API.';
+report.exports.AsOfControl.scope = 'Mode and supplied asOf are authoritative controlled values. Freeze/edit emit proposed Date values while parent values remain displayed; absent asOf permits local timestamp edits. Empty edits must not emit an invalid Date. No asynchronous loading/error API.';
 report.exports.DonutChart.scope = 'Caller-controlled views use native Tab/Enter/Space buttons; no roving-arrow contract. Inputs are finite nonnegative parts of a real total. Empty/loading/error explanations are caller-owned.';
 report.exports.DotMatrix.scope = 'Native cell drilldown is optional. Missing values remain null and differ from numeric zero. Shape and sign encoding are caller-controlled; no loading/error/selection API.';
 const bundle = await build({
@@ -46,7 +46,8 @@ const page = await context.newPage();
 page.setDefaultTimeout(3000);
 page.on('pageerror', error => report.errors.push(error.message));
 try {
-  await page.clock.install({ time: new Date('2026-09-10T14:30:00.000Z') });
+  await page.clock.install({ time: new Date('2026-09-10T14:29:59.000Z') });
+  await page.clock.pauseAt(new Date('2026-09-10T14:30:00.000Z'));
   await page.setContent(`<!doctype html><html lang="en"><head><title>Synthetic domain chart state contracts</title><style>
     :root{--chart-primary:#2d6fb3;--series-positive:#28754e;--series-negative:#ba4035;--series-actual:#2d6fb3;--series-prior:#96723f;--text-primary:#20252b;--text-secondary:#535c65;--text-muted:#606870;--border:#d2cdc3;--focus-ring:2px solid #2d6fb3;--focus-ring-offset:2px}
     body{font:14px Arial,sans-serif}button:focus-visible,summary:focus-visible{outline:var(--focus-ring)}
@@ -85,7 +86,7 @@ try {
   async function test(exportName, name, states, run) {
     let status='passed', detail;
     try { await run(); } catch(error) { status='failed';detail=error.message; }
-    report.exports[exportName].cases.push({name,states,status,...(detail?{detail}:{})});
+    report.exports[exportName].cases.push({name,kind:states.includes('keyboard')?'keyboard':'state',states,status,...(detail?{detail}:{})});
     console.log(`${status}: ${exportName} — ${name}`);
   }
   await test('AnalyticalFigure','native disclosure toggles with Enter/Space and preserves exact fallback, provenance and zero', ['populated','keyboard','accessible-data'],async()=>{
@@ -152,11 +153,14 @@ try {
     await page.clock.runFor(1000);assert.equal(await page.locator('.mds-asof__time').textContent(),'2026-09-10 14:30:01Z');
     const freeze=page.getByRole('button',{name:'Freeze',exact:true});await freeze.focus();await freeze.press('Enter');
     assert.deepEqual(await events(),[{mode:'asof',asOf:'2026-09-10T14:30:01.000Z',isDate:true}]);
-    const input=page.getByRole('textbox',{name:'As-of time (UTC)'});
+    const input=page.locator('input[type="datetime-local"]');
     assert.equal(await input.inputValue(),'2026-09-10T14:30');
     await page.clock.runFor(5000);assert.equal(await input.inputValue(),'2026-09-10T14:30');
     assert.equal(await page.locator('.mds-asof__time').getAttribute('title'),'2026-09-10 14:30:01Z');
-    await input.focus();await input.press('Tab');const back=page.getByRole('button',{name:'Return to live',exact:true});assert.equal(await focused(back),true);await back.press('Space');
+    await input.focus();const back=page.getByRole('button',{name:'Return to live',exact:true});
+    // Chromium exposes the native datetime-local editor as several keyboard segments.
+    for(let index=0;index<8&&!await focused(back);index++) await page.keyboard.press('Tab');
+    assert.equal(await focused(back),true);await back.press('Space');
     assert.deepEqual((await events()).at(-1),{mode:'live',asOf:null,isDate:false});
     assert.equal(await page.locator('.mds-asof__time').textContent(),'2026-09-10 14:30:06Z');
     await page.clock.runFor(1000);assert.equal(await page.locator('.mds-asof__time').textContent(),'2026-09-10 14:30:07Z');
@@ -166,7 +170,8 @@ try {
     await page.getByRole('button',{name:'Freeze',exact:true}).click();
     assert.equal((await events())[0].mode,'asof');assert.equal(await page.getByRole('button',{name:'Freeze',exact:true}).count(),1);
     await mount('AsOfControl',{mode:'asof',asOf:'2020-01-02T03:04:00Z'},false);
-    const input=page.locator('input[type="datetime-local"]');await page.waitForFunction(()=>document.querySelector('input')?.value==='2020-01-02T03:04');
+    const input=page.locator('input[type="datetime-local"]');
+    assert.equal(await input.inputValue(),'2020-01-02T03:04','Parent-supplied asOf must be respected when entering controlled asof mode after an unaccepted Freeze request');
     await page.getByRole('button',{name:'Return to live',exact:true}).click();assert.equal(await input.count(),1);
     assert.deepEqual(await events(),[{mode:'live',asOf:null,isDate:false}]);
     await mount('AsOfControl',{mode:'asof',asOf:'2021-06-07T08:09:00Z'},false);await page.waitForFunction(()=>document.querySelector('input')?.value==='2021-06-07T08:09');
@@ -174,12 +179,22 @@ try {
     await mount('AsOfControl',{mode:'live',withDate:false},false);assert.match(await page.locator('.mds-asof__time').textContent(),/^14:30:\d{2}Z$/);
   });
   await test('AsOfControl','UTC edit emits an exact Date across non-UTC browser timezone; empty edit is ignored and recovers', ['asof','keyboard','empty','recovery'],async()=>{
-    await mount('AsOfControl',{defaultMode:'asof',asOf:'2024-01-02T03:04:00Z'});
+    await mount('AsOfControl',{defaultMode:'asof'});
     const input=page.locator('input[type="datetime-local"]');assert.equal(await input.getAttribute('aria-label'),'As-of time (UTC)');
-    assert.equal(await input.inputValue(),'2024-01-02T03:04');
+    assert.equal(await input.inputValue(),'2026-09-10T14:30');
     await input.fill('');assert.deepEqual(await events(),[]);
     await input.fill('2025-07-08T09:10');assert.deepEqual(await events(),[{mode:'asof',asOf:'2025-07-08T09:10:00.000Z',isDate:true}]);
     assert.equal(await input.inputValue(),'2025-07-08T09:10');assert.equal(await page.locator('.mds-asof__time').getAttribute('title'),'2025-07-08 09:10:00Z');
+  });
+  await test('AsOfControl','rejected edit emits proposed UTC instant while authoritative supplied timestamp stays displayed', ['controlled','asof','keyboard','recovery'],async()=>{
+    await mount('AsOfControl',{mode:'asof',asOf:'2024-01-02T03:04:00Z'},false);
+    const input=page.locator('input[type="datetime-local"]');assert.equal(await input.inputValue(),'2024-01-02T03:04');
+    await input.fill('2025-07-08T09:10');
+    assert.deepEqual(await events(),[{mode:'asof',asOf:'2025-07-08T09:10:00.000Z',isDate:true}]);
+    assert.equal(await input.inputValue(),'2024-01-02T03:04');
+    assert.equal(await page.locator('.mds-asof__time').getAttribute('title'),'2024-01-02 03:04:00Z');
+    await mount('AsOfControl',{mode:'asof',asOf:'2025-07-08T09:10:00Z'},false);
+    assert.equal(await input.inputValue(),'2025-07-08T09:10');assert.deepEqual(await events(),[]);
   });
   await test('DonutChart','controlled native view activation returns exact IDs without mutating active selection', ['views','controlled','keyboard'],async()=>{
     await mount('DonutChart',{views:true,view:'allocation:exact/001'},false);
@@ -249,6 +264,10 @@ try {
   });
 } finally {
   await browser.close();
+  for(const [name,file] of Object.entries(sources)) {
+    const finalHash=createHash('sha256').update(await readFile(resolve(root,file))).digest('hex');
+    if(finalHash!==report.exports[name].reviewedSourceHash) report.errors.push(`${name} source changed during execution; rerun against the final source`);
+  }
   report.summary={cases:Object.values(report.exports).reduce((n,e)=>n+e.cases.length,0),failed:Object.values(report.exports).flatMap(e=>e.cases).filter(c=>c.status==='failed').length,browserErrors:report.errors.length};
   const output=process.env.DOMAIN_CHART_STATE_RESULTS||'/tmp/pr3501-full-audit/domain-chart-state-results.json';
   await mkdir(dirname(output),{recursive:true});await writeFile(output,JSON.stringify(report,null,2)+'\n');

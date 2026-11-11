@@ -74,9 +74,11 @@ export function AttestationPanel({
   onApprove,onReject,onRequestChanges,onReopen,className="",...rest
 }){
   inject();
-  const[local,setLocal]=React.useState("");
-  const comment=commentProp!==undefined?commentProp:local;
-  const setComment=v=>{if(commentProp===undefined)setLocal(v);onCommentChange?.(v)};
+  const commentScope=JSON.stringify([objectId??null,version??null,snapshot??null]);
+  const[local,setLocal]=React.useState(()=>({scope:commentScope,value:""}));
+  const comment=commentProp!==undefined?commentProp:local.scope===commentScope?local.value:"";
+  React.useEffect(()=>{setLocal(previous=>previous.scope===commentScope?previous:{scope:commentScope,value:""})},[commentScope]);
+  const setComment=v=>{if(commentProp===undefined)setLocal({scope:commentScope,value:v});onCommentChange?.(v)};
 
   const blockedGates=gates.filter(g=>g.blocking||g.status==="blocked");
   const openGates=gates.filter(g=>!DONE.includes(g.status));

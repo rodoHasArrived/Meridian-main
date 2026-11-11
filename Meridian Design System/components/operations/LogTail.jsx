@@ -106,7 +106,7 @@ export function LogTail({
       style={{ height, ...style }} {...rest}>
       <div className="mds-logtail__bar">
         <span className="mds-logtail__title">{title}</span>
-        <span className="mds-logtail__title" style={{ opacity: 0.7 }}>· {formatNumber(entries.length, { decimals: 0 })} lines</span>
+        <span className="mds-logtail__title" style={{ color: "var(--text-secondary)" }}>· {formatNumber(entries.length, { decimals: 0 })} lines</span>
         <span style={{ flex: 1 }} />
         {levelFilter && LEVELS.map((lvl) => (
           <button key={lvl} type="button" aria-pressed={levels.has(lvl)}

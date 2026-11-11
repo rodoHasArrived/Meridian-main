@@ -177,7 +177,14 @@ function checkpoint(draft, opts = {}) {
 function acknowledgeReview(draft, opts = {}) {
   return { ...draft, review: { ...(draft.review || {}), acknowledged: true, acknowledgedHash: formationHash(draft), notes: opts.notes ?? (draft.review || {}).notes ?? null, acknowledgedAt: opts.at ?? Date.now(), acknowledgedBy: opts.actor ?? null }, updatedAt: opts.at ?? Date.now() };
 }
-function deepFreeze(v) { if (v && typeof v === "object" && !Object.isFrozen(v)) { Object.freeze(v); Object.keys(v).forEach((k) => deepFreeze(v[k])); } return v; }
+function deepFreeze(v, seen = new WeakSet()) {
+  if (!v || typeof v !== "object" || seen.has(v)) return v;
+  seen.add(v);
+  Object.freeze(v);
+  // An already frozen parent can still contain mutable financial inputs.
+  Object.keys(v).forEach((key) => deepFreeze(v[key], seen));
+  return v;
+}
 
 // ---- lifecycle -------------------------------------------------------------------------------
 function lifecycleMeta(id) { return LC[id] || { id, label: id || "Unknown", severity: "info", next: [] }; }

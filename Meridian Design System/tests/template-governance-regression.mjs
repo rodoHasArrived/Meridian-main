@@ -76,6 +76,18 @@ try {
   assert.match(csv,/"JE:exact\/0001"/);assert.match(csv,/"wire, ""quoted""\nsecond line"/);assert.match(csv,/,"0","","posted"/,'CSV keeps real zero distinct from missing credit');
   assert.equal(await page.evaluate(()=>ledgerExportName),'general-ledger-2026-06.csv');
   await page.evaluate(()=>{URL.createObjectURL=ledgerExportOriginal.create;URL.revokeObjectURL=ledgerExportOriginal.revoke;HTMLAnchorElement.prototype.click=ledgerExportOriginal.click;});
+
+  // Authored stage flags must defeat the inline flex/grid displays used by the
+  // real financial planes. Retain mounted state while hiding inactive claims.
+  const visibilityEntries=[['alm-review/AlmReview.dc.html','al-show'],['books-loop/BooksLoop.dc.html','bl-show'],['close-management/CloseManagement.dc.html','cm-show'],['reconciliation/Reconciliation.dc.html','rw-show'],['reconciliation/ReconciliationException.dc.html','rx-show'],['strategy-formation/StrategyFormation.dc.html','sf-view'],['strategy-runs/StrategyRuns.dc.html','sr-view']];
+  for(const [entry,attribute]of visibilityEntries){
+    const html=await readFile(resolve(root,'templates',entry),'utf8');
+    for(const match of html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g))await page.addStyleTag({content:match[1]});
+    for(const display of ['flex','grid','block']){
+      const result=await page.evaluate(({attribute,display})=>{const node=document.createElement('div');node.setAttribute('data-'+attribute,'off');node.style.display=display;document.body.appendChild(node);const hidden=getComputedStyle(node).display;node.setAttribute('data-'+attribute,'on');const visible=getComputedStyle(node).display;node.remove();return{hidden,visible};},{attribute,display});
+      assert.equal(result.hidden,'none',`${entry} inactive ${display} plane is hidden`);assert.equal(result.visible,display,`${entry} active plane retains its layout`);
+    }
+  }
   assert.deepEqual(exceptions,[],'No template source runtime errors');
 
   const prefsCode=await readFile(resolve(root,'templates/_scaffold/prefs.js'),'utf8');

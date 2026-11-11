@@ -12,7 +12,7 @@ npm run build
 npm run build:check
 ```
 
-`scripts/build_package.mjs` takes public names from the manifest, compiles their actual imports, and records source hashes. The component bundle uses the consumer's existing React global. The separate offline preview runtime contains React for standalone examples; the production dashboard uses its existing React instance and TypeScript adapters. Default token metadata is refreshed from unconditional root declarations; dark-sheet records use the explicit dark scope. Conditional motion overrides cannot become default metadata.
+`scripts/build_package.mjs` takes public names from the manifest, compiles their actual imports, and records source hashes. The component bundle uses the consumer's existing React global. The separate offline preview runtime contains React for standalone examples; the production dashboard uses its existing React instance and TypeScript adapters. Default token metadata is refreshed from unconditional root declarations; dark-sheet records use the explicit dark scope. Qualified records follow the actual declarations in each published selector, including added brand inputs and removed local overrides. Inherited roles retain their base record. Conditional motion overrides cannot become default metadata.
 
 The historical extension compiler and its plan remain compatibility artifacts. They do not rebuild or certify the current whole distribution.
 

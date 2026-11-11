@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-// Compile the actual public value contract with the consuming project's React types.
+// Compile public declaration presence with the consuming project's React types.
+// Source behavior is verified separately by source fixtures; declaration compilation alone does not prove parity.
 import { createRequire } from 'node:module';
 import { dirname, resolve, relative, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -23,7 +24,18 @@ try {
     const declaration = existsSync(exactCompanion) ? exactCompanion : source;
     return `declare const publicExport${index}: typeof import(${JSON.stringify(declaration)}).${item.name};`;
   }).join('\n');
-  await writeFile(probe, declarations);
+  const propertyProbes = `
+import type { TimestampProps } from ${JSON.stringify(resolve(root, 'components/core/Timestamp.d.ts'))};
+import { describeObject } from ${JSON.stringify(resolve(root, 'components/core/ObjectModel.jsx'))};
+const timestampLocale: TimestampProps = { value: 0, locale: 'de-DE' };
+const normalized = describeObject({type: 'security', id: 0, coverage: {attached: 0, required: 1}, exceptions: 0});
+const context: {label: string; value: import('react').ReactNode}[] = normalized.context;
+const complete: boolean | null | undefined = normalized.coverage?.complete;
+const exceptionCount: number | undefined = normalized.exceptions?.count;
+const missingIdentity: string | number | null = describeObject().id;
+void [timestampLocale, context, complete, exceptionCount, missingIdentity];
+`;
+  await writeFile(probe, declarations + '\n' + propertyProbes);
   const program = ts.createProgram([probe], {
     noEmit: true, strict: true, skipLibCheck: false,
     target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext,

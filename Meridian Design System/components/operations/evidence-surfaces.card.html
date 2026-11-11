@@ -9,6 +9,10 @@
   <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
   <script src="../../_ds_bundle.js"></script>
+<style>
+.evidence-grid{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr)}
+@media(max-width:900px){.evidence-grid{grid-template-columns:minmax(0,1fr)}}
+</style>
 </head>
 <body style="margin:0;padding:20px;background:var(--bg-canvas,#F2F0EB);font-family:var(--font-body);">
 <div id="root"></div>
@@ -17,7 +21,7 @@ const { LogTail, EventTimeline } = window.MeridianDesignSystem_205d17;
 
 function Section({ title, children }) {
   return (
-    <div style={{ background:"var(--bg-light)", border:"1px solid var(--border)", borderRadius:2, padding:16 }}>
+    <div style={{ background:"var(--bg-light)", border:"1px solid var(--border)", borderRadius:2, padding:16, minWidth:0 }}>
       <div style={{ fontSize:10, fontWeight:600, fontVariant:"all-small-caps", letterSpacing:".04em",
         color:"var(--text-muted)", marginBottom:14 }}>{title}</div>
       {children}
@@ -55,7 +59,7 @@ const EVENTS = [
 
 function Demo() {
   return (
-    <div style={{ display:"grid", gridTemplateColumns:"1.2fr 1fr", gap:16, maxWidth:1040, alignItems:"start" }}>
+    <div className="evidence-grid" style={{ display:"grid", gap:16, maxWidth:1040, alignItems:"start" }}>
       <Section title="LogTail · backfill-7742 raw output">
         <LogTail title="backfill-7742 · Polygon daily" height={300} entries={LOG} />
         <div style={{ marginTop:10, fontSize:11, color:"var(--text-muted)" }}>

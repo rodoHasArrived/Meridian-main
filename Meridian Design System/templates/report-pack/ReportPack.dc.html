@@ -13,15 +13,17 @@
 <script src="./ds-base.js"></script>
 <script src="../_scaffold/operator-layer.js"></script>
 <meta name="dc-template" content="report-pack">
-<style>html,body{margin:0;padding:0;}</style>
+<style>html,body{margin:0;padding:0;}
+@media screen{.rp-canvas .mds-sheet{max-width:100%;padding-inline:clamp(20px,5vw,68px)}.rp-toolbar{flex-wrap:wrap}}
+</style>
 </helmet>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.ActionEnvelopeProvider" actions="{{ actionDecls }}" transport="{{ actionTransport }}" timeout-ms="{{ 4000 }}" on-settled="{{ onActionSettled }}" hint-size="100%,780px">
 <x-import component="ActionBridge" from="../_scaffold/action-bridge.jsx" on-api="{{ onActionApi }}" hint-size="0px,0px"></x-import>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Report pack" hint-size="100%,780px">
-<div data-screen-label="Report pack" role="main" style="min-height:100vh;background:var(--bg);padding:24px 16px 48px;font-family:var(--font-body);color:var(--text-primary);">
+<div data-screen-label="Report pack" role="main" class="rp-canvas" style="min-height:100vh;background:var(--bg);padding:24px 16px 48px;font-family:var(--font-body);color:var(--text-primary);">
 
   <!-- Print toolbar — screen only -->
-  <div class="mds-no-print" style="width:816px;box-sizing:border-box;margin:0 auto 16px;display:flex;align-items:center;gap:12px;">
+  <div class="mds-no-print rp-toolbar" style="width:min(816px,100%);box-sizing:border-box;margin:0 auto 16px;display:flex;align-items:center;gap:12px;">
     <div style="display:flex;flex-direction:column;gap:2px;">
       <span style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted);">Report pack</span>
       <span style="font-family:var(--font-data);font-size:11.5px;color:var(--text-secondary);">RP-2026-06 · generated 2026-07-01 06:00:12Z</span>
@@ -35,7 +37,7 @@
     </span>
   </div>
   <sc-if value="{{ deliverRejected }}" hint-placeholder-val="{{ false }}">
-    <div class="mds-no-print" style="width:816px;box-sizing:border-box;margin:0 auto 16px;">
+    <div class="mds-no-print rp-toolbar" style="width:min(816px,100%);box-sizing:border-box;margin:0 auto 16px;">
       <x-import component-from-global-scope="MeridianDesignSystem_205d17.ActionEnvelope" action="pack.deliver" show-declaration="{{ false }}" hint-size="100%,120px"></x-import>
     </div>
   </sc-if>

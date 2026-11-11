@@ -4,7 +4,7 @@
 import React from "react";
 const { useState } = React;
 import { AmountCell } from "./AmountCell";
-import { toNumber } from "../core/format.js";
+import { optionalSide, sumKnown, displayAmount } from "./knownAmounts.js";
 import { Input } from "../core/Input";
 import { Select } from "../core/Select";
 import { Button } from "../core/Button";
@@ -91,10 +91,13 @@ export function JournalEntryForm({
     setLines(l); emit(header, l);
   };
 
-  const totalD = lines.reduce((a, r) => a + (toNumber(r.debit) || 0), 0);
-  const totalC = lines.reduce((a, r) => a + (toNumber(r.credit) || 0), 0);
-  const diff = totalD - totalC;
-  const balanced = Math.abs(diff) <= tolerance && (totalD > 0 || totalC > 0);
+  const sides = lines.map(row => ({ debit: optionalSide(row.debit), credit: optionalSide(row.credit) }));
+  const totalD = sumKnown(sides.map(row => row.debit));
+  const totalC = sumKnown(sides.map(row => row.credit));
+  const amountsKnown = totalD !== null && totalC !== null;
+  const validSides = sides.every(row => row.debit !== null && row.credit !== null && row.debit >= 0 && row.credit >= 0 && !(row.debit > 0 && row.credit > 0));
+  const diff = amountsKnown ? totalD - totalC : null;
+  const balanced = amountsKnown && validSides && Math.abs(diff) <= tolerance && (totalD > 0 || totalC > 0);
   const blocks = (blockers || []).filter(Boolean).map((b) => (typeof b === "string" ? { label: b } : b));
   const postable = balanced && blocks.length === 0;
   const dlId = accounts && accounts.length ? `${uid}-accts` : undefined;
@@ -159,8 +162,8 @@ export function JournalEntryForm({
         <tfoot>
           <tr>
             <td className="jnl__foot-lbl">Totals</td>
-            <td className="jnl--r"><AmountCell value={totalD} currency={currency} strong /></td>
-            <td className="jnl--r"><AmountCell value={totalC} currency={currency} strong /></td>
+            <td className="jnl--r"><AmountCell value={displayAmount(totalD)} currency={currency} strong /></td>
+            <td className="jnl--r"><AmountCell value={displayAmount(totalC)} currency={currency} strong /></td>
             <td />
           </tr>
         </tfoot>
@@ -182,7 +185,7 @@ export function JournalEntryForm({
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <span className={`jnl__status ${balanced ? "jnl__status--bal" : "jnl__status--out"}`} role="status">
             <span className="jnl__dot" aria-hidden="true" />
-            {balanced
+            {!amountsKnown ? "Input amount unavailable" : !validSides ? "Invalid debit/credit lines" : balanced
               ? "Balanced"
               : <>Out by <AmountCell value={Math.abs(diff)} currency={currency} strong style={{ color: "inherit" }} /></>}
           </span>

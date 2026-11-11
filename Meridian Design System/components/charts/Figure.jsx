@@ -53,7 +53,7 @@ function inject() {
   document.head.appendChild(el);
 }
 
-function Ladder({ series, width, height, zero = true }) {
+function Ladder({ series, width, height, zero = true, ariaLabel }) {
   const s = series[0] || { points: [] };
   const pts = s.points || [];
   const n = Math.max(pts.length, 1);
@@ -64,7 +64,7 @@ function Ladder({ series, width, height, zero = true }) {
   const mid = zero ? padT + h / 2 : padT + h;
   const scale = zero ? (h / 2) / max : h / max;
   return (
-    <svg width={width} height={height} role="img">
+    <svg width={width} height={height} role={ariaLabel?"img":undefined} aria-label={ariaLabel} aria-hidden={ariaLabel?undefined:true}>
       <line x1={padL} y1={mid} x2={padL + w} y2={mid} stroke={RULE} strokeWidth="1" />
       {[max, 0, zero ? -max : null].filter((v) => v !== null).map((v, i) => (
         <text key={i} className="mds-fig__ax" x={padL - 6} y={mid - v * scale + 3} textAnchor="end">{formatNumber(v)}</text>
@@ -87,7 +87,7 @@ function Ladder({ series, width, height, zero = true }) {
   );
 }
 
-function Trace({ series, width, height }) {
+function Trace({ series, width, height, ariaLabel }) {
   const all = series.flatMap((s) => (s.points || []).map((p) => p.value));
   const max = Math.max(...all, 1), min = Math.min(...all, 0);
   const padL = 54, padB = 20, padT = 6;
@@ -95,7 +95,7 @@ function Trace({ series, width, height }) {
   const sx = (i, n) => padL + (n <= 1 ? 0 : (i * w) / (n - 1));
   const sy = (v) => padT + h - ((v - min) / (max - min || 1)) * h;
   return (
-    <svg width={width} height={height} role="img">
+    <svg width={width} height={height} role={ariaLabel?"img":undefined} aria-label={ariaLabel} aria-hidden={ariaLabel?undefined:true}>
       <line x1={padL} y1={padT + h} x2={padL + w} y2={padT + h} stroke={RULE} />
       <line x1={padL} y1={padT} x2={padL} y2={padT + h} stroke={RULE} />
       {[max, (max + min) / 2, min].map((v, i) => (
@@ -120,7 +120,7 @@ function Trace({ series, width, height }) {
   );
 }
 
-function Distribution({ series, width, height }) {
+function Distribution({ series, width, height, ariaLabel }) {
   const s = series[0] || { points: [] };
   const pts = s.points || [];
   const max = Math.max(1, ...pts.map((p) => p.value || 0));
@@ -129,7 +129,7 @@ function Distribution({ series, width, height }) {
   const bw = Math.max(2, w / Math.max(pts.length, 1) - 2);
   const r = roleOf(s.role);
   return (
-    <svg width={width} height={height} role="img">
+    <svg width={width} height={height} role={ariaLabel?"img":undefined} aria-label={ariaLabel} aria-hidden={ariaLabel?undefined:true}>
       <line x1={padL} y1={padT + h} x2={padL + w} y2={padT + h} stroke={RULE} />
       <text className="mds-fig__ax" x={padL - 6} y={padT + 8} textAnchor="end">{max}</text>
       {pts.map((p, i) => {
@@ -176,11 +176,12 @@ export function Figure({
   width = 460, height = 200, zero, small, className = "", children, ...rest
 }) {
   inject();
+  const ariaLabel=rest["aria-label"]||title;
   const body =
-    geometry === "ladder" ? <Ladder series={series} width={width} height={height} zero={zero !== false} />
-    : geometry === "distribution" ? <Distribution series={series} width={width} height={height} />
+    geometry === "ladder" ? <Ladder ariaLabel={ariaLabel} series={series} width={width} height={height} zero={zero !== false} />
+    : geometry === "distribution" ? <Distribution ariaLabel={ariaLabel} series={series} width={width} height={height} />
     : geometry === "plate" ? <Plate rows={rows} columns={columns} cells={cells} />
-    : <Trace series={series} width={width} height={height} />;
+    : <Trace ariaLabel={ariaLabel} series={series} width={width} height={height} />;
   const legendItems = geometry === "plate" ? (columns || []).filter((c) => c.role) : series.filter((s) => s.role || s.label);
   return (
     <figure className={`mds-fig${className ? " " + className : ""}`} style={{ margin: 0 }} {...rest}>

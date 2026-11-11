@@ -39,6 +39,7 @@ let injected=false;function inject(){if(injected||typeof document==="undefined")
 .mds-dc__bar{position:absolute;top:3px;height:6px;min-width:1px;background:var(--series-actual,var(--brand-axis,#29323A))}
 .mds-dc__bar[data-negative="true"]{background:var(--series-prior,#7890A4)}
 .mds-dc__cmp{position:absolute;bottom:2px;height:0;border-top:2px dashed var(--series-scenario,var(--scenario-signal,#C56343))}
+.mds-dc__row[aria-selected="true"] .mds-dc__label small,.mds-dc__row[aria-selected="true"] .mds-dc__num{color:var(--text-primary,#20252B)}
 .mds-dc__row[aria-selected="true"] .mds-dc__bar{background:var(--selected,#496C8F)}
 .mds-dc__mark{display:inline-block;width:9px;text-align:center;margin-right:3px;color:var(--text-muted,#606870)}
 .mds-dc__totals{display:grid;grid-template-columns:minmax(118px,1.3fr) 64px 64px 1.5fr 76px 76px;gap:10px;align-items:baseline;padding-top:5px;border-top:2px solid var(--border-strong,#AAA49A);font:600 11px var(--font-data,monospace);font-variant-numeric:tabular-nums;color:var(--text-primary,#20252B)}
