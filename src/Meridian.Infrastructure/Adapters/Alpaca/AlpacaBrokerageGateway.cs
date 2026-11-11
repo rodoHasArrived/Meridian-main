@@ -40,7 +40,7 @@ namespace Meridian.Infrastructure.Adapters.Alpaca;
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
 [ImplementsAdr("ADR-010", "Uses IHttpClientFactory for HTTP connections")]
-public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccountCatalog, IBrokeragePortfolioSync, IBrokerageActivitySync, INotionalOrderSizingGateway, IFaceValueOrderSizingGateway, IExplicitOrderCancellationGateway, IExplicitOrderModificationGateway, IBrokerageConnectionState, IBrokerageOrderRecoveryGateway, IBrokerageOrderAmendmentRecoveryGateway
+public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccountCatalog, IBrokeragePortfolioSync, IBrokerageActivitySync, INotionalOrderSizingGateway, IFaceValueOrderSizingGateway, IExplicitOrderCancellationGateway, IExplicitOrderModificationGateway, IBrokerageConnectionState, IBrokerageAccountIdentity, IBrokerageOrderRecoveryGateway, IBrokerageOrderAmendmentRecoveryGateway
 {
     /// <inheritdoc />
     public bool UsesFaceValuePercentageOfPar(OrderRequest request)
@@ -105,6 +105,9 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
     private long _generationStreamEpoch;
     private AlpacaCredentialSnapshot? _connectedCredentials;
     private string? _connectedAccountId;
+    // Alpaca's internal UUID for the same account. Operators never see it, so it is accepted as
+    // a second name for the account but never reported as the account's identity.
+    private string? _connectedProviderAccountId;
 
     public AlpacaBrokerageGateway(
         IHttpClientFactory httpClientFactory,
@@ -149,10 +152,13 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
 
     public bool IsExecutionStreamHealthy => _tradeUpdates?.IsHealthy ?? true;
 
+    // Durable state is bound to this exact string (the OMS recovery journal refuses any other
+    // scope), so it stays on Alpaca's immutable account UUID whenever one is reported. Naming the
+    // account by its account number must not lock an existing installation out of its journal.
     public string? ScopeIdentity => _connected && _connectedCredentials is { } connected && connected == CurrentCredentials
         && !string.IsNullOrWhiteSpace(_connectedAccountId)
         && !string.Equals(_connectedAccountId, "unknown", StringComparison.OrdinalIgnoreCase)
-            ? $"{connected.Environment}:{_connectedAccountId}"
+            ? $"{connected.Environment}:{_connectedProviderAccountId ?? _connectedAccountId}"
             : null;
 
     public long ConnectionGeneration
@@ -214,7 +220,7 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
                 "Alpaca KeyId and SecretKey are required for brokerage. Configure credentials before calling ConnectAsync.");
 
         var connectedCredentials = CurrentCredentials;
-        var account = await GetAccountInfoAsync(ct).ConfigureAwait(false);
+        var (account, providerAccountId) = await ReadAccountAsync(null, ct).ConfigureAwait(false);
         if (connectedCredentials != CurrentCredentials)
             throw new InvalidOperationException("Alpaca credentials changed during connection establishment.");
         if (_tradeUpdates is not null)
@@ -225,7 +231,9 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
                 throw new InvalidDataException(
                     "Alpaca did not return a provider account identity required to scope durable execution state.");
             }
-            _tradeUpdates.ConfigureDurableStateScope(account.AccountId, CurrentCredentials.Environment);
+            // Durable execution state stays keyed by Alpaca's immutable account UUID when it is
+            // reported, so naming the account by its account number does not orphan an inbox.
+            _tradeUpdates.ConfigureDurableStateScope(providerAccountId ?? account.AccountId, CurrentCredentials.Environment);
             // The gateway owns this stream until disposal. A browser recovery request must
             // not own its lifetime, or cancelling that request permanently stops later fills.
             ct.ThrowIfCancellationRequested();
@@ -233,6 +241,7 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
         }
         _connectedCredentials = connectedCredentials;
         _connectedAccountId = account.AccountId;
+        _connectedProviderAccountId = providerAccountId;
         _connected = true;
         Interlocked.Increment(ref _connectionGeneration);
         _logger.LogInformation("Alpaca brokerage connected: account {AccountId}, status {Status}",
@@ -363,62 +372,8 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
     public async Task<AccountInfo> GetAccountInfoAsync(CancellationToken ct = default)
         => await GetAccountInfoCoreAsync(null, ct).ConfigureAwait(false);
 
-    private async Task<AccountInfo> GetAccountInfoCoreAsync(List<string>? completenessIssues, CancellationToken ct)
-    {
-        using var client = CreateHttpClient();
-        var response = await client.GetAsync($"{BaseUrl}/v2/account", ct).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
-
-        var account = await response.Content.ReadFromJsonAsync(
-            AlpacaBrokerageSerializerContext.Default.AlpacaAccountResponse, ct).ConfigureAwait(false);
-
-        if (completenessIssues is not null)
-        {
-            RequirePortfolioDecimal(account?.Cash, "account cash", completenessIssues);
-            RequirePortfolioDecimal(account?.Equity, "account equity", completenessIssues);
-            RequirePortfolioDecimal(account?.BuyingPower, "account buying power", completenessIssues);
-            RequireOptionalPortfolioDecimal(account?.Multiplier, "account multiplier", completenessIssues);
-            RequireOptionalPortfolioDecimal(account?.RegTBuyingPower, "account Reg T buying power", completenessIssues);
-            RequireOptionalPortfolioDecimal(account?.InitialMargin, "account initial margin", completenessIssues);
-            RequireOptionalPortfolioDecimal(account?.MaintenanceMargin, "account maintenance margin", completenessIssues);
-            RequireOptionalPortfolioDecimal(account?.LastMaintenanceMargin, "account last maintenance margin", completenessIssues);
-            RequireOptionalPortfolioDecimal(account?.SpecialMemorandumAccount, "account SMA", completenessIssues);
-            RequireOptionalPortfolioDecimal(account?.LongMarketValue, "account long market value", completenessIssues);
-            RequireOptionalPortfolioDecimal(account?.ShortMarketValue, "account short market value", completenessIssues);
-            RequireOptionalPortfolioDecimal(account?.NonMarginableBuyingPower, "account non-marginable buying power", completenessIssues);
-            if (string.IsNullOrWhiteSpace(account?.Currency))
-                completenessIssues.Add("Account currency was not reported.");
-            if (string.IsNullOrWhiteSpace(account?.Status))
-                completenessIssues.Add("Account status was not reported.");
-            if (account?.TradingBlocked is null || account.AccountBlocked is null)
-                completenessIssues.Add("Account trading restrictions were not reported.");
-        }
-
-        return new AccountInfo
-        {
-            AccountId = account?.Id ?? account?.AccountNumber ?? "unknown",
-            Equity = ParseDecimal(account?.Equity),
-            Cash = ParseDecimal(account?.Cash),
-            BuyingPower = ParseDecimal(account?.BuyingPower),
-            Currency = account?.Currency ?? string.Empty,
-            Status = account?.Status ?? "unknown",
-            MarginMultiplier = ParseNullableDecimal(account?.Multiplier),
-            RegTBuyingPower = ParseNullableDecimal(account?.RegTBuyingPower),
-            InitialMargin = ParseNullableDecimal(account?.InitialMargin),
-            MaintenanceMargin = ParseNullableDecimal(account?.MaintenanceMargin),
-            LastMaintenanceMargin = ParseNullableDecimal(account?.LastMaintenanceMargin),
-            SpecialMemorandumAccount = ParseNullableDecimal(account?.SpecialMemorandumAccount),
-            LongMarketValue = ParseNullableDecimal(account?.LongMarketValue),
-            ShortMarketValue = ParseNullableDecimal(account?.ShortMarketValue),
-            NonMarginableBuyingPower = ParseNullableDecimal(account?.NonMarginableBuyingPower),
-            TradingBlocked = account?.TradingBlocked ?? false,
-            TransfersBlocked = account?.TransfersBlocked ?? false,
-            AccountBlocked = account?.AccountBlocked ?? false,
-            ShortingEnabled = account?.ShortingEnabled ?? false,
-            OptionsApprovedLevel = account?.OptionsApprovedLevel,
-            OptionsTradingLevel = account?.OptionsTradingLevel,
-        };
-    }
+    private async Task<AccountInfo> GetAccountInfoCoreAsync(List<string>? completenessIssues, CancellationToken ct) =>
+        (await ReadAccountAsync(completenessIssues, ct).ConfigureAwait(false)).Account;
 
     /// <inheritdoc />
     public async Task<IReadOnlyList<BrokerPosition>> GetPositionsAsync(CancellationToken ct = default)
@@ -693,27 +648,6 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
             // product decision, not a build fix.
             Activities: activities.Select(activity => BuildCanonicalActivityEvent(activity, account.Currency)).ToArray());
     }
-
-    private async Task<AccountInfo> RequireRequestedAccountAsync(
-        string externalAccountId,
-        CancellationToken ct,
-        List<string>? completenessIssues = null)
-    {
-        var account = await GetAccountInfoCoreAsync(completenessIssues, ct).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(account.AccountId)
-            || !string.Equals(
-                account.AccountId.Trim(),
-                externalAccountId.Trim(),
-                StringComparison.OrdinalIgnoreCase))
-        {
-            throw new InvalidOperationException(
-                "The requested Alpaca account does not match the account resolved by the configured credentials.");
-        }
-
-        return account;
-    }
-
-
 
     /// <inheritdoc />
     public ValueTask DisposeAsync()

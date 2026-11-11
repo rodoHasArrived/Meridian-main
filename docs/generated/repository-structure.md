@@ -5855,6 +5855,7 @@ Meridian-main
 │   │   ├── Adapters
 │   │   │   ├── Alpaca
 │   │   │   │   ├── AlpacaAssetStreamAdapters.cs
+│   │   │   │   ├── AlpacaBrokerageGateway.AccountIdentity.cs
 │   │   │   │   ├── AlpacaBrokerageGateway.Cancellation.cs
 │   │   │   │   ├── AlpacaBrokerageGateway.cs
 │   │   │   │   ├── AlpacaBrokerageGateway.Modifications.cs
@@ -11077,6 +11078,7 @@ Meridian-main
 │   │   │   │   │       ├── polygon-recorded-session-spy-etf.json
 │   │   │   │   │       └── polygon-recorded-session-tsla-opening-cross.json
 │   │   │   │   ├── AlpacaAssetStreamRoutingTests.cs
+│   │   │   │   ├── AlpacaBrokerageGatewayTests.AccountIdentity.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.Amendments.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.PortfolioRecovery.cs
