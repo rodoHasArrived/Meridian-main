@@ -398,6 +398,27 @@ public sealed class AssetObligationProjectionServiceTests
     }
 
     [Fact]
+    public void ProjectFromSecurityMaster_NegativeDepositInterest_BlocksRatherThanProjectingPrincipalWithZeroInterest()
+    {
+        var security = MakeSecurity("Deposit", "Signed deposit", new
+        {
+            depositType = "Term",
+            institutionName = "Synthetic Bank",
+            maturity = "2091-06-15",
+            interestRate = -0.005m,
+            par = 1_000_000m,
+            isCallable = false
+        });
+
+        var result = new AssetObligationProjectionService().ProjectFromSecurityMaster(security);
+
+        result.ProjectedCashFlows.Should().BeEmpty();
+        result.CashFlowProjectionRuns.Should().ContainSingle().Which.Blocker
+            .Should().Be(SecurityInterestSupport.NegativeInterestBlocker);
+        result.CashFlowProjectionRuns.Single().Status.Should().Be("Blocked");
+    }
+
+    [Fact]
     public void ProjectFromSecurityMaster_PrivateCompanyEquity_ReceivesValuationReview_LikeOtherAlternatives()
     {
         // Ops-capable alternatives that no other branch owns (real estate, guarantees) always got a

@@ -206,3 +206,17 @@ Daily direct-lending PIK, cash-interest and commitment-fee accrual use one-day s
 periods and period-aware day count. Formula version one retains its existing amounts, including
 Thirty360's Actual360 denominator and the terminal-date edge. Manual rate resets retain their
 explicit request date; automatic reset and capitalization cadence require separate persisted policy.
+
+
+ADR-027 S3-E codec records now store shared module records for exercise, currency pairs,
+notionals, profile envelopes, listing detail, credit protection, structured payoffs, private
+valuations, coupon structures, principal, swap legs, covenants, maturity, scalar rates, issuers,
+pool detail, financing, sweep and funds. Forwarding getters preserve codec/read APIs without
+another scalar copy. `Interop.SecurityStructures.fs` serializes the structural module homes;
+the permanent legacy-event upcaster remains read-only. Replay tests cover each contracted group.
+
+The completed field-home census covers all 32 class payloads and 52 canonical module types.
+Equity capital retains preferred/convertible structures, exact raw-rate modules retain source
+basis points and cadence labels, and the declared-schedule home retains complete windows,
+notices and calendars. A reflection regression forbids adding per-class scalar storage again.
+Legacy compatibility getters read their shared module; they do not keep a second value.

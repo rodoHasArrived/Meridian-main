@@ -51,80 +51,13 @@ module CommonTerms =
                 PrimaryListingMic = terms.PrimaryListingMic |> Option.map (fun m -> m.Trim().ToUpperInvariant())
         }
 
-[<RequireQualifiedAccess>]
-type DividendType =
-    | Fixed
-    | Floating
-    | Cumulative
-
-[<RequireQualifiedAccess>]
-module DividendType =
-    let asString dividendType =
-        match dividendType with
-        | DividendType.Fixed -> "Fixed"
-        | DividendType.Floating -> "Floating"
-        | DividendType.Cumulative -> "Cumulative"
-
-type ParticipationTerms = {
-    ParticipatesInCommonDividends: bool
-    AdditionalDividendThreshold: decimal option
-}
-
-[<RequireQualifiedAccess>]
-type LiquidationPreference =
-    | Pari
-    | Senior of multiple: decimal
-    | Subordinated
-
-[<RequireQualifiedAccess>]
-module LiquidationPreference =
-    let asString preference =
-        match preference with
-        | LiquidationPreference.Pari -> "Pari"
-        | LiquidationPreference.Senior _ -> "Senior"
-        | LiquidationPreference.Subordinated -> "Subordinated"
-
-type PreferredTerms = {
-    DividendRate: decimal option
-    DividendType: DividendType
-    RedemptionPrice: decimal option
-    RedemptionDate: DateOnly option
-    CallableDate: DateOnly option
-    ParticipationTerms: ParticipationTerms option
-    LiquidationPreference: LiquidationPreference
-}
-
-type ConvertibleTerms = {
-    UnderlyingSecurityId: SecurityId
-    ConversionRatio: decimal
-    ConversionPrice: decimal option
-    ConversionStartDate: DateOnly option
-    ConversionEndDate: DateOnly option
-}
-
-[<RequireQualifiedAccess>]
-type EquityClassification =
-    | Common
-    | Preferred of PreferredTerms
-    | Convertible of ConvertibleTerms
-    | ConvertiblePreferred of PreferredTerms * ConvertibleTerms
-    | Other of string
-
-[<RequireQualifiedAccess>]
-module EquityClassification =
-    let asString classification =
-        match classification with
-        | EquityClassification.Common -> "Common"
-        | EquityClassification.Preferred _ -> "Preferred"
-        | EquityClassification.Convertible _ -> "Convertible"
-        | EquityClassification.ConvertiblePreferred _ -> "ConvertiblePreferred"
-        | EquityClassification.Other s -> s
-
 type EquityTerms = {
-    ShareClass: string option
-    VotingRightsCat: VotingRightsCat option
-    Classification: EquityClassification option
-}
+    Capital: EquityCapitalTerms
+} with
+    member this.ShareClass = this.Capital.ShareClass
+    member this.VotingRightsCat = this.Capital.VotingRightsCat
+    member this.Classification = this.Capital.Classification
+
 
 /// Exercise style for options and warrants.
 [<RequireQualifiedAccess>]
@@ -137,315 +70,82 @@ type ExerciseStyle =
 type OptChainId = OptChainId of string
 
 type OptionTerms = {
-    UnderlyingId: SecurityId
-    PutCall: string
-    Strike: decimal
-    Expiry: DateOnly
-    Multiplier: decimal
-    /// Links this contract to its option chain / series aggregate.
-    OptChainId: string option
-    ExerciseStyle: ExerciseStyle option
-    /// "Physical" or "Cash".
-    SettlementType: string option
-    /// True when this contract has been adjusted for a corporate action (split, special dividend, etc.).
-    IsAdjusted: bool
-    LastTradingDt: DateOnly option
-}
+    Dates: MaturityTerms
+    ListingDetail: ListingDetailTerms
+    Exercise: ExerciseTerms
+    TradingParameters: TradingParams
+} with
+    member this.Expiry = (this.Dates.MaturityDate |> Option.defaultValue DateOnly.MinValue)
+
 
 type FutureTerms = {
-    RootSymbol: string
-    ContractMonth: string
-    Expiry: DateOnly
-    Multiplier: decimal
-    LastTradingDt: DateOnly option
-    FirstNoticeDt: DateOnly option
-    DeliveryMonthDt: DateOnly option
-    /// "Physical" or "Cash".
-    SettlementType: string option
-    /// Delivery point code for physically settled commodity futures.
-    DeliveryLocationCode: string option
-    /// True when this contract is the current front-month / roll target.
-    IsRollTarget: bool
-    /// Number of calendar days before expiry when the roll window opens.
-    RollWindowDays: int option
-}
+    Dates: MaturityTerms
+    ListingDetail: ListingDetailTerms
+    TradingParameters: TradingParams
+} with
+    member this.Expiry = (this.Dates.MaturityDate |> Option.defaultValue DateOnly.MinValue)
 
-/// Discriminated union identifying the bond's economic subclass.
-[<RequireQualifiedAccess>]
-type BondSubclass =
-    | Sovereign
-    | Corporate
-    | Municipal
-    | Agency
-    | Convertible
-    | InflationLinked
-    | FloatingRate
-    // --- Scheduled / structured principal ---
-    /// Bond with contractual sinking fund or mandatory principal instalments.
-    | SinkingFund
-    /// Step-rate bond whose coupon increases per a contractual schedule (may be callable at step dates).
-    | StepRate
-    /// Fixed-rate bond that converts to floating at a specified date.
-    | FixedToFloat
-    // --- Short-term / money-market debt ---
-    /// Variable Rate Demand Note — daily or weekly reset rate; investor may tender on demand.
-    | Vrdn
-    /// Auction Rate Security — rate resets at periodic auction; vendor pricing conventions may hold it at par.
-    | AuctionRate
-    // Loans belong in DirectLoan; securitized products belong in StructuredCredit.
-    // Historical labels survive only through Other for tolerant record reconstruction.
-    | Other of string
-
-[<RequireQualifiedAccess>]
-module BondSubclass =
-    /// Canonical serialization label. Named cases use the case name; <c>Other</c> carries its raw
-    /// label — serializing the union's ToString (<c>Other "X"</c>) made every unknown subclass
-    /// re-wrap itself one level deeper per codec pass instead of round-tripping.
-    let label (subclass: BondSubclass) =
-        match subclass with
-        | BondSubclass.Other name -> name
-        | named -> string named
-
-/// A dated coupon-rate step: the annual rate payable from <c>EffectiveDate</c> until the next
-/// entry's effective date (or maturity for the last entry). The term data that makes the
-/// <see cref="BondSubclass.StepRate"/> and <see cref="BondSubclass.FixedToFloat"/> taxonomy
-/// computable instead of a label.
-type StepCouponEntry = {
-    EffectiveDate: DateOnly
-    Rate: decimal
-}
-
-[<RequireQualifiedAccess>]
-type BondCouponStructure =
-    | Fixed of rate: decimal * dayCount: DayCountConvention option
-    | Floating of index: string * spreadBps: decimal option * capRate: decimal option * floorRate: decimal option * dayCount: DayCountConvention option
-    | ZeroCoupon
-    /// Step-rate coupon: a contractual dated rate schedule (step-up notes, step coupons around
-    /// call dates). The schedule is the coupon — there is no single scalar rate.
-    | Step of schedule: StepCouponEntry list * dayCount: DayCountConvention option
-    /// Inflation-linked coupon (TIPS, linkers): a real rate accruing on index-adjusted principal.
-    /// <c>indexName</c> names the reference index (e.g. "CPI-U"); <c>baseIndexValue</c> is the
-    /// index level at issue and <c>indexRatio</c> the current index ratio applied to principal.
-    | InflationLinked of realRate: decimal * indexName: string * baseIndexValue: decimal option * indexRatio: decimal option * dayCount: DayCountConvention option
-
-/// A scheduled principal repayment (amortizing instalment, sinking-fund payment, or term-loan
-/// instalment). Shared by bond and direct-loan terms.
-type PrincipalPaymentEntry = {
-    PaymentDate: DateOnly
-    Amount: decimal
-}
-
-/// The declared conventions the contractual schedule kernel (ADR-025) builds an instrument's periods
-/// with: the flat terms' <c>scheduleConventions</c> block (asset-class terms version 2 on bonds,
-/// certificates of deposit and swap legs, 3 on structured credit). A node reads it from payloads
-/// stamped at that version and does not write it until the contract step (ADR-024, readable before
-/// writable). Text members are kept verbatim, as the payload carries them;
-/// <c>ScheduleConventions.empty</c> means nothing is declared.
-type ScheduleConventions = {
-    BusinessDayConvention: string option
-    /// Whether accrual period boundaries are adjusted for business days (payment dates always are,
-    /// under <c>BusinessDayConvention</c>). None when the terms do not say.
-    AccrualAdjusted: bool option
-    /// The payment calendars by id, joined into one calendar when more than one is named.
-    PaymentCalendars: string list
-    PaymentLagBusinessDays: int option
-    RollConvention: string option
-    EndOfMonthRule: bool option
-    FirstRegularDate: DateOnly option
-    LastRegularDate: DateOnly option
-    /// Schedule generation direction: Forward or Backward.
-    Direction: string option
-    StubPolicy: string option
-    /// Whether a coupon rate is a percent or a fraction: Percent or Fraction.
-    CouponRateUnit: string option
-    /// How a regular coupon's cash amount is computed: Level (rate over frequency) or DayCount.
-    CouponCashBasis: string option
-}
-
-[<RequireQualifiedAccess>]
-module ScheduleConventions =
-    /// No convention declared: what every record carries until a node writes the block.
-    [<CompiledName("Empty")>]
-    let empty : ScheduleConventions =
-        { BusinessDayConvention = None
-          AccrualAdjusted = None
-          PaymentCalendars = []
-          PaymentLagBusinessDays = None
-          RollConvention = None
-          EndOfMonthRule = None
-          FirstRegularDate = None
-          LastRegularDate = None
-          Direction = None
-          StubPolicy = None
-          CouponRateUnit = None
-          CouponCashBasis = None }
-
-    /// Whether nothing is declared.
-    [<CompiledName("IsEmpty")>]
-    let isEmpty (conventions: ScheduleConventions) = conventions = empty
-
-/// One declared call (a flat callSchedule entry: asset-class terms version 3 on bonds and
-/// certificates of deposit, 4 on structured credit). Text members are kept verbatim; their meanings
-/// are frozen in ADR-025's Applications.
-type CallScheduleTerm = {
-    /// The call date, or the start of an American or Bermudan call window. An entry without one is
-    /// not a term and is never read.
-    CallDate: DateOnly
-    /// The last day of the call window, inclusive. Absent, the window runs to the day before the
-    /// next call's date in date order, or to maturity for the last call (ADR-025).
-    CallEndDate: DateOnly option
-    /// European, American or Bermudan.
-    ExerciseStyle: string option
-    /// How often a Bermudan window's call dates recur (a coupon frequency spelling).
-    ExerciseFrequency: string option
-    /// The call price, in the unit priceBasis names.
-    CallPrice: decimal option
-    /// PercentOfPar or PercentOfAccretedValue.
-    PriceBasis: string option
-    /// Fixed or MakeWhole.
-    PriceType: string option
-    /// The make-whole spread over the benchmark, in basis points.
-    MakeWholeSpreadBps: decimal option
-    /// WholeOnly, ProRata or ByLot.
-    PartialRedemption: string option
-    /// Notice of the call falls at least this many days before the exercise date.
-    MinimumNoticeDays: int option
-    /// Notice of the call falls at most this many days before the exercise date.
-    MaximumNoticeDays: int option
-    /// Whether the notice counts are Business or Calendar days.
-    NoticeDayType: string option
-}
-
-/// One declared holder put (a flat putSchedule entry), with the same versions as the call entry. A
-/// mandatory tender is not a put entry; it stays MandatoryPutDate.
-type PutScheduleTerm = {
-    /// The put date, or the start of a put window. An entry without one is never read.
-    PutDate: DateOnly
-    /// The last day of the put window, inclusive. Absent, the window runs to the day before the
-    /// next put's date in date order, or to maturity for the last put (ADR-025).
-    PutEndDate: DateOnly option
-    /// European, American or Bermudan.
-    ExerciseStyle: string option
-    /// How often a Bermudan window's put dates recur (a coupon frequency spelling).
-    ExerciseFrequency: string option
-    /// The put price, in the unit priceBasis names.
-    PutPrice: decimal option
-    /// PercentOfPar or PercentOfAccretedValue.
-    PriceBasis: string option
-    /// The holder's election falls at least this many days before the exercise date.
-    MinimumNoticeDays: int option
-    /// The holder's election falls at most this many days before the exercise date.
-    MaximumNoticeDays: int option
-    /// Whether the notice counts are Business or Calendar days.
-    NoticeDayType: string option
-}
-
-/// The declared call and put schedules, in stored order; empty until declared.
-type CallPutSchedules = { Calls: CallScheduleTerm list; Puts: PutScheduleTerm list }
-
-[<RequireQualifiedAccess>]
-module CallPutSchedules =
-    /// Nothing declared: what every record carries until a node writes the schedules.
-    [<CompiledName("Empty")>]
-    let empty : CallPutSchedules = { Calls = []; Puts = [] }
-
-    /// Whether neither a call nor a put is declared.
-    [<CompiledName("IsEmpty")>]
-    let isEmpty (schedules: CallPutSchedules) = schedules.Calls.IsEmpty && schedules.Puts.IsEmpty
-
-[<RequireQualifiedAccess>]
-module CallScheduleTerm =
-    /// A call on the date with nothing else stated.
-    let onDate (date: DateOnly) : CallScheduleTerm =
-        { CallDate = date
-          CallEndDate = None
-          ExerciseStyle = None
-          ExerciseFrequency = None
-          CallPrice = None
-          PriceBasis = None
-          PriceType = None
-          MakeWholeSpreadBps = None
-          PartialRedemption = None
-          MinimumNoticeDays = None
-          MaximumNoticeDays = None
-          NoticeDayType = None }
-
-[<RequireQualifiedAccess>]
-module PutScheduleTerm =
-    /// A put on the date with nothing else stated.
-    let onDate (date: DateOnly) : PutScheduleTerm =
-        { PutDate = date
-          PutEndDate = None
-          ExerciseStyle = None
-          ExerciseFrequency = None
-          PutPrice = None
-          PriceBasis = None
-          MinimumNoticeDays = None
-          MaximumNoticeDays = None
-          NoticeDayType = None }
 
 type BondTerms = {
-    Maturity: DateOnly
-    IssueDate: DateOnly option
-    Coupon: BondCouponStructure
-    IsCallable: bool
-    CallDate: DateOnly option
-    IssuerName: string option
-    Seniority: string option
-    /// Economic subclass of this bond instrument.
-    Subclass: BondSubclass
+    Dates: MaturityTerms
+    CouponStructure: BondCouponTerms
+    Callability: EconomicCallTerms
+    IssuerTerms: IssuerRef
+    DebtClassification: DebtClassificationTerms
+    RedemptionFacts: BondRedemptionTerms
     // --- Valuation and redemption terms ---
-    /// Face/par value of the bond (e.g. 1000 for a $1,000 par bond).
-    /// Used in market value calculation: Par × Factor × Price / 100.
-    Par: decimal option
-    /// Coupon payment frequency (Annual, SemiAnnual, Quarterly, Monthly, etc.).
-    PaymentFrequency: PaymentFrequency option
-    /// Latest contractual date by which principal is legally due under the governing documents.
-    /// May differ from Maturity for pre-refunded or mandatory-put bonds.
-    LegalFinalMaturity: DateOnly option
-    /// Date to which a pre-refunded municipal bond is called using escrowed proceeds.
-    /// When present, cash flows and amortization target this date rather than final maturity.
-    PreRefundDate: DateOnly option
-    /// Date of a mandatory put feature that obligates the holder to tender at a set price.
-    MandatoryPutDate: DateOnly option
     /// Contractual principal instalment schedule for sinking-fund and other scheduled-principal
     /// subclasses. Empty for bullet bonds. The BondSubclass taxonomy already names SinkingFund;
     /// this is the term data that lets cash-flow and amortization math act on it.
-    PrincipalSchedule: PrincipalPaymentEntry list
+    Principal: PrincipalScheduleTerms
     /// Declared schedule conventions (asset-class terms version 2); empty until declared.
-    ScheduleConventions: ScheduleConventions
+    DeclaredSchedule: DeclaredScheduleTerms
     /// Declared call and put schedules (asset-class terms version 3); empty until declared.
-    CallPutSchedules: CallPutSchedules
-}
+
+} with
+    member this.ScheduleConventions = this.DeclaredSchedule.Conventions
+    member this.CallPutSchedules = this.DeclaredSchedule.Exercises
+    member this.IsCallable = this.Callability.IsCallable
+    member this.CallDate = this.Callability.FirstCallDate
+    member this.Seniority = this.DebtClassification.Seniority
+    member this.Subclass = this.DebtClassification.Subclass
+    member this.Par = this.RedemptionFacts.Par
+    member this.LegalFinalMaturity = this.RedemptionFacts.LegalFinalMaturity
+    member this.PreRefundDate = this.RedemptionFacts.PreRefundDate
+    member this.MandatoryPutDate = this.RedemptionFacts.MandatoryPutDate
+    member this.PaymentFrequency = this.CouponStructure.PaymentFrequency
+    member this.IssuerName = this.IssuerTerms.IssuerName
+    member this.Maturity = (this.Dates.MaturityDate |> Option.defaultValue DateOnly.MinValue)
+    member this.IssueDate = this.Dates.IssueDate
+    member this.Coupon = this.CouponStructure.Structure
+    member this.PrincipalSchedule = this.Principal.Payments
+
 
 [<RequireQualifiedAccess>]
 module BondTerms =
     let fixedRate maturity couponRate dayCount issuerName =
-        { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.Fixed(couponRate, dayCount)
-          IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None
-          Subclass = BondSubclass.Corporate
-          Par = None; PaymentFrequency = None; LegalFinalMaturity = None; PreRefundDate = None; MandatoryPutDate = None
-          PrincipalSchedule = []
-          ScheduleConventions = ScheduleConventions.empty
-          CallPutSchedules = CallPutSchedules.empty }
+        { Dates = { EffectiveDate = None; IssueDate = None; MaturityDate = Some (maturity) }; CouponStructure = { Structure = BondCouponStructure.Fixed(couponRate, dayCount); PaymentFrequency = None }
+          Callability = EconomicCallTerms.scalar false None; IssuerTerms = { IssuerRef.empty with IssuerName = issuerName }
+          DebtClassification = { Subclass = BondSubclass.Corporate; Seniority = None }
+          RedemptionFacts = BondRedemptionTerms.empty
+          Principal = { Payments = [] }
+          DeclaredSchedule = DeclaredScheduleTerms.empty }
 
     let floatingRate maturity index spreadBps issuerName =
-        { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.Floating(index, spreadBps, None, None, None)
-          IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None
-          Subclass = BondSubclass.FloatingRate
-          Par = None; PaymentFrequency = None; LegalFinalMaturity = None; PreRefundDate = None; MandatoryPutDate = None
-          PrincipalSchedule = []
-          ScheduleConventions = ScheduleConventions.empty
-          CallPutSchedules = CallPutSchedules.empty }
+        { Dates = { EffectiveDate = None; IssueDate = None; MaturityDate = Some (maturity) }; CouponStructure = { Structure = BondCouponStructure.Floating(index, spreadBps, None, None, None); PaymentFrequency = None }
+          Callability = EconomicCallTerms.scalar false None; IssuerTerms = { IssuerRef.empty with IssuerName = issuerName }
+          DebtClassification = { Subclass = BondSubclass.FloatingRate; Seniority = None }
+          RedemptionFacts = BondRedemptionTerms.empty
+          Principal = { Payments = [] }
+          DeclaredSchedule = DeclaredScheduleTerms.empty }
 
     let zeroCoupon maturity issuerName =
-        { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.ZeroCoupon
-          IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None
-          Subclass = BondSubclass.Corporate
-          Par = None; PaymentFrequency = None; LegalFinalMaturity = None; PreRefundDate = None; MandatoryPutDate = None
-          PrincipalSchedule = []
-          ScheduleConventions = ScheduleConventions.empty
-          CallPutSchedules = CallPutSchedules.empty }
+        { Dates = { EffectiveDate = None; IssueDate = None; MaturityDate = Some (maturity) }; CouponStructure = { Structure = BondCouponStructure.ZeroCoupon; PaymentFrequency = None }
+          Callability = EconomicCallTerms.scalar false None; IssuerTerms = { IssuerRef.empty with IssuerName = issuerName }
+          DebtClassification = { Subclass = BondSubclass.Corporate; Seniority = None }
+          RedemptionFacts = BondRedemptionTerms.empty
+          Principal = { Payments = [] }
+          DeclaredSchedule = DeclaredScheduleTerms.empty }
 
     let couponRate (terms: BondTerms) =
         match terms.Coupon with
@@ -479,333 +179,293 @@ module BondTerms =
         | _ -> couponRate terms
 
 type FxSpotTerms = {
-    BaseCurrency: string
-    QuoteCurrency: string
+    CurrencyPair: CurrencyPairTerms
+
 }
 
 type DepositTerms = {
-    DepositType: string
-    InstitutionName: string
-    Maturity: DateOnly option
-    InterestRate: decimal option
-    DayCount: DayCountConvention option
-    IsCallable: bool
-}
+    Dates: MaturityTerms
+    IssuerTerms: IssuerRef
+    CouponTerms: CouponTerms
+    Callability: EconomicCallTerms
+    /// Optional governed declaration of this record's scalar rate unit; no inferred default.
+    RateConvention: RateConventionTerms option
+} with
+    member this.RateUnit = this.RateConvention |> Option.map (fun declaration -> declaration.RateUnit)
+    member this.IsCallable = this.Callability.IsCallable
+    member this.DepositType = (this.IssuerTerms.IssuerProgram |> Option.defaultValue System.String.Empty)
+    member this.InstitutionName = (this.IssuerTerms.InstitutionName |> Option.defaultValue System.String.Empty)
+    member this.Maturity = this.Dates.MaturityDate
+    member this.InterestRate = this.CouponTerms.CouponRate
+    member this.DayCount = this.CouponTerms.DayCount
 
 type MoneyMarketFundTerms = {
-    FundFamily: string option
-    SweepEligible: bool
-    WeightedAverageMaturityDays: int option
-    LiquidityFeeEligible: bool
-}
+    FundTerms: FundTerms
+} with
+    member this.FundFamily = this.FundTerms.FundFamily
+    member this.SweepEligible = (this.FundTerms.SweepEligible |> Option.defaultValue false)
+    member this.WeightedAverageMaturityDays = this.FundTerms.WeightedAverageMaturityDays
+    member this.LiquidityFeeEligible = (this.FundTerms.LiquidityFeeEligible |> Option.defaultValue false)
+
 
 type CertificateOfDepositTerms = {
-    IssuerName: string
-    Maturity: DateOnly
-    CouponRate: decimal option
-    CallableDate: DateOnly option
-    DayCount: DayCountConvention option
+    Dates: MaturityTerms
+    IssuerTerms: IssuerRef
+    CouponTerms: CouponTerms
+    Callability: EconomicCallTerms
     /// Declared schedule conventions (asset-class terms version 2); empty until declared.
-    ScheduleConventions: ScheduleConventions
+    DeclaredSchedule: DeclaredScheduleTerms
     /// Declared call and put schedules (asset-class terms version 3); empty until declared.
-    CallPutSchedules: CallPutSchedules
-}
+    /// Optional governed declaration of this record's scalar rate unit; no inferred default.
+    RateConvention: RateConventionTerms option
+} with
+    member this.ScheduleConventions = this.DeclaredSchedule.Conventions
+    member this.CallPutSchedules = this.DeclaredSchedule.Exercises
+    member this.RateUnit = this.RateConvention |> Option.map (fun declaration -> declaration.RateUnit)
+    member this.CallableDate = this.Callability.FirstCallDate
+    member this.IssuerName = (this.IssuerTerms.IssuerName |> Option.defaultValue System.String.Empty)
+    member this.Maturity = (this.Dates.MaturityDate |> Option.defaultValue DateOnly.MinValue)
+    member this.CouponRate = this.CouponTerms.CouponRate
+    member this.DayCount = this.CouponTerms.DayCount
 
 type CommercialPaperTerms = {
-    IssuerName: string
-    Maturity: DateOnly
-    DiscountRate: decimal option
-    DayCount: DayCountConvention option
-    IsAssetBacked: bool
-}
+    Dates: MaturityTerms
+    IssuerTerms: IssuerRef
+    DiscountTerms: DiscountTerms
+    CouponTerms: CouponTerms
+    /// Optional governed declaration of this record's scalar rate unit; no inferred default.
+    RateConvention: RateConventionTerms option
+} with
+    member this.RateUnit = this.RateConvention |> Option.map (fun declaration -> declaration.RateUnit)
+    member this.IssuerName = (this.IssuerTerms.IssuerName |> Option.defaultValue System.String.Empty)
+    member this.IsAssetBacked = this.IssuerTerms.IssuerProgram = Some "AssetBacked"
+    member this.Maturity = (this.Dates.MaturityDate |> Option.defaultValue DateOnly.MinValue)
+    member this.DiscountRate = this.DiscountTerms.DiscountRate
+    member this.DayCount = this.CouponTerms.DayCount
 
 type TreasuryBillTerms = {
-    Maturity: DateOnly
-    AuctionDate: DateOnly option
-    CUSIP: string option
-    DiscountRate: decimal option
-}
+    Dates: MaturityTerms
+    Auction: AuctionTerms
+    IssuerTerms: IssuerRef
+    DiscountTerms: DiscountTerms
+    /// Optional governed declaration of this record's scalar rate unit; no inferred default.
+    RateConvention: RateConventionTerms option
+} with
+    member this.RateUnit = this.RateConvention |> Option.map (fun declaration -> declaration.RateUnit)
+    member this.AuctionDate = this.Auction.AuctionDate
+    member this.CUSIP = this.IssuerTerms.IssuerProgram
+    member this.Maturity = (this.Dates.MaturityDate |> Option.defaultValue DateOnly.MinValue)
+    member this.DiscountRate = this.DiscountTerms.DiscountRate
 
 type RepoTerms = {
-    Counterparty: string
-    StartDate: DateOnly
-    EndDate: DateOnly
-    RepoRate: decimal option
-    CollateralType: string option
-    Haircut: decimal option
-}
+    FinancingTerms: FinancingTerms
+    DiscountTerms: DiscountTerms
+    /// Optional governed declaration of this record's scalar rate unit; no inferred default.
+    RateConvention: RateConventionTerms option
+} with
+    member this.RateUnit = this.RateConvention |> Option.map (fun declaration -> declaration.RateUnit)
+    member this.Counterparty = (this.FinancingTerms.Counterparty |> Option.defaultValue System.String.Empty)
+    member this.StartDate = (this.FinancingTerms.OpenDate |> Option.defaultValue System.DateOnly.MinValue)
+    member this.EndDate = (this.FinancingTerms.CloseDate |> Option.defaultValue System.DateOnly.MinValue)
+    member this.CollateralType = this.FinancingTerms.CollateralType
+    member this.Haircut = this.FinancingTerms.Haircut
+    member this.RepoRate = this.DiscountTerms.YieldRate
 
 type CashSweepTerms = {
-    ProgramName: string
-    SweepVehicleType: string
-    SweepFrequency: string option
-    TargetAccountType: string option
-    YieldRate: decimal option
-}
+    SweepTerms: SweepTerms
+    DiscountTerms: DiscountTerms
+    /// Optional governed declaration of this record's scalar rate unit; no inferred default.
+    RateConvention: RateConventionTerms option
+} with
+    member this.RateUnit = this.RateConvention |> Option.map (fun declaration -> declaration.RateUnit)
+    member this.ProgramName = (this.SweepTerms.ProgramName |> Option.defaultValue System.String.Empty)
+    member this.SweepVehicleType = (this.SweepTerms.SweepVehicleType |> Option.map SweepVehicle.label |> Option.defaultValue System.String.Empty)
+    member this.SweepFrequency = this.SweepTerms.SweepFrequency |> Option.map PaymentFrequency.label
+    member this.TargetAccountType = this.SweepTerms.TargetAccountType
+    member this.YieldRate = this.DiscountTerms.YieldRate
 
 type OtherSecurityTerms = {
-    Category: string
-    SubType: string option
-    Maturity: DateOnly option
-    IssuerName: string option
-    SettlementType: string option
-}
+    Dates: MaturityTerms
+    ClassificationDetail: ClassificationDetailTerms
+    IssuerTerms: IssuerRef
+} with
+    member this.Category = this.ClassificationDetail.Category
+    member this.SubType = this.ClassificationDetail.SubType
+    member this.IssuerName = this.IssuerTerms.IssuerName
+    member this.SettlementType = this.IssuerTerms.IssuerProgram
+    member this.Maturity = this.Dates.MaturityDate
 
-/// One step of an amortizing or accreting leg notional: the notional in effect from this date
-/// until the next step (or maturity).
-type SwapNotionalStep = {
-    EffectiveDate: DateOnly
-    Notional: decimal
-}
-
-/// A floating-leg reset date with the index fixing observed on it, once known.
-type SwapResetEntry = {
-    ResetDate: DateOnly
-    FixingRate: decimal option
-}
-
-/// A swap leg with the economics consumed by cash-flow projection. Optional terms keep
-/// legacy legs readable and allow the projection to use security-level fallbacks.
-type SwapLeg = {
-    LegId: string option
-    LegType: string
-    Currency: string
-    /// Pay or Receive from the holder's perspective. None leaves the leg unnetted.
-    Direction: string option
-    Index: string option
-    FixedRate: decimal option
-    SpreadBps: decimal option
-    /// Observed index fixing used for flat-forward projection, without an implied forward curve.
-    CurrentIndexRate: decimal option
-    Notional: decimal option
-    PaymentFrequency: string option
-    DayCount: DayCountConvention option
-    /// Whether principal exchanges are part of the leg's contractual terms.
-    ExchangesPrincipal: bool
-    /// Dated notional steps for an amortizing or accreting leg; empty for a constant notional.
-    NotionalSchedule: SwapNotionalStep list
-    /// Reset dates with their observed fixings for a floating leg; empty when not tracked.
-    ResetSchedule: SwapResetEntry list
-    /// The leg's declared schedule conventions (asset-class terms version 2); empty until declared.
-    ScheduleConventions: ScheduleConventions
-}
 
 type SwapTerms = {
-    EffectiveDate: DateOnly
-    MaturityDate: DateOnly
-    Legs: SwapLeg list
-}
+    Dates: MaturityTerms
+    SwapLegs: SwapLegTerms
+    RateConvention: RateConventionTerms option
+} with
+    member this.RateUnit = this.RateConvention |> Option.map (fun declaration -> declaration.RateUnit)
+    member this.EffectiveDate = (this.Dates.EffectiveDate |> Option.defaultValue DateOnly.MinValue)
+    member this.MaturityDate = (this.Dates.MaturityDate |> Option.defaultValue DateOnly.MinValue)
+    member this.Legs = this.SwapLegs.Legs
 
-type Covenant = {
-    CovenantType: string
-    Threshold: string
-    Notes: string option
-}
 
 type DirectLoanTerms = {
-    Borrower: string
-    Maturity: DateOnly option
-    Covenants: Covenant list
+    Dates: MaturityTerms
+    IssuerTerms: IssuerRef
+    LoanCovenants: LoanCovenantTerms
     // --- Floating-rate loan economics ---
     /// Floating rate reference index (e.g. "SOFR", "LIBOR", "EURIBOR").
-    ReferenceIndex: string option
-    /// Spread over the reference index in basis points (e.g. 350 = SOFR + 3.50%).
-    SpreadBps: decimal option
+    FloatingRate: FloatingRateTerms
     /// Current all-in coupon rate (reference rate + spread, subject to floor/cap).
-    CurrentCouponRate: decimal option
-    /// Rate reset frequency (e.g. "Daily", "Monthly", "Quarterly").
-    ResetFrequency: string option
+    CouponTerms: CouponTerms
     /// Contractual or expected principal instalment schedule.
-    PrincipalSchedule: PrincipalPaymentEntry list
+    Principal: PrincipalScheduleTerms
     /// Operational reference, not loan economics: the pricing source for market value
     /// (e.g. "IHSMarkit", "Refinitiv", "Client"). Declared Operational in the term schema.
-    PricingSource: string option
-}
+    ReferenceDataSource: ReferenceDataSourceTerms
+    /// Optional governed declaration of this record's scalar rate unit; no inferred default.
+    RateConvention: RateConventionTerms option
+} with
+    member this.RateUnit = this.RateConvention |> Option.map (fun declaration -> declaration.RateUnit)
+    member this.PricingSource = this.ReferenceDataSource.PricingSource
+    member this.Borrower = (this.IssuerTerms.IssuerName |> Option.defaultValue System.String.Empty)
+    member this.Maturity = this.Dates.MaturityDate
+    member this.ReferenceIndex = this.FloatingRate.ReferenceIndex
+    member this.SpreadBps = this.FloatingRate.SpreadBps
+    member this.ResetFrequency = this.FloatingRate.ResetFrequency
+    member this.CurrentCouponRate = this.CouponTerms.CouponRate
+    member this.Covenants = this.LoanCovenants.Entries
+    member this.PrincipalSchedule = this.Principal.Payments
+
 
 /// A dated pool-factor point: the outstanding factor effective on <c>AsOfDate</c>. The typed
 /// counterpart of the free-text factor-schedule term, so amortization can be seeded from a dated
 /// schedule instead of a single scalar factor.
-type FactorScheduleEntry = {
-    AsOfDate: DateOnly
-    Factor: decimal
-}
+type FactorScheduleEntry = EconomicFactorScheduleEntry
 
 /// The securitisation family a structured-credit tranche belongs to. Carried as a typed term so
 /// reporting, risk and reconciliation can partition on it instead of inferring it from the free-text
 /// tranche label or the collateral type; <c>OtherStructuredCreditKind</c> keeps an unrecognised
 /// vendor label verbatim rather than dropping it.
-[<RequireQualifiedAccess>]
-type StructuredCreditKind =
-    | AgencyMbs
-    | NonAgencyMbs
-    | CommercialMbs
-    | AssetBacked
-    | Clo
-    | Cdo
-    | Cmo
-    | InterestOnly
-    | PrincipalOnly
-    | OtherStructuredCreditKind of string
-
-[<RequireQualifiedAccess>]
-module StructuredCreditKind =
-    let asString kind =
-        match kind with
-        | StructuredCreditKind.AgencyMbs -> "AgencyMbs"
-        | StructuredCreditKind.NonAgencyMbs -> "NonAgencyMbs"
-        | StructuredCreditKind.CommercialMbs -> "CommercialMbs"
-        | StructuredCreditKind.AssetBacked -> "AssetBacked"
-        | StructuredCreditKind.Clo -> "Clo"
-        | StructuredCreditKind.Cdo -> "Cdo"
-        | StructuredCreditKind.Cmo -> "Cmo"
-        | StructuredCreditKind.InterestOnly -> "InterestOnly"
-        | StructuredCreditKind.PrincipalOnly -> "PrincipalOnly"
-        | StructuredCreditKind.OtherStructuredCreditKind label -> label
-
-    /// Parses the wire label. Governed labels match case-insensitively, as the taxonomy validator
-    /// does, and canonicalise to the named case; an unrecognised label is kept verbatim as
-    /// <c>OtherStructuredCreditKind</c>.
-    let parse (label: string) =
-        let trimmed = label.Trim()
-        match trimmed.ToUpperInvariant() with
-        | "AGENCYMBS" -> StructuredCreditKind.AgencyMbs
-        | "NONAGENCYMBS" -> StructuredCreditKind.NonAgencyMbs
-        | "COMMERCIALMBS" -> StructuredCreditKind.CommercialMbs
-        | "ASSETBACKED" -> StructuredCreditKind.AssetBacked
-        | "CLO" -> StructuredCreditKind.Clo
-        | "CDO" -> StructuredCreditKind.Cdo
-        | "CMO" -> StructuredCreditKind.Cmo
-        | "INTERESTONLY" -> StructuredCreditKind.InterestOnly
-        | "PRINCIPALONLY" -> StructuredCreditKind.PrincipalOnly
-        | _ -> StructuredCreditKind.OtherStructuredCreditKind trimmed
-
 type StructuredCreditTerms = {
-    Tranche: string
-    PoolId: string option
-    CollateralType: string
-    OriginalFace: decimal
-    CurrentFactor: decimal option
-    CouponOrIndex: string
-    /// Free-text factor-schedule reference (e.g. a trustee-report pointer). Kept for legacy rows;
-    /// dated factor data belongs in <see cref="FactorScheduleEntries"/>.
-    FactorSchedule: string option
-    /// Typed, dated factor schedule consumed by the structured cash-flow resolver's
-    /// <c>FactorAsOf</c> lookup. Empty when no schedule has been supplied.
-    FactorScheduleEntries: FactorScheduleEntry list
-    /// Legal final maturity of the tranche. Cash-flow projection anchors on this date — without a
-    /// persisted maturity the calculated projection paths produce nothing for the record, so the
-    /// factor schedule alone cannot drive amortization math.
-    Maturity: DateOnly option
-    /// Securitisation family (agency/non-agency/commercial MBS, ABS, CLO, CDO, CMO, IO/PO strip).
-    Kind: StructuredCreditKind option
-    /// Position in the capital structure as the deal labels it (e.g. "Senior", "Mezzanine", "Equity").
-    Seniority: string option
-    /// Loss attachment point of the tranche as a fraction of the deal balance (0.0–1.0).
-    AttachmentPoint: decimal option
-    /// Loss detachment point of the tranche as a fraction of the deal balance (0.0–1.0), at or above
-    /// <see cref="AttachmentPoint"/>.
-    DetachmentPoint: decimal option
-    /// Weighted-average coupon of the underlying collateral pool (%).
-    WeightedAverageCoupon: decimal option
-    /// Weighted-average remaining maturity of the collateral pool in months (WAM).
-    WeightedAverageMaturityMonths: int option
-    /// Weighted-average loan age of the collateral pool in months (WALA).
-    WeightedAverageLoanAgeMonths: int option
-    /// CLO: last day of the reinvestment period, after which collections pay down the notes.
-    ReinvestmentPeriodEnd: DateOnly option
-    /// CLO: last day of the non-call period, before which the notes cannot be refinanced.
-    NonCallPeriodEnd: DateOnly option
+    CouponTerms: CouponTerms
+    TrancheContract: TrancheContractTerms
+    Pool: StructuredProductTerms
+    Dates: MaturityTerms
     /// Declared schedule conventions (asset-class terms version 3); empty until declared.
-    ScheduleConventions: ScheduleConventions
+    DeclaredSchedule: DeclaredScheduleTerms
     /// Declared call and put schedules (asset-class terms version 4); empty until declared.
-    CallPutSchedules: CallPutSchedules
-}
+    /// Optional governed declaration of this record's scalar rate unit; no inferred default.
+    RateConvention: RateConventionTerms option
+} with
+    member this.ScheduleConventions = this.DeclaredSchedule.Conventions
+    member this.CallPutSchedules = this.DeclaredSchedule.Exercises
+    member this.CouponOrIndex = this.CouponTerms.CouponType |> Option.map CouponKind.label |> Option.defaultValue String.Empty
+    member this.Kind = this.TrancheContract.Kind
+    member this.Seniority = this.TrancheContract.Seniority
+    member this.AttachmentPoint = this.TrancheContract.AttachmentPoint
+    member this.DetachmentPoint = this.TrancheContract.DetachmentPoint
+    member this.ReinvestmentPeriodEnd = this.TrancheContract.ReinvestmentPeriodEnd
+    member this.NonCallPeriodEnd = this.TrancheContract.NonCallPeriodEnd
+    member this.RateUnit = this.RateConvention |> Option.map (fun declaration -> declaration.RateUnit)
+    member this.Tranche = (this.Pool.TrancheClass |> Option.defaultValue String.Empty)
+    member this.PoolId = this.Pool.PoolIdentifier
+    member this.CollateralType = (this.Pool.CollateralType |> Option.defaultValue String.Empty)
+    member this.OriginalFace = (this.Pool.NotionalBalance |> Option.defaultValue 0m)
+    member this.CurrentFactor = this.Pool.Factor
+    member this.FactorSchedule = this.Pool.FactorScheduleReference
+    member this.FactorScheduleEntries = this.Pool.FactorScheduleEntries
+    member this.WeightedAverageCoupon = this.Pool.WeightedAvgCoupon
+    member this.WeightedAverageMaturityMonths = this.Pool.WeightedAvgMaturityMonths
+    member this.WeightedAverageLoanAgeMonths = this.Pool.WeightedAvgLoanAgeMos
+    member this.Maturity = this.Dates.MaturityDate
+
 
 type PrivateFundInterestTerms = {
-    GpSponsor: string
-    Strategy: string
-    Vintage: int
-    Commitment: decimal
-    FundedAmount: decimal option
-    UnfundedAmount: decimal option
-    NavDate: DateOnly
-    Lockup: string option
-}
+    PrivateAssetValuation: PrivateAssetValuationTerms
+    Notional: NotionalTerms
+    IssuerTerms: IssuerRef
+} with
+    member this.GpSponsor = (this.IssuerTerms.IssuerName |> Option.defaultValue System.String.Empty)
+    member this.Strategy = (this.IssuerTerms.IssuerProgram |> Option.defaultValue System.String.Empty)
+
 
 type PrivateCompanyEquityTerms = {
-    Issuer: string
-    ShareClass: string
-    Round: string
-    OwnershipPercent: decimal option
-    CostBasis: decimal
-    LatestValuation: decimal option
-    TransferRestrictions: string option
-}
+    Capital: EquityCapitalTerms
+    PrivateAssetValuation: PrivateAssetValuationTerms
+    IssuerTerms: IssuerRef
+} with
+    member this.ShareClass = this.Capital.ShareClass |> Option.defaultValue String.Empty
+    member this.Issuer = (this.IssuerTerms.IssuerName |> Option.defaultValue System.String.Empty)
+    member this.Round = (this.IssuerTerms.IssuerProgram |> Option.defaultValue System.String.Empty)
+
 
 type RealEstateHoldingTerms = {
-    PropertyType: string
-    AddressOrMarket: string
-    OwnershipPercent: decimal
-    AppraisalValue: decimal
-    ValuationDate: DateOnly
-    DebtStack: string option
-    Sponsor: string option
-}
+    PrivateAssetValuation: PrivateAssetValuationTerms
+    IssuerTerms: IssuerRef
+} with
+    member this.PropertyType = (this.IssuerTerms.IssuerProgram |> Option.defaultValue System.String.Empty)
+    member this.Sponsor = this.IssuerTerms.IssuerName
+
 
 type CommitmentGuaranteeTerms = {
-    Counterparty: string
-    Beneficiary: string option
-    CommittedAmount: decimal
-    UnfundedAmount: decimal option
-    EffectiveDate: DateOnly
-    ExpiryDate: DateOnly option
-    FeeRate: decimal option
-    Collateral: string option
-    Covenants: Covenant list
-}
+    Dates: MaturityTerms
+    Notional: NotionalTerms
+    IssuerTerms: IssuerRef
+    ContractualRate: ContractualRateTerms
+    CollateralTerms: FinancingTerms
+    LoanCovenants: LoanCovenantTerms
+} with
+    member this.FeeRate = this.ContractualRate.FeeRate
+    member this.Collateral = this.CollateralTerms.CollateralType
+
+    member this.Counterparty = (this.IssuerTerms.IssuerName |> Option.defaultValue System.String.Empty)
+    member this.Beneficiary = this.IssuerTerms.IssuerProgram
+    member this.EffectiveDate = (this.Dates.EffectiveDate |> Option.defaultValue DateOnly.MinValue)
+    member this.ExpiryDate = this.Dates.MaturityDate
+    member this.Covenants = this.LoanCovenants.Entries
+
 
 /// Terms for mutual funds, ETFs, hedge funds, REITs, and closed-end funds.
 /// These instruments generally do not amortize; market value is units × NAV/price.
 type InvestmentFundTerms = {
-    /// Fund category (e.g. "MutualFund", "ETF", "HedgeFund", "REIT", "ClosedEnd").
-    FundType: string option
-    FundFamily: string option
-    /// Currency of the NAV (may differ from the account base currency).
-    NavCurrency: string option
-    /// Distribution policy (Accumulating, Distributing, etc.).
-    DistributionPolicy: DistributionPolicy option
-    /// True for stable-NAV money market and government liquidity funds.
-    IsStableNav: bool option
-    /// Operational reference, not fund economics: the price/NAV data source
-    /// (e.g. "iMoneyNet", "Bloomberg", "Client"). Declared Operational in the term schema.
-    PricingSource: string option
-}
+    FundShare: FundShareTerms
+    FundTerms: FundTerms
+    ReferenceDataSource: ReferenceDataSourceTerms
+} with
+    member this.FundType = this.FundShare.FundType
+    member this.NavCurrency = this.FundShare.NavCurrency
+    member this.DistributionPolicy = this.FundShare.DistributionPolicy
+    member this.IsStableNav = this.FundShare.IsStableNav
+    member this.PricingSource = this.ReferenceDataSource.PricingSource
+    member this.FundFamily = this.FundTerms.FundFamily
+
 
 type CommodityTerms = {
-    CommodityType: string
-    Denomination: string option
-    ContractSize: decimal option
-}
+    CommodityContract: CommodityContractTerms
+} with
+    member this.CommodityType = this.CommodityContract.CommodityType
+    member this.Denomination = this.CommodityContract.Denomination
+    member this.ContractSize = this.CommodityContract.ContractSize
 
 type CryptoTerms = {
-    BaseCurrency: string
-    QuoteCurrency: string
-    Network: string option
-}
+    CurrencyPair: CurrencyPairTerms
+    DigitalAsset: DigitalAssetTerms
+} with
+    member this.Network = this.DigitalAsset.Network
 
 type CfdTerms = {
-    UnderlyingAssetClass: string
-    UnderlyingDescription: string option
-    Leverage: decimal option
-}
+    UnderlyingExposure: UnderlyingExposureTerms
+} with
+    member this.UnderlyingAssetClass = this.UnderlyingExposure.UnderlyingAssetClass
+    member this.UnderlyingDescription = this.UnderlyingExposure.UnderlyingDescription
+    member this.Leverage = this.UnderlyingExposure.Leverage
 
 type WarrantTerms = {
-    UnderlyingId: SecurityId
-    WarrantType: string
-    Strike: decimal option
-    Expiry: DateOnly option
-    Multiplier: decimal option
-}
+    Dates: MaturityTerms
+    Exercise: ExerciseTerms
+    TradingParameters: TradingParams
+} with
+    member this.Expiry = this.Dates.MaturityDate
+
 
 /// Profile-backed custom asset: the typed governance envelope plus the complete
 /// asset-specific-terms document preserved verbatim. Profile fields are dynamic and governed
@@ -814,132 +474,112 @@ type WarrantTerms = {
 /// Carrying the raw document is what makes serialize → deserialize → serialize lossless for
 /// the extension point — previously CustomAsset collapsed into OtherSecurity and dropped the
 /// profile envelope on any amend.
-type CustomAssetTerms = {
-    /// Identifier of the approved custom-asset profile governing this record.
-    CustomProfileId: string
-    /// Version of the approved profile the record's fields were validated against.
-    ProfileVersion: int
-    /// The complete asset-specific-terms JSON document (envelope, profileFields, and any
-    /// additional governed keys such as category/subType/evidenceLinks), preserved verbatim.
-    TermsJson: string
-}
+type CustomAssetTerms = ProfileEnvelopeTerms
 
 /// Outright FX forward: an agreed exchange of the base and quote currencies at a forward rate on
 /// the value date. Deliverable unless SettlementType says otherwise.
 type FxForwardTerms = {
-    BaseCurrency: string
-    QuoteCurrency: string
-    /// Notional in the base currency.
-    Notional: decimal option
-    /// Agreed forward rate, quote currency per unit of base currency.
-    ForwardRate: decimal option
-    TradeDate: DateOnly option
-    ValueDate: DateOnly
+    Dates: MaturityTerms
+    CurrencyPair: CurrencyPairTerms
+    Notional: NotionalTerms
     /// Settlement method label ("Physical" by default, "Cash" for a cash-settled forward).
-    SettlementType: string option
-}
+    Settlement: SettlementTerms
+} with
+    member this.SettlementType = this.Settlement.SettlementType
+    member this.TradeDate = this.Dates.EffectiveDate
+    member this.ValueDate = (this.Dates.MaturityDate |> Option.defaultValue DateOnly.MinValue)
+
 
 /// Non-deliverable forward: cash-settled in the settlement currency against a published fixing of
 /// the base/quote rate on the fixing date; no exchange of the restricted currency takes place.
 type NonDeliverableForwardTerms = {
-    BaseCurrency: string
-    QuoteCurrency: string
-    /// Currency in which the net difference is paid (usually the convertible leg).
-    SettlementCurrency: string
-    /// Notional in the base currency.
-    Notional: decimal option
-    /// Agreed forward rate, quote currency per unit of base currency.
-    ForwardRate: decimal option
-    FixingDate: DateOnly
-    ValueDate: DateOnly
+    Dates: MaturityTerms
+    CurrencyPair: CurrencyPairTerms
+    Notional: NotionalTerms
     /// Published fixing source the settlement rate is read from (operational reference).
-    FixingSource: string option
-}
+    ReferenceDataSource: ReferenceDataSourceTerms
+} with
+    member this.FixingSource = this.ReferenceDataSource.FixingSource
+    member this.FixingDate = (this.Dates.EffectiveDate |> Option.defaultValue DateOnly.MinValue)
+    member this.ValueDate = (this.Dates.MaturityDate |> Option.defaultValue DateOnly.MinValue)
+
 
 /// Single-name or index credit default swap: protection bought or sold on a reference entity (or
 /// index) for a running fixed coupon over the protection period.
 type CreditDefaultSwapTerms = {
-    ReferenceEntity: string
-    ReferenceObligation: string option
-    /// "Buy" when the holder buys protection (pays the coupon), "Sell" when it sells protection.
-    ProtectionSide: string
-    Notional: decimal
+    Dates: MaturityTerms
+    CreditProtection: CreditProtectionTerms
+    Notional: NotionalTerms
     /// Running fixed coupon in basis points per annum (e.g. 100 or 500 under the standard contract).
-    FixedCouponBps: decimal
-    EffectiveDate: DateOnly
-    MaturityDate: DateOnly
-    PaymentFrequency: string option
-    DayCount: DayCountConvention option
-    /// Seniority of the reference obligation (e.g. "SeniorUnsecured", "Subordinated").
-    Seniority: string option
-    /// ISDA restructuring clause (e.g. "ModR", "ModModR", "XR", "CR").
-    RestructuringClause: string option
-    /// Upfront payment as points of notional; positive when paid by the protection buyer.
-    UpfrontPoints: decimal option
-    /// Assumed recovery rate as a fraction (0 to 1).
-    RecoveryRateAssumption: decimal option
-    /// Index name and series for an index CDS (e.g. "CDX.NA.IG.42"); None for single-name.
-    IndexName: string option
-}
+    ContractualRate: ContractualRateTerms
+} with
+    member this.FixedCouponBps = this.ContractualRate.FixedCouponBps |> Option.defaultValue 0m
+    member this.PaymentFrequency = this.ContractualRate.PaymentFrequency
+    member this.DayCount = this.ContractualRate.DayCount
+
+    member this.EffectiveDate = (this.Dates.EffectiveDate |> Option.defaultValue DateOnly.MinValue)
+    member this.MaturityDate = (this.Dates.MaturityDate |> Option.defaultValue DateOnly.MinValue)
+
 
 /// Option to enter an interest-rate swap: the holder may pay ("Payer") or receive ("Receiver") the
 /// strike fixed rate against the floating index on the underlying swap dates.
 type SwaptionTerms = {
-    /// "Payer" (right to pay fixed) or "Receiver" (right to receive fixed).
-    PayerReceiver: string
-    /// "European", "American" or "Bermudan"; None leaves the style undeclared.
-    ExerciseStyle: string option
-    /// Fixed rate of the underlying swap, as a decimal rate; may be negative.
-    StrikeRate: decimal
-    Expiry: DateOnly
-    UnderlyingEffectiveDate: DateOnly option
-    UnderlyingMaturityDate: DateOnly
-    Notional: decimal
-    FloatingIndex: string option
-    FixedLegPaymentFrequency: string option
-    FixedLegDayCount: DayCountConvention option
+    Dates: MaturityTerms
+    Exercise: ExerciseTerms
+    Notional: NotionalTerms
+    UnderlyingSwap: UnderlyingSwapTerms
     /// Settlement method label ("Physical" enters the swap, "Cash" pays its value).
-    SettlementType: string option
-}
+    Settlement: SettlementTerms
+    /// Optional governed declaration of this record's scalar rate unit; no inferred default.
+    RateConvention: RateConventionTerms option
+} with
+    member this.UnderlyingMaturityDate = this.UnderlyingSwap.MaturityDate
+    member this.FloatingIndex = this.UnderlyingSwap.FloatingIndex
+    member this.FixedLegPaymentFrequency = this.UnderlyingSwap.FixedLegPaymentFrequency
+    member this.FixedLegDayCount = this.UnderlyingSwap.FixedLegDayCount
+    member this.SettlementType = this.Settlement.SettlementType
+
+    member this.RateUnit = this.RateConvention |> Option.map (fun declaration -> declaration.RateUnit)
+    member this.Expiry = (this.Dates.MaturityDate |> Option.defaultValue DateOnly.MinValue)
+    member this.UnderlyingEffectiveDate = this.Dates.EffectiveDate
+
 
 /// Interest-rate cap, floor or collar on a floating reference index over the protection period.
 type CapFloorTerms = {
-    /// "Cap", "Floor" or "Collar" (a long cap with a short floor).
-    CapFloorType: string
-    ReferenceIndex: string
-    /// Cap strike as a decimal rate; required for Cap and Collar.
-    CapStrike: decimal option
-    /// Floor strike as a decimal rate; required for Floor and Collar.
-    FloorStrike: decimal option
-    Notional: decimal
-    EffectiveDate: DateOnly
-    MaturityDate: DateOnly
-    ResetFrequency: string option
-    DayCount: DayCountConvention option
-    PremiumAmount: decimal option
-}
+    Dates: MaturityTerms
+    Exercise: ExerciseTerms
+    FloatingRate: FloatingRateTerms
+    Notional: NotionalTerms
+    ContractualRate: ContractualRateTerms
+    /// Optional governed declaration of this record's scalar rate unit; no inferred default.
+    RateConvention: RateConventionTerms option
+} with
+    member this.DayCount = this.ContractualRate.DayCount
+
+    member this.RateUnit = this.RateConvention |> Option.map (fun declaration -> declaration.RateUnit)
+    member this.EffectiveDate = (this.Dates.EffectiveDate |> Option.defaultValue DateOnly.MinValue)
+    member this.MaturityDate = (this.Dates.MaturityDate |> Option.defaultValue DateOnly.MinValue)
+
 
 /// Issuer note whose return is linked to a reference asset or basket (principal-protected notes,
 /// participation notes, reverse convertibles, autocallables). Held and priced by face like debt.
 type StructuredNoteTerms = {
-    IssuerName: string
-    /// Reference asset, index or basket the payoff is linked to.
-    UnderlyingDescription: string
-    Maturity: DateOnly
-    IssueDate: DateOnly option
-    /// Face amount of one note.
-    Denomination: decimal option
-    /// Share of principal repaid at maturity regardless of the underlying, as a fraction (1 = 100%).
-    PrincipalProtectionPct: decimal option
-    /// Share of the underlying's return the holder receives, as a fraction (1 = 100%).
-    ParticipationRate: decimal option
-    /// Maximum return paid, as a fraction of face.
-    ReturnCap: decimal option
-    CouponRate: decimal option
-    PaymentFrequency: string option
-    /// Knock-in or knock-out barrier as a fraction of the underlying's initial level.
-    BarrierLevel: decimal option
-}
+    Dates: MaturityTerms
+    StructuredPayoff: StructuredPayoffTerms
+    Notional: NotionalTerms
+    IssuerTerms: IssuerRef
+    ContractualRate: ContractualRateTerms
+    /// Optional governed declaration of this record's scalar rate unit; no inferred default.
+    RateConvention: RateConventionTerms option
+} with
+    member this.CouponRate = this.ContractualRate.CouponRate
+    member this.PaymentFrequency = this.ContractualRate.PaymentFrequency
+
+    member this.RateUnit = this.RateConvention |> Option.map (fun declaration -> declaration.RateUnit)
+    member this.IssuerName = (this.IssuerTerms.IssuerName |> Option.defaultValue System.String.Empty)
+    member this.Maturity = (this.Dates.MaturityDate |> Option.defaultValue DateOnly.MinValue)
+    member this.IssueDate = this.Dates.IssueDate
+
 
 [<RequireQualifiedAccess>]
 type SecurityKind =
@@ -1253,8 +893,8 @@ module SecurityKind =
 
     let underlyingSecurityId kind =
         match kind with
-        | SecurityKind.Option terms -> Some terms.UnderlyingId
-        | SecurityKind.Warrant terms -> Some terms.UnderlyingId
+        | SecurityKind.Option terms -> terms.Exercise.UnderlyingSecurityId
+        | SecurityKind.Warrant terms -> terms.Exercise.UnderlyingSecurityId
         | _ -> None
 
     let isDerivative kind =

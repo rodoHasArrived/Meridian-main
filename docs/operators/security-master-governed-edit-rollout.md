@@ -36,6 +36,31 @@ migration, deployment and operator acceptance remain pending under a separate pr
 
 ## Prerequisites
 
+### Identifier-history migration 062
+
+The owner authorized migration 062's waiver on 2026-11-11 with three
+[apply conditions](../architecture/security-master-extensibility-review.md#owner-decisions--2026-11-11).
+Before upgrading an existing schema with 062 pending:
+
+1. Stop every Security Master writer, including import/background workers and WPF desktops.
+2. Retire every pre-062 binary so none can resume writing after commit. Retain the writer
+   inventory and deployment evidence; the runner cannot discover binaries on other machines.
+3. Set `MERIDIAN_SECURITY_MASTER_IDENTIFIER_HISTORY_WRITERS_STOPPED=true` and
+   `MERIDIAN_SECURITY_MASTER_IDENTIFIER_HISTORY_LEGACY_WRITERS_RETIRED=true` for the migration
+   host. These map to the two `IdentifierHistoryMigration…` properties of
+   `SecurityMasterOptions`; neither defaults to true. Remove them after the upgrade.
+4. Above 1,000,000 identifier rows, add `Command Timeout=120` (or another value above 30
+   seconds, sized for the target environment; `0` is unlimited) to the migration host's
+   Security Master connection string. The runner refuses the default or a shorter timeout.
+
+The runner checks these conditions only when 062 will execute. It takes exclusive write locks
+on `securities` followed by `security_identifiers` with `NOWAIT`, so an active writer refuses
+the upgrade immediately. Locks remain through the atomic migration commit or rollback.
+Fresh installations need no upgrade attestation. Restarts after the migration receipt exists
+need neither attestation. The shipped 062 script and its checksum stay unchanged.
+
+### Governed-edit cutover
+
 - Name the release owner, independent human schema/Storage reviewer, and accepting operator in
   the deployment change record. Retain their identities, decisions, timestamps and artifact links.
 - Obtain the independent review of migration 036, transaction composition, first-edit fencing,
