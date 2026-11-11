@@ -8,7 +8,7 @@ using Meridian.Domain.Reconciliation;
 using Meridian.Infrastructure.Reconciliation;
 using Meridian.PortfolioRecords.Accounts;
 using Meridian.PortfolioRecords.FundAccounts;
-using Meridian.Ui.Shared.Contracts.Reconciliation;
+using Meridian.Contracts.Reconciliation;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.DependencyInjection;
 

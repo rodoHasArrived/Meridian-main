@@ -584,6 +584,10 @@ accepts older numeric status payloads; persisted queue records already use text 
   `Meridian.Contracts.Coordination`.
 - `FundStructure/` - fund-structure command, query, DTO, ownership lifecycle, and graph-validation payloads.
 - `Plaid/` - Plaid provider, account-link, transaction, investment, identity, webhook, and transfer DTOs.
+- `Reconciliation/` - statement-import and reconciliation casework DTOs
+  (`StatementImportContracts.cs`) and the scope-authorized `IReconciliationApiService` seam shared by
+  the web host and the WPF workstation. Moved here from `Meridian.Ui.Shared` so desktop clients
+  consume these contracts without depending on the server project for them.
 - `Services/` - cross-module service contracts such as backtest preflight and Security Master
   validation gates, fund-structure graph/query orchestration, operational scheduling/deterministic local trading-calendar
   coordination, plus Environment Design draft/publish/runtime projection contracts that
