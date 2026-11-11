@@ -20,9 +20,10 @@ for (let i = 2; i < process.argv.length; i++) {
   } else throw new Error(`Unknown argument: ${arg}`);
 }
 if (options.help) {
-  console.log(`Usage: node tests/specimen-matrix.mjs --peer-cache PATH [options]
+  console.log(`Usage: node tests/specimen-matrix.mjs [options]
 
---peer-cache PATH       Prepared pinned runtime cache (or MERIDIAN_SPECIMEN_PEER_CACHE).
+--peer-cache PATH       Optional pinned runtime cache (or MERIDIAN_SPECIMEN_PEER_CACHE); only
+                       needed if a card declares a remote script.
 --base-url URL          Existing package server (or MERIDIAN_SPECIMEN_URL).
                        Omit to start an ephemeral loopback static server.
 --output PATH          Artifact directory (or MERIDIAN_SPECIMEN_OUTPUT); defaults to OS temp.
@@ -34,8 +35,10 @@ See tests/SPECIMEN_MATRIX.md for cache preparation and evidence scope.`);
   process.exit(0);
 }
 
-const peerCache = options['peer-cache'] || process.env.MERIDIAN_SPECIMEN_PEER_CACHE;
-assert(peerCache, 'An explicit --peer-cache PATH or MERIDIAN_SPECIMEN_PEER_CACHE is required; see tests/SPECIMEN_MATRIX.md');
+// The cards load the package's own _preview_runtime.js and _preview_jsx.js, so no peer cache is
+// needed. It is still accepted, and becomes required again the moment a card declares a remote
+// script: the run then fails unless every such URL is a pinned peer served from the cache.
+const peerCache = options['peer-cache'] || process.env.MERIDIAN_SPECIMEN_PEER_CACHE || null;
 const timeout = Number(options['timeout-ms'] || 300000);
 assert(Number.isFinite(timeout) && timeout > 0, '--timeout-ms must be a positive number');
 const output = options.output || process.env.MERIDIAN_SPECIMEN_OUTPUT;
@@ -56,7 +59,7 @@ const pins = [
 const runtimes = new Map();
 const report = {
   startedAt: new Date().toISOString(), status: 'FAIL', evidenceScope: 'Synthetic specimen conformance; pinned local peer substitution; not live CDN or application certification',
-  motion: 'no-preference', viewport: { width: 1440, height: 900 }, peerCache: resolve(peerCache),
+  motion: 'no-preference', viewport: { width: 1440, height: 900 }, peerCache: peerCache ? resolve(peerCache) : null,
   output: outputPath, peerPins: [], sourcePeerReferences: [], missingIntegrityReferences: [],
   cacheSubstitutions: [], remoteDenied: [], errors: [], consoleErrors: [], resourceFailures: [], httpFailures: [], diagnostics: []
 };
@@ -89,7 +92,7 @@ try {
   const manifest = JSON.parse(await readFile(resolve(root, '_ds_manifest.json'), 'utf8'));
   assert(Array.isArray(manifest.cards) && manifest.cards.length > 0, 'The manifest must declare specimen cards');
   report.expectedCards = manifest.cards.length;
-  for (const pin of pins) {
+  for (const pin of peerCache ? pins : []) {
     const directory = resolve(peerCache, 'node_modules', pin.name);
     const pkg = JSON.parse(await readFile(resolve(directory, 'package.json'), 'utf8'));
     assert.equal(pkg.version, pin.version, `Pinned ${pin.name} version`);
@@ -108,7 +111,8 @@ try {
       const reference = { card: card.path, url, declaredIntegrity: declared, cacheIntegrity: runtimes.get(url)?.integrity || null };
       report.sourcePeerReferences.push(reference);
       if (!declared) report.missingIntegrityReferences.push(reference);
-      if (!runtimes.has(url)) report.errors.push(`Unmapped external script in ${card.path}: ${url}`);
+      if (!peerCache) report.errors.push(`Remote script in ${card.path}: ${url} — cards load local runtimes; pass --peer-cache only to diagnose`);
+      else if (!runtimes.has(url)) report.errors.push(`Unmapped external script in ${card.path}: ${url}`);
       else if (declared && declared !== runtimes.get(url).integrity) report.errors.push(`Declared SRI does not match pinned bytes in ${card.path}: ${url}`);
     }
   }

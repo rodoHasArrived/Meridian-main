@@ -42,8 +42,8 @@ export function AccountBalanceHistoryChart({ accountId }: { accountId: string | 
         </select></label>
         {chartable ? <ChartCard title={`Account balances · ${currency}`} subtitle={`${selected[0].source} · ${selected[0].asOfDate} to ${selected.at(-1)?.asOfDate}`} height={240}>
           <EquityCurve labels={selected.map((point) => point.asOfDate)} valueFmt={(value) => formatNumber(value)} series={[
-            { label: `Cash · ${currency}`, color: "var(--chart-equity, #3A7A56)", points: selected.map((point) => Number(point.cashBalance)) },
-            ...(completeSecurities ? [{ label: `Securities market value · ${currency}`, color: "var(--chart-primary, #A85436)", points: selected.map((point) => Number(point.securitiesMarketValue)), area: false }] : [])
+            { label: `Cash · ${currency}`, color: "var(--chart-equity, #2E7655)", points: selected.map((point) => Number(point.cashBalance)) },
+            ...(completeSecurities ? [{ label: `Securities market value · ${currency}`, color: "var(--chart-primary, #29323A)", points: selected.map((point) => Number(point.securitiesMarketValue)), area: false }] : [])
           ]} />
         </ChartCard> : <p role="status" className="text-xs text-muted-foreground">{duplicateDates ? "Multiple retained observations share a date for this source. Inspect the records before choosing a valuation authority." : "At least two usable dated observations are needed for a trend."}</p>}
         <p className="text-xs text-muted-foreground">Cash and securities remain separate retained components. No net-equity total or cross-currency sum is inferred. {!completeSecurities ? "Some securities values are unavailable; no securities trend is drawn." : ""} {active.history.isTruncated ? "Only the latest 500 snapshots are shown." : ""}</p>
