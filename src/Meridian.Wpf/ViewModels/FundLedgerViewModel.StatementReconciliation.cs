@@ -1,7 +1,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Contracts.Workstation;
-using Meridian.Ui.Shared.Contracts.Reconciliation;
+using Meridian.Contracts.Reconciliation;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Workstation.Models;
 using UtcFormat = Meridian.Ui.Services.FormatHelpers;

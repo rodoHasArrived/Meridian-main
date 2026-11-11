@@ -616,12 +616,11 @@ public sealed class SecurityMasterWorkbenchDeclaredExerciseScheduleBookTests
     }
 
     [Fact]
-    public async Task BlockedDeclaringBond_PassportStillReadsTermsReady_AndCarriesTheBlockerOnlyAsText()
+    public async Task BlockedDeclaringBond_PassportReadsTermsUnderReview_FromTheTypedOutcome()
     {
-        // Recorded behaviour, not a target: the Maturity row and the economic terms keep the terms
-        // checks positive, and no passport collection takes a warning without changing a status or
-        // the contract. The blocker reaches the passport through the two texts that repeat the
-        // schedule summary.
+        // The typed outcome on the schedule book is what the passport reads: a blocked declared
+        // schedule puts the payment schedule, the obligation and cash-flow sections and close
+        // readiness under review, although the Maturity row and the economic terms are still there.
         var snapshot = await ReadAsync(WithoutConventions(BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, 60, "Calendar")])));
         const string Blocker = "Declared call/put schedule is blocked (DeclaredScheduleRequired): "
             + "Exercise notice windows require reviewed explicit schedule conventions; legacy defaults are not inferred. "
@@ -629,27 +628,108 @@ public sealed class SecurityMasterWorkbenchDeclaredExerciseScheduleBookTests
 
         var passport = snapshot.InstrumentPassport!;
         var terms = passport.OperationsWorkbench!.Panels.Single(static panel => panel.PanelId == "terms");
+        terms.Status.Should().Be("Review");
         var economics = terms.Items.Single(static item => item.ItemId == "economics");
-        economics.Status.Should().Be("Ready");
+        economics.Status.Should().Be("Ready", "pricing and retained economic terms are not what is blocked");
         economics.BlockingIssueCount.Should().Be(0);
         economics.Detail.Should().Be("1 projected obligation event(s) retained with source provenance.");
         var paymentSchedule = terms.Items.Single(static item => item.ItemId == "payment-schedule");
-        paymentSchedule.Status.Should().Be("Ready");
-        paymentSchedule.BlockingIssueCount.Should().Be(0);
+        paymentSchedule.Status.Should().Be("Review");
+        paymentSchedule.BlockingIssueCount.Should().Be(1);
         paymentSchedule.Value.Should().Be("1 projected event(s)");
         paymentSchedule.Detail.Should().EndWith(Blocker);
-        terms.Items.Should().NotContain(static item => item.ItemId.Contains("declared", StringComparison.OrdinalIgnoreCase),
-            "no item is added for the blocker");
 
         var sections = passport.ReferenceDataWorkbench!.Sections;
-        sections.Single(static section => section.SectionId == "terms-obligations").Status.Should().Be("Ready");
+        var obligations = sections.Single(static section => section.SectionId == "terms-obligations");
+        obligations.Status.Should().Be("Review");
+        obligations.BlockingIssueCount.Should().Be(1);
         var cashFlow = sections.Single(static section => section.SectionId == "cash-flow-readiness");
-        cashFlow.Status.Should().Be("Ready");
-        cashFlow.BlockingIssueCount.Should().Be(0);
+        cashFlow.Status.Should().Be("Review");
+        cashFlow.BlockingIssueCount.Should().Be(1);
         cashFlow.Summary.Should().EndWith(Blocker);
 
-        snapshot.RecommendedActions.Should().NotContain(action => action.Detail.Contains("Declared call/put", StringComparison.Ordinal),
-            "recommended actions are typed by a closed kind and none is for a blocked declared schedule");
+        var close = passport.OperationsWorkbench.Readiness.Single(static row => row.ReadinessId == "close");
+        close.IsReady.Should().BeFalse();
+        close.NextAction.Should().Be("Resolve the blocked declared call/put schedule (DeclaredScheduleRequired) before close package use.");
+    }
+
+    [Fact]
+    public async Task ResolvedDeclaringBond_AndUndeclaredBond_KeepTheirPassportStatuses()
+    {
+        var resolved = await ReadAsync(BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, 60, "Calendar")]));
+        var undeclared = await ReadAsync(BondExerciseNoticeWatchTests.Bond());
+
+        foreach (var snapshot in new[] { resolved, undeclared })
+        {
+            var passport = snapshot.InstrumentPassport!;
+            var paymentSchedule = passport.OperationsWorkbench!.Panels.Single(static panel => panel.PanelId == "terms")
+                .Items.Single(static item => item.ItemId == "payment-schedule");
+            paymentSchedule.Status.Should().Be("Ready");
+            paymentSchedule.BlockingIssueCount.Should().Be(0);
+            var sections = passport.ReferenceDataWorkbench!.Sections;
+            sections.Single(static section => section.SectionId == "terms-obligations").Status.Should().Be("Ready");
+            sections.Single(static section => section.SectionId == "cash-flow-readiness").Status.Should().Be("Ready");
+            passport.OperationsWorkbench.Readiness.Single(static row => row.ReadinessId == "close").NextAction
+                .Should().NotContain("declared call/put schedule", "nothing is blocked");
+        }
+    }
+
+    [Fact]
+    public async Task TypedOutcome_IsResolvedWithItsWindows_BlockedWithItsCode_AndAbsentWhenNothingIsDeclared()
+    {
+        var resolved = await ReadAsync(BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, 60, "Calendar")], [Put()]));
+        var blocked = await ReadAsync(WithoutConventions(BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, 60, "Calendar")])));
+        var undeclared = await ReadAsync(BondExerciseNoticeWatchTests.Bond());
+
+        var outcome = resolved.ScheduleBook!.DeclaredExercise!;
+        outcome.Status.Should().Be(SecurityMasterDeclaredExerciseStatus.Resolved);
+        outcome.AsOf.Should().Be(DateOnly.FromDateTime(AsOf.UtcDateTime));
+        outcome.SecurityVersion.Should().Be(resolved.EconomicDefinition.Version);
+        outcome.WindowCount.Should().Be(2);
+        outcome.Blockers.Should().BeEmpty();
+        outcome.Diagnostics.Should().Contain(BondExerciseNoticeWatch.AuthorityDiagnostic);
+        resolved.ScheduleSummary!.DeclaredExercise.Should().BeEquivalentTo(outcome, "the book repeats the summary's outcome");
+
+        var refusal = blocked.ScheduleBook!.DeclaredExercise!;
+        refusal.Status.Should().Be(SecurityMasterDeclaredExerciseStatus.Blocked);
+        refusal.WindowCount.Should().Be(0);
+        refusal.Blockers.Should().ContainSingle().Which.Should().Be(new SecurityMasterScheduleBlockerDto(
+            "DeclaredScheduleRequired",
+            "Exercise notice windows require reviewed explicit schedule conventions; legacy defaults are not inferred."));
+        blocked.ScheduleSummary!.DeclaredExercise.Should().BeEquivalentTo(refusal);
+
+        undeclared.ScheduleBook!.DeclaredExercise.Should().BeNull("a record that declares no schedule has no declared outcome");
+        undeclared.ScheduleSummary!.DeclaredExercise.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task TypedOutcome_SerializesWithAStringStatus_AndIsOmittedWhenNothingIsDeclared()
+    {
+        var blocked = await ReadAsync(WithoutConventions(BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, 60, "Calendar")])));
+        var undeclared = await ReadAsync(BondExerciseNoticeWatchTests.Bond());
+        var context = Meridian.Core.Serialization.SecurityMasterJsonContext.Default;
+
+        var blockedJson = JsonSerializer.SerializeToElement(blocked.ScheduleBook!, context.SecurityMasterScheduleBookDto);
+        var declared = blockedJson.GetProperty("declaredExercise");
+        declared.GetProperty("status").GetString().Should().Be("Blocked");
+        declared.GetProperty("asOf").GetString().Should().Be("2026-12-01");
+        declared.GetProperty("windowCount").GetInt32().Should().Be(0);
+        declared.GetProperty("blockers")[0].GetProperty("code").GetString().Should().Be("DeclaredScheduleRequired");
+        JsonSerializer.Deserialize(blockedJson, context.SecurityMasterScheduleBookDto)!.DeclaredExercise
+            .Should().BeEquivalentTo(blocked.ScheduleBook!.DeclaredExercise, "the outcome round-trips through the API context");
+
+        foreach (var element in new[]
+                 {
+                     JsonSerializer.SerializeToElement(undeclared.ScheduleBook!, context.SecurityMasterScheduleBookDto),
+                     JsonSerializer.SerializeToElement(undeclared.ScheduleSummary!, context.SecurityMasterScheduleSummaryDto),
+                     JsonSerializer.SerializeToElement(undeclared.ScheduleBook!),
+                     JsonSerializer.SerializeToElement(undeclared.ScheduleSummary!)
+                 })
+        {
+            element.EnumerateObject().Should().NotContain(
+                static property => property.Name.Equals("declaredExercise", StringComparison.OrdinalIgnoreCase),
+                "an undeclared record's serialized read model is unchanged by the new member");
+        }
     }
 
     [Fact]
@@ -811,6 +891,14 @@ public sealed class SecurityMasterWorkbenchDeclaredExerciseScheduleBookTests
         summary.SourceSummary.Should().Be(book.SourceSummary, because);
         book.NextLifecycleDate.Should().Be(Maturity, "a blocked declaring bond offers no call or put date, scalar or declared");
         summary.NextLifecycleDate.Should().Be(Maturity, because);
+
+        // The typed outcome states the same blocker the texts repeat.
+        var outcome = book.DeclaredExercise;
+        outcome.Should().NotBeNull(because);
+        outcome!.Status.Should().Be(SecurityMasterDeclaredExerciseStatus.Blocked, because);
+        outcome.WindowCount.Should().Be(0, because);
+        outcome.Blockers.Should().ContainSingle(because).Which.Should().Be(new SecurityMasterScheduleBlockerDto(actualCode, reason), because);
+        summary.DeclaredExercise.Should().BeEquivalentTo(outcome, because);
         return reason;
     }
 

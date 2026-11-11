@@ -43,7 +43,6 @@ public sealed class SecurityAssetClassLiteralRatchetTests
         "src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs",
         "src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs",
         "src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs",
-        "src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Profiles.cs",
         "src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs",
         "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs",
         "src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs",

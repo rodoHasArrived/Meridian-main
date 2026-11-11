@@ -147,6 +147,8 @@ public sealed class SecurityMasterTermsCapabilityRefusalEndpointsTests
             [$"{SecurityMasterWorkbenchOptions.SectionName}:{nameof(SecurityMasterWorkbenchOptions.RequireGovernedTermAmendments)}"] = "false"
         });
         builder.Services.Configure<SecurityMasterWorkbenchOptions>(builder.Configuration.GetSection(SecurityMasterWorkbenchOptions.SectionName));
+        Meridian.Application.Composition.SecurityMasterGovernanceServiceCollectionExtensions
+            .AddSecurityMasterGovernanceRequirements(builder.Services);
         builder.Services.AddSingleton(query ?? Substitute.For<ISecurityMasterQueryService>());
         builder.Services.AddSingleton(service);
         builder.Services.AddMeridianApiProblemDetails();

@@ -2,11 +2,30 @@
 
 # `security-master-contracts` data objects - page 7 of 7
 
-Objects 481-504 of 504. References crossing pages remain available in the dependency manifest.
+Objects 481-507 of 507. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_StructuredCashFlowScenario["StructuredCashFlowScenario"] {
+    }
+    class Meridian_Contracts_SecurityMaster_StructuredCashFlowScheduleEntry["StructuredCashFlowScheduleEntry"] {
+        +DateOnly? AccrualEnd
+        +DateOnly? AccrualStart
+        +decimal Factor
+        +decimal InterestAmount
+        +DateTimeOffset PeriodDate
+        +decimal PrincipalAmount
+        +Meridian_Contracts_FixedIncome_BondFloatingRateEvidence? RateEvidence
+        +DateOnly? UnadjustedEnd
+        +DateOnly? UnadjustedStart
+    }
+    class Meridian_Contracts_SecurityMaster_StructuredCashFlowScheduleEvidence["StructuredCashFlowScheduleEvidence"] {
+        +IReadOnlyList~StructuredCashFlowCalendarEvidence~ Calendars
+        +IReadOnlyList~StructuredCashFlowCoverageGap~ CoverageGaps
+        +string DeclaredMappingVersion
+        +string KernelVersion
+    }
     class Meridian_Contracts_SecurityMaster_StructuredCashFlowSourceKind["StructuredCashFlowSourceKind"] {
     }
     class Meridian_Contracts_SecurityMaster_StructuredCashFlowStaleness["StructuredCashFlowStaleness"] {

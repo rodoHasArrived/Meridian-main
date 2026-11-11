@@ -1900,20 +1900,23 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
             classificationValues.Add(GetString(profileFields, "accountingClassification"));
         }
 
-        foreach (var (candidateClass, keywords) in SecurityAssetPackRegistry.ProfileClassificationKeywords)
+        // Each class owns its routing keys (name, aliases, classification labels); a metadata value
+        // that is another class's key contradicts the profile. Classes are asked in catalog order and
+        // a key is compared whole, never by substring.
+        foreach (var candidate in SecurityAssetClassCatalog.All)
         {
-            if (string.Equals(candidateClass, resolvedClass, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(candidate.AssetClass, resolvedClass, StringComparison.OrdinalIgnoreCase))
             {
                 continue;
             }
 
-            var conflicting = keywords.FirstOrDefault(keyword => classificationValues.Any(value =>
-                SecurityAssetPackRegistry.MatchesProfileClassificationKeyword(value, keyword)));
+            var conflicting = candidate.RoutingKeys.FirstOrDefault(key => classificationValues.Any(value =>
+                SecurityAssetClassCatalog.MatchesRoutingKey(value, key)));
             if (conflicting is not null)
             {
                 throw new SecurityMasterWriteRefusedException(
                     $"Profile '{profileId}' resolves to asset class '{resolvedClass}', but the envelope's " +
-                    $"classification metadata ('{conflicting}') belongs to '{candidateClass}'. The profile is " +
+                    $"classification metadata ('{conflicting}') belongs to '{candidate.AssetClass}'. The profile is " +
                     "the identity of a profile-backed record — correct the category/subType/accountingClassification " +
                     "metadata (or the profile reference) so they agree before the write can proceed.");
             }
