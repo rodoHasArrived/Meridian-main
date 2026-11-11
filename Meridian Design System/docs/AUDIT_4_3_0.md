@@ -590,7 +590,7 @@ above retains its own source and scope; these results are not combined into a
 new unrun full-suite count.
 
 Final verification after the brand runtime-alias update, 743-token metadata
-refresh and integration through `db7902` passed the complete **131-test Python
+refresh and integration through `7952be63ba` passed the complete **135-test Python
 suite** and full contrast check. All seven release gates passed after the
 runtime-alias update. The parity suite passed 12 tests, and the complete parity
 check passed with 502 declared names, 227 shared names and zero findings. The
@@ -598,12 +598,17 @@ fresh brand browser matrix passed 28 states and 1,932 AA pairs; all 60 actual
 dark-role mappings matched their intended identities. The final native browser
 coverage passed 64 cases and 15 axe scans with zero reported violations.
 
-The last incoming Modal/comment-governance fixes retained the already-correct
-button type and standalone identity; all 25 governance tests passed. The
+The incoming Modal/comment-governance fixes retained the already-correct
+button type and standalone identity. The final retired-export declaration
+requires each retained unpublished API to name its source and public replacement;
+all 29 governance tests passed, with zero package failures and warnings. The
 component bundle and public runtime are byte-identical to those exercised by
 the strict 135-card run, so that component proof remains applicable. Source-hash
 and README checks reported zero errors. The initial and intermediate Python
-counts above remain historical; 131 is the complete-suite result through that checkpoint.
+counts above remain historical; 135 is the final complete-suite result.
+Release integrity covers 1,347 curated files. The CI-equivalent Gitleaks 8.25.1
+first-parent scan passed with no findings; exact source-digest exceptions remain
+limited to the verified provenance values and paths.
 
 The documentation generators were attempted and each generation step exited
 successfully, but the aggregate `verify-docs` check did not converge against the

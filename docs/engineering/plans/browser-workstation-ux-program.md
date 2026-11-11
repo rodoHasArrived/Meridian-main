@@ -127,6 +127,12 @@ copyable in disclosure rather than appearing as primary operator labels. The foo
 material attention and stale-page evidence without repeating navigation. Design-system ratchet
 allowances only decrease; no rule or baseline was loosened.
 
+The upstream ledger integration also retains the new account running-balance drill-down,
+selected dimension semantics, GL/P&L exports and brokerage actual-cash history. Running-balance
+reads use authenticated tenant/company and retained book ownership checks, and the selected
+accounting basis travels through the client and server. Missing currency remains explicitly
+unavailable. No physical schema, migration or policy is changed by contract-document refresh.
+
 The main order ticket also retains raw local decimal editor text, fixing the existing case where
 typing `188.05` became `1885`. Limit and Stop typing now preserve the intermediate `188.0` and final
 `188.05`; numeric preview, calculations, request DTOs and server authority are unchanged. Account
@@ -139,9 +145,10 @@ Validation on the combined source, using the declared lockfile dependencies:
 
 | Check | Result and scope |
 | --- | --- |
-| Dashboard source suite | Full pre-workbench integration run: 449 files, 5,045 tests passed, zero failed or skipped. After the final native developer-workbench merge, 89 affected shell/workbench checks and 173 trading checks passed. |
-| Backend | Canonical assembly built; 131 focused tests passed, zero failed/skipped, including real PostgreSQL persistence/concurrency, native DuckDB exports, scope refusal and exact retry compatibility. |
-| Build and static checks | Production build, strict TypeScript, lint and the canonical 77-file asset/font/license check passed. Lint retains 98 hook warnings. C# whitespace verification passes on all 74 task paths; Roslyn confirmed 286,819 token kinds/values and parse diagnostics are unchanged by normalization. |
+| Dashboard source suite | Full integration run before the final upstream ledger merge: 453 files, 5,081 tests passed, zero failed or skipped. After the final upstream ledger merge, 217 affected checks passed across eight suites, including selected-basis wire scope, stale responses, currency refusal, Accounting, canonical Ledger and trial balance. Behavior-preserving file-size extractions passed 133 Accounting and 146 Trading tests. |
+| Backend | Before the upstream ledger merge, the canonical assembly built and 131 focused tests passed, zero failed/skipped, including real PostgreSQL persistence/concurrency, native DuckDB exports, scope refusal and exact retry compatibility. |
+| Build and static checks | Production build, strict TypeScript, lint and the canonical 77-file asset/font/license check passed. Lint retains 98 hook warnings. C# whitespace verification passes on all 79 task paths. Earlier whitespace normalization was independently checked for unchanged C# token kinds/values and parse diagnostics. |
+| Contract documentation | All 38 added contracts retained, none removed; 32 schema-control tests passed. Two 89-file candidates matched byte-for-byte; all 13 retained physical/policy manifest files and 166 protected inputs were unchanged. |
 | Maintained generation | Converged across two passes; every required and advisory step passed, with no protected-file violations. |
 | Browser workflows | 18 interaction groups at 1920 × 1080, 1440 × 900 and 1366 × 768 passed in Linux Chromium. Eighteen axe scans had no violations; incomplete checks remain for manual assessment. |
 | Navigation and masthead | 28 mask/theme/forced-colors checks passed. Masthead text measured 11.34:1 in light appearance and 16.38:1 in dark appearance. |

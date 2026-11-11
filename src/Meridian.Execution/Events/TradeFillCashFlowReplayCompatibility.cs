@@ -5,7 +5,33 @@ namespace Meridian.Execution.Events;
 /// <summary>Adapts only the new canonical trade attribution to an immutable pre-attribution journal.</summary>
 internal static class TradeFillCashFlowReplayCompatibility
 {
+    internal const string StrategyRunIdTag = "strategy.runId";
+
     internal static JournalEntry SelectCandidate(JournalEntry expected, JournalEntry retained)
+        => SelectCashFlowCandidate(SelectStrategyAttributionCandidate(expected, retained), retained);
+
+    /// <summary>
+    /// Fill journals retained before strategy attribution carry no strategy id or run tag. When the
+    /// same fill is redelivered after the upgrade, compare it in the retained shape; every other
+    /// field is still compared by the governed target. The retained record is never edited.
+    /// </summary>
+    private static JournalEntry SelectStrategyAttributionCandidate(JournalEntry expected, JournalEntry retained)
+    {
+        if (expected.JournalEntryId != retained.JournalEntryId
+            || !string.IsNullOrWhiteSpace(retained.Metadata.StrategyId)
+            || retained.Metadata.Tags?.ContainsKey(StrategyRunIdTag) is true
+            || (string.IsNullOrWhiteSpace(expected.Metadata.StrategyId)
+                && expected.Metadata.Tags?.ContainsKey(StrategyRunIdTag) is not true))
+            return expected;
+
+        var legacyTags = expected.Metadata.Tags?
+            .Where(static pair => !string.Equals(pair.Key, StrategyRunIdTag, StringComparison.OrdinalIgnoreCase))
+            .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase);
+        return new JournalEntry(expected.JournalEntryId, expected.Timestamp, expected.Description,
+            expected.Lines, expected.Metadata with { StrategyId = null, Tags = legacyTags });
+    }
+
+    private static JournalEntry SelectCashFlowCandidate(JournalEntry expected, JournalEntry retained)
     {
         if (expected.JournalEntryId != retained.JournalEntryId
             || expected.Metadata.ActivityType != "trade-fill"

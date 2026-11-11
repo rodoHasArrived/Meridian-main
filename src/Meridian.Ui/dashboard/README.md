@@ -2477,3 +2477,15 @@ for retry. Journal and report links open the existing review workflows. The seve
 remain unchanged. Focused coverage: `capital-call-issuance-screen.test.tsx`,
 `private-capital-installment-notices.test.tsx`, `private-capital.api.test.ts`, and the existing pure
 capital-call presentation tests.
+
+### Posted-ledger account drill-down
+
+Selecting a trial-balance account in the Accounting posted-ledger panel renders
+`LedgerAccountRunningBalancePanel`, which lists the account's postings for the selected period
+with a running balance from `GET /api/ledger/periods/{periodId}/accounts/running-balance`.
+The panel sends the selected row's accounting basis, symbol, financial account and dimension set,
+so the postings and ending balance are those of that row only. Basis and row changes discard the
+previous scope's response. Missing book currency remains explicitly unavailable rather than
+defaulting to dollars. Legacy API callers that omit accounting basis retain an unfiltered read. The
+route helper lives in `src/lib/ledger-reports-api.ts` rather than `workstation-endpoints.ts`,
+which is at its file-size limit.

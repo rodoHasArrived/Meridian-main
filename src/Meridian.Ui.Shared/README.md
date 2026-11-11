@@ -154,6 +154,13 @@ transport, policy/currency checks and source population identities. An open peri
 same elapsed fiscal interval in a completed baseline; missing or too-short baselines remain
 unavailable. These comparisons never consume the strategy-run simulated ledger.
 
+The posted-account running-balance read requires the same authenticated tenant/company and
+retained book ownership, including exact returned period, book and fund identities. Its optional
+`accountingBasis` selector filters retained journal records before aggregation; the posted-row
+browser drill-down supplies its selected basis. Omitting the selector preserves the legacy all-
+basis API behavior. Running-balance amounts retain the existing decimal-to-JSON-number
+transport; the exact-string comparison transport remains separate.
+
 Close checklist history projects only versioned snapshots retained by canonical workflow commits.
 Its shared read endpoint uses exact account/book/fund ownership, verifies mixed legacy/new audit
 chains, reports coverage and missing versions, and splits observations across unknown intervals.
@@ -1985,6 +1992,25 @@ review path across retained source records, normalized activity, reconciliation 
 evidence, approvals, document attachments, export manifests, and report-pack/restatement lineage.
 Browser and WPF command surfaces should consume that shared workflow instead of creating separate
 accounting-record launch lists.
+
+`/api/ledger/periods/{periodId}/accounts/running-balance?account=...` returns one account's
+postings in the period with a running balance, optionally narrowed by `symbol`,
+`financialAccountId` and `dimensions` (the JSON dimension set of one trial-balance row, matched
+exactly after the book's fund is defaulted as the period trial balance does), under the same ledger read permission as the other period routes.
+
+`DirectLendingOperationsReadService` adds a subledger-to-GL tie-out when a ledger journal store is
+registered: servicing principal, accrued interest and accrued PIK are compared with the net
+balance of the loan's `LoanPrincipal`, `AccruedInterestReceivable` and `PikInterestReceivable`
+control accounts, and a difference above 0.01 is a `SubledgerTieOut` warning close blocker.
+
+`BrokeragePortfolioSyncService` retains a per-account activity history
+(`activity-history/{fundAccountId}.json`): each sync's fills and cash transactions are merged by
+provider id, so rows later snapshots no longer return are kept without duplicates. The current
+projection is unchanged and remains the latest provider snapshot. The history and the projection it
+falls back to are used only for the external account the fund account is currently linked to, and cash amounts keep the broker's
+sign so a reversal nets against its receipt. `BrokerageSyncActualCashActivitySource`
+reads interest/coupon and principal/paydown cash for held symbols from that history (or from a
+fresh projection) and supplies it to expected-income reconciliation.
 
 Evidence Vault packet exports stream retained local artifacts through a bounded 64 KiB read
 window into private staging while the canonical SHA-256 primitive hashes the same bytes. The

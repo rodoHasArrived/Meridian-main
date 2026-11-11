@@ -1,4 +1,8 @@
+<<<<<<<< HEAD:src/Meridian.Ui/wwwroot/workstation/assets/TrialBalanceRowDetail-Cqy2WwMH.js
 import{n as e}from"./rolldown-runtime-WkwZ5CU-.js";import{Rs as t,h as n,ks as r,m as i,t as a}from"./button-BFnXOtWX.js";import{L as o}from"./index-CdkYZ6cO.js";import{t as s}from"./technical-details-sMLF9BLL.js";import{n as c}from"./ui-kit-primitives-CtcZPMZC.js";import{C as l,b as u}from"./accounting-screen.basis-bridge.view-model-Df6ws9LT.js";var d=e(t(),1),f=i(),p=!1;function m(){if(p||typeof document>`u`)return;p=!0;let e=document.createElement(`style`);e.setAttribute(`data-mds`,`accounttree`),e.textContent=`
+========
+import{A as e,M as t,f as n,p as r,t as i,x as a}from"./button-CFpdW8Ms.js";import{k as o}from"./index-BSoiH9Ek.js";import{t as s}from"./technical-details-CyclIsnp.js";import{r as c}from"./ui-kit-primitives-iTgXFc5j.js";import{S as l,y as u}from"./accounting-screen.basis-bridge.view-model-C4SeMvO7.js";var d=t(e(),1),f=n(),p=!1;function m(){if(p||typeof document>`u`)return;p=!0;let e=document.createElement(`style`);e.setAttribute(`data-mds`,`accounttree`),e.textContent=`
+>>>>>>>> 13c76588a07eeeb088b66bb9d24ec070504ae021:src/Meridian.Ui/wwwroot/workstation/assets/TrialBalanceRowDetail-ucFZzUZt.js
 .act{border:1px solid var(--border-color,#D2CDC3);border-radius:var(--radius-chip,2px);
   overflow:hidden;background:var(--bg-light,#F8F7F3);}
 .act__head{display:grid;grid-template-columns:1fr auto;gap:12px;padding:8px 12px;

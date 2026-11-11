@@ -104,7 +104,8 @@ per-class scalar field with one of the 52 shared module homes, including the res
 and complete declared schedules. Each field group has replay checks; a global reflection ratchet
 requires every stored field on all 32 payloads to use a registered module type. The permanent
 legacy upcaster and retained-history fold remain. Every term rule is now expressed on the
-definition surface; the codec-only validator that held the remainder is removed. See the
+definition surface; the codec-only validator that held the remainder is removed. A record is
+refused any module member its class's flat row does not persist. See the
 remediation plan's follow-through section for current-output extensions and compatibility
 boundaries.
 

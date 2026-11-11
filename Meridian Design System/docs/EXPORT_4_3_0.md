@@ -54,7 +54,7 @@ script references without declared SRI; local byte-pin verification does not
 change that source-integrity limitation or prove live CDN access.
 
 The initial expanded export recorded 67 governance findings and 25 warnings.
-The final merged source through `db7902` passed the complete 131-test Python
+The final merged source through `7952be63ba` passed the complete 135-test Python
 suite and full contrast check. All seven release gates passed after the runtime
 alias update; parity passed 12 tests and the full 502-declared/227-shared-name
 check with zero findings. The 743-token metadata refresh adds 39 brand-scoped/
@@ -65,7 +65,9 @@ The byte-identical component bundle and public runtime retain the strict
 135/135-card proof. Source-hash and README checks reported zero errors.
 
 The 13-test metadata suite includes unconditional-default precedence.
-Build/source freshness and release integrity passed for 1,346 curated files.
+Build/source freshness and release integrity passed for 1,347 curated files.
+The retired-export declaration is enforced by 29 governance tests; the actual
+package reports zero governance failures and warnings.
 Regenerate the artifact after final documentation edits and associate its
 checksum with the delivered source. Use the audit's continuation status for the
 precise scope, historical dashboard evidence and documentation gate that did not

@@ -323,6 +323,8 @@ public static partial class LedgerEndpoints
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status501NotImplemented);
 
+        MapAccountRunningBalanceEndpoint(app, jsonOptions);
+
         app.MapGet(UiApiRoutes.LedgerAggregateJournalEntries, async (
             Guid aggregateId,
             Guid? ledgerBookId,
