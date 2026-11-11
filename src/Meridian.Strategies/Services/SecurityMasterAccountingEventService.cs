@@ -420,6 +420,16 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
                 ReconciliationBreakSeverity.High));
         }
 
+        if (terms.CouponRate is { } signedCoupon
+            && terms.CouponType?.Equals("Fixed", StringComparison.OrdinalIgnoreCase) == true
+            && ResolveCouponRate(security, signedCoupon).Resolution.TryGetFraction(out var fraction)
+            && fraction < 0m)
+        {
+            issues.Add(CreateIssue(SecurityInterestSupport.NegativeInterestUnsupported, "security-master",
+                security.Symbol, accountId, SecurityInterestSupport.NegativeInterestReason,
+                ReconciliationBreakSeverity.High));
+        }
+
         if (string.IsNullOrWhiteSpace(terms.DayCountConvention))
         {
             issues.Add(CreateIssue("SM_DAY_COUNT_MISSING", "security-master", security.Symbol, accountId, $"Security '{security.Symbol}' is missing day-count convention.", ReconciliationBreakSeverity.High));

@@ -83,6 +83,7 @@ public static class StructuredCashFlowTermsResolver
         {
             CouponKind = couponKind,
             CouponRateUnit = rateUnit,
+            RecordRateUnit = SecurityRecordRateUnit.Read(security.AssetClass, security.AssetSpecificTerms),
             CapRate = SecurityTermReader.ReadDecimal(sources, "capRate"),
             FloorRate = SecurityTermReader.ReadDecimal(sources, "floorRate")
         };

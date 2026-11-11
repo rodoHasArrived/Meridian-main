@@ -4726,7 +4726,7 @@
       ]
     }
   ],
-  "fingerprint": "3be3f0d39dbbe5b27ab59b64d8cc0ecba33709956f0fe22db9c7cee5636f5f24",
+  "fingerprint": "bc572b62de14cd57e91193cc64498c05f141c423a9a5aeae95f5ab2946c5278b",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -6922,7 +6922,7 @@
         "all-contracts",
         "security-master-contracts"
       ],
-      "fingerprint": "f2626b5feea35f25c5f64717098ddb421105dcac77b50735bb3bf0a5bf8c6845",
+      "fingerprint": "b9a13ede9459971aaaf7a6bc4801558df58ba0a2c441fd7b4641130fe6088f24",
       "mapped_schemas": [
         "security_master"
       ],
@@ -268389,7 +268389,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "814fd61b3eed948b38d13bb28b8c0c909dc9b55bc001291adf68f2fecf65f21c",
+      "fingerprint": "fa97fc35ba0ac9f8da064e6fa167ebdb340521ceb42e0a6ceeb6532caa776430",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterChain",
       "id": "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterChain",
       "kind": "class",
@@ -268403,12 +268403,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterChain",
       "references": [],
       "source": {
-        "line": 1648,
+        "line": 1356,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs"
       },
       "sources": [
         {
-          "line": 1648,
+          "line": 1356,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs"
         }
       ],
@@ -268429,7 +268429,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "b1ed2783d12561fd424b843f71901ca9be198addf613a1b124a18392a3bee497",
+      "fingerprint": "f75374a730f4d75d1043e36fb4d1a918882adf174f00eeaf81059c26872e960c",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterPipeline",
       "id": "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterPipeline",
       "kind": "class",
@@ -268448,7 +268448,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "SecurityAssetSpecificTermsUpcasterPipeline",
-          "source_line": 1703,
+          "source_line": 1411,
           "type": "SecurityAssetSpecificTermsUpcasterPipeline"
         }
       ],
@@ -268461,12 +268461,12 @@
         "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTerms"
       ],
       "source": {
-        "line": 1700,
+        "line": 1408,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs"
       },
       "sources": [
         {
-          "line": 1700,
+          "line": 1408,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs"
         }
       ],
@@ -272752,7 +272752,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "9e408229bac08d4fdff06d62b5ca6bff37e99ef2e0abbef9d99d6997b30ba49f",
+      "fingerprint": "dc49a55c2337f028f6ae25f02895f9ae8d723b5c2c388d8ac7875414a87cf9c0",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster",
       "id": "Meridian.Contracts.SecurityMaster.SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster",
       "kind": "class",
@@ -272785,7 +272785,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 90,
+          "source_line": 88,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -272799,7 +272799,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 101,
+          "source_line": 99,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -272841,7 +272841,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 113,
+          "source_line": 111,
           "type": "IReadOnlyList<string>"
         }
       ],

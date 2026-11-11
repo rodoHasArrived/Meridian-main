@@ -85,7 +85,7 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
             "lastDividendPerShare": 0.62, "dividendCurrency": "USD", "isQualifiedDividend": true
         },
         "covenants": {
-            "covenants": [ { "covenantType": "Maximum leverage", "notes": "Tested quarterly", "threshold": "< 4.0x" } ]
+            "covenants": [ { "kind": "FinancialMaintenance", "description": "Leverage covenant", "threshold": 4.0, "metric": "Net Debt / EBITDA", "testFrequency": "Quarterly" } ]
         },
         "esg": {
             "esgScore": 72.5, "esgProvider": "MSCI", "esgRating": "AA", "esgAsOf": "2025-11-30",
@@ -107,36 +107,18 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
         },
         "currencyPair": { "baseCurrency": "EUR", "quoteCurrency": "USD", "settlementCurrency": "USD", "forwardRate": 1.0875 },
         "notional": { "notional": 10000000, "denomination": 1000, "committedAmount": 5000000, "fundedAmount": 3250000, "unfundedAmount": 1750000 },
+        "bondCoupon": null,
+        "principalSchedule": null,
+        "swapLegs": null,
+        "loanCovenants": null,
+        "creditProtection": null,
+        "structuredPayoff": null,
+        "privateAssetValuation": null,
+        "listingDetail": null,
+        "rateConvention": { "rateUnit": "Percent" },
         "profileEnvelope": {
             "customProfileId": "co-invest-spv", "profileVersion": 2,
             "terms": { "schemaVersion": 3, "customProfileId": "co-invest-spv", "profileVersion": 2, "profileFields": { "vehicle": "SPV I" } }
-        },
-        "listing": {
-            "rootSymbol": "ES", "contractMonth": "2030-03", "optionChainId": "SPY-20261218", "lastTradingDate": "2030-03-15",
-            "firstNoticeDate": "2030-02-28", "deliveryMonthDate": "2030-03-01", "deliveryLocationCode": "CUSH"
-        },
-        "underlying": { "description": "S&P 500 Index", "assetClass": "Equity", "commodity": "Gold", "endDate": "2037-03-17" },
-        "creditProtection": {
-            "referenceEntity": "Meridian Industries Inc", "referenceObligation": "5.25% 2031", "protectionSide": "Buy",
-            "seniority": "SeniorUnsecured", "restructuringClause": "XR", "upfrontPoints": 1.25, "recoveryRateAssumption": 0.4,
-            "indexName": "CDX.NA.IG.42", "feeRate": 0.0075, "collateral": "First lien"
-        },
-        "structuredPayoff": { "principalProtectionPct": 1.0, "participationRate": 0.8, "returnCap": 0.35, "barrierLevel": 0.6 },
-        "creditTranche": {
-            "kind": "Clo", "seniority": "Mezzanine", "attachmentPoint": 0.12, "detachmentPoint": 0.18,
-            "reinvestmentPeriodEnd": "2028-07-15", "nonCallPeriodEnd": "2027-07-15"
-        },
-        "privateHolding": {
-            "vintage": 2021, "ownershipPercent": 12.5, "costBasis": 2500000, "latestValuation": 3100000,
-            "appraisalValue": 8400000, "valuationDate": "2026-06-30", "marketOrAddress": "Austin, TX"
-        },
-        "taxonomy": { "category": "Note", "subType": "PromissoryNote", "subclass": "Corporate" },
-        "couponSchedule": { "steps": [ { "effectiveDate": "2027-01-15", "rate": 4.5 }, { "effectiveDate": "2029-01-15", "rate": 5.25 } ] },
-        "legStructure": {
-            "legs": [
-                { "currency": "USD", "currentIndexRate": null, "dayCount": "30/360", "direction": "Pay", "exchangesPrincipal": false, "fixedRate": 3.75, "index": null, "legId": "fixed", "legType": "Fixed", "notional": 10000000, "notionalSchedule": [], "paymentFrequency": "SemiAnnual", "resetSchedule": [], "scheduleConventions": null, "spreadBps": null },
-                { "currency": "USD", "currentIndexRate": 4.31, "dayCount": "ACT/360", "direction": "Receive", "exchangesPrincipal": false, "fixedRate": null, "index": "SOFR", "legId": "float", "legType": "Floating", "notional": 10000000, "notionalSchedule": [], "paymentFrequency": "Quarterly", "resetSchedule": [ { "fixingRate": 4.31, "resetDate": "2026-04-15" } ], "scheduleConventions": null, "spreadBps": 12.5 }
-            ]
         }
     }
     """);
@@ -201,17 +183,42 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
             [],
             []);
 
-        var emitted = PropertyNames(SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection).EconomicTerms)
+        // rateConvention is emitted only for an actual declaration, keeping pre-field bytes stable.
+        projection = projection with
+        {
+            AssetClass = "CertificateOfDeposit",
+            AssetSpecificTerms = Json("""{"schemaVersion":1,"termsFormat":"flat","assetClassTermsVersion":5,"issuerName":"Synthetic Bank","maturity":"2029-01-01","rateUnit":"Percent"}""")
+        };
+        // Additive exact homes are emitted only for an actual fact. Sample every class rather
+        // than forcing absent modules onto old economic images merely to satisfy this inventory.
+        var representativeDocuments = new List<JsonElement>
+        {
+            SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection).EconomicTerms
+        };
+        foreach (var (assetClass, payload) in SecurityAssetTermsSchemaRoundTripTests.FullPayloads)
+        {
+            var flat = SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain(assetClass, payload);
+            representativeDocuments.Add(SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+                SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(assetClass, flat)).EconomicTerms);
+        }
+        representativeDocuments.Add(SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("Bond",
+                SecurityDeclaredScheduleModuleContractionTests.DeclaringFlat("Bond"))).EconomicTerms);
+        var emitted = representativeDocuments.SelectMany(PropertyNames)
             .Where(name => !SecurityTermsEnvelope.IsReservedKey(name))
+            .Distinct(StringComparer.Ordinal)
             .ToArray();
 
         emitted.Should().BeEquivalentTo(
             SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.EconomicTermsModules,
             "every module the economic serializer emits must be classified as bridged or dropped by the v2 → v1 bridge");
 
-        PropertyNames(FullEconomicTerms)
-            .Where(name => name != "schemaVersion")
-            .Should().BeEquivalentTo(emitted, "the coverage fixture must carry every emitted module");
+        var historicalModules = PropertyNames(FullEconomicTerms).Where(name => name != "schemaVersion").ToArray();
+        historicalModules.Should().OnlyContain(name => emitted.Contains(name),
+            "every module in the unchanged historical source remains part of the serializer contract");
+        emitted.Except(historicalModules, StringComparer.Ordinal).Should().OnlyContain(
+            name => SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.ModulesAddedAfterIdentityGate.Contains(name),
+            "only explicitly inventoried additive homes may extend the historical module set");
 
         SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.BridgedModules
             .Intersect(SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.DroppedModules, StringComparer.Ordinal)
@@ -290,15 +297,6 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
     [InlineData("currencyPair")]
     [InlineData("notional")]
     [InlineData("profileEnvelope")]
-    [InlineData("listing")]
-    [InlineData("underlying")]
-    [InlineData("creditProtection")]
-    [InlineData("structuredPayoff")]
-    [InlineData("creditTranche")]
-    [InlineData("privateHolding")]
-    [InlineData("taxonomy")]
-    [InlineData("couponSchedule")]
-    [InlineData("legStructure")]
     public void Convert_DroppedModule_LeavesNoTraceInTheFlatPayload(string module)
     {
         // This asserts the documented flat-key loss for an ordinary document. Declared schedule
@@ -346,15 +344,6 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
     [InlineData("currencyPair")]
     [InlineData("notional")]
     [InlineData("profileEnvelope")]
-    [InlineData("listing")]
-    [InlineData("underlying")]
-    [InlineData("creditProtection")]
-    [InlineData("structuredPayoff")]
-    [InlineData("creditTranche")]
-    [InlineData("privateHolding")]
-    [InlineData("taxonomy")]
-    [InlineData("couponSchedule")]
-    [InlineData("legStructure")]
     public void Convert_DroppedModule_IsRetainedVerbatimBesideTheFlatKeys(string module)
     {
         // An ordinary document keeps its source module beside the lossy flat keys. Populated

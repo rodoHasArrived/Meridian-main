@@ -816,6 +816,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             ProjectionReplayBatchSize = configuration.GetInt32("MERIDIAN_SECURITY_MASTER_REPLAY_BATCH_SIZE", 500),
             PreloadProjectionCache = configuration.GetBoolean("MERIDIAN_SECURITY_MASTER_PRELOAD_CACHE", true),
             ResolveInactiveByDefault = configuration.GetBoolean("MERIDIAN_SECURITY_MASTER_RESOLVE_INACTIVE", true),
+            IdentifierHistoryMigrationWritersStopped = configuration.GetBoolean("MERIDIAN_SECURITY_MASTER_IDENTIFIER_HISTORY_WRITERS_STOPPED", false),
+            IdentifierHistoryMigrationLegacyWritersRetired = configuration.GetBoolean("MERIDIAN_SECURITY_MASTER_IDENTIFIER_HISTORY_LEGACY_WRITERS_RETIRED", false),
             ProjectionCacheNotificationsEnabled = configuration.GetBoolean("MERIDIAN_SECURITY_MASTER_PROJECTION_NOTIFICATIONS", true)
         };
 

@@ -56,7 +56,7 @@ public sealed partial class SecurityMasterCashFlowService
         decimal principalBasis,
         decimal openingOutstanding,
         bool hasContractualPrincipal,
-        bool assertedBulletSchedule, bool unifiedEconomics = false)
+        bool assertedBulletSchedule, bool unifiedEconomics = false, bool rejectNegativeInterest = false)
     {
         StructuredCashFlowProjectionDto Empty(string? reason = null) => new(
             security.SecurityId, sourceKind, scenario, asOf, [], staleness, sourceLastUpdatedUtc, terms.FactorSchedule, terms, BlockedReason: reason);
@@ -84,6 +84,9 @@ public sealed partial class SecurityMasterCashFlowService
         var annualRate = couponFraction + ScenarioRateShift(scenario);
         if (annualRate < 0m)
         {
+            if (rejectNegativeInterest)
+                return Empty(SecurityInterestSupport.NegativeInterestReason) with { Blocker = SecurityInterestSupport.NegativeInterestBlocker };
+            // Frozen v1/v2 receipt replay retains its original arithmetic.
             annualRate = 0m;
         }
 

@@ -492,50 +492,6 @@ and S2-B4 (codec single-purpose) land. Planned increments:
     marker, no retained carry) instead of reading as the OtherSecurity salvage; a document
     written before the module keeps the former route. The profile pin of a profile-backed
     row that resolves to a first-class class is not a record field and stays document-level.
-  - **S3-E5 — record-field contraction (implemented 2026-11-11).** The thirteen per-class
-    records whose fields S3-E1 to E4 homed no longer redefine them: each holds a reference to
-    the term module that does (`Exercise`, `CurrencyPair`, `Notional`), and the CustomAsset
-    kind's payload is the `ProfileEnvelopeTerms` module itself — `CustomAssetTerms` and the
-    `ExerciseStyle` union are gone. Byte-neutral: no golden, corpus or sweep fixture changed.
-    Values the records guaranteed by type are now required by the definition validator (three
-    new `*_required` codes, five rules tightened from "valid when present" to "present and
-    valid"). Review follow-up: the removed `ExerciseStyle` union had also guaranteed an
-    option's style spelling, so `option_exercise_style_invalid` now requires one of the three
-    spellings the flat codec reads back. And because a record now holds a whole module, three
-    `*_member_unsupported` codes refuse a member the class's flat row does not persist. Contract multipliers and the cap/floor strikes stay scalar: their homes are on
-    wider modules that predate S3-E, and embedding a six-field module to carry one value would
-    widen the record rather than shrink it.
-  - **S3-E6 — residual scalar homes (implemented 2026-11-11).** Six term modules home the
-    scalar remainder: `listing` (futures root symbol and contract month, option chain, listing
-    dates), `underlying` (described reference asset, its asset class, the physical commodity,
-    a swaption's underlying swap end date), `creditProtection` (CDS reference terms; a
-    commitment's fee rate and collateral), `structuredPayoff` (structured-note protection,
-    participation, cap and barrier), `creditTranche` (kind, seniority, attachment and
-    detachment, CLO period ends) and `privateHolding` (vintage, ownership, cost basis,
-    valuations, market). Twenty-six rules moved to the definition surface; eleven more classes
-    keep no codec-only rule. A new module none of whose members is set is carried as absent.
-  - **S3-E7 — structural homes (implemented 2026-11-11).** The bond's structural complement
-    and the covenant entries gain homes: two new modules, `taxonomy` (a bond's subclass, an
-    other-security's category and sub-type) and `couponSchedule` (dated step-coupon rates),
-    plus four homes on modules that already existed and that these classes had never fed —
-    a bond's par on `notional.denomination`, its principal instalments on `sinkingFund`, its
-    inflation index terms on `inflationLinked`, and the DirectLoan and CommitmentGuarantee
-    covenant entries on `covenants`, whose entry is reshaped to the three members the flat
-    family holds. Nineteen ledger entries moved to the definition surface (thirteen Bond, two
-    OtherSecurity, two covenant codes on each loan class). The identity gate's tolerance widens
-    from "a later module key the rebuild emits null" to "a later module key the image
-    predates", because a bond always restates its subclass. Swap legs are the only codec-only
-    rules left. Review follow-up: the retained-document fold no longer refills a value the
-    flat row carries exactly (`FlatAuthoritativeFields`, the S3-E homes), so an amendment that
-    clears covenants or a principal schedule is not undone by a row's retained document.
-  - **S3-E8 — swap legs (implemented 2026-11-11).** A `legStructure` module carries a swap's
-    legs, each written by the flat family's own leg writer, including the leg's
-    `scheduleConventions` block. The ten leg rules moved to the definition surface, which
-    leaves `validateCodecOnlyKindTerms` empty, so it is removed: `validateKindTerms` is
-    `validateDefinitionTerms` over the kind's modules and the ledger is the complete list of
-    term-rule codes. The flatten recovers the flat `legs` array, stamping the row at the
-    block's terms version only when a leg declares one, so an economic-only swap replays with
-    its legs.
   - **Remaining for S3-E.** The record-field contraction itself (removing per-class record
     fields now that they have homes) and the residual codec-only complement listed in the
     review record (structural decodes — bond coupon structures and principal schedules, swap
@@ -543,9 +499,6 @@ and S2-B4 (codec single-purpose) land. Planned increments:
     payoff terms, private-asset valuations, listing detail). Both wait on owner sequencing.
     *2026-11-11:* the owner sequenced both as follow-up pull requests; see the close-out pass
     below.
-    *2026-11-11 (S3-E5 to E8):* both are implemented above, in the follow-up pull request the
-    owner sequenced: the contraction as S3-E5, and module homes for the whole residual
-    complement as S3-E6 to E8. No codec-only rule remains.
   *2026-11-10 (close-out pass):* the contraction has not started. Two limits apply when it does.
   ADR-027 keeps `SecurityMasterLegacyUpgrade` as the permanent read-only upcaster for legacy
   `SecurityProjection` events, so the bridge is confined, not deleted. And the residual complement
@@ -570,10 +523,51 @@ Remaining work, none of it started:
 
 - **S3-E record contraction**, one field group at a time, each with its own replay-compatibility
   proof, including module homes for the residual complement listed above.
-  *2026-11-11:* implemented as S3-E5 to E8 above; the items below have not started.
 - **D10, undeclared legacy rates:** a governed per-record rate-unit field for the classes that
   cannot carry a `scheduleConventions` block, with no field default.
 - **D10, negative rates:** readers that do not model signed interest block with a typed reason
   where the field permits negatives, and never floor.
 - **D10, StructuredNote:** fair value through profit or loss from valuation marks, with no accrual
   posting, when its accounting template is added.
+
+
+## Follow-through implementation — 2026-11-11
+
+The follow-through replaces per-class scalar storage across all 32 `SecurityKind` payloads with
+shared typed modules. Separate replay cases cover exercise/multipliers, currency pairs, notionals,
+profile envelopes, credit protection, structured payoffs, private valuations, listing details,
+coupon structures, principal, swap legs, covenants, maturity, scalar rates, issuers, pool detail,
+financing, sweep/fund terms, equity capital, tranche contracts, debt/redemption facts, exact raw
+rate/cadence terms, underlying swaps, rate conventions, commodity contracts, digital networks,
+underlying exposure, settlement, classification labels, reference sources and fund shares.
+Complete declared schedules retain every convention, exercise window and notice rule; the older
+Call/Accrual modules remain compatible summaries. Conflicting populated summaries and malformed
+complete-module documents are refused.
+
+Computed compatibility getters preserve existing codec/read APIs without duplicated scalar
+storage. A global reflection check requires every field of every per-class payload to use a
+registered canonical module type. The permanent legacy upcaster and historical retained-document
+fold remain; source events and historical refusal/rebuild outputs are not rewritten. Current
+new-event output gains the explicit module homes. Old economic-only Equity documents without a
+complete capital module retain their historical refusal; new complete capital documents recover
+exactly, including preferred/convertible terms.
+
+The new `rateUnit` term is an explicit per-record repair for scalar-rate classes without usable
+schedule anchors. It has no default, is version-gated, survives economic replay and uses the
+existing governed draft/review/approve/publish lifecycle. Raising this field's authoring version
+does not authorize the calculation-only companion or swap-leg schedule blocks.
+
+Current readers that cannot model signed interest return `NegativeInterestUnsupported` and no
+partial output rather than applying an implicit zero floor. Contractual calculations that support
+signed interest and frozen historical replay retain their own semantics.
+
+The browser and WPF schedule books show typed declared-schedule results and blockers, plus the
+effective governance profile, its source/latch, enforced requirements and ignored configuration.
+Both consume the shared trust snapshot. Browser row labels distinguish puts and notice deadlines.
+
+Pending migration 062 now checks the authorized apply conditions in the runner. Upgrades require
+explicit stopped-writer and retired-legacy-writer attestations, acquire parent then child exclusive
+locks without waiting, and refuse a backfill above one million identifier rows unless the command
+timeout exceeds thirty seconds (or is unlimited). The locks last through commit/rollback; the
+attestations describe deployment facts the database cannot infer. An already-applied 062 is not
+rechecked. The shipped SQL and checksum are unchanged. See the governed-edit rollout for settings.

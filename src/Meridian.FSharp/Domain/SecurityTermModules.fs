@@ -47,6 +47,291 @@ type SweepVehicle =
     | Repo
     | OtherVehicle of string
 
+/// A dated coupon-rate step: the annual rate payable from <c>EffectiveDate</c> until the next
+/// entry's effective date (or maturity for the last entry). The term data that makes the
+/// <see cref="BondSubclass.StepRate"/> and <see cref="BondSubclass.FixedToFloat"/> taxonomy
+/// computable instead of a label.
+type StepCouponEntry = {
+    EffectiveDate: DateOnly
+    Rate: decimal
+}
+
+[<RequireQualifiedAccess>]
+type BondCouponStructure =
+    | Fixed of rate: decimal * dayCount: DayCountConvention option
+    | Floating of index: string * spreadBps: decimal option * capRate: decimal option * floorRate: decimal option * dayCount: DayCountConvention option
+    | ZeroCoupon
+    /// Step-rate coupon: a contractual dated rate schedule (step-up notes, step coupons around
+    /// call dates). The schedule is the coupon — there is no single scalar rate.
+    | Step of schedule: StepCouponEntry list * dayCount: DayCountConvention option
+    /// Inflation-linked coupon (TIPS, linkers): a real rate accruing on index-adjusted principal.
+    /// <c>indexName</c> names the reference index (e.g. "CPI-U"); <c>baseIndexValue</c> is the
+    /// index level at issue and <c>indexRatio</c> the current index ratio applied to principal.
+    | InflationLinked of realRate: decimal * indexName: string * baseIndexValue: decimal option * indexRatio: decimal option * dayCount: DayCountConvention option
+
+/// A scheduled principal repayment (amortizing instalment, sinking-fund payment, or term-loan
+/// instalment). Shared by bond and direct-loan terms.
+type PrincipalPaymentEntry = {
+    PaymentDate: DateOnly
+    Amount: decimal
+}
+
+/// The declared conventions the contractual schedule kernel (ADR-025) builds an instrument's periods
+/// with: the flat terms' <c>scheduleConventions</c> block (asset-class terms version 2 on bonds,
+/// certificates of deposit and swap legs, 3 on structured credit). A node reads it from payloads
+/// stamped at that version and does not write it until the contract step (ADR-024, readable before
+/// writable). Text members are kept verbatim, as the payload carries them;
+/// <c>ScheduleConventions.empty</c> means nothing is declared.
+type ScheduleConventions = {
+    BusinessDayConvention: string option
+    /// Whether accrual period boundaries are adjusted for business days (payment dates always are,
+    /// under <c>BusinessDayConvention</c>). None when the terms do not say.
+    AccrualAdjusted: bool option
+    /// The payment calendars by id, joined into one calendar when more than one is named.
+    PaymentCalendars: string list
+    PaymentLagBusinessDays: int option
+    RollConvention: string option
+    EndOfMonthRule: bool option
+    FirstRegularDate: DateOnly option
+    LastRegularDate: DateOnly option
+    /// Schedule generation direction: Forward or Backward.
+    Direction: string option
+    StubPolicy: string option
+    /// Whether a coupon rate is a percent or a fraction: Percent or Fraction.
+    CouponRateUnit: string option
+    /// How a regular coupon's cash amount is computed: Level (rate over frequency) or DayCount.
+    CouponCashBasis: string option
+}
+
+[<RequireQualifiedAccess>]
+module ScheduleConventions =
+    /// No convention declared: what every record carries until a node writes the block.
+    [<CompiledName("Empty")>]
+    let empty : ScheduleConventions =
+        { BusinessDayConvention = None
+          AccrualAdjusted = None
+          PaymentCalendars = []
+          PaymentLagBusinessDays = None
+          RollConvention = None
+          EndOfMonthRule = None
+          FirstRegularDate = None
+          LastRegularDate = None
+          Direction = None
+          StubPolicy = None
+          CouponRateUnit = None
+          CouponCashBasis = None }
+
+    /// Whether nothing is declared.
+    [<CompiledName("IsEmpty")>]
+    let isEmpty (conventions: ScheduleConventions) = conventions = empty
+
+/// One declared call (a flat callSchedule entry: asset-class terms version 3 on bonds and
+/// certificates of deposit, 4 on structured credit). Text members are kept verbatim; their meanings
+/// are frozen in ADR-025's Applications.
+type CallScheduleTerm = {
+    /// The call date, or the start of an American or Bermudan call window. An entry without one is
+    /// not a term and is never read.
+    CallDate: DateOnly
+    /// The last day of the call window, inclusive. Absent, the window runs to the day before the
+    /// next call's date in date order, or to maturity for the last call (ADR-025).
+    CallEndDate: DateOnly option
+    /// European, American or Bermudan.
+    ExerciseStyle: string option
+    /// How often a Bermudan window's call dates recur (a coupon frequency spelling).
+    ExerciseFrequency: string option
+    /// The call price, in the unit priceBasis names.
+    CallPrice: decimal option
+    /// PercentOfPar or PercentOfAccretedValue.
+    PriceBasis: string option
+    /// Fixed or MakeWhole.
+    PriceType: string option
+    /// The make-whole spread over the benchmark, in basis points.
+    MakeWholeSpreadBps: decimal option
+    /// WholeOnly, ProRata or ByLot.
+    PartialRedemption: string option
+    /// Notice of the call falls at least this many days before the exercise date.
+    MinimumNoticeDays: int option
+    /// Notice of the call falls at most this many days before the exercise date.
+    MaximumNoticeDays: int option
+    /// Whether the notice counts are Business or Calendar days.
+    NoticeDayType: string option
+}
+
+/// One declared holder put (a flat putSchedule entry), with the same versions as the call entry. A
+/// mandatory tender is not a put entry; it stays MandatoryPutDate.
+type PutScheduleTerm = {
+    /// The put date, or the start of a put window. An entry without one is never read.
+    PutDate: DateOnly
+    /// The last day of the put window, inclusive. Absent, the window runs to the day before the
+    /// next put's date in date order, or to maturity for the last put (ADR-025).
+    PutEndDate: DateOnly option
+    /// European, American or Bermudan.
+    ExerciseStyle: string option
+    /// How often a Bermudan window's put dates recur (a coupon frequency spelling).
+    ExerciseFrequency: string option
+    /// The put price, in the unit priceBasis names.
+    PutPrice: decimal option
+    /// PercentOfPar or PercentOfAccretedValue.
+    PriceBasis: string option
+    /// The holder's election falls at least this many days before the exercise date.
+    MinimumNoticeDays: int option
+    /// The holder's election falls at most this many days before the exercise date.
+    MaximumNoticeDays: int option
+    /// Whether the notice counts are Business or Calendar days.
+    NoticeDayType: string option
+}
+
+/// The declared call and put schedules, in stored order; empty until declared.
+type CallPutSchedules = { Calls: CallScheduleTerm list; Puts: PutScheduleTerm list }
+
+[<RequireQualifiedAccess>]
+module CallPutSchedules =
+    /// Nothing declared: what every record carries until a node writes the schedules.
+    [<CompiledName("Empty")>]
+    let empty : CallPutSchedules = { Calls = []; Puts = [] }
+
+    /// Whether neither a call nor a put is declared.
+    [<CompiledName("IsEmpty")>]
+    let isEmpty (schedules: CallPutSchedules) = schedules.Calls.IsEmpty && schedules.Puts.IsEmpty
+
+[<RequireQualifiedAccess>]
+module CallScheduleTerm =
+    /// A call on the date with nothing else stated.
+    let onDate (date: DateOnly) : CallScheduleTerm =
+        { CallDate = date
+          CallEndDate = None
+          ExerciseStyle = None
+          ExerciseFrequency = None
+          CallPrice = None
+          PriceBasis = None
+          PriceType = None
+          MakeWholeSpreadBps = None
+          PartialRedemption = None
+          MinimumNoticeDays = None
+          MaximumNoticeDays = None
+          NoticeDayType = None }
+
+[<RequireQualifiedAccess>]
+module PutScheduleTerm =
+    /// A put on the date with nothing else stated.
+    let onDate (date: DateOnly) : PutScheduleTerm =
+        { PutDate = date
+          PutEndDate = None
+          ExerciseStyle = None
+          ExerciseFrequency = None
+          PutPrice = None
+          PriceBasis = None
+          MinimumNoticeDays = None
+          MaximumNoticeDays = None
+          NoticeDayType = None }
+
+/// One step of an amortizing or accreting leg notional: the notional in effect from this date
+/// until the next step (or maturity).
+type SwapNotionalStep = {
+    EffectiveDate: DateOnly
+    Notional: decimal
+}
+
+/// A floating-leg reset date with the index fixing observed on it, once known.
+type SwapResetEntry = {
+    ResetDate: DateOnly
+    FixingRate: decimal option
+}
+
+/// A swap leg with the economics consumed by cash-flow projection. Optional terms keep
+/// legacy legs readable and allow the projection to use security-level fallbacks.
+type SwapLeg = {
+    LegId: string option
+    LegType: string
+    Currency: string
+    /// Pay or Receive from the holder's perspective. None leaves the leg unnetted.
+    Direction: string option
+    Index: string option
+    FixedRate: decimal option
+    SpreadBps: decimal option
+    /// Observed index fixing used for flat-forward projection, without an implied forward curve.
+    CurrentIndexRate: decimal option
+    Notional: decimal option
+    PaymentFrequency: string option
+    DayCount: DayCountConvention option
+    /// Whether principal exchanges are part of the leg's contractual terms.
+    ExchangesPrincipal: bool
+    /// Dated notional steps for an amortizing or accreting leg; empty for a constant notional.
+    NotionalSchedule: SwapNotionalStep list
+    /// Reset dates with their observed fixings for a floating leg; empty when not tracked.
+    ResetSchedule: SwapResetEntry list
+    /// The leg's declared schedule conventions (asset-class terms version 2); empty until declared.
+    ScheduleConventions: ScheduleConventions
+}
+
+type Covenant = {
+    CovenantType: string
+    Threshold: string
+    Notes: string option
+}
+
+/// Discriminated union identifying the bond's economic subclass.
+[<RequireQualifiedAccess>]
+type BondSubclass =
+    | Sovereign
+    | Corporate
+    | Municipal
+    | Agency
+    | Convertible
+    | InflationLinked
+    | FloatingRate
+    // --- Scheduled / structured principal ---
+    /// Bond with contractual sinking fund or mandatory principal instalments.
+    | SinkingFund
+    /// Step-rate bond whose coupon increases per a contractual schedule (may be callable at step dates).
+    | StepRate
+    /// Fixed-rate bond that converts to floating at a specified date.
+    | FixedToFloat
+    // --- Short-term / money-market debt ---
+    /// Variable Rate Demand Note — daily or weekly reset rate; investor may tender on demand.
+    | Vrdn
+    /// Auction Rate Security — rate resets at periodic auction; vendor pricing conventions may hold it at par.
+    | AuctionRate
+    // Loans belong in DirectLoan; securitized products belong in StructuredCredit.
+    // Historical labels survive only through Other for tolerant record reconstruction.
+    | Other of string
+
+[<RequireQualifiedAccess>]
+module BondSubclass =
+    /// Canonical serialization label. Named cases use the case name; <c>Other</c> carries its raw
+    /// label — serializing the union's ToString (<c>Other "X"</c>) made every unknown subclass
+    /// re-wrap itself one level deeper per codec pass instead of round-tripping.
+    let label (subclass: BondSubclass) =
+        match subclass with
+        | BondSubclass.Other name -> name
+        | named -> string named
+
+/// Exact bond classification facts, including historical unknown subclass labels.
+type DebtClassificationTerms = { Subclass: BondSubclass; Seniority: string option }
+
+/// Face amount and distinct legal/redemption dates; none is a redemption price or call-date alias.
+type BondRedemptionTerms = {
+    Par: decimal option
+    LegalFinalMaturity: DateOnly option
+    PreRefundDate: DateOnly option
+    MandatoryPutDate: DateOnly option
+}
+
+[<RequireQualifiedAccess>]
+module BondRedemptionTerms =
+    let empty = { Par = None; LegalFinalMaturity = None; PreRefundDate = None; MandatoryPutDate = None }
+
+/// Exact coupon structure shared by the domain and the flat codec (ADR-027 S3-E).
+type BondCouponTerms = { Structure: BondCouponStructure; PaymentFrequency: PaymentFrequency option }
+
+/// Contractual payments retain stored order and amounts.
+type PrincipalScheduleTerms = { Payments: PrincipalPaymentEntry list }
+
+type SwapLegTerms = { Legs: SwapLeg list }
+
+/// Free-text legacy covenant thresholds are retained verbatim, separately from numeric ratios.
+type LoanCovenantTerms = { Entries: Covenant list }
+
 type MaturityTerms = {
     EffectiveDate: DateOnly option
     IssueDate: DateOnly option
@@ -128,6 +413,14 @@ type EconomicCallTerms = {
     PutSchedule: PutScheduleEntry list
 }
 
+[<RequireQualifiedAccess>]
+module EconomicCallTerms =
+    /// Stored scalar facts only; declared schedules keep their original order in CallPutSchedules.
+    [<CompiledName("Scalar")>]
+    let scalar isCallable firstCallDate : EconomicCallTerms =
+        { IsCallable = isCallable; FirstCallDate = firstCallDate; CallPrice = None; CallSchedule = []
+          MakeWholeSpreadBps = None; IsPuttable = false; PutSchedule = [] }
+
 type AuctionTerms = {
     AuctionDate: DateOnly option
     AuctionType: string option
@@ -161,6 +454,12 @@ type IssuerRef = {
     IssuerSector: string option
     IssuerCountry: string option
 }
+
+[<RequireQualifiedAccess>]
+module IssuerRef =
+    let empty : IssuerRef =
+        { IssuerName = None; InstitutionName = None; IssuerProgram = None; LeiCode = None
+          UltimateParentName = None; IssuerSector = None; IssuerCountry = None }
 
 /// Voting rights category for equity instruments.
 [<RequireQualifiedAccess>]
@@ -269,19 +568,25 @@ type DividendScheduleTerms = {
     IsQualifiedDividend: bool
 }
 
-/// A single covenant as the governing documents state it. The members are what loan and
-/// commitment records hold: free text, because a covenant's type and its threshold are written
-/// in the deal's own words ("Maximum leverage", "< 4.0x"). Reshaped from a never-populated typed
-/// sketch when the module gained its first producer (ADR-027 stage 3, S3-E7).
+/// Covenant kind for bond and loan covenants.
+[<RequireQualifiedAccess>]
+type CovenantKind =
+    | FinancialMaintenance  // must maintain a ratio (e.g. leverage ≤ 4x)
+    | Incurrence            // triggered on a specific action (e.g. taking on new debt)
+    | Negative              // prohibits certain actions
+    | Affirmative           // requires certain actions
+
+/// A single covenant on a bond or loan.
 type CovenantEntry = {
-    /// What the covenant restricts or requires, as the documents name it.
-    CovenantType: string
-    /// The level that must be kept or not exceeded, as the documents state it.
-    Threshold: string
-    Notes: string option
+    Kind: CovenantKind
+    Description: string
+    Threshold: decimal option
+    /// Metric name, e.g. "Net Debt / EBITDA".
+    Metric: string option
+    TestFrequency: string option
 }
 
-/// Covenant module — applicable to loans, commitments and other direct credit instruments.
+/// Covenant module — applicable to bonds, loans, and direct credit instruments.
 type CovenantTerms = {
     Covenants: CovenantEntry list
 }
@@ -481,11 +786,10 @@ type NotionalTerms = {
 }
 
 /// The governance envelope of a profile-backed custom asset together with the profile-governed
-/// terms document it pins, carried opaquely: profile fields are dynamic and governed by the
-/// approved profile version, so the module holds the document rather than modelling per-profile
-/// shapes. Since the S3-E contraction this module is the CustomAsset kind's payload — carrying
-/// the raw document is what makes serialize → deserialize → serialize lossless for the
-/// extension point.
+/// terms document it pins, carried opaquely exactly as CustomAssetTerms carries it: profile
+/// fields are dynamic and governed by the approved profile version, so the module holds the
+/// document rather than modelling per-profile shapes. The home for the envelope the flat codec
+/// alone carried before S3-E.
 type ProfileEnvelopeTerms = {
     /// Identifier of the approved custom-asset profile governing the record.
     CustomProfileId: string
@@ -495,237 +799,270 @@ type ProfileEnvelopeTerms = {
     TermsJson: string
 }
 
-// ---------------------------------------------------------------------------
-// ADR-027 stage 3 (S3-E6): homes for the residual scalar complement
-// ---------------------------------------------------------------------------
-
-/// Listing detail of an exchange-traded contract: what identifies the contract series and the
-/// dates the venue sets for it.
-type ListingTerms = {
-    /// Root symbol of a futures contract series (e.g. "ES").
-    RootSymbol: string option
-    /// Contract month as the venue labels it (e.g. "2030-03").
-    ContractMonth: string option
-    /// The option chain or series a listed option belongs to.
-    OptionChainId: string option
-    LastTradingDate: DateOnly option
-    FirstNoticeDate: DateOnly option
-    DeliveryMonthDate: DateOnly option
-    /// Delivery point code for a physically settled contract.
-    DeliveryLocationCode: string option
-}
-
-/// What an instrument references when that is not a security-master record of its own: a
-/// described asset, an asset class, a physical commodity, or an underlying swap. (A listed
-/// option's or warrant's underlying security is ExerciseTerms.UnderlyingSecurityId.)
-type UnderlyingReferenceTerms = {
-    /// Free-text description of the reference asset, index or basket (CFD, structured note).
-    Description: string option
-    /// Asset class of the reference asset (CFD).
-    AssetClass: string option
-    /// The physical commodity a commodity instrument represents (e.g. "Gold").
-    Commodity: string option
-    /// Last day of the underlying swap's term (swaption): its maturity. Its effective date is
-    /// MaturityTerms.EffectiveDate.
-    EndDate: DateOnly option
-}
-
-/// Credit protection and commitment terms: who or what is protected, on which side, and the
-/// contractual assumptions around it (credit default swap), plus the running fee and collateral
-/// of a commitment or guarantee.
+/// Reference obligation and contractual protection elections of a CDS.
 type CreditProtectionTerms = {
-    ReferenceEntity: string option
+    ReferenceEntity: string
     ReferenceObligation: string option
-    /// "Buy" when the holder buys protection, "Sell" when it sells protection.
-    ProtectionSide: string option
-    /// Seniority of the reference obligation (e.g. "SeniorUnsecured").
+    ProtectionSide: string
     Seniority: string option
-    /// ISDA restructuring clause (e.g. "ModR", "XR").
     RestructuringClause: string option
-    /// Upfront payment as points of notional.
     UpfrontPoints: decimal option
-    /// Assumed recovery rate as a fraction (0 to 1).
     RecoveryRateAssumption: decimal option
-    /// Index name and series for an index CDS; None for single-name.
     IndexName: string option
-    /// Running fee of a commitment or guarantee, as a rate.
-    FeeRate: decimal option
-    /// Collateral supporting a commitment or guarantee, as described.
-    Collateral: string option
 }
 
-/// Payoff terms of a structured note: how much principal is protected and how the holder
-/// participates in the underlying's return.
+/// Underlying-linked payoff of an issuer note; coupon and denomination have separate homes.
 type StructuredPayoffTerms = {
-    /// Share of principal repaid at maturity regardless of the underlying, as a fraction.
+    UnderlyingDescription: string
     PrincipalProtectionPct: decimal option
-    /// Share of the underlying's return the holder receives, as a fraction.
     ParticipationRate: decimal option
-    /// Maximum return paid, as a fraction of face.
     ReturnCap: decimal option
-    /// Knock-in or knock-out barrier as a fraction of the underlying's initial level.
     BarrierLevel: decimal option
 }
 
-/// Position of a structured-credit tranche in its deal's capital structure, with the CLO period
-/// dates. (Pool-level analytics stay on StructuredProductTerms.)
-type CreditTrancheTerms = {
-    /// Securitisation family label (e.g. "Clo", "AgencyMbs"), as StructuredCreditKind names it.
-    Kind: string option
-    /// Position in the capital structure as the deal labels it (e.g. "Senior", "Mezzanine").
-    Seniority: string option
-    /// Loss attachment point as a fraction of the deal balance (0 to 1).
-    AttachmentPoint: decimal option
-    /// Loss detachment point as a fraction of the deal balance (0 to 1).
-    DetachmentPoint: decimal option
-    /// CLO: last day of the reinvestment period.
-    ReinvestmentPeriodEnd: DateOnly option
-    /// CLO: last day of the non-call period.
-    NonCallPeriodEnd: DateOnly option
-}
-
-/// Holding-level terms of a private asset: the stake held and how it is valued.
-type PrivateHoldingTerms = {
-    /// Vintage year of a private fund interest.
+/// Private-asset valuation facts and ownership restrictions, without inventing a mark when absent.
+type PrivateAssetValuationTerms = {
     Vintage: int option
-    /// Share of the asset held, as a percentage.
+    NavDate: DateOnly option
+    Lockup: string option
     OwnershipPercent: decimal option
-    /// Cost basis of the holding (private company equity).
     CostBasis: decimal option
-    /// Most recent valuation of the holding (private company equity).
     LatestValuation: decimal option
-    /// Appraised value of the property (real estate holding).
+    TransferRestrictions: string option
+    AddressOrMarket: string option
     AppraisalValue: decimal option
-    /// Date of the valuation or net asset value the holding is carried at.
     ValuationDate: DateOnly option
-    /// Address or market of the property (real estate holding).
-    MarketOrAddress: string option
+    DebtStack: string option
 }
 
-// ---------------------------------------------------------------------------
-// ADR-027 stage 3 (S3-E7): homes for the structural complement
-// ---------------------------------------------------------------------------
-
-/// Labels a record carries beyond its classification: an other-security's category and
-/// sub-type, and a bond's economic subclass. They decide whether the record sits in its
-/// canonical asset class, so the definition validator needs them where it can read them.
-type TaxonomyTerms = {
-    /// Free-text category of an other-security.
-    Category: string option
-    /// Free-text sub-type of an other-security.
-    SubType: string option
-    /// A bond's economic subclass label (e.g. "Corporate", "Municipal", or a vendor label).
-    Subclass: string option
+/// Listed-contract series, settlement and delivery details retained independently of its right.
+type ListingDetailTerms = {
+    OptChainId: string option
+    SettlementType: string option
+    IsAdjusted: bool option
+    LastTradingDt: DateOnly option
+    RootSymbol: string option
+    ContractMonth: string option
+    FirstNoticeDt: DateOnly option
+    DeliveryMonthDt: DateOnly option
+    DeliveryLocationCode: string option
+    IsRollTarget: bool option
+    RollWindowDays: int option
 }
 
-/// One dated step of a step-rate coupon: the annual rate payable from EffectiveDate until the
-/// next step (or maturity).
-type CouponStep = {
-    EffectiveDate: DateOnly
-    Rate: decimal
-}
+/// Explicit unit of scalar rate fields, independent of schedule generation.
+type RateConventionTerms = { RateUnit: string }
 
-/// The dated rate schedule of a step-rate coupon. Present only when the coupon is a step
-/// structure that declares steps; CouponTerms.CouponType names the structure.
-type CouponScheduleTerms = {
-    Steps: CouponStep list
-}
+[<RequireQualifiedAccess>]
+type DividendType =
+    | Fixed
+    | Floating
+    | Cumulative
 
-/// The declared conventions the contractual schedule kernel (ADR-025) builds an instrument's periods
-/// with: the flat terms' <c>scheduleConventions</c> block (asset-class terms version 2 on bonds,
-/// certificates of deposit and swap legs, 3 on structured credit). A node reads it from payloads
-/// stamped at that version and does not write it until the contract step (ADR-024, readable before
-/// writable). Text members are kept verbatim, as the payload carries them;
-/// <c>ScheduleConventions.empty</c> means nothing is declared.
-type ScheduleConventions = {
-    BusinessDayConvention: string option
-    /// Whether accrual period boundaries are adjusted for business days (payment dates always are,
-    /// under <c>BusinessDayConvention</c>). None when the terms do not say.
-    AccrualAdjusted: bool option
-    /// The payment calendars by id, joined into one calendar when more than one is named.
-    PaymentCalendars: string list
-    PaymentLagBusinessDays: int option
-    RollConvention: string option
-    EndOfMonthRule: bool option
-    FirstRegularDate: DateOnly option
-    LastRegularDate: DateOnly option
-    /// Schedule generation direction: Forward or Backward.
-    Direction: string option
-    StubPolicy: string option
-    /// Whether a coupon rate is a percent or a fraction: Percent or Fraction.
-    CouponRateUnit: string option
-    /// How a regular coupon's cash amount is computed: Level (rate over frequency) or DayCount.
-    CouponCashBasis: string option
+[<RequireQualifiedAccess>]
+module DividendType =
+    let asString dividendType =
+        match dividendType with
+        | DividendType.Fixed -> "Fixed"
+        | DividendType.Floating -> "Floating"
+        | DividendType.Cumulative -> "Cumulative"
+
+type ParticipationTerms = {
+    ParticipatesInCommonDividends: bool
+    AdditionalDividendThreshold: decimal option
 }
 
 [<RequireQualifiedAccess>]
-module ScheduleConventions =
-    /// No convention declared: what every record carries until a node writes the block.
-    [<CompiledName("Empty")>]
-    let empty : ScheduleConventions =
-        { BusinessDayConvention = None
-          AccrualAdjusted = None
-          PaymentCalendars = []
-          PaymentLagBusinessDays = None
-          RollConvention = None
-          EndOfMonthRule = None
-          FirstRegularDate = None
-          LastRegularDate = None
-          Direction = None
-          StubPolicy = None
-          CouponRateUnit = None
-          CouponCashBasis = None }
+type LiquidationPreference =
+    | Pari
+    | Senior of multiple: decimal
+    | Subordinated
 
-    /// Whether nothing is declared.
-    [<CompiledName("IsEmpty")>]
-    let isEmpty (conventions: ScheduleConventions) = conventions = empty
+[<RequireQualifiedAccess>]
+module LiquidationPreference =
+    let asString preference =
+        match preference with
+        | LiquidationPreference.Pari -> "Pari"
+        | LiquidationPreference.Senior _ -> "Senior"
+        | LiquidationPreference.Subordinated -> "Subordinated"
 
-/// One step of an amortizing or accreting leg notional: the notional in effect from this date
-/// until the next step (or maturity).
-type SwapNotionalStep = {
-    EffectiveDate: DateOnly
-    Notional: decimal
+type PreferredTerms = {
+    DividendRate: decimal option
+    DividendType: DividendType
+    RedemptionPrice: decimal option
+    RedemptionDate: DateOnly option
+    CallableDate: DateOnly option
+    ParticipationTerms: ParticipationTerms option
+    LiquidationPreference: LiquidationPreference
 }
 
-/// A floating-leg reset date with the index fixing observed on it, once known.
-type SwapResetEntry = {
-    ResetDate: DateOnly
-    FixingRate: decimal option
+type ConvertibleTerms = {
+    UnderlyingSecurityId: SecurityId
+    ConversionRatio: decimal
+    ConversionPrice: decimal option
+    ConversionStartDate: DateOnly option
+    ConversionEndDate: DateOnly option
 }
 
-/// A swap leg with the economics consumed by cash-flow projection. Optional terms keep
-/// legacy legs readable and allow the projection to use security-level fallbacks.
-type SwapLeg = {
-    LegId: string option
-    LegType: string
-    Currency: string
-    /// Pay or Receive from the holder's perspective. None leaves the leg unnetted.
-    Direction: string option
-    Index: string option
-    FixedRate: decimal option
-    SpreadBps: decimal option
-    /// Observed index fixing used for flat-forward projection, without an implied forward curve.
-    CurrentIndexRate: decimal option
-    Notional: decimal option
+[<RequireQualifiedAccess>]
+type EquityClassification =
+    | Common
+    | Preferred of PreferredTerms
+    | Convertible of ConvertibleTerms
+    | ConvertiblePreferred of PreferredTerms * ConvertibleTerms
+    | Other of string
+
+[<RequireQualifiedAccess>]
+module EquityClassification =
+    let asString classification =
+        match classification with
+        | EquityClassification.Common -> "Common"
+        | EquityClassification.Preferred _ -> "Preferred"
+        | EquityClassification.Convertible _ -> "Convertible"
+        | EquityClassification.ConvertiblePreferred _ -> "ConvertiblePreferred"
+        | EquityClassification.Other s -> s
+
+/// Exact equity capital terms, including the complete preferred/convertible discriminant.
+/// These types are shared by the economic model and its flat codec; the economic summaries
+/// in dividend/conversion modules remain projections rather than another source of truth.
+type EquityCapitalTerms = {
+    ShareClass: string option
+    VotingRightsCat: VotingRightsCat option
+    Classification: EquityClassification option
+}
+
+/// Commodity quantity and its declared unit; denomination is text, never monetary face.
+type CommodityContractTerms = {
+    CommodityType: string
+    Denomination: string option
+    ContractSize: decimal option
+}
+
+/// Network identity of a digital asset, independent of its quoted currency pair.
+type DigitalAssetTerms = { Network: string option }
+
+/// Descriptive underlying and exact leverage; leverage is not reconstructed from margin percent.
+type UnderlyingExposureTerms = {
+    UnderlyingAssetClass: string
+    UnderlyingDescription: string option
+    Leverage: decimal option
+}
+
+/// Contractual settlement method as declared, without assigning an implicit method.
+type SettlementTerms = { SettlementType: string option }
+
+/// Raw classification labels retained separately from canonical catalog classification.
+type ClassificationDetailTerms = { Category: string; SubType: string option }
+
+/// Fund-share category, NAV currency and distribution behavior.
+type FundShareTerms = {
+    FundType: string option
+    NavCurrency: string option
+    DistributionPolicy: DistributionPolicy option
+    IsStableNav: bool option
+}
+
+/// Operational references only: no pricing or rate-setting authority is inferred from these names.
+type ReferenceDataSourceTerms = { PricingSource: string option; FixingSource: string option }
+
+/// Exact scalar interest quote and cadence; no unit conversion or vocabulary normalization.
+type ContractualRateTerms = {
+    CouponRate: decimal option
+    FixedCouponBps: decimal option
+    FeeRate: decimal option
     PaymentFrequency: string option
     DayCount: DayCountConvention option
-    /// Whether principal exchanges are part of the leg's contractual terms.
-    ExchangesPrincipal: bool
-    /// Dated notional steps for an amortizing or accreting leg; empty for a constant notional.
-    NotionalSchedule: SwapNotionalStep list
-    /// Reset dates with their observed fixings for a floating leg; empty when not tracked.
-    ResetSchedule: SwapResetEntry list
-    /// The leg's declared schedule conventions (asset-class terms version 2); empty until declared.
-    ScheduleConventions: ScheduleConventions
 }
 
-/// The legs of a swap (ADR-027 stage 3, S3-E8): the structure every swap rule reads. A swap with
-/// no legs carries no module.
-type LegStructureTerms = {
-    Legs: SwapLeg list
+/// The underlying swap of a swaption, distinct from the option's expiry dates.
+type UnderlyingSwapTerms = {
+    MaturityDate: DateOnly
+    FloatingIndex: string option
+    FixedLegPaymentFrequency: string option
+    FixedLegDayCount: DayCountConvention option
 }
+
+[<RequireQualifiedAccess>]
+type StructuredCreditKind =
+    | AgencyMbs
+    | NonAgencyMbs
+    | CommercialMbs
+    | AssetBacked
+    | Clo
+    | Cdo
+    | Cmo
+    | InterestOnly
+    | PrincipalOnly
+    | OtherStructuredCreditKind of string
+
+[<RequireQualifiedAccess>]
+module StructuredCreditKind =
+    let asString kind =
+        match kind with
+        | StructuredCreditKind.AgencyMbs -> "AgencyMbs"
+        | StructuredCreditKind.NonAgencyMbs -> "NonAgencyMbs"
+        | StructuredCreditKind.CommercialMbs -> "CommercialMbs"
+        | StructuredCreditKind.AssetBacked -> "AssetBacked"
+        | StructuredCreditKind.Clo -> "Clo"
+        | StructuredCreditKind.Cdo -> "Cdo"
+        | StructuredCreditKind.Cmo -> "Cmo"
+        | StructuredCreditKind.InterestOnly -> "InterestOnly"
+        | StructuredCreditKind.PrincipalOnly -> "PrincipalOnly"
+        | StructuredCreditKind.OtherStructuredCreditKind label -> label
+
+    /// Parses the wire label. Governed labels match case-insensitively, as the taxonomy validator
+    /// does, and canonicalise to the named case; an unrecognised label is kept verbatim as
+    /// <c>OtherStructuredCreditKind</c>.
+    let parse (label: string) =
+        let trimmed = label.Trim()
+        match trimmed.ToUpperInvariant() with
+        | "AGENCYMBS" -> StructuredCreditKind.AgencyMbs
+        | "NONAGENCYMBS" -> StructuredCreditKind.NonAgencyMbs
+        | "COMMERCIALMBS" -> StructuredCreditKind.CommercialMbs
+        | "ASSETBACKED" -> StructuredCreditKind.AssetBacked
+        | "CLO" -> StructuredCreditKind.Clo
+        | "CDO" -> StructuredCreditKind.Cdo
+        | "CMO" -> StructuredCreditKind.Cmo
+        | "INTERESTONLY" -> StructuredCreditKind.InterestOnly
+        | "PRINCIPALONLY" -> StructuredCreditKind.PrincipalOnly
+        | _ -> StructuredCreditKind.OtherStructuredCreditKind trimmed
+
+/// Exact tranche contract terms that the pool analytics summary cannot express.
+type TrancheContractTerms = {
+    Kind: StructuredCreditKind option
+    Seniority: string option
+    AttachmentPoint: decimal option
+    DetachmentPoint: decimal option
+    ReinvestmentPeriodEnd: DateOnly option
+    NonCallPeriodEnd: DateOnly option
+}
+
+/// Complete declared schedule source, including windows, notice rules and calendar conventions.
+/// The older Call/Accrual modules remain compatible summaries, never a replacement for this source.
+type DeclaredScheduleTerms = {
+    Conventions: ScheduleConventions
+    Exercises: CallPutSchedules
+}
+
+[<RequireQualifiedAccess>]
+module DeclaredScheduleTerms =
+    let empty = { Conventions = ScheduleConventions.empty; Exercises = CallPutSchedules.empty }
 
 type SecurityTermModules = {
+    DeclaredSchedule: DeclaredScheduleTerms option
+    DebtClassification: DebtClassificationTerms option
+    BondRedemption: BondRedemptionTerms option
+    CommodityContract: CommodityContractTerms option
+    DigitalAsset: DigitalAssetTerms option
+    UnderlyingExposure: UnderlyingExposureTerms option
+    Settlement: SettlementTerms option
+    ClassificationDetail: ClassificationDetailTerms option
+    FundShare: FundShareTerms option
+    ReferenceDataSource: ReferenceDataSourceTerms option
+    BondCoupon: BondCouponTerms option
+    PrincipalSchedule: PrincipalScheduleTerms option
+    SwapLegs: SwapLegTerms option
+    LoanCovenants: LoanCovenantTerms option
     // --- Original 15 modules ---
     Maturity: MaturityTerms option
     Coupon: CouponTerms option
@@ -765,19 +1102,16 @@ type SecurityTermModules = {
     /// Notional, denomination and commitment amounts.
     Notional: NotionalTerms option
     /// Profile pin and governed terms document of a profile-backed custom asset.
+    ContractualRate: ContractualRateTerms option
+    UnderlyingSwap: UnderlyingSwapTerms option
+    RateConvention: RateConventionTerms option
     ProfileEnvelope: ProfileEnvelopeTerms option
-    // --- ADR-027 stage 3 (S3-E6) homes for the residual scalar complement ---
-    Listing: ListingTerms option
-    Underlying: UnderlyingReferenceTerms option
     CreditProtection: CreditProtectionTerms option
     StructuredPayoff: StructuredPayoffTerms option
-    CreditTranche: CreditTrancheTerms option
-    PrivateHolding: PrivateHoldingTerms option
-    // --- ADR-027 stage 3 (S3-E7) homes for the structural complement ---
-    Taxonomy: TaxonomyTerms option
-    CouponSchedule: CouponScheduleTerms option
-    // --- ADR-027 stage 3 (S3-E8) home for a swap's legs ---
-    LegStructure: LegStructureTerms option
+    PrivateAssetValuation: PrivateAssetValuationTerms option
+    ListingDetail: ListingDetailTerms option
+    EquityCapital: EquityCapitalTerms option
+    TrancheContract: TrancheContractTerms option
 }
 
 [<RequireQualifiedAccess>]
@@ -870,8 +1204,32 @@ module DividendFrequency =
         | DividendFrequency.NoDividend -> "NoDividend"
 
 [<RequireQualifiedAccess>]
+module CovenantKind =
+
+    [<CompiledName("Label")>]
+    let label = function
+        | CovenantKind.FinancialMaintenance -> "FinancialMaintenance"
+        | CovenantKind.Incurrence -> "Incurrence"
+        | CovenantKind.Negative -> "Negative"
+        | CovenantKind.Affirmative -> "Affirmative"
+
+[<RequireQualifiedAccess>]
 module SecurityTermModules =
     let empty = {
+        DeclaredSchedule = None
+        CommodityContract = None
+        DigitalAsset = None
+        UnderlyingExposure = None
+        Settlement = None
+        ClassificationDetail = None
+        FundShare = None
+        ReferenceDataSource = None
+        DebtClassification = None
+        BondRedemption = None
+        BondCoupon = None
+        PrincipalSchedule = None
+        SwapLegs = None
+        LoanCovenants = None
         Maturity = None
         Coupon = None
         Discount = None
@@ -900,14 +1258,14 @@ module SecurityTermModules =
         Exercise = None
         CurrencyPair = None
         Notional = None
+        ContractualRate = None
+        UnderlyingSwap = None
+        RateConvention = None
         ProfileEnvelope = None
-        Listing = None
-        Underlying = None
         CreditProtection = None
         StructuredPayoff = None
-        CreditTranche = None
-        PrivateHolding = None
-        Taxonomy = None
-        CouponSchedule = None
-        LegStructure = None
+        PrivateAssetValuation = None
+        ListingDetail = None
+        EquityCapital = None
+        TrancheContract = None
     }

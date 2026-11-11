@@ -43,14 +43,17 @@ public sealed class SecurityMasterReplayCorpusTests
         Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
     };
 
-    [Fact]
-    public void EveryCorpusCase_ReplaysToItsCommittedBytes()
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    public void EveryCorpusCase_ReplaysToItsCommittedBytes(int eventPayloadVersion)
     {
         var corpus = LoadCorpus();
         var received = new SortedDictionary<string, string>(StringComparer.Ordinal);
         foreach (var replayCase in corpus)
         {
-            ComputeCase(replayCase, received);
+            ComputeCase(replayCase, received, eventPayloadVersion);
         }
 
         var goldenPath = LocateFixture(GoldenFileName);
@@ -78,10 +81,15 @@ public sealed class SecurityMasterReplayCorpusTests
             "(ADR-027 stage 2 requires rebuilt state to stay byte-identical across command-path moves).");
     }
 
-    private static void ComputeCase(JsonElement replayCase, SortedDictionary<string, string> received)
+    private static void ComputeCase(JsonElement replayCase, SortedDictionary<string, string> received, int eventPayloadVersion)
     {
         var name = replayCase.GetProperty("name").GetString()!;
-        var record = BuildRecord(replayCase);
+        var envelope = SecurityMasterMapping.ToEventEnvelope(BuildRecord(replayCase), "TermsAmended", "replay-corpus", "replay-corpus", null, 1) with
+        {
+            PayloadVersion = eventPayloadVersion,
+            Metadata = Json($$"""{"payloadType":"SecurityEconomicDefinition","schemaVersion":{{eventPayloadVersion}}}""")
+        };
+        var record = SecurityMasterMapping.FromEventEnvelope(envelope);
         var expectRefusal = replayCase.TryGetProperty("expectRefusal", out var refusal) && refusal.ValueKind == JsonValueKind.True;
 
         SecurityProjectionRecord? rebuilt = null;
@@ -255,6 +263,17 @@ public sealed class SecurityMasterReplayCorpusTests
         var predating = JsonNode.Parse(economic.EconomicTerms.GetRawText())!.AsObject();
         foreach (var key in laterKeys)
         {
+            if (key == "rateConvention")
+            {
+                predating.ContainsKey(key).Should().BeFalse("an undeclared unit has no default module");
+                continue;
+            }
+            if (!predating.ContainsKey(key))
+            {
+                // Exact additive homes emit no key when the class has no such fact. Their
+                // representative-class coverage is pinned by the module-inventory test.
+                continue;
+            }
             predating[key].Should().BeNull($"the {assetClass} twin does not feed the {key} module");
             predating.Remove(key).Should().BeTrue();
         }
@@ -269,107 +288,96 @@ public sealed class SecurityMasterReplayCorpusTests
             .Should().Be(economic.EconomicTerms.GetRawText(), "the next event is the current image of the same document");
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void SwapImage_RecoversItsLegsOnEconomicOnlyReplay(bool declaresConventions)
+    [Fact]
+    public void IdentityGate_HistoricalCertificateImageShedsOnlyTheRedundantCarry()
     {
-        // ADR-027 stage 3 (S3-E8): the legStructure module carries a swap's legs as the flat family
-        // writes them, so a replay from the economic document alone rebuilds the flat legs array —
-        // stamped at the version that carries the leg scheduleConventions block only when a leg
-        // declares one — and the document is the flat row, so the carry is shed.
-        const string assetClass = "Swap";
-        var flat = declaresConventions
-            ? SecurityAssetTermsSchemaRoundTripTests.ReadableTwin(assetClass)
-            : SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain(
-                assetClass, SecurityAssetTermsSchemaRoundTripTests.FullPayloads[assetClass]);
-        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
-            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(assetClass, flat));
-        var moduleLegs = economic.EconomicTerms.GetProperty("legStructure").GetProperty("legs");
+        var source = HistoricalCertificateImage();
+        source.EconomicTerms.TryGetProperty("declaredSchedule", out _).Should().BeFalse();
+        var recovered = SecurityEconomicDefinitionAdapter.ToProjection(source);
+        var golden = JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(LocateFixture(GoldenFileName)!))!;
+        recovered.AssetSpecificTerms.GetRawText().Should().Be(golden["certificateofdeposit-image.rebuild"],
+            "a new exact home cannot re-age an already lossless historical projection");
+        SecurityTermsEnvelope.TryGetRetainedEconomicTerms(recovered.AssetSpecificTerms, out _).Should().BeFalse();
+        SecurityEconomicDefinitionAdapter.ToEconomicRecord(recovered).EconomicTerms.GetProperty("declaredSchedule")
+            .ValueKind.Should().Be(JsonValueKind.Object, "only the next event gains the derivable canonical home");
+    }
 
-        var recovered = SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null });
-
-        SecurityTermsEnvelope.TryGetRetainedEconomicTerms(recovered.AssetSpecificTerms, out _)
-            .Should().BeFalse("the flat row holds the legs, so the document is the flat row");
-        var recoveredLegs = recovered.AssetSpecificTerms.GetProperty("legs");
-        recoveredLegs.GetArrayLength().Should().Be(moduleLegs.GetArrayLength());
-        var blockSince = SecurityAssetTermsSchema.ElementFields(assetClass, "legs")
-            .Single(field => field.Key == SecurityVersionedTerms.ScheduleConventionsKey).SinceTermsVersion;
-        var stamp = recovered.AssetSpecificTerms.GetProperty(SecurityTermsEnvelope.AssetClassTermsVersionKey).GetInt32();
-        if (declaresConventions)
+    [Theory]
+    [InlineData("window")]
+    [InlineData("notice")]
+    [InlineData("roll")]
+    [InlineData("lag")]
+    [InlineData("calendar")]
+    [InlineData("existing-summary")]
+    public void IdentityGate_DerivableScheduleProofRejectsEveryAdditionalFact(string mutation)
+    {
+        var (source, rebuilt) = RebuildHistoricalCertificateWithoutGate(includeCall: mutation is "window" or "notice");
+        SecurityEconomicDefinitionAdapter.EqualsBeforeLaterModuleKeys(
+            JsonSerializer.SerializeToElement(rebuilt), source, "CertificateOfDeposit").Should().BeTrue();
+        var declaration = rebuilt["declaredSchedule"]!;
+        switch (mutation)
         {
-            stamp.Should().Be(blockSince, "a leg that declares its conventions stamps the row at the block's version");
-            recoveredLegs.GetRawText().Should().Be(moduleLegs.GetRawText(), "at that version the flat leg is the module's leg");
+            case "window":
+                declaration["callSchedule"]![0]!["callEndDate"] = "2027-07-31";
+                break;
+            case "notice":
+                declaration["callSchedule"]![0]!["minimumNoticeDays"] = 30;
+                break;
+            case "roll":
+                declaration["scheduleConventions"]!["rollConvention"] = "Imm";
+                break;
+            case "lag":
+                declaration["scheduleConventions"]!["paymentLagBusinessDays"] = 2;
+                break;
+            case "calendar":
+                declaration["scheduleConventions"]!["paymentCalendars"] = new JsonArray("GBLO");
+                break;
+            case "existing-summary":
+                rebuilt["coupon"]!["couponRate"] = 9m;
+                break;
         }
-        else
-        {
-            stamp.Should().BeLessThan(blockSince, "no leg declares conventions, so the row stays below the block's version");
-            recoveredLegs.GetRawText().Should().Be(flat.GetProperty("legs").GetRawText(),
-                "below the block's version the flat writer omits the key, and so does the recovered leg");
-        }
-
-        SecurityEconomicDefinitionAdapter.ToEconomicRecord(recovered).EconomicTerms.GetRawText()
-            .Should().Be(economic.EconomicTerms.GetRawText(), "the next event is the same document");
+        SecurityEconomicDefinitionAdapter.EqualsBeforeLaterModuleKeys(
+            JsonSerializer.SerializeToElement(rebuilt), source, "CertificateOfDeposit").Should().BeFalse();
     }
 
     [Fact]
-    public void IdentityGate_KeepsSheddingWhenTheRebuildPopulatesALaterModuleTheImagePredates()
+    public void IdentityGate_DerivableScheduleProofDoesNotTreatAnExplicitNullAsAnAbsentHome()
     {
-        // S3-E7: a bond always has a subclass, so the rebuild of a bond image that predates the
-        // taxonomy module populates it from the decode default rather than emitting null. The
-        // rebuild is made from the flat row, which was flattened from the source alone, so the
-        // source still loses nothing by shedding its carry. (A fixed-coupon bond is the case that
-        // sheds at all: a floating bond's index and an other-security's category have no home in
-        // an image that predates their modules, so those decodes fail closed and keep the carry,
-        // as they did before.)
-        const string assetClass = "Bond";
-        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
-            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(
-                assetClass,
-                SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain(
-                    assetClass,
-                    new
-                    {
-                        maturity = "2030-01-01",
-                        issueDate = "2024-01-01",
-                        couponType = "Fixed",
-                        couponRate = 4.25m,
-                        dayCount = "30/360",
-                        isCallable = false,
-                        issuerName = "ACME Corp",
-                        seniority = "Senior",
-                        subclass = "Corporate",
-                        par = 1000m,
-                        paymentFrequency = "SemiAnnual"
-                    })));
-        SecurityTermsEnvelope.TryGetRetainedEconomicTerms(
-                SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null }).AssetSpecificTerms,
-                out _)
-            .Should().BeFalse("precondition: the current fixed-coupon bond image sheds its carry");
+        var (source, rebuilt) = RebuildHistoricalCertificateWithoutGate();
+        var explicitNull = JsonNode.Parse(source.GetRawText())!;
+        explicitNull["declaredSchedule"] = null;
+        SecurityEconomicDefinitionAdapter.EqualsBeforeLaterModuleKeys(JsonSerializer.SerializeToElement(rebuilt),
+            JsonSerializer.SerializeToElement(explicitNull), "CertificateOfDeposit").Should().BeFalse();
+    }
 
-        var laterKeys = SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.ModulesAddedAfterIdentityGate;
-        var predating = JsonNode.Parse(economic.EconomicTerms.GetRawText())!.AsObject();
-        predating["taxonomy"].Should().NotBeNull("precondition: the bond twin feeds the taxonomy module");
-        foreach (var key in laterKeys)
+    [Fact]
+    public void IdentityGate_DerivableScheduleProofFailsClosedWhenTheHistoricalSummaryRefusesRecovery()
+    {
+        var (source, rebuilt) = RebuildHistoricalCertificateWithoutGate();
+        var refusing = JsonNode.Parse(source.GetRawText())!;
+        refusing["call"]!["callSchedule"] = "not-an-array";
+        Action conversion = () => SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(
+            JsonSerializer.SerializeToElement(refusing), "CertificateOfDeposit");
+        conversion.Should().Throw<InvalidOperationException>();
+        SecurityEconomicDefinitionAdapter.EqualsBeforeLaterModuleKeys(JsonSerializer.SerializeToElement(rebuilt),
+            JsonSerializer.SerializeToElement(refusing), "CertificateOfDeposit").Should().BeFalse();
+    }
+
+    private static SecurityEconomicDefinitionRecord HistoricalCertificateImage()
+        => BuildRecord(LoadCorpus().Single(replayCase => replayCase.GetProperty("name").GetString() == "certificateofdeposit-image"));
+
+    private static (JsonElement Source, JsonObject Rebuilt) RebuildHistoricalCertificateWithoutGate(bool includeCall = false)
+    {
+        var source = HistoricalCertificateImage();
+        if (includeCall)
         {
-            predating.Remove(key).Should().BeTrue();
+            var withCall = JsonNode.Parse(source.EconomicTerms.GetRawText())!;
+            withCall["call"]!["callSchedule"] = JsonNode.Parse("""[{"callDt":"2027-06-30","callPx":100,"isParCall":true,"callType":"European"}]""");
+            source = source with { EconomicTerms = JsonSerializer.SerializeToElement(withCall) };
         }
-
-        var predatingImage = JsonSerializer.SerializeToElement(predating);
-        var recovered = SecurityEconomicDefinitionAdapter.ToProjection(
-            economic with { EconomicTerms = predatingImage, LegacyAssetSpecificTerms = null });
-
-        SecurityTermsEnvelope.TryGetRetainedEconomicTerms(recovered.AssetSpecificTerms, out _)
-            .Should().BeFalse("the rebuild holds everything the predating image holds");
-        var next = JsonNode.Parse(SecurityEconomicDefinitionAdapter.ToEconomicRecord(recovered).EconomicTerms.GetRawText())!.AsObject();
-        next["taxonomy"].Should().NotBeNull("the next event restates the classification the flat row decodes to");
-        foreach (var key in laterKeys)
-        {
-            next.Remove(key).Should().BeTrue();
-        }
-
-        next.ToJsonString().Should().Be(predating.ToJsonString(),
-            "apart from the later module keys, the next event is the predating image unchanged");
+        var legacy = SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(source.EconomicTerms, "CertificateOfDeposit").Payload;
+        var projection = SecurityEconomicDefinitionAdapter.ToProjection(source with { LegacyAssetSpecificTerms = legacy });
+        return (source.EconomicTerms, JsonNode.Parse(SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection).EconomicTerms.GetRawText())!.AsObject());
     }
 
     [Fact]
