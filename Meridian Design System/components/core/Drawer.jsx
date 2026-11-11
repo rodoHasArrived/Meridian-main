@@ -75,7 +75,7 @@ function inject() {
 }
 .mds-drawer-close:hover { color: var(--text-primary, #20252B); }
 .mds-drawer-close:focus-visible {
-  outline: 2px solid var(--border-focus, #C56343); outline-offset: -2px;
+  outline: 2px solid var(--border-focus, #2D6FB3); outline-offset: -2px;
 }
 .mds-drawer-bd {
   flex: 1; overflow-y: auto; padding: var(--space-lg, 16px);

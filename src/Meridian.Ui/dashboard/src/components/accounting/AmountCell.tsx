@@ -59,8 +59,8 @@ export function AmountCell({
       !Number.isFinite(num) || num === 0
         ? "var(--text-muted, #606870)"
         : num < 0
-          ? "var(--red-dim, #7E332D)"
-          : "var(--green-dim, #2C5C40)";
+          ? "var(--red-dim, #883832)"
+          : "var(--green-dim, #225840)";
   }
 
   return createElement(

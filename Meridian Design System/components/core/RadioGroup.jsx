@@ -18,7 +18,7 @@ function inject() {
 .mds-radio--checked .mds-radio__ring{border-color:var(--interaction-selected,#496C8F);}
 .mds-radio__dot{width:8px;height:8px;border-radius:50%;background:var(--brand-signal,#C56343);}
 .mds-radio__label{font-size:13px;color:var(--text-primary,#20252B);line-height:18px;}
-.mds-radio__hint{font-size:11px;color:var(--text-muted,#6B737B);margin-top:1px;}
+.mds-radio__hint{font-size:11px;color:var(--text-muted,#606870);margin-top:1px;}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "radiogroup");

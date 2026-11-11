@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-label="Meridian application tile">
       <title>Meridian application tile</title>
       <rect width="100%" height="100%" fill="#F2F0EB"></rect>
-      
+
 <defs>
   <filter id="tileShadow" x="-20%" y="-20%" width="140%" height="140%">
     <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#20252B" flood-opacity="0.11"></feDropShadow>

@@ -13,19 +13,19 @@
 <script src="./ds-base.js"></script>
 <script src="../_scaffold/operator-layer.js"></script>
 <meta name="dc-template" content="session-start">
-<style>html,body{margin:0;padding:0;height:100%}[data-ss-sel="off"] [data-ss-dot-inner]{display:none}[data-ss-kind="live"][data-ss-sel="on"]{background:var(--state-live-bg,#F7E9E4);border-color:var(--state-live-bd,#C56343);box-shadow:inset 2px 0 0 var(--mode-live,#C56343)}[data-ss-kind="live"][data-ss-sel="on"] [data-ss-dot]{border-color:var(--mode-live,#C56343)}[data-ss-kind="live"] [data-ss-dot-inner]{background:var(--mode-live,#C56343)}[data-ss-kind="paper"][data-ss-sel="on"]{background:var(--state-paper-bg,#E7EDF2);border-color:var(--state-paper-bd,#496C8F);box-shadow:inset 2px 0 0 var(--mode-paper,#496C8F)}[data-ss-kind="paper"][data-ss-sel="on"] [data-ss-dot]{border-color:var(--mode-paper,#496C8F)}[data-ss-kind="paper"] [data-ss-dot-inner]{background:var(--mode-paper,#496C8F)}[data-ss-kind="fixture"][data-ss-sel="on"]{background:var(--state-warn-bg,#F4ECDD);border-color:var(--state-warn-bd,#986717);box-shadow:inset 2px 0 0 var(--mode-fixture,#986717)}[data-ss-kind="fixture"][data-ss-sel="on"] [data-ss-dot]{border-color:var(--mode-fixture,#986717)}[data-ss-kind="fixture"] [data-ss-dot-inner]{background:var(--mode-fixture,#986717)}</style>
+<style>html,body{margin:0;padding:0;height:100%}[data-ss-sel="off"] [data-ss-dot-inner]{display:none}[data-ss-kind="live"][data-ss-sel="on"]{background:var(--state-live-bg,#B54B42);border-color:var(--state-live-bd,#B54B42);box-shadow:inset 2px 0 0 var(--mode-live,#B54B42)}[data-ss-kind="live"][data-ss-sel="on"] [data-ss-dot]{border-color:var(--mode-live,#B54B42)}[data-ss-kind="live"] [data-ss-dot-inner]{background:var(--mode-live,#B54B42)}[data-ss-kind="paper"][data-ss-sel="on"]{background:var(--state-paper-bg,#5D7286);border-color:var(--state-paper-bd,#5D7286);box-shadow:inset 2px 0 0 var(--mode-paper,#5D7286)}[data-ss-kind="paper"][data-ss-sel="on"] [data-ss-dot]{border-color:var(--mode-paper,#5D7286)}[data-ss-kind="paper"] [data-ss-dot-inner]{background:var(--mode-paper,#5D7286)}[data-ss-kind="fixture"][data-ss-sel="on"]{background:var(--state-warn-bg,#986717);border-color:var(--state-warn-bd,#986717);box-shadow:inset 2px 0 0 var(--mode-fixture,#986717)}[data-ss-kind="fixture"][data-ss-sel="on"] [data-ss-dot]{border-color:var(--mode-fixture,#986717)}[data-ss-kind="fixture"] [data-ss-dot-inner]{background:var(--mode-fixture,#986717)}</style>
 </helmet>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Sign-in" action-label="Retry" on-action="{{ onRetry }}" hint-size="100%,780px">
 <div data-screen-label="Session start" style="height:100vh;display:flex;flex-direction:column;background:var(--bg);font-family:var(--font-body);color:var(--text-secondary);font-size:13px">
-<div style="flex:none;height:48px;background:var(--topbar-bg,#29323A);border-bottom:1px solid var(--topbar-border,#1F262C);display:flex;align-items:center;gap:12px;padding:0 16px">
+<div style="flex:none;height:48px;background:var(--topbar-bg,#29323A);border-bottom:1px solid var(--topbar-border,#3A444D);display:flex;align-items:center;gap:12px;padding:0 16px">
 <img src="../../assets/brand/meridian-mark-light.svg" alt="" style="height:20px;display:block">
 <span style="font-size:12px;font-weight:600;letter-spacing:.18em;color:var(--topbar-text,#F1EFEA)">MERIDIAN</span>
-<span style="font-family:var(--font-data);font-size:11px;color:var(--topbar-text-muted,#8F9AA7)">workstation sign-in</span>
+<span style="font-family:var(--font-data);font-size:11px;color:var(--topbar-text-muted,#A9B1B8)">workstation sign-in</span>
 <div style="flex:1"></div>
 <sc-if value="{{ started }}" hint-placeholder-val="{{ false }}">
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.HandoverBriefChip" count="{{ handoverCount }}" severity="blocked" since="09:12" hint-size="160px,22px"></x-import>
 </sc-if>
-<span style="font-family:var(--font-data);font-size:11.5px;color:var(--topbar-text-muted,#8F9AA7)">{{ clockStamp }}</span>
+<span style="font-family:var(--font-data);font-size:11.5px;color:var(--topbar-text-muted,#A9B1B8)">{{ clockStamp }}</span>
 </div>
 <main style="flex:1;min-height:0;overflow-y:auto;display:grid;place-items:center;padding:32px">
 <div style="width:100%;max-width:1080px;display:flex;flex-direction:column;gap:14px;align-items:center">

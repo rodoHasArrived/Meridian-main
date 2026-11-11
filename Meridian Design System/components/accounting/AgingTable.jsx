@@ -10,6 +10,7 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
+.agt-wrap:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}
 .agt-wrap{overflow-x:auto;border:1px solid var(--border,#D2CDC3);
   border-radius:var(--radius-chip,2px);background:var(--bg-light,#F8F7F3);}
 .agt{width:100%;border-collapse:separate;border-spacing:0;
@@ -17,7 +18,7 @@ function inject() {
 .agt thead th{padding:9px 12px;text-align:right;white-space:nowrap;position:sticky;top:0;
   background:var(--bg-medium,#EBE8E1);z-index:1;
   font-family:var(--font-body);font-size:10px;font-weight:600;font-variant:all-small-caps;
-  letter-spacing:.03em;color:var(--text-muted,#6B737B);
+  letter-spacing:.03em;color:var(--text-muted,#606870);
   border-bottom:1px solid var(--border-strong,#AAA49A);border-right:1px solid var(--border-divider,#E2DED5);}
 .agt thead th:last-child{border-right:none;}
 .agt thead th.agt--l{text-align:left;}
@@ -31,18 +32,18 @@ function inject() {
 .agt tbody tr.agt__row--on td{background:var(--selected-surface,#E7EDF2);}
 .agt tbody tr.agt__row--on td:first-child{box-shadow:inset 3px 0 0 var(--interaction-selected,#496C8F);}
 .agt tbody tr.agt__row--click:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}
-.agt__empty{padding:16px 12px;font-family:var(--font-body);font-size:12px;color:var(--text-muted,#6B737B);text-align:center;}
-.agt td.agt--warn{background:var(--orange-a10,rgba(154,113,19,.07));}
-.agt td.agt--late{background:var(--red-a10,rgba(166,67,63,.08));}
+.agt__empty{padding:16px 12px;font-family:var(--font-body);font-size:12px;color:var(--text-muted,#606870);text-align:center;}
+.agt td.agt--warn{background:var(--orange-a10,rgba(152,103,23,.07));}
+.agt td.agt--late{background:var(--red-a10,rgba(181,75,66,.08));}
 .agt__name{font-family:var(--font-body);color:var(--text-primary,#20252B);}
-.agt__ref{color:var(--text-muted,#6B737B);}
+.agt__ref{color:var(--text-muted,#606870);}
 .agt tfoot td{padding:9px 12px;background:var(--bg-medium,#EBE8E1);font-weight:600;
   border-top:2px solid var(--border-strong,#AAA49A);color:var(--text-primary,#20252B);text-align:right;}
 .agt tfoot td.agt--l{text-align:left;}
 .agt__foot-label{font-family:var(--font-body);font-variant:all-small-caps;letter-spacing:.03em;
   font-size:11px;color:var(--text-secondary,#535C65);}
 .agt__share{display:block;font-family:var(--font-body);font-size:10px;font-weight:400;
-  color:var(--text-muted,#6B737B);margin-top:2px;}
+  color:var(--text-muted,#606870);margin-top:2px;}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "aging");
@@ -75,7 +76,7 @@ export function AgingTable({
   };
 
   return (
-    <div className="agt-wrap" role="region" aria-label={caption || "Aging schedule"}>
+    <div className="agt-wrap" tabIndex={0} role="region" aria-label={caption || "Aging schedule"}>
       <table className="agt">
         <thead>
           <tr>

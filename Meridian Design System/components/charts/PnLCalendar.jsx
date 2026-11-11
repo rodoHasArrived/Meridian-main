@@ -14,23 +14,23 @@ function inject() {
 .mds-pnlcal{border:1px solid var(--border,#D2CDC3);background:var(--bg-light,#F8F7F3);font-family:var(--font-body);}
 .mds-pnlcal__grid{display:grid;grid-template-columns:repeat(7,1fr);}
 .mds-pnlcal__wd{padding:6px 8px;font-size:9px;font-weight:600;font-variant:all-small-caps;letter-spacing:.04em;
-  color:var(--text-muted,#6B737B);background:var(--bg-medium,#EBE8E1);text-align:right;
+  color:var(--text-muted,#606870);background:var(--bg-medium,#EBE8E1);text-align:right;
   border-bottom:1px solid var(--border-strong,#AAA49A);border-right:1px solid var(--border-divider,#E2DED5);}
 .mds-pnlcal__wd:last-child{border-right:none;}
 .mds-pnlcal__cell{position:relative;padding:5px 8px;border-right:1px solid var(--border-divider,#E2DED5);
   border-bottom:1px solid var(--border-divider,#E2DED5);display:flex;flex-direction:column;justify-content:space-between;
   gap:2px;min-width:0;}
 .mds-pnlcal__cell:nth-child(7n){border-right:none;}
-.mds-pnlcal__day{font-family:var(--font-data);font-size:9px;color:var(--text-muted,#6B737B);}
+.mds-pnlcal__day{font-family:var(--font-data);font-size:9px;color:var(--text-muted,#606870);}
 .mds-pnlcal__val{font-family:var(--font-data);font-size:11px;font-variant-numeric:tabular-nums;text-align:right;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.mds-pnlcal__cell--up .mds-pnlcal__val{color:var(--green-dim,#375D46);}
-.mds-pnlcal__cell--down .mds-pnlcal__val{color:var(--red-dim,#7D322F);}
-.mds-pnlcal__cell--flat .mds-pnlcal__val{color:var(--text-muted,#6B737B);}
+.mds-pnlcal__cell--up .mds-pnlcal__val{color:var(--green-dim,#225840);}
+.mds-pnlcal__cell--down .mds-pnlcal__val{color:var(--red-dim,#883832);}
+.mds-pnlcal__cell--flat .mds-pnlcal__val{color:var(--text-muted,#606870);}
 .mds-pnlcal__foot{display:flex;justify-content:space-between;align-items:baseline;padding:8px 12px;
   border-top:2px solid var(--border-strong,#AAA49A);}
 .mds-pnlcal__foot-label{font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;
-  color:var(--text-muted,#6B737B);}
+  color:var(--text-muted,#606870);}
 .mds-pnlcal__foot-val{font-family:var(--font-data);font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;}
 `;
   const el = document.createElement("style");

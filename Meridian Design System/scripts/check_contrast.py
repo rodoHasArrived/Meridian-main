@@ -42,11 +42,16 @@ PAIRS = [
     ("muted text on hover row",    "--text-muted",     "--bg-hover",     4.5),
     # Signal is an identity/plot role, not body text or a primary action. Measure the
     # published action and interaction roles rather than imposing the old copper UI.
+    ("signal on card (non-text)", "--accent", "--bg-light", 3.0),
     ("signal on header band (non-text)", "--accent", "--bg-medium", 3.0),
+    ("brand-signal-text text on card", "--brand-signal-text", "--bg-light", 4.5),
+    ("brand-signal-text text on header band", "--brand-signal-text", "--bg-medium", 4.5),
     ("primary button label",       "--ink-inverse", "--brand-axis", 4.5),
     ("hover button label",         "--ink-inverse", "--check-primary-hover", 4.5),
     ("pressed button label",       "--ink-inverse", "--check-primary-pressed", 4.5),
     ("signal-fill label",          "--text-on-accent", "--accent", 4.5),
+    ("hover signal-fill label",    "--text-on-accent", "--accent-hover", 4.5),
+    ("pressed signal-fill label",  "--text-on-accent", "--accent-dim", 4.5),
     ("link text on card",          "--interaction-link", "--bg-light", 4.5),
     ("link text on header band",   "--interaction-link", "--bg-medium", 4.5),
     ("hover link text on card",    "--interaction-link-hover", "--bg-light", 4.5),
@@ -81,6 +86,9 @@ WASH_PAIRS = [
     ("green-dim on green-a20 wash",   "--green-dim",  "--green",  0.20, "--bg-light", 4.5),
     # Signal marks can sit on a signal wash; text uses the semantic/link roles above.
     ("signal on signal wash (non-text)", "--accent", "--accent", 0.10, "--bg-light", 3.0),
+    ("brand-signal-text text on accent wash", "--brand-signal-text", "--accent", 0.10, "--bg-light", 4.5),
+    ("brand-signal-text on accent wash, canvas", "--brand-signal-text", "--accent", 0.10, "--bg", 4.5),
+    ("brand-signal-text on accent wash, band", "--brand-signal-text", "--accent", 0.10, "--bg-medium", 4.5),
     ("red-dim on red-a20 wash",       "--red-dim",    "--red",    0.20, "--bg-light", 4.5),
     # The actual status chips, foreground token against its own wash, on each surface a chip
     # sits on. Checking only the -dim tokens in the abstract missed that the *-fg tokens were
@@ -92,10 +100,12 @@ WASH_PAIRS = [
     ("severity-action chip",   "--severity-action-fg",  "--orange", 0.11, "--bg-light",  4.5),
     ("state-healthy chip",     "--state-healthy-fg",    "--green",  0.10, "--bg-light",  4.5),
     ("state-danger chip",      "--state-danger-fg",     "--red",    0.10, "--bg-light",  4.5),
-    ("state-paper chip",       "--state-paper-fg",      "--accent", 0.10, "--bg-light",  4.5),
+    # Paper and pending are measured on their OWN wash: since 4.3.0 paper is the Field slate
+    # and pending is the warm taupe, not the accent and the information blue.
+    ("state-paper chip",       "--state-paper-fg",      "--brand-field", 0.10, "--bg-light",  4.5),
     ("state-strategy chip",    "--state-strategy-fg",   "--purple", 0.10, "--bg-light",  4.5),
     ("state-live chip",        "--state-live-fg",       "--red",    0.12, "--bg-light",  4.5),
-    ("state-pending chip",     "--state-pending-fg",    "--purple", 0.10, "--bg-light",  4.5),
+    ("state-pending chip",     "--state-pending-fg",    "--pending", 0.10, "--bg-light",  4.5),
 ]
 
 
@@ -242,6 +252,7 @@ def check_brands(root: Path) -> list[str]:
 
 
 WS_INDEX = Path("src/Meridian.Ui/dashboard/src/styles/index.css")
+WS_BUTTON = Path("src/Meridian.Ui/dashboard/src/design-system/button.tsx")
 WS_STATES = [("base", "--brand-axis"), ("hover", "--ws-primary-hover"), ("pressed", "--ws-primary-pressed")]
 
 
@@ -265,6 +276,9 @@ def check_workstation(root: Path) -> list[str]:
     # declarations into the light map (or HSL channel aliases as literal RGB values).
     modes = {mode: scoped_tokens(text, f':root[data-theme="{mode}"]') for mode in ("light", "dark")}
     failures = []
+    button = root.parent / WS_BUTTON
+    if button.exists() and re.search(r"mds-btn--primary[^\n]*bg-\[var\(--(?:ws-)?accent", button.read_text(encoding="utf-8")):
+        failures.append("[workstation] the primary button paints an accent fill while its label uses primary ink-inverse; signal fills are not primary actions")
     for mode, tokens in modes.items():
         fg = resolve("var(--ink-inverse)", tokens)
         for state, token in WS_STATES:
@@ -694,7 +708,19 @@ def check_bundle_parity(root: Path) -> list[str]:
     bundle = bundle_path.read_text(encoding="utf-8", errors="replace")
     failures: list[str] = []
     checked = 0
+    # The bundle is built from the manifest's export list, so a source the manifest no longer
+    # exports (the table renderers DataGrid replaced in 4.0, the pre-Dialog Modal) is retained
+    # for migration and deliberately absent from the bundle. Holding those to bundle parity
+    # reported 35 "shipped component differs" findings for components that do not ship.
+    shipped: set[str] | None = None
+    manifest_path = root / "_ds_manifest.json"
+    if manifest_path.exists():
+        import json
+        shipped = {c.get("sourcePath", "") for c in
+                   json.loads(manifest_path.read_text(encoding="utf-8")).get("components", [])}
     for path in sorted((root / "components").rglob("*.jsx")):
+        if shipped is not None and path.relative_to(root).as_posix() not in shipped:
+            continue
         for lineno, line in enumerate(path.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
             rule = line.strip()
             if not SOURCE_RULE.match(rule):
@@ -928,7 +954,7 @@ def check_accent_on_wash(root: Path) -> list[str]:
                     failures.append(
                         f"[accent-wash] {_rel(path, root)}:{text.count(chr(10), 0, m.start()) + 1}: "
                         f"{selector[:44]} puts --accent text on an accent-tinted surface "
-                        "(3.87–4.41:1) — wash text is --accent-dim")
+                        "(3.33:1) — wash text is --brand-signal-text")
     for f in failures[:10]:
         print(f)
     if not failures:

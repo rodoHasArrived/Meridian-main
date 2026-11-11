@@ -21,7 +21,7 @@ function inject() {
 .mds-tabs__tab--active{color:var(--text-primary,#20252B);font-weight:600;
   border-bottom-color:var(--brand-signal,#C56343);}
 .mds-tabs__tab:disabled{cursor:not-allowed;color:var(--text-disabled,#A4ABB2);}
-.mds-tabs__count{font-family:var(--font-data);font-size:10px;color:var(--text-muted,#6B737B);
+.mds-tabs__count{font-family:var(--font-data);font-size:10px;color:var(--text-muted,#606870);
   border:1px solid var(--border,#D2CDC3);padding:0 5px;line-height:1.6;}
 .mds-tabs__panel{display:none;}
 .mds-tabs__panel--active{display:block;}

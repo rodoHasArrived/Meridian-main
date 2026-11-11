@@ -123,11 +123,13 @@ both OFL notices together. Installed local faces can alter font loading; browser
 screenshots are needed to assess geometry on the target Windows environment.
 
 **Token migration.** The package uses IBM Plex typography, terracotta brand/
-scenario signal, blue focus/selection, and its own material hierarchy. Token
-name compatibility does not imply equal values in Meridian's application. The
-package parity manifest declares `valuesShared: false`; browser integration must
-therefore compare the actual package values and role mappings. The follow-up
-below performs that application integration separately from the archive build.
+scenario signal, blue focus/selection, and its own material hierarchy. The
+browser workstation and WPF theme tokens were migrated to this palette in the
+same pull request, so the parity manifest now declares `valuesShared: true` and
+`scripts/check_token_parity.py` compares every name both sides declare in all
+four theme scopes, and `upstreamValueDivergences` is empty. See
+[Application integration](#application-integration) for what moved in each
+direction.
 
 **Maturity.** Use the regenerated `api/families.json` for each export's stability;
 the package's stable channel does not make every export stable. Review the 4.0
@@ -158,6 +160,79 @@ preview and transport outcomes must remain labeled as demonstrations.
 
 Build/export commands, archive contents, dependency scope, and integrity checks
 are documented in [Export handoff](EXPORT_4_3_0.md).
+
+## Application integration
+
+The integration pass compared the package with the two consumers in the monorepo
+and changed whichever side was worse. It ran alongside the workstation
+foundation integration in `0cc7555bd5` and was merged onto it. Static gates and
+unit tests back these statements; no browser, screen-reader or Windows run was
+made for them.
+
+**Package changed to match the application**
+
+- State and severity chip text reads a text-safe variant of its hue again. The
+  4.3.0 retone had wired every `*-fg` to the raw hue, which measured 3.3-4.5:1
+  on its own wash in light mode; the workstation had kept the `-dim` wiring.
+  `--brand-field-dim` and `--pending-dim` are declared under the names the
+  workstation uses (one component read `--pending-dim` before anything
+  defined it), and `--brand-signal-text` is new for signal-coloured text.
+- The ten `--theme-*` contract names, `--theme-border-focus` and the four
+  chrome inputs follow dark mode. They resolved to their light literals on a
+  dark screen; both dark blocks now re-point them.
+- `--series-estimated` and `--viz-band-outline` are restated for forced light.
+- `--accent-a10` is declared again, and 76 references to 19 names the package
+  never declared now name the canonical token, so they stop painting a light
+  literal in dark mode. `--theme-font-mono` names the same fallbacks as
+  `--font-data`.
+- More than a thousand `var(--token, literal)` fallbacks carried a previous
+  palette and now carry the value the token resolves to.
+- Component defects the workstation ports had already fixed:
+  `ReconciliationPanel` match checkboxes (threw on first tick), `toNumber`
+  dropping the sign of a formatted negative, `LedgerTable` inventing running
+  balances and losing header focus on sort, `Pagination` jumping back to a
+  stale page, `Sparkline` / `EquityCurve` / `CandleChart` on one or zero
+  points, `JournalEntryForm` labelling and a colliding datalist id, and
+  scroll regions that keyboard users could not reach. `Checkbox` forwards
+  `aria-label`.
+- The brand art's live `<text>` runs name IBM Plex Sans, the face the package
+  ships, not Inter.
+
+**Application changed to match the package**
+
+The concurrent workstation integration made most of the application-side
+changes (fonts, focus and selection roles, paper mode, radii, primary button
+states). This pass added:
+
+- The last hard-coded copper `rgba()` literals in the workstation stylesheets
+  now derive from `--focus`, the row tokens or `--ws-accent`.
+- `--chart-band` and `--chart-dd` take the package values, and `var()`
+  fallback literals across the dashboard carry the value their token
+  resolves to.
+- Order quantity and price fields reject exponent and hex notation, the
+  operations status vocabulary has one normaliser, `AccountTree` is keyboard
+  navigable, tables have empty states, and scroll regions are focusable.
+- WPF `OnAccentTextColor` is the dark ink the package puts on a terracotta
+  fill.
+
+**Gate changes.** `check_token_parity.py` gained two passes: the theme inputs
+must flip in dark, and every token name declared by both the package and the
+workstation (224 at this commit) must resolve to the same value in light, auto
+dark, manual dark and forced light. No difference is recorded: the Review
+severity chip, the last one, is the terracotta signal on both sides by the
+owner's decision. In `check_contrast.py`, rows that held
+`--accent` and `--accent-dim` to the text threshold now hold
+`--brand-signal-text` to it and the signal to the 3:1 non-text threshold,
+matching the 4.3.0 role of each token. The paper and pending chip rows measure
+against their own wash. The workstation button check measures the graphite
+states the button paints. The bundle-parity check skips sources the manifest no
+longer exports, and test files are not scanned as call sites. No threshold was
+lowered.
+
+**Still failing.** Six white-label `data-brand` presets declare no dark accent
+and no focus token (12 findings in `check_contrast.py`); the previous package
+version carried both. No consumer in this repository sets `data-brand`. The
+governance gate is unchanged at 67 findings and 25 warnings.
 
 ## Production browser integration follow-up
 

@@ -32,7 +32,7 @@ export function EmptyState({
         {title}
       </div>
       {detail && (
-        <div style={{ fontSize:12, color:"var(--text-muted,#6B737B)", maxWidth:280, lineHeight:1.5 }}>
+        <div style={{ fontSize:12, color:"var(--text-muted,#606870)", maxWidth:280, lineHeight:1.5 }}>
           {detail}
         </div>
       )}

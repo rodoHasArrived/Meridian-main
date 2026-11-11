@@ -23,9 +23,9 @@ function inject() {
   background:var(--bg-light,#F8F7F3);display:flex;align-items:center;justify-content:center;}
 .mds-chk-box:focus-within{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:var(--focus-ring-offset,1px);}
 .mds-chk-box--on{background:var(--interaction-selected,#496C8F);border-color:var(--interaction-selected,#496C8F);}
-.mds-chk-check{color:var(--text-on-accent,#fff);display:flex;}
+.mds-chk-check{color:var(--text-on-accent,#0D1217);display:flex;}
 .mds-chk-label{font-family:var(--font-body);font-size:13px;color:var(--text-primary,#20252B);}
-.mds-chk-hint{font-family:var(--font-body);font-size:11px;color:var(--text-muted,#6B737B);margin-top:1px;}
+.mds-chk-hint{font-family:var(--font-body);font-size:11px;color:var(--text-muted,#606870);margin-top:1px;}
 
 .mds-tog-wrap{display:inline-flex;align-items:center;gap:10px;min-height:24px;cursor:pointer;user-select:none;}
 .mds-tog-wrap--disabled{opacity:.5;cursor:not-allowed;}

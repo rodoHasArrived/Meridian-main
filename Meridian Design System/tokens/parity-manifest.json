@@ -1,5 +1,5 @@
 {
-  "$comment": "Canonical token record for Meridian's Programmed Institutionalism v2.1 palette. THIS FILE is the single source of truth for the base flip set (the tokens colors-dark.css overrides) and the token NAME contract the upstream app authors CSS against. scripts/check_token_parity.py verifies tokens/*.css against it: light values (resolved through the default theme graph), all three dark-mode blocks, and every recorded name. Retoning a token = change it here AND in tokens/*.css in the same commit; the gate fails on any one-sided edit. Upstream note: src/Meridian.Ui/dashboard/src/styles/index.css moved to its own 'Concrete' console palette (steel/spruce/brick on #DEE3EA) — VALUES are no longer shared with this system; the shared contract is the token NAME surface, recorded below as aliasContract (--ws-*) plus workingNameContract (the theme/working/domain/chart/effect tiers the app also authors against). Before 2026-09-01 only the 22 --ws-* names were pinned, so 15 names the app defines had no alias here at all.",
+  "$comment": "Canonical token record for Meridian's Programmed Institutionalism v2.1 palette. THIS FILE is the single source of truth for the base flip set (the tokens colors-dark.css overrides) and the token NAME contract the upstream app authors CSS against. scripts/check_token_parity.py verifies tokens/*.css against it: light values (resolved through the default theme graph), all three dark-mode blocks, and every recorded name. Retoning a token = change it here AND in tokens/*.css in the same commit; the gate fails on any one-sided edit. Upstream note: since the 4.3.0 migration (PR #3501) src/Meridian.Ui/dashboard/src/styles/index.css carries THIS palette, so VALUES are shared again. When the package sits in the monorepo the gate resolves every name both sides declare in light, auto dark, manual dark and forced light and fails on any difference that is not listed under upstreamValueDivergences. The name surface is still recorded below as aliasContract (--ws-*) plus workingNameContract (the theme/working/domain/chart/effect tiers the app also authors against).",
   "canonicalSource": {
     "name": "Programmed Institutionalism v2.1 — Foundations & Primitives sheet",
     "files": [
@@ -16,10 +16,11 @@
       "src/Meridian.Ui/dashboard/src/styles/index.css",
       "src/Meridian.Wpf/Styles/ThemeTokens.xaml"
     ],
-    "valuesShared": false,
+    "valuesShared": true,
+    "valuesSharedSince": "4.3.0",
     "nameSurfaceRecordedAt": "2026-09-01",
     "nameSurfaceRecordedFromTree": "fa43d2e476a0",
-    "note": "131 names read off index.css at the tree above. ThemeTokens.xaml is listed as a source but is not machine-readable from here (the importer does not serve .xaml), so the recorded surface is the dashboard's."
+    "note": "131 contract names read off index.css at the tree above. Value parity is checked live against index.css whenever the package sits in the monorepo, across every name both sides declare (224 at the 4.3.0 integration), not only the 131 pinned here. ThemeTokens.xaml is listed as a source but is light-only XAML; its runtime twin ColorPalette.cs is held to it by scripts/check_contrast.py (runtime-palette)."
   },
   "aliasContract": [
     "--ws-page-bg",
@@ -53,20 +54,7 @@
     "chart": ["--chart-grid", "--chart-grid-major", "--chart-up", "--chart-dn", "--chart-ma20", "--chart-ma50", "--chart-bench", "--chart-band", "--chart-crosshair", "--chart-dd"],
     "effects": ["--shadow-workstation", "--shadow-panel", "--shadow-menu", "--shadow-float", "--shadow-soft", "--radius-chip", "--radius-button", "--radius-card", "--radius-checkbox", "--space-panel"]
   },
-  "divergences": [
-    {
-      "name": "--cyan-focus",
-      "upstream": "var(--ws-accent)",
-      "here": "var(--focus)",
-      "why": "Focus is blue in this system and the signal is forbidden in a focus rule (colors.css role-alias gate). Mirroring the app's mapping would put terracotta on every focus ring."
-    },
-    {
-      "name": "--chart-ma20 / --chart-ma50",
-      "upstream": "accent / orange",
-      "here": "var(--brand-field) / var(--navy)",
-      "why": "Both upstream mappings are semantic hues. An MA is derived observation, not a condition, so it takes the two tokens declared as non-status ink."
-    }
-  ],
+  "upstreamValueDivergences": [],
   "tokens": {
     "--accent": {
       "light": "#C56343",

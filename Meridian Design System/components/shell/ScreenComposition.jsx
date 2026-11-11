@@ -34,7 +34,7 @@ function inject() {
 .mds-sc__rg{display:flex;flex-direction:column;min-width:0;background:var(--bg-light,#F8F7F3);
   border:1px solid var(--border,#D2CDC3);border-radius:2px;}
 .mds-sc__hd{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:6px 10px;
-  border-bottom:1px solid var(--border-divider,#E4E0D8);}
+  border-bottom:1px solid var(--border-divider,#E2DED5);}
 .mds-sc__ti{font-family:var(--font-body,system-ui);font-size:12px;font-weight:var(--weight-medium,500);color:var(--text-primary,#20252B);}
 .mds-sc__ro{font-family:var(--font-body,system-ui);font-size:10px;font-variant:all-small-caps;letter-spacing:.06em;color:var(--text-muted,#606870);}
 .mds-sc__bd{padding:10px;min-height:36px;}

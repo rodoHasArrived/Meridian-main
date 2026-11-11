@@ -9,7 +9,7 @@ function inject() {
   const css = `
 .mds-number-field{display:block;}
 .mds-number-label{display:block;font-family:var(--font-body);font-size:10px;font-weight:600;
-  font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#6B737B);margin-bottom:5px;}
+  font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#606870);margin-bottom:5px;}
 .mds-number-wrap{display:flex;align-items:center;border:1px solid var(--border,#D2CDC3);
   background:var(--bg-light,#F8F7F3);height:32px;}
 .mds-number-btn{width:32px;height:32px;border:none;background:transparent;color:var(--text-primary,#20252B);

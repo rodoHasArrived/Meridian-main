@@ -19,7 +19,7 @@ let injected=false;function inject(){if(injected||typeof document==="undefined")
 .mds-tie__type{font:9px var(--font-data,monospace);text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted,#606870)}
 .mds-tie__status{display:inline-flex;align-items:center;gap:4px;font:600 10px var(--font-data,monospace);text-transform:uppercase;letter-spacing:.03em}
 .mds-tie--tied .mds-tie__status{color:var(--green-dim,#23583F)}
-.mds-tie--tolerance .mds-tie__status{color:var(--orange-dim,#725012)}
+.mds-tie--tolerance .mds-tie__status{color:var(--orange-dim,#724D11)}
 .mds-tie--exception .mds-tie__status{color:var(--red-dim,#873832)}
 .mds-tie--indeterminate .mds-tie__status{color:var(--red-dim,#873832)}
 .mds-tie__block{padding:8px 12px;border-top:1px solid var(--border-divider,#E2DED5);background:var(--red-a10,rgba(181,75,66,.10));font:11px/1.5 var(--font-body);color:var(--text-primary,#20252B);max-width:none}

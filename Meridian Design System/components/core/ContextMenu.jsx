@@ -23,8 +23,8 @@ function inject() {
 .cm-item--disabled{cursor:not-allowed;background:transparent;color:var(--text-disabled,#A4ABB2);}
 .cm-item--disabled:hover{background:transparent;}
 .cm-item--danger{color:var(--red,#B54B42);}
-.cm-item--danger:hover{background:var(--red-a10,rgba(166,67,63,0.10));}
-.cm-icon{flex:0 0 auto;font-size:14px;color:var(--text-muted,#6B737B);}
+.cm-item--danger:hover{background:var(--red-a10,rgba(181,75,66,0.10));}
+.cm-icon{flex:0 0 auto;font-size:14px;color:var(--text-muted,#606870);}
 .cm-label{flex:1;overflow:hidden;text-overflow:ellipsis;}
 .cm-divider{height:1px;background:var(--border,#D2CDC3);margin:4px 0;}
 .cm-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:calc(var(--z-dropdown,100) - 1);cursor:default;}

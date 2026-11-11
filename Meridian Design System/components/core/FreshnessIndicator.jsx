@@ -20,7 +20,7 @@ function inject() {
 .mds-fresh__state{color:var(--mds-fresh-c);font-weight:600;font-variant:all-small-caps;
   letter-spacing:.04em;}
 .mds-fresh__sep{color:var(--text-disabled,#A4ABB2);}
-.mds-fresh__time{color:var(--text-muted,#6B737B);}
+.mds-fresh__time{color:var(--text-muted,#606870);}
 .mds-fresh--badge{padding:3px 8px;border:1px solid var(--mds-fresh-ring);
   background:var(--mds-fresh-wash);border-radius:var(--radius-chip,2px);}
 `;

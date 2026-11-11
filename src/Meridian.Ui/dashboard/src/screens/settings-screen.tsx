@@ -427,14 +427,14 @@ const requirementToneClass = {
 
 const environmentOptionClass = {
   paper: {
-    selected: "border-paper/40 bg-paper/10 text-paper",
+    selected: "border-paper/40 bg-paper/10 text-[var(--state-paper-fg)]",
     idle: "border-border/70 bg-secondary/25 text-foreground hover:border-paper/35 hover:bg-paper/10",
-    badge: "border-paper/30 bg-paper/10 text-paper"
+    badge: "border-paper/30 bg-paper/10 text-[var(--state-paper-fg)]"
   },
   live: {
     selected: "border-live-env/40 bg-live-env/10 text-live-env",
     idle: "border-border/70 bg-secondary/25 text-foreground hover:border-live-env/35 hover:bg-live-env/10",
-    badge: "border-live-env/35 bg-live-env/10 text-live-env"
+    badge: "border-live-env/35 bg-live-env/10 text-[var(--state-live-fg)]"
   }
 } as const;
 

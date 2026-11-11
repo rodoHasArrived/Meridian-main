@@ -137,7 +137,7 @@ function inject() {
 .mds-time__issue[data-severity="warning"]{border-color:var(--orange,#986717);background:var(--orange-a10,rgba(152,103,23,.1))}
 .mds-time__issue[data-severity="info"]{background:var(--card-surface,#F8F7F3)}
 .mds-time__sev{font:600 10px var(--font-data,monospace);letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted,#606870)}
-.mds-time__issue[data-severity="error"] .mds-time__sev{color:var(--red-dim,#B54B42)}
+.mds-time__issue[data-severity="error"] .mds-time__sev{color:var(--red-dim,#883832)}
 .mds-time__issue[data-severity="warning"] .mds-time__sev{color:var(--orange-dim,#725012)}
 .mds-time__ok{font:12px var(--font-body);color:var(--text-muted,#606870);margin:0}
 .mds-timerole{display:inline-grid;gap:1px}

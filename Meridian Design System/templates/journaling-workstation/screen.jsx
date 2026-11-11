@@ -29,7 +29,7 @@ const { useState, useMemo } = React;
 .journ-entry-row { cursor: pointer; transition: background 120ms; }
 .journ-entry-row:hover { background: var(--bg-hover); }
 .journ-entry-row.unreconciled { background: var(--amber-a10,rgba(197,136,26,.06)); }
-.journ-entry-row.reconciled { background: var(--green-a10,rgba(58,122,86,.06)); }
+.journ-entry-row.reconciled { background: var(--green-a10,rgba(46,118,85,.06)); }
 .journ-modal-hd { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 15px 18px; border-bottom: 1px solid var(--border); background: var(--bg-light); }
 .journ-modal-body { padding: 18px; overflow-y: auto; max-height: 70vh; }
 .journ-modal-title { font-size: 16px; font-weight: 600; color: var(--text-primary); }

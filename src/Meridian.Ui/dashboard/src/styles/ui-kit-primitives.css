@@ -529,3 +529,9 @@
 .meridian-toolbar-chip {
   border-radius: var(--radius-chip);
 }
+
+/* The wrap is a tab stop when its rows are not selectable, so it needs its own visible ring. */
+.dense-data-table-wrap:focus-visible {
+  outline: var(--focus-ring, 2px solid var(--focus, #2D6FB3));
+  outline-offset: -2px;
+}

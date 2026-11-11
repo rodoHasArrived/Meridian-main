@@ -156,6 +156,12 @@
   --series-estimated: color-mix(in srgb, var(--series-actual) 55%, var(--bg-light));
   --viz-band-outline: color-mix(in srgb, var(--series-prior) 78%, var(--dim-mix));
 }
+/* Forced light under an OS-dark preference: the media block above still matches, so the
+   light mixes are restated here or a forced-light screen keeps the dark 55% / 78% nudge. */
+:root[data-theme="light"] {
+  --series-estimated: color-mix(in srgb, var(--series-actual) 62%, var(--bg-light));
+  --viz-band-outline: color-mix(in srgb, var(--series-prior) 70%, var(--dim-mix));
+}
 
 :root { --viz-reflow: var(--motion-slow, 240ms); --viz-trace: var(--motion-slower, 300ms); }
 

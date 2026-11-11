@@ -13,21 +13,21 @@ function inject() {
   const css = `
 .mds-prov{display:inline-flex;align-items:center;gap:6px;width:fit-content;max-width:100%;
   min-height:20px;border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-chip,2px);
-  background:var(--bg-light,#F8F7F3);color:var(--text-secondary,#3D454F);
+  background:var(--bg-light,#F8F7F3);color:var(--text-secondary,#535C65);
   font-family:var(--font-data,"IBM Plex Mono",monospace);font-size:9.5px;font-weight:500;line-height:1;
   letter-spacing:.02em;padding:0 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 button.mds-prov{cursor:pointer;}
-button.mds-prov:hover{border-color:var(--border-strong,#B2BAC3);background:var(--bg-hover,#F0F2F5);}
+button.mds-prov:hover{border-color:var(--border-strong,#AAA49A);background:var(--bg-hover,#EDEFF0);}
 button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3);outline-offset:2px;}
 .mds-prov__dot{height:6px;width:6px;border-radius:50%;flex:0 0 auto;}
-.mds-prov__dot--ready{background:var(--severity-ready-fg,#2E7655);}
-.mds-prov__dot--review{background:var(--severity-review-fg,#C56343);}
-.mds-prov__dot--action{background:var(--severity-action-fg,#986717);}
-.mds-prov__dot--blocked{background:var(--severity-blocked-fg,#B54B42);}
-.mds-prov__dot--info{background:var(--severity-info-fg,#6B737B);}
+.mds-prov__dot--ready{background:var(--severity-ready-fg,#225840);}
+.mds-prov__dot--review{background:var(--severity-review-fg,#8E4730);}
+.mds-prov__dot--action{background:var(--severity-action-fg,#724D11);}
+.mds-prov__dot--blocked{background:var(--severity-blocked-fg,#883832);}
+.mds-prov__dot--info{background:var(--severity-info-fg,#606870);}
 .mds-prov__src{font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
-.mds-prov__sep{color:var(--text-muted,#6B737B);opacity:.6;}
-.mds-prov__meta{color:var(--text-muted,#6B737B);}
+.mds-prov__sep{color:var(--text-muted,#606870);opacity:.6;}
+.mds-prov__meta{color:var(--text-muted,#606870);}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "provenance-chip");

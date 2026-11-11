@@ -21,7 +21,7 @@ function inject() {
   border-bottom:1px solid var(--border,#D2CDC3);background:var(--bg-medium,#EBE8E1);}
 .jnl__grid{width:100%;border-collapse:separate;border-spacing:0;font-family:var(--font-data);font-size:12px;}
 .jnl__grid th{padding:8px 12px;text-align:left;font-family:var(--font-body);font-size:10px;
-  font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#6B737B);
+  font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#606870);
   border-bottom:1px solid var(--border,#D2CDC3);}
 .jnl__grid th.jnl--r{text-align:right;}
 .jnl__grid th.jnl--x{width:36px;}
@@ -30,8 +30,8 @@ function inject() {
 .jnl__grid td.jnl--r{text-align:right;}
 .jnl__del{width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;
   border:1px solid transparent;border-radius:var(--radius-button,2px);background:transparent;cursor:pointer;
-  color:var(--text-muted,#6B737B);font-size:14px;line-height:1;transition:color 120ms cubic-bezier(.2,0,0,1),background-color 120ms cubic-bezier(.2,0,0,1);}
-.jnl__del:hover{background:var(--red-a10,rgba(166,67,63,.10));border-color:var(--red,#B54B42);color:var(--red-dim,#7D322F);}
+  color:var(--text-muted,#606870);font-size:14px;line-height:1;transition:color 120ms cubic-bezier(.2,0,0,1),background-color 120ms cubic-bezier(.2,0,0,1);}
+.jnl__del:hover{background:var(--red-a10,rgba(181,75,66,.10));border-color:var(--red,#B54B42);color:var(--red-dim,#883832);}
 .jnl__grid tfoot td{padding:8px 12px;border-top:2px solid var(--border-strong,#AAA49A);
   background:var(--bg-medium,#EBE8E1);font-weight:600;}
 .jnl__grid tfoot td.jnl--r{text-align:right;}
@@ -41,11 +41,11 @@ function inject() {
 .jnl__status{display:inline-flex;align-items:center;gap:7px;
   font-family:var(--font-body);font-size:11px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;
   border:1px solid;border-radius:var(--radius-chip,2px);padding:5px 10px;}
-.jnl__status--bal{background:var(--green-a10,rgba(74,124,94,.10));border-color:var(--green,#2E7655);color:var(--green-dim,#375D46);}
-.jnl__status--out{background:var(--red-a10,rgba(166,67,63,.10));border-color:var(--red,#B54B42);color:var(--red-dim,#7D322F);}
+.jnl__status--bal{background:var(--green-a10,rgba(46,118,85,.10));border-color:var(--green,#2E7655);color:var(--green-dim,#225840);}
+.jnl__status--out{background:var(--red-a10,rgba(181,75,66,.10));border-color:var(--red,#B54B42);color:var(--red-dim,#883832);}
 .jnl__dot{height:6px;width:6px;border-radius:50%;background:currentColor;}
 .jnl__block{display:grid;gap:2px;padding:9px 14px;border-top:1px solid var(--border,#D2CDC3);
-  background:var(--red-a10,rgba(166,67,63,.10));font-family:var(--font-body);font-size:11px;line-height:1.5;color:var(--text-primary,#20252B);}
+  background:var(--red-a10,rgba(181,75,66,.10));font-family:var(--font-body);font-size:11px;line-height:1.5;color:var(--text-primary,#20252B);}
 .jnl__block b{font-weight:600;}
 .jnl__block small{font-family:var(--font-data);font-size:10px;color:var(--text-secondary,#535C65);}
 `;
@@ -70,6 +70,10 @@ export function JournalEntryForm({
   onPost,
 }) {
   inject();
+  const uid = React.useId();
+  const dateId = `${uid}-date`;
+  const refId = `${uid}-ref`;
+  const memoId = `${uid}-memo`;
   const [header, setHeader] = useState(() => ({ date: "", ref: "", memo: "", ...initialHeader }));
   const [lines, setLines] = useState(() =>
     initialLines && initialLines.length ? initialLines.map((l) => ({ ...blankLine(), ...l })) : [blankLine(), blankLine()]
@@ -93,25 +97,24 @@ export function JournalEntryForm({
   const balanced = Math.abs(diff) <= tolerance && (totalD > 0 || totalC > 0);
   const blocks = (blockers || []).filter(Boolean).map((b) => (typeof b === "string" ? { label: b } : b));
   const postable = balanced && blocks.length === 0;
-  const uid = React.useId();
-  const dlId = accounts && accounts.length ? `${uid}-accounts` : undefined;
+  const dlId = accounts && accounts.length ? `${uid}-accts` : undefined;
 
   return (
     <div className="jnl" role="group" aria-label="Journal entry">
       <div className="jnl__hd">
         <div className="jnl__field">
-          <label className="jnl__lbl" htmlFor={`${uid}-date`}>Date</label>
-          <Input id={`${uid}-date`} type="date" value={header.date}
+          <label className="jnl__lbl" htmlFor={dateId}>Date</label>
+          <Input id={dateId} type="date" value={header.date}
             onChange={(e) => setH("date", e.target.value)} />
         </div>
         <div className="jnl__field">
-          <label className="jnl__lbl" htmlFor={`${uid}-ref`}>Reference</label>
-          <Input id={`${uid}-ref`} placeholder="JE-0001" value={header.ref}
+          <label className="jnl__lbl" htmlFor={refId}>Reference</label>
+          <Input id={refId} placeholder="JE-0001" value={header.ref}
             onChange={(e) => setH("ref", e.target.value)} />
         </div>
         <div className="jnl__field">
-          <label className="jnl__lbl" htmlFor={`${uid}-memo`}>Memo</label>
-          <Input id={`${uid}-memo`} placeholder="Description" value={header.memo}
+          <label className="jnl__lbl" htmlFor={memoId}>Memo</label>
+          <Input id={memoId} placeholder="Description" value={header.memo}
             onChange={(e) => setH("memo", e.target.value)} />
         </div>
       </div>
@@ -135,15 +138,15 @@ export function JournalEntryForm({
           {lines.map((row, i) => (
             <tr key={i}>
               <td>
-                <Input aria-label={`Line ${i + 1} account`} placeholder="Account" value={row.account}
+                <Input placeholder="Account" aria-label={`Line ${i + 1} account`} value={row.account}
                   onChange={(e) => setL(i, "account", e.target.value)} list={dlId} />
               </td>
               <td className="jnl--r">
-                <Input aria-label={`Line ${i + 1} debit`} type="number" placeholder="0.00" value={row.debit}
+                <Input type="number" placeholder="0.00" aria-label={`Line ${i + 1} debit`} value={row.debit}
                   onChange={(e) => setL(i, "debit", e.target.value)} style={{ textAlign: "right" }} />
               </td>
               <td className="jnl--r">
-                <Input aria-label={`Line ${i + 1} credit`} type="number" placeholder="0.00" value={row.credit}
+                <Input type="number" placeholder="0.00" aria-label={`Line ${i + 1} credit`} value={row.credit}
                   onChange={(e) => setL(i, "credit", e.target.value)} style={{ textAlign: "right" }} />
               </td>
               <td className="jnl--r">
@@ -177,7 +180,7 @@ export function JournalEntryForm({
           <Button variant="ghost" onClick={addLine}>+ Add line</Button>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span className={`jnl__status ${balanced ? "jnl__status--bal" : "jnl__status--out"}`}>
+          <span className={`jnl__status ${balanced ? "jnl__status--bal" : "jnl__status--out"}`} role="status">
             <span className="jnl__dot" aria-hidden="true" />
             {balanced
               ? "Balanced"

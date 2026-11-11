@@ -191,6 +191,8 @@
     --green-dim:  color-mix(in srgb, var(--green)  75%, var(--dim-mix));
     --red-dim:    color-mix(in srgb, var(--red)    75%, var(--dim-mix));
     --orange-dim: color-mix(in srgb, var(--orange) 75%, var(--dim-mix));
+    /* Signal-coloured TEXT. The raw signal is 3.7:1 on a panel; this is the package's ink. */
+    --brand-signal-text: color-mix(in srgb, var(--ws-accent) 72%, var(--dim-mix));
     --purple-dim: color-mix(in srgb, var(--purple) 75%, var(--dim-mix));
 
     --bg: var(--ws-page-bg);
@@ -259,9 +261,9 @@
     --severity-action-fg: var(--orange-dim);
     --severity-action-bd: color-mix(in srgb, var(--orange) 42%, transparent);
     --severity-action-bg: color-mix(in srgb, var(--orange) 11%, transparent);
-    --severity-review-fg: var(--orange-dim);
-    --severity-review-bd: color-mix(in srgb, var(--orange) 36%, transparent);
-    --severity-review-bg: color-mix(in srgb, var(--orange) 10%, transparent);
+    --severity-review-fg: var(--brand-signal-text);
+    --severity-review-bd: color-mix(in srgb, var(--ws-accent) 36%, transparent);
+    --severity-review-bg: color-mix(in srgb, var(--ws-accent) 10%, transparent);
     --severity-ready-fg: var(--green-dim);
     --severity-ready-bd: color-mix(in srgb, var(--green) 36%, transparent);
     --severity-ready-bg: color-mix(in srgb, var(--green) 10%, transparent);
@@ -283,7 +285,7 @@
     --chart-ma20: #5D7286;
     --chart-ma50: #2E4B6E;
     --chart-bench: #8C918F;
-    --chart-band: color-mix(in srgb, var(--ws-accent) 10%, transparent);
+    --chart-band: color-mix(in srgb, var(--chart-compare-1) 14%, transparent);
     --chart-crosshair: #C56343;
     /* Overlay channels the historical chart reads: comparison symbols, moving averages,
        Bollinger envelope and RSI. They were referenced and never declared, so every
@@ -304,7 +306,7 @@
     --chart-sma-50: var(--chart-ma50);
     --chart-bollinger: var(--chart-bench);
     --chart-rsi: var(--chart-series-3);
-    --chart-dd: color-mix(in srgb, var(--red) 22%, transparent);
+    --chart-dd: color-mix(in srgb, var(--red) 20%, transparent);
 
     /* ─── Elevation — flat by mandate. Panels/cards carry no shadow; only
        detached overlays (menus/popovers) float. ───────────────────────────*/
@@ -567,6 +569,8 @@
     --green-dim:  color-mix(in srgb, var(--green)  75%, var(--dim-mix));
     --red-dim:    color-mix(in srgb, var(--red)    75%, var(--dim-mix));
     --orange-dim: color-mix(in srgb, var(--orange) 75%, var(--dim-mix));
+    /* Signal-coloured TEXT. The raw signal is 3.7:1 on a panel; this is the package's ink. */
+    --brand-signal-text: color-mix(in srgb, var(--ws-accent) 72%, var(--dim-mix));
     --purple-dim: color-mix(in srgb, var(--purple) 75%, var(--dim-mix));
 
     --bg: var(--ws-page-bg);
@@ -635,9 +639,9 @@
     --severity-action-fg: var(--orange-dim);
     --severity-action-bd: color-mix(in srgb, var(--orange) 42%, transparent);
     --severity-action-bg: color-mix(in srgb, var(--orange) 11%, transparent);
-    --severity-review-fg: var(--orange-dim);
-    --severity-review-bd: color-mix(in srgb, var(--orange) 36%, transparent);
-    --severity-review-bg: color-mix(in srgb, var(--orange) 10%, transparent);
+    --severity-review-fg: var(--brand-signal-text);
+    --severity-review-bd: color-mix(in srgb, var(--ws-accent) 36%, transparent);
+    --severity-review-bg: color-mix(in srgb, var(--ws-accent) 10%, transparent);
     --severity-ready-fg: var(--green-dim);
     --severity-ready-bd: color-mix(in srgb, var(--green) 36%, transparent);
     --severity-ready-bg: color-mix(in srgb, var(--green) 10%, transparent);
@@ -659,7 +663,7 @@
     --chart-ma20: #5D7286;
     --chart-ma50: #2E4B6E;
     --chart-bench: #8C918F;
-    --chart-band: color-mix(in srgb, var(--ws-accent) 10%, transparent);
+    --chart-band: color-mix(in srgb, var(--chart-compare-1) 14%, transparent);
     --chart-crosshair: #C56343;
     /* Overlay channels the historical chart reads: comparison symbols, moving averages,
        Bollinger envelope and RSI. They were referenced and never declared, so every
@@ -680,7 +684,7 @@
     --chart-sma-50: var(--chart-ma50);
     --chart-bollinger: var(--chart-bench);
     --chart-rsi: var(--chart-series-3);
-    --chart-dd: color-mix(in srgb, var(--red) 22%, transparent);
+    --chart-dd: color-mix(in srgb, var(--red) 20%, transparent);
 
     /* ─── Elevation — flat by mandate. Panels/cards carry no shadow; only
        detached overlays (menus/popovers) float. ───────────────────────────*/
@@ -872,6 +876,8 @@
       --green-dim:  color-mix(in srgb, var(--green)  75%, var(--dim-mix));
       --red-dim:    color-mix(in srgb, var(--red)    75%, var(--dim-mix));
       --orange-dim: color-mix(in srgb, var(--orange) 75%, var(--dim-mix));
+      /* Signal-coloured TEXT. The raw signal is 3.7:1 on a panel; this is the package's ink. */
+      --brand-signal-text: color-mix(in srgb, var(--ws-accent) 72%, var(--dim-mix));
       --purple-dim: color-mix(in srgb, var(--purple) 75%, var(--dim-mix));
 
       --border-hover: var(--ws-border-hover);
@@ -1080,6 +1086,8 @@
     --green-dim:  color-mix(in srgb, var(--green)  75%, var(--dim-mix));
     --red-dim:    color-mix(in srgb, var(--red)    75%, var(--dim-mix));
     --orange-dim: color-mix(in srgb, var(--orange) 75%, var(--dim-mix));
+    /* Signal-coloured TEXT. The raw signal is 3.7:1 on a panel; this is the package's ink. */
+    --brand-signal-text: color-mix(in srgb, var(--ws-accent) 72%, var(--dim-mix));
     --purple-dim: color-mix(in srgb, var(--purple) 75%, var(--dim-mix));
 
     --border-hover: var(--ws-border-hover);
@@ -1290,6 +1298,8 @@
     --green-dim:  color-mix(in srgb, var(--green)  75%, var(--dim-mix));
     --red-dim:    color-mix(in srgb, var(--red)    75%, var(--dim-mix));
     --orange-dim: color-mix(in srgb, var(--orange) 75%, var(--dim-mix));
+    /* Signal-coloured TEXT. The raw signal is 3.7:1 on a panel; this is the package's ink. */
+    --brand-signal-text: color-mix(in srgb, var(--ws-accent) 72%, var(--dim-mix));
     --purple-dim: color-mix(in srgb, var(--purple) 75%, var(--dim-mix));
 
     --border-hover: var(--ws-border-hover);
@@ -1661,9 +1671,9 @@
     align-items: center;
     gap: 0.375rem;
     min-height: 2rem;
-    border: 1px solid rgba(217, 138, 100, 0.3);
+    border: 1px solid color-mix(in srgb, var(--ws-accent) 30%, transparent);
     border-radius: var(--radius-xs);
-    background: rgba(217, 138, 100, 0.08);
+    background: color-mix(in srgb, var(--ws-accent) 8%, transparent);
     color: #E6A585;
     padding: 0.25rem 0.5rem;
     font-size: 0.6875rem;
@@ -1696,7 +1706,7 @@
 
   .operator-mode-toggle [aria-pressed="true"],
   .operator-mode-toggle [aria-current="page"] {
-    background: rgba(217, 138, 100, 0.14);
+    background: color-mix(in srgb, var(--ws-accent) 14%, transparent);
     color: #FDFAF5;
   }
 
@@ -2075,7 +2085,7 @@
   }
 
   [aria-selected="true"] {
-    box-shadow: inset 3px 0 0 var(--cyan-primary);
+    box-shadow: inset 3px 0 0 var(--interaction-selected);
   }
 
 }

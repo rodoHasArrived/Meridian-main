@@ -94,12 +94,15 @@ publisher trust. Re-exporting unchanged inputs produces the same archive bytes.
   host and JSX runtime requirement. The standard HTML smoke entry proves a
   narrower browser-bundle path; it does not convert the full template catalogue.
 - **Platform integration:** map the package's token roles and domain contracts
-  deliberately. `tokens/parity-manifest.json` shares selected names with the
-  application while declaring that values are not shared. The production browser
-  integration in this PR is delivered through the monorepo's native source and
-  built workstation assets; this standalone archive contains the design-system
-  package. Concurrent WPF integration uses its platform resources and requires
-  Windows validation separately.
+  deliberately. `tokens/parity-manifest.json` records the names and, since the
+  4.3.0 migration, the values the package shares with the Meridian browser
+  workstation; `scripts/check_token_parity.py` checks both when the package
+  sits in that repository and skips the comparison when it does not. No
+  divergence is recorded. The production browser integration in this PR is
+  delivered through the monorepo's native source and built workstation assets;
+  this standalone archive contains the design-system package. Concurrent WPF
+  integration uses its platform resources and requires Windows validation
+  separately.
 
 The archive excludes uploads, scraps, screenshots, embedded application-source
 snapshots, local dependency directories, and previous export output. It retains

@@ -11,6 +11,7 @@ import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-re
 import * as workstationApi from "@/lib/api";
 import { formatCurrency, formatMoney as formatMoneyValue, formatQuantity as formatQuantityValue, formatUtcTimestamp, pluralizeCount } from "@/lib/format";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
+import { parsePositiveDecimal } from "@/lib/positive-decimal";
 import { useBrokerageRecoveryObservation } from "./trading-screen.brokerage-recovery-state";
 import type { ApiRequestOptions, ApprovePromotionRequest, RejectPromotionRequest } from "@/lib/api";
 import { evidenceWorkbenchPath, normalizeLocalWorkstationRoute, WORKSTATION_ROUTE_CATALOG, workflowTargetPath } from "@/lib/workspace";
@@ -3550,10 +3551,10 @@ export function updateOrderTicketForm(
   }
 
   if (field === "quantity") {
-    return { ...current, quantity: parsePositiveNumber(value) ?? 0 };
+    return { ...current, quantity: parsePositiveDecimal(value) ?? 0 };
   }
 
-  return { ...current, limitPrice: parsePositiveNumber(value) };
+  return { ...current, limitPrice: parsePositiveDecimal(value) };
 }
 
 export function buildOrderSubmitRequest(form: OrderSubmitRequest, fundAccountId?: string | null): OrderSubmitRequest {
@@ -3614,11 +3615,6 @@ function normalizeOrderSymbol(symbol: string): string {
 
 function orderTypeRequiresPrice(type: OrderSubmitRequest["type"]): boolean {
   return type === "Limit" || type === "Stop";
-}
-
-function parsePositiveNumber(value: string): number | null {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 }
 
 export type OrderPreviewLevel = "info" | "warning" | "danger";

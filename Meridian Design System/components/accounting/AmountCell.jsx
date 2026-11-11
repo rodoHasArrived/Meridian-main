@@ -69,11 +69,11 @@ export function AmountCell({
   }
 
   let color = "var(--text-primary, #20252B)";
-  if (mode === "muted") color = "var(--text-muted, #6B737B)";
+  if (mode === "muted") color = "var(--text-muted, #606870)";
   else if (mode === "pnl") {
     color = !isFinite(num) || num === 0
-      ? "var(--text-muted, #6B737B)"
-      : num < 0 ? "var(--red-dim, #7D322F)" : "var(--green-dim, #375D46)";
+      ? "var(--text-muted, #606870)"
+      : num < 0 ? "var(--red-dim, #883832)" : "var(--green-dim, #225840)";
   }
 
   if (envelope) {
@@ -120,7 +120,7 @@ export function AmountCell({
             fontWeight: 600,
             fontVariant: "all-small-caps",
             letterSpacing: ".03em",
-            color: "var(--text-muted, #6B737B)",
+            color: "var(--text-muted, #606870)",
             marginLeft: 5,
           }}
         >

@@ -8,7 +8,7 @@ function inject() {
   const css = `
 .mds-textarea-field{display:block;}
 .mds-textarea-label{display:block;font-family:var(--font-body);font-size:10px;font-weight:600;
-  font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#6B737B);margin-bottom:5px;}
+  font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#606870);margin-bottom:5px;}
 .mds-textarea{width:100%;box-sizing:border-box;padding:7px 10px;
   border:1px solid var(--border,#D2CDC3);background:var(--bg-light,#F8F7F3);
   color:var(--text-primary,#20252B);font-family:var(--font-body);font-size:13px;
@@ -18,7 +18,7 @@ function inject() {
 .mds-textarea:focus{outline:var(--focus-ring);outline-offset:var(--focus-ring-offset);}
 .mds-textarea:disabled{opacity:.5;cursor:not-allowed;background:var(--bg-medium,#EBE8E1);}
 .mds-textarea--error{border-color:var(--red,#B54B42);}
-.mds-textarea-error{font-family:var(--font-body);font-size:11px;color:var(--red-dim,#7D322F);margin-top:5px;}
+.mds-textarea-error{font-family:var(--font-body);font-size:11px;color:var(--red-dim,#883832);margin-top:5px;}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "textarea");

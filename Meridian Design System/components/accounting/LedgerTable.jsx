@@ -7,10 +7,11 @@ import React from "react";
 const { useState } = React;
 import { AmountCell, splitEnvelopeValue } from "./AmountCell";
 import { toNumber } from "../core/format.js";
+import { knownAmount, sumKnown, displayAmount, optionalSide } from "./knownAmounts.js";
 
 // A debit/credit may arrive as a bare number or as an envelope-shaped object
 // ({ value, condition, authority, … }) — arithmetic reads the figure, AmountCell reads the rest.
-const amt = (v) => toNumber(splitEnvelopeValue(v).value);
+const amt = value => knownAmount(value);
 const fig = (v) => splitEnvelopeValue(v).value;
 
 // Row-level envelope facets apply to that row's amount cells; a side-level envelope-shaped
@@ -33,12 +34,13 @@ function inject() {
   const css = `
 .ldg-wrap{overflow-x:auto;border:1px solid var(--border,#D2CDC3);
   border-radius:var(--radius-chip,2px);background:var(--bg-light,#F8F7F3);}
+.ldg-wrap:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}
 .ldg{width:100%;min-width:100%;border-collapse:separate;border-spacing:0;
   font-family:var(--font-data);font-size:12px;}
 .ldg thead th{padding:9px 12px;text-align:left;white-space:nowrap;position:sticky;top:0;
   background:var(--bg-medium,#EBE8E1);z-index:1;cursor:pointer;user-select:none;
   font-family:var(--font-body);font-size:10px;font-weight:600;font-variant:all-small-caps;
-  letter-spacing:.03em;color:var(--text-muted,#6B737B);
+  letter-spacing:.03em;color:var(--text-muted,#606870);
   border-bottom:1px solid var(--border-strong,#AAA49A);border-right:1px solid var(--border-divider,#E2DED5);}
 .ldg thead th:hover{color:var(--text-primary,#20252B);}
 .ldg thead th:focus-visible{outline:var(--focus-ring);outline-offset:-2px;color:var(--text-primary,#20252B);}
@@ -54,29 +56,29 @@ function inject() {
 .ldg tbody tr.ldg__row--click{cursor:pointer;}
 .ldg tbody tr.ldg__row--on td{background:var(--bg-active,#E7EDF2);}
 .ldg tbody tr.ldg__row--on td:first-child{box-shadow:inset 3px 0 0 var(--interaction-selected,#496C8F);}
-.ldg tbody tr.ldg__row--pending td{background:var(--orange-a10,rgba(154,113,19,.07));}
+.ldg tbody tr.ldg__row--pending td{background:var(--orange-a10,rgba(152,103,23,.07));}
 .ldg tbody tr.ldg__row--void td{color:var(--text-secondary,#535C65);text-decoration:line-through;}
 .ldg tbody tr.ldg__row--void td .ldg__ref{color:var(--text-secondary,#535C65);}
 .ldg tbody tr.ldg__row--click:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}
-.ldg__empty{padding:16px 12px;font-family:var(--font-body);font-size:12px;color:var(--text-muted,#6B737B);text-align:center;}
+.ldg__empty{padding:16px 12px;font-family:var(--font-body);font-size:12px;color:var(--text-muted,#606870);text-align:center;}
 .ldg__date{color:var(--text-secondary,#535C65);}
 .ldg__ref{color:var(--link,#2A5F96);}
 .ldg__chip{display:inline-block;margin-left:7px;font-family:var(--font-body);font-size:9px;
   font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;border:1px solid;
   border-radius:var(--radius-chip,2px);padding:0 5px;line-height:1.5;vertical-align:1px;}
-.ldg__chip--pending{background:var(--orange-a10,rgba(183,121,31,.10));border-color:var(--orange,#986717);color:var(--orange-dim,#735414);}
-.ldg__chip--void{background:var(--red-a10,rgba(166,67,63,.10));border-color:var(--red,#B54B42);color:var(--red-dim,#7D322F);}
+.ldg__chip--pending{background:var(--orange-a10,rgba(152,103,23,.10));border-color:var(--orange,#986717);color:var(--orange-dim,#724D11);}
+.ldg__chip--void{background:var(--red-a10,rgba(181,75,66,.10));border-color:var(--red,#B54B42);color:var(--red-dim,#883832);}
 .ldg__memo{font-family:var(--font-body);color:var(--text-secondary,#535C65);
   white-space:normal;min-width:160px;}
 .ldg__acct{color:var(--text-primary,#20252B);}
-.ldg__open td{background:var(--bg-medium,#EBE8E1);color:var(--text-muted,#6B737B);}
+.ldg__open td{background:var(--bg-medium,#EBE8E1);color:var(--text-muted,#606870);}
 .ldg__open .ldg__memo{font-style:italic;}
 .ldg tfoot td{padding:9px 12px;background:var(--bg-medium,#EBE8E1);font-weight:600;
   border-top:2px solid var(--border-strong,#AAA49A);color:var(--text-primary,#20252B);}
 .ldg tfoot td.ldg--r{text-align:right;}
 .ldg__foot-label{font-family:var(--font-body);font-variant:all-small-caps;letter-spacing:.03em;
   font-size:11px;color:var(--text-secondary,#535C65);}
-.ldg__foot-note{font-weight:400;color:var(--text-muted,#6B737B);margin-left:8px;}
+.ldg__foot-note{font-weight:400;color:var(--text-muted,#606870);margin-left:8px;}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "ledger");
@@ -90,6 +92,17 @@ function compareRows(a, b, key) {
   const av = (a[key] ?? "").toString();
   const bv = (b[key] ?? "").toString();
   return av.localeCompare(bv, undefined, { numeric: true });
+}
+
+// Module-scope so the <th> keeps its identity (and keyboard focus) across re-renders and sorts.
+function Head({ k, children, right, sortKey, sortDir, onSort }) {
+  return (
+    <th className={right ? "ldg--r" : undefined} scope="col" tabIndex={0} onClick={() => onSort(k)}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSort(k); } }}
+      aria-sort={sortKey === k ? (sortDir === 1 ? "ascending" : "descending") : "none"}>
+      {children} {sortKey === k && (sortDir === 1 ? "\u2191" : "\u2193")}
+    </th>
+  );
 }
 
 export function LedgerTable({
@@ -116,21 +129,24 @@ export function LedgerTable({
     onSort?.(key, dir);
   };
 
-  // Running balance is chronological (source order); void rows contribute nothing.
-  let bal = isFinite(toNumber(open)) ? toNumber(open) : 0;
-  let hasRunning = isFinite(toNumber(open));
-  const computed = rows.map((r, i) => {
-    const isVoid = r.status === "void";
-    const d = isVoid ? 0 : amt(r.debit) || 0;
-    const c = isVoid ? 0 : amt(r.credit) || 0;
-    const delta = normalSide === "credit" ? c - d : d - c;
-    if (!isVoid && r.balance != null && isFinite(amt(r.balance))) {
-      bal = amt(r.balance);
-      hasRunning = true;
-    } else {
-      bal += delta;
+  // Running balance is chronological (source order); void rows contribute nothing. It is only
+  // known from the opening balance or the first explicit row balance onward — earlier rows show a dash.
+  let bal=knownAmount(open);
+  const rowSide=(row,key)=>{
+    if(row[key]===undefined||(typeof row[key]==="string"&&row[key].trim()===""))return 0;
+    return knownAmount({...sideEnvelope(row,key),value:fig(row[key])});
+  };
+  const computed=rows.map((row,index)=>{
+    const isVoid=row.status==="void";
+    const hasSides=row.debit!==undefined||row.credit!==undefined;
+    const debit=isVoid?0:hasSides?rowSide(row,"debit"):null;
+    const credit=isVoid?0:hasSides?rowSide(row,"credit"):null;
+    if(!isVoid){
+      if(row.balance!==undefined)bal=knownAmount(row.balance);
+      else if(bal===null||debit===null||credit===null)bal=null;
+      else bal+=normalSide==="credit"?credit-debit:debit-credit;
     }
-    return { ...r, _bal: bal, _void: isVoid, _i: i };
+    return{...row,_bal:bal,_balanceKnown:bal!==null,_debit:debit,_credit:credit,_void:isVoid,_i:index};
   });
 
   let display = computed;
@@ -139,34 +155,29 @@ export function LedgerTable({
   }
 
   const live = computed.filter((r) => !r._void);
-  const totalD = live.reduce((a, r) => a + (amt(r.debit) || 0), 0);
-  const totalC = live.reduce((a, r) => a + (amt(r.credit) || 0), 0);
+  const totalD = sumKnown(live.map(row=>row._debit));
+  const totalC = sumKnown(live.map(row=>row._credit));
   const voided = computed.length - live.length;
+  const net=totalD===null||totalC===null?null:totalD-totalC;
 
-  const Head = ({ k, children, right }) => (
-    <th className={right ? "ldg--r" : undefined} scope="col" tabIndex={0} onClick={() => handleSort(k)}
-      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleSort(k); } }}
-      aria-sort={sortKey === k ? (sortDir === 1 ? "ascending" : "descending") : "none"}>
-      {children} {sortKey === k && (sortDir === 1 ? "\u2191" : "\u2193")}
-    </th>
-  );
+  const hp = { sortKey, sortDir, onSort: handleSort };
 
   return (
-    <div className="ldg-wrap" role="region" aria-label={caption || "General ledger"}>
+    <div className="ldg-wrap" tabIndex={0} role="region" aria-label={caption || "General ledger"}>
       <table className="ldg">
         <thead>
           <tr>
-            <Head k="date">Date</Head>
-            <Head k="ref">Ref</Head>
-            {showAccount && <Head k="account">Account</Head>}
-            <Head k="memo">Description</Head>
-            <Head k="debit" right>Debit</Head>
-            <Head k="credit" right>Credit</Head>
-            <Head k="balance" right>Balance</Head>
+            <Head k="date" {...hp}>Date</Head>
+            <Head k="ref" {...hp}>Ref</Head>
+            {showAccount && <Head k="account" {...hp}>Account</Head>}
+            <Head k="memo" {...hp}>Description</Head>
+            <Head k="debit" right {...hp}>Debit</Head>
+            <Head k="credit" right {...hp}>Credit</Head>
+            <Head k="balance" right {...hp}>Balance</Head>
           </tr>
         </thead>
         <tbody>
-          {isFinite(toNumber(open)) && (
+          {knownAmount(open)!==null && (
             <tr className="ldg__open">
               <td className="ldg__date" />
               <td />
@@ -175,7 +186,7 @@ export function LedgerTable({
               <td className="ldg--r" />
               <td className="ldg--r" />
               <td className="ldg--r">
-                <AmountCell value={toNumber(open)} currency={currency} mode="muted" />
+                <AmountCell value={displayAmount(open)} currency={currency} mode="muted" />
               </td>
             </tr>
           )}
@@ -201,17 +212,17 @@ export function LedgerTable({
                 {showAccount && <td className="ldg__acct">{r.account}</td>}
                 <td className="ldg__memo">{r.memo}</td>
                 <td className="ldg--r">
-                  <AmountCell value={fig(r.debit)} currency={currency} zeroDash
+                  <AmountCell value={r.debit===undefined?0:displayAmount(r.debit)} currency={currency} zeroDash
                     mode={r._void ? "muted" : undefined} envelope={sideEnvelope(r, "debit")} />
                 </td>
                 <td className="ldg--r">
-                  <AmountCell value={fig(r.credit)} currency={currency} zeroDash
+                  <AmountCell value={r.credit===undefined?0:displayAmount(r.credit)} currency={currency} zeroDash
                     mode={r._void ? "muted" : undefined} envelope={sideEnvelope(r, "credit")} />
                 </td>
                 <td className="ldg--r">
-                  {r._void || !hasRunning
+                  {r._void || !r._hasBal
                     ? <span style={{ color: "var(--text-disabled,#A4ABB2)" }}>&mdash;</span>
-                    : <AmountCell value={r._bal} currency={currency} parens />}
+                    : <AmountCell value={displayAmount(r._bal)} currency={currency} parens />}
                 </td>
               </tr>
             );
@@ -227,13 +238,13 @@ export function LedgerTable({
                 </span>
               )}
             </td>
-            <td className="ldg--r"><AmountCell value={totalD} currency={currency} strong /></td>
-            <td className="ldg--r"><AmountCell value={totalC} currency={currency} strong /></td>
+            <td className="ldg--r"><AmountCell value={displayAmount(totalD)} currency={currency} strong /></td>
+            <td className="ldg--r"><AmountCell value={displayAmount(totalC)} currency={currency} strong /></td>
             <td className="ldg--r">
               <AmountCell
-                value={totalD - totalC}
+                value={displayAmount(net)}
                 currency={currency}
-                mode={Math.abs(totalD - totalC) < 0.005 ? "muted" : "pnl"}
+                mode={net!==null&&Math.abs(net)<0.005?"muted":"pnl"}
                 parens
                 strong
               />

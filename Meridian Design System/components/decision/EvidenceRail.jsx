@@ -38,9 +38,9 @@ function inject() {
 .mds-erail__state{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;padding:6px 11px;border-bottom:1px solid var(--border-divider,#E2DED5)}
 .mds-erail__cov{font:600 11px var(--font-data,monospace);font-variant-numeric:tabular-nums;color:var(--text-primary,#20252B)}
 .mds-erail__covnote,.mds-erail__note{font:10px var(--font-data,monospace);color:var(--text-muted,#606870)}
-.mds-erail__cov[data-short="true"]{color:var(--orange-dim,#725012)}
+.mds-erail__cov[data-short="true"]{color:var(--orange-dim,#724D11)}
 .mds-erail__chip{display:inline-flex;align-items:center;gap:5px;padding:1px 6px;border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-chip,2px);font:600 9px var(--font-data,monospace);letter-spacing:.05em;text-transform:uppercase;color:var(--text-secondary,#535C65);background:var(--surface-well,var(--card-surface-raised,#FCFBF8))}
-.mds-erail__chip[data-continuity="retained"],.mds-erail__chip[data-continuity="stale"]{border-color:var(--orange,#986717);color:var(--orange-dim,#725012);background:var(--orange-a10,rgba(152,103,23,.10))}
+.mds-erail__chip[data-continuity="retained"],.mds-erail__chip[data-continuity="stale"]{border-color:var(--orange,#986717);color:var(--orange-dim,#724D11);background:var(--orange-a10,rgba(152,103,23,.10))}
 .mds-erail__chip[data-continuity="partial"]{border-color:var(--semantic-info,#2F648A);color:var(--semantic-info,#2F648A);background:var(--blue-a10,rgba(47,100,138,.10))}
 .mds-erail__tabs{display:flex;flex-wrap:wrap;gap:0;border-bottom:1px solid var(--border-strong,#AAA49A);background:var(--surface-well,var(--card-surface-raised,#FCFBF8))}
 .mds-erail__tab{appearance:none;min-height:var(--theme-control-height,30px);padding:0 10px;border:0;border-right:1px solid var(--border-divider,#E2DED5);border-bottom:2px solid transparent;background:transparent;font:600 11px var(--font-body);color:var(--text-muted,#606870);cursor:pointer;transition:color 120ms cubic-bezier(.2,0,0,1),border-color 120ms cubic-bezier(.2,0,0,1),background-color 120ms cubic-bezier(.2,0,0,1)}

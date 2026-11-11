@@ -13,8 +13,8 @@ function inject() {
 .mds-spin--sm{width:14px;height:14px;border-width:2px;}
 .mds-spin--md{width:20px;height:20px;border-width:2px;}
 .mds-spin--lg{width:32px;height:32px;border-width:3px;}
-.mds-spin--muted{border-top-color:var(--text-muted,#6B737B);}
-.mds-spin--onDark{border-color:color-mix(in srgb, var(--topbar-text,#fff) 25%, transparent);border-top-color:var(--topbar-text,#fff);}
+.mds-spin--muted{border-top-color:var(--text-muted,#606870);}
+.mds-spin--onDark{border-color:color-mix(in srgb, var(--topbar-text,#F1EFEA) 25%, transparent);border-top-color:var(--topbar-text,#F1EFEA);}
 .mds-spin-row{display:inline-flex;align-items:center;gap:8px;font-family:var(--font-body);
   font-size:13px;color:var(--text-secondary,#535C65);}
 @keyframes mds-spin-rot{to{transform:rotate(360deg);}}

@@ -506,10 +506,26 @@
                   <Setter Property="Background" Value="{StaticResource ChartSurfaceBrush}" />
                   <Setter Property="BorderBrush" Value="{StaticResource ChartBorderBrush}" />
                   <Setter Property="BorderThickness" Value="1" />
+                  <!-- Own template so the selected surface and selection-mark border apply; the default
+                       ListBoxItem template paints its own selection fill over Background. -->
+                  <Setter Property="Template">
+                    <Setter.Value>
+                      <ControlTemplate TargetType="ListBoxItem">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}"
+                                SnapsToDevicePixels="True">
+                          <ContentPresenter />
+                        </Border>
+                      </ControlTemplate>
+                    </Setter.Value>
+                  </Setter>
                   <Style.Triggers>
                     <Trigger Property="IsSelected" Value="True">
-                      <Setter Property="Foreground" Value="{StaticResource TopBarTextBrush}" />
-                      <Setter Property="BorderBrush" Value="{StaticResource ChartPrimaryLineBrush}" />
+                      <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
+                      <Setter Property="Background" Value="{StaticResource SidebarActiveBrush}" />
+                      <Setter Property="BorderBrush" Value="{StaticResource SidebarActiveIndicatorBrush}" />
                     </Trigger>
                   </Style.Triggers>
                 </Style>

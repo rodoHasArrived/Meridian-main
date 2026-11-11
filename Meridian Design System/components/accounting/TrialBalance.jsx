@@ -15,6 +15,7 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
+.tbl-wrap:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}
 .tbl-wrap{overflow-x:auto;border:1px solid var(--border,#D2CDC3);
   border-radius:var(--radius-chip,2px);background:var(--bg-light,#F8F7F3);}
 .tbl{width:100%;border-collapse:separate;border-spacing:0;
@@ -22,7 +23,7 @@ function inject() {
 .tbl thead th{padding:9px 12px;text-align:left;white-space:nowrap;position:sticky;top:0;
   background:var(--bg-medium,#EBE8E1);z-index:1;
   font-family:var(--font-body);font-size:10px;font-weight:600;font-variant:all-small-caps;
-  letter-spacing:.03em;color:var(--text-muted,#6B737B);
+  letter-spacing:.03em;color:var(--text-muted,#606870);
   border-bottom:1px solid var(--border-strong,#AAA49A);border-right:1px solid var(--border-divider,#E2DED5);}
 .tbl thead th:last-child{border-right:none;}
 .tbl th.tbl--r,.tbl td.tbl--r{text-align:right;}
@@ -35,7 +36,7 @@ function inject() {
 .tbl tbody tr.tbl__row--on td{background:var(--bg-active,#E7EDF2);}
 .tbl tbody tr.tbl__row--on td:first-child{box-shadow:inset 3px 0 0 var(--interaction-selected,#496C8F);}
 .tbl tbody tr.tbl__row--click:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}
-.tbl__empty{padding:16px 12px;font-family:var(--font-body);font-size:12px;color:var(--text-muted,#6B737B);text-align:center;}
+.tbl__empty{padding:16px 12px;font-family:var(--font-body);font-size:12px;color:var(--text-muted,#606870);text-align:center;}
 /* section + subtotal rows are structure, not data: state modifiers come after the hover rule
    and match its specificity, so they win by order — no !important needed. */
 .tbl tbody tr.tbl__sec td,.tbl tbody tr.tbl__sec:hover td{background:var(--bg-medium,#EBE8E1);
@@ -44,14 +45,14 @@ function inject() {
   color:var(--text-secondary,#535C65);padding:6px 12px;}
 .tbl tbody tr.tbl__sub td,.tbl tbody tr.tbl__sub:hover td{background:var(--bg-light,#F8F7F3);
   font-family:var(--font-body);
-  font-size:11px;color:var(--text-muted,#6B737B);border-top:1px solid var(--border-divider,#E2DED5);}
-.tbl__code{color:var(--text-muted,#6B737B);}
+  font-size:11px;color:var(--text-muted,#606870);border-top:1px solid var(--border-divider,#E2DED5);}
+.tbl__code{color:var(--text-muted,#606870);}
 .tbl__acct{font-family:var(--font-body);color:var(--text-primary,#20252B);}
 .tbl tfoot td{padding:9px 12px;background:var(--bg-medium,#EBE8E1);font-weight:600;
   border-top:2px solid var(--border-strong,#AAA49A);color:var(--text-primary,#20252B);}
 .tbl__foot-label{font-family:var(--font-body);font-variant:all-small-caps;letter-spacing:.03em;
   font-size:11px;color:var(--text-secondary,#535C65);}
-.tbl__foot-note{font-weight:400;color:var(--text-muted,#6B737B);margin-left:8px;font-family:var(--font-body);font-size:11px;}
+.tbl__foot-note{font-weight:400;color:var(--text-muted,#606870);margin-left:8px;font-family:var(--font-body);font-size:11px;}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "trialbalance");
@@ -129,7 +130,7 @@ export function TrialBalance({
   };
 
   return (
-    <div className="tbl-wrap" role="region" aria-label={caption || "Trial balance"}>
+    <div className="tbl-wrap" tabIndex={0} role="region" aria-label={caption || "Trial balance"}>
       <table className="tbl">
         <thead>
           <tr>
@@ -170,7 +171,7 @@ export function TrialBalance({
             <td className="tbl__foot-label" colSpan={cols - 2 - (trailing ? 1 : 0)}>
               Totals
               {!balanced && (
-                <span className="tbl__foot-note" style={{ color: "var(--red-dim,#7D322F)" }}>
+                <span className="tbl__foot-note" style={{ color: "var(--red-dim,#883832)" }}>
                   out of balance by {""}
                 </span>
               )}

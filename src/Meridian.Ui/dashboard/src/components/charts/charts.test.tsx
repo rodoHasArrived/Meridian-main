@@ -60,7 +60,7 @@ describe("EquityCurve", () => {
   it("renders a legend and a series path", () => {
     const { container } = render(
       <EquityCurve
-        series={[{ label: "Strategy", color: "var(--chart-equity, #3A7A56)", points: [100, 110, 105, 120] }]}
+        series={[{ label: "Strategy", color: "var(--chart-equity, #2E7655)", points: [100, 110, 105, 120] }]}
         labels={["Jan", "Feb", "Mar", "Apr"]}
       />
     );

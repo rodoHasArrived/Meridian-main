@@ -13,12 +13,12 @@ function inject() {
 .mds-trust__item{display:flex;flex-direction:column;gap:2px;min-width:0;
   border:1px solid var(--state-muted-bd,#D2CDC3);border-left-width:3px;border-radius:var(--radius-chip,2px);
   background:var(--state-muted-bg,#EBE8E1);padding:5px 10px;}
-.mds-trust__item--ready{border-color:var(--state-healthy-bd,rgba(74,124,94,.32));border-left-color:var(--state-healthy-fg,#2E7655);background:var(--state-healthy-bg,rgba(74,124,94,.10));}
-.mds-trust__item--review{border-color:var(--state-warn-bd,rgba(154,113,19,.38));border-left-color:var(--state-warn-fg,#986717);background:var(--state-warn-bg,rgba(154,113,19,.11));}
-.mds-trust__item--blocked{border-color:var(--state-danger-bd,rgba(166,67,63,.35));border-left-color:var(--state-danger-fg,#B54B42);background:var(--state-danger-bg,rgba(166,67,63,.10));}
-.mds-trust__item--pending{border-color:var(--state-pending-bd,rgba(111,91,167,.34));border-left-color:var(--state-pending-fg,#2F648A);background:var(--state-pending-bg,rgba(111,91,167,.10));}
+.mds-trust__item--ready{border-color:var(--state-healthy-bd,rgba(46,118,85,.32));border-left-color:var(--state-healthy-fg,#225840);background:var(--state-healthy-bg,rgba(46,118,85,.10));}
+.mds-trust__item--review{border-color:var(--state-warn-bd,rgba(152,103,23,.38));border-left-color:var(--state-warn-fg,#724D11);background:var(--state-warn-bg,rgba(152,103,23,.11));}
+.mds-trust__item--blocked{border-color:var(--state-danger-bd,rgba(181,75,66,.35));border-left-color:var(--state-danger-fg,#883832);background:var(--state-danger-bg,rgba(181,75,66,.10));}
+.mds-trust__item--pending{border-color:var(--state-pending-bd,rgba(122,107,82,.34));border-left-color:var(--state-pending-fg,#5C503E);background:var(--state-pending-bg,rgba(122,107,82,.10));}
 .mds-trust__label{font-family:var(--font-data,monospace);font-size:9px;font-weight:700;text-transform:uppercase;
-  letter-spacing:.05em;color:var(--text-muted,#6B737B);white-space:nowrap;}
+  letter-spacing:.05em;color:var(--text-muted,#606870);white-space:nowrap;}
 .mds-trust__value{font-family:var(--font-body);font-size:12px;font-weight:600;color:var(--text-primary,#20252B);white-space:nowrap;}
 `;
   const el = document.createElement("style");

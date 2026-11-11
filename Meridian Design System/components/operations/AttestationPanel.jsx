@@ -21,7 +21,7 @@ let injected=false;function inject(){if(injected||typeof document==="undefined")
 .mds-att__version{font:10px var(--font-data,monospace);color:var(--text-muted,#606870)}
 .mds-att__state{display:inline-flex;align-items:center;gap:4px;padding:2px 6px;border:1px solid var(--border,#D2CDC3);font:600 9px var(--font-data,monospace);text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted,#606870);white-space:nowrap}
 .mds-att__state[data-tone="pass"]{color:var(--green-dim,#23583F);border-color:var(--green,#2E7655);background:var(--green-a10,rgba(46,118,85,.10))}
-.mds-att__state[data-tone="review"]{color:var(--orange-dim,#725012);border-color:var(--orange,#986717);background:var(--orange-a10,rgba(152,103,23,.10))}
+.mds-att__state[data-tone="review"]{color:var(--orange-dim,#724D11);border-color:var(--orange,#986717);background:var(--orange-a10,rgba(152,103,23,.10))}
 .mds-att__state[data-tone="exception"]{color:var(--red-dim,#873832);border-color:var(--red,#B54B42);background:var(--red-a10,rgba(181,75,66,.10))}
 .mds-att__banner{padding:8px 12px;border-bottom:1px solid var(--border-divider,#E2DED5);background:var(--orange-surface,#F2EAD8);font-size:11px;color:var(--text-primary,#20252B)}
 .mds-att__banner--void{background:var(--red-surface,#F5E5E2)}
@@ -37,7 +37,7 @@ let injected=false;function inject(){if(injected||typeof document==="undefined")
 .mds-att__detail{font:9px var(--font-data,monospace);color:var(--text-muted,#606870)}
 .mds-att__evidence{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:baseline;padding:7px 12px;border-top:1px solid var(--border-divider,#E2DED5);font-size:10px}
 .mds-att__evidence b{font:11px var(--font-data,monospace);color:var(--text-primary,#20252B)}
-.mds-att__evidence[data-complete="false"] b{color:var(--orange-dim,#725012)}
+.mds-att__evidence[data-complete="false"] b{color:var(--orange-dim,#724D11)}
 .mds-att__roles{display:grid;gap:0;padding:0 12px;border-top:1px solid var(--border-divider,#E2DED5)}
 .mds-att__role-row{display:grid;grid-template-columns:96px 1fr auto;gap:8px;align-items:baseline;min-height:26px;border-bottom:1px solid var(--border-divider,#E2DED5);font-size:10px}
 .mds-att__role-row:last-child{border-bottom:0}

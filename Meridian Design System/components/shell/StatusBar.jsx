@@ -17,9 +17,9 @@ function inject() {
 .ws-statusbar__item:first-child{padding-left:0;}
 .ws-statusbar__item--push{margin-left:auto;border-right:none;border-left:1px solid var(--statusbar-border,#3A444D);}
 .ws-statusbar__label{font-family:var(--font-body);font-variant:all-small-caps;
-  letter-spacing:.03em;color:var(--topbar-text-faint,#8A929B);}
+  letter-spacing:.03em;color:var(--topbar-text-faint,#969EA6);}
 .ws-statusbar__dot{width:6px;height:6px;border-radius:50%;flex:0 0 auto;}
-.ws-st--ok{background:var(--chrome-ok,#6FAE8B);} .ws-st--warn{background:var(--chrome-warn,#CDA84D);} .ws-st--err{background:var(--chrome-err,#D98B76);}
+.ws-st--ok{background:var(--chrome-ok,#65A983);} .ws-st--warn{background:var(--chrome-warn,#C69B4D);} .ws-st--err{background:var(--chrome-err,#D97A70);}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "statusbar");

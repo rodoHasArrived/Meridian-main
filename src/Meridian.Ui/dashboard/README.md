@@ -2035,8 +2035,12 @@ surface). Light, auto-dark, manual-dark, and forced-light scopes take their valu
 `tokens/` files.
 
 `main.tsx` loads `src/design-system/fonts.css`, synchronized from the package,
-before the workstation stylesheet. IBM Plex Sans and Mono TTFs ship under
-`src/assets/fonts/`; their OFL notices ship through `public/licenses/`. Brand
+before the workstation stylesheet. The package ships IBM Plex Sans and Mono as TTF; the sync serves
+them as WOFF2 under `src/assets/fonts/` (about a third of the size) and rewrites the projected
+`fonts.css` sources to match. `woff2-sources.json` records each source TTF and WOFF2 SHA-256, so check
+mode stays pure Node while `npm run design-system:sync` reconverts changed fonts through
+`scripts/convert-fonts-to-woff2.py` (Python with `fonttools` and `brotli`; set `MERIDIAN_PYTHON` to
+pick an interpreter). Their OFL notices ship through `public/licenses/`. Brand
 marks, lockups, the identity sheet, and module icons use the canonical copied
 assets in `src/assets/` and the typed asset bridge. Vite bundles these local
 assets for hosted and offline-capable deployments.
@@ -2047,6 +2051,14 @@ Asset drift is checked before dev/build and by Vite's build hook. Run
 `npm run design-system:test-assets` for the synchronization regression suite.
 Keep the package, synchronized assets, token bridge, and contract tests in the
 same reviewable change.
+
+Token values are checked from the package directory. `python3 scripts/check_token_parity.py`
+fails when a token name that `src/styles/index.css` and the package both declare resolves to a
+different value in light, auto-dark, manual-dark, or forced-light scope; a deliberate difference
+has to be listed in `tokens/parity-manifest.json` (none is). The Review severity chip is the
+terracotta signal, distinct from Action's ochre, with `--brand-signal-text` as its text ink.
+`python3 scripts/check_contrast.py` checks chip and button contrast, `var()` fallback literals,
+brand art in all three tracks, and the WPF runtime palette.
 
 Auxiliary route and primitive styles consume the same roles: `--font-body` /
 `--font-display` for interface text, `--font-data` for values and identifiers,
