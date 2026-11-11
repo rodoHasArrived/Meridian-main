@@ -137,7 +137,7 @@ internal sealed record PeriodCloseDraftPreview(
 /// close cockpit's approval queue. The dividend lane requires the Security Master query
 /// service; when it is not configured the run fails loudly instead of producing nothing.
 /// </summary>
-public sealed class AutomatedJournalIntakeRunner
+public sealed partial class AutomatedJournalIntakeRunner
 {
     private static readonly AutomatedJournalDraftIntakeResult EmptyIntake = new([], []);
 
@@ -151,6 +151,7 @@ public sealed class AutomatedJournalIntakeRunner
     private readonly IAutomatedJournalCapitalAccountReconciliationResolver? _capitalAccountReconciliationResolver;
     private readonly TimeProvider _timeProvider;
     private readonly IManualJournalEntryWorkbenchService? _manualJournalWorkbench;
+    private readonly Meridian.FinancialOperations.FundAdministration.IDistributionRegister? _distributionRegister;
 
     public AutomatedJournalIntakeRunner(
         AutomatedJournalDraftIntakeService intake,
@@ -162,8 +163,10 @@ public sealed class AutomatedJournalIntakeRunner
         AutomatedJournalEvidencePolicy? evidencePolicy = null,
         IAutomatedJournalCapitalAccountReconciliationResolver? capitalAccountReconciliationResolver = null,
         TimeProvider? timeProvider = null,
-        IManualJournalEntryWorkbenchService? manualJournalWorkbench = null)
+        IManualJournalEntryWorkbenchService? manualJournalWorkbench = null,
+        Meridian.FinancialOperations.FundAdministration.IDistributionRegister? distributionRegister = null)
     {
+        _distributionRegister = distributionRegister;
         _intake = intake ?? throw new ArgumentNullException(nameof(intake));
         _feeProducer = feeProducer ?? throw new ArgumentNullException(nameof(feeProducer));
         _dividendProducer = dividendProducer;

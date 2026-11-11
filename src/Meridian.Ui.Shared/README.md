@@ -1544,6 +1544,20 @@ fundable ceiling is recomputed server-side from the call's posted ledger activit
 debits minus funding credits on the LP's receivable — so funding an unissued call, exceeding the
 open receivable, or omitting retained remittance evidence returns `Blocked` with reasons instead
 of drafts; partial funding drafts the funded portion and leaves the receivable balance open.
+`/api/ledger/journal-automation/capital-call-default-interest-intake` (same declaration) accrues
+default interest on the unfunded part of a posted call as governed drafts (Dr Capital Call Default
+Interest Receivable / Cr Capital Call Default Interest Income). The called amount and receipts are
+folded from posted ledger lines; the due date, rate, day-count convention and grace days are
+operator-attested terms that must cite retained evidence, because the ledger does not hold them.
+Interest is accrued to its cumulative amount and only the part not already posted is drafted; an
+earlier default-interest draft still awaiting approval returns `Blocked`.
+`/api/ledger/journal-automation/distribution-intake` (same declaration) declares a distribution and
+runs `EuropeanDistributionWaterfall` per investor into `Distribution` drafts (Dr Investor Capital
+and Carried Interest Allocation / Cr Fund Distribution Payable). Earlier tiers come from the
+durable distribution register for posted distributions; an earlier distribution that is not yet
+posted returns `Blocked`, a rejected one is ignored, and redeclaring an id with different terms is
+refused. `/api/ledger/fixed-assets` lists and registers the fixed assets a fund book depreciates;
+the `fixed-asset-depreciation` recurring calculation reads that register.
 Default-interest accrual for late LPs is not wired yet: the kernel exists
 (`DefaultInterestCalculator`, `BuildDefaultInterestDraft`), but its rate/convention/grace terms
 and the installment due date have no durable server-side policy source to corroborate against.

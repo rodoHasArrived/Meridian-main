@@ -106,7 +106,6 @@ public static class CapitalCallDraftFactory
     /// interest receivable, credit fund interest income. The credit leg is income, not equity,
     /// so it never distorts the capital-account equity roll-forward.
     /// </summary>
-    [PostingCalculationNotYetConnected("Needs each commitment's default rate, grace days and due dates. No store or intake supplies them, and DefaultInterestCalculator has no production caller either.")]
     public static AutomatedJournalDraft BuildDefaultInterestDraft(
         CapitalCallDefault capitalCallDefault,
         DefaultInterestAccrual accrual,

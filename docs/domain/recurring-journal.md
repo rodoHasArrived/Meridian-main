@@ -63,6 +63,7 @@ flow. Its memo states the inputs the amount came from.
 | `management-fee-accrual` | Ledger net assets at the close of the day before the accrual window | `annualRate`, `yearBasisDays` |
 | `performance-fee-accrual` | Ledger net assets and the performance fee already payable at the effective date | `performanceFeeRate`, `highWaterMark`, `hurdleAmount`, `crystallize` (0 or 1) |
 | `fund-expense-accrual` | Nothing | `annualAmount`, `yearBasisDays`; input `expenseId` |
+| `fixed-asset-depreciation` | The fixed-asset register for the fund book | none |
 | `fixed-income-accrual` | Security Master cash-flow projection and the position's open face-value lots | inputs `securityId`, `ticker`, optional `financialAccountId` |
 | `fx-revaluation` | Foreign-currency journal legs, book-currency balances and the dated FX rate for the effective date | `maxRateAgeDays` |
 
@@ -77,6 +78,9 @@ Rules that keep an amount from being drafted twice:
   fallen). After a fee is crystallized and settled, register a schedule version with the new mark.
 - **FX revaluation is incremental.** An account's carrying value is its book-currency balance,
   which includes earlier posted revaluations, so each occurrence drafts only the change.
+- **A depreciation period belongs to one window.** Each registered asset's scheduled monthly
+  charge is drafted by the occurrence whose window contains its period end, and stops at
+  retirement. Assets are registered through `/api/ledger/fixed-assets`.
 - **A coupon accrues across windows, once.** The bond calculation drafts the day-count share of
   each coupon period that falls inside the window and the premium or discount amortized over the
   same days. Each share is a difference of rounded cumulative amounts, so the windows covering a
@@ -106,11 +110,26 @@ schedule terms an operator maintains; there is no fee-terms store.
 
 `PostingCalculationConnectionTests` fails when a method that builds journal drafts, lines or
 ledger postings has no production caller and is not marked
-`[PostingCalculationNotYetConnected("reason")]`. Each marker states what the calculation is
-waiting for: a fixed-asset register (depreciation), commitment default terms (capital-call
-default interest), a distribution workflow (waterfall), governed producers (the corporate-action
-ledger bridge), and retirement or repointing (the short-lot tuple reversal and the whole-coupon
-ledger-postings builder).
+`[PostingCalculationNotYetConnected("reason")]`. Three markers remain, each stating what it is
+waiting for: the corporate-action ledger bridge, the short-lot tuple reversal, and the
+whole-coupon ledger-postings builder.
+
+## Event-driven calculations
+
+Two posting calculations are events, not recurring accruals, and run through journal-automation
+intakes that admit approval drafts the same way:
+
+- **Capital-call default interest**
+  (`/api/ledger/journal-automation/capital-call-default-interest-intake`). The called amount and
+  receipts come from posted ledger lines. The due date, rate, day-count convention and grace days
+  are operator-attested with retained evidence. Interest is accrued to its cumulative amount
+  through the requested date and only the part not already posted is drafted; an earlier
+  default-interest draft still awaiting approval blocks a further accrual.
+- **Distribution waterfall** (`/api/ledger/journal-automation/distribution-intake`). Each
+  investor's distribution is split by the European waterfall. The tiers already paid come from
+  the distribution register for posted distributions, so return of capital, preferred return and
+  GP catch-up are each paid once. An earlier distribution that is not yet posted blocks the next;
+  a rejected one is ignored.
 
 ## Definition correction and recovery
 

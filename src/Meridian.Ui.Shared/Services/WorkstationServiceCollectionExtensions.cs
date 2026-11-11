@@ -1100,7 +1100,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<AutomatedJournalEvidencePolicy>(),
                 sp.GetService<IAutomatedJournalCapitalAccountReconciliationResolver>(),
                 sp.GetRequiredService<TimeProvider>(),
-                sp.GetService<IManualJournalEntryWorkbenchService>());
+                sp.GetService<IManualJournalEntryWorkbenchService>(),
+                sp.GetService<Meridian.FinancialOperations.FundAdministration.IDistributionRegister>());
         });
         // Durable ledger and reporting-evidence services are present only when persistence-backed
         // storage is configured. Resolve them optionally so lightweight hosts still compose; when

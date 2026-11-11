@@ -17,10 +17,69 @@ public sealed record ConfigureRecurringJournalRequest(RecurringJournalScheduleSn
 public sealed record RestoreRecurringJournalDefinitionsRequest(string ScheduleId, int ScheduleVersion,
     int TemplateVersion, string Reason);
 
+/// <summary>Registers or replaces one fixed asset on a fund book's depreciation register.</summary>
+public sealed record RegisterFixedAssetRequest(string FundProfileId, Guid LedgerBookId, FixedAssetRecord Asset,
+    string EvidenceUri, DateOnly? RetiredOn = null);
+
 public static partial class LedgerEndpoints
 {
+    private static void MapFixedAssetRegisterEndpoints(WebApplication app, JsonSerializerOptions jsonOptions)
+    {
+        app.MapGet(UiApiRoutes.LedgerFixedAssetRegister, async (HttpContext context) =>
+        {
+            if (!HasLedgerReadPermission(context))
+                return EndpointHelpers.Forbidden();
+            var register = context.RequestServices.GetService<IFixedAssetRegister>();
+            if (register is null)
+                return ServiceUnavailable();
+            var fund = context.Request.Query["fundProfileId"].ToString();
+            if (string.IsNullOrWhiteSpace(fund) || !Guid.TryParse(context.Request.Query["ledgerBookId"], out var book) || book == Guid.Empty)
+                return Results.BadRequest(new { error = "The fixed-asset register requires an exact fund and ledger book." });
+            var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            try
+            {
+                return Results.Json(await register.ListAsync(tenant.TenantId!, tenant.CompanyId!, fund, book,
+                    context.RequestAborted).ConfigureAwait(false), jsonOptions);
+            }
+            catch (Exception ex) when (ex is IOException or JsonException or InvalidOperationException)
+            { return Results.Problem("The fixed-asset register is unavailable.", statusCode: StatusCodes.Status503ServiceUnavailable); }
+        }).WithName("ListFixedAssetRegister")
+            .RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports)
+            .RequireWorkstationTenantCompanyScope()
+            .Produces<IReadOnlyList<FixedAssetRegisterEntry>>(StatusCodes.Status200OK);
+
+        app.MapPost(UiApiRoutes.LedgerFixedAssetRegister, async (HttpContext context) =>
+        {
+            if (!TryResolveActor(context, out var actor))
+                return EndpointHelpers.Forbidden();
+            var register = context.RequestServices.GetService<IFixedAssetRegister>();
+            if (register is null)
+                return ServiceUnavailable();
+            var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            try
+            {
+                var request = await context.Request.ReadFromJsonAsync<RegisterFixedAssetRequest>(jsonOptions, context.RequestAborted).ConfigureAwait(false);
+                if (request?.Asset is null || string.IsNullOrWhiteSpace(request.FundProfileId) || string.IsNullOrWhiteSpace(request.EvidenceUri))
+                    return Results.BadRequest(new { error = "Fund, ledger book, asset and retained evidence are required." });
+                var now = (context.RequestServices.GetService<TimeProvider>() ?? TimeProvider.System).GetUtcNow();
+                var saved = await register.UpsertAsync(new FixedAssetRegisterEntry(request.Asset, tenant.TenantId!, tenant.CompanyId!,
+                    request.FundProfileId, request.LedgerBookId, actor, now, request.EvidenceUri, request.RetiredOn),
+                    context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(saved, jsonOptions);
+            }
+            catch (JsonException) { return Results.BadRequest(new { error = "The fixed-asset request contains invalid JSON or enum values." }); }
+            catch (ArgumentException ex) { return Results.BadRequest(new { error = ex.Message }); }
+            catch (Exception ex) when (ex is IOException or InvalidOperationException)
+            { return ApiProblemDetails.Conflict(context, ex.Message); }
+        }).WithName("RegisterFixedAsset").Accepts<RegisterFixedAssetRequest>("application/json")
+            .RequirePermission(UserPermission.ManageLedgerReports)
+            .RequireAuthenticatedSession().RequireWorkstationTenantCompanyScope().RequireFundScopedWriteTenant()
+            .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+    }
+
     private static void MapRecurringJournalEndpoints(WebApplication app, JsonSerializerOptions jsonOptions)
     {
+        MapFixedAssetRegisterEndpoints(app, jsonOptions);
         app.MapGet(UiApiRoutes.LedgerJournalAutomationRecurringOccurrences, async (HttpContext context) =>
         {
             if (!HasLedgerReadPermission(context))

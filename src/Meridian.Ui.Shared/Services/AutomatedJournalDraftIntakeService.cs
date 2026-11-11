@@ -511,6 +511,9 @@ public sealed class AutomatedJournalDraftIntakeService
             // counts them in the commitment roll-forward; funding stays General (a cash receipt),
             // otherwise it would double-count as a second call.
             AutomatedJournalEventKind.CapitalCallIssued => ManualJournalEntryTypeDto.CapitalCall,
+            // A declared distribution posts as the sanctioned Distribution kind so the
+            // private-capital projection reports it as one.
+            AutomatedJournalEventKind.DistributionDeclared => ManualJournalEntryTypeDto.Distribution,
             _ => ManualJournalEntryTypeDto.General
         };
 

@@ -225,7 +225,6 @@ public static class FundEconomicsJournalFactory
     /// interest allocation, credit the fund distribution payable. Balances by construction because
     /// the payable equals the waterfall's total distributed amount.
     /// </summary>
-    [PostingCalculationNotYetConnected("A distribution is a declared event, not a recurring accrual. It needs a distribution workflow that retains the prior waterfall tiers; EuropeanDistributionWaterfall has no production caller either.")]
     public static AutomatedJournalDraft BuildDistributionWaterfallDraft(
         string fundId,
         string investorId,
@@ -258,7 +257,7 @@ public static class FundEconomicsJournalFactory
 
         return Build(
             normalizedFundId,
-            AutomatedJournalEventKind.CorporateActionExpense,
+            AutomatedJournalEventKind.DistributionDeclared,
             "Distribution",
             FormattableString.Invariant($"fund-event:{normalizedFundId}:distribution:{normalizedDistributionId}"),
             normalizedPeriodId,
