@@ -116,7 +116,12 @@ public sealed partial class AssetObligationProjectionService
         };
         var declaresConventions = SecurityVersionedTerms.ReadDeclaredScheduleConventions(
             security.AssetClass, security.AssetSpecificTerms).Status != SecurityDeclaredConventionsStatus.None;
-        var blockedReason = calculatedProjection?.BlockedReason
+        var negativeInterestBlocker = calculatedProjection?.Blocker
+            ?? (IsFixedIncome(security.AssetClass)
+                && SecurityRateFieldUnits.Find(security.AssetClass, SecurityRateFieldUnits.CouponFieldKey(security.AssetClass))?.AllowsNegative == true
+                && StructuredCashFlowTermsResolver.Resolve(security).CouponRate is < 0m
+                ? SecurityInterestSupport.NegativeInterestBlocker : null);
+        var blockedReason = negativeInterestBlocker?.Reason ?? calculatedProjection?.BlockedReason
             ?? (declaresConventions && calculatedProjection is null
                 ? "Declared bond economics require the shared cash-flow calculation; legacy fallback is disabled."
                 : null);
@@ -143,7 +148,8 @@ public sealed partial class AssetObligationProjectionService
                 termsHash = terms[0].TermsHash,
                 termsContentSha256 = AssetOperationsProjectionBuilder.BondTermsContentHash(terms[0].ExtensionPayload!.Value),
                 inputManifest = calculatedProjection?.InputManifest
-            }));
+            }))
+        { Blocker = negativeInterestBlocker };
         IReadOnlyList<AssetProjectedCashFlowDto> flows = blockedReason is not null ? []
             : calculatedProjection is not null
                 ? AssetOperationsProjectionBuilder.MapCanonicalBondCashFlows(security, calculatedProjection, projectionRunId)
@@ -792,7 +798,7 @@ public sealed partial class AssetObligationProjectionService
     /// percentage-point convention for them untouched (a 0.5 coupon is half a percent); declared bonds
     /// read the shared Security Master projection instead.
     /// </summary>
-    private static decimal? NormalizeCouponRatePercent(string? assetClass, decimal? couponRate)
+    private static decimal? NormalizeCouponRatePercent(string? assetClass, decimal? couponRate, RateUnit? recordUnit = null)
     {
         if (couponRate is not { } rate)
         {
@@ -800,12 +806,12 @@ public sealed partial class AssetObligationProjectionService
         }
 
         var field = SecurityRateFieldUnits.Find(assetClass, SecurityRateFieldUnits.CouponFieldKey(assetClass));
-        if (field?.DefaultUnit is null)
+        if (field?.DefaultUnit is null && recordUnit is null)
         {
             return rate;
         }
 
-        return RateUnitNormalizer.Normalize(field, rate).TryGetFraction(out var fraction)
+        return RateUnitNormalizer.Normalize(field, rate, recordUnit).TryGetFraction(out var fraction)
             ? fraction * 100m
             : null;
     }

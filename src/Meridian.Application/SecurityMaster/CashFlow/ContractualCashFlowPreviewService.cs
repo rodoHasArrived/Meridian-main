@@ -158,30 +158,30 @@ public sealed class ContractualCashFlowPreviewService(
                 var block = bondCoupon ? conventions : decodesLegConventions && i < rawLegs.Length
                     ? SecurityVersionedTerms.ReadScheduleConventions(rawLegs[i], SecurityVersionedTerms.ScheduleConventionsKey) : ScheduleConventionTerms.Empty;
                 streams.Add(new(leg.LegId, leg.Notional ?? principal ?? throw new ContractInputUnavailable("Every leg needs a retained notional."), Months(leg.PaymentFrequency ?? terms.PaymentFrequency),
-                    DayCount(leg.DayCountConvention ?? terms.DayCountConvention), Rate(leg.FixedRate, block, security.AssetClass, bondCoupon ? "couponRate" : "legs.fixedRate"), leg.Direction ?? CashFlowLegDirection.Receive,
+                    DayCount(leg.DayCountConvention ?? terms.DayCountConvention), Rate(leg.FixedRate, block, security.AssetClass, bondCoupon ? "couponRate" : "legs.fixedRate", terms.RecordRateUnit), leg.Direction ?? CashFlowLegDirection.Receive,
                     leg.ExchangesPrincipal, block, PrincipalSchedule: bondCoupon ? terms.PrincipalSchedule : null,
                     NotionalSchedule: leg.NotionalSchedule,
                     IndexName: leg.RateKind == CashFlowLegRateKind.Floating ? leg.IndexName : null,
                     SpreadBps: leg.SpreadBps ?? 0, Resets: leg.ResetSchedule?.Select(r => r with
                     {
-                        FixingRate = Rate(r.FixingRate, block, security.AssetClass, bondCoupon ? "resetSchedule.fixingRate" : "legs.resetSchedule.fixingRate")
+                        FixingRate = Rate(r.FixingRate, block, security.AssetClass, bondCoupon ? "resetSchedule.fixingRate" : "legs.resetSchedule.fixingRate", terms.RecordRateUnit)
                     }).ToArray(),
-                    Floor: bondCoupon ? Rate(terms.FloorRate, conventions, security.AssetClass, "floorRate") : null,
-                    Cap: bondCoupon ? Rate(terms.CapRate, conventions, security.AssetClass, "capRate") : null));
+                    Floor: bondCoupon ? Rate(terms.FloorRate, conventions, security.AssetClass, "floorRate", terms.RecordRateUnit) : null,
+                    Cap: bondCoupon ? Rate(terms.CapRate, conventions, security.AssetClass, "capRate", terms.RecordRateUnit) : null));
             }
         }
         else
         {
-            var rate = Rate(terms.CouponRate, conventions, security.AssetClass, SecurityRateFieldUnits.CouponFieldKey(security.AssetClass));
+            var rate = Rate(terms.CouponRate, conventions, security.AssetClass, SecurityRateFieldUnits.CouponFieldKey(security.AssetClass), terms.RecordRateUnit);
             if (terms.InflationIndex is not null)
                 throw new ContractInputUnavailable("Inflation-linked cash flows require a supported provider schedule.");
             if (terms.CurrentFactor is not null || terms.HasFactorSchedule)
                 throw new ContractInputUnavailable("Observed factor history requires a reconciled contractual balance history; a current factor cannot reconstruct prior accrual.");
             streams.Add(new("main", principal ?? throw new ContractInputUnavailable("Retained principal is required; analytical per-100 amounts are not substituted."), Months(terms.PaymentFrequency), DayCount(terms.DayCountConvention), rate,
                 Conventions: conventions, PrincipalSchedule: terms.PrincipalSchedule,
-                RateSteps: terms.StepCouponSchedule?.Select(r => r with { Rate = Rate(r.Rate, conventions, security.AssetClass, "stepSchedule.rate")!.Value }).ToArray(),
-                Floor: Rate(terms.FloorRate, conventions, security.AssetClass, "floorRate"),
-                Cap: Rate(terms.CapRate, conventions, security.AssetClass, "capRate"),
+                RateSteps: terms.StepCouponSchedule?.Select(r => r with { Rate = Rate(r.Rate, conventions, security.AssetClass, "stepSchedule.rate", terms.RecordRateUnit)!.Value }).ToArray(),
+                Floor: Rate(terms.FloorRate, conventions, security.AssetClass, "floorRate", terms.RecordRateUnit),
+                Cap: Rate(terms.CapRate, conventions, security.AssetClass, "capRate", terms.RecordRateUnit),
                 Amortization: terms.HasPrincipalSchedule ? CashFlowAmortization.ExplicitPrincipal : CashFlowAmortization.Bullet));
         }
         var exercises = new List<ContractualExerciseEntry>();
@@ -284,11 +284,11 @@ public sealed class ContractualCashFlowPreviewService(
     };
     // Every rate reads through the shared normalizer: the block's couponRateUnit, then the field's
     // declared default, and otherwise the preview is blocked. Magnitude never selects a unit.
-    private static decimal? Rate(decimal? rate, ScheduleConventionTerms block, string assetClass, string fieldKey)
+    private static decimal? Rate(decimal? rate, ScheduleConventionTerms block, string assetClass, string fieldKey, Meridian.Contracts.SecurityMaster.RateUnit? recordUnit = null)
     {
         if (rate is not { } value)
             return null;
-        var resolution = RateUnitNormalizer.Normalize(assetClass, fieldKey, value, RateUnitNormalizer.ParseCouponRateUnit(block.CouponRateUnit));
+        var resolution = RateUnitNormalizer.Normalize(assetClass, fieldKey, value, RateUnitNormalizer.ParseCouponRateUnit(block.CouponRateUnit) ?? recordUnit);
         return resolution.TryGetFraction(out var fraction)
             ? fraction
             : throw new RateUnitUnavailable(RateUnitNormalizer.DiagnosticCode(resolution), RateUnitNormalizer.DescribeRefusal(resolution, assetClass, fieldKey));

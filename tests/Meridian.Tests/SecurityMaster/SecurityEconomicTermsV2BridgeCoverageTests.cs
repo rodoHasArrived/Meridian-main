@@ -107,6 +107,15 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
         },
         "currencyPair": { "baseCurrency": "EUR", "quoteCurrency": "USD", "settlementCurrency": "USD", "forwardRate": 1.0875 },
         "notional": { "notional": 10000000, "denomination": 1000, "committedAmount": 5000000, "fundedAmount": 3250000, "unfundedAmount": 1750000 },
+        "bondCoupon": null,
+        "principalSchedule": null,
+        "swapLegs": null,
+        "loanCovenants": null,
+        "creditProtection": null,
+        "structuredPayoff": null,
+        "privateAssetValuation": null,
+        "listingDetail": null,
+        "rateConvention": { "rateUnit": "Percent" },
         "profileEnvelope": {
             "customProfileId": "co-invest-spv", "profileVersion": 2,
             "terms": { "schemaVersion": 3, "customProfileId": "co-invest-spv", "profileVersion": 2, "profileFields": { "vehicle": "SPV I" } }
@@ -174,17 +183,42 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
             [],
             []);
 
-        var emitted = PropertyNames(SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection).EconomicTerms)
+        // rateConvention is emitted only for an actual declaration, keeping pre-field bytes stable.
+        projection = projection with
+        {
+            AssetClass = "CertificateOfDeposit",
+            AssetSpecificTerms = Json("""{"schemaVersion":1,"termsFormat":"flat","assetClassTermsVersion":5,"issuerName":"Synthetic Bank","maturity":"2029-01-01","rateUnit":"Percent"}""")
+        };
+        // Additive exact homes are emitted only for an actual fact. Sample every class rather
+        // than forcing absent modules onto old economic images merely to satisfy this inventory.
+        var representativeDocuments = new List<JsonElement>
+        {
+            SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection).EconomicTerms
+        };
+        foreach (var (assetClass, payload) in SecurityAssetTermsSchemaRoundTripTests.FullPayloads)
+        {
+            var flat = SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain(assetClass, payload);
+            representativeDocuments.Add(SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+                SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(assetClass, flat)).EconomicTerms);
+        }
+        representativeDocuments.Add(SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("Bond",
+                SecurityDeclaredScheduleModuleContractionTests.DeclaringFlat("Bond"))).EconomicTerms);
+        var emitted = representativeDocuments.SelectMany(PropertyNames)
             .Where(name => !SecurityTermsEnvelope.IsReservedKey(name))
+            .Distinct(StringComparer.Ordinal)
             .ToArray();
 
         emitted.Should().BeEquivalentTo(
             SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.EconomicTermsModules,
             "every module the economic serializer emits must be classified as bridged or dropped by the v2 → v1 bridge");
 
-        PropertyNames(FullEconomicTerms)
-            .Where(name => name != "schemaVersion")
-            .Should().BeEquivalentTo(emitted, "the coverage fixture must carry every emitted module");
+        var historicalModules = PropertyNames(FullEconomicTerms).Where(name => name != "schemaVersion").ToArray();
+        historicalModules.Should().OnlyContain(name => emitted.Contains(name),
+            "every module in the unchanged historical source remains part of the serializer contract");
+        emitted.Except(historicalModules, StringComparer.Ordinal).Should().OnlyContain(
+            name => SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.ModulesAddedAfterIdentityGate.Contains(name),
+            "only explicitly inventoried additive homes may extend the historical module set");
 
         SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.BridgedModules
             .Intersect(SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.DroppedModules, StringComparer.Ordinal)
