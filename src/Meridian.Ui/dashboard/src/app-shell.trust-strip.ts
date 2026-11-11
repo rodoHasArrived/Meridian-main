@@ -30,6 +30,13 @@ export interface AppShellTrustStripItem {
 export interface AppShellTrustStripEnvironment {
   label: string;
   variant: "live" | "paper" | "research" | "default";
+  /**
+   * The data qualifier that rides beside the environment: SEEDED, SIMULATED, SAMPLE or UNKNOWN
+   * whenever the loaded data is not confirmed real, and null for real data. It replaces the
+   * separate sample-data chip, so the badge is the one place that says what the operator is
+   * looking at.
+   */
+  dataLabel: string | null;
 }
 
 export interface AppShellTrustStripState {
@@ -38,7 +45,18 @@ export interface AppShellTrustStripState {
   items: AppShellTrustStripItem[];
 }
 
-function buildTrustStripEnvironment(session: SessionInfo | null, loading: boolean): AppShellTrustStripEnvironment {
+function buildTrustStripEnvironment(
+  session: SessionInfo | null,
+  loading: boolean,
+  dataLabel: string | null
+): AppShellTrustStripEnvironment {
+  return { ...resolveEnvironmentBadge(session, loading), dataLabel };
+}
+
+function resolveEnvironmentBadge(
+  session: SessionInfo | null,
+  loading: boolean
+): Pick<AppShellTrustStripEnvironment, "label" | "variant"> {
   switch (session?.environment) {
     case "live":
       return { label: "LIVE", variant: "live" };
@@ -49,6 +67,27 @@ function buildTrustStripEnvironment(session: SessionInfo | null, loading: boolea
     default:
       return loading ? { label: "LOADING", variant: "default" } : { label: "DEMO", variant: "research" };
   }
+}
+
+/**
+ * The one rule for the data-source tone, read by the masthead, every page status row and Today.
+ *
+ * Declared demo data on a PAPER or DEMO session is the expected state: the environment badge
+ * names it permanently, so it is not also raised as a warning. It becomes an issue only when the
+ * operator could be misled: provenance that was never confirmed, or non-real data inside a LIVE
+ * session.
+ */
+export function resolveDataSourceTone(
+  provenance: DataProvenanceKind,
+  environment: SessionInfo["environment"] | null | undefined
+): AppShellTrustStripTone {
+  if (provenance === "real") {
+    return "ready";
+  }
+  if (provenance === "unknown") {
+    return "review";
+  }
+  return environment === "live" ? "blocked" : "ready";
 }
 
 export function buildTrustStripState({
@@ -92,13 +131,9 @@ export function buildTrustStripState({
       : session?.environment === "paper"
         ? "Paper"
         : "Demo";
-  const environmentTone: AppShellTrustStripTone = loading
-    ? "pending"
-    : environmentValue === "Live"
-      ? "review"
-      : environmentValue === "Paper"
-        ? "ready"
-        : "review";
+  // The environment is identity, not a warning: LIVE is announced by the alarm-red badge and
+  // never counted as an issue on its own.
+  const environmentTone: AppShellTrustStripTone = loading ? "pending" : "ready";
   const environmentDetail = loading
     ? "Session environment is loading."
     : session?.environment === "research"
@@ -108,11 +143,11 @@ export function buildTrustStripState({
         : "Session environment is not loaded; Demo is the safe default.";
 
   const dataSourceValue = resolvedProvenance.toUpperCase();
-  const dataSourceTone: AppShellTrustStripTone = provenanceBadge.visible
-    ? "review"
-    : "ready";
+  const dataSourceTone = resolveDataSourceTone(resolvedProvenance, session?.environment);
   const dataSourceDetail = provenanceBadge.visible
-    ? `${provenanceBadge.headline}. ${provenanceBadge.detail}`
+    ? dataSourceTone === "blocked"
+      ? `${provenanceBadge.headline} in a LIVE session. ${provenanceBadge.detail}`
+      : `${provenanceBadge.headline}. ${provenanceBadge.detail}`
     : "Server mode evidence identifies the loaded workstation data as real.";
   const dataSourceHref = provenanceBadge.visible
     ? WORKSTATION_ROUTE_CATALOG.dataProviders
@@ -126,7 +161,11 @@ export function buildTrustStripState({
     // Follows the session itself, not the workspace bootstrap: the session card this badge
     // replaced showed PAPER/LIVE as soon as the session resolved, so a known environment is
     // never hidden behind LOADING while workspace data is still arriving.
-    environment: buildTrustStripEnvironment(session, loading),
+    environment: buildTrustStripEnvironment(
+      session,
+      loading,
+      provenanceBadge.visible ? provenanceBadge.label : null
+    ),
     items: [
       {
         id: "build",
