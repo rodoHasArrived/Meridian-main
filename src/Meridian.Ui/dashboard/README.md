@@ -2063,7 +2063,8 @@ same reviewable change.
 Token values are checked from the package directory. `python3 scripts/check_token_parity.py`
 fails when a token name that `src/styles/index.css` and the package both declare resolves to a
 different value in light, auto-dark, manual-dark, or forced-light scope; a deliberate difference
-has to be listed in `tokens/parity-manifest.json` (currently only the Review severity hue).
+has to be listed in `tokens/parity-manifest.json` (none is). The Review severity chip is the
+terracotta signal, distinct from Action's ochre, with `--brand-signal-text` as its text ink.
 `python3 scripts/check_contrast.py` checks chip and button contrast, `var()` fallback literals,
 brand art in all three tracks, and the WPF runtime palette.
 

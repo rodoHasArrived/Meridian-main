@@ -379,7 +379,7 @@ def appearance_scopes(light: dict[str, str], dark_css: str) -> dict[str, dict[st
     """Resolve the current source's default, OS-dark, manual-dark and forced-light scopes."""
     modes = {"light": light}
     patterns = {
-        "auto dark": r"@media\s*\(prefers-color-scheme:\s*dark\)\s*\{\s*:root\s*\{([^{}]+)\}",
+        "auto dark": r'@media\s*\(prefers-color-scheme:\s*dark\)\s*\{\s*:root(?::not\(\[data-theme="light"\]\))?\s*\{([^{}]+)\}',
         "manual dark": r':root\[data-theme="dark"\]\s*\{([^{}]+)\}',
         "forced light": r':root\[data-theme="light"\]\s*\{([^{}]+)\}',
     }
@@ -425,14 +425,19 @@ def check_brands(root: Path) -> list[str]:
     base = {**parse_tokens((root / "tokens/colors.css").read_text(encoding="utf-8")),
             **parse_tokens(BRAND_BLOCK.sub("", text))}
     dark_css = (root / "tokens/colors-dark.css").read_text(encoding="utf-8")
+    auto_uses_plain_root = bool(re.search(
+        r"@media\s*\(prefers-color-scheme:\s*dark\)\s*\{\s*:root\s*\{",
+        strip_comments(dark_css)))
     merged: dict[str, dict[str, str]] = {}
     for brand, body in BRAND_BLOCK.findall(text):
         merged.setdefault(brand, {}).update(parse_tokens(body))
     failures = []
     for brand, declared in merged.items():
         for mode, tokens in appearance_scopes({**base, **declared}, dark_css).items():
-            if mode == "auto dark":
-                # html[data-brand] is more specific than the media block's :root.
+            if mode == "auto dark" and auto_uses_plain_root:
+                # html[data-brand] is more specific than a plain media :root;
+                # :root:not([data-theme="light"]) has two pseudo-class/attribute
+                # selectors and wins against that brand selector instead.
                 # Keep direct brand outputs here so a white-label ink override cannot
                 # be incorrectly hidden by a lower-specificity dark declaration.
                 tokens = {**tokens, **declared}
@@ -507,7 +512,7 @@ def check_workstation(root: Path) -> list[str]:
     light = parse_tokens(text)
     blocks = {"light": light}
     scopes = {
-        "auto dark": r"@media\s*\(prefers-color-scheme:\s*dark\)\s*\{\s*:root\s*\{([^{}]+)\}",
+        "auto dark": r'@media\s*\(prefers-color-scheme:\s*dark\)\s*\{\s*:root(?::not\(\[data-theme="light"\]\))?\s*\{([^{}]+)\}',
         "manual dark": r':root\[data-theme="dark"\]\s*\{([^{}]+)\}',
         "forced light": r':root\[data-theme="light"\]\s*\{([^{}]+)\}',
     }

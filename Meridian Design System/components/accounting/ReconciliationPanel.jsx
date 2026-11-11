@@ -249,7 +249,6 @@ export function ReconciliationPanel({
               <Input
                 aria-label="Filter reconciliation items by memo or reference"
                 placeholder="Filter memo, ref…"
-                aria-label="Filter reconciliation items"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
               />

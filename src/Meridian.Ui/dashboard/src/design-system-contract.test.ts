@@ -356,18 +356,21 @@ describe("dashboard design-system contract", () => {
   });
 
   it("matches the 4.3 source roles across both CSS representations and both themes", () => {
-    const withoutComments = (css: string) => css.replace(/\/\*[\s\S]*?\*\//g, "");
-    const baseScope = (css: string) => withoutComments(css).match(/:root\s*\{([^}]+)\}/)?.[1] ?? "";
+    const declarationBlock = (css: string, selector: string) => {
+      const declarations = scopedDeclarations(css, selector);
+      expect(declarations.size, `${selector} must declare source roles`).toBeGreaterThan(0);
+      return [...declarations].map(([name, value]) => `${name}: ${value};`).join("\n");
+    };
     const declared = (css: string, token: string) => {
       const value = css.match(new RegExp(`${token}:\\s*([^;]+);`))?.[1].trim();
       if (!value) throw new Error(`Missing source contract token ${token}`);
       return value.toUpperCase();
     };
     const styles = readDashboardStyles();
-    const applicationLight = baseScope(styles);
-    const applicationDark = withoutComments(styles).match(/:root\[data-theme="dark"\]\s*\{([^}]+)\}/)?.[1] ?? "";
-    const packageLight = baseScope(readDesignSystemPackageFile("tokens/colors.css"));
-    const packageDark = baseScope(readDesignSystemPackageFile("tokens/colors-dark.css"));
+    const applicationLight = declarationBlock(styles, ":root");
+    const applicationDark = declarationBlock(styles, ':root[data-theme="dark"]');
+    const packageLight = declarationBlock(readDesignSystemPackageFile("tokens/colors.css"), ":root");
+    const packageDark = declarationBlock(readDesignSystemPackageFile("tokens/colors-dark.css"), ':root[data-theme="dark"]');
     const pairs = [
       ["--ws-page-bg", "--bg"], ["--ws-surface", "--bg-light"],
       ["--ws-surface-subtle", "--bg-medium"], ["--ws-surface-raised", "--card-surface-raised"],
@@ -412,13 +415,15 @@ describe("dashboard design-system contract", () => {
       "brand-field", "brand-axis", "ink-inverse", "navy", "pending", "neutral", "missing"];
     for (const [selector, automaticDark, source, sourceSelector] of [
       [":root", false, base, ":root"],
-      [":root", true, themes, ":root"],
+      [":root", true, themes, ':root:not([data-theme="light"])'],
       [':root[data-theme="dark"]', false, themes, ':root[data-theme="dark"]'],
       [':root[data-theme="light"]', false, themes, ':root[data-theme="light"]'],
       ['[data-appearance="light"]', false, base, ":root"]
     ] as const) {
       const actual = scopedDeclarations(styles, selector, automaticDark);
       const expected = scopedDeclarations(source, sourceSelector, automaticDark);
+      expect(actual.size, `${selector} automaticDark=${automaticDark} must declare roles`).toBeGreaterThan(0);
+      expect(expected.size, `${sourceSelector} automaticDark=${automaticDark} must declare source roles`).toBeGreaterThan(0);
       for (const role of roles) {
         const token = `--${role}`;
         expect(actual.get(token), `${selector} automaticDark=${automaticDark}: ${token}`)
@@ -599,7 +604,12 @@ describe("dashboard design-system contract", () => {
     // hue, and measured against that wash the raw hue gave 4.32-4.41:1 for ready/review —
     // under AA. The -dim variants measure 5.9-8.1:1. check_contrast.py now pins every chip.
     expect(styles).toContain("--severity-ready-fg: var(--green-dim)");
-    expect(styles).toContain("--severity-review-fg: var(--orange-dim)");
+    // Review uses the package's canonical signal ink in every appearance scope.
+    // Preserve the existing text role for consumers with its separate 72% mix.
+    expect(styles.match(/--brand-signal-ink: color-mix\(in srgb, var\(--ws-accent\) 75%, var\(--dim-mix\)\);/g)).toHaveLength(5);
+    expect(styles.match(/--brand-signal-text: color-mix\(in srgb, var\(--ws-accent\) 72%, var\(--dim-mix\)\);/g)).toHaveLength(5);
+    expect(styles).toContain("--severity-review-fg: var(--brand-signal-ink)");
+    expect(styles).toContain("--severity-review-bd: color-mix(in srgb, var(--ws-accent) 36%, transparent)");
     expect(styles).toContain("--severity-action-fg: var(--orange-dim)");
     expect(styles).toContain("--severity-blocked-fg: var(--red-dim)");
     expect(styles).toContain(

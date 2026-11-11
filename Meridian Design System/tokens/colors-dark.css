@@ -18,15 +18,15 @@
 
 /* ── 1. Auto (OS) dark ── */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     color-scheme: dark;
 
     /* Tier-1 theme inputs the app also reads directly. theme.css authors them as light
        literals and only the component tokens flip, so in dark mode --theme-bg-canvas and the
        other fourteen still resolved to the LIGHT value: app CSS pasted against the name contract
        painted a paper panel on a graphite screen. Re-point them at the flipped component
-       token in both dark blocks. The forced-light block needs no restatement: it sets every
-       one of these component tokens to a literal, so the reference resolves light there. */
+       token in both dark blocks. Explicit light opts out of this automatic scope, so the light theme inputs
+       remain independent of their component outputs and preserve white-label identities. */
     --theme-bg-canvas:      var(--bg);
     --theme-bg-light:       var(--bg-light);
     --theme-bg-hover:       var(--bg-hover);

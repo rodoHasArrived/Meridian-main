@@ -11,6 +11,7 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
+@property --ochain-row{syntax:"*";inherits:true;}
 .mds-ochain{font-family:var(--font-data);font-size:12px;border:1px solid var(--border,#D2CDC3);
   background:var(--bg-light,#F8F7F3);display:inline-block;min-width:100%;outline:none;}
 .mds-ochain__grid{display:grid;}

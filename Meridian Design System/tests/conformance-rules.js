@@ -376,28 +376,50 @@
         }
         return used ? out : `${parent} ${child}`;
       };
-      const references = (style, matches, owner) => {
+      const references = (style, matches, owner, optional) => {
         if (!style || !matches.length) return;
-        const names = new Set();
+        const uses = [];
         // CSSOM can expose an unresolved shorthand as empty individual
         // longhands. cssText retains its var() calls; quoted labels are text.
         const value = style.cssText.replace(/\/\*[\s\S]*?\*\/|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'/g, " ");
-        for (const m of value.matchAll(/var\(\s*(--[A-Za-z0-9-]+)/g)) names.add(m[1]);
-        for (const { el, pseudo } of matches) for (const name of names) {
-          if (!styleFor(el, pseudo).getPropertyValue(name).trim() && !missing.has(name)) missing.set(name, owner);
+        for (const m of value.matchAll(/var\(\s*(--[A-Za-z0-9-]+)\s*/g)) {
+          const after = m.index + m[0].length;
+          let end = after, depth = 1;
+          for (; end < value.length; end++) {
+            if (value[end] === "(") depth++;
+            if (value[end] === ")" && --depth === 0) break;
+          }
+          uses.push({ name: m[1], fallback: value[after] === "," && depth === 0 && value.slice(after + 1, end).trim().length > 0 });
+        }
+        for (const { el, pseudo } of matches) for (const { name, fallback } of uses) {
+          // A universal, inherited @property with no initial value explicitly
+          // declares an optional extension point. Its existing fallback remains
+          // mandatory here; a bare required use or an unregistered typo fails.
+          if (!styleFor(el, pseudo).getPropertyValue(name).trim() && !(optional.has(name) && fallback) && !missing.has(name)) missing.set(name, owner);
         }
       };
-      const walk = (list, owner, parents = []) => { for (const rule of list) {
+      const active = (rule) => !(rule.type === win.CSSRule.MEDIA_RULE && !win.matchMedia(rule.conditionText).matches) &&
+        !(rule.type === win.CSSRule.SUPPORTS_RULE && !win.CSS.supports(rule.conditionText));
+      const optionalProperties = (list, names = new Set()) => {
+        for (const rule of list) {
+          if (!active(rule)) continue;
+          if (win.CSSPropertyRule && rule instanceof win.CSSPropertyRule && rule.syntax === "*" && rule.inherits && !rule.initialValue) names.add(rule.name);
+          if (rule.cssRules) optionalProperties(rule.cssRules, names);
+          if (rule.styleSheet && (!rule.media.mediaText || win.matchMedia(rule.media.mediaText).matches)) optionalProperties(rule.styleSheet.cssRules, names);
+        }
+        return names;
+      };
+      const walk = (list, owner, optional, parents = []) => { for (const rule of list) {
         if (rule.type === win.CSSRule.MEDIA_RULE && !win.matchMedia(rule.conditionText).matches) continue;
         if (rule.type === win.CSSRule.SUPPORTS_RULE && !win.CSS.supports(rule.conditionText)) continue;
         if (rule.styleSheet) {
           if (rule.media.mediaText && !win.matchMedia(rule.media.mediaText).matches) continue;
-          try { walk(rule.styleSheet.cssRules, owner, parents); }
+          try { walk(rule.styleSheet.cssRules, owner, optional, parents); }
           catch (e) { unverifiable.add(`imported stylesheet (${owner})`); }
         }
         if (rule.type === win.CSSRule.KEYFRAMES_RULE) {
           const animated = [...doc.querySelectorAll("*")].filter((el) => styleFor(el).animationName.split(",").map((name) => name.trim()).includes(rule.name));
-          for (const frame of rule.cssRules) references(frame.style, animated.map((el) => ({ el, pseudo: "" })), owner);
+          for (const frame of rule.cssRules) references(frame.style, animated.map((el) => ({ el, pseudo: "" })), owner, optional);
           continue;
         }
         let resolved = parents;
@@ -411,13 +433,13 @@
             try { doc.querySelectorAll(target).forEach((el) => matches.push({ el, pseudo })); }
             catch (e) { unverifiable.add(`${selector} (${owner})`); }
           }
-          references(rule.style, matches, owner);
+          references(rule.style, matches, owner, optional);
         }
         // Read a style rule before its nested cssRules, which can be empty.
-        if (rule.cssRules) walk(rule.cssRules, owner, resolved);
+        if (rule.cssRules) walk(rule.cssRules, owner, optional, resolved);
       } };
       for (const style of doc.querySelectorAll("style[data-mds]")) {
-        try { walk(style.sheet.cssRules, style.getAttribute("data-mds")); }
+        try { walk(style.sheet.cssRules, style.getAttribute("data-mds"), optionalProperties(style.sheet.cssRules)); }
         catch (e) { unverifiable.add(`stylesheet (${style.getAttribute("data-mds")})`); }
       }
       const notes = [];

@@ -86,6 +86,32 @@ class ManifestMetadataTests(unittest.TestCase):
         self.assertEqual("#11171D", tokens[("--auto-only", None)]["value"])
         self.assertEqual("#F1EFEA", tokens[("--scope-ink", ':root[data-theme="dark"]')]["value"])
 
+    def test_auto_dark_cannot_keep_an_old_origin_over_another_sources_light_default(self):
+        self.manifest["tokens"][0].update({"definedIn": "tokens/colors-dark.css", "value": "#11171D"})
+        self.sources["tokens/colors-dark.css"] = """
+          @supports (display: grid) { @media (prefers-color-scheme: dark) {
+            :root { --canvas: #11171D; --new-ink: #F1EFEA; }
+          } }
+          :root[data-theme='dark'] { --canvas: #11171D; }
+        """
+        self.sources["tokens/colors.css"] += " :root { --new-ink: #20252B; }"
+        updated = SYNC.synchronize_manifest(self.manifest, self.sources)
+        tokens = self.tokens(updated)
+        self.assertEqual("#F2F0EB", tokens[("--canvas", None)]["value"])
+        self.assertEqual("tokens/colors.css", tokens[("--canvas", None)]["definedIn"])
+        self.assertEqual("#20252B", tokens[("--new-ink", None)]["value"])
+        self.assertEqual("tokens/colors.css", tokens[("--new-ink", None)]["definedIn"])
+        self.assertEqual("#11171D", tokens[("--canvas", ':root[data-theme="dark"]')]["value"])
+        self.assertEqual(updated, SYNC.synchronize_manifest(updated, self.sources))
+
+    def test_reduced_motion_only_token_keeps_its_conditional_fallback(self):
+        self.sources["tokens/elevation.css"] = """
+          @media (prefers-reduced-motion: reduce) { :root { --motion-only: 0ms; } }
+        """
+        token = self.tokens(SYNC.synchronize_manifest(self.manifest, self.sources))[("--motion-only", None)]
+        self.assertEqual("0ms", token["value"])
+        self.assertEqual("tokens/elevation.css", token["definedIn"])
+
     def test_comments_strings_functions_and_unregistered_scopes_do_not_invent_tokens(self):
         self.sources["tokens/colors.css"] = '''
           /* :root { --comment-only: #BADBAD; } */

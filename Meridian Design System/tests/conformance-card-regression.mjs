@@ -61,6 +61,15 @@ try {
   assert(await run('tokens-resolve', '<div class="unrelated"></div><div class="probe"></div>', '.unrelated{--unrelated-role:4px}.probe{padding:var(--unrelated-role)}'));
   assert(await run('tokens-resolve', '<div class="unrelated" style="--unrelated-inline:4px"></div><div class="probe"></div>', '.probe{padding:var(--unrelated-inline)}'));
   assert(await run('tokens-resolve', '<div class="probe"></div>', '.probe{color:var(--active-typo,red)}'));
+  const optional = '@property --optional-height{syntax:"*";inherits:true;}';
+  assert.equal(await run('tokens-resolve', '<div class="probe"></div>', `${optional}.probe{height:var(--optional-height,26px)}`), null);
+  assert.equal(await run('tokens-resolve', '<div class="probe"></div>', `${optional}.probe{--density:28px;height:var(--optional-height,var(--density))}`), null);
+  assert(await run('tokens-resolve', '<div class="probe"></div>', `${optional}.probe{height:var(--optional-height)}`));
+  assert(await run('tokens-resolve', '<div class="probe"></div>', `${optional}.probe{height:var(--optional-height,)}`));
+  assert(await run('tokens-resolve', '<div class="probe"></div>', `${optional}.probe{height:var(--optional-height, )}`));
+  assert(await run('tokens-resolve', '<div class="probe"></div>', `${optional}.probe{height:var(--optional-height,var(--fallback-typo,26px))}`));
+  assert(await run('tokens-resolve', '<div class="probe"></div>', '@property --noninherited{syntax:"*";inherits:false;}.probe{height:var(--noninherited,26px)}'));
+  assert(await run('tokens-resolve', '<style data-mds="unrelated">@property --other-owner{syntax:"*";inherits:true;}</style><div class="probe"></div>', '.probe{height:var(--other-owner,26px)}'));
   assert.equal(await run('tokens-resolve', '<div class="probe"></div>', '.inactive-variant{color:var(--inactive-role)}'), null);
   assert.equal(await run('tokens-resolve', '<div class="probe"></div>', '.probe{content:"var(--quoted-label)"}'), null);
   assert.equal(await run('tokens-resolve', '<div class="probe"></div>', '@media(min-width:2000px){.probe{color:var(--inactive-media-role)}}'), null);

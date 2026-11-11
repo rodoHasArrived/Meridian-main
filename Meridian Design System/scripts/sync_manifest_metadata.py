@@ -2,10 +2,10 @@
 """Refresh source-derived token/card metadata without changing the public census.
 
 Only the six registered token stylesheets and existing card paths are read.
-Existing token kinds and source origins are retained when that declaration still
-exists. Within a source, an unconditional declaration takes precedence over a
-conditional fallback; this records the ordinary value of reduced-motion tokens
-without discarding the auto-dark-only defaults in colors-dark.css.
+Existing token kinds and source origins are retained among equally applicable
+declarations. Unconditional declarations across the registered sources take
+precedence over conditional fallbacks, even when an older manifest recorded an
+auto-dark origin. Conditional-only tokens remain represented.
 """
 from __future__ import annotations
 
@@ -210,9 +210,17 @@ def token_metadata(manifest: dict, sources: Mapping[str, str | bytes]) -> list[d
     refreshed = {}
     for key, files in candidates.items():
         old = previous.get(key)
+        # Conditional ancestry is more important than a historical source origin:
+        # an auto-dark :root in the alphabetically first file is not the ordinary
+        # light default when another source declares an unconditional :root.
+        unconditional = {path: [item for item in options if not item["conditional"]]
+                         for path, options in files.items()}
+        unconditional = {path: options for path, options in unconditional.items() if options}
+        if unconditional:
+            files = unconditional
         path = old["definedIn"] if old and old["definedIn"] in files else sorted(files)[0]
         options = files[path]
-        declaration = next((item for item in options if not item["conditional"]), options[0])
+        declaration = options[0]
         name, scope = key
         token = copy.deepcopy(old) if old else {"name": name, "kind": _infer_kind(name, declaration["value"])}
         token.update({"value": declaration["value"], "definedIn": path})

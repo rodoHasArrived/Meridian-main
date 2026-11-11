@@ -46,7 +46,7 @@ class SemanticChipContrastTest(unittest.TestCase):
         light = mod.parse_tokens((ROOT / "tokens/colors.css").read_text(encoding="utf-8"))
         dark_css = mod.strip_comments((ROOT / "tokens/colors-dark.css").read_text(encoding="utf-8"))
         scopes = {
-            "auto dark": r"@media\s*\(prefers-color-scheme:\s*dark\)\s*\{\s*:root\s*\{([^{}]+)\}",
+            "auto dark": r'@media\s*\(prefers-color-scheme:\s*dark\)\s*\{\s*:root(?::not\(\[data-theme="light"\]\))?\s*\{([^{}]+)\}',
             "manual dark": r':root\[data-theme="dark"\]\s*\{([^{}]+)\}',
             "forced light": r':root\[data-theme="light"\]\s*\{([^{}]+)\}',
         }
@@ -89,6 +89,10 @@ class SourceRoleContrastTest(unittest.TestCase):
                 text = (ROOT / relative).read_text(encoding="utf-8")
                 if relative == "tokens/theme.css":
                     text = text.replace("--theme-text-on-accent: #FFFFFF", "--text-on-accent: #FFFFFF")
+                if relative == "tokens/colors-dark.css":
+                    # Reproduce the old weaker cascade, rather than weakening the
+                    # current selector that intentionally excludes forced light.
+                    text = text.replace(':root:not([data-theme="light"])', ':root')
                 target.write_text(text, encoding="utf-8")
             self.assertTrue(any("auto dark · brand indigo" in failure and "signal label" in failure
                                 for failure in mod.check_brands(root)))
@@ -131,6 +135,70 @@ class SourceRoleContrastTest(unittest.TestCase):
             failures = mod.check_workstation(root)
             self.assertEqual(len(failures), 1)
             self.assertIn("hover button label: 1.00:1", failures[0])
+
+
+class WorkstationColourUtilityTest(unittest.TestCase):
+    ARBITRARY = (
+        "bg-[var(--brand-axis)] text-[var(--ink-inverse)] "
+        "hover:bg-[color-mix(in_srgb,var(--brand-axis)_88%,var(--bg-light))] "
+        "active:bg-[color-mix(in_srgb,var(--brand-axis)_78%,var(--bg-light))]"
+    )
+
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.root = Path(temporary.name) / "Meridian Design System"
+        self.index = self.root.parent / mod.WS_INDEX
+        self.button = self.root.parent / mod.WS_BUTTON
+        self.index.parent.mkdir(parents=True)
+        self.button.parent.mkdir(parents=True)
+        self.index.write_text("""
+:root { --brand-axis:#000000; --ink-inverse:#FFFFFF; --bg-light:#FFFFFF;
+        --primary:0 0% 0%; --primary-foreground:0 0% 100%;
+        --ws-primary-hover:#222222; --ws-primary-pressed:#333333; }
+@media (prefers-color-scheme: dark) {
+  :root { --brand-axis:#FFFFFF; --ink-inverse:#000000; --bg-light:#000000; }
+}
+:root[data-theme="dark"] { --brand-axis:#FFFFFF; --ink-inverse:#000000; --bg-light:#000000; }
+:root[data-theme="light"] { --brand-axis:#000000; --ink-inverse:#FFFFFF; --bg-light:#FFFFFF; }
+""", encoding="utf-8")
+
+    def check_classes(self, classes):
+        self.button.write_text(f'default: "{classes}"', encoding="utf-8")
+        return mod.check_workstation(self.root)
+
+    def test_arbitrary_mix_classes_pass_in_all_four_appearances(self):
+        self.assertEqual(self.check_classes(self.ARBITRARY), [])
+
+    def test_legacy_hsl_utilities_and_token_state_fills_still_pass(self):
+        self.assertEqual(self.check_classes(
+            "bg-primary text-primary-foreground hover:bg-[var(--ws-primary-hover)] "
+            "active:bg-[var(--ws-primary-pressed)]"), [])
+
+    def test_arbitrary_unreadable_hover_is_measured(self):
+        classes = self.ARBITRARY.replace(
+            "hover:bg-[color-mix(in_srgb,var(--brand-axis)_88%,var(--bg-light))]",
+            "hover:bg-[var(--ink-inverse)]")
+        failures = self.check_classes(classes)
+        self.assertEqual(len(failures), 4)
+        self.assertTrue(all("hover button label: 1.00:1" in failure for failure in failures))
+
+    def test_state_label_override_is_measured(self):
+        failures = self.check_classes(self.ARBITRARY + " hover:text-[var(--brand-axis)]")
+        self.assertEqual(len(failures), 4)
+        self.assertTrue(all("hover button label" in failure for failure in failures))
+
+    def test_unknown_expression_role_cannot_pass(self):
+        failures = self.check_classes(self.ARBITRARY.replace("text-[var(--ink-inverse)]", "text-[var(--missing)]"))
+        self.assertEqual(len(failures), 12)
+        self.assertTrue(all("cannot resolve actual roles" in failure for failure in failures))
+
+    def test_unknown_or_ambiguous_colour_utilities_cannot_pass(self):
+        for classes in (self.ARBITRARY.replace("bg-[var(--brand-axis)]", "bg-unknown", 1),
+                        self.ARBITRARY + " text-primary-foreground"):
+            with self.subTest(classes=classes):
+                self.assertEqual(self.check_classes(classes), [
+                    "[workstation] cannot identify the native primary fill and label roles"])
 
 
 class ContrastScopeTest(unittest.TestCase):

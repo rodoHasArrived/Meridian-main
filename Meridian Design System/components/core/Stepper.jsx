@@ -10,6 +10,7 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
+@property --stepper-height{syntax:"*";inherits:true;}
 .mds-stepper{display:flex;gap:1px;background:var(--border);list-style:none;margin:0;padding:0;}
 .mds-stepper--h{border-bottom:1px solid var(--border);}
 .mds-stepper--v{flex-direction:column;border-right:1px solid var(--border);}

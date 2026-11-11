@@ -9,14 +9,13 @@ This is it, scoped to what is actually shared with the upstream app:
             names; a missing one means pasted app CSS silently resolves to nothing.
   2 ALIASES Every contract name is a var() reference, not a duplicate hex — an alias
             that hardcodes a value can drift from the token it mirrors.
-  3 VALUES  Every entry in `tokens` matches tokens/*.css: the light value in the
-            default theme graph, the dark value in BOTH dark blocks of
-            colors-dark.css, and the light value re-asserted in the forced-light block.
+  3 VALUES  Every entry in `tokens` resolves to its recorded value in the default,
+            automatic-dark, manual-dark and OS-dark/forced-light theme graphs.
 
   4 THEME    The ten --theme-* contract names (plus focus and chrome inputs) are Tier-1
             inputs authored as light literals. Both dark blocks must re-point each one at its flipped
-            component token, and the forced-light block must state that component
-            token as a literal — otherwise the name stays light on a dark screen.
+            component token. Forced light must resolve both input and component to
+            their light identities, without cycles or reliance on an OS-light baseline.
   5 UPSTREAM When the package sits in the Meridian monorepo, every name the browser
             workstation (src/Meridian.Ui/dashboard/src/styles/index.css) declares in
             common with this package must resolve to the same value in light, auto
@@ -91,18 +90,14 @@ def light_graph(files):
 def dark_blocks(text):
     """The three declared blocks of colors-dark.css, by selector shape."""
     found = {"auto": {}, "manual": {}, "forced-light": {}}
-    text = strip_comments(text)
-    # 1. @media (prefers-color-scheme: dark) { :root { ... } }
-    m = re.search(r"@media[^{]*prefers-color-scheme:\s*dark[^{]*\{(.*)\n\}", text, re.S)
-    if m:
-        for sel, body in blocks(m.group(1)):
-            if ":root" in sel:
-                found["auto"].update(declared(body))
-    for sel, body in blocks(text):
+    for sel, body in flat_blocks(text):
         s = sel.replace(" ", "")
-        if 'data-theme="dark"' in s:
+        leaf = s.split(">>")[-1]
+        if "prefers-color-scheme:dark" in s and leaf in (":root", ':root:not([data-theme="light"])'):
+            found["auto"].update(declared(body))
+        elif leaf == ':root[data-theme="dark"]':
             found["manual"].update(declared(body))
-        elif 'data-theme="light"' in s:
+        elif leaf == ':root[data-theme="light"]':
             found["forced-light"].update(declared(body))
     return found
 
@@ -153,25 +148,44 @@ def flat_blocks(text):
 
 
 def mode_envs(sheets):
-    """Declarations per mode, in cascade order: light, auto dark, manual dark, forced light."""
+    """Resolve root declaration scopes, including explicit light under an OS-dark preference.
+
+    Scope specificity beats source order. In particular, :root:not([data-theme="light"])
+    does not apply in forced light, while an unguarded OS-dark :root still does.
+    Brand-specific selectors are exercised separately by the browser brand matrix.
+    """
     env = {"light": {}, "auto": {}, "manual": {}, "forced-light": {}}
+    ranks = {mode: {} for mode in env}
+    order = 0
     for text in sheets:
         for selector, body in flat_blocks(text):
+            order += 1
             leaf = selector.split(" >> ")[-1].replace(" ", "")
             parts = leaf.split(",")
             dark_media = "prefers-color-scheme:dark" in selector.replace(" ", "")
-            if dark_media and ":root" in parts:
-                env["auto"].update(declared(body))
-            elif not dark_media and ":root" in parts or ".meridian-root" in parts:
-                env["light"].update(declared(body))
-            if ':root[data-theme="dark"]' in parts:
-                env["manual"].update(declared(body))
-            if ':root[data-theme="light"]' in parts and ":root" not in parts:
-                env["forced-light"].update(declared(body))
-    light = env["light"]
-    return {"light": light, "auto": {**light, **env["auto"]},
-            "manual": {**light, **env["manual"]},
-            "forced-light": {**light, **env["forced-light"]}}
+            if "@media" in selector and not dark_media:
+                continue  # print, forced-colors, etc. are separate environments
+            for mode in env:
+                if dark_media and mode not in ("auto", "forced-light"):
+                    continue
+                specificity = []
+                for part in parts:
+                    if part in (":root", ".meridian-root"):
+                        specificity.append(1)
+                    elif part == ':root:not([data-theme="light"])' and mode != "forced-light":
+                        specificity.append(2)
+                    elif part == ':root[data-theme="dark"]' and mode == "manual":
+                        specificity.append(2)
+                    elif part == ':root[data-theme="light"]' and mode == "forced-light":
+                        specificity.append(2)
+                if not specificity:
+                    continue
+                rank = (max(specificity), order)
+                for name, value in declared(body).items():
+                    if rank >= ranks[mode].get(name, (0, 0)):
+                        env[mode][name] = value
+                        ranks[mode][name] = rank
+    return env
 
 
 def canonical(value):
@@ -189,15 +203,36 @@ def canonical(value):
     return ("text", re.sub(r"\s*,\s*", ", ", v))
 
 
-def resolve_token(name, env, depth=0):
+def cyclic_tokens(env):
+    """CSS invalidates every custom property in a cycle, including var() fallback edges."""
+    refs = {name: re.findall(r"var\(\s*(--[\w-]+)", value) for name, value in env.items()}
+    visiting, done, cyclic = [], set(), set()
+    def visit(name):
+        if name in visiting:
+            cyclic.update(visiting[visiting.index(name):])
+            return
+        if name in done or name not in refs:
+            return
+        visiting.append(name)
+        for other in refs[name]:
+            visit(other)
+        visiting.pop()
+        done.add(name)
+    for name in refs:
+        visit(name)
+    return cyclic
+
+
+def resolve_token(name, env, depth=0, cycles=None):
     """Follow var() references (honouring fallbacks) to a canonical value, or None."""
+    cycles = cyclic_tokens(env) if cycles is None else cycles
     value = env.get(name)
-    if value is None or depth > 24:
+    if value is None or name in cycles or depth > 24:
         return None
 
     def substitute(match):
         head, _, fallback = match.group(1).partition(",")
-        inner = resolve_text(head.strip(), env, depth + 1)
+        inner = resolve_token(head.strip(), env, depth + 1, cycles)
         if inner is None:
             return fallback.strip() if fallback.strip() else "unresolved(" + head.strip() + ")"
         return inner
@@ -231,16 +266,19 @@ def theme_findings(files):
     """Pass 4: the Tier-1 theme inputs flip in dark and stay light when light is forced."""
     out = []
     dark = dark_blocks(files["colors-dark.css"])
+    envs = mode_envs([files[name] for name in CLOSURE if name in files])
     for theme, mirror in THEME_MIRRORS.items():
         for label in ("auto", "manual"):
             got = dark[label].get(theme)
             if got != f"var({mirror})":
                 out.append(f"THEME    {theme} must be var({mirror}) in the {label} dark block "
                            f"(found {got or 'nothing'}) — the name would stay light in dark mode")
-        forced = dark["forced-light"].get(mirror, "")
-        if not (forced.startswith("#") or forced.startswith("rgb")):
-            out.append(f"THEME    forced-light must state {mirror} as a literal so {theme} "
-                       "resolves light under an OS-dark preference")
+        expected = resolve_token(mirror, envs["light"])
+        for name in (mirror, theme):
+            forced = resolve_token(name, envs["forced-light"])
+            if expected is None or forced is None or not same_value(canonical(forced), canonical(expected)):
+                out.append(f"THEME    forced-light {name} must resolve to the light {mirror} "
+                           "under an OS-dark preference; check aliases and cycles")
     return out
 
 
@@ -272,6 +310,21 @@ def upstream_findings(manifest, files):
         out.append(f"UPSTREAM {name} is listed in upstreamValueDivergences but {reason} — "
                    "drop the entry")
     return len(shared), out
+
+
+def token_value_findings(manifest, files):
+    """Pass 3 checks computed aliases, not their syntactic spelling."""
+    envs = mode_envs([files[name] for name in CLOSURE if name in files])
+    out = []
+    for token, rec in manifest.get("tokens", {}).items():
+        for mode, label in (("light", "light"), ("auto", "auto dark"), ("manual", "manual dark"), ("forced-light", "forced-light")):
+            expected = canonical(rec["dark" if mode in ("auto", "manual") else "light"])
+            actual = resolve_token(token, envs[mode])
+            if actual is None:
+                out.append(f"VALUE    {token} {label}: missing or cyclic in the effective theme graph")
+            elif not same_value(canonical(actual), expected):
+                out.append(f"VALUE    {token} {label}: css {actual} ≠ manifest {show(expected)}")
+    return out
 
 
 def main():
@@ -322,25 +375,7 @@ def main():
 
     value_findings = []
     if not names_only:
-        light = light_graph(files)
-        dark = dark_blocks(files["colors-dark.css"])
-        for token, rec in manifest.get("tokens", {}).items():
-            want_l, want_d = norm(rec["light"]), norm(rec["dark"])
-            got_l = light.get(token)
-            if got_l is None:
-                value_findings.append(f"VALUE    {token} recorded light {want_l} but the default theme graph does not define it")
-            elif got_l != want_l:
-                value_findings.append(f"VALUE    {token} light: css {got_l} ≠ manifest {want_l}")
-            for label in ("auto", "manual"):
-                got = dark[label].get(token)
-                if got is None:
-                    if want_d != want_l:
-                        value_findings.append(f"VALUE    {token} flips to {want_d} but the {label} dark block does not set it")
-                elif got != want_d:
-                    value_findings.append(f"VALUE    {token} {label} dark: css {got} ≠ manifest {want_d}")
-            got_f = dark["forced-light"].get(token)
-            if got_f is not None and got_f != want_l:
-                value_findings.append(f"VALUE    {token} forced-light: css {got_f} ≠ manifest light {want_l}")
+        value_findings += token_value_findings(manifest, files)
         value_findings += theme_findings(files)
     shared_count, upstream = (None, []) if names_only else upstream_findings(manifest, files)
     value_findings += upstream

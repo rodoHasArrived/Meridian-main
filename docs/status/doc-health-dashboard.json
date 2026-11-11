@@ -1,11 +1,11 @@
 {
-  "total_files": 948,
-  "orphaned_count": 390,
+  "total_files": 949,
+  "orphaned_count": 391,
   "no_heading_count": 231,
   "stale_count": 0,
   "todo_count": 330,
   "health_score": 79,
-  "signal_digest": "sha256:c0a0095cceef4a771e42b5923e47c16241be8060a81d7e167b8f50740a7b6f40",
+  "signal_digest": "sha256:1a72dce2a90e00a0f4fe81a42b99ccd9228001444a8b89cfa705f6a9c9167de1",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -308,6 +308,7 @@
     "Meridian Design System/tests/A11Y_RUN_4.3.0.md",
     "Meridian Design System/tests/A11Y_STATIC_AUDIT_4.1.md",
     "Meridian Design System/tests/BROWSER_TEST_PLAN.md",
+    "Meridian Design System/tests/SPECIMEN_MATRIX.md",
     "benchmarks/BOTTLENECK_REPORT.md",
     "benchmarks/results/20260521_111257/batchserialization/results/Meridian.Benchmarks.BatchSerializationBenchmarks-report-github.md",
     "benchmarks/results/20260521_111257/canonicalizing/results/Meridian.Benchmarks.CanonicalizingPublisherBenchmarks-report-github.md",
@@ -6613,6 +6614,13 @@
     },
     {
       "path": "Meridian Design System/tests/README.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/tests/SPECIMEN_MATRIX.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
