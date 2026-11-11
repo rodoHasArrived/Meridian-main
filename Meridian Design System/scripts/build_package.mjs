@@ -75,13 +75,21 @@ const runtime = await build({ ...common,
   banner: { js: `/* Meridian ${pkg.version} offline preview runtime. React / React DOM ${pkg.devDependencies.react}; MIT. See THIRD_PARTY_NOTICES.md. */` }
 });
 const manifest = oldManifest;
+// The in-browser JSX compiler for standalone specimen pages. Cards, UI kits and test pages keep
+// their demo source as hand-readable JSX in <script type="text/babel">; loading this file after
+// _preview_runtime.js compiles those blocks on the page with no network request. It is the
+// pinned @babel/standalone build, redistributed unmodified under its MIT license.
+const babelVersion = pkg.devDependencies['@babel/standalone'];
+const jsxCompiler = `/* Meridian ${pkg.version} offline JSX preview compiler. @babel/standalone ${babelVersion}; MIT. See THIRD_PARTY_NOTICES.md. */\n`
+  + await readFile(resolve(root, 'node_modules/@babel/standalone/babel.min.js'), 'utf8');
 const generated = {
   '_ds_bundle.js': bundle.outputFiles[0].text,
   '_preview_runtime.js': runtime.outputFiles[0].text,
+  '_preview_jsx.js': jsxCompiler,
 };
 const release = { name: pkg.name, version: pkg.version, namespace, sourceHashAlgorithm: 'sha256',
   counts: { exports: components.length, cards: manifest.cards.length, templates: manifest.templates.length, tokenRecords: manifest.tokens.length },
-  build: { esbuild: pkg.devDependencies.esbuild, reactPreview: pkg.devDependencies.react, sourceHashes,
+  build: { esbuild: pkg.devDependencies.esbuild, reactPreview: pkg.devDependencies.react, jsxPreview: babelVersion, sourceHashes,
     bundledSources: Object.keys(bundle.metafile.inputs).map(path => path.split('\\').join('/'))
       .filter(path => Object.hasOwn(sourceHashes, path)).sort() },
   assets: Object.fromEntries(Object.entries({ ...generated,
@@ -89,7 +97,7 @@ const release = { name: pkg.name, version: pkg.version, namespace, sourceHashAlg
     'release.json': await readFile(resolve(root, 'release.json'), 'utf8')
   }).map(([path, content]) => [path, { sha256: hash(content), bytes: Buffer.byteLength(content) }])),
   evidenceScope: 'Design-system package export; synthetic examples; not application production certification',
-  externalRequirements: { components: 'Consumer supplied React global (React 18 or 19)', templates: 'Design Component host for x-dc/x-import/helmet elements', preview: 'Offline React production runtime and IBM Plex fonts included; see THIRD_PARTY_NOTICES.md' }
+  externalRequirements: { components: 'Consumer supplied React global (React 18 or 19)', templates: 'Design Component host for x-dc/x-import/helmet elements', preview: 'Offline React production runtime, offline JSX compiler and IBM Plex fonts included; see THIRD_PARTY_NOTICES.md' }
 };
 generated['release-build.json'] = JSON.stringify(release, null, 2) + '\n';
 for (const [name, content] of Object.entries(generated)) {
