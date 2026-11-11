@@ -3,8 +3,8 @@
 
 const {
   WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge,
-  MetricCard, DenseDataTable, EntitySummary, StatusBanner
-} = window.MeridianDesignSystem_4f61be;
+  MetricCard, DataGrid, EntitySummary, StatusBanner
+} = window.MeridianDesignSystem_205d17;
 const { useState } = React;
 
 const POSITIONS = [
@@ -151,8 +151,9 @@ function DashboardWorkstationScreen() {
             </PanelSurface>
           </div>
 
-          <DenseDataTable
-            selectedIndex={selected}
+          <DataGrid
+            rowKey="index" activeKey={selected}
+            style={{ flexShrink: 0 }}
             sortKey={sortKey} sortDir={sortDir} onSort={onSort}
             onRowClick={(_, i) => setSelected(i)}
             columns={[
@@ -160,8 +161,8 @@ function DashboardWorkstationScreen() {
               { key: "qty", label: "Qty", align: "right" },
               { key: "avg", label: "Avg cost", align: "right" },
               { key: "last", label: "Last", align: "right" },
-              { key: "pnl", label: "Unrlzd P&L", align: "right", render: (r) => pnlCell(r.pnl) },
-              { key: "pnlPct", label: "Return", align: "right", render: (r) => pnlCell(r.pnlPct) },
+              { key: "pnl", label: "Unrlzd P&L", align: "right", cell: (r) => pnlCell(r.pnl) },
+              { key: "pnlPct", label: "Return", align: "right", cell: (r) => pnlCell(r.pnlPct) },
             ]}
             rows={sorted}
           />
