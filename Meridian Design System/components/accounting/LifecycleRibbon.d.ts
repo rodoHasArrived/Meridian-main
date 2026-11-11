@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * Lifecycle ribbon — the investment-event lifecycle as a selectable rail:
  * `Trade captured → Accounting generated → Settlement → Custody → Income →
@@ -41,7 +42,7 @@ export interface LifecycleRibbonProps extends Omit<React.HTMLAttributes<HTMLDivE
   /** Makes stages buttons — wire it to the workspace synchronization. */
   onSelect?: (id: string) => void;
 }
-export declare function LifecycleRibbon(props: LifecycleRibbonProps): JSX.Element;
+export declare function LifecycleRibbon(props: LifecycleRibbonProps): React.JSX.Element;
 
 export interface LifecycleLane {
   label: string;
@@ -50,4 +51,4 @@ export interface LifecycleLane {
 export interface LifecycleLanesProps extends React.HTMLAttributes<HTMLDivElement> {
   lanes: LifecycleLane[];
 }
-export declare function LifecycleLanes(props: LifecycleLanesProps): JSX.Element;
+export declare function LifecycleLanes(props: LifecycleLanesProps): React.JSX.Element;

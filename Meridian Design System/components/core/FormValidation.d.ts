@@ -1,3 +1,4 @@
+import type React from "react";
 export interface ValidatorFn {
   (value: any): string | null;
 }

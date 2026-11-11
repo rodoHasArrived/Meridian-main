@@ -5,9 +5,12 @@
   <meta charset="UTF-8" />
   <title>Form Controls</title>
   <link rel="stylesheet" href="../../styles.css" />
-  <script src="../../_preview_runtime.js"></script>
-  <script src="../../_preview_jsx.js"></script>
-  <script src="../../_ds_bundle.js"></script>
+
+
+
+<script src="../../_preview_runtime.js"></script>
+<script src="../../_preview_jsx.js"></script>
+<script src="../../_ds_bundle.js"></script>
 </head>
 <body style="margin:0;padding:20px;background:var(--bg-canvas,#F2F0EB);font-family:var(--font-body);">
 <div id="root"></div>
@@ -20,7 +23,7 @@ const { useState } = React;
 
 function Section({ title, children }) {
   return (
-    <div style={{ background:"var(--surface-well,#FCFBF8)", border:"1px solid var(--border)", borderRadius:8, padding:16 }}>
+    <div style={{ background:"var(--surface-well,#FCFBF8)", border:"1px solid var(--border)", borderRadius:8, padding:16, minWidth:0 }}>
       <div style={{ fontSize:10, fontWeight:600, fontVariant:"all-small-caps", letterSpacing:".04em",
         color:"var(--text-muted)", marginBottom:12 }}>{title}</div>
       {children}
@@ -32,11 +35,12 @@ function Demo() {
   const toast = window.MeridianToast;
   const [sel, setSel] = useState("aapl");
   const [chk, setChk] = useState(true);
+  const [showZero, setShowZero] = useState(false);
   const [tog, setTog] = useState(true);
   const [tog2, setTog2] = useState(false);
 
   return (
-    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
+    <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,520px),1fr))", gap:16 }}>
       <ToastProvider />
 
       {/* Toast */}
@@ -69,7 +73,7 @@ function Demo() {
       <Section title="Checkbox + Toggle">
         <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
           <Checkbox checked={chk} onChange={setChk} label="Include open positions" hint="Adds unrealized P&L to totals" />
-          <Checkbox checked={false} onChange={() => {}} label="Show zero-balance accounts" />
+          <Checkbox checked={showZero} onChange={setShowZero} label="Show zero-balance accounts" />
           <Checkbox checked={true} onChange={() => {}} label="Disabled example" disabled />
           <FormDivider />
           <Toggle checked={tog} onChange={setTog} label="Live market data" />
@@ -82,7 +86,7 @@ function Demo() {
         <div style={{ display:"flex", gap:12, alignItems:"center", flexWrap:"wrap" }}>
           <Tooltip content="Apple Inc. — Common Stock" placement="above">
             <span style={{ fontFamily:"var(--font-data)", fontSize:13, fontWeight:600,
-              color:"var(--brand-signal-ink,#944A32)", cursor:"default", borderBottom:"1px dashed var(--brand-signal,#C56343)" }}>
+              color:"var(--link,var(--interaction-selected))", cursor:"default", borderBottom:"1px dashed var(--link,var(--interaction-selected))" }}>
               AAPL
             </span>
           </Tooltip>

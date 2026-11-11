@@ -1,3 +1,4 @@
+import type React from "react";
 export type DatumRole = "baseline" | "selection" | "current-time" | "target" | "zero" | "warning";
 export interface DatumProps extends React.HTMLAttributes<HTMLDivElement> {
   role?: DatumRole;
@@ -22,7 +23,7 @@ export interface DatumProps extends React.HTMLAttributes<HTMLDivElement> {
   labelLane?: number;
   onActivate?: (event: React.MouseEvent | React.KeyboardEvent) => void;
 }
-export declare function Datum(props: DatumProps): JSX.Element;
+export declare function Datum(props: DatumProps): React.JSX.Element;
 
 export interface DatumGroupProps extends React.HTMLAttributes<HTMLElement> {
   /** Container width in px. Omit to self-measure with a ResizeObserver. */
@@ -35,4 +36,4 @@ export interface DatumGroupProps extends React.HTMLAttributes<HTMLElement> {
   children?: React.ReactNode;
 }
 /** Assigns non-overlapping label lanes to its child Datums. No-op until it has a width. */
-export declare function DatumGroup(props: DatumGroupProps): JSX.Element;
+export declare function DatumGroup(props: DatumGroupProps): React.JSX.Element;

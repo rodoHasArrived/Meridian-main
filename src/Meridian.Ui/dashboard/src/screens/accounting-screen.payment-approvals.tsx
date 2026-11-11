@@ -184,7 +184,7 @@ function EntityPaymentApprovalsPanel({ entityId }: { entityId?: string }) {
           <Metric label="Evidence recorded" value={String(summary.evidenceCount)} />
         </div>
 
-        <TableWorkbench<(typeof rows)[number]> workbenchId="accounting-payment-intents" sourceKey={entityId ?? "unselected"}
+        <TableWorkbench<(typeof rows)[number]> tableClassName={"w-full text-sm"} maxVisibleRows={null}  workbenchId="accounting-payment-intents" sourceKey={entityId ?? "unselected"}
  rows={rows} columns={[{id:"amount",label:"Amount",exportValue: row => row.source.amount,render: row => <>
 <div className="font-mono text-xs">{row.amount}</div>
 

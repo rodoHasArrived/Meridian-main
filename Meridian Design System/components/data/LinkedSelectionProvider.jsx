@@ -13,7 +13,16 @@ function normalize(value, source = "programmatic") {
 }
 function toList(value, source) {
   if (value == null) return [];
-  return (Array.isArray(value) ? value : [value]).map((entry) => normalize(entry, source)).filter(Boolean);
+  const seen = new Set();
+  return (Array.isArray(value) ? value : [value]).map((entry) => normalize(entry, source)).filter((entry) => {
+    if (!entry || seen.has(entry.id)) return false;
+    seen.add(entry.id); return true;
+  });
+}
+function limitSelection(list, multiple, max) {
+  if (!multiple) return list.slice(0, 1);
+  return typeof max === "number" && Number.isFinite(max)
+    ? list.slice(0, Math.max(0, Math.floor(max))) : list;
 }
 function sameList(a, b) {
   return a.length === b.length && a.every((entry, i) => entry.id === b[i].id);
@@ -26,8 +35,9 @@ function readUrl(param, multiple) {
   return ids.map((id) => ({ id, value: id, source: "url" }));
 }
 function readStorage(key) {
-  if (!key || typeof localStorage === "undefined") return null;
+  if (!key) return null;
   try {
+    if (typeof localStorage === "undefined") return null;
     const raw = localStorage.getItem(key);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
@@ -41,18 +51,20 @@ export function LinkedSelectionProvider({
 }) {
   const controlled = value !== undefined;
   const [internal, setInternal] = React.useState(
-    () => readUrl(urlParam, multiple) || readStorage(storageKey) || toList(defaultValue, "default")
+    () => limitSelection(readUrl(urlParam, multiple) || readStorage(storageKey) || toList(defaultValue, "default"), multiple, max)
   );
   const [history, setHistory] = React.useState([]);
-  const selections = controlled ? toList(value, "controlled") : internal;
+  const selections = limitSelection(controlled ? toList(value, "controlled") : internal, multiple, max);
   const selectionsRef = React.useRef(selections);
   selectionsRef.current = selections;
 
   const persist = React.useCallback((list) => {
-    if (storageKey && typeof localStorage !== "undefined") {
+    if (storageKey) {
       try {
-        if (list.length) localStorage.setItem(storageKey, JSON.stringify(multiple ? list : list[0]));
-        else localStorage.removeItem(storageKey);
+        if (typeof localStorage !== "undefined") {
+          if (list.length) localStorage.setItem(storageKey, JSON.stringify(multiple ? list : list[0]));
+          else localStorage.removeItem(storageKey);
+        }
       } catch { /* storage unavailable */ }
     }
     if (urlParam && typeof window !== "undefined") {
@@ -65,18 +77,22 @@ export function LinkedSelectionProvider({
 
   const commit = React.useCallback((next, meta = {}) => {
     const previous = selectionsRef.current;
-    let list = toList(next, meta.source || "programmatic");
-    if (!multiple) list = list.slice(0, 1);
-    else if (typeof max === "number") list = list.slice(0, max);
+    const list = limitSelection(toList(next, meta.source || "programmatic"), multiple, max);
     if (sameList(previous, list) && !meta.force) return;
     if (!meta.replaceHistory) {
       setHistory((entries) => [previous, ...entries].slice(0, Math.max(0, historyLimit)));
     }
     if (!controlled) setInternal(list);
     selectionsRef.current = list;
-    persist(list);
+    if (!controlled) persist(list);
     onChange?.(multiple ? list : (list[0] ?? null), { ...meta, selections: list });
   }, [controlled, historyLimit, max, multiple, onChange, persist]);
+
+  // A controlled callback proposes a selection. Only the owner's accepted value is committed
+  // to URL/storage, so a refused proposal cannot restore as a different selection later.
+  React.useEffect(() => {
+    if (controlled) persist(selections);
+  }, [controlled, value, multiple, max, persist]);
 
   const api = React.useMemo(() => {
     const idOf = (candidate) => {
@@ -176,6 +192,9 @@ export function LinkedSelectionTarget({
 }) {
   const api = useLinkedSelection(scope);
   const selected = api.isSelected(selection);
+  const selectionRole = ["option", "row", "gridcell", "tab", "treeitem"].includes(rest.role) || !rest.role && Tag === "tr";
+  const buttonRole = !selectionRole && !rest.role && Tag !== "button";
+  const pressedRole = buttonRole || rest.role === "button" || !rest.role && Tag === "button";
   const activate = (event, source) => {
     const additive = event && (event.metaKey || event.ctrlKey);
     const extend = event && event.shiftKey;
@@ -190,7 +209,9 @@ export function LinkedSelectionTarget({
   return (
     <Tag
       className={`${className}${selected ? " is-selected" : ""}`}
-      aria-selected={selected}
+      role={buttonRole ? "button" : undefined}
+      aria-selected={selectionRole ? selected : undefined}
+      aria-pressed={pressedRole ? selected : undefined}
       data-selected={selected ? "true" : undefined}
       data-index={index}
       tabIndex={tabIndex ?? 0}

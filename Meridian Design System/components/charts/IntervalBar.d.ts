@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * Interval bar — quantile rows for one metric on a shared domain. Use when the
  * question is "how wide is the plausible range for this number" and a fan chart
@@ -43,4 +44,4 @@ export interface IntervalBarProps extends React.HTMLAttributes<HTMLDivElement> {
   /** The caveat line — what the interval means and what it does not. */
   note?: string;
 }
-export declare function IntervalBar(props: IntervalBarProps): JSX.Element;
+export declare function IntervalBar(props: IntervalBarProps): React.JSX.Element;

@@ -48,4 +48,4 @@ export interface DatePickerProps extends Omit<React.HTMLAttributes<HTMLDivElemen
  *   required
  * />
  */
-export declare function DatePicker(props: DatePickerProps): JSX.Element;
+export declare function DatePicker(props: DatePickerProps): React.JSX.Element;

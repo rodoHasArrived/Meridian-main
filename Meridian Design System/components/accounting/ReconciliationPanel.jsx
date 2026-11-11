@@ -125,7 +125,6 @@ function Side({ side, columns, currency, status, query, sort, onSort, onToggleIt
     rows = [...rows].sort((a, b) => sort.dir * compareItems(a, b, sort.key));
   }
 
-  const allMatched = rows.length > 0 && rows.every((i) => i.matched);
 
   return (
     <div className="rec__side">
@@ -136,15 +135,17 @@ function Side({ side, columns, currency, status, query, sort, onSort, onToggleIt
           {open > 0 && <span className="rec__chip rec__chip--open">{open} open</span>}
         </span>
       </div>
-      <div className="rec__tablewrap" tabIndex={0} role="region" aria-label={`${side.title} items`}>
+      <div className="rec__tablewrap" role="region" aria-label={`${side.title} items`} tabIndex={0}>
         <table className="rec__table">
           <thead>
             <tr>
               <th scope="col" aria-label="Matched" style={{ width: 28, textAlign: "center" }}>
                 <Checkbox
-                  aria-label={`Matched status for all ${side.title} items`}
-                  checked={allMatched}
-                  onChange={(checked) => onToggleAll && onToggleAll(side, checked)}
+                  checked={items.length > 0 && items.every(i => i.matched)}
+                  indeterminate={matched > 0 && matched < items.length}
+                  disabled={!onToggleAll || items.length === 0}
+                  aria-label={`Mark all ${side.title} items matched`}
+                  onChange={(checked) => onToggleAll?.(side, checked)}
                 />
               </th>
               {columns.map((c) => <SortHead key={c.key} col={c} sort={sort} onSort={onSort} />)}
@@ -158,9 +159,10 @@ function Side({ side, columns, currency, status, query, sort, onSort, onToggleIt
               <tr key={it.id ?? i} className={it.matched ? "matched" : "open"}>
                 <td style={{ textAlign: "center", paddingLeft: 6, paddingRight: 6 }}>
                   <Checkbox
-                    aria-label={`Matched: ${side.title} ${it.ref ?? it.id}`}
                     checked={it.matched || false}
-                    onChange={(checked) => onToggleItem && onToggleItem(it.id, checked)}
+                    disabled={!onToggleItem || it.id == null}
+                    aria-label={`Match ${side.title} item ${it.ref || it.id || i + 1}`}
+                    onChange={(checked) => onToggleItem?.(it.id, checked)}
                   />
                 </td>
                 {columns.map((c) =>
@@ -257,10 +259,8 @@ export function ReconciliationPanel({
         </div>
       )}
       <div className="rec__cols">
-        <Side side={left} columns={cols} currency={currency} status={status} query={query} sort={sort} onSort={onSort}
-          onToggleItem={onToggleItem} onToggleAll={onToggleAll} />
-        <Side side={right} columns={cols} currency={currency} status={status} query={query} sort={sort} onSort={onSort}
-          onToggleItem={onToggleItem} onToggleAll={onToggleAll} />
+        <Side side={left} columns={cols} currency={currency} status={status} query={query} sort={sort} onSort={onSort} onToggleItem={onToggleItem} onToggleAll={onToggleAll} />
+        <Side side={right} columns={cols} currency={currency} status={status} query={query} sort={sort} onSort={onSort} onToggleItem={onToggleItem} onToggleAll={onToggleAll} />
       </div>
       <div className="rec__summary">
         <div className="rec__sumcell">

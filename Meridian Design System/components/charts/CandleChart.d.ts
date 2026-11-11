@@ -50,4 +50,4 @@ export interface CandleChartProps {
   /** 3.5 · Forwarded to ChartFrame — visually-hidden data table/list behind the pixels. */
   accessibleData?: string | { label: string; value: React.ReactNode }[] | { caption?: string; columns: React.ReactNode[]; rows: React.ReactNode[][] };
 }
-export declare function CandleChart(props: CandleChartProps): JSX.Element;
+export declare function CandleChart(props: CandleChartProps): React.JSX.Element;

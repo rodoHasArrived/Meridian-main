@@ -21,3 +21,5 @@ button.
   version changed is void, not stale — say so with `supersededBy` or `expiredReason`.
 
 **Readiness is asserted, never assumed.** An under-declared panel is not ready: absent `gates`, `evidence` counts, `snapshot`, `version` or `signatories` are reported by name ("Attestation under-declared — no readiness gates declared · not bound to a reviewed snapshot"), and a caller-declared `state="ready"` does not survive them. Pass **`snapshotFindings`** — the output of `DecisionSnapshot.verify(snapshot, current)` — so a changed reviewed snapshot expires the pending signature (`void` findings) or asks for a re-read (`review` findings) instead of letting a signature attach to a record that has moved.
+
+Private required rationale is bound to objectId, version and reviewed snapshot. Changing a binding clears an uncontrolled comment before approval; a controlled comment remains parent-owned. Approval/rejection callbacks are synchronous notifications and the parent owns any remote outcome.

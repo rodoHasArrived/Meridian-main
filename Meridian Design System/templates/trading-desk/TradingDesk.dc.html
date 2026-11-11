@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,6 +7,7 @@
 <script src="../_scaffold/vendor/react-dom-18.3.1.production.min.js"></script>
 <script src="../../_ds_bundle.js"></script>
 <script src="./support.js"></script>
+<title>Monitor · Trading Desk — Meridian</title>
 </head>
 <body>
 <x-dc>
@@ -16,7 +17,7 @@
 <meta name="dc-template" content="trading-desk">
 <style>html,body{margin:0;padding:0;height:100%}</style>
 </helmet>
-<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Depth ladder" action-label="Retry" on-action="{{ noop }}" hint-size="100%,780px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Depth ladder" action-label="Retry" on-action="{{ onPreviewRetry }}" hint-size="100%,780px">
 <div style="height:100vh;display:flex;flex-direction:column;background:var(--bg);font-family:var(--font-body);color:var(--text-secondary);font-size:13px">
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkstationTopbar" module-label="Trading Desk" environment="{{ envLabel }}" brand-src="../../assets/brand/meridian-mark-light.svg" hint-size="100%,48px"></x-import>
 <div style="display:flex;flex:1;min-height:0">
@@ -32,12 +33,12 @@
 </sc-if>
 </div>
 <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-<div style="display:flex;gap:6px">
+<div style="display:flex;gap:6px;flex-wrap:wrap;min-width:0">
 <sc-for list="{{ chips }}" as="w" hint-placeholder-count="4">
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.InstrumentChip" symbol="{{ w.symbol }}" venue="{{ w.venue }}" asset-class="{{ w.assetClass }}" selected="{{ w.selected }}" on-click="{{ w.select }}" hint-size="110px,30px"></x-import>
 </sc-for>
 </div>
-<div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+<div style="margin-left:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0">
 <span style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted)">Depth</span>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.SegmentedControl" size="sm" value="{{ detail }}" on-change="{{ onDetail }}" options="{{ detailOptions }}" hint-size="140px,26px"></x-import>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.TimeframeSwitcher" value="{{ tf }}" on-change="{{ onTf }}" hint-size="220px,28px"></x-import>
@@ -157,6 +158,7 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1920,&quot;height&quot;:1080},&quot;detail&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;full&quot;,&quot;options&quot;:[&quot;summary&quot;,&quot;full&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;transport&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;answers&quot;,&quot;options&quot;:[&quot;answers&quot;,&quot;refuses&quot;,&quot;loses the answer&quot;,&quot;silent&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;autoFill&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;orderCapUsd&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:150000,&quot;min&quot;:25000,&quot;max&quot;:1000000,&quot;step&quot;:25000,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;default&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;LIVE&quot;,&quot;options&quot;:[&quot;PAPER&quot;,&quot;LIVE&quot;,&quot;FIXTURE&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;}}">
 class Component extends DCLogic {
+  retryPreview = () => this.setState({ previewReady: true });
   applyChrome() {
     const html = document.documentElement;
     html.setAttribute("data-theme", (window.MeridianPrefs?window.MeridianPrefs.theme(this.props.theme ?? "light"):(this.props.theme ?? "light")));
@@ -164,7 +166,7 @@ class Component extends DCLogic {
     if (document.body) document.body.setAttribute("data-theme-density", (window.MeridianPrefs?window.MeridianPrefs.density(this.props.density ?? "default"):(this.props.density ?? "default")));
   }
   componentDidMount() { this.applyChrome(); this._untick = window.MeridianWorld && window.MeridianWorld.tick(this); }
-  componentDidUpdate() { this.applyChrome(); }
+  componentDidUpdate(previous) { this.applyChrome(); if (previous.dataState !== this.props.dataState && this.state.previewReady) this.setState({ previewReady: false }); }
   componentWillUnmount() { (this.timers || []).forEach(clearTimeout); this._untick && this._untick(); }
   env() { return String(this.props.environment ?? "LIVE").toUpperCase(); }
   ds() { return window.MeridianDesignSystem_205d17 || {}; }
@@ -461,6 +463,8 @@ class Component extends DCLogic {
   }
 
   renderVals() {
+    // Retry only the declared synthetic preview, never an application transport.
+
     this.applyChrome();
     const s = this.state;
     const el = React.createElement;
@@ -507,7 +511,7 @@ class Component extends DCLogic {
         { id: "flow", label: "Tape · positions", minSize: 0.3 },
         { id: "ticket", label: "Order ticket · limits · ledger", minSize: 0.2 },
       ],
-      dataState: this.props.dataState ?? "ready",
+      onPreviewRetry: this.retryPreview, dataState: this.state.previewReady ? "ready" : (this.props.dataState ?? "ready"),
       clockLabel: this.clockLabel(),
       envLabel: this.env(), envLower: this.env().toLowerCase(),
       lastSeen: this.now() - 1000,

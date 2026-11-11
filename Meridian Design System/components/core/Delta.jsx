@@ -4,7 +4,7 @@
 import React from "react";
 
 export function Delta({ value, decimals = 2, suffix = "", arrow = false, tone, locale, style = {}, ...rest }) {
-  const n = typeof value === "number" ? value : parseFloat(value);
+  const n = typeof value === "number" ? value : typeof value === "string" && value.trim() ? Number(value) : NaN;
   if (!Number.isFinite(n)) return <span {...rest}>—</span>;
   const dir = n > 0 ? "up" : n < 0 ? "down" : "flat";
   const resolved = tone || dir;

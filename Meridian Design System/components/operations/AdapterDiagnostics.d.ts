@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * AdapterDiagnostics — posture, retry schedule, last error, queue depth and signing-key state for
  * the **outbound** integrations that carry an operator's instructions away from the workstation
@@ -56,7 +57,7 @@ export interface AdapterRow {
   versionStale?: boolean;
 }
 
-export interface AdapterDiagnosticsProps extends React.HTMLAttributes<HTMLElement> {
+export interface AdapterDiagnosticsProps extends Omit<React.HTMLAttributes<HTMLElement>, "title" | "onSuspend" | "onSelect"> {
   adapters?: AdapterRow[];
   /** @default "Outbound adapters" */
   title?: React.ReactNode;
@@ -81,7 +82,7 @@ export interface AdapterDiagnosticsProps extends React.HTMLAttributes<HTMLElemen
   emptyStatement?: React.ReactNode;
   footNote?: React.ReactNode;
 }
-export declare function AdapterDiagnostics(props: AdapterDiagnosticsProps): JSX.Element;
+export declare function AdapterDiagnostics(props: AdapterDiagnosticsProps): React.JSX.Element;
 
 /** Cell-sized posture, for a blotter row, a status bar, or an adapter picker. */
 export declare function AdapterPostureChip(props: React.HTMLAttributes<HTMLSpanElement> & {
@@ -89,7 +90,7 @@ export declare function AdapterPostureChip(props: React.HTMLAttributes<HTMLSpanE
   label?: React.ReactNode;
   /** Rendered inline — a retrying chip with no next attempt is misleading. */
   nextAttempt?: string;
-}): JSX.Element;
+}): React.JSX.Element;
 
 /** The five postures with severity mapping and the sentence each one means. */
 export declare const ADAPTER_POSTURES: Array<{ id: AdapterPosture; label: string; severity: "ready" | "action" | "blocked" | "review" | "info"; says: string }>;

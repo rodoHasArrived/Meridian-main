@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * Allocation editor — interactive split of a fixed total across editable weights, computed
  * with `Money.allocateAmount` (largest-remainder at the currency minor unit) so the parts sum
@@ -23,4 +24,4 @@ export interface AllocationEditorProps {
   /** Accessible caption / region label. */
   caption?: string;
 }
-export declare function AllocationEditor(props: AllocationEditorProps): JSX.Element;
+export declare function AllocationEditor(props: AllocationEditorProps): React.JSX.Element;

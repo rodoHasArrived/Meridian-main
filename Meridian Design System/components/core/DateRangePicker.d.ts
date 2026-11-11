@@ -60,4 +60,4 @@ export interface DateRangePickerProps extends Omit<React.HTMLAttributes<HTMLDivE
  *   disabledDate={(iso, d) => d.getDay() === 0 || d.getDay() === 6}
  * />
  */
-export declare function DateRangePicker(props: DateRangePickerProps): JSX.Element;
+export declare function DateRangePicker(props: DateRangePickerProps): React.JSX.Element;

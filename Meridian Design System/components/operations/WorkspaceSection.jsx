@@ -43,7 +43,7 @@ export function WorkspaceSection({ id, title, summary, jump, onJump, jumpHref, c
         {jump && (
           jumpHref
             ? <a className="mds-wsection__jump" href={jumpHref}>{jump}</a>
-            : <button type="button" className="mds-wsection__jump" onClick={onJump}>{jump}</button>
+            : <button type="button" className="mds-wsection__jump" onClick={onJump} disabled={!onJump} title={onJump?undefined:"Navigation is unavailable in this view"}>{jump}</button>
         )}
       </div>
       <div className="mds-wsection__body">{children}</div>

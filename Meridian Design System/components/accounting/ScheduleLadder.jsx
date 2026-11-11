@@ -55,10 +55,11 @@ let injected=false;function inject(){if(injected||typeof document==="undefined")
 .mds-sl__exp{font:600 12px/16px var(--font-data,monospace);font-variant-numeric:tabular-nums;color:var(--text-primary,#20252B)}
 .mds-sl__sub{display:block;font:400 10px/14px var(--font-body);color:var(--text-muted,#606870)}
 .mds-sl__wait{display:inline-grid;justify-items:end;font-family:var(--font-data,monospace)}
-.mds-sl__wait b{font:600 11px/16px var(--font-data,monospace);color:var(--pending,#7A6B52)}
+.mds-sl__wait b{font:600 11px/16px var(--font-data,monospace);color:var(--text-primary,#20252B)}
 .mds-sl__wait span{font:10px/14px var(--font-body);color:var(--text-muted,#606870)}
 .mds-sl__mark{display:inline-block;width:8px;margin-right:3px;text-align:center}
 .mds-sl tbody tr[data-projected="true"] .mds-sl__period,.mds-sl tbody tr[data-projected="true"] .mds-sl__exp{font-weight:400}
+.mds-sl tbody tr[data-current="true"] .mds-sl__date,.mds-sl tbody tr[data-current="true"] .mds-sl__sub,.mds-sl tbody tr[data-current="true"] .mds-sl__wait>span{color:var(--text-primary,#20252B)}
 .mds-sl tbody tr[data-current="true"]{background:var(--bg-active,#E7EDF2)}
 .mds-sl__rule td{padding:5px 11px;background:var(--bg,#F2F0EB);font:10px/14px var(--font-data,monospace);color:var(--text-muted,#606870);border-top:1px solid var(--border,#D2CDC3)}
 .mds-sl__trace{background:none;border:0;padding:0;font:10px/14px var(--font-body);color:var(--link,#2A5F96);cursor:pointer;text-align:left}

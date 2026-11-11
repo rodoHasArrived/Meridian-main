@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { addReconciliationBreakComment, assignReconciliationBreak, getReconciliationBreakDetail } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { TextArea } from "@/components/ui/text-area";
 import { FormRow } from "@/components/ui/form";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { isApiError } from "@/lib/api-errors";
@@ -132,7 +133,7 @@ export function ReconciliationCaseDiscussion({ breakId, onUpdated, services = de
             </li>)}
           </ol>
           {!comments.length ? <p className="text-sm text-muted-foreground">No retained comments.</p> : null}
-          <FormRow label="Comment" labelFor={`${id}-note`}><textarea id={`${id}-note`} className="min-h-20 w-full border border-border bg-background px-3 py-2 text-sm" value={note} disabled={!editable} onChange={(event) => setNote(event.target.value)} /></FormRow>
+          <FormRow label="Comment" labelFor={`${id}-note`}><TextArea id={`${id}-note`} rows={2} className="min-h-20" value={note} disabled={!editable} onChange={(event) => setNote(event.target.value)} /></FormRow>
           <FormRow label="Mention operator IDs (comma separated)" labelFor={`${id}-mentions`}><Input id={`${id}-mentions`} value={mentions} disabled={!editable} onChange={(event) => setMentions(event.target.value)} /></FormRow>
           <Button size="sm" disabled={!editable || !note.trim()} disabledReason="Load a versioned case and enter a comment before submitting." onClick={() => void submit("AddComment")}>Add comment</Button>
           <FormRow label="Assign to operator ID" labelFor={`${id}-assignee`}><Input id={`${id}-assignee`} value={assignee} disabled={!editable} onChange={(event) => setAssignee(event.target.value)} /></FormRow>

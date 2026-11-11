@@ -3,10 +3,9 @@
 // text equivalent; permissions, redaction, and export restrictions are stated, not implied.
 import React from "react";
 import { Button } from "../core/Button";
+import { conditionMeta } from "./conditions";
 
-const CONDITION={confirmed:{label:"Confirmed source",glyph:"●"},provisional:{label:"Provisional",glyph:"◐"},estimated:{label:"Estimated",glyph:"○"},stale:{label:"Stale",glyph:"◔"},overridden:{label:"Overridden",glyph:"◆"},missing:{label:"Missing",glyph:"■"},na:{label:"Not applicable",glyph:"—"},pending:{label:"Pending",glyph:"◇"},exception:{label:"Exception",glyph:"▲"},reconciled:{label:"Reconciled",glyph:"✓"}};
-const ALIAS={complete:"confirmed",verified:"confirmed",ok:"confirmed",matched:"reconciled",certified:"reconciled",preliminary:"provisional",unaudited:"provisional",delayed:"stale",aged:"stale",override:"overridden",manual:"overridden",absent:"missing",unavailable:"missing","not applicable":"na","n/a":"na",awaiting:"pending",queued:"pending",failed:"exception"};
-function meta(v){if(!v)return null;const k=String(v).trim().toLowerCase().replace(/[_-]+/g," ");const key=CONDITION[k]?k:ALIAS[k]||ALIAS[k.replace(/\s+/g,"")];return key?{key,...CONDITION[key]}:null}
+const meta=value=>value?conditionMeta(value):null;
 const TYPES={statement:"Statement",confirmation:"Trade confirmation",extract:"GL extract",custodian:"Custodian file",pricing:"Pricing report",model:"Model output",policy:"Accounting policy",approval:"Approval record",correspondence:"Correspondence",snapshot:"Source snapshot",document:"Document"};
 
 let injected=false;function inject(){if(injected||typeof document==="undefined")return;injected=true;const el=document.createElement("style");el.setAttribute("data-mds","evidence-preview");el.textContent=`
@@ -50,7 +49,8 @@ export function EvidencePreview({
   inject();
   const c=meta(condition);
   const typeLabel=type?(TYPES[String(type).toLowerCase()]||type):null;
-  const canOpen=permissions.canOpen!==false;
+  const withheld=c?.key==="restricted";
+  const canOpen=permissions.canOpen!==false&&!withheld;
   const canExport=permissions.canExport!==false;
   const extractText=extraction||extractionStatus;
   const equivalent=textEquivalent||(image?imageAlt:null);
@@ -69,18 +69,18 @@ export function EvidencePreview({
       <div className="mds-evp__loc">{page?`Page ${page}`:null}{page&&section?<br/>:null}{section}</div>
     </header>
     {flags.length?<div className="mds-evp__flags">{flags.map((f,i)=><span key={i} className={`mds-evp__flag mds-evp__flag--${f.tone}`}>{f.text}</span>)}</div>:null}
-    {image
+    {withheld ? <div className="mds-evp__doc">Restricted</div> : image
       ? <div className="mds-evp__doc mds-evp__doc--image"><img src={image} alt={imageAlt||`Evidence excerpt from ${title}`}/></div>
       : <div className="mds-evp__doc">{before}{highlight?<mark>{highlight}</mark>:null}{after}</div>}
-    {equivalent?<div className="mds-evp__equiv"><h4>Text equivalent</h4><p>{equivalent}</p></div>:null}
+    {equivalent&&!withheld?<div className="mds-evp__equiv"><h4>Text equivalent</h4><p>{equivalent}</p></div>:null}
     <div className="mds-evp__meta">
       <div><span>{statementDate?"Statement date":"As of"}</span><strong>{statementDate||asOf||"—"}</strong></div>
       <div><span>Received</span><strong>{receivedAt||"—"}</strong></div>
-      <div><span>Extraction</span><strong>{extractText||"—"}</strong></div>
+      <div><span>Extraction</span><strong>{withheld?"Restricted":extractText||"—"}</strong></div>
       <div><span>Condition</span><strong>{c?`${c.glyph} ${c.label}`:"—"}</strong></div>
-      {completeness!=null?<div><span>Completeness</span><strong>{completeness}</strong></div>:null}
-      {confidence!=null?<div><span>Match confidence</span><strong>{confidence}%</strong></div>:null}
-      {metadata.map((m,i)=><div key={i}><span>{m.label}</span><strong>{m.value}</strong></div>)}
+      {completeness!=null&&!withheld?<div><span>Completeness</span><strong>{completeness}</strong></div>:null}
+      {confidence!=null&&!withheld?<div><span>Match confidence</span><strong>{confidence}%</strong></div>:null}
+      {(!withheld?metadata:[]).map((m,i)=><div key={i}><span>{m.label}</span><strong>{m.value}</strong></div>)}
     </div>
     {citation?<div className="mds-evp__cite"><span>{citation}</span></div>:null}
     <footer className="mds-evp__foot">
@@ -88,10 +88,10 @@ export function EvidencePreview({
       {onPrevious?<Button size="sm" variant="ghost" onClick={onPrevious}>Previous</Button>:null}
       {onNext?<Button size="sm" variant="ghost" onClick={onNext}>Next</Button>:null}
       {onCopyCitation?<Button size="sm" variant="ghost" onClick={onCopyCitation}>Copy citation</Button>:null}
-      {onCompare?<Button size="sm" variant="ghost" onClick={onCompare}>Compare</Button>:null}
+      {onCompare?<Button size="sm" variant="ghost" onClick={onCompare} disabled={withheld} title={withheld?"Restricted evidence cannot be compared":undefined}>Compare</Button>:null}
       {onLink?<Button size="sm" variant="ghost" onClick={onLink}>Link to exception</Button>:null}
       {onMarkSuperseded&&!superseded?<Button size="sm" variant="ghost" onClick={onMarkSuperseded}>Mark superseded</Button>:null}
-      {onOpenOriginal?<Button size="sm" onClick={onOpenOriginal} disabled={!canOpen} title={canOpen?undefined:"Document permissions do not allow opening the original"}>Open original</Button>:null}
+      {onOpenOriginal?<Button size="sm" onClick={onOpenOriginal} disabled={!canOpen} title={canOpen?undefined:withheld?"Evidence is restricted":"Document permissions do not allow opening the original"}>Open original</Button>:null}
     </footer>
   </section>;
 }

@@ -88,7 +88,7 @@ export function ProviderAccountingRegion({ services }: { services?: ProviderAcco
 
           {panel.rateLimits.length > 0 ? (
             <div className="mt-3 overflow-x-auto rounded-md border border-border/70">
-              <TableWorkbench workbenchId="data-provider-rate-limits" sourceKey={panel.rateLimits.map((row) => row.id).join("|")}
+              <TableWorkbench tableClassName={"w-full min-w-[920px] text-left text-xs"} maxVisibleRows={null}  workbenchId="data-provider-rate-limits" sourceKey={panel.rateLimits.map((row) => row.id).join("|")}
                 sourceDescription="Complete current provider rate-limit snapshot; no history is inferred." completePopulation
                 rows={panel.rateLimits} getRowId={(row) => row.id} getSearchText={(row) => `${row.provider} ${row.surface} ${row.status} ${row.failureReason}`}
                 ariaLabel="Current provider rate-limit state" emptyText="No current rate-limit evidence."

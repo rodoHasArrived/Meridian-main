@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * Financial-statement table — P&L, balance sheet, or cash-flow layout: grouped sections with
  * indented line items, per-section subtotals, and a strong double-ruled grand total. Supports
@@ -45,4 +46,4 @@ export interface StatementTableProps {
   /** Accessible caption / region label. */
   caption?: string;
 }
-export declare function StatementTable(props: StatementTableProps): JSX.Element;
+export declare function StatementTable(props: StatementTableProps): React.JSX.Element;

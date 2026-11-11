@@ -8,6 +8,7 @@
 //   "?"       — single key, ignored while typing in a field
 // ShortcutSheet renders automatically inside the provider: "?" or ctrl+/ opens it.
 import React from "react";
+import { useOverlayFocus } from "./useOverlayFocus";
 import { Kbd } from "./Kbd";
 
 let injected = false;
@@ -64,6 +65,8 @@ function eventKey(e) {
 export function HotkeysProvider({ bindings = [], sheet = true, sheetTitle = "Keyboard shortcuts" }) {
   inject();
   const [open, setOpen] = React.useState(false);
+  const sheetRef = React.useRef(null);
+  useOverlayFocus(sheetRef, sheet && open, ".mds-hotkeys-panel");
   const parsed = React.useMemo(
     () => bindings.map((b) => ({ ...b, parsed: parseBinding(b.keys) })),
     [bindings]
@@ -132,8 +135,8 @@ export function HotkeysProvider({ bindings = [], sheet = true, sheetTitle = "Key
     entry.items.push(b);
   }
   return (
-    <div className="mds-hotkeys-sheet" onClick={() => setOpen(false)}>
-      <div className="mds-hotkeys-panel" role="dialog" aria-label={sheetTitle} onClick={(e) => e.stopPropagation()}>
+    <div ref={sheetRef} className="mds-hotkeys-sheet" onClick={() => setOpen(false)}>
+      <div className="mds-hotkeys-panel" role="dialog" aria-modal="true" aria-label={sheetTitle} onClick={(e) => e.stopPropagation()}>
         <div className="mds-hotkeys-hd">
           <span className="mds-hotkeys-title">{sheetTitle}</span>
           <button type="button" className="mds-hotkeys-x" aria-label="Close" onClick={() => setOpen(false)}>×</button>

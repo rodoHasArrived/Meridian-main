@@ -25,6 +25,7 @@ import type { AuditTrailExplorerResult } from "@/types/execution-audit.types";
 
 const AUDIT_LIMIT = 50;
 
+
 export function ExecutionAuditTrailPanel() {
   const [result, setResult] = useState<AuditTrailExplorerResult | null>(null);
   const [searchText, setSearchText] = useState("");
@@ -101,7 +102,7 @@ export function ExecutionAuditTrailPanel() {
           </div>
         </form>
 
-        <TableWorkbench<(typeof vm.rows)[number]> workbenchId="trading-execution-audit" sourceKey={appliedSearch} sourceDescription="Authorized retained execution and Operations audit query; host execution retention limits apply. Actor, outcome, context and ledger status are retained."
+        <TableWorkbench<(typeof vm.rows)[number]> maxVisibleRows={null}  workbenchId="trading-execution-audit" sourceKey={appliedSearch} sourceDescription="Authorized retained execution and Operations audit query; host execution retention limits apply. Actor, outcome, context and ledger status are retained."
  completePopulation={!loading && !error && Boolean(result) && !vm.truncated} rows={vm.rows} getRowId={(row)=>row.auditId} getRowAriaLabel={(row)=>row.ariaLabel}
  onExportAll={!loading && !error && result ? (columns, _search, sort, signal) => exportTableQuery("trading-execution-audit", columns, appliedSearch, sort?.columnId, sort?.direction, signal) : undefined}
  ariaLabel="Execution audit trail entries" emptyText={loading ? "Loading audit trail…" : vm.emptyState}

@@ -1,4 +1,4 @@
-// Meridian status bar — near-black footer (--statusbar-bg) mirroring the WPF StatusBar palette.
+// Meridian status bar — near-black footer mirroring the WPF StatusBar palette.
 // A row of mono fields: connection, sync state, record counts, latency. Always-on telemetry.
 import React from "react";
 
@@ -7,12 +7,13 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.ws-statusbar{display:flex;align-items:center;gap:0;min-height:28px;padding:0 12px;
+.ws-statusbar{display:flex;align-items:center;flex-wrap:wrap;gap:6px 0;min-height:28px;min-width:0;max-width:100%;box-sizing:border-box;padding:4px 12px;
   background:var(--statusbar-bg,#29323A);border-top:1px solid var(--statusbar-border,#3A444D);
   font-family:var(--font-data);font-size:11px;color:var(--statusbar-text,#C9CFD4);
   font-variant-numeric:tabular-nums;}
-.ws-statusbar__item{display:inline-flex;align-items:center;gap:6px;padding:0 12px;
-  border-right:1px solid var(--statusbar-border,#3A444D);height:16px;}
+.ws-statusbar__item{display:inline-flex;align-items:center;gap:6px;padding:0 12px;min-width:0;max-width:100%;box-sizing:border-box;
+  border-right:1px solid var(--statusbar-border,#3A444D);min-height:16px;}
+.ws-statusbar__item>span:last-child{min-width:0;overflow-wrap:anywhere;}
 .ws-statusbar__item:first-child{padding-left:0;}
 .ws-statusbar__item--push{margin-left:auto;border-right:none;border-left:1px solid var(--statusbar-border,#3A444D);}
 .ws-statusbar__label{font-family:var(--font-body);font-variant:all-small-caps;

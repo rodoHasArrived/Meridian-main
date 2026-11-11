@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,6 +7,7 @@
 <script src="../_scaffold/vendor/react-dom-18.3.1.production.min.js"></script>
 <script src="../../_ds_bundle.js"></script>
 <script src="./support.js"></script>
+<title>Report · Report Library — Meridian</title>
 </head>
 <body>
 <x-dc>
@@ -187,7 +188,7 @@ class Component extends DCLogic {
     if (document.body) document.body.setAttribute("data-theme-density", (window.MeridianPrefs?window.MeridianPrefs.density(this.props.density ?? "default"):(this.props.density ?? "default")));
   }
   componentDidMount() { this.applyChrome(); }
-  componentDidUpdate() { this.applyChrome(); }
+  componentDidUpdate(previous) { this.applyChrome(); if (previous.dataState !== this.props.dataState && this.state.previewReady) this.setState({ previewReady: false }); }
 
   reports = [
     { id: "trial-balance", name: "Trial Balance", category: "Financial Statements",
@@ -277,8 +278,8 @@ class Component extends DCLogic {
     const d = this.reports.find((r) => r.id === s.dlgId);
     const anyFormat = d && d.format.some((f) => s.dlgFormats[f]);
     return {
-      dataState: this.props.dataState ?? "ready",
-      onRetry: () => {},
+      dataState: this.state.previewReady ? "ready" : (this.props.dataState ?? "ready"),
+      onRetry: () => this.setState({ previewReady: true }),
       topbar: WorkstationTopbar && el(WorkstationTopbar, { moduleLabel: "Report Library", environment: String(this.props.environment ?? "PAPER").toUpperCase(),  brandSrc: "../../assets/brand/meridian-mark-light.svg" }),
       nav: NavRail && el(NavRail, { activeId: "report-library", onSelect: (id) => window.MeridianAppMap && window.MeridianAppMap.go(id), sections: (window.MeridianAppMap ? window.MeridianAppMap.sections("report-library") : []) }),
       statusBar: StatusBar && el(StatusBar, { items: [

@@ -1,3 +1,4 @@
+import type React from "react";
 /**
  * KPI tile — mirrors `MetricCardStyle` + its semantic variants. Raised paper surface with a
  * **3px left-accent border** in the tone color, small-caps label, 24px mono value, signed delta.
@@ -35,4 +36,4 @@ export interface MetricCardProps {
    *  the group's accessible name, which already carries value, trend + delta, context, and tone. */
   sparklineLabel?: string;
 }
-export declare function MetricCard(props: MetricCardProps): JSX.Element;
+export declare function MetricCard(props: MetricCardProps): React.JSX.Element;

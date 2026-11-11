@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,6 +7,7 @@
 <script src="../_scaffold/vendor/react-dom-18.3.1.production.min.js"></script>
 <script src="../../_ds_bundle.js"></script>
 <script src="./support.js"></script>
+<title>Investigate · Asset-Liability Review — Meridian</title>
 </head>
 <body>
 <x-dc>
@@ -15,7 +16,7 @@
 <script src="./ds-base.js"></script>
 <meta name="dc-template" content="alm-review">
 <style>html,body{margin:0;padding:0;height:100%}
-[data-al-show="off"]{display:none}
+[data-al-show="off"]{display:none!important}
 .al-screen{height:100vh;display:flex;flex-direction:column;background:var(--bg);font-family:var(--font-body);color:var(--text-secondary);font-size:13px}
 .al-frame{flex:1;min-height:0;display:flex}
 .al-pane{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column}
@@ -67,8 +68,8 @@
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.ObjectHeader" dc-props="{{ bookHeader }}" hint-size="100%,92px"></x-import>
 <div class="al-head">
 <div class="al-seg">
-<button type="button" class="al-tab" data-on="{{ baseOn }}" onClick="{{ setBase }}">Base</button>
-<button type="button" class="al-tab" data-on="{{ scenarioOn }}" onClick="{{ setScenario }}">+200 bp scenario</button>
+<button type="button" class="al-tab" data-on="{{ baseOn }}" aria-pressed="{{ basePressed }}" onClick="{{ setBase }}">Base</button>
+<button type="button" class="al-tab" data-on="{{ scenarioOn }}" aria-pressed="{{ scenarioPressed }}" onClick="{{ setScenario }}">+200 bp scenario</button>
 </div>
 </div>
 <p class="al-state">The <b>{{ worstLabel }}</b> bucket carries the largest net liability gap: <b>{{ worstBase }}</b> on the base book, widening to <b>{{ worstScenario }}</b> under a +200 bp parallel shift — a deterioration of <b>{{ worstDelta }}</b>. Selected horizon <b>{{ selectionLabel }}</b>: net <b>{{ selectionNet }}</b>, coverage {{ selectionCoverage }}, condition {{ selectionCondition }}.</p>
@@ -111,11 +112,11 @@
 </x-import>
 <div class="al-body">
 <div class="al-plane">
-<div class="al-seg" role="tablist" style="align-self:flex-start">
-<button type="button" class="al-tab" data-on="{{ cashOn }}" onClick="{{ viewCash }}">Cash flow</button>
-<button type="button" class="al-tab" data-on="{{ matOn }}" onClick="{{ viewMaturity }}">Maturity</button>
-<button type="button" class="al-tab" data-on="{{ durOn }}" onClick="{{ viewDuration }}">Duration</button>
-<button type="button" class="al-tab" data-on="{{ basisOn }}" onClick="{{ viewBasis }}">Basis</button>
+<div class="al-seg" role="group" aria-label="Asset liability view" style="align-self:flex-start">
+<button type="button" class="al-tab" data-on="{{ cashOn }}" onClick="{{ viewCash }}" aria-pressed="{{ cashPressed }}">Cash flow</button>
+<button type="button" class="al-tab" data-on="{{ matOn }}" onClick="{{ viewMaturity }}" aria-pressed="{{ matPressed }}">Maturity</button>
+<button type="button" class="al-tab" data-on="{{ durOn }}" onClick="{{ viewDuration }}" aria-pressed="{{ durPressed }}">Duration</button>
+<button type="button" class="al-tab" data-on="{{ basisOn }}" onClick="{{ viewBasis }}" aria-pressed="{{ basisPressed }}">Basis</button>
 </div>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.ContinuityFrame" state="{{ continuity }}" subject="Analytics feed" since="{{ snapshotSince }}" snapshot-at="02:14 UTC" coverage="{{ coverageLabel }}" on-retry="{{ onContinuityRetry }}" retry-label="Refresh" hint-size="100%,520px">
 <div data-al-show="{{ cashShow }}">
@@ -134,9 +135,9 @@
 </div>
 <aside class="al-rail" aria-label="Calculation and evidence inspector">
 <div class="al-seg">
-<button type="button" class="al-tab" data-on="{{ readoutOn }}" onClick="{{ showReadout }}">Readout</button>
-<button type="button" class="al-tab" data-on="{{ traceOn }}" onClick="{{ openTrace }}">Calculation</button>
-<button type="button" class="al-tab" data-on="{{ evidenceOn }}" onClick="{{ openEvidence }}">Evidence</button>
+<button type="button" class="al-tab" data-on="{{ readoutOn }}" onClick="{{ showReadout }}" aria-pressed="{{ readoutPressed }}">Readout</button>
+<button type="button" class="al-tab" data-on="{{ traceOn }}" onClick="{{ openTrace }}" aria-pressed="{{ tracePressed }}">Calculation</button>
+<button type="button" class="al-tab" data-on="{{ evidenceOn }}" onClick="{{ openEvidence }}" aria-pressed="{{ evidencePressed }}">Evidence</button>
 </div>
 <div data-al-show="{{ readoutShow }}" style="display:flex;flex-direction:column;gap:10px">
 <h2 class="al-h">Selected horizon</h2>
@@ -241,7 +242,7 @@ class Component extends DCLogic {
     if(document.body)document.body.setAttribute("data-theme-density",(window.MeridianPrefs?window.MeridianPrefs.density(this.props.density??"default"):(this.props.density??"default")));
   }
   componentDidMount(){this.applyChrome()}
-  componentDidUpdate(){this.applyChrome()}
+  componentDidUpdate(previous){this.applyChrome();if(previous.dataState!==this.props.dataState&&this.state.previewReady)this.setState({previewReady:false})}
 
   // The template logic can run before ds-base finishes loading the numeric authority.
   // Preserve missingness until the import resolver rerenders with the compiled bundle.
@@ -287,11 +288,11 @@ class Component extends DCLogic {
 
     return {
       noop,half:0.5,
-      dataState:this.props.dataState??"ready",
+      dataState:this.state.previewReady?"ready":(this.props.dataState??"ready"),
       navSections:(window.MeridianAppMap?window.MeridianAppMap.sections("alm"):[]),
       onNav:(id)=>window.MeridianAppMap&&window.MeridianAppMap.go(id),
       environment:String(this.props.environment??"PAPER").toUpperCase(),
-      onRetry:()=>this.setState({continuity:"live"}),
+      onRetry:()=>this.setState({continuity:"live",previewReady:true}),
       onContinuityRetry:s.continuity==="live"?null:()=>this.setState({continuity:"live"}),
       continuity:s.continuity,
       snapshotSince:Date.now()-9*60*1000,
@@ -311,7 +312,7 @@ class Component extends DCLogic {
       commitHorizon:commit,
       selectedBucket:bucket.id,
 
-      baseOn:s.scenario?"off":"on",scenarioOn:s.scenario?"on":"off",
+      baseOn:s.scenario?"off":"on",scenarioOn:s.scenario?"on":"off",basePressed:!s.scenario,scenarioPressed:s.scenario,
       setBase:()=>this.setState({scenario:false}),
       setScenario:()=>this.setState({scenario:true}),
       showScenario:s.scenario,
@@ -379,7 +380,7 @@ class Component extends DCLogic {
       cashShow:on("cash"),matShow:on("maturity"),durShow:on("duration"),basisShow:on("basis"),
       viewCash:view("cash"),viewMaturity:view("maturity"),viewDuration:view("duration"),viewBasis:view("basis"),
 
-      readoutOn:insp("readout"),traceOn:insp("trace"),evidenceOn:insp("evidence"),
+      readoutOn:insp("readout"),readoutPressed:insp("readout")==="on",traceOn:insp("trace"),tracePressed:insp("trace")==="on",evidenceOn:insp("evidence"),evidencePressed:insp("evidence")==="on",
       readoutShow:insp("readout"),traceShow:insp("trace"),evidenceShow:insp("evidence"),
       showReadout:()=>this.setState({inspector:"readout"}),
       openTrace:()=>this.setState({inspector:"trace"}),

@@ -86,7 +86,7 @@ export interface ChartFrameProps {
    *  full table ({caption?, columns, rows}). */
   accessibleData?: string | { label: string; value: React.ReactNode }[] | { caption?: string; columns: React.ReactNode[]; rows: React.ReactNode[][] };
 }
-export declare function ChartFrame(props: ChartFrameProps): JSX.Element;
+export declare function ChartFrame(props: ChartFrameProps): React.JSX.Element;
 
 export interface AxisChipProps {
   x: number;
@@ -100,4 +100,7 @@ export interface AxisChipProps {
   /** @default 4 */
   rx?: number;
 }
-export declare function AxisChip(props: AxisChipProps): JSX.Element;
+export declare function AxisChip(props: AxisChipProps): React.JSX.Element;
+
+/** Shared axis typography, used by chart tick labels. */
+export declare const AXIS_FONT: React.CSSProperties;

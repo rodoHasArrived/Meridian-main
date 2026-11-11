@@ -5,6 +5,7 @@
 // (default: assertive for error, polite otherwise). Ready content is returned UNWRAPPED —
 // no live region ever wraps the working surface.
 import React from "react";
+import { Button } from "../core/Button";
 
 let injected = false;
 function inject() {
@@ -29,7 +30,7 @@ function inject() {
 .mds-dss--error .mds-dss__glyph{border-color:var(--red,#B54B42);color:var(--red-dim,#883832);background:var(--red-a10,rgba(181,75,66,.10));}
 .mds-dss--error .mds-dss__title{color:var(--red-dim,#883832);}
 .mds-dss__btn{margin-top:2px;padding:7px 16px;background:var(--brand-signal,#C56343);color:var(--text-on-fill,#fff);border:none;border-radius:var(--radius-button,2px);font:600 12px var(--font-body);cursor:pointer;}
-.mds-dss__note{font:11px var(--font-data,monospace);color:var(--text-disabled,#A4ABB2);}
+.mds-dss__note{font:11px var(--font-data,monospace);color:var(--text-muted,#606870);}
 @keyframes mds-dss-sweep{100%{transform:translateX(100%);}}
 @media (prefers-reduced-motion:reduce){.mds-dss__bar::after{animation:none;}}
 `;
@@ -95,7 +96,7 @@ export function DataStateSwitch({
             <div className="mds-dss__title">{copy.title}</div>
             <div className="mds-dss__detail">{copy.detail}</div>
             {actionLabel && (
-              <button type="button" className="mds-dss__btn" onClick={onAction}>{actionLabel}</button>
+              <Button type="button" onClick={onAction}>{actionLabel}</Button>
             )}
           </div>
         )}

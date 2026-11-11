@@ -1,3 +1,4 @@
+import * as React from "react";
 export interface CashFlowBucket {
   id?: string;
   label: string;
@@ -43,4 +44,8 @@ export interface CashFlowLadderProps extends Omit<React.HTMLAttributes<HTMLDivEl
   onSelect?: (bucket: CashFlowBucket, index: number) => void;
   description?: string;
 }
-export declare function CashFlowLadder(props: CashFlowLadderProps): JSX.Element;
+export declare function CashFlowLadder(props: CashFlowLadderProps): React.JSX.Element;
+
+/** Explicit missing/not-applicable/restricted or invalid required amounts render
+ * an unavailable result without row labels, numeric bars, or derived table totals.
+ * Restore usable inputs to recover the ordinary view. */

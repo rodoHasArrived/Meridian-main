@@ -22,7 +22,7 @@ export const STRATEGY_RUN_AXES = Object.freeze({
 function normalizeEnv(env) { const e = String(env || "").toLowerCase(); return STRATEGY_RUN_AXES.environment.includes(e) ? e : null; }
 function iss(code, severity, message) { return { code, severity, message }; }
 const toMs = (t) => (typeof t === "number" ? t : Date.parse(t));
-function deepFreeze(v) { if (v && typeof v === "object" && !Object.isFrozen(v)) { Object.freeze(v); Object.keys(v).forEach((k) => deepFreeze(v[k])); } return v; }
+function deepFreeze(v, visited = new WeakSet()) { if (v && typeof v === "object" && !visited.has(v)) { visited.add(v); Object.keys(v).forEach((k) => deepFreeze(v[k], visited)); Object.freeze(v); } return v; }
 const clone = (v) => (v === undefined ? null : JSON.parse(JSON.stringify(v)));
 
 /** New run request from the current draft. Snapshot + hashes are taken HERE — later draft edits

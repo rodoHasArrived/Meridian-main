@@ -107,7 +107,7 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
               <Badge variant="outline">{pluralizeCount(view.fundEventCommandRows.length, "event", { localizeCount: true })}</Badge>
             </div>
             <div className="overflow-x-auto rounded-md border border-border/70">
-              <TableWorkbench<(typeof view.fundEventCommandRows)[number]> workbenchId="accounting-capital-command-centers" sourceKey={view.workbenchRouteLabel}
+              <TableWorkbench<(typeof view.fundEventCommandRows)[number]> tableClassName={"w-full min-w-[940px] text-sm"} maxVisibleRows={null}  workbenchId="accounting-capital-command-centers" sourceKey={view.workbenchRouteLabel}
  rows={view.fundEventCommandRows} columns={[{ id: "field-0", label: "Fund event", rowHeader: true, exportValue: row => `${row.title} | ${row.subtitle} | ${row.memoLabel} | ${row.netActivityLabel}`, render: row => <>
 <div className="font-semibold text-foreground">{row.title}</div>
                         <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{row.subtitle}</div>

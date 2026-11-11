@@ -1,3 +1,4 @@
+import * as React from "react";
 export interface PostingLine { id?: string; account: string; description?: string; debit?: number; credit?: number }
 export interface PostingEffect { id?: string; label: React.ReactNode; before?: React.ReactNode | number; after?: React.ReactNode | number; basis?: string }
 export interface PostingCheck {
@@ -7,7 +8,7 @@ export interface PostingCheck {
   label: React.ReactNode;
   detail?: React.ReactNode;
 }
-export interface PostingImpactPreviewProps extends React.HTMLAttributes<HTMLElement> {
+export interface PostingImpactPreviewProps extends Omit<React.HTMLAttributes<HTMLElement>, "title"> {
   title?: React.ReactNode;
   subtitle?: React.ReactNode;
   /** Reporting period. */
@@ -36,4 +37,4 @@ export interface PostingImpactPreviewProps extends React.HTMLAttributes<HTMLElem
   onCancel?: () => void;
   postLabel?: React.ReactNode;
 }
-export declare function PostingImpactPreview(props: PostingImpactPreviewProps): JSX.Element;
+export declare function PostingImpactPreview(props: PostingImpactPreviewProps): React.JSX.Element;

@@ -102,6 +102,19 @@ test("new smoke-only support stays scoped to six GET identities without inventin
   assert.equal(readOnlySmokeResponse("/api/workstation/tables/other-table/views"), null);
 });
 
+test("command-palette symbol support is limited to its exact read-only query", () => {
+  const endpoint = "/api/symbols/search?query=portfolio";
+  const response = readOnlySmokeResponse(endpoint, "GET");
+  assert.equal(response.status, 200);
+  assert.deepEqual(response.body, []);
+  assert.match(response.smokeFixture.limitation, /empty symbol search/);
+  assert.equal(response.headers["x-meridian-dev-fixture"], "true");
+  for (const value of ["/api/symbols/search", "/api/symbols/search?query=MSFT", endpoint + "&extra=true", "/api/symbols/search/unknown?query=portfolio"]) {
+    assert.equal(readOnlySmokeResponse(value, "GET"), null);
+  }
+  assert.equal(readOnlySmokeResponse(endpoint, "POST"), null);
+});
+
 test("contrast math covers alpha washes and exposes the original selected-row failure", () => {
   assert.equal(contrastRatio(parseCssColor("#FFFFFF"), parseCssColor("#000000")), 21);
   assert.deepEqual(parseCssColor("color(srgb 1 0.5 0 / 0.25)"), [255, 127.5, 0, 0.25]);

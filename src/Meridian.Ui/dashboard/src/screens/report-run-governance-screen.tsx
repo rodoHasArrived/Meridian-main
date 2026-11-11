@@ -1033,7 +1033,7 @@ function AuditPanel({ run }: { run: GovernedReportingRun }) {
           />
         ) : (
           <div className="overflow-x-auto">
-            <TableWorkbench<(typeof run.auditTrail)[number]> workbenchId="reporting-run-audit" sourceKey={JSON.stringify(run.auditTrail)} rows={run.auditTrail} columns={[{id:"field-0",label:"Version",exportValue:(entry)=>entry.aggregateVersion,render:(entry)=>{return <>{entry.aggregateVersion}</>;}},
+            <TableWorkbench<(typeof run.auditTrail)[number]> tableClassName={"w-full min-w-[64rem] text-left text-sm"} maxVisibleRows={null}  workbenchId="reporting-run-audit" sourceKey={JSON.stringify(run.auditTrail)} rows={run.auditTrail} columns={[{id:"field-0",label:"Version",exportValue:(entry)=>entry.aggregateVersion,render:(entry)=>{return <>{entry.aggregateVersion}</>;}},
 {id:"field-1",label:"When",exportValue:(entry)=>entry.occurredAtUtc,render:(entry)=>{return <>{formatTimestamp(entry.occurredAtUtc)}</>;}},
 {id:"field-2",label:"Action",exportValue:(entry)=>entry.action,render:(entry)=>{return <>
                       <div>{entry.action}</div>
@@ -1124,7 +1124,7 @@ function RestatementPanel({
         ) : (
           <>
             <div className="overflow-x-auto">
-              <TableWorkbench<(typeof history.runs)[number]> workbenchId="reporting-series-revisions" sourceKey={JSON.stringify(history.runs)} rows={history.runs} columns={[{id:"field-0",label:"Revision",exportValue:(revision)=>revision.revision,render:(revision)=>{return <>{revision.revision}</>;}},
+              <TableWorkbench<(typeof history.runs)[number]> tableClassName={"w-full min-w-[42rem] text-left text-sm"} maxVisibleRows={null}  workbenchId="reporting-series-revisions" sourceKey={JSON.stringify(history.runs)} rows={history.runs} columns={[{id:"field-0",label:"Revision",exportValue:(revision)=>revision.revision,render:(revision)=>{return <>{revision.revision}</>;}},
 {id:"field-1",label:"Run",exportValue:(revision)=>revision.runId,render:(revision)=>{return <>
                         {revision.runId === run.runId ? (
                           <span className="font-mono text-xs">{revision.runId} (current)</span>
@@ -1598,7 +1598,7 @@ function DeliveryHistory({ resource }: { resource: ResourceState<SecureReporting
         <p className="text-sm text-muted-foreground">No durable delivery jobs are retained for this run.</p>
       ) : (
         <div className="overflow-x-auto">
-          <TableWorkbench<(typeof resource.data)[number]> workbenchId="reporting-delivery-history" sourceKey={JSON.stringify(resource.data)} rows={resource.data} columns={[{id:"field-0",label:"Job",exportValue:(delivery)=>delivery.jobId,render:(delivery)=>{return <>
+          <TableWorkbench<(typeof resource.data)[number]> tableClassName={"w-full min-w-[68rem] text-left text-sm"} maxVisibleRows={null}  workbenchId="reporting-delivery-history" sourceKey={JSON.stringify(resource.data)} rows={resource.data} columns={[{id:"field-0",label:"Job",exportValue:(delivery)=>delivery.jobId,render:(delivery)=>{return <>
                     <div>{delivery.jobId}</div>
                     <div className="mt-1 text-muted-foreground">release v{delivery.releaseVersion}</div>
                     <div className="mt-1">{delivery.artifactManifestHashSha256}</div>

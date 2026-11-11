@@ -5,11 +5,15 @@
   <meta charset="UTF-8" />
   <title>Token playground</title>
   <link rel="stylesheet" href="../styles.css" />
-  <script src="../_preview_runtime.js"></script>
-  <script src="../_preview_jsx.js"></script>
-  <script src="../_ds_bundle.js"></script>
+<link rel="stylesheet" href="../docs/specimen-layout.css">
+
+
+
+<script src="../_preview_runtime.js"></script>
+<script src="../_preview_jsx.js"></script>
+<script src="../_ds_bundle.js"></script>
 </head>
-<body style="margin:0;padding:20px;background:var(--bg-canvas,#F2F0EB);font-family:var(--font-body);color:var(--text-primary);">
+<body style="margin:0;padding:20px;background:var(--bg-canvas,#F2F0EB);font-family:var(--font-body);color:var(--text-primary);" class="mds-specimen">
 <div id="root"></div>
 <script type="text/babel">
 const { MetricCard, Button, Badge, SeverityBadge, DataGrid, Sparkline, Input, Select, Toggle, Eyebrow } = window.MeridianDesignSystem_205d17;
@@ -44,7 +48,7 @@ function Chip({ active, onClick, children, swatch }) {
       font: "600 11px var(--font-body)", padding: "4px 10px", borderRadius: 2,
       border: `1px solid ${active ? "var(--brand-signal,#C56343)" : "var(--border)"}`,
       background: active ? "var(--blue-a10)" : "var(--bg-light)",
-      color: active ? "var(--brand-signal-dim,#CB6E4E)" : "var(--text-secondary)",
+      color: active ? "var(--text-primary)" : "var(--text-secondary)",
       boxShadow: active ? "inset 0 0 0 1px var(--brand-signal,#C56343)" : "none" }}>
       {swatch && <span style={{ width: 10, height: 10, background: swatch, display: "inline-block" }}></span>}
       {children}
@@ -64,6 +68,8 @@ function Row({ label, children }) {
 
 function Playground() {
   const [brand, setBrand] = React.useState("");
+  const [followTail, setFollowTail] = React.useState(true);
+  const [provider, setProvider] = React.useState("Polygon");
   const [theme, setTheme] = React.useState("light");
   const [density, setDensity] = React.useState("");
 
@@ -130,10 +136,10 @@ function Playground() {
           display: "flex", flexDirection: "column", gap: 10 }}>
           <span style={{ fontSize: 10, fontWeight: 600, fontVariant: "all-small-caps", letterSpacing: ".04em",
             color: "var(--text-muted)" }}>Controls under this brand</span>
-          <Input placeholder="Search symbols" />
-          <Select options={["Polygon", "IBKR", "Databento"]} value="Polygon" onChange={() => {}} />
+          <Input label="Search symbols" placeholder="Search symbols" />
+          <Select label="Data provider" options={["Polygon", "IBKR", "Databento"]} value={provider} onChange={setProvider} />
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <Toggle checked onChange={() => {}} /> <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>Follow tail</span>
+            <Toggle label="Follow tail" checked={followTail} onChange={setFollowTail} />
           </div>
           <div style={{ height: 56 }}>
             <Sparkline points={[4, 6, 5, 8, 7, 9, 11, 10, 12, 14, 13, 16]} variant="area" width={280} height={56} />

@@ -1,5 +1,5 @@
 // Meridian operator rail — mirrors the light sidebar in ThemeTokens/ThemeControls:
-// 14rem paper rail (--sidebar-bg), small-caps section labels, nav items with a 3px terracotta
+// 14rem paper rail, small-caps section labels, nav items with a 3px terracotta
 // left indicator on the active item.
 import React from "react";
 
@@ -41,12 +41,13 @@ export function NavRail({ sections = [], activeId, onSelect }) {
   inject();
   return (
     <nav className="op-rail">
-      {sections.map((sec, si) => (
+      {(Array.isArray(sections) ? sections : []).filter(Boolean).map((sec, si) => (
         <div key={si} style={{ marginBottom: 10 }}>
           <div className="op-rail__section">{sec.label}</div>
           <div className="op-rail__nav">
-            {sec.items.map((it) => (
+            {(Array.isArray(sec.items) ? sec.items : []).filter(Boolean).map((it) => (
               <button type="button" key={it.id} className={`op-nav-item${it.id === activeId ? " active" : ""}`}
+                      aria-current={it.id === activeId ? "page" : undefined}
                       onClick={onSelect ? () => onSelect(it.id) : undefined}>
                 {it.icon
                   ? <img className="op-nav-item__icon" src={it.icon} width="16" height="16" alt="" />

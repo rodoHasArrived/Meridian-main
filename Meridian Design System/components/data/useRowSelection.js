@@ -53,15 +53,16 @@ export function useRowSelection(rows, getKey = (r) => r.id) {
 
   const toggleAllLoaded = React.useCallback(() => {
     setAllMatching(false);
-    setSelected((prev) => (prev.size === rows.length ? new Set() : new Set(keys)));
+    setSelected((prev) => (keys.length > 0 && keys.every((key) => prev.has(key)) ? new Set() : new Set(keys)));
   }, [rows.length, keys]);
 
   const selectAllMatching = React.useCallback(() => { setAllMatching(true); setSelected(new Set(keys)); }, [keys]);
   const clear = React.useCallback(() => { setAllMatching(false); setSelected(new Set()); anchorRef.current = null; }, []);
 
   const count = allMatching ? "all" : selected.size;
-  const allLoadedSelected = rows.length > 0 && selected.size === rows.length;
-  const someSelected = selected.size > 0 && selected.size < rows.length;
+  const loadedSelectedCount = allMatching ? rows.length : keys.filter((key) => selected.has(key)).length;
+  const allLoadedSelected = rows.length > 0 && loadedSelectedCount === rows.length;
+  const someSelected = loadedSelectedCount > 0 && loadedSelectedCount < rows.length;
 
   return {
     isSelected, onRowClick, toggle, toggleAllLoaded, selectAllMatching, clear,

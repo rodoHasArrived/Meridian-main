@@ -74,6 +74,7 @@ export function WorksheetGrid({
   const [internal, setInternal] = React.useState(defaultActiveCell);
   const active = isControlled ? activeCell : internal;
   const activeParsed = parseRef(active);
+  const activeValid = activeParsed && activeParsed.row >= 1 && activeParsed.row <= rows && cols.some((c) => c.key === activeParsed.col);
 
   const select = (ref) => {
     if (!isControlled) setInternal(ref);
@@ -116,7 +117,7 @@ export function WorksheetGrid({
 
   const onKeyDown = (e) => {
     if (editing != null) return;
-    if (!activeParsed) return;
+    if (!activeValid) { if (["ArrowDown", "ArrowUp", "ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key) && cols[0] && rows > 0) { e.preventDefault(); select(cols[0].key + 1); } return; }
     if (editable && (e.key === "Enter" || e.key === "F2")) { e.preventDefault(); startEdit(active); return; }
     if (editable && e.key.length === 1 && !e.metaKey && !e.ctrlKey && !e.altKey) { e.preventDefault(); startEdit(active, e.key); return; }
     let ci = cols.findIndex((c) => c.key === activeParsed.col);
@@ -135,7 +136,7 @@ export function WorksheetGrid({
   };
 
   const activeObj = active ? cells[active] : null;
-  const barText = activeObj ? (activeObj.formula || activeObj.value || "") : "";
+  const barText = activeObj ? (activeObj.formula || (activeObj.value ?? "")) : "";
   const barIsError = activeObj && activeObj.type === "error";
 
   const cellInner = (c, col) => {
@@ -159,14 +160,14 @@ export function WorksheetGrid({
           <div className="mds-ws__ref">{active || "—"}</div>
           <div className="mds-ws__fx">fx</div>
           <div className="mds-ws__formula" style={barIsError ? { color: "var(--red-dim)" } : undefined}>
-            {barText || <span style={{ color: "var(--text-disabled,#A4ABB2)" }}>{emptyFormulaText}</span>}
+            {barText !== "" ? barText : <span style={{ color: "var(--text-muted,#606870)" }}>{emptyFormulaText}</span>}
           </div>
         </div>
       )}
       <div className="mds-ws__scroll">
         <div className="mds-ws__grid" ref={gridRef} tabIndex={0} role="grid" aria-label={label}
           aria-rowcount={rows + 1} aria-colcount={cols.length + 1}
-          aria-activedescendant={active ? `${uid}-cell-${active}` : undefined}
+          aria-activedescendant={activeValid ? `${uid}-cell-${active}` : undefined}
           onKeyDown={onKeyDown}>
           <div className="mds-ws__row mds-ws__corner" role="row" aria-rowindex={1}>
             <div className="mds-ws__hdr" role="columnheader" aria-colindex={1} aria-label="Row number" style={{ width: rowHeaderWidth, minWidth: rowHeaderWidth, height: headerHeight, borderRightColor: "var(--border-strong,#AAA49A)", position: "sticky", left: 0, zIndex: 4 }} />
@@ -176,7 +177,7 @@ export function WorksheetGrid({
               return (
                 <div key={col.key} className="mds-ws__hdr" role="columnheader" aria-colindex={ci + 2} style={{
                   width: w, minWidth: w, height: headerHeight,
-                  color: on ? "var(--brand-signal,#C56343)" : undefined,
+                  color: on ? "var(--interaction-link,var(--link,#2A5F96))" : undefined,
                   background: on ? "color-mix(in srgb, var(--brand-signal,#C56343) 12%, transparent)" : undefined,
                 }}>{col.label != null ? col.label : col.key}</div>
               );
@@ -186,7 +187,7 @@ export function WorksheetGrid({
             const rowOn = activeParsed && activeParsed.row === r;
             return (
               <div key={r} className="mds-ws__row" role="row" aria-rowindex={r + 1}>
-                <div className="mds-ws__rownum" role="rowheader" aria-colindex={1} style={{ width: rowHeaderWidth, minWidth: rowHeaderWidth, height: rowHeight, color: rowOn ? "var(--brand-signal,#C56343)" : undefined }}>{r}</div>
+                <div className="mds-ws__rownum" role="rowheader" aria-colindex={1} style={{ width: rowHeaderWidth, minWidth: rowHeaderWidth, height: rowHeight, color: rowOn ? "var(--interaction-link,var(--link,#2A5F96))" : undefined }}>{r}</div>
                 {cols.map((col, ci) => {
                   const ref = col.key + r;
                   const c = cells[ref];

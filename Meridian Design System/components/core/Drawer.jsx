@@ -136,17 +136,18 @@ export function Drawer({
         aria-modal="true"
         aria-labelledby={title ? `${uid}-title` : undefined}
       >
-        {title && <DrawerHeader title={title} onClose={onClose} />}
+        {title && <DrawerHeader id={`${uid}-title`} title={title} onClose={onClose} />}
         <DrawerBody>{children}</DrawerBody>
       </div>
     </div>
   );
 }
 
-export function DrawerHeader({ title, onClose }) {
+export function DrawerHeader({ title, onClose, id }) {
+  const generatedId = React.useId();
   return (
     <div className="mds-drawer-hd">
-      <h2 className="mds-drawer-title" id={`${uid}-title`}>
+      <h2 className="mds-drawer-title" id={id || `${generatedId}-title`}>
         {title}
       </h2>
       {onClose && (

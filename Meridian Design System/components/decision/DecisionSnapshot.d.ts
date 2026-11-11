@@ -1,3 +1,4 @@
+import * as React from "react";
 import type { ObjectRef } from "../core/ObjectModel";
 import type { ActionGuardValue } from "../operations/ActionGuard";
 import type { ConsequenceSet } from "./ConsequenceRail";
@@ -89,7 +90,7 @@ export interface DecisionSnapshotPanelProps extends Omit<React.HTMLAttributes<HT
   showSentence?: boolean;
 }
 /** Read-only proof block: sealed · re-read · superseded, then the bound facts. */
-export declare function DecisionSnapshotPanel(props: DecisionSnapshotPanelProps): JSX.Element;
+export declare function DecisionSnapshotPanel(props: DecisionSnapshotPanelProps): React.JSX.Element;
 
 export interface UseDecisionSnapshot {
   snapshot: DecisionSnapshotValue | null;

@@ -22,3 +22,10 @@ Maturity profile of exposure by bucket — the distribution of what is held, not
 **Totals and fallback.** Exact totals for both series sit under the ladder, and the summary table carries bucket, both series, both shares, difference, and condition. `showTable={false}` keeps that table for assistive technology and restores it on narrow screens, where the bars are withdrawn.
 
 Selecting a bucket is meant to reveal what is inside it: securities, issuers, liability groups, exposure by currency, source coverage, concentration contributors.
+
+Unavailable-input safeguard: explicit missing/not-applicable/restricted conditions or
+nonfinite required amounts replace the populated view with a stated unavailable
+result. Restricted row values, labels, titles and table totals are not emitted, and
+no partial totals or percentages are presented. Empty declared buckets still
+represent an observed empty bucket at zero. The caller must recover usable data
+before the ordinary view returns; UI redaction does not replace server permissions.

@@ -8,13 +8,23 @@ import { fileURLToPath } from 'node:url';
 import { build } from 'esbuild';
 import { chromium } from 'playwright';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const sheets = new Map();
+async function closure(path) {
+  if (sheets.has(path)) return;
+  const text = await readFile(path, 'utf8'); sheets.set(path, text);
+  for (const match of text.matchAll(/@import\s+["']([^"']+)["']/g)) await closure(resolve(dirname(path), match[1]));
+}
+await closure(resolve(root, 'styles.css'));
+const declarations = new Set([...sheets.values()].flatMap(text => [...text.matchAll(/(--[\w-]+)\s*:/g)].map(match => match[1])));
 const retired = new Set(['surface-selected', 'bg-selected', 'pending-dim', 'info-dim', 'info', 'info-a10', 'red-ghost', 'red-wash', 'amber-wash', 'bg-well', 'bg-inset', 'border-heavy', 'bg-dark', 'graphite', 'action-primary-bg', 'positive-fg', 'negative-fg', 'severity-complete-fg', 'severity-complete-bd', 'severity-complete-bg', 'blue', 'accent-a10'].map(name => `--${name}`));
 function validateBindings(source, label) {
-  for (const match of source.matchAll(/var\(\s*(--[\w-]+)/g)) assert(!retired.has(match[1]), `${label}: undeclared role ${match[1]}`);
+  for (const match of source.matchAll(/var\(\s*(--[\w-]+)/g)) assert(!retired.has(match[1]) || declarations.has(match[1]), `${label}: undeclared role ${match[1]}`);
 }
 assert.throws(() => validateBindings('color:var(--info,#2F648A)', 'negative info fixture'), /undeclared role/);
 assert.throws(() => validateBindings('background:var(--surface-selected,var(--bg-active))', 'negative selection fixture'), /undeclared role/);
 validateBindings('color:var(--color-info);background:var(--interaction-selected-surface)', 'positive fixture');
+assert(declarations.has('--accent-a10'), 'The published compatibility wash is declared in the actual CSS closure');
+validateBindings('background:var(--accent-a10)', 'declared compatibility wash fixture');
 async function files(path) {
   const out = [];
   for (const entry of await readdir(path, { withFileTypes: true })) {
@@ -39,14 +49,6 @@ validateGeometryBindings('border-radius:var(--radius-button,4px);min-height:var(
 for (const file of ['components/charts/OwnershipGraph.jsx', 'components/data/FilterBuilder.jsx', 'components/operations/ActionEnvelope.jsx', 'components/operations/ActionQueue.jsx']) {
   validateGeometryBindings(await readFile(resolve(root, file), 'utf8'), file);
 }
-const sheets = new Map();
-async function closure(path) {
-  if (sheets.has(path)) return;
-  const text = await readFile(path, 'utf8'); sheets.set(path, text);
-  for (const match of text.matchAll(/@import\s+["']([^"']+)["']/g)) await closure(resolve(dirname(path), match[1]));
-}
-await closure(resolve(root, 'styles.css'));
-const declarations = new Set([...sheets.values()].flatMap(text => [...text.matchAll(/(--[\w-]+)\s*:/g)].map(match => match[1])));
 for (const name of ['interaction-selected-surface', 'state-pending-fg', 'purple-dim', 'color-info', 'purple-a10', 'red-a10', 'orange-a10', 'surface-well', 'surface-recessed', 'border-strong', 'topbar-bg', 'brand-axis', 'ink-inverse', 'green-dim', 'red-dim', 'severity-ready-fg', 'severity-ready-bd', 'severity-ready-bg', 'brand-signal-a10', 'interaction-focus', 'shadow-card', 'radius-button', 'z-dropdown', 'theme-row-height']) assert(declarations.has(`--${name}`), `Replacement --${name} missing from styles.css dependency closure`);
 console.log('PASS source bindings: positive/negative controls and every replacement declared in the CSS closure');
 const compiled = await build({

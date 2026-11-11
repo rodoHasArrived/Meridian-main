@@ -19,7 +19,7 @@ const { useState, useMemo } = React;
   font-size:13px;color:var(--text-secondary);padding:9px 14px 11px;border-bottom:2px solid transparent;
   margin-bottom:-1px;display:inline-flex;align-items:center;gap:7px;transition:color .12s,border-color .12s;}
 .acct-tab:hover{color:var(--text-primary);}
-.acct-tab--on{color:var(--text-primary);font-weight:600;border-bottom-color:var(--accent);}
+.acct-tab--on{color:var(--text-primary);font-weight:600;border-bottom-color:var(--text-primary);}
 .acct-tab__count{font-family:var(--font-data);font-size:10px;color:var(--text-muted);
   border:1px solid var(--border);border-radius:3px;padding:0 5px;line-height:1.5;}
 .sec-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}

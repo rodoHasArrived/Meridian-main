@@ -55,7 +55,13 @@
    * Resolve a value: the operator's choice if they made one, else the screen's own seed.
    * This is what applyChrome calls — so a screen keeps its intended default on a first visit.
    */
-  function resolve(key, seed) { return get(key) || norm(key, seed) || VALID[key][0]; }
+  function resolve(key, seed) {
+    // A compatibility entry can carry a preview seed across its canonical view.
+    // A deliberate stored operator choice still outranks either URL or prop seeds.
+    var routeSeed = null;
+    try { routeSeed = new URL(global.location.href).searchParams.get(key); } catch (e) {}
+    return get(key) || norm(key, routeSeed) || norm(key, seed) || VALID[key][0];
+  }
 
   function theme(seed) { return resolve("theme", seed); }
   function density(seed) { return resolve("density", seed); }

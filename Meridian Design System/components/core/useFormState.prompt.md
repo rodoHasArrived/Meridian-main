@@ -1,0 +1,3 @@
+# FormHooks
+
+`FormHooks` publishes `useDirtyState`, `useAsyncValidation` and `useWizard` without renaming React hooks. Call them only within a mounted React component. Dirty state compares field identity against an explicit baseline; call `commit` after a confirmed save, not before transport settlement. `reset` restores that baseline. Supply stable validators; async validation debounces and aborts superseded reads, and rejects late responses even when a validator ignores abort. An empty value returns to idle when `skipEmpty` is true. Wizard validation guards `next`; `goTo` is an explicit navigation action, so use `isReachable` to guard external step buttons. These hooks do not provide server authorization or write persistence.

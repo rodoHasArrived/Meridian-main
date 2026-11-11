@@ -23,6 +23,7 @@ const REVERSIBILITY = {
   irreversible: { label: "Irreversible", note: "Cannot be undone, compensated, or superseded.", tone: "danger" },
 };
 
+const guardState=guard=>{const state=guard?.state||guard?.status;return ["blocking","warning","pending","satisfied"].includes(state)?state:"pending"};
 const GUARD_TONE = { blocking: "danger", warning: "warn", pending: "info", satisfied: "ok" };
 
 let injected = false;
@@ -83,12 +84,12 @@ export function ConsequenceRail({
   const uid = React.useId();
   const rev = consequences.reversibility ? REVERSIBILITY[consequences.reversibility] || { label: String(consequences.reversibility), note: "", tone: "neutral" } : null;
   const groups = CONSEQUENCE_KINDS.map((k) => ({ kind: k, items: Array.isArray(consequences[k.id]) ? consequences[k.id] : [] })).filter((g) => g.items.length);
-  const tally = guards.reduce((a, g) => { const s = g && g.status ? g.status : "satisfied"; a[s] = (a[s] || 0) + 1; return a; }, {});
+  const tally = guards.reduce((a, g) => { const s = guardState(g); a[s] = (a[s] || 0) + 1; return a; }, {});
   const blocking = tally.blocking || 0;
   // "Guards satisfied" while one is a warning and another is pending is the kind of reassuring
   // summary this system exists to refuse. Report the worst state, and count what is still open.
   const outstanding = blocking + (tally.warning || 0) + (tally.pending || 0);
-  const guardLabel = blocking
+  const guardLabel = !guards.length?"No guards supplied":blocking
     ? `${blocking} blocking ${blocking === 1 ? "guard" : "guards"}${outstanding > blocking ? ` · ${outstanding - blocking} more outstanding` : ""}`
     : outstanding
       ? `${outstanding} ${outstanding === 1 ? "guard" : "guards"} outstanding`
@@ -123,11 +124,10 @@ export function ConsequenceRail({
             const interactive = !!onInspect;
             const Tag = interactive ? "button" : "div";
             const amount = item.delta != null ? item.delta : item.amount;
-            return <li key={id}>
+            return <li key={id} aria-setsize={g.items.length} aria-posinset={i + 1}>
               <Tag className={`mds-crail__row${interactive ? " mds-crail__row--action" : ""}`}
                 {...(interactive ? { type: "button", onClick: () => onInspect(g.kind.id, item), "aria-pressed": selectedId === id } : {})}
-                data-selected={selectedId === id ? "true" : undefined}
-                aria-setsize={g.items.length} aria-posinset={i + 1}>
+                data-selected={selectedId === id ? "true" : undefined}>
                 <span className="mds-crail__rlabel">
                   {item.label || item.id}
                   {item.effect ? <span className="mds-crail__reffect">{item.effect}</span> : null}
@@ -142,17 +142,17 @@ export function ConsequenceRail({
       </div>) : <p className="mds-crail__empty">No consequence declared. An action with no stated consequence is not ready for review.</p>}
     </div>
 
-    {guards.length ? <div className="mds-crail__guards">
+    <div className="mds-crail__guards">
       <span className="mds-crail__gname">{guardLabel}</span>
       <ul className="mds-crail__glist">
         {guards.map((g, i) => {
-          const status = (g && g.status) || "satisfied";
+          const status = guardState(g);
           return <li className="mds-crail__guard" key={g.id || i} data-tone={GUARD_TONE[status] || "info"}>
             <span className="mds-crail__gmark" aria-hidden="true">{status === "blocking" ? "!" : status === "warning" ? "▲" : status === "pending" ? "◐" : "✓"}</span>
             <span>{g.label || g.id}{g.detail ? ` — ${g.detail}` : ""}<span className="mds-crail__reffect">{status}</span></span>
           </li>;
         })}
       </ul>
-    </div> : null}
+    </div>
   </section>;
 }

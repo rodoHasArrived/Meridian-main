@@ -39,7 +39,8 @@ const ROW_H = 32;
 export function AsyncCombobox({
   value = null, onChange, fetchOptions, getKey = (o) => o.value, getLabel = (o) => o.label,
   getSecondary = (o) => o.secondary, placeholder = "Search…", debounceMs = 220, minChars = 0,
-  emptyLabel = "No matches", maxRows = 200,
+  emptyLabel = "No matches", maxRows = 200, id, disabled = false,
+  "aria-label": ariaLabel = "Search options",
 }) {
   inject();
   const [open, setOpen] = React.useState(false);
@@ -51,49 +52,65 @@ export function AsyncCombobox({
   const rootRef = React.useRef(null);
   const listRef = React.useRef(null);
   const reqRef = React.useRef(0);
+  const generatedId = React.useId();
+  const inputId = id || generatedId;
+  const listId = `${inputId}-options`;
+  React.useEffect(() => { if (disabled) setOpen(false); }, [disabled]);
 
   React.useEffect(() => {
-    if (!open) return;
+    if (!open || disabled) return;
     if (text.length < minChars) { setOptions([]); setStatus("idle"); return; }
     const reqId = ++reqRef.current;
+    let current = true;
     const controller = typeof AbortController !== "undefined" ? new AbortController() : { abort() {}, signal: undefined };
     setStatus("loading");
+    setOptions([]);
+    setHl(0);
+    setScrollTop(0);
     const t = setTimeout(async () => {
       try {
         const res = await fetchOptions(text, controller.signal);
-        if (reqId !== reqRef.current) return;
+        if (!current || reqId !== reqRef.current) return;
         const rows = (res || []).slice(0, maxRows);
         setOptions(rows);
         setStatus(rows.length ? "ready" : "empty");
         setHl(0);
       } catch (e) {
         if (e && e.name === "AbortError") return;
-        if (reqId !== reqRef.current) return;
+        if (!current || reqId !== reqRef.current) return;
+        setOptions([]);
         setStatus("error");
       }
     }, debounceMs);
-    return () => { controller.abort(); clearTimeout(t); };
-  }, [text, open, minChars, debounceMs, maxRows]);
+    return () => { current = false; controller.abort(); clearTimeout(t); };
+  }, [text, open, minChars, debounceMs, maxRows, fetchOptions, disabled]);
 
   React.useEffect(() => {
     if (!open) return;
     const onDown = (e) => { if (rootRef.current && !rootRef.current.contains(e.target)) setOpen(false); };
+    const onFocus = (e) => { if (rootRef.current && !rootRef.current.contains(e.target)) setOpen(false); };
     document.addEventListener("mousedown", onDown);
-    return () => document.removeEventListener("mousedown", onDown);
+    document.addEventListener("focusin", onFocus);
+    return () => { document.removeEventListener("mousedown", onDown); document.removeEventListener("focusin", onFocus); };
   }, [open]);
 
   const commit = (opt) => {
+    if (disabled) return;
     onChange && onChange(opt);
     setText(getLabel(opt) != null ? String(getSecondary(opt) ? getKey(opt) : getLabel(opt)) : "");
     setOpen(false);
   };
 
   const onKeyDown = (e) => {
-    if (!open && (e.key === "ArrowDown" || e.key === "Enter")) { setOpen(true); return; }
-    if (e.key === "ArrowDown") { e.preventDefault(); setHl((h) => Math.min(options.length - 1, h + 1)); }
+    if (disabled) return;
+    if (!open && (e.key === "ArrowDown" || e.key === "ArrowUp" || e.key === "Enter")) { e.preventDefault(); setOpen(true); return; }
+    if (e.key === "ArrowDown") { e.preventDefault(); setHl((h) => Math.max(0, Math.min(options.length - 1, h + 1))); }
     else if (e.key === "ArrowUp") { e.preventDefault(); setHl((h) => Math.max(0, h - 1)); }
+    else if (open && e.key === "Home") { e.preventDefault(); setHl(0); }
+    else if (open && e.key === "End") { e.preventDefault(); setHl(Math.max(0, options.length - 1)); }
     else if (e.key === "Enter") { e.preventDefault(); if (options[hl]) commit(options[hl]); }
-    else if (e.key === "Escape") { setOpen(false); }
+    else if (e.key === "Escape" && open) { e.preventDefault(); e.stopPropagation(); setOpen(false); }
+    else if (e.key === "Tab") { setOpen(false); }
   };
 
   // Windowed list: only render the visible slice.
@@ -117,15 +134,18 @@ export function AsyncCombobox({
     <div className="mds-cbx" ref={rootRef}>
       <div className="mds-cbx__field">
         <input
+          id={inputId} disabled={disabled} aria-label={ariaLabel}
           className="mds-cbx__input" role="combobox" aria-expanded={open} aria-autocomplete="list"
+          aria-controls={open ? listId : undefined}
+          aria-activedescendant={open && status === "ready" && hl >= start && hl < end && options[hl] ? `${listId}-${hl}` : undefined}
           value={display} placeholder={placeholder}
           onChange={(e) => { setText(e.target.value); setOpen(true); }}
-          onFocus={() => setOpen(true)} onKeyDown={onKeyDown}
+          onFocus={() => { if (!disabled) setOpen(true); }} onKeyDown={onKeyDown}
         />
         <span className="mds-cbx__caret" aria-hidden="true">▾</span>
       </div>
       {open && (
-        <div className="mds-cbx__pop" ref={listRef} role="listbox"
+        <div className="mds-cbx__pop" id={listId} ref={listRef} role="listbox" aria-label={ariaLabel}
           onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}>
           {status === "ready" && (
             <div style={{ height: options.length * ROW_H, position: "relative" }}>
@@ -133,12 +153,12 @@ export function AsyncCombobox({
                 {options.slice(start, end).map((o, i) => {
                   const idx = start + i;
                   return (
-                    <div key={getKey(o)} role="option" aria-selected={idx === hl}
+                    <div key={getKey(o)} id={`${listId}-${idx}`} role="option" aria-selected={idx === hl}
                       className={`mds-cbx__opt${idx === hl ? " mds-cbx__opt--on" : ""}`}
                       style={{ height: ROW_H }}
                       onMouseEnter={() => setHl(idx)} onMouseDown={(e) => { e.preventDefault(); commit(o); }}>
                       <span className="mds-cbx__opt-sym">{getSecondary(o) ? getKey(o) : getLabel(o)}</span>
-                      <span className="mds-cbx__opt-label">{getSecondary(o) || getLabel(o)}</span>
+                      {getSecondary(o) != null && <span className="mds-cbx__opt-label">{getSecondary(o)}</span>}
                     </div>
                   );
                 })}

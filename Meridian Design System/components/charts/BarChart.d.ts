@@ -34,4 +34,4 @@ export interface BarChartProps {
   /** 3.5 · Forwarded to ChartFrame — visually-hidden data table/list behind the pixels. */
   accessibleData?: string | { label: string; value: React.ReactNode }[] | { caption?: string; columns: React.ReactNode[]; rows: React.ReactNode[][] };
 }
-export declare function BarChart(props: BarChartProps): JSX.Element;
+export declare function BarChart(props: BarChartProps): React.JSX.Element;

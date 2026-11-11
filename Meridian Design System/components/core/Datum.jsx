@@ -82,7 +82,7 @@ function DatumSvg({
   return (
     <g
       className={`mds-datum-svg mds-datum-svg--${role}${activation ? " mds-datum-svg--interactive" : ""}${className ? " " + className : ""}`}
-      role={activation ? "button" : "presentation"}
+      role={activation ? "button" : "img"}
       tabIndex={activation ? 0 : undefined}
       aria-label={rest["aria-label"] || text || `${role} datum`}
       onClick={onActivate}
@@ -114,7 +114,7 @@ function DatumSvg({
           textAnchor={vertical && labelPlacement === "before" ? "end" : "start"}
         >
           {label ? <tspan>{label}</tspan> : null}
-          {value !== undefined && value !== null ? <tspan className="mds-datum-svg__label-value" dx={label ? 5 : 0}>{value}</tspan> : null}
+          {value !== undefined && value !== null ? <tspan className="mds-datum-svg__label-value" dx={label ? 2 : 0}>{label ? " " : ""}{value}</tspan> : null}
         </text>
       ) : null}
     </g>
@@ -155,7 +155,7 @@ export function Datum({
     <div
       className={`mds-datum mds-datum--${vertical ? "v" : "h"} mds-datum--${role} mds-datum--${labelPlacement}${span != null ? " mds-datum--band" : ""}${activation ? " mds-datum--interactive" : ""}${className ? " " + className : ""}`}
       style={{ ...placement, ...(labelLane ? { "--datum-lane": labelLane } : null), ...style }}
-      role={activation ? "button" : undefined}
+      role={activation ? "button" : "img"}
       tabIndex={activation ? 0 : undefined}
       aria-label={rest["aria-label"] || [label, value].filter(Boolean).join(" · ") || `${role} datum`}
       onClick={onActivate}

@@ -1,3 +1,4 @@
+import * as React from "react";
 export type CloseStatus = "not-started" | "in-progress" | "waiting" | "at-risk" | "blocked" | "review" | "complete" | "reopened" | "waived";
 export interface CloseDay { date: string; label?: string }
 export interface CloseTask {
@@ -22,7 +23,7 @@ export interface CloseTask {
   completedAt?: string;
   [key: string]: unknown;
 }
-export interface CloseCalendarProps extends Omit<React.HTMLAttributes<HTMLElement>, "onSelect"> {
+export interface CloseCalendarProps extends Omit<React.HTMLAttributes<HTMLElement>, "onSelect" | "title"> {
   days: CloseDay[];
   tasks: CloseTask[];
   /** Day carrying the current-time Datum. */
@@ -37,4 +38,4 @@ export interface CloseCalendarProps extends Omit<React.HTMLAttributes<HTMLElemen
   defaultView?: "calendar" | "dependency" | "owner";
   onViewChange?: (view: "calendar" | "dependency" | "owner") => void;
 }
-export declare function CloseCalendar(props: CloseCalendarProps): JSX.Element;
+export declare function CloseCalendar(props: CloseCalendarProps): React.JSX.Element;

@@ -51,4 +51,4 @@ export interface TreeViewProps extends Omit<React.HTMLAttributes<HTMLDivElement>
  * typeahead, Enter select, Space toggle. Row height tracks `--theme-row-height`, so the tree re-densifies
  * with `DensityToggle`; override just this component with `--tree-row-height`.
  */
-export declare function TreeView(props: TreeViewProps): JSX.Element;
+export declare function TreeView(props: TreeViewProps): React.JSX.Element;

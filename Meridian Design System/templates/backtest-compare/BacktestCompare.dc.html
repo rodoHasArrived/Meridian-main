@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Backtest compare — Meridian compatibility entry</title>
 <script src="../_scaffold/vendor/react-18.3.1.production.min.js"></script>
 <script src="../_scaffold/vendor/react-dom-18.3.1.production.min.js"></script>
 <script src="../../_preview_jsx.js"></script>
@@ -11,40 +12,32 @@
 </head>
 <body>
 <x-dc>
-<!-- @template name="Backtest Compare" description="Two strategy runs side by side — KPI delta table, overlaid equity curves, paired drawdown and returns panes, configuration diff with provenance" -->
-<helmet>
-<script src="./ds-base.js"></script>
-<meta name="dc-template" content="backtest-compare">
-<style>html,body{margin:0;padding:0;height:100%;}</style>
-</helmet>
-<!-- Wait for the compiled component namespace before mounting the source screen. -->
-<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="ready" hint-size="100%,1100px">
-<div data-screen-label="Backtest compare" style="height:100vh;display:flex;flex-direction:column;background:var(--bg);font-family:var(--font-body);color:var(--text-secondary);font-size:13px;">
-<x-import component-from-global-scope="BacktestCompareScreen" from="./screen.jsx" environment="{{ env }}" state="{{ dataState }}" run-a="{{ runA }}" run-b="{{ runB }}" highlight-deltas="{{ highlight }}" hint-size="100%,1100px"></x-import>
-</div>
+<!-- @template name="Compatibility · Backtest compare" description="Retained entry for the current Backtest compare view; delegates to its documented canonical workstation." -->
+<helmet><script src="./ds-base.js"></script><meta name="dc-template" content="backtest-compare"></helmet>
+<main aria-label="Backtest compare compatibility entry" style="height:100vh;min-height:0">
+<h1 style="position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)">Backtest compare</h1>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Backtest compare" action-label="Retry preview" on-action="{{ retry }}" hint-size="100%,100vh">
+<x-import component-from-global-scope="MeridianTemplateCompatibility" from="../_scaffold/compatibility-frame.jsx" target="../strategy-runs/StrategyRuns.dc.html?view=compare" title="Backtest compare canonical workstation" theme="{{ theme }}" density="{{ density }}" environment="{{ environment }}" hint-size="100%,100vh"></x-import>
 </x-import>
+</main>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;FIXTURE&quot;,&quot;options&quot;:[&quot;PAPER&quot;,&quot;LIVE&quot;,&quot;FIXTURE&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;runA&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;1841&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;1841&quot;,&quot;1847&quot;,&quot;1852&quot;],&quot;section&quot;:&quot;Runs&quot;},&quot;runB&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;1847&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;1841&quot;,&quot;1847&quot;,&quot;1852&quot;],&quot;section&quot;:&quot;Runs&quot;},&quot;highlightDeltas&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;$preview&quot;:{&quot;width&quot;:1920,&quot;height&quot;:1080},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;compact&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1920,&quot;height&quot;:1080},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;default&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;FIXTURE&quot;,&quot;options&quot;:[&quot;FIXTURE&quot;,&quot;PAPER&quot;,&quot;LIVE&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;}}">
 class Component extends DCLogic {
-  applyChrome() {
-    const prefs = window.MeridianPrefs;
-    const theme = this.props.theme ?? "light", density = this.props.density ?? "compact";
-    document.documentElement.setAttribute("data-theme", prefs ? prefs.theme(theme) : theme);
-    document.documentElement.setAttribute("data-environment", this.env());
-    if (document.body) document.body.setAttribute("data-theme-density", prefs ? prefs.density(density) : density);
+  state = { previewReady: false };
+  componentDidUpdate(previous) {
+    if (previous.dataState !== this.props.dataState && this.state.previewReady) this.setState({ previewReady: false });
   }
-  env() { const seed = String(this.props.environment ?? "FIXTURE").toUpperCase(); return window.MeridianPrefs ? window.MeridianPrefs.environment(seed) : seed; }
-  componentDidMount() { this.applyChrome(); }
-  componentDidUpdate() { this.applyChrome(); }
   renderVals() {
-    this.applyChrome();
-    return {
-      env: this.env(),
-      dataState: this.props.dataState ?? "ready",
-      runA: this.props.runA ?? "1841",
-      runB: this.props.runB ?? "1847",
-      highlight: this.props.highlightDeltas ?? true,
-    };
+    const prefs = window.MeridianPrefs;
+    const theme = prefs ? prefs.theme(this.props.theme ?? "light") : (this.props.theme ?? "light");
+    const density = prefs ? prefs.density(this.props.density ?? "default") : (this.props.density ?? "default");
+    const environment = prefs ? prefs.environment(this.props.environment ?? "FIXTURE") : (this.props.environment ?? "FIXTURE");
+    document.documentElement.setAttribute("data-theme", theme);
+    document.documentElement.setAttribute("data-environment", environment);
+    if (document.body) document.body.setAttribute("data-theme-density", density);
+    return { theme, density, environment,
+      dataState: this.state.previewReady ? "ready" : (this.props.dataState ?? "ready"),
+      retry: () => this.setState({ previewReady: true }) };
   }
 }
 </script>

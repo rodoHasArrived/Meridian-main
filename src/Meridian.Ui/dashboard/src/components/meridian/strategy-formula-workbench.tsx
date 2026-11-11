@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { GateRail, SeverityBadge } from "@/components/operations";
 import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
 import { cn } from "@/lib/utils";
+import { TextArea } from "@/components/ui/text-area";
 
 export type StrategyFormulaWorkbenchMode = "visual" | "formula" | "code";
 export type StrategyFormulaFieldType = "decimal" | "string" | "date" | "percent";
@@ -149,10 +150,10 @@ export function StrategyFormulaWorkbench({
             <CardDescription>{selectedCell ? `${selectedCell.label} · ${selectedCell.status}` : "No selected cell"}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            <textarea
+            <TextArea rows={2}
               value={source}
               onChange={(event) => setSource(event.target.value)}
-              className="min-h-52 w-full resize-y rounded-md border border-border bg-background px-3 py-2 font-mono text-sm leading-6 text-foreground shadow-[var(--shadow-panel)] outline-hidden transition-colors placeholder:text-muted-foreground focus:border-primary/70 focus:ring-2 focus:ring-primary/35"
+              className="min-h-52 w-full font-mono text-sm leading-6"
               aria-label="Strategy formula source"
               spellCheck={false}
             />

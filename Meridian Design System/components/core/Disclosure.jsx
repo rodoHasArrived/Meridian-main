@@ -98,7 +98,7 @@ export function DisclosureProvider({
   screenId = "global", detail: controlled, defaultDetail = "full", regions: defaultRegions,
   persist = true, urlParam = "detail", storage, onChange, children,
 }) {
-  const [state, setState] = React.useState(() => {
+  const initialState = () => {
     const saved = persist ? readStore(screenId, storage) : null;
     const fromUrl = readUrl(urlParam);
     return {
@@ -106,7 +106,14 @@ export function DisclosureProvider({
       regions: { ...(defaultRegions || null), ...(saved?.regions || null) },
       open: saved?.open || {},
     };
-  });
+  };
+  const [state, setState] = React.useState(initialState);
+  const previousScreen = React.useRef(screenId);
+  React.useLayoutEffect(() => {
+    if (previousScreen.current === screenId) return;
+    previousScreen.current = screenId;
+    setState(initialState());
+  }, [screenId]);
   const detail = controlled || state.detail;
 
   const commit = React.useCallback((updater) => {
@@ -190,15 +197,22 @@ export function DetailDial({
   const d = useDisc();
   const value = region ? d.detailFor(region) : d.detail;
   const overridden = region ? d.overridden(region) : false;
+  const dialRef = React.useRef(null), restoreResetFocus = React.useRef(false);
+  React.useLayoutEffect(() => {
+    if (restoreResetFocus.current && !overridden) {
+      restoreResetFocus.current = false;
+      dialRef.current?.querySelector('[role="radio"][aria-checked="true"]')?.focus();
+    }
+  }, [overridden, value]);
   return (
-    <span className={`mds-disc__dial${className ? " " + className : ""}`} {...rest}>
+    <span ref={dialRef} className={`mds-disc__dial${className ? " " + className : ""}`} {...rest}>
       <SegmentedControl size={size} fullWidth={fullWidth} value={value}
         aria-label={region ? `Detail level — ${region}` : "Detail level"}
         options={DETAIL_LEVELS.map((l) => ({ value: l, label: labels[l] || l }))}
         onChange={(v) => (region ? d.setDetailFor(region, v) : d.setDetail(v))} />
       {region && showReset ? (
         overridden
-          ? <button type="button" className="mds-disc__inherit" onClick={() => d.setDetailFor(region, null)}>{"\u21BA"} screen</button>
+          ? <button type="button" className="mds-disc__inherit" onClick={(event) => { restoreResetFocus.current = document.activeElement === event.currentTarget; d.setDetailFor(region, null); }}>{"\u21BA"} screen</button>
           : <span className="mds-disc__kicker">{resetLabel}</span>
       ) : null}
     </span>
@@ -288,13 +302,37 @@ export function DisclosureRegion({
 export function DetailOnly({ region, label, children, notice = true }) {
   inject();
   const d = useDisc();
-  if (d.detailFor(region) === "full") return <>{children}</>;
+  const full = d.detailFor(region) === "full";
+  const noticeRef = React.useRef(null), revealFocus = React.useRef(null);
+  React.useLayoutEffect(() => {
+    if (!full || !revealFocus.current) return;
+    const { parent, index } = revealFocus.current;
+    revealFocus.current = null;
+    // Keep the public fragment contract, including table/inline children. Recover focus at the
+    // native content replacing the notice, without inserting a layout-changing wrapper.
+    const node = parent?.childNodes[index];
+    const content = node?.nodeType === 1 ? node : parent;
+    const target = content?.matches?.('button,a[href],input,select,textarea,[tabindex]') ? content
+      : content?.querySelector?.('button,a[href],input,select,textarea,[tabindex]') || content;
+    if (!target?.focus) return;
+    const temporary = !target.hasAttribute('tabindex') && !target.matches('button,a[href],input,select,textarea');
+    if (temporary) {
+      target.setAttribute('tabindex', '-1');
+      target.addEventListener('blur', () => target.removeAttribute('tabindex'), { once: true });
+    }
+    target.focus();
+  }, [full]);
+  if (full) return <>{children}</>;
   if (!notice) return null;
   return (
-    <div className="mds-disc__withheld">
+    <div ref={noticeRef} className="mds-disc__withheld">
       <span>{label || "Detail withheld at summary depth"}</span>
       <button type="button" className="mds-disc__reveal"
-        onClick={() => (region ? d.setDetailFor(region, "full") : d.setDetail("full"))}>Show</button>
+        onClick={(event) => {
+          const node = noticeRef.current, parent = node?.parentNode;
+          if (parent && document.activeElement === event.currentTarget) revealFocus.current = { parent, index: Array.prototype.indexOf.call(parent.childNodes, node) };
+          region ? d.setDetailFor(region, "full") : d.setDetail("full");
+        }}>Show</button>
     </div>
   );
 }

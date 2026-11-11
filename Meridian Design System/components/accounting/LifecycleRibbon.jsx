@@ -57,7 +57,7 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
 export function LifecycleRibbon({ stages = [], selectedId, onSelect, className = "", ...rest }) {
   inject();
   return (
-    <div className={`mds-lcr${className ? " " + className : ""}`} role="list" aria-label="Event lifecycle" {...rest}>
+    <div className={`mds-lcr${className ? " " + className : ""}`} role={onSelect ? "group" : "list"} aria-label="Event lifecycle" {...rest}>
       {stages.map((s) => {
         const state = s.state || "pending";
         const Tag = onSelect ? "button" : "div";
@@ -65,7 +65,7 @@ export function LifecycleRibbon({ stages = [], selectedId, onSelect, className =
         return (
           <Tag
             key={s.id}
-            role="listitem"
+            role={onSelect ? undefined : "listitem"}
             className={`mds-lcr__stage mds-lcr__stage--${state}${selectedId === s.id ? " mds-lcr__stage--sel" : ""}`}
             {...extra}
           >

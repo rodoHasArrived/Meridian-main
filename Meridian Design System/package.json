@@ -16,16 +16,26 @@
     "test:patches": "node tests/local-patches-regression.mjs && node tests/interaction-depth-regression.mjs && npm run test:components",
     "test:specimens": "node tests/specimen-matrix.mjs",
     "test:components": "node tests/scenario-selector-regression.mjs && node tests/optimistic-observer-regression.mjs && node tests/modal-label-regression.mjs && node tests/chart-accessibility-regression.mjs",
+    "test:library": "node tests/full-library-browser.mjs",
+    "test:cards": "node tests/full-library-browser.mjs --kind=cards",
+    "test:templates": "node tests/full-library-browser.mjs --kind=templates",
+    "test:contracts": "node tests/full-library-browser.mjs --kind=contracts && node tests/chart-trading-contract-regression.mjs && node tests/accounting-interaction-regression.mjs",
+    "test:types": "node tests/public-contract-types.mjs",
+    "test:chart-trading": "node tests/chart-trading-contract-regression.mjs",
+    "test:accounting": "node tests/accounting-interaction-regression.mjs",
+    "test:source": "node tests/source-contracts.mjs",
     "test:gallery": "node --test tests/gallery.test.mjs",
     "test:gallery:browser": "node tests/gallery-browser.mjs"
   },
   "devDependencies": {
     "@babel/standalone": "7.29.0",
+    "@types/react": "19.3.0",
     "axe-core": "4.14.0",
     "esbuild": "0.28.2",
     "playwright": "1.64.1",
     "react": "19.3.1",
-    "react-dom": "19.3.1"
+    "react-dom": "19.3.1",
+    "typescript": "5.7.2"
   },
   "engines": {
     "node": ">=22"

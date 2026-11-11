@@ -2141,6 +2141,43 @@ loaded fonts, workspace navigation, proof-dialog keyboard behavior, density,
 native Accounting borders/selection, and fresh accessibility scans. Fixture API
 gaps remain explicit in the report and are not backend validation.
 
+The full PR #3501 adoption review is recorded in
+`Meridian Design System/api/project-compatibility.json`. It covers every browser
+screen and shared adapter, including concrete reasons for retaining specialized
+accounting tables, native file controls and embedded row actions. The dashboard
+keeps its existing React, routes, service contracts and financial semantics.
+
+Provider institution search now uses shared search input and selectable dense
+results while retaining explicit server search and exact institution identifiers.
+Maintenance history uses a shared filter and the read-only dense adapter through
+the governed TableWorkbench. Its default remains service order with a 25-row
+limit; concurrent personal-view, search and export controls are preserved. Report-writer token actions
+use shared buttons with visible keyboard focus and disabled reasons, preserving
+reordering, removal and drag behavior. Other compatible forms and flat tables
+use the same adapters; specialized financial tables retain their row/header and
+grouping semantics. `DenseDataTable.tableClassName` preserves a screen's existing
+minimum table width without introducing a row cap or sort.
+
+Reproduce package-wide offline validation from the design-system directory with
+`npm run test:library` and `npm run test:types`; the package's test guide documents
+the source-level interaction suites. These synthetic checks establish component
+and browser behavior. Live providers, backend writes, native Windows/Edge and
+assistive-technology announcement journeys require their own evidence.
+
+`node scripts/smoke-design-system-adoption.mjs --url http://127.0.0.1:5173/workstation --output /tmp/meridian-adoption`
+reproduces the institution, maintenance and report-token acceptance matrix against
+the fixture-only server. Its defaults run both themes at three desktop sizes and
+a 200% desktop zoom layout equivalent, with exact request/selection/cancellation
+IDs, keyboard ordering, drag actions and scoped accessibility checks. The optional
+`--only` and `--sizes` filters produce explicitly focused evidence.
+
+The final adoption checkpoint passes 5,100 tests across all 455 dashboard test
+files, strict types, production build, 31 tooling checks and ratchets. Lint has
+zero errors and 98 existing warnings. The maintained browser passes 64 checks
+and 15 axe scans; the three adoption journeys pass 24 checks and 24 scoped axe
+scans. All use synthetic fixtures; these counts do not certify backend services
+or native Windows/assistive-technology behavior.
+
 The routes that walk reads are answered by `src/lib/dev-fixtures/`. Read surfaces
 that once returned 501 there (reconciliation readiness, statement-run detail for
 the sample run, operator preference reads, ledger books, the provider capability

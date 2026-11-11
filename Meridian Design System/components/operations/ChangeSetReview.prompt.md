@@ -19,3 +19,9 @@ before/after; `ChangeReviewBar` is the persistent status and action bar.
   `conflicted`. Derived unless `status` is supplied.
 - Commit is blocked while any error-severity issue is open; discard confirms and lists what is lost.
 - Read the change set with `ChangeSetHooks.useChangeSet()` (also `ChangeSetProvider.use()`).
+
+Required per-field reasons gate both saving and submitting. Validating, committed, superseded and conflicted change sets cannot be saved/submitted through the bar. Partial outcomes retain a caller-owned recovery path. Validation updates must flow through the provider even when the number of issues stays constant.
+
+`ChangeSetProvider.use()` is the same context hook as `ChangeSetHooks.useChangeSet()`. Uncontrolled consumers can set fields/drafts, set reasons and explicitly discard; controlled drafts remain authoritative until the parent accepts a callback.
+
+Private field reasons, uncontrolled drafts and discard confirmation are bound to change-set id/version. Switching binding clears prior private review state; controlled draft values remain authoritative. Save/submit callbacks notify the parent and do not themselves own asynchronous server completion.

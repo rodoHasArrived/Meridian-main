@@ -3,7 +3,7 @@
 // toISOString(), shifting every range back a day for users west of UTC.
 // Preset ranges (MTD/QTD/YTD…) sit beside the calendar because that is how a desk actually picks.
 import React from "react";
-import { toISO, fromISO, addDays, addMonths, sameDay, parseLoose, dowLabels, longDate, monthTitle, weeksFor, rangePresets } from "./localDate";
+import { toISO, fromISO, addDays, addMonths, sameDay, parseLoose, dowLabels, longDate, monthTitle, weeksFor, rangePresets } from "./localDate.js";
 
 let injected = false;
 function inject() {
@@ -22,7 +22,7 @@ function inject() {
 .mds-dr-input{flex:1;min-width:0;height:100%;padding:7px 10px;border:none;background:transparent;
   color:var(--text-primary,#20252B);font-family:var(--font-data);font-size:13px;outline:none;
   font-variant-numeric:tabular-nums;text-align:left;cursor:pointer;display:flex;align-items:center;}
-.mds-dr-input--empty{color:var(--text-disabled,#A4ABB2);}
+.mds-dr-input--empty{color:var(--text-muted,#606870);}
 .mds-dr-btn{flex:0 0 auto;height:100%;padding:0 9px;border:0;background:none;margin:0;
   color:var(--text-muted,#606870);font-size:12px;cursor:pointer;display:inline-flex;align-items:center;}
 .mds-dr-btn:hover{color:var(--text-primary,#20252B);}
@@ -127,6 +127,7 @@ export function DateRangePicker({
   const [cursor, setCursor] = React.useState(() => startD || new Date());
   const [anchor, setAnchor] = React.useState(null); // first click of an in-progress range
   const [hover, setHover] = React.useState(null);
+  React.useEffect(() => { if (disabled) { setOpen(false); setAnchor(null); setHover(null); } }, [disabled]);
   const [placement, setPlacement] = React.useState("");
   const rootRef = React.useRef(null);
   const calRef = React.useRef(null);
@@ -173,7 +174,7 @@ export function DateRangePicker({
   // Two clicks make a range; the first click sets the anchor, the second closes it out. Clicking
   // a completed range starts a new one rather than silently extending the old.
   const pick = (d) => {
-    if (isBlocked(d)) return;
+    if (disabled || isBlocked(d)) return;
     const iso = toISO(d);
     if (anchor == null) { setAnchor(iso); onChange?.({ start: iso, end: null }); return; }
     if (iso < anchor) onChange?.({ start: iso, end: anchor });
@@ -183,11 +184,15 @@ export function DateRangePicker({
     close();
   };
 
-  const applyPreset = (p) => { onChange?.({ start: p.start, end: p.end }); setAnchor(null); close(); };
+  const presetBlocked = (p) => { const a = fromISO(p.start), b = fromISO(p.end); return disabled || !a || !b || isBlocked(a) || isBlocked(b); };
+  const applyPreset = (p) => { if (presetBlocked(p)) return; onChange?.({ start: p.start, end: p.end }); setAnchor(null); close(); };
   const activePreset = presetList.find((p) => p.start === start && p.end === end);
 
   const onGridKey = (e) => {
     const k = e.key;
+    if (k === "Escape") { e.preventDefault(); e.stopPropagation(); close(); return; }
+    // Presets and month-navigation buttons keep their native Enter/Space behavior.
+    if (!e.target.classList.contains("mds-dr-day")) return;
     let next = null;
     if (k === "ArrowLeft") next = addDays(focusDay, -1);
     else if (k === "ArrowRight") next = addDays(focusDay, 1);
@@ -197,15 +202,18 @@ export function DateRangePicker({
     else if (k === "End") next = addDays(focusDay, 6 - ((focusDay.getDay() - weekStartsOn + 7) % 7));
     else if (k === "PageUp") next = addMonths(focusDay, e.shiftKey ? -12 : -1);
     else if (k === "PageDown") next = addMonths(focusDay, e.shiftKey ? 12 : 1);
-    else if (k === "Enter" || k === " ") { e.preventDefault(); pick(focusDay); return; }
+    else if (k === "Enter" || k === " ") return; // Native day button commits its own date.
     else if (k === "Escape") { e.preventDefault(); e.stopPropagation(); close(); return; }
     else if (k === "Tab") { close(false); return; }
     if (next) {
       e.preventDefault();
       setFocusDay(next);
       setHover(toISO(next));
-      if (next.getMonth() !== cursor.getMonth() && next < cursor) setCursor(addMonths(cursor, -1));
-      else if (next > addMonths(cursor, months - 1)) setCursor(addMonths(cursor, 1));
+      const nextMonth = new Date(next.getFullYear(), next.getMonth(), 1);
+      const firstMonth = new Date(cursor.getFullYear(), cursor.getMonth(), 1);
+      const lastMonth = addMonths(firstMonth, months - 1);
+      if (nextMonth < firstMonth) setCursor(nextMonth);
+      else if (nextMonth > lastMonth) setCursor(addMonths(nextMonth, -(months - 1)));
     }
   };
 
@@ -253,6 +261,7 @@ export function DateRangePicker({
               <div className="mds-dr-presets">
                 {presetList.map((p) => (
                   <button key={p.id} type="button"
+                    disabled={presetBlocked(p)}
                     className={`mds-dr-preset${activePreset?.id === p.id ? " mds-dr-preset--on" : ""}`}
                     aria-pressed={activePreset?.id === p.id}
                     onClick={() => applyPreset(p)}>{p.label}</button>

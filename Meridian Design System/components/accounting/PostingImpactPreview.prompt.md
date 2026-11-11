@@ -6,3 +6,5 @@ Show the consequences before a journal or adjustment is posted: balanced debit/c
 ```
 
 Posting is disabled for an unbalanced journal or locked period. Use explicit account and reporting consequences rather than a generic confirmation dialog.
+
+Empty/all-zero or invalid supplied sides cannot be posted. Warning acknowledgement binds the exact current preview, including amounts, period, authority and checks; changing that context revokes the acknowledgement. Validation/authorization/idempotency remain server responsibilities.

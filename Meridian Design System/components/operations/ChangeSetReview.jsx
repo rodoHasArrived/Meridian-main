@@ -21,19 +21,22 @@ const STATUS={
 
 export function ChangeSetProvider({original={},value,onChange,version,id,fields={},validate,children}){
   const controlled=value!==undefined;
-  const[draft,setDraft]=React.useState(()=>({...original}));
-  const[reasons,setReasons]=React.useState({});
-  React.useEffect(()=>{if(!controlled)setDraft({...original})},[original]);
-  const current=controlled?value:draft;
-  const set=next=>{if(!controlled)setDraft(next);onChange?.(next)};
+  const binding=JSON.stringify([id??null,version??null]);
+  const[draft,setDraft]=React.useState(()=>({scope:binding,value:{...original}}));
+  const[reasonState,setReasons]=React.useState(()=>({scope:binding,values:{}}));
+  const reasons=reasonState.scope===binding?reasonState.values:{};
+  React.useEffect(()=>{if(!controlled)setDraft({scope:binding,value:{...original}})},[original,binding]);
+  React.useEffect(()=>{setReasons(previous=>previous.scope===binding?previous:{scope:binding,values:{}})},[binding]);
+  const current=controlled?value:draft.scope===binding?draft.value:{...original};
+  const set=next=>{if(!controlled)setDraft({scope:binding,value:next});onChange?.(next)};
   const setField=(key,v)=>set({...current,[key]:v});
-  const setReason=(key,v)=>setReasons(r=>({...r,[key]:v}));
-  const discard=()=>{set({...original});setReasons({})};
+  const setReason=(key,v)=>setReasons(previous=>({scope:binding,values:{...(previous.scope===binding?previous.values:{}),[key]:v}}));
+  const discard=()=>{set({...original});setReasons({scope:binding,values:{}})};
   const changes=Object.keys({...original,...current}).filter(k=>!equal(original[k],current[k])).map(k=>({key:k,before:original[k],after:current[k],group:fields[k]?.group,label:fields[k]?.label,impact:fields[k]?.impact,reason:reasons[k]}));
   const issues=(validate?validate(current,changes):[])||[];
   const errors=issues.filter(i=>i.severity==="error");
   const status=!changes.length?"clean":errors.length?"invalid":issues.length?"warning":"ready";
-  const api=React.useMemo(()=>({id,version,original,draft:current,setDraft:set,setField,discard,changes,issues,errors,reasons,setReason,status,dirty:changes.length>0}),[id,version,original,current,changes.length,issues.length,reasons]);
+  const api={id,version,original,draft:current,setDraft:set,setField,discard,changes,issues,errors,reasons,setReason,status,dirty:changes.length>0};
   return <Context.Provider value={api}>{children}</Context.Provider>;
 }
 export function useChangeSet(){const v=React.useContext(Context);if(!v)throw new Error("useChangeSet must be used inside ChangeSetProvider");return v}
@@ -95,6 +98,7 @@ let injected=false;function inject(){if(injected||typeof document==="undefined")
 `;document.head.appendChild(el)}
 
 export function ChangeSetDiff({changes=[],labels={},fields={},issues=[],reasons={},onReason,requireReason=false,grouped=true}){
+  const uid=React.useId();
   inject();
   if(!changes.length)return <div className="mds-cs__diff"><div className="mds-cs__empty">No staged changes. Edits are held here for review before they touch the record.</div></div>;
   const nameOf=c=>c.label||fields[c.key]?.label||labels[c.key]||c.key;
@@ -109,7 +113,7 @@ export function ChangeSetDiff({changes=[],labels={},fields={},issues=[],reasons=
       {impact||rowIssues.length||requireReason?<div className="mds-cs__meta">
         {impact?<div className="mds-cs__impact">{impact}</div>:null}
         {rowIssues.map((i,n)=><div className="mds-cs__issue" data-sev={i.severity||"warning"} key={n}><span aria-hidden="true">{i.severity==="error"?"▲":i.severity==="info"?"·":"◇"}</span>{i.message}</div>)}
-        {requireReason?<div className="mds-cs__reason"><label htmlFor={`mds-cs-reason-${c.key}`}>Reason for change</label><input id={`mds-cs-reason-${c.key}`} value={reason||""} onChange={e=>onReason?.(c.key,e.target.value)} placeholder="Why this value changes"/></div>:null}
+        {requireReason?<div className="mds-cs__reason"><label htmlFor={`${uid}-reason-${c.key}`}>Reason for change</label><input id={`${uid}-reason-${c.key}`} value={reason||""} readOnly={!onReason} onChange={e=>onReason?.(c.key,e.target.value)} placeholder="Why this value changes"/></div>:null}
       </div>:null}
     </div>})}
   </React.Fragment>)}</div>;
@@ -126,7 +130,7 @@ export function ChangeReviewBar({changes=[],warnings=[],errors=[],status,onDisca
     <span>{parts.join(" · ")}</span><span className="spacer"/>
     {onDiscard?<Button size="sm" variant="ghost" onClick={onDiscard} disabled={!n}>Discard</Button>:null}
     {onReviewImpact?<Button size="sm" variant="ghost" onClick={onReviewImpact} disabled={!n}>Review impact</Button>:null}
-    {onSubmit?<Button size="sm" variant="ghost" onClick={onSubmit} disabled={!n||!!errors.length}>{submitLabel}</Button>:null}
+    {onSubmit?<Button size="sm" variant="ghost" onClick={onSubmit} disabled={disabled||!n||!!errors.length}>{submitLabel}</Button>:null}
     {onSave?<Button size="sm" onClick={onSave} disabled={disabled||!n||!!errors.length}>{saveLabel}</Button>:null}
   </div>;
 }
@@ -151,10 +155,16 @@ export function ChangeSetReview({
   const errors=all.filter(i=>i.severity==="error");
   const warns=[...warnings,...all.filter(i=>i.severity==="warning"&&!i.key).map(i=>i.message)];
   const status=statusProp||cs.status;
+  const unavailable=["validating","committed","superseded","conflicted"].includes(status);
+  const missingReasons=requireReason&&cs.changes.some(change=>!(cs.reasons[change.key]||change.reason||"").trim());
   const tone=STATUS[status]?.tone||"neutral";
   const impacts=normalizeImpact(impact);
-  const[confirming,setConfirming]=React.useState(false);
   const ver=version??cs.version??basedOnVersion;
+  const confirmationScope=JSON.stringify([changeSetId??cs.id??null,ver??null]);
+  const[confirmation,setConfirmation]=React.useState(null);
+  const confirming=confirmation===confirmationScope;
+  const setConfirming=next=>setConfirmation(next?confirmationScope:null);
+  React.useEffect(()=>setConfirmation(null),[confirmationScope]);
   const scopeItems=[changeSetId||cs.id?{k:"Change set",v:changeSetId||cs.id}:null,scope?{k:"Scope",v:scope}:null,affectedRecords!=null?{k:"Affected records",v:formatNumber(Number(affectedRecords), { decimals: 0 })}:null,initiatedBy?{k:"Initiated by",v:initiatedBy}:null,ver!=null?{k:"Based on version",v:ver}:null].filter(Boolean);
 
   return <section className={`mds-cs${className?" "+className:""}`} {...rest}>
@@ -177,6 +187,6 @@ export function ChangeSetReview({
     <ChangeReviewBar changes={cs.changes} warnings={warns} errors={errors} status={status}
       onDiscard={confirmDiscard?()=>setConfirming(true):(onDiscard||cs.discard)}
       onReviewImpact={onReviewImpact} onSubmit={onSubmit?()=>onSubmit(cs.draft,cs.changes):undefined}
-      onSave={onSave?()=>onSave(cs.draft,cs.changes):undefined} saveLabel={saveLabel} submitLabel={submitLabel}/>
+      onSave={onSave?()=>onSave(cs.draft,cs.changes):undefined} disabled={unavailable||missingReasons} saveLabel={saveLabel} submitLabel={submitLabel}/>
   </section>;
 }

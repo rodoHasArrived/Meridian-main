@@ -59,4 +59,4 @@ export interface SmallMultiplesProps {
   /** Note under the grid — what the window is, what the panels share. */
   caption?: string;
 }
-export declare function SmallMultiples(props: SmallMultiplesProps): JSX.Element;
+export declare function SmallMultiples(props: SmallMultiplesProps): React.JSX.Element;

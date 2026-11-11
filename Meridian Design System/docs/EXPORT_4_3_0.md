@@ -25,9 +25,13 @@ directory:
 
 ```bash
 npm ci
+python3 scripts/sync_manifest_metadata.py --write
 npm run build
 npm run build:check
 npm run test:release
+npm run test:source -- --out=api/source-contract-results.json
+npm run test:library -- --out=/tmp/meridian-library
+python scripts/project_compatibility.py
 python scripts/validate_release.py
 python scripts/export_release.py --check
 python scripts/export_release.py
@@ -46,6 +50,13 @@ contracts and `npm run test:browser` exercises the standalone reference. Set
 have their own synthetic-data scope; they do not replace workstation integration
 or live-backend validation.
 
+The full compatibility follow-up repaired the 67 original governance findings.
+All seven release gates now pass, with retained warnings reported separately.
+`api/project-compatibility.json` records all export/template/screen reviews and
+the executed browser matrix. Its validator rejects stale or incomplete proof;
+assembly requires supplied reviewer records and a complete executed report.
+See `tests/README.md` for reconstruction inputs and the source/test freeze rule.
+Package checks establish the scoped artifact and synthetic browser contracts.
 The additional `tests/optimistic-settlement-regression.mjs` and
 `tests/chart-accessibility-regression.mjs` cover observer reporting and the chart
 keyboard/data-alternative contracts. Run the full specimen matrix after the
@@ -136,7 +147,7 @@ is a required check.
   into an existing application.
 - **Styles:** preserve `styles.css` and every imported token stylesheet. Tokens
   are a dependency closure, not optional individual samples.
-- **Fonts:** `tokens/fonts.css` references IBM Plex Sans/Mono TTFs in
+- **Fonts:** `tokens/fonts.css` references local IBM Plex Sans/Mono files in
   `assets/fonts/`; the OFL licenses ship beside them. No Google Fonts request is
   required for this package's type system.
 - **Templates:** `.dc.html`/`x-dc`/`x-import` content retains its Design Component

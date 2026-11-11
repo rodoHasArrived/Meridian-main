@@ -2,28 +2,31 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<title>Meridian — Signal &amp; text</title>
 <meta charset="UTF-8">
 <link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../docs/specimen-layout.css">
 <style>
   body { margin: 0; padding: 14px; background: var(--bg); font-family: var(--font-body); display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   .group { display: flex; flex-direction: column; gap: 6px; }
   .swrow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .sw { border-radius: 8px; padding: 10px 10px 8px; height: 64px; display: flex; flex-direction: column; justify-content: flex-end; gap: 2px; }
-  .n { font-size: 9.5px; font-weight: 600; font-variant: all-small-caps; letter-spacing: .03em; color: var(--text-on-accent); }
-  .v { font-family: var(--font-data); font-size: 8.5px; color: var(--text-on-accent); }
-  .sw--action .n, .sw--action .v { color: var(--ink-inverse); }
+  .n { font-size: 9.5px; font-weight: 600; font-variant: all-small-caps; letter-spacing: .03em; color: var(--text-primary); }
+  .v { font-family: var(--font-data); font-size: 8.5px; color: var(--text-secondary); }
+  .caption { display: flex; flex-direction: column; gap: 2px; margin-top: 5px; }
+  .ink-sample { display: inline-block; width: 12px; height: 12px; margin-right: 5px; border: 1px solid var(--border); }
   .txt { display: flex; flex-direction: column; gap: 4px; justify-content: center; }
   .tline { font-family: var(--font-data); font-size: 12.5px; }
   .cap { font-size: 9.5px; font-weight: 600; font-variant: all-small-caps; color: var(--text-muted); }
 </style>
 </head>
-<body>
+<body class="mds-specimen">
   <div class="group">
     <span class="cap">Signal · terracotta</span>
     <div class="swrow">
-      <div class="sw" style="background: var(--brand-signal,#C56343);"><span class="n">accent</span><span class="v">#C56343</span></div>
-      <div class="sw" style="background: var(--brand-signal-dim,#CB6E4E);"><span class="n">controlled variant</span><span class="v">#CB6E4E</span></div>
-      <div class="sw sw--action" style="background: var(--brand-axis);"><span class="n">primary action</span><span class="v">#29323A</span></div>
+      <div class="sample"><div class="sw" style="background: var(--brand-signal,#C56343);" aria-hidden="true"></div><div class="caption"><span class="n">accent</span><span class="v">#C56343</span></div></div>
+      <div class="sample"><div class="sw" style="background: var(--brand-signal-dim,#CB6E4E);" aria-hidden="true"></div><div class="caption"><span class="n">controlled variant</span><span class="v">#CB6E4E</span></div></div>
+      <div class="sample"><div class="sw" style="background: var(--brand-signal-hover,#D2795A);" aria-hidden="true"></div><div class="caption"><span class="n">vibrant</span><span class="v">#D2795A</span></div></div>
     </div>
   </div>
   <div class="group">
@@ -32,7 +35,7 @@
       <span class="tline" style="color: var(--text-primary);">primary · #20252B</span>
       <span class="tline" style="color: var(--text-secondary);">secondary · #535C65</span>
       <span class="tline" style="color: var(--text-muted);">muted · #606870</span>
-      <span class="tline" style="color: var(--text-disabled);">disabled · #A4ABB2</span>
+      <span class="tline" style="color: var(--text-secondary);"><i class="ink-sample" style="background: var(--text-disabled);" aria-hidden="true"></i>disabled · #A4ABB2</span>
     </div>
   </div>
 </body>

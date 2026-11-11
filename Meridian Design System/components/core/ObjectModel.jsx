@@ -30,7 +30,7 @@ const BY_ID = OBJECT_TYPES.reduce((map, type) => { map[type.id] = type; return m
 
 /** The ledger entry for a type id; a permissive fallback so an unknown type still renders. */
 export function objectMeta(type) {
-  return BY_ID[type] || { id: type, label: type || "Object", identifierLabel: "Id", nameLabel: "Name", material: "Value", lifecycle: [], context: [] };
+  return BY_ID[type] || { id: type, label: type || "Object", plural: type || "Objects", identifierLabel: "Id", nameLabel: "Name", material: "Value", lifecycle: [], context: [] };
 }
 /** Normalizes any record into the identity contract, so a header, a chip, a breadcrumb, and a
  *  search result describe the same object the same way. */

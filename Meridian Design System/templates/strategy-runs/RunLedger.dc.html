@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -8,9 +8,11 @@
 <script src="../../_preview_jsx.js"></script>
 <script src="../../_ds_bundle.js"></script>
 <script src="./support.js"></script>
+<title>RunLedger — Meridian</title>
 </head>
 <body>
 <x-dc>
+<!-- @template name="Companion · RunLedger" description="Declared companion view of the strategy-runs template; retains the same shared object and workflow state." -->
 <helmet>
 <script src="./ds-base.js"></script>
 <script src="../_strategy-executor/executor-store.js"></script>
@@ -18,7 +20,10 @@
 <meta name="dc-template" content="strategy-runs">
 <style>html,body{margin:0;padding:0;height:100%}
 tr[data-sr-row="on"]{background:var(--selected-surface,#E7EDF2);box-shadow:inset 3px 0 0 var(--interaction-selected,#496C8F)}
-[data-sr-ret="pos"]{color:var(--green,#2E7655)}[data-sr-ret="neg"]{color:var(--red,#B54B42)}
+[data-sr-ret="pos"]{color:var(--green-dim,#23583F)}[data-sr-ret="neg"]{color:var(--red-dim,#873832)}
+tr[data-sr-row="on"] td:not([data-sr-ret]){color:var(--text-primary)!important}
+tr[data-sr-row="on"] td[data-sr-ret="pos"]{color:var(--green-dim,#23583F)!important}
+tr[data-sr-row="on"] td[data-sr-ret="neg"]{color:var(--red-dim,#873832)!important}
 .sr-kv{display:flex;justify-content:space-between;gap:10px;font-size:12px}
 .sr-kv .k{color:var(--text-muted)}.sr-kv .v{font-family:var(--font-data);color:var(--text-primary);font-variant-numeric:tabular-nums;text-align:right}
 </style>
@@ -113,6 +118,7 @@ tr[data-sr-row="on"]{background:var(--selected-surface,#E7EDF2);box-shadow:inset
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.GateRail" gates="{{ gates }}" hint-size="100%,44px"></x-import>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.StatusBanner" tone="{{ bannerTone }}" title="{{ bannerTitle }}" detail="{{ bannerDetail }}" hint-size="100%,48px"></x-import>
 </div>
+</x-import>
 </x-import>
 </x-import>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.ToastProvider" hint-size="0px,0px"></x-import>

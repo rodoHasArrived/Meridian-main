@@ -13,3 +13,5 @@ defaults to overwrite and never auto-merges a conflicting financial value.
 - Replacing a newer value warns that validation re-runs and that any impact preview taken against
   the base version is invalidated; a rationale is required by default.
 - Primary action is *Reload latest record*. The notice is `role="alert"` and takes focus.
+
+A different record, version or conflict value set invalidates local choices and rationale; an earlier conflict decision cannot authorize replacing a later value. Radio groups remain isolated between mounted notices. Controlled choices still belong to the caller.

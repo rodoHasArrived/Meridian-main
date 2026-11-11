@@ -3,7 +3,7 @@
 // Mirrors the EvidenceStatus model (Unknown | Ready | ReviewRequired | Blocked |
 // Stale | Missing). Renders as a clickable chip: status dot, label, mono route, arrow.
 import React from "react";
-import { normalizeSeverity } from "./status";
+import { normalizeSeverity } from "./status.js";
 
 let injected = false;
 function inject() {
@@ -36,8 +36,8 @@ function inject() {
 export function EvidenceLink({ label, status = "info", route, href, onOpen, className = "", ...rest }) {
   inject();
   const sev = normalizeSeverity(status);
-  const Tag = href ? "a" : "button";
-  const extra = href ? { href } : { type: "button" };
+  const Tag = href ? "a" : onOpen ? "button" : "span";
+  const extra = href ? { href } : onOpen ? { type: "button" } : {};
   return (
     <Tag
       className={`mds-evidence mds-evidence--${sev}${className ? " " + className : ""}`}

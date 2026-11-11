@@ -1,9 +1,9 @@
-# `tests/` — offline validation (4.2)
+# `tests/` — offline validation
 
 | File | What it covers | How to run |
 | --- | --- | --- |
 | `unit.html` | Schemas · lifecycle transitions · canonical SHA-256 · invalidation rules · revert-to-current · derived metrics (ACT/365.2425 CAGR, rolling-peak drawdown, declared-method Sharpe, fees-never-invented) · time coherence · legacy Run adapters · persistence failures (unavailable/corrupt/unsupported/quota) · migrations · URL identity precedence · export/manifest parity · the full acceptance journey | Serve the repo root over HTTP, open `tests/unit.html`. Summary + per-assertion table; `document.title` reads PASS/FAIL; `window.__testResults` for machines. Offline — fetches only sibling files. |
-| `conformance.html` | **The gate.** Sixteen static rules (`C-01…C-16`) over every component, token file and template entry, each proving itself against a fixture first — C-16 is cross-file, so `runStatic` hands every rule the whole file map. Template paths come from `api/template-eligibility.json`, so all **35** declared `.dc.html` entries are scanned, not just the 27 the manifest names as template entries · assertions over all 125 specimen cards (mounts · no bundle error · unique ids · accessible names · button types · no positive tabindex · no `transition:all` · named dialogs · visible focus · every token a component references actually exists · a published adoption figure recomputes from its own rows) · parity: component trio, card per directory, and the typed counts in `readme.md`/`docs/METRICS.md` against the manifest | Serve the root over HTTP, open `tests/conformance.html` (add `?cards=all` for the card gate — minutes, not seconds). `window.__conformance`; last run kept in `localStorage` and shown on `docs/conformance.card.html`. Law: `guidelines/CONFORMANCE.md` |
+| `conformance.html` | **The gate.** Sixteen static rules (`C-01…C-16`) over every component, token file and template entry, each proving itself against a fixture first — C-16 is cross-file, so `runStatic` hands every rule the whole file map. Template paths come from `api/template-eligibility.json`, so all **49** declared `.dc.html` entries are scanned, not just the 30 published entries in the manifest · assertions over all 135 specimen cards (mounts · no bundle error · unique ids · accessible names · button types · no positive tabindex · no `transition:all` · named dialogs · visible focus · every token a component references actually exists · a published adoption figure recomputes from its own rows) · parity: component trio, card per directory, and the typed counts in `README.md`/`docs/METRICS.md` against the manifest | Serve the root over HTTP, open `tests/conformance.html` (add `?cards=all` for the card gate — minutes, not seconds). `window.__conformance`; last run kept in `localStorage` and shown on `docs/conformance.card.html`. Law: `guidelines/CONFORMANCE.md` |
 | `conformance-rules.js` | The rule table itself — each rule carries the shipped defect it comes from, the fix, and both fixtures. Shared by the harness and the scoreboard card | Imported, not run directly |
 | `decision-preview.html` | `components/decision/` (`EvidenceRail` · `ConsequenceRail` · `DecisionSnapshot`) rendered from **source** — fetched and transpiled in the page, so a new component can be seen before the bundle is rebuilt. Leaves `window.DS` / `SNAP` / `FROZEN` / `FINDINGS` for probing. Not a card | Serve the root over HTTP, open `tests/decision-preview.html`. Needs **no** compiled bundle |
 | `action-contract.html` | The four fates of an instruction against `mock-transport.js`: landed with a receipt · a triple-clicked submit as ONE instruction · a 4xx rejection carrying its reason · a thrown 500 and silence as **unlanded** · a retry that reuses the key and resolves to the original receipt with one order at the venue · unheld permission · undeclared key/failure surface rendered as defects | Serve the root over HTTP, open `tests/action-contract.html`. Needs the compiled `_ds_bundle.js` |
@@ -11,7 +11,7 @@
 | `books-loop.html` | **Increment B's exit check, executed** — the whole journey over `templates/_scaffold/books.js` + `instructions.js`: one selector feeding five surfaces with one stable identity per object · a break and its named evidence · staging refused for an out-of-balance, unexplained, unevidenced or hard-closed draft · a staged journal closing the **projected** residual while the **actual** one does not move · a trial balance that proves to zero before and after · the reviewed payload carrying its rationale, evidence, scope and snapshot as one object · the four instruction fates and idempotent re-submission · an in-flight instruction returning **unlanded** after the screen closed · scope, basis exclusion and period state surviving the walk | Serve the root over HTTP, open `tests/books-loop.html`. Needs **no** bundle. Instruction suites re-evaluate `instructions.js` against fake storage, so the operator's own tray is never written |
 | `local-patches-regression.mjs` | One case per local patch in `docs/LOCAL_PATCHES.md` (action bridge loop · synchronous key reservation and retry payload · settings save key · inert continuity lock · tick precision · impossible dates · posting-period check · escaping). Each fails on the pre-patch file | `npm run test:patches` (also runs the interaction-depth, scenario-selector, optimistic-observer, modal-label and chart-accessibility regressions). Builds from source; needs Chromium |
 | `mock-transport.js` | The transport that lies convincingly — latency, server-side idempotency replay, `reject`, `error`, `lost` (wrote it, lost the answer), `silent`. Lives here, never in a template | `createMockTransport({ mode, latencyMs })` |
-| `BROWSER_TEST_PLAN.md` | Keyboard/ARIA (NVDA/VoiceOver) + responsive matrix — **prepared, deferred, not claimed** | Later execution; no browser is installed by this delivery |
+| `BROWSER_TEST_PLAN.md` | Keyboard/ARIA (NVDA/VoiceOver) + responsive matrix — **prepared, deferred, not claimed** | Native assistive-technology journeys remain deferred; see current Chromium evidence separately |
 
 `scripts/check_design_system_governance.py` and `scripts/validate_release.py` remain the offline
 Python gates (component trio, raw-hex, template contract, broken routes, generated-file parity).
@@ -21,3 +21,51 @@ regex-grade half of the compiler's own `_adherence.oxlintrc.json`, which nothing
 Isolation rule: `unit.html` never touches the real `meridian.strategyExecutor.store.v1` key —
 store suites re-evaluate `executor-store.js` against fake windows/storage. `books-loop.html`
 follows the same rule for `meridian.instructions.v1`.
+
+## Full project compatibility audit
+
+`npm run test:library` loads every published specimen and every eligibility-registry
+entry with local React, Babel, fonts and assets. See [FULL_LIBRARY_BROWSER.md](FULL_LIBRARY_BROWSER.md)
+for isolated storage/clocks, authored primary-journey recipes, screenshots, theme,
+density and viewport matrices. Unknown external requests fail. Generic render
+observations are kept separate from interaction and financial contract assertions.
+
+`npm run test:types` compiles all public values against strict TypeScript and React
+declarations. Source-level Chromium regressions cover the contracts that static
+examples cannot prove:
+
+`npm run test:source -- --out=api/source-contract-results.json` executes all
+`*-regression.mjs` suites, the public type check and token-default checks in fresh
+processes. The result records source hashes, individual exit codes and source
+stability. Generate this only after freezing the component/test sources; changes
+invalidate the evidence. Examples of individual commands include:
+
+```bash
+node tests/core-control-regression.mjs
+node tests/core-form-regression.mjs
+node tests/core-table-regression.mjs
+node tests/core-composition-regression.mjs
+node tests/core-interaction-regression.mjs
+node tests/core-logic-regression.mjs
+node tests/core-state-regression.mjs
+node tests/core-gap-regression.mjs
+node tests/domain-integrity-regression.mjs
+node tests/domain-workflow-regression.mjs
+node tests/domain-evidence-regression.mjs
+node tests/domain-logic-regression.mjs
+node tests/domain-chart-state-regression.mjs
+node tests/accounting-interaction-regression.mjs
+npm run test:chart-trading
+npm run test:components
+npm run test:agency
+python3 -m unittest discover -s tests -p test_manifest_metadata.py
+python3 -m unittest discover -s tests -p 'test_*.py'
+```
+
+Set `MERIDIAN_CHROMIUM_PATH=/usr/bin/chromium` when using system Chromium.
+`api/project-compatibility.json` joins per-item review decisions and executed
+evidence. `python3 scripts/project_compatibility.py` rejects incomplete inventories,
+stale source/companion/browser hashes, failed cases and missing primary journeys.
+Assembly requires supplied reviewer records and an executed full browser report;
+the generator never invents reviews or passes. Native Windows/Edge, assistive
+technology and live-provider/backend certification are explicitly unclaimed.
