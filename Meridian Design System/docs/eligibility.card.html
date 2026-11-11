@@ -66,7 +66,7 @@ dl.rz dd{margin:0;text-wrap:pretty}
 
 <div class="note"><b>Two figures deliberately absent: a target, and a trend.</b> A percentage here is a diagnosis of where local state still lives, not a number to move — and the arithmetic on this page is recomputed from the rows at load, never typed, so the card cannot drift from the record the way the 284/118 census outlived two releases. <code>Capsule</code> reads low on its eligible screens because its use condition requires working move/resize affordances; the restrictive rule in the contract is the intended answer, not a gap.</div>
 <script>
-const esc = (s) => String(s).replace(/[<>&]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c]));
+const esc = (s) => String(s).replace(/[<>&"']/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;", "'": "&#39;" }[c]));
 const pct = (c, e) => (e ? Math.round((c / e) * 1000) / 10 : 0);
 fetch("../api/template-eligibility.json").then((r) => r.json()).then((mf) => {
   // Published so the dynamic gate's `eligibility` assertion can recompute this page against its own rows.
@@ -115,8 +115,8 @@ fetch("../api/template-eligibility.json").then((r) => r.json()).then((mf) => {
       const isE = t.eligible.includes(p), isC = (t.conforming || []).includes(p);
       const state = isC ? "conforming" : isE ? "unmigrated" : "exempt";
       const glyph = isC ? "●" : isE ? "○" : "·";
-      const title = isE ? `${p} — eligible, ${isC ? "conforming" : "not yet migrated"}` : `${p} — exempt: ${esc(t.exempt[p] || "")}`;
-      return `<td data-c="${state}" title="${title}"><i>${glyph}</i></td>`;
+      const title = isE ? `${p} — eligible, ${isC ? "conforming" : "not yet migrated"}` : `${p} — exempt: ${t.exempt[p] || ""}`;
+      return `<td data-c="${state}" title="${esc(title)}"><i>${glyph}</i></td>`;
     }).join("");
     return `<tr><td class="name">${esc(s)}</td><td class="arch">${esc(t.archetype)}</td>${cellsHtml}<td class="n">${(t.conforming || []).length}/${t.eligible.length}</td></tr>`;
   }).join("");

@@ -19,7 +19,7 @@
 <div id="stage" aria-hidden="true"></div>
 <script>
 const rows=[],out=document.getElementById("out");let suite="";
-function record(name,ok,note){rows.push({suite,name,ok,note});const tr=document.createElement("tr");tr.dataset.ok=ok?"1":"0";tr.innerHTML=`<td>${rows.length}</td><td>${suite}</td><td>${name}</td><td>${ok?"PASS":"FAIL "+(note||"")}</td>`;out.appendChild(tr);}
+function record(name,ok,note){rows.push({suite,name,ok,note});const tr=document.createElement("tr");tr.dataset.ok=ok?"1":"0";for(const v of [rows.length,suite,name,ok?"PASS":"FAIL "+(note||"")]){const td=document.createElement("td");td.textContent=String(v);tr.appendChild(td);}out.appendChild(tr);}
 async function t(name,fn){let ok=false,note="";try{const r=await fn();ok=r===true||r===undefined;if(typeof r==="string"){ok=false;note=r;}}catch(e){note=String(e&&e.message||e);}record(name,ok,note);}
 const eq=(a,b)=>{if(a!==b)throw new Error(`expected ${JSON.stringify(b)}, got ${JSON.stringify(a)}`)};
 const ok=(v,m)=>{if(!v)throw new Error(m||"falsy")};
