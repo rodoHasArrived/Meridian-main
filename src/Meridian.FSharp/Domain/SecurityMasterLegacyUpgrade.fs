@@ -177,6 +177,30 @@ module SecurityMasterLegacyUpgrade =
           IsPuttable = not puts.IsEmpty
           PutSchedule = puts }
 
+    let private exerciseStyleLabel = function
+        | ExerciseStyle.American -> "American"
+        | ExerciseStyle.European -> "European"
+        | ExerciseStyle.Bermudan -> "Bermudan"
+
+    let private contractMultiplierOnly (multiplier: decimal option) : TradingParams =
+        {
+            LotSize = None
+            TickSize = None
+            ContractMultiplier = multiplier
+            MarginRequirementPct = None
+            TradingHoursUtc = None
+            CircuitBreakerThresholdPct = None
+        }
+
+    let private emptyNotional : NotionalTerms =
+        {
+            Notional = None
+            Denomination = None
+            CommittedAmount = None
+            FundedAmount = None
+            UnfundedAmount = None
+        }
+
     let private termsFromKind (kind: SecurityKind) =
         match kind with
         | SecurityKind.Equity terms ->
@@ -223,6 +247,16 @@ module SecurityMasterLegacyUpgrade =
                             IssueDate = None
                             MaturityDate = Some terms.Expiry
                         }
+                    TradingParameters = Some (contractMultiplierOnly (Some terms.Multiplier))
+                    Exercise =
+                        Some {
+                            OptionRight = Some terms.PutCall
+                            StrikePrice = Some terms.Strike
+                            StrikeRate = None
+                            ExerciseStyle = terms.ExerciseStyle |> Option.map exerciseStyleLabel
+                            UnderlyingSecurityId = Some terms.UnderlyingId
+                            PremiumAmount = None
+                        }
             }
         | SecurityKind.Future terms ->
             {
@@ -233,6 +267,7 @@ module SecurityMasterLegacyUpgrade =
                             IssueDate = None
                             MaturityDate = Some terms.Expiry
                         }
+                    TradingParameters = Some (contractMultiplierOnly (Some terms.Multiplier))
             }
         | SecurityKind.Bond terms ->
             let isStructured =
@@ -300,8 +335,17 @@ module SecurityMasterLegacyUpgrade =
                             })
                     StructuredProduct = structuredTerms
             }
-        | SecurityKind.FxSpot _ ->
-            SecurityTermModules.empty
+        | SecurityKind.FxSpot terms ->
+            {
+                SecurityTermModules.empty with
+                    CurrencyPair =
+                        Some {
+                            BaseCurrency = Some terms.BaseCurrency
+                            QuoteCurrency = Some terms.QuoteCurrency
+                            SettlementCurrency = None
+                            ForwardRate = None
+                        }
+            }
         | SecurityKind.Deposit terms ->
             {
                 SecurityTermModules.empty with
@@ -636,6 +680,13 @@ module SecurityMasterLegacyUpgrade =
                             IssuerSector = None
                             IssuerCountry = None
                         }
+                    Notional =
+                        Some {
+                            emptyNotional with
+                                CommittedAmount = Some terms.Commitment
+                                FundedAmount = terms.FundedAmount
+                                UnfundedAmount = terms.UnfundedAmount
+                        }
             }
         | SecurityKind.PrivateCompanyEquity terms ->
             {
@@ -690,6 +741,12 @@ module SecurityMasterLegacyUpgrade =
                             IssuerSector = None
                             IssuerCountry = None
                         }
+                    Notional =
+                        Some {
+                            emptyNotional with
+                                CommittedAmount = Some terms.CommittedAmount
+                                UnfundedAmount = terms.UnfundedAmount
+                        }
             }
         | SecurityKind.Commodity terms ->
             {
@@ -704,8 +761,17 @@ module SecurityMasterLegacyUpgrade =
                             CircuitBreakerThresholdPct = None
                         }
             }
-        | SecurityKind.CryptoCurrency _ ->
-            SecurityTermModules.empty
+        | SecurityKind.CryptoCurrency terms ->
+            {
+                SecurityTermModules.empty with
+                    CurrencyPair =
+                        Some {
+                            BaseCurrency = Some terms.BaseCurrency
+                            QuoteCurrency = Some terms.QuoteCurrency
+                            SettlementCurrency = None
+                            ForwardRate = None
+                        }
+            }
         | SecurityKind.Cfd terms ->
             {
                 SecurityTermModules.empty with
@@ -740,6 +806,15 @@ module SecurityMasterLegacyUpgrade =
                             TradingHoursUtc = None
                             CircuitBreakerThresholdPct = None
                         }
+                    Exercise =
+                        Some {
+                            OptionRight = Some terms.WarrantType
+                            StrikePrice = terms.Strike
+                            StrikeRate = None
+                            ExerciseStyle = None
+                            UnderlyingSecurityId = Some terms.UnderlyingId
+                            PremiumAmount = None
+                        }
             }
         | SecurityKind.FxForward terms ->
             {
@@ -750,6 +825,14 @@ module SecurityMasterLegacyUpgrade =
                             IssueDate = None
                             MaturityDate = Some terms.ValueDate
                         }
+                    CurrencyPair =
+                        Some {
+                            BaseCurrency = Some terms.BaseCurrency
+                            QuoteCurrency = Some terms.QuoteCurrency
+                            SettlementCurrency = None
+                            ForwardRate = terms.ForwardRate
+                        }
+                    Notional = Some { emptyNotional with Notional = terms.Notional }
             }
         | SecurityKind.NonDeliverableForward terms ->
             {
@@ -760,6 +843,14 @@ module SecurityMasterLegacyUpgrade =
                             IssueDate = None
                             MaturityDate = Some terms.ValueDate
                         }
+                    CurrencyPair =
+                        Some {
+                            BaseCurrency = Some terms.BaseCurrency
+                            QuoteCurrency = Some terms.QuoteCurrency
+                            SettlementCurrency = Some terms.SettlementCurrency
+                            ForwardRate = terms.ForwardRate
+                        }
+                    Notional = Some { emptyNotional with Notional = terms.Notional }
             }
         | SecurityKind.CreditDefaultSwap terms ->
             {
@@ -778,6 +869,7 @@ module SecurityMasterLegacyUpgrade =
                             PaymentFrequency = terms.PaymentFrequency |> Option.map PaymentFrequency.parse
                             DayCount = terms.DayCount
                         }
+                    Notional = Some { emptyNotional with Notional = Some terms.Notional }
             }
         | SecurityKind.Swaption terms ->
             {
@@ -788,6 +880,16 @@ module SecurityMasterLegacyUpgrade =
                             IssueDate = None
                             MaturityDate = Some terms.Expiry
                         }
+                    Exercise =
+                        Some {
+                            OptionRight = Some terms.PayerReceiver
+                            StrikePrice = None
+                            StrikeRate = Some terms.StrikeRate
+                            ExerciseStyle = terms.ExerciseStyle
+                            UnderlyingSecurityId = None
+                            PremiumAmount = None
+                        }
+                    Notional = Some { emptyNotional with Notional = Some terms.Notional }
             }
         | SecurityKind.CapFloor terms ->
             {
@@ -806,6 +908,16 @@ module SecurityMasterLegacyUpgrade =
                             FloorRate = terms.FloorStrike
                             CapRate = terms.CapStrike
                         }
+                    Exercise =
+                        Some {
+                            OptionRight = Some terms.CapFloorType
+                            StrikePrice = None
+                            StrikeRate = None
+                            ExerciseStyle = None
+                            UnderlyingSecurityId = None
+                            PremiumAmount = terms.PremiumAmount
+                        }
+                    Notional = Some { emptyNotional with Notional = Some terms.Notional }
             }
         | SecurityKind.StructuredNote terms ->
             {
@@ -838,6 +950,7 @@ module SecurityMasterLegacyUpgrade =
                             IssuerSector = None
                             IssuerCountry = None
                         }
+                    Notional = Some { emptyNotional with Denomination = terms.Denomination }
             }
         | SecurityKind.InvestmentFund terms ->
             {
@@ -850,10 +963,19 @@ module SecurityMasterLegacyUpgrade =
                             LiquidityFeeEligible = None
                         }
             }
-        | SecurityKind.CustomAsset _ ->
+        | SecurityKind.CustomAsset terms ->
             // Custom-asset terms are an opaque profile-governed document; no structural
-            // economic-term modules can be extracted without interpreting the profile.
-            SecurityTermModules.empty
+            // economic-term modules can be extracted without interpreting the profile. The
+            // envelope and the document it pins travel whole on the profile-envelope module.
+            {
+                SecurityTermModules.empty with
+                    ProfileEnvelope =
+                        Some {
+                            CustomProfileId = terms.CustomProfileId
+                            ProfileVersion = terms.ProfileVersion
+                            TermsJson = terms.TermsJson
+                        }
+            }
 
     /// ADR-027 stage 2: the kind → modules projection as a first-class seam. S2-B1's equivalence
     /// tests reach it directly, and S2-B2 derives the economic definition from commands at
