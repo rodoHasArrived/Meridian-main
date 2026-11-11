@@ -1,0 +1,80 @@
+#!/usr/bin/env node
+// Source-level synthetic workflow checks; no live write or credentials.
+import assert from 'node:assert/strict';
+import { build } from 'esbuild';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { chromium } from 'playwright';
+const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
+const bundled=await build({absWorkingDir:root,bundle:true,write:false,format:'iife',platform:'browser',resolveExtensions:['.js','.jsx','.ts','.tsx','.json'],define:{'process.env.NODE_ENV':'"production"'},stdin:{resolveDir:root,loader:'jsx',contents:`
+import React from 'react'; import {createRoot} from 'react-dom/client';
+import {AdapterDiagnostics} from './components/operations/AdapterDiagnostics.jsx';
+import {CaseQueue} from './components/operations/CaseQueue.jsx';
+import {ChangeSetProvider,ChangeSetHooks,ChangeSetReview,ChangeSetDiff,ChangeReviewBar} from './components/operations/ChangeSetReview.jsx';
+import {EvidenceRail} from './components/decision/EvidenceRail.jsx';
+import {LogTail} from './components/operations/LogTail.jsx';
+import {ResolutionDrawer} from './components/operations/ResolutionDrawer.jsx';
+import {VersionConflictNotice} from './components/operations/VersionConflictNotice.jsx';
+import {AnnotationProvider,AnnotationAnchor} from './components/operations/AnnotationLayer.jsx';
+window.Fixture={React,createRoot,AdapterDiagnostics,CaseQueue,ChangeSetProvider,ChangeSetHooks,ChangeSetReview,ChangeSetDiff,ChangeReviewBar,EvidenceRail,LogTail,ResolutionDrawer,VersionConflictNotice,AnnotationProvider,AnnotationAnchor};`}});
+const executablePath=process.env.MERIDIAN_CHROMIUM_PATH||process.env.CHROMIUM_EXECUTABLE_PATH;
+const browser=await chromium.launch({...executablePath?{executablePath}:{},args:['--no-sandbox']});
+const page=await browser.newPage({viewport:{width:1440,height:900}}); const errors=[];page.on('pageerror',error=>errors.push(error.message));
+try{
+ await page.setContent('<!doctype html><html lang="en"><head><title>Workflow contracts</title></head><body><main><h1>Synthetic workflow contracts</h1><div id="fixture"></div></main></body></html>');
+ await page.addScriptTag({content:bundled.outputFiles[0].text});
+ await page.evaluate(()=>{
+  const {React,createRoot,...DS}=window.Fixture;const host=document.getElementById('fixture');const root=createRoot(host);let revision=0;
+  const original={amount:10};const value={amount:20};window.events=[];
+  const record=(name,payload)=>window.events.push({name,payload});
+  function ChangeProbe(){const cs=DS.ChangeSetHooks.useChangeSet();window.cs=cs;return React.createElement('output',{id:'changes'},JSON.stringify({draft:cs.draft,status:cs.status,issues:cs.issues}));}
+  function Fixture({kind,config,revision}){
+   React.useLayoutEffect(()=>{host.dataset.revision=String(revision)},[revision]);
+   if(kind==='adapter')return React.createElement(DS.AdapterDiagnostics,{adapters:config.empty?[]:[{id:'exact-id',name:'Synthetic adapter',posture:config.posture||'retrying',version:7,versionStale:config.stale,retry:config.scheduled?{attempt:2,nextAt:'2026-06-01T12:00:00Z'}:{attempt:2},key:{id:'key-1',overdue:true},lastError:{code:'E-1',message:'Raw adapter failure'}}],defaultSelectedId:'exact-id',...(config.controlled?{selectedId:config.selected??null}:{}),onSelect:id=>record('select',id),onRetryNow:row=>record('retry',row.id),onSuspend:row=>record('suspend',row.id),onResume:row=>record('resume',row.id),onRotateKey:row=>record('rotate',row.id)});
+   if(kind==='case')return React.createElement(DS.CaseQueue,{items:config.empty?[]:[{id:'case-a',summary:'Alpha',status:'Open'},{id:'case-b',summary:'Beta',status:'Blocked'}],selectedId:config.selected??'case-a',onSelect:config.readOnly?undefined:(id,item)=>record('case',{id,itemId:item.id}),now:'2026-06-01T00:00:00Z'});
+   if(kind==='change')return React.createElement(DS.ChangeSetProvider,{original,value:config.controlled?value:undefined,onChange:draft=>record('draft',draft),validate:()=>config.error?[{key:'amount',severity:'error',message:'Invalid synthetic amount'}]:config.warning?[{key:'amount',severity:'warning',message:'Review synthetic amount'}]:[]},React.createElement(ChangeProbe),React.createElement(DS.ChangeSetReview,{requireReason:true,status:config.status,onSave:(draft,changes)=>record('save',{draft,changes}),onSubmit:(draft,changes)=>record('submit',{draft,changes})}));
+   if(kind==='bar')return React.createElement(DS.ChangeReviewBar,{changes:[{key:'amount',before:10,after:20}],disabled:config.disabled,onSave:()=>record('save'),onSubmit:()=>record('submit')});
+   if(kind==='evidence')return React.createElement(DS.EvidenceRail,{sections:config.empty?{}:config.onlySources?{sources:'Source evidence'}:{summary:'Synthetic summary',sources:'Source evidence',audit:'Audit evidence'},...(config.controlled?{activeSection:config.active||'summary'}:{}),coverage:{attached:0,required:3,label:'documents'},continuity:config.continuity||'retained',onSectionChange:id=>record('section',id)});
+   if(kind==='log')return React.createElement(DS.LogTail,{title:'Synthetic raw log',height:180,entries:config.empty?[]:Array.from({length:60},(_,i)=>({id:String(i),ts:'2026-06-01T01:02:03Z',level:i===0?undefined:i%3===0?'error':'info',text:'Raw line '+i}))});
+   if(kind==='resolve')return React.createElement(DS.ResolutionDrawer,{inline:true,requireReason:true,primaryAction:config.primary||'resolve',reason:config.controlled?config.reason:undefined,onReasonChange:config.readOnly?undefined:value=>record('reason',value),rootCauses:['Timing','Mapping'],rootCause:config.cause||'',onRootCauseChange:config.readOnly?undefined:value=>record('cause',value),onResolve:reason=>record('resolve',reason),onEscalate:()=>record('escalate'),onRequestEvidence:()=>record('evidence')});
+   if(kind==='conflict')return React.createElement(DS.VersionConflictNotice,{record:'REC-1',baseVersion:1,latestVersion:config.version||2,fields:[{key:'amount',label:'Amount',base:10,proposed:20,latest:config.latest||30}],choices:config.controlled?config.choices:undefined,onFieldChoice:(key,side)=>record('choice',{key,side}),onReapply:detail=>record('reapply',detail),onMergeNonConflicting:()=>record('merge'),onReload:()=>record('reload'),onSaveDraft:reason=>record('draft',reason)});
+   if(kind==='annotation')return React.createElement(DS.AnnotationProvider,{objectId:'record-1',objectVersion:2},React.createElement(DS.AnnotationAnchor,{anchor:config.ready?{kind:'cell',ref:'row:1',label:'Balance'}:undefined},'Retained value'));
+   throw Error(kind);
+  }
+  window.mount=(kind,config={})=>{window.events=[];const next=++revision;root.render(React.createElement(Fixture,{kind,config,revision:next,key:config.reset||kind}));return next};
+ });
+ async function mount(kind,config={}){const revision=await page.evaluate(({kind,config})=>window.mount(kind,config),{kind,config});await page.waitForFunction(revision=>document.querySelector('#fixture').dataset.revision===String(revision),revision)}
+ const text=()=>page.locator('#fixture').textContent();
+ await mount('adapter');assert.match(await text(),/Retrying with no next attempt/);assert.match(await text(),/Raw adapter failure/);
+ const retry=page.getByRole('button',{name:'Retry now',exact:true});await retry.focus();await page.keyboard.press('Enter');assert.deepEqual(await page.evaluate(()=>window.events),[{name:'retry',payload:'exact-id'}]);
+ await mount('adapter',{stale:true});assert(await retry.isDisabled());assert(await page.getByRole('button',{name:'Rotate key'}).isDisabled());assert.match(await text(),/moved server-side/);
+ await mount('adapter',{posture:'suspended',scheduled:true});await page.getByRole('button',{name:'Resume',exact:true}).click();assert.deepEqual(await page.evaluate(()=>window.events),[{name:'resume',payload:'exact-id'}]);
+ await mount('adapter',{controlled:true});const adapterRow=page.locator('.mds-adpt__row');await adapterRow.focus();await page.keyboard.press('Space');assert.equal(await adapterRow.getAttribute('aria-expanded'),'false');assert.equal((await page.evaluate(()=>window.events))[0].payload,'exact-id');
+ await mount('adapter',{controlled:true,selected:'exact-id',scheduled:true});assert.equal(await adapterRow.getAttribute('aria-expanded'),'true');assert(!/Retrying with no next attempt/.test(await text()));
+ await mount('adapter',{empty:true});assert.match(await text(),/No outbound adapters configured/);
+ await mount('case');await page.getByRole('option').first().focus();await page.keyboard.press('ArrowDown');assert.equal(await page.getByRole('option').nth(1).evaluate(node=>node===document.activeElement),true);assert.deepEqual((await page.evaluate(()=>window.events))[0],{name:'case',payload:{id:'case-b',itemId:'case-b'}});assert.equal(await page.getByRole('option').first().getAttribute('aria-selected'),'true','Controlled case waits for parent');
+ await mount('case',{selected:'removed'});assert.equal(await page.locator('[role="option"][tabindex="0"]').count(),1);await page.getByRole('option').first().focus();await page.keyboard.press('End');await page.keyboard.press('Space');assert.equal((await page.evaluate(()=>window.events)).at(-1).payload.id,'case-b');
+ await mount('case',{readOnly:true});assert.equal(await page.getByRole('button').count(),0);assert.equal(await page.getByRole('listitem').count(),2);
+ await mount('case',{empty:true});assert.match(await text(),/No open cases/);
+ await mount('change',{controlled:true,error:true});assert(await page.getByRole('button',{name:'Save changes'}).isDisabled());assert(await page.getByRole('button',{name:'Submit for review'}).isDisabled());
+ await mount('change',{controlled:true,warning:true});assert.match(await text(),/Review synthetic amount/);assert(!/Invalid synthetic amount/.test(await text()),'Same-count validation change reaches consumers');assert(await page.getByRole('button',{name:'Submit for review'}).isDisabled(),'Required reason gates submit');
+ await page.getByLabel('Reason for change').fill('Synthetic evidence');await page.getByRole('button',{name:'Save changes',exact:true}).focus();await page.keyboard.press('Enter');assert.equal((await page.evaluate(()=>window.events)).at(-1).payload.draft.amount,20);assert.equal((await page.evaluate(()=>window.events)).at(-1).payload.changes[0].reason,'Synthetic evidence');
+ await mount('change',{controlled:true,status:'validating'});assert(await page.getByRole('button',{name:'Save changes'}).isDisabled());assert(await page.getByRole('button',{name:'Submit for review'}).isDisabled());
+ await mount('change',{controlled:true});await page.getByRole('button',{name:'Discard',exact:true}).click();assert.match(await text(),/Discard 1 staged change/);await page.getByRole('button',{name:'Keep editing'}).click();assert.equal(await page.getByRole('button',{name:'Discard staged changes'}).count(),0);
+ await mount('bar',{disabled:true});assert(await page.getByRole('button',{name:'Submit for review'}).isDisabled());
+ await mount('evidence');assert.match(await text(),/0 of 3 documents.*3 required items outstanding.*Retained/s);const summary=page.getByRole('tab',{name:'Summary',exact:true});await summary.focus();await page.keyboard.press('ArrowRight');assert.equal(await page.getByRole('tab',{name:'Sources',exact:true}).getAttribute('aria-selected'),'true');assert.match(await page.getByRole('tabpanel').textContent(),/Source evidence/);
+ await mount('evidence',{controlled:true,active:'summary',continuity:'stale'});await summary.focus();await page.keyboard.press('End');assert.equal(await summary.getAttribute('aria-selected'),'true');assert.equal((await page.evaluate(()=>window.events))[0].payload,'audit');
+ await mount('evidence',{controlled:true,active:'summary',onlySources:true,continuity:'recovering'});assert.equal(await page.getByRole('tab',{name:'Sources'}).getAttribute('aria-selected'),'true');assert.match(await text(),/Recovering/);
+ await mount('evidence',{empty:true});assert.equal(await page.getByRole('tab').count(),0);assert.match(await text(),/No evidence sections declared/);
+ await mount('log');assert.equal(await page.getByRole('log').getAttribute('tabindex'),'0');assert.equal(await page.locator('.mds-logtail__line').count(),60);assert.match(await page.getByRole('button',{name:/INFO/}).textContent(),/41/);
+ const info=page.getByRole('button',{name:/INFO/});await info.focus();await page.keyboard.press('Space');assert.equal(await info.getAttribute('aria-pressed'),'false');assert.equal(await page.locator('.mds-logtail__line').count(),19);
+ await page.getByRole('button',{name:'Following',exact:true}).click();assert.equal(await page.getByRole('button',{name:'Paused',exact:true}).getAttribute('aria-pressed'),'false');await page.getByRole('button',{name:'Paused',exact:true}).click();assert.equal(await page.getByRole('button',{name:'Following',exact:true}).getAttribute('aria-pressed'),'true');
+ await mount('log',{empty:true});assert.match(await text(),/No log lines/);
+ await mount('resolve');assert(await page.getByRole('button',{name:'Resolve exception',exact:true}).isDisabled());await page.getByLabel('Resolution rationale').fill('  Reviewed  ');await page.getByRole('button',{name:'Resolve exception',exact:true}).focus();await page.keyboard.press('Enter');assert.equal((await page.evaluate(()=>window.events)).at(-1).payload,'  Reviewed  ');
+ await mount('resolve',{primary:'escalate'});await page.getByRole('button',{name:'Resolve exception',exact:true}).click();assert.equal((await page.evaluate(()=>window.events)).at(-1).payload,'  Reviewed  ','Secondary resolve carries reason string');
+ await mount('resolve',{controlled:true,reason:'',readOnly:true});assert(await page.getByLabel('Classification').isDisabled());assert(await page.getByLabel('Resolution rationale').evaluate(node=>node.readOnly));
+ await mount('conflict');assert.equal(await page.getByRole('heading',{name:'Record changed while you were editing'}).evaluate(node=>node===document.activeElement),true);const reapply=page.getByRole('button',{name:'Reapply with rationale'});assert(await reapply.isDisabled());await page.getByRole('radio',{name:'Keep mine'}).check();assert(await reapply.isDisabled());await page.getByLabel('Reason for replacing the newer record').fill('  Audited  ');await reapply.click();assert.deepEqual((await page.evaluate(()=>window.events)).at(-1).payload,{reason:'Audited',choices:{amount:'mine'}});
+ await mount('conflict',{version:3,latest:40});assert(await reapply.isDisabled());assert.equal(await page.getByLabel('Reason for replacing the newer record').inputValue(),'');assert.equal(await page.getByRole('radio',{checked:true}).count(),0,'New conflict cannot reuse previous choice');
+ await mount('annotation');assert.equal(await page.getByRole('button').count(),0);assert.match(await text(),/Retained value/);await mount('annotation',{ready:true});await page.getByRole('button',{name:'Annotate Balance'}).click();assert.equal(await page.getByRole('dialog').count(),1);await mount('annotation');assert.equal(await page.getByRole('dialog').count(),0);await mount('annotation',{ready:true});assert.equal(await page.getByRole('button',{name:'Annotate Balance'}).getAttribute('aria-expanded'),'false');
+ assert.deepEqual(errors,[]);console.log('PASS Domain workflows: exact callback IDs, controlled state, keyboard/focus, reason/validation gates, stale data, empty and recovery across eight families');
+}finally{await browser.close()}

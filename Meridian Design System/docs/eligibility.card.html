@@ -1,5 +1,6 @@
 <!-- @dsCard group="Documentation" viewport="1280x1240" name="Template eligibility" subtitle="Which primitives each of the 27 screens actually owes — 270 cells, 152 eligible, and the adoption figure recomputed from its own rows" -->
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Template eligibility</title><link rel="stylesheet" href="../styles.css"><style>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Template eligibility</title><link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../docs/specimen-layout.css"><style>
 body{margin:0;padding:22px 24px 44px;background:var(--bg);color:var(--text-secondary);font-family:var(--font-body);font-size:13px}
 h1{font:600 20px/28px var(--font-display,var(--font-body));color:var(--text-primary);margin:0 0 6px}
 p.lede{margin:0 0 16px;max-width:96ch;text-wrap:pretty}
@@ -10,13 +11,13 @@ h2 em{font:400 11px var(--font-data);color:var(--text-muted);font-style:normal}
 .tiles div:last-child{border-right:0}
 .tiles .v{font:600 21px var(--font-data);color:var(--text-primary);font-variant-numeric:tabular-nums}
 .tiles .l{font:600 10px var(--font-body);font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted)}
-.tiles div[data-tone="good"] .v{color:var(--severity-ready-fg,#2E7655)}
-.tiles div[data-tone="warn"] .v{color:var(--severity-review-fg,#725012)}
+.tiles div[data-tone="good"] .v{color:var(--green-dim)}
+.tiles div[data-tone="warn"] .v{color:var(--text-primary)}
 .check{display:flex;gap:10px;align-items:baseline;padding:9px 12px;border:1px solid var(--border-strong);background:var(--bg-medium);font:11px var(--font-data);color:var(--text-secondary);margin-top:8px}
 .check b{font-weight:600;color:var(--text-primary)}
 .tag{display:inline-block;font:600 9px var(--font-body);font-variant:all-small-caps;letter-spacing:.05em;padding:1px 6px;border:1px solid var(--border);border-radius:2px;white-space:nowrap}
-.tag[data-s="clean"]{color:var(--severity-ready-fg,#2E7655);border-color:var(--severity-ready-bd,#9DC4AE);background:var(--severity-ready-bg,#E9F2EC)}
-.tag[data-s="review"]{color:var(--severity-review-fg,#725012);border-color:var(--severity-review-bd,#D6C08A);background:var(--severity-review-bg,#F6EFE0)}
+.tag[data-s="clean"]{color:var(--green-dim);border-color:var(--severity-ready-bd,#9DC4AE);background:var(--severity-ready-bg,#E9F2EC)}
+.tag[data-s="review"]{color:var(--text-primary);border-color:var(--severity-review-bd,#D6C08A);background:var(--severity-review-bg,#F6EFE0)}
 table{border-collapse:collapse;width:100%;border:1px solid var(--border);background:var(--bg-light);font-size:12.5px}
 th{text-align:left;font:600 10px var(--font-body);font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted);background:var(--bg-medium);padding:6px 9px;border-bottom:1px solid var(--border-strong)}
 td{padding:5px 9px;border-top:1px solid var(--border-divider);vertical-align:top;line-height:18px}
@@ -29,8 +30,8 @@ table.mx td{padding:0;text-align:center;border-left:1px solid var(--border-divid
 table.mx td.name{padding:4px 9px;text-align:left;font:12px var(--font-body);color:var(--text-primary);border-left:0;white-space:nowrap}
 table.mx td.arch{padding:4px 9px;text-align:left;font:10px var(--font-body);font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted)}
 table.mx td i{display:block;width:100%;height:22px;line-height:22px;font-style:normal;font-size:12px}
-table.mx td[data-c="conforming"] i{color:var(--severity-ready-fg,#2E7655);background:var(--severity-ready-bg,#E9F2EC)}
-table.mx td[data-c="unmigrated"] i{color:var(--severity-review-fg,#725012);background:var(--severity-review-bg,#F6EFE0)}
+table.mx td[data-c="conforming"] i{color:var(--green-dim);background:var(--severity-ready-bg,#E9F2EC)}
+table.mx td[data-c="unmigrated"] i{color:var(--text-primary);background:var(--severity-review-bg,#F6EFE0)}
 table.mx td[data-c="exempt"] i{color:var(--text-disabled,#A4ABB2)}
 table.mx td.n{padding:4px 9px;text-align:right;color:var(--text-secondary)}
 .legend{display:flex;flex-wrap:wrap;gap:6px 22px;margin:8px 0 0;font:11px var(--font-body);color:var(--text-muted)}
@@ -41,7 +42,7 @@ dl.rz dd{margin:0;text-wrap:pretty}
 .note{border-left:3px solid var(--brand-signal);background:var(--bg-medium);padding:11px 14px;margin-top:22px;max-width:96ch;line-height:19px;text-wrap:pretty}
 .two{display:grid;grid-template-columns:1.15fr 1fr;gap:22px;align-items:start}
 @media(max-width:1000px){.two{grid-template-columns:1fr}}
-</style></head><body>
+</style></head><body class="mds-specimen">
 <h1>Template eligibility</h1>
 <p class="lede">Requiring every operating-language primitive on every screen would be consistency theater, so adoption is measured against the cells that carry a design judgment: <b>eligible templates conforming ÷ templates eligible</b>. Every one of the 27 templates is on the record — <code>C-16</code> in the static gate fails the release if a new screen ships unclassified, because an unclassified template is absent from both terms and would move the printed percentage without anything having been migrated. Judgment: <code>guidelines/TEMPLATE_CONTRACT.md</code>. Record: <code>api/template-eligibility.json</code>. Gate: <code>scripts/check_template_eligibility.py</code>.</p>
 <div class="tiles" id="tiles"></div>

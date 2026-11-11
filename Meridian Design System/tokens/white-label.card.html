@@ -2,8 +2,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<title>Meridian — White-Label Kit</title>
 <meta charset="utf-8">
 <link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../docs/specimen-layout.css">
 <style>
  body{margin:0;padding:22px;background:var(--bg);font-family:var(--font-body);color:var(--text-primary);}
  .wrap{max-width:1040px;margin:0 auto;display:flex;flex-direction:column;gap:18px;}
@@ -18,10 +20,10 @@
  .panel{border:1px solid var(--border);background:var(--bg-light);padding:16px;}
  .eyebrow{font:600 10px var(--font-body);font-variant:all-small-caps;letter-spacing:.06em;color:var(--text-muted);margin:0 0 12px;}
  .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
- .btn{padding:8px 16px;border:1px solid var(--brand-signal,#C56343);background:var(--brand-signal,#C56343);color:#fff;border-radius:2px;font-size:13px;font-weight:600;cursor:pointer;}
- .btn--ghost{background:transparent;color:var(--brand-signal,#C56343);}
- .link{color:var(--brand-signal,#C56343);font-weight:600;text-decoration:none;font-size:13px;}
- .chk{width:18px;height:18px;border:1px solid var(--brand-signal,#C56343);background:var(--brand-signal,#C56343);border-radius:2px;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:12px;}
+ .btn{padding:8px 16px;border:1px solid var(--brand-signal,#C56343);background:var(--brand-signal,#C56343);color:var(--text-on-accent);border-radius:2px;font-size:13px;font-weight:600;cursor:pointer;}
+ .btn--ghost{background:transparent;color:var(--interaction-link);}
+ .link{color:var(--interaction-link);font-weight:600;text-decoration:none;font-size:13px;}
+ .chk{width:18px;height:18px;border:1px solid var(--brand-signal,#C56343);background:var(--brand-signal,#C56343);border-radius:2px;display:inline-flex;align-items:center;justify-content:center;color:var(--text-on-accent);font-size:12px;}
  .track{height:6px;background:var(--bg-hover);border-radius:3px;overflow:hidden;flex:1;min-width:120px;}
  .fill{height:100%;width:62%;background:var(--brand-signal,#C56343);}
  .mono{font-family:var(--font-data);font-size:12px;color:var(--text-muted);}
@@ -29,13 +31,13 @@
  .swatch b{width:52px;height:52px;border:1px solid var(--border);background:var(--brand-signal,#C56343);border-radius:2px;flex:none;}
  .nav{display:flex;flex-direction:column;gap:2px;}
  .nav a{padding:6px 10px;font-size:12px;color:var(--text-secondary);border-radius:2px;text-decoration:none;}
- .nav a.active{color:var(--brand-signal,#C56343);background:color-mix(in srgb,var(--brand-signal,#C56343) 10%,transparent);font-weight:600;box-shadow:inset 2px 0 0 var(--brand-signal,#C56343);}
+ .nav a.active{color:var(--text-primary);background:color-mix(in srgb,var(--brand-signal,#C56343) 10%,transparent);font-weight:600;box-shadow:inset 2px 0 0 var(--brand-signal,#C56343);}
 </style>
 </head>
-<body>
+<body class="mds-specimen">
 <div class="wrap">
  <h1>White-Label Kit</h1>
- <p class="sub">One attribute — <code>&lt;html data-brand&gt;</code> — remaps <code>--accent</code>, which every component reads. Nothing else changes.</p>
+ <p class="sub">The <code>&lt;html data-brand&gt;</code> attribute previews brand accents. Explicit light/dark appearance retains the canonical palette; interaction and semantic roles remain independent.</p>
  <div class="brands" id="brands"></div>
  <div class="grid">
   <div class="panel">
@@ -67,7 +69,7 @@ const el=document.getElementById("brands");
 function setBrand(b){
   if(b) document.documentElement.setAttribute("data-brand",b); else document.documentElement.removeAttribute("data-brand");
   [...el.children].forEach(c=>c.setAttribute("aria-pressed", c.dataset.b===b ? "true":"false"));
-  requestAnimationFrame(()=>{ document.getElementById("hex").textContent=getComputedStyle(document.getElementById("chip")).backgroundColor; });
+  refreshSampleCaption();
 }
 for(const [label,b] of BRANDS){
   const btn=document.createElement("button"); btn.className="brand"; btn.dataset.b=b;
@@ -76,7 +78,12 @@ for(const [label,b] of BRANDS){
   btn.onclick=()=>setBrand(b);
   el.appendChild(btn);
 }
+function refreshSampleCaption(){
+  requestAnimationFrame(()=>{document.getElementById("hex").textContent=getComputedStyle(document.getElementById("chip")).backgroundColor;});
+}
+new MutationObserver(refreshSampleCaption).observe(document.documentElement,{attributes:true,attributeFilter:['data-brand','data-theme']});
 setBrand("indigo");
+
 </script>
 </body>
 </html>

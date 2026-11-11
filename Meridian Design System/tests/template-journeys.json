@@ -1,0 +1,1863 @@
+{
+  "schemaVersion": 1,
+  "note": "Concrete primary journeys run against authored synthetic DC entries. Read-only reports/walls assert meaningful financial and failure disclosures; no recipe certifies a live backend. Loading/empty/error/retry, appearance, keyboard and accessibility checks are executed separately by the browser harness.",
+  "entries": {
+    "templates/accounting-workstation/AccountingWorkstation.dc.html": {
+      "description": "Read trial balance, switch to the General Ledger and retain explicit view state without posting.",
+      "steps": [
+        {
+          "action": "click",
+          "target": {
+            "role": "tab",
+            "name": "Trial Balance",
+            "exact": true
+          }
+        },
+        {
+          "action": "assertAttribute",
+          "target": {
+            "role": "tab",
+            "name": "Trial Balance",
+            "exact": true
+          },
+          "attribute": "aria-selected",
+          "value": "true"
+        },
+        {
+          "action": "click",
+          "target": {
+            "role": "tab",
+            "name": "General Ledger",
+            "exact": true
+          }
+        },
+        {
+          "action": "assertAttribute",
+          "target": {
+            "role": "tab",
+            "name": "General Ledger",
+            "exact": true
+          },
+          "attribute": "aria-selected",
+          "value": "true"
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "JE-1042"
+        }
+      ],
+      "failureStates": [
+        "loading",
+        "empty",
+        "error"
+      ]
+    },
+    "templates/adapter-operations/AdapterOperations.dc.html": {
+      "description": "Select the exhausted posting adapter and inspect its verbatim authentication failure and missing retry schedule.",
+      "steps": [
+        {
+          "action": "click",
+          "target": {
+            "role": "button",
+            "name": "Posting export,",
+            "exact": false
+          }
+        },
+        {
+          "action": "assertVisible",
+          "target": {
+            "role": "group",
+            "name": "Posting export \u2014 diagnostics",
+            "exact": true
+          }
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "AUTH-401"
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "no next attempt scheduled"
+        }
+      ],
+      "failureStates": [
+        "loading",
+        "empty",
+        "error"
+      ]
+    },
+    "templates/alerting-workstation/AlertingWorkstation.dc.html": {
+      "description": "Search the alert queue to an actual empty result, then clear filters and recover the populated queue.",
+      "steps": [
+        {
+          "action": "fill",
+          "target": {
+            "css": "input[placeholder=\"Search rule, scope, id\u2026\"]"
+          },
+          "value": "no-such-alert-3501"
+        },
+        {
+          "action": "assertVisible",
+          "target": {
+            "text": "No alerts match",
+            "exact": true
+          }
+        },
+        {
+          "action": "click",
+          "target": {
+            "role": "button",
+            "name": "Clear filters",
+            "exact": true
+          }
+        },
+        {
+          "action": "assertValue",
+          "target": {
+            "css": "input[placeholder=\"Search rule, scope, id\u2026\"]"
+          },
+          "value": ""
+        },
+        {
+          "action": "assertVisible",
+          "target": {
+            "role": "heading",
+            "name": "Alerts",
+            "exact": true
+          }
+        }
+      ],
+      "failureStates": [
+        "loading",
+        "empty",
+        "error"
+      ]
+    },
+    "templates/alm-review/AlmReview.dc.html": {
+      "description": "Change scenario and reading while preserving the liability-gap context and selected horizon.",
+      "steps": [
+        {
+          "action": "click",
+          "target": {
+            "role": "button",
+            "name": "+200 bp scenario",
+            "exact": true
+          }
+        },
+        {
+          "action": "assertAttribute",
+          "target": {
+            "role": "button",
+            "name": "+200 bp scenario",
+            "exact": true
+          },
+          "attribute": "aria-pressed",
+          "value": "true"
+        },
+        {
+          "action": "click",
+          "target": {
+            "role": "button",
+            "name": "Maturity",
+            "exact": true
+          }
+        },
+        {
+          "action": "assertAttribute",
+          "target": {
+            "role": "button",
+            "name": "Maturity",
+            "exact": true
+          },
+          "attribute": "data-on",
+          "value": "on"
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "Selected horizon"
+        }
+      ],
+      "failureStates": [
+        "loading",
+        "empty",
+        "error"
+      ]
+    },
+    "templates/analytical-workbench/AnalyticalWorkbench.dc.html": {
+      "description": "Reduce the curve to its current series and inspect the retained observation timestamp.",
+      "steps": [
+        {
+          "action": "click",
+          "target": {
+            "role": "radio",
+            "name": "Current",
+            "exact": true
+          }
+        },
+        {
+          "action": "assertAttribute",
+          "target": {
+            "role": "radio",
+            "name": "Current",
+            "exact": true
+          },
+          "attribute": "aria-checked",
+          "value": "true"
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "2026-05-14 14:32:08Z"
+        }
+      ],
+      "failureStates": [
+        "loading",
+        "empty",
+        "error"
+      ]
+    },
+    "templates/asset-sheet/AssetSheet.dc.html": {
+      "description": "Read the overview, advance to component specifications, then return with page navigation.",
+      "steps": [
+        {
+          "action": "click",
+          "target": {
+            "role": "button",
+            "name": "Next page",
+            "exact": true
+          }
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "COMPONENTS"
+        },
+        {
+          "action": "click",
+          "target": {
+            "role": "button",
+            "name": "Previous page",
+            "exact": true
+          }
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "OVERVIEW"
+        }
+      ],
+      "failureStates": [
+        "loading",
+        "empty",
+        "error"
+      ]
+    },
+    "templates/basket-builder/BasketBuilder.dc.html": {
+      "description": "Inspect basket analytics and recover constituents while unsupported import/creation remain explicit.",
+      "steps": [
+        {
+          "action": "assertDisabled",
+          "target": {
+            "role": "button",
+            "name": "+ New",
+            "exact": true
+          },
+          "reasonContains": "application instruction"
+        },
+        {
+          "action": "click",
+          "target": {
+            "role": "tab",
+            "name": "Analytics",
+            "exact": true
+          }
+        },
+        {
+          "action": "assertAttribute",
+          "target": {
+            "role": "tab",
+            "name": "Analytics",
+            "exact": true
+          },
+          "attribute": "aria-selected",
+          "value": "true"
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "Basket NAV"
+        },
+        {
+          "action": "click",
+          "target": {
+            "role": "tab",
+            "name": "Constituents",
+            "exact": true
+          }
+        },
+        {
+          "action": "assertDisabled",
+          "target": {
+            "role": "button",
+            "name": "Upload assets",
+            "exact": true
+          },
+          "reasonContains": "import service"
+        },
+        {
+          "action": "assertVisible",
+          "target": {
+            "role": "button",
+            "name": "Export example",
+            "exact": true
+          }
+        }
+      ],
+      "failureStates": [
+        "loading",
+        "empty",
+        "error"
+      ]
+    },
+    "templates/blank-workstation/BlankWorkstation.dc.html": {
+      "description": "Open the empty workstation command palette using the keyboard, inspect its command input, then dismiss it.",
+      "steps": [
+        {
+          "action": "press",
+          "target": {
+            "css": "body"
+          },
+          "key": "Control+k"
+        },
+        {
+          "action": "assertVisible",
+          "target": {
+            "css": "[role=\"dialog\"]"
+          }
+        },
+        {
+          "action": "press",
+          "target": {
+            "css": "body"
+          },
+          "key": "Escape"
+        },
+        {
+          "action": "assertVisible",
+          "target": {
+            "role": "heading",
+            "name": "Untitled workstation",
+            "exact": true
+          }
+        }
+      ],
+      "failureStates": [
+        "loading",
+        "empty",
+        "error"
+      ]
+    },
+    "templates/charting-workstation/ChartingWorkstation.dc.html": {
+      "description": "Switch the chart to scatter analysis and inspect the shared correlation readout; unsupported study creation stays blocked.",
+      "steps": [
+        {
+          "action": "assertDisabled",
+          "target": {
+            "role": "button",
+            "name": "Add",
+            "exact": true
+          },
+          "reasonContains": "fixed study set"
+        },
+        {
+          "action": "click",
+          "target": {
+            "role": "radio",
+            "name": "Scatter Analysis",
+            "exact": true
+          }
+        },
+        {
+          "action": "assertAttribute",
+          "target": {
+            "role": "radio",
+            "name": "Scatter Analysis",
+            "exact": true
+          },
+          "attribute": "aria-checked",
+          "value": "true"
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "Corr (r)"
+        }
+      ],
+      "failureStates": [
+        "loading",
+        "empty",
+        "error"
+      ]
+    },
+    "templates/close-management/CloseManagement.dc.html": {
+      "description": "Inspect task owners and downstream blocked controls without inventing an assignment transport.",
+      "steps": [
+        {
+          "action": "click",
+          "target": {
+            "role": "button",
+            "name": "Owners",
+            "exact": true
+          }
+        },
+        {
+          "action": "assertAttribute",
+          "target": {
+            "role": "button",
+            "name": "Owners",
+            "exact": true
+          },
+          "attribute": "data-on",
+          "value": "on"
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "Downstream impact"
+        },
+        {
+          "action": "assertDisabled",
+          "target": {
+            "role": "button",
+            "name": "Reassign",
+            "exact": true
+          },
+          "reasonContains": "application ownership instruction"
+        }
+      ],
+      "failureStates": [
+        "loading",
+        "empty",
+        "error"
+      ]
+    },
+    "templates/close-management/CloseTieOut.dc.html": {
+      "description": "Return the retained tie-out example to its preparer with an explicit preview-only disposition.",
+      "steps": [
+        {
+          "action": "click",
+          "target": {
+            "role": "button",
+            "name": "Return example to preparer",
+            "exact": true
+          }
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "Synthetic return to preparer recorded in this preview only."
+        }
+      ],
+      "failureStates": [
+        "loading",
+        "empty",
+        "error"
+      ]
+    },
+    "templates/dashboard-workstation/DashboardWorkstation.dc.html": {
+      "description": "Inspect portfolio positions and the selected holding; a real close instruction remains blocked.",
+      "steps": [
+        {
+          "action": "assertVisible",
+          "target": {
+            "role": "heading",
+            "name": "Portfolio overview",
+            "exact": true
+          }
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "\u03a3 unrealized P&L"
+        },
+        {
+          "action": "assertDisabled",
+          "target": {
+            "role": "button",
+            "name": "Close position",
+            "exact": true
+          },
+          "reasonContains": "authorized trading instruction"
+        },
+        {
+          "action": "click",
+          "target": {
+            "css": "tbody tr:nth-child(2)"
+          }
+        },
+        {
+          "action": "assertVisible",
+          "target": {
+            "role": "button",
+            "name": "Open sample chart",
+            "exact": true
+          }
+        }
+      ],
+      "failureStates": [
+        "loading",
+        "empty",
+        "error"
+      ]
+    },
+    "templates/field-formula/FieldFormula.dc.html": {
+      "description": "Validate an incomplete formula as an error, then recover a valid AMX field expression without applying a financial change.",
+      "steps": [
+        {
+          "action": "fill",
+          "target": {
+            "label": "Formula for the selected statement",
+            "exact": true
+          },
+          "value": "NOT_A_REAL_FIELD("
+        },
+        {
+          "action": "assertVisible",
+          "target": {
+            "text": "error",
+            "exact": true
+          }
+        },
+        {
+          "action": "fill",
+          "target": {
+            "label": "Formula for the selected statement",
+            "exact": true
+          },
+          "value": "Let audit_yield = YTM(cusip)"
+        },
+        {
+          "action": "assertVisible",
+          "target": {
+            "text": "valid",
+            "exact": true,
+            "index": 0
+          }
+        }
+      ],
+      "failureStates": [
+        "loading",
+        "empty",
+        "error"
+      ]
+    },
+    "templates/ingestion-operations/IngestionOperations.dc.html": {
+      "description": "Open a synthetic backfill request and inspect its required provider/symbol/window fields without submitting a live job.",
+      "steps": [
+        {
+          "action": "click",
+          "target": {
+            "role": "button",
+            "name": "New backfill",
+            "exact": true
+          }
+        },
+        {
+          "action": "assertVisible",
+          "target": {
+            "label": "Provider",
+            "exact": true
+          }
+        },
+        {
+          "action": "assertVisible",
+          "target": {
+            "label": "Symbols",
+            "exact": true
+          }
+        },
+        {
+          "action": "fill",
+          "target": {
+            "label": "Symbols",
+            "exact": true
+          },
+          "value": "AAPL, MSFT"
+        },
+        {
+          "action": "assertValue",
+          "target": {
+            "label": "Symbols",
+            "exact": true
+          },
+          "value": "AAPL, MSFT"
+        },
+        {
+          "action": "press",
+          "target": {
+            "css": "body"
+          },
+          "key": "Escape"
+        }
+      ],
+      "failureStates": [
+        "loading",
+        "empty",
+        "error"
+      ]
+    },
+    "templates/interaction-depth/InteractionDepth.dc.html": {
+      "description": "Filter the virtual registry to an empty result and recover the synthetic working set.",
+      "steps": [
+        {
+          "action": "fill",
+          "target": {
+            "label": "Filter by symbol or name",
+            "exact": true
+          },
+          "value": "no-such-instrument-3501"
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "0"
+        },
+        {
+          "action": "fill",
+          "target": {
+            "label": "Filter by symbol or name",
+            "exact": true
+          },
+          "value": "AAA"
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "AAA"
+        }
+      ],
+      "failureStates": [
+        "loading",
+        "empty",
+        "error"
+      ]
+    },
+    "templates/investment-event-ledger/InvestmentEventLedger.dc.html": {
+      "description": "Change accounting basis while keeping generated journal facts separate from unavailable posting/override instructions.",
+      "steps": [
+        {
+          "action": "click",
+          "target": {
+            "role": "radio",
+            "name": "GAAP",
+            "exact": true
+          }
+        },
+        {
+          "action": "assertAttribute",
+          "target": {
+            "role": "radio",
+            "name": "GAAP",
+            "exact": true
+          },
+          "attribute": "aria-checked",
+          "value": "true"
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "Generated purchase journal"
+        },
+        {
+          "action": "assertDisabled",
+          "target": {
+            "role": "button",
+            "name": "Post event",
+            "exact": true
+          },
+          "reasonContains": "application ledger transport"
+        },
+        {
+          "action": "assertDisabled",
+          "target": {
+            "role": "button",
+            "name": "Record override",
+            "exact": true
+          },
+          "reasonContains": "authorization"
+        },
+        {
+          "action": "assertDisabled",
+          "target": {
+            "role": "button",
+            "name": "Create adjustment",
+            "exact": true
+          },
+          "reasonContains": "application journal instruction"
+        }
+      ],
+      "failureStates": [
+        "loading",
+        "empty",
+        "error"
+      ]
+    },
+    "templates/ops-wall/OpsWall.dc.html": {
+      "description": "Read the wall as a passive monitoring journey and verify degraded coverage, held work and the retry explanation.",
+      "steps": [
+        {
+          "action": "assertVisible",
+          "target": {
+            "role": "heading",
+            "name": "Operations wall",
+            "exact": true
+          }
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "1 feed degraded"
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "backfill-7746"
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "retry backoff 30s"
+        }
+      ],
+      "failureStates": [
+        "loading",
+        "empty",
+        "error"
+      ],
+      "readOnly": true
+    },
+    "templates/ownership-graph/OwnershipGraph.dc.html": {
+      "description": "Change the look-through lens from economics to voting and retain the attribution warning and absent-document boundary.",
+      "steps": [
+        {
+          "action": "assertDisabled",
+          "target": {
+            "role": "button",
+            "name": "Registry filings",
+            "exact": true
+          },
+          "reasonContains": "No original registry filing"
+        },
+        {
+          "action": "click",
+          "target": {
+            "role": "button",
+            "name": "Voting",
+            "exact": true
+          }
+        },
+        {
+          "action": "assertVisible",
+          "target": {
+            "role": "button",
+            "name": "\u25cf Voting",
+            "exact": true
+          }
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "voting"
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "unattributed"
+        }
+      ],
+      "failureStates": [
+        "loading",
+        "empty",
+        "error"
+      ]
+    },
+    "templates/reconciliation/Reconciliation.dc.html": {
+      "description": "Inspect the queue, filter breached cases and open the existing synthetic matcher without signing off an unsupported write.",
+      "steps": [
+        {
+          "action": "assertDisabled",
+          "target": {
+            "role": "button",
+            "name": "Import statement",
+            "exact": true
+          },
+          "reasonContains": "application import transport"
+        },
+        {
+          "action": "assertDisabled",
+          "target": {
+            "role": "button",
+            "name": "Sign off",
+            "exact": true
+          },
+          "reasonContains": "authorized application attestation"
+        },
+        {
+          "action": "click",
+          "target": {
+            "role": "radio",
+            "name": "Breached",
+            "exact": false
+          }
+        },
+        {
+          "action": "click",
+          "target": {
+            "role": "button",
+            "name": "Matcher",
+            "exact": true
+          }
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "Custodian statement"
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "Internal ledger"
+        },
+        {
+          "action": "assertVisible",
+          "target": {
+            "role": "button",
+            "name": "Export example",
+            "exact": true
+          }
+        }
+      ],
+      "failureStates": [
+        "loading",
+        "empty",
+        "error"
+      ]
+    },
+    "templates/reconciliation/ReconciliationException.dc.html": {
+      "description": "Inspect linked exception evidence and the unresolved workflow boundary, without posting an accounting correction.",
+      "steps": [
+        {
+          "action": "click",
+          "target": {
+            "role": "button",
+            "name": "Evidence",
+            "exact": true,
+            "within": {
+              "css": ".rx-rail"
+            }
+          }
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "Linked evidence"
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "Custodian"
+        }
+      ],
+      "failureStates": [
+        "loading",
+        "empty",
+        "error"
+      ]
+    },
+    "templates/report-library/ReportLibrary.dc.html": {
+      "description": "Filter the catalog to no matching reports, then restore the available parameter journeys.",
+      "steps": [
+        {
+          "action": "fill",
+          "target": {
+            "css": "input[placeholder=\"Search reports\u2026\"]"
+          },
+          "value": "no-such-report-3501"
+        },
+        {
+          "action": "assertVisible",
+          "target": {
+            "text": "No reports match",
+            "exact": true
+          }
+        },
+        {
+          "action": "fill",
+          "target": {
+            "css": "input[placeholder=\"Search reports\u2026\"]"
+          },
+          "value": ""
+        },
+        {
+          "action": "assertVisible",
+          "target": {
+            "role": "button",
+            "name": "Set parameters",
+            "exact": true,
+            "index": 0
+          }
+        }
+      ],
+      "failureStates": [
+        "loading",
+        "empty",
+        "error"
+      ]
+    },
+    "templates/report-pack/ReportPack.dc.html": {
+      "description": "Read the printable pack through cover, financial statements and positions, preserving stated figures and delivery provenance.",
+      "steps": [
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "Meridian Capital Partners LP"
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "$26.14M"
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "+1.62%"
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "Positions"
+        },
+        {
+          "action": "assertVisible",
+          "target": {
+            "role": "button",
+            "name": "Print / save PDF",
+            "exact": true
+          }
+        }
+      ],
+      "failureStates": [
+        "loading",
+        "empty",
+        "error"
+      ],
+      "readOnly": true
+    },
+    "templates/report-scheduler/ReportScheduler.dc.html": {
+      "description": "Select another scheduled pack and inspect delivery history while application schedule edits remain blocked.",
+      "steps": [
+        {
+          "action": "assertDisabled",
+          "target": {
+            "role": "button",
+            "name": "New report pack",
+            "exact": true
+          },
+          "reasonContains": "application reporting configuration"
+        },
+        {
+          "action": "click",
+          "target": {
+            "css": "tbody tr:nth-child(2)"
+          }
+        },
+        {
+          "action": "assertDisabled",
+          "target": {
+            "role": "button",
+            "name": "Edit schedule",
+            "exact": true
+          },
+          "reasonContains": "delivery permissions"
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "Delivery history"
+        }
+      ],
+      "failureStates": [
+        "loading",
+        "empty",
+        "error"
+      ]
+    },
+    "templates/security-master-registry/SecurityDetail.dc.html": {
+      "description": "Read the retained security and switch to its audit history without changing instrument identity.",
+      "steps": [
+        {
+          "action": "click",
+          "target": {
+            "role": "tab",
+            "name": "Audit History",
+            "exact": false
+          }
+        },
+        {
+          "action": "assertAttribute",
+          "target": {
+            "role": "tab",
+            "name": "Audit History",
+            "exact": false
+          },
+          "attribute": "aria-selected",
+          "value": "true"
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "Field"
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "Old Value"
+        }
+      ],
+      "failureStates": [
+        "loading",
+        "empty",
+        "error"
+      ]
+    },
+    "templates/security-master-registry/SecurityMasterRegistry.dc.html": {
+      "description": "Search the registry to no matching securities, recover the source-ordered list, and verify unsupported imports/creation remain blocked.",
+      "steps": [
+        {
+          "action": "assertDisabled",
+          "target": {
+            "role": "button",
+            "name": "Import data",
+            "exact": true
+          },
+          "reasonContains": "application validation"
+        },
+        {
+          "action": "assertDisabled",
+          "target": {
+            "role": "button",
+            "name": "Add security",
+            "exact": true
+          },
+          "reasonContains": "application registry instruction"
+        },
+        {
+          "action": "fill",
+          "target": {
+            "css": "input[placeholder=\"Search name, issuer, CUSIP, sector, rating\u2026\"]"
+          },
+          "value": "no-such-security-3501"
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "0"
+        },
+        {
+          "action": "fill",
+          "target": {
+            "css": "input[placeholder=\"Search name, issuer, CUSIP, sector, rating\u2026\"]"
+          },
+          "value": ""
+        },
+        {
+          "action": "assertVisible",
+          "target": {
+            "role": "button",
+            "name": "Export all examples",
+            "exact": true
+          }
+        }
+      ],
+      "failureStates": [
+        "loading",
+        "empty",
+        "error"
+      ]
+    },
+    "templates/session-start/SessionStart.dc.html": {
+      "description": "Enforce required credentials locally and advance the synthetic sign-in wizard without claiming real authentication.",
+      "steps": [
+        {
+          "action": "fill",
+          "target": {
+            "label": "Operator ID",
+            "exact": true
+          },
+          "value": ""
+        },
+        {
+          "action": "assertDisabled",
+          "target": {
+            "role": "button",
+            "name": "Continue",
+            "exact": true
+          }
+        },
+        {
+          "action": "fill",
+          "target": {
+            "label": "Operator ID",
+            "exact": true
+          },
+          "value": "synthetic.operator"
+        },
+        {
+          "action": "click",
+          "target": {
+            "role": "button",
+            "name": "Continue",
+            "exact": true
+          }
+        },
+        {
+          "action": "assertVisible",
+          "target": {
+            "label": "Authentication code",
+            "exact": true
+          }
+        }
+      ],
+      "failureStates": [
+        "loading",
+        "empty",
+        "error"
+      ]
+    },
+    "templates/settings-admin/SettingsAdmin.dc.html": {
+      "description": "Edit organization metadata, see the unsaved boundary, then discard the local draft.",
+      "steps": [
+        {
+          "action": "fill",
+          "target": {
+            "label": "Organization name",
+            "exact": true
+          },
+          "value": "Synthetic audit organization"
+        },
+        {
+          "action": "assertVisible",
+          "target": {
+            "text": "Unsaved changes",
+            "exact": true
+          }
+        },
+        {
+          "action": "click",
+          "target": {
+            "role": "button",
+            "name": "Discard",
+            "exact": true
+          }
+        },
+        {
+          "action": "assertDisabled",
+          "target": {
+            "role": "button",
+            "name": "Discard",
+            "exact": true
+          }
+        }
+      ],
+      "failureStates": [
+        "loading",
+        "empty",
+        "error"
+      ]
+    },
+    "templates/strategy-formation/StrategyBuilder.dc.html": {
+      "description": "Move the shared worksheet selection by keyboard and inspect the corresponding statement without committing a draft edit.",
+      "steps": [
+        {
+          "action": "press",
+          "target": {
+            "role": "grid"
+          },
+          "key": "ArrowDown"
+        },
+        {
+          "action": "assertAttribute",
+          "target": {
+            "css": "[role=\"gridcell\"][aria-label^=\"B2,\"]"
+          },
+          "attribute": "aria-selected",
+          "value": "true"
+        },
+        {
+          "action": "assertVisible",
+          "target": {
+            "text": "Cell inspector",
+            "exact": true
+          }
+        }
+      ],
+      "failureStates": [
+        "loading",
+        "empty",
+        "error"
+      ]
+    },
+    "templates/strategy-formation/StrategyOnboarding.dc.html": {
+      "description": "Edit a strategy mandate name in the existing shared draft and verify the controlled value before leaving it unsubmitted.",
+      "steps": [
+        {
+          "action": "fill",
+          "target": {
+            "label": "Strategy name",
+            "exact": true
+          },
+          "value": "Synthetic audit mandate"
+        },
+        {
+          "action": "assertValue",
+          "target": {
+            "label": "Strategy name",
+            "exact": true
+          },
+          "value": "Synthetic audit mandate"
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "Mandate"
+        }
+      ],
+      "failureStates": [
+        "loading",
+        "empty",
+        "error"
+      ]
+    },
+    "templates/strategy-formation/StrategyFormation.dc.html": {
+      "use": "templates/strategy-formation/StrategyOnboarding.dc.html"
+    },
+    "templates/strategy-governance/StrategyGovernance.dc.html": {
+      "description": "Filter the AMX catalog, recover its fields and inspect the signer needed for the review instruction.",
+      "steps": [
+        {
+          "action": "fill",
+          "target": {
+            "css": "input[placeholder=\"\u2315  Search AMX data fields\u2026\"]"
+          },
+          "value": "no-such-field-3501"
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "0"
+        },
+        {
+          "action": "fill",
+          "target": {
+            "css": "input[placeholder=\"\u2315  Search AMX data fields\u2026\"]"
+          },
+          "value": ""
+        },
+        {
+          "action": "assertVisible",
+          "target": {
+            "label": "Sign as",
+            "exact": true
+          }
+        }
+      ],
+      "failureStates": [
+        "loading",
+        "empty",
+        "error"
+      ]
+    },
+    "templates/strategy-runs/BacktestBuilder.dc.html": {
+      "description": "Edit a material backtest window and inspect the controlled request without fabricating a new result.",
+      "steps": [
+        {
+          "action": "fill",
+          "target": {
+            "label": "From",
+            "exact": true,
+            "index": 0
+          },
+          "value": "2025-01-01"
+        },
+        {
+          "action": "assertValue",
+          "target": {
+            "label": "From",
+            "exact": true,
+            "index": 0
+          },
+          "value": "2025-01-01"
+        },
+        {
+          "action": "assertVisible",
+          "target": {
+            "label": "Dataset \u2014 material input",
+            "exact": true
+          }
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "material"
+        }
+      ],
+      "failureStates": [
+        "loading",
+        "empty",
+        "error"
+      ]
+    },
+    "templates/strategy-runs/BacktestCompare.dc.html": {
+      "description": "Swap the immutable baseline/candidate comparison and preserve the B-minus-A interpretation.",
+      "steps": [
+        {
+          "action": "assertVisible",
+          "target": {
+            "label": "Run A \u00b7 baseline",
+            "exact": true
+          }
+        },
+        {
+          "action": "click",
+          "target": {
+            "role": "button",
+            "name": "Swap",
+            "exact": true
+          }
+        },
+        {
+          "action": "assertVisible",
+          "target": {
+            "label": "Run B \u00b7 candidate",
+            "exact": true
+          }
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "\u0394 = B \u2212 A"
+        }
+      ],
+      "failureStates": [
+        "loading",
+        "empty",
+        "error"
+      ]
+    },
+    "templates/strategy-runs/CoveredCallLab.dc.html": {
+      "description": "Inspect the option chain preview, then return to the result without sending an order.",
+      "steps": [
+        {
+          "action": "click",
+          "target": {
+            "role": "tab",
+            "name": "Chain preview",
+            "exact": true
+          }
+        },
+        {
+          "action": "assertAttribute",
+          "target": {
+            "role": "tab",
+            "name": "Chain preview",
+            "exact": true
+          },
+          "attribute": "aria-selected",
+          "value": "true"
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "Strike"
+        },
+        {
+          "action": "click",
+          "target": {
+            "role": "tab",
+            "name": "Result",
+            "exact": true
+          }
+        },
+        {
+          "action": "assertAttribute",
+          "target": {
+            "role": "tab",
+            "name": "Result",
+            "exact": true
+          },
+          "attribute": "aria-selected",
+          "value": "true"
+        }
+      ],
+      "failureStates": [
+        "loading",
+        "empty",
+        "error"
+      ]
+    },
+    "templates/strategy-runs/RunLedger.dc.html": {
+      "description": "Filter immutable runs to stale evidence and recover all runs without promoting a result.",
+      "steps": [
+        {
+          "action": "click",
+          "target": {
+            "role": "radio",
+            "name": "Stale",
+            "exact": true
+          }
+        },
+        {
+          "action": "assertAttribute",
+          "target": {
+            "role": "radio",
+            "name": "Stale",
+            "exact": true
+          },
+          "attribute": "aria-checked",
+          "value": "true"
+        },
+        {
+          "action": "click",
+          "target": {
+            "role": "radio",
+            "name": "All",
+            "exact": true
+          }
+        },
+        {
+          "action": "assertAttribute",
+          "target": {
+            "role": "radio",
+            "name": "All",
+            "exact": true
+          },
+          "attribute": "aria-checked",
+          "value": "true"
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "Freshness"
+        }
+      ],
+      "failureStates": [
+        "loading",
+        "empty",
+        "error"
+      ]
+    },
+    "templates/strategy-runs/StrategyRuns.dc.html": {
+      "use": "templates/strategy-runs/RunLedger.dc.html"
+    },
+    "templates/trading-desk/TradingDesk.dc.html": {
+      "description": "Select another instrument and read its ticket while keeping orders unsubmitted.",
+      "steps": [
+        {
+          "action": "click",
+          "target": {
+            "role": "button",
+            "name": "NVDA",
+            "exact": false,
+            "index": 0
+          }
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "Depth \u00b7 NVDA"
+        },
+        {
+          "action": "click",
+          "target": {
+            "role": "radio",
+            "name": "Summary",
+            "exact": true
+          }
+        },
+        {
+          "action": "assertAttribute",
+          "target": {
+            "role": "radio",
+            "name": "Summary",
+            "exact": true
+          },
+          "attribute": "aria-checked",
+          "value": "true"
+        },
+        {
+          "action": "assertVisible",
+          "target": {
+            "role": "button",
+            "name": "Show full detail",
+            "exact": true
+          }
+        }
+      ],
+      "failureStates": [
+        "loading",
+        "empty",
+        "error"
+      ]
+    },
+    "templates/books-loop/BooksLoop.dc.html": {
+      "description": "Read the source trial balance and general ledger under one entity/basis/period scope without approving a projection.",
+      "steps": [
+        {
+          "action": "click",
+          "target": {
+            "role": "radio",
+            "name": "Trial balance",
+            "exact": true
+          }
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "Trial balance \u00b7"
+        },
+        {
+          "action": "click",
+          "target": {
+            "role": "radio",
+            "name": "Ledger",
+            "exact": false,
+            "index": 0
+          }
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "General ledger \u00b7"
+        }
+      ],
+      "failureStates": [
+        "loading",
+        "empty",
+        "error"
+      ]
+    },
+    "templates/family-office/FamilyOffice.dc.html": {
+      "description": "Open retained evidence and record an explicitly local example review without changing unresolved blockers.",
+      "steps": [
+        {
+          "action": "click",
+          "target": {
+            "role": "button",
+            "name": "Evidence binder",
+            "exact": true
+          }
+        },
+        {
+          "action": "assertVisible",
+          "target": {
+            "role": "region",
+            "name": "Example evidence binder",
+            "exact": true
+          }
+        },
+        {
+          "action": "click",
+          "target": {
+            "role": "button",
+            "name": "Record example review",
+            "exact": true
+          }
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "Synthetic review noted"
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "no review was submitted"
+        }
+      ],
+      "failureStates": [
+        "loading",
+        "empty",
+        "error"
+      ]
+    },
+    "templates/position-detail/PositionDetail.dc.html": {
+      "description": "Read accounting evidence for the selected holding, then compare both holdings at security scope.",
+      "steps": [
+        {
+          "action": "click",
+          "target": {
+            "role": "tab",
+            "name": "Accounting",
+            "exact": true
+          }
+        },
+        {
+          "action": "assertAttribute",
+          "target": {
+            "role": "tab",
+            "name": "Accounting",
+            "exact": true
+          },
+          "attribute": "aria-selected",
+          "value": "true"
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "Basis in force"
+        },
+        {
+          "action": "click",
+          "target": {
+            "role": "radio",
+            "name": "Compare",
+            "exact": true
+          }
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "Security"
+        }
+      ],
+      "failureStates": [
+        "loading",
+        "empty",
+        "error"
+      ]
+    },
+    "templates/split-pane-reconciliation/Split Pane Reconciliation.dc.html": {
+      "description": "Open an unmatched statement row by keyboard, inspect break details, then close and restore row focus.",
+      "steps": [
+        {
+          "action": "press",
+          "target": {
+            "css": ".spr-table tbody tr.break",
+            "index": 0
+          },
+          "key": "Enter"
+        },
+        {
+          "action": "assertVisible",
+          "target": {
+            "role": "dialog",
+            "name": "Break details",
+            "exact": true
+          }
+        },
+        {
+          "action": "assertVisible",
+          "target": {
+            "role": "button",
+            "name": "Simulate adjustment entry",
+            "exact": true
+          }
+        },
+        {
+          "action": "press",
+          "target": {
+            "role": "dialog",
+            "name": "Break details",
+            "exact": true
+          },
+          "key": "Escape"
+        },
+        {
+          "action": "assertVisible",
+          "target": {
+            "role": "heading",
+            "name": "Reconciliation",
+            "exact": true
+          }
+        }
+      ],
+      "failureStates": [
+        "loading",
+        "empty",
+        "error"
+      ]
+    },
+    "templates/amx-governance/AmxGovernance.dc.html": {
+      "use": "templates/strategy-governance/StrategyGovernance.dc.html"
+    },
+    "templates/backtest-builder/BacktestBuilder.dc.html": {
+      "use": "templates/strategy-runs/BacktestBuilder.dc.html"
+    },
+    "templates/backtest-compare/BacktestCompare.dc.html": {
+      "use": "templates/strategy-runs/BacktestCompare.dc.html"
+    },
+    "templates/covered-call-lab/CoveredCallLab.dc.html": {
+      "use": "templates/strategy-runs/CoveredCallLab.dc.html"
+    },
+    "templates/reconciliation-workstation/ReconciliationWorkstation.dc.html": {
+      "use": "templates/reconciliation/Reconciliation.dc.html"
+    },
+    "templates/strategy-builder/StrategyBuilder.dc.html": {
+      "use": "templates/strategy-formation/StrategyBuilder.dc.html"
+    },
+    "templates/strategy-onboarding/StrategyOnboarding.dc.html": {
+      "use": "templates/strategy-formation/StrategyOnboarding.dc.html"
+    },
+    "templates/journaling-workstation/JournalingWorkstation.dc.html": {
+      "description": "Inspect the existing journal compose surface and its required balanced-entry fields without posting.",
+      "steps": [
+        {
+          "action": "assertVisible",
+          "target": {
+            "role": "dialog",
+            "name": "New journal entry",
+            "exact": true
+          }
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "Debit"
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "Credit"
+        },
+        {
+          "action": "assertText",
+          "target": {
+            "css": "body"
+          },
+          "contains": "Memo"
+        },
+        {
+          "action": "assertDisabled",
+          "target": {
+            "role": "button",
+            "name": "Post entry",
+            "exact": true
+          }
+        },
+        {
+          "action": "press",
+          "target": {
+            "role": "dialog",
+            "name": "New journal entry",
+            "exact": true
+          },
+          "key": "Escape"
+        }
+      ],
+      "failureStates": [
+        "loading",
+        "empty",
+        "error"
+      ],
+      "readOnly": false
+    }
+  }
+}

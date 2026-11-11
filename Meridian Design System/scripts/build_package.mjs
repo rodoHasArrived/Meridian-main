@@ -6,12 +6,26 @@ import { readFile, writeFile, readdir } from 'node:fs/promises';
 import { dirname, resolve, relative, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
+import { rootTokenDefaults } from './token_defaults.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const check = process.argv.includes('--check');
 if (process.argv.slice(2).some(arg => arg !== '--check')) throw new Error('Usage: node scripts/build_package.mjs [--check]');
 const pkg = JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8'));
 const oldManifest = JSON.parse(await readFile(resolve(root, '_ds_manifest.json'), 'utf8'));
+// Preserve the published token identities/scopes while refreshing default values
+// from their authored stylesheets. A source token repair must not leave the
+// browser's manifest and documentation describing the previous value.
+const tokenSheets = new Map();
+for (const token of oldManifest.tokens) {
+  if (token.scope || !token.definedIn?.endsWith('.css')) continue;
+  if (!tokenSheets.has(token.definedIn)) tokenSheets.set(token.definedIn,
+    rootTokenDefaults(await readFile(resolve(root, token.definedIn), 'utf8'),
+      token.definedIn.endsWith('/colors-dark.css') ? ':root[data-theme="dark"]' : ':root'));
+  const value = tokenSheets.get(token.definedIn).get(token.name);
+  if (!value) throw new Error(`Published token declaration is missing: ${token.name} in ${token.definedIn}`);
+  if (value.replace(/\s+/g, ' ') !== token.value.replace(/\s+/g, ' ')) token.value = value;
+}
 const identity = JSON.parse(await readFile(resolve(root, 'release.json'), 'utf8'));
 if (pkg.version !== identity.version) throw new Error('package.json must match authoritative release.json');
 const namespace = oldManifest.namespace;
@@ -77,12 +91,12 @@ const manifest = oldManifest;
 const generated = {
   '_ds_bundle.js': bundle.outputFiles[0].text,
   '_preview_runtime.js': runtime.outputFiles[0].text,
+  '_ds_manifest.json': JSON.stringify(manifest) + '\n',
 };
 const release = { name: pkg.name, version: pkg.version, namespace, sourceHashAlgorithm: 'sha256',
   counts: { exports: components.length, cards: manifest.cards.length, templates: manifest.templates.length, tokenRecords: manifest.tokens.length },
   build: { esbuild: pkg.devDependencies.esbuild, reactPreview: pkg.devDependencies.react, sourceHashes },
   assets: Object.fromEntries(Object.entries({ ...generated,
-    '_ds_manifest.json': await readFile(resolve(root, '_ds_manifest.json'), 'utf8'),
     'release.json': await readFile(resolve(root, 'release.json'), 'utf8')
   }).map(([path, content]) => [path, { sha256: hash(content), bytes: Buffer.byteLength(content) }])),
   evidenceScope: 'Design-system package export; synthetic examples; not application production certification',

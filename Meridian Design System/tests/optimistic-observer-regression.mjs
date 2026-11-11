@@ -51,6 +51,8 @@ try {
           if (config.rejectRevert) return Promise.reject(new Error('compensation denied'));
           return Promise.resolve();
         },
+        ...(config.missingCommit ? { commit: undefined } : {}),
+        ...(config.missingRevert ? { revert: undefined } : {}),
         onSettle(edit) {
           window.settlements.push({ ...edit });
           if (config.throwOnSettle) throw new Error('consumer projection failed');
@@ -76,6 +78,17 @@ try {
   }
   const edit = { rowId: 'synthetic-row', field: 'limit', prior: 10, value: 20 };
 
+  await mount({ missingCommit: true });
+  const absentWrite = await page.evaluate(async edit => { await window.ledger.commit({ ...edit, id: 'forged', status: 'confirmed' }); return window.ledger.entries[0]; }, edit);
+  assert.equal(absentWrite.status, 'rejected');
+  assert.match(absentWrite.reason, /No write handler/);
+  assert.notEqual(absentWrite.id, 'forged');
+  await mount({ missingRevert: true });
+  const absentRevert = await page.evaluate(async edit => { await window.ledger.commit(edit); await window.ledger.revert(window.ledger.entries[0].id, 'Synthetic correction'); return window.ledger.entries[0]; }, edit);
+  assert.equal(absentRevert.status, 'confirmed'); assert.match(absentRevert.revertError, /No revert handler/);
+  await mount();
+  const noReason = await page.evaluate(async edit => { await window.ledger.commit(edit); await window.ledger.revert(window.ledger.entries[0].id, '  '); return { entry: window.ledger.entries[0], transport: window.transportEvents }; }, edit);
+  assert.equal(noReason.entry.status, 'confirmed'); assert.match(noReason.entry.revertError, /reason is required/); assert.equal(noReason.transport.length, 1);
   await mount({ throwOnSettle: true, throwOnChange: true });
   const confirmed = await page.evaluate(async edit => {
     window.subscriberEvents = [];

@@ -120,12 +120,12 @@ T("WorkspaceLayout", "Modified status: how many times the live region mutates fo
 T("ObjectTrail", "Disclosure not menu (no aria-haspopup), aria-controls resolves, Escape closes and focus stays on the trigger", async () => {
   const CAT = [{ type: "journal", id: "JE-1", label: "Amortization", version: 1, currentVersion: 1 }, { type: "position", id: "P-1", label: "UST 4.375", version: 2, currentVersion: 2 }];
   await mount(e(DS.ObjectTrailProvider, { screenId: "a11y-run", persist: false, defaultEntries: CAT, onNavigate: () => {} }, e(DS.ObjectTrail)));
-  const trig = qa("button").find((b) => b.getAttribute("aria-controls") && /[Rr]ecent/.test(nameOf(b)));
+  const trig = qa("button").find((b) => b.classList.contains("mds-trail__more") && /[Rr]ecent/.test(nameOf(b)));
   if (!trig) return { ok: false, note: "no recents trigger with aria-controls found; buttons: " + qa("button").map(nameOf).join(" | ") };
   const hp = trig.getAttribute("aria-haspopup"); trig.focus(); trig.click(); await tick();
   const panel = document.getElementById(trig.getAttribute("aria-controls")), openOk = !!panel && trig.getAttribute("aria-expanded") === "true";
   key(document.activeElement, "Escape"); await tick();
-  const closed = qa("button").find((b) => b.getAttribute("aria-controls") === trig.getAttribute("aria-controls")).getAttribute("aria-expanded") !== "true", focus = document.activeElement.getAttribute("aria-controls") === trig.getAttribute("aria-controls");
+  const closed = trig.getAttribute("aria-expanded") !== "true", focus = document.activeElement === trig;
   return { ok: !hp && openOk && closed && focus, note: `trigger "${nameOf(trig)}" · aria-haspopup=${hp || "none"} · open: panel found=${!!panel} expanded=${openOk} · Esc: closed=${closed} focus on trigger=${focus}` };
 }),
 // ---- CommandPalette

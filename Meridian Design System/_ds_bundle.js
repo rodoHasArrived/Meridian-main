@@ -1,4 +1,4 @@
-/* @ds-bundle: {"format":4,"version":"4.3.0","namespace":"MeridianDesignSystem_205d17","components":[{"name":"AccountTree","sourcePath":"components/accounting/AccountTree.jsx"},{"name":"AccountingPeriodSelector","sourcePath":"components/accounting/AccountingPeriodSelector.jsx"},{"name":"AgingTable","sourcePath":"components/accounting/AgingTable.jsx"},{"name":"AllocationEditor","sourcePath":"components/accounting/AllocationEditor.jsx"},{"name":"AmountCell","sourcePath":"components/accounting/AmountCell.jsx"},{"name":"ASSURANCE_STAGES","sourcePath":"components/accounting/Assurance.jsx"},{"name":"AssuranceChip","sourcePath":"components/accounting/Assurance.jsx"},{"name":"CertificationMatrix","sourcePath":"components/accounting/Assurance.jsx"},{"name":"Assurance","sourcePath":"components/accounting/Assurance.jsx"},{"name":"BasisBridge","sourcePath":"components/accounting/BasisBridge.jsx"},{"name":"BasisComparisonMatrix","sourcePath":"components/accounting/BasisComparisonMatrix.jsx"},{"name":"CalculationTrace","sourcePath":"components/accounting/CalculationTrace.jsx"},{"name":"CloseCalendar","sourcePath":"components/accounting/CloseCalendar.jsx"},{"name":"CommitmentBar","sourcePath":"components/accounting/CommitmentBar.jsx"},{"name":"FxRevaluationTable","sourcePath":"components/accounting/FxRevaluationTable.jsx"},{"name":"IncomeSchedule","sourcePath":"components/accounting/IncomeSchedule.jsx"},{"name":"JournalEntryForm","sourcePath":"components/accounting/JournalEntryForm.jsx"},{"name":"LedgerTable","sourcePath":"components/accounting/LedgerTable.jsx"},{"name":"LifecycleRibbon","sourcePath":"components/accounting/LifecycleRibbon.jsx"},{"name":"LifecycleLanes","sourcePath":"components/accounting/LifecycleRibbon.jsx"},{"name":"Money","sourcePath":"components/accounting/Money.jsx"},{"name":"PostingImpactPreview","sourcePath":"components/accounting/PostingImpactPreview.jsx"},{"name":"ReconciliationPanel","sourcePath":"components/accounting/ReconciliationPanel.jsx"},{"name":"RollforwardMatrix","sourcePath":"components/accounting/RollforwardMatrix.jsx"},{"name":"RollforwardTrace","sourcePath":"components/accounting/RollforwardTrace.jsx"},{"name":"ScheduleLadder","sourcePath":"components/accounting/ScheduleLadder.jsx"},{"name":"ScheduleLadderSet","sourcePath":"components/accounting/ScheduleLadder.jsx"},{"name":"StatementTable","sourcePath":"components/accounting/StatementTable.jsx"},{"name":"TaxLotTable","sourcePath":"components/accounting/TaxLotTable.jsx"},{"name":"TieOutPanel","sourcePath":"components/accounting/TieOutPanel.jsx"},{"name":"TrialBalance","sourcePath":"components/accounting/TrialBalance.jsx"},{"name":"VarianceCell","sourcePath":"components/accounting/VarianceCell.jsx"},{"name":"AnalyticalField","sourcePath":"components/charts/AnalyticalField.jsx"},{"name":"AnalyticalFigure","sourcePath":"components/charts/AnalyticalFigure.jsx"},{"name":"AnalyticalFigureGrid","sourcePath":"components/charts/AnalyticalFigure.jsx"},{"name":"BarChart","sourcePath":"components/charts/BarChart.jsx"},{"name":"CandleChart","sourcePath":"components/charts/CandleChart.jsx"},{"name":"CashFlowLadder","sourcePath":"components/charts/CashFlowLadder.jsx"},{"name":"ChartAnnotations","sourcePath":"components/charts/ChartAnnotations.jsx"},{"name":"ChartCard","sourcePath":"components/charts/ChartCard.jsx"},{"name":"AXIS_FONT","sourcePath":"components/charts/ChartFrame.jsx"},{"name":"AxisChip","sourcePath":"components/charts/ChartFrame.jsx"},{"name":"ChartFrame","sourcePath":"components/charts/ChartFrame.jsx"},{"name":"ChartTooltip","sourcePath":"components/charts/ChartTooltip.jsx"},{"name":"ComparisonPlate","sourcePath":"components/charts/ComparisonPlate.jsx"},{"name":"PlateGrid","sourcePath":"components/charts/ComparisonPlate.jsx"},{"name":"ControlDependencyGraph","sourcePath":"components/charts/ControlDependencyGraph.jsx"},{"name":"CorrelationHeatmap","sourcePath":"components/charts/CorrelationHeatmap.jsx"},{"name":"CoverageMatrix","sourcePath":"components/charts/CoverageMatrix.jsx"},{"name":"DepthChart","sourcePath":"components/charts/DepthChart.jsx"},{"name":"DistributionRange","sourcePath":"components/charts/DistributionRange.jsx"},{"name":"DonutChart","sourcePath":"components/charts/DonutChart.jsx"},{"name":"DotMatrix","sourcePath":"components/charts/DotMatrix.jsx"},{"name":"DrawdownChart","sourcePath":"components/charts/DrawdownChart.jsx"},{"name":"DurationContribution","sourcePath":"components/charts/DurationContribution.jsx"},{"name":"EquityCurve","sourcePath":"components/charts/EquityCurve.jsx"},{"name":"FIGURE_ROLES","sourcePath":"components/charts/Figure.jsx"},{"name":"GEOMETRIES","sourcePath":"components/charts/Figure.jsx"},{"name":"Figure","sourcePath":"components/charts/Figure.jsx"},{"name":"FigureSet","sourcePath":"components/charts/Figure.jsx"},{"name":"Histogram","sourcePath":"components/charts/Histogram.jsx"},{"name":"IntervalBar","sourcePath":"components/charts/IntervalBar.jsx"},{"name":"LineageGraph","sourcePath":"components/charts/LineageGraph.jsx"},{"name":"MATURITY_BUCKETS","sourcePath":"components/charts/MaturityLadder.jsx"},{"name":"MaturityLadder","sourcePath":"components/charts/MaturityLadder.jsx"},{"name":"OwnershipGraph","sourcePath":"components/charts/OwnershipGraph.jsx"},{"name":"PeerComparisonStrip","sourcePath":"components/charts/PeerComparisonStrip.jsx"},{"name":"PnLCalendar","sourcePath":"components/charts/PnLCalendar.jsx"},{"name":"ScatterChart","sourcePath":"components/charts/ScatterChart.jsx"},{"name":"ScenarioSelector","sourcePath":"components/charts/ScenarioSelector.jsx"},{"name":"SmallMultiples","sourcePath":"components/charts/SmallMultiples.jsx"},{"name":"Sparkline","sourcePath":"components/charts/Sparkline.jsx"},{"name":"TimeframeSwitcher","sourcePath":"components/charts/TimeframeSwitcher.jsx"},{"name":"AsOfControl","sourcePath":"components/charts/TimeframeSwitcher.jsx"},{"name":"TraceChart","sourcePath":"components/charts/TraceChart.jsx"},{"name":"Treemap","sourcePath":"components/charts/Treemap.jsx"},{"name":"WatchlistStrip","sourcePath":"components/charts/WatchlistStrip.jsx"},{"name":"WaterfallChart","sourcePath":"components/charts/WaterfallChart.jsx"},{"name":"YieldCurve","sourcePath":"components/charts/YieldCurve.jsx"},{"name":"ChartCursorSync","sourcePath":"components/charts/useChartCrosshair.js"},{"name":"ChartCursor","sourcePath":"components/charts/useChartCrosshair.js"},{"name":"ROLES","sourcePath":"components/charts/viz.js"},{"name":"Fmt","sourcePath":"components/charts/viz.js"},{"name":"Accordion","sourcePath":"components/core/Accordion.jsx"},{"name":"AsyncCombobox","sourcePath":"components/core/AsyncCombobox.jsx"},{"name":"Badge","sourcePath":"components/core/Badge.jsx"},{"name":"Breadcrumb","sourcePath":"components/core/Breadcrumb.jsx"},{"name":"Button","sourcePath":"components/core/Button.jsx"},{"name":"Callout","sourcePath":"components/core/Callout.jsx"},{"name":"CapsuleHeader","sourcePath":"components/core/Capsule.jsx"},{"name":"CapsuleBody","sourcePath":"components/core/Capsule.jsx"},{"name":"CapsuleFooter","sourcePath":"components/core/Capsule.jsx"},{"name":"Capsule","sourcePath":"components/core/Capsule.jsx"},{"name":"Checkbox","sourcePath":"components/core/Checkbox.jsx"},{"name":"Toggle","sourcePath":"components/core/Checkbox.jsx"},{"name":"Combobox","sourcePath":"components/core/Combobox.jsx"},{"name":"CommandPalette","sourcePath":"components/core/CommandPalette.jsx"},{"name":"ContextMenu","sourcePath":"components/core/ContextMenu.jsx"},{"name":"ContinuityStatus","sourcePath":"components/core/ContinuityFrame.jsx"},{"name":"ContinuityFrame","sourcePath":"components/core/ContinuityFrame.jsx"},{"name":"DatePicker","sourcePath":"components/core/DatePicker.jsx"},{"name":"DateRangePicker","sourcePath":"components/core/DateRangePicker.jsx"},{"name":"Datum","sourcePath":"components/core/Datum.jsx"},{"name":"DatumGroup","sourcePath":"components/core/Datum.jsx"},{"name":"Delta","sourcePath":"components/core/Delta.jsx"},{"name":"DensityToggle","sourcePath":"components/core/DensityToggle.jsx"},{"name":"Dialog","sourcePath":"components/core/Dialog.jsx"},{"name":"DialogHeader","sourcePath":"components/core/Dialog.jsx"},{"name":"DialogBody","sourcePath":"components/core/Dialog.jsx"},{"name":"DialogFooter","sourcePath":"components/core/Dialog.jsx"},{"name":"DialogForm","sourcePath":"components/core/Dialog.jsx"},{"name":"DETAIL_LEVELS","sourcePath":"components/core/Disclosure.jsx"},{"name":"DisclosureProvider","sourcePath":"components/core/Disclosure.jsx"},{"name":"DetailDial","sourcePath":"components/core/Disclosure.jsx"},{"name":"DisclosureResidue","sourcePath":"components/core/Disclosure.jsx"},{"name":"DisclosureRegion","sourcePath":"components/core/Disclosure.jsx"},{"name":"DetailOnly","sourcePath":"components/core/Disclosure.jsx"},{"name":"DisclosureHooks","sourcePath":"components/core/Disclosure.jsx"},{"name":"Disclosure","sourcePath":"components/core/Disclosure.jsx"},{"name":"Drawer","sourcePath":"components/core/Drawer.jsx"},{"name":"DrawerHeader","sourcePath":"components/core/Drawer.jsx"},{"name":"DrawerBody","sourcePath":"components/core/Drawer.jsx"},{"name":"ErrorBoundary","sourcePath":"components/core/ErrorBoundary.jsx"},{"name":"Eyebrow","sourcePath":"components/core/Eyebrow.jsx"},{"name":"FileUpload","sourcePath":"components/core/FileUpload.jsx"},{"name":"Flex","sourcePath":"components/core/Flex.jsx"},{"name":"FormRow","sourcePath":"components/core/Form.jsx"},{"name":"FormGrid","sourcePath":"components/core/Form.jsx"},{"name":"FormDivider","sourcePath":"components/core/Form.jsx"},{"name":"FormSectionLabel","sourcePath":"components/core/Form.jsx"},{"name":"Form","sourcePath":"components/core/Form.jsx"},{"name":"FormField","sourcePath":"components/core/FormField.jsx"},{"name":"FormValidation","sourcePath":"components/core/FormValidation.jsx"},{"name":"FieldInput","sourcePath":"components/core/FormValidation.jsx"},{"name":"FormErrorSummary","sourcePath":"components/core/FormValidation.jsx"},{"name":"NEGATIVE_STYLES","sourcePath":"components/core/FormatProvider.jsx"},{"name":"FormatProvider","sourcePath":"components/core/FormatProvider.jsx"},{"name":"FormatHooks","sourcePath":"components/core/FormatProvider.jsx"},{"name":"Format","sourcePath":"components/core/FormatProvider.jsx"},{"name":"ConnectionDot","sourcePath":"components/core/FreshnessIndicator.jsx"},{"name":"FreshnessIndicator","sourcePath":"components/core/FreshnessIndicator.jsx"},{"name":"Grid","sourcePath":"components/core/Grid.jsx"},{"name":"HotkeysProvider","sourcePath":"components/core/HotkeysProvider.jsx"},{"name":"Input","sourcePath":"components/core/Input.jsx"},{"name":"InstrumentChip","sourcePath":"components/core/InstrumentChip.jsx"},{"name":"Kbd","sourcePath":"components/core/Kbd.jsx"},{"name":"LocalDate","sourcePath":"components/core/LocalDate.jsx"},{"name":"LocalDateText","sourcePath":"components/core/LocalDate.jsx"},{"name":"MaterialityBadge","sourcePath":"components/core/MaterialityAssessment.jsx"},{"name":"MaterialityAssessment","sourcePath":"components/core/MaterialityAssessment.jsx"},{"name":"MultiSelect","sourcePath":"components/core/MultiSelect.jsx"},{"name":"NotificationCenter","sourcePath":"components/core/NotificationCenter.jsx"},{"name":"NumberInput","sourcePath":"components/core/NumberInput.jsx"},{"name":"OBJECT_TYPES","sourcePath":"components/core/ObjectModel.jsx"},{"name":"ObjectHeader","sourcePath":"components/core/ObjectModel.jsx"},{"name":"ObjectHooks","sourcePath":"components/core/ObjectModel.jsx"},{"name":"ObjectModel","sourcePath":"components/core/ObjectModel.jsx"},{"name":"ANALYTICAL_SCOPES","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ObjectScopeProvider","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ScopeMark","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ScopedValue","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ScopeMismatch","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ScopeHooks","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ObjectScope","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ObjectTrailProvider","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"TrailHooks","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"ObjectTrail","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"ObjectTrailList","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"PanelSurface","sourcePath":"components/core/PanelSurface.jsx"},{"name":"Popover","sourcePath":"components/core/Popover.jsx"},{"name":"ProgressBar","sourcePath":"components/core/ProgressBar.jsx"},{"name":"RadioGroup","sourcePath":"components/core/RadioGroup.jsx"},{"name":"DENSITY","sourcePath":"components/core/Registry.jsx"},{"name":"SEVERITY","sourcePath":"components/core/Registry.jsx"},{"name":"TIME_ROLES","sourcePath":"components/core/TimeContext.jsx"},{"name":"Registry","sourcePath":"components/core/Registry.jsx"},{"name":"RegistryTable","sourcePath":"components/core/Registry.jsx"},{"name":"SegmentedControl","sourcePath":"components/core/SegmentedControl.jsx"},{"name":"Select","sourcePath":"components/core/Select.jsx"},{"name":"Slider","sourcePath":"components/core/Slider.jsx"},{"name":"Spinner","sourcePath":"components/core/Spinner.jsx"},{"name":"SplitPane","sourcePath":"components/core/SplitPane.jsx"},{"name":"Stack","sourcePath":"components/core/Stack.jsx"},{"name":"StatusBanner","sourcePath":"components/core/StatusBanner.jsx"},{"name":"Stepper","sourcePath":"components/core/Stepper.jsx"},{"name":"STRATEGY_LIFECYCLE","sourcePath":"components/core/StrategyModel.jsx"},{"name":"STRATEGY_FORMATION_STEPS","sourcePath":"components/core/StrategyModel.jsx"},{"name":"StrategyModel","sourcePath":"components/core/StrategyModel.jsx"},{"name":"Tabs","sourcePath":"components/core/Tabs.jsx"},{"name":"TabPanel","sourcePath":"components/core/Tabs.jsx"},{"name":"TagInput","sourcePath":"components/core/TagInput.jsx"},{"name":"TextArea","sourcePath":"components/core/TextArea.jsx"},{"name":"TimeContextProvider","sourcePath":"components/core/TimeContext.jsx"},{"name":"TimeHooks","sourcePath":"components/core/TimeContext.jsx"},{"name":"TimeRole","sourcePath":"components/core/TimeContext.jsx"},{"name":"TimeContextPanel","sourcePath":"components/core/TimeContext.jsx"},{"name":"TimeContext","sourcePath":"components/core/TimeContext.jsx"},{"name":"Timestamp","sourcePath":"components/core/Timestamp.jsx"},{"name":"ToastProvider","sourcePath":"components/core/Toast.jsx"},{"name":"Toast","sourcePath":"components/core/Toast.jsx"},{"name":"Tooltip","sourcePath":"components/core/Tooltip.jsx"},{"name":"TreeView","sourcePath":"components/core/TreeView.jsx"},{"name":"Validators","sourcePath":"components/core/Validators.js"},{"name":"AuthorityChip","sourcePath":"components/core/ValueAuthority.jsx"},{"name":"AuthorityStack","sourcePath":"components/core/ValueAuthority.jsx"},{"name":"ValueAuthority","sourcePath":"components/core/ValueAuthority.jsx"},{"name":"AuthorityPanel","sourcePath":"components/core/ValueAuthority.jsx"},{"name":"GLYPHS","sourcePath":"components/core/format.js"},{"name":"DOW","sourcePath":"components/core/localDate.js"},{"name":"FormHooks","sourcePath":"components/core/useFormState.js"},{"name":"BulkActionBar","sourcePath":"components/data/BulkActionBar.jsx"},{"name":"BulkSelectCheckbox","sourcePath":"components/data/BulkActionBar.jsx"},{"name":"ColumnChooser","sourcePath":"components/data/ColumnChooser.jsx"},{"name":"ColumnManager","sourcePath":"components/data/ColumnManager.jsx"},{"name":"CELL_FORMATS","sourcePath":"components/data/DataGrid.jsx"},{"name":"GRID_SCHEMAS","sourcePath":"components/data/DataGrid.jsx"},{"name":"DataGrid","sourcePath":"components/data/DataGrid.jsx"},{"name":"DataStateSwitch","sourcePath":"components/data/DataStateSwitch.jsx"},{"name":"EditableCell","sourcePath":"components/data/EditableCell.jsx"},{"name":"EmptyState","sourcePath":"components/data/EmptyState.jsx"},{"name":"EntitySummary","sourcePath":"components/data/EntitySummary.jsx"},{"name":"FilterBuilder","sourcePath":"components/data/FilterBuilder.jsx"},{"name":"KeyValueGrid","sourcePath":"components/data/KeyValueGrid.jsx"},{"name":"LinkedSelectionProvider","sourcePath":"components/data/LinkedSelectionProvider.jsx"},{"name":"SelectionHooks","sourcePath":"components/data/LinkedSelectionProvider.jsx"},{"name":"LinkedSelectionTarget","sourcePath":"components/data/LinkedSelectionProvider.jsx"},{"name":"MetricCard","sourcePath":"components/data/MetricCard.jsx"},{"name":"OptimisticProvider","sourcePath":"components/data/OptimisticCell.jsx"},{"name":"OptimisticHooks","sourcePath":"components/data/OptimisticCell.jsx"},{"name":"OptimisticCell","sourcePath":"components/data/OptimisticCell.jsx"},{"name":"OptimisticRowBar","sourcePath":"components/data/OptimisticCell.jsx"},{"name":"Pagination","sourcePath":"components/data/Pagination.jsx"},{"name":"SavedViews","sourcePath":"components/data/SavedViews.jsx"},{"name":"SelectionCompareProvider","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"SelectionCompareHooks","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"CompareToggle","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"CompareTray","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"SelectionCompare","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"CompareSheet","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"SelectionToolbar","sourcePath":"components/data/SelectionToolbar.jsx"},{"name":"Skeleton","sourcePath":"components/data/Skeleton.jsx"},{"name":"SkeletonTable","sourcePath":"components/data/Skeleton.jsx"},{"name":"TableHooks","sourcePath":"components/data/TableHooks.js"},{"name":"Toolbar","sourcePath":"components/data/Toolbar.jsx"},{"name":"ToolbarGroup","sourcePath":"components/data/Toolbar.jsx"},{"name":"ToolbarSpacer","sourcePath":"components/data/Toolbar.jsx"},{"name":"ToolbarDivider","sourcePath":"components/data/Toolbar.jsx"},{"name":"VirtualizedList","sourcePath":"components/data/VirtualizedList.jsx"},{"name":"WorksheetGrid","sourcePath":"components/data/WorksheetGrid.jsx"},{"name":"CONSEQUENCE_KINDS","sourcePath":"components/decision/ConsequenceRail.jsx"},{"name":"ConsequenceRail","sourcePath":"components/decision/ConsequenceRail.jsx"},{"name":"DecisionSnapshotPanel","sourcePath":"components/decision/DecisionSnapshot.jsx"},{"name":"DecisionSnapshot","sourcePath":"components/decision/DecisionSnapshot.jsx"},{"name":"SnapshotHooks","sourcePath":"components/decision/DecisionSnapshot.jsx"},{"name":"EVIDENCE_SECTIONS","sourcePath":"components/decision/EvidenceRail.jsx"},{"name":"EvidenceRail","sourcePath":"components/decision/EvidenceRail.jsx"},{"name":"ACTION_STATES","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"ActionStateChip","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"ActionEnvelope","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"InstructionLedger","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"ActionEnvelopeProvider","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"ActionHooks","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"ActionGuardList","sourcePath":"components/operations/ActionGuard.jsx"},{"name":"ActionGuard","sourcePath":"components/operations/ActionGuard.jsx"},{"name":"ActionAvailability","sourcePath":"components/operations/ActionGuard.jsx"},{"name":"QUEUE_RUNGS","sourcePath":"components/operations/ActionQueue.jsx"},{"name":"ActionQueue","sourcePath":"components/operations/ActionQueue.jsx"},{"name":"ActionQueueChip","sourcePath":"components/operations/ActionQueue.jsx"},{"name":"ADAPTER_POSTURES","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"AdapterPostureChip","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"AdapterDiagnostics","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"AdapterHooks","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"AnnotationProvider","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"AnnotationHooks","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"AnnotationAnchor","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"AnnotationLayer","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"AnnotationPanel","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"AttestationPanel","sourcePath":"components/operations/AttestationPanel.jsx"},{"name":"CaseQueue","sourcePath":"components/operations/CaseQueue.jsx"},{"name":"ChangeSetProvider","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"ChangeSetHooks","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"ChangeSetDiff","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"ChangeReviewBar","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"ChangeSetReview","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"ClaimHeader","sourcePath":"components/operations/ClaimHeader.jsx"},{"name":"ConnectionState","sourcePath":"components/operations/ConnectionState.jsx"},{"name":"DataCondition","sourcePath":"components/operations/DataCondition.jsx"},{"name":"DataConditionValue","sourcePath":"components/operations/DataCondition.jsx"},{"name":"DataConditionLegend","sourcePath":"components/operations/DataCondition.jsx"},{"name":"DecisionFlowProvider","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"DecisionFlow","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"DecisionFlowRail","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"DecisionFlowStage","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"DecisionConsequenceBar","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"DiffView","sourcePath":"components/operations/DiffView.jsx"},{"name":"EventTimeline","sourcePath":"components/operations/EventTimeline.jsx"},{"name":"EvidenceInspector","sourcePath":"components/operations/EvidenceInspector.jsx"},{"name":"EvidenceSection","sourcePath":"components/operations/EvidenceInspector.jsx"},{"name":"ProvenanceTrace","sourcePath":"components/operations/EvidenceInspector.jsx"},{"name":"EvidenceLink","sourcePath":"components/operations/EvidenceLink.jsx"},{"name":"EvidencePreview","sourcePath":"components/operations/EvidencePreview.jsx"},{"name":"GateRail","sourcePath":"components/operations/GateRail.jsx"},{"name":"HandoverBrief","sourcePath":"components/operations/HandoverBrief.jsx"},{"name":"HandoverBriefChip","sourcePath":"components/operations/HandoverBrief.jsx"},{"name":"LogTail","sourcePath":"components/operations/LogTail.jsx"},{"name":"ProvenanceChip","sourcePath":"components/operations/ProvenanceChip.jsx"},{"name":"ReadinessPanel","sourcePath":"components/operations/ReadinessPanel.jsx"},{"name":"ResolutionDrawer","sourcePath":"components/operations/ResolutionDrawer.jsx"},{"name":"SeverityBadge","sourcePath":"components/operations/SeverityBadge.jsx"},{"name":"SlaChip","sourcePath":"components/operations/SlaChip.jsx"},{"name":"SourceCoverageSummary","sourcePath":"components/operations/SourceCoverageSummary.jsx"},{"name":"Status","sourcePath":"components/operations/Status.jsx"},{"name":"STRATEGY_RUN_AXES","sourcePath":"components/operations/StrategyRunModel.jsx"},{"name":"StrategyRunModel","sourcePath":"components/operations/StrategyRunModel.jsx"},{"name":"TrustStrip","sourcePath":"components/operations/TrustStrip.jsx"},{"name":"ValidationIssueList","sourcePath":"components/operations/ValidationIssueList.jsx"},{"name":"ENVELOPE_MARKS","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"AUTHORITIES","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"EnvelopeMark","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"ValueEnvelope","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"EnvelopePanel","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"EnvelopeCoherence","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"VersionConflictNotice","sourcePath":"components/operations/VersionConflictNotice.jsx"},{"name":"WorkspaceSection","sourcePath":"components/operations/WorkspaceSection.jsx"},{"name":"GlobalSearch","sourcePath":"components/shell/GlobalSearch.jsx"},{"name":"NavRail","sourcePath":"components/shell/NavRail.jsx"},{"name":"ReturnPath","sourcePath":"components/shell/ReturnPath.jsx"},{"name":"ARCHETYPES","sourcePath":"components/shell/ScreenComposition.jsx"},{"name":"ScreenComposition","sourcePath":"components/shell/ScreenComposition.jsx"},{"name":"UserMenu","sourcePath":"components/shell/SessionControls.jsx"},{"name":"RoleBadge","sourcePath":"components/shell/SessionControls.jsx"},{"name":"ReadOnlyBanner","sourcePath":"components/shell/SessionControls.jsx"},{"name":"SessionControls","sourcePath":"components/shell/SessionControls.jsx"},{"name":"StatusBar","sourcePath":"components/shell/StatusBar.jsx"},{"name":"WorkspaceContextProvider","sourcePath":"components/shell/WorkspaceContextBar.jsx"},{"name":"WorkspaceHooks","sourcePath":"components/shell/WorkspaceContextBar.jsx"},{"name":"WorkspaceContextBar","sourcePath":"components/shell/WorkspaceContextBar.jsx"},{"name":"WorkspaceLayoutProvider","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"LayoutHooks","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"WorkspaceLayoutBar","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"WorkspaceLayoutGrid","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"WorkspaceLayout","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"LayoutRegion","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"WorkstationShell","sourcePath":"components/shell/WorkstationShell.jsx"},{"name":"WorkstationTopbar","sourcePath":"components/shell/WorkstationTopbar.jsx"},{"name":"Blotter","sourcePath":"components/trading/Blotter.jsx"},{"name":"DepthLadder","sourcePath":"components/trading/DepthLadder.jsx"},{"name":"FillsFeed","sourcePath":"components/trading/FillsFeed.jsx"},{"name":"OptionChainTable","sourcePath":"components/trading/OptionChainTable.jsx"},{"name":"OrderTicket","sourcePath":"components/trading/OrderTicket.jsx"},{"name":"TimeAndSalesTape","sourcePath":"components/trading/TimeAndSalesTape.jsx"}],"sourceHashAlgorithm":"sha256","sourceHashes":{"api/accounting.js":"32a06149bbd3e32d60456970b7d0a25fef31aed21cffc2d01b999eb3aeab13f4","api/analytics.js":"93324c43ff214c4fa63c40715e531989d37d79bf693e9d492fde823e8fa6b437","api/coordination.js":"071d33c712dd84bd1d755b9d74515a6336697f90ffecc2ca92ac80314aefc3d1","api/data.js":"89acfb7da4c585ba655b3901a5bba7f367184b614dbce79653bed62b243c788e","api/decision.js":"f07458ea2956126c59e37a23159369b06bf06da74a1e50581a53318a8ffd1fa5","api/evidence.js":"c767f680e87df8a92edfb6a7f14150bb789a67b64525272d9ef622cba736063f","api/legacy.js":"560b474515b04c2cf068955403659d74d05fc388feded136177b50836b81300a","api/primitives.js":"4c180a2daabd16d496cecccd86369fac40e6cacc51e3d44ab87e7c0285a0b78e","api/shell.js":"033c09bc4874371584610596234a7f5d43168702e24ecf1e5430c0e3b49028ba","api/trading.js":"d1e4efaf7268e3ab4da5faa0ec091a61b1842ee377823620d829585fefbc6802","components/accounting/AccountTree.jsx":"4a72d913f8655aa0f170572ef2ef7fffe3b7c287930b0736a810b18f3b725f5e","components/accounting/AccountingPeriodSelector.jsx":"d60da2b9e6bd8aec4ce73e70cec0f46094e5de41d678d3b54ce12247d062c31d","components/accounting/AgingTable.jsx":"9c83469536747c5f9984480997a9bb96ccce4a9770a6c68cfe78407bc3d83784","components/accounting/AllocationEditor.jsx":"5a7aaf8484950d8707015402e905a0cb7a65a5ab461903bc43607ca598667b93","components/accounting/AmountCell.jsx":"e44a05252e36af22a27c10fee99a472299f2f1ec6610af67b23981c2894a46f1","components/accounting/Assurance.jsx":"ea4cd9539a6ce024e549eae7e69544b8a6534498b930549397ec4615ec7b697b","components/accounting/BasisBridge.jsx":"a3c3b75cf7f48cf5b6557ca56f53ba0aa28b20a3a45b7c999ab81623d044bdbd","components/accounting/BasisComparisonMatrix.jsx":"ad1ba5dd1c28c9849d279955cdb7acb430c072f94777be82de5017ba7c9b866c","components/accounting/CalculationTrace.jsx":"ff295223949fdbf6d712f99e7fc32e780055ecd404b4524b9af8643705bf8027","components/accounting/CloseCalendar.jsx":"b1beffb23f593ce0b9ef16e52d3ab6ca2cdb8e5cf1d80a63b397eda4256bddc3","components/accounting/CommitmentBar.jsx":"1f5bd27179921c1121c2d0a79184bdb1b367dc792c826d158833d442f85ab2ab","components/accounting/FxRevaluationTable.jsx":"d00393edcf983c1b83efc25fa80abd0f371d75a6008d21eb377b132d5410a2e5","components/accounting/IncomeSchedule.jsx":"b50ed52af142bc9d2fe2ed0726a2dd78bd4d80434f20d633859e36bb26b98db4","components/accounting/JournalEntryForm.jsx":"0fc9039e4525a27625af399d5481e6889123eef26bb2a95ae682e0ced9b7e442","components/accounting/LedgerTable.jsx":"0e98c73b02dde72fcdb18ba4ac13fb887e2066015c9de333a8b585750d5d77b0","components/accounting/LifecycleRibbon.jsx":"6c0098b10ece1c840c1b88bbbcef8c10160f42095c4f35ff78bc94371a44484b","components/accounting/Money.jsx":"398838b8e99b76f2022a5dbf6365a94989d25970ab4de99e9d71dd40d5ee10e0","components/accounting/PostingImpactPreview.jsx":"fbb8513afb8258b38a8adcc9bd3e33979dd3de9b91e775ae86cb23a59e582f66","components/accounting/ReconciliationPanel.jsx":"eebe1a90c0fe71450e3af5f9f56c68d6c2f6638ea506554176fa22a1a07a81a4","components/accounting/RollforwardMatrix.jsx":"2e44d13dabb0f51ced17b198f58d9a24c5efe636ca0d28dbe643df857dba5359","components/accounting/RollforwardTrace.jsx":"f0d36d55637055236efdf9a98f9504b8fda3934cbd789862f38d3cb768aad293","components/accounting/ScheduleLadder.jsx":"2617983c32a5662caa4783cedaf8265a95e6f3cad4cf901029cb2b7786e4287f","components/accounting/StatementTable.jsx":"98ba92983d06522dd0118ced9aa78dd90d925838a1d988120e6a73a617334b02","components/accounting/TaxLotTable.jsx":"7d158bb06769996449cf18fe4b597944db564f1927786f3763744476dcf85801","components/accounting/TieOutPanel.jsx":"628ed3dd91ef46817de24e3b4985c8e1ab90f40d5574ca7e7764003c3f7520f0","components/accounting/TrialBalance.jsx":"24715fba1be9783eda15706179d2d6b4293b71300acf75107a68be98944fb36d","components/accounting/VarianceCell.jsx":"2cb0cb3a908125bd4c7a7bf2df728c948cb794e127ce4367e8133a5954cb0bc5","components/accounting/money.js":"d9373bff6f5102341cad7e9449501cc577ad5c256af79a6d13730c6d1ffe7676","components/charts/AnalyticalField.jsx":"1296912c7a2288e3cf68f46bd25e81478f2e5c52f422e9361ef2000834f047af","components/charts/AnalyticalFigure.jsx":"4854d1e5568c239ab97d4dc59c611902c6a925041c8f55b6826a4622cb22020e","components/charts/BarChart.jsx":"331663e52d569d0dd4ca0e83c16d0d02f36a3b2fb90ff053297b030dab5345e2","components/charts/CandleChart.jsx":"a6312cbc79d1e322a73453cfa8c5e5df40781e9f1d8cd15b4343f6ddb21d25cc","components/charts/CashFlowLadder.jsx":"c4d58548e3b6d9f9e48322da24abacbbf505a3efbb80a02da12acfb1b2f33cf9","components/charts/ChartAnnotations.jsx":"69c3dc4fd00ce12b8131ece787613415bc69c84823caa95ebe22418d979bb910","components/charts/ChartCard.jsx":"6effbc549d35f377e92d82e94c3d809493b47c22669995bd2d5a8eeb8107e2d6","components/charts/ChartFrame.jsx":"2f75ef6888d6b1bbb5dc3b104e5454b0d6b2d6333462889dd4703ea91adf8a22","components/charts/ChartTooltip.jsx":"9e4b5a1a7807d7c1ac8761d7507b9d0541c81568edcff7fc73bba430a5a716ea","components/charts/ComparisonPlate.jsx":"efd128888a0542d1a21d02c29c8c43befe5fbc3c95788cec2cf561744361090f","components/charts/ControlDependencyGraph.jsx":"e09f05b72623e6fe2647a289c470f34e115fdfc3f184c5a51db309625b744c2a","components/charts/CorrelationHeatmap.jsx":"60e1d99cca694c1187ab5dd3a441aa96e172098d20a8e1ac1e54b8e0500cc6f7","components/charts/CoverageMatrix.jsx":"9ca0d07c6eb20e8e8aa8bb8898c78672ce367eb29378d8cfc2aaa9a9003d8f70","components/charts/DepthChart.jsx":"9f17864422da12ea133295989d5c3e39b3717d835bcc9e044c21a775cbee83f4","components/charts/DistributionRange.jsx":"3d506a855b8c626b165b5544f3dfabaa29d2cafff33534add51d9d049b2d81a4","components/charts/DonutChart.jsx":"9170151975a1b012503828d1c500c5799963859a650f6ae5a6098dae54798667","components/charts/DotMatrix.jsx":"e86e509908716f09979e28a8560bc4bd215a9f3fca2a13c8d37d17a1d64bd5ff","components/charts/DrawdownChart.jsx":"b92f936c1824e0a37835d85d29174b022438a6f7d2a473dab005f2dd752ac14a","components/charts/DurationContribution.jsx":"c405e189d070a9cea7e943899e7aa19f0b79a4d0ed75b6d3178366402c0bde16","components/charts/EquityCurve.jsx":"eaf0ab925e645add45ba66088a614f05238f8d7545cb64c901472fcfcfa19723","components/charts/Figure.jsx":"be8379a5384245b225ae853e0e985401f0c02b8e296dedf0f4cded7f63882f87","components/charts/Histogram.jsx":"86f0a48f4257ea524646201972ca0e7130a4808474c7b337ab0af6005e46ed17","components/charts/IntervalBar.jsx":"4257d6cd0f701310751bdbf2ee6b1eafbc3cf0d75c593222df7e814c9691d9c4","components/charts/LineageGraph.jsx":"eef32c388c288f7e4a72216cd61399de450212938ff5858781883f82112143e6","components/charts/MaturityLadder.jsx":"fab2e509dfedc42c32581355e498e9301b5c576d7ab226e54bb0f7130c484f91","components/charts/OwnershipGraph.jsx":"f8763a6e9746a1f1c4ef14f4c3979f413ea9fae3e6e72a99d423b15d9be156e9","components/charts/PeerComparisonStrip.jsx":"c5486bbf76c0ab86ae0568886aaf76e0a6d53b0f9c17c3da72fc7dcb29f36278","components/charts/PnLCalendar.jsx":"acad82a60ee9bf87f99f23803d8bc610fa2b22826363b2908f036f77e2a121e5","components/charts/ScatterChart.jsx":"772c981326d6c1bf74c8359548109c18b04634160333c23a54ad53c6f976cb51","components/charts/ScenarioSelector.jsx":"3345d0b3e3adaa6880b52bdb4a37c589b99af0460be42a7e30e7b9db919853a7","components/charts/SmallMultiples.jsx":"d91f942d02c134069d4c5a1f4240802a295d4cf0571d6e7f9c24aaeb241aa21e","components/charts/Sparkline.jsx":"b5f18899d2f5318ae1afa39d124a919e481e43a7c9ca315c414d71cc7c516aab","components/charts/TimeframeSwitcher.jsx":"c27add5876ae0baa6fd3cbeeed5030bed8f4b73f0fc605333c7d9daf467cfab9","components/charts/TraceChart.jsx":"4202a2b610805906d916cf6c5f94fc21156416ab13ff1c4f25bebf7a44963472","components/charts/Treemap.jsx":"6ab7262ee86ba6ce64059aa4ac3f049a77b456698be2f70b636be34a004b40d9","components/charts/WatchlistStrip.jsx":"30c287ef4265f327d0c2c70014484494ffd1d54e1cd51afe3b112bdcd77eaf53","components/charts/WaterfallChart.jsx":"7083c9626ef0c481791e776b391af262c05c659c11f5f874b12c7b708d37d442","components/charts/YieldCurve.jsx":"f5194121f5a0bedf9a3a4772fa2c85d944b3aa6f36cb74a8908e74b9ae05eebd","components/charts/useChartCrosshair.js":"86ceabff33b2cf3c51a9703d3ae952aff3d16a046305288c052a9d74c5cbac82","components/charts/viz.js":"cc385e67e88e4ec4e184501395920359070adf2e8e773c2d9a43d364f9d4ceb2","components/core/Accordion.jsx":"59c5ab6ca2296f9d2717cc336ec290d1269b1b3e46d63d56075f89458e93c256","components/core/AsyncCombobox.jsx":"0f03e4f254552feb1fc5a41f304176a4d2507a2ae779bba3552c7ca7e857653e","components/core/Badge.jsx":"48281270cddd31b1032a01f711ee5e212cb479084d66e52c2e2a770cfbd1676e","components/core/Breadcrumb.jsx":"5501059efb2fa40fd72cb55e9673c542400e80ea3f7c90ce7def15695b14b339","components/core/Button.jsx":"b5dd20de2b6419227a7fc0d3637cfa55abe859382b2bed69398b7fe7710ec165","components/core/Callout.jsx":"02ed93313ad6d6fdae0436ae190e779bfabc51f38f865a1460929506ab87183c","components/core/Capsule.jsx":"3a19dead2eebca544f53a9b245792e54462b3e24653b81c787a604437f34a80c","components/core/Checkbox.jsx":"a902e38752ce0156fc66796491f67185bb44e4c1541a6ea4b500297bab05a40c","components/core/Combobox.jsx":"cd88129bb81749a8ae01de8c1385077580c6ddf78099421c47f49e3dd5678c82","components/core/CommandPalette.jsx":"526c4d0faa6cc12ff19bdfd330d78729653c884072fcefbfa00233c238e96a92","components/core/ContextMenu.jsx":"acfe3da43860f264124e94152aabdcb11b9a7cf1614f7a3ffa7e9f2c756e0f2b","components/core/ContinuityFrame.jsx":"eece36eb00950df00d49009c5579e309e0e162c1fd589ea35df1e5261134ae34","components/core/DatePicker.jsx":"7b8d8e63bb55758577e977f09a6ce45100615b92e7e748cde3c02e87760f5c63","components/core/DateRangePicker.jsx":"19404b8b0a5248d85184eb468bc33b32c18e2cc2927ecbe47e87e155b6d003df","components/core/Datum.jsx":"85b238aba3a03d82d787cb45cab1fc71ab57b387aca8c805d814d47455dd32a8","components/core/Delta.jsx":"c97a0a2b91689e771dd795b03be48b357bed777aba9a81a3cf7f1933cf8c4f9c","components/core/DensityToggle.jsx":"209c0b53e0e6ef9793458b792a207a99919d7e29ecccf2c8fe53324c1633d6bd","components/core/Dialog.jsx":"9d6e15674e10986d78c6d2a715264c13c7d015cac5d09e6d468a06b5693c1573","components/core/Disclosure.jsx":"651fd6d9f0a852690eb73bb9add6484c6d5ffbd9bda02af987329e0e23339a6c","components/core/Drawer.jsx":"cdbb0a508b9f2ff9e21c151ff36821f628523ed99c9d39cfe66da308eb789a5b","components/core/ErrorBoundary.jsx":"2d6618f00d983f01b0ea5524672d0b337c5ddf5e47959a4da19e31147cffdf43","components/core/Eyebrow.jsx":"20b12c59c51560f8e089d73b0c23cdcad9920a173145cbc579b48e30c3a17044","components/core/FileUpload.jsx":"4e48becdb7be208b82a3f9c910b2d42363e96c12ef5f470d295373437942f0af","components/core/Flex.jsx":"cb320fab89ab54e971633763c1757a047f61d022d99df38a7db22a319af8c3d6","components/core/Form.jsx":"5c405b219fce282c5605bb1662d710e03d38856dd98b3112be9ea4d3b520f479","components/core/FormField.jsx":"5cb89511428e74304232a20e008530e60989f576d1bd517327883dfb88087cea","components/core/FormValidation.jsx":"0caf698ffecb52f709541ac0d580eea1a41d11ff650a1ca99f83f08637c24126","components/core/FormatProvider.jsx":"05a1eaab1a260c164410bf9f34af13e7327d28888ffcfb450991d9ed2dfc29c7","components/core/FreshnessIndicator.jsx":"3bda2889e59fcf43f82497e9a5c7b3162130b7c8c1d7af6512f11247106f27f6","components/core/Gauge.jsx":"91cce969ee0bb9bfce58450b08bf16c04ed12ff6c53000f3e73b9628a93e37db","components/core/Grid.jsx":"01128532601bcc0712748d3de2c4a109e002f96f3a1ed6b2f5f9b89e4d583f2d","components/core/HotkeysProvider.jsx":"292725ab22abf7cd3387e1a997ad2711064eb1fa0fd35aeab2c77261a1c99b28","components/core/Input.jsx":"e3b59bcadb1ac69ba049958753b36ffa9f946f8a06e6c731cd81084cf6a751ea","components/core/InstrumentChip.jsx":"62f397c33b4ee1c364bac048fd66dc4c5fff520f0754cb724f870d71d0c6adc7","components/core/Kbd.jsx":"62699ce3918262f10375d8f4559dde5b00f373ba44260bd7dc7b44542bf12510","components/core/LinearGauge.jsx":"dd33e65ab2d6ed553b1ce751f64d0cd2775ce52c6503246208de74fa51ee5604","components/core/LocalDate.jsx":"39340da0bc1cc4f7b00b425ae640861106fc9e598884ed5628a46f67147f82a3","components/core/MaterialityAssessment.jsx":"3708277927030bd51a8875f656e5b1cf37bd5a91fd049974ad2b2a995fd2236b","components/core/Modal.jsx":"8dc6890734fdfd2a5703bcbbb68cac7599ccb29cabdd291c93e35be50cc8e3d2","components/core/MultiSelect.jsx":"d59fb7398c892756a35aa0132adf07dc3193e866bf140928d8781a299b5d1c04","components/core/NotificationCenter.jsx":"a3a7b763ec52478b1f10747d356a174b9899d5ff0dea97aba619f258d63b0902","components/core/NumberInput.jsx":"cfe9fbbe3f79e283cc081fb1104aaae410a1ba371822f27da5f655883e16e53d","components/core/ObjectModel.jsx":"e942654f0e74799e8fb34e276da6a276c325ae499497d0d9a40f630394500072","components/core/ObjectScope.jsx":"3f6d471e11ea0be02ab0dcade6a8c51afefe75e9b6cbd82d457bfd360163aadf","components/core/ObjectTrail.jsx":"fd93c4f7f9a38c6687a6e45379692473976405eff64b27c08229df72775d2fb2","components/core/PanelSurface.jsx":"60554506fd7a4bdc3373168e4e90eaf4d73c6262fb06abeb9e9d3d90dcade2a3","components/core/Popover.jsx":"4bb4925875040bd86e17c5f1de3fdf5febc133880dad82f33a938db109bdd8ff","components/core/ProgressBar.jsx":"9738bfeabebd00059a4c746f3557bcfe6a01ac01547c91f515a575accde8d077","components/core/RadioGroup.jsx":"af6fe49ceb92a8af010c4923d90e377bdfe61552c8ee868bd64470fd5da8d23c","components/core/Registry.jsx":"b6989c9f6c71fd75b3a7856d8a5c63d6c8570d56a79841108bdd6f0e12a215cf","components/core/SegmentedControl.jsx":"f9d9e26251891dac969b45fc1db3205afc5751b9b07585ffd80926d814092620","components/core/Select.jsx":"3bc7e84c7dfd94ea0d3d738a7506709e0de5a287135ef2b91ef496ba2bd2ee6b","components/core/Slider.jsx":"a59ccb13e0707d17feb0b98c711e71355390733dc3b6bfcc0ac135b90a858b66","components/core/Spinner.jsx":"45954dc66405712635a36f78ebde20ab813bb240d0f9b8c483c25a89215d336f","components/core/SplitPane.jsx":"6d0fb9b3559ff54581a208e09a7abdf388af7ee88c35baea7118ab506ebcce90","components/core/Stack.jsx":"35e22a8758b9a3ffd35e370fa16f1a22f5c64d95c49dd287a74ab48c424e8727","components/core/StatusBanner.jsx":"c069f599c3d87ddc1163f8f24a04bb7817e849bdba1485d9b38844bcfa9e2f99","components/core/Stepper.jsx":"be00d6befe0a4ef884f4ea15533ba7d2d341d306b1b15fb6d5f14426170eac02","components/core/StrategyModel.jsx":"7ae4909385e4761c595385742c3ede0988766006e56b9c129ea2abbee3f37e93","components/core/Tabs.jsx":"8d877f5158d2913de40087863119c48b62309c970c0a1c1a00d02b748fe5b629","components/core/TagInput.jsx":"5ad5e0715536f6935209c7a66fbfae24b2ad352cfedfaf60af77f48d4a6a98dc","components/core/TextArea.jsx":"9574e5d217308e27a8d395a92e1d241f6e469a90ac105ac29847b293848b31cf","components/core/TimeContext.jsx":"2611a673d40990adf56ce93936f0f33b4cf23a203d093513315c4237a77d2f06","components/core/Timestamp.jsx":"983e59f6bfcd523572f41ea9002df109da75ea73bb92b5346b80eaecf1947cb9","components/core/Toast.jsx":"20c270c3c90de73bc25afdbd73a36962a57dea8e133d8f5570f75205b9617252","components/core/Tooltip.jsx":"3c7eb58696ee2c8fddee1f2f1bf3adfc8a54751cbc7663cd2dc172598c30c4ad","components/core/TreeView.jsx":"af29301f787f3f327de7b802fd2136cbce5bd43adf66f9582ce5d5f153e3f83e","components/core/Validators.js":"65cbb84289f440ae64a4a867ad487f8d2c77f9427bf0a5e080a532b324c55551","components/core/ValueAuthority.jsx":"3d5baf10318237bd38d5dae2d807768b66b97b2da4aa2a6a4b2226d4e6071a27","components/core/format.js":"4213592f71b7ae1edd30223072e6c0a2ac7c3a086de5f6622a851ebf30b6752b","components/core/localDate.js":"7f055f64cefd8478be169b657cc8ad8dd71600dea2a55798a7805362af0e64cd","components/core/useFormState.js":"609104423c512bb221936265d2e2d7a223a710918420b59ccb35eb9d1a477df0","components/core/useOverlayFocus.js":"9301635fc0a563174eee78fd1cbd20f8c820666cde01b2f89be55dece41135dd","components/data/BulkActionBar.jsx":"5c7834de4fdd0dee35d8b2efdd13b6f48214f08c689840e0e697ac5a863e1d09","components/data/ColumnChooser.jsx":"6a24f6de6900cfb344772e58fe8a75d2fae319e1139150c630cec7048b709725","components/data/ColumnManager.jsx":"f4cdd3bc7e9be238340eb57a400657e8ba5bae980408b1b28ca16d784d4a97d8","components/data/DataGrid.jsx":"2117c98ccb3906a4fe885a5ca558a4e29764853dcad6fff71d5e920def6030ad","components/data/DataStateSwitch.jsx":"6f4a7e6f0b15f3a1f0e28624297194f90444c08f199af8113553aaced6ef0a9c","components/data/DenseDataTable.jsx":"749924157a0f9b84ad94f653cb6375e43e63af6162dc4ad6b3c2df95964b1961","components/data/EditableCell.jsx":"316c28dd53cf97090f6ce5cb3533d3a1bdd9a94690b296e4c70602ba39bf0bd7","components/data/EmptyState.jsx":"6879d1d7c242a12017a91ba4cfc888587cb09aae7af6183be130a5b1140ab480","components/data/EntitySummary.jsx":"2beac34f2e8e0d1b77f0e4b9722b3060df8c57ee35b2f443832af73931d6c399","components/data/ExpandableDataTable.jsx":"bfaf02fe3c12e1107bb29095da607937c9ebbc2feae7b7e092b5389ea1f112fa","components/data/FilterBuilder.jsx":"8d33b5cd9a1659b0889430afce5ad6685f33b2db28eb306d60744bcaaf15a73e","components/data/FilteredDataTable.jsx":"df02b5179e695c0b3e11c6b3cfcc768a633298eab629edf5bea5bb9c0a89a860","components/data/KeyValueGrid.jsx":"869b90a742954586f725e346e596aab4930239f0c4411acfd2e32448460f6632","components/data/LinkedSelectionProvider.jsx":"cd7a709dc43b469123867da343765408aa33d1e39fe024b3460b0ba5bf664214","components/data/MetricCard.jsx":"b440e189881a16e93b4e617c284c5942c9d7cb0ed2f304c2e1e046e72a49bf82","components/data/OptimisticCell.jsx":"b6e4734d5f8f1dd282500b9abf5ee73e99d379832078cd744a4f19aeb481139b","components/data/Pagination.jsx":"57e38974f79e933d1e427aa76a231a81715e68ba67a0a9f1bdd9b91046403989","components/data/SavedViews.jsx":"893fd2679460b6d54c4d822f3e0c908f920e6829b407b85c6211991b7b15cf03","components/data/SelectionCompare.jsx":"300b903bdef4a72baae223a8e3b6f7039cf0eeac99333aadf22861af19b86221","components/data/SelectionToolbar.jsx":"bdd1d3a6f549cdf7346aa83d1c28224466af86dfc817caad7e37355b1aab56f6","components/data/Skeleton.jsx":"5f9652eda4d6c5ff9e90577f8c477711b88cfce44a3bd7a8f74704f25354593f","components/data/TableHooks.js":"533bff5b26899d68a8312bea0845929509c19aebbc84801f207f79dd200080d9","components/data/Toolbar.jsx":"1a14df32a8f9ad6542ebba299587c3cf1da8de6c0a8c9a05234d1f805142bcdb","components/data/VirtualizedList.jsx":"0599414fa7634924bb4ba283992a59c7b3d0dedf2ae3c86e94903b9b6cba7b24","components/data/WorksheetGrid.jsx":"9714fab3da22f3761995f6c5a8524850bfa26618ef57ecdcabe011dc8064f19a","components/data/gridFormat.js":"fd436c00da97a70961de0dcc2ebfa852a5e7d6bec8a831e58effd1aa86044bb8","components/data/useAsyncTableData.js":"ab343de3f5db8a42fbae0709944bea4c9d55053a308ae0445f5c14153284634d","components/data/useRowSelection.js":"a799985727b9fd4cec548ce71fb4685783edd903e60ca745f2db66202e4a4a03","components/data/useTableColumns.js":"7471ccf8ebdb4068b383c30ef88a05e278a3c5b9532745acc5b5d2cd06ff08d7","components/data/useTableState.js":"4ef6478e6f2ec4092ede0be55349b3fbb9bcfaaf8897cb8173842cc0e211a7b5","components/data/useThemeRowHeight.js":"b57e448018c5d78247f7b3244ef772db24faf6e8b7884031e43926875d2a3c95","components/decision/ConsequenceRail.jsx":"f91023fc9a483bc1ff7fa9da891d2a15ffb44d021dc0e9b3cad420750703d662","components/decision/DecisionSnapshot.jsx":"d6d227af2cc64d79de2398cda03f0233fc5505ae95226d1502a1ecb243651422","components/decision/EvidenceRail.jsx":"abebd20fab4fb8c10c1a78b70c180976af8ec3d9179cbd4bb6f21e9fd994ce78","components/operations/ActionEnvelope.jsx":"6058e0bcc2ed9f44df0d13aedd0ab63c9582756b35750cc54004e0a592cd1fd5","components/operations/ActionGuard.jsx":"01f11f64ad3bad1e55820a9ad191bacacd46447df00cdc8d8819c8a45e75f307","components/operations/ActionQueue.jsx":"b2a2add744511f63f6d03f218afb0636a32f00e8ce43aa4b6d31bbb250e62775","components/operations/AdapterDiagnostics.jsx":"241d8ffd7fab50639e6e9d7d27e15da84ca243c8a13d99a5b2c18424b482455d","components/operations/AnnotationLayer.jsx":"873e99b15f608213789b75fa255f7de7fe7f70ee549c626b21e5421047d8b0ed","components/operations/AttestationPanel.jsx":"fa972465b78bed618105805f091df2ae60719e56066522a9a272874d5d026a6a","components/operations/CaseQueue.jsx":"5c79da5c56583224d1b078c2993c3a0528e3cbaad436945042db68982624dcbb","components/operations/ChangeSetReview.jsx":"8ec024553d40d1594f6b37cd624fd770c62d57599c00597f4e0be2ae7c41b564","components/operations/ClaimHeader.jsx":"76739e03c27e5e7ecc43013cb969454fd60676203ed770480f5d6a2f24adf378","components/operations/ConnectionState.jsx":"7ecc32060102e42a6d4ce7022203feb76dcc1d82731d8e0825ddbb2863611147","components/operations/DataCondition.jsx":"f016bf0b977122e728c7daa1f1efd2d7e70d608de8bbc517ffb53025d35cafed","components/operations/DecisionFlow.jsx":"0f3384502ec83ce1aa3aed82445141f95dfe570abed4bd2916dab91caa6436d9","components/operations/DiffView.jsx":"993986e927d88641c44672354dbfd289fc0d3ca8b85b390703c8b33c370eb4aa","components/operations/EventTimeline.jsx":"592bf074447ec3678c9147d37251e9d95085ed30841efe9351843b4d4ba737e3","components/operations/EvidenceInspector.jsx":"b7456804bf3643f03a972aa7de9f110631bb7b939a4c9e3ff0596d253d337fc8","components/operations/EvidenceLink.jsx":"b9574dcc86d1e499638d2d43743abf1ba08e71ff170e156b5ea1f612e4834a30","components/operations/EvidencePreview.jsx":"7d703b066b9542d798f2f2a4407f4ecaf0a03eba8786e606080e44f968ef0034","components/operations/GateRail.jsx":"37c2238b82b8288eec232e86ff6c1d43b2f4c1d1cde1711d64dda684a6966035","components/operations/HandoverBrief.jsx":"07dabaa7629b2c025d97f6f4a3d426bfb3f255dc66607bd561d7b5cd9a772ec3","components/operations/LogTail.jsx":"f10ba87e8496e0dc6d799410d8e0c7f7ea3a23ae2ffe0adabcbf0d99a011941f","components/operations/ProvenanceChip.jsx":"706f49d7a1b540f8c48834e0fac13f3893298fe241f7efdfd810511a8b97d227","components/operations/ReadinessPanel.jsx":"984ed30b8e6b591861de4f2c0239387ff78c0139be7520577f4c2cffa2a378d7","components/operations/ResolutionDrawer.jsx":"3b40fbd3ecce9e6daf60bac7d97580673f93f6dc13f204e13210d51fd61fc289","components/operations/SeverityBadge.jsx":"3d59663fc4a90ed52490929596e8bb3bc6416b58c483033cc21490a1b9af76be","components/operations/SlaChip.jsx":"7756b34b0866d87d6b1a5453f276513f77cd8d3cf3b641605761ba405b4bfcba","components/operations/SourceCoverageSummary.jsx":"3ecf18d3e33151fa48682f377f1d6e57c732d8f1fcecac9b4d57535c6ffd033a","components/operations/Status.jsx":"e4c8d1ba42a77533917be6c7dd484ff8379858dc39e7b0cde48dfee452de8066","components/operations/StrategyRunModel.jsx":"e594758074094a58f1cd2b09886cb68a8c3c5ad0d73f4d940345fc162946266e","components/operations/TrustStrip.jsx":"35677d7b2a197917e5b3add813874b8d3b12d6f009e9cdbd2d5627619c8918ca","components/operations/ValidationIssueList.jsx":"1733c7cdefda3f6de7f002bdf2b5f4c87d36c72733ba70f50b57868a4a6b3d97","components/operations/ValueEnvelope.jsx":"0f016fb2452fac28c7b922aed72b60121b725f3773fe9c01f6adceea4af4c54b","components/operations/VersionConflictNotice.jsx":"52194a0b56f4bf89bcaa4fecfaeb1de69eed37590bc9317537ab9ad5d2ea04a4","components/operations/WorkspaceSection.jsx":"8811a15f2c634e9286dbe80b5dbd91a8a8b872ff9467e67bca6319054eea00ea","components/operations/conditions.js":"eafb0436c6328f60d2d604aa561afb6cf9a783084aab9dc325ab854160fd9cdf","components/operations/status.js":"3653187e0b7fedc3ad1f22065e1cecbff432cd06a353ea4dd3a5881fe2c5dae8","components/shell/GlobalSearch.jsx":"495bef508438a3bf61688ffc6f4a3754f237b8c2a5339d92ff6dd463d5dea4f9","components/shell/NavRail.jsx":"3131799769fc00d7283bcd80eeff3e73cbe5b42f9d3768ed1fae1e523ca2e62a","components/shell/ReturnPath.jsx":"f5db2966437ba79a40de029c5ef4c27d5bd1494c370b80a9070630a436a35e34","components/shell/ScreenComposition.jsx":"28e85166f59940505ac6ce849366e7640e21de53566abfda33a3f2820950ef6d","components/shell/SessionControls.jsx":"623b25fc20702ed2cac94fcb4ef4655a409698ef5906eb9f7d9e3c1029d2d41e","components/shell/StatusBar.jsx":"044adb2f39e2a0e86c6445231ad6dba4cbdeb0a329663a5faa15cc827a70d841","components/shell/WorkspaceContextBar.jsx":"b6cc2026c888971acead846619b4e13d031c47e82b4517b5b43b8f52efe86a43","components/shell/WorkspaceLayout.jsx":"b2f205a1b91bd3824525ca4f2987d47e324167944f533833d2c8156e0c9fb1c9","components/shell/WorkstationShell.jsx":"0e45344036b3881c863a0c762091ef82c0067a64acc9a1fb87c4dbaf26e78c97","components/shell/WorkstationTopbar.jsx":"f32d50f46319a2315b05086c64194f3c24fce99938706bb16fedf59b12d21f6f","components/trading/Blotter.jsx":"9a8a721922ea8cc1e54568d679deb518ae60e93b756baf65fc7641dbd06f6bd8","components/trading/DepthLadder.jsx":"d14943b8ca2d29dda83a3ff2d1078c2ac17480aaa81551449bfec4afe0b769e5","components/trading/FillsFeed.jsx":"71ea551fcf3361e2567bda750147d4a7cbee61f9e55a36ef704d50b6d599add5","components/trading/OptionChainTable.jsx":"44b76cd87444b86de8a2a5d9e5efd7fa0171b2651e4294f9f282bc28e595d0ed","components/trading/OrderTicket.jsx":"c4b9a13bb3104db03bcd2cf50d0c7e0cbc1b78301b6a2831396f02611ac18f43","components/trading/TimeAndSalesTape.jsx":"b1396e89ee0690e53c894f95ece1b661aad535773906d6685881a32c79b0b8a1","tests/conformance-rules.js":"399c6558d14628fcfdc11020a41b15c958e2201654dab3d990a98a5b53c5aa0e","tests/mock-transport.js":"238c83d10a66d6b1b35d9edb2597cf6d7e7ace816a60ab0d8bbd0259e1588ec5"},"inlinedExternals":[],"unexposedExports":[{"name":"accountNormalSide","sourcePath":"components/accounting/money.js"},{"name":"adapterPosture","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"adapterScheduleMissing","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"addDays","sourcePath":"components/core/localDate.js"},{"name":"addMonths","sourcePath":"components/core/localDate.js"},{"name":"agingBucketIndex","sourcePath":"components/accounting/money.js"},{"name":"allocateAmount","sourcePath":"components/accounting/money.js"},{"name":"amortizeStraightLine","sourcePath":"components/accounting/money.js"},{"name":"assuranceCoverage","sourcePath":"components/accounting/Assurance.jsx"},{"name":"assuranceHistory","sourcePath":"components/accounting/Assurance.jsx"},{"name":"assuranceState","sourcePath":"components/accounting/Assurance.jsx"},{"name":"assuranceVerb","sourcePath":"components/accounting/Assurance.jsx"},{"name":"atDepth","sourcePath":"components/core/Disclosure.jsx"},{"name":"bandPath","sourcePath":"components/charts/viz.js"},{"name":"buildTrialBalance","sourcePath":"components/accounting/money.js"},{"name":"checkTimeCoherence","sourcePath":"components/core/TimeContext.jsx"},{"name":"clampDate","sourcePath":"components/core/localDate.js"},{"name":"conditionMeta","sourcePath":"components/operations/conditions.js"},{"name":"conditionsVocabulary","sourcePath":"components/operations/conditions.js"},{"name":"convertAmount","sourcePath":"components/accounting/money.js"},{"name":"currencyDecimals","sourcePath":"components/core/format.js"},{"name":"currencySymbol","sourcePath":"components/core/format.js"},{"name":"dayOfInstant","sourcePath":"components/core/localDate.js"},{"name":"daysBetween","sourcePath":"components/accounting/money.js"},{"name":"decimalsForTick","sourcePath":"components/core/format.js"},{"name":"defineScreen","sourcePath":"components/shell/ScreenComposition.jsx"},{"name":"deriveMetrics","sourcePath":"components/operations/StrategyRunModel.jsx"},{"name":"describeObject","sourcePath":"components/core/ObjectModel.jsx"},{"name":"domainOf","sourcePath":"components/charts/viz.js"},{"name":"dowLabels","sourcePath":"components/core/localDate.js"},{"name":"effectiveYieldSchedule","sourcePath":"components/accounting/money.js"},{"name":"elbow","sourcePath":"components/charts/viz.js"},{"name":"envelopeCheck","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"fixtureTransport","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"formatAccounting","sourcePath":"components/core/format.js"},{"name":"formatBp","sourcePath":"components/operations/conditions.js"},{"name":"formatBps","sourcePath":"components/core/format.js"},{"name":"formatCompact","sourcePath":"components/core/format.js"},{"name":"formatConditioned","sourcePath":"components/operations/conditions.js"},{"name":"formatGridSigned","sourcePath":"components/data/gridFormat.js"},{"name":"formatMoney","sourcePath":"components/core/format.js"},{"name":"formatMoneyCompact","sourcePath":"components/core/format.js"},{"name":"formatNumber","sourcePath":"components/core/format.js"},{"name":"formatPercent","sourcePath":"components/core/format.js"},{"name":"formatPrice","sourcePath":"components/core/format.js"},{"name":"formatQuantity","sourcePath":"components/core/format.js"},{"name":"formatSigned","sourcePath":"components/operations/conditions.js"},{"name":"formatSignedDelta","sourcePath":"components/core/format.js"},{"name":"formatSlaDuration","sourcePath":"components/operations/SlaChip.jsx"},{"name":"fromISO","sourcePath":"components/core/localDate.js"},{"name":"fxRevalue","sourcePath":"components/accounting/money.js"},{"name":"getDefaultLocale","sourcePath":"components/accounting/money.js"},{"name":"getNumberDefaults","sourcePath":"components/core/format.js"},{"name":"gridProof","sourcePath":"components/data/DataGrid.jsx"},{"name":"humanizeStatus","sourcePath":"components/operations/status.js"},{"name":"isEnvelopeValue","sourcePath":"components/accounting/AmountCell.jsx"},{"name":"linePath","sourcePath":"components/charts/viz.js"},{"name":"longDate","sourcePath":"components/core/localDate.js"},{"name":"monthTitle","sourcePath":"components/core/localDate.js"},{"name":"nextAssuranceStage","sourcePath":"components/accounting/Assurance.jsx"},{"name":"niceTicks","sourcePath":"components/charts/viz.js"},{"name":"normalizeCondition","sourcePath":"components/operations/conditions.js"},{"name":"normalizeSeverity","sourcePath":"components/operations/status.js"},{"name":"numberFormatter","sourcePath":"components/core/format.js"},{"name":"objectMeta","sourcePath":"components/core/ObjectModel.jsx"},{"name":"observeWidth","sourcePath":"components/charts/viz.js"},{"name":"pad","sourcePath":"components/core/localDate.js"},{"name":"parseLoose","sourcePath":"components/core/localDate.js"},{"name":"rangePresets","sourcePath":"components/core/localDate.js"},{"name":"resetNumberDefaults","sourcePath":"components/core/format.js"},{"name":"resolve","sourcePath":"components/core/Registry.jsx"},{"name":"resolveAuthority","sourcePath":"components/core/ValueAuthority.jsx"},{"name":"roleStyle","sourcePath":"components/charts/viz.js"},{"name":"roundMoney","sourcePath":"components/accounting/money.js"},{"name":"rungFor","sourcePath":"components/operations/ActionQueue.jsx"},{"name":"sameDay","sourcePath":"components/core/localDate.js"},{"name":"scale","sourcePath":"components/charts/viz.js"},{"name":"scheduleApplies","sourcePath":"components/accounting/ScheduleLadder.jsx"},{"name":"scopeMeta","sourcePath":"components/core/ObjectScope.jsx"},{"name":"scopeRelation","sourcePath":"components/core/ObjectScope.jsx"},{"name":"setDefaultLocale","sourcePath":"components/accounting/money.js"},{"name":"setNumberDefaults","sourcePath":"components/core/format.js"},{"name":"severityKeys","sourcePath":"components/operations/status.js"},{"name":"severityLabels","sourcePath":"components/operations/status.js"},{"name":"severityOf","sourcePath":"components/core/Disclosure.jsx"},{"name":"signAssurance","sourcePath":"components/accounting/Assurance.jsx"},{"name":"splitEnvelopeValue","sourcePath":"components/accounting/AmountCell.jsx"},{"name":"sumAmounts","sourcePath":"components/accounting/money.js"},{"name":"summarizeGuards","sourcePath":"components/operations/ActionGuard.jsx"},{"name":"toISO","sourcePath":"components/core/localDate.js"},{"name":"toNumber","sourcePath":"components/core/format.js"},{"name":"trailMoved","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"trailRef","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"useAnnotations","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"useAsyncTableData","sourcePath":"components/data/useAsyncTableData.js"},{"name":"useAsyncValidation","sourcePath":"components/core/useFormState.js"},{"name":"useChangeSet","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"useChartCrosshair","sourcePath":"components/charts/useChartCrosshair.js"},{"name":"useCommandPalette","sourcePath":"components/core/CommandPalette.jsx"},{"name":"useContextMenu","sourcePath":"components/core/ContextMenu.jsx"},{"name":"useDecisionFlow","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"useDirtyState","sourcePath":"components/core/useFormState.js"},{"name":"useDisclosure","sourcePath":"components/core/Disclosure.jsx"},{"name":"useFormat","sourcePath":"components/core/FormatProvider.jsx"},{"name":"useLinkedSelection","sourcePath":"components/data/LinkedSelectionProvider.jsx"},{"name":"useMeasuredWidth","sourcePath":"components/charts/viz.js"},{"name":"useObjectTrail","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"useOptimistic","sourcePath":"components/data/OptimisticCell.jsx"},{"name":"useOverlayEscape","sourcePath":"components/core/useOverlayFocus.js"},{"name":"useOverlayFocus","sourcePath":"components/core/useOverlayFocus.js"},{"name":"useRowSelection","sourcePath":"components/data/useRowSelection.js"},{"name":"useSelectionCompare","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"useSyncedCursor","sourcePath":"components/charts/useChartCrosshair.js"},{"name":"useTableColumns","sourcePath":"components/data/useTableColumns.js"},{"name":"useTableState","sourcePath":"components/data/useTableState.js"},{"name":"useThemeRowHeight","sourcePath":"components/data/useThemeRowHeight.js"},{"name":"useTimeContext","sourcePath":"components/core/TimeContext.jsx"},{"name":"useToast","sourcePath":"components/core/Toast.jsx"},{"name":"useWizard","sourcePath":"components/core/useFormState.js"},{"name":"useWorkspaceContext","sourcePath":"components/shell/WorkspaceContextBar.jsx"},{"name":"useWorkspaceLayout","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"weeksFor","sourcePath":"components/core/localDate.js"}]} */
+/* @ds-bundle: {"format":4,"version":"4.3.0","namespace":"MeridianDesignSystem_205d17","components":[{"name":"AccountTree","sourcePath":"components/accounting/AccountTree.jsx"},{"name":"AccountingPeriodSelector","sourcePath":"components/accounting/AccountingPeriodSelector.jsx"},{"name":"AgingTable","sourcePath":"components/accounting/AgingTable.jsx"},{"name":"AllocationEditor","sourcePath":"components/accounting/AllocationEditor.jsx"},{"name":"AmountCell","sourcePath":"components/accounting/AmountCell.jsx"},{"name":"ASSURANCE_STAGES","sourcePath":"components/accounting/Assurance.jsx"},{"name":"AssuranceChip","sourcePath":"components/accounting/Assurance.jsx"},{"name":"CertificationMatrix","sourcePath":"components/accounting/Assurance.jsx"},{"name":"Assurance","sourcePath":"components/accounting/Assurance.jsx"},{"name":"BasisBridge","sourcePath":"components/accounting/BasisBridge.jsx"},{"name":"BasisComparisonMatrix","sourcePath":"components/accounting/BasisComparisonMatrix.jsx"},{"name":"CalculationTrace","sourcePath":"components/accounting/CalculationTrace.jsx"},{"name":"CloseCalendar","sourcePath":"components/accounting/CloseCalendar.jsx"},{"name":"CommitmentBar","sourcePath":"components/accounting/CommitmentBar.jsx"},{"name":"FxRevaluationTable","sourcePath":"components/accounting/FxRevaluationTable.jsx"},{"name":"IncomeSchedule","sourcePath":"components/accounting/IncomeSchedule.jsx"},{"name":"JournalEntryForm","sourcePath":"components/accounting/JournalEntryForm.jsx"},{"name":"LedgerTable","sourcePath":"components/accounting/LedgerTable.jsx"},{"name":"LifecycleRibbon","sourcePath":"components/accounting/LifecycleRibbon.jsx"},{"name":"LifecycleLanes","sourcePath":"components/accounting/LifecycleRibbon.jsx"},{"name":"Money","sourcePath":"components/accounting/Money.jsx"},{"name":"PostingImpactPreview","sourcePath":"components/accounting/PostingImpactPreview.jsx"},{"name":"ReconciliationPanel","sourcePath":"components/accounting/ReconciliationPanel.jsx"},{"name":"RollforwardMatrix","sourcePath":"components/accounting/RollforwardMatrix.jsx"},{"name":"RollforwardTrace","sourcePath":"components/accounting/RollforwardTrace.jsx"},{"name":"ScheduleLadder","sourcePath":"components/accounting/ScheduleLadder.jsx"},{"name":"ScheduleLadderSet","sourcePath":"components/accounting/ScheduleLadder.jsx"},{"name":"StatementTable","sourcePath":"components/accounting/StatementTable.jsx"},{"name":"TaxLotTable","sourcePath":"components/accounting/TaxLotTable.jsx"},{"name":"TieOutPanel","sourcePath":"components/accounting/TieOutPanel.jsx"},{"name":"TrialBalance","sourcePath":"components/accounting/TrialBalance.jsx"},{"name":"VarianceCell","sourcePath":"components/accounting/VarianceCell.jsx"},{"name":"AnalyticalField","sourcePath":"components/charts/AnalyticalField.jsx"},{"name":"AnalyticalFigure","sourcePath":"components/charts/AnalyticalFigure.jsx"},{"name":"AnalyticalFigureGrid","sourcePath":"components/charts/AnalyticalFigure.jsx"},{"name":"BarChart","sourcePath":"components/charts/BarChart.jsx"},{"name":"CandleChart","sourcePath":"components/charts/CandleChart.jsx"},{"name":"CashFlowLadder","sourcePath":"components/charts/CashFlowLadder.jsx"},{"name":"ChartAnnotations","sourcePath":"components/charts/ChartAnnotations.jsx"},{"name":"ChartCard","sourcePath":"components/charts/ChartCard.jsx"},{"name":"AXIS_FONT","sourcePath":"components/charts/ChartFrame.jsx"},{"name":"AxisChip","sourcePath":"components/charts/ChartFrame.jsx"},{"name":"ChartFrame","sourcePath":"components/charts/ChartFrame.jsx"},{"name":"ChartTooltip","sourcePath":"components/charts/ChartTooltip.jsx"},{"name":"ComparisonPlate","sourcePath":"components/charts/ComparisonPlate.jsx"},{"name":"PlateGrid","sourcePath":"components/charts/ComparisonPlate.jsx"},{"name":"ControlDependencyGraph","sourcePath":"components/charts/ControlDependencyGraph.jsx"},{"name":"CorrelationHeatmap","sourcePath":"components/charts/CorrelationHeatmap.jsx"},{"name":"CoverageMatrix","sourcePath":"components/charts/CoverageMatrix.jsx"},{"name":"DepthChart","sourcePath":"components/charts/DepthChart.jsx"},{"name":"DistributionRange","sourcePath":"components/charts/DistributionRange.jsx"},{"name":"DonutChart","sourcePath":"components/charts/DonutChart.jsx"},{"name":"DotMatrix","sourcePath":"components/charts/DotMatrix.jsx"},{"name":"DrawdownChart","sourcePath":"components/charts/DrawdownChart.jsx"},{"name":"DurationContribution","sourcePath":"components/charts/DurationContribution.jsx"},{"name":"EquityCurve","sourcePath":"components/charts/EquityCurve.jsx"},{"name":"FIGURE_ROLES","sourcePath":"components/charts/Figure.jsx"},{"name":"GEOMETRIES","sourcePath":"components/charts/Figure.jsx"},{"name":"Figure","sourcePath":"components/charts/Figure.jsx"},{"name":"FigureSet","sourcePath":"components/charts/Figure.jsx"},{"name":"Histogram","sourcePath":"components/charts/Histogram.jsx"},{"name":"IntervalBar","sourcePath":"components/charts/IntervalBar.jsx"},{"name":"LineageGraph","sourcePath":"components/charts/LineageGraph.jsx"},{"name":"MATURITY_BUCKETS","sourcePath":"components/charts/MaturityLadder.jsx"},{"name":"MaturityLadder","sourcePath":"components/charts/MaturityLadder.jsx"},{"name":"OwnershipGraph","sourcePath":"components/charts/OwnershipGraph.jsx"},{"name":"PeerComparisonStrip","sourcePath":"components/charts/PeerComparisonStrip.jsx"},{"name":"PnLCalendar","sourcePath":"components/charts/PnLCalendar.jsx"},{"name":"ScatterChart","sourcePath":"components/charts/ScatterChart.jsx"},{"name":"ScenarioSelector","sourcePath":"components/charts/ScenarioSelector.jsx"},{"name":"SmallMultiples","sourcePath":"components/charts/SmallMultiples.jsx"},{"name":"Sparkline","sourcePath":"components/charts/Sparkline.jsx"},{"name":"TimeframeSwitcher","sourcePath":"components/charts/TimeframeSwitcher.jsx"},{"name":"AsOfControl","sourcePath":"components/charts/TimeframeSwitcher.jsx"},{"name":"TraceChart","sourcePath":"components/charts/TraceChart.jsx"},{"name":"Treemap","sourcePath":"components/charts/Treemap.jsx"},{"name":"WatchlistStrip","sourcePath":"components/charts/WatchlistStrip.jsx"},{"name":"WaterfallChart","sourcePath":"components/charts/WaterfallChart.jsx"},{"name":"YieldCurve","sourcePath":"components/charts/YieldCurve.jsx"},{"name":"ChartCursorSync","sourcePath":"components/charts/useChartCrosshair.js"},{"name":"ChartCursor","sourcePath":"components/charts/useChartCrosshair.js"},{"name":"ROLES","sourcePath":"components/charts/viz.js"},{"name":"Fmt","sourcePath":"components/charts/viz.js"},{"name":"Accordion","sourcePath":"components/core/Accordion.jsx"},{"name":"AsyncCombobox","sourcePath":"components/core/AsyncCombobox.jsx"},{"name":"Badge","sourcePath":"components/core/Badge.jsx"},{"name":"Breadcrumb","sourcePath":"components/core/Breadcrumb.jsx"},{"name":"Button","sourcePath":"components/core/Button.jsx"},{"name":"Callout","sourcePath":"components/core/Callout.jsx"},{"name":"CapsuleHeader","sourcePath":"components/core/Capsule.jsx"},{"name":"CapsuleBody","sourcePath":"components/core/Capsule.jsx"},{"name":"CapsuleFooter","sourcePath":"components/core/Capsule.jsx"},{"name":"Capsule","sourcePath":"components/core/Capsule.jsx"},{"name":"Checkbox","sourcePath":"components/core/Checkbox.jsx"},{"name":"Toggle","sourcePath":"components/core/Checkbox.jsx"},{"name":"Combobox","sourcePath":"components/core/Combobox.jsx"},{"name":"CommandPalette","sourcePath":"components/core/CommandPalette.jsx"},{"name":"ContextMenu","sourcePath":"components/core/ContextMenu.jsx"},{"name":"ContinuityStatus","sourcePath":"components/core/ContinuityFrame.jsx"},{"name":"ContinuityFrame","sourcePath":"components/core/ContinuityFrame.jsx"},{"name":"DatePicker","sourcePath":"components/core/DatePicker.jsx"},{"name":"DateRangePicker","sourcePath":"components/core/DateRangePicker.jsx"},{"name":"Datum","sourcePath":"components/core/Datum.jsx"},{"name":"DatumGroup","sourcePath":"components/core/Datum.jsx"},{"name":"Delta","sourcePath":"components/core/Delta.jsx"},{"name":"DensityToggle","sourcePath":"components/core/DensityToggle.jsx"},{"name":"Dialog","sourcePath":"components/core/Dialog.jsx"},{"name":"DialogHeader","sourcePath":"components/core/Dialog.jsx"},{"name":"DialogBody","sourcePath":"components/core/Dialog.jsx"},{"name":"DialogFooter","sourcePath":"components/core/Dialog.jsx"},{"name":"DialogForm","sourcePath":"components/core/Dialog.jsx"},{"name":"DETAIL_LEVELS","sourcePath":"components/core/Disclosure.jsx"},{"name":"DisclosureProvider","sourcePath":"components/core/Disclosure.jsx"},{"name":"DetailDial","sourcePath":"components/core/Disclosure.jsx"},{"name":"DisclosureResidue","sourcePath":"components/core/Disclosure.jsx"},{"name":"DisclosureRegion","sourcePath":"components/core/Disclosure.jsx"},{"name":"DetailOnly","sourcePath":"components/core/Disclosure.jsx"},{"name":"DisclosureHooks","sourcePath":"components/core/Disclosure.jsx"},{"name":"Disclosure","sourcePath":"components/core/Disclosure.jsx"},{"name":"Drawer","sourcePath":"components/core/Drawer.jsx"},{"name":"DrawerHeader","sourcePath":"components/core/Drawer.jsx"},{"name":"DrawerBody","sourcePath":"components/core/Drawer.jsx"},{"name":"ErrorBoundary","sourcePath":"components/core/ErrorBoundary.jsx"},{"name":"Eyebrow","sourcePath":"components/core/Eyebrow.jsx"},{"name":"FileUpload","sourcePath":"components/core/FileUpload.jsx"},{"name":"Flex","sourcePath":"components/core/Flex.jsx"},{"name":"FormRow","sourcePath":"components/core/Form.jsx"},{"name":"FormGrid","sourcePath":"components/core/Form.jsx"},{"name":"FormDivider","sourcePath":"components/core/Form.jsx"},{"name":"FormSectionLabel","sourcePath":"components/core/Form.jsx"},{"name":"Form","sourcePath":"components/core/Form.jsx"},{"name":"FormField","sourcePath":"components/core/FormField.jsx"},{"name":"FormValidation","sourcePath":"components/core/FormValidation.jsx"},{"name":"FieldInput","sourcePath":"components/core/FormValidation.jsx"},{"name":"FormErrorSummary","sourcePath":"components/core/FormValidation.jsx"},{"name":"NEGATIVE_STYLES","sourcePath":"components/core/FormatProvider.jsx"},{"name":"FormatProvider","sourcePath":"components/core/FormatProvider.jsx"},{"name":"FormatHooks","sourcePath":"components/core/FormatProvider.jsx"},{"name":"Format","sourcePath":"components/core/FormatProvider.jsx"},{"name":"ConnectionDot","sourcePath":"components/core/FreshnessIndicator.jsx"},{"name":"FreshnessIndicator","sourcePath":"components/core/FreshnessIndicator.jsx"},{"name":"Grid","sourcePath":"components/core/Grid.jsx"},{"name":"HotkeysProvider","sourcePath":"components/core/HotkeysProvider.jsx"},{"name":"Input","sourcePath":"components/core/Input.jsx"},{"name":"InstrumentChip","sourcePath":"components/core/InstrumentChip.jsx"},{"name":"Kbd","sourcePath":"components/core/Kbd.jsx"},{"name":"LocalDate","sourcePath":"components/core/LocalDate.jsx"},{"name":"LocalDateText","sourcePath":"components/core/LocalDate.jsx"},{"name":"MaterialityBadge","sourcePath":"components/core/MaterialityAssessment.jsx"},{"name":"MaterialityAssessment","sourcePath":"components/core/MaterialityAssessment.jsx"},{"name":"MultiSelect","sourcePath":"components/core/MultiSelect.jsx"},{"name":"NotificationCenter","sourcePath":"components/core/NotificationCenter.jsx"},{"name":"NumberInput","sourcePath":"components/core/NumberInput.jsx"},{"name":"OBJECT_TYPES","sourcePath":"components/core/ObjectModel.jsx"},{"name":"ObjectHeader","sourcePath":"components/core/ObjectModel.jsx"},{"name":"ObjectHooks","sourcePath":"components/core/ObjectModel.jsx"},{"name":"ObjectModel","sourcePath":"components/core/ObjectModel.jsx"},{"name":"ANALYTICAL_SCOPES","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ObjectScopeProvider","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ScopeMark","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ScopedValue","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ScopeMismatch","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ScopeHooks","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ObjectScope","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ObjectTrailProvider","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"TrailHooks","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"ObjectTrail","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"ObjectTrailList","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"PanelSurface","sourcePath":"components/core/PanelSurface.jsx"},{"name":"Popover","sourcePath":"components/core/Popover.jsx"},{"name":"ProgressBar","sourcePath":"components/core/ProgressBar.jsx"},{"name":"RadioGroup","sourcePath":"components/core/RadioGroup.jsx"},{"name":"DENSITY","sourcePath":"components/core/Registry.jsx"},{"name":"SEVERITY","sourcePath":"components/core/Registry.jsx"},{"name":"TIME_ROLES","sourcePath":"components/core/TimeContext.jsx"},{"name":"Registry","sourcePath":"components/core/Registry.jsx"},{"name":"RegistryTable","sourcePath":"components/core/Registry.jsx"},{"name":"SegmentedControl","sourcePath":"components/core/SegmentedControl.jsx"},{"name":"Select","sourcePath":"components/core/Select.jsx"},{"name":"Slider","sourcePath":"components/core/Slider.jsx"},{"name":"Spinner","sourcePath":"components/core/Spinner.jsx"},{"name":"SplitPane","sourcePath":"components/core/SplitPane.jsx"},{"name":"Stack","sourcePath":"components/core/Stack.jsx"},{"name":"StatusBanner","sourcePath":"components/core/StatusBanner.jsx"},{"name":"Stepper","sourcePath":"components/core/Stepper.jsx"},{"name":"STRATEGY_LIFECYCLE","sourcePath":"components/core/StrategyModel.jsx"},{"name":"STRATEGY_FORMATION_STEPS","sourcePath":"components/core/StrategyModel.jsx"},{"name":"StrategyModel","sourcePath":"components/core/StrategyModel.jsx"},{"name":"Tabs","sourcePath":"components/core/Tabs.jsx"},{"name":"TabPanel","sourcePath":"components/core/Tabs.jsx"},{"name":"TagInput","sourcePath":"components/core/TagInput.jsx"},{"name":"TextArea","sourcePath":"components/core/TextArea.jsx"},{"name":"TimeContextProvider","sourcePath":"components/core/TimeContext.jsx"},{"name":"TimeHooks","sourcePath":"components/core/TimeContext.jsx"},{"name":"TimeRole","sourcePath":"components/core/TimeContext.jsx"},{"name":"TimeContextPanel","sourcePath":"components/core/TimeContext.jsx"},{"name":"TimeContext","sourcePath":"components/core/TimeContext.jsx"},{"name":"Timestamp","sourcePath":"components/core/Timestamp.jsx"},{"name":"ToastProvider","sourcePath":"components/core/Toast.jsx"},{"name":"Toast","sourcePath":"components/core/Toast.jsx"},{"name":"Tooltip","sourcePath":"components/core/Tooltip.jsx"},{"name":"TreeView","sourcePath":"components/core/TreeView.jsx"},{"name":"Validators","sourcePath":"components/core/Validators.js"},{"name":"AuthorityChip","sourcePath":"components/core/ValueAuthority.jsx"},{"name":"AuthorityStack","sourcePath":"components/core/ValueAuthority.jsx"},{"name":"ValueAuthority","sourcePath":"components/core/ValueAuthority.jsx"},{"name":"AuthorityPanel","sourcePath":"components/core/ValueAuthority.jsx"},{"name":"GLYPHS","sourcePath":"components/core/format.js"},{"name":"DOW","sourcePath":"components/core/localDate.js"},{"name":"FormHooks","sourcePath":"components/core/useFormState.js"},{"name":"BulkActionBar","sourcePath":"components/data/BulkActionBar.jsx"},{"name":"BulkSelectCheckbox","sourcePath":"components/data/BulkActionBar.jsx"},{"name":"ColumnChooser","sourcePath":"components/data/ColumnChooser.jsx"},{"name":"ColumnManager","sourcePath":"components/data/ColumnManager.jsx"},{"name":"CELL_FORMATS","sourcePath":"components/data/DataGrid.jsx"},{"name":"GRID_SCHEMAS","sourcePath":"components/data/DataGrid.jsx"},{"name":"DataGrid","sourcePath":"components/data/DataGrid.jsx"},{"name":"DataStateSwitch","sourcePath":"components/data/DataStateSwitch.jsx"},{"name":"EditableCell","sourcePath":"components/data/EditableCell.jsx"},{"name":"EmptyState","sourcePath":"components/data/EmptyState.jsx"},{"name":"EntitySummary","sourcePath":"components/data/EntitySummary.jsx"},{"name":"FilterBuilder","sourcePath":"components/data/FilterBuilder.jsx"},{"name":"KeyValueGrid","sourcePath":"components/data/KeyValueGrid.jsx"},{"name":"LinkedSelectionProvider","sourcePath":"components/data/LinkedSelectionProvider.jsx"},{"name":"SelectionHooks","sourcePath":"components/data/LinkedSelectionProvider.jsx"},{"name":"LinkedSelectionTarget","sourcePath":"components/data/LinkedSelectionProvider.jsx"},{"name":"MetricCard","sourcePath":"components/data/MetricCard.jsx"},{"name":"OptimisticProvider","sourcePath":"components/data/OptimisticCell.jsx"},{"name":"OptimisticHooks","sourcePath":"components/data/OptimisticCell.jsx"},{"name":"OptimisticCell","sourcePath":"components/data/OptimisticCell.jsx"},{"name":"OptimisticRowBar","sourcePath":"components/data/OptimisticCell.jsx"},{"name":"Pagination","sourcePath":"components/data/Pagination.jsx"},{"name":"SavedViews","sourcePath":"components/data/SavedViews.jsx"},{"name":"SelectionCompareProvider","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"SelectionCompareHooks","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"CompareToggle","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"CompareTray","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"SelectionCompare","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"CompareSheet","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"SelectionToolbar","sourcePath":"components/data/SelectionToolbar.jsx"},{"name":"Skeleton","sourcePath":"components/data/Skeleton.jsx"},{"name":"SkeletonTable","sourcePath":"components/data/Skeleton.jsx"},{"name":"TableHooks","sourcePath":"components/data/TableHooks.js"},{"name":"Toolbar","sourcePath":"components/data/Toolbar.jsx"},{"name":"ToolbarGroup","sourcePath":"components/data/Toolbar.jsx"},{"name":"ToolbarSpacer","sourcePath":"components/data/Toolbar.jsx"},{"name":"ToolbarDivider","sourcePath":"components/data/Toolbar.jsx"},{"name":"VirtualizedList","sourcePath":"components/data/VirtualizedList.jsx"},{"name":"WorksheetGrid","sourcePath":"components/data/WorksheetGrid.jsx"},{"name":"CONSEQUENCE_KINDS","sourcePath":"components/decision/ConsequenceRail.jsx"},{"name":"ConsequenceRail","sourcePath":"components/decision/ConsequenceRail.jsx"},{"name":"DecisionSnapshotPanel","sourcePath":"components/decision/DecisionSnapshot.jsx"},{"name":"DecisionSnapshot","sourcePath":"components/decision/DecisionSnapshot.jsx"},{"name":"SnapshotHooks","sourcePath":"components/decision/DecisionSnapshot.jsx"},{"name":"EVIDENCE_SECTIONS","sourcePath":"components/decision/EvidenceRail.jsx"},{"name":"EvidenceRail","sourcePath":"components/decision/EvidenceRail.jsx"},{"name":"ACTION_STATES","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"ActionStateChip","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"ActionEnvelope","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"InstructionLedger","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"ActionEnvelopeProvider","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"ActionHooks","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"ActionGuardList","sourcePath":"components/operations/ActionGuard.jsx"},{"name":"ActionGuard","sourcePath":"components/operations/ActionGuard.jsx"},{"name":"ActionAvailability","sourcePath":"components/operations/ActionGuard.jsx"},{"name":"QUEUE_RUNGS","sourcePath":"components/operations/ActionQueue.jsx"},{"name":"ActionQueue","sourcePath":"components/operations/ActionQueue.jsx"},{"name":"ActionQueueChip","sourcePath":"components/operations/ActionQueue.jsx"},{"name":"ADAPTER_POSTURES","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"AdapterPostureChip","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"AdapterDiagnostics","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"AdapterHooks","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"AnnotationProvider","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"AnnotationHooks","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"AnnotationAnchor","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"AnnotationLayer","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"AnnotationPanel","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"AttestationPanel","sourcePath":"components/operations/AttestationPanel.jsx"},{"name":"CaseQueue","sourcePath":"components/operations/CaseQueue.jsx"},{"name":"ChangeSetProvider","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"ChangeSetHooks","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"ChangeSetDiff","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"ChangeReviewBar","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"ChangeSetReview","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"ClaimHeader","sourcePath":"components/operations/ClaimHeader.jsx"},{"name":"ConnectionState","sourcePath":"components/operations/ConnectionState.jsx"},{"name":"DataCondition","sourcePath":"components/operations/DataCondition.jsx"},{"name":"DataConditionValue","sourcePath":"components/operations/DataCondition.jsx"},{"name":"DataConditionLegend","sourcePath":"components/operations/DataCondition.jsx"},{"name":"DecisionFlowProvider","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"DecisionFlow","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"DecisionFlowRail","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"DecisionFlowStage","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"DecisionConsequenceBar","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"DiffView","sourcePath":"components/operations/DiffView.jsx"},{"name":"EventTimeline","sourcePath":"components/operations/EventTimeline.jsx"},{"name":"EvidenceInspector","sourcePath":"components/operations/EvidenceInspector.jsx"},{"name":"EvidenceSection","sourcePath":"components/operations/EvidenceInspector.jsx"},{"name":"ProvenanceTrace","sourcePath":"components/operations/EvidenceInspector.jsx"},{"name":"EvidenceLink","sourcePath":"components/operations/EvidenceLink.jsx"},{"name":"EvidencePreview","sourcePath":"components/operations/EvidencePreview.jsx"},{"name":"GateRail","sourcePath":"components/operations/GateRail.jsx"},{"name":"HandoverBrief","sourcePath":"components/operations/HandoverBrief.jsx"},{"name":"HandoverBriefChip","sourcePath":"components/operations/HandoverBrief.jsx"},{"name":"LogTail","sourcePath":"components/operations/LogTail.jsx"},{"name":"ProvenanceChip","sourcePath":"components/operations/ProvenanceChip.jsx"},{"name":"ReadinessPanel","sourcePath":"components/operations/ReadinessPanel.jsx"},{"name":"ResolutionDrawer","sourcePath":"components/operations/ResolutionDrawer.jsx"},{"name":"SeverityBadge","sourcePath":"components/operations/SeverityBadge.jsx"},{"name":"SlaChip","sourcePath":"components/operations/SlaChip.jsx"},{"name":"SourceCoverageSummary","sourcePath":"components/operations/SourceCoverageSummary.jsx"},{"name":"Status","sourcePath":"components/operations/Status.jsx"},{"name":"STRATEGY_RUN_AXES","sourcePath":"components/operations/StrategyRunModel.jsx"},{"name":"StrategyRunModel","sourcePath":"components/operations/StrategyRunModel.jsx"},{"name":"TrustStrip","sourcePath":"components/operations/TrustStrip.jsx"},{"name":"ValidationIssueList","sourcePath":"components/operations/ValidationIssueList.jsx"},{"name":"ENVELOPE_MARKS","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"AUTHORITIES","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"EnvelopeMark","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"ValueEnvelope","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"EnvelopePanel","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"EnvelopeCoherence","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"VersionConflictNotice","sourcePath":"components/operations/VersionConflictNotice.jsx"},{"name":"WorkspaceSection","sourcePath":"components/operations/WorkspaceSection.jsx"},{"name":"GlobalSearch","sourcePath":"components/shell/GlobalSearch.jsx"},{"name":"NavRail","sourcePath":"components/shell/NavRail.jsx"},{"name":"ReturnPath","sourcePath":"components/shell/ReturnPath.jsx"},{"name":"ARCHETYPES","sourcePath":"components/shell/ScreenComposition.jsx"},{"name":"ScreenComposition","sourcePath":"components/shell/ScreenComposition.jsx"},{"name":"UserMenu","sourcePath":"components/shell/SessionControls.jsx"},{"name":"RoleBadge","sourcePath":"components/shell/SessionControls.jsx"},{"name":"ReadOnlyBanner","sourcePath":"components/shell/SessionControls.jsx"},{"name":"SessionControls","sourcePath":"components/shell/SessionControls.jsx"},{"name":"StatusBar","sourcePath":"components/shell/StatusBar.jsx"},{"name":"WorkspaceContextProvider","sourcePath":"components/shell/WorkspaceContextBar.jsx"},{"name":"WorkspaceHooks","sourcePath":"components/shell/WorkspaceContextBar.jsx"},{"name":"WorkspaceContextBar","sourcePath":"components/shell/WorkspaceContextBar.jsx"},{"name":"WorkspaceLayoutProvider","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"LayoutHooks","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"WorkspaceLayoutBar","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"WorkspaceLayoutGrid","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"WorkspaceLayout","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"LayoutRegion","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"WorkstationShell","sourcePath":"components/shell/WorkstationShell.jsx"},{"name":"WorkstationTopbar","sourcePath":"components/shell/WorkstationTopbar.jsx"},{"name":"Blotter","sourcePath":"components/trading/Blotter.jsx"},{"name":"DepthLadder","sourcePath":"components/trading/DepthLadder.jsx"},{"name":"FillsFeed","sourcePath":"components/trading/FillsFeed.jsx"},{"name":"OptionChainTable","sourcePath":"components/trading/OptionChainTable.jsx"},{"name":"OrderTicket","sourcePath":"components/trading/OrderTicket.jsx"},{"name":"TimeAndSalesTape","sourcePath":"components/trading/TimeAndSalesTape.jsx"}],"sourceHashAlgorithm":"sha256","sourceHashes":{"api/accounting.js":"32a06149bbd3e32d60456970b7d0a25fef31aed21cffc2d01b999eb3aeab13f4","api/analytics.js":"93324c43ff214c4fa63c40715e531989d37d79bf693e9d492fde823e8fa6b437","api/coordination.js":"071d33c712dd84bd1d755b9d74515a6336697f90ffecc2ca92ac80314aefc3d1","api/data.js":"89acfb7da4c585ba655b3901a5bba7f367184b614dbce79653bed62b243c788e","api/decision.js":"f07458ea2956126c59e37a23159369b06bf06da74a1e50581a53318a8ffd1fa5","api/evidence.js":"c767f680e87df8a92edfb6a7f14150bb789a67b64525272d9ef622cba736063f","api/legacy.js":"560b474515b04c2cf068955403659d74d05fc388feded136177b50836b81300a","api/primitives.js":"4c180a2daabd16d496cecccd86369fac40e6cacc51e3d44ab87e7c0285a0b78e","api/shell.js":"033c09bc4874371584610596234a7f5d43168702e24ecf1e5430c0e3b49028ba","api/trading.js":"d1e4efaf7268e3ab4da5faa0ec091a61b1842ee377823620d829585fefbc6802","components/accounting/AccountTree.jsx":"0f227be08ee640e0e358e7447e7eb94d1eea0cf774d2f031c542080146f3796b","components/accounting/AccountingPeriodSelector.jsx":"d60da2b9e6bd8aec4ce73e70cec0f46094e5de41d678d3b54ce12247d062c31d","components/accounting/AgingTable.jsx":"9c83469536747c5f9984480997a9bb96ccce4a9770a6c68cfe78407bc3d83784","components/accounting/AllocationEditor.jsx":"5a7aaf8484950d8707015402e905a0cb7a65a5ab461903bc43607ca598667b93","components/accounting/AmountCell.jsx":"e44a05252e36af22a27c10fee99a472299f2f1ec6610af67b23981c2894a46f1","components/accounting/Assurance.jsx":"f8ed45277d321f3ec6872538e3782de6bc89501bbeaeca6b8a8ee20448cf840d","components/accounting/BasisBridge.jsx":"ab4d212327170d45265eb9fe6f3a205503cee8bd2395e9ec7e8e7cd74c6b7ad7","components/accounting/BasisComparisonMatrix.jsx":"eb2b70881964df0d3c2a141913eec7d55839bf84168480925ef3aa26886e1167","components/accounting/CalculationTrace.jsx":"ac6f49780685640da22fde3ee0ca519e08d946a444b86901c904468ff1826194","components/accounting/CloseCalendar.jsx":"893006947217221524f70e034a41df439035d70c7bbc886d02917454897864b1","components/accounting/CommitmentBar.jsx":"1f5bd27179921c1121c2d0a79184bdb1b367dc792c826d158833d442f85ab2ab","components/accounting/FxRevaluationTable.jsx":"d00393edcf983c1b83efc25fa80abd0f371d75a6008d21eb377b132d5410a2e5","components/accounting/IncomeSchedule.jsx":"2f250a831b75e163901382523181eab2839ce1b6223c72c448aad88e6dc038b7","components/accounting/JournalEntryForm.jsx":"12accb6b244fa9a4107d33f8874dabce0c980ea9d06240f404d004b415d75b99","components/accounting/LedgerTable.jsx":"cf12bd788bb1b8b86038df8cc92d7a22310f78a9470a7dd32c6873318397ca08","components/accounting/LifecycleRibbon.jsx":"13404beefa15be74401b170f5a338216649cededb559117de72619075e690ef8","components/accounting/Money.jsx":"398838b8e99b76f2022a5dbf6365a94989d25970ab4de99e9d71dd40d5ee10e0","components/accounting/PostingImpactPreview.jsx":"fbb8513afb8258b38a8adcc9bd3e33979dd3de9b91e775ae86cb23a59e582f66","components/accounting/ReconciliationPanel.jsx":"31c36b5bd058a80c1718000d0e033e1d9e04c22f09bf27f3f34e57f2018872fa","components/accounting/RollforwardMatrix.jsx":"4ef5eae7ce466840b6afdba8f5aa140cdf97019eab736c1adba720aad98934b0","components/accounting/RollforwardTrace.jsx":"1a2126128a1f7a7c2538620bdb7b4a98f2bf61a738d9d8b1bfe3e187680cdd97","components/accounting/ScheduleLadder.jsx":"7e1e02f97768a74945985d5a3bba57c04d89a0a7c0d2252a44e2ec897fc66b65","components/accounting/StatementTable.jsx":"98ba92983d06522dd0118ced9aa78dd90d925838a1d988120e6a73a617334b02","components/accounting/TaxLotTable.jsx":"81be88665c131e7134a54e85fb705285ff62432372b12e45fd0087b02111c423","components/accounting/TieOutPanel.jsx":"6bd023faed44bf37f91ec69f91363bd468932bf9cd9fbcd141503249142a1fd8","components/accounting/TrialBalance.jsx":"24715fba1be9783eda15706179d2d6b4293b71300acf75107a68be98944fb36d","components/accounting/VarianceCell.jsx":"33618aaf4281e90a7aac9369119e3af9773885ffb2de3821c8d3bff06d6f2deb","components/accounting/money.js":"d9373bff6f5102341cad7e9449501cc577ad5c256af79a6d13730c6d1ffe7676","components/charts/AnalyticalField.jsx":"95a616f1d9d91e777a1de950eb51ef3dfaf14f92f4d3131c8ca75d4531011332","components/charts/AnalyticalFigure.jsx":"4854d1e5568c239ab97d4dc59c611902c6a925041c8f55b6826a4622cb22020e","components/charts/BarChart.jsx":"331663e52d569d0dd4ca0e83c16d0d02f36a3b2fb90ff053297b030dab5345e2","components/charts/CandleChart.jsx":"a6312cbc79d1e322a73453cfa8c5e5df40781e9f1d8cd15b4343f6ddb21d25cc","components/charts/CashFlowLadder.jsx":"11d2665027718794fcd74e39cb6db3e4cbe5120da0a7715c792b8ca38014009c","components/charts/ChartAnnotations.jsx":"212e9e98999c80105092282b84d2fd8605bd4caba7b76a01018e6da2a818c046","components/charts/ChartCard.jsx":"6effbc549d35f377e92d82e94c3d809493b47c22669995bd2d5a8eeb8107e2d6","components/charts/ChartFrame.jsx":"2f75ef6888d6b1bbb5dc3b104e5454b0d6b2d6333462889dd4703ea91adf8a22","components/charts/ChartTooltip.jsx":"9e4b5a1a7807d7c1ac8761d7507b9d0541c81568edcff7fc73bba430a5a716ea","components/charts/ComparisonPlate.jsx":"dc127875e2749c7126122494fe1a1e814ae641591bda35cb6498689950b573fd","components/charts/ControlDependencyGraph.jsx":"648f1b1c3ef15573564a12afb760a26db29b6e99edf4489307cd7aafebe724b6","components/charts/CorrelationHeatmap.jsx":"609fea70f2470bc55601f9a0ecb4e8213b44f8e9d4da7c5ac5ea8599f536fc8f","components/charts/CoverageMatrix.jsx":"df0aee6e633afe6672b8bfa18bd768bc59bb2ea858fc5e8567a23d78377135a8","components/charts/DepthChart.jsx":"9f17864422da12ea133295989d5c3e39b3717d835bcc9e044c21a775cbee83f4","components/charts/DistributionRange.jsx":"3d506a855b8c626b165b5544f3dfabaa29d2cafff33534add51d9d049b2d81a4","components/charts/DonutChart.jsx":"9170151975a1b012503828d1c500c5799963859a650f6ae5a6098dae54798667","components/charts/DotMatrix.jsx":"e86e509908716f09979e28a8560bc4bd215a9f3fca2a13c8d37d17a1d64bd5ff","components/charts/DrawdownChart.jsx":"b92f936c1824e0a37835d85d29174b022438a6f7d2a473dab005f2dd752ac14a","components/charts/DurationContribution.jsx":"a83107f8e0ae291bb4649c212bab9335c5bf6e2df4810b8ffdeb83f01d99ca22","components/charts/EquityCurve.jsx":"eaf0ab925e645add45ba66088a614f05238f8d7545cb64c901472fcfcfa19723","components/charts/Figure.jsx":"be8379a5384245b225ae853e0e985401f0c02b8e296dedf0f4cded7f63882f87","components/charts/Histogram.jsx":"86f0a48f4257ea524646201972ca0e7130a4808474c7b337ab0af6005e46ed17","components/charts/IntervalBar.jsx":"4257d6cd0f701310751bdbf2ee6b1eafbc3cf0d75c593222df7e814c9691d9c4","components/charts/LineageGraph.jsx":"193add1802f299f7637647dd0e09df4d773ceeab666012174dd61acb67469168","components/charts/MaturityLadder.jsx":"733d9868c94c9b97c541bf7a8712e225c16c4d4b7a11e3a8f30f216fbe7633e6","components/charts/OwnershipGraph.jsx":"f8763a6e9746a1f1c4ef14f4c3979f413ea9fae3e6e72a99d423b15d9be156e9","components/charts/PeerComparisonStrip.jsx":"2029cd50717d2ee343ff7a7020ebf3d41829aae83e9fb3816841bb2c3d23e826","components/charts/PnLCalendar.jsx":"54d904fa2d0ff6cd8a888cf42a2f70a665e69a2e21a35c13e4a5205baadb9f51","components/charts/ScatterChart.jsx":"772c981326d6c1bf74c8359548109c18b04634160333c23a54ad53c6f976cb51","components/charts/ScenarioSelector.jsx":"3345d0b3e3adaa6880b52bdb4a37c589b99af0460be42a7e30e7b9db919853a7","components/charts/SmallMultiples.jsx":"d91f942d02c134069d4c5a1f4240802a295d4cf0571d6e7f9c24aaeb241aa21e","components/charts/Sparkline.jsx":"b5f18899d2f5318ae1afa39d124a919e481e43a7c9ca315c414d71cc7c516aab","components/charts/TimeframeSwitcher.jsx":"35f3d2a43350fbbfaf68774fee63275506a138c7e55d5af62f86a3523e901d08","components/charts/TraceChart.jsx":"4202a2b610805906d916cf6c5f94fc21156416ab13ff1c4f25bebf7a44963472","components/charts/Treemap.jsx":"d4538a5226e3ede5ca3fca4f67cbdb8dd13a177e358321f7461e679dffa0c961","components/charts/WatchlistStrip.jsx":"30c287ef4265f327d0c2c70014484494ffd1d54e1cd51afe3b112bdcd77eaf53","components/charts/WaterfallChart.jsx":"7083c9626ef0c481791e776b391af262c05c659c11f5f874b12c7b708d37d442","components/charts/YieldCurve.jsx":"f5194121f5a0bedf9a3a4772fa2c85d944b3aa6f36cb74a8908e74b9ae05eebd","components/charts/useChartCrosshair.js":"605741e2562d5d8ffa98a1e8a691cf0bb10ece4a9e4a83a54cd99aacd187c79d","components/charts/viz.js":"cc385e67e88e4ec4e184501395920359070adf2e8e773c2d9a43d364f9d4ceb2","components/core/Accordion.jsx":"59c5ab6ca2296f9d2717cc336ec290d1269b1b3e46d63d56075f89458e93c256","components/core/AsyncCombobox.jsx":"5d99f602658571b3b1943ba5e4ac382338f6316d7d25fe5c86e16f3e21b990bf","components/core/Badge.jsx":"48281270cddd31b1032a01f711ee5e212cb479084d66e52c2e2a770cfbd1676e","components/core/Breadcrumb.jsx":"6d303775336ecfcc3d66b28c3182f1e51f5275e83ed68958e4327c1f6fb3c6bd","components/core/Button.jsx":"b5dd20de2b6419227a7fc0d3637cfa55abe859382b2bed69398b7fe7710ec165","components/core/Callout.jsx":"02ed93313ad6d6fdae0436ae190e779bfabc51f38f865a1460929506ab87183c","components/core/Capsule.jsx":"5005f4a38645f4fe993664db3990e78035fee899d951e183192bcd7c278a927c","components/core/Checkbox.jsx":"98f0acd4d4b6c7e4923c3612684ef04cbb18ddd923dfe6d4061a509fa8f0c38f","components/core/Combobox.jsx":"7fc8aec39fe422ecc87bbb9c89316241bb2ab0c512a9946a0a20ba9f58ba2755","components/core/CommandPalette.jsx":"505f0c360d1d02fcc1236ad70ad2c55e08bd3ccc4a387888e3202c37f3878df8","components/core/ContextMenu.jsx":"441349040eef23f4481acd4bdbdd3ff0728a3aec0a1dd29f249bd92b354b6939","components/core/ContinuityFrame.jsx":"fe0b61cee73fcbc9e2f3a2a8a784c9220142b080bab2779f495d88d341a2d08e","components/core/DatePicker.jsx":"011d8ab24a9ea97b3cd2f95fa15e288186761059e1bdeb6b14c9bb63e1a7e0e6","components/core/DateRangePicker.jsx":"5b644270d37a252dcc7367a05033cec22d20a41fd871e31c2a89a025408edb83","components/core/Datum.jsx":"85138d4318055747e56b94ac22cdcd6724b970d000ed4c87032f5277fea9effa","components/core/Delta.jsx":"b7edf8e380ca42227fbc95ee671c2a6851b8883cfb389a7744e9823a104d8218","components/core/DensityToggle.jsx":"3772d220111d66b3a447af867e5171943426ccb346647be2ecd2b5d07d4f5d9c","components/core/Dialog.jsx":"9d6e15674e10986d78c6d2a715264c13c7d015cac5d09e6d468a06b5693c1573","components/core/Disclosure.jsx":"78428bb78b16b0bdcc79359026c69dba3f01403b6d6cb7b4330f3bb472cb967e","components/core/Drawer.jsx":"1f24ce77d2e6bbbc9ace3706bdb5cffd5244bdb2bc3218cab42dbb10e4a269d0","components/core/ErrorBoundary.jsx":"2d6618f00d983f01b0ea5524672d0b337c5ddf5e47959a4da19e31147cffdf43","components/core/Eyebrow.jsx":"20b12c59c51560f8e089d73b0c23cdcad9920a173145cbc579b48e30c3a17044","components/core/FileUpload.jsx":"0b9ccc3e5c148d5c4e298be4fd5661fdeefad637492ceb5a1f0fcc40d821d5f7","components/core/Flex.jsx":"cb320fab89ab54e971633763c1757a047f61d022d99df38a7db22a319af8c3d6","components/core/Form.jsx":"5c405b219fce282c5605bb1662d710e03d38856dd98b3112be9ea4d3b520f479","components/core/FormField.jsx":"89e422156aca449eefb259e654257acdeef0cbb3ab67505cfa1b67899d47ce09","components/core/FormValidation.jsx":"eb9817d07d691ac2b2b0c04af62c41fbd9a899621cc523bb2e8e121a6035a158","components/core/FormatProvider.jsx":"05a1eaab1a260c164410bf9f34af13e7327d28888ffcfb450991d9ed2dfc29c7","components/core/FreshnessIndicator.jsx":"47bf7a0fc5355d27fd014db445bad498756e4533fb005966806849e58694584f","components/core/Gauge.jsx":"91cce969ee0bb9bfce58450b08bf16c04ed12ff6c53000f3e73b9628a93e37db","components/core/Grid.jsx":"01128532601bcc0712748d3de2c4a109e002f96f3a1ed6b2f5f9b89e4d583f2d","components/core/HotkeysProvider.jsx":"645834261b902f9f13e406e52aca7e26c7f28981a949de21278fb4d70184d45e","components/core/Input.jsx":"c563600159dadec616eec6545182b6b66f9a2b5aa282a5ff2f8b5d9dfe45d056","components/core/InstrumentChip.jsx":"31939e81c6fc7d96d2bf3815566f2f996df09c4ed870622e385d60b2193b641c","components/core/Kbd.jsx":"62699ce3918262f10375d8f4559dde5b00f373ba44260bd7dc7b44542bf12510","components/core/LinearGauge.jsx":"dd33e65ab2d6ed553b1ce751f64d0cd2775ce52c6503246208de74fa51ee5604","components/core/LocalDate.jsx":"39340da0bc1cc4f7b00b425ae640861106fc9e598884ed5628a46f67147f82a3","components/core/MaterialityAssessment.jsx":"3708277927030bd51a8875f656e5b1cf37bd5a91fd049974ad2b2a995fd2236b","components/core/Modal.jsx":"1ab14721a638de76cf0fb3110318f750b77171e59a58323201afaa07aa08d833","components/core/MultiSelect.jsx":"2cf9ebd5aca8e9096a2d74445b695475b9be73115dcbbe13aa5b9d3de302f6d0","components/core/NotificationCenter.jsx":"d361ed43148bf5eb9b2893453d28aa6c651492fed281ac3e559dfc9919fe33c3","components/core/NumberInput.jsx":"05199d53e48c6f7126cff33551d370f554bba4ae777cdee3d7e4a780641e3bf1","components/core/ObjectModel.jsx":"e942654f0e74799e8fb34e276da6a276c325ae499497d0d9a40f630394500072","components/core/ObjectScope.jsx":"3f6d471e11ea0be02ab0dcade6a8c51afefe75e9b6cbd82d457bfd360163aadf","components/core/ObjectTrail.jsx":"c075dc8219c1bd94d8a8b2a5dba6323fe43ea6dbba02e235fd60bb265d1e5496","components/core/PanelSurface.jsx":"60554506fd7a4bdc3373168e4e90eaf4d73c6262fb06abeb9e9d3d90dcade2a3","components/core/Popover.jsx":"27274df827256917366aaacfdf9aab94639f991ed751a43856d48c937d4b311a","components/core/ProgressBar.jsx":"21a9ae3c77d41a9cdd2b5a02816c825b80a2b8de669b462c924d02d30ea95c02","components/core/RadioGroup.jsx":"be8a5009276c66a5e3bcd69689c7ca6c2f6d1679ebb136a2a1ab751b5fec17e6","components/core/Registry.jsx":"dbd1d467a35e0d321e450dbbf3726660815bd6e6b11ecbf85ba31b2e86259543","components/core/SegmentedControl.jsx":"f9d9e26251891dac969b45fc1db3205afc5751b9b07585ffd80926d814092620","components/core/Select.jsx":"eb9dddc7e16a91801c96e3aedb371fdabfcdf3f1c2918010273da95c7998bfb6","components/core/Slider.jsx":"a59ccb13e0707d17feb0b98c711e71355390733dc3b6bfcc0ac135b90a858b66","components/core/Spinner.jsx":"45954dc66405712635a36f78ebde20ab813bb240d0f9b8c483c25a89215d336f","components/core/SplitPane.jsx":"58035a38f439fd7e6a97042da9be88a60de128c6fe579de4f0618902d752afaf","components/core/Stack.jsx":"35e22a8758b9a3ffd35e370fa16f1a22f5c64d95c49dd287a74ab48c424e8727","components/core/StatusBanner.jsx":"c069f599c3d87ddc1163f8f24a04bb7817e849bdba1485d9b38844bcfa9e2f99","components/core/Stepper.jsx":"d2cf9cc578f9696d7f8c214f754bf9dfc601c01de9cb31348d24c7a5b30bf4a9","components/core/StrategyModel.jsx":"0af0e36c74809ca1960646333325f3a7de2594422cc225bf6de55c16df1141d8","components/core/Tabs.jsx":"4eea6c54f774e4c0e4ba3cf66306485d3ea819d9ecc8bdd536b998da9cefbc37","components/core/TagInput.jsx":"da0548861fd8423b424a71ed272ad504936beda0055d85472d10462a01638c4d","components/core/TextArea.jsx":"fa08b138af286193dbf101d640ed99a891da8d11754f8424cca08a4e28c0ef45","components/core/TimeContext.jsx":"f3e4fac828c1cca735f63e95b35e66bd6282c25aea9e7be507416321cab1043f","components/core/Timestamp.jsx":"983e59f6bfcd523572f41ea9002df109da75ea73bb92b5346b80eaecf1947cb9","components/core/Toast.jsx":"6c7f58aa444763632fa069a2af82bfb5b8ac1f0a238962f4762076f6a03991e1","components/core/Tooltip.jsx":"b5e716f82cce768d641013c188e2b434ad7f77cdfd9feecf602bf6cab88ed6d2","components/core/TreeView.jsx":"64dc3115f47681db72a967f0453acac6e2cecac5a233df1d13e9ed453c3d23b0","components/core/Validators.js":"579b4cdb4df7f50f0e33e77f4394c99cf5d59f12c0b3884ee5f7c74c656858d0","components/core/ValueAuthority.jsx":"2f6f8070a1c384c07cb4c316851d20444547537441e942e870245e59bdb388e3","components/core/format.js":"4213592f71b7ae1edd30223072e6c0a2ac7c3a086de5f6622a851ebf30b6752b","components/core/localDate.js":"7f055f64cefd8478be169b657cc8ad8dd71600dea2a55798a7805362af0e64cd","components/core/useFormState.js":"797da291fe2b851944458baee93d9f723cf711435f6c4e8e1549f19a0f138105","components/core/useOverlayFocus.js":"9301635fc0a563174eee78fd1cbd20f8c820666cde01b2f89be55dece41135dd","components/data/BulkActionBar.jsx":"6ce6864f3105bbd04b4faf7eb9cbafb5c2125a4297a47c0f99633857ab770904","components/data/ColumnChooser.jsx":"5cbf0a638232b2cc37cddb3556d27f63d25a44372fd1d3f709553cf68e9cb5e5","components/data/ColumnManager.jsx":"dd7b2b3722c31cfe8a5864a6aaf92f6ceffbab0ecec0d7c62e49080b561629df","components/data/DataGrid.jsx":"3fa45536561dd6092a78de89a2ef9ec5746eb290c904090e31a678f727eb941b","components/data/DataStateSwitch.jsx":"029b147b5216a6e59b84118e542d005709ec0a7a152774f8123687fd4e44aebf","components/data/DenseDataTable.jsx":"594edbd1be3cf94651b8ff3885cf73aa9810b934803fe7fa2530b4b295b560ca","components/data/EditableCell.jsx":"082b0064f9b97208ca82f80f6189c7aa322ec848bdaa5cf8e573290d29950b8e","components/data/EmptyState.jsx":"41384bf2a88f21601e441f30a16b4912afaf930a17cda2e3e17865b91ed4f29c","components/data/EntitySummary.jsx":"2beac34f2e8e0d1b77f0e4b9722b3060df8c57ee35b2f443832af73931d6c399","components/data/ExpandableDataTable.jsx":"689c7d84016352ea4f740a5b9283e1f336f344f4fb2934e35d4ddc8f1dda2894","components/data/FilterBuilder.jsx":"f55d6486f99e650bd0bf07938eea635f96e28329f4be5b0c2ed015c28cdadca1","components/data/FilteredDataTable.jsx":"a34919b046d94c1c70ae0e612c145d0455e0cdac9e857a128af0145e4decfdc5","components/data/KeyValueGrid.jsx":"869b90a742954586f725e346e596aab4930239f0c4411acfd2e32448460f6632","components/data/LinkedSelectionProvider.jsx":"d2b7a6b16dd6358c284637cca02847ed33f3b751b721033648bc6c0462605a8e","components/data/MetricCard.jsx":"b440e189881a16e93b4e617c284c5942c9d7cb0ed2f304c2e1e046e72a49bf82","components/data/OptimisticCell.jsx":"5e8cb56aa087c90e2d6142bbf858274ccf86be19a15fa4a1f91b663ba7246867","components/data/Pagination.jsx":"7ac1c3b33c28d6df8a0d2ba692800791f7a3fa98e069ed75b6ba68977a0c1b70","components/data/SavedViews.jsx":"c4edd4cd680a83513d2e8071f356815deb08e6a4e5cb785ee46f46d76ce11efb","components/data/SelectionCompare.jsx":"27a796f19cc6a48a3573d29b4e52d51ba4af7ca70a27aff7d8ca72ad81bd76e8","components/data/SelectionToolbar.jsx":"b0f3501ce31fd6865d85a5d988c899007e3a31a7f86a8cff540d566e907bad10","components/data/Skeleton.jsx":"5f9652eda4d6c5ff9e90577f8c477711b88cfce44a3bd7a8f74704f25354593f","components/data/TableHooks.js":"533bff5b26899d68a8312bea0845929509c19aebbc84801f207f79dd200080d9","components/data/Toolbar.jsx":"1a14df32a8f9ad6542ebba299587c3cf1da8de6c0a8c9a05234d1f805142bcdb","components/data/VirtualizedList.jsx":"7d4b2fb86e609be1988255d758dfda402694c5cf458d9c0180e3971548ceabf6","components/data/WorksheetGrid.jsx":"3c6e1345356c36bd009a0b0df8c06aadce7b2abe3c2724f07f48c48457f5dddc","components/data/gridFormat.js":"fd436c00da97a70961de0dcc2ebfa852a5e7d6bec8a831e58effd1aa86044bb8","components/data/useAsyncTableData.js":"d929b2c36aca251d9acf134d546df750f87682d319c20d49d843c1d6c5c7cf1d","components/data/useRowSelection.js":"3db0978903f50ab6d7cb3752d2bfd4d1e5086d4a9317c4ffbcbd5b34c4f22162","components/data/useTableColumns.js":"4e3b7effccf10c0555c0b37739e51fb8edb2c8c258e5ec11d554a1e91ca192ea","components/data/useTableState.js":"604b680c60937900f41e7b69b69e5a9b0b1b22d348470d8f2e019e8f580ca968","components/data/useThemeRowHeight.js":"b57e448018c5d78247f7b3244ef772db24faf6e8b7884031e43926875d2a3c95","components/decision/ConsequenceRail.jsx":"e053a5385cd5b95ee9c5371717cc4fe0113ee61626802b7c5c0ffcc4fa713c5e","components/decision/DecisionSnapshot.jsx":"a0f52f3a9d9270fb3dfcf7877719128e9f3a238a6345d74a096adee33b5b09cf","components/decision/EvidenceRail.jsx":"8ffc852002c6312eb5b6054118209fd6b873bc8ca2bf5611def915d5288c6009","components/operations/ActionEnvelope.jsx":"6058e0bcc2ed9f44df0d13aedd0ab63c9582756b35750cc54004e0a592cd1fd5","components/operations/ActionGuard.jsx":"01f11f64ad3bad1e55820a9ad191bacacd46447df00cdc8d8819c8a45e75f307","components/operations/ActionQueue.jsx":"b2a2add744511f63f6d03f218afb0636a32f00e8ce43aa4b6d31bbb250e62775","components/operations/AdapterDiagnostics.jsx":"ddc5d0b2cf4d5183d0050e436d59ec58f754340524fed04f6971378c238dc855","components/operations/AnnotationLayer.jsx":"678a504f860096433cff1f7eeb01d5268ea0be6567a0c9f49379efbfc8f2581a","components/operations/AttestationPanel.jsx":"09b50d4b3964c6053919731b766fe731fe29f9fa1db5bb44400d19941dce0070","components/operations/CaseQueue.jsx":"1ea89ec631c84325455321a47baaf86b586e3a224fc14fb70057164030406a43","components/operations/ChangeSetReview.jsx":"1fbd44fa53eaa219f44ed37509c5f28b91c96be9cb22cdef4c1aed3156bbad38","components/operations/ClaimHeader.jsx":"34868b38e34e5c0ff27b6eb8a890d82cf80c76ecb75ba3fa8aebb4e922b8eedf","components/operations/ConnectionState.jsx":"7ecc32060102e42a6d4ce7022203feb76dcc1d82731d8e0825ddbb2863611147","components/operations/DataCondition.jsx":"f016bf0b977122e728c7daa1f1efd2d7e70d608de8bbc517ffb53025d35cafed","components/operations/DecisionFlow.jsx":"834e5902998f5ffbd3bceff34120c4ee436e7980721a84153f4656ae2000ed34","components/operations/DiffView.jsx":"993986e927d88641c44672354dbfd289fc0d3ca8b85b390703c8b33c370eb4aa","components/operations/EventTimeline.jsx":"592bf074447ec3678c9147d37251e9d95085ed30841efe9351843b4d4ba737e3","components/operations/EvidenceInspector.jsx":"288a13cc31ad4ce07862019dba06621c03b0d7486eb5b22f130870bba2c2b6e1","components/operations/EvidenceLink.jsx":"cf6b16b112d54bcdc64e239d0114f02ebc4bc58f3f3032d2b7241466414faa23","components/operations/EvidencePreview.jsx":"74dd83c905d85dc0594fd618cb8f7de84037f66e5f433665ba9d87f42da0dcc4","components/operations/GateRail.jsx":"bdd8e284d65ed84b84c8758991c7b6e0d60d50b09d82a55ea0b4cb79d3e530e0","components/operations/HandoverBrief.jsx":"07dabaa7629b2c025d97f6f4a3d426bfb3f255dc66607bd561d7b5cd9a772ec3","components/operations/LogTail.jsx":"3415254d2efcea60979a566daffb6c2d246390bf3a2de6451c220700a02e01b4","components/operations/ProvenanceChip.jsx":"678ae0041aa97e8fbfcb5d8ce3fd52627cae2973ffa3d8d79c6e3ba7899285c7","components/operations/ReadinessPanel.jsx":"73fc165948b3c4e788894bcba7bd31ac6bbc7103229fae99caefc81178878613","components/operations/ResolutionDrawer.jsx":"fa7c722fc4e6ed817c3cdfdcf05dbb00ced5d8f8322433ba9ceb51aa4a33705e","components/operations/SeverityBadge.jsx":"471d0d003645feb5cdd13719bd67ccb78184fe9f5b95d4b57ce49c4dfacf53f1","components/operations/SlaChip.jsx":"05ebc93252a0adf510206a5b976946438ed1aa6f513cf4c3b45ffd278b62643d","components/operations/SourceCoverageSummary.jsx":"a55a5e523f23519528b1fa9c5394eff58b9d998fcfbfb52023936ec0020dc690","components/operations/Status.jsx":"80a6a41ec8ea52a3394be43c5917f920d080ed9fe45aaff6c6b3cfdfa0b36dc6","components/operations/StrategyRunModel.jsx":"e594758074094a58f1cd2b09886cb68a8c3c5ad0d73f4d940345fc162946266e","components/operations/TrustStrip.jsx":"35677d7b2a197917e5b3add813874b8d3b12d6f009e9cdbd2d5627619c8918ca","components/operations/ValidationIssueList.jsx":"a27a6049257ec7ecb5880fc7c05ab4d95fb5ef898930a11bb670258dcf979abb","components/operations/ValueEnvelope.jsx":"0f016fb2452fac28c7b922aed72b60121b725f3773fe9c01f6adceea4af4c54b","components/operations/VersionConflictNotice.jsx":"57a17117c292f00604eaa962c233f6cb7d99d5be53d1f0c469aaded49e30c785","components/operations/WorkspaceSection.jsx":"8811a15f2c634e9286dbe80b5dbd91a8a8b872ff9467e67bca6319054eea00ea","components/operations/conditions.js":"eafb0436c6328f60d2d604aa561afb6cf9a783084aab9dc325ab854160fd9cdf","components/operations/status.js":"3653187e0b7fedc3ad1f22065e1cecbff432cd06a353ea4dd3a5881fe2c5dae8","components/shell/GlobalSearch.jsx":"06dafe3b932cabddb4b2ce535afd4e39c0dd679ea516af7f4a050fbdf67e8a3e","components/shell/NavRail.jsx":"ccd53029862ca4e0d9fc1c34e310ab6024990ae81cd0b3245ddbadfd5ee8be50","components/shell/ReturnPath.jsx":"f5db2966437ba79a40de029c5ef4c27d5bd1494c370b80a9070630a436a35e34","components/shell/ScreenComposition.jsx":"904f9f7c33ed152e0bb5f796bdd6b60ba786954d47071b436d640319b985016a","components/shell/SessionControls.jsx":"d12a26fc003af74dc980c9ab1722385ebbb2df51c6a1e2301c509508c071d2ed","components/shell/StatusBar.jsx":"92cbcca97715ad5d779e0694e6e8d9dff71c260a76e81fd1b033c018f1112688","components/shell/WorkspaceContextBar.jsx":"030a128a235c8d00ca0d77b38dd1637f0e7aee10ddde5636823c5bec726d6f72","components/shell/WorkspaceLayout.jsx":"ce822fbeeac8ae988ab7221405fe3bd1a6599afa68160b605ba4b2238a974413","components/shell/WorkstationShell.jsx":"0e45344036b3881c863a0c762091ef82c0067a64acc9a1fb87c4dbaf26e78c97","components/shell/WorkstationTopbar.jsx":"1e2e12fb9a1c890be365a17588d782aab40522dd4cdbca0c0c269f5f7456d851","components/trading/Blotter.jsx":"9a8a721922ea8cc1e54568d679deb518ae60e93b756baf65fc7641dbd06f6bd8","components/trading/DepthLadder.jsx":"dd7f40efd45e7f7fecd0a58e2edcb0f5d15b714f6cfb7eb7bf6ae9f676838b91","components/trading/FillsFeed.jsx":"71ea551fcf3361e2567bda750147d4a7cbee61f9e55a36ef704d50b6d599add5","components/trading/OptionChainTable.jsx":"e76e3b29fd0bf31e14eb65bc4f4c1f3da33a558e7b76652deb65e2738afdef97","components/trading/OrderTicket.jsx":"c4b9a13bb3104db03bcd2cf50d0c7e0cbc1b78301b6a2831396f02611ac18f43","components/trading/TimeAndSalesTape.jsx":"6f94a2bb4a8220ca9deda9fa070d9fb5ab0e1278f779da681e3394c1b8cc01d6","tests/conformance-rules.js":"399c6558d14628fcfdc11020a41b15c958e2201654dab3d990a98a5b53c5aa0e","tests/mock-transport.js":"238c83d10a66d6b1b35d9edb2597cf6d7e7ace816a60ab0d8bbd0259e1588ec5"},"inlinedExternals":[],"unexposedExports":[{"name":"accountNormalSide","sourcePath":"components/accounting/money.js"},{"name":"adapterPosture","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"adapterScheduleMissing","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"addDays","sourcePath":"components/core/localDate.js"},{"name":"addMonths","sourcePath":"components/core/localDate.js"},{"name":"agingBucketIndex","sourcePath":"components/accounting/money.js"},{"name":"allocateAmount","sourcePath":"components/accounting/money.js"},{"name":"amortizeStraightLine","sourcePath":"components/accounting/money.js"},{"name":"assuranceCoverage","sourcePath":"components/accounting/Assurance.jsx"},{"name":"assuranceHistory","sourcePath":"components/accounting/Assurance.jsx"},{"name":"assuranceState","sourcePath":"components/accounting/Assurance.jsx"},{"name":"assuranceVerb","sourcePath":"components/accounting/Assurance.jsx"},{"name":"atDepth","sourcePath":"components/core/Disclosure.jsx"},{"name":"bandPath","sourcePath":"components/charts/viz.js"},{"name":"buildTrialBalance","sourcePath":"components/accounting/money.js"},{"name":"checkTimeCoherence","sourcePath":"components/core/TimeContext.jsx"},{"name":"clampDate","sourcePath":"components/core/localDate.js"},{"name":"conditionMeta","sourcePath":"components/operations/conditions.js"},{"name":"conditionsVocabulary","sourcePath":"components/operations/conditions.js"},{"name":"convertAmount","sourcePath":"components/accounting/money.js"},{"name":"currencyDecimals","sourcePath":"components/core/format.js"},{"name":"currencySymbol","sourcePath":"components/core/format.js"},{"name":"dayOfInstant","sourcePath":"components/core/localDate.js"},{"name":"daysBetween","sourcePath":"components/accounting/money.js"},{"name":"decimalsForTick","sourcePath":"components/core/format.js"},{"name":"defineScreen","sourcePath":"components/shell/ScreenComposition.jsx"},{"name":"deriveMetrics","sourcePath":"components/operations/StrategyRunModel.jsx"},{"name":"describeObject","sourcePath":"components/core/ObjectModel.jsx"},{"name":"domainOf","sourcePath":"components/charts/viz.js"},{"name":"dowLabels","sourcePath":"components/core/localDate.js"},{"name":"effectiveYieldSchedule","sourcePath":"components/accounting/money.js"},{"name":"elbow","sourcePath":"components/charts/viz.js"},{"name":"envelopeCheck","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"fixtureTransport","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"formatAccounting","sourcePath":"components/core/format.js"},{"name":"formatBp","sourcePath":"components/operations/conditions.js"},{"name":"formatBps","sourcePath":"components/core/format.js"},{"name":"formatCompact","sourcePath":"components/core/format.js"},{"name":"formatConditioned","sourcePath":"components/operations/conditions.js"},{"name":"formatGridSigned","sourcePath":"components/data/gridFormat.js"},{"name":"formatMoney","sourcePath":"components/core/format.js"},{"name":"formatMoneyCompact","sourcePath":"components/core/format.js"},{"name":"formatNumber","sourcePath":"components/core/format.js"},{"name":"formatPercent","sourcePath":"components/core/format.js"},{"name":"formatPrice","sourcePath":"components/core/format.js"},{"name":"formatQuantity","sourcePath":"components/core/format.js"},{"name":"formatSigned","sourcePath":"components/operations/conditions.js"},{"name":"formatSignedDelta","sourcePath":"components/core/format.js"},{"name":"formatSlaDuration","sourcePath":"components/operations/SlaChip.jsx"},{"name":"fromISO","sourcePath":"components/core/localDate.js"},{"name":"fxRevalue","sourcePath":"components/accounting/money.js"},{"name":"getDefaultLocale","sourcePath":"components/accounting/money.js"},{"name":"getNumberDefaults","sourcePath":"components/core/format.js"},{"name":"gridProof","sourcePath":"components/data/DataGrid.jsx"},{"name":"humanizeStatus","sourcePath":"components/operations/status.js"},{"name":"isEnvelopeValue","sourcePath":"components/accounting/AmountCell.jsx"},{"name":"linePath","sourcePath":"components/charts/viz.js"},{"name":"longDate","sourcePath":"components/core/localDate.js"},{"name":"monthTitle","sourcePath":"components/core/localDate.js"},{"name":"nextAssuranceStage","sourcePath":"components/accounting/Assurance.jsx"},{"name":"niceTicks","sourcePath":"components/charts/viz.js"},{"name":"normalizeCondition","sourcePath":"components/operations/conditions.js"},{"name":"normalizeSeverity","sourcePath":"components/operations/status.js"},{"name":"numberFormatter","sourcePath":"components/core/format.js"},{"name":"objectMeta","sourcePath":"components/core/ObjectModel.jsx"},{"name":"observeWidth","sourcePath":"components/charts/viz.js"},{"name":"pad","sourcePath":"components/core/localDate.js"},{"name":"parseLoose","sourcePath":"components/core/localDate.js"},{"name":"rangePresets","sourcePath":"components/core/localDate.js"},{"name":"resetNumberDefaults","sourcePath":"components/core/format.js"},{"name":"resolve","sourcePath":"components/core/Registry.jsx"},{"name":"resolveAuthority","sourcePath":"components/core/ValueAuthority.jsx"},{"name":"roleStyle","sourcePath":"components/charts/viz.js"},{"name":"roundMoney","sourcePath":"components/accounting/money.js"},{"name":"rungFor","sourcePath":"components/operations/ActionQueue.jsx"},{"name":"sameDay","sourcePath":"components/core/localDate.js"},{"name":"scale","sourcePath":"components/charts/viz.js"},{"name":"scheduleApplies","sourcePath":"components/accounting/ScheduleLadder.jsx"},{"name":"scopeMeta","sourcePath":"components/core/ObjectScope.jsx"},{"name":"scopeRelation","sourcePath":"components/core/ObjectScope.jsx"},{"name":"setDefaultLocale","sourcePath":"components/accounting/money.js"},{"name":"setNumberDefaults","sourcePath":"components/core/format.js"},{"name":"severityKeys","sourcePath":"components/operations/status.js"},{"name":"severityLabels","sourcePath":"components/operations/status.js"},{"name":"severityOf","sourcePath":"components/core/Disclosure.jsx"},{"name":"signAssurance","sourcePath":"components/accounting/Assurance.jsx"},{"name":"splitEnvelopeValue","sourcePath":"components/accounting/AmountCell.jsx"},{"name":"sumAmounts","sourcePath":"components/accounting/money.js"},{"name":"summarizeGuards","sourcePath":"components/operations/ActionGuard.jsx"},{"name":"toISO","sourcePath":"components/core/localDate.js"},{"name":"toNumber","sourcePath":"components/core/format.js"},{"name":"trailMoved","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"trailRef","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"useAnnotations","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"useAsyncTableData","sourcePath":"components/data/useAsyncTableData.js"},{"name":"useAsyncValidation","sourcePath":"components/core/useFormState.js"},{"name":"useChangeSet","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"useChartCrosshair","sourcePath":"components/charts/useChartCrosshair.js"},{"name":"useCommandPalette","sourcePath":"components/core/CommandPalette.jsx"},{"name":"useContextMenu","sourcePath":"components/core/ContextMenu.jsx"},{"name":"useDecisionFlow","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"useDirtyState","sourcePath":"components/core/useFormState.js"},{"name":"useDisclosure","sourcePath":"components/core/Disclosure.jsx"},{"name":"useFormat","sourcePath":"components/core/FormatProvider.jsx"},{"name":"useLinkedSelection","sourcePath":"components/data/LinkedSelectionProvider.jsx"},{"name":"useMeasuredWidth","sourcePath":"components/charts/viz.js"},{"name":"useObjectTrail","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"useOptimistic","sourcePath":"components/data/OptimisticCell.jsx"},{"name":"useOverlayEscape","sourcePath":"components/core/useOverlayFocus.js"},{"name":"useOverlayFocus","sourcePath":"components/core/useOverlayFocus.js"},{"name":"useRowSelection","sourcePath":"components/data/useRowSelection.js"},{"name":"useSelectionCompare","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"useSyncedCursor","sourcePath":"components/charts/useChartCrosshair.js"},{"name":"useTableColumns","sourcePath":"components/data/useTableColumns.js"},{"name":"useTableState","sourcePath":"components/data/useTableState.js"},{"name":"useThemeRowHeight","sourcePath":"components/data/useThemeRowHeight.js"},{"name":"useTimeContext","sourcePath":"components/core/TimeContext.jsx"},{"name":"useToast","sourcePath":"components/core/Toast.jsx"},{"name":"useWizard","sourcePath":"components/core/useFormState.js"},{"name":"useWorkspaceContext","sourcePath":"components/shell/WorkspaceContextBar.jsx"},{"name":"useWorkspaceLayout","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"weeksFor","sourcePath":"components/core/localDate.js"}]} */
 (() => {
   // api/accounting.js
   (function(global) {
@@ -653,8 +653,8 @@
         el.focus();
         if (doc.activeElement !== el) return "first control could not take focus";
         const s = win.getComputedStyle(el);
-        const has4 = s.outlineStyle !== "none" && parseFloat(s.outlineWidth) > 0 || s.boxShadow !== "none" || /inset/.test(s.boxShadow);
-        return has4 ? null : "no visible focus indicator on the first control";
+        const has3 = s.outlineStyle !== "none" && parseFloat(s.outlineWidth) > 0 || s.boxShadow !== "none" || /inset/.test(s.boxShadow);
+        return has3 ? null : "no visible focus indicator on the first control";
       } }
     ];
     const severityLabel = (rule) => typeof rule.severity === "function" ? "scoped" : rule.severity;
@@ -730,37 +730,37 @@
   })(typeof window !== "undefined" ? window : globalThis);
 
   // meridian-peer:react
-  var React2 = window.React;
-  if (!React2) throw new Error("Load React before the Meridian component bundle");
-  var react_default = React2;
-  var Children = React2.Children;
-  var Component = React2.Component;
-  var Fragment = React2.Fragment;
-  var PureComponent = React2.PureComponent;
-  var StrictMode = React2.StrictMode;
-  var Suspense = React2.Suspense;
-  var cloneElement = React2.cloneElement;
-  var createContext = React2.createContext;
-  var createElement = React2.createElement;
-  var createRef = React2.createRef;
-  var forwardRef = React2.forwardRef;
-  var isValidElement = React2.isValidElement;
-  var memo = React2.memo;
-  var useCallback = React2.useCallback;
-  var useContext = React2.useContext;
-  var useDebugValue = React2.useDebugValue;
-  var useDeferredValue = React2.useDeferredValue;
-  var useEffect = React2.useEffect;
-  var useId = React2.useId;
-  var useImperativeHandle = React2.useImperativeHandle;
-  var useInsertionEffect = React2.useInsertionEffect;
-  var useLayoutEffect = React2.useLayoutEffect;
-  var useMemo = React2.useMemo;
-  var useReducer = React2.useReducer;
-  var useRef = React2.useRef;
-  var useState = React2.useState;
-  var useSyncExternalStore = React2.useSyncExternalStore;
-  var useTransition = React2.useTransition;
+  var React = window.React;
+  if (!React) throw new Error("Load React before the Meridian component bundle");
+  var react_default = React;
+  var Children = React.Children;
+  var Component = React.Component;
+  var Fragment = React.Fragment;
+  var PureComponent = React.PureComponent;
+  var StrictMode = React.StrictMode;
+  var Suspense = React.Suspense;
+  var cloneElement = React.cloneElement;
+  var createContext = React.createContext;
+  var createElement = React.createElement;
+  var createRef = React.createRef;
+  var forwardRef = React.forwardRef;
+  var isValidElement = React.isValidElement;
+  var memo = React.memo;
+  var useCallback = React.useCallback;
+  var useContext = React.useContext;
+  var useDebugValue = React.useDebugValue;
+  var useDeferredValue = React.useDeferredValue;
+  var useEffect = React.useEffect;
+  var useId = React.useId;
+  var useImperativeHandle = React.useImperativeHandle;
+  var useInsertionEffect = React.useInsertionEffect;
+  var useLayoutEffect = React.useLayoutEffect;
+  var useMemo = React.useMemo;
+  var useReducer = React.useReducer;
+  var useRef = React.useRef;
+  var useState = React.useState;
+  var useSyncExternalStore = React.useSyncExternalStore;
+  var useTransition = React.useTransition;
 
   // components/core/format.js
   var SYMBOLS = { USD: "$", EUR: "€", GBP: "£", JPY: "¥", CNY: "¥", CHF: "CHF ", CAD: "$", AUD: "$" };
@@ -991,8 +991,8 @@
     const key = normalizeCondition(value);
     return { key, ...CONDITIONS[key] };
   }
-  function formatConditioned(value, condition, detail) {
-    const { key } = conditionMeta(condition);
+  function formatConditioned(value, condition2, detail) {
+    const { key } = conditionMeta(condition2);
     if (key === "restricted") return detail ? `Restricted · ${detail}` : "Restricted";
     if (key === "missing") return "Missing";
     if (key === "na" || value === null || value === void 0 || value === "") return "—";
@@ -1119,7 +1119,7 @@
   }
   function ValueEnvelope({
     value,
-    condition = "confirmed",
+    condition: condition2 = "confirmed",
     detail,
     authority,
     evidence = [],
@@ -1132,8 +1132,8 @@
     ...rest
   }) {
     inject();
-    const m2 = conditionMeta(condition);
-    const env = { value, condition, authority, evidence, clocks, materiality };
+    const m2 = conditionMeta(condition2);
+    const env = { value, condition: condition2, authority, evidence, clocks, materiality };
     const viol = envelopeCheck(env);
     const soft = m2.key === "estimated" || m2.key === "stale";
     const auth = AUTHORITIES[authority] || (authority ? AUTHORITIES.unattributed : null);
@@ -1215,19 +1215,19 @@
       value = split.value;
       envelope = { ...split.envelope, ...envelope };
     }
-    const num6 = toNumber(value);
+    const num5 = toNumber(value);
     const dp = decimals === "auto" ? currencyDecimals(currency) : decimals;
     const useParens = parens || mode === "accounting";
     const useSigned = signed5 || mode === "signed";
     let text;
     let suffix = null;
     let title = rest.title;
-    if (drcr && isFinite(num6) && num6 !== 0) {
-      text = formatMoney(Math.abs(num6), { currency, decimals: dp, locale });
-      suffix = num6 > 0 ? "Dr" : "Cr";
+    if (drcr && isFinite(num5) && num5 !== 0) {
+      text = formatMoney(Math.abs(num5), { currency, decimals: dp, locale });
+      suffix = num5 > 0 ? "Dr" : "Cr";
     } else if (compact3) {
       text = formatMoneyCompact(value, { currency, signed: useSigned, locale });
-      if (title == null && isFinite(num6)) {
+      if (title == null && isFinite(num5)) {
         title = formatMoney(value, { currency, decimals: dp, signed: useSigned, locale });
       }
     } else {
@@ -1236,7 +1236,7 @@
     let color = "var(--text-primary, #20252B)";
     if (mode === "muted") color = "var(--text-muted, #6B737B)";
     else if (mode === "pnl") {
-      color = !isFinite(num6) || num6 === 0 ? "var(--text-muted, #6B737B)" : num6 < 0 ? "var(--red-dim, #7D322F)" : "var(--green-dim, #375D46)";
+      color = !isFinite(num5) || num5 === 0 ? "var(--text-muted, #6B737B)" : num5 < 0 ? "var(--red-dim, #7D322F)" : "var(--green-dim, #375D46)";
     }
     if (envelope) {
       return /* @__PURE__ */ window.React.createElement(
@@ -1317,6 +1317,7 @@
 .act__tw{width:14px;height:14px;flex:0 0 auto;display:inline-flex;align-items:center;
   justify-content:center;font-size:9px;color:var(--text-muted,#6B737B);
   cursor:pointer;border-radius:var(--radius-chip,2px);user-select:none;}
+.act__row--on .act__code{color:var(--text-primary,#20252B);}
 .act__tw:hover{background:var(--bg-active,#E7EDF2);color:var(--text-secondary,#535C65);}
 .act__tw--leaf{cursor:default;opacity:0;}
 .act__code{font-family:var(--font-data);font-size:11px;color:var(--text-muted,#6B737B);
@@ -1330,12 +1331,13 @@
     document.head.appendChild(el);
   }
   function rollup(node) {
-    if (node.children && node.children.length) {
-      const own = node.balance != null && isFinite(toNumber(node.balance));
-      if (own) return toNumber(node.balance);
-      return node.children.reduce((a, c) => a + rollup(c), 0);
+    const present = node.balance !== null && node.balance !== void 0 && !(typeof node.balance === "string" && node.balance.trim() === "");
+    if (present) return Number.isFinite(toNumber(node.balance)) ? toNumber(node.balance) : null;
+    if (node.children?.length) {
+      const balances = node.children.map(rollup);
+      return balances.every((value) => value !== null) ? balances.reduce((sum, value) => sum + value, 0) : null;
     }
-    return isFinite(toNumber(node.balance)) ? toNumber(node.balance) : 0;
+    return null;
   }
   function seedExpanded(nodes, depth, maxDepth, set) {
     for (const n of nodes) {
@@ -1469,7 +1471,7 @@
         /* @__PURE__ */ window.React.createElement(
           AmountCell,
           {
-            value: rollup(node),
+            value: rollup(node) === null ? { value: null, condition: "missing" } : rollup(node),
             currency,
             parens: true,
             strong: isGroup,
@@ -1907,8 +1909,8 @@
     const css = `
 .mds-asr{display:inline-flex;align-items:center;gap:6px;height:20px;padding:0 7px;border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-chip,2px);font:600 9.5px var(--font-data,monospace);letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted,#6B737B);background:var(--bg-light,#F8F7F3);white-space:nowrap}
 .mds-asr::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.55}
-.mds-asr[data-stage="prepared"]{color:var(--pending-dim,#7A6B52);border-color:var(--pending,#B89B62)}
-.mds-asr[data-stage="reviewed"]{color:var(--info-dim,#3D5F8A);border-color:var(--info,#5C82B3)}
+.mds-asr[data-stage="prepared"]{color:var(--text-secondary,#535C65);border-color:var(--pending,#B89B62)}
+.mds-asr[data-stage="reviewed"]{color:var(--text-secondary,#535C65);border-color:var(--info,#5C82B3)}
 .mds-asr[data-stage="certified"]{color:var(--green-dim,#2E6B3A);border-color:var(--green,#4E8F5C);background:var(--green-a10,rgba(78,143,92,.1))}
 .mds-asr[data-voided="true"]{text-decoration:line-through;text-decoration-color:var(--red,#B44D48)}
 .mds-asr__by{text-transform:none;letter-spacing:0;font-weight:500;color:var(--text-secondary,#535C65)}
@@ -1923,7 +1925,7 @@
 .mds-cert__dot{display:inline-block;width:10px;height:10px;border:1px solid var(--border-strong,#AAA49A);border-radius:50%;background:transparent;vertical-align:middle}
 .mds-cert__dot[data-on="true"]{background:var(--green,#4E8F5C);border-color:var(--green,#4E8F5C)}
 .mds-cert__dot[data-void="true"]{background:transparent;border-color:var(--red,#B44D48);border-style:dashed}
-.mds-cert__mat{font:600 9px var(--font-data,monospace);letter-spacing:.05em;color:var(--pending-dim,#7A6B52);margin-left:6px}
+.mds-cert__mat{font:600 9px var(--font-data,monospace);letter-spacing:.05em;color:var(--text-secondary,#535C65);margin-left:6px}
 .mds-cert__foot{display:flex;gap:14px;align-items:center;padding:8px 10px;border-top:1px solid var(--border,#D2CDC3);font-size:11px;color:var(--text-secondary,#535C65)}
 .mds-cert__foot b{color:var(--text-primary,#20252B);font-weight:600}
 `;
@@ -1964,7 +1966,7 @@
         },
         /* @__PURE__ */ window.React.createElement("td", null, r.code, " · ", r.name, r.material ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-cert__mat", title: "Material — required for lock" }, "MATERIAL") : null),
         /* @__PURE__ */ window.React.createElement("td", { className: "r" }, formatMoney(Math.abs(balances[r.code] ?? 0), { currency })),
-        stages.map((s) => /* @__PURE__ */ window.React.createElement("td", { key: s.id, className: "c" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-cert__dot", "data-on": rank2 >= s.rank ? "true" : void 0, "data-void": st3.voided && top && STAGE[top.stage].rank >= s.rank ? "true" : void 0, "aria-label": `${s.label}: ${rank2 >= s.rank ? "done" : st3.voided && top && STAGE[top.stage].rank >= s.rank ? "void — balance moved" : "not yet"}` }))),
+        stages.map((s) => /* @__PURE__ */ window.React.createElement("td", { key: s.id, className: "c" }, /* @__PURE__ */ window.React.createElement("span", { role: "img", className: "mds-cert__dot", "data-on": rank2 >= s.rank ? "true" : void 0, "data-void": st3.voided && top && STAGE[top.stage].rank >= s.rank ? "true" : void 0, "aria-label": `${s.label}: ${rank2 >= s.rank ? "done" : st3.voided && top && STAGE[top.stage].rank >= s.rank ? "void — balance moved" : "not yet"}` }))),
         /* @__PURE__ */ window.React.createElement("td", { style: { color: "var(--text-secondary)" } }, top ? `${top.actor} · ${top.at.replace("T", " ").slice(0, 16)}Z${st3.voided ? " · void — balance moved" : ""}` : "—")
       );
     }))), /* @__PURE__ */ window.React.createElement("div", { className: "mds-cert__foot" }, /* @__PURE__ */ window.React.createElement("span", null, /* @__PURE__ */ window.React.createElement("b", null, cov.rows.filter((r) => r.covered).length), " of ", cov.rows.length, " accounts ", STAGE[requiredStage].label.toLowerCase()), /* @__PURE__ */ window.React.createElement("span", null, /* @__PURE__ */ window.React.createElement("b", null, cov.rows.filter((r) => r.material && r.covered).length), " of ", cov.rows.filter((r) => r.material).length, " material"), cov.rows.some((r) => r.voided) ? /* @__PURE__ */ window.React.createElement("span", { style: { color: "var(--red-dim,#7D322F)" } }, /* @__PURE__ */ window.React.createElement("b", null, cov.rows.filter((r) => r.voided).length), " signature", cov.rows.filter((r) => r.voided).length === 1 ? "" : "s", " void — balance moved since signing") : null));
@@ -1990,7 +1992,7 @@
 .mds-bb td{font-family:var(--font-data);color:var(--text-primary);font-variant-numeric:tabular-nums;}
 .mds-bb td.is-ref{color:var(--text-secondary);}
 .mds-bb td.is-changed{background:var(--cond-overridden-bg);box-shadow:inset 2px 0 0 var(--cond-overridden-fg);
-  color:var(--cond-overridden-fg);font-weight:var(--weight-medium,500);}
+  color:var(--text-primary);font-weight:var(--weight-medium,500);}
 .mds-bb td.is-changed::after{content:" ◆";font-size:8px;vertical-align:2px;}
 .mds-bb tfoot td,.mds-bb tfoot th{border-bottom:0;border-top:1px solid var(--border-strong);
   background:var(--bg-light);font-family:var(--font-body);}
@@ -2033,8 +2035,8 @@
   }
 
   // components/accounting/BasisComparisonMatrix.jsx
-  var COND = { confirmed: { label: "Confirmed", glyph: "●" }, provisional: { label: "Provisional", glyph: "◐" }, estimated: { label: "Estimated", glyph: "○" }, stale: { label: "Stale", glyph: "◔" }, overridden: { label: "Overridden", glyph: "◆" }, missing: { label: "Missing", glyph: "■" }, na: { label: "Not applicable", glyph: "—" }, pending: { label: "Pending", glyph: "◇" }, exception: { label: "Exception", glyph: "▲" }, reconciled: { label: "Reconciled", glyph: "✓" } };
-  var cond = (v) => COND[String(v || "").toLowerCase().replace(/[_\s-]+/g, "")] || null;
+  var cond = (value) => value ? conditionMeta(value) : null;
+  var unusable = (cell) => ["missing", "na", "restricted"].includes(cond(cell.condition)?.key);
   var MODES = [
     { id: "none", label: "Values" },
     { id: "absolute", label: "Absolute" },
@@ -2055,7 +2057,7 @@
 .mds-bcm__modes{margin-left:auto;display:flex;border:1px solid var(--border,#D2CDC3);border-radius:2px;overflow:hidden}
 .mds-bcm__modes button{appearance:none;border:0;border-left:1px solid var(--border,#D2CDC3);background:var(--surface-plate,#F8F7F3);font:9px var(--font-data,monospace);text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted,#606870);padding:3px 8px;cursor:pointer}
 .mds-bcm__modes button:first-child{border-left:0}
-.mds-bcm__modes button[aria-pressed="true"]{background:var(--surface-selected,#E7EDF2);color:var(--text-primary,#20252B);font-weight:600}
+.mds-bcm__modes button[aria-pressed="true"]{background:var(--selected-surface,var(--bg-active,#E7EDF2));color:var(--text-primary,#20252B);font-weight:600}
 .mds-bcm__modes button:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
 .mds-bcm__scroll{overflow:auto}
 .mds-bcm table{border-collapse:collapse;width:100%;min-width:560px}
@@ -2071,7 +2073,7 @@
 .mds-bcm__cell--action{cursor:pointer}
 .mds-bcm__cell--action:hover{background:var(--bg-hover,#EDEFF0)}
 .mds-bcm__cell--action:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
-.mds-bcm__cell[data-selected="true"]{border-left-color:var(--selected,#496C8F);background:var(--surface-selected,#E7EDF2)}
+.mds-bcm__cell[data-selected="true"]{border-left-color:var(--selected,#496C8F);background:var(--selected-surface,var(--bg-active,#E7EDF2))}
 .mds-bcm__val{display:block;font:11px var(--font-data,monospace);font-variant-numeric:tabular-nums;color:var(--text-primary,#20252B)}
 .mds-bcm__val[data-text="true"]{font-family:var(--font-body);font-size:11px}
 .mds-bcm__val[data-condition="missing"],.mds-bcm__val[data-condition="exception"]{color:var(--red-dim,#873832)}
@@ -2091,6 +2093,7 @@
   var signed = (v, f) => `${v < 0 ? "−" : "+"}${f(Math.abs(v))}`;
   function difference(mode, cell, ref, row, basisId) {
     if (mode === "none" || !ref) return null;
+    if (unusable(cell) || unusable(ref)) return { text: "Not comparable — input unavailable", same: false };
     const flagged = (row.different || row.changed || []).includes(basisId);
     const a = num(cell.value), b = num(ref.value);
     const sameText = String(cell.value) === String(ref.value);
@@ -2138,6 +2141,10 @@
     const refBasis = bases.find((b) => b.id === refId);
     const interactive = Boolean(onSelectCell || onOpenTrace || onOpenEvidence);
     const render = (cell, row) => {
+      const condition2 = cond(cell.condition)?.key;
+      if (condition2 === "restricted") return "Restricted";
+      if (condition2 === "missing") return "—";
+      if (condition2 === "na") return "n/a";
       if (cell.value === null || cell.value === void 0 || cell.value === "")
         return cell.condition === "na" ? "n/a" : "—";
       const n = num(cell.value);
@@ -2145,7 +2152,7 @@
         return row.unit === "%" ? `${n.toFixed(2)}%` : notation === "accounting" ? acct(n) : money(n);
       return cell.value;
     };
-    return /* @__PURE__ */ window.React.createElement("section", { className: `mds-bcm${className ? " " + className : ""}`, ...rest }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-bcm__head" }, /* @__PURE__ */ window.React.createElement("div", null, /* @__PURE__ */ window.React.createElement("h3", null, title), /* @__PURE__ */ window.React.createElement("div", { className: "mds-bcm__ref" }, "Reference basis: ", refBasis?.label || "none", object ? ` · ${object}` : "", period ? ` · ${period}` : "", asOf ? ` · as of ${asOf}` : "")), /* @__PURE__ */ window.React.createElement("div", { className: "mds-bcm__modes", role: "group", "aria-label": "Difference mode" }, MODES.map((m2) => /* @__PURE__ */ window.React.createElement("button", { key: m2.id, type: "button", "aria-pressed": mode === m2.id, onClick: () => setMode(m2.id) }, m2.label)))), /* @__PURE__ */ window.React.createElement("div", { className: "mds-bcm__scroll" }, /* @__PURE__ */ window.React.createElement("table", null, /* @__PURE__ */ window.React.createElement("caption", null, description || `${title} — every basis shown on identical rows and units; differences are stated against ${refBasis?.label || "the reference basis"} in words and numbers.`), /* @__PURE__ */ window.React.createElement("thead", null, /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, attributeLabel), bases.map((b) => /* @__PURE__ */ window.React.createElement("th", { key: b.id, scope: "col", "data-reference": b.id === refId ? "true" : void 0 }, b.label, b.id === refId ? " · reference" : "", b.meta ? /* @__PURE__ */ window.React.createElement("small", null, b.meta) : null)))), /* @__PURE__ */ window.React.createElement("tbody", null, rows.map((row, ri) => {
+    return /* @__PURE__ */ window.React.createElement("section", { className: `mds-bcm${className ? " " + className : ""}`, ...rest }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-bcm__head" }, /* @__PURE__ */ window.React.createElement("div", null, /* @__PURE__ */ window.React.createElement("h3", null, title), /* @__PURE__ */ window.React.createElement("div", { className: "mds-bcm__ref" }, "Reference basis: ", refBasis?.label || "none", object ? ` · ${object}` : "", period ? ` · ${period}` : "", asOf ? ` · as of ${asOf}` : "")), /* @__PURE__ */ window.React.createElement("div", { className: "mds-bcm__modes", role: "group", "aria-label": "Difference mode" }, MODES.map((m2) => /* @__PURE__ */ window.React.createElement("button", { key: m2.id, type: "button", "aria-pressed": mode === m2.id, onClick: () => setMode(m2.id) }, m2.label)))), /* @__PURE__ */ window.React.createElement("div", { className: "mds-bcm__scroll", role: "region", "aria-label": `${typeof title === "string" ? title : "Basis comparison"} scroll area`, tabIndex: 0 }, /* @__PURE__ */ window.React.createElement("table", null, /* @__PURE__ */ window.React.createElement("caption", null, description || `${title} — every basis shown on identical rows and units; differences are stated against ${refBasis?.label || "the reference basis"} in words and numbers.`), /* @__PURE__ */ window.React.createElement("thead", null, /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, attributeLabel), bases.map((b) => /* @__PURE__ */ window.React.createElement("th", { key: b.id, scope: "col", "data-reference": b.id === refId ? "true" : void 0 }, b.label, b.id === refId ? " · reference" : "", b.meta ? /* @__PURE__ */ window.React.createElement("small", null, b.meta) : null)))), /* @__PURE__ */ window.React.createElement("tbody", null, rows.map((row, ri) => {
       const ref = norm2(row.values?.[refId]);
       return /* @__PURE__ */ window.React.createElement("tr", { key: row.id || row.label || ri }, /* @__PURE__ */ window.React.createElement("th", { scope: "row" }, row.label, row.unit || row.note ? /* @__PURE__ */ window.React.createElement("small", null, [row.unit, row.note].filter(Boolean).join(" · ")) : null), bases.map((b) => {
         const cell = norm2(row.values?.[b.id]);
@@ -2166,7 +2173,7 @@
           },
           /* @__PURE__ */ window.React.createElement("span", { className: "mds-bcm__val", "data-condition": c?.key || (cell.condition || "").toLowerCase() || void 0, "data-text": numeric ? void 0 : "true" }, c ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-bcm__mark", "aria-hidden": "true" }, c.glyph) : null, render(cell, row)),
           cell.method || cell.source || cell.asOf ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-bcm__sub" }, [cell.method, cell.source, cell.asOf].filter(Boolean).join(" · ")) : null,
-          cell.override ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-bcm__sub" }, "Override: ", cell.override) : null,
+          cell.override && c?.key !== "restricted" ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-bcm__sub" }, "Override: ", cell.override) : null,
           diff ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-bcm__diff", "data-same": diff.same ? "true" : void 0 }, diff.text) : null,
           isRef && mode !== "none" ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-bcm__diff", "data-same": "true" }, "Reference") : null
         ));
@@ -2175,14 +2182,7 @@
   }
 
   // components/accounting/CalculationTrace.jsx
-  var CONDITION = { confirmed: { label: "Confirmed", glyph: "●" }, provisional: { label: "Provisional", glyph: "◐" }, estimated: { label: "Estimated", glyph: "○" }, stale: { label: "Stale", glyph: "◔" }, overridden: { label: "Overridden", glyph: "◆" }, missing: { label: "Missing", glyph: "■" }, na: { label: "Not applicable", glyph: "—" }, pending: { label: "Pending", glyph: "◇" }, exception: { label: "Exception", glyph: "▲" }, reconciled: { label: "Reconciled", glyph: "✓" } };
-  var ALIAS2 = { complete: "confirmed", verified: "confirmed", ok: "confirmed", matched: "reconciled", certified: "reconciled", preliminary: "provisional", unaudited: "provisional", modeled: "estimated", forecast: "estimated", projected: "estimated", delayed: "stale", aged: "stale", override: "overridden", manual: "overridden", absent: "missing", unavailable: "missing", "not applicable": "na", "n/a": "na", none: "na", awaiting: "pending", queued: "pending", scheduled: "pending", unmatched: "exception", break: "exception", failed: "exception" };
-  function meta(v) {
-    if (!v) return null;
-    const k = String(v).trim().toLowerCase().replace(/[_-]+/g, " ");
-    const key = CONDITION[k] ? k : ALIAS2[k] || ALIAS2[k.replace(/\s+/g, "")];
-    return key ? { key, ...CONDITION[key] } : null;
-  }
+  var meta = (value) => value ? conditionMeta(value) : null;
   var LEVELS = [{ id: "summary", label: "Summary" }, { id: "expanded", label: "Expanded" }, { id: "audit", label: "Audit" }];
   var injected9 = false;
   function inject9() {
@@ -2198,7 +2198,7 @@
 .mds-calc__levels{margin-left:auto;display:flex;border:1px solid var(--border,#D2CDC3);border-radius:2px;overflow:hidden;flex:none}
 .mds-calc__levels button{appearance:none;border:0;border-left:1px solid var(--border,#D2CDC3);background:var(--surface-plate,#F8F7F3);font:9px var(--font-data,monospace);text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted,#606870);padding:3px 8px;cursor:pointer}
 .mds-calc__levels button:first-child{border-left:0}
-.mds-calc__levels button[aria-pressed="true"]{background:var(--surface-selected,#E7EDF2);color:var(--text-primary,#20252B);font-weight:600}
+.mds-calc__levels button[aria-pressed="true"]{background:var(--selected-surface,var(--bg-active,#E7EDF2));color:var(--text-primary,#20252B);font-weight:600}
 .mds-calc__levels button:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
 .mds-calc__group{padding:5px 12px 0;font:9px var(--font-data,monospace);text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted,#606870)}
 .mds-calc__rows{padding:4px 12px 6px}
@@ -2228,6 +2228,8 @@
   }
   var val = (x) => x.value === null || x.value === void 0 || x.value === "" ? "—" : x.value;
   function conditioned(text, c) {
+    if (c?.key === "restricted") return "Restricted";
+    if (c?.key === "missing" || c?.key === "na") return "—";
     if (!c || text === "—") return text;
     if (c.key === "estimated") return `${text} Est.`;
     if (c.key === "overridden") return `${text} *`;
@@ -2248,7 +2250,7 @@
     basis,
     override,
     overrides = [],
-    condition = "confirmed",
+    condition: condition2 = "confirmed",
     asOf,
     level: levelProp,
     defaultLevel = "expanded",
@@ -2270,11 +2272,11 @@
       if (onLevelChange) onLevelChange(l);
     };
     const shown = LEVELS.filter((l) => !availableLevels || availableLevels.includes(l.id));
-    const c = meta(condition);
+    const c = meta(condition2);
     const material = steps.filter((s) => s.material !== false);
     const rows = level === "summary" ? material.filter((s) => s.kind === "intermediate" || s.summary) : material;
     const overrideList = overrides.length ? overrides : override ? [{ label: "Override", value: override }] : [];
-    return /* @__PURE__ */ window.React.createElement("section", { className: `mds-calc${className ? " " + className : ""}`, ...rest }, /* @__PURE__ */ window.React.createElement("header", { className: "mds-calc__head" }, /* @__PURE__ */ window.React.createElement("div", null, /* @__PURE__ */ window.React.createElement("h3", null, title), formula ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-calc__formula" }, formula) : null), shown.length > 1 ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-calc__levels", role: "group", "aria-label": "Trace level" }, shown.map((l) => /* @__PURE__ */ window.React.createElement("button", { key: l.id, type: "button", "aria-pressed": level === l.id, onClick: () => setLevel(l.id) }, l.label))) : null), level !== "summary" && rows.some((s) => s.kind === "intermediate") ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-calc__group" }, "Inputs and intermediates") : null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-calc__rows" }, rows.map((s, i) => /* @__PURE__ */ window.React.createElement(Row, { key: s.id || s.label || i, step: s, level }))), /* @__PURE__ */ window.React.createElement("div", { className: "mds-calc__result" }, /* @__PURE__ */ window.React.createElement("strong", null, result?.label || "Calculated result"), /* @__PURE__ */ window.React.createElement("span", null, conditioned(result?.value ?? "—", c), result?.unit ? ` ${result.unit}` : "")), /* @__PURE__ */ window.React.createElement("footer", { className: "mds-calc__foot" }, /* @__PURE__ */ window.React.createElement("span", null, c ? `${c.glyph} ${c.label}` : `Condition: ${condition}`), asOf ? /* @__PURE__ */ window.React.createElement("span", null, "As of ", asOf) : null, rounding ? /* @__PURE__ */ window.React.createElement("span", null, "Rounding: ", rounding) : null, basis ? /* @__PURE__ */ window.React.createElement("span", null, "Basis: ", basis) : null, overrideList.length ? /* @__PURE__ */ window.React.createElement("span", null, "Overrides: ", overrideList.length) : null), level === "audit" ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-calc__audit" }, /* @__PURE__ */ window.React.createElement("h4", null, "Audit detail"), /* @__PURE__ */ window.React.createElement("div", { className: "mds-calc__kv" }, calculationVersion ? /* @__PURE__ */ window.React.createElement("div", null, /* @__PURE__ */ window.React.createElement("span", null, "Calculation version"), /* @__PURE__ */ window.React.createElement("b", null, calculationVersion)) : null, calculatedAt ? /* @__PURE__ */ window.React.createElement("div", null, /* @__PURE__ */ window.React.createElement("span", null, "Executed"), /* @__PURE__ */ window.React.createElement("b", null, calculatedAt)) : null, executedBy ? /* @__PURE__ */ window.React.createElement("div", null, /* @__PURE__ */ window.React.createElement("span", null, "Executed by"), /* @__PURE__ */ window.React.createElement("b", null, executedBy)) : null, engine ? /* @__PURE__ */ window.React.createElement("div", null, /* @__PURE__ */ window.React.createElement("span", null, "Engine"), /* @__PURE__ */ window.React.createElement("b", null, engine)) : null, rounding ? /* @__PURE__ */ window.React.createElement("div", null, /* @__PURE__ */ window.React.createElement("span", null, "Rounding policy"), /* @__PURE__ */ window.React.createElement("b", null, rounding)) : null, basis ? /* @__PURE__ */ window.React.createElement("div", null, /* @__PURE__ */ window.React.createElement("span", null, "Accounting basis"), /* @__PURE__ */ window.React.createElement("b", null, basis)) : null, overrideList.map((o, i) => /* @__PURE__ */ window.React.createElement("div", { key: i }, /* @__PURE__ */ window.React.createElement("span", null, o.label || "Override"), /* @__PURE__ */ window.React.createElement("b", null, o.value, o.by ? ` · ${o.by}` : "")))), technicalFormula ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-calc__tech" }, technicalFormula) : null, reproducibility ? /* @__PURE__ */ window.React.createElement("p", { className: "mds-calc__repro" }, reproducibility) : null) : null);
+    return /* @__PURE__ */ window.React.createElement("section", { className: `mds-calc${className ? " " + className : ""}`, ...rest }, /* @__PURE__ */ window.React.createElement("header", { className: "mds-calc__head" }, /* @__PURE__ */ window.React.createElement("div", null, /* @__PURE__ */ window.React.createElement("h3", null, title), formula ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-calc__formula" }, formula) : null), shown.length > 1 ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-calc__levels", role: "group", "aria-label": "Trace level" }, shown.map((l) => /* @__PURE__ */ window.React.createElement("button", { key: l.id, type: "button", "aria-pressed": level === l.id, onClick: () => setLevel(l.id) }, l.label))) : null), level !== "summary" && rows.some((s) => s.kind === "intermediate") ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-calc__group" }, "Inputs and intermediates") : null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-calc__rows" }, rows.map((s, i) => /* @__PURE__ */ window.React.createElement(Row, { key: s.id || s.label || i, step: s, level }))), /* @__PURE__ */ window.React.createElement("div", { className: "mds-calc__result" }, /* @__PURE__ */ window.React.createElement("strong", null, result?.label || "Calculated result"), /* @__PURE__ */ window.React.createElement("span", null, conditioned(result?.value ?? "—", c), result?.unit ? ` ${result.unit}` : "")), /* @__PURE__ */ window.React.createElement("footer", { className: "mds-calc__foot" }, /* @__PURE__ */ window.React.createElement("span", null, c ? `${c.glyph} ${c.label}` : `Condition: ${condition2}`), asOf ? /* @__PURE__ */ window.React.createElement("span", null, "As of ", asOf) : null, rounding ? /* @__PURE__ */ window.React.createElement("span", null, "Rounding: ", rounding) : null, basis ? /* @__PURE__ */ window.React.createElement("span", null, "Basis: ", basis) : null, overrideList.length ? /* @__PURE__ */ window.React.createElement("span", null, "Overrides: ", overrideList.length) : null), level === "audit" ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-calc__audit" }, /* @__PURE__ */ window.React.createElement("h4", null, "Audit detail"), /* @__PURE__ */ window.React.createElement("div", { className: "mds-calc__kv" }, calculationVersion ? /* @__PURE__ */ window.React.createElement("div", null, /* @__PURE__ */ window.React.createElement("span", null, "Calculation version"), /* @__PURE__ */ window.React.createElement("b", null, calculationVersion)) : null, calculatedAt ? /* @__PURE__ */ window.React.createElement("div", null, /* @__PURE__ */ window.React.createElement("span", null, "Executed"), /* @__PURE__ */ window.React.createElement("b", null, calculatedAt)) : null, executedBy ? /* @__PURE__ */ window.React.createElement("div", null, /* @__PURE__ */ window.React.createElement("span", null, "Executed by"), /* @__PURE__ */ window.React.createElement("b", null, executedBy)) : null, engine ? /* @__PURE__ */ window.React.createElement("div", null, /* @__PURE__ */ window.React.createElement("span", null, "Engine"), /* @__PURE__ */ window.React.createElement("b", null, engine)) : null, rounding ? /* @__PURE__ */ window.React.createElement("div", null, /* @__PURE__ */ window.React.createElement("span", null, "Rounding policy"), /* @__PURE__ */ window.React.createElement("b", null, rounding)) : null, basis ? /* @__PURE__ */ window.React.createElement("div", null, /* @__PURE__ */ window.React.createElement("span", null, "Accounting basis"), /* @__PURE__ */ window.React.createElement("b", null, basis)) : null, c?.key !== "restricted" && overrideList.map((o, i) => /* @__PURE__ */ window.React.createElement("div", { key: i }, /* @__PURE__ */ window.React.createElement("span", null, o.label || "Override"), /* @__PURE__ */ window.React.createElement("b", null, o.value, o.by ? ` · ${o.by}` : "")))), technicalFormula && c?.key !== "restricted" ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-calc__tech" }, technicalFormula) : null, reproducibility ? /* @__PURE__ */ window.React.createElement("p", { className: "mds-calc__repro" }, reproducibility) : null) : null);
   }
 
   // components/core/Datum.jsx
@@ -2369,7 +2371,7 @@
       "g",
       {
         className: `mds-datum-svg mds-datum-svg--${role}${activation ? " mds-datum-svg--interactive" : ""}${className ? " " + className : ""}`,
-        role: activation ? "button" : "presentation",
+        role: activation ? "button" : "img",
         tabIndex: activation ? 0 : void 0,
         "aria-label": rest["aria-label"] || text || `${role} datum`,
         onClick: onActivate,
@@ -2390,7 +2392,7 @@
           textAnchor: vertical && labelPlacement === "before" ? "end" : "start"
         },
         label2 ? /* @__PURE__ */ window.React.createElement("tspan", null, label2) : null,
-        value !== void 0 && value !== null ? /* @__PURE__ */ window.React.createElement("tspan", { className: "mds-datum-svg__label-value", dx: label2 ? 5 : 0 }, value) : null
+        value !== void 0 && value !== null ? /* @__PURE__ */ window.React.createElement("tspan", { className: "mds-datum-svg__label-value", dx: label2 ? 2 : 0 }, label2 ? " " : "", value) : null
       ) : null
     );
   }
@@ -2450,7 +2452,7 @@
       {
         className: `mds-datum mds-datum--${vertical ? "v" : "h"} mds-datum--${role} mds-datum--${labelPlacement}${span != null ? " mds-datum--band" : ""}${activation ? " mds-datum--interactive" : ""}${className ? " " + className : ""}`,
         style: { ...placement, ...labelLane ? { "--datum-lane": labelLane } : null, ...style },
-        role: activation ? "button" : void 0,
+        role: activation ? "button" : "img",
         tabIndex: activation ? 0 : void 0,
         "aria-label": rest["aria-label"] || [label2, value].filter(Boolean).join(" · ") || `${role} datum`,
         onClick: onActivate,
@@ -2524,10 +2526,10 @@
     reopened: { label: "Reopened", tone: "review", glyph: "↺" },
     waived: { label: "Waived", tone: "idle", glyph: "—" }
   };
-  var ALIAS3 = { pending: "not-started", todo: "not-started", started: "in-progress", running: "in-progress", late: "at-risk", overdue: "at-risk", done: "complete", signed: "complete", ready: "review" };
+  var ALIAS2 = { pending: "not-started", todo: "not-started", started: "in-progress", running: "in-progress", late: "at-risk", overdue: "at-risk", done: "complete", signed: "complete", ready: "review" };
   var st = (v) => {
     const k = String(v || "not-started").trim().toLowerCase().replace(/[_\s]+/g, "-");
-    const key = STATUS[k] ? k : ALIAS3[k] || "not-started";
+    const key = STATUS[k] ? k : ALIAS2[k] || "not-started";
     return { key, ...STATUS[key] };
   };
   var VIEWS = [{ id: "calendar", label: "Calendar" }, { id: "dependency", label: "Dependency" }, { id: "owner", label: "Owner" }];
@@ -2545,18 +2547,18 @@
 .mds-close__views{margin-left:auto;display:flex;border:1px solid var(--border,#D2CDC3);border-radius:2px;overflow:hidden}
 .mds-close__views button{appearance:none;border:0;border-left:1px solid var(--border,#D2CDC3);background:var(--surface-well,#FCFBF8);font:9px var(--font-data,monospace);text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted,#606870);padding:4px 9px;cursor:pointer}
 .mds-close__views button:first-child{border-left:0}
-.mds-close__views button[aria-pressed="true"]{background:var(--surface-selected,#E7EDF2);color:var(--text-primary,#20252B);font-weight:600}
+.mds-close__views button[aria-pressed="true"]{background:var(--selected-surface,var(--bg-active,#E7EDF2));color:var(--text-primary,#20252B);font-weight:600}
 .mds-close__views button:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
 .mds-close__grid{display:grid;grid-template-columns:repeat(var(--close-cols,7),minmax(132px,1fr));overflow:auto}
 .mds-close__day{min-height:var(--calendar-cell-min-height,170px);border-right:1px solid var(--border-divider,#E2DED5);position:relative}
 .mds-close__day:last-child{border-right:0}
-.mds-close__day[data-past="true"] .mds-close__date{color:var(--text-disabled,#A4ABB2)}
+.mds-close__day[data-past="true"] .mds-close__date{color:var(--text-muted,#606870)}
 .mds-close__date{display:flex;justify-content:space-between;gap:6px;padding:7px 8px;border-bottom:1px solid var(--border-divider,#E2DED5);font:600 10px var(--font-data,monospace);color:var(--text-muted,#606870);background:var(--surface-recessed,var(--bg-medium,#EBE8E1))}
 .mds-close__tasks{padding:5px;display:grid;gap:4px}
 .mds-close__task{display:grid;gap:2px;width:100%;border:0;border-left:2px solid var(--neutral,#6D757D);background:var(--surface-well,#FCFBF8);padding:6px;text-align:left;cursor:pointer;color:var(--text-secondary,#535C65);font-family:var(--font-body)}
 .mds-close__task:hover{background:var(--bg-hover,#EDEFF0)}
 .mds-close__task:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:1px}
-.mds-close__task[data-selected="true"]{background:var(--surface-selected,#E7EDF2)}
+.mds-close__task[data-selected="true"]{background:var(--selected-surface,var(--bg-active,#E7EDF2))}
 .mds-close__task[data-tone="done"]{border-left-color:var(--green,#2E7655)}
 .mds-close__task[data-tone="review"]{border-left-color:var(--orange,#986717)}
 .mds-close__task[data-tone="active"]{border-left-color:var(--info,#2F648A)}
@@ -2568,7 +2570,7 @@
 .mds-close__row{display:grid;grid-template-columns:20px minmax(160px,1.6fr) 1fr 108px 96px 78px;gap:10px;align-items:center;width:100%;min-height:36px;border:0;border-bottom:1px solid var(--border-divider,#E2DED5);background:transparent;text-align:left;font-size:11px;color:var(--text-secondary,#535C65);cursor:pointer;font-family:var(--font-body)}
 .mds-close__row:hover{background:var(--bg-hover,#EDEFF0)}
 .mds-close__row:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
-.mds-close__row[data-selected="true"]{background:var(--surface-selected,#E7EDF2)}
+.mds-close__row[data-selected="true"]{background:var(--selected-surface,var(--bg-active,#E7EDF2))}
 .mds-close__row strong{color:var(--text-primary,#20252B);font-weight:600}
 .mds-close__row small{display:block;font:9px/13px var(--font-data,monospace);color:var(--text-muted,#606870)}
 .mds-close__row[data-tone="blocked"] .mds-close__status{color:var(--red-dim,#873832);font-weight:600}
@@ -2858,8 +2860,9 @@
     ...rest
   }) {
     inject14();
-    const money3 = (v) => formatMoney(v, { decimals: 2, parens: true, zeroDash: true });
-    const total = (k) => rows.reduce((a, r) => a + (Number(r[k]) || 0), 0);
+    const usable = (value) => value !== null && value !== void 0 && value !== "" && !(typeof value === "string" && value.trim() === "") && Number.isFinite(Number(value));
+    const money3 = (value) => usable(value) ? formatMoney(value, { currency, decimals: 2, parens: true, zeroDash: true }) : "Missing";
+    const total = (key) => rows.every((row) => usable(row[key])) ? rows.reduce((sum, row) => sum + Number(row[key]), 0) : null;
     return /* @__PURE__ */ window.React.createElement("div", { className: `mds-isch__wrap${className ? " " + className : ""}`, style: { maxHeight }, ...rest }, /* @__PURE__ */ window.React.createElement("table", { className: "mds-isch" }, /* @__PURE__ */ window.React.createElement("thead", null, /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Period"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, couponLabel), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, accretionLabel), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, incomeLabel), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, bookLabel), /* @__PURE__ */ window.React.createElement("th", { scope: "col", style: { textAlign: "left" } }, "State"))), /* @__PURE__ */ window.React.createElement("tbody", null, rows.map((r, i) => {
       const id = r.id || r.period || i;
       const st3 = STATES2[String(r.state || "scheduled").toLowerCase()] || STATES2.scheduled;
@@ -2883,7 +2886,7 @@
         /* @__PURE__ */ window.React.createElement("td", null, money3(r.accretion)),
         /* @__PURE__ */ window.React.createElement("td", null, money3(r.income)),
         /* @__PURE__ */ window.React.createElement("td", null, money3(r.closingBook ?? r.endingBook)),
-        /* @__PURE__ */ window.React.createElement("td", { style: { textAlign: "left" } }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-isch__st", style: { color: `var(--cond-${st3.tone}-fg)` } }, /* @__PURE__ */ window.React.createElement("i", { "aria-hidden": "true" }, st3.glyph), r.stateLabel || st3.label))
+        /* @__PURE__ */ window.React.createElement("td", { style: { textAlign: "left" } }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-isch__st", style: { color: "var(--text-primary)" } }, /* @__PURE__ */ window.React.createElement("i", { "aria-hidden": "true" }, st3.glyph), r.stateLabel || st3.label))
       );
     })), showTotals && rows.length ? /* @__PURE__ */ window.React.createElement("tfoot", null, /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("td", { style: { fontFamily: "var(--font-body)" } }, "Total · ", rows.length, " periods"), /* @__PURE__ */ window.React.createElement("td", null, money3(total("coupon"))), /* @__PURE__ */ window.React.createElement("td", null, money3(total("accretion"))), /* @__PURE__ */ window.React.createElement("td", null, money3(total("income"))), /* @__PURE__ */ window.React.createElement("td", null, money3(rows[rows.length - 1].closingBook ?? rows[rows.length - 1].endingBook)), /* @__PURE__ */ window.React.createElement("td", { style: { textAlign: "left", fontFamily: "var(--font-body)", fontWeight: 400, color: "var(--text-muted)", fontSize: 11 } }, currency))) : null));
   }
@@ -2914,14 +2917,18 @@
   }
   function Input({ label: label2, error, className = "", ...rest }) {
     inject15();
-    const errorId = rest.id ? `${rest.id}--error` : void 0;
+    const generatedId = react_default.useId();
+    const inputId = rest.id || generatedId;
+    const errorId = `${inputId}--error`;
+    const describedBy = [rest["aria-describedby"], error ? errorId : null].filter(Boolean).join(" ") || void 0;
     const input = /* @__PURE__ */ window.React.createElement(
       "input",
       {
         className: `mds-input${error ? " mds-input--error" : ""}${className ? " " + className : ""}`,
-        "aria-invalid": error ? true : void 0,
-        "aria-describedby": error && errorId ? errorId : void 0,
-        ...rest
+        ...rest,
+        id: inputId,
+        "aria-invalid": error ? true : rest["aria-invalid"],
+        "aria-describedby": describedBy
       }
     );
     if (!label2 && !error) return input;
@@ -2963,9 +2970,11 @@
     el.textContent = css;
     document.head.appendChild(el);
   }
-  function Select({ label: label2, options = [], value, onChange, placeholder = "Select…", disabled = false, ariaLabel }) {
+  function Select({ label: label2, options = [], value, onChange, placeholder = "Select…", disabled = false, ariaLabel, id, ...rest }) {
     inject16();
-    const uid6 = react_default.useId();
+    const generatedId = react_default.useId();
+    const uid5 = id || generatedId;
+    const buttonId = id || `${uid5}-btn`;
     const [open, setOpen] = react_default.useState(false);
     const [above, setAbove] = react_default.useState(false);
     const ref = react_default.useRef(null);
@@ -2999,9 +3008,13 @@
         m2.scrollTop = el.offsetTop + el.offsetHeight - m2.clientHeight;
     }, [open, focusIdx]);
     const commit = (it) => {
+      if (disabled) return;
       onChange?.(it.value);
       setOpen(false);
     };
+    react_default.useEffect(() => {
+      if (disabled) setOpen(false);
+    }, [disabled]);
     const handleKey = (e) => {
       if (disabled) return;
       if (!open) {
@@ -3053,19 +3066,20 @@
       }
     };
     const displayLabel = items.find((it) => !it.divider && it.value === value)?.label ?? null;
-    const activeId = open && focusIdx >= 0 && enabled[focusIdx] ? `${uid6}-opt-${enabled[focusIdx].i}` : void 0;
-    return /* @__PURE__ */ window.React.createElement("div", { ref }, label2 && /* @__PURE__ */ window.React.createElement("span", { className: "mds-sel-label", id: `${uid6}-label` }, label2), /* @__PURE__ */ window.React.createElement("div", { className: "mds-sel-wrap" }, /* @__PURE__ */ window.React.createElement(
+    const activeId = open && focusIdx >= 0 && enabled[focusIdx] ? `${uid5}-opt-${enabled[focusIdx].i}` : void 0;
+    return /* @__PURE__ */ window.React.createElement("div", { ref }, label2 && /* @__PURE__ */ window.React.createElement("span", { className: "mds-sel-label", id: `${uid5}-label` }, label2), /* @__PURE__ */ window.React.createElement("div", { className: "mds-sel-wrap" }, /* @__PURE__ */ window.React.createElement(
       "button",
       {
         type: "button",
-        id: `${uid6}-btn`,
+        ...rest,
+        id: buttonId,
         className: `mds-sel-btn${!displayLabel ? " mds-sel-btn--placeholder" : ""}`,
         role: "combobox",
         "aria-expanded": open,
         "aria-haspopup": "listbox",
-        "aria-controls": `${uid6}-menu`,
-        "aria-labelledby": label2 ? `${uid6}-label ${uid6}-btn` : void 0,
-        "aria-label": !label2 ? ariaLabel || placeholder : void 0,
+        "aria-controls": `${uid5}-menu`,
+        "aria-labelledby": label2 ? `${uid5}-label ${buttonId}` : rest["aria-labelledby"],
+        "aria-label": !label2 ? ariaLabel || rest["aria-label"] || (id ? void 0 : placeholder) : void 0,
         "aria-activedescendant": activeId,
         disabled,
         onClick: () => open ? setOpen(false) : openMenu(),
@@ -3076,10 +3090,10 @@
       "div",
       {
         ref: menuRef,
-        id: `${uid6}-menu`,
+        id: `${uid5}-menu`,
         className: `mds-sel-menu${above ? " mds-sel-menu--above" : ""}`,
         role: "listbox",
-        "aria-labelledby": label2 ? `${uid6}-label` : void 0,
+        "aria-labelledby": label2 ? `${uid5}-label` : void 0,
         "aria-label": !label2 ? ariaLabel || placeholder : void 0
       },
       items.map((it) => {
@@ -3090,7 +3104,7 @@
           "div",
           {
             key: it.i,
-            id: `${uid6}-opt-${it.i}`,
+            id: `${uid5}-opt-${it.i}`,
             role: "option",
             "aria-selected": it.value === value,
             "aria-disabled": it.disabled || void 0,
@@ -3263,7 +3277,7 @@
 .mds-date-input{flex:1;min-width:0;height:100%;padding:7px 10px;border:none;background:transparent;
   color:var(--text-primary,#20252B);font-family:var(--font-data);font-size:13px;outline:none;
   font-variant-numeric:tabular-nums;}
-.mds-date-input::placeholder{color:var(--text-disabled,#A4ABB2);}
+.mds-date-input::placeholder{color:var(--text-muted,#606870);opacity:1;}
 .mds-date-input:disabled{cursor:not-allowed;}
 .mds-date-open{flex:0 0 auto;height:100%;padding:0 9px;border:0;background:none;margin:0;
   color:var(--text-muted,#6B737B);font-size:12px;cursor:pointer;display:inline-flex;align-items:center;}
@@ -3310,10 +3324,10 @@
     el.textContent = css;
     document.head.appendChild(el);
   }
-  var uid2 = 0;
+  var uid = 0;
   function useUid() {
     if (react_default.useId) return react_default.useId().replace(/:/g, "");
-    return react_default.useMemo(() => "mdsdp" + ++uid2, []);
+    return react_default.useMemo(() => "mdsdp" + ++uid, []);
   }
   function DatePicker({
     label: label2,
@@ -3423,6 +3437,13 @@
       }
     };
     const onGridKey = (e) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        e.stopPropagation();
+        close();
+        return;
+      }
+      if (!e.target.classList.contains("mds-date-day")) return;
       const k = e.key;
       let next = null;
       if (k === "ArrowLeft") next = addDays(cursor, -1);
@@ -3656,24 +3677,28 @@
     const balanced = Math.abs(diff) <= tolerance && (totalD > 0 || totalC > 0);
     const blocks = (blockers || []).filter(Boolean).map((b) => typeof b === "string" ? { label: b } : b);
     const postable = balanced && blocks.length === 0;
-    const dlId = accounts && accounts.length ? "jnl-accts" : void 0;
-    return /* @__PURE__ */ window.React.createElement("div", { className: "jnl", role: "group", "aria-label": "Journal entry" }, /* @__PURE__ */ window.React.createElement("div", { className: "jnl__hd" }, /* @__PURE__ */ window.React.createElement("div", { className: "jnl__field" }, /* @__PURE__ */ window.React.createElement("label", { className: "jnl__lbl" }, "Date"), /* @__PURE__ */ window.React.createElement(
+    const uid5 = react_default.useId();
+    const dlId = accounts && accounts.length ? `${uid5}-accounts` : void 0;
+    return /* @__PURE__ */ window.React.createElement("div", { className: "jnl", role: "group", "aria-label": "Journal entry" }, /* @__PURE__ */ window.React.createElement("div", { className: "jnl__hd" }, /* @__PURE__ */ window.React.createElement("div", { className: "jnl__field" }, /* @__PURE__ */ window.React.createElement("label", { className: "jnl__lbl", htmlFor: `${uid5}-date` }, "Date"), /* @__PURE__ */ window.React.createElement(
       Input,
       {
+        id: `${uid5}-date`,
         type: "date",
         value: header.date,
         onChange: (e) => setH("date", e.target.value)
       }
-    )), /* @__PURE__ */ window.React.createElement("div", { className: "jnl__field" }, /* @__PURE__ */ window.React.createElement("label", { className: "jnl__lbl" }, "Reference"), /* @__PURE__ */ window.React.createElement(
+    )), /* @__PURE__ */ window.React.createElement("div", { className: "jnl__field" }, /* @__PURE__ */ window.React.createElement("label", { className: "jnl__lbl", htmlFor: `${uid5}-ref` }, "Reference"), /* @__PURE__ */ window.React.createElement(
       Input,
       {
+        id: `${uid5}-ref`,
         placeholder: "JE-0001",
         value: header.ref,
         onChange: (e) => setH("ref", e.target.value)
       }
-    )), /* @__PURE__ */ window.React.createElement("div", { className: "jnl__field" }, /* @__PURE__ */ window.React.createElement("label", { className: "jnl__lbl" }, "Memo"), /* @__PURE__ */ window.React.createElement(
+    )), /* @__PURE__ */ window.React.createElement("div", { className: "jnl__field" }, /* @__PURE__ */ window.React.createElement("label", { className: "jnl__lbl", htmlFor: `${uid5}-memo` }, "Memo"), /* @__PURE__ */ window.React.createElement(
       Input,
       {
+        id: `${uid5}-memo`,
         placeholder: "Description",
         value: header.memo,
         onChange: (e) => setH("memo", e.target.value)
@@ -3681,6 +3706,7 @@
     ))), dlId && /* @__PURE__ */ window.React.createElement("datalist", { id: dlId }, accounts.map((a) => /* @__PURE__ */ window.React.createElement("option", { key: a, value: a }))), /* @__PURE__ */ window.React.createElement("table", { className: "jnl__grid" }, /* @__PURE__ */ window.React.createElement("thead", null, /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Account"), /* @__PURE__ */ window.React.createElement("th", { className: "jnl--r", scope: "col" }, "Debit"), /* @__PURE__ */ window.React.createElement("th", { className: "jnl--r", scope: "col" }, "Credit"), /* @__PURE__ */ window.React.createElement("th", { className: "jnl--x", scope: "col", "aria-label": "Remove" }))), /* @__PURE__ */ window.React.createElement("tbody", null, lines.map((row, i) => /* @__PURE__ */ window.React.createElement("tr", { key: i }, /* @__PURE__ */ window.React.createElement("td", null, /* @__PURE__ */ window.React.createElement(
       Input,
       {
+        "aria-label": `Line ${i + 1} account`,
         placeholder: "Account",
         value: row.account,
         onChange: (e) => setL(i, "account", e.target.value),
@@ -3689,6 +3715,7 @@
     )), /* @__PURE__ */ window.React.createElement("td", { className: "jnl--r" }, /* @__PURE__ */ window.React.createElement(
       Input,
       {
+        "aria-label": `Line ${i + 1} debit`,
         type: "number",
         placeholder: "0.00",
         value: row.debit,
@@ -3698,6 +3725,7 @@
     )), /* @__PURE__ */ window.React.createElement("td", { className: "jnl--r" }, /* @__PURE__ */ window.React.createElement(
       Input,
       {
+        "aria-label": `Line ${i + 1} credit`,
         type: "number",
         placeholder: "0.00",
         value: row.credit,
@@ -3767,8 +3795,8 @@
 .ldg tbody tr.ldg__row--on td{background:var(--bg-active,#E7EDF2);}
 .ldg tbody tr.ldg__row--on td:first-child{box-shadow:inset 3px 0 0 var(--interaction-selected,#496C8F);}
 .ldg tbody tr.ldg__row--pending td{background:var(--orange-a10,rgba(154,113,19,.07));}
-.ldg tbody tr.ldg__row--void td{color:var(--text-disabled,#A4ABB2);text-decoration:line-through;}
-.ldg tbody tr.ldg__row--void td .ldg__ref{color:var(--text-disabled,#A4ABB2);}
+.ldg tbody tr.ldg__row--void td{color:var(--text-secondary,#535C65);text-decoration:line-through;}
+.ldg tbody tr.ldg__row--void td .ldg__ref{color:var(--text-secondary,#535C65);}
 .ldg tbody tr.ldg__row--click:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}
 .ldg__empty{padding:16px 12px;font-family:var(--font-body);font-size:12px;color:var(--text-muted,#6B737B);text-align:center;}
 .ldg__date{color:var(--text-secondary,#535C65);}
@@ -3978,7 +4006,7 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
   }
   function LifecycleRibbon({ stages = [], selectedId, onSelect, className = "", ...rest }) {
     inject21();
-    return /* @__PURE__ */ window.React.createElement("div", { className: `mds-lcr${className ? " " + className : ""}`, role: "list", "aria-label": "Event lifecycle", ...rest }, stages.map((s) => {
+    return /* @__PURE__ */ window.React.createElement("div", { className: `mds-lcr${className ? " " + className : ""}`, role: onSelect ? "group" : "list", "aria-label": "Event lifecycle", ...rest }, stages.map((s) => {
       const state = s.state || "pending";
       const Tag = onSelect ? "button" : "div";
       const extra = onSelect ? { type: "button", onClick: () => onSelect(s.id), "aria-pressed": selectedId === s.id } : {};
@@ -3986,7 +4014,7 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
         Tag,
         {
           key: s.id,
-          role: "listitem",
+          role: onSelect ? void 0 : "listitem",
           className: `mds-lcr__stage mds-lcr__stage--${state}${selectedId === s.id ? " mds-lcr__stage--sel" : ""}`,
           ...extra
         },
@@ -4165,7 +4193,7 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
     el.textContent = css;
     document.head.appendChild(el);
   }
-  function Checkbox({ checked = false, indeterminate = false, onChange, label: label2, hint, disabled = false }) {
+  function Checkbox({ checked = false, indeterminate = false, onChange, label: label2, hint, disabled = false, ...rest }) {
     inject23();
     const inputRef = react_default.useRef(null);
     react_default.useEffect(() => {
@@ -4175,6 +4203,7 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
     return /* @__PURE__ */ window.React.createElement("label", { className: `mds-chk-wrap${disabled ? " mds-chk-wrap--disabled" : ""}` }, /* @__PURE__ */ window.React.createElement("div", { className: `mds-chk-box${checked || indeterminate ? " mds-chk-box--on" : ""}` }, /* @__PURE__ */ window.React.createElement(
       "input",
       {
+        ...rest,
         ref: inputRef,
         type: "checkbox",
         className: "mds-hidden-input",
@@ -4184,11 +4213,12 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
       }
     ), mark2 && /* @__PURE__ */ window.React.createElement("span", { className: "mds-chk-check", "aria-hidden": "true" }, mark2)), (label2 || hint) && /* @__PURE__ */ window.React.createElement("div", null, label2 && /* @__PURE__ */ window.React.createElement("div", { className: "mds-chk-label" }, label2), hint && /* @__PURE__ */ window.React.createElement("div", { className: "mds-chk-hint" }, hint)));
   }
-  function Toggle({ checked = false, onChange, label: label2, disabled = false }) {
+  function Toggle({ checked = false, onChange, label: label2, disabled = false, ...rest }) {
     inject23();
     return /* @__PURE__ */ window.React.createElement("label", { className: `mds-tog-wrap${disabled ? " mds-tog-wrap--disabled" : ""}` }, /* @__PURE__ */ window.React.createElement("div", { className: `mds-tog-track${checked ? " mds-tog-track--on" : ""}` }, /* @__PURE__ */ window.React.createElement(
       "input",
       {
+        ...rest,
         type: "checkbox",
         role: "switch",
         className: "mds-hidden-input",
@@ -4299,7 +4329,7 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
       active && /* @__PURE__ */ window.React.createElement("span", { className: `rec__caret rec__caret--${sort.dir > 0 ? "asc" : "desc"}`, "aria-hidden": "true" })
     );
   }
-  function Side({ side, columns, currency, status, query, sort, onSort }) {
+  function Side({ side, columns, currency, status, query, sort, onSort, onToggleItem, onToggleAll }) {
     const items = side.items || [];
     const matched = items.filter((i) => i.matched).length;
     const open = items.length - matched;
@@ -4315,17 +4345,22 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
     if (sort.key) {
       rows = [...rows].sort((a, b) => sort.dir * compareItems(a, b, sort.key));
     }
-    return /* @__PURE__ */ window.React.createElement("div", { className: "rec__side" }, /* @__PURE__ */ window.React.createElement("div", { className: "rec__head" }, /* @__PURE__ */ window.React.createElement("span", { className: "rec__title" }, side.title), /* @__PURE__ */ window.React.createElement("span", { className: "rec__counts" }, /* @__PURE__ */ window.React.createElement("span", { className: "rec__chip rec__chip--ok" }, matched, " matched"), open > 0 && /* @__PURE__ */ window.React.createElement("span", { className: "rec__chip rec__chip--open" }, open, " open"))), /* @__PURE__ */ window.React.createElement("div", { className: "rec__tablewrap" }, /* @__PURE__ */ window.React.createElement("table", { className: "rec__table" }, /* @__PURE__ */ window.React.createElement("thead", null, /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("th", { scope: "col", "aria-label": "Matched", style: { width: 28, textAlign: "center" } }, /* @__PURE__ */ window.React.createElement(
+    return /* @__PURE__ */ window.React.createElement("div", { className: "rec__side" }, /* @__PURE__ */ window.React.createElement("div", { className: "rec__head" }, /* @__PURE__ */ window.React.createElement("span", { className: "rec__title" }, side.title), /* @__PURE__ */ window.React.createElement("span", { className: "rec__counts" }, /* @__PURE__ */ window.React.createElement("span", { className: "rec__chip rec__chip--ok" }, matched, " matched"), open > 0 && /* @__PURE__ */ window.React.createElement("span", { className: "rec__chip rec__chip--open" }, open, " open"))), /* @__PURE__ */ window.React.createElement("div", { className: "rec__tablewrap", role: "region", "aria-label": `${side.title} items`, tabIndex: 0 }, /* @__PURE__ */ window.React.createElement("table", { className: "rec__table" }, /* @__PURE__ */ window.React.createElement("thead", null, /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("th", { scope: "col", "aria-label": "Matched", style: { width: 28, textAlign: "center" } }, /* @__PURE__ */ window.React.createElement(
       Checkbox,
       {
-        checked: rows.every((i) => i.matched),
-        onChange: (e) => onToggleAll && onToggleAll(side, e.target.checked)
+        checked: items.length > 0 && items.every((i) => i.matched),
+        indeterminate: matched > 0 && matched < items.length,
+        disabled: !onToggleAll || items.length === 0,
+        "aria-label": `Mark all ${side.title} items matched`,
+        onChange: (checked) => onToggleAll?.(side, checked)
       }
     )), columns.map((c) => /* @__PURE__ */ window.React.createElement(SortHead, { key: c.key, col: c, sort, onSort })))), /* @__PURE__ */ window.React.createElement("tbody", null, rows.length === 0 && /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("td", { className: "rec__empty", colSpan: columns.length + 1 }, "No matching items")), rows.map((it, i) => /* @__PURE__ */ window.React.createElement("tr", { key: it.id ?? i, className: it.matched ? "matched" : "open" }, /* @__PURE__ */ window.React.createElement("td", { style: { textAlign: "center", paddingLeft: 6, paddingRight: 6 } }, /* @__PURE__ */ window.React.createElement(
       Checkbox,
       {
         checked: it.matched || false,
-        onChange: (e) => onToggleItem && onToggleItem(it.id, e.target.checked)
+        disabled: !onToggleItem || it.id == null,
+        "aria-label": `Match ${side.title} item ${it.ref || it.id || i + 1}`,
+        onChange: (checked) => onToggleItem?.(it.id, checked)
       }
     )), columns.map(
       (c) => c.amount ? /* @__PURE__ */ window.React.createElement("td", { key: c.key, className: "num" }, /* @__PURE__ */ window.React.createElement(AmountCell, { value: it.amount, currency, parens: true })) : /* @__PURE__ */ window.React.createElement("td", { key: c.key, className: `${c.mono ? "mono" : ""} ${c.key === "memo" ? "memo" : ""}`.trim() }, it[c.key] ?? "")
@@ -4346,8 +4381,8 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
     tolerance = 5e-3,
     searchable = true,
     filterable = true,
-    onToggleItem: onToggleItem2,
-    onToggleAll: onToggleAll2
+    onToggleItem,
+    onToggleAll
   }) {
     inject24();
     const [status, setStatus] = react_default.useState("all");
@@ -4372,11 +4407,12 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
     return /* @__PURE__ */ window.React.createElement("div", { className: "rec", role: "group", "aria-label": "Reconciliation" }, (filterable || searchable) && /* @__PURE__ */ window.React.createElement("div", { className: "rec__toolbar" }, filterable ? /* @__PURE__ */ window.React.createElement("div", { className: "rec__seg", role: "group", "aria-label": "Filter by status" }, STATUS_TABS.map((t2) => /* @__PURE__ */ window.React.createElement("button", { key: t2.key, type: "button", "aria-pressed": status === t2.key, onClick: () => setStatus(t2.key) }, t2.label))) : /* @__PURE__ */ window.React.createElement("span", null), searchable && /* @__PURE__ */ window.React.createElement("div", { className: "rec__searchwrap" }, /* @__PURE__ */ window.React.createElement(
       Input,
       {
+        "aria-label": "Filter reconciliation items",
         placeholder: "Filter memo, ref…",
         value: query,
         onChange: (e) => setQuery(e.target.value)
       }
-    ))), /* @__PURE__ */ window.React.createElement("div", { className: "rec__cols" }, /* @__PURE__ */ window.React.createElement(Side, { side: left, columns: cols, currency, status, query, sort, onSort }), /* @__PURE__ */ window.React.createElement(Side, { side: right, columns: cols, currency, status, query, sort, onSort })), /* @__PURE__ */ window.React.createElement("div", { className: "rec__summary" }, /* @__PURE__ */ window.React.createElement("div", { className: "rec__sumcell" }, /* @__PURE__ */ window.React.createElement("span", { className: "rec__sumlabel" }, left.title, " balance"), /* @__PURE__ */ window.React.createElement(AmountCell, { value: sb, currency, parens: true, strong: true })), /* @__PURE__ */ window.React.createElement("div", { className: "rec__sumcell" }, /* @__PURE__ */ window.React.createElement("span", { className: "rec__sumlabel" }, right.title, " balance"), /* @__PURE__ */ window.React.createElement(AmountCell, { value: bb, currency, parens: true, strong: true })), /* @__PURE__ */ window.React.createElement("div", { className: `rec__statusbox ${balanced ? "rec__statusbox--bal" : "rec__statusbox--out"}` }, /* @__PURE__ */ window.React.createElement("span", { className: "rec__dot", "aria-hidden": "true" }), balanced ? "Reconciled" : /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, "Out by ", /* @__PURE__ */ window.React.createElement(AmountCell, { value: Math.abs(diff), currency, strong: true, style: { color: "inherit" } })))));
+    ))), /* @__PURE__ */ window.React.createElement("div", { className: "rec__cols" }, /* @__PURE__ */ window.React.createElement(Side, { side: left, columns: cols, currency, status, query, sort, onSort, onToggleItem, onToggleAll }), /* @__PURE__ */ window.React.createElement(Side, { side: right, columns: cols, currency, status, query, sort, onSort, onToggleItem, onToggleAll })), /* @__PURE__ */ window.React.createElement("div", { className: "rec__summary" }, /* @__PURE__ */ window.React.createElement("div", { className: "rec__sumcell" }, /* @__PURE__ */ window.React.createElement("span", { className: "rec__sumlabel" }, left.title, " balance"), /* @__PURE__ */ window.React.createElement(AmountCell, { value: sb, currency, parens: true, strong: true })), /* @__PURE__ */ window.React.createElement("div", { className: "rec__sumcell" }, /* @__PURE__ */ window.React.createElement("span", { className: "rec__sumlabel" }, right.title, " balance"), /* @__PURE__ */ window.React.createElement(AmountCell, { value: bb, currency, parens: true, strong: true })), /* @__PURE__ */ window.React.createElement("div", { className: `rec__statusbox ${balanced ? "rec__statusbox--bal" : "rec__statusbox--out"}` }, /* @__PURE__ */ window.React.createElement("span", { className: "rec__dot", "aria-hidden": "true" }), balanced ? "Reconciled" : /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, "Out by ", /* @__PURE__ */ window.React.createElement(AmountCell, { value: Math.abs(diff), currency, strong: true, style: { color: "inherit" } })))));
   }
 
   // components/accounting/RollforwardMatrix.jsx
@@ -4394,7 +4430,7 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
   var fmt2 = (v) => typeof v === "number" ? formatNumber(v, { decimals: 2 }) : v ?? "—";
   function RollforwardMatrix({ columns = [], rows = [], valueFormat = fmt2, className = "", ...rest }) {
     inject25();
-    return /* @__PURE__ */ window.React.createElement("div", { className: `mds-rfm${className ? " " + className : ""}`, ...rest }, /* @__PURE__ */ window.React.createElement("table", null, /* @__PURE__ */ window.React.createElement("thead", null, /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("th", null, "Movement"), columns.map((c) => /* @__PURE__ */ window.React.createElement("th", { key: c.id }, c.label)))), /* @__PURE__ */ window.React.createElement("tbody", null, rows.map((r, i) => /* @__PURE__ */ window.React.createElement("tr", { key: r.id || r.label || i, "data-total": r.total ? "true" : void 0, "data-check": r.check ? "true" : void 0 }, /* @__PURE__ */ window.React.createElement("th", { scope: "row" }, r.label), columns.map((c) => {
+    return /* @__PURE__ */ window.React.createElement("div", { className: `mds-rfm${className ? " " + className : ""}`, role: "region", "aria-label": "Rollforward matrix", tabIndex: 0, ...rest }, /* @__PURE__ */ window.React.createElement("table", null, /* @__PURE__ */ window.React.createElement("thead", null, /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("th", null, "Movement"), columns.map((c) => /* @__PURE__ */ window.React.createElement("th", { key: c.id }, c.label)))), /* @__PURE__ */ window.React.createElement("tbody", null, rows.map((r, i) => /* @__PURE__ */ window.React.createElement("tr", { key: r.id || r.label || i, "data-total": r.total ? "true" : void 0, "data-check": r.check ? "true" : void 0 }, /* @__PURE__ */ window.React.createElement("th", { scope: "row" }, r.label), columns.map((c) => {
       const v = r.values?.[c.id], fail = r.check && Math.abs(Number(v) || 0) > (r.tolerance ?? 0);
       return /* @__PURE__ */ window.React.createElement("td", { key: c.id, "data-fail": fail ? "true" : void 0 }, r.operator && v != null ? /* @__PURE__ */ window.React.createElement("span", { "aria-hidden": "true" }, r.operator, " ") : null, valueFormat(v), fail ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-visually-hidden" }, " Check failed") : null);
     }))))));
@@ -4426,9 +4462,9 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
 .mds-rf__note{font-family:var(--font-data);font-size:10.5px;color:var(--text-muted);}
 .mds-rf__proof{display:flex;align-items:center;gap:8px;margin-top:8px;padding:5px 8px;
   border:1px solid var(--cond-confirmed-bd);background:var(--cond-confirmed-bg);
-  border-radius:var(--radius-chip,2px);font-size:11px;color:var(--cond-confirmed-fg);}
+  border-radius:var(--radius-chip,2px);font-size:11px;color:var(--text-primary);}
 .mds-rf__proof--off{border-color:var(--cond-exception-bd);background:var(--cond-exception-bg);
-  color:var(--cond-exception-fg);}
+  color:var(--text-primary);}
 `;
     const el = document.createElement("style");
     el.setAttribute("data-mds", "rollforward-trace");
@@ -4462,20 +4498,13 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
   }
 
   // components/accounting/VarianceCell.jsx
-  var CONDITION2 = { confirmed: { label: "Confirmed", glyph: "●" }, provisional: { label: "Provisional", glyph: "◐" }, estimated: { label: "Estimated", glyph: "○" }, stale: { label: "Stale", glyph: "◔" }, overridden: { label: "Overridden", glyph: "◆" }, missing: { label: "Missing", glyph: "■" }, na: { label: "Not applicable", glyph: "—" }, pending: { label: "Pending", glyph: "◇" }, exception: { label: "Exception", glyph: "▲" }, reconciled: { label: "Reconciled", glyph: "✓" } };
-  var ALIAS4 = { complete: "confirmed", verified: "confirmed", ok: "confirmed", live: "confirmed", matched: "reconciled", certified: "reconciled", preliminary: "provisional", unaudited: "provisional", modeled: "estimated", forecast: "estimated", projected: "estimated", delayed: "stale", aged: "stale", override: "overridden", manual: "overridden", absent: "missing", unavailable: "missing", "not applicable": "na", "n/a": "na", none: "na", awaiting: "pending", queued: "pending", scheduled: "pending", unmatched: "exception", break: "exception", failed: "exception" };
-  function meta2(v) {
-    if (!v) return null;
-    const k = String(v).trim().toLowerCase().replace(/[_-]+/g, " ");
-    const key = CONDITION2[k] ? k : ALIAS4[k] || ALIAS4[k.replace(/\s+/g, "")];
-    return key ? { key, ...CONDITION2[key] } : null;
-  }
+  var meta2 = (value) => value ? conditionMeta(value) : null;
   var MODES2 = { currency: { digits: 2 }, accounting: { digits: 2, parens: true }, percent: { digits: 2, suffix: "%", relative: false }, bp: { digits: 0, suffix: " bp", relative: false }, quantity: { digits: 0 }, count: { digits: 0, suffix: " records" }, duration: { digits: 0, suffix: " days", dir: ["late", "early"], relative: false }, number: { digits: 2 }, analytical: { digits: 2 } };
   var num2 = (v) => {
+    if (v == null || v === "" || typeof v === "string" && !v.trim()) return null;
     const n = Number(v);
     return Number.isFinite(n) ? n : null;
   };
-  var has = (v) => v !== null && v !== void 0 && v !== "" && num2(v) !== null;
   function formatter({ notation = "currency", unit, currency, digits, format: format2 }) {
     const m2 = MODES2[notation] || MODES2.number, d = digits ?? m2.digits;
     const cur = notation === "currency" || notation === "accounting" ? currency || (unit && unit.length === 3 ? unit : null) || "USD" : null;
@@ -4543,7 +4572,7 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
     digits,
     format: format2,
     comparisonLabel,
-    condition,
+    condition: condition2,
     conditionDetail,
     explanation,
     reason,
@@ -4562,21 +4591,20 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
     const legacyMode = mode === "accounting" ? "accounting" : mode === "analytical" ? "number" : null;
     const f = formatter({ notation: notation || legacyMode || "currency", unit, currency, digits, format: format2 });
     const ref = expected !== void 0 ? expected : reference;
-    const c = meta2(condition);
-    const a = num2(actual), e = num2(ref);
+    const c = meta2(condition2);
+    const redacted = c?.key === "restricted";
+    const a = redacted || c?.key === "missing" || c?.key === "na" ? null : num2(actual), e = redacted ? null : num2(ref);
     const tolAbs = tolerance != null ? Math.abs(tolerance) : tolerancePct != null && e != null ? Math.abs(e) * tolerancePct / 100 : 0;
     const variance = a != null && e != null ? a - e : null;
     const relative2 = variance != null && e !== 0 && e != null ? variance / Math.abs(e) * 100 : null;
     let key = stateProp;
-    if (!key) {
-      if (notComparable || c?.key === "na") key = "not-comparable";
-      else if (c?.key === "pending") key = "pending";
-      else if (!has(actual)) key = "missing-actual";
-      else if (!has(ref)) key = "missing-reference";
-      else {
-        const abs = Math.abs(variance);
-        key = abs <= tolAbs ? tolAbs > 0 && abs >= tolAbs * nearFactor ? "near" : "within" : "outside";
-      }
+    if (notComparable || c?.key === "na" || redacted) key = "not-comparable";
+    else if (c?.key === "pending") key = "pending";
+    else if (a === null) key = "missing-actual";
+    else if (e === null) key = "missing-reference";
+    else if (!key) {
+      const abs = Math.abs(variance);
+      key = abs <= tolAbs ? tolAbs > 0 && abs >= tolAbs * nearFactor ? "near" : "within" : "outside";
     }
     const tone = { within: "pass", near: "review", outside: "exception", pending: "pending", "not-comparable": "neutral", "missing-actual": "neutral", "missing-reference": "neutral" }[key] || "neutral";
     const mark2 = { within: "✓", near: "◇", outside: "▲", pending: "◇", "not-comparable": "—", "missing-actual": "■", "missing-reference": "■" }[key] || "—";
@@ -4591,7 +4619,7 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
       "missing-reference": "No reference value"
     }[key] || "Not comparable";
     const word = { within: "Agreed", near: "Review", outside: "Exception", pending: "Pending", "not-comparable": "Not applicable", "missing-actual": "Missing", "missing-reference": "Missing" }[key] || "—";
-    const actualText = a != null ? conditioned2(f.value(a), c) : "—";
+    const actualText = redacted ? "Restricted" : a != null ? conditioned2(f.value(a), c) : "—";
     const wantRelative = showRelative !== void 0 ? showRelative : f.relative;
     const deltaText = variance != null && showDelta !== false ? [f.delta(variance), wantRelative && relative2 != null ? `${relative2 < 0 ? "−" : relative2 > 0 ? "+" : ""}${Math.abs(relative2).toFixed(2)}%` : null].filter(Boolean).join(" · ") : null;
     const versus = comparisonLabel ? ` versus ${comparisonLabel}` : "";
@@ -4601,7 +4629,7 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
     const label2 = [actualText, deltaText && `${deltaText}${versus}`, result, condText].filter(Boolean).join(". ");
     const Tag = onSelect ? "button" : "span";
     const props = onSelect ? { type: "button", onClick: () => onSelect({ actual: a, expected: e, variance, relative: relative2, state: key, tolerance: tolAbs }), "aria-pressed": selected || void 0 } : {};
-    return /* @__PURE__ */ window.React.createElement(Tag, { className: `mds-var mds-var--${tone}${inline ? " mds-var--inline" : ""}${onSelect ? " mds-var--action" : ""}${className ? " " + className : ""}`, "data-state": key, "data-condition": c?.key || void 0, "data-selected": selected ? "true" : void 0, "aria-label": label2, title: label2, ...props, ...rest }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-var__actual" }, actualText), deltaText ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-var__delta" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-var__mark", "aria-hidden": "true" }, mark2), deltaText, versus) : null, /* @__PURE__ */ window.React.createElement("span", { className: "mds-var__result" }, !deltaText ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-var__mark", "aria-hidden": "true" }, mark2) : null, result), showReference && e != null && !inline ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-var__cond mds-var__ref" }, "Reference ", f.value(e)) : null, condText && !inline ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-var__cond" }, condText) : null, note && !inline ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-var__note" }, note) : null);
+    return /* @__PURE__ */ window.React.createElement(Tag, { className: `mds-var mds-var--${tone}${inline ? " mds-var--inline" : ""}${onSelect ? " mds-var--action" : ""}${className ? " " + className : ""}`, "data-state": key, "data-condition": c?.key || void 0, "data-selected": selected ? "true" : void 0, title: label2, ...props, ...rest }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-var__actual" }, actualText), deltaText ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-var__delta" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-var__mark", "aria-hidden": "true" }, mark2), deltaText, versus) : null, /* @__PURE__ */ window.React.createElement("span", { className: "mds-var__result" }, !deltaText ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-var__mark", "aria-hidden": "true" }, mark2) : null, result), showReference && e != null && !inline ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-var__cond mds-var__ref" }, "Reference ", f.value(e)) : null, condText && !inline ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-var__cond" }, condText) : null, note && !inline ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-var__note" }, note) : null);
   }
 
   // components/accounting/ScheduleLadder.jsx
@@ -4610,7 +4638,7 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
     const n = Number(v);
     return Number.isFinite(n) ? n : null;
   };
-  var has2 = (v) => v !== null && v !== void 0 && v !== "" && num3(v) !== null;
+  var has = (v) => v !== null && v !== void 0 && v !== "" && num3(v) !== null;
   var stamp = (v) => {
     if (!v) return null;
     const t2 = Date.parse(v);
@@ -4668,7 +4696,7 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
 .mds-sl__exp{font:600 12px/16px var(--font-data,monospace);font-variant-numeric:tabular-nums;color:var(--text-primary,#20252B)}
 .mds-sl__sub{display:block;font:400 10px/14px var(--font-body);color:var(--text-muted,#606870)}
 .mds-sl__wait{display:inline-grid;justify-items:end;font-family:var(--font-data,monospace)}
-.mds-sl__wait b{font:600 11px/16px var(--font-data,monospace);color:var(--pending,#7A6B52)}
+.mds-sl__wait b{font:600 11px/16px var(--font-data,monospace);color:var(--text-primary,#20252B)}
 .mds-sl__wait span{font:10px/14px var(--font-body);color:var(--text-muted,#606870)}
 .mds-sl__mark{display:inline-block;width:8px;margin-right:3px;text-align:center}
 .mds-sl tbody tr[data-projected="true"] .mds-sl__period,.mds-sl tbody tr[data-projected="true"] .mds-sl__exp{font-weight:400}
@@ -4687,8 +4715,8 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
     if (row.projected) return "undelivered";
     const a = num3(row.actual), e = num3(row.expected);
     if (row.notComparable || row.condition === "na") return "not-comparable";
-    if (!has2(row.actual)) return e != null ? "undelivered" : "missing-reference";
-    if (!has2(row.expected)) return "missing-reference";
+    if (!has(row.actual)) return e != null ? "undelivered" : "missing-reference";
+    if (!has(row.expected)) return "missing-reference";
     const abs = Math.abs(a - e);
     return abs <= tolAbs ? tolAbs > 0 && abs >= tolAbs * nearFactor ? "near" : "within" : "outside";
   }
@@ -4735,8 +4763,8 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
     const cut = stamp(asOf);
     const prepared = rows.map((r, i) => {
       const rowCut = stamp(r.date);
-      const projected = r.projected !== void 0 ? !!r.projected : cut != null && rowCut != null ? rowCut > cut : !has2(r.actual);
-      const tolAbs = r.tolerance != null ? Math.abs(r.tolerance) : r.tolerancePct != null && has2(r.expected) ? Math.abs(num3(r.expected)) * r.tolerancePct / 100 : tolerance != null ? Math.abs(tolerance) : tolerancePct != null && has2(r.expected) ? Math.abs(num3(r.expected)) * tolerancePct / 100 : 0;
+      const projected = r.projected !== void 0 ? !!r.projected : cut != null && rowCut != null ? rowCut > cut : !has(r.actual);
+      const tolAbs = r.tolerance != null ? Math.abs(r.tolerance) : r.tolerancePct != null && has(r.expected) ? Math.abs(num3(r.expected)) * r.tolerancePct / 100 : tolerance != null ? Math.abs(tolerance) : tolerancePct != null && has(r.expected) ? Math.abs(num3(r.expected)) * tolerancePct / 100 : 0;
       const row = { ...r, projected, tolAbs, id: r.id ?? r.period ?? String(i) };
       return { ...row, resolved: resolve(row, tolAbs, r.nearFactor ?? nearFactor) };
     });
@@ -4895,7 +4923,7 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
   padding:2px 7px;font-family:var(--font-body);font-size:10px;font-weight:600;font-variant:all-small-caps;
   letter-spacing:.03em;white-space:nowrap;line-height:1.3;}
 .tlt__hp--short{background:var(--orange-a10,rgba(183,121,31,.10));border-color:var(--orange,#986717);color:var(--orange-dim,#735414);}
-.tlt__hp--long{background:var(--blue-a10,rgba(47,111,143,.10));border-color:var(--brand-signal,#C56343);color:var(--brand-signal,#C56343);}
+.tlt__hp--long{background:var(--blue-a10,rgba(47,111,143,.10));border-color:var(--semantic-info,#2F648A);color:var(--text-primary,#20252B);}
 .tlt__hp__dot{height:5px;width:5px;border-radius:50%;background:currentColor;flex:0 0 auto;}
 .tlt__pct{font-family:var(--font-data);font-size:10.5px;margin-left:7px;}
 .tlt tfoot td{padding:9px 12px;background:var(--bg-medium,#EBE8E1);font-weight:600;
@@ -5154,9 +5182,11 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
     document.head.appendChild(el);
   }
   var EPS = 5e-3;
-  var UNUSABLE = ["missing", "pending", "stale", "na", "n/a", "exception"];
+  var UNUSABLE = ["missing", "pending", "stale", "na", "exception", "restricted"];
+  var condition = (s) => s?.condition ? conditionMeta(s.condition).key : null;
+  var unavailableValue = (s) => ["missing", "na", "restricted"].includes(condition(s));
   var num4 = (v) => {
-    if (v === "" || v == null) return null;
+    if (v == null || typeof v === "string" && v.trim() === "") return null;
     const n = Number(v);
     return Number.isFinite(n) ? n : null;
   };
@@ -5164,16 +5194,28 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
     const out = [];
     const check = (s, fallback) => {
       const label2 = s?.label || fallback;
+      const c = condition(s);
+      if (c === "restricted") {
+        out.push(`${label2} is restricted`);
+        return;
+      }
       if (!s || num4(s.value) === null) {
         out.push(`${label2} has no value`);
         return;
       }
-      const c = String(s.condition || "").toLowerCase();
       if (UNUSABLE.includes(c)) out.push(`${label2} is ${c === "na" || c === "n/a" ? "not applicable" : c}`);
     };
     check(sourceA, "Source A");
     check(sourceB, "Source B");
-    for (const x of list || []) if (x && x.explained !== false && num4(x.value) === null) out.push(`Reconciling item "${x.label || "unnamed"}" has no amount`);
+    for (const x of list || []) {
+      if (!x) continue;
+      const label2 = condition(x) === "restricted" ? "Restricted reconciling item" : `Reconciling item "${x.label || "unnamed"}"`;
+      if (condition(x) === "restricted") out.push(`${label2} is restricted`);
+      else if (x.explained !== false) {
+        if (num4(x.value) === null) out.push(`${label2} has no amount`);
+        else if (UNUSABLE.includes(condition(x))) out.push(`${label2} is ${condition(x)}`);
+      }
+    }
     return out;
   }
   function TieOutPanel({
@@ -5211,15 +5253,16 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
     className = "",
     ...rest
   }) {
-    const uid6 = react_default.useId();
+    const uid5 = react_default.useId();
     inject31();
     const list = (items && items.length ? items : adjustments) || [];
     const gaps = inputGaps(sourceA, sourceB, list);
     const indeterminate = gaps.length > 0;
-    const av = num4(sourceA?.value), bv = num4(sourceB?.value);
+    const av = unavailableValue(sourceA) ? null : num4(sourceA?.value), bv = unavailableValue(sourceB) ? null : num4(sourceB?.value);
     const a = av ?? 0, b = bv ?? 0;
     const explainedItems = list.filter((x) => x.explained !== false);
-    const explained = explainedItems.reduce((n, x) => n + (Number(x.value) || 0), 0);
+    const explainedUsable = explainedItems.every((x) => num4(x.value) !== null && !UNUSABLE.includes(condition(x)));
+    const explained = explainedItems.reduce((n, x) => n + (unavailableValue(x) ? 0 : Number(x.value) || 0), 0);
     const gross = a - b;
     const adjusted = a + explained;
     const unexplained = adjusted - b;
@@ -5242,7 +5285,7 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
     const signed5 = (v) => `${v < 0 ? "−" : "+"}${fmt6(Math.abs(v))}`;
     const cond2 = (c) => c ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-tie__cond" }, CONDITION_GLYPH[String(c).toLowerCase()] || "·", " ", String(c).charAt(0).toUpperCase() + String(c).slice(1)) : null;
     const primary = indeterminate ? onInvestigate ? { fn: onInvestigate, label: "Investigate missing input" } : onLinkEvidence ? { fn: onLinkEvidence, label: "Link the missing source" } : null : onResolve ? { fn: onResolve, label: "Resolve" } : key === "exception" && onInvestigate ? { fn: onInvestigate, label: "Investigate residual" } : key === "tolerance" && onAccept ? { fn: () => requireReason ? setReasonOpen(true) : onAccept(""), label: acceptLabel } : onExport ? { fn: onExport, label: "Export tie-out proof" } : null;
-    return /* @__PURE__ */ window.React.createElement("section", { className: `mds-tie mds-tie--${key}${className ? " " + className : ""}`, ...rest }, /* @__PURE__ */ window.React.createElement("header", { className: "mds-tie__head" }, /* @__PURE__ */ window.React.createElement("div", null, /* @__PURE__ */ window.React.createElement("h3", null, title), context ? /* @__PURE__ */ window.React.createElement("p", null, context) : null), /* @__PURE__ */ window.React.createElement("div", { className: "mds-tie__tags" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-tie__status" }, /* @__PURE__ */ window.React.createElement("span", { "aria-hidden": "true" }, statusMark), statusText), /* @__PURE__ */ window.React.createElement("span", { className: "mds-tie__type" }, TYPES[type] || type))), /* @__PURE__ */ window.React.createElement("div", { className: "mds-tie__rows" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-tie__row" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-tie__srclabel" }, sourceA?.label || "Source A", cond2(sourceA?.condition), sourceA?.count != null ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-tie__cond" }, fx.number(sourceA.count, { decimals: 0 }), " records") : null), /* @__PURE__ */ window.React.createElement("span", { className: "mds-tie__value" }, av === null ? "—" : fmt6(a))), /* @__PURE__ */ window.React.createElement("div", { className: "mds-tie__row mds-tie__row--rule" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-tie__srclabel" }, sourceB?.label || "Source B", cond2(sourceB?.condition), sourceB?.count != null ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-tie__cond" }, fx.number(sourceB.count, { decimals: 0 }), " records") : null), /* @__PURE__ */ window.React.createElement("span", { className: "mds-tie__value" }, bv === null ? "—" : fmt6(b))), /* @__PURE__ */ window.React.createElement("div", { className: "mds-tie__row" }, /* @__PURE__ */ window.React.createElement("span", null, "Gross difference"), /* @__PURE__ */ window.React.createElement("span", { className: "mds-tie__value" }, indeterminate ? "—" : signed5(gross))), /* @__PURE__ */ window.React.createElement("div", { className: "mds-tie__row mds-tie__row--rule" }, /* @__PURE__ */ window.React.createElement("span", null, list.length ? /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-tie__toggle", onClick: toggle, "aria-expanded": open }, /* @__PURE__ */ window.React.createElement("span", { "aria-hidden": "true" }, open ? "▾" : "▸"), "Explained · ", explainedItems.length, " reconciling item", explainedItems.length === 1 ? "" : "s") : "Explained"), /* @__PURE__ */ window.React.createElement("span", { className: "mds-tie__value" }, signed5(explained)))), open && list.length ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-tie__items" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-tie__item mds-tie__item--head" }, /* @__PURE__ */ window.React.createElement("span", null, "Item"), /* @__PURE__ */ window.React.createElement("span", null, "Amount"), /* @__PURE__ */ window.React.createElement("span", null, "Condition"), /* @__PURE__ */ window.React.createElement("span", null, "Evidence")), list.map((x, i) => /* @__PURE__ */ window.React.createElement("div", { className: `mds-tie__item${x.explained === false ? " mds-tie__item--unexplained" : ""}`, key: x.id || x.label || i }, /* @__PURE__ */ window.React.createElement("span", null, x.label), /* @__PURE__ */ window.React.createElement("span", { className: "mds-tie__value" }, signed5(Number(x.value) || 0)), /* @__PURE__ */ window.React.createElement("span", null, String(x.condition || (x.explained === false ? "exception" : "confirmed")).replace(/^./, (s) => s.toUpperCase())), /* @__PURE__ */ window.React.createElement("span", null, x.evidence || "No evidence")))) : null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-tie__proof" }, /* @__PURE__ */ window.React.createElement("div", null, /* @__PURE__ */ window.React.createElement("strong", null, "Unexplained residual"), /* @__PURE__ */ window.React.createElement("em", null, proofNote)), indeterminate ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-tie__value", "aria-label": "Residual not computable — an input is missing" }, "—") : /* @__PURE__ */ window.React.createElement(VarianceCell, { actual: unexplained, expected: 0, tolerance, notation: notation === "currency" ? "accounting" : notation, currency, unit, digits, showDelta: false, showRelative: false })), indeterminate ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-tie__block" }, /* @__PURE__ */ window.React.createElement("b", null, "Cannot tie out."), " ", gaps.join(" · "), ". Supply the input, or record it as a reconciling item with its own evidence. Acceptance and resolution stay unavailable until then.") : null, secondary ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-tie__secondary" }, /* @__PURE__ */ window.React.createElement("span", null, secondary.label), /* @__PURE__ */ window.React.createElement(VarianceCell, { layout: "inline", actual: secondary.actual, expected: secondary.expected, tolerance: secondary.tolerance || 0, notation: secondary.notation || "quantity", unit: secondary.unit, digits: secondary.digits, comparisonLabel: secondary.comparisonLabel, showRelative: false })) : null, reasonOpen ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-tie__reason" }, /* @__PURE__ */ window.React.createElement("label", { htmlFor: `${uid6}-reason` }, "Reason for accepting an unexplained residual"), /* @__PURE__ */ window.React.createElement("textarea", { id: `${uid6}-reason`, value: reason, onChange: (e) => setReason(e.target.value), placeholder: "Name the policy or judgment that permits acceptance." }), /* @__PURE__ */ window.React.createElement("div", { className: "row" }, /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "ghost", onClick: () => {
+    return /* @__PURE__ */ window.React.createElement("section", { className: `mds-tie mds-tie--${key}${className ? " " + className : ""}`, ...rest }, /* @__PURE__ */ window.React.createElement("header", { className: "mds-tie__head" }, /* @__PURE__ */ window.React.createElement("div", null, /* @__PURE__ */ window.React.createElement("h3", null, title), context ? /* @__PURE__ */ window.React.createElement("p", null, context) : null), /* @__PURE__ */ window.React.createElement("div", { className: "mds-tie__tags" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-tie__status" }, /* @__PURE__ */ window.React.createElement("span", { "aria-hidden": "true" }, statusMark), statusText), /* @__PURE__ */ window.React.createElement("span", { className: "mds-tie__type" }, TYPES[type] || type))), /* @__PURE__ */ window.React.createElement("div", { className: "mds-tie__rows" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-tie__row" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-tie__srclabel" }, sourceA?.label || "Source A", cond2(sourceA?.condition), sourceA?.count != null && condition(sourceA) !== "restricted" ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-tie__cond" }, fx.number(sourceA.count, { decimals: 0 }), " records") : null), /* @__PURE__ */ window.React.createElement("span", { className: "mds-tie__value" }, av === null ? "—" : fmt6(a))), /* @__PURE__ */ window.React.createElement("div", { className: "mds-tie__row mds-tie__row--rule" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-tie__srclabel" }, sourceB?.label || "Source B", cond2(sourceB?.condition), sourceB?.count != null && condition(sourceB) !== "restricted" ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-tie__cond" }, fx.number(sourceB.count, { decimals: 0 }), " records") : null), /* @__PURE__ */ window.React.createElement("span", { className: "mds-tie__value" }, bv === null ? "—" : fmt6(b))), /* @__PURE__ */ window.React.createElement("div", { className: "mds-tie__row" }, /* @__PURE__ */ window.React.createElement("span", null, "Gross difference"), /* @__PURE__ */ window.React.createElement("span", { className: "mds-tie__value" }, indeterminate ? "—" : signed5(gross))), /* @__PURE__ */ window.React.createElement("div", { className: "mds-tie__row mds-tie__row--rule" }, /* @__PURE__ */ window.React.createElement("span", null, list.length ? /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-tie__toggle", onClick: toggle, "aria-expanded": open }, /* @__PURE__ */ window.React.createElement("span", { "aria-hidden": "true" }, open ? "▾" : "▸"), "Explained · ", explainedItems.length, " reconciling item", explainedItems.length === 1 ? "" : "s") : "Explained"), /* @__PURE__ */ window.React.createElement("span", { className: "mds-tie__value" }, explainedUsable ? signed5(explained) : "—"))), open && list.length ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-tie__items" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-tie__item mds-tie__item--head" }, /* @__PURE__ */ window.React.createElement("span", null, "Item"), /* @__PURE__ */ window.React.createElement("span", null, "Amount"), /* @__PURE__ */ window.React.createElement("span", null, "Condition"), /* @__PURE__ */ window.React.createElement("span", null, "Evidence")), list.map((x, i) => /* @__PURE__ */ window.React.createElement("div", { className: `mds-tie__item${x.explained === false ? " mds-tie__item--unexplained" : ""}`, key: x.id || x.label || i }, /* @__PURE__ */ window.React.createElement("span", null, condition(x) === "restricted" ? "Restricted reconciling item" : x.label), /* @__PURE__ */ window.React.createElement("span", { className: "mds-tie__value" }, condition(x) === "restricted" ? "Restricted" : num4(x.value) === null || unavailableValue(x) ? "—" : signed5(Number(x.value))), /* @__PURE__ */ window.React.createElement("span", null, String(x.condition || (x.explained === false ? "exception" : "confirmed")).replace(/^./, (s) => s.toUpperCase())), /* @__PURE__ */ window.React.createElement("span", null, condition(x) === "restricted" ? "Restricted" : x.evidence || "No evidence")))) : null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-tie__proof" }, /* @__PURE__ */ window.React.createElement("div", null, /* @__PURE__ */ window.React.createElement("strong", null, "Unexplained residual"), /* @__PURE__ */ window.React.createElement("em", null, proofNote)), indeterminate ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-tie__value", "aria-label": "Residual not computable — an input is missing" }, "—") : /* @__PURE__ */ window.React.createElement(VarianceCell, { actual: unexplained, expected: 0, tolerance, notation: notation === "currency" ? "accounting" : notation, currency, unit, digits, showDelta: false, showRelative: false })), indeterminate ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-tie__block" }, /* @__PURE__ */ window.React.createElement("b", null, "Cannot tie out."), " ", gaps.join(" · "), ". Supply the input, or record it as a reconciling item with its own evidence. Acceptance and resolution stay unavailable until then.") : null, secondary ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-tie__secondary" }, /* @__PURE__ */ window.React.createElement("span", null, secondary.label), /* @__PURE__ */ window.React.createElement(VarianceCell, { layout: "inline", actual: secondary.actual, expected: secondary.expected, tolerance: secondary.tolerance || 0, notation: secondary.notation || "quantity", unit: secondary.unit, digits: secondary.digits, comparisonLabel: secondary.comparisonLabel, showRelative: false })) : null, reasonOpen ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-tie__reason" }, /* @__PURE__ */ window.React.createElement("label", { htmlFor: `${uid5}-reason` }, "Reason for accepting an unexplained residual"), /* @__PURE__ */ window.React.createElement("textarea", { id: `${uid5}-reason`, value: reason, onChange: (e) => setReason(e.target.value), placeholder: "Name the policy or judgment that permits acceptance." }), /* @__PURE__ */ window.React.createElement("div", { className: "row" }, /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "ghost", onClick: () => {
       setReasonOpen(false);
       setReason("");
     } }, "Cancel"), /* @__PURE__ */ window.React.createElement(Button, { size: "sm", disabled: !reason.trim(), onClick: () => {
@@ -5374,7 +5417,7 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
   }
 
   // components/charts/AnalyticalField.jsx
-  var GLYPH = { confirmed: "●", provisional: "◐", estimated: "○", stale: "◔", overridden: "◆", missing: "■", na: "—", pending: "◇", exception: "▲", reconciled: "✓" };
+  var GLYPH = { confirmed: "●", provisional: "◐", estimated: "○", stale: "◔", overridden: "◆", missing: "■", na: "—", pending: "◇", exception: "▲", reconciled: "✓", restricted: "■" };
   var injected33 = false;
   function inject33() {
     if (injected33 || typeof document === "undefined") return;
@@ -5393,29 +5436,45 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
   function AnalyticalField({ items = [], columns = 10, selectedId, onSelect, showLegend = false, summary, className = "", ...rest }) {
     inject33();
     const data = items.map(normalize);
+    const columnCount = Number.isInteger(columns) && columns > 0 ? columns : 10;
     const counts = data.reduce((a, item) => (a[item.condition] = (a[item.condition] || 0) + 1, a), {});
     const text = summary || Object.entries(counts).map(([k, n]) => `${n} ${k}`).join(" · ");
     const keys = [...new Set(data.map((d) => d.condition))];
+    const selectedIndex = data.findIndex((item) => String(selectedId) === String(item.id));
+    const activeIndex = selectedIndex < 0 ? 0 : selectedIndex;
+    const describe = (item) => `${item.label || item.id}, ${item.condition}${item.condition !== "restricted" && item.value != null ? `, ${item.value}` : ""}`;
     const handleKey = (event, index) => {
       let next = index;
       if (event.key === "ArrowRight") next = Math.min(data.length - 1, index + 1);
       else if (event.key === "ArrowLeft") next = Math.max(0, index - 1);
-      else if (event.key === "ArrowDown") next = Math.min(data.length - 1, index + columns);
-      else if (event.key === "ArrowUp") next = Math.max(0, index - columns);
+      else if (event.key === "ArrowDown") next = Math.min(data.length - 1, index + columnCount);
+      else if (event.key === "ArrowUp") next = Math.max(0, index - columnCount);
       else if (event.key === "Home") next = 0;
       else if (event.key === "End") next = data.length - 1;
-      else if (event.key === "Enter" || event.key === " ") {
-        event.preventDefault();
-        onSelect?.(data[index], index);
-        return;
-      } else return;
+      else return;
       event.preventDefault();
-      event.currentTarget.parentElement?.children[next]?.focus();
+      event.currentTarget.closest('[role="grid"]')?.querySelectorAll("button")[next]?.focus();
     };
-    return /* @__PURE__ */ window.React.createElement("div", { className: `mds-af${className ? " " + className : ""}`, style: { "--af-cols": columns }, ...rest }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-af__grid", role: onSelect ? "grid" : "img", "aria-label": text }, data.map((item, i) => {
+    const marks = data.map((item, i) => {
       const Tag = onSelect ? "button" : "span";
-      return /* @__PURE__ */ window.React.createElement(Tag, { type: onSelect ? "button" : void 0, key: item.id, role: onSelect ? "gridcell" : void 0, tabIndex: onSelect ? String(selectedId) === item.id ? 0 : selectedId == null && i === 0 ? 0 : -1 : void 0, className: `mds-af__mark mds-af__mark--${item.condition}${String(selectedId) === item.id ? " mds-af__mark--selected" : ""}`, title: `${item.label || item.id} · ${item.condition}${item.value != null ? ` · ${item.value}` : ""}`, "aria-label": `${item.label || item.id}, ${item.condition}${item.value != null ? `, ${item.value}` : ""}`, onClick: onSelect ? () => onSelect(item, i) : void 0, onKeyDown: onSelect ? (e) => handleKey(e, i) : void 0 }, GLYPH[item.condition] || "·");
-    })), /* @__PURE__ */ window.React.createElement("div", { className: "mds-af__summary" }, text), showLegend ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-af__legend" }, keys.map((k) => /* @__PURE__ */ window.React.createElement("span", { key: k }, /* @__PURE__ */ window.React.createElement("b", { "aria-hidden": "true" }, GLYPH[k] || "·"), k))) : null);
+      const mark2 = /* @__PURE__ */ window.React.createElement(
+        Tag,
+        {
+          type: onSelect ? "button" : void 0,
+          tabIndex: onSelect ? i === activeIndex ? 0 : -1 : void 0,
+          className: `mds-af__mark mds-af__mark--${item.condition}${String(selectedId) === String(item.id) ? " mds-af__mark--selected" : ""}`,
+          title: describe(item),
+          "aria-label": describe(item),
+          onClick: onSelect ? () => onSelect(item, i) : void 0,
+          onKeyDown: onSelect ? (event) => handleKey(event, i) : void 0
+        },
+        GLYPH[item.condition] || "·"
+      );
+      return onSelect ? /* @__PURE__ */ window.React.createElement("div", { key: item.id, role: "gridcell", "aria-selected": i === selectedIndex, style: { display: "contents" } }, mark2) : /* @__PURE__ */ window.React.createElement(react_default.Fragment, { key: item.id }, mark2);
+    });
+    const rows = [];
+    for (let i = 0; i < marks.length; i += columnCount) rows.push(/* @__PURE__ */ window.React.createElement("div", { key: i, role: "row", style: { display: "contents" } }, marks.slice(i, i + columnCount)));
+    return /* @__PURE__ */ window.React.createElement("div", { className: `mds-af${className ? " " + className : ""}`, style: { "--af-cols": columnCount }, ...rest }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-af__grid", role: onSelect ? "grid" : "img", "aria-label": typeof text === "string" ? text : void 0 }, onSelect ? rows : marks), /* @__PURE__ */ window.React.createElement("div", { className: "mds-af__summary" }, text), showLegend ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-af__legend" }, keys.map((k) => /* @__PURE__ */ window.React.createElement("span", { key: k }, /* @__PURE__ */ window.React.createElement("b", { "aria-hidden": "true" }, GLYPH[k] || "·"), k))) : null);
   }
 
   // components/core/ContinuityFrame.jsx
@@ -5439,14 +5498,14 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
 .mds-cont{display:flex;flex-direction:column;min-height:0;border:1px solid var(--border,#D2CDC3);background:var(--surface-well,var(--card-surface-raised,#FCFBF8));font-family:var(--font-body);position:relative;}
 .mds-cont__status{min-height:30px;display:flex;align-items:center;gap:8px;padding:0 10px;border-bottom:1px solid var(--border-divider,#E2DED5);background:var(--surface-recessed,var(--bg-medium,#EBE8E1));font-size:11px;color:var(--text-secondary,#535C65);}
 .mds-cont__mark{font-size:9px;color:var(--neutral,#6D757D)}.mds-cont__mark--ok{color:var(--green,#2E7655)}.mds-cont__mark--warn{color:var(--orange,#986717)}.mds-cont__mark--danger{color:var(--red,#B54B42)}.mds-cont__mark--info{color:var(--purple,#2F648A)}
-.mds-cont__label{font-weight:600;color:var(--text-primary,#20252B)}.mds-cont__detail{font-family:var(--font-data,monospace);color:var(--text-muted,#606870)}.mds-cont__spacer{flex:1}.mds-cont__read{font:600 9px var(--font-data,monospace);letter-spacing:.06em;text-transform:uppercase;color:var(--pending,#7A6B52)}
+.mds-cont__label{font-weight:600;color:var(--text-primary,#20252B)}.mds-cont__detail{font-family:var(--font-data,monospace);color:var(--text-muted,#606870)}.mds-cont__spacer{flex:1}.mds-cont__read{font:600 9px var(--font-data,monospace);letter-spacing:.06em;text-transform:uppercase;color:var(--text-secondary,#535C65)}
 .mds-cont__body{min-height:0;position:relative}.mds-cont--stale .mds-cont__body,.mds-cont--partial .mds-cont__body,.mds-cont--offline .mds-cont__body{box-shadow:inset 3px 0 0 var(--pending,#7A6B52)}
 .mds-cont--error .mds-cont__body{box-shadow:inset 3px 0 0 var(--red,#B54B42)}
 .mds-cont__retry{height:22px;padding:0 8px;border:1px solid var(--border-strong,#AAA49A);border-radius:var(--radius-control,4px);background:var(--surface-plate,var(--bg-light,#F8F7F3));color:var(--text-primary,#20252B);font:600 10px var(--font-data,monospace);letter-spacing:.04em;text-transform:uppercase;cursor:pointer;}
 .mds-cont__retry:hover{background:var(--bg-hover,#EDEFF0);border-color:var(--border-hover,#BEB8AD)}.mds-cont__retry:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:1px}.mds-cont__retry[disabled]{opacity:.5;cursor:default}
 .mds-cont--dim .mds-cont__body>*{opacity:.55}
 .mds-cont--locked .mds-cont__body{pointer-events:none;}
-.mds-cont__retained{position:absolute;top:6px;right:6px;z-index:4;display:inline-flex;align-items:center;gap:5px;padding:2px 6px;border:1px solid var(--border-strong,#AAA49A);background:var(--surface-overlay,var(--surface-overlay-base,#fff));font:600 9px var(--font-data,monospace);letter-spacing:.06em;text-transform:uppercase;color:var(--pending,#7A6B52);pointer-events:none;}
+.mds-cont__retained{position:absolute;top:6px;right:6px;z-index:4;display:inline-flex;align-items:center;gap:5px;padding:2px 6px;border:1px solid var(--border-strong,#AAA49A);background:var(--surface-overlay,var(--surface-overlay-base,#fff));font:600 9px var(--font-data,monospace);letter-spacing:.06em;text-transform:uppercase;color:var(--text-secondary,#535C65);pointer-events:none;}
 @media (prefers-reduced-motion:no-preference){.mds-cont--recovering .mds-cont__mark{animation:mds-cont-pulse 1.4s ease-in-out infinite}@keyframes mds-cont-pulse{50%{opacity:.35}}}
 @media print{.mds-cont--dim .mds-cont__body>*{opacity:1}.mds-cont__retry{display:none}}
 `;
@@ -5592,13 +5651,13 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
 `;
     document.head.appendChild(v);
   }
-  function continuity(condition) {
-    return condition === "stale" ? "stale" : condition === "partial" ? "partial" : condition === "offline" ? "offline" : condition === "delayed" ? "delayed" : "live";
+  function continuity(condition2) {
+    return condition2 === "stale" ? "stale" : condition2 === "partial" ? "partial" : condition2 === "offline" ? "offline" : condition2 === "delayed" ? "delayed" : "live";
   }
-  function AnalyticalFigure({ title, question, subtitle, unit, asOf, source, condition = "confirmed", variant = "standard", continuityState, age, coverage, actions, selectedLabel, selectedValue, annotation, note, method, fallback, children, className = "", ...rest }) {
+  function AnalyticalFigure({ title, question, subtitle, unit, asOf, source, condition: condition2 = "confirmed", variant = "standard", continuityState, age, coverage, actions, selectedLabel, selectedValue, annotation, note, method, fallback, children, className = "", ...rest }) {
     inject35();
     const plot = /* @__PURE__ */ window.React.createElement("div", { className: "mds-figure__plot" }, children);
-    return /* @__PURE__ */ window.React.createElement("figure", { className: `mds-figure mds-figure--${variant}${className ? " " + className : ""}`, "data-variant": variant, ...rest }, /* @__PURE__ */ window.React.createElement("figcaption", { className: "mds-figure__head" }, /* @__PURE__ */ window.React.createElement("div", null, question ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-figure__question" }, question) : null, /* @__PURE__ */ window.React.createElement("h2", { className: "mds-figure__title" }, title), subtitle ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-figure__subtitle" }, subtitle) : null), /* @__PURE__ */ window.React.createElement("div", { className: "mds-figure__meta" }, unit ? /* @__PURE__ */ window.React.createElement("span", null, unit) : null, asOf ? /* @__PURE__ */ window.React.createElement("span", null, "As of ", asOf) : null, /* @__PURE__ */ window.React.createElement("span", { className: "mds-figure__cond", "data-condition": condition }, condition), actions)), continuityState || ["stale", "partial", "offline", "delayed"].includes(condition) ? /* @__PURE__ */ window.React.createElement(ContinuityFrame, { state: continuityState || continuity(condition), subject: title, snapshotAt: asOf, age, coverage }, plot) : plot, selectedLabel || selectedValue ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-figure__readout" }, /* @__PURE__ */ window.React.createElement("span", null, selectedLabel), /* @__PURE__ */ window.React.createElement("strong", null, selectedValue), annotation ? /* @__PURE__ */ window.React.createElement("span", null, annotation) : null) : null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-figure__foot" }, /* @__PURE__ */ window.React.createElement("span", null, note || method || ""), /* @__PURE__ */ window.React.createElement("span", null, source ? `Source: ${source}` : "Source not supplied")), fallback ? /* @__PURE__ */ window.React.createElement("details", { className: "mds-figure__fallback", open: variant === "print" || void 0 }, /* @__PURE__ */ window.React.createElement("summary", null, "Review exact values and text alternative"), /* @__PURE__ */ window.React.createElement("div", null, fallback)) : null);
+    return /* @__PURE__ */ window.React.createElement("figure", { className: `mds-figure mds-figure--${variant}${className ? " " + className : ""}`, "data-variant": variant, ...rest }, /* @__PURE__ */ window.React.createElement("figcaption", { className: "mds-figure__head" }, /* @__PURE__ */ window.React.createElement("div", null, question ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-figure__question" }, question) : null, /* @__PURE__ */ window.React.createElement("h2", { className: "mds-figure__title" }, title), subtitle ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-figure__subtitle" }, subtitle) : null), /* @__PURE__ */ window.React.createElement("div", { className: "mds-figure__meta" }, unit ? /* @__PURE__ */ window.React.createElement("span", null, unit) : null, asOf ? /* @__PURE__ */ window.React.createElement("span", null, "As of ", asOf) : null, /* @__PURE__ */ window.React.createElement("span", { className: "mds-figure__cond", "data-condition": condition2 }, condition2), actions)), continuityState || ["stale", "partial", "offline", "delayed"].includes(condition2) ? /* @__PURE__ */ window.React.createElement(ContinuityFrame, { state: continuityState || continuity(condition2), subject: title, snapshotAt: asOf, age, coverage }, plot) : plot, selectedLabel || selectedValue ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-figure__readout" }, /* @__PURE__ */ window.React.createElement("span", null, selectedLabel), /* @__PURE__ */ window.React.createElement("strong", null, selectedValue), annotation ? /* @__PURE__ */ window.React.createElement("span", null, annotation) : null) : null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-figure__foot" }, /* @__PURE__ */ window.React.createElement("span", null, note || method || ""), /* @__PURE__ */ window.React.createElement("span", null, source ? `Source: ${source}` : "Source not supplied")), fallback ? /* @__PURE__ */ window.React.createElement("details", { className: "mds-figure__fallback", open: variant === "print" || void 0 }, /* @__PURE__ */ window.React.createElement("summary", null, "Review exact values and text alternative"), /* @__PURE__ */ window.React.createElement("div", null, fallback)) : null);
   }
   function AnalyticalFigureGrid({ title, sharedScale, columns = 3, source, note, actions, children, className = "", style, ...rest }) {
     inject35();
@@ -5778,7 +5837,7 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
     children
     // (geo) => marks
   }) {
-    const uid6 = react_default.useId();
+    const uid5 = react_default.useId();
     const [ref, w] = useMeasuredWidth();
     const plotL = railSide === "right" ? padL : rail;
     const plotR = railSide === "right" ? Math.max(plotL + 40, w - rail) : Math.max(rail + 40, w - padL);
@@ -5815,7 +5874,7 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
         style: { display: "block" },
         role: ariaLabel ? "img" : void 0,
         "aria-label": ariaLabel,
-        "aria-describedby": ariaDescription ? `${uid6}-desc` : void 0,
+        "aria-describedby": ariaDescription ? `${uid5}-desc` : void 0,
         "aria-hidden": ariaLabel ? void 0 : "true"
       },
       /* @__PURE__ */ window.React.createElement("rect", { x: "0", y: "0", width: w, height, fill: "var(--chart-plot)" }),
@@ -5862,7 +5921,7 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
           opacity: "0.8"
         }
       )
-    ) : /* @__PURE__ */ window.React.createElement("div", { style: { width: "100%", height } }), ariaDescription && /* @__PURE__ */ window.React.createElement("p", { id: `${uid6}-desc`, style: SR }, ariaDescription), /* @__PURE__ */ window.React.createElement(AccessibleData, { data: accessibleData }));
+    ) : /* @__PURE__ */ window.React.createElement("div", { style: { width: "100%", height } }), ariaDescription && /* @__PURE__ */ window.React.createElement("p", { id: `${uid5}-desc`, style: SR }, ariaDescription), /* @__PURE__ */ window.React.createElement(AccessibleData, { data: accessibleData }));
   }
   ChartFrame.displayName = "ChartFrame";
 
@@ -6066,8 +6125,9 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
   CandleChart.displayName = "CandleChart";
 
   // components/charts/CashFlowLadder.jsx
-  var COND2 = { confirmed: "●", provisional: "◐", estimated: "○", stale: "◔", overridden: "◆", missing: "■", na: "—", pending: "◇", exception: "▲", reconciled: "✓" };
-  var glyph = (c) => COND2[String(c || "").toLowerCase()] || null;
+  var glyph = (condition2) => condition2 ? conditionMeta(condition2).glyph : null;
+  var finite = (value) => typeof value === "number" && Number.isFinite(value);
+  var unavailable = (condition2) => condition2 && ["restricted", "missing", "na"].includes(conditionMeta(condition2).key);
   var injected36 = false;
   function inject36() {
     if (injected36 || typeof document === "undefined") return;
@@ -6090,7 +6150,7 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
 .mds-cfl__row--action{cursor:pointer}
 .mds-cfl__row--action:hover{background:var(--bg-hover,#EDEFF0)}
 .mds-cfl__row--action:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
-.mds-cfl__row[data-selected="true"]{border-left-color:var(--selected,#496C8F);background:var(--surface-selected,#E7EDF2)}
+.mds-cfl__row[data-selected="true"]{border-left-color:var(--selected,#496C8F);background:var(--selected-surface,var(--bg-active,#E7EDF2))}
 .mds-cfl__label{font-size:11px;font-weight:600;color:var(--text-primary,#20252B)}
 .mds-cfl__label small{display:block;font:9px var(--font-data,monospace);font-weight:400;color:var(--text-muted,#606870)}
 .mds-cfl__track{position:relative;height:22px;background:var(--surface-recessed,var(--bg-medium,#EBE8E1))}
@@ -6152,6 +6212,11 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
     const tot = rows.reduce((t2, r) => ({ a: t2.a + r.a, l: t2.l + r.l, n: t2.n + r.n }), { a: 0, l: 0, n: 0 });
     const unscheduled = items.filter((x) => x.unscheduled);
     const Tag = onSelect ? "button" : "div";
+    const hasUnavailableInputs = items.some((item) => unavailable(item.condition) || !finite(item.assets) || !finite(item.liabilities) || ["net", "scenarioAssets", "scenarioLiabilities", "unscheduled"].some((key) => item[key] != null && !finite(item[key])));
+    if (hasUnavailableInputs) {
+      const withheld = items.some((item) => item.condition && conditionMeta(item.condition).key === "restricted");
+      return /* @__PURE__ */ window.React.createElement("div", { className: "mds-exposure-unavailable", role: "status", "aria-label": description, style: { fontFamily: "var(--font-body)", color: "var(--text-primary)", padding: 12, border: "1px solid var(--border)", background: "var(--surface-plate,var(--bg-light))" } }, /* @__PURE__ */ window.React.createElement("strong", null, description), /* @__PURE__ */ window.React.createElement("p", null, withheld ? "Restricted inputs are withheld. Totals and comparisons are unavailable." : "Input data is unavailable or invalid. Totals and comparisons cannot be computed; missing values are not zero."));
+    }
     return /* @__PURE__ */ window.React.createElement("div", { className: `mds-cfl${showTable ? "" : " mds-cfl--sr"}${className ? " " + className : ""}`, ...rest }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-cfl__head" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-cfl__legend" }, /* @__PURE__ */ window.React.createElement("span", null, /* @__PURE__ */ window.React.createElement("i", null), assetLabel), /* @__PURE__ */ window.React.createElement("span", null, /* @__PURE__ */ window.React.createElement("i", { "data-role": "liability" }), liabilityLabel), showScenario ? /* @__PURE__ */ window.React.createElement("span", null, /* @__PURE__ */ window.React.createElement("i", { "data-role": "scenario" }), scenarioLabel) : null), /* @__PURE__ */ window.React.createElement("span", { className: "mds-cfl__unit" }, currency, " · ", basis, bucketDefinition ? ` · ${bucketDefinition}` : "", asOf ? ` · as of ${asOf}` : "")), /* @__PURE__ */ window.React.createElement("div", { className: "mds-cfl__colhead" }, /* @__PURE__ */ window.React.createElement("span", null, "Period"), /* @__PURE__ */ window.React.createElement("span", null, liabilityLabel, " ← 0 → ", assetLabel), /* @__PURE__ */ window.React.createElement("span", null, "Net gap"), /* @__PURE__ */ window.React.createElement("span", null, cumulative ? "Cumulative" : "Coverage")), /* @__PURE__ */ window.React.createElement("div", { className: "mds-cfl__rows" }, rows.map((r, i) => {
       const g = glyph(r.condition);
       return /* @__PURE__ */ window.React.createElement(Tag, { key: r.id || r.label || i, type: onSelect ? "button" : void 0, className: `mds-cfl__row${onSelect ? " mds-cfl__row--action" : ""}`, "data-selected": String(r.id || r.label) === String(selectedId) ? "true" : void 0, onClick: onSelect ? () => onSelect(r, i) : void 0 }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-cfl__label" }, r.label, r.detail ? /* @__PURE__ */ window.React.createElement("small", null, r.detail) : null), /* @__PURE__ */ window.React.createElement("span", { className: "mds-cfl__track" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-cfl__zero" }), /* @__PURE__ */ window.React.createElement("span", { className: "mds-cfl__asset", style: { width: `${r.a / max * 48}%` } }), /* @__PURE__ */ window.React.createElement("span", { className: "mds-cfl__liab", style: { width: `${r.l / max * 48}%` } }), showScenario && r.scenarioAssets != null ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-cfl__scen", "data-band": "asset", style: { width: `${Math.abs(r.scenarioAssets) / max * 48}%` } }) : null, showScenario && r.scenarioLiabilities != null ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-cfl__scen", "data-band": "liability", "data-side": "liability", style: { width: `${Math.abs(r.scenarioLiabilities) / max * 48}%` } }) : null), /* @__PURE__ */ window.React.createElement("span", { className: "mds-cfl__value", "data-negative": r.n < 0 ? "true" : void 0 }, g ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-cfl__mark", "aria-hidden": "true" }, g) : null, signed2(r.n, valueFormat), /* @__PURE__ */ window.React.createElement("small", null, valueFormat(r.a), " in · ", valueFormat(r.l), " out")), /* @__PURE__ */ window.React.createElement("span", { className: "mds-cfl__value", "data-negative": cumulative && r.cum < 0 ? "true" : void 0 }, cumulative ? signed2(r.cum, valueFormat) : r.coverage ?? "—", r.unscheduled ? /* @__PURE__ */ window.React.createElement("small", null, valueFormat(r.unscheduled), " unscheduled") : null));
@@ -6185,6 +6250,30 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
     badgeY = null
     // override badge baseline (defaults to pane top)
   }) {
+    const uid5 = react_default.useId();
+    const ref = react_default.useRef(null);
+    const description = [
+      ...bands.map((band) => `Band ${band.label || ""} from index ${band.from} to index ${band.to}`),
+      ...events.map((event, index) => `Event ${event.badge ?? index + 1}${event.label ? `: ${event.label}` : ""}`),
+      ...pane ? callouts.map((callout) => callout.text).filter(Boolean) : []
+    ].join(". ");
+    react_default.useLayoutEffect(() => {
+      const svg = ref.current?.ownerSVGElement;
+      if (!svg || !description) return;
+      const include = () => {
+        const ids = (svg.getAttribute("aria-describedby") || "").split(/\s+/).filter(Boolean);
+        if (!ids.includes(uid5)) svg.setAttribute("aria-describedby", [...ids, uid5].join(" "));
+      };
+      include();
+      const observer = new MutationObserver(include);
+      observer.observe(svg, { attributes: true, attributeFilter: ["aria-describedby"] });
+      return () => {
+        observer.disconnect();
+        const ids = (svg.getAttribute("aria-describedby") || "").split(/\s+/).filter((id) => id && id !== uid5);
+        if (ids.length) svg.setAttribute("aria-describedby", ids.join(" "));
+        else svg.removeAttribute("aria-describedby");
+      };
+    }, [uid5, description, g]);
     if (!g) return null;
     const p = pane ? g.pane(pane) : null;
     const t2 = p ? p.t : g.innerT;
@@ -6192,7 +6281,7 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
     const y = p ? p.y : null;
     const by = badgeY != null ? badgeY : t2;
     const clampX = (x) => Math.max(g.plotL, Math.min(g.plotR, x));
-    return /* @__PURE__ */ window.React.createElement("g", null, bands.map((bd, i) => {
+    return /* @__PURE__ */ window.React.createElement("g", { ref }, description ? /* @__PURE__ */ window.React.createElement("desc", { id: uid5 }, description) : null, bands.map((bd, i) => {
       const x0 = clampX(g.x(bd.from)), x1 = clampX(g.x(bd.to));
       const c = kindColor(bd.kind);
       return /* @__PURE__ */ window.React.createElement("g", { key: "b" + i }, /* @__PURE__ */ window.React.createElement(
@@ -6309,6 +6398,7 @@ button.mds-plate:focus-visible{outline:2px solid var(--border-focus);outline-off
 .mds-plate__hd{display:flex;align-items:baseline;gap:8px;margin-bottom:8px;}
 .mds-plate__t{font-size:13px;font-weight:var(--weight-semibold,600);color:var(--text-primary);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mds-plate--sel .mds-plate__tag,.mds-plate--sel .mds-plate__fl{color:var(--text-secondary);}
 .mds-plate__tag{margin-left:auto;font-family:var(--font-data);font-size:10px;color:var(--text-muted);
   text-transform:uppercase;letter-spacing:.04em;}
 .mds-plate__ft{display:flex;align-items:baseline;gap:8px;margin-top:8px;padding-top:7px;
@@ -6452,7 +6542,7 @@ button.mds-plate:focus-visible{outline:2px solid var(--border-focus);outline-off
 .mds-cdg__toggle{margin-left:auto;display:flex;border:1px solid var(--border,#D2CDC3);border-radius:2px;overflow:hidden}
 .mds-cdg__toggle button{appearance:none;border:0;border-left:1px solid var(--border,#D2CDC3);background:var(--surface-plate,#F8F7F3);font:9px var(--font-data,monospace);text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted,#606870);padding:3px 8px;cursor:pointer}
 .mds-cdg__toggle button:first-child{border-left:0}
-.mds-cdg__toggle button[aria-pressed="true"]{background:var(--surface-selected,#E7EDF2);color:var(--text-primary,#20252B);font-weight:600}
+.mds-cdg__toggle button[aria-pressed="true"]{background:var(--selected-surface,var(--bg-active,#E7EDF2));color:var(--text-primary,#20252B);font-weight:600}
 .mds-cdg__toggle button:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
 .mds-cdg svg{width:100%;height:auto;display:block;background:var(--surface-well,var(--card-surface-raised,#FCFBF8));border:1px solid var(--border,#D2CDC3)}
 .mds-cdg__edge{fill:none;stroke:var(--border-strong,#AAA49A);stroke-width:1.25}
@@ -6594,7 +6684,7 @@ button.mds-plate:focus-visible{outline:2px solid var(--border-focus);outline-off
     };
     const ordered = [...nodes].sort((a, b) => (depth.get(String(a.id)) ?? 0) - (depth.get(String(b.id)) ?? 0));
     const blockedCount = nodes.filter((n) => BLOCKING.has(st2(n.status).key)).length;
-    return /* @__PURE__ */ window.React.createElement("div", { className: `mds-cdg${view === "outline" ? " mds-cdg--outline-only" : ""}${className ? " " + className : ""}`, ...rest }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-cdg__head" }, /* @__PURE__ */ window.React.createElement("b", null, title || description), /* @__PURE__ */ window.React.createElement("span", null, nodes.length, " nodes · ", edges.length, " relationships", blockedCount ? ` · ${blockedCount} blocked` : "", impeded.size ? ` · ${impeded.size} downstream impeded` : "", asOf ? ` · as of ${asOf}` : ""), /* @__PURE__ */ window.React.createElement("div", { className: "mds-cdg__toggle", role: "group", "aria-label": "View" }, /* @__PURE__ */ window.React.createElement("button", { type: "button", "aria-pressed": view === "graph", onClick: () => setView("graph") }, "Graph"), /* @__PURE__ */ window.React.createElement("button", { type: "button", "aria-pressed": view === "outline", onClick: () => setView("outline") }, "Outline"))), /* @__PURE__ */ window.React.createElement("svg", { viewBox: `0 0 ${width} ${height}`, role: "img", "aria-label": `${description}. ${nodes.length} nodes, ${edges.length} relationships. A numbered relationship outline follows.` }, edges.map((e, i) => {
+    return /* @__PURE__ */ window.React.createElement("div", { className: `mds-cdg${view === "outline" ? " mds-cdg--outline-only" : ""}${className ? " " + className : ""}`, ...rest }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-cdg__head" }, /* @__PURE__ */ window.React.createElement("b", null, title || description), /* @__PURE__ */ window.React.createElement("span", null, nodes.length, " nodes · ", edges.length, " relationships", blockedCount ? ` · ${blockedCount} blocked` : "", impeded.size ? ` · ${impeded.size} downstream impeded` : "", asOf ? ` · as of ${asOf}` : ""), /* @__PURE__ */ window.React.createElement("div", { className: "mds-cdg__toggle", role: "group", "aria-label": "View" }, /* @__PURE__ */ window.React.createElement("button", { type: "button", "aria-pressed": view === "graph", onClick: () => setView("graph") }, "Graph"), /* @__PURE__ */ window.React.createElement("button", { type: "button", "aria-pressed": view === "outline", onClick: () => setView("outline") }, "Outline"))), /* @__PURE__ */ window.React.createElement("svg", { viewBox: `0 0 ${width} ${height}`, role: onSelect ? "group" : "img", "aria-label": `${description}. ${nodes.length} nodes, ${edges.length} relationships. A numbered relationship outline follows.` }, edges.map((e, i) => {
       const type = String(e.type || "requires").toLowerCase();
       const blocked = e.blocked || BLOCKING.has(st2(byId.get(String(e.from))?.status).key);
       const onPath = critical.has(String(e.from)) && critical.has(String(e.to));
@@ -6613,7 +6703,7 @@ button.mds-plate:focus-visible{outline:2px solid var(--border-focus);outline-off
           className: "mds-cdg__hit",
           tabIndex: onSelect ? 0 : void 0,
           role: onSelect ? "button" : void 0,
-          "aria-label": `${n.label}, ${s.label}${n.owner ? `, owner ${n.owner}` : ""}${down ? ", impeded by an upstream block" : ""}`,
+          "aria-label": `${s.glyph} ${String(n.label).slice(0, 24)} ${TYPES2[String(n.type || "").toLowerCase()] || n.type || "Task"} · ${s.label} ${[n.owner, n.due].filter(Boolean).join(" · ") || (down ? "Impeded upstream" : "—")}. ${n.label}${down ? ", impeded by an upstream block" : ""}`,
           onClick: () => onSelect?.(n),
           onKeyDown: (e) => {
             if ((e.key === "Enter" || e.key === " ") && onSelect) {
@@ -6650,7 +6740,7 @@ button.mds-plate:focus-visible{outline:2px solid var(--border-focus);outline-off
 .mds-corr__rh{justify-content:flex-end;padding-right:8px;}
 .mds-corr__cell{display:flex;align-items:center;justify-content:center;font-size:11px;
   color:var(--text-primary,#20252B);font-variant-numeric:tabular-nums;cursor:default;}
-.mds-corr__cell--diag{color:var(--text-muted,#6B737B);}
+.mds-corr__cell--diag{color:var(--text-primary,#20252B);}
 .mds-corr__corner{background:var(--bg-medium,#EBE8E1);}
 `;
     const el = document.createElement("style");
@@ -6659,7 +6749,7 @@ button.mds-plate:focus-visible{outline:2px solid var(--border-focus);outline-off
     document.head.appendChild(el);
   }
   function cellColor(v) {
-    if (v == null || Number.isNaN(v)) return "var(--bg-light,#F8F7F3)";
+    if (typeof v !== "number" || !Number.isFinite(v)) return "var(--bg-light,#F8F7F3)";
     const mag = Math.min(1, Math.abs(v));
     const pct3 = (mag * 62).toFixed(0);
     const base = v >= 0 ? "var(--green,#2E7655)" : "var(--red,#B54B42)";
@@ -6678,7 +6768,7 @@ button.mds-plate:focus-visible{outline:2px solid var(--border-focus);outline-off
     inject40();
     const n = labels.length;
     const cols = `${headerSize}px repeat(${n}, ${cellSize}px)`;
-    return /* @__PURE__ */ window.React.createElement("div", { className: "mds-corr", style: { gridTemplateColumns: cols }, role: "grid", "aria-label": "Correlation matrix" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-corr__corner" }), labels.map((l) => /* @__PURE__ */ window.React.createElement("div", { key: "ch" + l, className: "mds-corr__h", role: "columnheader" }, l)), matrix.map((row, r) => /* @__PURE__ */ window.React.createElement(react_default.Fragment, { key: "r" + r }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-corr__h mds-corr__rh", role: "rowheader" }, labels[r]), row.map((v, c) => {
+    return /* @__PURE__ */ window.React.createElement("div", { className: "mds-corr", style: { gridTemplateColumns: cols }, role: "grid", "aria-label": "Correlation matrix" }, /* @__PURE__ */ window.React.createElement("div", { role: "row", style: { display: "contents" } }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-corr__corner", role: "columnheader", "aria-label": "Series" }), labels.map((l) => /* @__PURE__ */ window.React.createElement("div", { key: "ch" + l, className: "mds-corr__h", role: "columnheader" }, l))), matrix.map((row, r) => /* @__PURE__ */ window.React.createElement("div", { role: "row", key: "r" + r, style: { display: "contents" } }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-corr__h mds-corr__rh", role: "rowheader" }, labels[r]), row.map((v, c) => {
       const diag = r === c;
       return /* @__PURE__ */ window.React.createElement(
         "div",
@@ -6686,11 +6776,11 @@ button.mds-plate:focus-visible{outline:2px solid var(--border-focus);outline-off
           key: "c" + r + "-" + c,
           role: "gridcell",
           className: `mds-corr__cell${diag ? " mds-corr__cell--diag" : ""}`,
-          style: { background: diag ? "var(--bg-active,#E7EDF2)" : cellColor(v), height: cellSize },
-          title: `${labels[r]} · ${labels[c]} = ${v == null ? "—" : valueFmt(v)}`,
+          style: { background: diag ? "var(--selected-surface,var(--bg-active,#E7EDF2))" : cellColor(v), height: cellSize },
+          title: `${labels[r]} · ${labels[c]} = ${typeof v !== "number" || !Number.isFinite(v) ? "—" : valueFmt(v)}`,
           onMouseEnter: onCellHover ? () => onCellHover({ row: r, col: c, value: v }) : void 0
         },
-        showValues && v != null && !Number.isNaN(v) ? valueFmt(v) : ""
+        showValues && typeof v === "number" && Number.isFinite(v) ? valueFmt(v) : ""
       );
     }))));
   }
@@ -6787,13 +6877,14 @@ button.mds-covm__cell{cursor:pointer;}
       if (el) el.focus();
     };
     const describe = (r, c, e) => `${r.label} · ${c.label} · ${STATUS_LABEL[e.status] || e.status}${e.detail ? ` (${e.detail})` : ""}`;
-    return /* @__PURE__ */ window.React.createElement("div", { className: `mds-covm${className ? " " + className : ""}`, ...rest }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-covm__scroll" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-covm__grid", style: { gridTemplateColumns: template }, role: "grid", "aria-label": "Coverage matrix", onKeyDown }, colLabels && /* @__PURE__ */ window.React.createElement(react_default.Fragment, null, /* @__PURE__ */ window.React.createElement("span", null), C.map((c) => /* @__PURE__ */ window.React.createElement("span", { key: c.id, className: "mds-covm__collab" }, c.label))), R.map((r, ri) => /* @__PURE__ */ window.React.createElement(react_default.Fragment, { key: r.id }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-covm__rowlab", role: "rowheader" }, r.label), C.map((c, ci) => {
+    return /* @__PURE__ */ window.React.createElement("div", { className: `mds-covm${className ? " " + className : ""}`, ...rest }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-covm__scroll", role: "region", "aria-label": "Coverage matrix scroll area", tabIndex: interactive ? void 0 : 0 }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-covm__grid", style: { gridTemplateColumns: template }, role: "grid", "aria-label": "Coverage matrix", "aria-rowcount": R.length + (colLabels ? 1 : 0), "aria-colcount": C.length + 1, onKeyDown }, colLabels && /* @__PURE__ */ window.React.createElement("div", { role: "row", style: { display: "contents" } }, /* @__PURE__ */ window.React.createElement("span", { role: "columnheader", "aria-label": "Instrument" }), C.map((c) => /* @__PURE__ */ window.React.createElement("span", { role: "columnheader", key: c.id, className: "mds-covm__collab" }, c.label))), R.map((r, ri) => /* @__PURE__ */ window.React.createElement("div", { role: "row", key: r.id, style: { display: "contents" } }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-covm__rowlab", role: "rowheader" }, r.label), C.map((c, ci) => {
       const e = lookup(r, c);
       const label2 = describe(r, c, e);
       return /* @__PURE__ */ window.React.createElement(
         CellTag,
         {
           key: c.id,
+          role: "gridcell",
           type: interactive ? "button" : void 0,
           className: `mds-covm__cell mds-covm__cell--${e.status || "none"}`,
           style: { width: cellSize, height: cellSize },
@@ -7189,8 +7280,9 @@ button.mds-covm__cell{cursor:pointer;}
   DrawdownChart.displayName = "DrawdownChart";
 
   // components/charts/DurationContribution.jsx
-  var COND3 = { confirmed: "●", provisional: "◐", estimated: "○", stale: "◔", overridden: "◆", missing: "■", na: "—", pending: "◇", exception: "▲", reconciled: "✓" };
-  var glyph2 = (c) => COND3[String(c || "").toLowerCase()] || null;
+  var glyph2 = (condition2) => condition2 ? conditionMeta(condition2).glyph : null;
+  var finite2 = (value) => typeof value === "number" && Number.isFinite(value);
+  var unavailable2 = (condition2) => condition2 && ["restricted", "missing", "na"].includes(conditionMeta(condition2).key);
   var RANKS = [{ id: "contribution", label: "Contribution" }, { id: "difference", label: "Difference" }, { id: "weight", label: "Weight" }, { id: "label", label: "Name" }];
   var injected42 = false;
   function inject42() {
@@ -7205,7 +7297,7 @@ button.mds-covm__cell{cursor:pointer;}
 .mds-dc__ranks{margin-left:auto;display:flex;border:1px solid var(--border,#D2CDC3);border-radius:2px;overflow:hidden}
 .mds-dc__ranks button{appearance:none;border:0;border-left:1px solid var(--border,#D2CDC3);background:var(--surface-plate,#F8F7F3);font:9px var(--font-data,monospace);text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted,#606870);padding:3px 8px;cursor:pointer}
 .mds-dc__ranks button:first-child{border-left:0}
-.mds-dc__ranks button[aria-pressed="true"]{background:var(--surface-selected,#E7EDF2);color:var(--text-primary,#20252B);font-weight:600}
+.mds-dc__ranks button[aria-pressed="true"]{background:var(--selected-surface,var(--bg-active,#E7EDF2));color:var(--text-primary,#20252B);font-weight:600}
 .mds-dc__ranks button:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
 .mds-dc__unit{flex-basis:100%;font:9px var(--font-data,monospace);color:var(--text-muted,#606870)}
 .mds-dc__colhead,.mds-dc__row{display:grid;grid-template-columns:minmax(118px,1.3fr) 64px 64px 1.5fr 76px 76px;gap:10px;align-items:center}
@@ -7215,7 +7307,7 @@ button.mds-covm__cell{cursor:pointer;}
 .mds-dc__row{min-height:32px;width:100%;border:0;border-bottom:1px solid var(--border-divider,#E2DED5);border-left:2px solid transparent;background:none;padding:0;text-align:left;font:inherit;color:inherit;cursor:pointer}
 .mds-dc__row:hover{background:var(--bg-hover,#EDEFF0)}
 .mds-dc__row:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
-.mds-dc__row[aria-selected="true"]{border-left-color:var(--selected,#496C8F);background:var(--surface-selected,#E7EDF2)}
+.mds-dc__row[aria-selected="true"]{border-left-color:var(--selected,#496C8F);background:var(--selected-surface,var(--bg-active,#E7EDF2))}
 .mds-dc__label{font-size:11px;font-weight:600;color:var(--text-primary,#20252B);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mds-dc__label small{display:block;font:9px var(--font-data,monospace);font-weight:400;color:var(--text-muted,#606870)}
 .mds-dc__num{text-align:right;font:11px var(--font-data,monospace);font-variant-numeric:tabular-nums;color:var(--text-primary,#20252B)}
@@ -7245,7 +7337,7 @@ button.mds-covm__cell{cursor:pointer;}
   var n2 = (v) => Number(v).toFixed(2);
   var pct = (v) => `${(Math.round(Number(v) * 10) / 10).toFixed(1)}%`;
   var signed3 = (v, f = n2) => `${v < 0 ? "−" : "+"}${f(Math.abs(v))}`;
-  var has3 = (v) => v !== null && v !== void 0 && v !== "";
+  var has2 = (v) => v !== null && v !== void 0 && v !== "";
   function DurationContribution({
     items = [],
     durationDefinition = "Effective duration",
@@ -7280,14 +7372,14 @@ button.mds-covm__cell{cursor:pointer;}
       if (onRankChange) onRankChange(r);
     };
     const rows = items.map((x) => {
-      const contribution = has3(x.contribution) ? Number(x.contribution) : has3(x.weight) && has3(x.duration) ? Number(x.weight) / 100 * Number(x.duration) : null;
-      const cmp = has3(x.comparisonContribution) ? Number(x.comparisonContribution) : null;
+      const contribution = has2(x.contribution) ? Number(x.contribution) : has2(x.weight) && has2(x.duration) ? Number(x.weight) / 100 * Number(x.duration) : null;
+      const cmp = has2(x.comparisonContribution) ? Number(x.comparisonContribution) : null;
       return {
         ...x,
         contribution,
         cmp,
         diff: contribution != null && cmp != null ? contribution - cmp : null,
-        incomplete: !has3(x.weight) || !has3(x.duration)
+        incomplete: !has2(x.weight) || !has2(x.duration)
       };
     });
     const sorted = react_default.useMemo(() => {
@@ -7301,7 +7393,7 @@ button.mds-covm__cell{cursor:pointer;}
     const sum = rows.reduce((n, r) => n + (r.contribution || 0), 0);
     const sumCmp = rows.reduce((n, r) => n + (r.cmp || 0), 0);
     const sumW = rows.reduce((n, r) => n + (Number(r.weight) || 0), 0);
-    const stated = has3(total) ? Number(total) : null;
+    const stated = has2(total) ? Number(total) : null;
     const residual = stated != null ? stated - sum : 0;
     const ties = stated == null || Math.abs(residual) < 5e-3;
     const incomplete = rows.filter((r) => r.incomplete);
@@ -7329,6 +7421,11 @@ button.mds-covm__cell{cursor:pointer;}
       e.preventDefault();
       kids[n]?.focus();
     };
+    const hasUnavailableInputs = items.some((item) => unavailable2(item.condition) || ["weight", "duration", "contribution", "comparisonContribution"].some((key) => item[key] != null && !finite2(item[key])) || !finite2(item.contribution) && !(finite2(item.weight) && finite2(item.duration)));
+    if (hasUnavailableInputs) {
+      const withheld = items.some((item) => item.condition && conditionMeta(item.condition).key === "restricted");
+      return /* @__PURE__ */ window.React.createElement("div", { className: "mds-exposure-unavailable", role: "status", "aria-label": description, style: { fontFamily: "var(--font-body)", color: "var(--text-primary)", padding: 12, border: "1px solid var(--border)", background: "var(--surface-plate,var(--bg-light))" } }, /* @__PURE__ */ window.React.createElement("strong", null, description), /* @__PURE__ */ window.React.createElement("p", null, withheld ? "Restricted inputs are withheld. Totals and comparisons are unavailable." : "Input data is unavailable or invalid. Totals and comparisons cannot be computed; missing values are not zero."));
+    }
     return /* @__PURE__ */ window.React.createElement("div", { className: `mds-dc${showTable ? "" : " mds-dc--sr"}${className ? " " + className : ""}`, ...rest }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-dc__head" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-dc__def" }, durationDefinition, scenario ? ` · Scenario: ${scenario}` : ""), /* @__PURE__ */ window.React.createElement("div", { className: "mds-dc__ranks", role: "group", "aria-label": "Rank by" }, RANKS.filter((r) => r.id !== "difference" || showComparison).map((r) => /* @__PURE__ */ window.React.createElement("button", { key: r.id, type: "button", "aria-pressed": rank2 === r.id, onClick: () => setRank(r.id) }, r.label))), /* @__PURE__ */ window.React.createElement("span", { className: "mds-dc__unit" }, "Duration in ", durationUnit, " · contribution in ", contributionUnit, " · weight in percent of ", unit || "market value", groupBy ? ` · grouped by ${groupBy}` : "", asOf ? ` · as of ${asOf}` : "", scenario ? " · scenario values are scenarios, not forecasts" : "")), /* @__PURE__ */ window.React.createElement("div", { className: "mds-dc__colhead" }, /* @__PURE__ */ window.React.createElement("span", null, groupBy || "Entity"), /* @__PURE__ */ window.React.createElement("span", null, "Weight"), /* @__PURE__ */ window.React.createElement("span", null, "Duration"), /* @__PURE__ */ window.React.createElement("span", null, "Contribution · zero datum"), /* @__PURE__ */ window.React.createElement("span", null, "Contribution"), /* @__PURE__ */ window.React.createElement("span", null, showComparison ? "vs " + comparisonLabel : "Share")), /* @__PURE__ */ window.React.createElement("div", { className: "mds-dc__rows", role: "listbox", "aria-label": description }, sorted.map((r, i) => {
       const selected = String(selectedId) === String(r.id);
       const g = glyph2(r.condition);
@@ -7347,13 +7444,13 @@ button.mds-covm__cell{cursor:pointer;}
           onKeyDown: (e) => onKey(e, i)
         },
         /* @__PURE__ */ window.React.createElement("span", { className: "mds-dc__label" }, r.label, r.detail ? /* @__PURE__ */ window.React.createElement("small", null, r.detail) : r.incomplete ? /* @__PURE__ */ window.React.createElement("small", null, "Incomplete inputs") : null),
-        /* @__PURE__ */ window.React.createElement("span", { className: "mds-dc__num", "data-missing": !has3(r.weight) ? "true" : void 0 }, has3(r.weight) ? pct(r.weight) : "Missing"),
-        /* @__PURE__ */ window.React.createElement("span", { className: "mds-dc__num", "data-missing": !has3(r.duration) ? "true" : void 0 }, has3(r.duration) ? valueFormat(r.duration) : "Missing"),
+        /* @__PURE__ */ window.React.createElement("span", { className: "mds-dc__num", "data-missing": !has2(r.weight) ? "true" : void 0 }, has2(r.weight) ? pct(r.weight) : "Missing"),
+        /* @__PURE__ */ window.React.createElement("span", { className: "mds-dc__num", "data-missing": !has2(r.duration) ? "true" : void 0 }, has2(r.duration) ? valueFormat(r.duration) : "Missing"),
         /* @__PURE__ */ window.React.createElement("span", { className: "mds-dc__track" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-dc__zero", style: { left: `${zero}%` } }), /* @__PURE__ */ window.React.createElement("span", { className: "mds-dc__bar", "data-negative": (r.contribution ?? 0) < 0 ? "true" : void 0, style: bar }), showComparison && r.cmp != null ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-dc__cmp", style: barOf(r.cmp) }) : null),
         /* @__PURE__ */ window.React.createElement("span", { className: "mds-dc__num" }, g ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-dc__mark", "aria-hidden": "true" }, g) : null, r.contribution == null ? "—" : valueFormat(r.contribution)),
         /* @__PURE__ */ window.React.createElement("span", { className: "mds-dc__num" }, showComparison ? r.diff == null ? "—" : signed3(r.diff, valueFormat) : sum ? pct((r.contribution || 0) / sum * 100) : "—")
       );
-    })), /* @__PURE__ */ window.React.createElement("div", { className: "mds-dc__totals" }, /* @__PURE__ */ window.React.createElement("span", null, "Total"), /* @__PURE__ */ window.React.createElement("span", null, pct(sumW)), /* @__PURE__ */ window.React.createElement("span", null, "—"), /* @__PURE__ */ window.React.createElement("span", null), /* @__PURE__ */ window.React.createElement("span", null, valueFormat(sum)), /* @__PURE__ */ window.React.createElement("span", null, showComparison ? signed3(sum - (has3(comparisonTotal) ? Number(comparisonTotal) : sumCmp), valueFormat) : pct(100))), /* @__PURE__ */ window.React.createElement("p", { className: "mds-dc__tie", "data-ok": ties ? "true" : "false" }, stated == null ? `Contributions sum to ${valueFormat(sum)} ${contributionUnit}; no aggregate total supplied to tie against.` : ties ? `Contributions tie to the stated portfolio duration of ${valueFormat(stated)} ${contributionUnit}.` : `Contributions sum to ${valueFormat(sum)} against a stated total of ${valueFormat(stated)} — residual ${signed3(residual, valueFormat)} ${contributionUnit} is unexplained.`, incomplete.length ? ` ${incomplete.length} row${incomplete.length === 1 ? "" : "s"} missing weight or duration; contribution shown only where both inputs exist.` : "", source ? ` Source: ${source}.` : ""), /* @__PURE__ */ window.React.createElement("table", { className: "mds-dc__table" }, /* @__PURE__ */ window.React.createElement("caption", null, description, " · ", durationDefinition, " · ", contributionUnit, asOf ? ` · as of ${asOf}` : "", scenario ? ` · scenario ${scenario}` : ""), /* @__PURE__ */ window.React.createElement("thead", null, /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, groupBy || "Entity"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Weight"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Duration"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Contribution"), showComparison ? /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, comparisonLabel) : null, showComparison ? /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Difference") : null, /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Condition"))), /* @__PURE__ */ window.React.createElement("tbody", null, sorted.map((r, i) => /* @__PURE__ */ window.React.createElement("tr", { key: r.id || i }, /* @__PURE__ */ window.React.createElement("th", { scope: "row" }, r.label), /* @__PURE__ */ window.React.createElement("td", null, has3(r.weight) ? pct(r.weight) : "Missing"), /* @__PURE__ */ window.React.createElement("td", null, has3(r.duration) ? valueFormat(r.duration) : "Missing"), /* @__PURE__ */ window.React.createElement("td", null, r.contribution == null ? "—" : valueFormat(r.contribution)), showComparison ? /* @__PURE__ */ window.React.createElement("td", null, r.cmp == null ? "—" : valueFormat(r.cmp)) : null, showComparison ? /* @__PURE__ */ window.React.createElement("td", null, r.diff == null ? "—" : signed3(r.diff, valueFormat)) : null, /* @__PURE__ */ window.React.createElement("td", null, r.condition || "confirmed"))), /* @__PURE__ */ window.React.createElement("tr", { "data-total": "true" }, /* @__PURE__ */ window.React.createElement("th", { scope: "row" }, "Total"), /* @__PURE__ */ window.React.createElement("td", null, pct(sumW)), /* @__PURE__ */ window.React.createElement("td", null, "—"), /* @__PURE__ */ window.React.createElement("td", null, valueFormat(sum)), showComparison ? /* @__PURE__ */ window.React.createElement("td", null, valueFormat(has3(comparisonTotal) ? Number(comparisonTotal) : sumCmp)) : null, showComparison ? /* @__PURE__ */ window.React.createElement("td", null, signed3(sum - (has3(comparisonTotal) ? Number(comparisonTotal) : sumCmp), valueFormat)) : null, /* @__PURE__ */ window.React.createElement("td", null, "—")))));
+    })), /* @__PURE__ */ window.React.createElement("div", { className: "mds-dc__totals" }, /* @__PURE__ */ window.React.createElement("span", null, "Total"), /* @__PURE__ */ window.React.createElement("span", null, pct(sumW)), /* @__PURE__ */ window.React.createElement("span", null, "—"), /* @__PURE__ */ window.React.createElement("span", null), /* @__PURE__ */ window.React.createElement("span", null, valueFormat(sum)), /* @__PURE__ */ window.React.createElement("span", null, showComparison ? signed3(sum - (has2(comparisonTotal) ? Number(comparisonTotal) : sumCmp), valueFormat) : sum ? pct(100) : "—")), /* @__PURE__ */ window.React.createElement("p", { className: "mds-dc__tie", "data-ok": ties ? "true" : "false" }, stated == null ? `Contributions sum to ${valueFormat(sum)} ${contributionUnit}; no aggregate total supplied to tie against.` : ties ? `Contributions tie to the stated portfolio duration of ${valueFormat(stated)} ${contributionUnit}.` : `Contributions sum to ${valueFormat(sum)} against a stated total of ${valueFormat(stated)} — residual ${signed3(residual, valueFormat)} ${contributionUnit} is unexplained.`, incomplete.length ? ` ${incomplete.length} row${incomplete.length === 1 ? "" : "s"} missing weight or duration; only explicitly supplied contributions remain available for those rows.` : "", source ? ` Source: ${source}.` : ""), /* @__PURE__ */ window.React.createElement("table", { className: "mds-dc__table" }, /* @__PURE__ */ window.React.createElement("caption", null, description, " · ", durationDefinition, " · ", contributionUnit, asOf ? ` · as of ${asOf}` : "", scenario ? ` · scenario ${scenario}` : ""), /* @__PURE__ */ window.React.createElement("thead", null, /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, groupBy || "Entity"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Weight"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Duration"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Contribution"), showComparison ? /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, comparisonLabel) : null, showComparison ? /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Difference") : null, /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Condition"))), /* @__PURE__ */ window.React.createElement("tbody", null, sorted.map((r, i) => /* @__PURE__ */ window.React.createElement("tr", { key: r.id || i }, /* @__PURE__ */ window.React.createElement("th", { scope: "row" }, r.label), /* @__PURE__ */ window.React.createElement("td", null, has2(r.weight) ? pct(r.weight) : "Missing"), /* @__PURE__ */ window.React.createElement("td", null, has2(r.duration) ? valueFormat(r.duration) : "Missing"), /* @__PURE__ */ window.React.createElement("td", null, r.contribution == null ? "—" : valueFormat(r.contribution)), showComparison ? /* @__PURE__ */ window.React.createElement("td", null, r.cmp == null ? "—" : valueFormat(r.cmp)) : null, showComparison ? /* @__PURE__ */ window.React.createElement("td", null, r.diff == null ? "—" : signed3(r.diff, valueFormat)) : null, /* @__PURE__ */ window.React.createElement("td", null, r.condition || "confirmed"))), /* @__PURE__ */ window.React.createElement("tr", { "data-total": "true" }, /* @__PURE__ */ window.React.createElement("th", { scope: "row" }, "Total"), /* @__PURE__ */ window.React.createElement("td", null, pct(sumW)), /* @__PURE__ */ window.React.createElement("td", null, "—"), /* @__PURE__ */ window.React.createElement("td", null, valueFormat(sum)), showComparison ? /* @__PURE__ */ window.React.createElement("td", null, valueFormat(has2(comparisonTotal) ? Number(comparisonTotal) : sumCmp)) : null, showComparison ? /* @__PURE__ */ window.React.createElement("td", null, signed3(sum - (has2(comparisonTotal) ? Number(comparisonTotal) : sumCmp), valueFormat)) : null, /* @__PURE__ */ window.React.createElement("td", null, "—")))));
   }
 
   // components/charts/EquityCurve.jsx
@@ -7664,8 +7761,8 @@ button.mds-covm__cell{cursor:pointer;}
       all.push(r.lo, r.hi);
       if (r.mid !== void 0) all.push(r.mid);
     });
-    const finite = all.filter((v) => typeof v === "number" && isFinite(v));
-    const dom = domain || [Math.min(...finite), Math.max(...finite)];
+    const finite5 = all.filter((v) => typeof v === "number" && isFinite(v));
+    const dom = domain || [Math.min(...finite5), Math.max(...finite5)];
     const span = dom[1] - dom[0] || 1;
     const pct3 = (v) => `${((v - dom[0]) / span * 100).toFixed(2)}%`;
     return /* @__PURE__ */ window.React.createElement("div", { className: `mds-ivb${className ? " " + className : ""}`, ...rest }, rows.map((r, i) => /* @__PURE__ */ window.React.createElement(react_default.Fragment, { key: r.id || r.label || i }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-ivb__lbl" }, r.label), /* @__PURE__ */ window.React.createElement(
@@ -7708,6 +7805,7 @@ button.mds-covm__cell{cursor:pointer;}
 .mds-lin__node--sel{border-color:var(--viz-select-rail);border-width:2px;background:var(--viz-select-surface);}
 .mds-lin__nl{font-size:12px;font-weight:var(--weight-semibold,600);color:var(--text-primary);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mds-lin__node--sel .mds-lin__nm{color:var(--text-secondary);}
 .mds-lin__nm{font-family:var(--font-data);font-size:10px;color:var(--text-muted);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .mds-lin__out{display:flex;flex-direction:column;gap:3px;margin:0;padding:0;list-style:none;}
@@ -7804,15 +7902,16 @@ button.mds-covm__cell{cursor:pointer;}
     })), nodes.map((n) => {
       const p = pos.get(n.id);
       if (!p) return null;
+      const Node = onSelect ? "button" : "div";
       return /* @__PURE__ */ window.React.createElement(
-        "button",
+        Node,
         {
           key: n.id,
-          type: "button",
+          type: onSelect ? "button" : void 0,
           className: `mds-lin__node${selectedId === n.id ? " mds-lin__node--sel" : ""}`,
           style: { left: p.x, top: p.y, width: nodeWidth, height: nodeHeight },
-          "aria-pressed": selectedId === n.id,
-          onClick: () => onSelect && onSelect(n.id)
+          "aria-pressed": onSelect ? selectedId === n.id : void 0,
+          onClick: onSelect ? () => onSelect(n.id) : void 0
         },
         /* @__PURE__ */ window.React.createElement("span", { className: "mds-lin__nl" }, n.label),
         /* @__PURE__ */ window.React.createElement("span", { className: "mds-lin__nm" }, n.meta || KIND_LABEL[n.kind] || "")
@@ -7824,8 +7923,9 @@ button.mds-covm__cell{cursor:pointer;}
   }
 
   // components/charts/MaturityLadder.jsx
-  var COND4 = { confirmed: "●", provisional: "◐", estimated: "○", stale: "◔", overridden: "◆", missing: "■", na: "—", pending: "◇", exception: "▲", reconciled: "✓" };
-  var glyph3 = (c) => COND4[String(c || "").toLowerCase()] || null;
+  var glyph3 = (condition2) => condition2 ? conditionMeta(condition2).glyph : null;
+  var finite3 = (value) => typeof value === "number" && Number.isFinite(value);
+  var unavailable3 = (condition2) => condition2 && ["restricted", "missing", "na"].includes(conditionMeta(condition2).key);
   var MATURITY_BUCKETS = ["0–1 year", "1–3 years", "3–5 years", "5–7 years", "7–10 years", "10–20 years", "20+ years", "Unknown"];
   var MODES3 = [{ id: "amount", label: "Amount" }, { id: "percent", label: "Percent" }];
   var UNKNOWN = /^unknown|^unscheduled|^perpetual|^no maturity/i;
@@ -7845,7 +7945,7 @@ button.mds-covm__cell{cursor:pointer;}
 .mds-ml__modes{margin-left:auto;display:flex;border:1px solid var(--border,#D2CDC3);border-radius:2px;overflow:hidden}
 .mds-ml__modes button{appearance:none;border:0;border-left:1px solid var(--border,#D2CDC3);background:var(--surface-plate,#F8F7F3);font:9px var(--font-data,monospace);text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted,#606870);padding:3px 8px;cursor:pointer}
 .mds-ml__modes button:first-child{border-left:0}
-.mds-ml__modes button[aria-pressed="true"]{background:var(--surface-selected,#E7EDF2);color:var(--text-primary,#20252B);font-weight:600}
+.mds-ml__modes button[aria-pressed="true"]{background:var(--selected-surface,var(--bg-active,#E7EDF2));color:var(--text-primary,#20252B);font-weight:600}
 .mds-ml__modes button:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
 .mds-ml__unit{font:9px var(--font-data,monospace);color:var(--text-muted,#606870);flex-basis:100%}
 .mds-ml__colhead,.mds-ml__row{display:grid;grid-template-columns:minmax(78px,104px) 1fr 92px 92px 96px;gap:10px;align-items:center}
@@ -7855,7 +7955,7 @@ button.mds-covm__cell{cursor:pointer;}
 .mds-ml__row--action{cursor:pointer}
 .mds-ml__row--action:hover{background:var(--bg-hover,#EDEFF0)}
 .mds-ml__row--action:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
-.mds-ml__row[data-selected="true"]{border-left-color:var(--selected,#496C8F);background:var(--surface-selected,#E7EDF2)}
+.mds-ml__row[data-selected="true"]{border-left-color:var(--selected,#496C8F);background:var(--selected-surface,var(--bg-active,#E7EDF2))}
 .mds-ml__row[data-unknown="true"] .mds-ml__label{font-style:italic}
 .mds-ml__label{font-size:11px;font-weight:600;color:var(--text-primary,#20252B)}
 .mds-ml__label small{display:block;font:9px var(--font-data,monospace);font-weight:400;color:var(--text-muted,#606870)}
@@ -7917,7 +8017,7 @@ button.mds-covm__cell{cursor:pointer;}
       if (modeProp === void 0) setOwn(m2);
       if (onModeChange) onModeChange(m2);
     };
-    const declared = buckets || (items.length ? items.map((x) => x.label) : MATURITY_BUCKETS);
+    const declared = buckets || MATURITY_BUCKETS;
     const byLabel = new Map(items.map((x) => [String(x.label), x]));
     const rows = declared.map((label2) => {
       const x = byLabel.get(String(label2)) || { label: label2, primary: 0, comparison: 0, condition: "na", empty: true };
@@ -7938,6 +8038,11 @@ button.mds-covm__cell{cursor:pointer;}
     }));
     const Tag = onSelect ? "button" : "div";
     const unknownRow = rows.find((r) => r.unknown && (r.p || r.c));
+    const hasUnavailableInputs = items.some((item) => unavailable3(item.condition) || !finite3(item.primary) || !finite3(item.comparison));
+    if (hasUnavailableInputs) {
+      const withheld = items.some((item) => item.condition && conditionMeta(item.condition).key === "restricted");
+      return /* @__PURE__ */ window.React.createElement("div", { className: "mds-exposure-unavailable", role: "status", "aria-label": description, style: { fontFamily: "var(--font-body)", color: "var(--text-primary)", padding: 12, border: "1px solid var(--border)", background: "var(--surface-plate,var(--bg-light))" } }, /* @__PURE__ */ window.React.createElement("strong", null, description), /* @__PURE__ */ window.React.createElement("p", null, withheld ? "Restricted inputs are withheld. Totals and comparisons are unavailable." : "Input data is unavailable or invalid. Totals and comparisons cannot be computed; missing values are not zero."));
+    }
     return /* @__PURE__ */ window.React.createElement("div", { className: `mds-ml${showTable ? "" : " mds-ml--sr"}${className ? " " + className : ""}`, ...rest }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-ml__head" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-ml__key" }, /* @__PURE__ */ window.React.createElement("span", null, /* @__PURE__ */ window.React.createElement("i", null), primaryLabel), /* @__PURE__ */ window.React.createElement("span", null, /* @__PURE__ */ window.React.createElement("i", { "data-role": "comparison" }), comparisonLabel)), /* @__PURE__ */ window.React.createElement("div", { className: "mds-ml__modes", role: "group", "aria-label": "Value mode" }, MODES3.map((m2) => /* @__PURE__ */ window.React.createElement("button", { key: m2.id, type: "button", "aria-pressed": mode === m2.id, onClick: () => setMode(m2.id) }, m2.label))), /* @__PURE__ */ window.React.createElement("span", { className: "mds-ml__unit" }, comparisonMode ? `${comparisonMode} · ` : "", measure, " · ", mode === "percent" ? "percent of total" : currency, bucketDefinition ? ` · ${bucketDefinition}` : "", asOf ? ` · as of ${asOf}` : "")), /* @__PURE__ */ window.React.createElement("div", { className: "mds-ml__colhead" }, /* @__PURE__ */ window.React.createElement("span", null, "Bucket"), /* @__PURE__ */ window.React.createElement("span", null, "Shared scale"), /* @__PURE__ */ window.React.createElement("span", null, primaryLabel), /* @__PURE__ */ window.React.createElement("span", null, comparisonLabel), /* @__PURE__ */ window.React.createElement("span", null, "Difference")), /* @__PURE__ */ window.React.createElement("div", { className: "mds-ml__rows" }, rows.map((r, i) => {
       const v = view(r);
       const d = v.p - v.c;
@@ -7958,7 +8063,7 @@ button.mds-covm__cell{cursor:pointer;}
         /* @__PURE__ */ window.React.createElement("span", { className: "mds-ml__value" }, fmt6(v.c)),
         /* @__PURE__ */ window.React.createElement("span", { className: "mds-ml__diff" }, signed4(d, (x) => mode === "percent" ? pct2(x) : valueFormat(x)), /* @__PURE__ */ window.React.createElement("small", null, mode === "percent" ? "pp vs" : "vs", " ", comparisonLabel))
       );
-    })), /* @__PURE__ */ window.React.createElement("div", { className: "mds-ml__totals" }, /* @__PURE__ */ window.React.createElement("span", null, "Total"), /* @__PURE__ */ window.React.createElement("span", null), /* @__PURE__ */ window.React.createElement("span", null, mode === "percent" ? pct2(100) : valueFormat(totP)), /* @__PURE__ */ window.React.createElement("span", null, mode === "percent" ? pct2(100) : valueFormat(totC)), /* @__PURE__ */ window.React.createElement("span", null, mode === "percent" ? "—" : signed4(totP - totC, valueFormat))), /* @__PURE__ */ window.React.createElement("p", { className: "mds-ml__note" }, "Buckets are fixed and fully enumerated; empty buckets are shown at zero.", unknownRow ? ` Unknown maturity carries ${mode === "percent" ? pct2(share(unknownRow.p, totP)) : valueFormat(unknownRow.p)} and is never redistributed.` : " No exposure carries unknown maturity.", coverage ? ` Coverage: ${coverage}.` : "", source ? ` Source: ${source}.` : "", ` Difference stated in ${diffUnit}; amount and percent are not mixed.`), /* @__PURE__ */ window.React.createElement("table", { className: "mds-ml__table" }, /* @__PURE__ */ window.React.createElement("caption", null, description, " · ", measure, " · ", currency, asOf ? ` · as of ${asOf}` : "", comparisonMode ? ` · ${comparisonMode}` : ""), /* @__PURE__ */ window.React.createElement("thead", null, /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Bucket"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, primaryLabel), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Share"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, comparisonLabel), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Share"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Difference"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Condition"))), /* @__PURE__ */ window.React.createElement("tbody", null, rows.map((r, i) => /* @__PURE__ */ window.React.createElement("tr", { key: r.id || i }, /* @__PURE__ */ window.React.createElement("th", { scope: "row" }, r.label), /* @__PURE__ */ window.React.createElement("td", null, valueFormat(r.p)), /* @__PURE__ */ window.React.createElement("td", null, pct2(share(r.p, totP))), /* @__PURE__ */ window.React.createElement("td", null, valueFormat(r.c)), /* @__PURE__ */ window.React.createElement("td", null, pct2(share(r.c, totC))), /* @__PURE__ */ window.React.createElement("td", null, signed4(r.p - r.c, valueFormat)), /* @__PURE__ */ window.React.createElement("td", null, r.condition || (r.empty ? "na" : "confirmed")))), /* @__PURE__ */ window.React.createElement("tr", { "data-total": "true" }, /* @__PURE__ */ window.React.createElement("th", { scope: "row" }, "Total"), /* @__PURE__ */ window.React.createElement("td", null, valueFormat(totP)), /* @__PURE__ */ window.React.createElement("td", null, pct2(100)), /* @__PURE__ */ window.React.createElement("td", null, valueFormat(totC)), /* @__PURE__ */ window.React.createElement("td", null, pct2(100)), /* @__PURE__ */ window.React.createElement("td", null, signed4(totP - totC, valueFormat)), /* @__PURE__ */ window.React.createElement("td", null, "—")))));
+    })), /* @__PURE__ */ window.React.createElement("div", { className: "mds-ml__totals" }, /* @__PURE__ */ window.React.createElement("span", null, "Total"), /* @__PURE__ */ window.React.createElement("span", null), /* @__PURE__ */ window.React.createElement("span", null, mode === "percent" ? totP ? pct2(100) : "—" : valueFormat(totP)), /* @__PURE__ */ window.React.createElement("span", null, mode === "percent" ? totC ? pct2(100) : "—" : valueFormat(totC)), /* @__PURE__ */ window.React.createElement("span", null, mode === "percent" ? "—" : signed4(totP - totC, valueFormat))), /* @__PURE__ */ window.React.createElement("p", { className: "mds-ml__note" }, "Buckets are fixed and fully enumerated; empty buckets are shown at zero.", unknownRow ? ` Unknown maturity carries ${mode === "percent" ? pct2(share(unknownRow.p, totP)) : valueFormat(unknownRow.p)} and is never redistributed.` : " No exposure carries unknown maturity.", coverage ? ` Coverage: ${coverage}.` : "", source ? ` Source: ${source}.` : "", ` Difference stated in ${diffUnit}; amount and percent are not mixed.`), /* @__PURE__ */ window.React.createElement("table", { className: "mds-ml__table" }, /* @__PURE__ */ window.React.createElement("caption", null, description, " · ", measure, " · ", currency, asOf ? ` · as of ${asOf}` : "", comparisonMode ? ` · ${comparisonMode}` : ""), /* @__PURE__ */ window.React.createElement("thead", null, /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Bucket"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, primaryLabel), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Share"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, comparisonLabel), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Share"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Difference"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Condition"))), /* @__PURE__ */ window.React.createElement("tbody", null, rows.map((r, i) => /* @__PURE__ */ window.React.createElement("tr", { key: r.id || i }, /* @__PURE__ */ window.React.createElement("th", { scope: "row" }, r.label), /* @__PURE__ */ window.React.createElement("td", null, valueFormat(r.p)), /* @__PURE__ */ window.React.createElement("td", null, pct2(share(r.p, totP))), /* @__PURE__ */ window.React.createElement("td", null, valueFormat(r.c)), /* @__PURE__ */ window.React.createElement("td", null, pct2(share(r.c, totC))), /* @__PURE__ */ window.React.createElement("td", null, signed4(r.p - r.c, valueFormat)), /* @__PURE__ */ window.React.createElement("td", null, r.condition || (r.empty ? "na" : "confirmed")))), /* @__PURE__ */ window.React.createElement("tr", { "data-total": "true" }, /* @__PURE__ */ window.React.createElement("th", { scope: "row" }, "Total"), /* @__PURE__ */ window.React.createElement("td", null, valueFormat(totP)), /* @__PURE__ */ window.React.createElement("td", null, totP ? pct2(100) : "—"), /* @__PURE__ */ window.React.createElement("td", null, valueFormat(totC)), /* @__PURE__ */ window.React.createElement("td", null, totC ? pct2(100) : "—"), /* @__PURE__ */ window.React.createElement("td", null, signed4(totP - totC, valueFormat)), /* @__PURE__ */ window.React.createElement("td", null, "—")))));
   }
 
   // components/charts/OwnershipGraph.jsx
@@ -8115,6 +8220,17 @@ button.mds-covm__cell{cursor:pointer;}
     const m2 = s.length >> 1;
     return s.length % 2 ? s[m2] : (s[m2 - 1] + s[m2]) / 2;
   };
+  var finite4 = (value) => typeof value === "number" && Number.isFinite(value);
+  function comparison(metric) {
+    const value = finite4(metric.value) ? metric.value : null;
+    const peers = (metric.peers || []).filter(finite4);
+    const pool = value === null ? peers : [...peers, value];
+    const declared = metric.domain;
+    const domain = declared && finite4(declared[0]) && finite4(declared[1]) && declared[1] >= declared[0] ? declared : pool.length ? [Math.min(...pool), Math.max(...pool)] : [0, 1];
+    const med = finite4(metric.median) ? metric.median : peers.length ? median(peers) : null;
+    const rank2 = value !== null && peers.length ? peers.filter((peer) => metric.higherIsBetter === false ? peer < value : peer > value).length + 1 : null;
+    return { value, peers, domain, med, rank: rank2 };
+  }
   function PeerComparisonStrip({
     metrics = [],
     // [{ id?, label, value, peers?: number[], domain?: [lo,hi], median?, fmt?, higherIsBetter?, note? }]
@@ -8128,22 +8244,17 @@ button.mds-covm__cell{cursor:pointer;}
   }) {
     return /* @__PURE__ */ window.React.createElement("div", { role: ariaLabel ? "group" : void 0, "aria-label": ariaLabel, style: { position: "relative", display: "flex", flexDirection: "column", gap: 2 } }, metrics.map((m2, mi) => {
       const f = m2.fmt || fmt6;
-      const peers = m2.peers || [];
-      const pool = [...peers, m2.value].filter((v) => v != null && isFinite(v));
-      const [lo, hi] = m2.domain || (pool.length ? [Math.min(...pool), Math.max(...pool)] : [0, 1]);
+      const { value, peers, domain: [lo, hi], med, rank: rank2 } = comparison(m2);
       const span = hi - lo || 1;
       const pct3 = (v) => `${((v - lo) / span * 100).toFixed(2)}%`;
-      const med = m2.median != null ? m2.median : peers.length ? median(peers) : null;
       const better = m2.higherIsBetter;
-      const above = med != null && m2.value > med;
-      const tone = better == null ? "var(--series-actual)" : above === !!better ? "var(--series-positive)" : "var(--series-negative)";
-      const rank2 = peers.length ? peers.filter((p) => better === false ? p < m2.value : p > m2.value).length + 1 : null;
-      return /* @__PURE__ */ window.React.createElement("div", { key: m2.id || m2.label || mi, style: { display: "flex", alignItems: "center", gap: 12, padding: "7px 0", borderBottom: mi < metrics.length - 1 ? "1px solid var(--border-divider,var(--border))" : "none" } }, /* @__PURE__ */ window.React.createElement("div", { style: { width: labelWidth2, flex: "0 0 auto", minWidth: 0 } }, /* @__PURE__ */ window.React.createElement("div", { style: { fontSize: "var(--viz-type-label,12px)", color: "var(--text-primary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, m2.label), m2.note && /* @__PURE__ */ window.React.createElement("div", { style: { fontSize: "var(--viz-type-micro,10px)", color: "var(--text-muted)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, m2.note)), /* @__PURE__ */ window.React.createElement("div", { style: { flex: "1 1 auto", minWidth: 120, position: "relative", height: 22 } }, /* @__PURE__ */ window.React.createElement("div", { style: { position: "absolute", left: 0, right: 0, top: 10, height: 2, background: "var(--viz-grid,var(--chart-grid))" } }), peers.map((p, i) => /* @__PURE__ */ window.React.createElement("span", { key: i, title: `peer ${f(p)}`, style: { position: "absolute", left: pct3(p), top: 5, width: 1, height: 12, marginLeft: -0.5, background: "var(--series-prior)", opacity: 0.55 } })), med != null && /* @__PURE__ */ window.React.createElement("span", { title: `median ${f(med)}`, style: { position: "absolute", left: pct3(med), top: 1, width: 0, height: 20, marginLeft: -0.5, borderLeft: "1px dashed var(--series-benchmark)", opacity: 0.9 } }), m2.value != null && /* @__PURE__ */ window.React.createElement("span", { title: `${subjectLabel} ${f(m2.value)}`, style: { position: "absolute", left: pct3(m2.value), top: 4, width: 14, height: 14, marginLeft: -7, borderRadius: "50%", background: tone, border: "2px solid var(--surface-plate,var(--bg-light))", boxSizing: "border-box" } }), /* @__PURE__ */ window.React.createElement("span", { style: { ...MONO3, position: "absolute", left: 0, top: -2, fontSize: "var(--viz-type-micro,10px)", color: "var(--text-muted)" }, "aria-hidden": "true" }, f(lo)), /* @__PURE__ */ window.React.createElement("span", { style: { ...MONO3, position: "absolute", right: 0, top: -2, fontSize: "var(--viz-type-micro,10px)", color: "var(--text-muted)" }, "aria-hidden": "true" }, f(hi))), /* @__PURE__ */ window.React.createElement("div", { style: { ...MONO3, width: valueWidth, flex: "0 0 auto", textAlign: "right" } }, /* @__PURE__ */ window.React.createElement("div", { style: { fontSize: "var(--viz-type-label,12px)", fontWeight: 600, color: tone } }, m2.value == null ? "—" : f(m2.value)), showRank && rank2 != null && /* @__PURE__ */ window.React.createElement("div", { style: { fontSize: "var(--viz-type-micro,10px)", color: "var(--text-muted)" } }, rank2, " of ", peers.length + 1)));
-    }), ariaLabel && /* @__PURE__ */ window.React.createElement("table", { style: SR4 }, /* @__PURE__ */ window.React.createElement("caption", null, caption || ariaLabel), /* @__PURE__ */ window.React.createElement("thead", null, /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Metric"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, subjectLabel), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Peer median"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Rank"))), /* @__PURE__ */ window.React.createElement("tbody", null, metrics.map((m2, i) => {
-      const f = m2.fmt || fmt6, peers = m2.peers || [];
-      const med = m2.median != null ? m2.median : peers.length ? median(peers) : null;
-      const rank2 = peers.length ? peers.filter((p) => m2.higherIsBetter === false ? p < m2.value : p > m2.value).length + 1 : null;
-      return /* @__PURE__ */ window.React.createElement("tr", { key: i }, /* @__PURE__ */ window.React.createElement("th", { scope: "row" }, m2.label), /* @__PURE__ */ window.React.createElement("td", null, m2.value == null ? "no data" : f(m2.value)), /* @__PURE__ */ window.React.createElement("td", null, med == null ? "no peers" : f(med)), /* @__PURE__ */ window.React.createElement("td", null, rank2 == null ? "—" : `${rank2} of ${peers.length + 1}`));
+      const above = value !== null && med !== null && value > med;
+      const tone = better == null || value === null || med === null || value === med ? "var(--series-actual)" : above === !!better ? "var(--series-positive)" : "var(--series-negative)";
+      return /* @__PURE__ */ window.React.createElement("div", { key: m2.id || m2.label || mi, style: { display: "flex", alignItems: "center", gap: 12, padding: "7px 0", borderBottom: mi < metrics.length - 1 ? "1px solid var(--border-divider,var(--border))" : "none" } }, /* @__PURE__ */ window.React.createElement("div", { style: { width: labelWidth2, flex: "0 0 auto", minWidth: 0 } }, /* @__PURE__ */ window.React.createElement("div", { style: { fontSize: "var(--viz-type-label,12px)", color: "var(--text-primary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, m2.label), m2.note && /* @__PURE__ */ window.React.createElement("div", { style: { fontSize: "var(--viz-type-micro,10px)", color: "var(--text-muted)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, m2.note)), /* @__PURE__ */ window.React.createElement("div", { style: { flex: "1 1 auto", minWidth: 120, position: "relative", height: 22 } }, /* @__PURE__ */ window.React.createElement("div", { style: { position: "absolute", left: 0, right: 0, top: 10, height: 2, background: "var(--viz-grid,var(--chart-grid))" } }), peers.map((p, i) => /* @__PURE__ */ window.React.createElement("span", { key: i, title: `peer ${f(p)}`, style: { position: "absolute", left: pct3(p), top: 5, width: 1, height: 12, marginLeft: -0.5, background: "var(--series-prior)", opacity: 0.55 } })), med != null && /* @__PURE__ */ window.React.createElement("span", { title: `median ${f(med)}`, style: { position: "absolute", left: pct3(med), top: 1, width: 0, height: 20, marginLeft: -0.5, borderLeft: "1px dashed var(--series-benchmark)", opacity: 0.9 } }), value !== null && /* @__PURE__ */ window.React.createElement("span", { title: `${subjectLabel} ${f(value)}`, style: { position: "absolute", left: pct3(value), top: 4, width: 14, height: 14, marginLeft: -7, borderRadius: "50%", background: tone, border: "2px solid var(--surface-plate,var(--bg-light))", boxSizing: "border-box" } }), /* @__PURE__ */ window.React.createElement("span", { style: { ...MONO3, position: "absolute", left: 0, top: -2, fontSize: "var(--viz-type-micro,10px)", color: "var(--text-muted)" }, "aria-hidden": "true" }, f(lo)), /* @__PURE__ */ window.React.createElement("span", { style: { ...MONO3, position: "absolute", right: 0, top: -2, fontSize: "var(--viz-type-micro,10px)", color: "var(--text-muted)" }, "aria-hidden": "true" }, f(hi))), /* @__PURE__ */ window.React.createElement("div", { style: { ...MONO3, width: valueWidth, flex: "0 0 auto", textAlign: "right" } }, /* @__PURE__ */ window.React.createElement("div", { style: { fontSize: "var(--viz-type-label,12px)", fontWeight: 600, color: tone } }, value === null ? "—" : f(value)), showRank && rank2 != null && /* @__PURE__ */ window.React.createElement("div", { style: { fontSize: "var(--viz-type-micro,10px)", color: "var(--text-muted)" } }, rank2, " of ", peers.length + 1)));
+    }), ariaLabel && /* @__PURE__ */ window.React.createElement("table", { style: SR4 }, /* @__PURE__ */ window.React.createElement("caption", null, caption || ariaLabel), /* @__PURE__ */ window.React.createElement("thead", null, /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Metric"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, subjectLabel), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Peer median"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Rank"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Peer values"))), /* @__PURE__ */ window.React.createElement("tbody", null, metrics.map((m2, i) => {
+      const f = m2.fmt || fmt6;
+      const { value, peers, med, rank: rank2 } = comparison(m2);
+      return /* @__PURE__ */ window.React.createElement("tr", { key: i }, /* @__PURE__ */ window.React.createElement("th", { scope: "row" }, m2.label), /* @__PURE__ */ window.React.createElement("td", null, value === null ? "no data" : f(value)), /* @__PURE__ */ window.React.createElement("td", null, med === null ? "no peers" : f(med)), /* @__PURE__ */ window.React.createElement("td", null, !showRank || rank2 === null ? "—" : `${rank2} of ${peers.length + 1}`), /* @__PURE__ */ window.React.createElement("td", null, peers.length ? peers.map(f).join(", ") : "no peers"));
     }))), caption && /* @__PURE__ */ window.React.createElement("p", { style: { margin: "10px 0 0", fontSize: "var(--viz-type-annotation,12px)", color: "var(--text-secondary)", maxWidth: "62ch" } }, caption));
   }
   PeerComparisonStrip.displayName = "PeerComparisonStrip";
@@ -8217,7 +8328,8 @@ button.mds-covm__cell{cursor:pointer;}
     const [y, m2] = String(month).split("-").map(Number);
     const days = new Date(Date.UTC(y, m2, 0)).getUTCDate();
     const lead = (new Date(Date.UTC(y, m2 - 1, 1)).getUTCDay() + 6) % 7;
-    const nums = Object.values(values).filter((v) => Number.isFinite(v));
+    const monthKeys = Array.from({ length: Number.isFinite(days) ? days : 0 }, (_, index) => `${y}-${pad2(m2)}-${pad2(index + 1)}`);
+    const nums = monthKeys.map((key) => values[key]).filter((value) => Number.isFinite(value));
     const maxAbs = Math.max(1e-9, ...nums.map((v) => Math.abs(v)));
     const total = nums.reduce((a, v) => a + v, 0);
     const fmt6 = valueFormat || ((v) => (v > 0 ? "+" : v < 0 ? "-" : "±") + formatNumber(Math.abs(v), { maxDecimals: 0 }));
@@ -8226,10 +8338,10 @@ button.mds-covm__cell{cursor:pointer;}
     for (let d = 1; d <= days; d++) {
       const key = `${y}-${pad2(m2)}-${pad2(d)}`;
       const v = values[key];
-      const has4 = Number.isFinite(v);
-      const dir = !has4 ? null : v > 0 ? "up" : v < 0 ? "down" : "flat";
-      const strong = has4 && Math.abs(v) > maxAbs / 2;
-      const wash = !heat || !has4 || dir === "flat" ? void 0 : dir === "up" ? `var(--green-a${strong ? "20" : "10"})` : `var(--red-a${strong ? "20" : "10"})`;
+      const has3 = Number.isFinite(v);
+      const dir = !has3 ? null : v > 0 ? "up" : v < 0 ? "down" : "flat";
+      const strong = has3 && Math.abs(v) > maxAbs / 2;
+      const wash = !heat || !has3 || dir === "flat" ? void 0 : dir === "up" ? `var(--green-a${strong ? "20" : "10"})` : `var(--red-a${strong ? "20" : "10"})`;
       cells.push(
         /* @__PURE__ */ window.React.createElement(
           "div",
@@ -8237,10 +8349,10 @@ button.mds-covm__cell{cursor:pointer;}
             key,
             className: `mds-pnlcal__cell${dir ? " mds-pnlcal__cell--" + dir : ""}`,
             style: { minHeight: cellHeight, background: wash },
-            title: has4 ? `${key} · ${fmt6(v)}` : key
+            title: has3 ? `${key} · ${fmt6(v)}` : key
           },
           /* @__PURE__ */ window.React.createElement("span", { className: "mds-pnlcal__day" }, pad2(d)),
-          /* @__PURE__ */ window.React.createElement("span", { className: "mds-pnlcal__val" }, has4 ? fmt6(v) : ""),
+          /* @__PURE__ */ window.React.createElement("span", { className: "mds-pnlcal__val" }, has3 ? fmt6(v) : ""),
           bars && bars[key] && bars[key].length > 0 && /* @__PURE__ */ window.React.createElement(MicroBars, { vals: bars[key] })
         )
       );
@@ -8657,7 +8769,20 @@ button.mds-covm__cell{cursor:pointer;}
     const opts = options.map((o) => typeof o === "string" ? { value: o, label: o } : o);
     const isControlled = value != null;
     const [internal, setInternal] = react_default.useState(defaultValue != null ? defaultValue : (opts[0] || {}).value);
-    const current = isControlled ? value : internal;
+    const requested = isControlled ? value : internal;
+    const current = opts.some((option) => option.value === requested) ? requested : opts[0]?.value;
+    const refs = react_default.useRef([]);
+    const move = (event, index) => {
+      let next;
+      if (event.key === "ArrowRight" || event.key === "ArrowDown") next = (index + 1) % opts.length;
+      else if (event.key === "ArrowLeft" || event.key === "ArrowUp") next = (index - 1 + opts.length) % opts.length;
+      else if (event.key === "Home") next = 0;
+      else if (event.key === "End") next = opts.length - 1;
+      else return;
+      event.preventDefault();
+      refs.current[next]?.focus();
+      select(opts[next].value);
+    };
     const select = (v) => {
       if (!isControlled) setInternal(v);
       onChange && onChange(v);
@@ -8670,13 +8795,18 @@ button.mds-covm__cell{cursor:pointer;}
         className: `mds-tf mds-tf--${size}${className ? " " + className : ""}`,
         ...rest
       },
-      opts.map((o) => /* @__PURE__ */ window.React.createElement(
+      opts.map((o, index) => /* @__PURE__ */ window.React.createElement(
         "button",
         {
           key: o.value,
           type: "button",
           role: "radio",
           "aria-checked": o.value === current,
+          ref: (node) => {
+            refs.current[index] = node;
+          },
+          tabIndex: o.value === current ? 0 : -1,
+          onKeyDown: (event) => move(event, index),
           className: `mds-tf__btn${o.value === current ? " mds-tf__btn--active" : ""}`,
           onClick: () => select(o.value)
         },
@@ -9024,7 +9154,7 @@ button.mds-covm__cell{cursor:pointer;}
       return () => ro.disconnect();
     }, []);
     const mode = colorBy === "auto" ? items.some((d) => d.delta != null) ? "delta" : items.some((d) => d.group) ? "group" : "none" : colorBy;
-    const clean = items.filter((d) => d.value > 0).slice().sort((a, b) => b.value - a.value);
+    const clean = items.filter((d) => Number.isFinite(d.value) && d.value > 0).slice().sort((a, b) => b.value - a.value);
     const total = clean.reduce((a, d) => a + d.value, 0);
     const rects = [];
     if (dim.w > 4 && dim.h > 4 && total > 0) {
@@ -9042,7 +9172,7 @@ button.mds-covm__cell{cursor:pointer;}
         const tok = GROUP_WASHES[groups.indexOf(d.group) % GROUP_WASHES.length];
         return `color-mix(in srgb, var(${tok}) 12%, transparent)`;
       }
-      return "var(--bg-raised)";
+      return "var(--card-surface-raised)";
     };
     const mono = { fontFamily: "var(--font-data)", fontVariantNumeric: "tabular-nums" };
     return /* @__PURE__ */ window.React.createElement("div", { ref, style: {
@@ -9059,11 +9189,14 @@ button.mds-covm__cell{cursor:pointer;}
       const showValue = w >= 72 && h >= 42;
       const showDelta = it.delta != null && w >= 72 && h >= 58;
       const tip = it.label + " · " + valueFmt(it.value) + (it.delta != null ? " · " + deltaFmt(it.delta) : "");
+      const Tile = onSelect ? "button" : "div";
       return /* @__PURE__ */ window.React.createElement(
-        "div",
+        Tile,
         {
           key: i,
           title: tip,
+          type: onSelect ? "button" : void 0,
+          "aria-label": onSelect ? tip : void 0,
           onClick: onSelect ? () => onSelect(it) : void 0,
           style: {
             position: "absolute",
@@ -9076,7 +9209,9 @@ button.mds-covm__cell{cursor:pointer;}
             background: wash(it),
             padding: "4px 6px",
             overflow: "hidden",
-            cursor: onSelect ? "pointer" : "default"
+            cursor: onSelect ? "pointer" : "default",
+            textAlign: "left",
+            font: "inherit"
           }
         },
         showAny && /* @__PURE__ */ window.React.createElement("div", { style: {
@@ -9089,8 +9224,8 @@ button.mds-covm__cell{cursor:pointer;}
           overflow: "hidden",
           textOverflow: "ellipsis"
         } }, it.label),
-        showValue && /* @__PURE__ */ window.React.createElement("div", { style: { ...mono, fontSize: 11, color: "var(--text-secondary)", whiteSpace: "nowrap" } }, valueFmt(it.value)),
-        showDelta && /* @__PURE__ */ window.React.createElement("div", { style: { ...mono, fontSize: 10.5, color: it.delta < 0 ? "var(--red-dim)" : "var(--green-dim)", whiteSpace: "nowrap" } }, deltaFmt(it.delta))
+        showValue && /* @__PURE__ */ window.React.createElement("div", { style: { ...mono, fontSize: 11, color: "var(--text-primary)", whiteSpace: "nowrap" } }, valueFmt(it.value)),
+        showDelta && /* @__PURE__ */ window.React.createElement("div", { style: { ...mono, fontSize: 10.5, color: "var(--text-primary)", whiteSpace: "nowrap" } }, deltaFmt(it.delta))
       );
     }));
   }
@@ -9378,6 +9513,7 @@ button.mds-covm__cell{cursor:pointer;}
 
   // components/charts/useChartCrosshair.js
   function indexAt(e, count, padLeft, rail) {
+    if (!Number.isInteger(count) || count <= 0) return null;
     const rect = e.currentTarget.getBoundingClientRect();
     const span = rect.width - padLeft - rail;
     if (span <= 0) return null;
@@ -9387,6 +9523,9 @@ button.mds-covm__cell{cursor:pointer;}
   }
   function useChartCrosshair(count, { padLeft = 10, rail = 62 } = {}) {
     const [index, setIndex] = react_default.useState(null);
+    react_default.useEffect(() => {
+      setIndex((current) => !Number.isInteger(count) || count <= 0 || current !== null && current >= count ? null : current);
+    }, [count]);
     const onMove = react_default.useCallback((e) => {
       const i = indexAt(e, count, padLeft, rail);
       if (i != null) setIndex(i);
@@ -9415,7 +9554,7 @@ button.mds-covm__cell{cursor:pointer;}
       if (i != null) ctx.setIndex(i);
     };
     return {
-      index: ctx.index,
+      index: ctx.index !== null && ctx.index >= 0 && ctx.index < count ? ctx.index : null,
       setIndex: ctx.setIndex,
       clear: () => ctx.setIndex(null),
       bind: { onMouseMove: onMove, onMouseLeave: () => ctx.setIndex(null), style: { position: "relative" } }
@@ -9519,7 +9658,10 @@ button.mds-covm__cell{cursor:pointer;}
     debounceMs = 220,
     minChars = 0,
     emptyLabel = "No matches",
-    maxRows = 200
+    maxRows = 200,
+    id,
+    disabled = false,
+    "aria-label": ariaLabel = "Search options"
   }) {
     inject52();
     const [open, setOpen] = react_default.useState(false);
@@ -9531,64 +9673,96 @@ button.mds-covm__cell{cursor:pointer;}
     const rootRef = react_default.useRef(null);
     const listRef = react_default.useRef(null);
     const reqRef = react_default.useRef(0);
+    const generatedId = react_default.useId();
+    const inputId = id || generatedId;
+    const listId = `${inputId}-options`;
     react_default.useEffect(() => {
-      if (!open) return;
+      if (disabled) setOpen(false);
+    }, [disabled]);
+    react_default.useEffect(() => {
+      if (!open || disabled) return;
       if (text.length < minChars) {
         setOptions([]);
         setStatus("idle");
         return;
       }
       const reqId = ++reqRef.current;
+      let current = true;
       const controller = typeof AbortController !== "undefined" ? new AbortController() : { abort() {
       }, signal: void 0 };
       setStatus("loading");
+      setOptions([]);
+      setHl(0);
+      setScrollTop(0);
       const t2 = setTimeout(async () => {
         try {
           const res = await fetchOptions(text, controller.signal);
-          if (reqId !== reqRef.current) return;
+          if (!current || reqId !== reqRef.current) return;
           const rows = (res || []).slice(0, maxRows);
           setOptions(rows);
           setStatus(rows.length ? "ready" : "empty");
           setHl(0);
         } catch (e) {
           if (e && e.name === "AbortError") return;
-          if (reqId !== reqRef.current) return;
+          if (!current || reqId !== reqRef.current) return;
+          setOptions([]);
           setStatus("error");
         }
       }, debounceMs);
       return () => {
+        current = false;
         controller.abort();
         clearTimeout(t2);
       };
-    }, [text, open, minChars, debounceMs, maxRows]);
+    }, [text, open, minChars, debounceMs, maxRows, fetchOptions, disabled]);
     react_default.useEffect(() => {
       if (!open) return;
       const onDown = (e) => {
         if (rootRef.current && !rootRef.current.contains(e.target)) setOpen(false);
       };
+      const onFocus = (e) => {
+        if (rootRef.current && !rootRef.current.contains(e.target)) setOpen(false);
+      };
       document.addEventListener("mousedown", onDown);
-      return () => document.removeEventListener("mousedown", onDown);
+      document.addEventListener("focusin", onFocus);
+      return () => {
+        document.removeEventListener("mousedown", onDown);
+        document.removeEventListener("focusin", onFocus);
+      };
     }, [open]);
     const commit = (opt) => {
+      if (disabled) return;
       onChange && onChange(opt);
       setText(getLabel(opt) != null ? String(getSecondary(opt) ? getKey(opt) : getLabel(opt)) : "");
       setOpen(false);
     };
     const onKeyDown = (e) => {
-      if (!open && (e.key === "ArrowDown" || e.key === "Enter")) {
+      if (disabled) return;
+      if (!open && (e.key === "ArrowDown" || e.key === "ArrowUp" || e.key === "Enter")) {
+        e.preventDefault();
         setOpen(true);
         return;
       }
       if (e.key === "ArrowDown") {
         e.preventDefault();
-        setHl((h) => Math.min(options.length - 1, h + 1));
+        setHl((h) => Math.max(0, Math.min(options.length - 1, h + 1)));
       } else if (e.key === "ArrowUp") {
         e.preventDefault();
         setHl((h) => Math.max(0, h - 1));
+      } else if (open && e.key === "Home") {
+        e.preventDefault();
+        setHl(0);
+      } else if (open && e.key === "End") {
+        e.preventDefault();
+        setHl(Math.max(0, options.length - 1));
       } else if (e.key === "Enter") {
         e.preventDefault();
         if (options[hl]) commit(options[hl]);
-      } else if (e.key === "Escape") {
+      } else if (e.key === "Escape" && open) {
+        e.preventDefault();
+        e.stopPropagation();
+        setOpen(false);
+      } else if (e.key === "Tab") {
         setOpen(false);
       }
     };
@@ -9607,25 +9781,34 @@ button.mds-covm__cell{cursor:pointer;}
     return /* @__PURE__ */ window.React.createElement("div", { className: "mds-cbx", ref: rootRef }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-cbx__field" }, /* @__PURE__ */ window.React.createElement(
       "input",
       {
+        id: inputId,
+        disabled,
+        "aria-label": ariaLabel,
         className: "mds-cbx__input",
         role: "combobox",
         "aria-expanded": open,
         "aria-autocomplete": "list",
+        "aria-controls": open ? listId : void 0,
+        "aria-activedescendant": open && status === "ready" && hl >= start && hl < end && options[hl] ? `${listId}-${hl}` : void 0,
         value: display,
         placeholder,
         onChange: (e) => {
           setText(e.target.value);
           setOpen(true);
         },
-        onFocus: () => setOpen(true),
+        onFocus: () => {
+          if (!disabled) setOpen(true);
+        },
         onKeyDown
       }
     ), /* @__PURE__ */ window.React.createElement("span", { className: "mds-cbx__caret", "aria-hidden": "true" }, "▾")), open && /* @__PURE__ */ window.React.createElement(
       "div",
       {
         className: "mds-cbx__pop",
+        id: listId,
         ref: listRef,
         role: "listbox",
+        "aria-label": ariaLabel,
         onScroll: (e) => setScrollTop(e.currentTarget.scrollTop)
       },
       status === "ready" && /* @__PURE__ */ window.React.createElement("div", { style: { height: options.length * ROW_H, position: "relative" } }, /* @__PURE__ */ window.React.createElement("div", { style: { transform: `translateY(${pad7}px)` } }, options.slice(start, end).map((o, i) => {
@@ -9634,6 +9817,7 @@ button.mds-covm__cell{cursor:pointer;}
           "div",
           {
             key: getKey(o),
+            id: `${listId}-${idx}`,
             role: "option",
             "aria-selected": idx === hl,
             className: `mds-cbx__opt${idx === hl ? " mds-cbx__opt--on" : ""}`,
@@ -9645,7 +9829,7 @@ button.mds-covm__cell{cursor:pointer;}
             }
           },
           /* @__PURE__ */ window.React.createElement("span", { className: "mds-cbx__opt-sym" }, getSecondary(o) ? getKey(o) : getLabel(o)),
-          /* @__PURE__ */ window.React.createElement("span", { className: "mds-cbx__opt-label" }, getSecondary(o) || getLabel(o))
+          getSecondary(o) != null && /* @__PURE__ */ window.React.createElement("span", { className: "mds-cbx__opt-label" }, getSecondary(o))
         );
       }))),
       status === "loading" && /* @__PURE__ */ window.React.createElement("div", { className: "mds-cbx__foot" }, "Searching…"),
@@ -9711,18 +9895,17 @@ button.mds-covm__cell{cursor:pointer;}
             border: "none",
             background: "transparent",
             padding: 0,
-            color: "var(--brand-signal,#C56343)",
+            color: "var(--interaction-link,var(--link,#2A5F96))",
             fontFamily: "var(--font-data)",
             fontSize: 12,
             cursor: item.onClick ? "pointer" : "default",
-            textDecoration: "none",
-            transition: "opacity .1s ease"
+            textDecoration: "none"
           },
           onMouseEnter: (e) => {
-            if (item.onClick) e.currentTarget.style.opacity = "0.7";
+            if (item.onClick) e.currentTarget.style.textDecoration = "underline";
           },
           onMouseLeave: (e) => {
-            e.currentTarget.style.opacity = "1";
+            e.currentTarget.style.textDecoration = "none";
           }
         },
         item.label
@@ -9788,7 +9971,7 @@ button.mds-covm__cell{cursor:pointer;}
 .mds-capsule__tool{width:26px;height:26px;border:1px solid transparent;background:transparent;color:var(--text-muted,#606870);font:600 11px var(--font-data,monospace);cursor:pointer;}
 .mds-capsule__tool:hover{background:var(--bg-hover,#EDEFF0);border-color:var(--border,#D2CDC3);color:var(--text-primary,#20252B)}.mds-capsule__tool:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:1px}
 .mds-capsule__body{flex:1;min-height:0;overflow:auto;padding:12px;}
-.mds-capsule__footer{min-height:28px;display:flex;align-items:center;gap:8px;padding:0 12px;border-top:1px solid var(--border-divider,#E2DED5);font:10px var(--font-data,monospace);color:var(--text-muted,#606870);}
+.mds-capsule__footer{min-height:28px;display:flex;align-items:center;gap:8px;padding:0 12px;border-top:1px solid var(--border-divider,#E2DED5);font:10px var(--font-data,monospace);color:var(--text-secondary,#535C65);}
 .mds-capsule.mds-capsule--collapsed{height:42px;min-height:42px}.mds-capsule--collapsed .mds-capsule__body,.mds-capsule--collapsed .mds-capsule__footer{display:none}
 .mds-capsule__resize{position:absolute;right:3px;bottom:3px;width:12px;height:12px;color:var(--text-disabled,#A4ABB2);font-size:10px;line-height:12px;cursor:nwse-resize;}
 `;
@@ -9829,8 +10012,9 @@ button.mds-covm__cell{cursor:pointer;}
     const generatedId = react_default.useId();
     const key = storageKey ? `mds-capsule:${storageKey}` : null;
     const [collapsed, setCollapsed] = react_default.useState(() => {
-      if (!key || typeof localStorage === "undefined") return defaultCollapsed;
+      if (!key) return defaultCollapsed;
       try {
+        if (typeof localStorage === "undefined") return defaultCollapsed;
         const saved = localStorage.getItem(key);
         return saved == null ? defaultCollapsed : saved === "1";
       } catch {
@@ -9839,8 +10023,8 @@ button.mds-covm__cell{cursor:pointer;}
     });
     const toggle = () => setCollapsed((current) => {
       const next = !current;
-      if (key && typeof localStorage !== "undefined") try {
-        localStorage.setItem(key, next ? "1" : "0");
+      if (key) try {
+        if (typeof localStorage !== "undefined") localStorage.setItem(key, next ? "1" : "0");
       } catch {
       }
       return next;
@@ -9903,10 +10087,10 @@ button.mds-covm__cell{cursor:pointer;}
     el.textContent = css;
     document.head.appendChild(el);
   }
-  var uid3 = 0;
+  var uid2 = 0;
   function useUid2() {
     if (react_default.useId) return react_default.useId().replace(/:/g, "");
-    return react_default.useMemo(() => "mdscb" + ++uid3, []);
+    return react_default.useMemo(() => "mdscb" + ++uid2, []);
   }
   function highlight(label2, query) {
     if (!query) return label2;
@@ -9957,6 +10141,9 @@ button.mds-covm__cell{cursor:pointer;}
       const q = query.toLowerCase();
       return norm5.filter((o) => o.label.toLowerCase().includes(q));
     }, [norm5, query, filter]);
+    react_default.useEffect(() => {
+      if (disabled) setOpen(false);
+    }, [disabled]);
     const firstEnabled = (list) => list.findIndex((o) => !o.disabled);
     const stepHl = (dir) => {
       setHl((h) => {
@@ -10004,7 +10191,7 @@ button.mds-covm__cell{cursor:pointer;}
       }
     }, [hl, open]);
     const commit = (opt) => {
-      if (opt.disabled) return;
+      if (opt.disabled || disabled) return;
       onChange?.(opt.value);
       closeMenu();
       inputRef.current?.focus();
@@ -10081,7 +10268,7 @@ button.mds-covm__cell{cursor:pointer;}
         className: "mds-cb-input",
         role: "combobox",
         "aria-expanded": open,
-        "aria-controls": listId,
+        "aria-controls": open ? listId : void 0,
         "aria-autocomplete": "list",
         "aria-activedescendant": open && filtered[hl] ? optId(hl) : void 0,
         "aria-labelledby": label2 ? labelId : void 0,
@@ -10282,7 +10469,7 @@ button.mds-covm__cell{cursor:pointer;}
     scope = "global",
     rankByRecency = true
   }) {
-    const uid6 = react_default.useId();
+    const uid5 = react_default.useId();
     inject57();
     const isControlled = controlledOpen != null;
     const [internalOpen, setInternalOpen] = react_default.useState(defaultOpen);
@@ -10408,7 +10595,7 @@ button.mds-covm__cell{cursor:pointer;}
       const nv = (cur && (cur.verbs || cur.actions) || []).length;
       if (e.key === "ArrowDown") {
         e.preventDefault();
-        setHl((h) => Math.min(h + 1, flat.length - 1));
+        setHl((h) => Math.max(0, Math.min(h + 1, flat.length - 1)));
       } else if (e.key === "ArrowUp") {
         e.preventDefault();
         setHl((h) => Math.max(h - 1, 0));
@@ -10426,6 +10613,7 @@ button.mds-covm__cell{cursor:pointer;}
         run(cur, verb);
       } else if (e.key === "Escape") {
         e.preventDefault();
+        e.stopPropagation();
         close();
       } else if (e.key === "Tab") {
         e.preventDefault();
@@ -10441,21 +10629,22 @@ button.mds-covm__cell{cursor:pointer;}
         className: "mds-cmd__input",
         role: "combobox",
         "aria-expanded": "true",
-        "aria-controls": `${uid6}-list`,
-        "aria-activedescendant": flat[hl] ? `mds-cmd-opt-${hl}` : void 0,
+        "aria-controls": `${uid5}-list`,
+        "aria-activedescendant": flat[hl] ? `${uid5}-opt-${hl}` : void 0,
+        "aria-label": placeholder,
         placeholder,
         value: query,
         onChange: (e) => setQuery(e.target.value),
         onKeyDown: onKey
       }
-    ), /* @__PURE__ */ window.React.createElement("span", { className: "mds-cmd__esc" }, "Esc")), /* @__PURE__ */ window.React.createElement("div", { className: "mds-cmd__list", id: `${uid6}-list`, role: "listbox", ref: listRef }, flat.length === 0 && /* @__PURE__ */ window.React.createElement("div", { className: "mds-cmd__empty" }, resolved.pending ? "Resolving…" : emptyText), groups.map((g) => /* @__PURE__ */ window.React.createElement("div", { key: g.group, role: "group", "aria-label": g.group }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-cmd__group" }, g.group), g.items.map((c) => {
+    ), /* @__PURE__ */ window.React.createElement("span", { className: "mds-cmd__esc" }, "Esc")), /* @__PURE__ */ window.React.createElement("div", { className: "mds-cmd__list", id: `${uid5}-list`, role: "listbox", "aria-label": "Commands", ref: listRef }, flat.length === 0 && /* @__PURE__ */ window.React.createElement("div", { className: "mds-cmd__empty" }, resolved.pending ? "Resolving…" : emptyText), groups.map((g) => /* @__PURE__ */ window.React.createElement("div", { key: g.group, role: "group", "aria-label": g.group }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-cmd__group" }, g.group), g.items.map((c) => {
       i += 1;
       const idx = i;
       return /* @__PURE__ */ window.React.createElement(
         "div",
         {
           key: c.id,
-          id: `mds-cmd-opt-${idx}`,
+          id: `${uid5}-opt-${idx}`,
           "data-i": idx,
           role: "option",
           "aria-selected": idx === hl,
@@ -10542,8 +10731,12 @@ button.mds-covm__cell{cursor:pointer;}
       setPos({ x: nx, y: ny });
     }, [x, y]);
     useEffect2(() => {
+      const previous = document.activeElement;
       const first = itemRefs.current.find((b) => b && !b.disabled);
       first && first.focus();
+      return () => {
+        if (previous?.isConnected) previous.focus();
+      };
     }, []);
     const enabledIndices = () => itemRefs.current.map((b, i) => b && !b.disabled ? i : -1).filter((i) => i >= 0);
     const moveFocus = (dir) => {
@@ -10562,6 +10755,7 @@ button.mds-covm__cell{cursor:pointer;}
       switch (e.key) {
         case "Escape":
           e.preventDefault();
+          e.stopPropagation();
           onClose();
           break;
         case "ArrowDown":
@@ -10717,10 +10911,10 @@ button.mds-covm__cell{cursor:pointer;}
     el.textContent = css;
     document.head.appendChild(el);
   }
-  var uid4 = 0;
+  var uid3 = 0;
   function useUid3() {
     if (react_default.useId) return react_default.useId().replace(/:/g, "");
-    return react_default.useMemo(() => "mdsdr" + ++uid4, []);
+    return react_default.useMemo(() => "mdsdr" + ++uid3, []);
   }
   var short = (iso) => {
     const d = fromISO(iso);
@@ -10823,6 +11017,13 @@ button.mds-covm__cell{cursor:pointer;}
     const activePreset = presetList.find((p) => p.start === start && p.end === end);
     const onGridKey = (e) => {
       const k = e.key;
+      if (k === "Escape") {
+        e.preventDefault();
+        e.stopPropagation();
+        close();
+        return;
+      }
+      if (!e.target.classList.contains("mds-dr-day")) return;
       let next = null;
       if (k === "ArrowLeft") next = addDays(focusDay, -1);
       else if (k === "ArrowRight") next = addDays(focusDay, 1);
@@ -10991,7 +11192,7 @@ button.mds-covm__cell{cursor:pointer;}
 
   // components/core/Delta.jsx
   function Delta({ value, decimals = 2, suffix = "", arrow = false, tone, locale, style = {}, ...rest }) {
-    const n = typeof value === "number" ? value : parseFloat(value);
+    const n = typeof value === "number" ? value : typeof value === "string" && value.trim() ? Number(value) : NaN;
     if (!Number.isFinite(n)) return /* @__PURE__ */ window.React.createElement("span", { ...rest }, "—");
     const dir = n > 0 ? "up" : n < 0 ? "down" : "flat";
     const resolved = tone || dir;
@@ -11075,20 +11276,28 @@ button.mds-covm__cell{cursor:pointer;}
     const isControlled = controlled != null;
     const [internal, setInternal] = react_default.useState(() => {
       if (isControlled) return controlled;
-      if (persist && typeof localStorage !== "undefined") {
-        const saved = localStorage.getItem(persist);
-        if (saved) return saved;
+      try {
+        if (persist && typeof localStorage !== "undefined") {
+          const saved = localStorage.getItem(persist);
+          if (LEVELS2.some((level) => level.value === saved)) return saved;
+        }
+      } catch {
       }
       return defaultValue;
     });
-    const value = isControlled ? controlled : internal;
+    const requested = isControlled ? controlled : internal;
+    const value = LEVELS2.some((level) => level.value === requested) ? requested : "default";
+    const buttonRefs = react_default.useRef([]);
     react_default.useEffect(() => {
       if (!apply) return;
       applyDensity(resolveTarget(target), value);
     }, [value, apply, target]);
     const select = (v) => {
       if (!isControlled) setInternal(v);
-      if (persist && typeof localStorage !== "undefined") localStorage.setItem(persist, v);
+      try {
+        if (persist && typeof localStorage !== "undefined") localStorage.setItem(persist, v);
+      } catch {
+      }
       onChange && onChange(v);
     };
     return /* @__PURE__ */ window.React.createElement(
@@ -11099,7 +11308,7 @@ button.mds-covm__cell{cursor:pointer;}
         className: `mds-den mds-den--${size}${fullWidth ? " mds-den--full" : ""}${className ? " " + className : ""}`,
         ...rest
       },
-      LEVELS2.map((lv) => {
+      LEVELS2.map((lv, index) => {
         const active = lv.value === value;
         return /* @__PURE__ */ window.React.createElement(
           "button",
@@ -11108,9 +11317,24 @@ button.mds-covm__cell{cursor:pointer;}
             type: "button",
             role: "radio",
             "aria-checked": active,
+            ref: (node) => {
+              buttonRefs.current[index] = node;
+            },
+            tabIndex: active ? 0 : -1,
             title: lv.label,
             className: `mds-den__btn${active ? " mds-den__btn--active" : ""}`,
-            onClick: () => select(lv.value)
+            onClick: () => select(lv.value),
+            onKeyDown: (event) => {
+              let next;
+              if (event.key === "ArrowRight" || event.key === "ArrowDown") next = (index + 1) % LEVELS2.length;
+              else if (event.key === "ArrowLeft" || event.key === "ArrowUp") next = (index - 1 + LEVELS2.length) % LEVELS2.length;
+              else if (event.key === "Home") next = 0;
+              else if (event.key === "End") next = LEVELS2.length - 1;
+              else return;
+              event.preventDefault();
+              select(LEVELS2[next].value);
+              buttonRefs.current[next]?.focus();
+            }
           },
           /* @__PURE__ */ window.React.createElement(Glyph, { gap: lv.gap }),
           showLabels && /* @__PURE__ */ window.React.createElement("span", null, lv.label)
@@ -11544,7 +11768,7 @@ button.mds-covm__cell{cursor:pointer;}
     onChange,
     children
   }) {
-    const [state, setState] = react_default.useState(() => {
+    const initialState = () => {
       const saved = persist ? readStore(screenId, storage) : null;
       const fromUrl = readUrl(urlParam);
       return {
@@ -11552,7 +11776,14 @@ button.mds-covm__cell{cursor:pointer;}
         regions: { ...defaultRegions || null, ...saved?.regions || null },
         open: saved?.open || {}
       };
-    });
+    };
+    const [state, setState] = react_default.useState(initialState);
+    const previousScreen = react_default.useRef(screenId);
+    react_default.useLayoutEffect(() => {
+      if (previousScreen.current === screenId) return;
+      previousScreen.current = screenId;
+      setState(initialState());
+    }, [screenId]);
     const detail = controlled || state.detail;
     const commit = react_default.useCallback((updater) => {
       setState((prev) => {
@@ -11861,7 +12092,7 @@ button.mds-covm__cell{cursor:pointer;}
     closeOnBackdrop = true,
     closeOnEsc = true
   }) {
-    const uid6 = react_default.useId();
+    const uid5 = react_default.useId();
     inject64();
     const ref = useRef4(null);
     useOverlayFocus(ref, open, ".mds-drawer-wrap");
@@ -11893,15 +12124,16 @@ button.mds-covm__cell{cursor:pointer;}
           onClick: (e) => e.stopPropagation(),
           role: "dialog",
           "aria-modal": "true",
-          "aria-labelledby": title ? `${uid6}-title` : void 0
+          "aria-labelledby": title ? `${uid5}-title` : void 0
         },
-        title && /* @__PURE__ */ window.React.createElement(DrawerHeader, { title, onClose }),
+        title && /* @__PURE__ */ window.React.createElement(DrawerHeader, { id: `${uid5}-title`, title, onClose }),
         /* @__PURE__ */ window.React.createElement(DrawerBody, null, children)
       )
     );
   }
-  function DrawerHeader({ title, onClose }) {
-    return /* @__PURE__ */ window.React.createElement("div", { className: "mds-drawer-hd" }, /* @__PURE__ */ window.React.createElement("h2", { className: "mds-drawer-title", id: `${uid}-title` }, title), onClose && /* @__PURE__ */ window.React.createElement(
+  function DrawerHeader({ title, onClose, id }) {
+    const generatedId = react_default.useId();
+    return /* @__PURE__ */ window.React.createElement("div", { className: "mds-drawer-hd" }, /* @__PURE__ */ window.React.createElement("h2", { className: "mds-drawer-title", id: id || `${generatedId}-title` }, title), onClose && /* @__PURE__ */ window.React.createElement(
       "button",
       {
         className: "mds-drawer-close",
@@ -12003,12 +12235,13 @@ button.mds-covm__cell{cursor:pointer;}
   }
   function FileUpload({ label: label2, onFilesSelected, multiple = true, accept = "*" }) {
     inject66();
+    const inputId = react_default.useId();
     const [files, setFiles] = useState7([]);
     const [isDrag, setIsDrag] = useState7(false);
     const inputRef = useRef5(null);
     const handleFiles = (fileList) => {
-      const newFiles = Array.from(fileList);
-      const updated = multiple ? [...files, ...newFiles] : newFiles;
+      const newFiles = Array.from(fileList || []);
+      const updated = multiple ? [...files, ...newFiles] : newFiles.slice(0, 1);
       setFiles(updated);
       onFilesSelected?.(updated);
     };
@@ -12022,17 +12255,26 @@ button.mds-covm__cell{cursor:pointer;}
       setFiles(updated);
       onFilesSelected?.(updated);
     };
-    return /* @__PURE__ */ window.React.createElement("div", { className: "mds-upload-wrap" }, label2 && /* @__PURE__ */ window.React.createElement("label", { className: "mds-upload-label" }, label2), /* @__PURE__ */ window.React.createElement(
+    return /* @__PURE__ */ window.React.createElement("div", { className: "mds-upload-wrap" }, label2 && /* @__PURE__ */ window.React.createElement("label", { className: "mds-upload-label", htmlFor: inputId }, label2), /* @__PURE__ */ window.React.createElement(
       "div",
       {
         className: `mds-upload-zone${isDrag ? " mds-upload-zone--drag" : ""}`,
+        role: "button",
+        tabIndex: 0,
+        "aria-label": label2 || "Upload files",
         onDrop: handleDrop,
         onDragOver: (e) => {
           e.preventDefault();
           setIsDrag(true);
         },
         onDragLeave: () => setIsDrag(false),
-        onClick: () => inputRef.current?.click()
+        onClick: () => inputRef.current?.click(),
+        onKeyDown: (event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            inputRef.current?.click();
+          }
+        }
       },
       /* @__PURE__ */ window.React.createElement("div", { className: "mds-upload-icon", "aria-hidden": "true" }, /* @__PURE__ */ window.React.createElement("svg", { width: "24", height: "24", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" }, /* @__PURE__ */ window.React.createElement("path", { d: "M12 3v12" }), /* @__PURE__ */ window.React.createElement("path", { d: "M7 8l5-5 5 5" }), /* @__PURE__ */ window.React.createElement("path", { d: "M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" }))),
       /* @__PURE__ */ window.React.createElement("div", { className: "mds-upload-text" }, "Drag files here or click to browse"),
@@ -12041,13 +12283,18 @@ button.mds-covm__cell{cursor:pointer;}
       "input",
       {
         ref: inputRef,
+        id: inputId,
+        "aria-label": label2 || "Upload files",
         type: "file",
         className: "mds-upload-input",
         multiple,
         accept,
-        onChange: (e) => handleFiles(e.target.files)
+        onChange: (e) => {
+          handleFiles(e.target.files);
+          e.target.value = "";
+        }
       }
-    ), files.length > 0 && /* @__PURE__ */ window.React.createElement("ul", { className: "mds-file-list" }, files.map((f, i) => /* @__PURE__ */ window.React.createElement("li", { key: i, className: "mds-file-item" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-file-name" }, f.name), /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-file-remove", onClick: () => removeFile(i) }, "✕")))));
+    ), files.length > 0 && /* @__PURE__ */ window.React.createElement("ul", { className: "mds-file-list" }, files.map((f, i) => /* @__PURE__ */ window.React.createElement("li", { key: i, className: "mds-file-item" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-file-name" }, f.name), /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-file-remove", "aria-label": `Remove ${f.name}`, onClick: () => removeFile(i) }, "✕")))));
   }
 
   // components/core/Flex.jsx
@@ -12141,7 +12388,10 @@ button.mds-covm__cell{cursor:pointer;}
     className = "",
     style = {}
   }) {
-    const fieldId = Math.random().toString(36).slice(2);
+    const generatedId = react_default.useId();
+    const control = react_default.isValidElement(children) ? children : null;
+    const fieldId = control?.props.id || generatedId;
+    const messageId = `${fieldId}-message`;
     return /* @__PURE__ */ window.React.createElement(
       "div",
       {
@@ -12166,15 +12416,18 @@ button.mds-covm__cell{cursor:pointer;}
           }
         },
         label2,
-        required && /* @__PURE__ */ window.React.createElement("span", { style: { color: "var(--red)", marginLeft: "4px" } }, "*")
+        required && /* @__PURE__ */ window.React.createElement("span", { "aria-hidden": "true", style: { color: "var(--red)", marginLeft: "4px" } }, "*")
       ),
-      children && typeof children === "object" && children.type ? (() => {
-        const cloned = children;
-        return cloned.props ? children : children;
-      })() : children,
+      control ? react_default.cloneElement(control, {
+        id: fieldId,
+        "aria-required": required || control.props["aria-required"],
+        "aria-invalid": error ? true : control.props["aria-invalid"],
+        "aria-describedby": [control.props["aria-describedby"], hint || error ? messageId : null].filter(Boolean).join(" ") || void 0
+      }) : children,
       (hint || error) && /* @__PURE__ */ window.React.createElement(
         "div",
         {
+          id: messageId,
           style: {
             fontSize: "var(--type-caption)",
             color: error ? "var(--red)" : "var(--text-muted)",
@@ -12189,9 +12442,9 @@ button.mds-covm__cell{cursor:pointer;}
 
   // components/core/FormValidation.jsx
   var Validators = {
-    required: (val2) => !val2 || val2.toString().trim() === "" ? "Required" : null,
+    required: (val2) => val2 == null || typeof val2 === "string" && val2.trim() === "" || Array.isArray(val2) && val2.length === 0 ? "Required" : null,
     email: (val2) => val2 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val2) ? "Invalid email" : null,
-    number: (val2) => val2 && isNaN(val2) ? "Must be a number" : null,
+    number: (val2) => val2 == null || val2 === "" ? null : !Number.isFinite(Number(val2)) ? "Must be a number" : null,
     minLength: (min) => (val2) => val2 && val2.length < min ? `Minimum ${min} characters` : null,
     maxLength: (max) => (val2) => val2 && val2.length > max ? `Maximum ${max} characters` : null,
     pattern: (pattern, msg) => (val2) => val2 && !pattern.test(val2) ? msg : null,
@@ -12219,8 +12472,12 @@ button.mds-covm__cell{cursor:pointer;}
     }
   };
   var FieldInput = ({ label: label2, value, onChange, onBlur, validators, hint, placeholder, type = "text" }) => {
-    const [touched, setTouched] = React.useState(false);
-    const [error, setError] = React.useState(null);
+    const inputId = react_default.useId();
+    const [touched, setTouched] = react_default.useState(false);
+    const [error, setError] = react_default.useState(null);
+    react_default.useEffect(() => {
+      if (touched) setError(FormValidation.validateField(value, validators));
+    }, [value, validators, touched]);
     const handleBlur = (e) => {
       setTouched(true);
       const err = FormValidation.validateField(value, validators);
@@ -12247,23 +12504,26 @@ button.mds-covm__cell{cursor:pointer;}
 .mds-field-error{display:flex;align-items:flex-start;gap:6px;font-size:11px;color:var(--red);}
 .mds-field-error-icon{flex:0 0 16px;line-height:1.4;font-weight:600;}
 `;
-    if (!document.getElementById("mds-field-css")) {
+    if (typeof document !== "undefined" && !document.getElementById("mds-field-css")) {
       const el = document.createElement("style");
       el.id = "mds-field-css";
       el.textContent = css;
       document.head.appendChild(el);
     }
-    return /* @__PURE__ */ window.React.createElement("div", { className: "mds-field" }, label2 && /* @__PURE__ */ window.React.createElement("label", { className: "mds-field-label" }, label2), /* @__PURE__ */ window.React.createElement(
+    return /* @__PURE__ */ window.React.createElement("div", { className: "mds-field" }, label2 && /* @__PURE__ */ window.React.createElement("label", { className: "mds-field-label", htmlFor: inputId }, label2), /* @__PURE__ */ window.React.createElement(
       "input",
       {
         className: `mds-field-input${error && touched ? " mds-field-input--error" : ""}`,
+        id: inputId,
+        "aria-invalid": error && touched ? true : void 0,
+        "aria-describedby": hint || error && touched ? `${inputId}-message` : void 0,
         type,
         value,
         onChange: handleChange,
         onBlur: handleBlur,
         placeholder
       }
-    ), hint && !error && /* @__PURE__ */ window.React.createElement("div", { className: "mds-field-hint" }, hint), error && touched && /* @__PURE__ */ window.React.createElement("div", { className: "mds-field-error" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-field-error-icon" }, "!"), /* @__PURE__ */ window.React.createElement("span", null, error)));
+    ), hint && !error && /* @__PURE__ */ window.React.createElement("div", { className: "mds-field-hint", id: `${inputId}-message` }, hint), error && touched && /* @__PURE__ */ window.React.createElement("div", { className: "mds-field-error", id: `${inputId}-message` }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-field-error-icon", "aria-hidden": "true" }, "!"), /* @__PURE__ */ window.React.createElement("span", null, error)));
   };
   var FormErrorSummary = ({ errors, fields }) => {
     const errorList = Object.entries(errors).filter(([_, err]) => err).map(([field, err]) => ({ field, label: fields[field]?.label || field, error: err }));
@@ -12276,13 +12536,13 @@ button.mds-covm__cell{cursor:pointer;}
 .mds-form-errors-item{font-size:12px;color:var(--red);display:flex;gap:6px;}
 .mds-form-errors-item::before{content:'•';flex:0 0 6px;}
 `;
-    if (!document.getElementById("mds-form-errors-css")) {
+    if (typeof document !== "undefined" && !document.getElementById("mds-form-errors-css")) {
       const el = document.createElement("style");
       el.id = "mds-form-errors-css";
       el.textContent = css;
       document.head.appendChild(el);
     }
-    return /* @__PURE__ */ window.React.createElement("div", { className: "mds-form-errors" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-form-errors-title" }, errorList.length, " error", errorList.length > 1 ? "s" : ""), /* @__PURE__ */ window.React.createElement("ul", { className: "mds-form-errors-list" }, errorList.map(({ field, label: label2, error }) => /* @__PURE__ */ window.React.createElement("li", { key: field, className: "mds-form-errors-item" }, label2, ": ", error))));
+    return /* @__PURE__ */ window.React.createElement("div", { className: "mds-form-errors", role: "alert" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-form-errors-title" }, errorList.length, " error", errorList.length > 1 ? "s" : ""), /* @__PURE__ */ window.React.createElement("ul", { className: "mds-form-errors-list" }, errorList.map(({ field, label: label2, error }) => /* @__PURE__ */ window.React.createElement("li", { key: field, className: "mds-form-errors-item" }, label2, ": ", error))));
   };
 
   // components/core/FreshnessIndicator.jsx
@@ -12311,11 +12571,11 @@ button.mds-covm__cell{cursor:pointer;}
     document.head.appendChild(el);
   }
   var STATUS3 = {
-    live: { label: "live", c: "var(--green,#2E7655)", ring: "var(--green-a20)", wash: "var(--green-a10)" },
-    fresh: { label: "fresh", c: "var(--green,#2E7655)", ring: "var(--green-a20)", wash: "var(--green-a10)" },
-    stale: { label: "stale", c: "var(--orange,#986717)", ring: "var(--orange-a20)", wash: "var(--orange-a10)" },
-    delayed: { label: "delayed", c: "var(--orange,#986717)", ring: "var(--orange-a20)", wash: "var(--orange-a10)" },
-    offline: { label: "offline", c: "var(--red,#B54B42)", ring: "var(--red-a20)", wash: "var(--red-a10)" },
+    live: { label: "live", c: "var(--green-dim,#245C42)", ring: "var(--green-a20)", wash: "var(--green-a10)" },
+    fresh: { label: "fresh", c: "var(--green-dim,#245C42)", ring: "var(--green-a20)", wash: "var(--green-a10)" },
+    stale: { label: "stale", c: "var(--orange-dim,#725012)", ring: "var(--orange-a20)", wash: "var(--orange-a10)" },
+    delayed: { label: "delayed", c: "var(--orange-dim,#725012)", ring: "var(--orange-a20)", wash: "var(--orange-a10)" },
+    offline: { label: "offline", c: "var(--red-dim,#873832)", ring: "var(--red-a20)", wash: "var(--red-a10)" },
     connecting: { label: "connecting", c: "var(--semantic-info,#2F648A)", ring: "var(--blue-a10)", wash: "var(--blue-a10)" },
     idle: { label: "idle", c: "var(--text-disabled,#A4ABB2)", ring: "rgba(136,144,153,.25)", wash: "transparent" }
   };
@@ -12505,6 +12765,8 @@ button.mds-covm__cell{cursor:pointer;}
   function HotkeysProvider({ bindings = [], sheet = true, sheetTitle = "Keyboard shortcuts" }) {
     inject70();
     const [open, setOpen] = react_default.useState(false);
+    const sheetRef = react_default.useRef(null);
+    useOverlayFocus(sheetRef, sheet && open, ".mds-hotkeys-panel");
     const parsed = react_default.useMemo(
       () => bindings.map((b) => ({ ...b, parsed: parseBinding(b.keys) })),
       [bindings]
@@ -12572,7 +12834,7 @@ button.mds-covm__cell{cursor:pointer;}
       }
       entry.items.push(b);
     }
-    return /* @__PURE__ */ window.React.createElement("div", { className: "mds-hotkeys-sheet", onClick: () => setOpen(false) }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-hotkeys-panel", role: "dialog", "aria-label": sheetTitle, onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-hotkeys-hd" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-hotkeys-title" }, sheetTitle), /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-hotkeys-x", "aria-label": "Close", onClick: () => setOpen(false) }, "×")), groups.map((g) => /* @__PURE__ */ window.React.createElement(react_default.Fragment, { key: g.name }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-hotkeys-group" }, g.name), g.items.map((b, i) => /* @__PURE__ */ window.React.createElement("div", { className: "mds-hotkeys-row", key: i }, /* @__PURE__ */ window.React.createElement("span", null, b.label), /* @__PURE__ */ window.React.createElement("span", { className: "mds-hotkeys-keys" }, String(b.keys).split(/(\s+|\+)/).filter((p) => p.trim() && p !== "+").map((p, j) => /* @__PURE__ */ window.React.createElement(Kbd, { key: j }, p.length === 1 ? p.toUpperCase() : p[0].toUpperCase() + p.slice(1)))))))), /* @__PURE__ */ window.React.createElement("div", { className: "mds-hotkeys-row", style: { borderTop: "1px solid var(--border, #D2CDC3)" } }, /* @__PURE__ */ window.React.createElement("span", null, "Show this sheet"), /* @__PURE__ */ window.React.createElement("span", { className: "mds-hotkeys-keys" }, /* @__PURE__ */ window.React.createElement(Kbd, null, "?")))));
+    return /* @__PURE__ */ window.React.createElement("div", { ref: sheetRef, className: "mds-hotkeys-sheet", onClick: () => setOpen(false) }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-hotkeys-panel", role: "dialog", "aria-modal": "true", "aria-label": sheetTitle, onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-hotkeys-hd" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-hotkeys-title" }, sheetTitle), /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-hotkeys-x", "aria-label": "Close", onClick: () => setOpen(false) }, "×")), groups.map((g) => /* @__PURE__ */ window.React.createElement(react_default.Fragment, { key: g.name }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-hotkeys-group" }, g.name), g.items.map((b, i) => /* @__PURE__ */ window.React.createElement("div", { className: "mds-hotkeys-row", key: i }, /* @__PURE__ */ window.React.createElement("span", null, b.label), /* @__PURE__ */ window.React.createElement("span", { className: "mds-hotkeys-keys" }, String(b.keys).split(/(\s+|\+)/).filter((p) => p.trim() && p !== "+").map((p, j) => /* @__PURE__ */ window.React.createElement(Kbd, { key: j }, p.length === 1 ? p.toUpperCase() : p[0].toUpperCase() + p.slice(1)))))))), /* @__PURE__ */ window.React.createElement("div", { className: "mds-hotkeys-row", style: { borderTop: "1px solid var(--border, #D2CDC3)" } }, /* @__PURE__ */ window.React.createElement("span", null, "Show this sheet"), /* @__PURE__ */ window.React.createElement("span", { className: "mds-hotkeys-keys" }, /* @__PURE__ */ window.React.createElement(Kbd, null, "?")))));
   }
 
   // components/core/InstrumentChip.jsx
@@ -12593,6 +12855,7 @@ button.mds-ichip:focus-visible{outline:var(--focus-ring);outline-offset:var(--fo
 .mds-ichip__sym{font-size:12px;font-weight:700;letter-spacing:.01em;color:var(--text-primary,#20252B);}
 .mds-ichip__venue{font-family:var(--font-body);font-size:9.5px;font-weight:600;font-variant:all-small-caps;
   letter-spacing:.05em;color:var(--text-muted,#6B737B);}
+.mds-ichip--selected .mds-ichip__venue{color:var(--text-secondary,#535C65);}
 .mds-ichip--sm{padding:1px 5px 1px 2px;gap:5px;}
 .mds-ichip--sm .mds-ichip__class{width:13px;height:13px;font-size:7.5px;}
 .mds-ichip--sm .mds-ichip__sym{font-size:11px;}
@@ -12820,10 +13083,10 @@ button.mds-mat:focus-visible{outline:2px solid var(--interaction-focus,var(--foc
     el.textContent = css;
     document.head.appendChild(el);
   }
-  var uid5 = 0;
+  var uid4 = 0;
   function useUid4() {
     if (react_default.useId) return react_default.useId().replace(/:/g, "");
-    return react_default.useMemo(() => "mdsms" + ++uid5, []);
+    return react_default.useMemo(() => "mdsms" + ++uid4, []);
   }
   function MultiSelect({
     label: label2,
@@ -12875,6 +13138,9 @@ button.mds-mat:focus-visible{outline:2px solid var(--interaction-focus,var(--foc
     }, [norm5, query, filter]);
     const atLimit = maxSelected != null && value.length >= maxSelected;
     react_default.useEffect(() => {
+      if (disabled) setOpen(false);
+    }, [disabled]);
+    react_default.useEffect(() => {
       if (!open) return;
       const onDown = (e) => {
         if (rootRef.current && !rootRef.current.contains(e.target)) closeMenu();
@@ -12917,11 +13183,13 @@ button.mds-mat:focus-visible{outline:2px solid var(--interaction-focus,var(--foc
     };
     const toggle = (opt) => {
       if (opt.disabled || disabled) return;
-      const has4 = selectedSet.has(opt.value);
-      if (!has4 && atLimit) return;
-      onChange?.(has4 ? value.filter((v) => v !== opt.value) : [...value, opt.value]);
+      const has3 = selectedSet.has(opt.value);
+      if (!has3 && atLimit) return;
+      onChange?.(has3 ? value.filter((v) => v !== opt.value) : [...value, opt.value]);
     };
-    const removeAt = (v) => onChange?.(value.filter((x) => x !== v));
+    const removeAt = (v) => {
+      if (!disabled) onChange?.(value.filter((x) => x !== v));
+    };
     const selectableNow = filtered.filter((o) => !o.disabled);
     const allShownSelected = selectableNow.length > 0 && selectableNow.every((o) => selectedSet.has(o.value));
     const selectAllShown = () => {
@@ -13023,7 +13291,7 @@ button.mds-mat:focus-visible{outline:2px solid var(--interaction-focus,var(--foc
           className: "mds-ms-input",
           role: "combobox",
           "aria-expanded": open,
-          "aria-controls": listId,
+          "aria-controls": open ? listId : void 0,
           "aria-autocomplete": "list",
           "aria-activedescendant": open && filtered[hl] ? optId(hl) : void 0,
           "aria-label": !label2 ? ariaLabel : void 0,
@@ -13075,15 +13343,11 @@ button.mds-mat:focus-visible{outline:2px solid var(--interaction-focus,var(--foc
       "div",
       {
         ref: menuRef,
-        className: `mds-ms-menu${above ? " mds-ms-menu--above" : ""}`,
-        role: "listbox",
-        "aria-multiselectable": "true",
-        id: listId,
-        "aria-label": label2 || ariaLabel
+        className: `mds-ms-menu${above ? " mds-ms-menu--above" : ""}`
       },
       showBulk && /* @__PURE__ */ window.React.createElement("div", { className: "mds-ms-bulk" }, /* @__PURE__ */ window.React.createElement("button", { type: "button", disabled: allShownSelected || atLimit, onClick: selectAllShown }, query ? "Select matches" : "Select all"), /* @__PURE__ */ window.React.createElement("button", { type: "button", disabled: !selectableNow.some((o) => selectedSet.has(o.value)), onClick: clearShown }, "Clear"), /* @__PURE__ */ window.React.createElement("span", { className: "mds-ms-count" }, value.length, " selected", maxSelected != null ? ` / ${maxSelected}` : "")),
       filtered.length === 0 && /* @__PURE__ */ window.React.createElement("div", { className: "mds-ms-empty" }, emptyText),
-      filtered.map((opt, i) => {
+      /* @__PURE__ */ window.React.createElement("div", { role: "listbox", "aria-multiselectable": "true", id: listId, "aria-label": label2 || ariaLabel || "Options" }, filtered.map((opt, i) => {
         const on = selectedSet.has(opt.value);
         const blocked = opt.disabled || !on && atLimit;
         const head = opt.group && opt.group !== lastGroup ? (lastGroup = opt.group, opt.group) : null;
@@ -13099,12 +13363,11 @@ button.mds-mat:focus-visible{outline:2px solid var(--interaction-focus,var(--foc
             onMouseDown: (e) => e.preventDefault(),
             onClick: () => toggle(opt)
           },
-          /* @__PURE__ */ window.React.createElement("span", { "aria-hidden": "true", style: { display: "flex", pointerEvents: "none" } }, /* @__PURE__ */ window.React.createElement(Checkbox, { checked: on, disabled: blocked, onChange: () => {
-          } })),
+          /* @__PURE__ */ window.React.createElement("span", { "aria-hidden": "true", style: { display: "flex", pointerEvents: "none" } }, /* @__PURE__ */ window.React.createElement("span", { className: `mds-checkbox-box${on ? " mds-checkbox-box--checked" : ""}` }, on ? "✓" : "")),
           /* @__PURE__ */ window.React.createElement("span", { className: "mds-ms-opt__t" }, opt.label),
           opt.meta != null && /* @__PURE__ */ window.React.createElement("span", { className: "mds-ms-opt__m" }, opt.meta)
         ));
-      })
+      }))
     )), error && /* @__PURE__ */ window.React.createElement("div", { className: "mds-ms-error", id: errorId }, error), /* @__PURE__ */ window.React.createElement("span", { className: "mds-ms-sr", role: "status", "aria-live": "polite" }, value.length, " selected", atLimit ? `, limit of ${maxSelected} reached` : ""));
   }
   MultiSelect.displayName = "MultiSelect";
@@ -13210,6 +13473,7 @@ button.mds-mat:focus-visible{outline:2px solid var(--interaction-focus,var(--foc
     inject74();
     const [open, setOpen] = react_default.useState(false);
     const rootRef = react_default.useRef(null);
+    const buttonRef = react_default.useRef(null);
     const unread = items.filter((n) => !n.read).length;
     react_default.useEffect(() => {
       if (!open) return;
@@ -13217,7 +13481,11 @@ button.mds-mat:focus-visible{outline:2px solid var(--interaction-focus,var(--foc
         if (rootRef.current && !rootRef.current.contains(e.target)) setOpen(false);
       };
       const onKey = (e) => {
-        if (e.key === "Escape") setOpen(false);
+        if (e.key === "Escape" && rootRef.current?.contains(e.target)) {
+          e.stopPropagation();
+          setOpen(false);
+          buttonRef.current?.focus();
+        }
       };
       document.addEventListener("mousedown", onDown);
       document.addEventListener("keydown", onKey);
@@ -13229,6 +13497,7 @@ button.mds-mat:focus-visible{outline:2px solid var(--interaction-focus,var(--foc
     return /* @__PURE__ */ window.React.createElement("div", { className: "mds-notif", ref: rootRef }, /* @__PURE__ */ window.React.createElement(
       "button",
       {
+        ref: buttonRef,
         type: "button",
         className: "mds-notif__bell",
         "aria-expanded": open,
@@ -13242,6 +13511,14 @@ button.mds-mat:focus-visible{outline:2px solid var(--interaction-focus,var(--foc
       {
         key: n.id,
         className: `mds-notif__item${n.read ? "" : " mds-notif__item--unread"}`,
+        role: onSelect ? "button" : void 0,
+        tabIndex: onSelect ? 0 : void 0,
+        onKeyDown: (e) => {
+          if (onSelect && (e.key === "Enter" || e.key === " ")) {
+            e.preventDefault();
+            onSelect(n);
+          }
+        },
         onClick: () => onSelect && onSelect(n),
         style: onSelect ? { cursor: "pointer" } : void 0
       },
@@ -13280,20 +13557,23 @@ button.mds-mat:focus-visible{outline:2px solid var(--interaction-focus,var(--foc
     el.textContent = css;
     document.head.appendChild(el);
   }
-  function NumberInput({ label: label2, value = 0, onChange, min, max, step = 1, disabled = false }) {
+  function NumberInput({ label: label2, value = 0, onChange, min, max, step = 1, disabled = false, id, "aria-label": ariaLabel, ...rest }) {
     inject75();
     const [localValue, setLocalValue] = useState8(value);
+    const generatedId = react_default.useId();
+    const inputId = id || generatedId;
     const handleChange = (newVal) => {
       if (min !== void 0 && newVal < min) newVal = min;
       if (max !== void 0 && newVal > max) newVal = max;
       setLocalValue(newVal);
       onChange?.(newVal);
     };
-    return /* @__PURE__ */ window.React.createElement("div", null, label2 && /* @__PURE__ */ window.React.createElement("label", { className: "mds-number-label" }, label2), /* @__PURE__ */ window.React.createElement("div", { className: "mds-number-wrap" }, /* @__PURE__ */ window.React.createElement(
+    return /* @__PURE__ */ window.React.createElement("div", null, label2 && /* @__PURE__ */ window.React.createElement("label", { className: "mds-number-label", htmlFor: inputId }, label2), /* @__PURE__ */ window.React.createElement("div", { className: "mds-number-wrap" }, /* @__PURE__ */ window.React.createElement(
       "button",
       {
         type: "button",
         className: "mds-number-btn",
+        "aria-label": `Decrease ${label2 || "number"}`,
         onClick: () => handleChange(localValue - step),
         disabled: disabled || min !== void 0 && localValue <= min
       },
@@ -13301,7 +13581,10 @@ button.mds-mat:focus-visible{outline:2px solid var(--interaction-focus,var(--foc
     ), /* @__PURE__ */ window.React.createElement(
       "input",
       {
+        ...rest,
         type: "number",
+        id: inputId,
+        "aria-label": label2 || id ? ariaLabel : ariaLabel || "Number",
         className: "mds-number-input",
         value: localValue,
         onChange: (e) => handleChange(parseFloat(e.target.value) || 0),
@@ -13315,6 +13598,7 @@ button.mds-mat:focus-visible{outline:2px solid var(--interaction-focus,var(--foc
       {
         type: "button",
         className: "mds-number-btn",
+        "aria-label": `Increase ${label2 || "number"}`,
         onClick: () => handleChange(localValue + step),
         disabled: disabled || max !== void 0 && localValue >= max
       },
@@ -13439,7 +13723,7 @@ button.mds-objh__fact:hover .mds-objh__v{text-decoration:underline;text-underlin
     name,
     identifierLabel,
     context,
-    condition,
+    condition: condition2,
     asOf,
     value,
     version,
@@ -13452,7 +13736,7 @@ button.mds-objh__fact:hover .mds-objh__v{text-decoration:underline;text-underlin
     ...rest
   }) {
     inject76();
-    const o = describeObject({ type, id, name, identifierLabel, context, condition, asOf, value, version, coverage, exceptions });
+    const o = describeObject({ type, id, name, identifierLabel, context, condition: condition2, asOf, value, version, coverage, exceptions });
     const amount = o.value && typeof o.value === "object" ? o.value : o.value != null ? { amount: o.value } : null;
     return /* @__PURE__ */ window.React.createElement("header", { className: `mds-objh${dense ? " mds-objh--dense" : ""}${className ? " " + className : ""}`, "data-object-type": o.type, ...rest }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-objh__ident" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-objh__type" }, o.typeLabel), o.name ? /* @__PURE__ */ window.React.createElement("h2", { className: "mds-objh__name" }, o.name) : null, o.id != null ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-objh__key" }, o.identifierLabel, " ", /* @__PURE__ */ window.React.createElement("b", null, o.id)) : null, o.version != null ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-objh__ver" }, "Version ", o.version) : null), /* @__PURE__ */ window.React.createElement("div", { className: "mds-objh__facts" }, o.context.map((pair) => /* @__PURE__ */ window.React.createElement(Fact, { key: pair.label, label: pair.label, value: pair.value })), amount ? /* @__PURE__ */ window.React.createElement(Fact, { label: o.materialLabel, value: amount.amount, sub: amount.secondary, material: true }) : null, o.condition ? /* @__PURE__ */ window.React.createElement(Fact, { label: "Condition" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-objh__v mds-objh__cond" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-objh__dot", style: { background: CONDITION_COLOR[o.condition] || CONDITION_COLOR.na } }), o.condition)) : null, o.asOf ? /* @__PURE__ */ window.React.createElement(Fact, { label: "As of", value: o.asOf }) : null, o.coverage ? /* @__PURE__ */ window.React.createElement(Fact, { label: "Evidence", value: o.coverage.text, flagged: o.coverage.complete === false, onClick: onOpenEvidence }) : null, o.exceptions ? /* @__PURE__ */ window.React.createElement(Fact, { label: o.exceptions.label || "Open exceptions", value: o.exceptions.count, flagged: o.exceptions.blocking, onClick: onOpenExceptions }) : null));
   }
@@ -13626,11 +13910,18 @@ button.mds-objh__fact:hover .mds-objh__v{text-decoration:underline;text-underlin
     }
   }
   function ObjectTrailProvider({ screenId = "global", max = 12, persist = true, storage, defaultEntries, defaultPinned, onNavigate, children }) {
-    const [state, setState] = react_default.useState(() => {
+    const initialState = () => {
       const saved = persist ? readStore2(screenId, storage) : null;
       const recents = saved?.recents || defaultEntries || [];
       return { stack: recents.length ? [recents[0]] : [], index: recents.length ? 0 : -1, recents, pinned: saved?.pinned || defaultPinned || [], notice: null };
-    });
+    };
+    const [state, setState] = react_default.useState(initialState);
+    const previousScreen = react_default.useRef(screenId);
+    react_default.useLayoutEffect(() => {
+      if (previousScreen.current === screenId) return;
+      previousScreen.current = screenId;
+      setState(initialState());
+    }, [screenId]);
     const persistNow = react_default.useCallback((next) => {
       if (persist) writeStore2(screenId, { recents: next.recents.slice(0, max), pinned: next.pinned }, storage);
     }, [persist, screenId, storage, max]);
@@ -13767,10 +14058,15 @@ button.mds-objh__fact:hover .mds-objh__v{text-decoration:underline;text-underlin
     const api = react_default.useContext(Ctx3);
     const [open, setOpen] = react_default.useState(false);
     const ref = react_default.useRef(null);
+    const recentRef = react_default.useRef(null);
     react_default.useEffect(() => {
       if (!open) return void 0;
       const onKey = (e) => {
-        if (e.key === "Escape") setOpen(false);
+        if (e.key === "Escape" && ref.current?.contains(e.target)) {
+          e.stopPropagation();
+          setOpen(false);
+          recentRef.current?.focus();
+        }
       };
       const onDown = (e) => {
         if (!ref.current?.contains(e.target)) setOpen(false);
@@ -13801,11 +14097,12 @@ button.mds-objh__fact:hover .mds-objh__v{text-decoration:underline;text-underlin
     )) : /* @__PURE__ */ window.React.createElement("div", { className: "mds-trail__current" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-trail__type" }, "No object opened yet")), /* @__PURE__ */ window.React.createElement("span", { className: "mds-trail__spacer" }), showPinned && pins.length ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-trail__pins", role: "group", "aria-label": "Pinned objects" }, pins.map((entry) => /* @__PURE__ */ window.React.createElement("button", { key: trailRef(entry), type: "button", className: "mds-trail__pin", "data-active": current ? trailRef(current) === trailRef(entry) : false, onClick: () => api.go(entry) }, /* @__PURE__ */ window.React.createElement("em", null, typeLabel(entry)), /* @__PURE__ */ window.React.createElement("span", { style: { overflow: "hidden", textOverflow: "ellipsis" } }, entry.label ?? entry.id)))) : null, /* @__PURE__ */ window.React.createElement(
       "button",
       {
+        ref: recentRef,
         type: "button",
         className: "mds-trail__more",
         "aria-expanded": open,
-        "aria-controls": panelId,
-        "aria-label": `${recentsLabel} objects${api.recents.length ? `, ${api.recents.length} in this session` : ""}`,
+        "aria-controls": open ? panelId : void 0,
+        "aria-label": `${recentsLabel} ${api.recents.length || ""} objects${api.recents.length ? `, ${api.recents.length} in this session` : ""}`,
         onClick: () => setOpen((s) => !s)
       },
       recentsLabel,
@@ -13885,6 +14182,17 @@ button.mds-objh__fact:hover .mds-objh__v{text-decoration:underline;text-underlin
     inject80();
     const rootRef = useRef6(null);
     const [style, setStyle] = useState9({});
+    useEffect5(() => {
+      if (!open) return;
+      const previous = document.activeElement;
+      const panel = rootRef.current;
+      return () => {
+        if (document.activeElement === document.body || panel?.contains(document.activeElement)) {
+          const target = anchorEl || previous;
+          if (target?.isConnected) target.focus();
+        }
+      };
+    }, [open, anchorEl]);
     useLayoutEffect2(() => {
       if (!open || !anchorEl || !rootRef.current) return;
       const updatePosition = () => {
@@ -13995,6 +14303,7 @@ button.mds-objh__fact:hover .mds-objh__v{text-decoration:underline;text-underlin
     variant = "accent",
     size = "md",
     className = "",
+    "aria-label": ariaLabel,
     ...rest
   }) {
     inject81();
@@ -14008,6 +14317,7 @@ button.mds-objh__fact:hover .mds-objh__v{text-decoration:underline;text-underlin
       {
         className: "mds-prog__track",
         role: "progressbar",
+        "aria-label": ariaLabel || label2 || "Progress",
         "aria-valuenow": indeterminate ? void 0 : Math.round(pct3),
         "aria-valuemin": 0,
         "aria-valuemax": 100,
@@ -14061,7 +14371,8 @@ button.mds-objh__fact:hover .mds-objh__v{text-decoration:underline;text-underlin
     ...rest
   }) {
     inject82();
-    const groupName = name || react_default.useId?.() || "mds-radio";
+    const generatedName = react_default.useId();
+    const groupName = name || generatedName;
     const items = normalize3(options);
     return /* @__PURE__ */ window.React.createElement(
       "div",
@@ -14195,7 +14506,11 @@ button.mds-objh__fact:hover .mds-objh__v{text-decoration:underline;text-underlin
     const api = react_default.useMemo(() => ({
       time,
       update,
-      reset: () => update(defaultValue || {}),
+      reset: () => {
+        const next = { ...defaultValue || {} };
+        if (!controlled) setInternal(next);
+        onChange?.(next);
+      },
       get: (id) => time[id],
       coherence: checkTimeCoherence(time)
     }), [time, update, defaultValue]);
@@ -14219,19 +14534,19 @@ button.mds-objh__fact:hover .mds-objh__v{text-decoration:underline;text-underlin
 .mds-time__kind{font:600 11px var(--font-body);color:var(--text-muted,#606870);margin:0 0 2px}
 .mds-time__row{display:grid;grid-template-columns:minmax(96px,auto) 1fr;gap:4px 14px;align-items:baseline;padding:3px 0;border-bottom:1px solid var(--border-divider,#E2DED5)}
 .mds-time__row:last-child{border-bottom:0}
-.mds-time__row[data-flagged="on"]{background:var(--amber-wash,rgba(152,103,23,.1));box-shadow:inset 2px 0 0 var(--orange,#986717);padding-left:6px}
+.mds-time__row[data-flagged="on"]{background:var(--orange-a10,rgba(152,103,23,.1));box-shadow:inset 2px 0 0 var(--orange,#986717);padding-left:6px}
 .mds-time__label{font:11px var(--font-body);color:var(--text-muted,#606870)}
 .mds-time__value{font:12px var(--font-data,monospace);color:var(--text-primary,#20252B);font-variant-numeric:tabular-nums;font-weight:600;justify-self:end;text-align:right;white-space:nowrap}
 .mds-time__value[data-missing="on"]{color:var(--text-disabled,#A4ABB2);font-weight:400}
 .mds-time__meta{grid-column:1/-1;font:10px var(--font-data,monospace);color:var(--text-muted,#606870)}
 .mds-time__co{display:grid;gap:4px;margin:0;padding:0;list-style:none}
 .mds-time__issue{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:baseline;padding:6px 8px;border:1px solid var(--border,#D2CDC3);font:12px/17px var(--font-body);text-wrap:pretty}
-.mds-time__issue[data-severity="error"]{border-color:var(--red,#B54B42);background:var(--red-wash,rgba(181,75,66,.1))}
-.mds-time__issue[data-severity="warning"]{border-color:var(--orange,#986717);background:var(--amber-wash,rgba(152,103,23,.1))}
+.mds-time__issue[data-severity="error"]{border-color:var(--red,#B54B42);background:var(--red-a10,rgba(181,75,66,.1))}
+.mds-time__issue[data-severity="warning"]{border-color:var(--orange,#986717);background:var(--orange-a10,rgba(152,103,23,.1))}
 .mds-time__issue[data-severity="info"]{background:var(--card-surface,#F8F7F3)}
 .mds-time__sev{font:600 10px var(--font-data,monospace);letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted,#606870)}
 .mds-time__issue[data-severity="error"] .mds-time__sev{color:var(--red-dim,#B54B42)}
-.mds-time__issue[data-severity="warning"] .mds-time__sev{color:var(--orange,#986717)}
+.mds-time__issue[data-severity="warning"] .mds-time__sev{color:var(--orange-dim,#725012)}
 .mds-time__ok{font:12px var(--font-body);color:var(--text-muted,#606870);margin:0}
 .mds-timerole{display:inline-grid;gap:1px}
 .mds-timerole__l{font:11px var(--font-body);color:var(--text-muted,#606870)}
@@ -14278,7 +14593,7 @@ button.mds-objh__fact:hover .mds-objh__v{text-decoration:underline;text-underlin
     return /* @__PURE__ */ window.React.createElement("div", { className: `mds-time${className ? " " + className : ""}`, ...rest }, title ? /* @__PURE__ */ window.React.createElement("h3", { className: "mds-time__kind", style: { fontSize: 12, color: "var(--text-primary,#20252B)" } }, title) : null, groups.map((group) => /* @__PURE__ */ window.React.createElement("div", { key: group.id, className: "mds-time__group" }, /* @__PURE__ */ window.React.createElement("h4", { className: "mds-time__kind" }, group.label), group.rows.map((role) => {
       const raw = time[role.id];
       return /* @__PURE__ */ window.React.createElement("div", { key: role.id, className: "mds-time__row", "data-time-role": role.id, "data-flagged": flagged.has(role.id) ? "on" : "off" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-time__label", title: role.definition }, role.label), /* @__PURE__ */ window.React.createElement("span", { className: "mds-time__value", "data-missing": raw == null ? "on" : "off" }, format(raw, role.precision)), sources && sources[role.id] ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-time__meta" }, sources[role.id]) : null);
-    }))), coherence ? issues.length ? /* @__PURE__ */ window.React.createElement("ul", { className: "mds-time__co" }, issues.map((issue2) => /* @__PURE__ */ window.React.createElement("li", { key: issue2.id, className: "mds-time__issue", "data-severity": issue2.severity }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-time__sev" }, issue2.severity), /* @__PURE__ */ window.React.createElement("span", null, issue2.message)))) : /* @__PURE__ */ window.React.createElement("p", { className: "mds-time__ok" }, "Dates are coherent — no ordering, period, or staleness conflict.") : null);
+    }))), coherence ? issues.length ? /* @__PURE__ */ window.React.createElement("ul", { className: "mds-time__co" }, issues.map((issue2) => /* @__PURE__ */ window.React.createElement("li", { key: issue2.id, className: "mds-time__issue", "data-severity": issue2.severity }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-time__sev" }, issue2.severity), /* @__PURE__ */ window.React.createElement("span", null, issue2.message)))) : /* @__PURE__ */ window.React.createElement("p", { className: "mds-time__ok" }, Object.values(time).some((value2) => value2 != null && value2 !== "") ? "Dates are coherent — no ordering, period, or staleness conflict." : "No dates declared — coherence not evaluated.") : null);
   }
   var TimeContext = {
     Provider: TimeContextProvider,
@@ -14319,6 +14634,7 @@ button.mds-objh__fact:hover .mds-objh__v{text-decoration:underline;text-underlin
       stale: "Stale",
       overridden: "Overridden",
       missing: "Missing",
+      restricted: "Restricted",
       na: "Not applicable",
       pending: "Pending",
       exception: "Exception",
@@ -14331,7 +14647,7 @@ button.mds-objh__fact:hover .mds-objh__v{text-decoration:underline;text-underlin
     }, {}),
     authority: { source: "Source of record", derived: "Derived", desk: "Desk mark", override: "Override", estimate: "Estimate", unattributed: "Unattributed" }
   };
-  var ALIAS5 = (() => {
+  var ALIAS3 = (() => {
     const m2 = { density: {}, severity: {} };
     Object.keys(DENSITY).forEach((k) => {
       m2.density[k] = k;
@@ -14388,7 +14704,7 @@ button.mds-objh__fact:hover .mds-objh__v{text-decoration:underline;text-underlin
   })();
   function resolve2(vocabulary, value) {
     const v = String(value ?? "").trim().toLowerCase();
-    const map = ALIAS5[vocabulary];
+    const map = ALIAS3[vocabulary];
     if (map && map[v]) return map[v];
     const vocab = Registry[vocabulary] || {};
     if (vocab[v]) return v;
@@ -14476,8 +14792,8 @@ button.mds-objh__fact:hover .mds-objh__v{text-decoration:underline;text-underlin
     ...rest
   }) {
     inject84();
-    const uid6 = react_default.useId();
-    const labelId = label2 ? uid6 + "-label" : void 0;
+    const uid5 = react_default.useId();
+    const labelId = label2 ? uid5 + "-label" : void 0;
     const clamped = Math.min(max, Math.max(min, value));
     const pct3 = max > min ? (clamped - min) / (max - min) * 100 : 0;
     const display = valueFmt ? valueFmt(clamped) : String(clamped);
@@ -14600,6 +14916,8 @@ body.mds-split-dragging--v,body.mds-split-dragging--v *{cursor:row-resize !impor
     inject86();
     const horiz = direction === "horizontal";
     const rootRef = react_default.useRef(null);
+    const dragCleanup = react_default.useRef(null);
+    react_default.useEffect(() => () => dragCleanup.current?.(), []);
     const [total, setTotal] = react_default.useState(0);
     const clamp2 = react_default.useCallback((v) => {
       const lo = resolve3(min, total);
@@ -14608,9 +14926,12 @@ body.mds-split-dragging--v,body.mds-split-dragging--v *{cursor:row-resize !impor
       return Math.min(Math.max(v, lo), Math.max(lo, hi));
     }, [min, max, minSecondary, total]);
     const [size, setSize] = react_default.useState(() => {
-      if (persistKey && typeof localStorage !== "undefined") {
-        const v = parseFloat(localStorage.getItem("mds-split:" + persistKey));
-        if (Number.isFinite(v)) return v;
+      try {
+        if (persistKey && typeof localStorage !== "undefined") {
+          const v = parseFloat(localStorage.getItem("mds-split:" + persistKey));
+          if (Number.isFinite(v)) return v;
+        }
+      } catch {
       }
       return resolve3(initial, 0) || 280;
     });
@@ -14618,7 +14939,10 @@ body.mds-split-dragging--v,body.mds-split-dragging--v *{cursor:row-resize !impor
     const [selfCollapsed, setSelfCollapsed] = react_default.useState(false);
     const collapsed = collapsedProp != null ? collapsedProp : selfCollapsed;
     const persist = (v) => {
-      if (persistKey && typeof localStorage !== "undefined") localStorage.setItem("mds-split:" + persistKey, String(v));
+      try {
+        if (persistKey && typeof localStorage !== "undefined") localStorage.setItem("mds-split:" + persistKey, String(v));
+      } catch {
+      }
     };
     react_default.useEffect(() => {
       const el = rootRef.current;
@@ -14659,6 +14983,7 @@ body.mds-split-dragging--v,body.mds-split-dragging--v *{cursor:row-resize !impor
         onResize?.(last);
       };
       const up = () => {
+        dragCleanup.current = null;
         setDrag(false);
         document.body.classList.remove("mds-split-dragging", "mds-split-dragging--h", "mds-split-dragging--v");
         node.releasePointerCapture?.(e.pointerId);
@@ -14671,6 +14996,12 @@ body.mds-split-dragging--v,body.mds-split-dragging--v *{cursor:row-resize !impor
       node.addEventListener("pointermove", move);
       node.addEventListener("pointerup", up);
       node.addEventListener("pointercancel", up);
+      dragCleanup.current = () => {
+        document.body.classList.remove("mds-split-dragging", "mds-split-dragging--h", "mds-split-dragging--v");
+        node.removeEventListener("pointermove", move);
+        node.removeEventListener("pointerup", up);
+        node.removeEventListener("pointercancel", up);
+      };
     };
     const commit = (v) => {
       const c = clamp2(v);
@@ -14845,7 +15176,7 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
 .mds-stepper-step--error .mds-stepper-step__label{color:var(--red-dim,#7D322F);}
 .mds-stepper-step__badge{flex:0 0 auto;margin-left:auto;font-size:10px;font-variant-numeric:tabular-nums;
   background:var(--bg-medium);color:var(--text-muted);padding:2px 6px;border-radius:var(--radius-chip,2px);}
-.mds-stepper-step--error .mds-stepper-step__badge{background:var(--red-ghost,#F7E9E7);color:var(--red-dim,#7D322F);}
+.mds-stepper-step--error .mds-stepper-step__badge{background:var(--red-a10,#F7E9E7);color:var(--red-dim,#7D322F);}
 .mds-stepper-step__sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
 @media print{.mds-stepper{background:none;}.mds-stepper-step{background:none;}}
 `;
@@ -14984,6 +15315,7 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
     return { stage, code, severity, message, path: path || null };
   }
   var blank = (v) => v == null || typeof v === "string" && v.trim() === "";
+  var finiteNumber = (v) => !blank(v) && (typeof v === "number" || typeof v === "string") && Number.isFinite(Number(v));
   function validateStage(draft = {}, stageId) {
     const out = [], m2 = draft.mandate || {}, th = draft.thesis || {}, u = draft.universe || {}, p = draft.portfolioRules || {}, r = draft.riskGovernance || {}, rv = draft.review || {};
     switch (stageId) {
@@ -14993,6 +15325,7 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
         if (blank(m2.benchmark)) out.push(issue(stageId, "benchmark-missing", "warning", "No benchmark declared — benchmark and excess return will be null on every run.", "mandate.benchmark"));
         const band = m2.capitalBand || {};
         if (band.min == null || band.max == null) out.push(issue(stageId, "capital-band-missing", "blocking", "Declare the capital band (minimum and maximum).", "mandate.capitalBand"));
+        else if (!finiteNumber(band.min) || !finiteNumber(band.max)) out.push(issue(stageId, "capital-band-invalid", "blocking", "Capital band minimum and maximum must be finite numbers.", "mandate.capitalBand"));
         else if (Number(band.min) > Number(band.max)) out.push(issue(stageId, "capital-band-inverted", "blocking", "Capital band minimum exceeds maximum.", "mandate.capitalBand"));
         if (blank(m2.horizon)) out.push(issue(stageId, "horizon-missing", "blocking", "Declare the holding horizon.", "mandate.horizon"));
         break;
@@ -15007,14 +15340,14 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
         if (blank(u.datasetId)) out.push(issue(stageId, "dataset-missing", "blocking", "Pick the dataset the universe is drawn from.", "universe.datasetId"));
         if (blank(u.assetClass)) out.push(issue(stageId, "asset-class-missing", "blocking", "Declare the asset class.", "universe.assetClass"));
         if (!Array.isArray(u.filters) || u.filters.length === 0) out.push(issue(stageId, "universe-unfiltered", "warning", "No universe filters — the strategy may trade anything in the dataset.", "universe.filters"));
-        if (u.minAdv != null && !(Number(u.minAdv) >= 0)) out.push(issue(stageId, "min-adv-invalid", "blocking", "Liquidity floor must be zero or positive.", "universe.minAdv"));
+        if (u.minAdv != null && (!finiteNumber(u.minAdv) || !(Number(u.minAdv) >= 0))) out.push(issue(stageId, "min-adv-invalid", "blocking", "Liquidity floor must be finite and zero or positive.", "universe.minAdv"));
         break;
       }
       case "portfolioRules": {
         if (blank(p.entry)) out.push(issue(stageId, "entry-missing", "blocking", "Define the entry rule.", "portfolioRules.entry"));
         if (blank(p.exit)) out.push(issue(stageId, "exit-missing", "blocking", "Define the exit rule.", "portfolioRules.exit"));
         if (blank(p.sizing)) out.push(issue(stageId, "sizing-missing", "blocking", "Define position sizing.", "portfolioRules.sizing"));
-        if (p.maxPositions == null || !(Number(p.maxPositions) >= 1)) out.push(issue(stageId, "max-positions-invalid", "blocking", "Maximum concurrent positions must be at least 1.", "portfolioRules.maxPositions"));
+        if (!finiteNumber(p.maxPositions) || !Number.isInteger(Number(p.maxPositions)) || !(Number(p.maxPositions) >= 1)) out.push(issue(stageId, "max-positions-invalid", "blocking", "Maximum concurrent positions must be a finite integer of at least 1.", "portfolioRules.maxPositions"));
         if (blank(p.rebalance)) out.push(issue(stageId, "rebalance-undeclared", "warning", "No rebalance cadence declared.", "portfolioRules.rebalance"));
         (Array.isArray(p.worksheet) ? p.worksheet : []).forEach((cell) => {
           if (cell && cell.status === "error") out.push(issue(stageId, "worksheet-error", "blocking", "Worksheet cell " + (cell.ref || "?") + ": " + (cell.message || "does not evaluate."), "portfolioRules.worksheet." + (cell.ref || "")));
@@ -15025,7 +15358,9 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
         const dd = Number(r.maxDrawdownPct);
         if (r.maxDrawdownPct == null || !(dd > 0) || dd > 60) out.push(issue(stageId, "drawdown-policy-invalid", "blocking", "Maximum drawdown policy must be between 0 and 60 percent.", "riskGovernance.maxDrawdownPct"));
         if (r.grossExposureMax == null) out.push(issue(stageId, "gross-exposure-missing", "blocking", "Declare the gross exposure limit.", "riskGovernance.grossExposureMax"));
+        else if (!finiteNumber(r.grossExposureMax)) out.push(issue(stageId, "gross-exposure-invalid", "blocking", "Gross exposure limit must be finite.", "riskGovernance.grossExposureMax"));
         if (r.perNameMax == null) out.push(issue(stageId, "per-name-missing", "blocking", "Declare the per-name exposure limit.", "riskGovernance.perNameMax"));
+        else if (!finiteNumber(r.perNameMax)) out.push(issue(stageId, "per-name-invalid", "blocking", "Per-name exposure limit must be finite.", "riskGovernance.perNameMax"));
         if (r.grossExposureMax != null && r.perNameMax != null && Number(r.perNameMax) > Number(r.grossExposureMax)) out.push(issue(stageId, "limits-inverted", "blocking", "Per-name limit exceeds the gross exposure limit.", "riskGovernance.perNameMax"));
         if (blank(r.reviewCadence)) out.push(issue(stageId, "cadence-missing", "blocking", "Declare the governance review cadence.", "riskGovernance.reviewCadence"));
         if (!Array.isArray(r.approvers) || r.approvers.length === 0) out.push(issue(stageId, "approvers-missing", "blocking", "Name at least one approver.", "riskGovernance.approvers"));
@@ -15178,10 +15513,14 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
   }
   function Tabs({ tabs = [], value, defaultTab = 0, onChange, children }) {
     inject88();
-    const uid6 = react_default.useId();
+    const uid5 = react_default.useId();
     const [internal, setInternal] = react_default.useState(defaultTab);
     const controlled = value != null;
-    const active = controlled ? value : internal;
+    const requested = controlled ? value : internal;
+    const firstEnabled = tabs.findIndex((tab) => !tab?.disabled);
+    const validRequested = Number.isInteger(requested) && requested >= 0 && requested < tabs.length && !tabs[requested]?.disabled;
+    const active = validRequested ? requested : controlled ? -1 : firstEnabled;
+    const tabStop = active >= 0 ? active : firstEnabled;
     const barRef = react_default.useRef(null);
     const select = (i) => {
       if (!controlled) setInternal(i);
@@ -15229,11 +15568,11 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
           key: i,
           type: "button",
           role: "tab",
-          id: `${uid6}-tab-${i}`,
+          id: `${uid5}-tab-${i}`,
           "data-idx": i,
           "aria-selected": active === i,
-          "aria-controls": panels[i] ? `${uid6}-panel-${i}` : void 0,
-          tabIndex: active === i ? 0 : -1,
+          "aria-controls": panels[i] ? `${uid5}-panel-${i}` : void 0,
+          tabIndex: tabStop === i ? 0 : -1,
           className: `mds-tabs__tab${active === i ? " mds-tabs__tab--active" : ""}`,
           onClick: () => select(i),
           onKeyDown: (e) => handleKey(e, i),
@@ -15247,8 +15586,10 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
       {
         key: i,
         role: "tabpanel",
-        id: `${uid6}-panel-${i}`,
-        "aria-labelledby": `${uid6}-tab-${i}`,
+        id: `${uid5}-panel-${i}`,
+        "aria-labelledby": `${uid5}-tab-${i}`,
+        tabIndex: 0,
+        hidden: active !== i,
         className: `mds-tabs__panel${active === i ? " mds-tabs__panel--active" : ""}`
       },
       panel
@@ -15299,6 +15640,7 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
     const [draft, setDraft] = react_default.useState("");
     const inputRef = react_default.useRef(null);
     const commit = () => {
+      if (disabled) return;
       let t2 = draft.trim().replace(/,+$/, "");
       if (!t2) return;
       if (uppercase) t2 = t2.toUpperCase();
@@ -15306,7 +15648,7 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
       if (!value.includes(t2) && onChange) onChange([...value, t2]);
       setDraft("");
     };
-    const remove = (i) => onChange && onChange(value.filter((_, j) => j !== i));
+    const remove = (i) => !disabled && onChange && onChange(value.filter((_, j) => j !== i));
     const onKeyDown = (e) => {
       if (e.key === "Enter" || e.key === ",") {
         e.preventDefault();
@@ -15376,17 +15718,22 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
   }
   function TextArea({ label: label2, error, rows = 4, className = "", ...rest }) {
     inject90();
+    const generatedId = react_default.useId();
+    const inputId = rest.id || generatedId;
+    const errorId = `${inputId}--error`;
     const textarea = /* @__PURE__ */ window.React.createElement(
       "textarea",
       {
         className: `mds-textarea${error ? " mds-textarea--error" : ""}${className ? " " + className : ""}`,
         rows,
-        "aria-invalid": error ? true : void 0,
-        ...rest
+        ...rest,
+        id: inputId,
+        "aria-invalid": error ? true : rest["aria-invalid"],
+        "aria-describedby": [rest["aria-describedby"], error ? errorId : null].filter(Boolean).join(" ") || void 0
       }
     );
     if (!label2 && !error) return textarea;
-    return /* @__PURE__ */ window.React.createElement("label", { className: "mds-textarea-field" }, label2 && /* @__PURE__ */ window.React.createElement("span", { className: "mds-textarea-label" }, label2), textarea, error && /* @__PURE__ */ window.React.createElement("span", { className: "mds-textarea-error" }, error));
+    return /* @__PURE__ */ window.React.createElement("label", { className: "mds-textarea-field" }, label2 && /* @__PURE__ */ window.React.createElement("span", { className: "mds-textarea-label" }, label2), textarea, error && /* @__PURE__ */ window.React.createElement("span", { className: "mds-textarea-error", id: errorId }, error));
   }
 
   // components/core/Toast.jsx
@@ -15425,7 +15772,7 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
     document.head.appendChild(el);
   }
   var listeners = /* @__PURE__ */ new Set();
-  window.MeridianToast = {
+  var toastApi = {
     show({ tone = "info", title, detail, duration = 4e3, action = null }) {
       const id = Date.now() + Math.random();
       listeners.forEach((fn) => fn({ id, tone, title, detail, duration, action }));
@@ -15453,15 +15800,24 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
     }
   };
   var dismissers = /* @__PURE__ */ new Set();
+  if (typeof window !== "undefined") window.MeridianToast = toastApi;
   function ToastProvider() {
     inject91();
     const [toasts, setToasts] = react_default.useState([]);
+    const timers = react_default.useRef(/* @__PURE__ */ new Set());
+    const schedule = (callback, duration) => {
+      const timer = setTimeout(() => {
+        timers.current.delete(timer);
+        callback();
+      }, duration);
+      timers.current.add(timer);
+    };
     react_default.useEffect(() => {
       const handler = (toast) => {
         setToasts((prev) => [...prev.slice(-4), { ...toast, exiting: false }]);
-        if (toast.duration > 0) setTimeout(() => {
+        if (toast.duration > 0) schedule(() => {
           setToasts((prev) => prev.map((t2) => t2.id === toast.id ? { ...t2, exiting: true } : t2));
-          setTimeout(() => setToasts((prev) => prev.filter((t2) => t2.id !== toast.id)), 180);
+          schedule(() => setToasts((prev) => prev.filter((t2) => t2.id !== toast.id)), 180);
         }, toast.duration);
       };
       const dismisser = (id) => dismiss(id);
@@ -15470,20 +15826,22 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
       return () => {
         listeners.delete(handler);
         dismissers.delete(dismisser);
+        timers.current.forEach(clearTimeout);
+        timers.current.clear();
       };
     }, []);
     const dismiss = (id) => {
       setToasts((prev) => prev.map((t2) => t2.id === id ? { ...t2, exiting: true } : t2));
-      setTimeout(() => setToasts((prev) => prev.filter((t2) => t2.id !== id)), 180);
+      schedule(() => setToasts((prev) => prev.filter((t2) => t2.id !== id)), 180);
     };
     if (!toasts.length) return null;
     return /* @__PURE__ */ window.React.createElement("div", { className: "mds-toast-stack", role: "status", "aria-live": "polite", "aria-atomic": "false" }, toasts.map((t2) => /* @__PURE__ */ window.React.createElement("div", { key: t2.id, className: `mds-toast mds-toast--${t2.tone}${t2.exiting ? " mds-toast--out" : ""}` }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-toast__bar" }), /* @__PURE__ */ window.React.createElement("div", { className: "mds-toast__body" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-toast__title" }, t2.title), t2.detail && /* @__PURE__ */ window.React.createElement("div", { className: "mds-toast__detail" }, t2.detail), t2.action && /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-toast__action", onClick: () => {
       t2.action.onAction?.();
       dismiss(t2.id);
-    } }, t2.action.label)), /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-toast__close", onClick: () => dismiss(t2.id) }, "×"))));
+    } }, t2.action.label)), /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-toast__close", "aria-label": "Dismiss notification", onClick: () => dismiss(t2.id) }, "×"))));
   }
   function useToast() {
-    return window.MeridianToast;
+    return toastApi;
   }
   var Toast = ToastProvider;
 
@@ -15511,7 +15869,7 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
   }
   function Tooltip({ content, children, placement = "above", delay = 300, focusable = false }) {
     inject92();
-    const uid6 = react_default.useId();
+    const uid5 = react_default.useId();
     const [visible, setVisible] = react_default.useState(false);
     const timer = react_default.useRef(null);
     const show4 = () => {
@@ -15529,20 +15887,21 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
         hide();
       }
     };
+    const child = react_default.isValidElement(children) && !focusable ? react_default.cloneElement(children, { "aria-describedby": [children.props["aria-describedby"], visible && content ? uid5 : null].filter(Boolean).join(" ") || void 0 }) : children;
     return /* @__PURE__ */ window.React.createElement(
       "span",
       {
         className: "mds-tip-host",
         tabIndex: focusable ? 0 : void 0,
-        "aria-describedby": visible ? uid6 : void 0,
+        "aria-describedby": focusable && visible && content ? uid5 : void 0,
         onMouseEnter: show4,
         onMouseLeave: hide,
         onFocus: show4,
         onBlur: hide,
         onKeyDown
       },
-      children,
-      visible && content && /* @__PURE__ */ window.React.createElement("span", { className: `mds-tip-box mds-tip-box--${placement}`, role: "tooltip", id: uid6 }, content)
+      child,
+      visible && content && /* @__PURE__ */ window.React.createElement("span", { className: `mds-tip-box mds-tip-box--${placement}`, role: "tooltip", id: uid5 }, content)
     );
   }
 
@@ -15571,7 +15930,8 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
 .mds-tree-label{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .mds-tree-meta{font-family:var(--font-data);font-size:11px;color:var(--text-muted,#6B737B);font-variant-numeric:tabular-nums;flex:0 0 auto;}
 .mds-tree-icon{flex:0 0 auto;color:var(--text-secondary,#535C65);font-size:12px;display:inline-flex;}
-.mds-tree-count{font-family:var(--font-data);font-size:10px;color:var(--text-disabled,#A4ABB2);font-variant-numeric:tabular-nums;flex:0 0 auto;}
+.mds-tree-count{font-family:var(--font-data);font-size:10px;color:var(--text-muted,#6B737B);font-variant-numeric:tabular-nums;flex:0 0 auto;}
+.mds-tree-row--sel .mds-tree-meta{color:var(--text-secondary,#535C65);}
 .mds-tree-empty{padding:12px;font-family:var(--font-body);font-size:13px;color:var(--text-muted,#6B737B);}
 .mds-tree-loading{font-family:var(--font-data);font-size:10px;color:var(--text-muted,#6B737B);letter-spacing:.04em;flex:0 0 auto;}
 @media print{.mds-tree-row{height:auto;min-height:20px;}.mds-tree-row--sel{background:transparent;}}
@@ -15803,18 +16163,22 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
       if (!value || typeof value !== "string") {
         return "Currency amount required";
       }
-      let cleaned = value.replace(/[$\s]/g, "").trim();
+      let cleaned = value.trim().replace(/\s/g, "");
       let isNegative = false;
       if (cleaned.startsWith("(") && cleaned.endsWith(")")) {
         isNegative = true;
         cleaned = cleaned.slice(1, -1);
       }
-      cleaned = cleaned.replace(/,/g, "");
-      const num6 = parseFloat(cleaned);
-      if (isNaN(num6)) {
+      cleaned = cleaned.replace(/^\$/, "").replace(/^(-)\$/, "$1");
+      if (isNegative && cleaned.startsWith("-") || !/^-?(?:(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d*)?|\.\d+)$/.test(cleaned)) {
         return "Invalid currency amount";
       }
-      const finalNum = isNegative ? -num6 : num6;
+      cleaned = cleaned.replace(/,/g, "");
+      const num5 = Number(cleaned);
+      if (!Number.isFinite(num5)) {
+        return "Invalid currency amount";
+      }
+      const finalNum = isNegative ? -num5 : num5;
       if (!allowNegative && finalNum < 0) {
         return "Negative amounts not allowed";
       }
@@ -15904,7 +16268,7 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
      */
     required: (value, opts = {}) => {
       const { fieldName = "This field" } = opts;
-      if (!value || typeof value === "string" && !value.trim()) {
+      if (value == null || typeof value === "string" && !value.trim() || Array.isArray(value) && value.length === 0) {
         return `${fieldName} is required`;
       }
       return true;
@@ -15965,7 +16329,12 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
     posted: { label: "Posted", glyph: "▣", note: "Written to the ledger for the period" },
     reported: { label: "Reported", glyph: "▲", note: "Published in an external report" }
   };
-  var CONDITION3 = { confirmed: "Confirmed", provisional: "Provisional", estimated: "Estimated", stale: "Stale", overridden: "Overridden", missing: "Missing", pending: "Pending", na: "Not applicable" };
+  var candidateCondition = (candidate) => candidate.condition ? conditionMeta(candidate.condition) : null;
+  var candidateValue = (candidate, format2) => {
+    const key = candidateCondition(candidate)?.key;
+    return key === "restricted" ? "Restricted" : key === "missing" || key === "na" ? "—" : fmt3(candidate.value, format2);
+  };
+  var candidateUnit = (candidate, unit) => unit && typeof candidate.value === "number" && !["restricted", "missing", "na"].includes(candidateCondition(candidate)?.key) ? ` ${unit}` : "";
   var order = (s) => {
     const i = STAGES.indexOf(s);
     return i < 0 ? 99 : i;
@@ -15993,7 +16362,8 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
 .mds-auth__row:last-child{border-bottom:0}
 .mds-auth__row--is{background:var(--interaction-selected-surface,var(--selected-surface,#E7EDF2));box-shadow:inset 2px 0 0 var(--interaction-selected,var(--selected,#496C8F))}
 .mds-auth__row--is{padding-left:8px}
-.mds-auth__row--after{opacity:.6}
+.mds-auth__row--after{color:var(--text-secondary,#535C65)}
+.mds-auth__row--is .mds-auth__meta{color:var(--text-secondary,#535C65)}
 .mds-auth__glyph{font:11px var(--font-data,monospace);color:var(--text-muted,#606870);text-align:center}
 .mds-auth__stage{font:600 11px/1.4 var(--font-body)}
 .mds-auth__meta{display:block;font:10px/1.45 var(--font-data,monospace);color:var(--text-muted,#606870)}
@@ -16036,8 +16406,8 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
     return /* @__PURE__ */ window.React.createElement("section", { className: `mds-auth${className ? " " + className : ""}`, ...rest }, /* @__PURE__ */ window.React.createElement("header", { className: "mds-auth__hd" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-auth__ttl" }, label2), /* @__PURE__ */ window.React.createElement("span", { className: "mds-auth__stagelabel" }, "Authoritative · ", (STAGE2[a.authoritativeStage] || {}).label || "—")), /* @__PURE__ */ window.React.createElement("ul", { className: "mds-auth__list" }, a.candidates.map((c, i) => {
       const s = STAGE2[c.stage] || { label: c.stage, glyph: "·", note: "" };
       const on = c.stage === a.authoritativeStage;
-      const meta5 = [c.version != null ? `v${c.version}` : null, c.effectiveAt, c.sourceRef, c.actorId, c.condition ? CONDITION3[c.condition] || c.condition : null].filter(Boolean).join(" · ");
-      return /* @__PURE__ */ window.React.createElement("li", { key: c.stage + i, className: `mds-auth__row${on ? " mds-auth__row--is" : ""}${isIndex >= 0 && i > isIndex ? " mds-auth__row--after" : ""}`, "data-stage": c.stage, "data-authoritative": on ? "true" : void 0 }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-auth__glyph", "aria-hidden": "true" }, s.glyph), /* @__PURE__ */ window.React.createElement("span", null, /* @__PURE__ */ window.React.createElement("span", { className: "mds-auth__stage" }, s.label), showMeta && meta5 ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-auth__meta" }, meta5) : null), /* @__PURE__ */ window.React.createElement("span", { className: "mds-auth__val" }, fmt3(c.value, format2), unit && typeof c.value === "number" ? ` ${unit}` : "", on ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-auth__mark" }, "Authoritative") : null));
+      const meta5 = [c.version != null ? `v${c.version}` : null, c.effectiveAt, c.sourceRef, c.actorId, c.condition ? candidateCondition(c).label : null].filter(Boolean).join(" · ");
+      return /* @__PURE__ */ window.React.createElement("li", { key: c.stage + i, className: `mds-auth__row${on ? " mds-auth__row--is" : ""}${isIndex >= 0 && i > isIndex ? " mds-auth__row--after" : ""}`, "data-stage": c.stage, "data-authoritative": on ? "true" : void 0 }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-auth__glyph", "aria-hidden": "true" }, s.glyph), /* @__PURE__ */ window.React.createElement("span", null, /* @__PURE__ */ window.React.createElement("span", { className: "mds-auth__stage" }, s.label), showMeta && meta5 ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-auth__meta" }, meta5) : null), /* @__PURE__ */ window.React.createElement("span", { className: "mds-auth__val" }, candidateValue(c, format2), candidateUnit(c, unit), on ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-auth__mark" }, "Authoritative") : null));
     })), a.rationale ? /* @__PURE__ */ window.React.createElement("p", { className: "mds-auth__why" }, a.rationale) : null, a.policyRef ? /* @__PURE__ */ window.React.createElement("p", { className: "mds-auth__policy" }, "Policy ", a.policyRef) : null);
   }
   var ValueAuthority = {
@@ -16054,7 +16424,7 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
     if (!a) return null;
     return /* @__PURE__ */ window.React.createElement("div", { className: `mds-auth${className ? " " + className : ""}`, ...rest }, /* @__PURE__ */ window.React.createElement("table", { className: "mds-auth__tbl" }, caption ? /* @__PURE__ */ window.React.createElement("caption", { style: { captionSide: "top", textAlign: "left", font: "600 11px var(--font-body)", paddingBottom: 6 } }, caption) : null, /* @__PURE__ */ window.React.createElement("thead", null, /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Stage"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Version"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Effective"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Actor"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Condition"), /* @__PURE__ */ window.React.createElement("th", { scope: "col", style: { textAlign: "right" } }, "Value"))), /* @__PURE__ */ window.React.createElement("tbody", null, a.candidates.map((c, i) => {
       const on = c.stage === a.authoritativeStage;
-      return /* @__PURE__ */ window.React.createElement("tr", { key: c.stage + i, "data-authoritative": on ? "true" : void 0 }, /* @__PURE__ */ window.React.createElement("td", null, (STAGE2[c.stage] || {}).label || c.stage, on ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-auth__mark" }, "Authoritative") : null), /* @__PURE__ */ window.React.createElement("td", null, c.version != null ? `v${c.version}` : "—"), /* @__PURE__ */ window.React.createElement("td", null, c.effectiveAt || "—"), /* @__PURE__ */ window.React.createElement("td", null, c.actorId || "—"), /* @__PURE__ */ window.React.createElement("td", null, c.condition ? CONDITION3[c.condition] || c.condition : "—"), /* @__PURE__ */ window.React.createElement("td", { className: "num" }, fmt3(c.value, format2), unit && typeof c.value === "number" ? ` ${unit}` : ""));
+      return /* @__PURE__ */ window.React.createElement("tr", { key: c.stage + i, "data-authoritative": on ? "true" : void 0 }, /* @__PURE__ */ window.React.createElement("td", null, (STAGE2[c.stage] || {}).label || c.stage, on ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-auth__mark" }, "Authoritative") : null), /* @__PURE__ */ window.React.createElement("td", null, c.version != null ? `v${c.version}` : "—"), /* @__PURE__ */ window.React.createElement("td", null, c.effectiveAt || "—"), /* @__PURE__ */ window.React.createElement("td", null, c.actorId || "—"), /* @__PURE__ */ window.React.createElement("td", null, c.condition ? candidateCondition(c).label : "—"), /* @__PURE__ */ window.React.createElement("td", { className: "num" }, candidateValue(c, format2), candidateUnit(c, unit)));
     }))), a.rationale ? /* @__PURE__ */ window.React.createElement("p", { className: "mds-auth__why" }, a.rationale) : null, a.policyRef ? /* @__PURE__ */ window.React.createElement("p", { className: "mds-auth__policy" }, "Policy ", a.policyRef) : null);
   }
 
@@ -16095,23 +16465,25 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
         return;
       }
       const reqId = ++reqRef.current;
+      let current = true;
       const controller = typeof AbortController !== "undefined" ? new AbortController() : { abort() {
       }, signal: void 0 };
       setStatus("checking");
       const t2 = setTimeout(async () => {
         try {
           const result = await validator(value, controller.signal);
-          if (reqId !== reqRef.current) return;
+          if (!current || reqId !== reqRef.current) return;
           setError(result || null);
           setStatus(result ? "invalid" : "valid");
         } catch (e) {
           if (e && e.name === "AbortError") return;
-          if (reqId !== reqRef.current) return;
+          if (!current || reqId !== reqRef.current) return;
           setError(e && e.message ? e.message : "Validation failed");
           setStatus("invalid");
         }
       }, debounceMs);
       return () => {
+        current = false;
         controller.abort();
         clearTimeout(t2);
       };
@@ -16194,25 +16566,27 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
       action.label
     ))));
   };
-  var BulkSelectCheckbox = ({ checked, onChange, indeterminate = false }) => {
-    const ref = React.useRef(null);
-    React.useEffect(() => {
+  var BulkSelectCheckbox = ({ checked, onChange, indeterminate = false, "aria-label": ariaLabel = "Select rows", ...rest }) => {
+    const ref = react_default.useRef(null);
+    react_default.useEffect(() => {
       if (ref.current) ref.current.indeterminate = indeterminate;
     }, [indeterminate]);
     return /* @__PURE__ */ window.React.createElement(
       "input",
       {
+        ...rest,
         type: "checkbox",
         ref,
         checked,
         onChange,
+        "aria-label": ariaLabel,
         style: { width: 16, height: 16, cursor: "pointer", accentColor: "var(--interaction-selected,#496C8F)" }
       }
     );
   };
   var ContextMenu2 = ({ x, y, items, onClose }) => {
-    const ref = React.useRef(null);
-    React.useEffect(() => {
+    const ref = react_default.useRef(null);
+    react_default.useEffect(() => {
       const handleClick = (e) => {
         if (ref.current && !ref.current.contains(e.target)) onClose && onClose();
       };
@@ -16273,6 +16647,7 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
   font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted,#6B737B);
   border-bottom:1px solid var(--border,#D2CDC3);}
 .mds-colchz__item{display:flex;align-items:center;gap:9px;padding:8px 12px;cursor:pointer;
+  appearance:none;border:0;background:transparent;width:100%;text-align:left;
   font-family:var(--font-body);font-size:12px;color:var(--text-primary,#20252B);
   transition:background .08s ease;}
 .mds-colchz__item:hover{background:var(--bg-active,#E7EDF2);}
@@ -16293,13 +16668,25 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
     inject95();
     const [open, setOpen] = react_default.useState(false);
     const ref = react_default.useRef(null);
+    const buttonRef = react_default.useRef(null);
     const visSet = react_default.useMemo(() => new Set(visible ?? columns.map((c) => c.key)), [visible, columns]);
     react_default.useEffect(() => {
       const h = (e) => {
         if (ref.current && !ref.current.contains(e.target)) setOpen(false);
       };
+      const key = (e) => {
+        if (e.key === "Escape" && ref.current?.contains(e.target)) {
+          e.stopPropagation();
+          setOpen(false);
+          buttonRef.current?.focus();
+        }
+      };
       document.addEventListener("mousedown", h);
-      return () => document.removeEventListener("mousedown", h);
+      document.addEventListener("keydown", key);
+      return () => {
+        document.removeEventListener("mousedown", h);
+        document.removeEventListener("keydown", key);
+      };
     }, []);
     const toggle = (key) => {
       const next = new Set(visSet);
@@ -16314,12 +16701,14 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
       "button",
       {
         type: "button",
+        ref: buttonRef,
+        "aria-expanded": open,
         className: `mds-colchz__btn${hiddenCount > 0 ? " mds-colchz__btn--active" : ""}`,
         onClick: () => setOpen((o) => !o)
       },
       "Columns ",
       hiddenCount > 0 && `· ${hiddenCount} hidden`
-    ), open && /* @__PURE__ */ window.React.createElement("div", { className: "mds-colchz__menu" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-colchz__head" }, "Show / hide columns"), columns.map((col) => /* @__PURE__ */ window.React.createElement("div", { key: col.key, className: "mds-colchz__item", onClick: () => toggle(col.key) }, /* @__PURE__ */ window.React.createElement("div", { className: `mds-colchz__ck${visSet.has(col.key) ? " mds-colchz__ck--on" : ""}` }, visSet.has(col.key) && "✓"), col.label)), hiddenCount > 0 && /* @__PURE__ */ window.React.createElement("div", { className: "mds-colchz__foot" }, /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-colchz__reset", onClick: reset }, "Reset to default"))));
+    ), open && /* @__PURE__ */ window.React.createElement("div", { className: "mds-colchz__menu" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-colchz__head" }, "Show / hide columns"), columns.map((col) => /* @__PURE__ */ window.React.createElement("button", { type: "button", role: "checkbox", "aria-checked": visSet.has(col.key), key: col.key, className: "mds-colchz__item", onClick: () => toggle(col.key) }, /* @__PURE__ */ window.React.createElement("span", { "aria-hidden": "true", className: `mds-colchz__ck${visSet.has(col.key) ? " mds-colchz__ck--on" : ""}` }, visSet.has(col.key) && "✓"), col.label)), hiddenCount > 0 && /* @__PURE__ */ window.React.createElement("div", { className: "mds-colchz__foot" }, /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-colchz__reset", onClick: reset }, "Reset to default"))));
   }
 
   // components/data/ColumnManager.jsx
@@ -16377,13 +16766,18 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
     inject96();
     const [open, setOpen] = react_default.useState(false);
     const ref = react_default.useRef(null);
+    const buttonRef = react_default.useRef(null);
     react_default.useEffect(() => {
       if (!open) return;
       const onDown = (e) => {
         if (ref.current && !ref.current.contains(e.target)) setOpen(false);
       };
       const onKey = (e) => {
-        if (e.key === "Escape") setOpen(false);
+        if (e.key === "Escape" && ref.current?.contains(e.target)) {
+          e.stopPropagation();
+          setOpen(false);
+          buttonRef.current?.focus();
+        }
       };
       document.addEventListener("mousedown", onDown);
       document.addEventListener("keydown", onKey);
@@ -16399,8 +16793,9 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
     return /* @__PURE__ */ window.React.createElement("div", { className: "mds-colmgr", ref }, /* @__PURE__ */ window.React.createElement(
       "button",
       {
+        ref: buttonRef,
         type: "button",
-        "aria-haspopup": "true",
+        "aria-haspopup": "dialog",
         "aria-expanded": open,
         className: `mds-colmgr__btn${hiddenCount > 0 ? " mds-colmgr__btn--active" : ""}`,
         onClick: () => setOpen((o) => !o)
@@ -16502,11 +16897,12 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
   }
 
   // components/data/DataGrid.jsx
-  var num5 = (v) => typeof v === "number" && !Number.isNaN(v) ? v : 0;
+  var isNumber = (v) => typeof v === "number" && Number.isFinite(v);
+  var sumColumn = (rows, key) => rows.every((row) => isNumber(row[key])) ? rows.reduce((total, row) => total + row[key], 0) : null;
   var CELL_FORMATS = {
     text: (v) => v === null || v === void 0 || v === "" ? "—" : String(v),
     num: (v, c) => v === null || v === void 0 ? "—" : formatNumber(Number(v), { decimals: c.digits ?? 0 }),
-    money: (v, c) => v === null || v === void 0 || v === 0 ? "—" : formatGridSigned(v, { style: "accounting", digits: c.digits ?? 2 }),
+    money: (v, c) => v === null || v === void 0 ? "—" : formatGridSigned(v, { style: "accounting", digits: c.digits ?? 2 }),
     signed: (v, c) => formatGridSigned(v, { digits: c.digits ?? 2 }),
     price: (v, c) => v === null || v === void 0 ? "—" : Number(v).toFixed(c.digits ?? 4),
     pct: (v, c) => v === null || v === void 0 ? "—" : formatGridSigned(v, { digits: c.digits ?? 2, suffix: "%" })
@@ -16634,8 +17030,8 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
   function gridProof(proof, rows) {
     if (!proof) return null;
     if (proof.type === "balance") {
-      const d = rows.reduce((a, r) => a + num5(r[proof.debit]), 0);
-      const c = rows.reduce((a, r) => a + num5(r[proof.credit]), 0);
+      const d = sumColumn(rows, proof.debit), c = sumColumn(rows, proof.credit);
+      if (!rows.length || d === null || c === null) return { ok: false, label: proof.label || "Σ debit = Σ credit", text: "Incomplete evidence" };
       const out = Math.round((d - c) * 100) / 100;
       return {
         ok: out === 0,
@@ -16644,8 +17040,9 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
       };
     }
     if (proof.type === "sum") {
-      const s = rows.reduce((a, r) => a + num5(r[proof.column]), 0);
+      const s = sumColumn(rows, proof.column);
       const exp = proof.expected;
+      if (!rows.length || s === null || exp !== void 0 && !isNumber(exp)) return { ok: false, label: proof.label || `Σ ${proof.column}`, text: "Incomplete evidence" };
       const ok = exp === void 0 || Math.round((s - exp) * 100) / 100 === 0;
       return {
         ok,
@@ -16705,8 +17102,11 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
     const [openRows, setOpenRows] = react_default.useState({});
     const [collapsed, setCollapsed] = react_default.useState({});
     const [editing, setEditing] = react_default.useState(null);
+    const editingRef = react_default.useRef(null);
+    editingRef.current = editing;
     const [selfSel, setSelfSel] = react_default.useState([]);
     const sel = selected || selfSel;
+    const selectedLoaded = rows.filter((row, index) => sel.includes(rowKey === "index" ? index : typeof rowKey === "function" ? rowKey(row) : row[rowKey] ?? index)).length;
     const setSel = (next) => {
       setSelfSel(next);
       if (onSelectedChange) onSelectedChange(next);
@@ -16771,6 +17171,8 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
     const span = cols.length + (select ? 1 : 0) + (expand ? 1 : 0) + (onDrill ? 1 : 0);
     const isHiddenUnder = (path) => Object.keys(collapsed).some((c) => collapsed[c] && path !== c && path.indexOf(c + " › ") === 0);
     const commit = (row, col, value) => {
+      if (!editingRef.current) return;
+      editingRef.current = null;
       setEditing(null);
       if (onEdit) onEdit({ row, column: col.key, value });
     };
@@ -16790,11 +17192,11 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
         {
           type: "checkbox",
           "aria-label": "Select all rows",
-          checked: rows.length > 0 && sel.length === rows.length,
+          checked: rows.length > 0 && selectedLoaded === rows.length,
           ref: (node) => {
-            if (node) node.indeterminate = sel.length > 0 && sel.length < rows.length;
+            if (node) node.indeterminate = selectedLoaded > 0 && selectedLoaded < rows.length;
           },
-          onChange: () => setSel(sel.length === rows.length ? [] : rows.map((r, i) => keyOf(r, i)))
+          onChange: () => setSel(selectedLoaded === rows.length ? [] : rows.map((r, i) => keyOf(r, i)))
         }
       )) : null, expand ? /* @__PURE__ */ window.React.createElement("th", { style: { width: 22 } }) : null, cols.map((c) => {
         const sortableCol = canSort && c.sortable !== false;
@@ -16875,7 +17277,7 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
         String(g.key),
         " · ",
         g.rows.length
-      ) : c.total === "sum" ? (CELL_FORMATS[c.format] || CELL_FORMATS.text)(g.rows.reduce((a, r) => a + num5(r[c.key]), 0), c) : "")), onDrill ? /* @__PURE__ */ window.React.createElement("td", null) : null) : null, g.key !== null && (g.leaf === false || collapsed[g.path] || isHiddenUnder(g.path)) ? null : (shouldVirt && g.key === null ? g.rows.slice(vStart, vEnd) : g.rows).map((r, i0) => {
+      ) : c.total === "sum" ? (CELL_FORMATS[c.format] || CELL_FORMATS.text)(sumColumn(g.rows, c.key), c) : "")), onDrill ? /* @__PURE__ */ window.React.createElement("td", null) : null) : null, g.key !== null && (g.leaf === false || collapsed[g.path] || isHiddenUnder(g.path)) ? null : (shouldVirt && g.key === null ? g.rows.slice(vStart, vEnd) : g.rows).map((r, i0) => {
         const i = shouldVirt && g.key === null ? vStart + i0 : i0;
         const k = keyOf(r, i);
         const isOpen = !!openRows[k];
@@ -16913,6 +17315,14 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
               role: "button",
               tabIndex: 0,
               "aria-expanded": isOpen,
+              "aria-label": isOpen ? "Collapse row" : "Expand row",
+              onKeyDown: (e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setOpenRows((s) => ({ ...s, [k]: !s[k] }));
+                }
+              },
               onClick: (e) => {
                 e.stopPropagation();
                 setOpenRows((s) => ({ ...s, [k]: !s[k] }));
@@ -16928,6 +17338,14 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
               {
                 key: c.key,
                 className: `${c.align === "right" ? "r " : ""}${c.pinned ? "mds-grid__pin" : ""}`.trim(),
+                tabIndex: editable ? 0 : void 0,
+                onKeyDown: editable ? (e) => {
+                  if (e.target === e.currentTarget && ["Enter", "F2"].includes(e.key)) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setEditing({ k, col: c.key });
+                  }
+                } : void 0,
                 style: c.pinned ? { left: c.pinnedOffset || 0, width: c.width, minWidth: c.width, maxWidth: c.width } : void 0,
                 onDoubleClick: editable ? () => setEditing({ k, col: c.key }) : void 0
               },
@@ -16935,12 +17353,21 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
                 "input",
                 {
                   className: "mds-grid__cellin",
+                  "aria-label": `Edit ${c.label}`,
                   autoFocus: true,
                   defaultValue: r[c.key] ?? "",
                   onBlur: (e) => commit(r, c, e.target.value),
                   onKeyDown: (e) => {
-                    if (e.key === "Enter") commit(r, c, e.target.value);
-                    if (e.key === "Escape") setEditing(null);
+                    e.stopPropagation();
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      commit(r, c, e.target.value);
+                    }
+                    if (e.key === "Escape") {
+                      e.preventDefault();
+                      editingRef.current = null;
+                      setEditing(null);
+                    }
                   }
                 }
               ) : fmt4(c, r)
@@ -16969,7 +17396,7 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
             "›"
           ) : null
         ), expand && isOpen ? /* @__PURE__ */ window.React.createElement("tr", { className: "mds-grid__detail" }, /* @__PURE__ */ window.React.createElement("td", { colSpan: span }, typeof expand === "function" ? expand(r) : null)) : null);
-      }), shouldVirt && g.key === null && vEnd < ordered.length ? /* @__PURE__ */ window.React.createElement("tr", { "aria-hidden": "true" }, /* @__PURE__ */ window.React.createElement("td", { colSpan: span, style: { height: (ordered.length - vEnd) * h, padding: 0, border: 0 } })) : null))), showTotals ? /* @__PURE__ */ window.React.createElement("tfoot", null, /* @__PURE__ */ window.React.createElement("tr", { style: { height: h } }, select ? /* @__PURE__ */ window.React.createElement("td", { className: "mds-grid__sel" }) : null, expand ? /* @__PURE__ */ window.React.createElement("td", null) : null, cols.map((c, i) => /* @__PURE__ */ window.React.createElement("td", { key: c.key, className: c.align === "right" ? "r" : "" }, c.total === "sum" ? (CELL_FORMATS[c.format] || CELL_FORMATS.text)(rows.reduce((a, r) => a + num5(r[c.key]), 0), c) : i === 0 ? "Total" : "")), onDrill ? /* @__PURE__ */ window.React.createElement("td", null) : null)) : null),
+      }), shouldVirt && g.key === null && vEnd < ordered.length ? /* @__PURE__ */ window.React.createElement("tr", { "aria-hidden": "true" }, /* @__PURE__ */ window.React.createElement("td", { colSpan: span, style: { height: (ordered.length - vEnd) * h, padding: 0, border: 0 } })) : null))), showTotals ? /* @__PURE__ */ window.React.createElement("tfoot", null, /* @__PURE__ */ window.React.createElement("tr", { style: { height: h } }, select ? /* @__PURE__ */ window.React.createElement("td", { className: "mds-grid__sel" }) : null, expand ? /* @__PURE__ */ window.React.createElement("td", null) : null, cols.map((c, i) => /* @__PURE__ */ window.React.createElement("td", { key: c.key, className: c.align === "right" ? "r" : "" }, c.total === "sum" ? (CELL_FORMATS[c.format] || CELL_FORMATS.text)(sumColumn(rows, c.key), c) : i === 0 ? "Total" : "")), onDrill ? /* @__PURE__ */ window.React.createElement("td", null) : null)) : null),
       withheld > 0 ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-grid__withheld" }, /* @__PURE__ */ window.React.createElement("span", null, withheld, " column", withheld === 1 ? "" : "s", " withheld at summary depth"), onDetailChange ? /* @__PURE__ */ window.React.createElement("button", { type: "button", onClick: () => onDetailChange("full") }, "Show full detail") : null) : null,
       p ? /* @__PURE__ */ window.React.createElement("div", { className: `mds-grid__proof mds-grid__proof--${p.ok ? "ok" : "bad"}` }, /* @__PURE__ */ window.React.createElement("span", null, p.label), /* @__PURE__ */ window.React.createElement("b", null, p.ok ? "✓ " : "▲ ", p.text)) : null
     );
@@ -17042,7 +17469,7 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
         detail: detail || "The upstream request failed. Nothing shown is stale — the surface refuses to render partial state."
       }
     }[state] || {};
-    return /* @__PURE__ */ window.React.createElement("div", { className: `mds-dss mds-dss--${state}`, ...live }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-dss__hd" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-dss__eyebrow" }, label2), /* @__PURE__ */ window.React.createElement("span", { className: "mds-dss__state" }, state)), /* @__PURE__ */ window.React.createElement("div", { className: "mds-dss__body" }, state === "loading" ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-dss__bars" }, Array.from({ length: rows }).map((_, r) => /* @__PURE__ */ window.React.createElement("div", { key: r, className: "mds-dss__row", style: { gridTemplateColumns: cols } }, Array.from({ length: columns }).map((_2, c) => /* @__PURE__ */ window.React.createElement("span", { key: c, className: "mds-dss__bar", style: { width: WIDTHS[(r + c) % WIDTHS.length] } })))), /* @__PURE__ */ window.React.createElement("span", { className: "mds-dss__note", style: { marginTop: 6 } }, copy.title)) : /* @__PURE__ */ window.React.createElement("div", { className: "mds-dss__center" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-dss__glyph", "aria-hidden": "true" }, copy.glyph), /* @__PURE__ */ window.React.createElement("div", { className: "mds-dss__title" }, copy.title), /* @__PURE__ */ window.React.createElement("div", { className: "mds-dss__detail" }, copy.detail), actionLabel && /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-dss__btn", onClick: onAction }, actionLabel))));
+    return /* @__PURE__ */ window.React.createElement("div", { className: `mds-dss mds-dss--${state}`, ...live }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-dss__hd" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-dss__eyebrow" }, label2), /* @__PURE__ */ window.React.createElement("span", { className: "mds-dss__state" }, state)), /* @__PURE__ */ window.React.createElement("div", { className: "mds-dss__body" }, state === "loading" ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-dss__bars" }, Array.from({ length: rows }).map((_, r) => /* @__PURE__ */ window.React.createElement("div", { key: r, className: "mds-dss__row", style: { gridTemplateColumns: cols } }, Array.from({ length: columns }).map((_2, c) => /* @__PURE__ */ window.React.createElement("span", { key: c, className: "mds-dss__bar", style: { width: WIDTHS[(r + c) % WIDTHS.length] } })))), /* @__PURE__ */ window.React.createElement("span", { className: "mds-dss__note", style: { marginTop: 6 } }, copy.title)) : /* @__PURE__ */ window.React.createElement("div", { className: "mds-dss__center" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-dss__glyph", "aria-hidden": "true" }, copy.glyph), /* @__PURE__ */ window.React.createElement("div", { className: "mds-dss__title" }, copy.title), /* @__PURE__ */ window.React.createElement("div", { className: "mds-dss__detail" }, copy.detail), actionLabel && /* @__PURE__ */ window.React.createElement(Button, { type: "button", onClick: onAction }, actionLabel))));
   }
 
   // components/data/EditableCell.jsx
@@ -17092,6 +17519,18 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
     const [draft, setDraft] = react_default.useState(String(value ?? ""));
     const [error, setError] = react_default.useState(null);
     const inputRef = react_default.useRef(null);
+    const displayRef = react_default.useRef(null);
+    const returnFocus = react_default.useRef(false);
+    const hintId = react_default.useId();
+    react_default.useEffect(() => {
+      if (!editing) setDraft(String(value ?? ""));
+    }, [value, editing]);
+    const startEdit = () => {
+      if (disabled) return;
+      setDraft(String(value ?? ""));
+      setError(null);
+      setEditing(true);
+    };
     const validate = (val2) => {
       if (validator) {
         const result = validator(val2);
@@ -17104,9 +17543,10 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
       return true;
     };
     const commit = () => {
-      if (!validate(draft)) return;
+      if (!validate(draft)) return false;
       onCommit?.(draft);
       setEditing(false);
+      return true;
     };
     const cancel = () => {
       setDraft(String(value ?? ""));
@@ -17116,9 +17556,10 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
     const handleKeyDown = (e) => {
       if (e.key === "Enter") {
         e.preventDefault();
-        commit();
+        if (commit()) returnFocus.current = true;
       } else if (e.key === "Escape") {
         e.preventDefault();
+        returnFocus.current = true;
         cancel();
       } else if (e.key === "Tab") {
         commit();
@@ -17135,16 +17576,26 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
         inputRef.current.focus();
         inputRef.current.select?.();
       }
+      if (!editing && returnFocus.current) {
+        returnFocus.current = false;
+        displayRef.current?.focus();
+      }
     }, [editing]);
     return /* @__PURE__ */ window.React.createElement("div", { className: `mds-editable ${editing ? "mds-editable--active" : ""} ${className}` }, !editing && /* @__PURE__ */ window.React.createElement(
       "div",
       {
+        ref: displayRef,
         className: "mds-editable__display",
-        onClick: () => !disabled && setEditing(true),
+        onClick: startEdit,
         role: "button",
         tabIndex: disabled ? -1 : 0,
-        "aria-label": `Edit ${value}`,
-        onKeyDown: (e) => e.key === "Enter" && !disabled && setEditing(true)
+        "aria-disabled": disabled || void 0,
+        onKeyDown: (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            startEdit();
+          }
+        }
       },
       children ?? value ?? "—"
     ), editing && /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, /* @__PURE__ */ window.React.createElement(
@@ -17154,13 +17605,16 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
         type: mode === "number" ? "number" : "text",
         className: `mds-editable__input ${error ? "mds-editable__input--error" : ""}`,
         value: draft,
+        "aria-label": "Edit value",
+        "aria-invalid": error ? true : void 0,
+        "aria-describedby": error || hint ? hintId : void 0,
         onChange: handleChange,
         onBlur: commit,
         onKeyDown: handleKeyDown,
         placeholder,
         disabled
       }
-    ), (error || hint) && /* @__PURE__ */ window.React.createElement("div", { className: "mds-editable__hint" }, error || hint)));
+    ), (error || hint) && /* @__PURE__ */ window.React.createElement("div", { className: "mds-editable__hint", id: hintId }, error || hint)));
   }
 
   // components/data/EmptyState.jsx
@@ -17195,19 +17649,7 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
         style: { color: "var(--text-disabled,#A4ABB2)" },
         dangerouslySetInnerHTML: { __html: svg }
       }
-    ), /* @__PURE__ */ window.React.createElement("div", { style: { fontSize: compact3 ? 13 : 14, fontWeight: 600, color: "var(--text-secondary,#535C65)" } }, title), detail && /* @__PURE__ */ window.React.createElement("div", { style: { fontSize: 12, color: "var(--text-muted,#6B737B)", maxWidth: 280, lineHeight: 1.5 } }, detail), action && onAction && /* @__PURE__ */ window.React.createElement("button", { type: "button", onClick: onAction, style: {
-      marginTop: 4,
-      padding: "7px 16px",
-      background: "var(--brand-signal,#C56343)",
-      color: "white",
-      border: "none",
-      borderRadius: "var(--radius-button,2px)",
-      fontFamily: "var(--font-body)",
-      fontSize: 12,
-      fontWeight: 600,
-      cursor: "pointer",
-      transition: "background .12s ease"
-    } }, action));
+    ), /* @__PURE__ */ window.React.createElement("div", { style: { fontSize: compact3 ? 13 : 14, fontWeight: 600, color: "var(--text-secondary,#535C65)" } }, title), detail && /* @__PURE__ */ window.React.createElement("div", { style: { fontSize: 12, color: "var(--text-muted,#6B737B)", maxWidth: 280, lineHeight: 1.5 } }, detail), action && onAction && /* @__PURE__ */ window.React.createElement(Button, { type: "button", onClick: onAction, style: { marginTop: 4 } }, action));
   }
 
   // components/data/EntitySummary.jsx
@@ -17354,8 +17796,9 @@ select.mds-fb__ctl{appearance:auto;}
   function testRow(field, r, raw) {
     const type = field && field.type || "text";
     if (type === "number") {
+      if (raw == null || typeof raw === "string" && raw.trim() === "") return false;
       const n = Number(raw), a = Number(r.value), b = Number(r.value2);
-      if (isNaN(n)) return false;
+      if (!Number.isFinite(n) || !Number.isFinite(a) || needsSecond(r.op) && !Number.isFinite(b)) return false;
       switch (r.op) {
         case "eq":
           return n === a;
@@ -17376,6 +17819,7 @@ select.mds-fb__ctl{appearance:auto;}
       }
     }
     if (type === "date") {
+      if (raw == null || raw === "") return false;
       const d = new Date(raw), a = new Date(r.value), b = new Date(r.value2);
       if (isNaN(d)) return false;
       switch (r.op) {
@@ -17591,7 +18035,12 @@ select.mds-fb__ctl{appearance:auto;}
   }
   function toList(value, source) {
     if (value == null) return [];
-    return (Array.isArray(value) ? value : [value]).map((entry) => normalize4(entry, source)).filter(Boolean);
+    const seen = /* @__PURE__ */ new Set();
+    return (Array.isArray(value) ? value : [value]).map((entry) => normalize4(entry, source)).filter((entry) => {
+      if (!entry || seen.has(entry.id)) return false;
+      seen.add(entry.id);
+      return true;
+    });
   }
   function sameList(a, b) {
     return a.length === b.length && a.every((entry, i) => entry.id === b[i].id);
@@ -17604,8 +18053,9 @@ select.mds-fb__ctl{appearance:auto;}
     return ids.map((id) => ({ id, value: id, source: "url" }));
   }
   function readStorage(key) {
-    if (!key || typeof localStorage === "undefined") return null;
+    if (!key) return null;
     try {
+      if (typeof localStorage === "undefined") return null;
       const raw = localStorage.getItem(key);
       if (!raw) return null;
       const parsed = JSON.parse(raw);
@@ -17637,10 +18087,12 @@ select.mds-fb__ctl{appearance:auto;}
     const selectionsRef = react_default.useRef(selections);
     selectionsRef.current = selections;
     const persist = react_default.useCallback((list) => {
-      if (storageKey && typeof localStorage !== "undefined") {
+      if (storageKey) {
         try {
-          if (list.length) localStorage.setItem(storageKey, JSON.stringify(multiple ? list : list[0]));
-          else localStorage.removeItem(storageKey);
+          if (typeof localStorage !== "undefined") {
+            if (list.length) localStorage.setItem(storageKey, JSON.stringify(multiple ? list : list[0]));
+            else localStorage.removeItem(storageKey);
+          }
         } catch {
         }
       }
@@ -17756,6 +18208,9 @@ select.mds-fb__ctl{appearance:auto;}
   }) {
     const api = useLinkedSelection(scope);
     const selected = api.isSelected(selection);
+    const selectionRole = ["option", "row", "gridcell", "tab", "treeitem"].includes(rest.role) || !rest.role && Tag === "tr";
+    const buttonRole = !selectionRole && !rest.role && Tag !== "button";
+    const pressedRole = buttonRole || rest.role === "button" || !rest.role && Tag === "button";
     const activate = (event, source) => {
       const additive = event && (event.metaKey || event.ctrlKey);
       const extend = event && event.shiftKey;
@@ -17774,7 +18229,9 @@ select.mds-fb__ctl{appearance:auto;}
       Tag,
       {
         className: `${className}${selected ? " is-selected" : ""}`,
-        "aria-selected": selected,
+        role: buttonRole ? "button" : void 0,
+        "aria-selected": selectionRole ? selected : void 0,
+        "aria-pressed": pressedRole ? selected : void 0,
         "data-selected": selected ? "true" : void 0,
         "data-index": index,
         tabIndex: tabIndex ?? 0,
@@ -17943,12 +18400,13 @@ select.mds-fb__ctl{appearance:auto;}
         return entries.filter((e) => e.rowId === rowId);
       },
       async commit(edit) {
-        const e = { id: `opt-${++seq}`, status: "pending", at: Date.now(), ...edit };
+        const e = { ...edit, id: `opt-${++seq}`, status: "pending", at: Date.now() };
         entries = [...entries, e];
         emit();
         let result;
         try {
-          result = h().commit ? await h().commit(e) : void 0;
+          if (typeof h().commit !== "function") throw new Error("No write handler configured; change was not submitted");
+          result = await h().commit(e);
         } catch (err) {
           const reason = err && err.message || String(err || "rejected by the write path");
           patch(e.id, () => ({ status: "rejected", settledAt: Date.now(), reason }));
@@ -17964,7 +18422,9 @@ select.mds-fb__ctl{appearance:auto;}
         if (!targets.length) return;
         targets.forEach((t2) => patch(t2.id, () => ({ status: "reverting" })));
         try {
-          if (h().revert) await h().revert(targets, reason);
+          if (typeof reason !== "string" || !reason.trim()) throw new Error("A reason is required to revert a confirmed change");
+          if (typeof h().revert !== "function") throw new Error("No revert handler configured; compensation was not submitted");
+          await h().revert(targets, reason);
         } catch (err) {
           targets.forEach((t2) => patch(t2.id, () => ({ status: "confirmed", revertError: err && err.message || String(err) })));
           return;
@@ -18007,7 +18467,7 @@ select.mds-fb__ctl{appearance:auto;}
   var STATUS_LABEL2 = { pending: "Provisional", confirmed: "Confirmed", rejected: "Rejected", reverting: "Reverting", reverted: "Reverted" };
   function ReasonForm({ title, prompt, onConfirm, onCancel, confirmLabel = "Revert", right }) {
     const [reason, setReason] = react_default.useState("");
-    const uid6 = react_default.useId();
+    const uid5 = react_default.useId();
     const ref = react_default.useRef(null);
     react_default.useEffect(() => {
       ref.current && ref.current.focus();
@@ -18031,8 +18491,8 @@ select.mds-fb__ctl{appearance:auto;}
       },
       /* @__PURE__ */ window.React.createElement("div", { className: "mds-opt__note-h" }, title),
       /* @__PURE__ */ window.React.createElement("p", null, prompt),
-      /* @__PURE__ */ window.React.createElement("label", { htmlFor: `${uid6}-r`, style: { font: "600 10px var(--font-data)", color: "var(--text-muted)" } }, "Reason · required"),
-      /* @__PURE__ */ window.React.createElement("input", { id: `${uid6}-r`, ref, className: "mds-opt__reason", value: reason, onChange: (e) => setReason(e.target.value), placeholder: "Why this goes back" }),
+      /* @__PURE__ */ window.React.createElement("label", { htmlFor: `${uid5}-r`, style: { font: "600 10px var(--font-data)", color: "var(--text-muted)" } }, "Reason · required"),
+      /* @__PURE__ */ window.React.createElement("input", { id: `${uid5}-r`, ref, className: "mds-opt__reason", value: reason, onChange: (e) => setReason(e.target.value), placeholder: "Why this goes back" }),
       /* @__PURE__ */ window.React.createElement("div", { className: "mds-opt__row" }, /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-opt__btn", onClick: onCancel }, "Cancel"), /* @__PURE__ */ window.React.createElement("button", { type: "submit", className: "mds-opt__btn mds-opt__btn--primary", disabled: !reason.trim() }, confirmLabel))
     );
   }
@@ -18172,6 +18632,9 @@ select.mds-fb__ctl{appearance:auto;}
   }) {
     inject103();
     const [jumpValue, setJumpValue] = react_default.useState(String(currentPage));
+    react_default.useEffect(() => {
+      setJumpValue(String(currentPage));
+    }, [currentPage]);
     const handlePrev = () => {
       if (currentPage > 1) onPageChange(currentPage - 1);
     };
@@ -18220,6 +18683,7 @@ select.mds-fb__ctl{appearance:auto;}
           type: "button",
           key: idx,
           className: `pgn-btn ${page === currentPage ? "pgn-btn--active" : ""}`,
+          "aria-current": page === currentPage ? "page" : void 0,
           onClick: () => handlePageClick(page)
         },
         page
@@ -18312,8 +18776,17 @@ select.mds-fb__ctl{appearance:auto;}
   }) {
     inject104();
     const [open, setOpen] = react_default.useState(false);
-    const [views, setViews] = react_default.useState(() => storageKey ? readJSON(storageKey + ".views", []) : []);
-    const [active, setActive] = react_default.useState(() => storageKey ? localStorage.getItem(storageKey + ".active") : null);
+    const [views, setViews] = react_default.useState(() => {
+      const stored = storageKey ? readJSON(storageKey + ".views", []) : [];
+      return Array.isArray(stored) ? stored.filter((v) => v && typeof v.name === "string" && v.state && typeof v.state === "object") : [];
+    });
+    const [active, setActive] = react_default.useState(() => {
+      try {
+        return storageKey ? localStorage.getItem(storageKey + ".active") : null;
+      } catch {
+        return null;
+      }
+    });
     const [draft, setDraft] = react_default.useState("");
     const rootRef = react_default.useRef(null);
     const capture = () => {
@@ -18330,9 +18803,12 @@ select.mds-fb__ctl{appearance:auto;}
       setViews(nextViews);
       setActive(nextActive);
       if (!storageKey) return;
-      localStorage.setItem(storageKey + ".views", JSON.stringify(nextViews));
-      if (nextActive) localStorage.setItem(storageKey + ".active", nextActive);
-      else localStorage.removeItem(storageKey + ".active");
+      try {
+        localStorage.setItem(storageKey + ".views", JSON.stringify(nextViews));
+        if (nextActive) localStorage.setItem(storageKey + ".active", nextActive);
+        else localStorage.removeItem(storageKey + ".active");
+      } catch {
+      }
     };
     react_default.useEffect(() => {
       if (!open) return;
@@ -18395,7 +18871,7 @@ select.mds-fb__ctl{appearance:auto;}
       {
         type: "button",
         className: "mds-savedviews__trigger",
-        "aria-haspopup": "menu",
+        "aria-haspopup": "dialog",
         "aria-expanded": open,
         onClick: () => setOpen((o) => !o)
       },
@@ -18403,10 +18879,11 @@ select.mds-fb__ctl{appearance:auto;}
       /* @__PURE__ */ window.React.createElement("span", { className: "mds-savedviews__name" }, active || defaultLabel),
       dirty && /* @__PURE__ */ window.React.createElement("span", { className: "mds-savedviews__dirty" }, "· edited"),
       /* @__PURE__ */ window.React.createElement("span", { className: "mds-savedviews__caret" }, "▾")
-    ), open && /* @__PURE__ */ window.React.createElement("div", { className: "mds-savedviews__menu", role: "menu" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-savedviews__item", "data-active": active ? "false" : "true" }, /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-savedviews__row", onClick: reset }, defaultLabel)), presets.length > 0 && /* @__PURE__ */ window.React.createElement("div", { className: "mds-savedviews__label" }, "Presets"), presets.map((p) => row(p, true)), views.length > 0 && /* @__PURE__ */ window.React.createElement("div", { className: "mds-savedviews__label" }, "Saved"), views.map((v) => row(v, false)), dirty && active && !isPresetActive && /* @__PURE__ */ window.React.createElement(react_default.Fragment, null, /* @__PURE__ */ window.React.createElement("div", { style: { height: 6 } }), /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-savedviews__update", onClick: updateActive }, "Update “" + active + "”")), /* @__PURE__ */ window.React.createElement("div", { className: "mds-savedviews__save" }, /* @__PURE__ */ window.React.createElement(
+    ), open && /* @__PURE__ */ window.React.createElement("div", { className: "mds-savedviews__menu", role: "dialog", "aria-label": "Saved views" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-savedviews__item", "data-active": active ? "false" : "true" }, /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-savedviews__row", onClick: reset }, defaultLabel)), presets.length > 0 && /* @__PURE__ */ window.React.createElement("div", { className: "mds-savedviews__label" }, "Presets"), presets.map((p) => row(p, true)), views.length > 0 && /* @__PURE__ */ window.React.createElement("div", { className: "mds-savedviews__label" }, "Saved"), views.map((v) => row(v, false)), dirty && active && !isPresetActive && /* @__PURE__ */ window.React.createElement(react_default.Fragment, null, /* @__PURE__ */ window.React.createElement("div", { style: { height: 6 } }), /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-savedviews__update", onClick: updateActive }, "Update “" + active + "”")), /* @__PURE__ */ window.React.createElement("div", { className: "mds-savedviews__save" }, /* @__PURE__ */ window.React.createElement(
       "input",
       {
         className: "mds-savedviews__input",
+        "aria-label": "Save current view as",
         placeholder: "Save current as…",
         value: draft,
         onChange: (e) => setDraft(e.target.value),
@@ -18426,7 +18903,7 @@ select.mds-fb__ctl{appearance:auto;}
     const el = document.createElement("style");
     el.setAttribute("data-mds", "selection-compare");
     el.textContent = `
-.mds-cmp__tog{display:inline-flex;align-items:center;gap:4px;min-height:24px;padding:0 7px;border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-chip,2px);
+.mds-cmp__tog{display:inline-flex;align-items:center;gap:4px;min-width:24px;min-height:24px;padding:0 7px;border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-chip,2px);
   background:var(--bg-light,#F8F7F3);color:var(--text-secondary,#535C65);font:600 10px var(--font-data);letter-spacing:.03em;text-transform:uppercase;cursor:pointer;white-space:nowrap;
   transition:border-color 120ms cubic-bezier(.2,0,0,1),background-color 120ms cubic-bezier(.2,0,0,1);}
 .mds-cmp__tog:hover{background:var(--bg-hover,#EDEFF0);border-color:var(--border-hover,#BEB8AD);}
@@ -18480,7 +18957,7 @@ select.mds-fb__ctl{appearance:auto;}
         return items.some((i) => i.id === id);
       },
       toggle(item) {
-        items = items.some((i) => i.id === item.id) ? items.filter((i) => i.id !== item.id) : items.length >= (handlers.current.max || 6) ? items : [...items, item];
+        items = items.some((i) => i.id === item.id) ? items.filter((i) => i.id !== item.id) : items.length >= (handlers.current.max ?? 6) ? items : [...items, item];
         emit();
       },
       remove(id) {
@@ -18517,7 +18994,10 @@ select.mds-fb__ctl{appearance:auto;}
   }
   function useSelectionCompare() {
     const c = useCtx();
-    return { items: c.set.items, max: c.max, has: c.set.has, toggle: c.set.toggle, remove: c.set.remove, clear: c.set.clear, open: c.open, setOpen: c.setOpen };
+    return { items: c.set.items, max: c.max, has: c.set.has, toggle: c.set.toggle, remove: c.set.remove, clear: () => {
+      c.set.clear();
+      c.setOpen(false);
+    }, open: c.open, setOpen: c.setOpen, onCompare: c.onCompare };
   }
   var SelectionCompareHooks = { useSelectionCompare };
   function CompareToggle({ item, label: label2 = "Compare", pressedLabel = "In compare", compact: compact3 = false, className = "", ...rest }) {
@@ -18533,7 +19013,7 @@ select.mds-fb__ctl{appearance:auto;}
         "aria-pressed": on,
         disabled: full,
         title: full ? `Compare set is full (${c.max})` : void 0,
-        "aria-label": `${on ? "Remove from" : "Add to"} comparison: ${item.title}`,
+        "aria-label": `${on ? pressedLabel : label2}: ${item.title}; ${on ? "remove from" : "add to"} comparison`,
         onClick: (e) => {
           e.stopPropagation();
           c.toggle(item);
@@ -18549,7 +19029,10 @@ select.mds-fb__ctl{appearance:auto;}
     const c = useSelectionCompare();
     const n = c.items.length;
     if (!n && !emptyLabel) return null;
-    return /* @__PURE__ */ window.React.createElement("div", { className: `mds-cmptray ${docked === "corner" ? "mds-cmptray--corner" : ""} ${className}`, role: "region", "aria-label": "Comparison set", ...rest }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-cmptray__n" }, n, " of ", c.max), /* @__PURE__ */ window.React.createElement("span", null, n ? label2 : emptyLabel), /* @__PURE__ */ window.React.createElement("div", { className: "mds-cmptray__chips" }, c.items.map((i) => /* @__PURE__ */ window.React.createElement("span", { key: i.id, className: "mds-cmptray__chip" }, i.title, i.tag && /* @__PURE__ */ window.React.createElement("b", null, i.tag), /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-cmptray__x", "aria-label": `Remove ${i.title} from comparison`, onClick: () => c.remove(i.id) }, "×")))), /* @__PURE__ */ window.React.createElement("span", { className: "mds-cmptray__spacer" }), n > 0 && /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-cmp__btn", onClick: c.clear }, "Clear"), /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-cmp__btn mds-cmp__btn--primary", disabled: n < 2, onClick: () => c.setOpen(true) }, "Compare", n >= 2 ? ` ${n}` : ""));
+    return /* @__PURE__ */ window.React.createElement("div", { className: `mds-cmptray ${docked === "corner" ? "mds-cmptray--corner" : ""} ${className}`, role: "region", "aria-label": "Comparison set", ...rest }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-cmptray__n" }, n, " of ", c.max), /* @__PURE__ */ window.React.createElement("span", null, n ? label2 : emptyLabel), /* @__PURE__ */ window.React.createElement("div", { className: "mds-cmptray__chips" }, c.items.map((i) => /* @__PURE__ */ window.React.createElement("span", { key: i.id, className: "mds-cmptray__chip" }, i.title, i.tag && /* @__PURE__ */ window.React.createElement("b", null, i.tag), /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-cmptray__x", "aria-label": `Remove ${i.title} from comparison`, onClick: () => c.remove(i.id) }, "×")))), /* @__PURE__ */ window.React.createElement("span", { className: "mds-cmptray__spacer" }), n > 0 && /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-cmp__btn", onClick: c.clear }, "Clear"), /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-cmp__btn mds-cmp__btn--primary", disabled: n < 2, onClick: () => {
+      c.onCompare?.(c.items);
+      c.setOpen(true);
+    } }, "Compare", n >= 2 ? ` ${n}` : ""));
   }
   var SelectionCompare = { Provider: SelectionCompareProvider, Toggle: CompareToggle, Tray: CompareTray, get Sheet() {
     return CompareSheet;
@@ -18559,7 +19042,12 @@ select.mds-fb__ctl{appearance:auto;}
     const c = useCtx();
     const items = c.set.items;
     const [sel, setSel] = react_default.useState(null);
+    const sheetRef = react_default.useRef(null);
+    useOverlayFocus(sheetRef, c.open && items.length >= 2 && mode === "overlay");
     const close = () => c.setOpen(false);
+    react_default.useEffect(() => {
+      if (c.open && items.length < 2) c.setOpen(false);
+    }, [c.open, items.length]);
     react_default.useEffect(() => {
       if (!c.open || mode !== "overlay") return;
       const onKey = (e) => {
@@ -18571,7 +19059,7 @@ select.mds-fb__ctl{appearance:auto;}
     if (!c.open || items.length < 2) return null;
     const cats = categories || c.categories || items[0] && items[0].categories || items[0].values.map((_, i) => String(i + 1));
     const plates = items.map((i) => ({ ...i, footerLabel: i.footerLabel ?? (footerLabel ? footerLabel : void 0), footerValue: i.footerValue ?? (footerValue ? footerValue(i) : void 0) }));
-    return /* @__PURE__ */ window.React.createElement("section", { className: `mds-cmpsheet ${mode === "overlay" ? "mds-cmpsheet--overlay" : ""} ${className}`, role: mode === "overlay" ? "dialog" : void 0, "aria-label": title, ...rest }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-cmpsheet__h" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-cmpsheet__t" }, title), /* @__PURE__ */ window.React.createElement("span", { className: "mds-cmpsheet__meta" }, items.length, " plates · one shared domain · ", cats.length, " categories"), /* @__PURE__ */ window.React.createElement("span", { className: "mds-cmptray__spacer" }), /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-cmp__btn", onClick: c.set.clear }, "Clear set"), /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-cmp__btn", onClick: close, "aria-label": "Close comparison" }, "Close")), /* @__PURE__ */ window.React.createElement("div", { className: "mds-cmpsheet__body" }, /* @__PURE__ */ window.React.createElement(PlateGrid, { plates, categories: cats, domain: domain || c.domain, format: format2 || c.format, selectedId: sel, onSelect: setSel })), /* @__PURE__ */ window.React.createElement("div", { className: "mds-cmpsheet__foot" }, "Plates share plot size, domain and ticks; a visible difference is a real difference. Selecting a plate never resizes it."));
+    return /* @__PURE__ */ window.React.createElement("section", { ref: sheetRef, className: `mds-cmpsheet ${mode === "overlay" ? "mds-cmpsheet--overlay" : ""} ${className}`, role: mode === "overlay" ? "dialog" : void 0, "aria-modal": mode === "overlay" ? true : void 0, "aria-label": title, ...rest }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-cmpsheet__h" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-cmpsheet__t" }, title), /* @__PURE__ */ window.React.createElement("span", { className: "mds-cmpsheet__meta" }, items.length, " plates · one shared domain · ", cats.length, " categories"), /* @__PURE__ */ window.React.createElement("span", { className: "mds-cmptray__spacer" }), /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-cmp__btn", onClick: c.set.clear }, "Clear set"), /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-cmp__btn", onClick: close, "aria-label": "Close comparison" }, "Close")), /* @__PURE__ */ window.React.createElement("div", { className: "mds-cmpsheet__body" }, /* @__PURE__ */ window.React.createElement(PlateGrid, { plates, categories: cats, domain: domain || c.domain, format: format2 || c.format, selectedId: sel, onSelect: setSel })), /* @__PURE__ */ window.React.createElement("div", { className: "mds-cmpsheet__foot" }, "Plates share plot size, domain and ticks; a visible difference is a real difference. Selecting a plate never resizes it."));
   }
 
   // components/data/SelectionToolbar.jsx
@@ -18612,6 +19100,7 @@ select.mds-fb__ctl{appearance:auto;}
   color:var(--red,#B54B42);}
 .mds-seltb__btn--danger:hover{background:var(--red-a10,rgba(166,67,63,.10));border-color:var(--red,#B54B42);}
 .mds-seltb__btn--danger:active{background:var(--red-a20,color-mix(in srgb,var(--red) 35%,transparent));}
+.mds-seltb__btn:disabled{opacity:.55;cursor:not-allowed;}
 `;
     const el = document.createElement("style");
     el.setAttribute("data-mds", "seltb");
@@ -18632,19 +19121,24 @@ select.mds-fb__ctl{appearance:auto;}
     return /* @__PURE__ */ window.React.createElement("div", { className: `mds-seltb ${active ? "mds-seltb--active" : ""} ${className}` }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-seltb__count" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-seltb__badge" }, count, " of ", total, " selected"), count < total && onSelectAll && /* @__PURE__ */ window.React.createElement("div", { className: "mds-seltb__shortcuts" }, /* @__PURE__ */ window.React.createElement("button", { className: "mds-seltb__shortcut", onClick: onSelectAll, type: "button" }, "Select all")), count > 0 && onClear && /* @__PURE__ */ window.React.createElement("div", { className: "mds-seltb__shortcuts" }, /* @__PURE__ */ window.React.createElement("button", { className: "mds-seltb__shortcut", onClick: onClear, type: "button" }, "Clear"))), (primaryAction || actions.length > 0) && /* @__PURE__ */ window.React.createElement("div", { className: "mds-seltb__actions" }, primaryAction && /* @__PURE__ */ window.React.createElement(
       "button",
       {
+        type: "button",
         className: "mds-seltb__btn mds-seltb__btn--primary",
         onClick: primaryAction.onClick,
-        type: "button"
+        disabled: primaryAction.disabled,
+        title: primaryAction.disabledReason || primaryAction.tooltip,
+        "aria-description": primaryAction.disabledReason
       },
       primaryAction.label
     ), actions.map((action, i) => /* @__PURE__ */ window.React.createElement(
       "button",
       {
+        type: "button",
         key: i,
         className: `mds-seltb__btn mds-seltb__btn--${action.variant || "ghost"}`,
         onClick: action.onClick,
-        type: "button",
-        title: action.tooltip
+        disabled: action.disabled,
+        "aria-description": action.disabledReason,
+        title: action.disabledReason || action.tooltip
       },
       action.label
     ))));
@@ -18721,26 +19215,32 @@ select.mds-fb__ctl{appearance:auto;}
     const [sortStack, setSortStack] = react_default.useState([]);
     const [filters, setFilters] = react_default.useState({});
     const [groupBy, setGroupBy] = react_default.useState(null);
+    const [restoredKey, setRestoredKey] = react_default.useState(null);
     react_default.useEffect(() => {
-      if (!localStorageKey) return;
+      if (!localStorageKey || restoredKey !== localStorageKey) return;
       const state = { query, sortStack, filters, groupBy };
-      localStorage.setItem(localStorageKey, JSON.stringify(state));
-    }, [query, sortStack, filters, groupBy, localStorageKey]);
+      try {
+        localStorage.setItem(localStorageKey, JSON.stringify(state));
+      } catch {
+      }
+    }, [query, sortStack, filters, groupBy, localStorageKey, restoredKey]);
     react_default.useEffect(() => {
       if (!localStorageKey) return;
-      const saved = localStorage.getItem(localStorageKey);
-      if (saved) {
-        try {
+      try {
+        const saved = localStorage.getItem(localStorageKey);
+        if (saved) {
           const parsed = JSON.parse(saved);
-          setQuery(parsed.query || "");
-          const stack = parsed.sortStack || (parsed.sortBy ? [parsed.sortBy] : []);
+          setQuery(typeof parsed.query === "string" ? parsed.query : "");
+          const rawStack = parsed.sortStack || (parsed.sortBy ? [parsed.sortBy] : []);
+          const stack = Array.isArray(rawStack) ? rawStack.filter((entry) => entry && typeof entry.column === "string" && ["asc", "desc"].includes(entry.direction)) : [];
           setSortStack(stack);
           setSortBy(stack[0] || null);
-          setFilters(parsed.filters || {});
-          setGroupBy(parsed.groupBy || null);
-        } catch (e) {
+          setFilters(Object.fromEntries(Object.entries(parsed.filters && typeof parsed.filters === "object" ? parsed.filters : {}).filter(([, values]) => Array.isArray(values))));
+          setGroupBy(typeof parsed.groupBy === "string" || Array.isArray(parsed.groupBy) && parsed.groupBy.every((key) => typeof key === "string") ? parsed.groupBy : null);
         }
+      } catch {
       }
+      setRestoredKey(localStorageKey);
     }, [localStorageKey]);
     const filtered = react_default.useMemo(() => {
       let result = data;
@@ -18826,14 +19326,17 @@ select.mds-fb__ctl{appearance:auto;}
     const exportCSV = (filename = "data.csv") => {
       if (sorted.length === 0) return;
       const headers = Object.keys(sorted[0]);
+      const csvCell = (value) => {
+        if (value == null) return "";
+        const text = String(value);
+        return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+      };
       const csv = [
-        headers.join(","),
+        headers.map(csvCell).join(","),
         ...sorted.map(
           (row) => headers.map((h) => {
             const v = row[h];
-            if (v === null || v === void 0) return "";
-            const str = String(v);
-            return str.includes(",") ? `"${str}"` : str;
+            return csvCell(v);
           }).join(",")
         )
       ].join("\n");
@@ -18879,25 +19382,26 @@ select.mds-fb__ctl{appearance:auto;}
         hidden: {},
         pinned: baseColumns.filter((c) => c.pinned).map((c) => c.key)
       };
-      if (persistKey && typeof localStorage !== "undefined") {
-        try {
+      try {
+        if (persistKey && typeof localStorage !== "undefined") {
           const saved = JSON.parse(localStorage.getItem(persistKey));
           if (saved && [...saved.order].sort().join("|") === [...model2.order].sort().join("|")) {
             return { ...model2, ...saved };
           }
-        } catch (e) {
         }
+      } catch (e) {
       }
       return model2;
     }, [baseKeys]);
     const [model, setModel] = react_default.useState(initial);
     react_default.useEffect(() => setModel(initial), [initial]);
     react_default.useEffect(() => {
-      if (persistKey && typeof localStorage !== "undefined") {
-        localStorage.setItem(persistKey, JSON.stringify(model));
+      try {
+        if (persistKey && typeof localStorage !== "undefined") localStorage.setItem(persistKey, JSON.stringify(model));
+      } catch {
       }
     }, [model, persistKey]);
-    const byKey = react_default.useMemo(() => Object.fromEntries(baseColumns.map((c) => [c.key, c])), [baseKeys]);
+    const byKey = react_default.useMemo(() => Object.fromEntries(baseColumns.map((c) => [c.key, c])), [baseColumns]);
     const resize = react_default.useCallback((key, width) => {
       setModel((m2) => ({ ...m2, widths: { ...m2.widths, [key]: Math.max(48, Math.round(width)) } }));
     }, []);
@@ -18997,7 +19501,7 @@ select.mds-fb__ctl{appearance:auto;}
     }, [getKey]);
     const toggleAllLoaded = react_default.useCallback(() => {
       setAllMatching(false);
-      setSelected((prev) => prev.size === rows.length ? /* @__PURE__ */ new Set() : new Set(keys));
+      setSelected((prev) => keys.length > 0 && keys.every((key) => prev.has(key)) ? /* @__PURE__ */ new Set() : new Set(keys));
     }, [rows.length, keys]);
     const selectAllMatching = react_default.useCallback(() => {
       setAllMatching(true);
@@ -19009,8 +19513,9 @@ select.mds-fb__ctl{appearance:auto;}
       anchorRef.current = null;
     }, []);
     const count = allMatching ? "all" : selected.size;
-    const allLoadedSelected = rows.length > 0 && selected.size === rows.length;
-    const someSelected = selected.size > 0 && selected.size < rows.length;
+    const loadedSelectedCount = allMatching ? rows.length : keys.filter((key) => selected.has(key)).length;
+    const allLoadedSelected = rows.length > 0 && loadedSelectedCount === rows.length;
+    const someSelected = loadedSelectedCount > 0 && loadedSelectedCount < rows.length;
     return {
       isSelected,
       onRowClick,
@@ -19074,7 +19579,11 @@ select.mds-fb__ctl{appearance:auto;}
         offsetRef.current = 0;
         run(false);
       }, debounceMs);
-      return () => clearTimeout(t2);
+      return () => {
+        clearTimeout(t2);
+        ++reqIdRef.current;
+        abortRef.current?.abort();
+      };
     }, [query, sort]);
     const hasMore = mode === "append" && total != null && rows.length < total;
     const loadMore = react_default.useCallback(() => {
@@ -19131,7 +19640,8 @@ select.mds-fb__ctl{appearance:auto;}
     overscan = 6,
     renderRow,
     className = "",
-    style = {}
+    style = {},
+    "aria-label": ariaLabel = "Virtualized list"
   }) {
     const [scrollTop, setScrollTop] = react_default.useState(0);
     const total = items.length;
@@ -19143,6 +19653,9 @@ select.mds-fb__ctl{appearance:auto;}
       "div",
       {
         className,
+        role: "region",
+        "aria-label": ariaLabel,
+        tabIndex: 0,
         style: {
           height,
           overflowY: "auto",
@@ -19233,7 +19746,7 @@ select.mds-fb__ctl{appearance:auto;}
     style = {}
   }) {
     inject109();
-    const uid6 = react_default.useId();
+    const uid5 = react_default.useId();
     const gridRef = react_default.useRef(null);
     const restoreFocus = react_default.useRef(false);
     const cols = columns.map((c) => typeof c === "string" ? { key: c } : c);
@@ -19241,6 +19754,7 @@ select.mds-fb__ctl{appearance:auto;}
     const [internal, setInternal] = react_default.useState(defaultActiveCell);
     const active = isControlled ? activeCell : internal;
     const activeParsed = parseRef(active);
+    const activeValid = activeParsed && activeParsed.row >= 1 && activeParsed.row <= rows && cols.some((c) => c.key === activeParsed.col);
     const select = (ref) => {
       if (!isControlled) setInternal(ref);
       if (onActiveCellChange) onActiveCellChange(ref);
@@ -19299,7 +19813,13 @@ select.mds-fb__ctl{appearance:auto;}
     };
     const onKeyDown = (e) => {
       if (editing != null) return;
-      if (!activeParsed) return;
+      if (!activeValid) {
+        if (["ArrowDown", "ArrowUp", "ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key) && cols[0] && rows > 0) {
+          e.preventDefault();
+          select(cols[0].key + 1);
+        }
+        return;
+      }
       if (editable && (e.key === "Enter" || e.key === "F2")) {
         e.preventDefault();
         startEdit(active);
@@ -19329,7 +19849,7 @@ select.mds-fb__ctl{appearance:auto;}
       if (cols[ci]) select(cols[ci].key + ri);
     };
     const activeObj = active ? cells[active] : null;
-    const barText = activeObj ? activeObj.formula || activeObj.value || "" : "";
+    const barText = activeObj ? activeObj.formula || (activeObj.value ?? "") : "";
     const barIsError = activeObj && activeObj.type === "error";
     const cellInner = (c, col) => {
       const t2 = c ? c.type : null;
@@ -19351,7 +19871,7 @@ select.mds-fb__ctl{appearance:auto;}
       }
       return s;
     };
-    return /* @__PURE__ */ window.React.createElement("div", { className: "mds-ws", style }, showFormulaBar && /* @__PURE__ */ window.React.createElement("div", { className: "mds-ws__bar" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-ws__ref" }, active || "—"), /* @__PURE__ */ window.React.createElement("div", { className: "mds-ws__fx" }, "fx"), /* @__PURE__ */ window.React.createElement("div", { className: "mds-ws__formula", style: barIsError ? { color: "var(--red-dim)" } : void 0 }, barText || /* @__PURE__ */ window.React.createElement("span", { style: { color: "var(--text-disabled,#A4ABB2)" } }, emptyFormulaText))), /* @__PURE__ */ window.React.createElement("div", { className: "mds-ws__scroll" }, /* @__PURE__ */ window.React.createElement(
+    return /* @__PURE__ */ window.React.createElement("div", { className: "mds-ws", style }, showFormulaBar && /* @__PURE__ */ window.React.createElement("div", { className: "mds-ws__bar" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-ws__ref" }, active || "—"), /* @__PURE__ */ window.React.createElement("div", { className: "mds-ws__fx" }, "fx"), /* @__PURE__ */ window.React.createElement("div", { className: "mds-ws__formula", style: barIsError ? { color: "var(--red-dim)" } : void 0 }, barText !== "" ? barText : /* @__PURE__ */ window.React.createElement("span", { style: { color: "var(--text-muted,#6B737B)" } }, emptyFormulaText))), /* @__PURE__ */ window.React.createElement("div", { className: "mds-ws__scroll" }, /* @__PURE__ */ window.React.createElement(
       "div",
       {
         className: "mds-ws__grid",
@@ -19361,7 +19881,7 @@ select.mds-fb__ctl{appearance:auto;}
         "aria-label": label2,
         "aria-rowcount": rows + 1,
         "aria-colcount": cols.length + 1,
-        "aria-activedescendant": active ? `${uid6}-cell-${active}` : void 0,
+        "aria-activedescendant": activeValid ? `${uid5}-cell-${active}` : void 0,
         onKeyDown
       },
       /* @__PURE__ */ window.React.createElement("div", { className: "mds-ws__row mds-ws__corner", role: "row", "aria-rowindex": 1 }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-ws__hdr", role: "columnheader", "aria-colindex": 1, "aria-label": "Row number", style: { width: rowHeaderWidth, minWidth: rowHeaderWidth, height: headerHeight, borderRightColor: "var(--border-strong,#AAA49A)", position: "sticky", left: 0, zIndex: 4 } }), cols.map((col, ci) => {
@@ -19371,13 +19891,13 @@ select.mds-fb__ctl{appearance:auto;}
           width: w,
           minWidth: w,
           height: headerHeight,
-          color: on ? "var(--brand-signal,#C56343)" : void 0,
+          color: on ? "var(--interaction-link,var(--link,#2A5F96))" : void 0,
           background: on ? "color-mix(in srgb, var(--brand-signal,#C56343) 12%, transparent)" : void 0
         } }, col.label != null ? col.label : col.key);
       })),
       Array.from({ length: rows }, (_, i) => i + 1).map((r) => {
         const rowOn = activeParsed && activeParsed.row === r;
-        return /* @__PURE__ */ window.React.createElement("div", { key: r, className: "mds-ws__row", role: "row", "aria-rowindex": r + 1 }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-ws__rownum", role: "rowheader", "aria-colindex": 1, style: { width: rowHeaderWidth, minWidth: rowHeaderWidth, height: rowHeight, color: rowOn ? "var(--brand-signal,#C56343)" : void 0 } }, r), cols.map((col, ci) => {
+        return /* @__PURE__ */ window.React.createElement("div", { key: r, className: "mds-ws__row", role: "row", "aria-rowindex": r + 1 }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-ws__rownum", role: "rowheader", "aria-colindex": 1, style: { width: rowHeaderWidth, minWidth: rowHeaderWidth, height: rowHeight, color: rowOn ? "var(--interaction-link,var(--link,#2A5F96))" : void 0 } }, r), cols.map((col, ci) => {
           const ref = col.key + r;
           const c = cells[ref];
           const cls = "mds-ws__cell" + (active === ref ? " mds-ws__cell--active" : "") + (c && c.type === "error" ? " mds-ws__cell--error" : "");
@@ -19389,7 +19909,7 @@ select.mds-fb__ctl{appearance:auto;}
             "div",
             {
               key: ref,
-              id: `${uid6}-cell-${ref}`,
+              id: `${uid5}-cell-${ref}`,
               role: "gridcell",
               "aria-colindex": ci + 2,
               "aria-selected": active === ref || void 0,
@@ -19495,7 +20015,7 @@ select.mds-fb__ctl{appearance:auto;}
     ...rest
   }) {
     inject110();
-    const uid6 = react_default.useId();
+    const uid5 = react_default.useId();
     const rev = consequences.reversibility ? REVERSIBILITY[consequences.reversibility] || { label: String(consequences.reversibility), note: "", tone: "neutral" } : null;
     const groups = CONSEQUENCE_KINDS.map((k) => ({ kind: k, items: Array.isArray(consequences[k.id]) ? consequences[k.id] : [] })).filter((g) => g.items.length);
     const tally = guards.reduce((a, g) => {
@@ -19506,7 +20026,7 @@ select.mds-fb__ctl{appearance:auto;}
     const blocking = tally.blocking || 0;
     const outstanding = blocking + (tally.warning || 0) + (tally.pending || 0);
     const guardLabel = blocking ? `${blocking} blocking ${blocking === 1 ? "guard" : "guards"}${outstanding > blocking ? ` · ${outstanding - blocking} more outstanding` : ""}` : outstanding ? `${outstanding} ${outstanding === 1 ? "guard" : "guards"} outstanding` : `All ${guards.length} guards satisfied`;
-    return /* @__PURE__ */ window.React.createElement("section", { className: `mds-crail${dense ? " mds-crail--dense" : ""}${className ? " " + className : ""}`, "aria-labelledby": `${uid6}-t`, ...rest }, /* @__PURE__ */ window.React.createElement("header", { className: "mds-crail__head" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-crail__eyebrow" }, "If this proceeds"), /* @__PURE__ */ window.React.createElement("h3", { className: "mds-crail__title", id: `${uid6}-t` }, title), proposal || object ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-crail__prop" }, [
+    return /* @__PURE__ */ window.React.createElement("section", { className: `mds-crail${dense ? " mds-crail--dense" : ""}${className ? " " + className : ""}`, "aria-labelledby": `${uid5}-t`, ...rest }, /* @__PURE__ */ window.React.createElement("header", { className: "mds-crail__head" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-crail__eyebrow" }, "If this proceeds"), /* @__PURE__ */ window.React.createElement("h3", { className: "mds-crail__title", id: `${uid5}-t` }, title), proposal || object ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-crail__prop" }, [
       proposal && proposal.id,
       proposal && proposal.changes ? `${proposal.changes.length} field ${proposal.changes.length === 1 ? "change" : "changes"}` : null,
       object && object.type,
@@ -19517,14 +20037,12 @@ select.mds-fb__ctl{appearance:auto;}
       const interactive = !!onInspect;
       const Tag = interactive ? "button" : "div";
       const amount = item.delta != null ? item.delta : item.amount;
-      return /* @__PURE__ */ window.React.createElement("li", { key: id }, /* @__PURE__ */ window.React.createElement(
+      return /* @__PURE__ */ window.React.createElement("li", { key: id, "aria-setsize": g.items.length, "aria-posinset": i + 1 }, /* @__PURE__ */ window.React.createElement(
         Tag,
         {
           className: `mds-crail__row${interactive ? " mds-crail__row--action" : ""}`,
           ...interactive ? { type: "button", onClick: () => onInspect(g.kind.id, item), "aria-pressed": selectedId === id } : {},
-          "data-selected": selectedId === id ? "true" : void 0,
-          "aria-setsize": g.items.length,
-          "aria-posinset": i + 1
+          "data-selected": selectedId === id ? "true" : void 0
         },
         /* @__PURE__ */ window.React.createElement("span", { className: "mds-crail__rlabel" }, item.label || item.id, item.effect ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-crail__reffect" }, item.effect) : null),
         amount != null ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-crail__rval", "data-sign": sign2(amount) }, item.formatted != null ? item.formatted : amount, item.currency ? ` ${item.currency}` : "") : null
@@ -19558,8 +20076,8 @@ select.mds-fb__ctl{appearance:auto;}
       capturedAt: capturedAt || (/* @__PURE__ */ new Date()).toISOString().replace("T", " ").slice(0, 19) + "Z"
     });
   };
-  var evidenceKey = (list) => (list || []).map((e) => `${e.id}@${e.version || ""}#${e.hash || ""}:${e.condition || ""}`).sort().join("|");
-  var calcKey = (list) => (list || []).map((c) => `${c.id}@${c.version || ""}#${c.inputHash || ""}`).sort().join("|");
+  var evidenceKey = (list) => (list || []).map((e) => `${e.id}@${e.version ?? ""}#${e.hash || ""}:${e.condition || ""}`).sort().join("|");
+  var calcKey = (list) => (list || []).map((c) => `${c.id}@${c.version ?? ""}#${c.inputHash || ""}`).sort().join("|");
   var verifySnapshot = (snapshot2, current = {}) => {
     if (!snapshot2) return [];
     const out = [];
@@ -19569,6 +20087,9 @@ select.mds-fb__ctl{appearance:auto;}
     }
     if (current.object && snapshot2.object && current.object.id && current.object.id !== snapshot2.object.id) {
       push("object.id", snapshot2.object.id, current.object.id, "void", "This proof is about a different object.");
+    }
+    if (current.object && snapshot2.object && current.object.type != null && snapshot2.object.type != null && current.object.type !== snapshot2.object.type) {
+      push("object.type", snapshot2.object.type, current.object.type, "void", "This proof is about a different kind of object.");
     }
     if (current.evidence && evidenceKey(current.evidence) !== evidenceKey(snapshot2.evidence)) {
       push("evidence", `${snapshot2.evidence.length} items`, `${current.evidence.length} items`, "void", "The evidence set behind the decision changed.");
@@ -19661,7 +20182,7 @@ select.mds-fb__ctl{appearance:auto;}
     ...rest
   }) {
     inject111();
-    const uid6 = react_default.useId();
+    const uid5 = react_default.useId();
     const found = findings || verifySnapshot(snapshot2, current || {});
     if (!snapshot2) {
       return /* @__PURE__ */ window.React.createElement("section", { className: `mds-snap${className ? " " + className : ""}`, ...rest }, /* @__PURE__ */ window.React.createElement("p", { className: "mds-snap__empty" }, "No snapshot captured. A commit or attestation binds to a snapshot taken before the attempt."));
@@ -19677,12 +20198,12 @@ select.mds-fb__ctl{appearance:auto;}
       ["Evidence", `${snapshot2.evidence.length} ${snapshot2.evidence.length === 1 ? "item" : "items"}`, snapshot2.evidence.length ? snapshot2.evidence.map((e) => `${e.id}${e.version ? ` v${e.version}` : ""}${e.condition ? ` (${e.condition})` : ""}`).join(" · ") : "No evidence bound to this decision"],
       ["Calculation", snapshot2.calculations.length ? snapshot2.calculations.map((c) => `${c.id} v${c.version}`).join(" · ") : "—", snapshot2.calculations.some((c) => c.inputHash) ? snapshot2.calculations.map((c) => c.inputHash).filter(Boolean).join(" · ") : null],
       ["Materiality", snapshot2.materiality ? snapshot2.materiality.label || snapshot2.materiality.classification || String(snapshot2.materiality) : "—", snapshot2.materiality && snapshot2.materiality.note ? snapshot2.materiality.note : null],
-      ["Guards", `${snapshot2.guards.length} evaluated`, snapshot2.guards.length ? snapshot2.guards.map((g) => `${g.label || g.id} — ${g.status || "satisfied"}`).join(" · ") : null],
+      ["Guards", `${snapshot2.guards.length} evaluated`, snapshot2.guards.length ? snapshot2.guards.map((g) => `${g.label || g.id} — ${g.state || g.status || "unknown"}`).join(" · ") : null],
       ["Reversibility", snapshot2.consequences && snapshot2.consequences.reversibility ? snapshot2.consequences.reversibility : "—", null],
       ["Decision", snapshot2.decision ? [snapshot2.decision.type, snapshot2.decision.actorName || snapshot2.decision.actorId, snapshot2.decision.authority].filter(Boolean).join(" · ") : "Not yet decided", snapshot2.decision && snapshot2.decision.rationale ? snapshot2.decision.rationale : null],
       ["Captured", snapshot2.capturedAt, null]
     ];
-    return /* @__PURE__ */ window.React.createElement("section", { className: `mds-snap${className ? " " + className : ""}`, "aria-labelledby": `${uid6}-t`, ...rest }, /* @__PURE__ */ window.React.createElement("header", { className: "mds-snap__head" }, /* @__PURE__ */ window.React.createElement("span", null, /* @__PURE__ */ window.React.createElement("span", { className: "mds-snap__eyebrow", id: `${uid6}-t` }, title), /* @__PURE__ */ window.React.createElement("br", null), /* @__PURE__ */ window.React.createElement("span", { className: "mds-snap__id" }, snapshot2.id)), /* @__PURE__ */ window.React.createElement("span", { className: "mds-snap__seal", "data-state": worst2 }, worst2 === "void" ? "Superseded" : worst2 === "review" ? "Re-read" : "Sealed")), showSentence ? /* @__PURE__ */ window.React.createElement("p", { className: "mds-snap__sentence" }, describeSnapshot(snapshot2)) : null, found.length ? /* @__PURE__ */ window.React.createElement("ul", { className: "mds-snap__findings", "data-effect": worst2 }, found.map((f, i) => /* @__PURE__ */ window.React.createElement("li", { className: "mds-snap__finding", key: f.field + i, "aria-setsize": found.length, "aria-posinset": i + 1 }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-snap__ffield" }, f.field, ": ", String(f.was), " → ", String(f.now)), /* @__PURE__ */ window.React.createElement("span", { className: "mds-snap__fnote" }, f.note)))) : null, /* @__PURE__ */ window.React.createElement("dl", { className: "mds-snap__grid" }, rows.map(([label2, value, sub]) => /* @__PURE__ */ window.React.createElement(react_default.Fragment, { key: label2 }, /* @__PURE__ */ window.React.createElement("dt", null, label2), /* @__PURE__ */ window.React.createElement("dd", null, value, sub ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-snap__sub" }, sub) : null)))), /* @__PURE__ */ window.React.createElement("p", { className: "mds-snap__foot" }, "Immutable — captured before the attempt and frozen. A change to the object, the evidence set, or the calculation version voids this proof rather than updating it."));
+    return /* @__PURE__ */ window.React.createElement("section", { className: `mds-snap${className ? " " + className : ""}`, "aria-labelledby": `${uid5}-t`, ...rest }, /* @__PURE__ */ window.React.createElement("header", { className: "mds-snap__head" }, /* @__PURE__ */ window.React.createElement("span", null, /* @__PURE__ */ window.React.createElement("span", { className: "mds-snap__eyebrow", id: `${uid5}-t` }, title), /* @__PURE__ */ window.React.createElement("br", null), /* @__PURE__ */ window.React.createElement("span", { className: "mds-snap__id" }, snapshot2.id)), /* @__PURE__ */ window.React.createElement("span", { className: "mds-snap__seal", "data-state": worst2 }, worst2 === "void" ? "Superseded" : worst2 === "review" ? "Re-read" : "Sealed")), showSentence ? /* @__PURE__ */ window.React.createElement("p", { className: "mds-snap__sentence" }, describeSnapshot(snapshot2)) : null, found.length ? /* @__PURE__ */ window.React.createElement("ul", { className: "mds-snap__findings", "data-effect": worst2 }, found.map((f, i) => /* @__PURE__ */ window.React.createElement("li", { className: "mds-snap__finding", key: f.field + i, "aria-setsize": found.length, "aria-posinset": i + 1 }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-snap__ffield" }, f.field, ": ", String(f.was), " → ", String(f.now)), /* @__PURE__ */ window.React.createElement("span", { className: "mds-snap__fnote" }, f.note)))) : null, /* @__PURE__ */ window.React.createElement("dl", { className: "mds-snap__grid" }, rows.map(([label2, value, sub]) => /* @__PURE__ */ window.React.createElement(react_default.Fragment, { key: label2 }, /* @__PURE__ */ window.React.createElement("dt", null, label2), /* @__PURE__ */ window.React.createElement("dd", null, value, sub ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-snap__sub" }, sub) : null)))), /* @__PURE__ */ window.React.createElement("p", { className: "mds-snap__foot" }, "Immutable — captured before the attempt and frozen. A change to the object, the evidence set, or the calculation version voids this proof rather than updating it."));
   }
   var DecisionSnapshot = {
     SECTIONS: SECTIONS2,
@@ -19732,7 +20253,7 @@ select.mds-fb__ctl{appearance:auto;}
 .mds-erail__tab{appearance:none;min-height:var(--theme-control-height,30px);padding:0 10px;border:0;border-right:1px solid var(--border-divider,#E2DED5);border-bottom:2px solid transparent;background:transparent;font:600 11px var(--font-body);color:var(--text-muted,#606870);cursor:pointer;transition:color 120ms cubic-bezier(.2,0,0,1),border-color 120ms cubic-bezier(.2,0,0,1),background-color 120ms cubic-bezier(.2,0,0,1)}
 .mds-erail__tab:hover{background:var(--bg-hover,#EDEFF0);color:var(--text-primary,#20252B)}
 .mds-erail__tab:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
-.mds-erail__tab[aria-selected="true"]{color:var(--text-primary,#20252B);border-bottom-color:var(--interaction-selected,#496C8F);background:var(--interaction-selected-surface,#E7EDF2)}
+.mds-erail__tab[aria-selected="true"]{color:var(--text-primary,#20252B);border-bottom-color:var(--interaction-selected,#496C8F);background:var(--interaction-selected-surface,var(--selected-surface,#E7EDF2))}
 .mds-erail__count{margin-left:5px;font:10px var(--font-data,monospace);font-variant-numeric:tabular-nums;color:var(--text-muted,#606870)}
 .mds-erail__q{padding:5px 11px 0;font:10px/15px var(--font-body);color:var(--text-muted,#606870)}
 .mds-erail__body{flex:1;min-height:0;overflow:auto;padding:9px 11px}
@@ -19761,7 +20282,7 @@ select.mds-fb__ctl{appearance:auto;}
     ...rest
   }) {
     inject112();
-    const uid6 = react_default.useId();
+    const uid5 = react_default.useId();
     const available = EVIDENCE_SECTIONS.filter((s) => sections[s.id] != null);
     const [internal, setInternal] = react_default.useState(defaultSection || available[0] && available[0].id);
     const current = activeSection != null ? activeSection : internal;
@@ -19787,7 +20308,7 @@ select.mds-fb__ctl{appearance:auto;}
     const required = coverage && coverage.required != null ? Number(coverage.required) : null;
     const short2 = attached != null && required != null && attached < required;
     const cont = continuity2 ? CONTINUITY[continuity2] || { label: String(continuity2), note: "" } : null;
-    return /* @__PURE__ */ window.React.createElement("section", { className: `mds-erail${dense ? " mds-erail--dense" : ""}${className ? " " + className : ""}`, "aria-labelledby": `${uid6}-t`, ...rest }, /* @__PURE__ */ window.React.createElement("header", { className: "mds-erail__head" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-erail__eyebrow" }, "Evidence"), /* @__PURE__ */ window.React.createElement("h3", { className: "mds-erail__title", id: `${uid6}-t` }, title), object ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-erail__obj" }, [object.label, object.type, object.id, object.version != null ? `v${object.version}` : null].filter(Boolean).join(" · ")) : null), coverage || cont || freshness2 || asOf ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-erail__state" }, attached != null && required != null ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-erail__cov", "data-short": short2 ? "true" : void 0 }, attached, " of ", required, " ", coverage.label || "sources") : null, short2 ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-erail__covnote" }, required - attached, " required ", required - attached === 1 ? "item" : "items", " outstanding") : null, cont ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-erail__chip", "data-continuity": continuity2 }, cont.label) : null, cont && cont.note ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-erail__note" }, cont.note) : null, freshness2 ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-erail__note" }, "Freshness ", freshness2) : null, asOf ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-erail__note" }, "As of ", asOf) : null) : null, available.length ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-erail__tabs", role: "tablist", "aria-label": "Evidence sections", onKeyDown }, available.map((s) => {
+    return /* @__PURE__ */ window.React.createElement("section", { className: `mds-erail${dense ? " mds-erail--dense" : ""}${className ? " " + className : ""}`, "aria-labelledby": `${uid5}-t`, ...rest }, /* @__PURE__ */ window.React.createElement("header", { className: "mds-erail__head" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-erail__eyebrow" }, "Evidence"), /* @__PURE__ */ window.React.createElement("h3", { className: "mds-erail__title", id: `${uid5}-t` }, title), object ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-erail__obj" }, [object.label, object.type, object.id, object.version != null ? `v${object.version}` : null].filter(Boolean).join(" · ")) : null), coverage || cont || freshness2 || asOf ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-erail__state" }, attached != null && required != null ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-erail__cov", "data-short": short2 ? "true" : void 0 }, attached, " of ", required, " ", coverage.label || "sources") : null, short2 ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-erail__covnote" }, required - attached, " required ", required - attached === 1 ? "item" : "items", " outstanding") : null, cont ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-erail__chip", "data-continuity": continuity2 }, cont.label) : null, cont && cont.note ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-erail__note" }, cont.note) : null, freshness2 ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-erail__note" }, "Freshness ", freshness2) : null, asOf ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-erail__note" }, "As of ", asOf) : null) : null, available.length ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-erail__tabs", role: "tablist", "aria-label": "Evidence sections", onKeyDown }, available.map((s) => {
       const selected = active && active.id === s.id;
       return /* @__PURE__ */ window.React.createElement(
         "button",
@@ -19796,9 +20317,9 @@ select.mds-fb__ctl{appearance:auto;}
           type: "button",
           className: "mds-erail__tab",
           role: "tab",
-          id: `${uid6}-tab-${s.id}`,
+          id: `${uid5}-tab-${s.id}`,
           "aria-selected": selected ? "true" : "false",
-          "aria-controls": `${uid6}-panel-${s.id}`,
+          "aria-controls": `${uid5}-panel-${s.id}`,
           tabIndex: selected ? 0 : -1,
           ref: (node) => {
             tabRefs.current[s.id] = node;
@@ -19808,7 +20329,7 @@ select.mds-fb__ctl{appearance:auto;}
         s.label,
         counts[s.id] != null ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-erail__count" }, counts[s.id]) : null
       );
-    })), showQuestion && active ? /* @__PURE__ */ window.React.createElement("p", { className: "mds-erail__q" }, active.question) : null, active ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-erail__body", role: "tabpanel", id: `${uid6}-panel-${active.id}`, "aria-labelledby": `${uid6}-tab-${active.id}`, tabIndex: 0 }, sections[active.id]) : null) : /* @__PURE__ */ window.React.createElement("div", { className: "mds-erail__body" }, /* @__PURE__ */ window.React.createElement("p", { className: "mds-erail__empty" }, "No evidence sections declared for this object. A rail with nothing to prove is not rendered as empty tabs.")));
+    })), showQuestion && active ? /* @__PURE__ */ window.React.createElement("p", { className: "mds-erail__q" }, active.question) : null, active ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-erail__body", role: "tabpanel", id: `${uid5}-panel-${active.id}`, "aria-labelledby": `${uid5}-tab-${active.id}`, tabIndex: 0 }, sections[active.id]) : null) : /* @__PURE__ */ window.React.createElement("div", { className: "mds-erail__body" }, /* @__PURE__ */ window.React.createElement("p", { className: "mds-erail__empty" }, "No evidence sections declared for this object. A rail with nothing to prove is not rendered as empty tabs.")));
   }
 
   // components/operations/ActionEnvelope.jsx
@@ -20421,6 +20942,11 @@ select.mds-fb__ctl{appearance:auto;}
   background:var(--severity-info-bg,#EBE8E1);color:var(--severity-info-fg,#6B737B);
   font-family:var(--font-data,"IBM Plex Mono",monospace);font-size:9px;font-weight:700;line-height:1;
   letter-spacing:.04em;padding:0 7px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mds-sev.mds-sev{color:var(--text-primary,#20252B);}
+.mds-sev--ready .mds-sev__dot{background:var(--severity-ready-fg,#2E7655);}
+.mds-sev--review .mds-sev__dot{background:var(--severity-review-fg,#C56343);}
+.mds-sev--action .mds-sev__dot{background:var(--severity-action-fg,#986717);}
+.mds-sev--blocked .mds-sev__dot{background:var(--severity-blocked-fg,#B54B42);}
 .mds-sev__dot{height:5px;width:5px;border-radius:50%;background:currentColor;flex:0 0 auto;}
 .mds-sev--ready{border-color:var(--severity-ready-bd,rgba(74,124,94,.36));background:var(--severity-ready-bg,rgba(74,124,94,.10));color:var(--severity-ready-fg,#2E7655);}
 .mds-sev--review{border-color:var(--severity-review-bd,rgba(47,111,143,.36));background:var(--severity-review-bg,rgba(47,111,143,.10));color:var(--severity-review-fg,#C56343);}
@@ -20484,7 +21010,8 @@ select.mds-fb__ctl{appearance:auto;}
 .mds-adpt__row{width:100%;padding:8px 13px;min-height:var(--row-review,40px);border:0;border-bottom:1px solid var(--border-divider,#E2DED5);border-left:2px solid transparent;background:transparent;text-align:left;font-family:inherit;color:inherit;cursor:pointer}
 .mds-adpt__row:hover{background:var(--bg-hover,#EDEFF0)}
 .mds-adpt__row:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
-.mds-adpt__row[aria-expanded="true"]{background:var(--bg-selected,#E4E9EC);border-left-color:var(--accent,#C56343)}
+.mds-adpt__row[aria-expanded="true"]{background:var(--selected-surface,#E4E9EC);border-left-color:var(--interaction-selected,#496C8F)}
+.mds-adpt__row[aria-expanded="true"] em,.mds-adpt__row[aria-expanded="true"] s{color:var(--text-primary,#20252B)}
 .mds-adpt__row--dense{padding:5px 13px;min-height:0}
 .mds-adpt__name{display:grid;gap:1px;min-width:0}
 .mds-adpt__name b{font-size:12.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -20522,7 +21049,8 @@ select.mds-fb__ctl{appearance:auto;}
 .mds-apc[data-sev="review"] .mds-apc__dot{background:var(--severity-review-fg,#C56343)}
 .mds-apc[data-sev="ready"]{color:var(--severity-ready-fg,#3D6B45);border-color:var(--severity-ready-bd,#A9C3AD);background:var(--severity-ready-bg,#E8F0E9)}
 .mds-apc[data-sev="ready"] .mds-apc__dot{background:var(--severity-ready-fg,#3D6B45)}
-.mds-apc__next{font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-muted,#606870)}
+.mds-apc.mds-apc{color:var(--text-primary,#20252B)}
+.mds-apc__next{font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-primary,#20252B)}
 @media print{.mds-adpt__acts,.mds-adpt__btn{display:none}.mds-adpt__row{break-inside:avoid}.mds-adpt__detail{break-inside:avoid}}
 `;
     document.head.appendChild(el);
@@ -20564,6 +21092,7 @@ select.mds-fb__ctl{appearance:auto;}
     ...rest
   }) {
     inject117();
+    const uid5 = react_default.useId();
     const [internal, setInternal] = react_default.useState(defaultSelectedId ?? null);
     const active = selectedId !== void 0 ? selectedId : internal;
     const select = (id) => {
@@ -20579,7 +21108,8 @@ select.mds-fb__ctl{appearance:auto;}
       const noSchedule = adapterScheduleMissing(row);
       const over = row.latency && row.latency.budget != null && row.latency.p99 != null && row.latency.p99 > row.latency.budget;
       const queued = row.outbound?.queued ?? 0;
-      const detailId = `mds-adpt-detail-${row.id}`;
+      const detailId = `${uid5}-detail-${row.id}`;
+      const descriptionId = `${uid5}-description-${row.id}`;
       const name = [
         `${row.name || row.id}${row.environment ? `, ${row.environment}` : ""}${row.venue ? `, venue ${row.venue}` : ""}`,
         `posture ${row.postureLabel || p.label}`,
@@ -20596,7 +21126,7 @@ select.mds-fb__ctl{appearance:auto;}
           className: `mds-adpt__row${dense ? " mds-adpt__row--dense" : ""}`,
           "aria-expanded": open,
           "aria-controls": detailId,
-          "aria-label": name,
+          "aria-describedby": descriptionId,
           onClick: () => select(row.id)
         },
         /* @__PURE__ */ window.React.createElement(SeverityBadge, { status: p.severity, label: row.postureLabel || p.label }),
@@ -20605,7 +21135,7 @@ select.mds-fb__ctl{appearance:auto;}
         /* @__PURE__ */ window.React.createElement("span", { className: "mds-adpt__n", "data-over": over ? "true" : void 0 }, /* @__PURE__ */ window.React.createElement("b", null, row.latency?.p99 != null ? `${row.latency.p99}ms` : "—"), /* @__PURE__ */ window.React.createElement("s", null, row.latency?.budget != null ? `budget ${row.latency.budget}ms` : "")),
         /* @__PURE__ */ window.React.createElement("span", { className: "mds-adpt__n", "data-bad": queued && row.outbound?.oldest ? "true" : void 0 }, /* @__PURE__ */ window.React.createElement("b", null, row.outbound ? `${row.outbound.inFlight ?? 0} / ${queued}` : "—"), /* @__PURE__ */ window.React.createElement("s", null, row.outbound?.oldest ? `oldest ${row.outbound.oldest}` : row.outbound ? "in flight / queued" : "")),
         /* @__PURE__ */ window.React.createElement("span", { className: "mds-adpt__n", "data-bad": noSchedule ? "true" : void 0 }, /* @__PURE__ */ window.React.createElement("b", null, row.retry?.nextAt || (noSchedule ? "none" : "—")), /* @__PURE__ */ window.React.createElement("s", null, row.retry ? `attempt ${row.retry.attempt ?? "?"}${row.retry.of ? ` of ${row.retry.of}` : ""}${row.retry.backoff ? ` · ${row.retry.backoff}` : ""}` : ""))
-      ), open ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-adpt__detail", id: detailId, role: "group", "aria-label": `${row.name || row.id} — diagnostics` }, noSchedule ? /* @__PURE__ */ window.React.createElement("p", { className: "mds-adpt__flag" }, "Retrying with no next attempt — this adapter is suspended in fact. Resume it or state the schedule.") : null, row.versionStale ? /* @__PURE__ */ window.React.createElement("p", { className: "mds-adpt__stale" }, "Row version ", row.version, " has moved server-side — mutating controls are disabled until it is refetched.") : null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-adpt__block" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-adpt__blabel" }, "Posture"), /* @__PURE__ */ window.React.createElement("p", { className: "mds-adpt__says" }, row.statement || p.says), /* @__PURE__ */ window.React.createElement("dl", { className: "mds-adpt__kv" }, row.venue ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, /* @__PURE__ */ window.React.createElement("dt", null, "Venue"), /* @__PURE__ */ window.React.createElement("dd", null, row.venue, row.venueStatus ? ` · ${row.venueStatus}` : "")) : null, row.environment ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, /* @__PURE__ */ window.React.createElement("dt", null, "Environment"), /* @__PURE__ */ window.React.createElement("dd", null, row.environment)) : null, row.suspendedBy ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, /* @__PURE__ */ window.React.createElement("dt", null, "Suspended by"), /* @__PURE__ */ window.React.createElement("dd", null, row.suspendedBy, row.suspendedAt ? ` · ${row.suspendedAt}` : "")) : null, row.version != null ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, /* @__PURE__ */ window.React.createElement("dt", null, "Version"), /* @__PURE__ */ window.React.createElement("dd", null, row.version)) : null)), /* @__PURE__ */ window.React.createElement("div", { className: "mds-adpt__block" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-adpt__blabel" }, "Retry schedule"), row.retry ? /* @__PURE__ */ window.React.createElement("dl", { className: "mds-adpt__kv" }, /* @__PURE__ */ window.React.createElement("dt", null, "Attempt"), /* @__PURE__ */ window.React.createElement("dd", null, row.retry.attempt ?? "—", row.retry.of ? ` of ${row.retry.of}` : ""), /* @__PURE__ */ window.React.createElement("dt", null, "Backoff"), /* @__PURE__ */ window.React.createElement("dd", null, row.retry.backoff || "—"), /* @__PURE__ */ window.React.createElement("dt", null, "Next"), /* @__PURE__ */ window.React.createElement("dd", null, row.retry.nextAt || "none"), row.retry.lastAttemptAt ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, /* @__PURE__ */ window.React.createElement("dt", null, "Last"), /* @__PURE__ */ window.React.createElement("dd", null, row.retry.lastAttemptAt)) : null, row.retry.onExhaustion ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, /* @__PURE__ */ window.React.createElement("dt", null, "On exhaustion"), /* @__PURE__ */ window.React.createElement("dd", null, row.retry.onExhaustion)) : null) : /* @__PURE__ */ window.React.createElement("p", { className: "mds-adpt__says" }, "No schedule in force."), row.outbound ? /* @__PURE__ */ window.React.createElement("dl", { className: "mds-adpt__kv" }, /* @__PURE__ */ window.React.createElement("dt", null, "In flight"), /* @__PURE__ */ window.React.createElement("dd", null, row.outbound.inFlight ?? 0), /* @__PURE__ */ window.React.createElement("dt", null, "Queued"), /* @__PURE__ */ window.React.createElement("dd", null, queued, row.outbound.oldest ? ` · oldest ${row.outbound.oldest}` : ""), row.outbound.onResume ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, /* @__PURE__ */ window.React.createElement("dt", null, "On resume"), /* @__PURE__ */ window.React.createElement("dd", null, row.outbound.onResume)) : null) : null), /* @__PURE__ */ window.React.createElement("div", { className: "mds-adpt__block" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-adpt__blabel" }, "Last error"), row.lastError ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, /* @__PURE__ */ window.React.createElement("p", { className: "mds-adpt__err" }, row.lastError.code ? `${row.lastError.code} — ` : "", row.lastError.message), /* @__PURE__ */ window.React.createElement("span", { className: "mds-adpt__errmeta" }, row.lastError.at ? `${row.lastError.at}` : "", row.lastError.count ? ` · ${row.lastError.count} occurrence${row.lastError.count === 1 ? "" : "s"}` : "", row.lastError.correlationId ? ` · ${row.lastError.correlationId}` : "")) : /* @__PURE__ */ window.React.createElement("p", { className: "mds-adpt__says" }, "No error since the last successful round trip.")), /* @__PURE__ */ window.React.createElement("div", { className: "mds-adpt__block" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-adpt__blabel" }, "Request signing"), row.key ? /* @__PURE__ */ window.React.createElement("dl", { className: "mds-adpt__kv" }, /* @__PURE__ */ window.React.createElement("dt", null, "Key"), /* @__PURE__ */ window.React.createElement("dd", null, row.key.id), row.key.algorithm ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, /* @__PURE__ */ window.React.createElement("dt", null, "Alg"), /* @__PURE__ */ window.React.createElement("dd", null, row.key.algorithm)) : null, /* @__PURE__ */ window.React.createElement("dt", null, "Age"), /* @__PURE__ */ window.React.createElement("dd", null, row.key.age || "—"), /* @__PURE__ */ window.React.createElement("dt", null, row.key.overdue ? "Expired" : "Rotates"), /* @__PURE__ */ window.React.createElement("dd", { style: row.key.overdue ? { color: "var(--severity-blocked-fg,#A3382F)", fontWeight: 600 } : void 0 }, row.key.rotatesAt || "—", row.key.overdue ? " · overdue" : "")) : /* @__PURE__ */ window.React.createElement("p", { className: "mds-adpt__says" }, "Unsigned route."), onRetryNow || onSuspend || onResume || onRotateKey ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-adpt__acts" }, onRetryNow ? /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-adpt__btn", disabled: row.versionStale || row.posture === "unconfigured", onClick: () => onRetryNow(row) }, "Retry now") : null, row.posture === "suspended" ? onResume ? /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-adpt__btn", disabled: row.versionStale, onClick: () => onResume(row) }, "Resume") : null : onSuspend ? /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-adpt__btn", disabled: row.versionStale || row.posture === "unconfigured", onClick: () => onSuspend(row) }, "Suspend") : null, onRotateKey && row.key ? /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-adpt__btn", disabled: row.versionStale, onClick: () => onRotateKey(row) }, "Rotate key") : null) : null)) : null);
+      ), /* @__PURE__ */ window.React.createElement("span", { id: descriptionId, style: { position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)" } }, name), open ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-adpt__detail", id: detailId, role: "group", "aria-label": `${row.name || row.id} — diagnostics` }, noSchedule ? /* @__PURE__ */ window.React.createElement("p", { className: "mds-adpt__flag" }, "Retrying with no next attempt — this adapter is suspended in fact. Resume it or state the schedule.") : null, row.versionStale ? /* @__PURE__ */ window.React.createElement("p", { className: "mds-adpt__stale" }, "Row version ", row.version, " has moved server-side — mutating controls are disabled until it is refetched.") : null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-adpt__block" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-adpt__blabel" }, "Posture"), /* @__PURE__ */ window.React.createElement("p", { className: "mds-adpt__says" }, row.statement || p.says), /* @__PURE__ */ window.React.createElement("dl", { className: "mds-adpt__kv" }, row.venue ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, /* @__PURE__ */ window.React.createElement("dt", null, "Venue"), /* @__PURE__ */ window.React.createElement("dd", null, row.venue, row.venueStatus ? ` · ${row.venueStatus}` : "")) : null, row.environment ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, /* @__PURE__ */ window.React.createElement("dt", null, "Environment"), /* @__PURE__ */ window.React.createElement("dd", null, row.environment)) : null, row.suspendedBy ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, /* @__PURE__ */ window.React.createElement("dt", null, "Suspended by"), /* @__PURE__ */ window.React.createElement("dd", null, row.suspendedBy, row.suspendedAt ? ` · ${row.suspendedAt}` : "")) : null, row.version != null ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, /* @__PURE__ */ window.React.createElement("dt", null, "Version"), /* @__PURE__ */ window.React.createElement("dd", null, row.version)) : null)), /* @__PURE__ */ window.React.createElement("div", { className: "mds-adpt__block" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-adpt__blabel" }, "Retry schedule"), row.retry ? /* @__PURE__ */ window.React.createElement("dl", { className: "mds-adpt__kv" }, /* @__PURE__ */ window.React.createElement("dt", null, "Attempt"), /* @__PURE__ */ window.React.createElement("dd", null, row.retry.attempt ?? "—", row.retry.of ? ` of ${row.retry.of}` : ""), /* @__PURE__ */ window.React.createElement("dt", null, "Backoff"), /* @__PURE__ */ window.React.createElement("dd", null, row.retry.backoff || "—"), /* @__PURE__ */ window.React.createElement("dt", null, "Next"), /* @__PURE__ */ window.React.createElement("dd", null, row.retry.nextAt || "none"), row.retry.lastAttemptAt ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, /* @__PURE__ */ window.React.createElement("dt", null, "Last"), /* @__PURE__ */ window.React.createElement("dd", null, row.retry.lastAttemptAt)) : null, row.retry.onExhaustion ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, /* @__PURE__ */ window.React.createElement("dt", null, "On exhaustion"), /* @__PURE__ */ window.React.createElement("dd", null, row.retry.onExhaustion)) : null) : /* @__PURE__ */ window.React.createElement("p", { className: "mds-adpt__says" }, "No schedule in force."), row.outbound ? /* @__PURE__ */ window.React.createElement("dl", { className: "mds-adpt__kv" }, /* @__PURE__ */ window.React.createElement("dt", null, "In flight"), /* @__PURE__ */ window.React.createElement("dd", null, row.outbound.inFlight ?? 0), /* @__PURE__ */ window.React.createElement("dt", null, "Queued"), /* @__PURE__ */ window.React.createElement("dd", null, queued, row.outbound.oldest ? ` · oldest ${row.outbound.oldest}` : ""), row.outbound.onResume ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, /* @__PURE__ */ window.React.createElement("dt", null, "On resume"), /* @__PURE__ */ window.React.createElement("dd", null, row.outbound.onResume)) : null) : null), /* @__PURE__ */ window.React.createElement("div", { className: "mds-adpt__block" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-adpt__blabel" }, "Last error"), row.lastError ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, /* @__PURE__ */ window.React.createElement("p", { className: "mds-adpt__err" }, row.lastError.code ? `${row.lastError.code} — ` : "", row.lastError.message), /* @__PURE__ */ window.React.createElement("span", { className: "mds-adpt__errmeta" }, row.lastError.at ? `${row.lastError.at}` : "", row.lastError.count ? ` · ${row.lastError.count} occurrence${row.lastError.count === 1 ? "" : "s"}` : "", row.lastError.correlationId ? ` · ${row.lastError.correlationId}` : "")) : /* @__PURE__ */ window.React.createElement("p", { className: "mds-adpt__says" }, "No error since the last successful round trip.")), /* @__PURE__ */ window.React.createElement("div", { className: "mds-adpt__block" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-adpt__blabel" }, "Request signing"), row.key ? /* @__PURE__ */ window.React.createElement("dl", { className: "mds-adpt__kv" }, /* @__PURE__ */ window.React.createElement("dt", null, "Key"), /* @__PURE__ */ window.React.createElement("dd", null, row.key.id), row.key.algorithm ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, /* @__PURE__ */ window.React.createElement("dt", null, "Alg"), /* @__PURE__ */ window.React.createElement("dd", null, row.key.algorithm)) : null, /* @__PURE__ */ window.React.createElement("dt", null, "Age"), /* @__PURE__ */ window.React.createElement("dd", null, row.key.age || "—"), /* @__PURE__ */ window.React.createElement("dt", null, row.key.overdue ? "Expired" : "Rotates"), /* @__PURE__ */ window.React.createElement("dd", { style: row.key.overdue ? { color: "var(--severity-blocked-fg,#A3382F)", fontWeight: 600 } : void 0 }, row.key.rotatesAt || "—", row.key.overdue ? " · overdue" : "")) : /* @__PURE__ */ window.React.createElement("p", { className: "mds-adpt__says" }, "Unsigned route."), onRetryNow || onSuspend || onResume || onRotateKey ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-adpt__acts" }, onRetryNow ? /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-adpt__btn", disabled: row.versionStale || row.posture === "unconfigured", onClick: () => onRetryNow(row) }, "Retry now") : null, row.posture === "suspended" ? onResume ? /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-adpt__btn", disabled: row.versionStale, onClick: () => onResume(row) }, "Resume") : null : onSuspend ? /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-adpt__btn", disabled: row.versionStale || row.posture === "unconfigured", onClick: () => onSuspend(row) }, "Suspend") : null, onRotateKey && row.key ? /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-adpt__btn", disabled: row.versionStale, onClick: () => onRotateKey(row) }, "Rotate key") : null) : null)) : null);
     })) : /* @__PURE__ */ window.React.createElement("p", { className: "mds-adpt__empty" }, emptyStatement || "No outbound adapters configured for this environment."), footNote ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-adpt__foot" }, footNote) : null);
   }
   var AdapterHooks = { adapterPosture, adapterScheduleMissing };
@@ -20773,7 +21303,7 @@ select.mds-fb__ctl{appearance:auto;}
   function NoteForm({ current, onAdd, onCancel }) {
     const [text, setText] = react_default.useState("");
     const [life, setLife] = react_default.useState("follow");
-    const uid6 = react_default.useId();
+    const uid5 = react_default.useId();
     const ref = react_default.useRef(null);
     react_default.useEffect(() => {
       ref.current && ref.current.focus();
@@ -20781,7 +21311,7 @@ select.mds-fb__ctl{appearance:auto;}
     return /* @__PURE__ */ window.React.createElement("form", { className: "mds-ann__form", onSubmit: (e) => {
       e.preventDefault();
       if (text.trim()) onAdd({ text: text.trim(), lifecycle: life, version: current });
-    } }, /* @__PURE__ */ window.React.createElement("textarea", { ref, className: "mds-ann__ta", value: text, onChange: (e) => setText(e.target.value), placeholder: "What a reader of this figure should know", "aria-label": "Annotation text" }), /* @__PURE__ */ window.React.createElement("div", { className: "mds-ann__life", role: "radiogroup", "aria-label": "When the object changes" }, /* @__PURE__ */ window.React.createElement("label", null, /* @__PURE__ */ window.React.createElement("input", { type: "radio", name: `${uid6}-life`, checked: life === "follow", onChange: () => setLife("follow") }), /* @__PURE__ */ window.React.createElement("span", null, /* @__PURE__ */ window.React.createElement("b", null, "Follow the object"), "Marked stale when v", current, " is superseded.")), /* @__PURE__ */ window.React.createElement("label", null, /* @__PURE__ */ window.React.createElement("input", { type: "radio", name: `${uid6}-life`, checked: life === "pin", onChange: () => setLife("pin") }), /* @__PURE__ */ window.React.createElement("span", null, /* @__PURE__ */ window.React.createElement("b", null, "Pin to v", current), "Stays as written; later versions show the pin."))), /* @__PURE__ */ window.React.createElement("div", { className: "mds-ann__row" }, /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-ann__btn", onClick: onCancel }, "Cancel"), /* @__PURE__ */ window.React.createElement("button", { type: "submit", className: "mds-ann__btn mds-ann__btn--primary", disabled: !text.trim() }, "Add note")));
+    } }, /* @__PURE__ */ window.React.createElement("textarea", { ref, className: "mds-ann__ta", value: text, onChange: (e) => setText(e.target.value), placeholder: "What a reader of this figure should know", "aria-label": "Annotation text" }), /* @__PURE__ */ window.React.createElement("div", { className: "mds-ann__life", role: "radiogroup", "aria-label": "When the object changes" }, /* @__PURE__ */ window.React.createElement("label", null, /* @__PURE__ */ window.React.createElement("input", { type: "radio", name: `${uid5}-life`, checked: life === "follow", onChange: () => setLife("follow") }), /* @__PURE__ */ window.React.createElement("span", null, /* @__PURE__ */ window.React.createElement("b", null, "Follow the object"), "Marked stale when v", current, " is superseded.")), /* @__PURE__ */ window.React.createElement("label", null, /* @__PURE__ */ window.React.createElement("input", { type: "radio", name: `${uid5}-life`, checked: life === "pin", onChange: () => setLife("pin") }), /* @__PURE__ */ window.React.createElement("span", null, /* @__PURE__ */ window.React.createElement("b", null, "Pin to v", current), "Stays as written; later versions show the pin."))), /* @__PURE__ */ window.React.createElement("div", { className: "mds-ann__row" }, /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-ann__btn", onClick: onCancel }, "Cancel"), /* @__PURE__ */ window.React.createElement("button", { type: "submit", className: "mds-ann__btn mds-ann__btn--primary", disabled: !text.trim() }, "Add note")));
   }
   function AnnotationAnchor({ anchor, block = false, popover = "right", readOnly = false, className = "", children, ...rest }) {
     inject118();
@@ -20789,10 +21319,15 @@ select.mds-fb__ctl{appearance:auto;}
     const [open, setOpen] = react_default.useState(false);
     const [adding, setAdding] = react_default.useState(false);
     const root = react_default.useRef(null);
-    const mine = layer2.notes.filter((n) => n.anchor && n.anchor.ref === anchor.ref);
+    const validAnchor = anchor && typeof anchor.ref === "string" && anchor.ref.trim() !== "";
+    const mine = validAnchor ? layer2.notes.filter((n) => n.anchor && n.anchor.ref === anchor.ref) : [];
+    react_default.useEffect(() => {
+      setOpen(false);
+      setAdding(false);
+    }, [anchor?.ref, layer2.objectId]);
     const stale = mine.some((n) => n.stale);
     react_default.useEffect(() => {
-      if (!open) return;
+      if (!open || !validAnchor) return;
       const off = (e) => {
         if (root.current && !root.current.contains(e.target)) {
           setOpen(false);
@@ -20801,7 +21336,8 @@ select.mds-fb__ctl{appearance:auto;}
       };
       document.addEventListener("pointerdown", off);
       return () => document.removeEventListener("pointerdown", off);
-    }, [open]);
+    }, [open, validAnchor, anchor?.ref]);
+    if (!validAnchor) return /* @__PURE__ */ window.React.createElement("span", { className: `mds-ann ${block ? "mds-ann--block" : ""} ${className}`, title: "Annotations unavailable until an anchor is supplied", ...rest }, children);
     const label2 = mine.length ? `${mine.length} annotation${mine.length === 1 ? "" : "s"}${stale ? ", some stale" : ""} on ${anchor.label || anchor.ref}` : `Annotate ${anchor.label || anchor.ref}`;
     return /* @__PURE__ */ window.React.createElement("span", { ref: root, className: `mds-ann ${block ? "mds-ann--block" : ""} ${className}`, onKeyDown: (e) => {
       if (e.key === "Escape" && open) {
@@ -20987,7 +21523,7 @@ select.mds-fb__ctl{appearance:auto;}
     ].filter(Boolean);
     const ready = reasons.length === 0;
     const bind2 = [["Object", objectId], ["Version", version], ["Period", period], ["Snapshot", snapshot2], ["Signatory role", signatoryRole || role]].filter(([, v]) => v !== void 0 && v !== null && v !== "");
-    return /* @__PURE__ */ window.React.createElement("section", { className: `mds-att${className ? " " + className : ""}`, ...rest }, /* @__PURE__ */ window.React.createElement("header", { className: "mds-att__head" }, /* @__PURE__ */ window.React.createElement("div", null, /* @__PURE__ */ window.React.createElement("h3", null, title), scope || period ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-att__scope" }, [scope, period].filter(Boolean).join(" · ")) : null), /* @__PURE__ */ window.React.createElement("div", { className: "mds-att__tags" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-att__version" }, "Version ", version ?? "—"), /* @__PURE__ */ window.React.createElement("span", { className: "mds-att__state", "data-tone": meta5.tone }, meta5.label))), supersededBy ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-att__banner mds-att__banner--void" }, "Superseded by ", supersededBy, ". This attestation no longer certifies the current record.") : null, expiredReason ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-att__banner mds-att__banner--void" }, expiredReason) : null, voidFindings.length ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-att__banner mds-att__banner--void" }, "The reviewed snapshot changed after review — ", voidFindings.map(sayFinding).join(" · "), ". The pending signature is void: re-read the record and capture a new snapshot before signing.") : null, !voidFindings.length && reviewFindings.length ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-att__banner" }, "Worth re-reading before signing — ", reviewFindings.map(sayFinding).join(" · "), ".") : null, gates.length ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-att__sub" }, "Readiness"), /* @__PURE__ */ window.React.createElement("div", { className: "mds-att__gates" }, gates.map((g, i) => /* @__PURE__ */ window.React.createElement("div", { className: "mds-att__gate", "data-status": g.status, "data-blocking": g.blocking || g.status === "blocked" ? "true" : void 0, key: g.id || g.label || i }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-att__mark", "aria-hidden": "true" }, glyph4(g.status)), /* @__PURE__ */ window.React.createElement("span", null, g.label), /* @__PURE__ */ window.React.createElement("span", { className: "mds-att__detail" }, g.detail || g.status))))) : null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-att__evidence", "data-complete": evidenceDeclared && evidenceComplete ? "true" : "false" }, /* @__PURE__ */ window.React.createElement("span", null, "Evidence completeness", evidence && evidence.label ? ` · ${evidence.label}` : ""), /* @__PURE__ */ window.React.createElement("b", null, evidenceDeclared ? `${evidence.attached} of ${evidence.required} attached` : "Not declared")), signatories.length ? /* @__PURE__ */ window.React.createElement("dl", { className: "mds-att__roles" }, signatories.map((s, i) => /* @__PURE__ */ window.React.createElement("div", { className: "mds-att__role-row", key: s.role || i }, /* @__PURE__ */ window.React.createElement("dt", null, s.role), /* @__PURE__ */ window.React.createElement("dd", null, s.name || "Unassigned"), /* @__PURE__ */ window.React.createElement("small", null, s.at || s.status || "Pending")))) : null, bind2.length ? /* @__PURE__ */ window.React.createElement("dl", { className: "mds-att__bind" }, bind2.map(([k, v]) => /* @__PURE__ */ window.React.createElement("div", { key: k }, /* @__PURE__ */ window.React.createElement("dt", null, k), /* @__PURE__ */ window.React.createElement("dd", null, v)))) : null, certification || requireComment ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-att__cert" }, certification ? /* @__PURE__ */ window.React.createElement("blockquote", null, certification) : null, requireComment ? /* @__PURE__ */ window.React.createElement("textarea", { value: comment, onChange: (e) => setComment(e.target.value), "aria-label": "Attestation rationale", placeholder: "Required rationale or certification note" }) : null) : null, !ready && (!terminal || voidFindings.length) ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-att__block" }, "Cannot attest — ", reasons.join(" · "), ".") : null, history.length ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-att__sub" }, "Approval history"), /* @__PURE__ */ window.React.createElement("div", { className: "mds-att__history" }, history.map((h, i) => /* @__PURE__ */ window.React.createElement("div", { className: "mds-att__event", key: h.id || i }, /* @__PURE__ */ window.React.createElement("span", null, h.at), /* @__PURE__ */ window.React.createElement("span", null, /* @__PURE__ */ window.React.createElement("b", null, h.actor), " ", h.action, h.note ? ` — ${h.note}` : ""))))) : null, /* @__PURE__ */ window.React.createElement("footer", { className: "mds-att__foot" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-att__role" }, "Required role: ", signatoryRole || role || "Authorized reviewer"), /* @__PURE__ */ window.React.createElement("span", { className: "spacer" }), onReopen ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "ghost", onClick: onReopen }, "Reopen") : null, onReject ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "danger", onClick: () => onReject(comment), disabled: terminal }, "Reject") : null, onRequestChanges ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "ghost", onClick: () => onRequestChanges(comment), disabled: terminal }, "Request changes") : null, onApprove ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", disabled: !ready, onClick: () => onApprove(comment) }, "Approve and attest") : null));
+    return /* @__PURE__ */ window.React.createElement("section", { className: `mds-att${className ? " " + className : ""}`, ...rest }, /* @__PURE__ */ window.React.createElement("header", { className: "mds-att__head" }, /* @__PURE__ */ window.React.createElement("div", null, /* @__PURE__ */ window.React.createElement("h3", null, title), scope || period ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-att__scope" }, [scope, period].filter(Boolean).join(" · ")) : null), /* @__PURE__ */ window.React.createElement("div", { className: "mds-att__tags" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-att__version" }, "Version ", version ?? "—"), /* @__PURE__ */ window.React.createElement("span", { className: "mds-att__state", "data-tone": meta5.tone }, meta5.label))), supersededBy ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-att__banner mds-att__banner--void" }, "Superseded by ", supersededBy, ". This attestation no longer certifies the current record.") : null, expiredReason ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-att__banner mds-att__banner--void" }, expiredReason) : null, voidFindings.length ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-att__banner mds-att__banner--void" }, "The reviewed snapshot changed after review — ", voidFindings.map(sayFinding).join(" · "), ". The pending signature is void: re-read the record and capture a new snapshot before signing.") : null, !voidFindings.length && reviewFindings.length ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-att__banner" }, "Worth re-reading before signing — ", reviewFindings.map(sayFinding).join(" · "), ".") : null, gates.length ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-att__sub" }, "Readiness"), /* @__PURE__ */ window.React.createElement("div", { className: "mds-att__gates" }, gates.map((g, i) => /* @__PURE__ */ window.React.createElement("div", { className: "mds-att__gate", "data-status": g.status, "data-blocking": g.blocking || g.status === "blocked" ? "true" : void 0, key: g.id || g.label || i }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-att__mark", "aria-hidden": "true" }, glyph4(g.status)), /* @__PURE__ */ window.React.createElement("span", null, g.label), /* @__PURE__ */ window.React.createElement("span", { className: "mds-att__detail" }, g.detail || g.status))))) : null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-att__evidence", "data-complete": evidenceDeclared && evidenceComplete ? "true" : "false" }, /* @__PURE__ */ window.React.createElement("span", null, "Evidence completeness", evidence && evidence.label ? ` · ${evidence.label}` : ""), /* @__PURE__ */ window.React.createElement("b", null, evidenceDeclared ? `${evidence.attached} of ${evidence.required} attached` : "Not declared")), signatories.length ? /* @__PURE__ */ window.React.createElement("dl", { className: "mds-att__roles" }, signatories.map((s, i) => /* @__PURE__ */ window.React.createElement("div", { className: "mds-att__role-row", key: s.role || i }, /* @__PURE__ */ window.React.createElement("dt", null, s.role), /* @__PURE__ */ window.React.createElement("dd", null, s.name || "Unassigned"), /* @__PURE__ */ window.React.createElement("dd", null, /* @__PURE__ */ window.React.createElement("small", null, s.at || s.status || "Pending"))))) : null, bind2.length ? /* @__PURE__ */ window.React.createElement("dl", { className: "mds-att__bind" }, bind2.map(([k, v]) => /* @__PURE__ */ window.React.createElement("div", { key: k }, /* @__PURE__ */ window.React.createElement("dt", null, k), /* @__PURE__ */ window.React.createElement("dd", null, v)))) : null, certification || requireComment ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-att__cert" }, certification ? /* @__PURE__ */ window.React.createElement("blockquote", null, certification) : null, requireComment ? /* @__PURE__ */ window.React.createElement("textarea", { value: comment, onChange: (e) => setComment(e.target.value), "aria-label": "Attestation rationale", placeholder: "Required rationale or certification note" }) : null) : null, !ready && (!terminal || voidFindings.length) ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-att__block" }, "Cannot attest — ", reasons.join(" · "), ".") : null, history.length ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-att__sub" }, "Approval history"), /* @__PURE__ */ window.React.createElement("div", { className: "mds-att__history" }, history.map((h, i) => /* @__PURE__ */ window.React.createElement("div", { className: "mds-att__event", key: h.id || i }, /* @__PURE__ */ window.React.createElement("span", null, h.at), /* @__PURE__ */ window.React.createElement("span", null, /* @__PURE__ */ window.React.createElement("b", null, h.actor), " ", h.action, h.note ? ` — ${h.note}` : ""))))) : null, /* @__PURE__ */ window.React.createElement("footer", { className: "mds-att__foot" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-att__role" }, "Required role: ", signatoryRole || role || "Authorized reviewer"), /* @__PURE__ */ window.React.createElement("span", { className: "spacer" }), onReopen ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "ghost", onClick: onReopen }, "Reopen") : null, onReject ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "danger", onClick: () => onReject(comment), disabled: terminal }, "Reject") : null, onRequestChanges ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "ghost", onClick: () => onRequestChanges(comment), disabled: terminal }, "Request changes") : null, onApprove ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", disabled: !ready, onClick: () => onApprove(comment) }, "Approve and attest") : null));
   }
 
   // components/operations/SlaChip.jsx
@@ -21104,19 +21640,22 @@ select.mds-fb__ctl{appearance:auto;}
   }) {
     inject121();
     const listRef = useRef(null);
-    const move = (dir) => {
-      const idx = items.findIndex((it) => it.id === selectedId);
-      const next = Math.min(items.length - 1, Math.max(0, idx < 0 ? 0 : idx + dir));
-      const item = items[next];
-      if (item && onSelect) onSelect(item.id, item);
-    };
-    const onKeyDown = (e) => {
-      if (e.key === "ArrowDown") {
-        e.preventDefault();
-        move(1);
-      } else if (e.key === "ArrowUp") {
-        e.preventDefault();
-        move(-1);
+    const selectedIndex = items.findIndex((item) => item.id === selectedId);
+    const activeIndex = selectedIndex < 0 ? 0 : selectedIndex;
+    const onKeyDown = (event) => {
+      let index;
+      const focused = Array.from(listRef.current?.querySelectorAll('[role="option"]') || []).indexOf(document.activeElement);
+      const current = focused < 0 ? activeIndex : focused;
+      if (event.key === "ArrowDown") index = Math.min(items.length - 1, current + 1);
+      else if (event.key === "ArrowUp") index = Math.max(0, current - 1);
+      else if (event.key === "Home") index = 0;
+      else if (event.key === "End") index = items.length - 1;
+      else return;
+      event.preventDefault();
+      const item = items[index];
+      if (item) {
+        onSelect?.(item.id, item);
+        listRef.current?.querySelectorAll('[role="option"]')[index]?.focus();
       }
     };
     if (!items.length) {
@@ -21126,25 +21665,26 @@ select.mds-fb__ctl{appearance:auto;}
       "div",
       {
         className: `mds-caseq${className ? " " + className : ""}`,
-        role: "listbox",
+        role: onSelect ? "listbox" : "list",
         "aria-label": "Case queue",
         ref: listRef,
-        onKeyDown,
+        onKeyDown: onSelect ? onKeyDown : void 0,
         ...rest
       },
-      items.map((it) => {
+      items.map((it, index) => {
         const selected = it.id === selectedId;
         const subParts = [it.category, it.reason, it.openedAtUtc && `opened ${it.openedAtUtc}`].filter(Boolean);
+        const Item2 = onSelect ? "button" : "div";
         return /* @__PURE__ */ window.React.createElement(
-          "button",
+          Item2,
           {
             key: it.id,
-            type: "button",
-            role: "option",
-            "aria-selected": selected,
+            type: onSelect ? "button" : void 0,
+            role: onSelect ? "option" : "listitem",
+            "aria-selected": onSelect ? selected : void 0,
             className: "mds-caseq__row",
-            tabIndex: selected || !selectedId && it === items[0] ? 0 : -1,
-            onClick: () => onSelect && onSelect(it.id, it)
+            tabIndex: onSelect ? index === activeIndex ? 0 : -1 : void 0,
+            onClick: onSelect ? () => onSelect(it.id, it) : void 0
           },
           /* @__PURE__ */ window.React.createElement("span", { className: `mds-caseq__rail ${railClass(it.priority)}`, "aria-hidden": "true" }),
           /* @__PURE__ */ window.React.createElement("span", { className: "mds-caseq__id" }, it.id),
@@ -21199,7 +21739,7 @@ select.mds-fb__ctl{appearance:auto;}
     const issues = (validate ? validate(current, changes) : []) || [];
     const errors = issues.filter((i) => i.severity === "error");
     const status = !changes.length ? "clean" : errors.length ? "invalid" : issues.length ? "warning" : "ready";
-    const api = react_default.useMemo(() => ({ id, version, original, draft: current, setDraft: set, setField, discard, changes, issues, errors, reasons, setReason, status, dirty: changes.length > 0 }), [id, version, original, current, changes.length, issues.length, reasons]);
+    const api = { id, version, original, draft: current, setDraft: set, setField, discard, changes, issues, errors, reasons, setReason, status, dirty: changes.length > 0 };
     return /* @__PURE__ */ window.React.createElement(Context.Provider, { value: api }, children);
   }
   function useChangeSet() {
@@ -21269,6 +21809,7 @@ select.mds-fb__ctl{appearance:auto;}
     document.head.appendChild(el);
   }
   function ChangeSetDiff({ changes = [], labels = {}, fields = {}, issues = [], reasons = {}, onReason, requireReason = false, grouped = true }) {
+    const uid5 = react_default.useId();
     inject122();
     if (!changes.length) return /* @__PURE__ */ window.React.createElement("div", { className: "mds-cs__diff" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-cs__empty" }, "No staged changes. Edits are held here for review before they touch the record."));
     const nameOf = (c) => c.label || fields[c.key]?.label || labels[c.key] || c.key;
@@ -21281,7 +21822,7 @@ select.mds-fb__ctl{appearance:auto;}
       const rowIssues = issues.filter((i) => i.key === c.key);
       const impact = c.impact || fields[c.key]?.impact;
       const reason = reasons[c.key] ?? c.reason;
-      return /* @__PURE__ */ window.React.createElement("div", { className: "mds-cs__row", key: c.key }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-cs__label" }, nameOf(c)), /* @__PURE__ */ window.React.createElement("span", { className: "mds-cs__before" }, show(c.before)), /* @__PURE__ */ window.React.createElement("span", { "aria-hidden": "true" }, "→"), /* @__PURE__ */ window.React.createElement("span", { className: "mds-cs__after" }, show(c.after)), impact || rowIssues.length || requireReason ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-cs__meta" }, impact ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-cs__impact" }, impact) : null, rowIssues.map((i, n) => /* @__PURE__ */ window.React.createElement("div", { className: "mds-cs__issue", "data-sev": i.severity || "warning", key: n }, /* @__PURE__ */ window.React.createElement("span", { "aria-hidden": "true" }, i.severity === "error" ? "▲" : i.severity === "info" ? "·" : "◇"), i.message)), requireReason ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-cs__reason" }, /* @__PURE__ */ window.React.createElement("label", { htmlFor: `mds-cs-reason-${c.key}` }, "Reason for change"), /* @__PURE__ */ window.React.createElement("input", { id: `mds-cs-reason-${c.key}`, value: reason || "", onChange: (e) => onReason?.(c.key, e.target.value), placeholder: "Why this value changes" })) : null) : null);
+      return /* @__PURE__ */ window.React.createElement("div", { className: "mds-cs__row", key: c.key }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-cs__label" }, nameOf(c)), /* @__PURE__ */ window.React.createElement("span", { className: "mds-cs__before" }, show(c.before)), /* @__PURE__ */ window.React.createElement("span", { "aria-hidden": "true" }, "→"), /* @__PURE__ */ window.React.createElement("span", { className: "mds-cs__after" }, show(c.after)), impact || rowIssues.length || requireReason ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-cs__meta" }, impact ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-cs__impact" }, impact) : null, rowIssues.map((i, n) => /* @__PURE__ */ window.React.createElement("div", { className: "mds-cs__issue", "data-sev": i.severity || "warning", key: n }, /* @__PURE__ */ window.React.createElement("span", { "aria-hidden": "true" }, i.severity === "error" ? "▲" : i.severity === "info" ? "·" : "◇"), i.message)), requireReason ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-cs__reason" }, /* @__PURE__ */ window.React.createElement("label", { htmlFor: `${uid5}-reason-${c.key}` }, "Reason for change"), /* @__PURE__ */ window.React.createElement("input", { id: `${uid5}-reason-${c.key}`, value: reason || "", readOnly: !onReason, onChange: (e) => onReason?.(c.key, e.target.value), placeholder: "Why this value changes" })) : null) : null);
     }))));
   }
   function ChangeReviewBar({ changes = [], warnings = [], errors = [], status, onDiscard, onReviewImpact, onSave, onSubmit, saveLabel = "Save changes", submitLabel = "Submit for review", disabled }) {
@@ -21291,7 +21832,7 @@ select.mds-fb__ctl{appearance:auto;}
     if (errors.length) parts.push(`${errors.length} error${errors.length === 1 ? "" : "s"}`);
     if (warnings.length) parts.push(`${warnings.length} warning${warnings.length === 1 ? "" : "s"}`);
     if (status && STATUS4[status]) parts.push(STATUS4[status].label);
-    return /* @__PURE__ */ window.React.createElement("div", { className: "mds-cs__bar" }, /* @__PURE__ */ window.React.createElement("span", null, parts.join(" · ")), /* @__PURE__ */ window.React.createElement("span", { className: "spacer" }), onDiscard ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "ghost", onClick: onDiscard, disabled: !n }, "Discard") : null, onReviewImpact ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "ghost", onClick: onReviewImpact, disabled: !n }, "Review impact") : null, onSubmit ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "ghost", onClick: onSubmit, disabled: !n || !!errors.length }, submitLabel) : null, onSave ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", onClick: onSave, disabled: disabled || !n || !!errors.length }, saveLabel) : null);
+    return /* @__PURE__ */ window.React.createElement("div", { className: "mds-cs__bar" }, /* @__PURE__ */ window.React.createElement("span", null, parts.join(" · ")), /* @__PURE__ */ window.React.createElement("span", { className: "spacer" }), onDiscard ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "ghost", onClick: onDiscard, disabled: !n }, "Discard") : null, onReviewImpact ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "ghost", onClick: onReviewImpact, disabled: !n }, "Review impact") : null, onSubmit ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "ghost", onClick: onSubmit, disabled: disabled || !n || !!errors.length }, submitLabel) : null, onSave ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", onClick: onSave, disabled: disabled || !n || !!errors.length }, saveLabel) : null);
   }
   function normalizeImpact(impact) {
     if (!impact) return [];
@@ -21332,6 +21873,8 @@ select.mds-fb__ctl{appearance:auto;}
     const errors = all.filter((i) => i.severity === "error");
     const warns = [...warnings, ...all.filter((i) => i.severity === "warning" && !i.key).map((i) => i.message)];
     const status = statusProp || cs.status;
+    const unavailable4 = ["validating", "committed", "superseded", "conflicted"].includes(status);
+    const missingReasons = requireReason && cs.changes.some((change) => !(cs.reasons[change.key] || change.reason || "").trim());
     const tone = STATUS4[status]?.tone || "neutral";
     const impacts = normalizeImpact(impact);
     const [confirming, setConfirming] = react_default.useState(false);
@@ -21351,6 +21894,7 @@ select.mds-fb__ctl{appearance:auto;}
         onReviewImpact,
         onSubmit: onSubmit ? () => onSubmit(cs.draft, cs.changes) : void 0,
         onSave: onSave ? () => onSave(cs.draft, cs.changes) : void 0,
+        disabled: unavailable4 || missingReasons,
         saveLabel,
         submitLabel
       }
@@ -21428,7 +21972,7 @@ select.mds-fb__ctl{appearance:auto;}
           },
           /* @__PURE__ */ window.React.createElement("span", { "aria-hidden": "true", style: { fontSize: 9, color: `var(--cond-${m2.key}-fg)` } }, m2.glyph),
           s.label,
-          s.detail ? /* @__PURE__ */ window.React.createElement("span", { style: { fontFamily: "var(--font-data)", fontSize: 10, color: "var(--text-muted)" } }, s.detail) : null
+          s.detail ? /* @__PURE__ */ window.React.createElement("span", { style: { fontFamily: "var(--font-data)", fontSize: 10, color: "var(--text-primary)" } }, s.detail) : null
         );
       })) : null, children) : null
     );
@@ -21551,9 +22095,9 @@ ${perKey}`;
     el.textContent = css;
     document.head.appendChild(el);
   }
-  function DataCondition({ condition, detail, chip = false, label: label2, showGlyph = true, className = "", ...rest }) {
+  function DataCondition({ condition: condition2, detail, chip = false, label: label2, showGlyph = true, className = "", ...rest }) {
     inject125();
-    const m2 = conditionMeta(condition);
+    const m2 = conditionMeta(condition2);
     return /* @__PURE__ */ window.React.createElement(
       "span",
       {
@@ -21566,9 +22110,9 @@ ${perKey}`;
       detail ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-cond__detail" }, detail) : null
     );
   }
-  function DataConditionValue({ value, condition, detail, align, className = "", ...rest }) {
+  function DataConditionValue({ value, condition: condition2, detail, align, className = "", ...rest }) {
     inject125();
-    const m2 = conditionMeta(condition);
+    const m2 = conditionMeta(condition2);
     const text = formatConditioned(value, m2.key, detail);
     const style = align === "right" ? { justifyContent: "flex-end", width: "100%" } : void 0;
     return /* @__PURE__ */ window.React.createElement(
@@ -21639,6 +22183,7 @@ ${perKey}`;
 .mds-dfstep[data-state="blocked"] .mds-dfstep__n{color:var(--red-dim,#873832)}
 .mds-dfstep__lbl{font:600 12px/1.4 var(--font-body)}
 .mds-dfstep__meta{display:block;font:10px/1.5 var(--font-data,monospace);color:var(--text-muted,#606870)}
+.mds-dfstep[data-current="true"] .mds-dfstep__meta{color:var(--text-primary,#20252B)}
 .mds-dfstage{display:grid;gap:10px}
 .mds-dfstage__hd{display:flex;align-items:baseline;justify-content:space-between;gap:12px;border-bottom:1px solid var(--border,#D2CDC3);padding-bottom:6px}
 .mds-dfstage__ttl{font:600 14px/1.3 var(--font-body)}
@@ -22085,15 +22630,15 @@ button.mds-trace__body:focus-visible{outline:2px solid var(--border-focus);outli
     eyebrow = "Selected observation",
     value,
     caption,
-    condition,
+    condition: condition2,
     emptyMessage = "Select a datum to inspect its evidence.",
     children,
     className = "",
     ...rest
   }) {
     inject130();
-    const m2 = condition ? conditionMeta(condition) : null;
-    return /* @__PURE__ */ window.React.createElement("aside", { className: `mds-insp${className ? " " + className : ""}`, "aria-label": "Evidence inspector", ...rest }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-insp__head" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-insp__eyebrow" }, eyebrow), value ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-insp__sel" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-insp__val" }, value), caption ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-insp__cap" }, caption) : null, m2 ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-insp__cap", style: { color: `var(--cond-${m2.key}-fg)` } }, m2.glyph, " ", m2.label) : null) : /* @__PURE__ */ window.React.createElement("div", { className: "mds-insp__empty" }, emptyMessage)), /* @__PURE__ */ window.React.createElement("div", { className: "mds-insp__body" }, children));
+    const m2 = condition2 ? conditionMeta(condition2) : null;
+    return /* @__PURE__ */ window.React.createElement("aside", { className: `mds-insp${className ? " " + className : ""}`, "aria-label": "Evidence inspector", ...rest }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-insp__head" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-insp__eyebrow" }, eyebrow), value !== null && value !== void 0 && value !== "" || m2?.key === "restricted" ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-insp__sel" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-insp__val" }, m2?.key === "restricted" ? "Restricted" : m2?.key === "missing" ? "Missing" : m2?.key === "na" ? "Not applicable" : value), caption && m2?.key !== "restricted" ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-insp__cap" }, caption) : null, m2 ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-insp__cap", style: { color: "var(--text-secondary)" } }, m2.glyph, " ", m2.label) : null) : /* @__PURE__ */ window.React.createElement("div", { className: "mds-insp__empty" }, emptyMessage)), /* @__PURE__ */ window.React.createElement("div", { className: "mds-insp__body" }, children));
   }
   function EvidenceSection({ title, action, onAction, fields, note, children, className = "", ...rest }) {
     inject130();
@@ -22119,14 +22664,7 @@ button.mds-trace__body:focus-visible{outline:2px solid var(--border-focus);outli
   }
 
   // components/operations/EvidencePreview.jsx
-  var CONDITION4 = { confirmed: { label: "Confirmed source", glyph: "●" }, provisional: { label: "Provisional", glyph: "◐" }, estimated: { label: "Estimated", glyph: "○" }, stale: { label: "Stale", glyph: "◔" }, overridden: { label: "Overridden", glyph: "◆" }, missing: { label: "Missing", glyph: "■" }, na: { label: "Not applicable", glyph: "—" }, pending: { label: "Pending", glyph: "◇" }, exception: { label: "Exception", glyph: "▲" }, reconciled: { label: "Reconciled", glyph: "✓" } };
-  var ALIAS6 = { complete: "confirmed", verified: "confirmed", ok: "confirmed", matched: "reconciled", certified: "reconciled", preliminary: "provisional", unaudited: "provisional", delayed: "stale", aged: "stale", override: "overridden", manual: "overridden", absent: "missing", unavailable: "missing", "not applicable": "na", "n/a": "na", awaiting: "pending", queued: "pending", failed: "exception" };
-  function meta4(v) {
-    if (!v) return null;
-    const k = String(v).trim().toLowerCase().replace(/[_-]+/g, " ");
-    const key = CONDITION4[k] ? k : ALIAS6[k] || ALIAS6[k.replace(/\s+/g, "")];
-    return key ? { key, ...CONDITION4[key] } : null;
-  }
+  var meta4 = (value) => value ? conditionMeta(value) : null;
   var TYPES3 = { statement: "Statement", confirmation: "Trade confirmation", extract: "GL extract", custodian: "Custodian file", pricing: "Pricing report", model: "Model output", policy: "Accounting policy", approval: "Approval record", correspondence: "Correspondence", snapshot: "Source snapshot", document: "Document" };
   var injected131 = false;
   function inject131() {
@@ -22185,7 +22723,7 @@ button.mds-trace__body:focus-visible{outline:2px solid var(--border-focus);outli
     extractionStatus,
     completeness,
     confidence,
-    condition,
+    condition: condition2,
     superseded,
     supersededBy,
     redacted,
@@ -22206,9 +22744,10 @@ button.mds-trace__body:focus-visible{outline:2px solid var(--border-focus);outli
     ...rest
   }) {
     inject131();
-    const c = meta4(condition);
+    const c = meta4(condition2);
     const typeLabel2 = type ? TYPES3[String(type).toLowerCase()] || type : null;
-    const canOpen = permissions.canOpen !== false;
+    const withheld = c?.key === "restricted";
+    const canOpen = permissions.canOpen !== false && !withheld;
     const canExport = permissions.canExport !== false;
     const extractText = extraction || extractionStatus;
     const equivalent = textEquivalent || (image ? imageAlt : null);
@@ -22218,7 +22757,7 @@ button.mds-trace__body:focus-visible{outline:2px solid var(--border-focus);outli
       restriction && { tone: "stop", text: restriction },
       !canExport && { tone: "stop", text: "Export restricted" }
     ].filter(Boolean);
-    return /* @__PURE__ */ window.React.createElement("section", { className: `mds-evp${superseded ? " mds-evp--superseded" : ""}${className ? " " + className : ""}`, "data-condition": c?.key || void 0, ...rest }, /* @__PURE__ */ window.React.createElement("header", { className: "mds-evp__head" }, /* @__PURE__ */ window.React.createElement("div", null, /* @__PURE__ */ window.React.createElement("h3", null, title), /* @__PURE__ */ window.React.createElement("div", { className: "mds-evp__source" }, typeLabel2 ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-evp__type" }, typeLabel2) : null, [source, sourceSystem, documentId].filter(Boolean).join(" · "))), /* @__PURE__ */ window.React.createElement("div", { className: "mds-evp__loc" }, page ? `Page ${page}` : null, page && section ? /* @__PURE__ */ window.React.createElement("br", null) : null, section)), flags.length ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-evp__flags" }, flags.map((f, i) => /* @__PURE__ */ window.React.createElement("span", { key: i, className: `mds-evp__flag mds-evp__flag--${f.tone}` }, f.text))) : null, image ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-evp__doc mds-evp__doc--image" }, /* @__PURE__ */ window.React.createElement("img", { src: image, alt: imageAlt || `Evidence excerpt from ${title}` })) : /* @__PURE__ */ window.React.createElement("div", { className: "mds-evp__doc" }, before, highlight3 ? /* @__PURE__ */ window.React.createElement("mark", null, highlight3) : null, after), equivalent ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-evp__equiv" }, /* @__PURE__ */ window.React.createElement("h4", null, "Text equivalent"), /* @__PURE__ */ window.React.createElement("p", null, equivalent)) : null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-evp__meta" }, /* @__PURE__ */ window.React.createElement("div", null, /* @__PURE__ */ window.React.createElement("span", null, statementDate ? "Statement date" : "As of"), /* @__PURE__ */ window.React.createElement("strong", null, statementDate || asOf || "—")), /* @__PURE__ */ window.React.createElement("div", null, /* @__PURE__ */ window.React.createElement("span", null, "Received"), /* @__PURE__ */ window.React.createElement("strong", null, receivedAt || "—")), /* @__PURE__ */ window.React.createElement("div", null, /* @__PURE__ */ window.React.createElement("span", null, "Extraction"), /* @__PURE__ */ window.React.createElement("strong", null, extractText || "—")), /* @__PURE__ */ window.React.createElement("div", null, /* @__PURE__ */ window.React.createElement("span", null, "Condition"), /* @__PURE__ */ window.React.createElement("strong", null, c ? `${c.glyph} ${c.label}` : "—")), completeness != null ? /* @__PURE__ */ window.React.createElement("div", null, /* @__PURE__ */ window.React.createElement("span", null, "Completeness"), /* @__PURE__ */ window.React.createElement("strong", null, completeness)) : null, confidence != null ? /* @__PURE__ */ window.React.createElement("div", null, /* @__PURE__ */ window.React.createElement("span", null, "Match confidence"), /* @__PURE__ */ window.React.createElement("strong", null, confidence, "%")) : null, metadata.map((m2, i) => /* @__PURE__ */ window.React.createElement("div", { key: i }, /* @__PURE__ */ window.React.createElement("span", null, m2.label), /* @__PURE__ */ window.React.createElement("strong", null, m2.value)))), citation ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-evp__cite" }, /* @__PURE__ */ window.React.createElement("span", null, citation)) : null, /* @__PURE__ */ window.React.createElement("footer", { className: "mds-evp__foot" }, total ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-evp__nav" }, "Evidence ", (index ?? 0) + 1, " of ", total) : /* @__PURE__ */ window.React.createElement("span", { className: "mds-evp__nav" }), onPrevious ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "ghost", onClick: onPrevious }, "Previous") : null, onNext ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "ghost", onClick: onNext }, "Next") : null, onCopyCitation ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "ghost", onClick: onCopyCitation }, "Copy citation") : null, onCompare ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "ghost", onClick: onCompare }, "Compare") : null, onLink ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "ghost", onClick: onLink }, "Link to exception") : null, onMarkSuperseded && !superseded ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "ghost", onClick: onMarkSuperseded }, "Mark superseded") : null, onOpenOriginal ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", onClick: onOpenOriginal, disabled: !canOpen, title: canOpen ? void 0 : "Document permissions do not allow opening the original" }, "Open original") : null));
+    return /* @__PURE__ */ window.React.createElement("section", { className: `mds-evp${superseded ? " mds-evp--superseded" : ""}${className ? " " + className : ""}`, "data-condition": c?.key || void 0, ...rest }, /* @__PURE__ */ window.React.createElement("header", { className: "mds-evp__head" }, /* @__PURE__ */ window.React.createElement("div", null, /* @__PURE__ */ window.React.createElement("h3", null, title), /* @__PURE__ */ window.React.createElement("div", { className: "mds-evp__source" }, typeLabel2 ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-evp__type" }, typeLabel2) : null, [source, sourceSystem, documentId].filter(Boolean).join(" · "))), /* @__PURE__ */ window.React.createElement("div", { className: "mds-evp__loc" }, page ? `Page ${page}` : null, page && section ? /* @__PURE__ */ window.React.createElement("br", null) : null, section)), flags.length ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-evp__flags" }, flags.map((f, i) => /* @__PURE__ */ window.React.createElement("span", { key: i, className: `mds-evp__flag mds-evp__flag--${f.tone}` }, f.text))) : null, withheld ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-evp__doc" }, "Restricted") : image ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-evp__doc mds-evp__doc--image" }, /* @__PURE__ */ window.React.createElement("img", { src: image, alt: imageAlt || `Evidence excerpt from ${title}` })) : /* @__PURE__ */ window.React.createElement("div", { className: "mds-evp__doc" }, before, highlight3 ? /* @__PURE__ */ window.React.createElement("mark", null, highlight3) : null, after), equivalent && !withheld ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-evp__equiv" }, /* @__PURE__ */ window.React.createElement("h4", null, "Text equivalent"), /* @__PURE__ */ window.React.createElement("p", null, equivalent)) : null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-evp__meta" }, /* @__PURE__ */ window.React.createElement("div", null, /* @__PURE__ */ window.React.createElement("span", null, statementDate ? "Statement date" : "As of"), /* @__PURE__ */ window.React.createElement("strong", null, statementDate || asOf || "—")), /* @__PURE__ */ window.React.createElement("div", null, /* @__PURE__ */ window.React.createElement("span", null, "Received"), /* @__PURE__ */ window.React.createElement("strong", null, receivedAt || "—")), /* @__PURE__ */ window.React.createElement("div", null, /* @__PURE__ */ window.React.createElement("span", null, "Extraction"), /* @__PURE__ */ window.React.createElement("strong", null, withheld ? "Restricted" : extractText || "—")), /* @__PURE__ */ window.React.createElement("div", null, /* @__PURE__ */ window.React.createElement("span", null, "Condition"), /* @__PURE__ */ window.React.createElement("strong", null, c ? `${c.glyph} ${c.label}` : "—")), completeness != null && !withheld ? /* @__PURE__ */ window.React.createElement("div", null, /* @__PURE__ */ window.React.createElement("span", null, "Completeness"), /* @__PURE__ */ window.React.createElement("strong", null, completeness)) : null, confidence != null && !withheld ? /* @__PURE__ */ window.React.createElement("div", null, /* @__PURE__ */ window.React.createElement("span", null, "Match confidence"), /* @__PURE__ */ window.React.createElement("strong", null, confidence, "%")) : null, (!withheld ? metadata : []).map((m2, i) => /* @__PURE__ */ window.React.createElement("div", { key: i }, /* @__PURE__ */ window.React.createElement("span", null, m2.label), /* @__PURE__ */ window.React.createElement("strong", null, m2.value)))), citation ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-evp__cite" }, /* @__PURE__ */ window.React.createElement("span", null, citation)) : null, /* @__PURE__ */ window.React.createElement("footer", { className: "mds-evp__foot" }, total ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-evp__nav" }, "Evidence ", (index ?? 0) + 1, " of ", total) : /* @__PURE__ */ window.React.createElement("span", { className: "mds-evp__nav" }), onPrevious ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "ghost", onClick: onPrevious }, "Previous") : null, onNext ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "ghost", onClick: onNext }, "Next") : null, onCopyCitation ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "ghost", onClick: onCopyCitation }, "Copy citation") : null, onCompare ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "ghost", onClick: onCompare, disabled: withheld, title: withheld ? "Restricted evidence cannot be compared" : void 0 }, "Compare") : null, onLink ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "ghost", onClick: onLink }, "Link to exception") : null, onMarkSuperseded && !superseded ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "ghost", onClick: onMarkSuperseded }, "Mark superseded") : null, onOpenOriginal ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", onClick: onOpenOriginal, disabled: !canOpen, title: canOpen ? void 0 : withheld ? "Evidence is restricted" : "Document permissions do not allow opening the original" }, "Open original") : null));
   }
 
   // components/operations/GateRail.jsx
@@ -22424,7 +22963,7 @@ button.mds-hand__row:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);o
   background:transparent;border-radius:var(--radius-chip,2px);padding:2px 7px;cursor:pointer;
   font-family:var(--font-data);font-size:10px;font-weight:600;color:var(--text-secondary,#535C65);line-height:1.4;}
 .mds-logtail__chip:hover{border-color:var(--border-hover,#BEB8AD);}
-.mds-logtail__chip--on{background:var(--bg-active,#E7EDF2);border-color:var(--interaction-selected,#496C8F);color:var(--text-primary,#20252B);}
+.mds-logtail__chip--on{background:var(--selected-surface,#E7EDF2);border-color:var(--interaction-selected,#496C8F);color:var(--text-primary,#20252B);}
 .mds-logtail__chip:focus-visible{outline:var(--focus-ring);outline-offset:var(--focus-ring-offset);}
 .mds-logtail__body{flex:1 1 auto;min-height:0;overflow:auto;padding:6px 0;
   font-family:var(--font-data,'IBM Plex Mono',monospace);font-size:11.5px;line-height:1.55;}
@@ -22436,7 +22975,7 @@ button.mds-hand__row:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);o
 .mds-logtail__src{color:var(--text-secondary,#535C65);flex:0 0 auto;}
 .mds-logtail__msg{color:var(--text-primary,#20252B);min-width:0;}
 .mds-logtail__lvl--info{color:var(--text-secondary,#535C65);}
-.mds-logtail__lvl--debug{color:var(--text-disabled,#A4ABB2);}
+.mds-logtail__lvl--debug{color:var(--text-secondary,#535C65);}
 .mds-logtail__lvl--warn{color:var(--orange-dim,#735414);}
 .mds-logtail__lvl--error{color:var(--red-dim,#7D322F);}
 .mds-logtail__line--error{background:var(--red-a10,rgba(166,67,63,.08));}
@@ -22476,7 +23015,7 @@ button.mds-hand__row:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);o
     const [levels, setLevels] = react_default.useState(() => new Set(LEVELS3));
     const counts = react_default.useMemo(() => {
       const c = { error: 0, warn: 0, info: 0, debug: 0 };
-      for (const e of entries) if (c[e.level] != null) c[e.level] += 1;
+      for (const e of entries) if (c[e.level || "info"] != null) c[e.level || "info"] += 1;
       return c;
     }, [entries]);
     const visible = react_default.useMemo(
@@ -22529,7 +23068,7 @@ button.mds-hand__row:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);o
         },
         follow ? "Following" : "Paused"
       )),
-      /* @__PURE__ */ window.React.createElement("div", { className: "mds-logtail__wrapref" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-logtail__body", ref: bodyRef, onScroll, role: "log", "aria-label": title }, visible.length === 0 ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-logtail__empty" }, "No log lines", entries.length > 0 ? " at the selected levels" : "", ".") : visible.map((e, i) => /* @__PURE__ */ window.React.createElement("div", { key: e.id || i, className: `mds-logtail__line${e.level === "error" ? " mds-logtail__line--error" : e.level === "warn" ? " mds-logtail__line--warn" : ""}` }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-logtail__ts" }, utcTime2(e.ts)), /* @__PURE__ */ window.React.createElement("span", { className: `mds-logtail__lvl mds-logtail__lvl--${e.level || "info"}` }, (e.level || "info").toUpperCase()), e.source && /* @__PURE__ */ window.React.createElement("span", { className: "mds-logtail__src" }, e.source), /* @__PURE__ */ window.React.createElement("span", { className: "mds-logtail__msg" }, e.text)))))
+      /* @__PURE__ */ window.React.createElement("div", { className: "mds-logtail__wrapref" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-logtail__body", ref: bodyRef, onScroll, role: "log", "aria-label": title, tabIndex: 0 }, visible.length === 0 ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-logtail__empty" }, "No log lines", entries.length > 0 ? " at the selected levels" : "", ".") : visible.map((e, i) => /* @__PURE__ */ window.React.createElement("div", { key: e.id || i, className: `mds-logtail__line${e.level === "error" ? " mds-logtail__line--error" : e.level === "warn" ? " mds-logtail__line--warn" : ""}` }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-logtail__ts" }, utcTime2(e.ts)), /* @__PURE__ */ window.React.createElement("span", { className: `mds-logtail__lvl mds-logtail__lvl--${e.level || "info"}` }, (e.level || "info").toUpperCase()), e.source && /* @__PURE__ */ window.React.createElement("span", { className: "mds-logtail__src" }, e.source), /* @__PURE__ */ window.React.createElement("span", { className: "mds-logtail__msg" }, e.text)))))
     );
   }
   LogTail.displayName = "LogTail";
@@ -22703,7 +23242,7 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
     caseId,
     version,
     severity = "exception",
-    condition,
+    condition: condition2,
     object,
     statement,
     fields = [],
@@ -22739,7 +23278,7 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
     className = "",
     ...rest
   }) {
-    const uid6 = react_default.useId();
+    const uid5 = react_default.useId();
     inject137();
     const sev = SEVERITY2[String(severity).toLowerCase()] || SEVERITY2.exception;
     const [localReason, setLocalReason] = react_default.useState("");
@@ -22754,11 +23293,11 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
     const actions = { resolve: { fn: onResolve, label: "Resolve exception", disabled: !canResolve }, escalate: { fn: onEscalate, label: "Escalate" }, defer: { fn: onDefer, label: "Defer" }, reopen: { fn: onReopen, label: "Reopen" } };
     const primaryKey = actions[primaryAction]?.fn ? primaryAction : Object.keys(actions).find((k) => actions[k].fn);
     const secondaries = ["defer", "escalate", "reopen", "resolve"].filter((k) => k !== primaryKey && actions[k].fn);
-    return /* @__PURE__ */ window.React.createElement("aside", { className: `mds-res${inline ? " mds-res--inline" : ""}${className ? " " + className : ""}`, "aria-label": title, ...rest }, onBack ? /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-res__back", onClick: onBack }, /* @__PURE__ */ window.React.createElement("span", { "aria-hidden": "true" }, "←"), backLabel) : null, /* @__PURE__ */ window.React.createElement("header", { className: "mds-res__head" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-res__titlerow" }, /* @__PURE__ */ window.React.createElement("h3", null, title), /* @__PURE__ */ window.React.createElement("span", { className: "mds-res__sev", "data-tone": sev.tone }, /* @__PURE__ */ window.React.createElement("span", { "aria-hidden": "true" }, sev.mark), sev.label)), /* @__PURE__ */ window.React.createElement("div", { className: "mds-res__meta" }, [caseId, version != null && `Version ${version}`, object, condition && String(condition).replace(/^./, (s) => s.toUpperCase())].filter(Boolean).join(" · "))), statement ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-res__statement" }, statement) : null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-res__body" }, /* @__PURE__ */ window.React.createElement(Section, { title: "Current evidence" }, fields.length || evidenceItems.length || evidence ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, fields.map((f, i) => /* @__PURE__ */ window.React.createElement("div", { className: "mds-res__field", "data-flag": f.flag ? "true" : void 0, key: f.id || f.label || i }, /* @__PURE__ */ window.React.createElement("span", null, f.label), /* @__PURE__ */ window.React.createElement("span", null, f.value ?? "—"))), evidenceItems.length ? /* @__PURE__ */ window.React.createElement("ul", { className: "mds-res__evidence" }, evidenceItems.map((e, i) => /* @__PURE__ */ window.React.createElement("li", { key: e.id || e.label || i }, /* @__PURE__ */ window.React.createElement("span", { "aria-hidden": "true" }, e.missing ? "■" : "●"), /* @__PURE__ */ window.React.createElement("span", null, e.href ? /* @__PURE__ */ window.React.createElement("a", { href: e.href }, e.label) : e.label), /* @__PURE__ */ window.React.createElement("small", null, e.detail || (e.missing ? "Missing" : "Attached"))))) : null, evidence) : null), /* @__PURE__ */ window.React.createElement(Section, { title: "Root cause" }, rootCauses?.length ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-res__select" }, /* @__PURE__ */ window.React.createElement("label", { htmlFor: `${uid6}-rootcause` }, "Classification"), /* @__PURE__ */ window.React.createElement("select", { id: `${uid6}-rootcause`, value: typeof rootCause === "string" ? rootCause : "", onChange: (e) => onRootCauseChange?.(e.target.value) }, /* @__PURE__ */ window.React.createElement("option", { value: "" }, "Not classified"), rootCauses.map((o) => {
+    return /* @__PURE__ */ window.React.createElement("aside", { className: `mds-res${inline ? " mds-res--inline" : ""}${className ? " " + className : ""}`, "aria-label": title, ...rest }, onBack ? /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-res__back", onClick: onBack }, /* @__PURE__ */ window.React.createElement("span", { "aria-hidden": "true" }, "←"), backLabel) : null, /* @__PURE__ */ window.React.createElement("header", { className: "mds-res__head" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-res__titlerow" }, /* @__PURE__ */ window.React.createElement("h3", null, title), /* @__PURE__ */ window.React.createElement("span", { className: "mds-res__sev", "data-tone": sev.tone }, /* @__PURE__ */ window.React.createElement("span", { "aria-hidden": "true" }, sev.mark), sev.label)), /* @__PURE__ */ window.React.createElement("div", { className: "mds-res__meta" }, [caseId, version != null && `Version ${version}`, object, condition2 && String(condition2).replace(/^./, (s) => s.toUpperCase())].filter(Boolean).join(" · "))), statement ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-res__statement" }, statement) : null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-res__body" }, /* @__PURE__ */ window.React.createElement(Section, { title: "Current evidence" }, fields.length || evidenceItems.length || evidence ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, fields.map((f, i) => /* @__PURE__ */ window.React.createElement("div", { className: "mds-res__field", "data-flag": f.flag ? "true" : void 0, key: f.id || f.label || i }, /* @__PURE__ */ window.React.createElement("span", null, f.label), /* @__PURE__ */ window.React.createElement("span", null, f.value ?? "—"))), evidenceItems.length ? /* @__PURE__ */ window.React.createElement("ul", { className: "mds-res__evidence" }, evidenceItems.map((e, i) => /* @__PURE__ */ window.React.createElement("li", { key: e.id || e.label || i }, /* @__PURE__ */ window.React.createElement("span", { "aria-hidden": "true" }, e.missing ? "■" : "●"), /* @__PURE__ */ window.React.createElement("span", null, e.href ? /* @__PURE__ */ window.React.createElement("a", { href: e.href }, e.label) : e.label), /* @__PURE__ */ window.React.createElement("small", null, e.detail || (e.missing ? "Missing" : "Attached"))))) : null, evidence) : null), /* @__PURE__ */ window.React.createElement(Section, { title: "Root cause" }, rootCauses?.length ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-res__select" }, /* @__PURE__ */ window.React.createElement("label", { htmlFor: `${uid5}-rootcause` }, "Classification"), /* @__PURE__ */ window.React.createElement("select", { disabled: !onRootCauseChange, id: `${uid5}-rootcause`, value: typeof rootCause === "string" ? rootCause : "", onChange: (e) => onRootCauseChange?.(e.target.value) }, /* @__PURE__ */ window.React.createElement("option", { value: "" }, "Not classified"), rootCauses.map((o) => {
       const v = typeof o === "string" ? o : o.value;
       const l = typeof o === "string" ? o : o.label;
       return /* @__PURE__ */ window.React.createElement("option", { value: v, key: v }, l);
-    })), onRootCauseNoteChange !== void 0 || rootCauseNote !== void 0 ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, /* @__PURE__ */ window.React.createElement("label", { htmlFor: `${uid6}-rootnote` }, rootCauseNoteLabel), /* @__PURE__ */ window.React.createElement("textarea", { id: `${uid6}-rootnote`, value: rootCauseNote || "", onChange: (e) => onRootCauseNoteChange?.(e.target.value), placeholder: "Optional detail beyond the classification." })) : null) : rootCause ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-res__prose" }, rootCause) : null), /* @__PURE__ */ window.React.createElement(Section, { title: "Proposed correction" }, correction || correctionFacts.length ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, correction ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-res__prose" }, correction) : null, correctionFacts.map((f, i) => /* @__PURE__ */ window.React.createElement("div", { className: "mds-res__field", "data-flag": f.flag ? "true" : void 0, key: f.label || i }, /* @__PURE__ */ window.React.createElement("span", null, f.label), /* @__PURE__ */ window.React.createElement("span", null, f.value)))) : null), /* @__PURE__ */ window.React.createElement(Section, { title: "Impact" }, impact || impactItems.length ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, impact ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-res__prose" }, impact) : null, impactItems.map((f, i) => /* @__PURE__ */ window.React.createElement("div", { className: "mds-res__field", "data-flag": f.flag ? "true" : void 0, key: f.label || i }, /* @__PURE__ */ window.React.createElement("span", null, f.label), /* @__PURE__ */ window.React.createElement("span", null, f.value)))) : null), /* @__PURE__ */ window.React.createElement(Section, { title: "Ownership and SLA" }, ownRows.length ? ownRows.map(([k, v]) => /* @__PURE__ */ window.React.createElement("div", { className: "mds-res__field", key: k }, /* @__PURE__ */ window.React.createElement("span", null, k), /* @__PURE__ */ window.React.createElement("span", null, v))) : null), requireReason ? /* @__PURE__ */ window.React.createElement("section", { className: "mds-res__section" }, /* @__PURE__ */ window.React.createElement("h4", null, reasonLabel), /* @__PURE__ */ window.React.createElement("div", { className: "mds-res__select" }, /* @__PURE__ */ window.React.createElement("textarea", { "aria-label": reasonLabel, value: reasonValue, onChange: (e) => setReason(e.target.value), placeholder: "Required before this exception can be resolved." }))) : null, /* @__PURE__ */ window.React.createElement(Section, { title: "Audit details" }, audit)), /* @__PURE__ */ window.React.createElement("footer", { className: "mds-res__foot" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-res__ownership" }, [own?.assignee && `Assignee ${own.assignee}`, own?.due && `Due ${own.due}`, sla && !own?.due ? sla : null].filter(Boolean).join(" · ")), /* @__PURE__ */ window.React.createElement("span", { className: "spacer" }), onRequestEvidence ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "ghost", onClick: onRequestEvidence }, "Request evidence") : null, onAssign ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "ghost", onClick: onAssign }, "Assign") : null, secondaries.map((k) => /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "ghost", key: k, onClick: actions[k].fn, disabled: actions[k].disabled }, actions[k].label)), primaryKey ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", onClick: () => actions[primaryKey].fn(reasonValue), disabled: actions[primaryKey].disabled }, actions[primaryKey].label) : null));
+    })), onRootCauseNoteChange !== void 0 || rootCauseNote !== void 0 ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, /* @__PURE__ */ window.React.createElement("label", { htmlFor: `${uid5}-rootnote` }, rootCauseNoteLabel), /* @__PURE__ */ window.React.createElement("textarea", { readOnly: !onRootCauseNoteChange, id: `${uid5}-rootnote`, value: rootCauseNote || "", onChange: (e) => onRootCauseNoteChange?.(e.target.value), placeholder: "Optional detail beyond the classification." })) : null) : rootCause ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-res__prose" }, rootCause) : null), /* @__PURE__ */ window.React.createElement(Section, { title: "Proposed correction" }, correction || correctionFacts.length ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, correction ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-res__prose" }, correction) : null, correctionFacts.map((f, i) => /* @__PURE__ */ window.React.createElement("div", { className: "mds-res__field", "data-flag": f.flag ? "true" : void 0, key: f.label || i }, /* @__PURE__ */ window.React.createElement("span", null, f.label), /* @__PURE__ */ window.React.createElement("span", null, f.value)))) : null), /* @__PURE__ */ window.React.createElement(Section, { title: "Impact" }, impact || impactItems.length ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, impact ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-res__prose" }, impact) : null, impactItems.map((f, i) => /* @__PURE__ */ window.React.createElement("div", { className: "mds-res__field", "data-flag": f.flag ? "true" : void 0, key: f.label || i }, /* @__PURE__ */ window.React.createElement("span", null, f.label), /* @__PURE__ */ window.React.createElement("span", null, f.value)))) : null), /* @__PURE__ */ window.React.createElement(Section, { title: "Ownership and SLA" }, ownRows.length ? ownRows.map(([k, v]) => /* @__PURE__ */ window.React.createElement("div", { className: "mds-res__field", key: k }, /* @__PURE__ */ window.React.createElement("span", null, k), /* @__PURE__ */ window.React.createElement("span", null, v))) : null), requireReason ? /* @__PURE__ */ window.React.createElement("section", { className: "mds-res__section" }, /* @__PURE__ */ window.React.createElement("h4", null, reasonLabel), /* @__PURE__ */ window.React.createElement("div", { className: "mds-res__select" }, /* @__PURE__ */ window.React.createElement("textarea", { readOnly: reason !== void 0 && !onReasonChange, "aria-label": reasonLabel, value: reasonValue, onChange: (e) => setReason(e.target.value), placeholder: "Required before this exception can be resolved." }))) : null, /* @__PURE__ */ window.React.createElement(Section, { title: "Audit details" }, audit)), /* @__PURE__ */ window.React.createElement("footer", { className: "mds-res__foot" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-res__ownership" }, [own?.assignee && `Assignee ${own.assignee}`, own?.due && `Due ${own.due}`, sla && !own?.due ? sla : null].filter(Boolean).join(" · ")), /* @__PURE__ */ window.React.createElement("span", { className: "spacer" }), onRequestEvidence ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "ghost", onClick: onRequestEvidence }, "Request evidence") : null, onAssign ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "ghost", onClick: onAssign }, "Assign") : null, secondaries.map((k) => /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "ghost", key: k, onClick: () => actions[k].fn(reasonValue), disabled: actions[k].disabled }, actions[k].label)), primaryKey ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", onClick: () => actions[primaryKey].fn(reasonValue), disabled: actions[primaryKey].disabled }, actions[primaryKey].label) : null));
   }
 
   // components/operations/SourceCoverageSummary.jsx
@@ -22794,7 +23333,7 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
 .mds-scs__row--action{cursor:pointer}
 .mds-scs__row--action:hover{background:var(--bg-hover,#EDEFF0)}
 .mds-scs__row--action:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
-.mds-scs__row[data-selected="true"]{border-left-color:var(--selected,#496C8F);background:var(--surface-selected,#E7EDF2)}
+.mds-scs__row[data-selected="true"]{border-left-color:var(--selected,#496C8F);background:var(--selected-surface,var(--bg-active,#E7EDF2))}
 .mds-scs__name{font-size:11px;color:var(--text-primary,#20252B)}
 .mds-scs__note{display:block;font:9px/13px var(--font-body);color:var(--text-muted,#606870)}
 .mds-scs__glyph{display:inline-block;width:11px;text-align:center;margin-right:5px;color:var(--text-muted,#606870)}
@@ -23231,7 +23770,7 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
     className = "",
     ...rest
   }) {
-    const uid6 = react_default.useId();
+    const uid5 = react_default.useId();
     inject141();
     const headingRef = react_default.useRef(null);
     react_default.useEffect(() => {
@@ -23244,17 +23783,20 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
       conflict: r.conflict !== void 0 ? r.conflict : String(show3(r.proposed)) !== String(show3(r.base)) && String(show3(r.latest)) !== String(show3(r.base)) && String(show3(r.proposed)) !== String(show3(r.latest))
     }));
     const conflicts = rows.filter((r) => r.conflict), clean = rows.filter((r) => !r.conflict);
-    const [localChoices, setLocalChoices] = react_default.useState({});
-    const picked = choices || localChoices;
+    const scopeKey = JSON.stringify([String(record ?? ""), baseVer, latestVersion, rows.map((row) => [row.key, show3(row.base), show3(row.proposed), show3(row.latest)])]);
+    const [localChoices, setLocalChoices] = react_default.useState({ scope: scopeKey, value: {} });
+    const picked = choices || (localChoices.scope === scopeKey ? localChoices.value : {});
     const pick = (key, side) => {
-      if (!choices) setLocalChoices((c) => ({ ...c, [key]: side }));
+      if (!choices) setLocalChoices((current) => ({ scope: scopeKey, value: { ...current.scope === scopeKey ? current.value : {}, [key]: side } }));
       onFieldChoice?.(key, side);
     };
-    const [reason, setReason] = react_default.useState("");
+    const [reasonState, setReasonState] = react_default.useState({ scope: scopeKey, value: "" });
+    const reason = reasonState.scope === scopeKey ? reasonState.value : "";
+    const setReason = (value) => setReasonState({ scope: scopeKey, value });
     const allPicked = conflicts.every((r) => picked[r.key]);
     const keepsMine = conflicts.some((r) => picked[r.key] === "mine");
     const canReapply = (!requireReason || reason.trim().length > 0) && (conflicts.length === 0 || allPicked);
-    return /* @__PURE__ */ window.React.createElement("section", { className: `mds-vcn${className ? " " + className : ""}`, role: "alert", "aria-live": "assertive", ...rest }, /* @__PURE__ */ window.React.createElement("header", { className: "mds-vcn__head" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-vcn__glyph", "aria-hidden": "true" }, "◇"), /* @__PURE__ */ window.React.createElement("div", null, /* @__PURE__ */ window.React.createElement("h3", { ref: headingRef, tabIndex: -1 }, title), /* @__PURE__ */ window.React.createElement("p", null, record ? `${record} · ` : "", conflicts.length ? `${conflicts.length} field${conflicts.length === 1 ? "" : "s"} conflict` : "No field conflicts", clean.length ? ` · ${clean.length} field${clean.length === 1 ? "" : "s"} merge cleanly` : "", ". Nothing has been saved."), /* @__PURE__ */ window.React.createElement("div", { className: "mds-vcn__lineage" }, "Your edit began from version ", show3(baseVer), " · version ", show3(latestVersion), " was saved by ", latestAuthor || "another operator", latestAt ? ` at ${latestAt}` : ""))), /* @__PURE__ */ window.React.createElement("div", { className: "mds-vcn__table" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-vcn__r mds-vcn__r--head" }, /* @__PURE__ */ window.React.createElement("span", null, "Field"), /* @__PURE__ */ window.React.createElement("span", null, "Base · v", show3(baseVer)), /* @__PURE__ */ window.React.createElement("span", null, "Your proposed value"), /* @__PURE__ */ window.React.createElement("span", null, "Latest saved · v", show3(latestVersion))), conflicts.map((r) => /* @__PURE__ */ window.React.createElement("div", { className: "mds-vcn__r", key: r.key }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-vcn__field" }, r.label || r.key, /* @__PURE__ */ window.React.createElement("span", { className: "mds-vcn__flag" }, "Conflict")), /* @__PURE__ */ window.React.createElement("span", { className: "mds-vcn__cell" }, show3(r.base), /* @__PURE__ */ window.React.createElement("small", null, "Both edits diverge from this")), /* @__PURE__ */ window.React.createElement("span", { className: "mds-vcn__cell" }, show3(r.proposed), onFieldChoice || !choices ? /* @__PURE__ */ window.React.createElement("label", { className: "mds-vcn__pick" }, /* @__PURE__ */ window.React.createElement("input", { type: "radio", name: `mds-vcn-${r.key}`, checked: picked[r.key] === "mine", onChange: () => pick(r.key, "mine") }), "Keep mine") : null), /* @__PURE__ */ window.React.createElement("span", { className: "mds-vcn__cell" }, show3(r.latest), onFieldChoice || !choices ? /* @__PURE__ */ window.React.createElement("label", { className: "mds-vcn__pick" }, /* @__PURE__ */ window.React.createElement("input", { type: "radio", name: `mds-vcn-${r.key}`, checked: picked[r.key] === "theirs", onChange: () => pick(r.key, "theirs") }), "Keep latest") : null))), clean.map((r) => /* @__PURE__ */ window.React.createElement("div", { className: "mds-vcn__r mds-vcn__r--clean", key: r.key }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-vcn__field" }, r.label || r.key, /* @__PURE__ */ window.React.createElement("span", { className: "mds-vcn__flag" }, "Merges")), /* @__PURE__ */ window.React.createElement("span", { className: "mds-vcn__cell" }, show3(r.base)), /* @__PURE__ */ window.React.createElement("span", { className: "mds-vcn__cell" }, show3(r.proposed)), /* @__PURE__ */ window.React.createElement("span", { className: "mds-vcn__cell" }, show3(r.latest))))), keepsMine ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-vcn__note" }, "Keeping your value replaces a newer saved value. Both versions stay in the audit record, validation re-runs, and any impact preview taken against version ", show3(baseVer), " is invalidated.") : null, requireReason ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-vcn__reason" }, /* @__PURE__ */ window.React.createElement("label", { htmlFor: `${uid6}-reason` }, "Reason for replacing the newer record"), /* @__PURE__ */ window.React.createElement("textarea", { id: `${uid6}-reason`, value: reason, onChange: (e) => setReason(e.target.value), placeholder: "Name the authority or evidence that makes your value correct." })) : null, /* @__PURE__ */ window.React.createElement("footer", { className: "mds-vcn__actions" }, onDiscard ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "danger", onClick: onDiscard }, "Discard my draft") : null, onSaveDraft ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "ghost", onClick: () => onSaveDraft(reason) }, "Save as new draft") : null, onCompare ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "ghost", onClick: onCompare }, "Compare all changes") : null, onMergeNonConflicting ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "ghost", onClick: onMergeNonConflicting, disabled: !clean.length }, "Merge ", clean.length, " nonconflicting") : null, onReapply ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "ghost", disabled: !canReapply, onClick: () => onReapply({ reason: reason.trim(), choices: picked }) }, "Reapply with rationale") : null, onReload ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", onClick: onReload }, "Reload latest record") : null));
+    return /* @__PURE__ */ window.React.createElement("section", { className: `mds-vcn${className ? " " + className : ""}`, role: "alert", "aria-live": "assertive", ...rest }, /* @__PURE__ */ window.React.createElement("header", { className: "mds-vcn__head" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-vcn__glyph", "aria-hidden": "true" }, "◇"), /* @__PURE__ */ window.React.createElement("div", null, /* @__PURE__ */ window.React.createElement("h3", { ref: headingRef, tabIndex: -1 }, title), /* @__PURE__ */ window.React.createElement("p", null, record ? `${record} · ` : "", conflicts.length ? `${conflicts.length} field${conflicts.length === 1 ? "" : "s"} conflict` : "No field conflicts", clean.length ? ` · ${clean.length} field${clean.length === 1 ? "" : "s"} merge cleanly` : "", ". Nothing has been saved."), /* @__PURE__ */ window.React.createElement("div", { className: "mds-vcn__lineage" }, "Your edit began from version ", show3(baseVer), " · version ", show3(latestVersion), " was saved by ", latestAuthor || "another operator", latestAt ? ` at ${latestAt}` : ""))), /* @__PURE__ */ window.React.createElement("div", { className: "mds-vcn__table" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-vcn__r mds-vcn__r--head" }, /* @__PURE__ */ window.React.createElement("span", null, "Field"), /* @__PURE__ */ window.React.createElement("span", null, "Base · v", show3(baseVer)), /* @__PURE__ */ window.React.createElement("span", null, "Your proposed value"), /* @__PURE__ */ window.React.createElement("span", null, "Latest saved · v", show3(latestVersion))), conflicts.map((r) => /* @__PURE__ */ window.React.createElement("div", { className: "mds-vcn__r", key: r.key }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-vcn__field" }, r.label || r.key, /* @__PURE__ */ window.React.createElement("span", { className: "mds-vcn__flag" }, "Conflict")), /* @__PURE__ */ window.React.createElement("span", { className: "mds-vcn__cell" }, show3(r.base), /* @__PURE__ */ window.React.createElement("small", null, "Both edits diverge from this")), /* @__PURE__ */ window.React.createElement("span", { className: "mds-vcn__cell" }, show3(r.proposed), onFieldChoice || !choices ? /* @__PURE__ */ window.React.createElement("label", { className: "mds-vcn__pick" }, /* @__PURE__ */ window.React.createElement("input", { type: "radio", name: `${uid5}-pick-${r.key}`, checked: picked[r.key] === "mine", onChange: () => pick(r.key, "mine") }), "Keep mine") : null), /* @__PURE__ */ window.React.createElement("span", { className: "mds-vcn__cell" }, show3(r.latest), onFieldChoice || !choices ? /* @__PURE__ */ window.React.createElement("label", { className: "mds-vcn__pick" }, /* @__PURE__ */ window.React.createElement("input", { type: "radio", name: `${uid5}-pick-${r.key}`, checked: picked[r.key] === "theirs", onChange: () => pick(r.key, "theirs") }), "Keep latest") : null))), clean.map((r) => /* @__PURE__ */ window.React.createElement("div", { className: "mds-vcn__r mds-vcn__r--clean", key: r.key }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-vcn__field" }, r.label || r.key, /* @__PURE__ */ window.React.createElement("span", { className: "mds-vcn__flag" }, "Merges")), /* @__PURE__ */ window.React.createElement("span", { className: "mds-vcn__cell" }, show3(r.base)), /* @__PURE__ */ window.React.createElement("span", { className: "mds-vcn__cell" }, show3(r.proposed)), /* @__PURE__ */ window.React.createElement("span", { className: "mds-vcn__cell" }, show3(r.latest))))), keepsMine ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-vcn__note" }, "Keeping your value replaces a newer saved value. Both versions stay in the audit record, validation re-runs, and any impact preview taken against version ", show3(baseVer), " is invalidated.") : null, requireReason ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-vcn__reason" }, /* @__PURE__ */ window.React.createElement("label", { htmlFor: `${uid5}-reason` }, "Reason for replacing the newer record"), /* @__PURE__ */ window.React.createElement("textarea", { id: `${uid5}-reason`, value: reason, onChange: (e) => setReason(e.target.value), placeholder: "Name the authority or evidence that makes your value correct." })) : null, /* @__PURE__ */ window.React.createElement("footer", { className: "mds-vcn__actions" }, onDiscard ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "danger", onClick: onDiscard }, "Discard my draft") : null, onSaveDraft ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "ghost", onClick: () => onSaveDraft(reason) }, "Save as new draft") : null, onCompare ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "ghost", onClick: onCompare }, "Compare all changes") : null, onMergeNonConflicting ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "ghost", onClick: onMergeNonConflicting, disabled: !clean.length }, "Merge ", clean.length, " nonconflicting") : null, onReapply ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", variant: "ghost", disabled: !canReapply, onClick: () => onReapply({ reason: reason.trim(), choices: picked }) }, "Reapply with rationale") : null, onReload ? /* @__PURE__ */ window.React.createElement(Button, { size: "sm", onClick: onReload }, "Reload latest record") : null));
   }
 
   // components/operations/WorkspaceSection.jsx
@@ -23359,11 +23901,13 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
     const [active, setActive] = react_default.useState(0);
     const inputRef = react_default.useRef(null);
     const listRef = react_default.useRef(null);
+    const overlayRef = react_default.useRef(null);
+    useOverlayFocus(overlayRef, open, ".mds-gsearch");
+    useOverlayEscape(open, onClose);
     react_default.useEffect(() => {
       if (open) {
         setQ("");
         setActive(0);
-        setTimeout(() => inputRef.current && inputRef.current.focus(), 0);
       }
     }, [open]);
     const rows = react_default.useMemo(() => {
@@ -23399,12 +23943,13 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
     const onKeyDown = (e) => {
       if (e.key === "Escape") {
         e.preventDefault();
+        e.stopPropagation();
         onClose && onClose();
         return;
       }
       if (e.key === "ArrowDown" || e.key === "n" && e.ctrlKey) {
         e.preventDefault();
-        setActive((i) => Math.min(rows.length - 1, i + 1));
+        setActive((i) => Math.max(0, Math.min(rows.length - 1, i + 1)));
         return;
       }
       if (e.key === "ArrowUp" || e.key === "p" && e.ctrlKey) {
@@ -23447,7 +23992,7 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
         r.meta ? react_default.createElement("span", { className: "mds-gsearch__meta" }, r.meta) : react_default.createElement("span")
       ));
     });
-    return /* @__PURE__ */ window.React.createElement("div", { className: "mds-gsearch__scrim", onMouseDown: (e) => {
+    return /* @__PURE__ */ window.React.createElement("div", { ref: overlayRef, className: "mds-gsearch__scrim", onMouseDown: (e) => {
       if (e.target === e.currentTarget) onClose && onClose();
     } }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-gsearch", role: "dialog", "aria-modal": "true", "aria-label": "Search" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-gsearch__field" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-gsearch__glyph", "aria-hidden": "true" }, "⌕"), /* @__PURE__ */ window.React.createElement(
       "input",
@@ -23495,14 +24040,15 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
     el.textContent = css;
     document.head.appendChild(el);
   }
-  function NavRail({ sections, activeId, onSelect }) {
+  function NavRail({ sections = [], activeId, onSelect }) {
     inject144();
-    return /* @__PURE__ */ window.React.createElement("nav", { className: "op-rail" }, sections.map((sec, si) => /* @__PURE__ */ window.React.createElement("div", { key: si, style: { marginBottom: 10 } }, /* @__PURE__ */ window.React.createElement("div", { className: "op-rail__section" }, sec.label), /* @__PURE__ */ window.React.createElement("div", { className: "op-rail__nav" }, sec.items.map((it) => /* @__PURE__ */ window.React.createElement(
+    return /* @__PURE__ */ window.React.createElement("nav", { className: "op-rail" }, (Array.isArray(sections) ? sections : []).filter(Boolean).map((sec, si) => /* @__PURE__ */ window.React.createElement("div", { key: si, style: { marginBottom: 10 } }, /* @__PURE__ */ window.React.createElement("div", { className: "op-rail__section" }, sec.label), /* @__PURE__ */ window.React.createElement("div", { className: "op-rail__nav" }, (Array.isArray(sec.items) ? sec.items : []).filter(Boolean).map((it) => /* @__PURE__ */ window.React.createElement(
       "button",
       {
         type: "button",
         key: it.id,
         className: `op-nav-item${it.id === activeId ? " active" : ""}`,
+        "aria-current": it.id === activeId ? "page" : void 0,
         onClick: onSelect ? () => onSelect(it.id) : void 0
       },
       it.icon ? /* @__PURE__ */ window.React.createElement("img", { className: "op-nav-item__icon", src: it.icon, width: "16", height: "16", alt: "" }) : /* @__PURE__ */ window.React.createElement("span", { className: "op-nav-item__icon" }),
@@ -23610,7 +24156,7 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
 .mds-sc__rg--action{background:var(--surface-recessed, #EBE8E1);}
 .mds-sc__rg--danger{border-color:var(--red, #B54B42);}
 .mds-sc__empty{font-family:var(--font-body,system-ui);font-size:11px;color:var(--text-muted,#606870);}
-.mds-sc__warn{grid-column:1/-1;font-family:var(--font-body,system-ui);font-size:11px;color:var(--amber, #986717);}`;
+.mds-sc__warn{grid-column:1/-1;font-family:var(--font-body,system-ui);font-size:11px;color:var(--orange-dim, #735414);}`;
     const el = document.createElement("style");
     el.setAttribute("data-mds", "screen-composition");
     el.textContent = css;
@@ -23665,7 +24211,7 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
   letter-spacing:.04em;background:var(--bg-medium,#EBE8E1);color:var(--text-secondary,#535C65);}
 .mds-rolebadge--admin{border-color:var(--purple,#2F648A);color:var(--purple-dim,#54448D);
   background:var(--purple-a10,rgba(111,91,167,.10));}
-.mds-rolebadge--operator{border-color:var(--brand-signal,#C56343);color:var(--brand-signal-dim,#A64E33);
+.mds-rolebadge--operator{border-color:var(--brand-signal,#C56343);color:var(--text-secondary,#535C65);
   background:var(--brand-signal-ghost,#F6E6DF);}
 .mds-rolebadge--viewer{border-color:var(--border-strong,#AAA49A);}
 .mds-readonly{display:flex;align-items:center;gap:10px;padding:7px 14px;
@@ -23687,33 +24233,68 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
     inject147();
     const [open, setOpen] = react_default.useState(false);
     const rootRef = react_default.useRef(null);
+    const buttonRef = react_default.useRef(null);
+    const closeMenu = (refocus = true) => {
+      setOpen(false);
+      if (refocus) buttonRef.current?.focus();
+    };
+    react_default.useEffect(() => {
+      if (open) rootRef.current?.querySelector('[role="menuitem"]')?.focus();
+    }, [open]);
     react_default.useEffect(() => {
       if (!open) return;
       const onDown = (e) => {
         if (rootRef.current && !rootRef.current.contains(e.target)) setOpen(false);
       };
       const onKey = (e) => {
-        if (e.key === "Escape") setOpen(false);
+        if (e.key === "Escape" && rootRef.current?.contains(e.target)) {
+          e.stopPropagation();
+          closeMenu();
+        }
+      };
+      const onFocus = (e) => {
+        if (!rootRef.current?.contains(e.target)) closeMenu(false);
       };
       document.addEventListener("mousedown", onDown);
       document.addEventListener("keydown", onKey);
+      document.addEventListener("focusin", onFocus);
       return () => {
         document.removeEventListener("mousedown", onDown);
         document.removeEventListener("keydown", onKey);
+        document.removeEventListener("focusin", onFocus);
       };
     }, [open]);
     return /* @__PURE__ */ window.React.createElement("div", { className: "mds-usermenu", ref: rootRef }, /* @__PURE__ */ window.React.createElement(
       "button",
       {
+        ref: buttonRef,
         type: "button",
-        "aria-haspopup": "true",
+        "aria-haspopup": "menu",
         "aria-expanded": open,
-        "aria-label": `Account: ${name}`,
+        "aria-label": `${initials(name)} — Account: ${name}`,
         className: `mds-usermenu__chip${onChrome ? "" : " mds-usermenu__chip--light"}`,
+        onKeyDown: (e) => {
+          if (e.key === "ArrowDown") {
+            e.preventDefault();
+            setOpen(true);
+          }
+        },
         onClick: () => setOpen((o) => !o)
       },
       initials(name)
-    ), open && /* @__PURE__ */ window.React.createElement("div", { className: "mds-usermenu__panel", role: "menu" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-usermenu__id" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-usermenu__name" }, name), (role || detail) && /* @__PURE__ */ window.React.createElement("span", { className: "mds-usermenu__sub" }, role && /* @__PURE__ */ window.React.createElement(RoleBadge, { role }), " ", detail)), items.map((it, i) => /* @__PURE__ */ window.React.createElement(
+    ), open && /* @__PURE__ */ window.React.createElement("div", { className: "mds-usermenu__panel", role: "menu", "aria-label": "Account actions", onKeyDown: (e) => {
+      const items2 = Array.from(e.currentTarget.querySelectorAll('[role="menuitem"]')).filter((node) => !node.disabled);
+      const index = items2.indexOf(document.activeElement);
+      let next;
+      if (e.key === "ArrowDown") next = items2[(index + 1) % items2.length];
+      else if (e.key === "ArrowUp") next = items2[(index - 1 + items2.length) % items2.length];
+      else if (e.key === "Home") next = items2[0];
+      else if (e.key === "End") next = items2[items2.length - 1];
+      if (next) {
+        e.preventDefault();
+        next.focus();
+      }
+    } }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-usermenu__id" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-usermenu__name" }, name), (role || detail) && /* @__PURE__ */ window.React.createElement("span", { className: "mds-usermenu__sub" }, role && /* @__PURE__ */ window.React.createElement(RoleBadge, { role }), " ", detail)), items.map((it, i) => /* @__PURE__ */ window.React.createElement(
       "button",
       {
         key: i,
@@ -23721,7 +24302,7 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
         role: "menuitem",
         className: `mds-usermenu__item${it.danger ? " mds-usermenu__item--danger" : ""}`,
         onClick: () => {
-          setOpen(false);
+          closeMenu();
           it.onSelect && it.onSelect();
         }
       },
@@ -23733,7 +24314,7 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
         role: "menuitem",
         className: "mds-usermenu__item mds-usermenu__item--danger",
         onClick: () => {
-          setOpen(false);
+          closeMenu();
           onSignOut();
         }
       },
@@ -23758,12 +24339,13 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
     if (injected148 || typeof document === "undefined") return;
     injected148 = true;
     const css = `
-.ws-statusbar{display:flex;align-items:center;gap:0;min-height:28px;padding:0 12px;
+.ws-statusbar{display:flex;align-items:center;flex-wrap:wrap;gap:6px 0;min-height:28px;min-width:0;max-width:100%;box-sizing:border-box;padding:4px 12px;
   background:var(--statusbar-bg,#29323A);border-top:1px solid var(--statusbar-border,#3A444D);
   font-family:var(--font-data);font-size:11px;color:var(--statusbar-text,#C9CFD4);
   font-variant-numeric:tabular-nums;}
-.ws-statusbar__item{display:inline-flex;align-items:center;gap:6px;padding:0 12px;
-  border-right:1px solid var(--statusbar-border,#3A444D);height:16px;}
+.ws-statusbar__item{display:inline-flex;align-items:center;gap:6px;padding:0 12px;min-width:0;max-width:100%;box-sizing:border-box;
+  border-right:1px solid var(--statusbar-border,#3A444D);min-height:16px;}
+.ws-statusbar__item>span:last-child{min-width:0;overflow-wrap:anywhere;}
 .ws-statusbar__item:first-child{padding-left:0;}
 .ws-statusbar__item--push{margin-left:auto;border-right:none;border-left:1px solid var(--statusbar-border,#3A444D);}
 .ws-statusbar__label{font-family:var(--font-body);font-variant:all-small-caps;
@@ -23831,7 +24413,7 @@ button.mds-wctx__item{cursor:pointer}button.mds-wctx__item:hover{background:var(
   }
   function WorkspaceContextBar({
     value,
-    condition,
+    condition: condition2,
     onEntityClick,
     onBookClick,
     onPeriodClick,
@@ -23859,15 +24441,17 @@ button.mds-wctx__item{cursor:pointer}button.mds-wctx__item:hover{background:var(
       { key: "asOf", priority: 4, node: /* @__PURE__ */ window.React.createElement(Item, { key: "asOf", label: "As of", value: c.asOf, onClick: onAsOfClick }) },
       { key: "currency", priority: 6, node: /* @__PURE__ */ window.React.createElement(Item, { key: "currency", label: "Currency", value: c.currency, onClick: onCurrencyClick }) },
       { key: "scenario", priority: 7, node: /* @__PURE__ */ window.React.createElement(Item, { key: "scenario", label: "Scenario", value: c.scenario, onClick: onScenarioClick }) },
-      { key: "condition", priority: 1, node: /* @__PURE__ */ window.React.createElement(Item, { key: "condition", label: "Data" }, /* @__PURE__ */ window.React.createElement(DataCondition, { condition: condition || c.condition })) },
+      { key: "condition", priority: 1, node: /* @__PURE__ */ window.React.createElement(Item, { key: "condition", label: "Data" }, /* @__PURE__ */ window.React.createElement(DataCondition, { condition: condition2 || c.condition })) },
       ...c.locked ? [{ key: "locked", priority: 2, node: /* @__PURE__ */ window.React.createElement(Item, { key: "locked", label: "Period state" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-wctx__lock" }, "Locked")) }] : []
     ];
     const navRef = react_default.useRef(null);
+    const moreRef = react_default.useRef(null);
     const ghostRef = react_default.useRef(null);
     const actionsRef = react_default.useRef(null);
     const [hidden, setHidden] = react_default.useState([]);
     const [open, setOpen] = react_default.useState(false);
     const signature = items.map((item) => item.key).join("|");
+    const contextSignature = JSON.stringify(c);
     const measure = react_default.useCallback(() => {
       const nav = navRef.current, ghost = ghostRef.current;
       if (!nav || !ghost) return;
@@ -23899,7 +24483,7 @@ button.mds-wctx__item{cursor:pointer}button.mds-wctx__item:hover{background:var(
         next = dropped;
       }
       setHidden((current) => current.length === next.length && current.every((key, i) => key === next[i]) ? current : next);
-    }, [collapse, minVisible, signature]);
+    }, [collapse, minVisible, signature, contextSignature]);
     react_default.useEffect(() => {
       measure();
       if (typeof ResizeObserver === "undefined" || !navRef.current) return void 0;
@@ -23910,7 +24494,11 @@ button.mds-wctx__item{cursor:pointer}button.mds-wctx__item:hover{background:var(
     react_default.useEffect(() => {
       if (!open) return void 0;
       const onKey = (event) => {
-        if (event.key === "Escape") setOpen(false);
+        if (event.key === "Escape" && navRef.current?.contains(event.target)) {
+          event.stopPropagation();
+          setOpen(false);
+          moreRef.current?.focus();
+        }
       };
       const onDown = (event) => {
         if (!navRef.current?.contains(event.target)) setOpen(false);
@@ -23927,7 +24515,7 @@ button.mds-wctx__item{cursor:pointer}button.mds-wctx__item:hover{background:var(
     }, [hidden.length]);
     const visible = items.filter((item) => !hidden.includes(item.key));
     const overflow = items.filter((item) => hidden.includes(item.key));
-    return /* @__PURE__ */ window.React.createElement("nav", { ref: navRef, className: `mds-wctx${collapse === "never" ? " mds-wctx--scroll" : ""}${className ? " " + className : ""}`, "aria-label": "Workspace context", ...rest }, /* @__PURE__ */ window.React.createElement("div", { ref: ghostRef, className: "mds-wctx__ghost", "aria-hidden": "true" }, items.map((item) => /* @__PURE__ */ window.React.createElement("div", { key: item.key, "data-key": item.key }, item.node))), visible.map((item) => item.node), overflow.length ? /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-wctx__more", "aria-expanded": open, "aria-haspopup": "true", onClick: () => setOpen((state) => !state) }, overflowLabel, " +", overflow.length) : null, /* @__PURE__ */ window.React.createElement("span", { className: "mds-wctx__spacer" }), actions ? /* @__PURE__ */ window.React.createElement("div", { ref: actionsRef, className: "mds-wctx__actions" }, actions) : null, open && overflow.length ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-wctx__overflow", role: "group", "aria-label": "Additional workspace context" }, overflow.map((item) => item.node)) : null);
+    return /* @__PURE__ */ window.React.createElement("nav", { ref: navRef, className: `mds-wctx${collapse === "never" ? " mds-wctx--scroll" : ""}${className ? " " + className : ""}`, "aria-label": "Workspace context", ...rest }, /* @__PURE__ */ window.React.createElement("div", { ref: ghostRef, className: "mds-wctx__ghost", "aria-hidden": "true" }, items.map((item) => /* @__PURE__ */ window.React.createElement("div", { key: item.key, "data-key": item.key }, item.node))), visible.map((item) => item.node), overflow.length ? /* @__PURE__ */ window.React.createElement("button", { ref: moreRef, type: "button", className: "mds-wctx__more", "aria-expanded": open, "aria-haspopup": "true", onClick: () => setOpen((state) => !state) }, overflowLabel, " +", overflow.length) : null, /* @__PURE__ */ window.React.createElement("span", { className: "mds-wctx__spacer" }), actions ? /* @__PURE__ */ window.React.createElement("div", { ref: actionsRef, className: "mds-wctx__actions" }, actions) : null, open && overflow.length ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-wctx__overflow", role: "group", "aria-label": "Additional workspace context" }, overflow.map((item) => item.node)) : null);
   }
 
   // components/shell/WorkspaceLayout.jsx
@@ -23984,18 +24572,26 @@ button.mds-wctx__item{cursor:pointer}button.mds-wctx__item:hover{background:var(
       const seen = /* @__PURE__ */ new Set();
       return list.filter((l) => seen.has(l.name) ? false : (seen.add(l.name), true));
     }, [declared, JSON.stringify(layouts || [])]);
-    const [state, setState] = react_default.useState(() => {
+    const initialState = () => {
       const saved = persist ? readStore3(screenId, storage) : null;
       const base = presets.find((p) => p.name === saved?.active) || presets[0];
       return {
-        active: base.name,
+        active: saved?.custom?.[saved?.active] ? saved.active : base.name,
         current: { ...base.regions, ...saved?.regions || {} },
         saved: { ...base.regions, ...saved?.saved || saved?.regions || {} },
         custom: saved?.custom || {},
         restored: !!saved
       };
-    });
+    };
+    const [state, setState] = react_default.useState(initialState);
     const [meta5, setMeta] = react_default.useState({});
+    const previousScreen = react_default.useRef(screenId);
+    react_default.useLayoutEffect(() => {
+      if (previousScreen.current === screenId) return;
+      previousScreen.current = screenId;
+      setState(initialState());
+      setMeta({});
+    }, [screenId]);
     const dirty = !sameArrangement(state.current, state.saved);
     const persistNow = react_default.useCallback((next) => {
       if (persist) writeStore3(screenId, { active: next.active, regions: next.current, saved: next.saved, custom: next.custom }, storage);
@@ -24013,7 +24609,7 @@ button.mds-wctx__item{cursor:pointer}button.mds-wctx__item:hover{background:var(
       active: state.active,
       dirty,
       restored: state.restored,
-      names: [...presets.map((p) => p.name), ...Object.keys(state.custom)],
+      names: [.../* @__PURE__ */ new Set([...presets.map((p) => p.name), ...Object.keys(state.custom)])],
       regions: state.current,
       meta: meta5,
       region: (id) => ({ size: 1, collapsed: false, hidden: false, ...state.current[id] || {} }),
@@ -24022,7 +24618,7 @@ button.mds-wctx__item{cursor:pointer}button.mds-wctx__item:hover{background:var(
       setRegion: (id, patch) => commit((prev) => ({ ...prev, current: { ...prev.current, [id]: { ...prev.current[id], ...arrangementOnly(typeof patch === "function" ? patch(prev.current[id] || {}) : patch) } } })),
       toggleCollapse: (id) => commit((prev) => ({ ...prev, current: { ...prev.current, [id]: { ...prev.current[id], collapsed: !prev.current[id]?.collapsed } } })),
       select: (name) => commit((prev) => {
-        const found = presets.find((p) => p.name === name) || (prev.custom[name] ? { name, regions: prev.custom[name] } : null);
+        const found = prev.custom[name] ? { name, regions: prev.custom[name] } : presets.find((p) => p.name === name);
         if (!found) return prev;
         return { ...prev, active: found.name, current: { ...found.regions }, saved: { ...found.regions } };
       }),
@@ -24683,9 +25279,9 @@ button.mds-ladder__price:focus-visible{outline:var(--focus-ring);outline-offset:
         tabIndex: keyboard ? Math.min(focusIdx, visualCount - 1) === idx ? 0 : -1 : void 0,
         onFocus: keyboard ? () => setFocusIdx(idx) : void 0,
         role: "cell",
-        "aria-label": `${side} ${fmt5(level.price, priceDecimals)}`
+        "aria-label": `${side} ${fmt5(level.price, priceDecimals)}${nearLast(level.price) ? ", last price" : ""}`
       },
-      nearLast(level.price) && /* @__PURE__ */ window.React.createElement("span", { className: "mds-ladder__last", "aria-label": "last price" }),
+      nearLast(level.price) && /* @__PURE__ */ window.React.createElement("span", { className: "mds-ladder__last", "aria-hidden": "true" }),
       fmt5(level.price, priceDecimals)
     ), /* @__PURE__ */ window.React.createElement("span", { className: "mds-ladder__size mds-ladder__size--ask", role: "cell" }, side === "ask" && /* @__PURE__ */ window.React.createElement(react_default.Fragment, null, /* @__PURE__ */ window.React.createElement(
       "span",
@@ -24825,20 +25421,22 @@ button.mds-ladder__price:focus-visible{outline:var(--focus-ring);outline-offset:
     }, [rows, underlyingPrice]);
     const [focusIdx, setFocusIdx] = react_default.useState(atmIdx);
     const interactive = !!onSelect;
+    const currentFocus = Math.max(0, Math.min(focusIdx, sorted.length - 1));
     const select = (r) => {
+      if (!r) return;
       if (!isControlled) setInternalSel(r.strike);
       if (onSelect) onSelect(r);
     };
     const onKeyDown = (e) => {
       if (!interactive || !sorted.length) return;
-      let i = focusIdx;
+      let i = currentFocus;
       if (e.key === "ArrowDown") i = Math.min(sorted.length - 1, i + 1);
       else if (e.key === "ArrowUp") i = Math.max(0, i - 1);
       else if (e.key === "Home") i = 0;
       else if (e.key === "End") i = sorted.length - 1;
       else if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
-        select(sorted[focusIdx]);
+        select(sorted[currentFocus]);
         return;
       } else return;
       e.preventDefault();
@@ -24884,7 +25482,7 @@ button.mds-ladder__price:focus-visible{outline:var(--focus-ring);outline-offset:
         const callItm = underlyingPrice != null && r.strike < underlyingPrice;
         const putItm = underlyingPrice != null && r.strike > underlyingPrice;
         const isSel = selected != null && r.strike === selected;
-        const isFocus = interactive && i === focusIdx;
+        const isFocus = interactive && i === currentFocus;
         return /* @__PURE__ */ window.React.createElement(react_default.Fragment, { key: r.strike }, /* @__PURE__ */ window.React.createElement(
           "div",
           {
@@ -25091,7 +25689,7 @@ button.mds-ladder__price:focus-visible{outline:var(--focus-ring);outline-offset:
 .mds-tape__size--t1{color:var(--text-secondary,#535C65);}
 .mds-tape__size--t2{color:var(--text-primary,#20252B);font-weight:600;}
 .mds-tape__blk{font-family:var(--font-body);font-size:9px;font-weight:600;font-variant:all-small-caps;
-  letter-spacing:.05em;color:var(--brand-signal-dim,#A64E33);margin-left:6px;}
+  letter-spacing:.05em;color:var(--text-primary,#20252B);margin-left:6px;}
 .mds-tape__venue{color:var(--text-muted,#6B737B);font-size:10px;text-align:right;}
 .mds-tape__empty{padding:18px 10px;text-align:center;font-family:var(--font-body);
   font-size:12px;color:var(--text-muted,#6B737B);}

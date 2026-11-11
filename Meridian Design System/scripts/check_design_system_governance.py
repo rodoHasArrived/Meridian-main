@@ -17,6 +17,8 @@ Gates (all static; no network, no browser):
   python scripts/check_design_system_governance.py           # report; exit 1 on failures
 """
 import json, re, sys, pathlib
+from dataclasses import dataclass
+from urllib.parse import unquote, urlsplit
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 fails, warns = [], []
@@ -103,32 +105,69 @@ def check_manifest():
                 if e not in names:
                     warn("manifest", f"{jsx.relative_to(ROOT)} export {e} not in manifest (stale — recompiles at end of turn)")
 
-def check_templates():
-    for folder in sorted(p for p in (ROOT / "templates").iterdir() if p.is_dir() and not p.name.startswith("_")):
-        slug = folder.name
-        pascal = "".join(w.capitalize() for w in slug.split("-"))
-        entry = folder / f"{pascal}.dc.html"
-        if not entry.exists():
-            fail("template", f"{slug}: entry {pascal}.dc.html missing")
+def declared_template_entries(root=None):
+    """Read the authored entry contract, including retained compatibility names.
+
+    The registry is authoritative; deriving PascalCase from a directory rejected
+    a valid retained filename and silently skipped additional sibling entries.
+    """
+    root = ROOT if root is None else pathlib.Path(root)
+    registry = root / "api" / "template-eligibility.json"
+    try:
+        templates = json.loads(registry.read_text(encoding="utf-8"))["templates"]
+    except Exception as error:
+        fail("template", f"entry registry unreadable: {error}")
+        return []
+    entries = []
+    for slug, record in sorted(templates.items()):
+        if pathlib.PurePosixPath(slug).name != slug or slug in (".", "..") or "\\" in slug:
+            fail("template", f"invalid template directory {slug!r}")
             continue
+        declared = record.get("entries", [])
+        if not declared:
+            fail("template", f"{slug}: no declared .dc.html entry")
+        seen = set()
+        for filename in declared:
+            if not isinstance(filename, str) or pathlib.PurePosixPath(filename).name != filename or "\\" in filename or not filename.endswith(".dc.html"):
+                fail("template", f"{slug}: invalid entry filename {filename!r}")
+                continue
+            if filename in seen:
+                fail("template", f"{slug}: duplicate declared entry {filename}")
+                continue
+            seen.add(filename)
+            entry = root / "templates" / slug / filename
+            if not entry.is_file():
+                fail("template", f"{slug}: declared entry {filename} missing")
+            else:
+                entries.append(entry)
+        actual = {p.name for p in (root / "templates" / slug).glob("*.dc.html")}
+        for filename in sorted(actual - seen):
+            fail("template", f"{slug}: undeclared entry {filename}")
+    return entries
+
+
+def check_templates():
+    for entry in declared_template_entries():
+        folder, slug = entry.parent, entry.parent.name
+        label = str(entry.relative_to(ROOT / "templates"))
         src = entry.read_text(encoding="utf-8")
-        if "<!-- @template " not in src.split("\n", 12)[0] and "@template" not in src[:1200]:
-            fail("template", f"{slug}: @template marker not near the top")
+        if "@template" not in src[:1200]:
+            fail("template", f"{label}: @template marker not near the top")
         if not (folder / "ds-base.js").exists():
-            fail("template", f"{slug}: ds-base.js missing")
+            fail("template", f"{label}: ds-base.js missing")
         if "$preview" not in src:
-            fail("template", f"{slug}: $preview missing from data-props")
+            fail("template", f"{label}: $preview missing from data-props")
         for tweak in ("density", "theme", "environment", "dataState"):
             if f"&quot;{tweak}&quot;" not in src and f'"{tweak}"' not in src:
-                fail("template", f"{slug}: standard tweak '{tweak}' missing")
+                fail("template", f"{label}: standard tweak '{tweak}' missing")
         if "DataStateSwitch" not in src:
-            fail("template", f"{slug}: DataStateSwitch not used")
+            fail("template", f"{label}: DataStateSwitch not used")
         if "<h1" not in src:
-            warn("template", f"{slug}: no literal <h1> (may live in an imported sibling)")
-        for m in re.finditer(r'"(\.\./[\w-]+/[\w]+\.dc\.html)"', src):
-            target = (folder / m.group(1)).resolve()
+            warn("template", f"{label}: no literal <h1> (may live in an imported sibling)")
+        for match in re.finditer(r'"(\.\./[\w-]+/[\w]+\.dc\.html)"', src):
+            target = (folder / match.group(1)).resolve()
             if not target.exists():
-                fail("routes", f"{slug}: broken route {m.group(1)}")
+                fail("routes", f"{label}: broken route {match.group(1)}")
 
 def check_eligibility():
     """A new template must be classified before it ships. Full validation (completeness, reason
@@ -158,8 +197,109 @@ def check_generated():
     if "inventory:generated:begin" not in readme:
         fail("generated", "README.md inventory markers missing")
 
+
+@dataclass(frozen=True)
+class Violation:
+    """Structured result retained for the checker’s original Python consumers."""
+    code: str
+    message: str
+
+
+def entry_markup(path, visited=None):
+    """Include local imported screen markup without executing authored code."""
+    visited = set() if visited is None else visited
+    path = path.resolve()
+    if path in visited or not path.is_file() or not path.is_relative_to(ROOT.resolve()):
+        return ""
+    visited.add(path)
+    source = path.read_text(encoding="utf-8")
+    imports = re.findall(r'<x-import\b[^>]*\bfrom=["\']([^"\']+)["\']', source)
+    children = [path.parent / value for value in imports if value.startswith(".")]
+    manifest = ROOT / "_ds_manifest.json"
+    if manifest.is_file():
+        exports = {item["name"]: item["sourcePath"] for item in json.loads(manifest.read_text())["components"]}
+        for name in re.findall(r'component-from-global-scope=["\'][\w$]+\.([A-Z]\w*)["\']', source):
+            if name in exports:
+                children.append(ROOT / exports[name])
+    for name in re.findall(r'<dc-import\b[^>]*\bname=["\']([\w-]+)["\']', source):
+        local = path.parent / f"{name}.dc.html"
+        children.extend([local] if local.is_file() else (ROOT / "templates").glob(f"*/{name}.dc.html"))
+    return source + "\n" + "\n".join(entry_markup(child, visited) for child in children)
+
+
+def check_document_contracts():
+    """Retain link, upload, geometry and rendered-entry checks from the legacy API.
+
+    These supplement the current release gates; they do not replace strict
+    registry discovery or exempt a source because a fixture lacks a manifest.
+    """
+    for path in sorted(ROOT.rglob("*.html")):
+        if any(part in {"node_modules", "dist"} for part in path.relative_to(ROOT).parts):
+            continue
+        source = path.read_text(encoding="utf-8")
+        for _, value in re.findall(r'\b(href|src)=["\']([^"\']+)["\']', source):
+            parsed = urlsplit(value)
+            if parsed.scheme or parsed.netloc or not parsed.path or any(c in value for c in "{}$<>"):
+                continue
+            relative = unquote(parsed.path)
+            if "uploads" in pathlib.PurePosixPath(relative).parts:
+                fail("local-upload-reference", f"{path.relative_to(ROOT)} references local upload {value}")
+            target = ROOT / relative.lstrip("/") if relative.startswith("/") else path.parent / relative
+            if not target.exists():
+                fail("local-link", f"{path.relative_to(ROOT)} references missing {value}")
+        if not path.is_relative_to(ROOT / "templates") or path.name.endswith(".card.html"):
+            continue
+        if path.name != "index.html" and not path.name.endswith(".dc.html"):
+            continue
+        markup = entry_markup(path)
+        if not re.search(r'<meta\b[^>]*name=["\']viewport["\']', source, re.I):
+            fail("template-viewport", f"{path.relative_to(ROOT)} has no viewport declaration")
+        if not re.search(r'<main\b|role=["\']main["\']', markup, re.I):
+            fail("template-main-landmark", f"{path.relative_to(ROOT)} has no main landmark in entry/imported screen")
+        if not re.search(r'<h1\b', markup, re.I):
+            fail("template-heading", f"{path.relative_to(ROOT)} has no h1 in entry/imported screen")
+        if re.search(r'<h1\b[^>]*>\s*(?:Governance|Research|Execution)\s*</h1>', markup, re.I):
+            fail("legacy-workspace", f"{path.relative_to(ROOT)} uses a superseded root workspace name")
+        for number, line in enumerate(blank_comments(source), 1):
+            for match in re.finditer(r"#[0-9A-Fa-f]{3,8}\b", line):
+                before = line[max(0, match.start() - 65):match.start()]
+                if "var(--" not in before and "url(" not in line:
+                    fail("raw-hex", f"{path.relative_to(ROOT)}:{number} bare {match.group(0)}")
+    for path in sorted(ROOT.glob("components/*/*.jsx")):
+        for number, line in enumerate(blank_comments(path.read_text(encoding="utf-8")), 1):
+            for match in re.finditer(r"border-radius\s*:\s*(\d+(?:\.\d+)?)px", line):
+                if float(match.group(1)) > 8:
+                    fail("large-radius", f"{path.relative_to(ROOT)}:{number} radius {match.group(1)}px exceeds 8px")
+
+
+def run_checks(root=ROOT, baseline=None):
+    """Pure structured API; a passed baseline cannot waive current enforcement.
+
+    Small fixture trees omit package release metadata. A real package with a
+    public manifest receives every release gate in addition to document checks.
+    Global CLI state is restored even when malformed input raises an exception.
+    """
+    global ROOT, fails, warns
+    previous = ROOT, fails, warns
+    ROOT, fails, warns = pathlib.Path(root), [], []
+    try:
+        check_components()
+        if (ROOT / "_ds_manifest.json").exists():
+            check_manifest(); check_templates(); check_eligibility(); check_generated()
+        check_document_contracts()
+        violations = []
+        for message in fails:
+            code = message[1:message.index("]")]
+            if code == "trio" and ".prompt.md" in message:
+                code = "prompt-coverage"
+            violations.append(Violation(code, message))
+        return violations
+    finally:
+        ROOT, fails, warns = previous
+
 def main():
     check_components(); check_manifest(); check_templates(); check_eligibility(); check_generated()
+    check_document_contracts()
     for w in warns: print("WARN  " + w)
     for f in fails: print("FAIL  " + f)
     print(f"\n{len(fails)} failures · {len(warns)} warnings")

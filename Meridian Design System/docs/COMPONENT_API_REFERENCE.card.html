@@ -1,11 +1,12 @@
 <!-- @dsCard group="Documentation" viewport="1920x1080" name="Component API Reference" subtitle="Interactive, searchable reference for the exported component API" -->
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Meridian — Component API Reference</title>
   <link rel="stylesheet" href="../styles.css" />
+<link rel="stylesheet" href="../docs/specimen-layout.css">
   <style>
     * { box-sizing: border-box; }
     body {
@@ -65,7 +66,7 @@
     }
     .component-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
       gap: 16px;
     }
     .component-card {
@@ -196,7 +197,7 @@
     }
   </style>
 </head>
-<body>
+<body class="mds-specimen">
   <div class="container">
     <header>
       <h1>Component API Reference</h1>
@@ -207,11 +208,11 @@
       <input
         type="text"
         class="search-input"
-        id="searchInput"
+        id="searchInput" aria-label="Search component API reference"
         placeholder="Search components by name..."
         autocomplete="off"
       />
-      <select class="filter-select" id="categoryFilter">
+      <select class="filter-select" id="categoryFilter" aria-label="Filter components by category">
         <option value="">All categories</option>
         <option value="core">Core UI</option>
         <option value="data">Data & Tables</option>

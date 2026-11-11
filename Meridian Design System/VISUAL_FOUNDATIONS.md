@@ -60,7 +60,7 @@ render as small-caps rather than ALL-CAPS.
 
 ## Elevation, radii, spacing (`ThemeSurfaces.xaml`)
 
-- Radii: unified **2px** across chips, controls, and cards/panels — one tight corner.
+- Radii: **2 / 4 / 6 / 8px** — 2px chips, 4px controls and cards, 6px overlays and 8px dialogs.
   Structure comes from borders, not rounding; the named scale never exceeds 6px (`--radius-xl`,
   large sheets only).
 - Accent bars: 3px metric-card left border; 4px tone-inspector / queue-card left border

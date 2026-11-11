@@ -9,7 +9,10 @@ below its threshold — so token edits that break AA are caught before they ship
 This closes the "known follow-up" in guidelines/ACCESSIBILITY.md: the contrast table there was
 hand-measured; this script re-derives it on every run.
 
-Usage:  python3 scripts/check_contrast.py [--root PATH]
+Usage:  python3 scripts/check_contrast.py [--root PATH] [--scope all|browser]
+
+The default includes native palette/asset parity. --scope browser is an explicit scoped
+check for package/browser work; it never reports the excluded native checks as passed.
 """
 
 from __future__ import annotations
@@ -17,6 +20,7 @@ from __future__ import annotations
 import argparse
 import re
 import sys
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 TOKEN_PATTERN = re.compile(r"(--[a-z0-9-]+)\s*:\s*([^;]+);")
@@ -36,21 +40,19 @@ PAIRS = [
     ("muted text on card",         "--text-muted",     "--bg-light",     4.5),
     ("muted text on header band",  "--text-muted",     "--bg-medium",    4.5),
     ("muted text on hover row",    "--text-muted",     "--bg-hover",     4.5),
-    ("accent text on card",        "--accent",         "--bg-light",     4.5),
-    ("accent-dim text on card",    "--accent-dim",     "--bg-light",     4.5),
-    # The header band is a third surface, and the accent is only 4.39:1 on it — which is why
-    # DenseDataTable's sort arrow and rank, which sit there, now take the dim variant. The
-    # accent keeps a non-text row on the band (borders, icons, the 3:1 threshold); text on the
-    # band is --accent-dim. Checking the accent only against the card and the canvas missed a
-    # pair that ships on every sorted table.
-    ("accent on header band (non-text)", "--accent",   "--bg-medium",    3.0),
-    ("accent-dim text on header band",   "--accent-dim", "--bg-medium",  4.5),
-    ("primary button label",       "--text-on-accent", "--accent",       4.5),
-    # The hover state was omitted here until 2026-09, so a hover fill that failed AA
-    # shipped behind a green gate. All three button states are checked now.
-    ("hover button label",         "--text-on-accent", "--accent-hover", 4.5),
-    ("pressed button label",       "--text-on-accent", "--accent-dim",   4.5),
-    ("focus ring on card",         "--border-focus",   "--bg-light",     3.0),
+    # Signal is an identity/plot role, not body text or a primary action. Measure the
+    # published action and interaction roles rather than imposing the old copper UI.
+    ("signal on header band (non-text)", "--accent", "--bg-medium", 3.0),
+    ("primary button label",       "--ink-inverse", "--brand-axis", 4.5),
+    ("hover button label",         "--ink-inverse", "--check-primary-hover", 4.5),
+    ("pressed button label",       "--ink-inverse", "--check-primary-pressed", 4.5),
+    ("signal-fill label",          "--text-on-accent", "--accent", 4.5),
+    ("link text on card",          "--interaction-link", "--bg-light", 4.5),
+    ("link text on header band",   "--interaction-link", "--bg-medium", 4.5),
+    ("hover link text on card",    "--interaction-link-hover", "--bg-light", 4.5),
+    ("selected row text",          "--text-primary", "--selected-surface", 4.5),
+    ("selection edge on card",     "--interaction-selected", "--bg-light", 3.0),
+    ("focus ring on card",         "--interaction-focus", "--bg-light", 3.0),
     ("LIVE badge label",           "--text-on-fill",   "--mode-live",    4.5),
     ("PAPER badge label",          "--text-on-fill",   "--mode-paper",   4.5),
     ("FIXTURE badge label",        "--text-on-fill",   "--mode-fixture", 4.5),
@@ -77,14 +79,8 @@ WASH_PAIRS = [
     ("orange-dim on orange-a10 wash", "--orange-dim", "--orange", 0.10, "--bg-light", 4.5),
     ("purple-dim on purple-a10 wash", "--purple-dim", "--purple", 0.10, "--bg-light", 4.5),
     ("green-dim on green-a20 wash",   "--green-dim",  "--green",  0.20, "--bg-light", 4.5),
-    # An accent wash lifts the surface toward the accent, so the accent itself loses contrast on
-    # it — 4.41:1 on a card, 4.07 on canvas, 3.87 on the header band, where the steel pair
-    # cleared AA. Same shape as the header-band rows above: the accent is a borders-and-icons
-    # colour on its own wash, and wash *text* is --accent-dim.
-    ("accent on accent wash (non-text)", "--accent",     "--accent", 0.10, "--bg-light",  3.0),
-    ("accent-dim text on accent wash",   "--accent-dim", "--accent", 0.10, "--bg-light",  4.5),
-    ("accent-dim on accent wash, canvas","--accent-dim", "--accent", 0.10, "--bg",        4.5),
-    ("accent-dim on accent wash, band",  "--accent-dim", "--accent", 0.10, "--bg-medium", 4.5),
+    # Signal marks can sit on a signal wash; text uses the semantic/link roles above.
+    ("signal on signal wash (non-text)", "--accent", "--accent", 0.10, "--bg-light", 3.0),
     ("red-dim on red-a20 wash",       "--red-dim",    "--red",    0.20, "--bg-light", 4.5),
     # The actual status chips, foreground token against its own wash, on each surface a chip
     # sits on. Checking only the -dim tokens in the abstract missed that the *-fg tokens were
@@ -179,7 +175,15 @@ def ratio(fg: tuple[float, float, float], bg: tuple[float, float, float]) -> flo
     return (l1 + 0.05) / (l2 + 0.05)
 
 
+def action_tokens(tokens: dict[str, str]) -> dict[str, str]:
+    """The exact source Button expressions, with no extra published token names."""
+    return {**tokens,
+            "--check-primary-hover": "color-mix(in srgb, var(--brand-axis) 88%, var(--bg-light))",
+            "--check-primary-pressed": "color-mix(in srgb, var(--brand-axis) 78%, var(--bg-light))"}
+
+
 def check_mode(mode: str, tokens: dict[str, str]) -> list[str]:
+    tokens = action_tokens(tokens)
     failures = []
     for name, fg_tok, bg_tok, minimum in PAIRS:
         fg = resolve(f"var({fg_tok})", tokens)
@@ -211,136 +215,67 @@ def check_mode(mode: str, tokens: dict[str, str]) -> list[str]:
 
 BRAND_BLOCK = re.compile(r'html\[data-brand="(\w+)"\]\s*\{(.*?)\n\}', re.S)
 
-# Button states a brand can restate. Every white-label variant renders these with the
-# same white label, so each has to clear AA on its own — checking only the default
-# palette let a brand ship an inaccessible primary action.
-BRAND_PAIRS = [("base", "accent"), ("hover", "accent-hover"), ("pressed", "accent-dim")]
+def package_modes(root: Path, brand: dict[str, str] | None = None) -> dict[str, dict[str, str]]:
+    """Apply the published sheet order: colors, theme mapping, final dark overrides.
 
-# Surfaces a brand's accent also drives. Checking only the button states let six brands ship
-# with the default copper focus ring and the default warm-brown ghost fill, because those two
-# tokens were never restated per brand and nothing here looked at them.
-# (name, foreground suffix, background suffix, minimum) — 3.0 is the non-text threshold.
-BRAND_SURFACES = [
-    ("focus ring on card", "border-focus", "bg-light", 3.0),
-    ("body text on ghost", "primary-text", "accent-ghost", 4.5),
-]
-
-# A brand may restate its light identity, its dark identity, or both, in separate blocks.
-# Merge a brand's blocks before checking so each variant is reported once per mode, and so
-# a brand that states only a dark identity is not silently measured against the defaults.
-BRAND_MODES = [("light", "--theme-"), ("dark", "--theme-dark-")]
+    Dark deliberately overrides final component roles, independent of signal branding
+    (colors-dark.css documents this). Inheriting a constant blue focus is intentional.
+    """
+    colors = parse_tokens((root / "tokens/colors.css").read_text(encoding="utf-8"))
+    theme = parse_tokens(BRAND_BLOCK.sub("", (root / "tokens/theme.css").read_text(encoding="utf-8")))
+    light = {**colors, **theme, **(brand or {})}
+    dark = {**light, **parse_tokens((root / "tokens/colors-dark.css").read_text(encoding="utf-8"))}
+    return {"light": light, "dark": dark}
 
 
 def check_brands(root: Path) -> list[str]:
-    """Check each data-brand variant's button states against its own label colour."""
-    text = (root / "tokens" / "theme.css").read_text(encoding="utf-8")
-    # Brand blocks sit above the default dark block in this file, so parsing the whole text
-    # would let the first brand's --theme-dark-* values stand in as "the defaults" for every
-    # brand that omits one. Read the defaults from the text with the brand blocks removed.
-    defaults = parse_tokens(BRAND_BLOCK.sub("", text))
-    merged: dict[str, dict[str, str]] = {}
+    """Check computed semantic roles, including inherited roles, in every brand/mode."""
+    text = (root / "tokens/theme.css").read_text(encoding="utf-8")
+    brands: dict[str, dict[str, str]] = {}
     for brand, body in BRAND_BLOCK.findall(text):
-        merged.setdefault(brand, {}).update(parse_tokens(body))
-
-    failures: list[str] = []
-    for brand, declared in merged.items():
-        stated = {
-            mode: any(f"{prefix}{name}" in declared for _, name in BRAND_PAIRS)
-            for mode, prefix in BRAND_MODES
-        }
-        # A brand that states a light identity but no dark one does not fall back to a
-        # dark version of itself: it inherits the default accent, so the whole white-label
-        # promise silently reverts to copper the moment the OS asks for dark. Six brands
-        # shipped that way. Skipping the unstated mode would also hide it from every check
-        # below, so name it here rather than measure the defaults twice.
-        # A brand exists to replace the accent, so it owes every accent-family token the
-        # default declares — not just the trio. Round six added the focus ring and ghost after
-        # six brands shipped without them; --theme-accent-figure went the same way and was
-        # caught the same way, one round later. Deriving the list from the default means the
-        # next token added there is covered without anyone remembering to add it here.
-        if stated["light"]:
-            family = {name for name in defaults
-                      if name.startswith("--theme-accent") or name == "--theme-border-focus"}
-            missing = sorted(family - set(declared))
-            for name in missing:
-                print(f"[light · brand {brand}] no {name}: inherits the default FAIL")
-                failures.append(
-                    f"[light · brand {brand}] declares an accent but no {name}; it would render "
-                    "the default's value while the rest of the identity changes")
-        if stated["light"] and not stated["dark"]:
-            print(f"[dark · brand {brand}] no dark identity: inherits the default accent FAIL")
-            failures.append(
-                f"[dark · brand {brand}] declares a light accent but no --theme-dark-accent*; "
-                "it would render the default accent in dark mode"
-            )
-        for mode, prefix in BRAND_MODES:
-            # Only report a mode the brand actually restates; otherwise it inherits the
-            # default palette, which the light/dark passes above already cover.
-            if not stated[mode]:
-                continue
-            tokens = {**defaults, **declared}
-            label = tokens.get(f"{prefix}text-on-accent", "#FFFFFF")
-            for state, name in BRAND_PAIRS:
-                token = f"{prefix}{name}"
-                if token not in tokens:
-                    continue
-                fg, bg = resolve(label, tokens), resolve(f"var({token})", tokens)
-                if fg is None or bg is None:
-                    continue
-                value = ratio(fg, bg)
-                status = "ok" if value >= 4.5 else "FAIL"
-                print(f"[{mode} · brand {brand}] {state} button label: {value:.2f}:1 (min 4.5) {status}")
-                if status == "FAIL":
-                    failures.append(f"[{mode} · brand {brand}] {state} button label: {value:.2f}:1 < 4.5")
-            for name, fg_name, bg_name, minimum in BRAND_SURFACES:
-                fg = resolve(f"var({prefix}{fg_name})", tokens)
-                bg = resolve(f"var({prefix}{bg_name})", tokens)
-                if fg is None or bg is None:
-                    continue
-                value = ratio(fg, bg)
-                status = "ok" if value >= minimum else "FAIL"
-                print(f"[{mode} · brand {brand}] {name}: {value:.2f}:1 (min {minimum}) {status}")
-                if status == "FAIL":
-                    failures.append(f"[{mode} · brand {brand}] {name}: {value:.2f}:1 < {minimum}")
+        brands.setdefault(brand, {}).update(parse_tokens(body))
+    failures = []
+    for brand, declared in brands.items():
+        for mode, tokens in package_modes(root, declared).items():
+            failures.extend(check_mode(f"{mode} · brand {brand}", tokens))
     return failures
 
 
-# The browser workstation keeps a parallel --ws-* track in its own index.css, and its
-# DesignSystemButton reads --ws-accent-hover rather than the canonical --accent-hover. That
-# track shipped a 3.86:1 hover behind a green gate because nothing here looked at it.
-WS_STATES = [("base", "--ws-accent"), ("hover", "--ws-accent-hover"), ("pressed", "--ws-accent-pressed")]
 WS_INDEX = Path("src/Meridian.Ui/dashboard/src/styles/index.css")
-# Tailwind --primary-foreground, as HSL triples: white in light, near-black ink in dark.
-WS_LABEL = {"light": (255.0, 255.0, 255.0), "dark": (26.0, 21.0, 18.0)}
+WS_STATES = [("base", "--brand-axis"), ("hover", "--ws-primary-hover"), ("pressed", "--ws-primary-pressed")]
+
+
+def scoped_tokens(text: str, selector: str) -> dict[str, str]:
+    """Read declarations from exact leaf selectors, using CSS's last declaration wins."""
+    out = {}
+    for match in re.finditer(r"([^{}]+)\{([^{}]*)\}", blank_comments(text)):
+        if selector not in [part.strip() for part in match.group(1).split(",")]:
+            continue
+        out.update(dict(TOKEN_PATTERN.findall(match.group(2))))
+    return {name: value.strip() for name, value in out.items()}
 
 
 def check_workstation(root: Path) -> list[str]:
-    """Check the browser workstation's --ws-* button states, which are not in this package."""
+    """Measure actual workstation action roles, never the unrelated ws-accent signal."""
     index = root.parent / WS_INDEX
     if not index.exists():
-        return []  # package used standalone, without the monorepo around it
+        return []
     text = index.read_text(encoding="utf-8")
-    # First declaration of each token is the light block; the dark blocks follow.
-    blocks = {"light": {}, "dark": {}}
-    for m in re.finditer(r"(--ws-accent(?:-hover|-pressed)?)\s*:\s*(#[0-9A-Fa-f]{6})\s*;", text):
-        tok, val = m.group(1), m.group(2)
-        blocks["light"].setdefault(tok, val)
-    for m in re.finditer(r"prefers-color-scheme:\s*dark(.*)", text, re.S):
-        for d in re.finditer(r"(--ws-accent(?:-hover|-pressed)?)\s*:\s*(#[0-9A-Fa-f]{6})\s*;", m.group(1)):
-            blocks["dark"].setdefault(d.group(1), d.group(2))
-        break
-
-    failures: list[str] = []
-    for mode, tokens in blocks.items():
-        label = WS_LABEL[mode]
-        for state, tok in WS_STATES:
-            if tok not in tokens:
+    # The explicit light/dark selectors are complete, avoid accidentally parsing OS-dark
+    # declarations into the light map (or HSL channel aliases as literal RGB values).
+    modes = {mode: scoped_tokens(text, f':root[data-theme="{mode}"]') for mode in ("light", "dark")}
+    failures = []
+    for mode, tokens in modes.items():
+        fg = resolve("var(--ink-inverse)", tokens)
+        for state, token in WS_STATES:
+            bg = resolve(f"var({token})", tokens)
+            if fg is None or bg is None:
+                failures.append(f"[{mode} · workstation] {state} button label: cannot resolve action roles")
                 continue
-            value = ratio(label, hex_to_rgb(tokens[tok]))
-            status = "ok" if value >= 4.5 else "FAIL"
-            print(f"[{mode} \u00b7 workstation] {state} button label: {value:.2f}:1 (min 4.5) {status}")
-            if status == "FAIL":
-                failures.append(f"[{mode} \u00b7 workstation] {state} button label: {value:.2f}:1 < 4.5")
+            value = ratio(fg, bg)
+            print(f"[{mode} · workstation] {state} button label: {value:.2f}:1 (min 4.5) {'ok' if value >= 4.5 else 'FAIL'}")
+            if value < 4.5:
+                failures.append(f"[{mode} · workstation] {state} button label: {value:.2f}:1 < 4.5")
     return failures
 
 
@@ -439,6 +374,31 @@ def tracks(root: Path) -> dict[str, list[Path]]:
     }
 
 
+def production_paths(base: Path):
+    """Production sources and shipped artifacts; tests are evidence, not rendered CSS."""
+    for path in ([base] if base.is_file() else sorted(base.rglob("*"))):
+        if not path.is_file() or (path != base and path.suffix not in CALL_SITE_SUFFIXES):
+            continue
+        if re.search(r"(?:^|[./_-])(?:test|spec)(?:[./_-]|$)", path.name) or path.name.endswith(".d.ts"):
+            continue
+        yield path
+
+
+STYLE_VALUE = re.compile(r"(?:[\w-]+[\"']?\s*:\s*[^;{}]*|\[[^\]]*)var\(")
+
+
+def style_lines(path: Path, text: str):
+    """A var() is CSS only in a declaration/value or an arbitrary-style class.
+
+    Scanning all JavaScript strings incorrectly treated GovernanceLints' replacement
+    string 'var(--x)' and test assertions as styles shipped to the browser.
+    """
+    text = blank_comments(text)
+    for lineno, line in enumerate(text.splitlines(), 1):
+        if path.suffix == ".css" or STYLE_VALUE.search(line):
+            yield lineno, line
+
+
 def check_var_chains(root: Path) -> list[str]:
     """Fail when a bare var() names a token its own track never declares.
 
@@ -456,6 +416,26 @@ def check_var_chains(root: Path) -> list[str]:
         declared: set[str] = set()
         for f in files:
             declared |= set(DECL_NAME.findall(blank_comments(f.read_text(encoding="utf-8"))))
+        graph = {}
+        for f in files:
+            for name, value in parse_tokens(f.read_text(encoding="utf-8")).items():
+                graph.setdefault(name, set()).update(re.findall(r"var\(\s*(--[a-zA-Z0-9-]+)", value))
+        complete, cycles = set(), set()
+        def visit(name, pending):
+            if name in pending:
+                cycle = pending[pending.index(name):]
+                cycles.add(tuple(sorted(cycle)))
+                return
+            if name in complete:
+                return
+            for ref in graph.get(name, set()):
+                if ref in graph:
+                    visit(ref, [*pending, name])
+            complete.add(name)
+        for name in graph:
+            visit(name, [])
+        for cycle in sorted(cycles):
+            failures.append(f"[var-chain] {track}: cyclic custom-property dependency: {', '.join(cycle)}")
         for f in files:
             text = blank_comments(f.read_text(encoding="utf-8"))
             for lineno, line in enumerate(text.splitlines(), 1):
@@ -483,18 +463,14 @@ def check_var_chains(root: Path) -> list[str]:
     for track, base in call_sites(root):
         if not base.exists():
             continue
-        for path in ([base] if base.is_file() else sorted(base.rglob("*"))):
-            if path != base and path.suffix not in CALL_SITE_SUFFIXES:
-                continue
+        for path in production_paths(base):
             text = path.read_text(encoding="utf-8", errors="replace")
-            if path.suffix == ".css":
-                text = blank_comments(text)
             declared = workstation_tokens if track == "workstation" else package_tokens
             local = set(DECL_NAME.findall(text)) | set(JS_DECL_NAME.findall(text))
-            for lineno, line in enumerate(text.splitlines(), 1):
+            for lineno, line in style_lines(path, text):
                 for ref in BARE_REF.findall(line):
                     checked += 1
-                    if ref in declared or ref in local or ref in KNOWN_UNDECLARED:
+                    if ref in declared or ref in local or ref in KNOWN_UNDECLARED or ref.startswith(LOCAL_PREFIXES):
                         continue
                     failures.append(f"[var-chain] {_rel(path, root)}:{lineno}: bare var({ref}) with "
                                     "no fallback names a token this track never declares — it "
@@ -649,122 +625,57 @@ KNOWN_UNDECLARED = frozenset({
 
 
 def check_fallbacks(root: Path) -> list[str]:
-    """Every `var(--token, literal)` literal must be the value that token resolves to.
+    """Validate fallback reachability, not equality with a value that prevents it rendering.
 
-    The literal is what renders wherever the stylesheet is absent — a component pasted into a
-    consuming app, a static export, a card rendered on its own. A literal left on the previous
-    palette is invisible in the app and wrong everywhere else, which is exactly how the
-    superseded colours survived three rounds of review. Only the RGB channels are compared:
-    the alpha on a wash fallback is the author's opacity choice, not a palette value.
-
-    A token the package never declares is a failure rather than a skip. The fallback is then
-    not a fallback at all — it is what renders always, stylesheet or no stylesheet — and
-    skipping it reported success over a live defect (`--accent-a10`, never declared, kept the
-    case-queue selection wash on the superseded steel).
+    CSS var(--defined, fallback) uses the defined custom property. Its fallback need not
+    equal that value (and cannot equal both light and dark values). Missing dependencies,
+    cycles and undeclared names are still failures: those make the fallback load-bearing.
+    Token contrast checks measure the values actually rendered; bundle parity still proves
+    that the shipped rules match their sources. A fallback is not an allowance for a missing
+    public token, even if its literal looks acceptable in one theme.
     """
-    # A fallback renders in place of the LIGHT default, so colors.css and theme.css are
-    # authoritative here; colors-dark.css must never win. The remaining sheets only widen the
-    # set of names the package declares (elevation, typography, motion), which is what lets a
-    # composite like `var(--focus-ring, 2px solid #…)` be checked at all.
-    package_tokens = {**parse_tokens((root / "tokens" / "theme.css").read_text(encoding="utf-8")),
-                      **parse_tokens((root / "tokens" / "colors.css").read_text(encoding="utf-8"))}
-    for sheet in sorted((root / "tokens").glob("*.css")):
-        if sheet.name in ("colors.css", "colors-dark.css", "theme.css"):
-            continue
-        for name, value in parse_tokens(sheet.read_text(encoding="utf-8")).items():
-            package_tokens.setdefault(name, value)
-    # The workstation is its own track and declares tokens the package never will (the chart
-    # overlay channels, for one). Resolving its call sites against the package's table reported
-    # every one of those as undeclared, which is how seven live chart channels reached a
-    # "known gap" list instead of being fixed.
-    workstation = root.parent / WORKSTATION_TRACK[0]
-    workstation_tokens = dict(package_tokens)
-    if workstation.exists():
-        workstation_tokens.update(parse_tokens(workstation.read_text(encoding="utf-8")))
-    superseded = superseded_values(root)
-    failures: list[str] = []
-    notes: list[str] = []
-    checked = 0
+    token_sets = {}
+    for track, paths in tracks(root).items():
+        tokens = {}
+        sheets = sorted((root / "tokens").glob("*.css")) if track == "package" else paths
+        for sheet in sheets:
+            if sheet.exists():
+                for name, value in parse_tokens(sheet.read_text(encoding="utf-8")).items():
+                    tokens.setdefault(name, value)
+        token_sets[track] = tokens
+    failures, checked, guarded = [], 0, 0
     for track, base in call_sites(root):
         if not base.exists():
             continue
-        paths = [base] if base.is_file() else sorted(base.rglob("*"))
-        for path in paths:
-            if not path.is_file():
-                continue
-            if path != base and path.suffix not in CALL_SITE_SUFFIXES:
-                continue
+        tokens = token_sets[track]
+        for path in production_paths(base):
             text = path.read_text(encoding="utf-8", errors="replace")
-            if path.suffix == ".css":
-                text = blank_comments(text)
             local = set(DECL_NAME.findall(text)) | set(JS_DECL_NAME.findall(text))
-            tokens = workstation_tokens if track == "workstation" else package_tokens
-            for lineno, line in enumerate(text.splitlines(), 1):
+            for lineno, line in style_lines(path, text):
                 for found in VAR_CALL.finditer(line):
-                    if not found.group(2):        # no comma: no fallback to check
+                    if not found.group(2):
                         continue
                     parsed = split_var_call(line, found.start())
                     if parsed is None:
                         continue
                     name, fallback = parsed
-                    if not fallback or not (HEX_LITERAL.search(fallback)
-                                            or RGBA_LITERAL.search(fallback)):
+                    if not fallback or not (HEX_LITERAL.search(fallback) or RGBA_LITERAL.search(fallback)):
                         continue
-                    if name not in tokens:
-                        if name.startswith(LOCAL_PREFIXES) or name in local:
-                            continue
-                        checked += 1
-                        stale = [h for h in HEX_LITERAL.findall(fallback)
-                                 if len(h) == 7 and h.upper() in superseded]
-                        where = f"{_rel(path, root)}:{lineno}: var({name}, …)"
-                        if name in KNOWN_UNDECLARED and not stale:
-                            notes.append(f"[fallback-note] {where} — undeclared (known gap)")
-                            continue
-                        detail = (f"so {', '.join(stale)} is what renders, always"
-                                  if stale else "so the literal is what renders, always")
-                        failures.append(f"[fallback] {where} — the package declares no such "
-                                        f"token, {detail}")
+                    checked += 1
+                    if name in tokens or name in local or name.startswith(LOCAL_PREFIXES):
+                        guarded += 1
                         continue
-                    wants = token_colours(tokens[name], tokens)
-                    if not wants:
+                    # Existing known-gap debt remains visible as a note, never grows here.
+                    if name in KNOWN_UNDECLARED:
+                        print(f"[fallback-note] {_rel(path, root)}:{lineno}: existing undeclared {name}")
                         continue
-                    hexes = HEX_LITERAL.findall(fallback)
-                    rgbas = RGBA_LITERAL.findall(fallback)
-                    gots: list[tuple[float, float, float] | None] = []
-                    for literal in hexes:
-                        gots.append(hex_to_rgb(literal))
-                    for r, g, b in rgbas:
-                        gots.append((float(r), float(g), float(b)))
-                    # A wash token's literal carries the hue at the author's own alpha. Follow
-                    # bare aliases first: --blue-a10 is declared as var(--accent-a10), and the
-                    # color-mix only appears one level down.
-                    mix = MIX_ALPHA.match(deref(name, tokens))
-                    if mix:
-                        hue = resolve(mix.group(1), tokens)
-                        wants = [hue] if hue is not None else []
-                    for index, got in enumerate(gots):
-                        if got is None or index >= len(wants):
-                            continue
-                        want = wants[index]
-                        checked += 1
-                        if max(abs(want[i] - got[i]) for i in range(3)) > 1.0:
-                            shown = (hexes + [f"rgb({r},{g},{b})" for r, g, b in rgbas])[index]
-                            failures.append(
-                                f"[fallback] {_rel(path, root)}:{lineno}: var({name}, …{shown}…) — "
-                                f"the token resolves to "
-                                f"#{round(want[0]):02X}{round(want[1]):02X}{round(want[2]):02X}")
-    for stale_entry in sorted(KNOWN_UNDECLARED & tokens.keys()):
-        failures.append(f"[fallback] {stale_entry} is declared now — drop it from "
-                        "KNOWN_UNDECLARED so the exemption cannot outlive the gap")
-    for f in failures[:10]:
-        print(f)
-    if notes:
-        print(f"[fallback-note] {len(notes)} call site(s) name one of the "
-              f"{len(KNOWN_UNDECLARED)} known-undeclared tokens")
-    if failures:
-        print(f"[fallback] {len(failures)} of {checked} literals disagree with the token they guard")
-    else:
-        print(f"[fallback] all {checked} literals mirror the token they guard")
+                    failures.append(f"[fallback] {_rel(path, root)}:{lineno}: var({name}, …) — this track declares no such token; the fallback is always active")
+    # This debt list belongs to package consumers, not similarly named workstation aliases.
+    for name in sorted(KNOWN_UNDECLARED & set(token_sets["package"])):
+        failures.append(f"[fallback] {name} is declared now — drop it from KNOWN_UNDECLARED so the exemption cannot outlive the gap")
+    for failure in failures[:10]:
+        print(failure)
+    print(f"[fallback] {checked} production fallback expressions, {guarded} guarded by declared/local tokens; {len(failures)} undeclared dependencies")
     return failures
 
 
@@ -925,16 +836,36 @@ BRAND_RETIRED = frozenset({
     "#07101C", "#0F1B28", "#111C28", "#152838", "#1B334B", "#21405D", "#29425C",
     "#1A6BB5", "#0EA5E9", "#16A34A", "#3B82F6", "#60A5FA", "#67E8F9", "#86EFAC", "#84F3B6",
 })
-BRAND_FONTS = ("Space Grotesk", "IBM Plex", "JetBrains Mono", "Inter")
+GENERIC_FONTS = {"serif", "sans-serif", "monospace", "system-ui", "ui-sans-serif", "ui-monospace"}
 
 
-def check_brand_assets(root: Path) -> list[str]:
+def primary_font(stack: str) -> str:
+    return stack.split(",", 1)[0].strip().strip("\"'")
+
+
+def svg_fonts(text: str) -> set[str]:
+    tree = ET.fromstring(text)
+    stacks = []
+    for node in tree.iter():
+        if node.get("font-family"):
+            stacks.append(node.get("font-family"))
+        stacks.extend(re.findall(r"font-family\s*:\s*([^;}]+)", node.get("style", "")))
+        if node.tag.rsplit("}", 1)[-1] == "style":
+            stacks.extend(re.findall(r"font-family\s*:\s*([^;}]+)", node.text or ""))
+    return {primary_font(stack) for stack in stacks}
+
+
+
+def check_brand_assets(root: Path, scope: str = "all") -> list[str]:
     """No brand asset may carry a retired colour or font, and the copies must agree."""
     repo = root.parent
     failures: list[str] = []
     checked = 0
     canonical = repo / BRAND_DIRS[0]
-    for rel in BRAND_DIRS:
+    fonts = root / "tokens/fonts.css"
+    loaded = {primary_font(value) for value in re.findall(r"font-family\s*:\s*([^;]+)", blank_comments(fonts.read_text(encoding="utf-8")))} if fonts.exists() else set()
+    directories = [rel for rel in BRAND_DIRS if scope == "all" or "Meridian.Wpf" not in str(rel)]
+    for rel in directories:
         base = repo / rel
         if not base.exists():
             continue
@@ -945,10 +876,12 @@ def check_brand_assets(root: Path) -> list[str]:
             if hits:
                 failures.append(f"[brand] {_rel(path, root)}: {', '.join(hits)} — a retired-identity "
                                 "colour in an asset the workstation chrome renders")
-            fonts = [f for f in BRAND_FONTS if f in text]
-            if fonts:
-                failures.append(f"[brand] {_rel(path, root)}: names {', '.join(fonts)}, a face the "
-                                "package no longer loads")
+            try:
+                unavailable = sorted(svg_fonts(text) - loaded - GENERIC_FONTS)
+                if unavailable:
+                    failures.append(f"[brand] {_rel(path, root)}: primary face {', '.join(unavailable)} is not loaded by the package")
+            except ET.ParseError as error:
+                failures.append(f"[brand] {_rel(path, root)}: invalid SVG: {error}")
             source = canonical / path.name
             if base != canonical and source.exists() and \
                     source.read_text(encoding="utf-8").rstrip("\n") != text.rstrip("\n"):
@@ -957,7 +890,7 @@ def check_brand_assets(root: Path) -> list[str]:
     for f in failures[:10]:
         print(f)
     if not failures:
-        print(f"[brand] all {checked} brand asset(s) across {len(BRAND_DIRS)} track(s) carry the "
+        print(f"[brand] all {checked} brand asset(s) across {len(directories)} selected track(s) carry the "
               "current identity and agree")
     return failures
 
@@ -1156,10 +1089,9 @@ def check_elevation_guidance(root: Path) -> list[str]:
     return failures
 
 
-def run_checks(root: Path) -> list[str]:
-    light = parse_tokens((root / "tokens" / "colors.css").read_text(encoding="utf-8"))
-    dark_overrides = parse_tokens((root / "tokens" / "colors-dark.css").read_text(encoding="utf-8"))
-    dark = {**light, **dark_overrides}
+def run_checks(root: Path, scope: str = "all") -> list[str]:
+    modes = package_modes(root)
+    light, dark = modes["light"], modes["dark"]
     return (check_mode("light", light) + check_mode("dark", dark)
             + check_brands(root) + check_workstation(root)
             + check_ws_aliases(root) + check_comment_terminators(root)
@@ -1167,16 +1099,20 @@ def run_checks(root: Path) -> list[str]:
             + check_card_metadata(root) + check_doc_palette(root)
             + check_elevation_guidance(root) + check_bundle_parity(root)
             + check_tailwind_literals(root) + check_catalog_palette(root)
-            + check_runtime_palette(root)
+            + (check_runtime_palette(root) if scope == "all" else [])
             + check_accent_on_wash(root)
-            + check_brand_assets(root))
+            + check_brand_assets(root, scope))
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parent.parent)
+    parser.add_argument("--scope", choices=("all", "browser"), default="all",
+                        help="all (default) preserves native WPF palette/asset parity guards; browser explicitly excludes native assets/palette without certifying them")
     args = parser.parse_args()
-    failures = run_checks(args.root)
+    if args.scope == "browser":
+        print("[scope] browser only: native WPF palette and asset parity checks were not selected; they are not passed by this command")
+    failures = run_checks(args.root, args.scope)
     if failures:
         print("\nContrast failures:", file=sys.stderr)
         for f in failures:

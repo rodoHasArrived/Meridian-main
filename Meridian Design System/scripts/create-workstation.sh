@@ -81,8 +81,8 @@ cat > "$PROJECT_DIR/screens/ExampleScreen.html" << 'ENDSCREEN'
     .section h2 { font-size: 18px; font-weight: 600; margin-bottom: 12px; }
     .controls { display: flex; gap: 12px; flex-wrap: wrap; }
     input, select { padding: 8px 12px; border: 1px solid var(--border, #E4E3DE); background: var(--bg-light, #FBFAF8); font-size: 13px; }
-    input:focus, select:focus { outline: none; border-color: var(--border-focus, #A85436);
-      box-shadow: 0 0 0 2px var(--accent-a10, rgba(168,84,54,.2)); }
+    input:focus-visible, select:focus-visible { outline: var(--focus-ring);
+      outline-offset: var(--focus-ring-offset); border-color: var(--interaction-focus); }
   </style>
 </head>
 <body>
