@@ -1,11 +1,11 @@
 {
-  "total_files": 799,
+  "total_files": 802,
   "orphaned_count": 259,
   "no_heading_count": 157,
   "stale_count": 0,
-  "todo_count": 328,
+  "todo_count": 329,
   "health_score": 83,
-  "signal_digest": "sha256:55ce72343f082bf5514735e1a2ef59b8402b1c7f71473a239c30ac1e6447a0e9",
+  "signal_digest": "sha256:5d3c8cf2955cb0db47b5a171f32f45382a52a5cf2ea696868baf85e164905836",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -3215,6 +3215,13 @@
       "stale": false
     },
     {
+      "path": "docs/product/plans/next-work-determination-2026-11-01.md",
+      "has_heading": true,
+      "todo_count": 1,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/product/plans/product-roadmap-priorities-2026-07.md",
       "has_heading": true,
       "todo_count": 1,
@@ -3267,6 +3274,20 @@
       "path": "docs/product/review-history.md",
       "has_heading": true,
       "todo_count": 1,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/product/single-principal-attestation-acceptance-matrix-2026-11-02.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/product/single-principal-attestation-policy-proposal-2026-11-02.md",
+      "has_heading": true,
+      "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
