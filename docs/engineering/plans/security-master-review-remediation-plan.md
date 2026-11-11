@@ -331,7 +331,8 @@ removed) is rebuilt into its next economic document, and when that reproduces th
 byte-for-byte the carry is dropped — the flat row IS the document. Byte equality is the
 strictest possible test, failing closed to keeping the carry on any difference or exception:
 image documents written by the current serializer shed it (CertificateOfDeposit and
-StructuredCredit twins do today; Bond's floating-coupon twin does not yet and keeps it);
+StructuredCredit twins did at this increment; Bond's floating-coupon twin did not then, and
+does since the stage-3 contraction — every class's image now sheds it, pinned per class);
 historical shapes and hand-written documents keep it with fold-on-read, and refusals refuse
 unchanged. No stored payload is rewritten. Pinned by the derived-verdict gate theory over every
 declared class, the class-aware retained pins (now per-class facts), and the regenerated corpus
@@ -592,3 +593,9 @@ lists, per class and embedded module, the members the row carries, and `validate
 the rest (`term_member_not_persisted`) and a conflicting value in a member the row derives
 (`term_member_value_not_persisted`). The list was derived from the flat codec's own round trip
 and is held to it by `SecurityKindPersistenceTests`. See the review record.
+
+A second gap in the fold is closed too. The fix above covered the stage-3 homes; a value in a
+field the document carried before stage 3 (a call date, an issuer name, a reference index) was
+still refilled after an amendment cleared it. The write path now flattens and rebuilds the
+retained document's own flat row and treats whatever that rebuild populates as held by the row,
+so only values the row never held fold back. Replay output is unchanged.

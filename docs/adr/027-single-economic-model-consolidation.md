@@ -94,9 +94,8 @@ stages are ordered so each is independently valuable and the decision can stop a
 | Economic↔flat loss ledger | `src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs` | `BridgedModules` / `DroppedModules` |
 | Event families | `src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs` | `EconomicDefinition` vs legacy `SecurityProjection` |
 
-Every component above is existing evidence. Stage 1 is in progress as remediation-plan slice 10
-(per-module increments with their own proof obligations); stages 2 and 3 are accepted but not
-started.
+Every component above is existing evidence. At acceptance stage 1 was in progress as
+remediation-plan slice 10 and stages 2 and 3 had not started; the status below is current.
 
 *Status at 2026-11-11:* stages 1 and 2 are complete. Both codec arms are asserted from the
 schema and every class's scalar decode is schema-bound (S3-D, 32 of 32). S3-E now replaces every
@@ -105,7 +104,8 @@ and complete declared schedules. Each field group has replay checks; a global re
 requires every stored field on all 32 payloads to use a registered module type. The permanent
 legacy upcaster and retained-history fold remain. Every term rule is now expressed on the
 definition surface; the codec-only validator that held the remainder is removed. A record is
-refused any module member its class's flat row does not persist. See the
+refused any module member its class's flat row does not persist, and the retained-history fold
+no longer refills a value the row held and a revision cleared. See the
 remediation plan's follow-through section for current-output extensions and compatibility
 boundaries.
 
