@@ -876,7 +876,7 @@ public sealed partial class ReportingGovernanceCoordinatorService : IReportingGo
                 $"Only an approved, successfully executed run can retain artifacts and release; run '{run.RunId}' is {run.ExecutionState}/{run.GovernanceState}.");
         }
 
-        ReportingGovernanceCanonicalValidation.ValidateFinalReleaseSnapshot(run.Snapshot);
+        ReportingGovernanceCanonicalValidation.ValidateReleaseSnapshot(run);
 
         var releaseAuthority = ResolveAuthority(caller, run.Scope);
         var retained = await ReadAndVerifyRetainedPackageAsync(

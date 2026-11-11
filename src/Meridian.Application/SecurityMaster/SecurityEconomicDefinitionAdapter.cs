@@ -5,7 +5,7 @@ using Meridian.FSharp.Domain;
 
 namespace Meridian.Application.SecurityMaster;
 
-internal static class SecurityEconomicDefinitionAdapter
+internal static partial class SecurityEconomicDefinitionAdapter
 {
     /// <summary>
     /// Stored classification labels come from the F# domain's explicit name functions, never from the
@@ -99,6 +99,7 @@ internal static class SecurityEconomicDefinitionAdapter
             : economic.LegacyAssetClass;
 
         if (economic.LegacyAssetSpecificTerms is null
+            && !SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.CanRecoverEquityCapital(economic.EconomicTerms, legacyAssetClass)
             && (HasPreferredClassification(economic)
                 || SecurityAssetClassCatalog.GetOrDefault(legacyAssetClass).SupportsEquityClassification
                 || (SecurityAssetClassCatalog.GetOrDefault(economic.AssetClass).SupportsEquityClassification
@@ -122,9 +123,9 @@ internal static class SecurityEconomicDefinitionAdapter
         // The flat family is keyed per asset class, so the fallback flattens against the record's
         // asset class: every value the economic document carries (call dates, pool factors, issuer
         // identity, sweep, fund and financing terms) lands at that class's declared flat key. It is
-        // still lossy for what the economic document never held — a swap's legs, a bond's
-        // subclass, an option's listing detail (SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.UnrecoverableKeys)
-        // — so the payload is stamped with FlattenedFromMarkerProperty and a projection rebuilt
+        // still lossy for fields a historical economic document never held (see
+        // SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.UnrecoverableKeys), so the payload
+        // is stamped with FlattenedFromMarkerProperty and a projection rebuilt
         // through this route stays distinguishable from one whose flat terms were always present.
         // Retained flat terms are read at the class's current terms version (ADR-024); the flattened
         // branch is already stamped at it.
@@ -161,10 +162,10 @@ internal static class SecurityEconomicDefinitionAdapter
     /// Byte equality is deliberately the strictest test: image documents written by the current
     /// serializer pass; historical shapes (the pre-increment-5 module set, different member
     /// forms) and hand-shaped documents fail and keep the carry with its fold-on-read, and any
-    /// exception on the trial rebuild fails closed to keeping it. The single tolerated
-    /// difference is a module key added after this gate shipped that the image predates and the
-    /// rebuild emits null (<see cref="EqualsBeforeLaterModuleKeys"/>), so serializer growth does
-    /// not undo the retirement for images already stored. No stored payload is rewritten — this
+    /// exception on the trial rebuild fails closed to keeping it. Later null module keys and an
+    /// exact declared-schedule fragment independently recoverable from the historical summaries
+    /// have narrowly bounded equality proofs (<see cref="EqualsBeforeLaterModuleKeys"/>), so
+    /// serializer growth does not undo the retirement for images already stored. No stored payload is rewritten — this
     /// changes only what a freshly rebuilt projection carries.
     /// </summary>
     private static JsonElement StripRetainedWhenLossless(JsonElement flattened, SecurityEconomicDefinitionRecord economic)
@@ -180,7 +181,7 @@ internal static class SecurityEconomicDefinitionAdapter
             var candidate = ToProjection(economic with { LegacyAssetSpecificTerms = candidateTerms });
             var rebuilt = ToEconomicRecord(candidate).EconomicTerms;
             return string.Equals(rebuilt.GetRawText(), economic.EconomicTerms.GetRawText(), StringComparison.Ordinal)
-                   || EqualsBeforeLaterModuleKeys(rebuilt, economic.EconomicTerms)
+                   || EqualsBeforeLaterModuleKeys(rebuilt, economic.EconomicTerms, candidate.AssetClass)
                 ? candidateTerms
                 : flattened;
         }
@@ -191,13 +192,15 @@ internal static class SecurityEconomicDefinitionAdapter
     }
 
     /// <summary>
-    /// The one difference the gate tolerates: a module key the serializer gained after the gate
+    /// The ordinary difference the gate tolerates: a module key the serializer gained after the gate
     /// shipped (<see cref="SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.ModulesAddedAfterIdentityGate"/>)
     /// that the source image predates and the rebuild emits null. Such a rebuild carries nothing
     /// the source does not, so the carry is still redundant. A later-module key the rebuild
-    /// populates, or one the source itself carries, is compared as written.
+    /// populates, or one the source itself carries, is compared as written. The exact declared
+    /// schedule home also has a narrow derivation proof: when absent from the source, it may add
+    /// exactly the frozen historical bridge's recovered schedule fragment and no other fact.
     /// </summary>
-    private static bool EqualsBeforeLaterModuleKeys(JsonElement rebuilt, JsonElement source)
+    internal static bool EqualsBeforeLaterModuleKeys(JsonElement rebuilt, JsonElement source, string assetClass)
     {
         if (rebuilt.ValueKind != JsonValueKind.Object || source.ValueKind != JsonValueKind.Object)
         {
@@ -210,7 +213,8 @@ internal static class SecurityEconomicDefinitionAdapter
         {
             if (!source.TryGetProperty(module, out _)
                 && node.TryGetPropertyValue(module, out var value)
-                && value is null)
+                && (value is null || module == "declaredSchedule"
+                    && DeclaredScheduleDerivesFromHistoricalSummary(source, value, assetClass)))
             {
                 node.Remove(module);
                 removed = true;
@@ -222,6 +226,27 @@ internal static class SecurityEconomicDefinitionAdapter
                    JsonSerializer.SerializeToElement(node).GetRawText(),
                    source.GetRawText(),
                    StringComparison.Ordinal);
+    }
+
+    private static bool DeclaredScheduleDerivesFromHistoricalSummary(JsonElement source,
+        JsonNode declaration, string assetClass)
+    {
+        // This source predates the exact home. Recover only what the frozen legacy summary
+        // bridge knows, without calling the application adapter or its identity gate again.
+        // Extra dates, windows, notice terms, roll or lag declarations cannot pass this proof.
+        try
+        {
+            var legacy = SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(source, assetClass).Payload;
+            var fragment = new JsonObject();
+            foreach (var field in new[] { SecurityVersionedTerms.ScheduleConventionsKey, SecurityVersionedTerms.CallScheduleKey, SecurityVersionedTerms.PutScheduleKey })
+                if (legacy.TryGetProperty(field, out var value))
+                    fragment[field] = JsonNode.Parse(value.GetRawText());
+            return JsonNode.DeepEquals(fragment, declaration);
+        }
+        catch (Exception exception) when (exception is InvalidOperationException or ArgumentException or JsonException)
+        {
+            return false;
+        }
     }
 
     private static JsonElement RemoveRetainedKey(JsonElement flattened)
@@ -552,8 +577,65 @@ internal static class SecurityEconomicDefinitionAdapter
                 customProfileId = definition.Terms.ProfileEnvelope.Value.CustomProfileId,
                 profileVersion = definition.Terms.ProfileEnvelope.Value.ProfileVersion,
                 terms = EmbedProfileDocument(definition.Terms.ProfileEnvelope.Value.TermsJson)
-            }
+            },
+            creditProtection = definition.Terms.CreditProtection is null ? null : new
+            {
+                referenceEntity = definition.Terms.CreditProtection.Value.ReferenceEntity,
+                referenceObligation = definition.Terms.CreditProtection.Value.ReferenceObligation is null ? null : definition.Terms.CreditProtection.Value.ReferenceObligation.Value,
+                protectionSide = definition.Terms.CreditProtection.Value.ProtectionSide,
+                seniority = definition.Terms.CreditProtection.Value.Seniority is null ? null : definition.Terms.CreditProtection.Value.Seniority.Value,
+                restructuringClause = definition.Terms.CreditProtection.Value.RestructuringClause is null ? null : definition.Terms.CreditProtection.Value.RestructuringClause.Value,
+                upfrontPoints = definition.Terms.CreditProtection.Value.UpfrontPoints,
+                recoveryRateAssumption = definition.Terms.CreditProtection.Value.RecoveryRateAssumption,
+                indexName = definition.Terms.CreditProtection.Value.IndexName is null ? null : definition.Terms.CreditProtection.Value.IndexName.Value
+            },
+            structuredPayoff = definition.Terms.StructuredPayoff is null ? null : new
+            {
+                underlyingDescription = definition.Terms.StructuredPayoff.Value.UnderlyingDescription,
+                principalProtectionPct = definition.Terms.StructuredPayoff.Value.PrincipalProtectionPct,
+                participationRate = definition.Terms.StructuredPayoff.Value.ParticipationRate,
+                returnCap = definition.Terms.StructuredPayoff.Value.ReturnCap,
+                barrierLevel = definition.Terms.StructuredPayoff.Value.BarrierLevel
+            },
+            privateAssetValuation = definition.Terms.PrivateAssetValuation is null ? null : new
+            {
+                vintage = definition.Terms.PrivateAssetValuation.Value.Vintage,
+                navDate = definition.Terms.PrivateAssetValuation.Value.NavDate,
+                lockup = definition.Terms.PrivateAssetValuation.Value.Lockup is null ? null : definition.Terms.PrivateAssetValuation.Value.Lockup.Value,
+                ownershipPercent = definition.Terms.PrivateAssetValuation.Value.OwnershipPercent,
+                costBasis = definition.Terms.PrivateAssetValuation.Value.CostBasis,
+                latestValuation = definition.Terms.PrivateAssetValuation.Value.LatestValuation,
+                transferRestrictions = definition.Terms.PrivateAssetValuation.Value.TransferRestrictions is null ? null : definition.Terms.PrivateAssetValuation.Value.TransferRestrictions.Value,
+                addressOrMarket = definition.Terms.PrivateAssetValuation.Value.AddressOrMarket is null ? null : definition.Terms.PrivateAssetValuation.Value.AddressOrMarket.Value,
+                appraisalValue = definition.Terms.PrivateAssetValuation.Value.AppraisalValue,
+                valuationDate = definition.Terms.PrivateAssetValuation.Value.ValuationDate,
+                debtStack = definition.Terms.PrivateAssetValuation.Value.DebtStack is null ? null : definition.Terms.PrivateAssetValuation.Value.DebtStack.Value
+            },
+            listingDetail = definition.Terms.ListingDetail is null ? null : new
+            {
+                optChainId = definition.Terms.ListingDetail.Value.OptChainId is null ? null : definition.Terms.ListingDetail.Value.OptChainId.Value,
+                settlementType = definition.Terms.ListingDetail.Value.SettlementType is null ? null : definition.Terms.ListingDetail.Value.SettlementType.Value,
+                isAdjusted = definition.Terms.ListingDetail.Value.IsAdjusted,
+                lastTradingDt = definition.Terms.ListingDetail.Value.LastTradingDt,
+                rootSymbol = definition.Terms.ListingDetail.Value.RootSymbol is null ? null : definition.Terms.ListingDetail.Value.RootSymbol.Value,
+                contractMonth = definition.Terms.ListingDetail.Value.ContractMonth is null ? null : definition.Terms.ListingDetail.Value.ContractMonth.Value,
+                firstNoticeDt = definition.Terms.ListingDetail.Value.FirstNoticeDt,
+                deliveryMonthDt = definition.Terms.ListingDetail.Value.DeliveryMonthDt,
+                deliveryLocationCode = definition.Terms.ListingDetail.Value.DeliveryLocationCode is null ? null : definition.Terms.ListingDetail.Value.DeliveryLocationCode.Value,
+                isRollTarget = definition.Terms.ListingDetail.Value.IsRollTarget,
+                rollWindowDays = definition.Terms.ListingDetail.Value.RollWindowDays
+            },
+            bondCoupon = definition.Terms.BondCoupon is null ? (JsonElement?)null : Meridian.FSharp.SecurityMasterInterop.StructuralTermsJson.coupon(definition.Terms.BondCoupon.Value),
+            principalSchedule = definition.Terms.PrincipalSchedule is null ? (JsonElement?)null : Meridian.FSharp.SecurityMasterInterop.StructuralTermsJson.principal(definition.Terms.PrincipalSchedule.Value),
+            swapLegs = definition.Terms.SwapLegs is null ? (JsonElement?)null : Meridian.FSharp.SecurityMasterInterop.StructuralTermsJson.swapLegs(definition.Terms.SwapLegs.Value),
+            loanCovenants = definition.Terms.LoanCovenants is null ? (JsonElement?)null : Meridian.FSharp.SecurityMasterInterop.StructuralTermsJson.covenants(definition.Terms.LoanCovenants.Value)
         });
+        if (definition.Terms.RateConvention is { } rateConvention)
+        {
+            var expanded = JsonNode.Parse(document.GetRawText())!;
+            expanded["rateConvention"] = JsonSerializer.SerializeToNode(new { rateUnit = rateConvention.Value.RateUnit });
+            document = JsonSerializer.SerializeToElement(expanded);
+        }
         // Keep byte-identical economics for records without a dated history. The additive field
         // carries real typed observations; no accounting reader needs the retained flat copy.
         if (definition.Terms.StructuredProduct is { } structured && !structured.Value.FactorScheduleEntries.IsEmpty)
@@ -565,9 +647,13 @@ internal static class SecurityEconomicDefinitionAdapter
                     asOfDate = entry.AsOfDate,
                     factor = entry.Factor
                 }));
-            return JsonSerializer.SerializeToElement(expanded);
+            document = JsonSerializer.SerializeToElement(expanded);
         }
-        return document;
+        document = AppendExactDebtModules(document, definition);
+        document = AppendExactRateModules(document, definition);
+        document = AppendExactReferenceModules(document, definition);
+        document = AppendExactCapitalModules(document, definition);
+        return AppendExactScheduleModules(document, definition);
     }
 
     /// <summary>

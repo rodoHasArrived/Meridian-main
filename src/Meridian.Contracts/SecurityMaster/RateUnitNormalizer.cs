@@ -3,6 +3,9 @@ namespace Meridian.Contracts.SecurityMaster;
 /// <summary>The declared unit a stored rate value is expressed in.</summary>
 public enum RateUnit
 {
+    /// <summary>A retained declaration the node cannot interpret; calculations refuse it.</summary>
+    Unrecognized = -1,
+
     /// <summary>A plain fraction: 0.045 is four and a half percent.</summary>
     Fraction,
 
@@ -94,6 +97,9 @@ public static class RateUnitNormalizer
     /// <summary>Reads <paramref name="value"/> against an already-resolved field declaration.</summary>
     public static RateUnitResolution Normalize(SecurityRateFieldDeclaration? field, decimal value, RateUnit? recordDeclaredUnit = null)
     {
+        // An explicit malformed declaration must never revive a field default (notably Deposit).
+        if (recordDeclaredUnit == RateUnit.Unrecognized && (field is null || field.HonorsRecordUnit))
+            return new RateUnitResolution.Undeclared(value);
         RateUnit unit;
         RateUnitSource source;
         if (recordDeclaredUnit is { } declared && (field is null || field.HonorsRecordUnit))

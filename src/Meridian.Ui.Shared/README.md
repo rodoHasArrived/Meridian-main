@@ -11,6 +11,15 @@ last_reviewed: 2026-11-11
 
 # src/Meridian.Ui.Shared
 
+Security Master trust snapshots include read-only `Governance` evidence from the effective
+`ISecurityMasterGovernanceRequirements` snapshot: profile, source, restart latch, enforced review
+requirements and ignored contradictory configuration. Browser and WPF show the same host decision;
+an unavailable requirements seam remains unavailable rather than implying Standard defaults.
+The snapshot also carries the selected terms' Base cash-flow calculation blocker at the snapshot's
+evaluation time through `GetProjectionBlockerAsync`, a passive read that retains no receipt. Typed
+signed-interest refusals remain visible to both clients and prevent payment, cash-flow, ledger and
+close readiness; current reads never recalculate a legacy receipt to obtain it.
+
 Margin Control Center reads and certifications are tenant-scoped: `GET /api/workstation/reconciliation/margin-control` and `POST /api/workstation/reconciliation/margin-control/certifications` require tenant and company scope and show or certify only retained snapshots whose import was recorded against an active fund account whose fund is held by the caller's tenant and company, and whose external account id matches (case-insensitively) one of that same fund account's identifiers: account code, custodian sub-account number, bank account number or IBAN. External ids are unique only within a provider, so an id match alone never admits another tenant's evidence. Both routes fail closed: they return 403 when the tenant context, `IAccountQueryService` or `IFundProfileTenancyRegistry` is unavailable; a fund whose ownership cannot be resolved contributes no accounts; evidence retained before the importing fund account was recorded is not shown; and certifying a snapshot outside the caller's scope returns the same 404 as an unknown snapshot. `MarginControlCenterReadService.GetAsync` and `CertifyAsync` take that scope as an optional `MarginEvidenceOwner` predicate (recorded fund account, provider and external account id); `null` shows every retained account and is reserved for trusted in-process callers.
 
 Sampling endpoints bound `sampleSize` to 1..100,000, reject confidence or margin-of-error values outside (0, 1), keep at most 50 saved samples in memory, report `no_data` instead of inventing a population of 100,000, honour cancellation while counting, and no longer echo the storage root.
@@ -38,6 +47,78 @@ does, then `BondExerciseNoticeWatch` lists each declared call or put window as `
 `DeadlineElapsed` or `NotStated` within a 1–366 day horizon (default 90). The route has the same tenant
 scope and `ViewSecurityMaster`/`ModifySecurityMaster` permission as analytics. Windows record no notice
 and grant no exercise authority; an elapsed deadline needs retained notice evidence.
+
+Capital-call intake resolves frozen call plans and approved commitment terms from durable
+private-capital authority. Legacy caller-supplied totals are consistency checks. Trusted automated
+intake alone retains `PrivateCapitalAuthorityJson`; client edits cannot replace it. Draft review
+checks scope, dates, amounts and retained bank evidence, while final storage repeats authority and
+ceiling checks atomically. Unavailable authority and changed or voided funding sources refuse
+intake/review rather than falling back to attested totals.
+Native issuance derives called capital from posting receipts for the exact commitment as of the
+notice date, so two approved commitments sharing an investor and capital account retain independent
+callable balances. Shared approval and posting checks also protect future effective commitment terms
+and already-posted future issuance throughout the retained timeline.
+
+## Commitment-to-cash authority
+
+The browser capital-call workbench uses `/api/ledger/private-capital` over the shared
+`PrivateCapitalLifecycleService`. Every request resolves tenant/company from authenticated context
+and fund, entity and currency from an already-owned entity ledger book. Commitment revisions require
+accepted, integrity-verified scoped Evidence Vault documents. Preview and retained-call intake check
+the exact open accounting period; journal submission, independent review and posting remain separate.
+Amounts use exact decimal text on this HTTP surface.
+
+Native funding requires stable receipt and bank-transaction identities, a supported capital cash-in
+classification, matching entity/date/currency/amount, and retained source evidence. The final
+PostgreSQL append rechecks bank authority in the same database and records the economic receipt in
+the journal transaction. Missing authority, historical capital without opening reconciliation,
+unsupported book shapes, and changed preview inputs fail closed. This first slice supports funding
+within the call's accounting period; it does not infer legacy openings or execute payments.
+
+`POST /api/ledger/private-capital/bank-observations?ledgerBookId=...` imports a reviewed
+`BankEvidence`/`BankStatement` JSON document into Banking. The request supplies only `evidenceLink`
+and `documentId`; source bytes supply the positive settled Credit observation. Scope, original-byte
+SHA-256, accepted review, dates and exact `NUMERIC(19,4)` representation are checked before retention.
+Exact source retries recover the retained observation; changed inputs or collisions refuse. This
+operation neither posts cash nor initiates a payment and establishes no live-provider compatibility.
+
+Capital-call notices use the existing governed Reporting lifecycle and an explicit deployment-owned
+investor-to-recipient binding under `PrivateCapital:NoticeRecipients`. Investor IDs are not assumed
+to be login IDs. Each mapping supplies `TenantId`, `CompanyId`, `FundProfileId`, `InvestorId`, and
+`RecipientPrincipalId`, and `ReviewGroupPrincipalId`; the configured secure delivery destination is
+checked independently. The retained review group supports independent approval and release without
+widening the investor audience to other LPs.
+Before generation, `CapitalCallNoticeReportingService` reconciles the frozen investor installment
+to its exact posted issuance, retaining an operational receipt through
+the existing Reporting evidence store. This receipt does not claim accounting-close completion.
+Only the named notice template may release its restricted, independently approved operational
+snapshot while the period is open; financial reports keep their Final and committed-close gates.
+Unrelated close-queue changes do not alter that immutable issuance proof; the dedicated receipt
+branch checks exact notice, investor, commitment and source bindings before accepting it.
+Generation, approval, release, delivery and cash settlement remain distinct outcomes. Workbench
+notice summaries come from retained reporting and delivery records, never browser-local status.
+
+The notice POST body uses `{ "operationId": "<UUID>", "commitmentId": "<commitment>" }`. A retry reuses that exact body and
+recovers the exact retained run before reading current call or ledger inputs. The server binds it
+to the authenticated actor and full scope/call/investor/commitment identity; collisions refuse. Deliberate
+regeneration uses a new UUID. Durable PostgreSQL Reporting create claims and the original
+certified parameters preserve one run across concurrent hosts and lost responses; current access
+and permissions are still checked on recovery. Configure `MERIDIAN_REPORTING_CONNECTION_STRING`
+(or its documented ledger fallback) so `IReportingRunStore` resolves to
+`PostgresReportingRunStore`; file-backed compatibility stores do not support notice generation.
+Each notice covers one complete posted commitment installment. Multiple commitments for the same
+investor in one call receive separate notices with exact commitment/journal filters, and retained
+summaries carry `CommitmentId`. The optional selector may be omitted for new generation only when
+the investor has one call installment. Existing pending operations whose original body omitted it
+retain that omitted-selector body and original hash; adding or changing a selector under the same
+UUID is a conflicting request.
+An authenticated recovery of an exact retained Failed operation returns HTTP 409 with
+`code: notice_operation_failed` and its exact `runId`; the failed manifest and audit remain intact.
+For a pending intent, only that confirmed terminal outcome permits the UI's explicit
+new-generation action. Other errors retain the original pending intent for recovery.
+
+Focused validation uses the `PrivateCapital` and `CapitalCall` test filters in `Meridian.Tests`,
+with `EnableWindowsTargeting=true` and a configured PostgreSQL ledger test connection.
 
 Portfolio cash-ladder composition supplies the configured business-day calendars to the shared Instruments scenario engine. Declared issuer-call and holder-put scenarios use retained projection terms and calendar hashes; floating shocks consume retained per-reset inputs. Scenario blockers remain visible through the existing decision-readiness response; no new approval or payment authority is introduced. The optional `engineVersion` query selects explicit `portfolio-cash-ladder-v1` replay; an unknown version returns a blocked ladder with no contributions that names the unsupported version rather than falling back silently.
 

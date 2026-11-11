@@ -11,6 +11,12 @@ last_reviewed: 2026-11-11
 
 # src/Meridian.Storage
 
+Security Master migration 062 now checks its apply conditions in the runner without changing
+the shipped SQL: upgrades require explicit stopped-writer and retired-legacy-writer attestations,
+hold source-table write locks through commit, and refuse the usual thirty-second command timeout
+above one million identifier rows. Fresh installations and already-applied restarts are exempt
+from upgrade attestations. See the [migration procedure](../../docs/operators/security-master-governed-edit-rollout.md#identifier-history-migration-062).
+
 `BackfillStatusStore` keeps a verified coverage sidecar (`_status/backfill-symbol-coverage.json`, atomic write): per symbol, granularity, provider and feed, the session ranges whose bars were written. Backfill resume reads only this sidecar; the date-only checkpoint and bar-count sidecars remain for status surfaces and are not evidence for skipping. An unreadable or newer-format coverage file is treated as no coverage. `BackfillCoverageMath` owns the range merge and missing-range arithmetic.
 
 `JsonlBackfillBarWriter` gives every granularity its own file prefix (`bar_4hour`, `bar_weekly`, `bar_monthly` alongside the existing ones) and throws for an unknown granularity instead of writing it as `bar_daily`.
@@ -24,7 +30,30 @@ Archive maintenance status counts today's executions from the start of the UTC d
 `CompositeSink` tolerates individual sink failures under `ContinueOnPartialFailure` only while at least
 one sink accepts the write. When no sink accepts an append, or no sink can be flushed because every
 circuit is open, it throws, so the pipeline never treats an unpersisted event as durable or truncates
-the WAL holding it.
+the WAL holding it. Under `FailOnAnyFailure` an append also throws while any sink's circuit breaker
+is open, instead of skipping that sink and writing to the healthy ones only.
+
+Native capital-call journals require approved commitment/call authority at the final PostgreSQL
+append boundary. Posting serializes with commitment amendments, rechecks the effective revision,
+unchanged allocation basis and remaining capacity, and commits one receipt with the journal.
+Commitment approval, call retention, and final issuance validate cumulative called capital at every
+posted issuance and effective-revision date under that same lock. Allocation is measured as of the
+notice date while approved future reductions and later posted calls remain binding on the timeline.
+External capital-call append transactions must use `ReadCommitted` or `Serializable`; repeatable-read
+and other unsupported isolation levels refuse before any capital write because their retained
+snapshot can hide a successor approval after the commitment lock is acquired. Ordinary journals
+retain their existing transaction contract.
+Competing drafts reserve no capacity. Funding additionally locks the retained `CapitalCallFunding`
+bank transaction in the same database and enforces unique receipt/bank-line consumption. The
+`PrivateCapitalBankingSchema` ledger option defaults to `banking`; absent or separate-database
+banking authority refuses funding. Unreconciled historical capital activity blocks native posting.
+
+Ledger migration `054` adds private-capital commitment revisions, immutable call plans, and posting
+receipts in the same PostgreSQL database as journals. `PostgresPrivateCapitalStore` checks retained
+book/entity/currency ownership and serializes commitment amendments with final posting through the
+same commitment advisory-lock identity. Historical capital journals without native receipts require
+opening reconciliation. Funding receipt and bank-line uniqueness span the owning tenant/company,
+and database triggers protect approved authority, retained calls, and posting receipts from rewrite.
 
 Governed short opening/cover now binds explicit direction to the authoritative Short/Liability
 position and liability carrying account. Opening debits cash and credits retained proceeds;

@@ -57,12 +57,14 @@ public sealed class SecurityAssetClassTermsUpgradeWiringTests
         SecurityMasterMapping.ToRecord(Record(V1Text)).Kind.Should().Be(v2);
         SecurityMasterMapping.ToRecord(Record(UnstampedText)).Kind.Should().Be(v2);
 
-        // The guard still sees the stored payload before the hook. Version 5 adds the readable
-        // calculation companion; the next version remains unsupported.
+        // The guard still sees the stored payload before the hook. A synthetic future stamp
+        // must remain unsupported as independently versioned optional fields advance this class.
+        var reads = SecurityAssetClassCatalog.GetReadsTermsThrough("StructuredCredit");
+        var future = reads + 1;
         var newer = () => SecurityMasterMapping.ToRecord(
-            Record(V1Text.Replace("\"assetClassTermsVersion\":1", "\"assetClassTermsVersion\":6", StringComparison.Ordinal)));
+            Record(V1Text.Replace("\"assetClassTermsVersion\":1", $"\"assetClassTermsVersion\":{future}", StringComparison.Ordinal)));
         newer.Should().Throw<InvalidOperationException>()
-            .WithMessage("Unsupported assetClassTermsVersion '6' for asset class 'StructuredCredit'; this node reads versions 1 through 5.");
+            .WithMessage($"Unsupported assetClassTermsVersion '{future}' for asset class 'StructuredCredit'; this node reads versions 1 through {reads}.");
     }
 
     // A StructuredCredit row stamped 3 by a node that writes version 3; this node reads it ahead of
@@ -101,26 +103,12 @@ public sealed class SecurityAssetClassTermsUpgradeWiringTests
             FSharpOption<string>.Some("Percent"),
             FSharpOption<string>.Some("DayCount"));
         var expected = SecurityKind.NewStructuredCredit(new StructuredCreditTerms(
-            v2Terms.Tranche,
-            v2Terms.PoolId,
-            v2Terms.CollateralType,
-            v2Terms.OriginalFace,
-            v2Terms.CurrentFactor,
-            v2Terms.CouponOrIndex,
-            v2Terms.FactorSchedule,
-            v2Terms.FactorScheduleEntries,
-            v2Terms.Maturity,
-            v2Terms.Kind,
-            v2Terms.Seniority,
-            v2Terms.AttachmentPoint,
-            v2Terms.DetachmentPoint,
-            v2Terms.WeightedAverageCoupon,
-            v2Terms.WeightedAverageMaturityMonths,
-            v2Terms.WeightedAverageLoanAgeMonths,
-            v2Terms.ReinvestmentPeriodEnd,
-            v2Terms.NonCallPeriodEnd,
-            conventions,
-            CallPutSchedulesModule.Empty));
+            v2Terms.CouponTerms,
+            v2Terms.TrancheContract,
+            v2Terms.Pool,
+            v2Terms.Dates,
+            new DeclaredScheduleTerms(conventions, CallPutSchedulesModule.Empty),
+            null));
         v2Terms.ScheduleConventions.Should().Be(ScheduleConventionsModule.Empty);
 
         SecurityMasterMapping.ToRecord(Record(WithScheduleConventions(V3Text))).Kind.Should().Be(expected);
@@ -209,26 +197,12 @@ public sealed class SecurityAssetClassTermsUpgradeWiringTests
     // The same terms with only the call and put schedules replaced.
     private static SecurityKind StructuredCreditWith(StructuredCreditTerms terms, CallPutSchedules schedules)
         => SecurityKind.NewStructuredCredit(new StructuredCreditTerms(
-            terms.Tranche,
-            terms.PoolId,
-            terms.CollateralType,
-            terms.OriginalFace,
-            terms.CurrentFactor,
-            terms.CouponOrIndex,
-            terms.FactorSchedule,
-            terms.FactorScheduleEntries,
-            terms.Maturity,
-            terms.Kind,
-            terms.Seniority,
-            terms.AttachmentPoint,
-            terms.DetachmentPoint,
-            terms.WeightedAverageCoupon,
-            terms.WeightedAverageMaturityMonths,
-            terms.WeightedAverageLoanAgeMonths,
-            terms.ReinvestmentPeriodEnd,
-            terms.NonCallPeriodEnd,
-            terms.ScheduleConventions,
-            schedules));
+            terms.CouponTerms,
+            terms.TrancheContract,
+            terms.Pool,
+            terms.Dates,
+            new DeclaredScheduleTerms(terms.ScheduleConventions, schedules),
+            null));
 
     [Fact]
     public void Mapping_ReadsVersionFourAsVersionTwo_PlusTheBlockAndTheCallAndPutSchedulesItDeclares()

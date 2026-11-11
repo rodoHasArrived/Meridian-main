@@ -6,10 +6,17 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-10-31
+last_reviewed: 2026-11-11
 ---
 
 # src/Meridian.Contracts
+
+`SecurityRecordRateUnit` reads the optional governed `rateUnit` declaration on scalar-rate
+classes that lack schedule anchors. Fraction, Percent and BasisPoints are explicit stored units;
+absence adds no default, and older stamped rows keep stray declarations inert. The `rateConvention`
+economic module preserves the declaration on replay. An invalid retained declaration refuses
+normalization instead of reviving a field default. New unit versions keep calculation-only
+companions and swap leg conventions read-only through the schema's authoring flag.
 
 `LedgerCurrencyRounding.RoundCurrency(amount, currency)` rounds to the currency's minor units via `CurrencyMinorUnits` (0 for JPY, 3 for KWD/BHD, 2 otherwise).
 
@@ -19,6 +26,24 @@ The optional field and `BondAnalyticsResult.SpreadDv01` are omitted from fixed/z
 These are calculation display contracts; they do not introduce discount margin or posting authority.
 
 `BondContractualEconomics` owns declared per-100 coupon cash, reference-period stub fractions, accrued interest and discounting time. `BondExerciseEconomics` shares fixed-price whole-redemption dates and cash across analytics and cash forecasts. `BondExerciseNoticeWatch` reads the same scenarios' notice bounds into dated notice windows for the workstation notice watch, refusing every structure fixed analytics refuses; `EvaluateToMaturity` is the same read without the horizon, used by the asset-operations obligation timeline. `BondFloatingRateEvidence` freezes each observed or forecast reset with explicit units, source, spread, cap/floor, principal and accrual fraction. New declared lot previews use `canonical-lot-amortization-v5`; v1–v3 retain their original arithmetic and dispatch. The interim v4 declared model was removed before any instruction was produced and is refused as an unsupported version.
+
+`PrivateCapitalLifecycleDtos` binds approved commitment revisions, frozen per-investor call plans,
+funding receipt identities, and notice summaries to explicit tenant/company/entity/fund/book/currency
+scope. Posted amounts are observations; caller-supplied totals and generic entity assignments do
+not establish commitment authority. Historical journals retain their original contracts and keys.
+
+`PrivateCapitalBankObservationSourceDto` describes a reviewed settled incoming bank observation.
+Import commands select an exact Evidence Vault document; they do not accept caller-supplied money
+or create a payment. The retained source hash and document identity explain the imported bank row.
+
+`SecurityInterestSupport` supplies the typed `NegativeInterestUnsupported` capability blocker for
+unsigned cash-flow, obligation and ledger readers. This is separate from a rate field's validity:
+negative fixings and spreads can still produce a supported positive coupon after contractual floors.
+
+Economic replay has explicit module homes for commodity quantity units, digital-asset networks,
+underlying exposure and exact leverage, settlement methods, raw classification labels, fund-share
+behavior and operational pricing/fixing sources. These homes recover class-owned flat fields without
+converting their labels or units; operational source names grant no calculation authority.
 
 `CashFlows/` owns the versioned calculation-only cash-flow contracts, exercise/notice resolution, standard make-whole formulas, structured coupon/principal walks, deterministic CPR/SMM/PSA prepayments, and replay verification. The `cashFlowContract` companion reads ahead of existing write ceilings; undeclared terms and existing call/put element shapes remain unchanged. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).
 
@@ -332,6 +357,9 @@ more separately identified child lots. Every target carries an approved positive
 original/current transaction and functional basis, acquisition FX and holding period. Independent
 currency residuals go to the final target. Dividend/purchase recipes, linked cash cases and new
 holding periods cannot use this carried-basis path; taxable spin-offs remain outside it.
+`OpenLotValidation` reconciles a retained functional basis to transaction basis times acquisition
+FX within one minor unit of the functional currency and never less than 0.01, so a basis rounded
+to whole yen or won is accepted while a two-decimal currency keeps the one-cent bound.
 Only the refunded successor receives `ScheduleD`; unsupported action or allocation shapes fail
 validation. Optional instruction fields are omitted when absent to preserve earlier payloads.
 Successor lot labels must already be trimmed before fingerprinting or drafting, remain distinct,

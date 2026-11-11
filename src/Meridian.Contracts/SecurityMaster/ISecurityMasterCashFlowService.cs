@@ -29,6 +29,14 @@ public interface ISecurityMasterCashFlowService
     Task<StructuredCashFlowProjectionDto?> GetProjectionAsync(SecurityDetailDto security, StructuredCashFlowScenario scenario, BondCalculationContext context, CancellationToken ct = default)
         => GetProjectionAsync(security.SecurityId, scenario, context, ct);
 
+    /// <summary>
+    /// Reads the Base calculation's capability refusal on the supplied selected terms and cutoffs.
+    /// This passive read retains no calculation receipt and exposes no unretained receipt identity.
+    /// An implementation without a read-only capability path must refuse rather than fall back to capture.
+    /// </summary>
+    Task<SecurityCashFlowBlockerDto?> GetProjectionBlockerAsync(SecurityDetailDto security, BondCalculationContext context, CancellationToken ct = default)
+        => throw new NotSupportedException("This cash-flow service does not support read-only capability evaluation.");
+
     /// <summary>Captures selected inputs for callers to retain with their calculation evidence.</summary>
     Task<SecurityCashFlowCalculationReceipt?> CaptureProjectionAsync(Guid securityId, StructuredCashFlowScenario scenario, BondCalculationContext context, CancellationToken ct = default)
         => Task.FromResult<SecurityCashFlowCalculationReceipt?>(null);

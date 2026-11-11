@@ -346,7 +346,7 @@ public sealed class BondAnalyticsService : IBondAnalyticsService
             if (leg.FloorRate is { } floor)
                 rate = Math.Max(rate, leg.RateUnit == SecurityCouponRateUnit.Percent ? floor / 100m : floor);
             if (rate < 0m)
-            { code = "CashFlowRefused"; refusal = "Negative floating coupon cash requires a supported signed-interest model."; return false; }
+            { code = SecurityInterestSupport.NegativeInterestUnsupported; refusal = SecurityInterestSupport.NegativeInterestReason; return false; }
             if (!BondContractualEconomics.TryCoupon(period, schedule, dayCount, rate, declared.Conventions.CouponCashBasis, out var interest, out refusal))
             { code = "CashFlowRefused"; return false; }
             if (period.AccrualStart <= settlement && settlement < period.AccrualEnd)

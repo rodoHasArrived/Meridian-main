@@ -42,6 +42,7 @@ public static class LedgerStoreExtensions
         services.AddSingleton<IAutomatedJournalPostingTarget>(sp =>
             sp.GetRequiredService<DurableAutomatedJournalPoster>());
         services.AddSingleton<PostgresAccountingConfigurationStore>();
+        services.AddSingleton<IPrivateCapitalStore, PostgresPrivateCapitalStore>();
         services.AddSingleton<IAccountingConfigurationStore>(sp => sp.GetRequiredService<PostgresAccountingConfigurationStore>());
         services.AddSingleton<IAccountingActionAuditStore>(sp => sp.GetRequiredService<PostgresAccountingConfigurationStore>());
         services.AddSingleton<LedgerMigrationRunner>();

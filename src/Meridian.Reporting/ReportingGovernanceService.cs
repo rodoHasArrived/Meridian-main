@@ -356,7 +356,7 @@ public sealed class ReportingGovernanceService
                     throw InvalidState(run, "release only a successfully executed and approved run");
                 }
 
-                ReportingGovernanceCanonicalValidation.ValidateFinalReleaseSnapshot(run.Snapshot);
+                ReportingGovernanceCanonicalValidation.ValidateReleaseSnapshot(run);
                 ReportingGovernanceCanonicalValidation.ValidateCompleteClientPackageRelease(
                     run.RunId,
                     run.Snapshot,

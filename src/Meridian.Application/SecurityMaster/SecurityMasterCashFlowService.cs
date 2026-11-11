@@ -336,7 +336,7 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         IReadOnlyDictionary<string, SecurityForwardCurve>? forwardCurves = null,
         StructuredCashFlowTerms? resolvedTerms = null)
         => BuildCalculatedProjectionCore(security, sourceKind, scenario, staleness, sourceLastUpdatedUtc,
-            asOf, calendars, forwardCurves, resolvedTerms, unifiedEconomics: false);
+            asOf, calendars, forwardCurves, resolvedTerms, unifiedEconomics: false, rejectNegativeInterest: false);
 
     private static StructuredCashFlowProjectionDto BuildCalculatedProjectionCore(
         SecurityDetailDto security,
@@ -347,7 +347,7 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         DateTimeOffset asOf,
         IBusinessDayCalendarSource? calendars,
         IReadOnlyDictionary<string, SecurityForwardCurve>? forwardCurves = null,
-        StructuredCashFlowTerms? resolvedTerms = null, bool unifiedEconomics = true)
+        StructuredCashFlowTerms? resolvedTerms = null, bool unifiedEconomics = true, bool rejectNegativeInterest = true)
     {
         var terms = resolvedTerms ?? StructuredCashFlowTermsResolver.Resolve(security);
         if (!unifiedEconomics && terms.Legs is not null)
@@ -394,10 +394,10 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         {
             if (declared.IsDeclared)
                 return BuildDeclaredBondLegProjection(security, sourceKind, scenario, staleness, sourceLastUpdatedUtc,
-                    terms, declared, asOf, asOfDate, forwardCurves, unifiedEconomics);
+                    terms, declared, asOf, asOfDate, forwardCurves, unifiedEconomics, rejectNegativeInterest);
             return BuildLegBasedProjection(
                 security, sourceKind, scenario, staleness, sourceLastUpdatedUtc,
-                terms, factorSchedule, issueDate, maturity, asOf, asOfDate, forwardCurves);
+                terms, factorSchedule, issueDate, maturity, asOf, asOfDate, forwardCurves, rejectNegativeInterest);
         }
 
         if (terms.HasStepCouponSchedule || terms.InflationIndex is not null)
@@ -436,13 +436,13 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
             return BuildDeclaredProjection(
                 security, sourceKind, scenario, staleness, sourceLastUpdatedUtc, asOf, asOfDate, terms,
                 declared, principalBasis, outstanding, contractualPrincipal.Length > 0,
-                hasAssertedPrincipalSchedule && inWindowContractual.Length == 0, unifiedEconomics);
+                hasAssertedPrincipalSchedule && inWindowContractual.Length == 0, unifiedEconomics, rejectNegativeInterest);
         }
 
         // The coupon's unit is the field's declared default (the record declares none on this legacy
         // path); without one the projection is blocked rather than guessing from the magnitude.
         var couponField = SecurityRateFieldUnits.CouponFieldKey(security.AssetClass);
-        var coupon = RateUnitNormalizer.Normalize(security.AssetClass, couponField, terms.CouponRate.Value);
+        var coupon = RateUnitNormalizer.Normalize(security.AssetClass, couponField, terms.CouponRate.Value, terms.RecordRateUnit);
         if (!coupon.TryGetFraction(out var couponFraction))
         {
             return Empty(RateUnitNormalizer.DescribeRefusal(coupon, security.AssetClass, couponField));
@@ -451,6 +451,9 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         var annualRate = couponFraction + ScenarioRateShift(scenario);
         if (annualRate < 0m)
         {
+            if (rejectNegativeInterest)
+                return Empty(SecurityInterestSupport.NegativeInterestReason) with { Blocker = SecurityInterestSupport.NegativeInterestBlocker };
+            // Frozen v1/v2 receipt replay retains its original arithmetic.
             annualRate = 0m;
         }
 
@@ -622,7 +625,7 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         DateOnly maturity,
         DateTimeOffset asOf,
         DateOnly asOfDate,
-        IReadOnlyDictionary<string, SecurityForwardCurve>? forwardCurves)
+        IReadOnlyDictionary<string, SecurityForwardCurve>? forwardCurves, bool rejectNegativeInterest)
     {
         var legs = terms.Legs!;
         var missingLegRate = legs.Any(leg => IsLegRateMissing(leg, ResolveCurve(leg, forwardCurves)));
@@ -634,9 +637,16 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
                 var curve = ResolveCurve(leg, forwardCurves);
                 legSchedules.Add(new StructuredCashFlowLegSchedule(
                     leg.LegId, leg.RateKind, leg.Direction,
-                    BuildLegSchedule(security.AssetClass, leg, terms, scenario, issueDate, maturity, asOfDate, curve),
+                    BuildLegSchedule(security.AssetClass, leg, terms, scenario, issueDate, maturity, asOfDate, curve, rejectNegativeInterest),
                     DescribeRateSource(leg, curve)));
             }
+        }
+        catch (NegativeInterestUnsupportedException)
+        {
+            return new StructuredCashFlowProjectionDto(
+                security.SecurityId, sourceKind, scenario, asOf, [], staleness,
+                sourceLastUpdatedUtc, factorSchedule, terms, BlockedReason: SecurityInterestSupport.NegativeInterestReason)
+            { Blocker = SecurityInterestSupport.NegativeInterestBlocker };
         }
         catch (RateUnitUnavailableException ex)
         {
@@ -691,7 +701,7 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         DateOnly issueDate,
         DateOnly maturity,
         DateOnly asOfDate,
-        SecurityForwardCurve? curve = null)
+        SecurityForwardCurve? curve = null, bool rejectNegativeInterest = true)
     {
         if (IsLegRateMissing(leg, curve))
             return [];
@@ -719,7 +729,7 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
             // An amortizing or accreting leg accrues on the notional in effect at the period start;
             // without a schedule this is the leg notional for every period, as before.
             var periodNotional = leg.NotionalOn(accrualStart, notional);
-            var annualRate = ResolveLegAnnualRate(assetClass, leg, scenario, curve, accrualStart, asOfDate);
+            var annualRate = ResolveLegAnnualRate(assetClass, leg, scenario, curve, accrualStart, asOfDate, rejectNegativeInterest, terms.RecordRateUnit);
             var interest = annualRate > 0m
                 ? RoundCash(periodNotional * annualRate * DayCountConventions.Fraction(dayCount, accrualStart, date))
                 : 0m;
@@ -747,7 +757,7 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         StructuredCashFlowScenario scenario,
         SecurityForwardCurve? curve,
         DateOnly accrualStart,
-        DateOnly asOfDate)
+        DateOnly asOfDate, bool rejectNegativeInterest, RateUnit? recordUnit)
     {
         // Fixed legs pay their contractual rate regardless of scenario; floating legs reset with
         // rates, so the scenario shift applies to them only. A period that has already reset (its
@@ -756,7 +766,9 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         // the last fixing (flat forward).
         if (leg.RateKind == CashFlowLegRateKind.Fixed)
         {
-            var fixedRate = LegRateFraction(assetClass, leg, "fixedRate", leg.FixedRate ?? 0m);
+            var fixedRate = LegRateFraction(assetClass, leg, "fixedRate", leg.FixedRate ?? 0m, recordUnit);
+            if (fixedRate < 0m && rejectNegativeInterest)
+                throw new NegativeInterestUnsupportedException();
             return fixedRate < 0m ? 0m : fixedRate;
         }
 
@@ -772,12 +784,14 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         // A forward-curve rate is a fraction by the curve contract. A retained fixing or current index
         // rate reads through the leg's declared unit, then the field default; otherwise it blocks.
         var indexFraction = forecastRate ? index
-            : LegRateFraction(assetClass, leg, recordedFixing is not null ? "resetSchedule.fixingRate" : "currentIndexRate", index);
+            : LegRateFraction(assetClass, leg, recordedFixing is not null ? "resetSchedule.fixingRate" : "currentIndexRate", index, recordUnit);
         var rate = indexFraction + ((leg.SpreadBps ?? 0m) / 10_000m) + ScenarioRateShift(scenario);
         if (leg.CapRate is { } cap)
-            rate = Math.Min(rate, LegRateFraction(assetClass, leg, "capRate", cap));
+            rate = Math.Min(rate, LegRateFraction(assetClass, leg, "capRate", cap, recordUnit));
         if (leg.FloorRate is { } floor)
-            rate = Math.Max(rate, LegRateFraction(assetClass, leg, "floorRate", floor));
+            rate = Math.Max(rate, LegRateFraction(assetClass, leg, "floorRate", floor, recordUnit));
+        if (rate < 0m && rejectNegativeInterest)
+            throw new NegativeInterestUnsupportedException();
         return rate < 0m ? 0m : rate;
     }
 
@@ -854,16 +868,18 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
     /// coupon leg keys them flat. A rate without a declared unit throws
     /// <see cref="RateUnitUnavailableException"/>, which blocks the projection with its reason.
     /// </summary>
-    private static decimal LegRateFraction(string assetClass, StructuredCashFlowLeg leg, string member, decimal value)
+    private static decimal LegRateFraction(string assetClass, StructuredCashFlowLeg leg, string member, decimal value, RateUnit? recordUnit = null)
     {
         var key = SecurityAssetClassCatalog.GetOrDefault(assetClass).CashFlowBehavior == SecurityCashFlowBehavior.SwapLegs
             ? "legs." + member
             : member;
-        var resolution = RateUnitNormalizer.Normalize(assetClass, key, value, RateUnitNormalizer.FromCouponRateUnit(leg.RateUnit));
+        var resolution = RateUnitNormalizer.Normalize(assetClass, key, value, RateUnitNormalizer.FromCouponRateUnit(leg.RateUnit) ?? recordUnit);
         return resolution.TryGetFraction(out var fraction)
             ? fraction
             : throw new RateUnitUnavailableException(RateUnitNormalizer.DescribeRefusal(resolution, assetClass, key));
     }
+
+    private sealed class NegativeInterestUnsupportedException : Exception { }
 
     private sealed class RateUnitUnavailableException(string message) : Exception(message);
 

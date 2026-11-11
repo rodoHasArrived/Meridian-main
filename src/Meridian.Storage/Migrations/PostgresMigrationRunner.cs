@@ -45,6 +45,8 @@ public sealed class PostgresMigrationRunner
         }
 
         await EnsureMigrationLedgerAsync(connection, transaction, ct).ConfigureAwait(false);
+        var isUpgrade = _options.BeforeScriptAsync is not null
+                        && await HasAppliedMigrationsAsync(connection, transaction, ct).ConfigureAwait(false);
 
         foreach (var script in scripts)
         {
@@ -77,6 +79,7 @@ public sealed class PostgresMigrationRunner
                     case AppliedMigrationAction.ExecuteAndUpdateChecksum:
                         // Explicitly repeatable migrations run on every startup; changed scripts in
                         // Reapply mode also run so their revised idempotent behavior takes effect.
+                        await BeforeScriptAsync(script.FileName, connection, transaction, isUpgrade, ct).ConfigureAwait(false);
                         await ExecuteScriptAsync(connection, transaction, sql, ct).ConfigureAwait(false);
                         await UpdateChecksumAsync(connection, transaction, script.FileName, checksum, ct)
                             .ConfigureAwait(false);
@@ -86,6 +89,7 @@ public sealed class PostgresMigrationRunner
                 }
             }
 
+            await BeforeScriptAsync(script.FileName, connection, transaction, isUpgrade, ct).ConfigureAwait(false);
             await ExecuteScriptAsync(connection, transaction, sql, ct).ConfigureAwait(false);
             await RecordMigrationAsync(connection, transaction, script, checksum, ct).ConfigureAwait(false);
         }
@@ -107,6 +111,20 @@ public sealed class PostgresMigrationRunner
         => _options.QuoteSchemaInScripts ? QuoteIdentifier(_options.Schema) : _options.Schema;
 
     private string LedgerTable => $"{RenderedSchema}.{_options.LedgerTableName}";
+
+    private Task BeforeScriptAsync(string fileName, NpgsqlConnection connection,
+        NpgsqlTransaction transaction, bool isUpgrade, CancellationToken ct)
+        => _options.BeforeScriptAsync?.Invoke(fileName, connection, transaction, isUpgrade, ct)
+           ?? Task.CompletedTask;
+
+    private async Task<bool> HasAppliedMigrationsAsync(NpgsqlConnection connection,
+        NpgsqlTransaction transaction, CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = $"select exists(select 1 from {LedgerTable});";
+        return (bool)(await command.ExecuteScalarAsync(ct).ConfigureAwait(false))!;
+    }
 
     private async Task<NpgsqlConnection> OpenConnectionAsync(CancellationToken ct)
     {

@@ -101,15 +101,20 @@ public sealed partial class SecurityMasterWorkbenchQueryService
                 Diagnostics: declaredExercise.Diagnostics.ToArray());
 
     /// <summary>
-    /// The blockers of the selected record's declared call and put schedule: empty when it declares no
-    /// schedule or the schedule resolved. The passport's terms, obligation and cash-flow statuses and
+    /// The blockers of the selected record's declared exercise schedule and current cash-flow calculation.
+    /// The passport's terms, obligation and cash-flow statuses and
     /// close readiness read this, so a blocked schedule is a status and not only a sentence.
     /// </summary>
-    private static IReadOnlyList<SecurityMasterScheduleBlockerDto> DeclaredExerciseBlockers(SecurityMasterTrustSnapshotDto snapshot)
-        => (snapshot.ScheduleBook?.DeclaredExercise ?? snapshot.ScheduleSummary?.DeclaredExercise)
+    private static IReadOnlyList<SecurityMasterScheduleBlockerDto> ScheduleReadinessBlockers(SecurityMasterTrustSnapshotDto snapshot)
+    {
+        var exerciseBlockers = (snapshot.ScheduleBook?.DeclaredExercise ?? snapshot.ScheduleSummary?.DeclaredExercise)
             is { Status: SecurityMasterDeclaredExerciseStatus.Blocked } outcome
             ? outcome.Blockers
             : [];
+        return snapshot.CashFlowBlocker is { } cashFlowBlocker
+            ? [.. exerciseBlockers, cashFlowBlocker]
+            : exerciseBlockers;
+    }
 
     /// <summary>
     /// The dates a declaring bond offers for the next lifecycle date: the next corporate action, every
