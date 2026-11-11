@@ -29,6 +29,7 @@
     <Compile Include="Domain/CashFlowRules.fs" />
     <Compile Include="Domain/SecurityMasterLegacyUpgrade.fs" />
     <Compile Include="Domain/SecurityMasterEvents.fs" />
+    <Compile Include="Domain/SecurityKindPersistence.fs" />
     <Compile Include="Domain/SecurityMasterCommands.fs" />
     <Compile Include="Domain/FundStructure.fs" />
     <Compile Include="Domain/AccountReconciliation.fs" />

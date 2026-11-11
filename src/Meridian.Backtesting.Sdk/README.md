@@ -82,6 +82,11 @@ Use this module when a backtesting contract must be shared across runtime and st
   `AssetEventCashFlow.EntryCommissionDisposed` retains fees relieved by fractional disposals.
   These init-only additions preserve constructor and deconstruction compatibility.
 
+- `BacktestRequest.PopulateAssetEventsFromSecurityMaster` (default `false`) asks the engine to
+  build dividend and split `AssetEvents` from confirmed Security Master corporate actions when the
+  request supplies none. It is valid only with `AdjustForCorporateActions = false`, and when it
+  takes effect it is part of `ExecutionRealismDescriptor` and so of the run's input hash.
+
 ## Unitized lots
 
 `OpenLot` and `ClosedLot` hold `decimal` quantities and implement `IUnitizedLot`. Their
