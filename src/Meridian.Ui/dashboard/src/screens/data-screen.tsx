@@ -1313,7 +1313,7 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
                     checked={vm.providerSetupDialogState.liveAcknowledgement.checked}
                     disabled={vm.providerSetupDialogState.liveAcknowledgement.disabled}
                     aria-label={vm.providerSetupDialogState.liveAcknowledgement.ariaLabel}
-                    label={<span className="text-live-env">{vm.providerSetupDialogState.liveAcknowledgement.label}</span>}
+                    label={vm.providerSetupDialogState.liveAcknowledgement.label}
                     hint={vm.providerSetupDialogState.liveAcknowledgement.detail}
                     onCheckedChange={vm.setProviderLiveAcknowledged}
                   />
