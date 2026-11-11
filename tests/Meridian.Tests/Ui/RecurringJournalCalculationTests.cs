@@ -320,6 +320,55 @@ public sealed class RecurringJournalCalculationTests : IDisposable
     }
 
     [Fact]
+    public async Task CalculatedLines_CarryTheScheduleDimensions()
+    {
+        await SeedAsync(FundExpenseAccrualCalculation.CalculationKind,
+            new() { ["annualAmount"] = 36_500m, ["yearBasisDays"] = 365m }, new() { ["expenseId"] = "audit" }, endsOn: JanuaryEnd,
+            dimensions: new LedgerLineDimensionSet(CostCenterId: "cc-ops"));
+        var fixture = await CreateFixtureAsync();
+
+        await fixture.Runner.RunDueAsync(Due(JanuaryEnd));
+
+        var draft = (await fixture.Drafts.ListAsync(Fund, Book)).Should().ContainSingle().Subject;
+        draft.Lines.Should().OnlyContain(line => line.Dimensions != null && line.Dimensions.CostCenterId == "cc-ops");
+    }
+
+    [Fact]
+    public async Task PerformanceFee_PreviousPeriodReversed_WaitsForTheReversalToPost()
+    {
+        Capitalize(10_000_000m);
+        Post(new(2026, 1, 20), (LedgerAccounts.Cash, 1_000_000m, 0m), (LedgerAccounts.RealizedGain, 0m, 1_000_000m));
+        await SeedAsync(PerformanceFeeAccrualCalculation.CalculationKind, new()
+        {
+            ["performanceFeeRate"] = 0.20m,
+            ["highWaterMark"] = 10_000_000m,
+            ["hurdleAmount"] = 0m,
+            ["crystallize"] = 0m
+        });
+        var fixture = await CreateFixtureAsync();
+        await fixture.Runner.RunDueAsync(Due(JanuaryEnd));
+        var january = (await fixture.Drafts.ListAsync(Fund, Book)).Should().ContainSingle().Subject;
+        // January was posted and then marked reversed; its reversal is still only a draft.
+        await fixture.Drafts.SaveAsync(january with { Status = ManualJournalEntryStatusDto.Reversed });
+        var reversal = january with
+        {
+            JournalEntryId = Guid.NewGuid(),
+            Status = ManualJournalEntryStatusDto.Draft,
+            ReversalOfJournalEntryId = january.JournalEntryId
+        };
+        await fixture.Drafts.SaveAsync(reversal);
+
+        var waiting = await (await CreateFixtureAsync()).Runner.RunDueAsync(Due(FebruaryEnd));
+        waiting.Single(result => result.RunKey == RecurringJournalIdentity.OccurrenceKey(ScheduleId, FebruaryEnd))
+            .Blockers.Should().ContainSingle().Which.Should().Contain("correction journal is not posted yet");
+
+        await fixture.Drafts.SaveAsync(reversal with { Status = ManualJournalEntryStatusDto.Posted });
+        var settled = await (await CreateFixtureAsync()).Runner.RunDueAsync(Due(FebruaryEnd).AddHours(1));
+        settled.Single(result => result.RunKey == RecurringJournalIdentity.OccurrenceKey(ScheduleId, FebruaryEnd))
+            .State.Should().Be(AutomatedJournalScheduleStateDto.DraftReady);
+    }
+
+    [Fact]
     public async Task ReversedOccurrence_IsBlockedInTheQueueUntilItsReversalIsPosted()
     {
         await SeedAsync(FundExpenseAccrualCalculation.CalculationKind,
@@ -650,7 +699,7 @@ public sealed class RecurringJournalCalculationTests : IDisposable
         => $"evidence://{intent}/journal/{journalEntryId:D}/ledger-book/{Book:D}/tenant/{Tenant}/company/{Company}";
 
     private async Task SeedAsync(string kind, Dictionary<string, decimal> terms,
-        Dictionary<string, string>? identifiers = null, DateOnly? endsOn = null)
+        Dictionary<string, string>? identifiers = null, DateOnly? endsOn = null, LedgerLineDimensionSet? dimensions = null)
     {
         var store = new FileRecurringJournalStore(Path.Combine(_root, "recurring"));
         await store.InitializeAsync();
@@ -658,7 +707,8 @@ public sealed class RecurringJournalCalculationTests : IDisposable
         await session.RegisterTemplateAsync(new JournalTemplate(TemplateId, "Calculated journal", "Calculated each period", [],
             calculation: new JournalTemplateCalculation(kind, identifiers)), "controller", 0, Registered);
         await session.RegisterScheduleAsync(new RecurringJournalSchedule(ScheduleId, TemplateId, new LedgerBookKey(Fund, "Fund"),
-            RecurringJournalCadence.Monthly, JanuaryEnd, "controller", Registered, terms, endsOn: endsOn ?? FebruaryEnd),
+            RecurringJournalCadence.Monthly, JanuaryEnd, "controller", Registered, terms, endsOn: endsOn ?? FebruaryEnd,
+                dimensions: dimensions),
             Scope, [Source()], "controller", 0, Registered);
     }
 

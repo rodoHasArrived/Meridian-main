@@ -178,8 +178,19 @@ public sealed class RecurringJournalRunner(
             var draft = await drafts.GetAsync(definition.Scope.FundProfileId, previous.DraftId, ct,
                 definition.Scope.TenantId, definition.Scope.CompanyId).ConfigureAwait(false);
             if (draft?.Status is ManualJournalEntryStatusDto.Posted or ManualJournalEntryStatusDto.CloseLocked
-                or ManualJournalEntryStatusDto.Rejected or ManualJournalEntryStatusDto.Reversed or ManualJournalEntryStatusDto.Rebooked)
+                or ManualJournalEntryStatusDto.Rejected)
                 return;
+            // Marking a journal reversed or rebooked only opens its correction; the ledger still
+            // holds the original amount until that correction posts.
+            if (draft?.Status is ManualJournalEntryStatusDto.Reversed or ManualJournalEntryStatusDto.Rebooked)
+            {
+                var all = await drafts.ListAsync(definition.Scope.FundProfileId, definition.Scope.LedgerBookId, ct,
+                    definition.Scope.TenantId, definition.Scope.CompanyId).ConfigureAwait(false);
+                if (CorrectionIsPosted(draft, all))
+                    return;
+                throw new InvalidOperationException(
+                    $"The {previousDate:yyyy-MM-dd} occurrence was reversed or rebooked and its correction journal is not posted yet. This amount depends on it; post the correction first.");
+            }
             status = draft is null ? "missing its retained draft" : $"a {draft.Status} draft";
         }
 
@@ -267,7 +278,10 @@ public sealed class RecurringJournalRunner(
                 EvidenceReferences = definition.Evidence
             };
             return new(scope.FundProfileId, scope.Currency,
-                [new AutomatedJournalDraft(calculatedEvent, description, calculated?.Lines ?? [], calculatedMetadata.Normalize())],
+                // The schedule's dimensions fill whatever the calculation left unset on a line.
+                [new AutomatedJournalDraft(calculatedEvent, description,
+                    (calculated?.Lines ?? []).Select(line => (line.account, line.debit, line.credit, WithScheduleDimensions(line.dimensions, schedule.Dimensions))).ToArray(),
+                    calculatedMetadata.Normalize())],
                 definition.RegisteredBy, scope.LedgerBookId, period.PeriodId, scope.EntityId, scope.TenantId,
                 scope.CompanyId, RecurringJournalEntryId: claim.DraftId);
         }
@@ -316,6 +330,37 @@ public sealed class RecurringJournalRunner(
                 item.ScheduleDefinition.Evidence.Select(e => e.Uri).ToArray(), item.LockOwner, item.ReopenPath));
         }
         return new(fundProfileId, ledgerBookId, entityId, rows.OrderByDescending(r => r.EffectiveDate).ToArray());
+    }
+
+    private static LedgerLineDimensionSet? WithScheduleDimensions(LedgerLineDimensionSet? line, LedgerLineDimensionSet? schedule)
+    {
+        if (line is null || schedule is null)
+            return line ?? schedule;
+        var external = new Dictionary<string, string>(schedule.ExternalGlDimensions, StringComparer.OrdinalIgnoreCase);
+        foreach (var (key, value) in line.ExternalGlDimensions)
+            external[key] = value;
+        return line with
+        {
+            FundId = line.FundId ?? schedule.FundId,
+            EntityId = line.EntityId ?? schedule.EntityId,
+            SleeveId = line.SleeveId ?? schedule.SleeveId,
+            StrategyId = line.StrategyId ?? schedule.StrategyId,
+            InvestorId = line.InvestorId ?? schedule.InvestorId,
+            CapitalAccountId = line.CapitalAccountId ?? schedule.CapitalAccountId,
+            InstrumentId = line.InstrumentId ?? schedule.InstrumentId,
+            TaxLotId = line.TaxLotId ?? schedule.TaxLotId,
+            CostCenterId = line.CostCenterId ?? schedule.CostCenterId,
+            CounterpartyId = line.CounterpartyId ?? schedule.CounterpartyId,
+            ExternalGlDimensions = external,
+            OrganizationId = line.OrganizationId ?? schedule.OrganizationId,
+            PortfolioId = line.PortfolioId ?? schedule.PortfolioId,
+            BookId = line.BookId ?? schedule.BookId,
+            AccountId = line.AccountId ?? schedule.AccountId,
+            CustomerId = line.CustomerId ?? schedule.CustomerId,
+            VendorId = line.VendorId ?? schedule.VendorId,
+            ProjectId = line.ProjectId ?? schedule.ProjectId,
+            PositionId = line.PositionId ?? schedule.PositionId
+        };
     }
 
     private static bool CorrectionIsPosted(ManualJournalEntryDraftDto corrected, IReadOnlyList<ManualJournalEntryDraftDto> all)

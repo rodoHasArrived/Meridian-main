@@ -72,13 +72,16 @@ Rules that keep an amount from being drafted twice:
 - **Posted history first.** Management fee, performance fee and FX revaluation read balances
   that earlier occurrences post. Such an occurrence is calculated only after the previous one is
   posted, rejected or needed no draft; until then it is blocked. Two periods that come due
-  together therefore cannot both be measured against a ledger that holds neither. The previous
+  together therefore cannot both be measured against a ledger that holds neither. A previous
+  occurrence that was reversed or rebooked counts only once its correction journal is posted. The previous
   occurrence's retained draft decides, so one that was posted and whose period has since closed
   still counts as settled.
 - **Closing balances wait for the day to end.** The runner waits until the effective day ends
   (UTC) before drafting management fees, performance fees, FX revaluations and bond accruals.
   Calculations that read that day's closing balances then include later postings from the same
   day. The accounting date is unchanged.
+- **Schedule dimensions apply.** A calculated line keeps the dimensions its calculation set and
+  takes the schedule's cost center, strategy and other dimensions for anything left unset.
 - **One accrual window per occurrence.** The window ends on the effective date and starts the day
   after the previous occurrence; the first window starts at the covering period's start date.
 - **Calculated once.** A retained draft is never recalculated. An occurrence that correctly has
