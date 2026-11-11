@@ -11,7 +11,7 @@ last_reviewed: 2026-11-10
 
 # src/Meridian.Application
 
-`DeadLetterSink` and `DroppedEventAuditTrail` append each record in place instead of rewriting the whole file, and callers that queue behind a write share the next one. At most 10,000 records wait for the disk at once, so sustained backpressure cannot pile up pending audit writes; drops over that cap are still counted and are reported as `AuditRecordsNotWritten`. A dead-letter write that fails keeps its record in memory and is retried by a later record (after a one-second back-off), by `FlushAsync`, and on disposal; `TotalPersisted`, `PendingRetryCount` and `TotalLost` report the outcome.
+`DeadLetterSink` and `DroppedEventAuditTrail` append each record in place instead of rewriting the whole file, and records that queue behind a write share the next one. One background writer does the appends and completes each caller as soon as its own record is on disk, so a caller never waits for a later batch. At most 10,000 records wait for the disk at once, so sustained backpressure cannot pile up pending audit writes; drops over that cap are still counted and are reported as `AuditRecordsNotWritten`. A dead-letter write that fails keeps its record in memory and is retried by a later record (after a one-second back-off), by `FlushAsync`, and on disposal; `TotalPersisted`, `PendingRetryCount` and `TotalLost` report the outcome.
 
 `PersistentDedupLedger` compacts its own file once it holds twice the lines the last rewrite kept (never below 100,000 lines), so the file no longer grows for the life of the deployment. Only an instance that loaded the whole file compacts, and a legacy admission whose own line is not yet appended is left out of the rewrite.
 

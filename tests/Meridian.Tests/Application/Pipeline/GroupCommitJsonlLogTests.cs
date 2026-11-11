@@ -236,33 +236,129 @@ public sealed class GroupCommitJsonlLogTests
         log.LostCount.Should().Be(1);
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task AppendReservedAsync_Cancelled_KeepsTheLineForTheNextFlush(bool cancelDuringWrite)
+    [Fact]
+    public async Task AppendReservedAsync_CallerCancelled_StillWritesTheLine()
     {
         var written = new List<string>();
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         using var cancellation = new CancellationTokenSource();
         await using var log = new GroupCommitJsonlLog(
             "unused.jsonl", 100, retainFailedWrites: false, (_, _, _) => { },
-            (_, lines, ct) =>
+            async (_, lines, _) =>
             {
-                if (cancelDuringWrite)
-                    cancellation.Cancel();
-                ct.ThrowIfCancellationRequested();
+                await release.Task;
                 written.AddRange(lines);
-                return Task.CompletedTask;
             });
-        if (!cancelDuringWrite)
-            cancellation.Cancel();
         log.TryReserve().Should().BeTrue();
+        var append = log.AppendReservedAsync("a", cancellation.Token).AsTask();
 
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
-            log.AppendReservedAsync("a", cancellation.Token).AsTask());
-        log.PendingCount.Should().Be(1, "cancellation is not a storage failure, even without retention");
+        cancellation.Cancel();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => append);
+        log.PendingCount.Should().Be(1, "a caller giving up does not withdraw its line");
 
+        release.SetResult();
         (await log.FlushAsync(CancellationToken.None)).Should().Be(0);
         written.Should().Equal("a");
         log.LostCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task FlushAsync_CancelledDuringTheWrite_KeepsTheLinesForTheNextFlush()
+    {
+        var written = new List<string>();
+        using var cancellation = new CancellationTokenSource();
+        var attempt = 0;
+        await using var log = new GroupCommitJsonlLog(
+            "unused.jsonl", 100, retainFailedWrites: true, (_, _, _) => { },
+            (_, lines, ct) =>
+            {
+                attempt++;
+                if (attempt == 1)
+                    throw new IOException("disk unavailable");
+                if (attempt == 2)
+                {
+                    cancellation.Cancel();
+                    ct.ThrowIfCancellationRequested();
+                }
+
+                written.AddRange(lines);
+                return Task.CompletedTask;
+            },
+            retryBackoff: TimeSpan.FromHours(1));
+        log.TryReserve().Should().BeTrue();
+        (await log.AppendReservedAsync("a", CancellationToken.None)).Should().Be(JsonlLogAppendOutcome.Retained);
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => log.FlushAsync(cancellation.Token));
+        log.PendingCount.Should().Be(1);
+        log.LostCount.Should().Be(0);
+
+        (await log.FlushAsync(CancellationToken.None)).Should().Be(0);
+        written.Should().Equal("a");
+    }
+
+    [Fact]
+    public async Task AppendReservedAsync_LineAlreadyWritten_CompletesWhileALaterWriteIsInFlight()
+    {
+        // Under sustained load every caller used to take the write lock in turn, so a caller
+        // whose line an earlier batch had already written stayed outstanding behind each later
+        // write. Outstanding callers then grew without limit even though unwritten lines were
+        // capped. Each caller must complete when its own batch is resolved.
+        var gates = new[]
+        {
+            new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously),
+            new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously),
+            new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously)
+        };
+        var started = new[]
+        {
+            new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously),
+            new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously),
+            new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously)
+        };
+        var writes = 0;
+        await using var log = new GroupCommitJsonlLog(
+            "unused.jsonl", maxPendingLines: 3, retainFailedWrites: false, (_, _, _) => { },
+            async (_, _, _) =>
+            {
+                var index = Interlocked.Increment(ref writes) - 1;
+                started[index].SetResult();
+                await gates[index].Task;
+            });
+        var timeout = TimeSpan.FromSeconds(10);
+
+        Task<JsonlLogAppendOutcome> Append(string line)
+        {
+            log.TryReserve().Should().BeTrue();
+            return log.AppendReservedAsync(line, CancellationToken.None).AsTask();
+        }
+
+        try
+        {
+            var first = Append("1");
+            await started[0].Task.WaitAsync(timeout);      // write 1 holds line 1
+            var second = Append("2");
+            var third = Append("3");
+            gates[0].SetResult();
+            await started[1].Task.WaitAsync(timeout);      // write 2 holds lines 2 and 3
+            var fourth = Append("4");
+            gates[1].SetResult();
+            await started[2].Task.WaitAsync(timeout);      // write 3 holds line 4 and is still blocked
+
+            // Lines 1 to 3 are on disk, so their callers are done even though write 3 is in flight.
+            (await first.WaitAsync(timeout)).Should().Be(JsonlLogAppendOutcome.Written);
+            (await second.WaitAsync(timeout)).Should().Be(JsonlLogAppendOutcome.Written);
+            (await third.WaitAsync(timeout)).Should().Be(JsonlLogAppendOutcome.Written);
+            fourth.IsCompleted.Should().BeFalse();
+
+            gates[2].SetResult();
+            (await fourth.WaitAsync(timeout)).Should().Be(JsonlLogAppendOutcome.Written);
+        }
+        finally
+        {
+            // Never leave a write blocked: disposal waits for it, and a failed assertion above
+            // must surface as a failure rather than a hung test run.
+            foreach (var gate in gates)
+                gate.TrySetResult();
+        }
     }
 }
