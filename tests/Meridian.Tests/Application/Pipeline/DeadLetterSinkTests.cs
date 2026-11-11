@@ -163,6 +163,39 @@ public sealed class DeadLetterSinkTests : IAsyncLifetime
         sink.TotalLost.Should().Be(3);
     }
 
+    [Fact]
+    public async Task RecordAsync_BufferFullThenFileWritableAgain_NextRecordDrainsTheBacklog()
+    {
+        // Nothing flushes the sink while the pipeline runs. A full retry buffer used to turn every
+        // later record away before the append that retries, so the backlog stayed in memory and
+        // new dead letters kept being lost until shutdown, even once the file was writable again.
+        var failWrites = true;
+        var written = 0;
+        await using var sink = new DeadLetterSink(
+            _testDir,
+            logger: null,
+            (_, lines, _) =>
+            {
+                if (failWrites)
+                    throw new IOException("disk unavailable");
+                written += lines.Count;
+                return Task.CompletedTask;
+            },
+            retryBackoff: TimeSpan.Zero);
+        for (var index = 0; index < DeadLetterSink.MaxRetainedRecords + 1; index++)
+            await sink.RecordAsync(CreateTestEvent("AAPL"), ["invalid_sequence"]);
+        sink.PendingRetryCount.Should().Be(DeadLetterSink.MaxRetainedRecords);
+        sink.TotalLost.Should().Be(1);
+
+        failWrites = false;
+        await sink.RecordAsync(CreateTestEvent("MSFT"), ["invalid_source"]);
+
+        written.Should().Be(DeadLetterSink.MaxRetainedRecords + 1);
+        sink.TotalPersisted.Should().Be(DeadLetterSink.MaxRetainedRecords + 1);
+        sink.PendingRetryCount.Should().Be(0);
+        sink.TotalLost.Should().Be(1, "the record that arrived after recovery is written, not lost");
+    }
+
     private static MarketEvent CreateTestEvent(string symbol)
     {
         return new MarketEvent(

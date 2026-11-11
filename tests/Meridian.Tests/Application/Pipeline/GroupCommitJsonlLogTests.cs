@@ -162,6 +162,60 @@ public sealed class GroupCommitJsonlLogTests
     }
 
     [Fact]
+    public async Task TryReserveAfterRetryAsync_FullLogThatCanWriteAgain_DrainsAndReserves()
+    {
+        var failWrites = true;
+        var written = new List<string>();
+        await using var log = new GroupCommitJsonlLog(
+            "unused.jsonl", maxPendingLines: 2, retainFailedWrites: true, (_, _, _) => { },
+            (_, lines, _) =>
+            {
+                if (failWrites)
+                    throw new IOException("disk unavailable");
+                written.AddRange(lines);
+                return Task.CompletedTask;
+            },
+            retryBackoff: TimeSpan.Zero);
+        log.TryReserve().Should().BeTrue();
+        await log.AppendReservedAsync("a", CancellationToken.None);
+        log.TryReserve().Should().BeTrue();
+        await log.AppendReservedAsync("b", CancellationToken.None);
+
+        (await log.TryReserveAfterRetryAsync(CancellationToken.None)).Should().BeFalse("the file is still unwritable");
+        log.LostCount.Should().Be(1);
+
+        failWrites = false;
+        (await log.TryReserveAfterRetryAsync(CancellationToken.None)).Should().BeTrue();
+        (await log.AppendReservedAsync("c", CancellationToken.None)).Should().Be(JsonlLogAppendOutcome.Written);
+
+        written.Should().Equal("a", "b", "c");
+        log.PendingCount.Should().Be(0);
+        log.LostCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task TryReserveAfterRetryAsync_FullLogStillBackingOff_DoesNotTouchTheFile()
+    {
+        var attempts = 0;
+        await using var log = new GroupCommitJsonlLog(
+            "unused.jsonl", maxPendingLines: 1, retainFailedWrites: true, (_, _, _) => { },
+            (_, _, _) =>
+            {
+                attempts++;
+                throw new IOException("disk unavailable");
+            },
+            retryBackoff: TimeSpan.FromHours(1));
+        log.TryReserve().Should().BeTrue();
+        await log.AppendReservedAsync("a", CancellationToken.None);
+
+        (await log.TryReserveAfterRetryAsync(CancellationToken.None)).Should().BeFalse();
+
+        attempts.Should().Be(1, "a full log must not hammer an unwritable file on every record");
+        log.PendingCount.Should().Be(1);
+        log.LostCount.Should().Be(1);
+    }
+
+    [Fact]
     public async Task DisposeAsync_RetriesRetainedLinesOnceMore_ThenCountsTheRestAsLost()
     {
         var attempts = 0;

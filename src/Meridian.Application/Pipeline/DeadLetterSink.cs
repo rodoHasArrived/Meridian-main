@@ -24,7 +24,7 @@ namespace Meridian.Application.Pipeline;
 /// <para>
 /// A dead-letter record can be the last copy of an event, so a failed write does not discard
 /// it: the record is held in memory (up to <see cref="MaxRetainedRecords"/>) and retried on
-/// a later record (after a short back-off), on <see cref="FlushAsync"/>, and on disposal. Records that still cannot be
+/// a later record (after a short back-off, including when the buffer is full), on <see cref="FlushAsync"/>, and on disposal. Records that still cannot be
 /// written are counted in <see cref="TotalLost"/> and logged as errors.
 /// </para>
 /// </remarks>
@@ -135,7 +135,9 @@ public sealed class DeadLetterSink : IEventQuarantineSink, IAsyncDisposable
             return;
         }
 
-        if (!_log.TryReserve())
+        // When the retry buffer is full this first retries the backlog (after the back-off), so a
+        // file that has become writable again drains instead of staying full until shutdown.
+        if (!await _log.TryReserveAfterRetryAsync(ct).ConfigureAwait(false))
         {
             // The file has been unwritable long enough to fill the retry buffer.
             _logger.LogError(
