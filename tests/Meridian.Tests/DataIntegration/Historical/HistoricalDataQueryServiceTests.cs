@@ -83,6 +83,92 @@ public sealed class HistoricalDataQueryServiceTests : IDisposable
         symbols.Should().NotContain(["2026-05-15", "WORKSTATION", "workstation"]);
     }
 
+    [Theory]
+    [InlineData("..")]
+    [InlineData(".")]
+    [InlineData("../outside")]
+    [InlineData("A/B")]
+    [InlineData("A\\B")]
+    [InlineData("*")]
+    [InlineData("SP?")]
+    [InlineData("C:SPY")]
+    public async Task UnsafeSymbol_IsRejectedBeforeAnyFileDiscovery(string symbol)
+    {
+        var query = () => _service.QueryAsync(new HistoricalDataQuery(symbol));
+        var bars = () => _service.GetBarsAsync(new HistoricalBarsQuery(symbol, 1));
+        var range = () => _service.GetDateRange(symbol);
+
+        await query.Should().ThrowAsync<ArgumentException>();
+        await bars.Should().ThrowAsync<ArgumentException>();
+        range.Should().Throw<ArgumentException>();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QueryAsync_DoesNotReadADirectoryOutsideTheDataRoot(bool absolutePath)
+    {
+        // Data that sits next to the data root, reachable only by leaving it: through a parent
+        // segment, or through a rooted path that makes Path.Combine discard the root.
+        var outside = _root + "-outside";
+        WriteGzipJsonl(Path.Combine(outside, "HistoricalBar", "2026-05-15.jsonl.gz"), BuildHistoricalBarJson("LEAK", "2026-05-15"));
+        try
+        {
+            var symbol = absolutePath ? outside : Path.Combine("..", Path.GetFileName(outside));
+
+            var query = () => _service.QueryAsync(new HistoricalDataQuery(symbol));
+
+            await query.Should().ThrowAsync<ArgumentException>();
+        }
+        finally
+        {
+            Directory.Delete(outside, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task SymbolDirectoryLinkedOutsideTheDataRoot_IsRefused()
+    {
+        var outside = _root + "-linked";
+        WriteGzipJsonl(Path.Combine(outside, "HistoricalBar", "2026-05-15.jsonl.gz"), BuildHistoricalBarJson("LINK", "2026-05-15"));
+        try
+        {
+            try
+            {
+                Directory.CreateSymbolicLink(Path.Combine(_root, "LINK"), outside);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or PlatformNotSupportedException)
+            {
+                return; // This host cannot create directory links (unprivileged Windows).
+            }
+
+            var query = () => _service.QueryAsync(new HistoricalDataQuery("LINK"));
+            var range = () => _service.GetDateRange("LINK");
+
+            await query.Should().ThrowAsync<UnauthorizedAccessException>();
+            range.Should().Throw<UnauthorizedAccessException>();
+        }
+        finally
+        {
+            Directory.Delete(outside, recursive: true);
+        }
+    }
+
+    [Theory]
+    [InlineData("BRK.B")]
+    [InlineData("ES=F")]
+    [InlineData("EUR_USD")]
+    [InlineData("^VIX")]
+    public async Task SymbolWithPunctuationThatIsNotPathSyntax_StillQueries(string symbol)
+    {
+        WriteGzipJsonl(Path.Combine(_root, symbol, "HistoricalBar", "2026-05-15.jsonl.gz"), BuildHistoricalBarJson(symbol, "2026-05-15"));
+
+        var result = await _service.QueryAsync(new HistoricalDataQuery(symbol));
+
+        result.Success.Should().BeTrue();
+        result.TotalRecords.Should().Be(1);
+    }
+
     private static void WriteGzipJsonl(string path, string line)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);

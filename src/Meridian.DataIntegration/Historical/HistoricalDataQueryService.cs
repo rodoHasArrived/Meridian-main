@@ -668,8 +668,31 @@ public sealed class HistoricalDataQueryService
         return files.OrderBy(f => f).ToList();
     }
 
+    /// <summary>
+    /// Whether <paramref name="symbol"/> can be used as a single directory or file-name component.
+    /// A symbol is spliced into paths and search patterns under the data root, so path syntax
+    /// (separators, a drive or stream colon, <c>.</c> and <c>..</c>) and wildcards are refused.
+    /// Punctuation that is not path syntax, as in <c>BRK.B</c>, <c>ES=F</c> or <c>^VIX</c>, is allowed.
+    /// </summary>
+    public static bool IsSafeSymbolPathComponent(string? symbol)
+    {
+        if (string.IsNullOrWhiteSpace(symbol) || symbol.Length > 64 || symbol is "." or "..")
+            return false;
+
+        foreach (var ch in symbol)
+        {
+            if (char.IsControl(ch) || ch is '/' or '\\' or ':' or '*' or '?' or '"' or '<' or '>' or '|')
+                return false;
+        }
+
+        return true;
+    }
+
     private List<string> FindDataFilesForSymbol(string symbol)
     {
+        if (!IsSafeSymbolPathComponent(symbol))
+            throw new ArgumentException("Symbol is not a valid historical data name.", nameof(symbol));
+
         var files = new List<string>();
 
         if (!Directory.Exists(_dataRoot))
@@ -695,7 +718,29 @@ public sealed class HistoricalDataQueryService
                 .Where(f => f.EndsWith(".jsonl") || f.EndsWith(".jsonl.gz")));
         }
 
-        return files.Distinct().ToList();
+        var distinct = files.Distinct().ToList();
+        foreach (var file in distinct)
+            RequireInsideDataRootWithoutLinks(file);
+        return distinct;
+    }
+
+    /// <summary>
+    /// Refuses a discovered file that resolves outside the data root or is reached through a
+    /// symbolic link below it. The configured root itself is trusted and may be a link.
+    /// </summary>
+    private void RequireInsideDataRootWithoutLinks(string file)
+    {
+        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        var root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(_dataRoot));
+        var fullPath = Path.GetFullPath(file);
+        if (!fullPath.StartsWith(root + Path.DirectorySeparatorChar, comparison))
+            throw new UnauthorizedAccessException("Historical data file is outside the configured data root.");
+
+        for (var current = fullPath; current is not null && !string.Equals(current, root, comparison); current = Path.GetDirectoryName(current))
+        {
+            if ((File.GetAttributes(current) & FileAttributes.ReparsePoint) != 0)
+                throw new UnauthorizedAccessException("Historical data cannot be read through a symbolic link.");
+        }
     }
 
     private async Task<List<HistoricalDataRecord>> ReadDataFileAsync(
