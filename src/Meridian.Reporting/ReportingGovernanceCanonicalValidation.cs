@@ -471,6 +471,50 @@ public static class ReportingGovernanceCanonicalValidation
         }
     }
 
+    /// <summary>
+    /// Posted capital-call notices are operational communications during an open period, not
+    /// final financial statements. Only that exact template may release its reviewed Draft-source
+    /// snapshot, with its frozen posted-issuance binding and one explicit investor recipient.
+    /// All other report families retain the existing Final-only release rule.
+    /// </summary>
+    public static void ValidateReleaseSnapshot(GovernedReportingRun run)
+    {
+        ArgumentNullException.ThrowIfNull(run);
+        if (!string.Equals(run.TemplateId, "capital-call-notice", StringComparison.Ordinal))
+        {
+            ValidateFinalReleaseSnapshot(run.Snapshot);
+            return;
+        }
+        using var document = JsonDocument.Parse(run.Snapshot.ParametersCanonicalJson
+            ?? throw new ReportingGovernanceException("A capital-call notice requires retained normalized parameters."));
+        var root = document.RootElement;
+        var parameters = ParseCanonicalParameters(run.Snapshot.ParametersCanonicalJson!);
+        var scope = root.GetProperty("scope");
+        var bindings = root.GetProperty("templateParameters");
+        string Required(string key) => RequireJsonString(bindings, key);
+        var recipient = Required("recipientPrincipalId");
+        var reviewGroup = Required("reviewGroupPrincipalId");
+        _ = Required("capitalCallId");
+        _ = Required("commitmentId");
+        _ = Required("capitalAccountId");
+        _ = Required("installmentId");
+        if (!parameters.IncludeEvidenceAppendix
+            || Required("operationalNoticeTemplateId") != "capital-call-notice"
+            || parameters.Finality != ReportingFinalityDto.Draft
+            || parameters.OutputFormat != ReportingOutputFormatDto.ClientPackage
+            || ParseEnum<ReportingEntityScopeKindDto>(scope, "entityScopeKind") != ReportingEntityScopeKindDto.Investor
+            || string.IsNullOrWhiteSpace(RequireJsonString(scope, "investorId"))
+            || !Guid.TryParse(Required("issuanceJournalEntryId"), out var journalId) || journalId == Guid.Empty
+            || !int.TryParse(Required("commitmentRevision"), out var revision) || revision < 1
+            || !Sha256Digest.IsWellFormed(Required("planHash"))
+            || !decimal.TryParse(Required("callAmount"), NumberStyles.Float, CultureInfo.InvariantCulture, out var amount) || amount <= 0m
+            || run.Access.Mode != ReportingGovernanceAccessMode.Restricted
+            || run.Access.Principals.IsDefaultOrEmpty || run.Access.Principals.Length != 2
+            || !run.Access.Principals.Contains(new ReportingAccessPrincipalScope(ReportingAccessPrincipalKind.User, recipient))
+            || !run.Access.Principals.Contains(new ReportingAccessPrincipalScope(ReportingAccessPrincipalKind.Group, reviewGroup)))
+            throw new ReportingGovernanceException("A capital-call notice requires exact posted issuance and one restricted investor recipient before release.");
+    }
+
     public static bool IsClientPackage(ReportingCertifiedSnapshotScope snapshot)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
@@ -760,7 +804,7 @@ public static class ReportingGovernanceCanonicalValidation
             humanRequired: true,
             "run release authority");
         ValidateUtc(release.ReleasedAtUtc, "run release timestamp");
-        ValidateFinalReleaseSnapshot(run.Snapshot);
+        ValidateReleaseSnapshot(run);
         ValidateReleasePayload(
             release.ManifestId,
             release.ManifestHash,
