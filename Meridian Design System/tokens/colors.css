@@ -107,8 +107,8 @@
   --navy-a20:           color-mix(in srgb, var(--navy)   20%, transparent);
 
   --blue-a10:           color-mix(in srgb, var(--purple) 10%, transparent);
-  /* Dropped in the 4.3.0 retone while the scaffold script, two cards and the workstation's
-     selection wash still read it, so each rendered its literal in every theme. */
+  /* Dropped in the 4.3.0 retone while the scaffold script and two cards still read it, so
+     each rendered its literal in every theme. */
   --accent-a10:         color-mix(in srgb, var(--accent) 10%, transparent);
 
   /* Text-safe variants for the three hues that had none. The terracotta signal, the Field

@@ -141,7 +141,7 @@ def validate(data: dict[str, bytes]) -> dict:
             require_file(data, path)
     for path in ["assets/fonts/OFL-IBMPlexSans.txt", "assets/fonts/OFL-IBMPlexMono.txt"]:
         require_file(data, path)
-    for path in ["preview/release-readiness.html", "preview/release-readiness.js", "preview/release-readiness.css", "THIRD_PARTY_NOTICES.md", "LICENSE"]:
+    for path in ["preview/release-readiness.html", "preview/release-readiness.js", "preview/release-readiness.css", "tests/gallery.html", "tests/gallery.mjs", "tests/gallery.css", "THIRD_PARTY_NOTICES.md", "LICENSE"]:
         require_file(data, path)
     preview = data["preview/release-readiness.html"]
     for reference in re.findall(rb'(?:src|href)=["\']([^"\']+)["\']', preview):
