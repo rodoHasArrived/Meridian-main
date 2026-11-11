@@ -170,6 +170,16 @@ public sealed class DirectLendingOutboxDispatcherTests
             ("InterestIncome", 0m, 200m));
     }
 
+    [Fact]
+    public async Task ProcessJournalAsync_FailsClosed_WhenDraftCarriesNegativeAmount()
+    {
+        var act = () => ProcessSingleAsync("loan.drawdown-booked", """{"amount":-1000.00}""");
+
+        // No draft is saved; the delivery stays in the outbox for recovery.
+        await act.Should().ThrowAsync<Meridian.Ledger.LedgerValidationException>()
+            .WithMessage("*loan.drawdown-booked*negative amount*");
+    }
+
     private static async Task<JournalEntryDto> ProcessSingleAsync(string eventType, string payloadJson)
     {
         var operationsStore = Substitute.For<IDirectLendingOperationsStore>();

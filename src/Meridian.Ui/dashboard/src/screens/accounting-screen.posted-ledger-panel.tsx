@@ -7,11 +7,13 @@ import { Input } from "@/components/ui/input";
 import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 import { AccountingTrialBalanceSelectedDetailPanel, trialBalanceColumns } from "@/components/accounting/TrialBalanceRowDetail";
 import { TrialBalanceTable } from "@/components/accounting";
+import { LedgerAccountRunningBalancePanel } from "@/components/accounting/LedgerAccountRunningBalancePanel";
 import { cn } from "@/lib/utils";
 import { DENSE_VIRTUALIZATION_THRESHOLD } from "@/lib/dense-table-virtualization";
 import type { FinancialRecordExplorerSavedView } from "@/components/meridian/financial-record-explorer";
 import { useAccountingPostedLedgerViewModel } from "@/screens/accounting-screen.posted-ledger.view-model";
 import type { AccountingWorkstream } from "@/screens/accounting-screen.task-mode-view-model";
+import { formatCurrency, formatCurrencyForCode } from "@/screens/accounting-screen.formatting";
 
 /**
  * Static saved views for the strategy-run ledger explorer that renders below the
@@ -44,6 +46,8 @@ export const LEDGER_EXPLORER_SAVED_VIEWS: FinancialRecordExplorerSavedView[] = [
 export function AccountingPostedLedgerSection({ workstream }: { workstream: AccountingWorkstream }) {
   const viewModel = useAccountingPostedLedgerViewModel(workstream);
   const { view } = viewModel;
+  const selectedTrialBalanceRow =
+    view.trialBalance.rows.find((row) => row.rowId === view.trialBalance.selectedRowId) ?? null;
 
   return (
     <section aria-labelledby="posted-ledger-title" className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
@@ -195,10 +199,24 @@ export function AccountingPostedLedgerSection({ workstream }: { workstream: Acco
                 />
               )}
               {view.trialBalance.selectedDetail ? (
-                <AccountingTrialBalanceSelectedDetailPanel
-                  panelId={view.trialBalance.detailPanelId}
-                  detail={view.trialBalance.selectedDetail}
-                />
+                <div className="grid min-w-0 gap-3">
+                  <AccountingTrialBalanceSelectedDetailPanel
+                    panelId={view.trialBalance.detailPanelId}
+                    detail={view.trialBalance.selectedDetail}
+                  />
+                  {selectedTrialBalanceRow && viewModel.selectedPeriodId ? (
+                    <LedgerAccountRunningBalancePanel
+                      periodId={viewModel.selectedPeriodId}
+                      accountName={selectedTrialBalanceRow.accountName}
+                      symbol={selectedTrialBalanceRow.symbol}
+                      financialAccountId={selectedTrialBalanceRow.financialAccountId}
+                      dimensions={selectedTrialBalanceRow.dimensions ?? null}
+                      formatAmount={(value) =>
+                        view.baseCurrency ? formatCurrencyForCode(value, view.baseCurrency) : formatCurrency(value)
+                      }
+                    />
+                  ) : null}
+                </div>
               ) : (
                 <aside
                   id={view.trialBalance.detailPanelId}
