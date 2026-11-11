@@ -54,7 +54,17 @@ public sealed class LoanAccountingProjector
 
         void Add(string account, LedgerAccountType accountType, decimal debit, decimal credit)
         {
-            if (debit <= 0m && credit <= 0m)
+            if (debit < 0m || credit < 0m)
+            {
+                // Fail closed: a negative amount would otherwise be dropped (or posted inverted)
+                // while the loan event itself is still persisted.
+                throw new DirectLendingCommandException(
+                    new DirectLendingCommandError(
+                        DirectLendingErrorCode.Validation,
+                        $"Direct-lending ledger event '{eventType}' produced a negative amount for account '{account}'; the journal was not posted."));
+            }
+
+            if (debit == 0m && credit == 0m)
             {
                 return;
             }
@@ -78,7 +88,7 @@ public sealed class LoanAccountingProjector
         {
             case "loan.drawdown-booked":
                 description = "Loan drawdown funding";
-                var drawdownAmount = GetDecimal(root, "amount");
+                var drawdownAmount = GetRequiredDecimal(root, eventType, "amount");
                 Add("LoanPrincipal", LedgerAccountType.Asset, drawdownAmount, 0m);
                 Add("Cash", LedgerAccountType.Asset, 0m, drawdownAmount);
                 break;
@@ -145,28 +155,28 @@ public sealed class LoanAccountingProjector
             // (the same pairs the outbox dispatcher drafts), or settlement would drive them negative.
             case "loan.fee-assessed":
                 description = "Loan fee assessment";
-                var assessedFee = GetDecimal(root, "amount", "Amount");
+                var assessedFee = GetRequiredDecimal(root, eventType, "amount", "Amount");
                 Add("FeeReceivable", LedgerAccountType.Asset, assessedFee, 0m);
                 Add("FeeIncome", LedgerAccountType.Revenue, 0m, assessedFee);
                 break;
 
             case "loan.prepayment-penalty-charged":
                 description = "Loan prepayment penalty";
-                var chargedPenalty = GetDecimal(root, "penaltyAmount", "PenaltyAmount");
+                var chargedPenalty = GetRequiredDecimal(root, eventType, "penaltyAmount", "PenaltyAmount");
                 Add("PenaltyReceivable", LedgerAccountType.Asset, chargedPenalty, 0m);
                 Add("PenaltyIncome", LedgerAccountType.Revenue, 0m, chargedPenalty);
                 break;
 
             case "loan.pik-capitalized":
                 description = "Loan PIK capitalization";
-                var capitalizedPik = GetDecimal(root, "amount");
+                var capitalizedPik = GetRequiredDecimal(root, eventType, "amount");
                 Add("LoanPrincipal", LedgerAccountType.Asset, capitalizedPik, 0m);
                 Add("PikInterestReceivable", LedgerAccountType.Asset, 0m, capitalizedPik);
                 break;
 
             case "loan.principal-payment-applied":
                 description = "Loan principal receipt";
-                var appliedPrincipal = GetDecimal(root, "AppliedAmount", "appliedAmount", "amount");
+                var appliedPrincipal = GetRequiredDecimal(root, eventType, "AppliedAmount", "appliedAmount", "amount");
                 Add("Cash", LedgerAccountType.Asset, appliedPrincipal, 0m);
                 Add("LoanPrincipal", LedgerAccountType.Asset, 0m, appliedPrincipal);
                 break;
@@ -194,7 +204,7 @@ public sealed class LoanAccountingProjector
 
             case "loan.write-off-applied":
                 description = "Loan write-off";
-                var writeOffAmount = GetDecimal(root, "AppliedAmount", "appliedAmount", "Amount", "amount");
+                var writeOffAmount = GetRequiredDecimal(root, eventType, "AppliedAmount", "appliedAmount", "Amount", "amount");
                 Add("WriteOffExpense", LedgerAccountType.Expense, writeOffAmount, 0m);
                 Add("LoanPrincipal", LedgerAccountType.Asset, 0m, writeOffAmount);
                 break;
@@ -535,16 +545,52 @@ public sealed class LoanAccountingProjector
     private static string? NormalizeSymbol(string? symbol) =>
         string.IsNullOrWhiteSpace(symbol) ? null : symbol.Trim().ToUpperInvariant();
 
-    private static decimal GetDecimal(JsonElement root, params string[] propertyNames)
+    /// <summary>
+    /// Reads an optional amount. An absent member means the component does not apply and reads as
+    /// zero; a member that is present but not a JSON number is rejected rather than read as zero.
+    /// </summary>
+    private static decimal GetDecimal(JsonElement root, params string[] propertyNames) =>
+        TryGetDecimal(root, propertyNames, out var value) ? value : 0m;
+
+    /// <summary>
+    /// Reads the amount a ledger-impacting event cannot post without. A missing amount fails the
+    /// command instead of silently producing no journal for a persisted loan event.
+    /// </summary>
+    private static decimal GetRequiredDecimal(JsonElement root, string eventType, params string[] propertyNames)
+    {
+        if (TryGetDecimal(root, propertyNames, out var value))
+        {
+            return value;
+        }
+
+        throw new DirectLendingCommandException(
+            new DirectLendingCommandError(
+                DirectLendingErrorCode.Validation,
+                $"Direct-lending ledger event '{eventType}' payload is missing required amount '{propertyNames[0]}'; the journal was not posted."));
+    }
+
+    private static bool TryGetDecimal(JsonElement root, string[] propertyNames, out decimal value)
     {
         foreach (var propertyName in propertyNames)
         {
-            if (root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.Number)
+            if (!root.TryGetProperty(propertyName, out var element) || element.ValueKind == JsonValueKind.Null)
             {
-                return value.GetDecimal();
+                continue;
             }
+
+            if (element.ValueKind != JsonValueKind.Number)
+            {
+                throw new DirectLendingCommandException(
+                    new DirectLendingCommandError(
+                        DirectLendingErrorCode.Validation,
+                        $"Direct-lending ledger payload member '{propertyName}' must be a JSON number; the journal was not posted."));
+            }
+
+            value = element.GetDecimal();
+            return true;
         }
 
-        return 0m;
+        value = 0m;
+        return false;
     }
 }
