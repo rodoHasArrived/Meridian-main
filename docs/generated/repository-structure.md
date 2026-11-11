@@ -7875,6 +7875,9 @@ Meridian-main
 │   ├── Meridian.Ui
 │   │   ├── dashboard
 │   │   │   ├── public
+│   │   │   │   ├── licenses
+│   │   │   │   │   ├── OFL-IBMPlexMono.txt
+│   │   │   │   │   └── OFL-IBMPlexSans.txt
 │   │   │   │   └── notices
 │   │   │   │       ├── OFL-IBMPlexMono.txt
 │   │   │   │       └── OFL-IBMPlexSans.txt
@@ -7882,18 +7885,28 @@ Meridian-main
 │   │   │   │   ├── eslint-rules
 │   │   │   │   │   └── kebab-filename.mjs
 │   │   │   │   ├── check-typography-floor.mjs
+│   │   │   │   ├── convert-fonts-to-woff2.py
 │   │   │   │   ├── design-system-ratchets.baseline.json
 │   │   │   │   ├── design-system-ratchets.d.mts
 │   │   │   │   ├── design-system-ratchets.mjs
 │   │   │   │   ├── run-vitest-stable.mjs
+│   │   │   │   ├── smoke-design-system.mjs
 │   │   │   │   ├── smoke-workstation.mjs
+│   │   │   │   ├── sync-design-system-assets.d.mts
+│   │   │   │   ├── sync-design-system-assets.mjs
+│   │   │   │   ├── sync-design-system-assets.test.mjs
 │   │   │   │   ├── typography-floor-baseline.json
 │   │   │   │   ├── vitest-evidence.mjs
 │   │   │   │   └── vitest-evidence.test.mjs
 │   │   │   ├── src
 │   │   │   │   ├── assets
 │   │   │   │   │   ├── brand
+│   │   │   │   │   │   ├── identity-sheet.png
+│   │   │   │   │   │   ├── identity-sheet.svg
 │   │   │   │   │   │   ├── meridian-hero.svg
+│   │   │   │   │   │   ├── meridian-lockup-light.svg
+│   │   │   │   │   │   ├── meridian-lockup-monochrome.svg
+│   │   │   │   │   │   ├── meridian-lockup.svg
 │   │   │   │   │   │   ├── meridian-mark-light.svg
 │   │   │   │   │   │   ├── meridian-mark-monochrome.svg
 │   │   │   │   │   │   ├── meridian-mark.svg
@@ -7904,18 +7917,19 @@ Meridian-main
 │   │   │   │   │   │   ├── meridian-wordmark.svg
 │   │   │   │   │   │   └── README.md
 │   │   │   │   │   ├── fonts
-│   │   │   │   │   │   ├── IBMPlexMono-Bold.ttf
-│   │   │   │   │   │   ├── IBMPlexMono-Italic.ttf
-│   │   │   │   │   │   ├── IBMPlexMono-Medium.ttf
-│   │   │   │   │   │   ├── IBMPlexMono-Regular.ttf
-│   │   │   │   │   │   ├── IBMPlexMono-SemiBold.ttf
-│   │   │   │   │   │   ├── IBMPlexSans-Bold.ttf
-│   │   │   │   │   │   ├── IBMPlexSans-Italic.ttf
-│   │   │   │   │   │   ├── IBMPlexSans-Medium.ttf
-│   │   │   │   │   │   ├── IBMPlexSans-Regular.ttf
-│   │   │   │   │   │   ├── IBMPlexSans-SemiBold.ttf
+│   │   │   │   │   │   ├── IBMPlexMono-Bold.woff2
+│   │   │   │   │   │   ├── IBMPlexMono-Italic.woff2
+│   │   │   │   │   │   ├── IBMPlexMono-Medium.woff2
+│   │   │   │   │   │   ├── IBMPlexMono-Regular.woff2
+│   │   │   │   │   │   ├── IBMPlexMono-SemiBold.woff2
+│   │   │   │   │   │   ├── IBMPlexSans-Bold.woff2
+│   │   │   │   │   │   ├── IBMPlexSans-Italic.woff2
+│   │   │   │   │   │   ├── IBMPlexSans-Medium.woff2
+│   │   │   │   │   │   ├── IBMPlexSans-Regular.woff2
+│   │   │   │   │   │   ├── IBMPlexSans-SemiBold.woff2
 │   │   │   │   │   │   ├── OFL-IBMPlexMono.txt
-│   │   │   │   │   │   └── OFL-IBMPlexSans.txt
+│   │   │   │   │   │   ├── OFL-IBMPlexSans.txt
+│   │   │   │   │   │   └── woff2-sources.json
 │   │   │   │   │   ├── icons
 │   │   │   │   │   │   ├── account-portfolio.svg
 │   │   │   │   │   │   ├── admin-maintenance.svg
@@ -8296,6 +8310,7 @@ Meridian-main
 │   │   │   │   │   ├── badge.tsx
 │   │   │   │   │   ├── button.tsx
 │   │   │   │   │   ├── design-system-ratchets.test.ts
+│   │   │   │   │   ├── fonts.css
 │   │   │   │   │   ├── label-case.ts
 │   │   │   │   │   ├── masthead.tsx
 │   │   │   │   │   ├── nav-rail.tsx
