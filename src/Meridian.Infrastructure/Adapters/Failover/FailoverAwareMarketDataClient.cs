@@ -42,6 +42,7 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
     private readonly object _switchTasksGate = new();
     private readonly HashSet<Task> _switchTasks = [];
     private readonly IDisposable _transitionRegistration;
+    private readonly IDisposable _transportProbeRegistration;
     private readonly TaskCompletionSource _disposeCompletion =
         new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly Dictionary<string, Action<WebSocketConnectionDiagnostics>> _providerDiagnosticsHandlers =
@@ -57,6 +58,11 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
     private string? _lastError;
     private ProviderFailureKind? _lastFailureKind;
     private int _disposeState;
+
+    // 1 while the active provider's transport is believed established. A terminal transport
+    // state consumes it, so one interruption requests exactly one failover, and an intentional
+    // disconnect clears it first so it is never mistaken for an interruption.
+    private int _activeTransportEstablished;
     private readonly ConcurrentDictionary<string, SymbolConfig> _activeDepthSubscriptions = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, SymbolConfig> _activeTradeSubscriptions = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, int> _depthSubIds = new(StringComparer.OrdinalIgnoreCase);
@@ -101,6 +107,7 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
         _activeProviderId = initialKey;
 
         _transitionRegistration = _failoverService.RegisterTransitionHandler(_ruleId, QueueTransition);
+        _transportProbeRegistration = _failoverService.RegisterTransportProbe(_ruleId, ProbeTransport);
         foreach (var (providerId, client) in _providers)
         {
             var capturedProviderId = providerId;
@@ -153,6 +160,7 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
         try
         {
             await _activeClient.ConnectAsync(ct);
+            Volatile.Write(ref _activeTransportEstablished, 1);
             _failoverService.RecordSuccess(_activeProviderId);
             UpdateDiagnostics(
                 ProviderConnectionLifecycleState.Connected,
@@ -193,6 +201,8 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
 
     public async Task DisconnectAsync(CancellationToken ct = default)
     {
+        // A requested disconnect is not a transport interruption; it must not request failover.
+        Volatile.Write(ref _activeTransportEstablished, 0);
         UpdateDiagnostics(ProviderConnectionLifecycleState.Disconnecting, isConnected: _isConnected);
         try
         {
@@ -403,6 +413,7 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
         try
         {
             _transitionRegistration.Dispose();
+            _transportProbeRegistration.Dispose();
             _cts.Cancel();
 
             Task[] pendingSwitches;
@@ -575,6 +586,7 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
                     {
                         _activeClient = newClient;
                         _activeProviderId = newProviderKey;
+                        Volatile.Write(ref _activeTransportEstablished, 1);
                         ReplaceSubscriptions(_depthSubIds, subscriptions.Depth);
                         ReplaceSubscriptions(_tradeSubIds, subscriptions.Trades);
                     });
@@ -888,7 +900,118 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
             _lastFailureKind = snapshot.LastFailureKind;
         }
 
+        FeedFailoverMonitor(providerId, snapshot);
         PublishDiagnostics();
+    }
+
+    /// <summary>
+    /// Feeds the failover monitor from the active provider's transport diagnostics. Callers have
+    /// already established that the snapshot belongs to the current connection, so a stale
+    /// callback from a superseded provider never reaches the monitor.
+    /// </summary>
+    private void FeedFailoverMonitor(string providerId, WebSocketConnectionDiagnostics snapshot)
+    {
+        if (Volatile.Read(ref _disposeState) != 0)
+            return;
+
+        if (snapshot.IsConnected)
+        {
+            Volatile.Write(ref _activeTransportEstablished, 1);
+            _failoverService.RecordHeartbeat(providerId);
+            return;
+        }
+
+        // Degraded and Reconnecting are states the transport recovers from on its own; only a
+        // transport that has given up (Failed) or closed without being asked to (Disconnected)
+        // is a terminal interruption of an established connection.
+        if (snapshot.LifecycleState is not (ProviderConnectionLifecycleState.Failed
+                or ProviderConnectionLifecycleState.Disconnected) ||
+            Interlocked.Exchange(ref _activeTransportEstablished, 0) == 0)
+        {
+            return;
+        }
+
+        var reason = string.IsNullOrWhiteSpace(snapshot.LastError)
+            ? $"Transport reported {snapshot.LifecycleState}"
+            : $"Transport reported {snapshot.LifecycleState}: {snapshot.LastError}";
+
+        Task task;
+        lock (_switchTasksGate)
+        {
+            if (Volatile.Read(ref _disposeState) != 0)
+                return;
+
+            // Run off the transport's callback thread: the hand-off connects the backup and
+            // re-subscribes, which must not block or re-enter the failed provider's notifier.
+            var cancellationToken = _cts.Token;
+            task = Task.Run(
+                () => FailoverAfterTransportLossAsync(providerId, reason, cancellationToken),
+                CancellationToken.None);
+            _switchTasks.Add(task);
+        }
+
+        _ = task.ContinueWith(
+            completed =>
+            {
+                lock (_switchTasksGate)
+                    _switchTasks.Remove(completed);
+            },
+            CancellationToken.None,
+            TaskContinuationOptions.ExecuteSynchronously,
+            TaskScheduler.Default);
+    }
+
+    private async Task FailoverAfterTransportLossAsync(
+        string failedProviderId,
+        string reason,
+        CancellationToken ct)
+    {
+        try
+        {
+            _log.Warning(
+                "Transport for active provider {ProviderId} was lost on rule {RuleId}: {Reason}",
+                failedProviderId,
+                _ruleId,
+                reason);
+
+            var switched = await _failoverService.FailoverAfterConnectionFailureAsync(
+                _ruleId,
+                failedProviderId,
+                reason,
+                ct).ConfigureAwait(false);
+            if (!switched)
+            {
+                _log.Error(
+                    "No viable backup accepted the hand-off after provider {ProviderId} lost its transport on rule {RuleId}",
+                    failedProviderId,
+                    _ruleId);
+            }
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            // Expected when the runtime shuts down while the hand-off is in flight.
+        }
+        catch (Exception ex)
+        {
+            _log.Error(
+                ex,
+                "Failover after transport loss failed for provider {ProviderId} on rule {RuleId}",
+                failedProviderId,
+                _ruleId);
+        }
+    }
+
+    private StreamingTransportLiveness ProbeTransport(string providerId)
+    {
+        if (!ProviderIdentity.EqualsId(providerId, _activeProviderId))
+            return StreamingTransportLiveness.NotCurrent;
+
+        lock (_diagnosticsSync)
+        {
+            return _isConnected
+                ? StreamingTransportLiveness.Live
+                : StreamingTransportLiveness.Down;
+        }
     }
 
     private void RefreshDiagnosticsFromActiveProvider()

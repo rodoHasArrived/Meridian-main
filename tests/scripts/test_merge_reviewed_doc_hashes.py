@@ -225,6 +225,49 @@ class ReviewedHashCheckoutTests(unittest.TestCase):
         self.assertFalse((self.repo / hashes.MANIFEST).exists())
         self.assertFalse(self.git("status", "--porcelain"))
 
+    def dependency_bump_branches(self, *, feature_source_edit=False):
+        """Two Dependabot-style branches bump different packages without touching the manifest."""
+        spacer = "".join(f'    "pinned-{index}": "1.0.0",\n' for index in range(3))
+        package = ('{\n  "name": "a",\n  "dependencies": {\n    "left": "1.0.0",\n' + spacer
+                   + '    "right": "1.0.0"\n  }\n}\n')
+        lockfile = ('{\n  "left": "1.0.0",\n  "a": 1,\n  "b": 2,\n  "c": 3,\n  "right": "1.0.0"\n}\n')
+        self.write("src/A/package.json", package)
+        self.write("src/A/package-lock.json", lockfile)
+        self.refresh()
+        self.commit("reviewed dashboard dependencies")
+        self.base = self.git("rev-parse", "HEAD").decode().strip()
+        reviewed = (self.repo / hashes.MANIFEST).read_bytes()
+        self.git("switch", "-c", "feature")
+        self.write("src/A/package.json", package.replace('"left": "1.0.0"', '"left": "^2.0.0"'))
+        self.write("src/A/package-lock.json", lockfile.replace('"left": "1.0.0"', '"left": "2.0.1"'))
+        if feature_source_edit:
+            self.write("src/A/first.cs", "// unreviewed source change\n")
+        self.commit("deps: bump left")
+        self.head = self.git("rev-parse", "HEAD").decode().strip()
+        self.git("switch", "main")
+        self.write("src/A/package.json", package.replace('"right": "1.0.0"', '"right": "1.1.0"'))
+        self.write("src/A/package-lock.json", lockfile.replace('"right": "1.0.0"', '"right": "1.1.0"'))
+        self.commit("deps: bump right")
+        self.incoming = self.git("rev-parse", "HEAD").decode().strip()
+        self.git("switch", "feature")
+        merge = subprocess.run(["git", "merge", "--no-commit", "--no-ff", "main"], cwd=self.repo, capture_output=True)
+        self.assertEqual(merge.returncode, 0, merge.stderr)
+        return reviewed
+
+    def test_concurrent_dependency_only_bumps_merge_without_new_review(self):
+        reviewed = self.dependency_bump_branches()
+        report = hashes.merge_checkout(self.repo, self.base, self.head, self.incoming, apply=True)
+        self.assertTrue(report["successful"], report)
+        self.assertEqual(report["decisions"], {"A": "both", "B": "both"})
+        self.assertEqual(reviewed, (self.repo / hashes.MANIFEST).read_bytes())
+        self.assertEqual(json.loads(reviewed), hashes.actual_manifest(self.repo))
+
+    def test_dependency_bump_with_source_change_still_requires_review(self):
+        self.dependency_bump_branches(feature_source_edit=True)
+        report = hashes.merge_checkout(self.repo, self.base, self.head, self.incoming, apply=True)
+        self.assertFalse(report["successful"])
+        self.assertEqual(list(report["review_required"]), ["A"])
+
     def test_registry_duplicates_and_outside_paths_are_rejected(self):
         for modules in ([{"id": "A", "path": "src/A", "readme": "src/A/README.md"}] * 2,
                         [{"id": "A", "path": "../outside", "readme": "src/A/README.md"}]):

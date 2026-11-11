@@ -179,16 +179,28 @@ public sealed class AlpacaPaperSandboxTests(ITestOutputHelper output)
                 new StatementFetchRequest(AlpacaActivityStatementConnector.ConnectorId, "another-account"), timeout.Token));
             foreignAccount.Should().BeOfType<InvalidOperationException>("credentials for one account must not serve another");
 
+            // The connection is owned by a synthetic tenant and retains the account the gateway
+            // reported; keys for any other account would be refused before they are stored.
+            const string tenantId = "sandbox-tenant";
+            const string connectionId = "alpaca-paper-sandbox";
+            var config = new Meridian.Application.UI.ConfigStore(Path.Combine(scratch, "appsettings.json"));
+            await config.SaveAsync(new AppConfig(DataRoot: scratch), timeout.Token);
+            await new Meridian.Application.ProviderRouting.ProviderConnectionService(config).UpsertForTenantAsync(
+                new(connectionId, "alpaca", "Paper sandbox", ExternalAccountId: externalAccountId), tenantId, "paper", timeout.Token);
+            var lifecycle = new ProviderConnectionLifecycleService(
+                new FileProviderCredentialStore(scratch), new ConfigStore(config.ConfigPath),
+                NullLogger<ProviderConnectionLifecycleService>.Instance, clients);
             var connection = new AlpacaBrokerageConnectionService(
-                NullLogger<AlpacaBrokerageConnectionService>.Instance, clients, new FileProviderCredentialStore(scratch));
-            (await connection.GetStatusAsync(timeout.Token)).IsConfigured.Should().BeFalse();
-            var verified = await connection.ConnectAsync(new AlpacaBrokerageConnectionRequestDto(key, secret, "paper"), timeout.Token);
+                NullLogger<AlpacaBrokerageConnectionService>.Instance, lifecycle, clients);
+            (await connection.GetStatusAsync(connectionId, tenantId, timeout.Token)).IsConfigured.Should().BeFalse();
+            var verified = await connection.ConnectAsync(
+                connectionId, tenantId, new AlpacaBrokerageConnectionRequestDto(key, secret, "paper"), timeout.Token);
             verified.State.Should().Be(BrokerageConnectionStateDto.Connected);
             verified.Environment.Should().Be("paper");
             verified.LastError.Should().BeNullOrEmpty();
             (verified.ExternalAccountId == externalAccountId).Should().BeTrue(
                 "verification and the brokerage gateway must name the account the same way");
-            (await connection.RevokeAsync(timeout.Token)).IsConfigured.Should().BeFalse();
+            (await connection.RevokeAsync(connectionId, tenantId, timeout.Token)).IsConfigured.Should().BeFalse();
         }
         finally
         {
