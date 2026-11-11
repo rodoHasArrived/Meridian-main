@@ -31,8 +31,8 @@ regression that was run against the pre-patch file and failed on it.
 | LP-10 | `components/charts/ScenarioSelector.jsx` | Keyboard operation (arrow/Home/End, Space/Enter), no silent model change for a missing saved selection, and no accidental form submission. | `20f24a1d` | `tests/scenario-selector-regression.mjs` |
 | LP-11 | `components/data/OptimisticCell.jsx` | A throwing settle observer or ledger subscriber could reclassify a confirmed or rejected transport outcome. Observer faults are now isolated and logged. | `20f24a1d` | `tests/optimistic-observer-regression.mjs` |
 | LP-12 | `components/core/Modal.jsx` | Every dialog labelled itself with the shared id `mdl-title`. Each dialog now owns its title id. | `c40a3b00` | `tests/modal-title-id-regression.mjs` |
-| LP-13 | `components/charts/ChartAnnotations.jsx` | Annotations could not be reached by keyboard or read item by item. Adds `ChartAnnotations.List`, an HTML list of the same annotations in time order with arrow/Home/End movement and an Enter/Space detail, and `activeId` to emphasise the matching mark. | this change | `tests/chart-a11y-regression.mjs` |
-| LP-14 | `components/charts/PeerComparisonStrip.jsx` | Peer values were disclosed only through hover titles. Each rail is now a button that opens the named peer values; the table lists them; marks survive forced colours. | this change | `tests/chart-a11y-regression.mjs` |
+| LP-13 | `components/charts/ChartAnnotations.jsx` | Annotations could not be reached by keyboard or read item by item. Adds `ChartAnnotations.List`, an HTML list of the same annotations in time order with arrow/Home/End movement and an Enter/Space detail, and `activeId` to emphasise the matching mark. | `05102d62a4` | `tests/chart-a11y-regression.mjs` |
+| LP-14 | `components/charts/PeerComparisonStrip.jsx` | Peer values were disclosed only through hover titles. Each rail is now a button that opens the named peer values; the table lists them; marks survive forced colours. | `05102d62a4` | `tests/chart-a11y-regression.mjs` |
 
 ## Other local changes
 
