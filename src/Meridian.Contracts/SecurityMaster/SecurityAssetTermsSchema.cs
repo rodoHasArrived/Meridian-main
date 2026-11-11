@@ -294,8 +294,8 @@ public static class SecurityAssetTermsSchema
             [
                 Req("underlyingId", SecurityAssetTermFieldType.Guid).LinksUnderlying(SecurityUnderlyingRole.Underlying),
                 // The F# option command rejects anything but Put/Call; declaring the vocabulary moves
-                // the same rejection onto the edit surface and the write-mode codec. OptionTerms
-                // holds it as a plain string, so an odd value already in a row re-serializes intact
+                // the same rejection onto the edit surface and the write-mode codec. The exercise
+                // term module holds it as a plain string, so an odd value already in a row re-serializes intact
                 // — the vocabulary constrains new writes, it does not make old rows unwritable.
                 ReqOneOf("putCall", "Put", "Call").WithVerbatimUndeclaredValue(),
                 Req("strike", SecurityAssetTermFieldType.Decimal),

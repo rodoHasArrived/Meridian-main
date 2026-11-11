@@ -126,25 +126,18 @@ type EquityTerms = {
     Classification: EquityClassification option
 }
 
-/// Exercise style for options and warrants.
-[<RequireQualifiedAccess>]
-type ExerciseStyle =
-    | American
-    | European
-    | Bermudan
-
 /// Single-case option-chain identity used by option-contract and series projections.
 type OptChainId = OptChainId of string
 
 type OptionTerms = {
-    UnderlyingId: SecurityId
-    PutCall: string
-    Strike: decimal
+    /// The right (Put/Call), strike price, exercise style and underlying security. The exercise
+    /// term module is their single definition (ADR-027 stage 3, S3-E contraction); the flat codec
+    /// requires the right, the strike and the underlying, and the definition validator enforces it.
+    Exercise: ExerciseTerms
     Expiry: DateOnly
     Multiplier: decimal
     /// Links this contract to its option chain / series aggregate.
     OptChainId: string option
-    ExerciseStyle: ExerciseStyle option
     /// "Physical" or "Cash".
     SettlementType: string option
     /// True when this contract has been adjusted for a corporate action (split, special dividend, etc.).
@@ -479,8 +472,9 @@ module BondTerms =
         | _ -> couponRate terms
 
 type FxSpotTerms = {
-    BaseCurrency: string
-    QuoteCurrency: string
+    /// Base and quote currencies, both required; the currency-pair term module is their single
+    /// definition (ADR-027 stage 3, S3-E contraction).
+    CurrencyPair: CurrencyPairTerms
 }
 
 type DepositTerms = {
@@ -725,9 +719,8 @@ type PrivateFundInterestTerms = {
     GpSponsor: string
     Strategy: string
     Vintage: int
-    Commitment: decimal
-    FundedAmount: decimal option
-    UnfundedAmount: decimal option
+    /// The commitment (required) with its funded and unfunded split, on the notional term module.
+    Notional: NotionalTerms
     NavDate: DateOnly
     Lockup: string option
 }
@@ -755,8 +748,8 @@ type RealEstateHoldingTerms = {
 type CommitmentGuaranteeTerms = {
     Counterparty: string
     Beneficiary: string option
-    CommittedAmount: decimal
-    UnfundedAmount: decimal option
+    /// The committed amount (required) and the unfunded exposure, on the notional term module.
+    Notional: NotionalTerms
     EffectiveDate: DateOnly
     ExpiryDate: DateOnly option
     FeeRate: decimal option
@@ -788,8 +781,8 @@ type CommodityTerms = {
 }
 
 type CryptoTerms = {
-    BaseCurrency: string
-    QuoteCurrency: string
+    /// Base and quote currencies, both required, on the currency-pair term module.
+    CurrencyPair: CurrencyPairTerms
     Network: string option
 }
 
@@ -800,39 +793,21 @@ type CfdTerms = {
 }
 
 type WarrantTerms = {
-    UnderlyingId: SecurityId
-    WarrantType: string
-    Strike: decimal option
+    /// The right (Call/Put) and underlying security, both required, and the strike price, on the
+    /// exercise term module.
+    Exercise: ExerciseTerms
     Expiry: DateOnly option
     Multiplier: decimal option
-}
-
-/// Profile-backed custom asset: the typed governance envelope plus the complete
-/// asset-specific-terms document preserved verbatim. Profile fields are dynamic and governed
-/// by the approved profile version, so the domain carries the document opaquely instead of
-/// modeling per-profile shapes; the envelope fields are the ones every custom asset must carry.
-/// Carrying the raw document is what makes serialize → deserialize → serialize lossless for
-/// the extension point — previously CustomAsset collapsed into OtherSecurity and dropped the
-/// profile envelope on any amend.
-type CustomAssetTerms = {
-    /// Identifier of the approved custom-asset profile governing this record.
-    CustomProfileId: string
-    /// Version of the approved profile the record's fields were validated against.
-    ProfileVersion: int
-    /// The complete asset-specific-terms JSON document (envelope, profileFields, and any
-    /// additional governed keys such as category/subType/evidenceLinks), preserved verbatim.
-    TermsJson: string
 }
 
 /// Outright FX forward: an agreed exchange of the base and quote currencies at a forward rate on
 /// the value date. Deliverable unless SettlementType says otherwise.
 type FxForwardTerms = {
-    BaseCurrency: string
-    QuoteCurrency: string
-    /// Notional in the base currency.
-    Notional: decimal option
-    /// Agreed forward rate, quote currency per unit of base currency.
-    ForwardRate: decimal option
+    /// Base and quote currencies (required) and the agreed forward rate, on the currency-pair
+    /// term module.
+    CurrencyPair: CurrencyPairTerms
+    /// Notional in the base currency, on the notional term module.
+    Notional: NotionalTerms
     TradeDate: DateOnly option
     ValueDate: DateOnly
     /// Settlement method label ("Physical" by default, "Cash" for a cash-settled forward).
@@ -842,14 +817,11 @@ type FxForwardTerms = {
 /// Non-deliverable forward: cash-settled in the settlement currency against a published fixing of
 /// the base/quote rate on the fixing date; no exchange of the restricted currency takes place.
 type NonDeliverableForwardTerms = {
-    BaseCurrency: string
-    QuoteCurrency: string
-    /// Currency in which the net difference is paid (usually the convertible leg).
-    SettlementCurrency: string
-    /// Notional in the base currency.
-    Notional: decimal option
-    /// Agreed forward rate, quote currency per unit of base currency.
-    ForwardRate: decimal option
+    /// Base, quote and settlement currencies (all required) and the agreed forward rate, on the
+    /// currency-pair term module.
+    CurrencyPair: CurrencyPairTerms
+    /// Notional in the base currency, on the notional term module.
+    Notional: NotionalTerms
     FixingDate: DateOnly
     ValueDate: DateOnly
     /// Published fixing source the settlement rate is read from (operational reference).
@@ -863,7 +835,8 @@ type CreditDefaultSwapTerms = {
     ReferenceObligation: string option
     /// "Buy" when the holder buys protection (pays the coupon), "Sell" when it sells protection.
     ProtectionSide: string
-    Notional: decimal
+    /// The contract notional (required), on the notional term module.
+    Notional: NotionalTerms
     /// Running fixed coupon in basis points per annum (e.g. 100 or 500 under the standard contract).
     FixedCouponBps: decimal
     EffectiveDate: DateOnly
@@ -885,16 +858,15 @@ type CreditDefaultSwapTerms = {
 /// Option to enter an interest-rate swap: the holder may pay ("Payer") or receive ("Receiver") the
 /// strike fixed rate against the floating index on the underlying swap dates.
 type SwaptionTerms = {
-    /// "Payer" (right to pay fixed) or "Receiver" (right to receive fixed).
-    PayerReceiver: string
-    /// "European", "American" or "Bermudan"; None leaves the style undeclared.
-    ExerciseStyle: string option
-    /// Fixed rate of the underlying swap, as a decimal rate; may be negative.
-    StrikeRate: decimal
+    /// The right ("Payer" pays fixed, "Receiver" receives it; required), the exercise style and
+    /// the strike rate of the underlying swap (required; may be negative), on the exercise term
+    /// module.
+    Exercise: ExerciseTerms
     Expiry: DateOnly
     UnderlyingEffectiveDate: DateOnly option
     UnderlyingMaturityDate: DateOnly
-    Notional: decimal
+    /// The contract notional (required), on the notional term module.
+    Notional: NotionalTerms
     FloatingIndex: string option
     FixedLegPaymentFrequency: string option
     FixedLegDayCount: DayCountConvention option
@@ -904,19 +876,20 @@ type SwaptionTerms = {
 
 /// Interest-rate cap, floor or collar on a floating reference index over the protection period.
 type CapFloorTerms = {
-    /// "Cap", "Floor" or "Collar" (a long cap with a short floor).
-    CapFloorType: string
+    /// The type ("Cap", "Floor" or "Collar" — a long cap with a short floor; required) and the
+    /// premium amount, on the exercise term module.
+    Exercise: ExerciseTerms
     ReferenceIndex: string
     /// Cap strike as a decimal rate; required for Cap and Collar.
     CapStrike: decimal option
     /// Floor strike as a decimal rate; required for Floor and Collar.
     FloorStrike: decimal option
-    Notional: decimal
+    /// The contract notional (required), on the notional term module.
+    Notional: NotionalTerms
     EffectiveDate: DateOnly
     MaturityDate: DateOnly
     ResetFrequency: string option
     DayCount: DayCountConvention option
-    PremiumAmount: decimal option
 }
 
 /// Issuer note whose return is linked to a reference asset or basket (principal-protected notes,
@@ -927,8 +900,8 @@ type StructuredNoteTerms = {
     UnderlyingDescription: string
     Maturity: DateOnly
     IssueDate: DateOnly option
-    /// Face amount of one note.
-    Denomination: decimal option
+    /// Face amount of one note (the denomination), on the notional term module.
+    Notional: NotionalTerms
     /// Share of principal repaid at maturity regardless of the underlying, as a fraction (1 = 100%).
     PrincipalProtectionPct: decimal option
     /// Share of the underlying's return the holder receives, as a fraction (1 = 100%).
@@ -984,7 +957,7 @@ type SecurityKind =
     | InvestmentFund of InvestmentFundTerms
     /// Governed profile-backed custom asset (private and other assets modeled via
     /// approved custom profiles). Terms are carried as an opaque, verbatim document.
-    | CustomAsset of CustomAssetTerms
+    | CustomAsset of ProfileEnvelopeTerms
 
 /// Structural classification metadata for a single asset class.
 /// Data-dependent refinements (e.g. demand vs. time deposits, free-text OtherSecurity
@@ -1253,8 +1226,8 @@ module SecurityKind =
 
     let underlyingSecurityId kind =
         match kind with
-        | SecurityKind.Option terms -> Some terms.UnderlyingId
-        | SecurityKind.Warrant terms -> Some terms.UnderlyingId
+        | SecurityKind.Option terms -> terms.Exercise.UnderlyingSecurityId
+        | SecurityKind.Warrant terms -> terms.Exercise.UnderlyingSecurityId
         | _ -> None
 
     let isDerivative kind =

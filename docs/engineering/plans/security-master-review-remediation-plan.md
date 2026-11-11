@@ -484,8 +484,13 @@ and S2-B4 (codec single-purpose) land. Planned increments:
     marker, no retained carry) instead of reading as the OtherSecurity salvage; a document
     written before the module keeps the former route. The profile pin of a profile-backed
     row that resolves to a first-class class is not a record field and stays document-level.
-  - **Remaining for S3-E.** The record-field contraction itself (removing per-class record
-    fields now that they have homes) and the residual codec-only complement listed in the
-    review record (structural decodes — bond coupon structures and principal schedules, swap
-    legs, covenant entries — plus the scalar remainder: CDS reference terms, structured-note
-    payoff terms, private-asset valuations, listing detail). Both wait on owner sequencing.
+  - **S3-E5 — record-field contraction (implemented 2026-11-11).** The thirteen per-class
+    records whose fields S3-E1 to E4 homed no longer redefine them: each holds a reference to
+    the term module that does (`Exercise`, `CurrencyPair`, `Notional`), and the CustomAsset
+    kind's payload is the `ProfileEnvelopeTerms` module itself — `CustomAssetTerms` and the
+    `ExerciseStyle` union are gone. Byte-neutral: no golden, corpus or sweep fixture changed.
+    Values the records guaranteed by type are now required by the definition validator (three
+    new `*_required` codes, five rules tightened from "valid when present" to "present and
+    valid"). Contract multipliers and the cap/floor strikes stay scalar: their homes are on
+    wider modules that predate S3-E, and embedding a six-field module to carry one value would
+    widen the record rather than shrink it.

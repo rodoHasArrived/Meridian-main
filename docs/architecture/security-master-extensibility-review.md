@@ -839,6 +839,63 @@ Validation (local, .NET SDK 10.0.403): `dotnet test tests/Meridian.Tests -c Rele
 active-plus-inactive gauge, and the zero case. The full local `bash scripts/ci.sh` was not run;
 GitHub `Meridian CI / quality-gate` remains authoritative.
 
+### ADR-027 stage-3 S3-E5 — per-class records contract onto their modules — 2026-11-11
+
+With the four S3-E modules in place, the per-class records stop redefining the fields those
+modules home. Each affected record now holds a reference to the module instead of its own copy
+of the scalars, so the term-module vocabulary is the single definition:
+
+| Record | Fields removed | Now holds |
+| --- | --- | --- |
+| `OptionTerms` | `UnderlyingId`, `PutCall`, `Strike`, `ExerciseStyle` | `Exercise` |
+| `WarrantTerms` | `UnderlyingId`, `WarrantType`, `Strike` | `Exercise` |
+| `SwaptionTerms` | `PayerReceiver`, `ExerciseStyle`, `StrikeRate`; `Notional` | `Exercise`, `Notional` |
+| `CapFloorTerms` | `CapFloorType`, `PremiumAmount`; `Notional` | `Exercise`, `Notional` |
+| `FxSpotTerms`, `CryptoTerms` | `BaseCurrency`, `QuoteCurrency` | `CurrencyPair` |
+| `FxForwardTerms` | `BaseCurrency`, `QuoteCurrency`, `ForwardRate`; `Notional` | `CurrencyPair`, `Notional` |
+| `NonDeliverableForwardTerms` | the pair, `SettlementCurrency`, `ForwardRate`; `Notional` | `CurrencyPair`, `Notional` |
+| `CreditDefaultSwapTerms` | `Notional` | `Notional` |
+| `StructuredNoteTerms` | `Denomination` | `Notional` |
+| `PrivateFundInterestTerms` | `Commitment`, `FundedAmount`, `UnfundedAmount` | `Notional` |
+| `CommitmentGuaranteeTerms` | `CommittedAmount`, `UnfundedAmount` | `Notional` |
+| `CustomAssetTerms` | the whole record | the kind's payload is `ProfileEnvelopeTerms` |
+
+The modules stay inside each kind's payload rather than moving to the aggregate record. That
+keeps `SecurityKind` self-describing — every API that takes only a kind still sees all of its
+terms — and keeps a kind from carrying a module its class does not declare at the aggregate
+level; hoisting them to the record is a later, mechanical step if the schema-generated codec
+wants it. `termsFromKind` now passes each module through unchanged, the flat writer reads the
+homed values from it, and the decode arm builds it directly. The `ExerciseStyle` union is
+removed with its only consumer; an unrecognized option style still decodes to none.
+
+The contraction is byte-neutral, and the suite is the proof: the write golden, the replay
+corpus and both schema sweeps pass with no fixture changed. Two things were done specifically
+to keep it so. A value the flat codec requires is decoded onto its module verbatim, never
+through the blank-to-none string helper, so a stored row with a blank required value
+re-serializes as it always did. And the decode helpers read their keys in the order the
+hand-written arms did, so a payload with several unreadable fields is refused on the same one.
+
+What the records guaranteed by type is now guaranteed by validation, because module members
+are all optional. Three codes are new — `option_underlying_required`,
+`warrant_underlying_required` and `swaption_strike_rate_required` — and five rules tightened
+from "valid when present" to "present and valid" (`option_strike_invalid`, the CDS, swaption
+and cap/floor notional rules, and the two commitment rules). None changes a verdict on the
+codec route, where the flat decode already refuses a payload that omits a required key; they
+close the gap for a record built directly. Record-level F# tests prove each on both surfaces.
+
+Deliberately not contracted: the Option, Future, Warrant and Commodity multipliers and the
+cap/floor strike rates. Their homes (`tradingParameters`, `floatingRate`) are wider modules
+that predate S3-E, and embedding a six-field module to carry one value would widen the record.
+The pre-S3-E homes more generally are not exact carriers — a deposit's type rides in
+`issuer.issuerProgram`, a CFD's leverage is stored as a margin percentage, a CDS coupon is
+rescaled from basis points — so they cannot be the record's only copy without changing what
+the flat codec writes.
+
+Validation (local, .NET SDK 10.0.403): solution build — 0 errors; `Meridian.Tests`
+SecurityMaster and Architecture namespaces — 6,340 passed, 1 skipped, no fixture changed;
+`Meridian.FSharp.Tests` — 627 passed. The full local `bash scripts/ci.sh` was not run; GitHub
+`Meridian CI / quality-gate` remains authoritative.
+
 ### ADR-027 stage-3 S3-E4 — the profile envelope gains a module home — 2026-11-10
 
 The last of the four themes the census named. A new `profileEnvelope` term module

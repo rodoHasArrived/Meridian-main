@@ -487,10 +487,11 @@ type NotionalTerms = {
 }
 
 /// The governance envelope of a profile-backed custom asset together with the profile-governed
-/// terms document it pins, carried opaquely exactly as CustomAssetTerms carries it: profile
-/// fields are dynamic and governed by the approved profile version, so the module holds the
-/// document rather than modelling per-profile shapes. The home for the envelope the flat codec
-/// alone carried before S3-E.
+/// terms document it pins, carried opaquely: profile fields are dynamic and governed by the
+/// approved profile version, so the module holds the document rather than modelling per-profile
+/// shapes. Since the S3-E contraction this module is the CustomAsset kind's payload — carrying
+/// the raw document is what makes serialize → deserialize → serialize lossless for the
+/// extension point.
 type ProfileEnvelopeTerms = {
     /// Identifier of the approved custom-asset profile governing the record.
     CustomProfileId: string

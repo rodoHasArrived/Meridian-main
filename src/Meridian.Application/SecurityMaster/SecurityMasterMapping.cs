@@ -343,17 +343,7 @@ internal static class SecurityMasterMapping
                 ToOption(GetOptionalString(json, "shareClass")),
                 ToVotingRightsCatOption(GetOptionalString(json, "votingRightsCat")),
                 ToEquityClassificationOption(json, mode))),
-            "Option" => SecurityKind.NewOption(new OptionTerms(
-                SecurityId.NewSecurityId(bound.RequiredGuid("underlyingId")),
-                bound.RequiredString("putCall"),
-                bound.RequiredDecimal("strike"),
-                bound.RequiredDateOnly("expiry"),
-                bound.RequiredDecimal("multiplier"),
-                ToOption(bound.OptionalString("optChainId")),
-                ParseExerciseStyle(bound.OptionalString("exerciseStyle")),
-                ToOption(bound.OptionalString("settlementType")),
-                bound.OptionalBoolean("isAdjusted") ?? false,
-                ToOption(bound.OptionalDateOnly("lastTradingDt")))),
+            "Option" => ToOptionKind(bound),
             "Future" => SecurityKind.NewFuture(new FutureTerms(
                 bound.RequiredString("rootSymbol"),
                 bound.RequiredString("contractMonth"),
@@ -373,8 +363,7 @@ internal static class SecurityMasterMapping
                 ReadScheduleConventions(json, assetClass, versionedTerms),
                 ReadCallPutSchedules(json, assetClass, versionedTerms))),
             "FxSpot" => SecurityKind.NewFxSpot(new FxSpotTerms(
-                bound.RequiredString("baseCurrency"),
-                bound.RequiredString("quoteCurrency"))),
+                CurrencyPairModule(bound.RequiredString("baseCurrency"), bound.RequiredString("quoteCurrency")))),
             "Deposit" => SecurityKind.NewDeposit(new DepositTerms(
                 bound.RequiredString("depositType"),
                 bound.RequiredString("institutionName"),
@@ -473,9 +462,10 @@ internal static class SecurityMasterMapping
                 boundTerms.RequiredString("gpSponsor"),
                 boundTerms.RequiredString("strategy"),
                 boundTerms.RequiredInt("vintage"),
-                boundTerms.RequiredDecimal("commitment"),
-                ToOption(boundTerms.OptionalDecimal("fundedAmount")),
-                ToOption(boundTerms.OptionalDecimal("unfundedAmount")),
+                NotionalModule(
+                    committedAmount: Some(boundTerms.RequiredDecimal("commitment")),
+                    fundedAmount: ToOption(boundTerms.OptionalDecimal("fundedAmount")),
+                    unfundedAmount: ToOption(boundTerms.OptionalDecimal("unfundedAmount"))),
                 boundTerms.RequiredDateOnly("navDate"),
                 ToOption(boundTerms.OptionalString("lockup")))),
             "PrivateCompanyEquity" => SecurityKind.NewPrivateCompanyEquity(new PrivateCompanyEquityTerms(
@@ -497,8 +487,9 @@ internal static class SecurityMasterMapping
             "CommitmentGuarantee" => SecurityKind.NewCommitmentGuarantee(new CommitmentGuaranteeTerms(
                 boundTerms.RequiredString("counterparty"),
                 ToOption(boundTerms.OptionalString("beneficiary")),
-                boundTerms.RequiredDecimal("committedAmount"),
-                ToOption(boundTerms.OptionalDecimal("unfundedAmount")),
+                NotionalModule(
+                    committedAmount: Some(boundTerms.RequiredDecimal("committedAmount")),
+                    unfundedAmount: ToOption(boundTerms.OptionalDecimal("unfundedAmount"))),
                 boundTerms.RequiredDateOnly("effectiveDate"),
                 ToOption(boundTerms.OptionalDateOnly("expiryDate")),
                 ToOption(boundTerms.OptionalDecimal("feeRate")),
@@ -509,41 +500,26 @@ internal static class SecurityMasterMapping
                 ToOption(bound.OptionalString("denomination")),
                 ToOption(bound.OptionalDecimal("contractSize")))),
             "CryptoCurrency" => SecurityKind.NewCryptoCurrency(new CryptoTerms(
-                bound.RequiredString("baseCurrency"),
-                bound.RequiredString("quoteCurrency"),
+                CurrencyPairModule(bound.RequiredString("baseCurrency"), bound.RequiredString("quoteCurrency")),
                 ToOption(bound.OptionalString("network")))),
             "Cfd" => SecurityKind.NewCfd(new CfdTerms(
                 bound.RequiredString("underlyingAssetClass"),
                 ToOption(bound.OptionalString("underlyingDescription")),
                 ToOption(bound.OptionalDecimal("leverage")))),
             "Warrant" => SecurityKind.NewWarrant(new WarrantTerms(
-                SecurityId.NewSecurityId(bound.RequiredGuid("underlyingId")),
-                bound.RequiredString("warrantType"),
-                ToOption(bound.OptionalDecimal("strike")),
+                ExerciseModule(
+                    underlyingSecurityId: Some(SecurityId.NewSecurityId(bound.RequiredGuid("underlyingId"))),
+                    optionRight: Some(bound.RequiredString("warrantType")),
+                    strikePrice: ToOption(bound.OptionalDecimal("strike"))),
                 ToOption(bound.OptionalDateOnly("expiry")),
                 ToOption(bound.OptionalDecimal("multiplier")))),
-            "FxForward" => SecurityKind.NewFxForward(new FxForwardTerms(
-                bound.RequiredString("baseCurrency"),
-                bound.RequiredString("quoteCurrency"),
-                ToOption(bound.OptionalStrictDecimal("notional")),
-                ToOption(bound.OptionalStrictDecimal("forwardRate")),
-                ToOption(bound.OptionalStrictDateOnly("tradeDate")),
-                bound.RequiredDateOnly("valueDate"),
-                ToOption(bound.OptionalConventionString("settlementType")))),
-            "NonDeliverableForward" => SecurityKind.NewNonDeliverableForward(new NonDeliverableForwardTerms(
-                bound.RequiredString("baseCurrency"),
-                bound.RequiredString("quoteCurrency"),
-                bound.RequiredString("settlementCurrency"),
-                ToOption(bound.OptionalStrictDecimal("notional")),
-                ToOption(bound.OptionalStrictDecimal("forwardRate")),
-                bound.RequiredDateOnly("fixingDate"),
-                bound.RequiredDateOnly("valueDate"),
-                ToOption(bound.OptionalConventionString("fixingSource")))),
+            "FxForward" => ToFxForwardKind(bound),
+            "NonDeliverableForward" => ToNonDeliverableForwardKind(bound),
             "CreditDefaultSwap" => SecurityKind.NewCreditDefaultSwap(new CreditDefaultSwapTerms(
                 bound.RequiredString("referenceEntity"),
                 ToOption(bound.OptionalConventionString("referenceObligation")),
                 bound.RequiredString("protectionSide"),
-                bound.RequiredDecimal("notional"),
+                NotionalModule(notional: Some(bound.RequiredDecimal("notional"))),
                 bound.RequiredDecimal("fixedCouponBps"),
                 bound.RequiredDateOnly("effectiveDate"),
                 bound.RequiredDateOnly("maturityDate"),
@@ -555,34 +531,25 @@ internal static class SecurityMasterMapping
                 ToOption(bound.OptionalStrictDecimal("recoveryRateAssumption")),
                 ToOption(bound.OptionalConventionString("indexName")))),
             "Swaption" => SecurityKind.NewSwaption(new SwaptionTerms(
-                bound.RequiredString("payerReceiver"),
-                ToOption(bound.OptionalConventionString("exerciseStyle")),
-                bound.RequiredDecimal("strikeRate"),
+                ExerciseModule(
+                    optionRight: Some(bound.RequiredString("payerReceiver")),
+                    exerciseStyle: ToOption(bound.OptionalConventionString("exerciseStyle")),
+                    strikeRate: Some(bound.RequiredDecimal("strikeRate"))),
                 bound.RequiredDateOnly("expiry"),
                 ToOption(bound.OptionalStrictDateOnly("underlyingEffectiveDate")),
                 bound.RequiredDateOnly("underlyingMaturityDate"),
-                bound.RequiredDecimal("notional"),
+                NotionalModule(notional: Some(bound.RequiredDecimal("notional"))),
                 ToOption(bound.OptionalConventionString("floatingIndex")),
                 ToOption(bound.OptionalConventionString("fixedLegPaymentFrequency")),
                 ToDayCountOption(bound.OptionalConventionString("fixedLegDayCount"), mode, "fixedLegDayCount"),
                 ToOption(bound.OptionalConventionString("settlementType")))),
-            "CapFloor" => SecurityKind.NewCapFloor(new CapFloorTerms(
-                bound.RequiredString("capFloorType"),
-                bound.RequiredString("referenceIndex"),
-                ToOption(bound.OptionalStrictDecimal("capStrike")),
-                ToOption(bound.OptionalStrictDecimal("floorStrike")),
-                bound.RequiredDecimal("notional"),
-                bound.RequiredDateOnly("effectiveDate"),
-                bound.RequiredDateOnly("maturityDate"),
-                ToOption(bound.OptionalConventionString("resetFrequency")),
-                ToDayCountOption(bound.OptionalConventionString("dayCount"), mode),
-                ToOption(bound.OptionalStrictDecimal("premiumAmount")))),
+            "CapFloor" => ToCapFloorKind(bound, mode),
             "StructuredNote" => SecurityKind.NewStructuredNote(new StructuredNoteTerms(
                 bound.RequiredString("issuerName"),
                 bound.RequiredString("underlyingDescription"),
                 bound.RequiredDateOnly("maturity"),
                 ToOption(bound.OptionalStrictDateOnly("issueDate")),
-                ToOption(bound.OptionalStrictDecimal("denomination")),
+                NotionalModule(denomination: ToOption(bound.OptionalStrictDecimal("denomination"))),
                 ToOption(bound.OptionalStrictDecimal("principalProtectionPct")),
                 ToOption(bound.OptionalStrictDecimal("participationRate")),
                 ToOption(bound.OptionalStrictDecimal("returnCap")),
@@ -776,7 +743,7 @@ internal static class SecurityMasterMapping
             && customProfileId.ValueKind == JsonValueKind.String
             && !string.IsNullOrWhiteSpace(customProfileId.GetString()))
         {
-            return SecurityKind.NewCustomAsset(new CustomAssetTerms(
+            return SecurityKind.NewCustomAsset(new ProfileEnvelopeTerms(
                 customProfileId.GetString()!,
                 GetOptionalInt(json, "profileVersion") ?? 1,
                 json.GetRawText()));
@@ -1226,14 +1193,132 @@ internal static class SecurityMasterMapping
     private static FSharpList<T> ToFSharpList<T>(IEnumerable<T> values)
         => ListModule.OfSeq(values);
 
-    private static FSharpOption<ExerciseStyle> ParseExerciseStyle(string? value)
+    /// <summary>
+    /// An option's exercise style as the exercise module carries it: the canonical label of a
+    /// recognized style, otherwise none. The vocabulary has no "other" case, so an unrecognized
+    /// value still decodes to none, exactly as it did when the record held a closed union.
+    /// </summary>
+    private static FSharpOption<string> ParseExerciseStyle(string? value)
         => value?.Trim() switch
         {
-            "American" => FSharpOption<ExerciseStyle>.Some(ExerciseStyle.American),
-            "European" => FSharpOption<ExerciseStyle>.Some(ExerciseStyle.European),
-            "Bermudan" => FSharpOption<ExerciseStyle>.Some(ExerciseStyle.Bermudan),
-            _ => FSharpOption<ExerciseStyle>.None
+            "American" => FSharpOption<string>.Some("American"),
+            "European" => FSharpOption<string>.Some("European"),
+            "Bermudan" => FSharpOption<string>.Some("Bermudan"),
+            _ => FSharpOption<string>.None
         };
+
+    // ── ADR-027 stage 3 (S3-E contraction) ─────────────────────────────────────────────────────
+    // The per-class records hold a reference to the term module that defines their homed fields,
+    // so those fields decode straight onto the module. A value the flat codec requires is carried
+    // verbatim as Some — never through ToOption(string), which reads a blank as none and would
+    // change what a stored blank re-serializes to. The helpers below that take a view read their
+    // keys in the order the hand-written arms always did, so a payload with several unreadable
+    // fields is still refused on the same one.
+
+    private static FSharpOption<T> Some<T>(T value) => FSharpOption<T>.Some(value);
+
+    private static ExerciseTerms ExerciseModule(
+        FSharpOption<string>? optionRight = null,
+        FSharpOption<decimal>? strikePrice = null,
+        FSharpOption<decimal>? strikeRate = null,
+        FSharpOption<string>? exerciseStyle = null,
+        FSharpOption<SecurityId>? underlyingSecurityId = null,
+        FSharpOption<decimal>? premiumAmount = null)
+        => new(optionRight, strikePrice, strikeRate, exerciseStyle, underlyingSecurityId, premiumAmount);
+
+    private static CurrencyPairTerms CurrencyPairModule(
+        string baseCurrency,
+        string quoteCurrency,
+        FSharpOption<string>? settlementCurrency = null,
+        FSharpOption<decimal>? forwardRate = null)
+        => new(Some(baseCurrency), Some(quoteCurrency), settlementCurrency, forwardRate);
+
+    private static NotionalTerms NotionalModule(
+        FSharpOption<decimal>? notional = null,
+        FSharpOption<decimal>? denomination = null,
+        FSharpOption<decimal>? committedAmount = null,
+        FSharpOption<decimal>? fundedAmount = null,
+        FSharpOption<decimal>? unfundedAmount = null)
+        => new(notional, denomination, committedAmount, fundedAmount, unfundedAmount);
+
+    private static SecurityKind ToOptionKind(SchemaBoundTerms bound)
+    {
+        var underlyingId = SecurityId.NewSecurityId(bound.RequiredGuid("underlyingId"));
+        var putCall = bound.RequiredString("putCall");
+        var strike = bound.RequiredDecimal("strike");
+        var expiry = bound.RequiredDateOnly("expiry");
+        var multiplier = bound.RequiredDecimal("multiplier");
+        var optChainId = ToOption(bound.OptionalString("optChainId"));
+        var exerciseStyle = ParseExerciseStyle(bound.OptionalString("exerciseStyle"));
+        var settlementType = ToOption(bound.OptionalString("settlementType"));
+        var isAdjusted = bound.OptionalBoolean("isAdjusted") ?? false;
+        var lastTradingDt = ToOption(bound.OptionalDateOnly("lastTradingDt"));
+        return SecurityKind.NewOption(new OptionTerms(
+            ExerciseModule(
+                optionRight: Some(putCall),
+                strikePrice: Some(strike),
+                exerciseStyle: exerciseStyle,
+                underlyingSecurityId: Some(underlyingId)),
+            expiry,
+            multiplier,
+            optChainId,
+            settlementType,
+            isAdjusted,
+            lastTradingDt));
+    }
+
+    private static SecurityKind ToFxForwardKind(SchemaBoundTerms bound)
+    {
+        var baseCurrency = bound.RequiredString("baseCurrency");
+        var quoteCurrency = bound.RequiredString("quoteCurrency");
+        var notional = ToOption(bound.OptionalStrictDecimal("notional"));
+        var forwardRate = ToOption(bound.OptionalStrictDecimal("forwardRate"));
+        return SecurityKind.NewFxForward(new FxForwardTerms(
+            CurrencyPairModule(baseCurrency, quoteCurrency, forwardRate: forwardRate),
+            NotionalModule(notional: notional),
+            ToOption(bound.OptionalStrictDateOnly("tradeDate")),
+            bound.RequiredDateOnly("valueDate"),
+            ToOption(bound.OptionalConventionString("settlementType"))));
+    }
+
+    private static SecurityKind ToNonDeliverableForwardKind(SchemaBoundTerms bound)
+    {
+        var baseCurrency = bound.RequiredString("baseCurrency");
+        var quoteCurrency = bound.RequiredString("quoteCurrency");
+        var settlementCurrency = bound.RequiredString("settlementCurrency");
+        var notional = ToOption(bound.OptionalStrictDecimal("notional"));
+        var forwardRate = ToOption(bound.OptionalStrictDecimal("forwardRate"));
+        return SecurityKind.NewNonDeliverableForward(new NonDeliverableForwardTerms(
+            CurrencyPairModule(baseCurrency, quoteCurrency, Some(settlementCurrency), forwardRate),
+            NotionalModule(notional: notional),
+            bound.RequiredDateOnly("fixingDate"),
+            bound.RequiredDateOnly("valueDate"),
+            ToOption(bound.OptionalConventionString("fixingSource"))));
+    }
+
+    private static SecurityKind ToCapFloorKind(SchemaBoundTerms bound, SecurityKindMappingMode mode)
+    {
+        var capFloorType = bound.RequiredString("capFloorType");
+        var referenceIndex = bound.RequiredString("referenceIndex");
+        var capStrike = ToOption(bound.OptionalStrictDecimal("capStrike"));
+        var floorStrike = ToOption(bound.OptionalStrictDecimal("floorStrike"));
+        var notional = bound.RequiredDecimal("notional");
+        var effectiveDate = bound.RequiredDateOnly("effectiveDate");
+        var maturityDate = bound.RequiredDateOnly("maturityDate");
+        var resetFrequency = ToOption(bound.OptionalConventionString("resetFrequency"));
+        var dayCount = ToDayCountOption(bound.OptionalConventionString("dayCount"), mode);
+        var premiumAmount = ToOption(bound.OptionalStrictDecimal("premiumAmount"));
+        return SecurityKind.NewCapFloor(new CapFloorTerms(
+            ExerciseModule(optionRight: Some(capFloorType), premiumAmount: premiumAmount),
+            referenceIndex,
+            capStrike,
+            floorStrike,
+            NotionalModule(notional: Some(notional)),
+            effectiveDate,
+            maturityDate,
+            resetFrequency,
+            dayCount));
+    }
 
     private static FSharpOption<Meridian.Contracts.SecurityMaster.DayCountConvention> ToSwapLegDayCountOption(
         JsonElement json, SecurityKindMappingMode mode)

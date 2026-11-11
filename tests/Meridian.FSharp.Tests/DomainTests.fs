@@ -1097,11 +1097,23 @@ let ``SecurityMasterLegacyUpgrade projects StructuredCredit maturity into the Ma
     (definition.Terms.FloatingRate |> Option.defaultWith (fun () -> failwith "Expected FloatingRate term module")).ResetFrequency
     |> should equal None
 
+// The per-class records reference the term modules that define their homed fields (ADR-027
+// stage 3, S3-E contraction); these are the all-unset modules the fixtures below start from.
+let private noExercise : ExerciseTerms =
+    { OptionRight = None; StrikePrice = None; StrikeRate = None; ExerciseStyle = None
+      UnderlyingSecurityId = None; PremiumAmount = None }
+
+let private currencyPair baseCurrency quoteCurrency : CurrencyPairTerms =
+    { BaseCurrency = Some baseCurrency; QuoteCurrency = Some quoteCurrency; SettlementCurrency = None; ForwardRate = None }
+
+let private noAmounts : NotionalTerms =
+    { Notional = None; Denomination = None; CommittedAmount = None; FundedAmount = None; UnfundedAmount = None }
+
 [<Fact>]
 let ``SecurityMasterLegacyUpgrade keeps a structured note cadence without a coupon rate`` () =
     let terms = {
         IssuerName = "Meridian Bank plc"; UnderlyingDescription = "EURO STOXX 50"; Maturity = DateOnly(2031, 12, 15)
-        IssueDate = None; Denomination = Some 1000m; PrincipalProtectionPct = Some 1m; ParticipationRate = None
+        IssueDate = None; Notional = { noAmounts with Denomination = Some 1000m }; PrincipalProtectionPct = Some 1m; ParticipationRate = None
         ReturnCap = None; CouponRate = None; PaymentFrequency = Some "Quarterly"; BarrierLevel = Some 0.6m
     }
     let equityCommand = createEquityCreateCommand None
@@ -1160,20 +1172,23 @@ let ``BondSubclass Other carries string payload`` () =
 let ``OptionTerms carries OptChainId and exercise style correctly`` () =
     let sid = SecurityId(Guid.NewGuid())
     let terms = {
-        UnderlyingId = sid
-        PutCall = "Call"
-        Strike = 150m
+        Exercise =
+            { noExercise with
+                OptionRight = Some "Call"
+                StrikePrice = Some 150m
+                ExerciseStyle = Some "American"
+                UnderlyingSecurityId = Some sid }
         Expiry = DateOnly(2025, 12, 19)
         Multiplier = 100m
         OptChainId = Some "AAPL-20251219"
-        ExerciseStyle = Some ExerciseStyle.American
         SettlementType = Some "Physical"
         IsAdjusted = false
         LastTradingDt = Some (DateOnly(2025, 12, 18))
     }
 
     terms.OptChainId |> should equal (Some "AAPL-20251219")
-    terms.ExerciseStyle |> should equal (Some ExerciseStyle.American)
+    terms.Exercise.ExerciseStyle |> should equal (Some "American")
+    SecurityKind.underlyingSecurityId (SecurityKind.Option terms) |> should equal (Some sid)
     terms.SettlementType |> should equal (Some "Physical")
     terms.LastTradingDt |> should equal (Some (DateOnly(2025, 12, 18)))
 
@@ -1629,8 +1644,9 @@ let private registrySampleKinds : (SecurityKind * string) list =
     let secId () = SecurityId(Guid.NewGuid())
     [ SecurityKind.Equity { ShareClass = None; VotingRightsCat = None; Classification = None }, "Equity"
       SecurityKind.Option {
-          UnderlyingId = secId (); PutCall = "Call"; Strike = 100m; Expiry = DateOnly(2030, 1, 18)
-          Multiplier = 100m; OptChainId = None; ExerciseStyle = None; SettlementType = None
+          Exercise = { noExercise with OptionRight = Some "Call"; StrikePrice = Some 100m; UnderlyingSecurityId = Some (secId ()) }
+          Expiry = DateOnly(2030, 1, 18)
+          Multiplier = 100m; OptChainId = None; SettlementType = None
           IsAdjusted = false; LastTradingDt = None }, "Option"
       SecurityKind.Future {
           RootSymbol = "ES"; ContractMonth = "2030-03"; Expiry = DateOnly(2030, 3, 20); Multiplier = 50m
@@ -1642,29 +1658,32 @@ let private registrySampleKinds : (SecurityKind * string) list =
       SecurityKind.Swap { EffectiveDate = DateOnly(2026, 1, 1); MaturityDate = DateOnly(2031, 1, 1); Legs = [] }, "Swap"
       SecurityKind.Cfd { UnderlyingAssetClass = "Equity"; UnderlyingDescription = None; Leverage = None }, "Cfd"
       SecurityKind.Warrant {
-          UnderlyingId = secId (); WarrantType = "Call"; Strike = None; Expiry = None; Multiplier = None }, "Warrant"
+          Exercise = { noExercise with OptionRight = Some "Call"; UnderlyingSecurityId = Some (secId ()) }
+          Expiry = None; Multiplier = None }, "Warrant"
       SecurityKind.FxForward {
-          BaseCurrency = "EUR"; QuoteCurrency = "USD"; Notional = None; ForwardRate = None; TradeDate = None
+          CurrencyPair = currencyPair "EUR" "USD"; Notional = noAmounts; TradeDate = None
           ValueDate = DateOnly(2026, 9, 2); SettlementType = None }, "FxForward"
       SecurityKind.NonDeliverableForward {
-          BaseCurrency = "USD"; QuoteCurrency = "BRL"; SettlementCurrency = "USD"; Notional = None; ForwardRate = None
+          CurrencyPair = { currencyPair "USD" "BRL" with SettlementCurrency = Some "USD" }; Notional = noAmounts
           FixingDate = DateOnly(2026, 6, 29); ValueDate = DateOnly(2026, 7, 1); FixingSource = None }, "NonDeliverableForward"
       SecurityKind.CreditDefaultSwap {
-          ReferenceEntity = "Meridian Industries Inc"; ReferenceObligation = None; ProtectionSide = "Buy"; Notional = 10_000_000m
+          ReferenceEntity = "Meridian Industries Inc"; ReferenceObligation = None; ProtectionSide = "Buy"
+          Notional = { noAmounts with Notional = Some 10_000_000m }
           FixedCouponBps = 100m; EffectiveDate = DateOnly(2026, 3, 20); MaturityDate = DateOnly(2031, 6, 20)
           PaymentFrequency = None; DayCount = None; Seniority = None; RestructuringClause = None; UpfrontPoints = None
           RecoveryRateAssumption = None; IndexName = None }, "CreditDefaultSwap"
       SecurityKind.Swaption {
-          PayerReceiver = "Payer"; ExerciseStyle = None; StrikeRate = 0.0375m; Expiry = DateOnly(2027, 3, 15)
-          UnderlyingEffectiveDate = None; UnderlyingMaturityDate = DateOnly(2037, 3, 17); Notional = 25_000_000m
+          Exercise = { noExercise with OptionRight = Some "Payer"; StrikeRate = Some 0.0375m }; Expiry = DateOnly(2027, 3, 15)
+          UnderlyingEffectiveDate = None; UnderlyingMaturityDate = DateOnly(2037, 3, 17)
+          Notional = { noAmounts with Notional = Some 25_000_000m }
           FloatingIndex = None; FixedLegPaymentFrequency = None; FixedLegDayCount = None; SettlementType = None }, "Swaption"
       SecurityKind.CapFloor {
-          CapFloorType = "Cap"; ReferenceIndex = "SOFR"; CapStrike = Some 0.05m; FloorStrike = None; Notional = 50_000_000m
-          EffectiveDate = DateOnly(2026, 4, 1); MaturityDate = DateOnly(2031, 4, 1); ResetFrequency = None; DayCount = None
-          PremiumAmount = None }, "CapFloor"
+          Exercise = { noExercise with OptionRight = Some "Cap" }; ReferenceIndex = "SOFR"; CapStrike = Some 0.05m; FloorStrike = None
+          Notional = { noAmounts with Notional = Some 50_000_000m }
+          EffectiveDate = DateOnly(2026, 4, 1); MaturityDate = DateOnly(2031, 4, 1); ResetFrequency = None; DayCount = None }, "CapFloor"
       SecurityKind.StructuredNote {
           IssuerName = "Meridian Bank plc"; UnderlyingDescription = "S&P 500 Index"; Maturity = DateOnly(2031, 12, 15)
-          IssueDate = None; Denomination = None; PrincipalProtectionPct = None; ParticipationRate = None; ReturnCap = None
+          IssueDate = None; Notional = noAmounts; PrincipalProtectionPct = None; ParticipationRate = None; ReturnCap = None
           CouponRate = None; PaymentFrequency = None; BarrierLevel = None }, "StructuredNote"
       SecurityKind.InvestmentFund {
           FundType = None; FundFamily = None; NavCurrency = None; DistributionPolicy = None

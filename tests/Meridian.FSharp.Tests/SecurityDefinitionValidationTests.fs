@@ -150,6 +150,97 @@ let ``a custom-asset definition without the envelope module is refused as an emp
     Assert.Contains("custom_asset_profile_version_invalid", codes)
     Assert.Contains("custom_asset_terms_required", codes)
 
+// ── ADR-027 stage 3 (S3-E contraction): required values the records no longer guarantee ─────────
+// The per-class records used to hold these as non-optional fields; they now reference the term
+// module that defines them, whose members are all optional. The flat codec still refuses a
+// payload that omits them, so only a record built directly can lack one — and the definition
+// validator must refuse it on both surfaces.
+
+let private noExercise : ExerciseTerms =
+    { OptionRight = None; StrikePrice = None; StrikeRate = None; ExerciseStyle = None
+      UnderlyingSecurityId = None; PremiumAmount = None }
+
+let private noAmounts : NotionalTerms =
+    { Notional = None; Denomination = None; CommittedAmount = None; FundedAmount = None; UnfundedAmount = None }
+
+let private someUnderlying = Some (SecurityId (Guid.Parse "9e9e9e9e-0000-0000-0000-000000000005"))
+
+let private optionWith (exercise: ExerciseTerms) : SecurityKind =
+    SecurityKind.Option {
+        Exercise = exercise
+        Expiry = DateOnly(2030, 1, 18)
+        Multiplier = 100m
+        OptChainId = None
+        SettlementType = None
+        IsAdjusted = false
+        LastTradingDt = None
+    }
+
+let private warrantWith (exercise: ExerciseTerms) : SecurityKind =
+    SecurityKind.Warrant { Exercise = exercise; Expiry = None; Multiplier = None }
+
+let private swaptionWith (exercise: ExerciseTerms) (notional: NotionalTerms) : SecurityKind =
+    SecurityKind.Swaption {
+        Exercise = exercise
+        Expiry = DateOnly(2027, 3, 15)
+        UnderlyingEffectiveDate = None
+        UnderlyingMaturityDate = DateOnly(2037, 3, 17)
+        Notional = notional
+        FloatingIndex = None
+        FixedLegPaymentFrequency = None
+        FixedLegDayCount = None
+        SettlementType = None
+    }
+
+let private validOption = { noExercise with OptionRight = Some "Call"; StrikePrice = Some 100m; UnderlyingSecurityId = someUnderlying }
+let private validWarrant = { noExercise with OptionRight = Some "Call"; UnderlyingSecurityId = someUnderlying }
+let private validSwaption = { noExercise with OptionRight = Some "Payer"; StrikeRate = Some 0.0375m }
+let private swaptionNotional = { noAmounts with Notional = Some 25_000_000m }
+
+let private bothSurfaces (typeName: string) (kind: SecurityKind) =
+    let kindCodes = SecurityMaster.validateKindInvariants kind |> List.map (fun e -> e.Code)
+    let definitionCodes =
+        SecurityMaster.validateDefinitionInvariants typeName (SecurityMasterLegacyUpgrade.modulesFromKind kind)
+        |> List.map (fun e -> e.Code)
+    kindCodes, definitionCodes
+
+[<Fact>]
+let ``complete option, warrant and swaption records pass both surfaces`` () =
+    for typeName, kind in
+        [ "Option", optionWith validOption
+          "Warrant", warrantWith validWarrant
+          "Swaption", swaptionWith validSwaption swaptionNotional ] do
+        let kindCodes, definitionCodes = bothSurfaces typeName kind
+        Assert.Empty kindCodes
+        Assert.Empty definitionCodes
+
+[<Theory>]
+[<InlineData("option_underlying_required")>]
+[<InlineData("option_strike_invalid")>]
+[<InlineData("option_put_call_required")>]
+[<InlineData("warrant_underlying_required")>]
+[<InlineData("warrant_type_required")>]
+[<InlineData("swaption_strike_rate_required")>]
+[<InlineData("swaption_notional_invalid")>]
+[<InlineData("swaption_payer_receiver_invalid")>]
+let ``a record missing a value the flat codec requires is refused on both surfaces`` (code: string) =
+    let typeName, kind =
+        match code with
+        | "option_underlying_required" -> "Option", optionWith { validOption with UnderlyingSecurityId = None }
+        | "option_strike_invalid" -> "Option", optionWith { validOption with StrikePrice = None }
+        | "option_put_call_required" -> "Option", optionWith { validOption with OptionRight = None }
+        | "warrant_underlying_required" -> "Warrant", warrantWith { validWarrant with UnderlyingSecurityId = None }
+        | "warrant_type_required" -> "Warrant", warrantWith { validWarrant with OptionRight = None }
+        | "swaption_strike_rate_required" -> "Swaption", swaptionWith { validSwaption with StrikeRate = None } swaptionNotional
+        | "swaption_notional_invalid" -> "Swaption", swaptionWith validSwaption noAmounts
+        | _ -> "Swaption", swaptionWith { validSwaption with OptionRight = None } swaptionNotional
+
+    let kindCodes, definitionCodes = bothSurfaces typeName kind
+    Assert.Contains(code, kindCodes)
+    Assert.Contains(code, definitionCodes)
+    for definitionCode in definitionCodes do
+        Assert.Contains(definitionCode, kindCodes)
+
 [<Fact>]
 let ``positive CFD leverage passes both surfaces`` () =
     let kind = cfd (Some 5m)

@@ -247,23 +247,15 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    preferredTerms = preferredTerms
                    convertibleTerms = convertibleTerms |})
         | SecurityKind.Option terms ->
-            let (SecurityId underlyingId) = terms.UnderlyingId
-            let exerciseStyle =
-                terms.ExerciseStyle
-                |> Option.map (fun style ->
-                    match style with
-                    | ExerciseStyle.American -> "American"
-                    | ExerciseStyle.European -> "European"
-                    | ExerciseStyle.Bermudan -> "Bermudan")
             JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
-                   underlyingId = underlyingId
-                   putCall = terms.PutCall
-                   strike = terms.Strike
+                   underlyingId = terms.Exercise.UnderlyingSecurityId |> Option.map (fun (SecurityId id) -> id)
+                   putCall = terms.Exercise.OptionRight
+                   strike = terms.Exercise.StrikePrice
                    expiry = terms.Expiry
                    multiplier = terms.Multiplier
                    optChainId = terms.OptChainId
-                   exerciseStyle = exerciseStyle
+                   exerciseStyle = terms.Exercise.ExerciseStyle
                    settlementType = terms.SettlementType
                    isAdjusted = terms.IsAdjusted
                    lastTradingDt = terms.LastTradingDt |})
@@ -349,8 +341,8 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
         | SecurityKind.FxSpot terms ->
             JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
-                   baseCurrency = terms.BaseCurrency
-                   quoteCurrency = terms.QuoteCurrency |})
+                   baseCurrency = terms.CurrencyPair.BaseCurrency
+                   quoteCurrency = terms.CurrencyPair.QuoteCurrency |})
         | SecurityKind.Deposit terms ->
             JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
@@ -525,9 +517,9 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    gpSponsor = terms.GpSponsor
                    strategy = terms.Strategy
                    vintage = terms.Vintage
-                   commitment = terms.Commitment
-                   fundedAmount = terms.FundedAmount
-                   unfundedAmount = terms.UnfundedAmount
+                   commitment = terms.Notional.CommittedAmount
+                   fundedAmount = terms.Notional.FundedAmount
+                   unfundedAmount = terms.Notional.UnfundedAmount
                    navDate = terms.NavDate
                    lockup = terms.Lockup |})
         | SecurityKind.PrivateCompanyEquity terms ->
@@ -555,8 +547,8 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                 {| schemaVersion = schemaVersion
                    counterparty = terms.Counterparty
                    beneficiary = terms.Beneficiary
-                   committedAmount = terms.CommittedAmount
-                   unfundedAmount = terms.UnfundedAmount
+                   committedAmount = terms.Notional.CommittedAmount
+                   unfundedAmount = terms.Notional.UnfundedAmount
                    effectiveDate = terms.EffectiveDate
                    expiryDate = terms.ExpiryDate
                    feeRate = terms.FeeRate
@@ -576,8 +568,8 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
         | SecurityKind.CryptoCurrency terms ->
             JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
-                   baseCurrency = terms.BaseCurrency
-                   quoteCurrency = terms.QuoteCurrency
+                   baseCurrency = terms.CurrencyPair.BaseCurrency
+                   quoteCurrency = terms.CurrencyPair.QuoteCurrency
                    network = terms.Network |})
         | SecurityKind.Cfd terms ->
             JsonSerializer.Serialize(
@@ -586,32 +578,31 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    underlyingDescription = terms.UnderlyingDescription
                    leverage = terms.Leverage |})
         | SecurityKind.Warrant terms ->
-            let (SecurityId underlyingId) = terms.UnderlyingId
             JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
-                   underlyingId = underlyingId
-                   warrantType = terms.WarrantType
-                   strike = terms.Strike
+                   underlyingId = terms.Exercise.UnderlyingSecurityId |> Option.map (fun (SecurityId id) -> id)
+                   warrantType = terms.Exercise.OptionRight
+                   strike = terms.Exercise.StrikePrice
                    expiry = terms.Expiry
                    multiplier = terms.Multiplier |})
         | SecurityKind.FxForward terms ->
             JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
-                   baseCurrency = terms.BaseCurrency
-                   quoteCurrency = terms.QuoteCurrency
-                   notional = terms.Notional
-                   forwardRate = terms.ForwardRate
+                   baseCurrency = terms.CurrencyPair.BaseCurrency
+                   quoteCurrency = terms.CurrencyPair.QuoteCurrency
+                   notional = terms.Notional.Notional
+                   forwardRate = terms.CurrencyPair.ForwardRate
                    tradeDate = terms.TradeDate
                    valueDate = terms.ValueDate
                    settlementType = terms.SettlementType |})
         | SecurityKind.NonDeliverableForward terms ->
             JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
-                   baseCurrency = terms.BaseCurrency
-                   quoteCurrency = terms.QuoteCurrency
-                   settlementCurrency = terms.SettlementCurrency
-                   notional = terms.Notional
-                   forwardRate = terms.ForwardRate
+                   baseCurrency = terms.CurrencyPair.BaseCurrency
+                   quoteCurrency = terms.CurrencyPair.QuoteCurrency
+                   settlementCurrency = terms.CurrencyPair.SettlementCurrency
+                   notional = terms.Notional.Notional
+                   forwardRate = terms.CurrencyPair.ForwardRate
                    fixingDate = terms.FixingDate
                    valueDate = terms.ValueDate
                    fixingSource = terms.FixingSource |})
@@ -621,7 +612,7 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    referenceEntity = terms.ReferenceEntity
                    referenceObligation = terms.ReferenceObligation
                    protectionSide = terms.ProtectionSide
-                   notional = terms.Notional
+                   notional = terms.Notional.Notional
                    fixedCouponBps = terms.FixedCouponBps
                    effectiveDate = terms.EffectiveDate
                    maturityDate = terms.MaturityDate
@@ -635,13 +626,13 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
         | SecurityKind.Swaption terms ->
             JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
-                   payerReceiver = terms.PayerReceiver
-                   exerciseStyle = terms.ExerciseStyle
-                   strikeRate = terms.StrikeRate
+                   payerReceiver = terms.Exercise.OptionRight
+                   exerciseStyle = terms.Exercise.ExerciseStyle
+                   strikeRate = terms.Exercise.StrikeRate
                    expiry = terms.Expiry
                    underlyingEffectiveDate = terms.UnderlyingEffectiveDate
                    underlyingMaturityDate = terms.UnderlyingMaturityDate
-                   notional = terms.Notional
+                   notional = terms.Notional.Notional
                    floatingIndex = terms.FloatingIndex
                    fixedLegPaymentFrequency = terms.FixedLegPaymentFrequency
                    fixedLegDayCount = terms.FixedLegDayCount |> Option.map Meridian.Contracts.SecurityMaster.DayCountConventions.TermLabel
@@ -649,16 +640,16 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
         | SecurityKind.CapFloor terms ->
             JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
-                   capFloorType = terms.CapFloorType
+                   capFloorType = terms.Exercise.OptionRight
                    referenceIndex = terms.ReferenceIndex
                    capStrike = terms.CapStrike
                    floorStrike = terms.FloorStrike
-                   notional = terms.Notional
+                   notional = terms.Notional.Notional
                    effectiveDate = terms.EffectiveDate
                    maturityDate = terms.MaturityDate
                    resetFrequency = terms.ResetFrequency
                    dayCount = terms.DayCount |> Option.map Meridian.Contracts.SecurityMaster.DayCountConventions.TermLabel
-                   premiumAmount = terms.PremiumAmount |})
+                   premiumAmount = terms.Exercise.PremiumAmount |})
         | SecurityKind.StructuredNote terms ->
             JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
@@ -666,7 +657,7 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    underlyingDescription = terms.UnderlyingDescription
                    maturity = terms.Maturity
                    issueDate = terms.IssueDate
-                   denomination = terms.Denomination
+                   denomination = terms.Notional.Denomination
                    principalProtectionPct = terms.PrincipalProtectionPct
                    participationRate = terms.ParticipationRate
                    returnCap = terms.ReturnCap

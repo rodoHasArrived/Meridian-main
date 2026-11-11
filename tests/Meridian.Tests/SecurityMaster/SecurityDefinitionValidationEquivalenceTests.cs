@@ -215,6 +215,12 @@ public sealed class SecurityDefinitionValidationEquivalenceTests
                 "structured_credit_factor_schedule_duplicate_date",
                 "structured_credit_factor_schedule_not_monotonic"
             ],
+            // S3-E contraction: the records no longer hold these values as non-optional fields.
+            // The flat codec refuses a payload that omits them, so only a directly built record
+            // can lack one.
+            ["Option"] = ["option_underlying_required"],
+            ["Warrant"] = ["warrant_underlying_required"],
+            ["Swaption"] = ["swaption_strike_rate_required"],
             // A blank profile id reads as the OtherSecurity salvage, and a non-object or
             // unparseable document never reaches a CustomAsset kind through the codec.
             ["CustomAsset"] =

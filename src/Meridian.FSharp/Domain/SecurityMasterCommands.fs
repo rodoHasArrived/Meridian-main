@@ -300,8 +300,8 @@ module SecurityMaster =
         | SecurityKind.CustomAsset _ ->
             []
 
-    /// The CustomAsset envelope rules, over the three values CustomAssetTerms and the
-    /// profile-envelope module both carry. ADR-027 stage 3 (S3-E4) moved them onto the
+    /// The CustomAsset envelope rules, over the three values the profile-envelope module carries
+    /// (it is the CustomAsset kind's payload since the S3-E contraction). ADR-027 stage 3 (S3-E4) moved them onto the
     /// definition surface when the envelope gained its module home.
     let private validateProfileEnvelope (customProfileId: string) (profileVersion: int) (termsJson: string) =
         // Write-path envelope validation: the DOCUMENT must declare the governance envelope the
@@ -396,6 +396,9 @@ module SecurityMaster =
         let strikePrice = modules.Exercise |> Option.bind (fun e -> e.StrikePrice)
         let isOneOf (values: string list) (value: string) =
             values |> List.exists (fun candidate -> String.Equals(candidate, value, StringComparison.OrdinalIgnoreCase))
+        // The per-class records no longer hold these values as non-optional fields (S3-E
+        // contraction), so a value the flat codec requires is required here: absent fails.
+        let underlyingSecurityId = modules.Exercise |> Option.bind (fun e -> e.UnderlyingSecurityId)
         let baseCurrency = moduleString (modules.CurrencyPair |> Option.bind (fun p -> p.BaseCurrency))
         let quoteCurrency = moduleString (modules.CurrencyPair |> Option.bind (fun p -> p.QuoteCurrency))
         let pairDiffers = not (String.Equals(baseCurrency, quoteCurrency, StringComparison.OrdinalIgnoreCase))
@@ -419,8 +422,10 @@ module SecurityMaster =
             @ requireNotBlank "option_put_call_required" "PutCall" optionRight
             @ require (isOneOf [ "Put"; "Call" ] optionRight)
                 (error "option_put_call_invalid" "Option PutCall must be either 'Put' or 'Call'.")
-            @ require (strikePrice |> Option.forall (fun strike -> strike > 0m))
+            @ require (strikePrice |> Option.exists (fun strike -> strike > 0m))
                 (error "option_strike_invalid" "Option strike must be greater than zero.")
+            @ require underlyingSecurityId.IsSome
+                (error "option_underlying_required" "Option UnderlyingId is required.")
             @ require (contractMultiplier |> Option.forall (fun multiplier -> multiplier > 0m))
                 (error "option_multiplier_invalid" "Option multiplier must be greater than zero.")
         | "Future" ->
@@ -433,7 +438,9 @@ module SecurityMaster =
                 (error "swaption_payer_receiver_invalid" "Swaption PayerReceiver must be either 'Payer' or 'Receiver'.")
             @ require (modules.Exercise |> Option.bind (fun e -> e.ExerciseStyle) |> Option.forall (isOneOf [ "European"; "American"; "Bermudan" ]))
                 (error "swaption_exercise_style_invalid" "Swaption ExerciseStyle must be European, American or Bermudan when present.")
-            @ require (notional |> Option.forall (fun amount -> amount > 0m))
+            @ require (modules.Exercise |> Option.bind (fun e -> e.StrikeRate)).IsSome
+                (error "swaption_strike_rate_required" "Swaption StrikeRate is required.")
+            @ require (notional |> Option.exists (fun amount -> amount > 0m))
                 (error "swaption_notional_invalid" "Swaption Notional must be greater than zero.")
         | "Bond" ->
             []
@@ -539,6 +546,8 @@ module SecurityMaster =
                 (error "warrant_type_invalid" "Warrant WarrantType must be either 'Call' or 'Put'.")
             @ require (strikePrice |> Option.forall (fun strike -> strike > 0m))
                 (error "warrant_strike_invalid" "Warrant Strike must be greater than zero when present.")
+            @ require underlyingSecurityId.IsSome
+                (error "warrant_underlying_required" "Warrant UnderlyingId is required.")
             @ require (contractMultiplier |> Option.forall (fun multiplier -> multiplier > 0m))
                 (error "warrant_multiplier_invalid" "Warrant Multiplier must be greater than zero when present.")
         | "CapFloor" ->
@@ -559,7 +568,7 @@ module SecurityMaster =
                 (error "cap_floor_floor_strike_required" "CapFloor FloorStrike is required for a Floor or Collar.")
             @ require (modules.Exercise |> Option.bind (fun e -> e.PremiumAmount) |> Option.forall (fun premium -> premium >= 0m))
                 (error "cap_floor_premium_invalid" "CapFloor PremiumAmount must be zero or greater when present.")
-            @ require (notional |> Option.forall (fun amount -> amount > 0m))
+            @ require (notional |> Option.exists (fun amount -> amount > 0m))
                 (error "cap_floor_notional_invalid" "CapFloor Notional must be greater than zero.")
         | "Swap" ->
             []
@@ -571,7 +580,7 @@ module SecurityMaster =
                 (error "cds_date_range_invalid" "CreditDefaultSwap EffectiveDate must be on or before MaturityDate.")
             @ require (couponRate |> Option.forall (fun rate -> rate >= 0m))
                 (error "cds_fixed_coupon_invalid" "CreditDefaultSwap FixedCouponBps must be zero or greater.")
-            @ require (notional |> Option.forall (fun amount -> amount > 0m))
+            @ require (notional |> Option.exists (fun amount -> amount > 0m))
                 (error "cds_notional_invalid" "CreditDefaultSwap Notional must be greater than zero.")
         | "NonDeliverableForward" ->
             []
@@ -611,7 +620,7 @@ module SecurityMaster =
             @ requireNotBlank "commitment_guarantee_counterparty_required" "Counterparty" (moduleString issuerName)
             @ requireOrderedWhenBoth effectiveDate maturityDate
                 (error "commitment_guarantee_date_range_invalid" "CommitmentGuarantee EffectiveDate must be on or before ExpiryDate when present.")
-            @ require (committedAmount |> Option.forall (fun amount -> amount > 0m))
+            @ require (committedAmount |> Option.exists (fun amount -> amount > 0m))
                 (error "commitment_guarantee_amount_invalid" "CommitmentGuarantee CommittedAmount must be greater than zero.")
             @ require (unfundedAmount |> Option.forall (fun amount -> amount >= 0m))
                 (error "commitment_guarantee_exposure_invalid" "CommitmentGuarantee UnfundedAmount must be zero or greater when present.")
@@ -622,7 +631,7 @@ module SecurityMaster =
             []
             @ requireNotBlank "private_fund_gp_required" "GpSponsor" (moduleString issuerName)
             @ requireNotBlank "private_fund_strategy_required" "Strategy" (moduleString (modules.Issuer |> Option.bind (fun i -> i.IssuerProgram)))
-            @ require (committedAmount |> Option.forall (fun amount -> amount > 0m))
+            @ require (committedAmount |> Option.exists (fun amount -> amount > 0m))
                 (error "private_fund_commitment_invalid" "PrivateFundInterest Commitment must be greater than zero.")
             @ require (modules.Notional |> Option.bind (fun n -> n.FundedAmount) |> Option.forall (fun amount -> amount >= 0m))
                 (error "private_fund_funded_invalid" "PrivateFundInterest FundedAmount must be zero or greater when present.")
@@ -803,7 +812,9 @@ module SecurityMaster =
     /// moves them theme by theme).
     let definitionExpressibleCodes : Map<string, string list> =
         Map.ofList [
-            "Option", [ "option_put_call_required"; "option_put_call_invalid"; "option_strike_invalid"; "option_multiplier_invalid" ]
+            "Option",
+            [ "option_put_call_required"; "option_put_call_invalid"; "option_strike_invalid"; "option_underlying_required"
+              "option_multiplier_invalid" ]
             "Future", [ "future_multiplier_invalid" ]
             "Bond", [ "bond_coupon_invalid" ]
             "CertificateOfDeposit", [ "cd_issuer_required"; "cd_coupon_invalid"; "cd_callable_date_invalid" ]
@@ -822,8 +833,12 @@ module SecurityMaster =
               "structured_credit_weighted_average_maturity_invalid"; "structured_credit_weighted_average_loan_age_invalid" ]
             "Commodity", [ "commodity_contract_size_invalid" ]
             "Cfd", [ "cfd_leverage_invalid" ]
-            "Warrant", [ "warrant_type_required"; "warrant_type_invalid"; "warrant_strike_invalid"; "warrant_multiplier_invalid" ]
-            "Swaption", [ "swaption_payer_receiver_invalid"; "swaption_exercise_style_invalid"; "swaption_notional_invalid" ]
+            "Warrant",
+            [ "warrant_type_required"; "warrant_type_invalid"; "warrant_strike_invalid"; "warrant_underlying_required"
+              "warrant_multiplier_invalid" ]
+            "Swaption",
+            [ "swaption_payer_receiver_invalid"; "swaption_exercise_style_invalid"; "swaption_strike_rate_required"
+              "swaption_notional_invalid" ]
             "CapFloor",
             [ "cap_floor_reference_index_required"; "cap_floor_strike_order_invalid"; "cap_floor_date_range_invalid"
               "cap_floor_type_invalid"; "cap_floor_cap_strike_required"; "cap_floor_floor_strike_required"
