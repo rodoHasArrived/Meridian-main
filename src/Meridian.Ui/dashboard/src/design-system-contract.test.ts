@@ -242,21 +242,22 @@ describe("dashboard design-system contract", () => {
     const designSystemTheme = readDesignSystemPackageFile("tokens/theme.css");
 
     // Design-system package 4.3.0: paper canvas #F2F0EB, terracotta signal #C56343, rule #D2CDC3.
-    // The dashboard tokens below still carry the pre-4.3.0 values until the dashboard palette is migrated.
     expect(designSystemTheme).toContain("--theme-bg-canvas: #F2F0EB");
     expect(designSystemTheme).toContain("--theme-accent: #C56343");
     expect(designSystemTheme).toContain("--theme-border: #D2CDC3");
-    expect(styles).toContain("--background: 40 19% 94%");
-    expect(styles).toContain("--foreground: 218 11% 15%");
-    expect(styles).toContain("--primary: 16 51% 44%");
-    expect(styles).toContain("--ws-page-bg: #F2F0EC");
-    expect(styles).toContain("--ws-surface: #FBFAF8");
-    expect(styles).toContain("--ws-surface-subtle: #EDEAE4");
-    expect(styles).toContain("--ws-surface-raised: #F6F4F0");
-    expect(styles).toContain("--ws-masthead-bg: #1F1D1A");
-    expect(styles).toContain("--ws-border: #E4E3DE");
-    expect(styles).toContain("--ws-border-strong: #AFABA1");
-    expect(styles).toContain("--ws-accent: #A85436");
+    expect(styles).toContain("--background: 43 21% 94%");
+    expect(styles).toContain("--foreground: 213 15% 15%");
+    expect(styles).toContain("--primary: 208 17% 19%");
+    // Focus is the interaction blue (#2D6FB3), never the terracotta signal.
+    expect(styles).toContain("--ring: 210 60% 44%");
+    expect(styles).toContain("--ws-page-bg: #F2F0EB");
+    expect(styles).toContain("--ws-surface: #F8F7F3");
+    expect(styles).toContain("--ws-surface-subtle: #EBE8E1");
+    expect(styles).toContain("--ws-surface-raised: #FCFBF8");
+    expect(styles).toContain("--ws-masthead-bg: #29323A");
+    expect(styles).toContain("--ws-border: #D2CDC3");
+    expect(styles).toContain("--ws-border-strong: #AAA49A");
+    expect(styles).toContain("--ws-accent: #C56343");
     expect(styles).toContain("--bg: var(--ws-page-bg)");
     expect(styles).toContain("--surface-topbar: var(--ws-masthead-bg)");
     expect(styles).toContain("--border-color: var(--ws-border)");
@@ -282,13 +283,13 @@ describe("dashboard design-system contract", () => {
     expect(styles).toContain("--text-secondary: var(--theme-secondary-text)");
     expect(styles).toContain("--text-muted: var(--theme-muted-text)");
     expect(styles).toContain("--nav-item: var(--text-secondary)");
-    expect(styles.match(/--ws-text-muted: #9A9289/g)).toHaveLength(2);
+    expect(styles.match(/--ws-text-muted: #929CA6/g)).toHaveLength(2);
     expect(styles).not.toContain("--ws-text-muted: #8893A0");
     expect(readinessPanel).toContain(
-      "var(--text-primary,var(--ws-text,#22252A))"
+      "var(--text-primary,var(--ws-text,#20252B))"
     );
     expect(readinessPanel).toContain(
-      "var(--text-muted,var(--ws-text-muted,#5E666F))"
+      "var(--text-muted,var(--ws-text-muted,#606870))"
     );
 
     const panelBackground = readManualDarkHexToken(styles, "--ws-surface");
@@ -410,7 +411,7 @@ describe("dashboard design-system contract", () => {
     const tailwindConfig = readTailwindConfig();
 
     // Concrete rail: band #EBEFF4 → 213 29% 94%; border #CBD3DC → 212 20% 83%.
-    expect(styles).toContain("--sidebar: 40 20% 91%");
+    expect(styles).toContain("--sidebar: 42 20% 90%");
     expect(styles).toContain("--sidebar-foreground: 216 6% 33%");
     expect(styles).toContain("--sidebar-primary: 16 51% 44%");
     expect(styles).toContain("--sidebar-border: 50 10% 88%");
@@ -418,9 +419,9 @@ describe("dashboard design-system contract", () => {
     expect(styles).toContain("[data-appearance=\"light\"]");
     expect(navStyles).toContain("--mds-nav-rail-bg: var(--theme-bg-hover, var(--ws-rail-bg))");
     expect(navStyles).toContain("--mds-nav-rail-accent: var(--theme-accent, var(--ws-accent))");
-    // The fallback mirrors --ws-rail-active (#F2E3DB); it previously quoted --accent-ghost
+    // The fallback mirrors --ws-rail-active (#E7EDF2); it previously quoted --accent-ghost
     // (#F4E7E0), a different token.
-    expect(navStyles).toContain("background: var(--mds-nav-rail-active, var(--ws-rail-active, #F2E3DB))");
+    expect(navStyles).toContain("background: var(--mds-nav-rail-active, var(--ws-rail-active, #E7EDF2))");
 
     // Tailwind color registrations present
     expect(tailwindConfig).toContain("sidebar: {");
@@ -432,7 +433,7 @@ describe("dashboard design-system contract", () => {
     const styles = readDashboardStyles();
     const tailwindConfig = readTailwindConfig();
 
-    // copper #A85436 · spruce #3A7A56 · brick #A8443C · ochre #8A5C12 · warm slate #7E7A72
+    // terracotta #C56343 · forest #2E7655 · brick #B54B42 · ochre #986717 · slate #8C918F
     expect(styles).toContain("--chart-1: 16 51% 44%");
     expect(styles).toContain("--chart-2: 146 36% 35%");
     expect(styles).toContain("--chart-3: 4 47% 45%");
@@ -460,10 +461,10 @@ describe("dashboard design-system contract", () => {
     const styles = readDashboardStyles();
 
     // Tier 2 semantic hues authored once in :root (light).
-    expect(styles).toContain("--green: #3A7A56");
-    expect(styles).toContain("--red: #A8443C");
-    expect(styles).toContain("--orange: #8A5C12");
-    expect(styles).toContain("--purple: #5D5486");
+    expect(styles).toContain("--green: #2E7655");
+    expect(styles).toContain("--red: #B54B42");
+    expect(styles).toContain("--orange: #986717");
+    expect(styles).toContain("--purple: #2F648A");
     expect(styles).toContain("--amber: var(--orange)");
 
     // Environment modes derive from the semantic palette (Live·Paper·Fixture).
@@ -505,13 +506,13 @@ describe("dashboard design-system contract", () => {
     expect(styles).toContain(":root[data-theme=\"dark\"]");
     expect(styles).toContain(":root[data-theme=\"light\"]");
 
-    // Warm graphite dark base: canvas #14120F · panel #201D19 · copper #D98A64.
-    expect(styles).toContain("--ws-page-bg: #14120F");
-    expect(styles).toContain("--ws-surface: #201D19");
-    expect(styles).toContain("--ws-accent: #D98A64");
+    // Cool graphite dark base: canvas #11171D · panel #171E25 · terracotta #D88466.
+    expect(styles).toContain("--ws-page-bg: #11171D");
+    expect(styles).toContain("--ws-surface: #171E25");
+    expect(styles).toContain("--ws-accent: #D88466");
 
     // The forced-light opt-out re-asserts the warm-paper light canvas.
-    expect(styles.match(/--ws-page-bg: #F2F0EC/g)).toHaveLength(2);
+    expect(styles.match(/--ws-page-bg: #F2F0EB/g)).toHaveLength(2);
   });
 
   it("uses Segoe UI as the primary sans font and Cascadia Mono with JetBrains fallback for mono", () => {

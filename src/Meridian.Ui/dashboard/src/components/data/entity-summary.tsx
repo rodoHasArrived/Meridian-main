@@ -24,7 +24,7 @@ const labelStyle: CSSProperties = {
   fontWeight: 600,
   fontVariant: "all-small-caps",
   letterSpacing: "0.03em",
-  color: "var(--text-muted, #5E666F)",
+  color: "var(--text-muted, #606870)",
   marginBottom: 3,
 };
 
@@ -55,7 +55,7 @@ export function EntitySummary({ items, columns = 3 }: EntitySummaryProps) {
               fontSize: 13,
               fontFamily: it.mono === false ? "var(--font-body)" : "var(--font-data, monospace)",
               fontVariantNumeric: "tabular-nums",
-              color: it.color || "var(--text-primary, #22252A)",
+              color: it.color || "var(--text-primary, #20252B)",
               overflow: "hidden",
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",

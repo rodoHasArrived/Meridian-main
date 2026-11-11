@@ -675,16 +675,16 @@ function EquityCurve({ result }: { result: NonNullable<CoveredCallScreenViewMode
       title="Equity curve"
       subtitle="Strategy vs underlying-only buy-and-hold."
       readout={[
-        { label: "Strategy", value: fmtMoney(finalStrategy), color: "var(--chart-equity, #3A7A56)" },
-        { label: "Underlying", value: fmtMoney(finalUnderlying), color: "var(--chart-axis, #5E666F)" }
+        { label: "Strategy", value: fmtMoney(finalStrategy), color: "var(--chart-equity, #2E7655)" },
+        { label: "Underlying", value: fmtMoney(finalUnderlying), color: "var(--chart-axis, #606870)" }
       ]}
       height={220}
       style={{ flexShrink: 0 }}
     >
       <EquityCurveChart
         series={[
-          { label: "Strategy", color: "var(--chart-equity, #3A7A56)", points: strategy },
-          { label: "Underlying", color: "var(--chart-axis, #5E666F)", points: underlying, dashed: true, area: false }
+          { label: "Strategy", color: "var(--chart-equity, #2E7655)", points: strategy },
+          { label: "Underlying", color: "var(--chart-axis, #606870)", points: underlying, dashed: true, area: false }
         ]}
         valueFmt={fmtMoney}
       />

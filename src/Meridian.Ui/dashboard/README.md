@@ -2025,6 +2025,11 @@ component references, patterns, templates, and governance scripts. The browser w
 the package through copied `src/assets/` files and the `src/design-system/assets.ts` bridge, while
 `src/design-system-contract.test.ts` keeps the package manifest, canonical token values, asset bridge,
 and runtime CSS alignment under test.
+Workstation tokens in `src/styles/index.css` follow the package's 4.3.0 roles: graphite (`#29323A`)
+is the primary action and chrome color, terracotta (`#C56343`) is the brand/attention signal only,
+and focus and selection use the interaction blue family (`#2D6FB3` ring, `#E7EDF2` selected
+surface). Light, auto-dark, manual-dark, and forced-light scopes take their values from the package's
+`tokens/` files.
 Live shell chrome and Accounting adapters remain dashboard-native TypeScript: `WorkstationTopbar`,
 `WorkstationStatusBar`, `TrialBalanceTable`, `AgingTable`, and `ReconciliationComparisonPanel`
 adapt the manifest-backed design-system references without importing root JSX or runtime-injected

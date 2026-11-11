@@ -30,8 +30,8 @@ export function ChartCard({ title, subtitle, readout, actions, height = 320, chi
   return (
     <div
       style={{
-        background: "var(--card-surface, var(--panel, #FBFAF8))",
-        border: "1px solid var(--border, #E4E3DE)",
+        background: "var(--card-surface, var(--panel, #F8F7F3))",
+        border: "1px solid var(--border, #D2CDC3)",
         borderRadius: "var(--radius-card, 2px)",
         display: "flex",
         flexDirection: "column",
@@ -45,7 +45,7 @@ export function ChartCard({ title, subtitle, readout, actions, height = 320, chi
           alignItems: "center",
           gap: 12,
           padding: "12px 14px",
-          borderBottom: "1px solid var(--border, #E4E3DE)"
+          borderBottom: "1px solid var(--border, #D2CDC3)"
         }}
       >
         <div style={{ minWidth: 0 }}>
@@ -54,12 +54,12 @@ export function ChartCard({ title, subtitle, readout, actions, height = 320, chi
               fontFamily: "var(--font-display, inherit)",
               fontSize: 14,
               fontWeight: 600,
-              color: "var(--text-primary, #22252A)"
+              color: "var(--text-primary, #20252B)"
             }}
           >
             {title}
           </div>
-          {subtitle && <div style={{ fontSize: 11, color: "var(--text-muted, #5E666F)", marginTop: 1 }}>{subtitle}</div>}
+          {subtitle && <div style={{ fontSize: 11, color: "var(--text-muted, #606870)", marginTop: 1 }}>{subtitle}</div>}
         </div>
         {readout && (
           <div style={{ display: "flex", gap: 16, marginLeft: 8, flexWrap: "wrap" }}>
@@ -71,7 +71,7 @@ export function ChartCard({ title, subtitle, readout, actions, height = 320, chi
                     fontSize: 9,
                     fontVariant: "all-small-caps",
                     letterSpacing: ".03em",
-                    color: "var(--text-muted, #5E666F)"
+                    color: "var(--text-muted, #606870)"
                   }}
                 >
                   {r.label}
@@ -81,7 +81,7 @@ export function ChartCard({ title, subtitle, readout, actions, height = 320, chi
                     fontFamily: "var(--font-data, monospace)",
                     fontSize: 12,
                     fontVariantNumeric: "tabular-nums",
-                    color: r.color || "var(--text-primary, #22252A)"
+                    color: r.color || "var(--text-primary, #20252B)"
                   }}
                 >
                   {r.value}
@@ -99,7 +99,7 @@ export function ChartCard({ title, subtitle, readout, actions, height = 320, chi
           flex: height == null ? 1 : undefined,
           minHeight: 0,
           padding: 8,
-          background: "var(--chart-plot, #FBFAF8)"
+          background: "var(--chart-plot, #F8F7F3)"
         }}
       >
         {children}

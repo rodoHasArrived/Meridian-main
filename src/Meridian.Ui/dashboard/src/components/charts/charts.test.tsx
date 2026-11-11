@@ -86,7 +86,7 @@ describe("EquityCurve", () => {
       />
     );
     const drawdownPath = Array.from(container.querySelectorAll("path")).find((p) =>
-      p.getAttribute("stroke") === "var(--chart-drawdown, #A8443C)"
+      p.getAttribute("stroke") === "var(--chart-drawdown, #B54B42)"
     );
     expect(drawdownPath?.getAttribute("d")).toContain("432.0");
   });

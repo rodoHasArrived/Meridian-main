@@ -43,12 +43,12 @@ export interface EquityCurveProps {
   fill?: boolean;
 }
 
-const PLOT = "var(--chart-plot, #FBFAF8)";
-const GRID = "var(--chart-grid, #E4E3DE)";
-const AXIS = "var(--chart-axis, #5E666F)";
-const BORDER = "var(--chart-border, #AFABA1)";
+const PLOT = "var(--chart-plot, #F8F7F3)";
+const GRID = "var(--chart-grid, #D2CDC3)";
+const AXIS = "var(--chart-axis, #606870)";
+const BORDER = "var(--chart-border, #AAA49A)";
 const CROSSHAIR = "var(--chart-crosshair, #6B655C)";
-const DRAWDOWN = "var(--chart-drawdown, #A8443C)";
+const DRAWDOWN = "var(--chart-drawdown, #B54B42)";
 
 export function EquityCurve({
   series,
@@ -109,7 +109,7 @@ export function EquityCurve({
         .join(" ")} L${x(n - 1).toFixed(1)},${yD(0).toFixed(1)} Z`
     : "";
 
-  const legendText = { fontFamily: "var(--font-data, monospace)", fontSize: 11, color: "var(--text-secondary, #4E5258)" };
+  const legendText = { fontFamily: "var(--font-data, monospace)", fontSize: 11, color: "var(--text-secondary, #535C65)" };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>

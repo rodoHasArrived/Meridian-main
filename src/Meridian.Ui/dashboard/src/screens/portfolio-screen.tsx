@@ -1561,7 +1561,7 @@ function PortfolioDrillInChartInner({
           {
             label: "Max drawdown",
             value: `-${(profile.maxDrawdownPercent * 100).toFixed(2)}%`,
-            color: "var(--chart-drawdown, #A8443C)"
+            color: "var(--chart-drawdown, #B54B42)"
           },
           { label: "Sharpe", value: profile.sharpeRatio.toFixed(2) }
         ]}
@@ -1569,7 +1569,7 @@ function PortfolioDrillInChartInner({
         style={{ flexShrink: 0 }}
       >
         <EquityCurve
-          series={[{ label: "Equity", color: "var(--chart-equity, #3A7A56)", points: equity }]}
+          series={[{ label: "Equity", color: "var(--chart-equity, #2E7655)", points: equity }]}
           drawdown={drawdown}
           labels={labels}
           valueFmt={drillInCurrency}
@@ -1624,10 +1624,10 @@ function PortfolioDrillInReturnDistribution({
         {
           label: "Mean / day",
           value: drillInSignedPercent(mean),
-          color: mean >= 0 ? "var(--chart-equity, #3A7A56)" : "var(--chart-drawdown, #A8443C)"
+          color: mean >= 0 ? "var(--chart-equity, #2E7655)" : "var(--chart-drawdown, #B54B42)"
         },
-        { label: "Best day", value: drillInSignedPercent(best), color: "var(--chart-equity, #3A7A56)" },
-        { label: "Worst day", value: drillInSignedPercent(worst), color: "var(--chart-drawdown, #A8443C)" },
+        { label: "Best day", value: drillInSignedPercent(best), color: "var(--chart-equity, #2E7655)" },
+        { label: "Worst day", value: drillInSignedPercent(worst), color: "var(--chart-drawdown, #B54B42)" },
         { label: "Positive days", value: `${positiveShare.toFixed(0)}%` }
       ]}
       height={220}
