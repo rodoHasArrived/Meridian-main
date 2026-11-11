@@ -206,7 +206,7 @@
       "components/operations/AttestationPanel.jsx": "701411dfc5702b6be7d0a2b87f4a5b7d59ddd9b74998a8628273d4f3200923ff",
       "components/operations/CaseQueue.jsx": "fd8a777ee49845a2f74bbc6c4cc34803d98c2c9fcb61c98f1c430217ca9db82b",
       "components/operations/ChangeSetReview.jsx": "0131a0ffe378e9304ec360a7f9cac662bc7cc33afb8ca8de5441a0758d29e30a",
-      "components/operations/ClaimHeader.jsx": "76739e03c27e5e7ecc43013cb969454fd60676203ed770480f5d6a2f24adf378",
+      "components/operations/ClaimHeader.jsx": "d4437a934250ca9b0527606ade99d9925e006e64858669908d7a820bd114599d",
       "components/operations/ConnectionState.jsx": "7ecc32060102e42a6d4ce7022203feb76dcc1d82731d8e0825ddbb2863611147",
       "components/operations/DataCondition.jsx": "f016bf0b977122e728c7daa1f1efd2d7e70d608de8bbc517ffb53025d35cafed",
       "components/operations/DecisionFlow.jsx": "9cff50d120674df556c8d6eddfb8362f4ab125790884c65e65e6f98d7db67898",
@@ -489,8 +489,8 @@
   },
   "assets": {
     "_ds_bundle.js": {
-      "sha256": "1e4f1825d54ba7711af18b5d38939cc8f1f1e298508e6ee2694bbb7315f494ea",
-      "bytes": 1688459
+      "sha256": "2293d20199dd2a45226fc0b6ecf43ae3f8478dd0b252e72bc101289074c7b197",
+      "bytes": 1688583
     },
     "_preview_runtime.js": {
       "sha256": "27807359b502e418026483c5e5857c68d666fefbbac236e0405a57062bf74df8",

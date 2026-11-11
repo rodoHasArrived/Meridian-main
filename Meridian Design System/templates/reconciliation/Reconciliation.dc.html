@@ -12,7 +12,7 @@
 <script src="./ds-base.js"></script>
 <meta name="dc-template" content="reconciliation">
 <style>html,body{margin:0;padding:0;height:100%}
-[data-rw-show="off"]{display:none}
+[data-rw-show="off"]{display:none !important} /* the view roots set display:flex inline, which beat a plain rule and left the queue and the matcher both on screen */
 tr[data-rw-state] td:first-child{position:relative;padding-left:13px}
 tr[data-rw-state] td:first-child::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:0 2px 2px 0}
 tr[data-rw-state="matched"] td:first-child::before{background:var(--green,#2E7655)}

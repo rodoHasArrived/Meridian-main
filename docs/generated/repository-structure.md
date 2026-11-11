@@ -9149,6 +9149,7 @@ Meridian-main
 │   │   │   │   │   ├── trading-screen.headline-evidence.ts
 │   │   │   │   │   ├── trading-screen.linked-context.ts
 │   │   │   │   │   ├── trading-screen.operator-focus.ts
+│   │   │   │   │   ├── trading-screen.order-ticket-form.tsx
 │   │   │   │   │   ├── trading-screen.order-ticket-text.ts
 │   │   │   │   │   ├── trading-screen.readiness-summary.ts
 │   │   │   │   │   ├── trading-screen.test.tsx
@@ -13093,6 +13094,7 @@ Meridian-main
 │   │   │   ├── FundStructureEndpointAuthorizationTests.cs
 │   │   │   ├── InMemoryFundStructureTenancyGuardTests.cs
 │   │   │   ├── InvestmentAccountingTransactionLabServiceTests.cs
+│   │   │   ├── LedgerAccountRunningBalanceEndpointTests.cs
 │   │   │   ├── LedgerAccountRunningBalanceScopeTests.cs
 │   │   │   ├── LedgerAmountProvenanceEndpointTests.cs
 │   │   │   ├── LedgerAmountProvenanceServiceTests.cs

@@ -12,3 +12,5 @@ The claim, not the topic. `ClaimHeader` opens an analytical view with a testable
 ```
 
 Rules: one claim per view; rewrite it when the selection changes the conclusion; never let the claim assert more than the data states support (a stale or partial input belongs in `states`). Use a plain `<h1>` + `Eyebrow` for record pages — `ClaimHeader` is for evidence surfaces.
+
+The claim renders as the page `<h1>`. If the screen already has an `<h1>` (a topic label above the header), pass `headingLevel={2}` so the page keeps one.

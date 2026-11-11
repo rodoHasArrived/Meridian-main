@@ -11,7 +11,7 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 ## Overall Health Score
 
 ```text
-  [########################------] 79/100
+  [########################------] 81/100
   Rating: Good
 ```
 
@@ -19,12 +19,12 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 | Metric | Value |
 | -------- | ------- |
-| Total documentation files | 951 |
+| Total documentation files | 1031 |
 | Orphaned files | 391 |
 | Files without headings | 231 |
 | Stale files (>90 days) | 0 |
 | TODO/FIXME markers | 330 |
-| **Health score** | **79/100** |
+| **Health score** | **81/100** |
 
 Line counts (total, average and per file) change on every Markdown edit, so they are not
 tracked here; they still feed the score. Pass `--volatile-json-output` to the generator to
@@ -95,7 +95,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 | ------ | ------- | ------- | --------- | ------- |
-| 1970-01-01 | 79 | 951 | 391 | 0 |
+| 1970-01-01 | 81 | 1031 | 391 | 0 |
 
 ---
 
