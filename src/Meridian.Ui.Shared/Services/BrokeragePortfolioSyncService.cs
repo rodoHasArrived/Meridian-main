@@ -401,6 +401,30 @@ public sealed class BrokeragePortfolioSyncService
         CancellationToken ct = default)
         => (await LoadActivityHistoryForActiveLinkAsync(fundAccountId, ct).ConfigureAwait(false))?.CashTransactions ?? [];
 
+    /// <summary>
+    /// The current projection only when it was synced from the external account the fund account
+    /// is linked to now. A relink updates the link at once but leaves the previous account's
+    /// projection in place until the next sync, and that projection is not evidence about the
+    /// newly linked account.
+    /// </summary>
+    public async Task<FundAccountBrokerageSyncActivityDto?> GetActivityForActiveLinkAsync(
+        Guid fundAccountId,
+        CancellationToken ct = default)
+    {
+        var projection = await LoadProjectionAsync(fundAccountId, ct).ConfigureAwait(false);
+        if (projection is null)
+        {
+            return null;
+        }
+
+        var link = await LoadLinkAsync(fundAccountId, ct).ConfigureAwait(false);
+        return link is null
+               || (string.Equals(projection.Link.ProviderId, link.ProviderId, StringComparison.OrdinalIgnoreCase)
+                   && string.Equals(projection.Link.ExternalAccountId, link.ExternalAccountId, StringComparison.Ordinal))
+            ? projection
+            : null;
+    }
+
     /// <summary>Every fill a sync has observed for the account, deduplicated by provider fill id.</summary>
     public async Task<IReadOnlyList<FundAccountBrokerageFillDto>> GetFillHistoryAsync(
         Guid fundAccountId,

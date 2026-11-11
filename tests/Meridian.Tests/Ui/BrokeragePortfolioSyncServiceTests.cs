@@ -422,6 +422,7 @@ public sealed class BrokeragePortfolioSyncServiceTests
             activity.CashTransactionIds = ["cash-2", "cash-3"];
             await service.RunSyncAsync(fundAccountId, request, cts.Token);
 
+            (await service.GetActivityForActiveLinkAsync(fundAccountId, cts.Token)).Should().NotBeNull();
             var history = await service.GetCashTransactionHistoryAsync(fundAccountId, cts.Token);
             history.Select(static cash => cash.TransactionId).Should().BeEquivalentTo(["cash-1", "cash-2", "cash-3"]);
             (await service.GetActivityAsync(fundAccountId, cts.Token))!.CashTransactions
@@ -435,6 +436,9 @@ public sealed class BrokeragePortfolioSyncServiceTests
                 new BrokerageAccountLinkRequestDto("alpaca", "PA-RELINKED", "Relinked account", "tests"), cts.Token);
             (await service.GetCashTransactionHistoryAsync(fundAccountId, cts.Token)).Should().BeEmpty();
             (await service.GetFillHistoryAsync(fundAccountId, cts.Token)).Should().BeEmpty();
+            // The projection still holds the previous account's snapshot until the next sync.
+            (await service.GetActivityAsync(fundAccountId, cts.Token)).Should().NotBeNull();
+            (await service.GetActivityForActiveLinkAsync(fundAccountId, cts.Token)).Should().BeNull();
         }
         finally
         {
