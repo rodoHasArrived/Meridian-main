@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import {
   assertHealthyScene, chromiumLaunchOptions, compositeColor, contrastRatio, designSystemMatrix,
-  parseCssColor, parseDesignSystemOptions, supportingSmokeResponse, workstationBase
+  parseCssColor, parseDesignSystemOptions, readOnlySmokeResponse, supportingSmokeResponse, workstationBase
 } from "./design-system-smoke-helpers.mjs";
 import { managedSmokeOptions } from "./design-system-smoke-runner.mjs";
 
@@ -68,6 +68,37 @@ test("supporting fixtures are exact-method/path matches rather than catch-all wr
   assert.equal(supportingSmokeResponse("/api/risk/escalations/unknown", "GET"), null);
   assert.equal(supportingSmokeResponse("/api/workstation/operator/visits/reconciliation-breaks", "POST").body.surface, "reconciliation-breaks");
   assert.equal(supportingSmokeResponse("/api/workstation/operator/visits/unknown", "POST"), null);
+});
+
+test("new smoke-only support stays scoped to five GET identities without inventing history", () => {
+  const paths = [
+    "/api/workstation/tables/close-checklist-progress-data/views",
+    "/api/workstation/tables/portfolio-positions/views",
+    "/api/workstation/tables/provider-evidence-age-data/views",
+    "/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6/checklist/history",
+    "/api/workstation/provider-verification-history/provider-alpaca-paper"
+  ];
+  for (const path of paths) {
+    const response = readOnlySmokeResponse(path, "GET");
+    assert.equal(response.status, 200);
+    assert.equal(response.smokeFixture.path, path);
+    assert.equal(response.headers["x-meridian-dev-fixture"], "true");
+    assert.equal(readOnlySmokeResponse(path, "POST"), null);
+    assert.equal(readOnlySmokeResponse(path + "/unknown", "GET"), null);
+  }
+  for (const path of paths.slice(0, 3)) assert.deepEqual(readOnlySmokeResponse(path).body, []);
+  const checklist = readOnlySmokeResponse(paths[3]).body;
+  assert.equal(checklist.status, "Unavailable");
+  assert.equal(checklist.workflowId, "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6");
+  assert.deepEqual(checklist.observations, []);
+  assert.equal(checklist.coverageStart, null);
+  assert.equal(checklist.coverageEnd, null);
+  const verification = readOnlySmokeResponse(paths[4]).body;
+  assert.equal(verification.connectionId, "provider-alpaca-paper");
+  assert.deepEqual(verification.observations, []);
+  assert.equal(readOnlySmokeResponse(paths[4].replace("provider-alpaca-paper", "other-connection")), null);
+  assert.equal(readOnlySmokeResponse(paths[3].replace("79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6", "other-workflow")), null);
+  assert.equal(readOnlySmokeResponse("/api/workstation/tables/other-table/views"), null);
 });
 
 test("contrast math covers alpha washes and exposes the original selected-row failure", () => {

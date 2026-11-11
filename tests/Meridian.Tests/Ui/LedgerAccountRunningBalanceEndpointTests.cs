@@ -178,8 +178,8 @@ public sealed class LedgerAccountRunningBalanceEndpointTests
             var id = Guid.NewGuid();
             var timestamp = new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero).AddDays(sequence);
             return new(new JournalEntry(id, timestamp, "Synthetic receipt",
-                [new LedgerEntry(Guid.NewGuid(), id, timestamp, new("Cash", LedgerAccountType.Asset), amount, 0m, "Cash receipt"),
-                 new LedgerEntry(Guid.NewGuid(), id, timestamp, new("Capital", LedgerAccountType.Equity), 0m, amount, "Capital receipt")]),
+                [new LedgerEntry(Guid.NewGuid(), id, timestamp, new("Cash", LedgerAccountType.Asset), amount, 0m, "Synthetic receipt"),
+                 new LedgerEntry(Guid.NewGuid(), id, timestamp, new("Capital", LedgerAccountType.Equity), 0m, amount, "Synthetic receipt")]),
                 Guid.NewGuid(), periodId, null, null, sequence, timestamp, basis);
         }
 
