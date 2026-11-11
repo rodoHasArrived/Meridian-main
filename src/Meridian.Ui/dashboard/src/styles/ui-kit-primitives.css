@@ -6,9 +6,9 @@
   gap: 0.75rem;
   min-width: 0;
   padding: 0.75rem 0.875rem;
-  border: 1px solid rgba(74, 68, 60, 0.95);
+  border: 1px solid var(--ws-border);
   border-radius: var(--radius-lg);
-  background: rgba(11, 21, 32, 0.96);
+  background: var(--ws-surface);
   box-shadow: var(--shadow-panel);
 }
 
@@ -27,11 +27,11 @@
   gap: 0.375rem;
   min-height: 1.625rem;
   padding: 0 0.625rem;
-  border: 1px solid rgba(74, 68, 60, 0.95);
+  border: 1px solid var(--ws-border);
   border-radius: var(--radius-sm);
-  background: rgba(20, 18, 15, 0.92);
+  background: var(--ws-surface-subtle);
   color: var(--fg-muted);
-  font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  font-family: var(--font-data, "IBM Plex Mono", ui-monospace, Consolas, monospace);
   font-size: 0.75rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -39,7 +39,7 @@
 }
 
 .meridian-toolbar-chip b {
-  color: #FDFAF5;
+  color: var(--ws-text);
   font-weight: 500;
   /* A chip's value is data ("0 corporate actions"), not a label: it keeps its own case. */
   letter-spacing: 0.01em;
@@ -52,9 +52,9 @@
 }
 
 .meridian-toolbar-chip.active {
-  border-color: rgba(217, 138, 100, 0.35);
-  background: rgba(217, 138, 100, 0.10);
-  color: var(--cyan-primary);
+  border-color: var(--interaction-selected);
+  background: var(--interaction-selected-surface);
+  color: var(--interaction-link);
 }
 
 .meridian-toolbar-right {
@@ -68,9 +68,9 @@
 .dense-data-table-wrap {
   max-height: 35rem;
   overflow: auto;
-  border: 1px solid rgba(74, 68, 60, 0.9);
+  border: 1px solid var(--ws-border);
   border-radius: var(--radius-lg);
-  background: rgba(20, 18, 15, 0.55);
+  background: var(--ws-surface);
 }
 
 .dense-data-table {
@@ -119,13 +119,13 @@
   position: sticky;
   top: 0;
   z-index: 1;
-  background: rgba(22, 35, 52, 0.62);
+  background: var(--ws-surface-subtle);
 }
 
 .dense-data-table th {
   padding: var(--dense-head-py) var(--dense-cell-px);
   color: var(--fg-muted);
-  font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  font-family: var(--font-data, "IBM Plex Mono", ui-monospace, Consolas, monospace);
   font-size: 0.75rem;
   font-weight: 500;
   letter-spacing: 0.14em;
@@ -135,14 +135,14 @@
 
 .dense-data-table td {
   padding: var(--dense-cell-py) var(--dense-cell-px);
-  border-top: 1px solid rgba(74, 68, 60, 0.66);
+  border-top: 1px solid var(--ws-row-border);
   color: var(--ws-text);
   vertical-align: top;
   font-size: 0.75rem;
 }
 
 .dense-data-table tbody tr {
-  background: rgba(20, 18, 15, 0.24);
+  background: var(--ws-surface-raised);
   transition: background 100ms ease;
 }
 
@@ -151,17 +151,17 @@
 }
 
 .dense-data-table tbody tr:hover {
-  background: rgba(217, 138, 100, 0.06);
+  background: var(--ws-row-hover);
 }
 
 .dense-data-table tbody tr.selected {
-  background: rgba(217, 138, 100, 0.10);
+  background: var(--interaction-selected-surface);
 }
 
 .dense-data-table tbody tr.selectable:focus-visible {
-  outline: 2px solid rgba(217, 138, 100, 0.45);
+  outline: 2px solid var(--interaction-focus);
   outline-offset: -2px;
-  background: rgba(217, 138, 100, 0.08);
+  background: var(--interaction-selected-surface);
 }
 
 .dense-data-table-empty {
@@ -217,7 +217,7 @@
 }
 
 .dense-data-table-columns > summary:focus-visible {
-  outline: 2px solid rgba(217, 138, 100, 0.45);
+  outline: 2px solid var(--interaction-focus);
   outline-offset: 2px;
 }
 
@@ -270,20 +270,20 @@
 
 .dense-data-table-sort-button:focus-visible {
   border-radius: var(--radius-sm);
-  outline: 2px solid rgba(217, 138, 100, 0.45);
+  outline: 2px solid var(--interaction-focus);
   outline-offset: 2px;
 }
 
 .dense-data-table-sort-indicator {
   opacity: 0.45;
-  color: var(--cyan-primary);
+  color: var(--interaction-link);
   font-size: 0.6875rem;
   line-height: 1;
 }
 
 .dense-data-table-sorted .dense-data-table-sort-indicator {
   opacity: 1;
-  color: var(--interaction-selected, #496C8F);
+  color: var(--interaction-selected);
 }
 
 .dense-data-table-sorted .dense-data-table-sort-button {
@@ -294,32 +294,32 @@
   display: flex;
   justify-content: center;
   padding: 0.625rem;
-  border-top: 1px solid rgba(74, 68, 60, 0.66);
-  background: rgba(20, 18, 15, 0.72);
+  border-top: 1px solid var(--ws-row-border);
+  background: var(--ws-surface-subtle);
 }
 
 .dense-data-table-row-cap button {
   min-height: 1.75rem;
   padding: 0 0.625rem;
-  border: 1px solid rgba(217, 138, 100, 0.32);
+  border: 1px solid var(--interaction-selected);
   border-radius: var(--radius-sm);
-  background: rgba(217, 138, 100, 0.10);
-  color: var(--cyan-primary);
-  font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  background: var(--interaction-selected-surface);
+  color: var(--interaction-link);
+  font-family: var(--font-data, "IBM Plex Mono", ui-monospace, Consolas, monospace);
   font-size: 0.6875rem;
   font-weight: 600;
   cursor: pointer;
 }
 
 .dense-data-table-row-cap button:focus-visible {
-  outline: 2px solid rgba(217, 138, 100, 0.45);
+  outline: 2px solid var(--interaction-focus);
   outline-offset: 2px;
 }
 
 .entity-summary {
-  border: 1px solid rgba(74, 68, 60, 0.95);
+  border: 1px solid var(--ws-border);
   border-radius: var(--radius-xl);
-  background: rgba(13, 23, 34, 0.9);
+  background: var(--ws-surface);
   padding: 1rem;
   box-shadow: var(--shadow-panel);
 }
@@ -343,14 +343,14 @@
 
 .entity-summary-kind {
   color: var(--fg-muted);
-  font-family: var(--font-body);
+  font-family: var(--font-body, "IBM Plex Sans", system-ui, -apple-system, sans-serif);
   font-size: 0.875rem;
   line-height: 1.4;
 }
 
 .entity-summary-title {
   min-width: 0;
-  color: #FDFAF5;
+  color: var(--ws-text);
   font-size: 1rem;
   font-weight: 600;
   line-height: 1.4;
@@ -366,7 +366,7 @@
 .entity-summary-subtitle {
   margin-top: 0.375rem;
   color: var(--fg-muted);
-  font-family: var(--font-body);
+  font-family: var(--font-body, "IBM Plex Sans", system-ui, -apple-system, sans-serif);
   font-size: 0.75rem;
 }
 
@@ -405,9 +405,9 @@
 }
 
 .meridian-toolbar-chip.active {
-  border-color: rgba(168, 84, 54, 0.34);
-  background: rgba(168, 84, 54, 0.10);
-  color: var(--cyan-primary);
+  border-color: var(--interaction-selected);
+  background: var(--interaction-selected-surface);
+  color: var(--interaction-link);
 }
 
 .entity-summary-title {
@@ -453,7 +453,7 @@
 }
 
 .dense-data-table tbody tr:nth-child(even) {
-  background: #fbfcfd;
+  background: var(--ws-surface-raised);
 }
 
 .dense-data-table tbody tr:hover {
@@ -462,14 +462,14 @@
 
 .dense-data-table tbody tr.selected {
   background: var(--ws-row-selected);
-  box-shadow: inset 3px 0 0 var(--cyan-primary);
+  box-shadow: inset 3px 0 0 var(--interaction-selected);
 }
 
 /* Grouped tables (a ledger entry and its posting lines): child rows sit under their parent,
    tinted and indented, and keep that tint through the zebra striping. */
 .dense-data-table tbody tr.dense-data-table-child-row,
 .dense-data-table tbody tr.dense-data-table-child-row:nth-child(even) {
-  /* Half-strength tint: copper amount links keep 4.5:1 (the full subtle surface gave 4.3:1). */
+  /* Keep child groups distinct while retaining the foreground chosen for their data. */
   background: color-mix(in srgb, var(--ws-surface-subtle) 50%, var(--ws-surface));
 }
 
@@ -520,17 +520,18 @@
   background: var(--ws-row-selected);
 }
 
-/* ── Concrete radius normalization ──────────────────────────────────────────
-   Concrete unifies control/card/panel corners to a single tight 2px radius;
-   structure is carried by hairline borders, not rounding. Override the legacy
-   scalable-radius values so these hand-authored primitives read as Concrete
-   regardless of the base --radius-* token resolution.
-──────────────────────────────────────────────────────────────────────────*/
+/* Role-specific 4.3 geometry follows the shared token bridge. */
 .meridian-toolbar-strip,
 .entity-summary {
-  border-radius: 2px;
+  border-radius: var(--radius-card);
 }
 
 .meridian-toolbar-chip {
-  border-radius: 2px;
+  border-radius: var(--radius-chip);
+}
+
+/* The wrap is a tab stop when its rows are not selectable, so it needs its own visible ring. */
+.dense-data-table-wrap:focus-visible {
+  outline: var(--focus-ring, 2px solid var(--focus, #2D6FB3));
+  outline-offset: -2px;
 }

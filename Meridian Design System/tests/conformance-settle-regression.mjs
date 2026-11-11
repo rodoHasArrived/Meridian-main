@@ -61,6 +61,41 @@ try {
   assert(measured.faces.some(face => face.family === 'DelayedFace' && face.status === 'loaded'));
   console.log('PASS specimen settle: used font loads before assertions and iframe removal');
 
+  let lateRequested, releaseLate;
+  const requestedLate = new Promise(resolve => { lateRequested = resolve; });
+  const releasedLate = new Promise(resolve => { releaseLate = resolve; });
+  await page.route('**/late-card.html', route => route.fulfill({ contentType: 'text/html', body: `<!doctype html><html><head><style>
+    @font-face{font-family:LateFace;src:url("/late.ttf") format("truetype")}
+    #late{font-family:LateFace}
+  </style></head><body><p>Already rendered specimen content.</p><p id="late" hidden>Typography inspected by an assertion.</p></body></html>` }));
+  await page.route('**/late.ttf', async route => {
+    lateRequested();
+    await releasedLate;
+    await route.fulfill({ contentType: 'font/ttf', body: font }).catch(() => undefined);
+  });
+  await page.evaluate(() => {
+    window.cardResult = undefined;
+    window.CARD_ASSERTIONS.unshift({ id: 'lazy-font', run(doc) {
+      if (!doc.getElementById('late')) return null;
+      const element = doc.getElementById('late');
+      element.hidden = false;
+      element.getBoundingClientRect();
+      return null;
+    } });
+  });
+  const latePending = page.evaluate(async () => {
+    window.cardResult = await assertCard({ path: 'late-card.html', name: 'Assertion-triggered face' });
+    return window.cardResult;
+  });
+  await requestedLate;
+  await page.waitForTimeout(50);
+  assert.equal(await page.evaluate(() => window.cardResult), undefined, 'An assertion-triggered face settles before cleanup');
+  assert.equal(await page.locator('#stage iframe').count(), 1);
+  releaseLate();
+  assert.equal((await latePending).ok, true);
+  assert.equal(await page.locator('#stage iframe').count(), 0);
+  console.log('PASS specimen settle: assertion-triggered lazy fonts settle before iframe removal');
+
   await page.route('**/broken-card.html', route => route.fulfill({ contentType: 'text/html', body: card('BrokenFace', '/broken.ttf') }));
   await page.route('**/broken.ttf', route => route.fulfill({ contentType: 'font/ttf', body: Buffer.from('not a TrueType font') }));
   const broken = await page.evaluate(() => assertCard({ path: 'broken-card.html', name: 'Broken face' }));

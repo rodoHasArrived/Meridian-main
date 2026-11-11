@@ -21,7 +21,9 @@ export function EquityCurve({ ariaLabel, ariaDescription, accessibleData,
   height = 380,
   rail = 62,
 }) {
-  const n = series[0].points.length;
+  series = series || [];
+  const primary = series[0];           // an empty series list renders an empty frame, not a throw
+  const n = primary ? primary.points.length : 0;
   const domain = domainOf(series.map((s) => s.points), 0.08);
   const ddMin = drawdown ? Math.min(...drawdown, 0) || -1 : -1;
   const panes = [
@@ -38,7 +40,7 @@ export function EquityCurve({ ariaLabel, ariaDescription, accessibleData,
       {(g) => {
         const E = g.pane("eq"), D = drawdown ? g.pane("dd") : null;
         const line = (pts) => linePath(pts, g.x, E.y);
-        const last = series[0].points[n - 1];
+        const last = primary ? primary.points[n - 1] : null;
         return (
           <g>
             {baseline != null && baseline >= E.domain[0] && baseline <= E.domain[1] && (
@@ -47,7 +49,7 @@ export function EquityCurve({ ariaLabel, ariaDescription, accessibleData,
                 <text x={g.plotL + 4} y={E.y(baseline) - 5} fill="var(--chart-axis)" style={AXIS_FONT}>{baselineLabel || valueFmt(baseline)}</text>
               </g>
             )}
-            {fill && series[0].area !== false && (
+            {fill && primary && primary.area !== false && (
               <path d={`${line(series[0].points)}L${g.x(n - 1).toFixed(1)} ${E.b}L${g.x(0).toFixed(1)} ${E.b}Z`} fill={series[0].color} opacity="0.10" />
             )}
             {series.map((s, k) => (
@@ -70,7 +72,7 @@ export function EquityCurve({ ariaLabel, ariaDescription, accessibleData,
                 <text x={g.plotR + 8} y={D.b} fill="var(--chart-axis)" textAnchor="start" style={AXIS_FONT}>{ddMin.toFixed(0)}%</text>
               </g>
             )}
-            {crosshairIndex != null && series[0].points[crosshairIndex] != null && (
+            {crosshairIndex != null && primary && primary.points[crosshairIndex] != null && (
               <g>
                 {series.map((s, k) => <circle key={k} cx={g.x(crosshairIndex)} cy={E.y(s.points[crosshairIndex])} r="4" fill={s.color} opacity="0.9" />)}
                 <AxisChip x={g.plotR + 2} y={E.y(series[0].points[crosshairIndex])} width={rail - 4} text={valueFmt(series[0].points[crosshairIndex])} />

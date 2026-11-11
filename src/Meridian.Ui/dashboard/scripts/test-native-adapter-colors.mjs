@@ -71,7 +71,7 @@ try {
     const colors = await page.evaluate(() => {
       const probe = document.createElement('span'); document.body.appendChild(probe);
       const color = value => { probe.style.color = value; return getComputedStyle(probe).color; };
-      const colors = { border: color('var(--ws-border)'), primary: color('hsl(var(--primary))'), ring: color('hsl(var(--ring))'), danger: color('hsl(var(--danger))'), warning: color('hsl(var(--warning))') }; probe.remove(); return colors;
+      const colors = { border: color('var(--ws-border)'), link: color('var(--interaction-link)'), ring: color('var(--interaction-focus)'), danger: color('hsl(var(--danger))'), warning: color('hsl(var(--warning))') }; probe.remove(); return colors;
     });
     for (const selector of ['[data-probe="chart"] > div', '.tbl-wrap', '.jnl', '.mds-metric', '.pgn-btn', '.mds-evidence']) {
       const border = await page.locator(selector).first().evaluate(element => {
@@ -81,7 +81,7 @@ try {
     }
     assert.equal(await page.locator('.mds-corr').evaluate(el => getComputedStyle(el).backgroundColor), colors.border, theme + ': matrix separators');
     assert.equal(await page.locator('.mds-gate').nth(1).evaluate(el => getComputedStyle(el, '::before').backgroundColor), colors.border, theme + ': gate connector');
-    assert.equal(await page.locator('.workflow-continuity-edit').evaluate(el => getComputedStyle(el).color), colors.primary, theme + ': primary text');
+    assert.equal(await page.locator('.workflow-continuity-edit').evaluate(el => getComputedStyle(el).color), colors.link, theme + ': interaction link text');
     for (const role of ['danger', 'warning']) {
       const c = await page.locator('[data-probe="' + role + '"]').evaluate(el => ({ color: getComputedStyle(el).color, border: getComputedStyle(el).borderTopColor }));
       assert.deepEqual(c, { color: colors[role], border: colors[role] }, theme + ': validation colors');

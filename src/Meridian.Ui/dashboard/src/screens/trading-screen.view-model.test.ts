@@ -1399,6 +1399,23 @@ describe("trading confirmation view model", () => {
 });
 
 describe("trading order ticket view model", () => {
+  it("rejects exponent, hex, signed, and separated numeric text for quantity and price", () => {
+    const base = { ...emptyOrderTicketForm, symbol: "AAPL", type: "Limit" as const, quantity: 10, limitPrice: 189.44 };
+
+    for (const malformed of ["1e3", "0x10", "+5", "-5", "1,000", "Infinity", "NaN", "0", ""]) {
+      const quantityForm = updateOrderTicketForm(base, "quantity", malformed);
+      expect(quantityForm.quantity).toBe(0);
+      expect(validateOrderTicketForm(quantityForm)).toBe("Enter an order quantity greater than zero.");
+
+      const priceForm = updateOrderTicketForm(base, "limitPrice", malformed);
+      expect(priceForm.limitPrice).toBeNull();
+      expect(validateOrderTicketForm(priceForm)).toBe("Enter a limit price greater than zero.");
+    }
+
+    expect(updateOrderTicketForm(base, "quantity", " 250 ").quantity).toBe(250);
+    expect(updateOrderTicketForm(base, "limitPrice", "190.25").limitPrice).toBe(190.25);
+  });
+
   it("normalizes order input and clears price for market orders", () => {
     const form = updateOrderTicketForm(
       {

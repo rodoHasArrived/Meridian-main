@@ -11,6 +11,7 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
+.tlt-wrap:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}
 .tlt-wrap{overflow-x:auto;border:1px solid var(--border,#D2CDC3);
   border-radius:var(--radius-chip,2px);background:var(--bg-light,#F8F7F3);}
 .tlt{width:100%;min-width:100%;border-collapse:separate;border-spacing:0;
@@ -106,7 +107,7 @@ export function TaxLotTable({
   const colCount = 6 + (showSymbol ? 1 : 0);
 
   return (
-    <div className="tlt-wrap" role="region" aria-label={caption || "Tax lots"}>
+    <div className="tlt-wrap" tabIndex={0} role="region" aria-label={caption || "Tax lots"}>
       <table className="tlt">
         <thead>
           <tr>

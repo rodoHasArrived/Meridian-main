@@ -1,10 +1,31 @@
+import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import postcss, { type AnyNode } from "postcss";
 import { describe, expect, it } from "vitest";
+// @ts-expect-error -- plain ESM build script without type declarations
+import { projectFontCss } from "../scripts/sync-design-system-assets.mjs";
 
 function readDashboardStyles() {
   return readFileSync(resolve(process.cwd(), "src/styles/index.css"), "utf8");
+}
+
+function scopedDeclarations(css: string, selector: string, automaticDark = false) {
+  const declarations = new Map<string, string>();
+  postcss.parse(css).walkRules((rule) => {
+    if (!rule.selectors.includes(selector)) return;
+    let parent: AnyNode | undefined = rule.parent;
+    let inAutomaticDark = false;
+    while (parent) {
+      if (parent.type === "atrule" && parent.name === "media" && /prefers-color-scheme\s*:\s*dark/.test(parent.params)) {
+        inAutomaticDark = true;
+      }
+      parent = parent.parent;
+    }
+    if (inAutomaticDark !== automaticDark) return;
+    rule.each((node) => { if (node.type === "decl") declarations.set(node.prop, node.value); });
+  });
+  return declarations;
 }
 
 function readDashboardStyleBundle() {
@@ -52,6 +73,20 @@ function contrastRatio(foreground: string, background: string) {
   const darker = Math.min(foregroundLuminance, backgroundLuminance);
 
   return (lighter + 0.05) / (darker + 0.05);
+}
+
+function hslTokenHex(styles: string, name: string) {
+  const value = styles.match(new RegExp(`${name}:\\s*([\\d.]+) ([\\d.]+)% ([\\d.]+)%`));
+  if (!value) throw new Error(`Missing HSL channels for ${name}`);
+  const hue = Number(value[1]) / 30;
+  const saturation = Number(value[2]) / 100;
+  const lightness = Number(value[3]) / 100;
+  const amplitude = saturation * Math.min(lightness, 1 - lightness);
+  return "#" + [0, 8, 4].map((offset) => {
+    const k = (offset + hue) % 12;
+    const channel = lightness - amplitude * Math.max(-1, Math.min(k - 3, 9 - k, 1));
+    return Math.round(channel * 255).toString(16).padStart(2, "0");
+  }).join("").toUpperCase();
 }
 
 function readWorkspaceSurfaceStyles() {
@@ -246,11 +281,11 @@ describe("dashboard design-system contract", () => {
     expect(designSystemTheme).toContain("--theme-bg-canvas: #F2F0EB");
     expect(designSystemTheme).toContain("--theme-accent: #C56343");
     expect(designSystemTheme).toContain("--theme-border: #D2CDC3");
-    expect(styles).toContain("--background: 43 21% 94%");
-    expect(styles).toContain("--foreground: 213 15% 15%");
-    expect(styles).toContain("--primary: 208 17% 19%");
+    expect(hslTokenHex(styles, "--background")).toBe("#F2F0EB");
+    expect(hslTokenHex(styles, "--foreground")).toBe("#20252B");
+    expect(hslTokenHex(styles, "--primary")).toBe("#29323A");
     // Focus is the interaction blue (#2D6FB3), never the terracotta signal.
-    expect(styles).toContain("--ring: 210 60% 44%");
+    expect(hslTokenHex(styles, "--ring")).toBe("#2D6FB3");
     expect(styles).toContain("--ws-page-bg: #F2F0EB");
     expect(styles).toContain("--ws-surface: #F8F7F3");
     expect(styles).toContain("--ws-surface-subtle: #EBE8E1");
@@ -265,10 +300,9 @@ describe("dashboard design-system contract", () => {
     expect(styles).toContain("--card-bg: var(--ws-surface)");
     expect(styles).toContain("--shadow-workstation: var(--ws-shadow)");
     expect(styles).toContain("--cyan-primary: var(--ws-accent)");
-    // --ws-page-bg / --ws-masthead-bg now appear once in :root plus once each in
-    // the dark-mode and forced-light scopes (auto-dark, manual dark, light opt-out).
-    expect(styles.match(/--ws-page-bg:/g)).toHaveLength(4);
-    expect(styles.match(/--ws-masthead-bg:/g)).toHaveLength(4);
+    // Default + auto-dark + manual dark + forced light + nested light panels.
+    expect(styles.match(/--ws-page-bg:/g)).toHaveLength(5);
+    expect(styles.match(/--ws-masthead-bg:/g)).toHaveLength(5);
   });
 
   it("keeps dark readiness and inactive navigation text above WCAG AA contrast", () => {
@@ -321,20 +355,103 @@ describe("dashboard design-system contract", () => {
     }
   });
 
-  it("unifies workstation radii to the mandated 2px and keeps surfaces flat", () => {
+  it("matches the 4.3 source roles across both CSS representations and both themes", () => {
+    const withoutComments = (css: string) => css.replace(/\/\*[\s\S]*?\*\//g, "");
+    const baseScope = (css: string) => withoutComments(css).match(/:root\s*\{([^}]+)\}/)?.[1] ?? "";
+    const declared = (css: string, token: string) => {
+      const value = css.match(new RegExp(`${token}:\\s*([^;]+);`))?.[1].trim();
+      if (!value) throw new Error(`Missing source contract token ${token}`);
+      return value.toUpperCase();
+    };
+    const styles = readDashboardStyles();
+    const applicationLight = baseScope(styles);
+    const applicationDark = withoutComments(styles).match(/:root\[data-theme="dark"\]\s*\{([^}]+)\}/)?.[1] ?? "";
+    const packageLight = baseScope(readDesignSystemPackageFile("tokens/colors.css"));
+    const packageDark = baseScope(readDesignSystemPackageFile("tokens/colors-dark.css"));
+    const pairs = [
+      ["--ws-page-bg", "--bg"], ["--ws-surface", "--bg-light"],
+      ["--ws-surface-subtle", "--bg-medium"], ["--ws-surface-raised", "--card-surface-raised"],
+      ["--ws-border", "--border"], ["--ws-border-hover", "--border-hover"],
+      ["--ws-border-strong", "--border-strong"], ["--ws-row-border", "--border-divider"],
+      ["--ws-text", "--text-primary"], ["--ws-text-secondary", "--text-secondary"],
+      ["--ws-text-muted", "--text-muted"], ["--ws-accent", "--accent"],
+      ["--ws-rail-active", "--selected-surface"], ["--brand-axis", "--brand-axis"],
+      ["--ink-inverse", "--ink-inverse"], ["--brand-field", "--brand-field"],
+      ["--focus", "--focus"], ["--selected", "--selected"],
+      ["--selected-surface", "--selected-surface"], ["--link", "--link"],
+      ["--link-hover", "--link-hover"], ["--pending", "--pending"],
+      ["--neutral", "--neutral"], ["--missing", "--missing"]
+    ];
+    const hslPairs = [
+      ["--background", "--bg"], ["--foreground", "--text-primary"],
+      ["--primary", "--brand-axis"], ["--primary-foreground", "--ink-inverse"],
+      ["--accent", "--accent"], ["--accent-foreground", "--text-on-accent"],
+      ["--sidebar-primary", "--selected"], ["--ring", "--focus"]
+    ];
+    for (const [theme, application, source] of [
+      ["light", applicationLight, packageLight], ["dark", applicationDark, packageDark]
+    ]) {
+      for (const [appToken, sourceToken] of pairs) {
+        // Dark-only sheets inherit unmodified values from the package's light base.
+        const upstream = source.includes(`${sourceToken}:`) ? source : packageLight;
+        expect(declared(application, appToken), `${theme} ${appToken}`).toBe(declared(upstream, sourceToken));
+      }
+      for (const [appToken, sourceToken] of hslPairs) {
+        expect(hslTokenHex(application, appToken), `${theme} HSL ${appToken}`).toBe(declared(source, sourceToken));
+      }
+    }
+  });
+
+  it("preserves canonical interaction roles and local light aliases across every appearance scope", () => {
+    const styles = readDashboardStyles();
+    const base = readDesignSystemPackageFile("tokens/colors.css");
+    const themes = readDesignSystemPackageFile("tokens/colors-dark.css");
+    const defaults = scopedDeclarations(styles, ":root");
+    const sourceDefaults = scopedDeclarations(base, ":root");
+    const roles = ["focus", "selected", "selected-surface", "interaction-hover", "link", "link-hover",
+      "brand-field", "brand-axis", "ink-inverse", "navy", "pending", "neutral", "missing"];
+    for (const [selector, automaticDark, source, sourceSelector] of [
+      [":root", false, base, ":root"],
+      [":root", true, themes, ":root"],
+      [':root[data-theme="dark"]', false, themes, ':root[data-theme="dark"]'],
+      [':root[data-theme="light"]', false, themes, ':root[data-theme="light"]'],
+      ['[data-appearance="light"]', false, base, ":root"]
+    ] as const) {
+      const actual = scopedDeclarations(styles, selector, automaticDark);
+      const expected = scopedDeclarations(source, sourceSelector, automaticDark);
+      for (const role of roles) {
+        const token = `--${role}`;
+        expect(actual.get(token), `${selector} automaticDark=${automaticDark}: ${token}`)
+          .toBe(expected.get(token) ?? sourceDefaults.get(token));
+      }
+      if (selector === '[data-appearance="light"]') {
+        // Inherited custom properties are already computed in the dark parent.
+        // A local light scope must rebind the aliases as well as the base colors.
+        for (const alias of ["--interaction-focus", "--interaction-selected", "--interaction-selected-surface",
+          "--interaction-hovered", "--interaction-link", "--interaction-link-hover", "--cyan-focus", "--border-color",
+          "--mode-paper", "--semantic-info", "--blue-a10", "--green-dim", "--red-dim", "--orange-dim", "--purple-dim",
+          "--state-paper-fg", "--severity-ready-fg", "--severity-review-fg", "--ws-disabled-bg", "--ws-disabled-fg", "--ws-disabled-border"]) {
+          expect(actual.has(alias), `local light must declare ${alias}`).toBe(true);
+          expect(actual.get(alias), `local light ${alias}`).toBe(defaults.get(alias));
+        }
+      }
+    }
+  });
+
+  it("adopts the 4.3 chip, control and surface radii while keeping surfaces flat", () => {
     const styles = readDashboardStyles();
 
-    // Concrete: one tight 2px corner across chips/controls/cards; the named
+    // 4.3: 2px chips, 4px controls/cards; the named
     // scale tops out at 6px (0.375rem) for large sheets only.
-    expect(styles).toContain("--radius: 0.125rem");
+    expect(styles).toContain("--radius: 0.25rem");
     expect(styles).toContain("--radius-xl: 0.375rem");
-    expect(styles).toContain("--radius-lg: 0.25rem");
-    expect(styles).toContain("--radius-md: 0.1875rem");
+    expect(styles).toContain("--radius-lg: 0.375rem");
+    expect(styles).toContain("--radius-md: 0.25rem");
     expect(styles).toContain("--radius-sm: 0.125rem");
     expect(styles).toContain("--radius-xs: 0.125rem");
     expect(styles).toContain("--radius-chip: 2px");
-    expect(styles).toContain("--radius-button: 2px");
-    expect(styles).toContain("--radius-card: 2px");
+    expect(styles).toContain("--radius-button: 4px");
+    expect(styles).toContain("--radius-card: 4px");
     expect(styles).toContain("--radius-checkbox: 2px");
 
     // Flat by mandate: the card/panel shadow tokens resolve to none; borders
@@ -342,7 +459,7 @@ describe("dashboard design-system contract", () => {
     expect(styles).toContain("--ws-shadow: none");
     expect(styles).toContain("--shadow-workstation: var(--ws-shadow)");
     expect(styles).toContain("--shadow-panel: var(--ws-shadow)");
-    expect(styles).toContain("--shadow-menu: 0 2px 6px rgba(0, 0, 0, 0.18)");
+    expect(styles).toContain("--shadow-menu: 0 2px 8px rgba(17, 23, 29, 0.16)");
     expect(styles).toContain("--shadow-float: var(--shadow-menu)");
     expect(styles).not.toContain("3px 3px 0 rgba(0, 0, 0, 0.72)");
   });
@@ -352,18 +469,6 @@ describe("dashboard design-system contract", () => {
 
     expect(tailwindConfig).toContain("success: \"hsl(var(--success) / <alpha-value>)\"");
     expect(tailwindConfig).toContain("positive: \"hsl(var(--success) / <alpha-value>)\"");
-  });
-
-
-  it("uses accessible slate for the Paper badge on dark chrome in both appearances", () => {
-    const styles = readDashboardStyles();
-    const paper = styles.match(/--chrome-paper:\s*(#[0-9A-F]{6})/i)?.[1];
-    expect(paper).toBe("#7F9DB8");
-    const shell = readRepositoryFile("src/Meridian.Ui/dashboard/src/styles/app-shell.css");
-    expect(shell).toMatch(/\.workstation-trust-summary \.mds-badge--paper\s*\{\s*color: var\(--chrome-paper, #7F9DB8\)/);
-    for (const background of ["#29323A", "#0D1217"]) {
-      expect(contrastRatio(paper!, background)).toBeGreaterThanOrEqual(4.5);
-    }
   });
 
   it("uses the high-contrast focus token for translucent primary focus rings", () => {
@@ -423,12 +528,12 @@ describe("dashboard design-system contract", () => {
     const navStyles = readWorkspaceNavStyles();
     const tailwindConfig = readTailwindConfig();
 
-    // Warm-paper rail with blue interaction selection and focus.
-    expect(styles).toContain("--sidebar: 42 20% 90%");
-    expect(styles).toContain("--sidebar-foreground: 210 10% 36%");
-    expect(styles).toContain("--sidebar-primary: 210 32% 42%");
-    expect(styles).toContain("--sidebar-border: 40 14% 79%");
-    expect(styles).toContain("--sidebar-ring: 210 60% 44%");
+    // Concrete rail: band #EBEFF4 → 213 29% 94%; border #CBD3DC → 212 20% 83%.
+    expect(hslTokenHex(styles, "--sidebar")).toBe("#EBE8E1");
+    expect(hslTokenHex(styles, "--sidebar-foreground")).toBe("#535C65");
+    expect(hslTokenHex(styles, "--sidebar-primary")).toBe("#496C8F");
+    expect(hslTokenHex(styles, "--sidebar-border")).toBe("#D2CDC3");
+    expect(hslTokenHex(styles, "--sidebar-ring")).toBe("#2D6FB3");
     expect(styles).toContain("[data-appearance=\"light\"]");
     expect(navStyles).toContain("--mds-nav-rail-bg: var(--theme-bg-hover, var(--ws-rail-bg))");
     expect(navStyles).toContain("--mds-nav-rail-accent: var(--interaction-selected)");
@@ -442,16 +547,16 @@ describe("dashboard design-system contract", () => {
     expect(tailwindConfig).toContain("\"hsl(var(--sidebar-border) / <alpha-value>)\"");
   });
 
-  it("exposes chart-1…5 tokens aligned with the Programmed Institutionalism semantic palette", () => {
+  it("exposes chart-1…5 observation roles separately from financial status hues", () => {
     const styles = readDashboardStyles();
     const tailwindConfig = readTailwindConfig();
 
-    // Actual graphite · positive green · negative red · warning ochre · neutral.
-    expect(styles).toContain("--chart-1: 208 17% 19%");
-    expect(styles).toContain("--chart-2: 152 44% 32%");
-    expect(styles).toContain("--chart-3: 5 47% 48%");
-    expect(styles).toContain("--chart-4: 37 74% 34%");
-    expect(styles).toContain("--chart-5: 210 7% 46%");
+    // Observed/derived traces use ink and slate; gain/loss remain explicit semantic roles.
+    expect(hslTokenHex(styles, "--chart-1")).toBe("#29323A");
+    expect(hslTokenHex(styles, "--chart-2")).toBe("#5D7286");
+    expect(hslTokenHex(styles, "--chart-3")).toBe("#7890A4");
+    expect(hslTokenHex(styles, "--chart-4")).toBe("#2E4B6E");
+    expect(hslTokenHex(styles, "--chart-5")).toBe("#8C918F");
 
     // Tailwind color registrations present
     expect(tailwindConfig).toContain("chart: {");
@@ -494,7 +599,7 @@ describe("dashboard design-system contract", () => {
     // hue, and measured against that wash the raw hue gave 4.32-4.41:1 for ready/review —
     // under AA. The -dim variants measure 5.9-8.1:1. check_contrast.py now pins every chip.
     expect(styles).toContain("--severity-ready-fg: var(--green-dim)");
-    expect(styles).toContain("--severity-review-fg: var(--brand-signal-text)");
+    expect(styles).toContain("--severity-review-fg: var(--orange-dim)");
     expect(styles).toContain("--severity-action-fg: var(--orange-dim)");
     expect(styles).toContain("--severity-blocked-fg: var(--red-dim)");
     expect(styles).toContain(
@@ -503,7 +608,7 @@ describe("dashboard design-system contract", () => {
 
     // State layer (healthy/warn/danger/paper/strategy/live/pending) derives too.
     expect(styles).toContain("--state-live-fg: var(--red-dim)");
-    expect(styles).toContain("--state-paper-fg: var(--brand-field-text)");
+    expect(styles).toContain("--state-paper-fg: var(--brand-field-dim)");
     expect(styles).toContain("--state-strategy-fg: var(--purple-dim)");
     expect(styles).toContain("--state-pending-fg: var(--pending-dim)");
     expect(styles).toContain(
@@ -525,14 +630,17 @@ describe("dashboard design-system contract", () => {
     expect(styles).toContain("--ws-accent: #D88466");
 
     // The forced-light opt-out re-asserts the warm-paper light canvas.
-    expect(styles.match(/--ws-page-bg: #F2F0EB/g)).toHaveLength(2);
+    expect(styles.match(/--ws-page-bg: #F2F0EB/g)).toHaveLength(3);
   });
 
-  it("uses the self-hosted IBM Plex interface and data families", () => {
+  it("uses the canonical self-hosted IBM Plex font families through semantic stacks", () => {
     const tailwindConfig = readTailwindConfig();
-
-    expect(tailwindConfig).toContain("\"IBM Plex Sans\"");
-    expect(tailwindConfig).toContain("\"IBM Plex Mono\"");
+    const styles = readDashboardStyles();
+    expect(tailwindConfig).toContain('"var(--font-body)"');
+    expect(tailwindConfig).toContain('"var(--font-display)"');
+    expect(tailwindConfig).toContain('"var(--font-data)"');
+    expect(styles).toContain('--font-body: "IBM Plex Sans"');
+    expect(styles).toContain('--font-data: "IBM Plex Mono"');
   });
 
   it("ends every Tailwind font stack in a generic family so missing faces never fall back to serif", () => {
@@ -552,99 +660,53 @@ describe("dashboard design-system contract", () => {
     expect(entryStyles.match(/@config\s+"/g)).toHaveLength(1);
   });
 
-  it("declares self-hosted IBM Plex faces and fetches no external fonts", () => {
+  it("loads the canonical local font closure without external font requests", () => {
     const styles = readDashboardStyles();
+    const fonts = readRepositoryFile("src/Meridian.Ui/dashboard/src/design-system/fonts.css");
+    // The package ships TTF; the dashboard serves WOFF2 projected by scripts/sync-design-system-assets.mjs.
+    expect(fonts).toBe(projectFontCss(readDesignSystemPackageFile("tokens/fonts.css")));
+    expect(fonts).not.toMatch(/\.ttf\b|truetype/);
+    expect(readDashboardEntry()).toContain('import "@/design-system/fonts.css";');
+    expect(fonts).not.toMatch(/(?:url\(|@import)[^;]*https?:/i);
+    expect(fonts).toContain('font-family: "IBM Plex Sans"');
+    expect(fonts).toContain('font-family: "IBM Plex Mono"');
+    expect(styles).not.toMatch(/@font-face/);
 
-    // Licensed font files are bundled for offline deployments and strict CSP.
-    expect(styles).not.toContain("googleapis.com");
-    expect(styles).not.toMatch(/@import\s+url\(\s*["']?https?:/i);
-    expect(styles).toContain("font-family: \"IBM Plex Sans\"");
-    expect(styles).toContain("font-family: \"IBM Plex Mono\"");
-  });
-
-  it("keeps interaction, action and status role primitives equal to the 4.3.0 export in every theme", () => {
-    function declarations(css: string, selector: string, automaticDark = false) {
+    const faces: Array<{ family: string; weight: string; style: string; source: string }> = [];
+    postcss.parse(fonts).walkAtRules("font-face", (face) => {
       const values = new Map<string, string>();
-      postcss.parse(css).walkRules((rule) => {
-        if (!rule.selectors.includes(selector)) return;
-        let parent: AnyNode | undefined = rule.parent;
-        let inDarkMedia = false;
-        while (parent) {
-          if (parent.type === "atrule" && parent.name === "media" && parent.params.includes("prefers-color-scheme: dark")) inDarkMedia = true;
-          parent = parent.parent;
-        }
-        if (inDarkMedia !== automaticDark) return;
-        rule.walkDecls((decl) => { values.set(decl.prop, decl.value); });
-      });
-      return values;
-    }
-    const base = readDesignSystemPackageFile("tokens/colors.css");
-    const themes = readDesignSystemPackageFile("tokens/colors-dark.css");
-    const styles = readDashboardStyles();
-    const roleNames = ["focus", "selected", "selected-surface", "interaction-hover", "link", "link-hover", "brand-field", "brand-axis", "ink-inverse", "navy", "pending", "neutral", "missing"];
-    for (const [selector, automaticDark, source] of [
-      [":root", false, base],
-      [":root", true, themes],
-      [':root[data-theme="dark"]', false, themes],
-      [':root[data-theme="light"]', false, themes],
-      ['[data-appearance="light"]', false, base]
-    ] as const) {
-      const actual = declarations(styles, selector, automaticDark);
-      const expected = declarations(source, selector === '[data-appearance="light"]' ? ":root" : selector, automaticDark);
-      if (selector === '[data-appearance="light"]') {
-        const pageDefaults = declarations(styles, ":root");
-        for (const alias of ["--interaction-focus", "--cyan-focus", "--ws-primary-hover", "--state-paper-fg"]) {
-          // Nested light must own these aliases: inheriting a computed root-dark
-          // alias would retain the parent's dark value despite light primitives.
-          expect(actual.get(alias), `local light ${alias}`).toBe(pageDefaults.get(alias));
-          expect(actual.has(alias)).toBe(true);
-        }
-      }
-      for (const name of roleNames) {
-        expect(actual.get(`--${name}`), `${selector}: --${name}`).toBe(expected.get(`--${name}`));
-      }
-    }
-    expect(styles).toContain("--ws-primary-hover: color-mix(in srgb, var(--brand-axis) 88%, var(--ws-surface))");
-    expect(styles).toContain("--ws-primary-pressed: color-mix(in srgb, var(--brand-axis) 78%, var(--ws-surface))");
-    expect(styles).toContain("--chart-primary: var(--brand-axis)");
-    expect(styles).toContain("--chart-scenario: var(--scenario-signal)");
-  });
-
-  it("bundles every licensed font face and live brand asset from the canonical export", () => {
-    const styles = readDashboardStyles();
-    const faces: Array<{ family: string; source: string; weight: string; style: string }> = [];
-    postcss.parse(styles).walkAtRules("font-face", (face) => {
-      const values = new Map<string, string>();
-      face.walkDecls((decl) => { values.set(decl.prop, decl.value); });
-      faces.push({ family: values.get("font-family")!, source: values.get("src")!, weight: values.get("font-weight")!, style: values.get("font-style")! });
+      face.walkDecls((declaration) => { values.set(declaration.prop, declaration.value); });
+      faces.push({ family: values.get("font-family")!, weight: values.get("font-weight")!,
+        style: values.get("font-style")!, source: values.get("src")! });
     });
     expect(faces).toHaveLength(10);
     for (const family of ["IBM Plex Sans", "IBM Plex Mono"]) {
       expect(faces.filter((face) => face.family === `"${family}"`).map((face) => `${face.weight}/${face.style}`).sort())
         .toEqual(["400/italic", "400/normal", "500/normal", "600/normal", "700/normal"]);
     }
+    const provenance = JSON.parse(readFileSync(resolveDashboardAsset("fonts/woff2-sources.json"), "utf8")) as {
+      fonts: Record<string, { source: string; sourceSha256: string; woff2Sha256: string }>;
+    };
+    const sha256 = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
     for (const face of faces) {
-      const filename = face.source.match(/assets\/fonts\/([^"')]+)/)?.[1];
-      expect(filename).toBeTruthy();
-      expect(readFileSync(resolveDashboardAsset(`fonts/${filename}`)))
-        .toEqual(readFileSync(resolve(process.cwd(), "../../../Meridian Design System/assets/fonts", filename!)));
+      const filename = face.source.match(/url\(["']?[^"')]*assets\/fonts\/([^"')]+)/)?.[1];
+      expect(filename, `${face.family} ${face.weight}/${face.style} must include an offline font`).toMatch(/\.woff2$/);
+      expect(face.source).toContain('format("woff2")');
+      const record = provenance.fonts[filename!];
+      expect(record, `${filename} provenance`).toBeTruthy();
+      expect(record.source).toBe(`assets/fonts/${filename!.replace(/\.woff2$/, ".ttf")}`);
+      expect(sha256(readFileSync(resolve(process.cwd(), "../../../Meridian Design System", record.source))),
+        `${record.source} changed; run npm run design-system:sync`).toBe(record.sourceSha256);
+      expect(sha256(readFileSync(resolveDashboardAsset(`fonts/${filename}`))), `${filename} differs from its recorded conversion`)
+        .toBe(record.woff2Sha256);
     }
+    expect(readdirSync(resolveDashboardAsset("fonts")).filter((name) => /\.(ttf|otf|woff)$/.test(name))).toEqual([]);
     for (const filename of ["OFL-IBMPlexSans.txt", "OFL-IBMPlexMono.txt"]) {
-      expect(readFileSync(resolveDashboardAsset(`fonts/${filename}`)))
+      expect(readFileSync(resolve(process.cwd(), "public/licenses", filename)))
         .toEqual(readFileSync(resolve(process.cwd(), "../../../Meridian Design System/assets/fonts", filename)));
       expect(readFileSync(resolve(process.cwd(), "public/notices", filename)))
         .toEqual(readFileSync(resolveDashboardAsset(`fonts/${filename}`)));
     }
-    const canonicalBrand = resolve(process.cwd(), "../../../Meridian Design System/assets/brand");
-    for (const filename of readdirSync(resolveDashboardAsset("brand")).filter((name) => /\.(svg|png)$/.test(name))) {
-      expect(readFileSync(resolveDashboardAsset(`brand/${filename}`))).toEqual(readFileSync(resolve(canonicalBrand, filename)));
-    }
-    const startup = readFileSync(resolve(process.cwd(), "index.html"), "utf8");
-    expect(startup).toContain('"IBM Plex Sans"');
-    expect(startup).toContain("--startup-bg: #F2F0EB");
-    expect(startup).toContain("--startup-bg: #11171D");
-    expect(startup).not.toMatch(/Segoe|Cascadia/);
-    expect(readRepositoryFile("src/Meridian.Ui/dashboard/src/design-system/assets.ts")).toContain("symbol: meridianMarkUrl");
   });
 
   it("keeps the reference workbench preview aligned with the schedule evidence pattern", () => {

@@ -10,6 +10,7 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
+.agt-wrap:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}
 .agt-wrap{overflow-x:auto;border:1px solid var(--border,#D2CDC3);
   border-radius:var(--radius-chip,2px);background:var(--bg-light,#F8F7F3);}
 .agt{width:100%;border-collapse:separate;border-spacing:0;
@@ -75,7 +76,7 @@ export function AgingTable({
   };
 
   return (
-    <div className="agt-wrap" role="region" aria-label={caption || "Aging schedule"}>
+    <div className="agt-wrap" tabIndex={0} role="region" aria-label={caption || "Aging schedule"}>
       <table className="agt">
         <thead>
           <tr>

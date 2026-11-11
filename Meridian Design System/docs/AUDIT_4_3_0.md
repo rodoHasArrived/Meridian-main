@@ -2,10 +2,11 @@
 
 **Reviewed:** 2026-11-11 · **Source:** PR #3501, initial head `7e580e1729`
 
-The branch advanced to `a81d7afb45` during this task with an existing dashboard
-palette migration. That concurrent `src/` work is preserved. This export
-follow-up changes the design-system package; it does not replace or rewrite the
-dashboard migration or WPF.
+The branch advanced to `a81d7afb45` with an existing dashboard palette migration;
+that work is preserved. The initial review covered the package export. The user
+then expanded scope to integrate the package into the production browser
+workstation, starting from `4782c83013`. The integration follow-up below records
+that additional work; WPF remains outside its scope.
 
 This review concerns the existing package in PR #3501. It does not describe the
 older package on the repository's main branch. `release.json` declares 4.3.0
@@ -13,10 +14,12 @@ stable, while this working tree also carries later additions labeled unreleased
 in `CHANGELOG.md`. The declared release channel, historical QA reports, and
 verification of this expanded export are separate facts.
 
-The follow-up preserves concurrent dashboard (`a81d7afb45`) and WPF
-(`2e78ac6654`) palette migrations already added to this PR. Its own code changes
-are confined to the design-system package; those application migrations were
-not reimplemented or independently certified by this package audit.
+The initial export follow-up preserved the existing dashboard (`a81d7afb45`) and
+WPF (`2e78ac6654`) palette migrations. Production integration then expanded the
+browser changes. Incoming commits `0cc7555bd5` and `e4e935c098`, including broader
+WPF IBM Plex typography and dashboard fundamentals, were merged while retaining
+the expanded browser token bridge, adapters, and validation. Windows/WPF
+rendering was not independently certified by this browser/package audit.
 
 ## Evidence and census
 
@@ -75,7 +78,7 @@ The following checks were exercised during this export task on the expanded tree
 | Dashboard design-system contract | `vitest run src/design-system-contract.test.ts`: 28/28 passed after preserving concurrent commit `a81d7afb45` |
 | Skill packages | `python build/scripts/docs/validate-skill-packages.py`: validated 13 packages |
 | Broad retained Python suite | 30 tests ran with one failure and 14 errors from obsolete checker API expectations and legacy contrast checks; the whole suite is not green |
-| Extracted archive | All 1,321 payload/inventory checksums verified; repeat export matched byte-for-byte. The extracted reference passed the same 22 accessibility states and desktop interaction checks over loopback HTTP |
+| Archive integrity | Payload/inventory checksums verified and repeat export matched byte-for-byte; exact file counts are recorded in the delivered inventory. The earlier extracted reference passed 22 accessibility states and desktop interaction checks over loopback HTTP |
 | Ordinary HTML state reference | 11 conditions in two themes, four desktop widths from 1280 to 1920, and 200% zoom passed the exercised checks; no remote requests or runtime errors |
 | Automated accessibility on the reference | Zero reported violations in the tested condition/theme combinations; color-contrast checks marked incomplete still require manual review |
 | Landing page | Chromium at 1366 × 768: canonical identity, 351/30/680/135 census, README/preview/audit/export links, no script errors, no horizontal overflow |
@@ -120,30 +123,35 @@ both OFL notices together. Installed local faces can alter font loading; browser
 screenshots are needed to assess geometry on the target Windows environment.
 
 **Token migration.** The package uses IBM Plex typography, terracotta brand/
-scenario signal, blue focus/selection, and its own material hierarchy. Token
-name compatibility does not imply equal values in Meridian's application. The
-parity manifest explicitly declares `valuesShared: false`; integrating this
-export is a separate app migration. This work does not modify WPF.
+scenario signal, blue focus/selection, and its own material hierarchy. The
+browser workstation and WPF theme tokens were migrated to this palette in the
+same pull request, so the parity manifest now declares `valuesShared: true` and
+`scripts/check_token_parity.py` compares every name both sides declare in all
+four theme scopes. One difference is recorded under
+`upstreamValueDivergences`: the Review severity hue. See
+[Application integration](#application-integration) for what moved in each
+direction.
 
 **Maturity.** Use the regenerated `api/families.json` for each export's stability;
 the package's stable channel does not make every export stable. Review the 4.0
 removed table APIs and template remaps in `docs/UPGRADING.md` before integrating
 older consumers. Preserve the current namespace and exact public manifest.
 
-**Residual callback fault boundary.** `OptimisticProvider` calls `onSettle` inside
-the commit/revert `try` block. A consumer callback that throws after a successful
-transport result can be classified as a rejected commit or failed revert. Keep
-settlement callbacks nonthrowing and treat this as a follow-up fault-isolation
-fix; these checks do not establish safe behavior for a throwing callback.
+**Observer fault boundary — resolved.** The initial review found that a throwing
+settlement observer could reclassify a successful transport result. The incoming
+component-adoption fix isolates synchronous
+`onSettle` and ledger-subscriber errors from transport outcomes. Confirmed edits
+stay confirmed; successful newest-first compensations stay reverted; remaining
+notifications continue. Observer errors are logged. Asynchronous consumer work
+still owns its promise failures; no live write transport is certified here.
 
-**Residual chart interaction.** `ScenarioSelector` updates controlled selection
-on arrow keys but does not move focus or implement Space/Enter on its div-based
-radios. Its prompt records that limitation. `ChartAnnotations` supplies no
+**Chart interaction.** `ScenarioSelector` now uses native button radios with
+Space/Enter activation, arrow/Home/End focus and selection, and a reachable
+fallback for a missing saved selection without silently changing the model.
+Read-only options remain disabled. `ChartAnnotations` still supplies no
 independent keyboard controls, and peer marks in `PeerComparisonStrip` rely on
 native titles. Include consequential annotation/peer values in an accessible
-adjacent table or inspector, and complete the selector interaction before using
-it as a keyboard-dependent production control. These components were not
-established as fully accessible by the ordinary HTML reference's automated run.
+adjacent table or inspector before production use.
 
 **Verification scope.** A passing Python release gate covers its static checks.
 It does not prove every template, screen-reader journey, Windows Edge behavior,
@@ -154,6 +162,144 @@ preview and transport outcomes must remain labeled as demonstrations.
 Build/export commands, archive contents, dependency scope, and integrity checks
 are documented in [Export handoff](EXPORT_4_3_0.md).
 
+## Application integration
+
+The integration pass compared the package with the two consumers in the monorepo
+and changed whichever side was worse. It ran alongside the workstation
+foundation integration in `0cc7555bd5` and was merged onto it. Static gates and
+unit tests back these statements; no browser, screen-reader or Windows run was
+made for them.
+
+**Package changed to match the application**
+
+- State and severity chip text reads a text-safe variant of its hue again. The
+  4.3.0 retone had wired every `*-fg` to the raw hue, which measured 3.3-4.5:1
+  on its own wash in light mode; the workstation had kept the `-dim` wiring.
+  `--brand-field-dim` and `--pending-dim` are declared under the names the
+  workstation uses (one component read `--pending-dim` before anything
+  defined it), and `--brand-signal-text` is new for signal-coloured text.
+- The ten `--theme-*` contract names, `--theme-border-focus` and the four
+  chrome inputs follow dark mode. They resolved to their light literals on a
+  dark screen; both dark blocks now re-point them.
+- `--series-estimated` and `--viz-band-outline` are restated for forced light.
+- `--accent-a10` is declared again, and 76 references to 19 names the package
+  never declared now name the canonical token, so they stop painting a light
+  literal in dark mode. `--theme-font-mono` names the same fallbacks as
+  `--font-data`.
+- More than a thousand `var(--token, literal)` fallbacks carried a previous
+  palette and now carry the value the token resolves to.
+- Component defects the workstation ports had already fixed:
+  `ReconciliationPanel` match checkboxes (threw on first tick), `toNumber`
+  dropping the sign of a formatted negative, `LedgerTable` inventing running
+  balances and losing header focus on sort, `Pagination` jumping back to a
+  stale page, `Sparkline` / `EquityCurve` / `CandleChart` on one or zero
+  points, `JournalEntryForm` labelling and a colliding datalist id, and
+  scroll regions that keyboard users could not reach. `Checkbox` forwards
+  `aria-label`.
+- The brand art's live `<text>` runs name IBM Plex Sans, the face the package
+  ships, not Inter.
+
+**Application changed to match the package**
+
+The concurrent workstation integration made most of the application-side
+changes (fonts, focus and selection roles, paper mode, radii, primary button
+states). This pass added:
+
+- The last hard-coded copper `rgba()` literals in the workstation stylesheets
+  now derive from `--focus`, the row tokens or `--ws-accent`.
+- `--chart-band` and `--chart-dd` take the package values, and `var()`
+  fallback literals across the dashboard carry the value their token
+  resolves to.
+- Order quantity and price fields reject exponent and hex notation, the
+  operations status vocabulary has one normaliser, `AccountTree` is keyboard
+  navigable, tables have empty states, and scroll regions are focusable.
+- WPF `OnAccentTextColor` is the dark ink the package puts on a terracotta
+  fill.
+
+**Gate changes.** `check_token_parity.py` gained two passes: the theme inputs
+must flip in dark, and every token name declared by both the package and the
+workstation (224 at this commit) must resolve to the same value in light, auto
+dark, manual dark and forced light. The only recorded difference is the Review
+severity hue: the workstation uses ochre, the package keeps the terracotta
+signal, and the choice is left to the owner. In `check_contrast.py`, rows that held
+`--accent` and `--accent-dim` to the text threshold now hold
+`--brand-signal-text` to it and the signal to the 3:1 non-text threshold,
+matching the 4.3.0 role of each token. The paper and pending chip rows measure
+against their own wash. The workstation button check measures the graphite
+states the button paints. The bundle-parity check skips sources the manifest no
+longer exports, and test files are not scanned as call sites. No threshold was
+lowered.
+
+**Still failing.** Six white-label `data-brand` presets declare no dark accent
+and no focus token (12 findings in `check_contrast.py`); the previous package
+version carried both. No consumer in this repository sets `data-brand`. The
+governance gate is unchanged at 67 findings and 25 warnings.
+
+## Production browser integration follow-up
+
+The browser workstation now consumes the package through its native TypeScript
+design-system adapters, synchronized brand/font assets, and the canonical role
+bridge in `src/Meridian.Ui/dashboard/src/styles/index.css`. This keeps the
+production application's routing, state, financial workflows, and shared API
+contracts in their existing owners.
+
+The integration includes local IBM Plex Sans/Mono fonts and OFL notices; brand
+assets and typed imports; package-value light/dark token scopes; and distinct
+graphite action, terracotta signal, blue focus/selection/link, and financial
+severity roles. The asset synchronization checks run before dev/build and in
+Vite, so the package copy cannot silently drift from its source assets.
+
+Auxiliary stylesheet review found direct Segoe/Cascadia declarations, copper
+focus/selection, effective hardcoded table header/zebra/row-cap surfaces, and a
+dark trust-menu item inside a paper dropdown. These now consume semantic font,
+interaction, workspace, and chrome roles. Accounting/reconciliation selection,
+keyboard focus, dense-table details, navigation, and workflow continuity use the
+same mappings. Financial severity and environment meanings remain independently
+expressed through their own roles and text.
+
+All 15 auxiliary stylesheets parse with PostCSS. Focused asset synchronization
+and application/component verification must be reported at their actual scope;
+the earlier export smoke page and upstream QA remain separate evidence. The
+source module README documents integration ownership and synchronization
+commands. No package-level conformance claim substitutes for exercising the
+rendered production workstation.
+
+The production integration baseline is `4782c83013`. The merged WPF source now
+declares IBM Plex Sans for interface text and IBM Plex Mono for data in
+`src/Meridian.Wpf/Styles/ThemeTypography.xaml`. That concurrent work is preserved;
+browser validation does not establish Windows/WPF rendering or identical
+cross-platform metrics. SVG labels on the strategy, live-quotes, and shared
+historical charts read the browser's semantic `--font-data` stack alongside the
+auxiliary CSS consumers.
+
+### Production integration verification
+
+The merged production source checkpoint is `5e9f5b6801`. Application checks below
+are separate from the standalone package and upstream release checks above.
+
+| Check | Observed scope |
+| --- | --- |
+| Full dashboard suite before the incoming merge | 4,843 tests passed, zero failed, across 424 files in 53 batches |
+| Focused regression matrix after the merge | 327 tests passed across 67 files; separate passport checks passed 23 tests and masthead/app checks passed five tests |
+| Production build after the merge | `npm run build` passed TypeScript checking and Vite production output; the existing chunk-size warning remained nonfatal |
+| Strict TypeScript check | Passed on the merged source; normal TypeScript checking also passed in the production build |
+| Dashboard lint | Zero errors; 97 warnings retained |
+| Canonical asset verification | 77 synchronized files passed the byte check |
+| Generated routes/catalog and evidence-reader regression | Two focused tests passed |
+| Rendered browser workstation | 22 Chromium checks passed: Trading/Accounting across light/dark at 1920 × 1080, 1440 × 900, and 1366 × 768; seven workspace routes; Portfolio MSFT proof Enter/Escape and focus return; four OS/manual appearance cases; Compact/Default/Spacious density settings with 28/36/44px rows; Ctrl+K palette keyboard operation |
+| Browser accessibility | Three fresh scenes reported zero automated violations: Portfolio MSFT proof in light appearance, Settings explicit Light under a dark OS preference, and Settings explicit Dark |
+| Native surface paint | Trial Balance/Ledger source-component borders were solid 1px with canonical light/dark `#D2CDC3` / `#2C3640`; selected cells used blue `#E7EDF2` / `#2C4054`; no uncaught exceptions, failed assets, or unexpected console errors |
+
+The full-suite count identifies the pre-merge source checkpoint; merged build,
+targeted regression, and rendered checks have their own scope above. The final
+`smoke:design-system` report passed and records the actual workstation source
+with synthetic data/component fixtures. Seventeen unhandled fixture API paths
+remain explicit in the harness report; this is not posted-backend validation.
+These Chromium checks do not claim
+Windows/Edge rendering, browser zoom coverage, screen-reader conformance, or
+whole-product production certification. They do not change the package's
+retained governance and Python-suite failures recorded above.
+
 ## PR review repairs
 
 The follow-up on `0cc7555bd5` preserves the concurrent workstation foundation
@@ -162,7 +308,9 @@ query, selection and model updates, and row context actions use the actual
 right-clicked row key. Header context menus cannot reuse an earlier selection.
 `tests/interaction-depth-regression.mjs` exercises typing/focus, keyboard
 selection, virtualized scroll continuity and the resulting row mutation receipt
-in Chromium. Rebuild the package before exporting these repairs.
+in Chromium. The incoming `324b439b9f` tree passed this Chromium regression and
+the package's `build:check`; the refreshed archive includes the rebuilt source
+bundle and these repairs.
 
 The eight earlier action-bridge, action-envelope, settings-key, continuity,
 formatting and date findings were verified against their existing fixes;
@@ -172,3 +320,85 @@ files. Its scanner exception matches only that complete digest in those exact
 paths. Negative controls confirm that other content in those files and the same
 digest elsewhere remain detectable. Remaining release/governance limitations
 above still apply.
+
+The merge retained incoming generated diagrams and documentation, font notices,
+and mask/currentColor workspace icons alongside the expanded browser integration.
+Forty-two targeted navigation, font-output, and design-system contract tests
+passed on the merged source, and the combined TypeScript/Vite production build
+passed. This incoming-review evidence is separate from the
+`5e9f5b6801` production matrix above; the original full-suite and package
+governance scopes are retained rather than silently reassigned to another tree.
+
+## Component adoption follow-up
+
+This pass reviews package/runtime compatibility and the existing dashboard
+adapters. The application continues to use its own React and TypeScript
+components; the global package bundle and preview React runtime are not loaded
+into production. Shared names alone are not a compatibility guarantee.
+
+| Surface | Review result and integration |
+| --- | --- |
+| Cash Ladder | Reuses shared `Select`/`Input`, retaining blank/default, Enter/apply, scenario and account-reset behavior. The interactive SVG is a named group with pressed bucket controls. |
+| Provider integration workbench | Reuses shared `Select`/`TextArea` for template/capability and JSON/CSV drafts; labels, disabled states, service validation and activation boundaries are retained. |
+| Shared Tabs | Instance-specific generated ids, labelled/focusable panels and preserved explicit panel links. Market Data tab URL changes retain focus; scope/hash navigation still hands off focus. |
+| Shared MetricCard | Uses the current workstation surface/border roles, correcting pale cards with dark-theme text while retaining nested light scopes. |
+| DenseDataTable | Nonselectable/empty scroll areas are named keyboard stops; selectable-row navigation is preserved. |
+| Package ScenarioSelector / OptimisticProvider | Source-level Chromium regressions cover keyboard behavior and synchronous observer fault isolation; the generated export is rebuilt. |
+
+The package's standalone release/browser and agency checks remain scoped to
+synthetic examples, not every template or live financial workflow. The release
+governance check still reports **67 failures and 25 warnings**. Comparing its
+findings with an extracted copy of the original `ec33af6168` PR tree confirms
+that the finding set is unchanged; the six other static release gates pass.
+No governance rule or baseline was weakened.
+
+`npm run test:components` runs the two new source-level browser regressions;
+set `MERIDIAN_CHROMIUM_PATH` when using a system Chromium. Dashboard integration
+coverage includes Cash Ladder and provider screen behavior, tab identity/focus,
+route focus, table keyboard access, design contracts and the production build.
+The Cash Ladder API is absent from the fixture server, so browser control QA
+uses an explicit synthetic response; that is not backend-integration evidence.
+
+Incoming follow-up evidence recorded at `d37e226f13`:
+
+- Dashboard: 4,851 tests across 425 files in the two full shards; final focused
+  reruns include the added font-publication case and latest keyboard regressions.
+  Taking the latest passing result per file yields **4,853 unique tests in 426
+  files**, with no failed or skipped assertions. Production build/type check,
+  lint (zero errors, 97 existing hook warnings), typography floor and
+  design-system ratchets pass. Full monorepo `bash scripts/ci.sh` was not run.
+- Package: build/source freshness, 12 release tests, release integrity, new
+  component regressions, existing agency regressions and standalone browser
+  checks pass. The standalone run covers 22 condition/theme accessibility states,
+  four desktop widths and its 200% zoom check, with no external requests.
+- Production dashboard assets: system Chromium (Browser plugin unavailable),
+  light/dark at 1920×1080, 1440×900 and 1366×768. Scenario/threshold and failure
+  recovery, provider draft editing and tab/panel focus are exercised with
+  synthetic data. Cash Ladder and provider Settings each report zero automated
+  WCAG A/AA violations in the tested states, zero page exceptions and zero failed
+  requests. This does not certify other routes, native Windows/Edge, assistive
+  technology or backend writes. Screenshots remain local review evidence.
+- Concurrent PR updates through `324b439b9f` are retained. Generated browser
+  assets are rebuilt, and source hashes and the repository tree are refreshed.
+  Hosted checks remain authoritative; the PR stays unmerged and shared history is not rewritten.
+
+### Combined validation after the incoming component fixes
+
+The merged source retaining `d37e226f13` passed the TypeScript/Vite production
+build, the strict TypeScript check, and a focused matrix of 110 tests across six
+files. Two additional Settings
+workflow tests passed under a name filter; 47 unrelated cases were intentionally
+excluded from that targeted invocation, not asserted as passing.
+
+The combined workstation smoke passed all 22 cases and three fresh accessibility
+scans with zero reported violations. Native Accounting borders/selection, nested
+light scopes, and all seven canonical SVG masks/currentColor passed; there were
+no unexpected errors or missing assets. The same 17 fixture API gaps remain
+explicit. This is synthetic Chromium evidence, without Windows/Edge,
+assistive-technology, zoom, or live-backend certification.
+
+Independent checks of the incoming package passed the ScenarioSelector keyboard
+and optimistic-observer Chromium regressions, source/build freshness, and export
+integrity. These fixes close the earlier selector and synchronous observer gaps;
+the remaining chart disclosure and legacy governance limitations above remain
+explicit.

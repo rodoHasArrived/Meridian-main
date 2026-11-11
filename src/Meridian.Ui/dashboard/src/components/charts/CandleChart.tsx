@@ -18,7 +18,7 @@ export interface Candle {
 
 export interface CandleOverlay {
   label: string;
-  /** CSS color (token var), e.g. "var(--ws-accent, #C56343)". */
+  /** CSS color (token var), e.g. "var(--brand-signal, #C56343)". */
   color: string;
   /** Moving-average window in bars. */
   win: number;

@@ -23,6 +23,8 @@ function inject(): void {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
+.agt-wrap:focus-visible{outline:var(--focus-ring,2px solid var(--focus,#2D6FB3));outline-offset:-2px;}
+.agt__empty{padding:16px 12px;font-family:var(--font-body,inherit);font-size:12px;color:var(--text-muted,#606870);text-align:center;}
 .agt-wrap{overflow-x:auto;border:1px solid var(--border-color,#D2CDC3);border-radius:var(--radius-chip,2px);background:var(--bg-light,#F8F7F3);}
 .agt{width:100%;min-width:720px;border-collapse:separate;border-spacing:0;font-family:var(--font-data,monospace);font-size:12px;}
 .agt th,.agt td{text-align:right;white-space:nowrap;}
@@ -35,7 +37,7 @@ function inject(): void {
 .agt__ref{color:var(--text-secondary,#535C65);}
 .agt__row--click{cursor:pointer;}
 .agt__row--click:hover{background:var(--bg-hover,#EDEFF0);}
-.agt__row--click:focus-visible{outline:2px solid var(--interaction-focus, #2D6FB3);outline-offset:-2px;}
+.agt__row--click:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3);outline-offset:-2px;}
 .agt__row--on td{background:var(--interaction-selected-surface,#E7EDF2);}
 .agt--warn{background:color-mix(in srgb,var(--orange,#986717) 8%,transparent);}
 .agt--late{background:color-mix(in srgb,var(--red,#B54B42) 8%,transparent);}
@@ -73,7 +75,7 @@ export function AgingTable({
   };
 
   return (
-    <div className="agt-wrap" role="region" aria-label={caption}>
+    <div className="agt-wrap" tabIndex={0} role="region" aria-label={caption || "Aging schedule"}>
       <table className="agt">
         <thead>
           <tr>
@@ -84,6 +86,11 @@ export function AgingTable({
           </tr>
         </thead>
         <tbody>
+          {rows.length === 0 ? (
+            <tr>
+              <td className="agt__empty" colSpan={(showRef ? 2 : 1) + buckets.length + 1}>No open items</td>
+            </tr>
+          ) : null}
           {rows.map((row) => {
             const selected = row.id === selectedRowId;
             return (

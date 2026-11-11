@@ -21,6 +21,28 @@
   :root {
     color-scheme: dark;
 
+    /* Tier-1 theme inputs the app also reads directly. theme.css authors them as light
+       literals and only the component tokens flip, so in dark mode --theme-bg-canvas and the
+       other fourteen still resolved to the LIGHT value: app CSS pasted against the name contract
+       painted a paper panel on a graphite screen. Re-point them at the flipped component
+       token in both dark blocks. The forced-light block needs no restatement: it sets every
+       one of these component tokens to a literal, so the reference resolves light there. */
+    --theme-bg-canvas:      var(--bg);
+    --theme-bg-light:       var(--bg-light);
+    --theme-bg-hover:       var(--bg-hover);
+    --theme-bg-active:      var(--bg-active);
+    --theme-border:         var(--border);
+    --theme-border-strong:  var(--border-strong);
+    --theme-primary-text:   var(--text-primary);
+    --theme-secondary-text: var(--text-secondary);
+    --theme-muted-text:     var(--text-muted);
+    --theme-accent:         var(--accent);
+    --theme-border-focus:   var(--border-focus);
+    --theme-topbar-bg:      var(--topbar-bg);
+    --theme-topbar-text:    var(--topbar-text);
+    --theme-statusbar-bg:   var(--statusbar-bg);
+    --theme-statusbar-text: var(--statusbar-text);
+
     /* Surfaces — cool carbon, flat */
     --bg:                 #11171D;  /* canvas */
     --bg-light:           #171E25;  /* plate — panel surface */
@@ -105,6 +127,28 @@
 /* ── 2. Manual dark — identical token block, attribute-driven ── */
 :root[data-theme="dark"] {
   color-scheme: dark;
+
+  /* Tier-1 theme inputs the app also reads directly. theme.css authors them as light
+     literals and only the component tokens flip, so in dark mode --theme-bg-canvas and the
+     other fourteen still resolved to the LIGHT value: app CSS pasted against the name contract
+     painted a paper panel on a graphite screen. Re-point them at the flipped component
+     token in both dark blocks. The forced-light block needs no restatement: it sets every
+     one of these component tokens to a literal, so the reference resolves light there. */
+  --theme-bg-canvas:      var(--bg);
+  --theme-bg-light:       var(--bg-light);
+  --theme-bg-hover:       var(--bg-hover);
+  --theme-bg-active:      var(--bg-active);
+  --theme-border:         var(--border);
+  --theme-border-strong:  var(--border-strong);
+  --theme-primary-text:   var(--text-primary);
+  --theme-secondary-text: var(--text-secondary);
+  --theme-muted-text:     var(--text-muted);
+  --theme-accent:         var(--accent);
+  --theme-border-focus:   var(--border-focus);
+  --theme-topbar-bg:      var(--topbar-bg);
+  --theme-topbar-text:    var(--topbar-text);
+  --theme-statusbar-bg:   var(--statusbar-bg);
+  --theme-statusbar-text: var(--statusbar-text);
 
   --bg:                 #11171D;
   --bg-light:           #171E25;

@@ -4,6 +4,7 @@ import { BrowserRouter } from "react-router-dom";
 import { App } from "@/app";
 import { applyDensity, readStoredDensity } from "@/lib/density";
 import { applyAppearance, readStoredAppearance } from "@/lib/theme";
+import "@/design-system/fonts.css";
 import "@/styles/index.css";
 import "@/styles/workspace-surface.css";
 import "@/styles/command-palette.css";

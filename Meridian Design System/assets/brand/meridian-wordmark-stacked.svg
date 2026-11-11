@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="900" height="680" viewBox="0 0 900 680" role="img" aria-label="Meridian stacked lockup">
       <title>Meridian stacked lockup</title>
-      
+
       <path d="M 375.00 195.00 A 75.00 75.00 0 0 1 525.00 195.00" fill="none" stroke="#B8B3A8" stroke-width="1.69" stroke-linecap="round"></path>
 <path d="M 347.50 195.00 A 102.50 102.50 0 0 1 552.50 195.00" fill="none" stroke="#B8B3A8" stroke-width="1.69" stroke-linecap="round"></path>
 <path d="M 320.00 195.00 A 130.00 130.00 0 0 1 580.00 195.00" fill="none" stroke="#B8B3A8" stroke-width="1.69" stroke-linecap="round"></path>
@@ -51,6 +51,6 @@
       <circle cx="546.27" cy="575.84" r="2.38" fill="#29323A"></circle>
     <path d="M20 0H208L358 418H980L1126 0H1318L774 1490H570ZM415 578 530 898C568 1003 608 1123 672 1321C736 1123 776 1003 813 898L925 578Z" fill="#29323A" transform="translate(567.389 560.000) scale(0.0429688 -0.0429688)"></path>
 <path d="M148 0H328V864C328 930 326 1058 319 1243C426 1064 510 926 551 862L1097 0H1306V1490H1126V528C1126 478 1129 349 1132 245C1072 351 1004 464 969 520L355 1490H148Z" fill="#29323A" transform="translate(642.481 560.000) scale(0.0429688 -0.0429688)"></path>
-<text x="450" y="632" text-anchor="middle" font-family="IBM Plex Sans, Arial, sans-serif" font-size="15" letter-spacing="4.2" fill="#535C65">PROGRAMMED INSTITUTIONALISM</text>
+<text x="450" y="632" text-anchor="middle" font-family="'IBM Plex Sans', Arial, sans-serif" font-size="15" letter-spacing="4.2" fill="#535C65">PROGRAMMED INSTITUTIONALISM</text>
 
     </svg>

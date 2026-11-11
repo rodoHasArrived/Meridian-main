@@ -38,6 +38,7 @@ function inject() {
 .rec__chip--ok{background:var(--green-a10,rgba(46,118,85,.10));border-color:var(--green,#2E7655);color:var(--green-dim,#225840);}
 .rec__chip--open{background:var(--orange-a10,rgba(152,103,23,.10));border-color:var(--orange,#986717);color:var(--orange-dim,#724D11);}
 .rec__tablewrap{overflow-x:auto;}
+.rec__tablewrap:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}
 .rec__table{width:100%;border-collapse:collapse;table-layout:auto;}
 .rec__table th{position:sticky;top:0;background:var(--bg-light,#F8F7F3);text-align:left;
   font-family:var(--font-body);font-size:9px;font-weight:600;font-variant:all-small-caps;letter-spacing:.04em;
@@ -124,6 +125,8 @@ function Side({ side, columns, currency, status, query, sort, onSort, onToggleIt
     rows = [...rows].sort((a, b) => sort.dir * compareItems(a, b, sort.key));
   }
 
+  const allMatched = rows.length > 0 && rows.every((i) => i.matched);
+
   return (
     <div className="rec__side">
       <div className="rec__head">
@@ -133,18 +136,18 @@ function Side({ side, columns, currency, status, query, sort, onSort, onToggleIt
           {open > 0 && <span className="rec__chip rec__chip--open">{open} open</span>}
         </span>
       </div>
-      <div className="rec__tablewrap">
+      <div className="rec__tablewrap" tabIndex={0} role="region" aria-label={`${side.title} items`}>
         <table className="rec__table">
           <thead>
             <tr>
               <th scope="col" aria-label="Matched" style={{ width: 28, textAlign: "center" }}>
                 <Checkbox
                   aria-label={`Matched status for all ${side.title} items`}
-                  checked={rows.every(i => i.matched)}
+                  checked={allMatched}
                   onChange={(checked) => onToggleAll && onToggleAll(side, checked)}
                 />
               </th>
-              {columns.map((c) => <SortHead key={c.key} col={c} sort={sort} onSort={onSort} onToggleItem={onToggleItem} onToggleAll={onToggleAll} />)}
+              {columns.map((c) => <SortHead key={c.key} col={c} sort={sort} onSort={onSort} />)}
             </tr>
           </thead>
           <tbody>
@@ -163,7 +166,7 @@ function Side({ side, columns, currency, status, query, sort, onSort, onToggleIt
                 {columns.map((c) =>
                   c.amount ? (
                     <td key={c.key} className="num">
-                      <AmountCell value={it.amount} currency={currency} parens />
+                      <AmountCell value={it[c.key]} currency={currency} parens />
                     </td>
                   ) : (
                     <td key={c.key} className={`${c.mono ? "mono" : ""} ${c.key === "memo" ? "memo" : ""}`.trim()}>
@@ -246,6 +249,7 @@ export function ReconciliationPanel({
               <Input
                 aria-label="Filter reconciliation items by memo or reference"
                 placeholder="Filter memo, ref…"
+                aria-label="Filter reconciliation items"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
               />
@@ -254,8 +258,10 @@ export function ReconciliationPanel({
         </div>
       )}
       <div className="rec__cols">
-        <Side side={left} columns={cols} currency={currency} status={status} query={query} sort={sort} onSort={onSort} onToggleItem={onToggleItem} onToggleAll={onToggleAll} />
-        <Side side={right} columns={cols} currency={currency} status={status} query={query} sort={sort} onSort={onSort} onToggleItem={onToggleItem} onToggleAll={onToggleAll} />
+        <Side side={left} columns={cols} currency={currency} status={status} query={query} sort={sort} onSort={onSort}
+          onToggleItem={onToggleItem} onToggleAll={onToggleAll} />
+        <Side side={right} columns={cols} currency={currency} status={status} query={query} sort={sort} onSort={onSort}
+          onToggleItem={onToggleItem} onToggleAll={onToggleAll} />
       </div>
       <div className="rec__summary">
         <div className="rec__sumcell">
@@ -266,7 +272,7 @@ export function ReconciliationPanel({
           <span className="rec__sumlabel">{right.title} balance</span>
           <AmountCell value={bb} currency={currency} parens strong />
         </div>
-        <div className={`rec__statusbox ${balanced ? "rec__statusbox--bal" : "rec__statusbox--out"}`}>
+        <div className={`rec__statusbox ${balanced ? "rec__statusbox--bal" : "rec__statusbox--out"}`} role="status">
           <span className="rec__dot" aria-hidden="true" />
           {balanced
             ? "Reconciled"

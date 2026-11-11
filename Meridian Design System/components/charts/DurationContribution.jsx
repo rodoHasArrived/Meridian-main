@@ -35,7 +35,7 @@ let injected=false;function inject(){if(injected||typeof document==="undefined")
 .mds-dc__track{position:relative;height:16px;background:var(--surface-recessed,var(--bg-medium,#EBE8E1))}
 .mds-dc__zero{position:absolute;top:-2px;bottom:-2px;border-left:1px solid var(--border-strong,#AAA49A)}
 .mds-dc__bar{position:absolute;top:3px;height:6px;min-width:1px;background:var(--series-actual,var(--brand-axis,#29323A))}
-.mds-dc__bar[data-negative="true"]{background:var(--series-prior,var(--brand-field,#5D7286))}
+.mds-dc__bar[data-negative="true"]{background:var(--series-prior,#7890A4)}
 .mds-dc__cmp{position:absolute;bottom:2px;height:0;border-top:2px dashed var(--series-scenario,var(--scenario-signal,#C56343))}
 .mds-dc__row[aria-selected="true"] .mds-dc__bar{background:var(--selected,#496C8F)}
 .mds-dc__mark{display:inline-block;width:9px;text-align:center;margin-right:3px;color:var(--text-muted,#606870)}

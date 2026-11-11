@@ -338,13 +338,17 @@ function assertCard(card) {
           // 14 s timer stays active while a slow or failed face is being loaded.
           if (doc.fonts) await doc.fonts.ready;
           if (settled) return;
-          const failedFonts = doc.fonts ? [...doc.fonts].filter((face) => face.status === "error") : [];
-          if (failedFonts.length) findings.push({ id: "fonts", note: `${failedFonts.length} failed font face(s): ${failedFonts.slice(0, 3).map((face) => face.family).join(", ")}` });
           for (const a of CARD_ASSERTIONS) {
             let note = null;
             try { note = a.run(doc, win); } catch (e) { note = "assertion threw: " + (e.message || e); }
             if (note) findings.push({ id: a.id, note });
           }
+          // Inspecting hidden typography or moving focus can start a lazy face
+          // load. Keep that request alive until it settles before disposal too.
+          if (doc.fonts) await doc.fonts.ready;
+          if (settled) return;
+          const failedFonts = doc.fonts ? [...doc.fonts].filter((face) => face.status === "error") : [];
+          if (failedFonts.length) findings.push({ id: "fonts", note: `${failedFonts.length} failed font face(s): ${failedFonts.slice(0, 3).map((face) => face.family).join(", ")}` });
         } catch (e) { findings = [{ id: "access", note: String(e.message || e) }]; }
         finish(findings);
       }, 1200);

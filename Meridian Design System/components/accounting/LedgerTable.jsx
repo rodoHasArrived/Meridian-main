@@ -33,6 +33,7 @@ function inject() {
   const css = `
 .ldg-wrap{overflow-x:auto;border:1px solid var(--border,#D2CDC3);
   border-radius:var(--radius-chip,2px);background:var(--bg-light,#F8F7F3);}
+.ldg-wrap:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}
 .ldg{width:100%;min-width:100%;border-collapse:separate;border-spacing:0;
   font-family:var(--font-data);font-size:12px;}
 .ldg thead th{padding:9px 12px;text-align:left;white-space:nowrap;position:sticky;top:0;
@@ -92,6 +93,17 @@ function compareRows(a, b, key) {
   return av.localeCompare(bv, undefined, { numeric: true });
 }
 
+// Module-scope so the <th> keeps its identity (and keyboard focus) across re-renders and sorts.
+function Head({ k, children, right, sortKey, sortDir, onSort }) {
+  return (
+    <th className={right ? "ldg--r" : undefined} scope="col" tabIndex={0} onClick={() => onSort(k)}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSort(k); } }}
+      aria-sort={sortKey === k ? (sortDir === 1 ? "ascending" : "descending") : "none"}>
+      {children} {sortKey === k && (sortDir === 1 ? "\u2191" : "\u2193")}
+    </th>
+  );
+}
+
 export function LedgerTable({
   rows = [],
   currency = "USD",
@@ -116,9 +128,10 @@ export function LedgerTable({
     onSort?.(key, dir);
   };
 
-  // Running balance is chronological (source order); void rows contribute nothing.
+  // Running balance is chronological (source order); void rows contribute nothing. It is only
+  // known from the opening balance or the first explicit row balance onward — earlier rows show a dash.
   let bal = isFinite(toNumber(open)) ? toNumber(open) : 0;
-  let hasRunning = isFinite(toNumber(open));
+  let canCompute = isFinite(toNumber(open));
   const computed = rows.map((r, i) => {
     const isVoid = r.status === "void";
     const d = isVoid ? 0 : amt(r.debit) || 0;
@@ -126,11 +139,11 @@ export function LedgerTable({
     const delta = normalSide === "credit" ? c - d : d - c;
     if (!isVoid && r.balance != null && isFinite(amt(r.balance))) {
       bal = amt(r.balance);
-      hasRunning = true;
-    } else {
+      canCompute = true;
+    } else if (canCompute) {
       bal += delta;
     }
-    return { ...r, _bal: bal, _void: isVoid, _i: i };
+    return { ...r, _bal: bal, _hasBal: canCompute, _void: isVoid, _i: i };
   });
 
   let display = computed;
@@ -143,26 +156,20 @@ export function LedgerTable({
   const totalC = live.reduce((a, r) => a + (amt(r.credit) || 0), 0);
   const voided = computed.length - live.length;
 
-  const Head = ({ k, children, right }) => (
-    <th className={right ? "ldg--r" : undefined} scope="col" tabIndex={0} onClick={() => handleSort(k)}
-      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleSort(k); } }}
-      aria-sort={sortKey === k ? (sortDir === 1 ? "ascending" : "descending") : "none"}>
-      {children} {sortKey === k && (sortDir === 1 ? "\u2191" : "\u2193")}
-    </th>
-  );
+  const hp = { sortKey, sortDir, onSort: handleSort };
 
   return (
-    <div className="ldg-wrap" role="region" aria-label={caption || "General ledger"}>
+    <div className="ldg-wrap" tabIndex={0} role="region" aria-label={caption || "General ledger"}>
       <table className="ldg">
         <thead>
           <tr>
-            <Head k="date">Date</Head>
-            <Head k="ref">Ref</Head>
-            {showAccount && <Head k="account">Account</Head>}
-            <Head k="memo">Description</Head>
-            <Head k="debit" right>Debit</Head>
-            <Head k="credit" right>Credit</Head>
-            <Head k="balance" right>Balance</Head>
+            <Head k="date" {...hp}>Date</Head>
+            <Head k="ref" {...hp}>Ref</Head>
+            {showAccount && <Head k="account" {...hp}>Account</Head>}
+            <Head k="memo" {...hp}>Description</Head>
+            <Head k="debit" right {...hp}>Debit</Head>
+            <Head k="credit" right {...hp}>Credit</Head>
+            <Head k="balance" right {...hp}>Balance</Head>
           </tr>
         </thead>
         <tbody>
@@ -209,7 +216,7 @@ export function LedgerTable({
                     mode={r._void ? "muted" : undefined} envelope={sideEnvelope(r, "credit")} />
                 </td>
                 <td className="ldg--r">
-                  {r._void || !hasRunning
+                  {r._void || !r._hasBal
                     ? <span style={{ color: "var(--text-disabled,#A4ABB2)" }}>&mdash;</span>
                     : <AmountCell value={r._bal} currency={currency} parens />}
                 </td>

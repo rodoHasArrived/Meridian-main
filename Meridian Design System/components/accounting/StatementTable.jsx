@@ -15,6 +15,7 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
+.stm-wrap:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}
 .stm-wrap{overflow-x:auto;border:1px solid var(--border,#D2CDC3);
   border-radius:var(--radius-chip,2px);background:var(--bg-light,#F8F7F3);}
 .stm{width:100%;border-collapse:separate;border-spacing:0;font-family:var(--font-data);font-size:12px;}
@@ -69,7 +70,7 @@ export function StatementTable({
   };
 
   return (
-    <div className="stm-wrap" role="region" aria-label={caption || "Financial statement"}>
+    <div className="stm-wrap" tabIndex={0} role="region" aria-label={caption || "Financial statement"}>
       <table className="stm">
         <thead>
           <tr>

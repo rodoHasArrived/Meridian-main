@@ -67,22 +67,23 @@ function createLedger(handlers = { current: {} }) {
   const h = () => handlers.current || {};
   let entries = [];
   const subs = new Set();
-  const emit = () => subs.forEach((f) => f(entries));
   const patch = (id, fn) => { entries = entries.map((e) => (e.id === id ? { ...e, ...fn(e) } : e)); emit(); };
-  const reportSettlementError = (error) => {
+  const reportObserverError = (error, name) => {
     // Observer failures are application faults, not rejected financial writes.
     // Surface them without rejecting a settled operation that a caller may retry.
     if (typeof globalThis.reportError === "function") {
       try { globalThis.reportError(error); return; } catch { /* Fall back to the console if reporting itself fails. */ }
     }
-    console.error("Meridian OptimisticProvider onSettle observer failed", error);
+    console.error(`OptimisticProvider: ${name} observer failed`, error);
   };
-  const notifySettlement = (edit) => {
+  const notify = (listener, value, name) => {
     try {
-      const result = h().onSettle && h().onSettle(edit);
-      if (result && typeof result.then === "function") Promise.resolve(result).catch(reportSettlementError);
-    } catch (error) { reportSettlementError(error); }
+      const result = listener && listener(value);
+      if (result && typeof result.then === "function") Promise.resolve(result).catch(error => reportObserverError(error, name));
+    } catch (error) { reportObserverError(error, name); }
   };
+  const emit = () => subs.forEach(listener => notify(listener, entries, "ledger"));
+  const notifySettlement = edit => notify(h().onSettle, edit, "onSettle");
   const api = {
     subscribe(f) { subs.add(f); return () => subs.delete(f); },
     get entries() { return entries; },
@@ -136,7 +137,7 @@ export function OptimisticProvider({ commit, revert, onSettle, onChange, childre
   const ref = React.useRef(null);
   if (!ref.current) ref.current = createLedger(handlers);
   const [, force] = React.useState(0);
-  React.useEffect(() => ref.current.subscribe((entries) => { force((n) => n + 1); onChange && onChange(entries); }), [onChange]);
+  React.useEffect(() => ref.current.subscribe((entries) => { force((n) => n + 1); return onChange && onChange(entries); }), [onChange]);
   return <Ctx.Provider value={ref.current}>{children}</Ctx.Provider>;
 }
 

@@ -360,7 +360,7 @@ describe("App", () => {
     expect(screen.getByRole("status", { name: "Activation status check" })).toHaveTextContent(
       "Checking activation status"
     );
-    expect(screen.queryByRole("button", { name: "Open workstation command palette (Ctrl K)" }))
+    expect(screen.queryByRole("button", { name: "Go to route, action, evidence... Ctrl K" }))
       .not.toBeInTheDocument();
     expect(mockedUseWorkstationData).not.toHaveBeenCalled();
   });
@@ -391,7 +391,7 @@ describe("App", () => {
 
     await userEvent.click(screen.getByRole("button", { name: "Retry activation check" }));
 
-    expect(await screen.findByRole("button", { name: "Open workstation command palette (Ctrl K)" }))
+    expect(await screen.findByRole("button", { name: "Go to route, action, evidence... Ctrl K" }))
       .toBeInTheDocument();
     expect(firstRunRequests).toBe(2);
     expect(mockedUseWorkstationData).toHaveBeenCalled();
@@ -529,7 +529,8 @@ describe("App", () => {
   it("opens and closes the command palette with Control+K", async () => {
     const user = userEvent.setup();
     renderWithRouter(<App />, { initialEntries: ["/trading"] });
-    const trigger = screen.getByRole("button", { name: "Open workstation command palette (Ctrl K)" });
+    const trigger = screen.getByRole("button", { name: "Go to route, action, evidence... Ctrl K" });
+    expect(trigger).toHaveAccessibleDescription("Open workstation command palette (Ctrl K). Keyboard shortcut: Ctrl K.");
 
     expect(document.querySelector('[data-design-system-component="Masthead"]')).toHaveClass("mds-masthead");
     expect(trigger).toHaveClass("mds-masthead__search");
@@ -542,7 +543,8 @@ describe("App", () => {
     const dialog = screen.getByRole("dialog", { name: "Open workstation command" });
     expect(dialog).toHaveAttribute("id", "command-palette-dialog");
     expect(trigger).toHaveAttribute("aria-expanded", "true");
-    expect(trigger).toHaveAccessibleName("Close workstation command palette (Ctrl K)");
+    expect(trigger).toHaveAccessibleName("Go to route, action, evidence... Ctrl K");
+    expect(trigger).toHaveAccessibleDescription("Close workstation command palette (Ctrl K). Keyboard shortcut: Ctrl K.");
 
     await user.keyboard("{Control>}k{/Control}");
     expect(screen.queryByRole("dialog", { name: "Open workstation command" })).not.toBeInTheDocument();
@@ -586,7 +588,7 @@ describe("App", () => {
     expect(screen.getByRole("region", { name: "Daily Control Tower continuity" })).toBeInTheDocument();
     // One rule, three surfaces: the masthead pill, Today's status row and Today's headline
     // read the same attention state, so they name the same worst issue with the same status.
-    const attentionPill = screen.getByRole("link", { name: /^Workstation attention: Blocked\. Brokerage sync failed\./ });
+    const attentionPill = screen.getByRole("link", { name: /^Blocked Brokerage sync failed/ });
     expect(attentionPill).toHaveAttribute("href", "/");
     expect(attentionPill).toHaveAttribute("data-attention-tone", "blocked");
     const status = screen.getByRole("region", { name: "Workstation status" });

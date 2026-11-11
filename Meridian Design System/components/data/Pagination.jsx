@@ -44,6 +44,11 @@ export function Pagination({
   inject();
   const [jumpValue, setJumpValue] = React.useState(String(currentPage));
 
+  // Keep the jump box in step with paging done through the buttons (or the parent).
+  React.useEffect(() => {
+    setJumpValue(String(currentPage));
+  }, [currentPage]);
+
   const handlePrev = () => {
     if (currentPage > 1) onPageChange(currentPage - 1);
   };
@@ -119,6 +124,8 @@ export function Pagination({
               key={idx}
               className={`pgn-btn ${page === currentPage ? "pgn-btn--active" : ""}`}
               onClick={() => handlePageClick(page)}
+              aria-label={`Page ${page}`}
+              aria-current={page === currentPage ? "page" : undefined}
             >
               {page}
             </button>

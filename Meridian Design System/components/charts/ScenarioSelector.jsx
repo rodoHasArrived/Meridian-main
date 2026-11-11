@@ -22,20 +22,21 @@ export function ScenarioSelector({
 }) {
   const inert = typeof onChange !== "function";
   const ids = scenarios.map((s) => s.id);
-  const optionRefs = React.useRef([]);
-  const tabStop = Math.max(0, ids.indexOf(value));
+  const radios = React.useRef([]);
+  // A restored selection may no longer be in the available scenarios. Keep the
+  // first option reachable without silently choosing a replacement for the caller.
+  const selectedIndex = ids.indexOf(value);
+  const tabStopIndex = selectedIndex < 0 ? 0 : selectedIndex;
   const onKeyDown = (e, index) => {
-    if (inert || e.target !== e.currentTarget || e.altKey || e.ctrlKey || e.metaKey) return;
+    if (inert || !ids.length || e.target !== e.currentTarget || e.altKey || e.ctrlKey || e.metaKey) return;
     let nextIndex;
     if (e.key === "ArrowDown" || e.key === "ArrowRight") nextIndex = (index + 1) % ids.length;
     else if (e.key === "ArrowUp" || e.key === "ArrowLeft") nextIndex = (index - 1 + ids.length) % ids.length;
-    else if (e.key === " " || e.key === "Enter") {
-      e.preventDefault();
-      onChange(ids[index]);
-      return;
-    } else return;
+    else if (e.key === "Home") nextIndex = 0;
+    else if (e.key === "End") nextIndex = ids.length - 1;
+    else return;
     e.preventDefault();
-    optionRefs.current[nextIndex]?.focus();
+    radios.current[nextIndex]?.focus();
     onChange(ids[nextIndex]);
   };
 
@@ -50,13 +51,15 @@ export function ScenarioSelector({
         {scenarios.map((s, index) => {
           const on = s.id === value;
           return (
-            <div key={s.id} role="radio" aria-checked={on} aria-disabled={inert || undefined}
-              ref={(node) => { optionRefs.current[index] = node; }}
-              tabIndex={inert ? -1 : index === tabStop ? 0 : -1}
-              onKeyDown={(e) => onKeyDown(e, index)}
+            <button key={s.id} type="button" role="radio" aria-checked={on} aria-disabled={inert || undefined}
+              ref={(node) => { radios.current[index] = node; }}
+              disabled={inert}
+              tabIndex={!inert && index === tabStopIndex ? 0 : -1}
               onClick={inert ? undefined : (e) => { e.currentTarget.focus(); onChange(s.id); }}
+              onKeyDown={(e) => onKeyDown(e, index)}
               style={{
                 display: "flex", alignItems: "center", gap: 12, minWidth: 0,
+                appearance: "none", textAlign: "left", font: "inherit", width: "100%",
                 padding: "10px 12px 10px 10px",
                 background: on ? "var(--viz-select-surface,var(--selected-surface))" : "var(--surface-plate,var(--bg-light))",
                 border: `1px solid ${on ? "var(--viz-select-rail,var(--selected))" : "var(--border)"}`,
@@ -88,7 +91,7 @@ export function ScenarioSelector({
               {s.headline != null && (
                 <span style={{ ...MONO, flex: "0 0 auto", fontSize: 15, fontWeight: 600, color: toneColor(s.tone), minWidth: 78, textAlign: "right" }}>{s.headline}</span>
               )}
-            </div>
+            </button>
           );
         })}
       </div>

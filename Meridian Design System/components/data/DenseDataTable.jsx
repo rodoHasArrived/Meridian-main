@@ -18,6 +18,7 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
+.dds-wrap:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}
 .dds-wrap{overflow-x:auto;border:1px solid var(--border,#D2CDC3);background:var(--bg-light,#F8F7F3);}
 .dds{width:100%;min-width:100%;border-collapse:separate;border-spacing:0;
   font-family:var(--font-data);font-size:12px;}
@@ -102,6 +103,7 @@ export function DenseDataTable({
   virtualizeThreshold = 500,
   rowHeight, // px — defaults to the density token --theme-row-height (32 compact · 40 cozy · 48 spacious)
   maxHeight = 560,
+  label = "Data table", // accessible name of the scrollable region
 }) {
   inject();
   const effRow = useThemeRowHeight(rowHeight);
@@ -151,6 +153,9 @@ export function DenseDataTable({
   return (
     <div
       className="dds-wrap"
+      tabIndex={0}
+      role="region"
+      aria-label={label}
       style={shouldVirtualize ? { maxHeight, overflowY: "auto" } : undefined}
       onScroll={shouldVirtualize ? (e) => setScrollTop(e.currentTarget.scrollTop) : undefined}
     >

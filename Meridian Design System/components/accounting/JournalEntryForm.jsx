@@ -70,7 +70,10 @@ export function JournalEntryForm({
   onPost,
 }) {
   inject();
-  const headerId = React.useId();
+  const uid = React.useId();
+  const dateId = `${uid}-date`;
+  const refId = `${uid}-ref`;
+  const memoId = `${uid}-memo`;
   const [header, setHeader] = useState(() => ({ date: "", ref: "", memo: "", ...initialHeader }));
   const [lines, setLines] = useState(() =>
     initialLines && initialLines.length ? initialLines.map((l) => ({ ...blankLine(), ...l })) : [blankLine(), blankLine()]
@@ -94,24 +97,24 @@ export function JournalEntryForm({
   const balanced = Math.abs(diff) <= tolerance && (totalD > 0 || totalC > 0);
   const blocks = (blockers || []).filter(Boolean).map((b) => (typeof b === "string" ? { label: b } : b));
   const postable = balanced && blocks.length === 0;
-  const dlId = accounts && accounts.length ? "jnl-accts" : undefined;
+  const dlId = accounts && accounts.length ? `${uid}-accts` : undefined;
 
   return (
     <div className="jnl" role="group" aria-label="Journal entry">
       <div className="jnl__hd">
         <div className="jnl__field">
-          <label className="jnl__lbl" htmlFor={`${headerId}-date`}>Date</label>
-          <Input id={`${headerId}-date`} type="date" value={header.date}
+          <label className="jnl__lbl" htmlFor={dateId}>Date</label>
+          <Input id={dateId} type="date" value={header.date}
             onChange={(e) => setH("date", e.target.value)} />
         </div>
         <div className="jnl__field">
-          <label className="jnl__lbl" htmlFor={`${headerId}-ref`}>Reference</label>
-          <Input id={`${headerId}-ref`} placeholder="JE-0001" value={header.ref}
+          <label className="jnl__lbl" htmlFor={refId}>Reference</label>
+          <Input id={refId} placeholder="JE-0001" value={header.ref}
             onChange={(e) => setH("ref", e.target.value)} />
         </div>
         <div className="jnl__field">
-          <label className="jnl__lbl" htmlFor={`${headerId}-memo`}>Memo</label>
-          <Input id={`${headerId}-memo`} placeholder="Description" value={header.memo}
+          <label className="jnl__lbl" htmlFor={memoId}>Memo</label>
+          <Input id={memoId} placeholder="Description" value={header.memo}
             onChange={(e) => setH("memo", e.target.value)} />
         </div>
       </div>
@@ -177,7 +180,7 @@ export function JournalEntryForm({
           <Button variant="ghost" onClick={addLine}>+ Add line</Button>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span className={`jnl__status ${balanced ? "jnl__status--bal" : "jnl__status--out"}`}>
+          <span className={`jnl__status ${balanced ? "jnl__status--bal" : "jnl__status--out"}`} role="status">
             <span className="jnl__dot" aria-hidden="true" />
             {balanced
               ? "Balanced"

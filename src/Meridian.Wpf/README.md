@@ -880,7 +880,8 @@ graphite global app bar, paper page bands, compact filter bars, and dense table 
 workstation: graphite (`ConsoleActionPrimary*`) fills primary buttons, `ConsoleAccentBlue` and
 `ConsoleBorderFocus` are the interaction blue for focus and selection, and terracotta
 (`ConsoleAccentCyan`) is the brand signal only. Paper simulation uses slate (`ModePaperColor`),
-independent of live red and fixture amber; actual chart traces use graphite. Brand art in
+independent of live red and fixture amber; actual chart traces use graphite. `OnAccentTextColor` is
+the dark ink the package puts on a terracotta fill (4.7:1; white is 4.0:1). Brand art in
 `Assets/Brand/` is copied from `Meridian Design System/assets/brand/` (identity v1.0); the startup
 window shows `meridian-mark-light-256.png`, a transparent raster of `meridian-mark-light.svg`, because
 the package reserves the light mark for graphite surfaces and WPF does not load SVG directly.

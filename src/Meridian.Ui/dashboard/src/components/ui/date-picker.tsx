@@ -35,11 +35,11 @@ export function monthGrid(month: Date): Date[] {
 }
 
 const dayButtonClass =
-  "flex h-8 w-8 items-center justify-center rounded-[2px] border border-transparent font-mono text-xs text-foreground transition-colors hover:bg-[var(--ws-row-hover)] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 [outline-offset:-2px]";
+  "flex h-8 w-8 items-center justify-center rounded-[var(--radius-button)] border border-transparent font-mono text-xs text-foreground transition-colors hover:bg-[var(--ws-row-hover)] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--interaction-focus)] [outline-offset:-2px]";
 
 /**
  * Single-date input with a flat calendar popover. Concrete: hairline field, menu shadow on the
- * calendar, 2px cells, one accent for the selected day. Emits ISO `YYYY-MM-DD` via `onChange`.
+ * calendar, control-radius cells, one selection tone for the selected day. Emits ISO `YYYY-MM-DD` via `onChange`.
  */
 export function DatePicker({ value, onChange, label, placeholder = "Select dateâ€¦", disabled = false, className, id }: DatePickerProps) {
   const [open, setOpen] = useState(false);
@@ -80,19 +80,19 @@ export function DatePicker({ value, onChange, label, placeholder = "Select dateâ
         value={display}
         onClick={() => !disabled && setOpen((current) => !current)}
         className={cn(
-          "h-9 w-full cursor-pointer rounded-[2px] border border-border bg-[var(--ws-surface-raised)] px-2.5 font-mono text-sm text-foreground",
-          "hover:border-[var(--ws-border-hover)] focus-visible:border-primary focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
+          "h-9 w-full cursor-pointer rounded-[var(--radius-button)] border border-border bg-[var(--ws-surface-raised)] px-2.5 font-mono text-sm text-foreground",
+          "hover:border-[var(--ws-border-hover)] focus-visible:border-[var(--interaction-focus)] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--interaction-focus)]",
           disabled && "cursor-not-allowed opacity-55"
         )}
       />
       {open ? (
-        <div className="absolute left-0 top-[calc(100%+4px)] z-[100] rounded-[2px] border border-border bg-popover p-3 shadow-[0_2px_6px_rgba(0,0,0,0.18)]">
+        <div className="absolute left-0 top-[calc(100%+4px)] z-[100] rounded-[var(--radius-overlay)] border border-border bg-popover p-3 shadow-[0_2px_6px_rgba(0,0,0,0.18)]">
           <div className="mb-3 flex items-center justify-between text-xs font-semibold text-foreground">
             <button
               type="button"
               aria-label="Previous month"
               onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1))}
-              className="rounded-[2px] border border-border bg-card px-2 py-1 transition-colors hover:bg-[var(--ws-row-hover)]"
+              className="rounded-[var(--radius-button)] border border-border bg-card px-2 py-1 transition-colors hover:bg-[var(--ws-row-hover)]"
             >
               â†
             </button>
@@ -101,7 +101,7 @@ export function DatePicker({ value, onChange, label, placeholder = "Select dateâ
               type="button"
               aria-label="Next month"
               onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1))}
-              className="rounded-[2px] border border-border bg-card px-2 py-1 transition-colors hover:bg-[var(--ws-row-hover)]"
+              className="rounded-[var(--radius-button)] border border-border bg-card px-2 py-1 transition-colors hover:bg-[var(--ws-row-hover)]"
             >
               â†’
             </button>
@@ -128,8 +128,8 @@ export function DatePicker({ value, onChange, label, placeholder = "Select dateâ
                   className={cn(
                     dayButtonClass,
                     other && "text-muted-foreground",
-                    isToday && !selected && "border-primary",
-                    selected && "border-primary bg-primary text-primary-foreground hover:bg-primary"
+                    isToday && !selected && "border-[var(--interaction-selected)]",
+                    selected && "border-[var(--interaction-selected)] bg-[var(--interaction-selected)] text-[var(--text-on-fill)] hover:bg-[var(--interaction-selected)]"
                   )}
                 >
                   {day.getDate()}

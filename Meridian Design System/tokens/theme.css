@@ -60,7 +60,7 @@
   --theme-brand-color: #C56343;
   --theme-font-display: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
   --theme-font-body: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
-  --theme-font-mono: "IBM Plex Mono", ui-monospace, "Courier New", monospace;
+  --theme-font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
 }
 
 /* ── Density Variants — v2.1 modes: dense (28) · standard (36) · review (44).

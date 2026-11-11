@@ -15,6 +15,7 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
+.tbl-wrap:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}
 .tbl-wrap{overflow-x:auto;border:1px solid var(--border,#D2CDC3);
   border-radius:var(--radius-chip,2px);background:var(--bg-light,#F8F7F3);}
 .tbl{width:100%;border-collapse:separate;border-spacing:0;
@@ -129,7 +130,7 @@ export function TrialBalance({
   };
 
   return (
-    <div className="tbl-wrap" role="region" aria-label={caption || "Trial balance"}>
+    <div className="tbl-wrap" tabIndex={0} role="region" aria-label={caption || "Trial balance"}>
       <table className="tbl">
         <thead>
           <tr>

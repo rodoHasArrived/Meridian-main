@@ -37,7 +37,7 @@ function inject() {
   if (injected || typeof document === "undefined") return; injected = true;
   const el = document.createElement("style"); el.setAttribute("data-mds", "action-queue");
   el.textContent = `
-.mds-aq{position:fixed;right:14px;bottom:40px;z-index:var(--z-popover,120);width:380px;max-width:calc(100vw - 28px);font-family:var(--font-body);color:var(--text-primary,#20252B);border:1px solid var(--border-strong,#AAA49A);background:var(--bg-light,#F8F7F3);box-shadow:var(--shadow-menu,0 2px 6px rgba(17,23,29,.18))}
+.mds-aq{position:fixed;right:14px;bottom:40px;z-index:var(--z-dropdown,100);width:380px;max-width:calc(100vw - 28px);font-family:var(--font-body);color:var(--text-primary,#20252B);border:1px solid var(--border-strong,#AAA49A);background:var(--bg-light,#F8F7F3);box-shadow:var(--shadow-menu,0 2px 6px rgba(17,23,29,.18))}
 .mds-aq[data-docked="inline"]{position:static;width:auto;max-width:none;box-shadow:none;border-color:var(--border,#D2CDC3)}
 .mds-aq__hd{display:flex;align-items:center;gap:8px;min-height:32px;padding:0 10px;border-bottom:1px solid var(--border,#D2CDC3);background:var(--bg-medium,#EBE8E1);cursor:pointer;user-select:none}
 .mds-aq__hd:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
@@ -65,7 +65,7 @@ function inject() {
 .mds-aq__meta{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:2px 10px;font:9.5px/1.5 var(--font-data,monospace);color:var(--text-muted,#606870)}
 .mds-aq__reason{grid-column:1/-1;margin:0;font:11px/1.45 var(--font-body);color:var(--text-primary,#20252B);padding:5px 8px;border-left:2px solid var(--red,#B54B42);background:var(--red-a10,rgba(181,75,66,.08))}
 .mds-aq__acts{grid-column:1/-1;display:flex;gap:6px}
-.mds-aq__btn{min-height:24px;padding:2px 9px;font:600 10.5px var(--font-body);cursor:pointer;background:var(--bg,#F2F0EB);border:1px solid var(--border-strong,#AAA49A);color:var(--text-primary,#20252B);border-radius:var(--radius-control,4px)}
+.mds-aq__btn{min-height:24px;padding:2px 9px;font:600 10.5px var(--font-body);cursor:pointer;background:var(--bg,#F2F0EB);border:1px solid var(--border-strong,#AAA49A);color:var(--text-primary,#20252B);border-radius:var(--radius-button,4px)}
 .mds-aq__btn:hover{background:var(--bg-hover,#EDEFF0)}
 .mds-aq__btn:focus-visible{outline:2px solid var(--interaction-focus,var(--focus,#2D6FB3));outline-offset:1px}
 .mds-aq__btn[data-primary="true"]{background:var(--brand-axis,#29323A);border-color:var(--brand-axis,#29323A);color:var(--ink-inverse,#F5F3EE)}

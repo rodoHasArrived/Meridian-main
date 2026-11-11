@@ -250,7 +250,7 @@ export function FinancialRecordExplorerShell({
           <Badge variant={dtoMode?.isBlocked ? "danger" : "default"} dot>{selectedDtoSavedView?.label ?? activeSavedView?.label ?? "Unsaved view"}</Badge>
           {dtoMode ? (
             <Button asChild size="sm" variant="outline">
-              <a href={shareHref} aria-label={`Share ${headerTitle} evidence state: ${shareStateSummary}`}>
+              <a href={shareHref} aria-label={`Share state — ${headerTitle} evidence state: ${shareStateSummary}`}>
                 <Link2 className="h-3.5 w-3.5" aria-hidden="true" />
                 Share state
               </a>
@@ -258,7 +258,7 @@ export function FinancialRecordExplorerShell({
           ) : null}
           {dtoMode && onSaveView ? (
             <input
-              className="h-8 w-44 rounded-md border border-border/70 bg-background px-2 text-xs text-foreground outline-hidden placeholder:text-muted-foreground focus:border-primary/60"
+              className="h-8 w-44 rounded-md border border-border/70 bg-background px-2 text-xs text-foreground outline-hidden placeholder:text-muted-foreground focus:border-[var(--interaction-focus)]"
               value={viewName}
               onChange={(event) => setViewName(event.target.value)}
               placeholder="View name"
@@ -392,7 +392,7 @@ function ExplorerSummaryStrip({ items }: { items: FinancialRecordExplorerSummary
     <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4" aria-label="Explorer summary">
       {items.map((item) => (
         <div key={item.id} className={cn("rounded-md border px-3 py-2", summaryToneClass(item.tone))}>
-          <div className={cn("text-[11px] font-semibold text-muted-foreground", usesTrackedCaps(item.label) && "uppercase")}>{item.label}</div>
+          <div className={cn("text-[11px] font-semibold text-[var(--text-secondary)]", usesTrackedCaps(item.label) && "uppercase")}>{item.label}</div>
           <div className="mt-1 font-mono text-lg font-semibold">{item.value}</div>
         </div>
       ))}
@@ -791,11 +791,11 @@ function toneTextClass(tone?: FinancialRecordExplorerTone): string {
 function summaryToneClass(tone: FinancialRecordExplorerSummaryItem["tone"]): string {
   switch (tone) {
     case "success":
-      return "border-success/30 bg-success/10 text-success";
+      return "border-success/30 bg-success/10 text-[var(--severity-ready-fg)]";
     case "warning":
-      return "border-warning/30 bg-warning/10 text-warning";
+      return "border-warning/30 bg-warning/10 text-[var(--severity-action-fg)]";
     case "danger":
-      return "border-danger/30 bg-danger/10 text-danger";
+      return "border-danger/30 bg-danger/10 text-[var(--severity-blocked-fg)]";
     default:
       return "border-border/70 bg-background/60 text-foreground";
   }

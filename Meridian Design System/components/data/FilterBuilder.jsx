@@ -13,7 +13,7 @@ function inject() {
 .mds-fb__row{display:flex;align-items:center;gap:6px;}
 .mds-fb__and{flex:0 0 34px;text-align:right;font-family:var(--font-data);font-size:9.5px;font-weight:700;
   letter-spacing:.06em;color:var(--text-muted,#606870);}
-.mds-fb__ctl{height:26px;box-sizing:border-box;border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-input,2px);
+.mds-fb__ctl{height:26px;box-sizing:border-box;border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-button,4px);
   background:var(--bg-light,#F8F7F3);color:var(--text-primary,#20252B);font-family:var(--font-body);font-size:12px;
   padding:0 7px;min-width:0;}
 .mds-fb__ctl:hover{border-color:var(--border-hover,#BEB8AD);}

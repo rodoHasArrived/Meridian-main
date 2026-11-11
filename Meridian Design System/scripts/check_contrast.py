@@ -44,6 +44,9 @@ PAIRS = [
     ("muted text on hover row",    "--text-muted",     "--bg-hover",     4.5),
     ("signal ink on card",         "--brand-signal-ink", "--bg-light",    4.5),
     ("signal ink on canvas",       "--brand-signal-ink", "--bg",          4.5),
+    # The incoming integration also publishes this text role; measure both names.
+    ("signal text on card",        "--brand-signal-text", "--bg-light",   4.5),
+    ("signal text on header band", "--brand-signal-text", "--bg-medium",  4.5),
     # Graphic signal marks retain their 3:1 threshold; normal text uses the
     # dedicated ink role, including the retained table's sort/rank labels.
     ("accent on card (non-text)",  "--accent",         "--bg-light",     3.0),
@@ -89,6 +92,9 @@ WASH_PAIRS = [
     ("signal ink on signal wash",       "--brand-signal-ink", "--accent", 0.10, "--bg-light",  4.5),
     ("signal ink on wash, canvas",      "--brand-signal-ink", "--accent", 0.10, "--bg",        4.5),
     ("signal ink on wash, band",        "--brand-signal-ink", "--accent", 0.10, "--bg-medium", 4.5),
+    ("signal text on signal wash",      "--brand-signal-text", "--accent", 0.10, "--bg-light", 4.5),
+    ("signal text on wash, canvas",     "--brand-signal-text", "--accent", 0.10, "--bg",       4.5),
+    ("signal text on wash, band",       "--brand-signal-text", "--accent", 0.10, "--bg-medium", 4.5),
     ("red-dim on red-a20 wash",       "--red-dim",    "--red",    0.20, "--bg-light", 4.5),
     # The actual status chips, foreground token against its own wash, on each surface a chip
     # sits on. Checking only the -dim tokens in the abstract missed that the *-fg tokens were
@@ -100,6 +106,7 @@ WASH_PAIRS = [
     ("severity-action chip",   "--severity-action-fg",  "--orange", 0.11, "--bg-light",  4.5),
     ("state-healthy chip",     "--state-healthy-fg",    "--green",  0.10, "--bg-light",  4.5),
     ("state-danger chip",      "--state-danger-fg",     "--red",    0.10, "--bg-light",  4.5),
+    # Paper and pending retain their Field-slate and warm-taupe meanings.
     ("state-paper chip",       "--state-paper-fg",      "--brand-field", 0.10, "--bg-light",  4.5),
     ("state-strategy chip",    "--state-strategy-fg",   "--purple", 0.10, "--bg-light",  4.5),
     ("state-live chip",        "--state-live-fg",       "--red",    0.12, "--bg-light",  4.5),
@@ -315,18 +322,19 @@ def check_semantic_chips(mode: str, tokens: dict[str, str]) -> list[str]:
 
 
 def check_signal_ink(mode: str, tokens: dict[str, str]) -> list[str]:
-    """Measure the text role on material/selected surfaces and actual signal/blue washes."""
-    foreground = resolve("var(--brand-signal-ink)", tokens)
+    """Measure both published signal text roles on materials, selection and washes."""
     failures = []
-    for background_name in (*CHIP_SURFACES, "--bg-active", "--accent-ghost", "--blue-a10"):
-        backdrops = CHIP_SURFACES if background_name == "--blue-a10" else ("--bg-light",)
-        for backdrop_name in backdrops:
-            backdrop = resolve(f"var({backdrop_name})", tokens)
-            background = composite(f"var({background_name})", tokens, backdrop) if backdrop else None
-            if foreground is None or background is None:
-                failures.append(f"[{mode}] signal ink on {background_name}: cannot resolve actual roles")
-            elif ratio(foreground, background) < 4.5:
-                failures.append(f"[{mode}] signal ink on {background_name}: {ratio(foreground, background):.2f}:1 < 4.5:1")
+    for name, role in (("signal ink", "--brand-signal-ink"), ("signal text", "--brand-signal-text")):
+        foreground = resolve(f"var({role})", tokens)
+        for background_name in (*CHIP_SURFACES, "--bg-active", "--accent-ghost", "--blue-a10"):
+            backdrops = CHIP_SURFACES if background_name == "--blue-a10" else ("--bg-light",)
+            for backdrop_name in backdrops:
+                backdrop = resolve(f"var({backdrop_name})", tokens)
+                background = composite(f"var({background_name})", tokens, backdrop) if backdrop else None
+                if foreground is None or background is None:
+                    failures.append(f"[{mode}] {name} on {background_name}: cannot resolve actual roles")
+                elif ratio(foreground, background) < 4.5:
+                    failures.append(f"[{mode}] {name} on {background_name}: {ratio(foreground, background):.2f}:1 < 4.5:1")
     return failures
 
 
@@ -457,6 +465,21 @@ WS_INDEX = Path("src/Meridian.Ui/dashboard/src/styles/index.css")
 WS_BUTTON = Path("src/Meridian.Ui/dashboard/src/design-system/button.tsx")
 
 
+def button_colour_utility(classes: list[str], kind: str, state: str = "") -> str | None:
+    """Read one actual Tailwind colour expression; ambiguous/unknown utilities fail closed."""
+    prefix = f"{state}:" if state else ""
+    values = [value[len(prefix + kind + "-"):] for value in classes
+              if value.startswith(prefix + kind + "-")]
+    if len(values) != 1:
+        return None
+    value = values[0]
+    if value.startswith("[") and value.endswith("]"):
+        # Tailwind arbitrary values encode CSS whitespace with underscores.
+        return value[1:-1].replace("_", " ")
+    return {("bg", "primary"): "hsl(var(--primary))",
+            ("text", "primary-foreground"): "hsl(var(--primary-foreground))"}.get((kind, value))
+
+
 def check_workstation(root: Path) -> list[str]:
     """Check the native adapter's real primary label and state fills in each appearance."""
     index = root.parent / WS_INDEX
@@ -467,15 +490,19 @@ def check_workstation(root: Path) -> list[str]:
     if not button.exists():
         return ["[workstation] native primary-button source is missing"]
     declaration = re.search(r'default:\s*"([^"]+)"', button.read_text(encoding="utf-8"))
-    classes = declaration.group(1) if declaration else ""
-    if "bg-primary" not in classes.split() or "text-primary-foreground" not in classes.split():
+    classes = declaration.group(1).split() if declaration else []
+    label = button_colour_utility(classes, "text")
+    base = button_colour_utility(classes, "bg")
+    if label is None or base is None:
         return ["[workstation] cannot identify the native primary fill and label roles"]
-    states = {"base": "hsl(var(--primary))"}
+    states = {"base": (base, label)}
     for state, prefix in (("hover", "hover"), ("pressed", "active")):
-        match = re.search(rf'{prefix}:bg-\[var\((--[a-z0-9-]+)\)\]', classes)
-        if not match:
+        fill = button_colour_utility(classes, "bg", prefix)
+        state_label = (button_colour_utility(classes, "text", prefix)
+                       if any(value.startswith(f"{prefix}:text-") for value in classes) else label)
+        if fill is None or state_label is None:
             return [f"[workstation] cannot identify the native primary {state} role"]
-        states[state] = f"var({match.group(1)})"
+        states[state] = (fill, state_label)
 
     light = parse_tokens(text)
     blocks = {"light": light}
@@ -491,9 +518,9 @@ def check_workstation(root: Path) -> list[str]:
 
     failures: list[str] = []
     for mode, tokens in blocks.items():
-        label = resolve("hsl(var(--primary-foreground))", tokens)
-        for state, expression in states.items():
-            fill = resolve(expression, tokens)
+        for state, (fill_expression, label_expression) in states.items():
+            fill = resolve(fill_expression, tokens)
+            label = resolve(label_expression, tokens)
             if label is None or fill is None:
                 failures.append(f"[{mode} · workstation] {state} button: cannot resolve actual roles")
                 continue
@@ -1203,6 +1230,7 @@ BRAND_RETIRED = frozenset({
     "#07101C", "#0F1B28", "#111C28", "#152838", "#1B334B", "#21405D", "#29425C",
     "#1A6BB5", "#0EA5E9", "#16A34A", "#3B82F6", "#60A5FA", "#67E8F9", "#86EFAC", "#84F3B6",
 })
+# IBM Plex is loaded by tokens/fonts.css; metadata about outlined fonts does not render.
 BRAND_FONTS = ("Space Grotesk", "JetBrains Mono", "Inter")
 
 
