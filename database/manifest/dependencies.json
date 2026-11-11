@@ -9778,6 +9778,48 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Reconciliation.IReconciliationApiService"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Reconciliation.ReconciliationCaseSummaryDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Reconciliation.ReconciliationFundAccountAuthorization"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Reconciliation.ReconciliationQueueAccountStatusDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Reconciliation.StatementImportSummaryDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Reconciliation.StatementReconciliationRunAuthorization"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Reconciliation.StatementRunEvidenceLinkDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Reporting.GovernedReportingRunDto"
     },
     {
@@ -56999,7 +57041,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "2101cb27a1b9b5fe8eb38cf46bec21008f6d01e12f0f651d3bdc4e497532dd83",
+  "fingerprint": "e40c6d2d348e9841dbadaf0281630b73545ec6a9ffdbf26fe7f8dc004b4a60e6",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -66825,6 +66867,48 @@
       "id": "contract:Meridian.Contracts.Plaid.PlaidWebhookEventDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Plaid.PlaidWebhookEventDto"
+    },
+    {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.Reconciliation.IReconciliationApiService",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Reconciliation.IReconciliationApiService"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Reconciliation.ReconciliationCaseSummaryDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Reconciliation.ReconciliationCaseSummaryDto"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Reconciliation.ReconciliationFundAccountAuthorization",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Reconciliation.ReconciliationFundAccountAuthorization"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Reconciliation.ReconciliationQueueAccountStatusDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Reconciliation.ReconciliationQueueAccountStatusDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Reconciliation.StatementImportSummaryDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Reconciliation.StatementImportSummaryDto"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Reconciliation.StatementReconciliationRunAuthorization",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Reconciliation.StatementReconciliationRunAuthorization"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Reconciliation.StatementRunEvidenceLinkDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Reconciliation.StatementRunEvidenceLinkDto"
     },
     {
       "classification": "dto",
@@ -83475,10 +83559,10 @@
   ],
   "summary": {
     "contract_references": 3634,
-    "contract_set_memberships": 4546,
-    "edges": 9471,
+    "contract_set_memberships": 4553,
+    "edges": 9478,
     "foreign_keys": 156,
     "logical_references": 6,
-    "nodes": 4592
+    "nodes": 4599
   }
 }

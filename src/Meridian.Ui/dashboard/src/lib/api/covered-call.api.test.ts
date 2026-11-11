@@ -64,9 +64,11 @@ describe("covered-call API client", () => {
       })
     });
 
-    await expect(startCoveredCallBacktest(buildRequest())).rejects.toThrow(
-      "Request failed for /api/strategies/covered-call/runs (422) - One or more validation errors occurred. minStrike: Minimum strike must be positive."
-    );
+    await expect(startCoveredCallBacktest(buildRequest())).rejects.toMatchObject({
+      path: "/api/strategies/covered-call/runs",
+      status: 422,
+      message: "One or more validation errors occurred. minStrike: Minimum strike must be positive."
+    });
   });
 
   it("rejects blank covered-call run identifiers before issuing a malformed fetch", async () => {

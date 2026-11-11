@@ -8,7 +8,7 @@ using Meridian.PortfolioRecords.Accounts;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Services;
-using Meridian.Ui.Shared.Contracts.Reconciliation;
+using Meridian.Contracts.Reconciliation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

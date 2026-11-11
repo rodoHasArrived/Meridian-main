@@ -180,7 +180,7 @@ describe("OperatorReadinessConsole", () => {
 
     expect((await screen.findAllByText("paper-fetch-1")).length).toBeGreaterThan(0);
     expect(screen.getAllByText("Fetched paper strategy").length).toBeGreaterThan(0);
-    expect(screen.queryByText("Awaiting readiness payload")).not.toBeInTheDocument();
+    expect(screen.queryByText("Awaiting readiness data")).not.toBeInTheDocument();
     fireEvent.click(screen.getByText("Technical source health"));
     expect(screen.getByRole("listitem", {
       name: "Trading readiness: Review required. Endpoint /api/workstation/trading/readiness"
@@ -207,7 +207,7 @@ describe("OperatorReadinessConsole", () => {
 
     expect((await screen.findAllByText("Readiness unavailable")).length).toBeGreaterThan(0);
     expect(screen.queryByText("Loading readiness")).not.toBeInTheDocument();
-    expect(screen.queryByText("Awaiting readiness payload")).not.toBeInTheDocument();
+    expect(screen.queryByText("Awaiting readiness data")).not.toBeInTheDocument();
   });
 
   it("keeps legacy trust-gate payloads renderable when newer evidence fields are absent", async () => {

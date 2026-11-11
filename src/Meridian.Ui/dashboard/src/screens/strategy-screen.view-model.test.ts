@@ -710,7 +710,7 @@ describe("strategy-screen view model", () => {
     expect(plotTool.workspace.notebookToolbarItems).toEqual([
       { id: "count", label: "Notebook set", value: "3 retained" },
       { id: "selected", label: "Selected", value: "Mean Reversion FX", active: true },
-      { id: "lane", label: "Lane", value: "Strategy" }
+      { id: "lane", label: "Workspace", value: "Strategy" }
     ]);
     expect(plotTool.studies[0]).toMatchObject({
       id: "run-1",
@@ -848,7 +848,7 @@ describe("strategy-screen view model", () => {
     expect(buildPlotNotebookToolbarItems(rows, "run-2")).toEqual([
       { id: "count", label: "Notebook set", value: "3 retained" },
       { id: "selected", label: "Selected", value: "Index Momentum", active: true },
-      { id: "lane", label: "Lane", value: "Strategy" }
+      { id: "lane", label: "Workspace", value: "Strategy" }
     ]);
 
     const state = buildStrategyRunLibraryState({

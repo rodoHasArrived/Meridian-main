@@ -244,7 +244,7 @@ function SelectedReleaseStepInspector({
   const Icon = iconForReleaseStep(step.id);
   const blockerText = step.tone === "blocked" || step.tone === "review"
     ? step.detail
-    : "No blockers in the loaded payload for this release step.";
+    : "No blockers in the loaded data for this release step.";
 
   return (
     <WorkspaceInspectorHost

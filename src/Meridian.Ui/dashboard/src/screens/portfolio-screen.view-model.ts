@@ -312,6 +312,8 @@ export interface PortfolioPositionDetail {
   title: string;
   subtitle: string;
   ariaLabel: string;
+  /** The one status shown beside the holding's name; null when there is nothing to flag. */
+  statusLabel: string | null;
   statusTitle: string;
   statusDetail: string;
   statusTone: "default" | "success" | "warning" | "danger";
@@ -2314,6 +2316,7 @@ function buildSelectedPositionDetail(
     title: position.symbol,
     subtitle: `${position.side} · ${position.quantity} shares`,
     ariaLabel: `${position.symbol} holding detail`,
+    statusLabel: position.markFreshness.reviewRequired ? "Review required" : risk?.state ?? null,
     statusTitle: position.markFreshness.reviewRequired ? `${position.symbol} · Review required` : `${position.symbol} selected`,
     statusDetail: `${position.markFreshness.reason} Recorded: ${position.exposure} exposure with ${position.unrealizedPnl} unrealized P&L. ${risk?.summary ?? "Risk context unavailable."}`,
     statusTone,

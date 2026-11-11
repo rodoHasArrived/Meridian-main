@@ -11,6 +11,8 @@ last_reviewed: 2026-11-10
 
 # src/Meridian.Storage
 
+`JsonlBackfillBarWriter` gives every granularity its own file prefix (`bar_4hour`, `bar_weekly`, `bar_monthly` alongside the existing ones) and throws for an unknown granularity instead of writing it as `bar_daily`.
+
 `SharedStorageCoordinationStore` accepts an optional `TimeProvider` for lease expiry and takeover decisions (system clock by default).
 
 Maintenance schedule and history stores bound their cross-process lock acquisition (default 30 seconds) and throw a `TimeoutException` naming the lock, instead of retrying forever during construction.

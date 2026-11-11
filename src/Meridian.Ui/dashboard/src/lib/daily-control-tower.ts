@@ -8,6 +8,7 @@ import type {
   AppShellWorkflowContinuityStatusTone,
   AppShellWorkflowContinuityViewModel
 } from "@/app-shell.view-model";
+import { summarizeStatusSignals } from "@/lib/status-signals";
 import { normalizeWorkspacePath, WORKSPACES } from "@/lib/workspace";
 import type { WorkspaceKey } from "@/types";
 
@@ -51,6 +52,8 @@ export interface DailyControlTowerModel {
   evidenceLabel: string;
   driverItems: DailyControlTowerDriverItem[];
   queueRows: DailyControlTowerFocusRow[];
+  /** The row for the decision the headline names; its evidence is shown until a row is chosen. */
+  leadingRow: DailyControlTowerFocusRow | null;
   trustItems: AppShellTrustStripItem[];
   linkedContextItems: AppShellLinkedContextItem[];
   evidenceTimelineItems: AppShellEvidenceTimelineItem[];
@@ -77,6 +80,21 @@ export function selectDailyControlTowerQueueItems(viewModel: AppShellWorkflowCon
   return viewModel.operatorFocusCommandItems.length > 0
     ? viewModel.operatorFocusCommandItems
     : viewModel.operatorFocusItems;
+}
+
+/**
+ * The queued item every status surface leads with: the one the view model ranked worst, or the
+ * first of the worst tone when the view model names none. The masthead attention pill and the
+ * Control Tower's headline both read this, so they name the same decision on every route.
+ */
+export function selectLeadingDecisionItem(viewModel: AppShellWorkflowContinuityViewModel): AppShellOperatorFocusItem | null {
+  const queue = selectDailyControlTowerQueueItems(viewModel);
+  const worst = summarizeStatusSignals(queue).worst ?? queue[0] ?? null;
+  if (!worst) {
+    return null;
+  }
+  const named = queue.find((item) => item.id === viewModel.leadingOperatorFocusItemId);
+  return named && named.tone === worst.tone ? named : worst;
 }
 
 export interface WorkspaceAttentionCounts {
@@ -118,7 +136,8 @@ export function buildDailyControlTowerModel(
 ): DailyControlTowerModel {
   const focusItems = selectDailyControlTowerQueueItems(viewModel);
   const queueRows = focusItems.map((item) => buildFocusRow(item, viewModel));
-  const leadingRow = queueRows[0] ?? null;
+  const leadingItemId = selectLeadingDecisionItem(viewModel)?.id ?? null;
+  const leadingRow = queueRows.find((row) => row.item.id === leadingItemId) ?? queueRows[0] ?? null;
   const decision = viewModel.decisionBrief;
 
   return {
@@ -140,6 +159,7 @@ export function buildDailyControlTowerModel(
       evidenceTimelineItems: viewModel.evidenceTimelineItems
     }),
     queueRows,
+    leadingRow,
     trustItems: trustStrip.items,
     linkedContextItems: viewModel.linkedContextItems,
     evidenceTimelineItems: viewModel.evidenceTimelineItems,
