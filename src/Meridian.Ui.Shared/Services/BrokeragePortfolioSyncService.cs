@@ -313,6 +313,10 @@ public sealed class BrokeragePortfolioSyncService
             activityMissing: activity is null);
 
         await PersistProjectionAsync(projection, ct).ConfigureAwait(false);
+        if (activity is not null)
+        {
+            await AppendActivityHistoryAsync(projection, ct).ConfigureAwait(false);
+        }
 
         if (portfolio is not null &&
             _services.GetService<IAccountingPositionSnapshotCaptureService>() is { } accountingSnapshotCapture)
@@ -373,6 +377,23 @@ public sealed class BrokeragePortfolioSyncService
 
     public async Task<FundAccountBrokerageSyncActivityDto?> GetActivityAsync(Guid fundAccountId, CancellationToken ct = default)
         => await LoadProjectionAsync(fundAccountId, ct).ConfigureAwait(false);
+
+    /// <summary>
+    /// Every cash transaction a sync has observed for the account, deduplicated by provider
+    /// transaction id and ordered by posting time. Unlike the current projection, which holds only
+    /// the latest activity snapshot, this history keeps rows that later syncs no longer return.
+    /// Empty when no activity has been retained or the history file cannot be read.
+    /// </summary>
+    public async Task<IReadOnlyList<FundAccountBrokerageCashTransactionDto>> GetCashTransactionHistoryAsync(
+        Guid fundAccountId,
+        CancellationToken ct = default)
+        => (await TryLoadActivityHistoryAsync(fundAccountId, ct).ConfigureAwait(false)).History?.CashTransactions ?? [];
+
+    /// <summary>Every fill a sync has observed for the account, deduplicated by provider fill id.</summary>
+    public async Task<IReadOnlyList<FundAccountBrokerageFillDto>> GetFillHistoryAsync(
+        Guid fundAccountId,
+        CancellationToken ct = default)
+        => (await TryLoadActivityHistoryAsync(fundAccountId, ct).ConfigureAwait(false)).History?.Fills ?? [];
 
     public async Task<FundAccountBrokerageSyncActivityDto?> GetViewAsync(Guid fundAccountId, CancellationToken ct = default)
         => await LoadProjectionAsync(fundAccountId, ct).ConfigureAwait(false);
@@ -1009,6 +1030,85 @@ public sealed class BrokeragePortfolioSyncService
         }
 
         return result with { Status = status with { Warnings = warnings } };
+    }
+
+    /// <summary>
+    /// Merges the activity this sync observed into the account's retained history. Rows are keyed
+    /// by provider id, so a repeated or overlapping sync adds nothing twice and a row the provider
+    /// re-reports replaces its earlier copy. The history is supplementary evidence: a failure to
+    /// read or write it is logged and never fails the sync or alters the projection.
+    /// </summary>
+    private async Task AppendActivityHistoryAsync(FundAccountBrokerageSyncActivityDto projection, CancellationToken ct)
+    {
+        try
+        {
+            var (existing, readable) = await TryLoadActivityHistoryAsync(projection.FundAccountId, ct).ConfigureAwait(false);
+            if (!readable)
+            {
+                // Never overwrite a history that could not be read: it may still be recoverable.
+                return;
+            }
+
+            // A relinked fund account starts a new history; rows from the previous external
+            // account are not this account's activity.
+            var sameAccount = existing is not null
+                && string.Equals(existing.ProviderId, projection.Link.ProviderId, StringComparison.OrdinalIgnoreCase)
+                && string.Equals(existing.ExternalAccountId, projection.Link.ExternalAccountId, StringComparison.Ordinal);
+            var fills = (sameAccount ? existing!.Fills : [])
+                .Concat(projection.Fills)
+                .GroupBy(static fill => fill.FillId, StringComparer.Ordinal)
+                .Select(static group => group.Last())
+                .OrderBy(static fill => fill.FilledAt)
+                .ThenBy(static fill => fill.FillId, StringComparer.Ordinal)
+                .ToArray();
+            var cashTransactions = (sameAccount ? existing!.CashTransactions : [])
+                .Concat(projection.CashTransactions)
+                .GroupBy(static cash => cash.TransactionId, StringComparer.Ordinal)
+                .Select(static group => group.Last())
+                .OrderBy(static cash => cash.PostedAt)
+                .ThenBy(static cash => cash.TransactionId, StringComparer.Ordinal)
+                .ToArray();
+
+            await WriteJsonAsync(
+                BuildActivityHistoryPath(projection.FundAccountId),
+                new BrokerageActivityHistory(
+                    projection.FundAccountId,
+                    projection.Link.ProviderId,
+                    projection.Link.ExternalAccountId,
+                    projection.SyncedAt,
+                    fills,
+                    cashTransactions),
+                ct).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            _logger.LogWarning(ex, "Brokerage activity history could not be updated; the sync projection is unaffected.");
+        }
+    }
+
+    private async Task<(BrokerageActivityHistory? History, bool Readable)> TryLoadActivityHistoryAsync(
+        Guid fundAccountId,
+        CancellationToken ct)
+    {
+        var path = BuildActivityHistoryPath(fundAccountId);
+        if (!File.Exists(path))
+        {
+            return (null, true);
+        }
+
+        try
+        {
+            await using var stream = File.OpenRead(path);
+            var history = await JsonSerializer
+                .DeserializeAsync<BrokerageActivityHistory>(stream, JsonOptions, ct)
+                .ConfigureAwait(false);
+            return (history, history is not null);
+        }
+        catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException)
+        {
+            _logger.LogWarning(ex, "Brokerage activity history could not be read.");
+            return (null, false);
+        }
     }
 
     private async Task PersistProjectionAsync(FundAccountBrokerageSyncActivityDto projection, CancellationToken ct)
@@ -1712,6 +1812,9 @@ public sealed class BrokeragePortfolioSyncService
     private string BuildLinkPath(Guid fundAccountId)
         => Path.Combine(_options.RootDirectory, "links", $"{fundAccountId:N}.json");
 
+    private string BuildActivityHistoryPath(Guid fundAccountId)
+        => Path.Combine(_options.RootDirectory, "activity-history", $"{fundAccountId:N}.json");
+
     private string BuildCursorPath(Guid fundAccountId)
         => Path.Combine(_options.RootDirectory, "cursors", $"{fundAccountId:N}.json");
 
@@ -1786,6 +1889,14 @@ public sealed class BrokeragePortfolioSyncService
         BrokeragePortfolioSnapshotDto? Portfolio,
         BrokerageActivitySnapshotDto? Activity,
         IReadOnlyList<string> Warnings);
+
+    private sealed record BrokerageActivityHistory(
+        Guid FundAccountId,
+        string ProviderId,
+        string ExternalAccountId,
+        DateTimeOffset UpdatedAt,
+        IReadOnlyList<FundAccountBrokerageFillDto> Fills,
+        IReadOnlyList<FundAccountBrokerageCashTransactionDto> CashTransactions);
 
     private sealed record BrokerageSyncCursor(
         Guid FundAccountId,

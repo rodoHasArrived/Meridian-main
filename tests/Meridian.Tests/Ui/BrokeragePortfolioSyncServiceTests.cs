@@ -390,6 +390,52 @@ public sealed class BrokeragePortfolioSyncServiceTests
     }
 
     [Fact]
+    public async Task RunSyncAsync_RetainsDeduplicatedActivityHistoryAcrossSyncs()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            var activity = new SequencedCashActivityAdapter("alpaca");
+            var (service, serviceProvider) = CreateService(
+                root,
+                new FixedPortfolioAdapter("alpaca"),
+                activity,
+                includeSecurityLookup: true);
+            var fundAccountId = Guid.NewGuid();
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            await serviceProvider.GetRequiredService<IFundAccountService>().CreateAccountAsync(
+                new CreateAccountRequest(
+                    fundAccountId,
+                    AccountTypeDto.Brokerage,
+                    "BRK-001",
+                    "Primary Brokerage",
+                    "USD",
+                    DateTimeOffset.UtcNow.AddDays(-10),
+                    "tests"),
+                cts.Token);
+            var request = new WorkstationBrokerageSyncRunRequestDto("alpaca", "PA-123", "ops-review");
+
+            // The provider's window moves on: the second sync repeats "cash-2" and no longer
+            // returns "cash-1".
+            activity.CashTransactionIds = ["cash-1", "cash-2"];
+            await service.RunSyncAsync(fundAccountId, request, cts.Token);
+            activity.CashTransactionIds = ["cash-2", "cash-3"];
+            await service.RunSyncAsync(fundAccountId, request, cts.Token);
+
+            var history = await service.GetCashTransactionHistoryAsync(fundAccountId, cts.Token);
+            history.Select(static cash => cash.TransactionId).Should().BeEquivalentTo(["cash-1", "cash-2", "cash-3"]);
+            (await service.GetActivityAsync(fundAccountId, cts.Token))!.CashTransactions
+                .Select(static cash => cash.TransactionId)
+                .Should().BeEquivalentTo(["cash-2", "cash-3"], "the projection stays the latest provider snapshot");
+            (await service.GetCashTransactionHistoryAsync(Guid.NewGuid(), cts.Token)).Should().BeEmpty();
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
     public async Task Scenario_BrokerageSyncSuccess_RecordsSharedAccountSyncHistoryWithEvidence()
     {
         var root = CreateTempRoot();
@@ -1635,6 +1681,36 @@ public sealed class BrokeragePortfolioSyncServiceTests
                         Currency: mismatch == "position-currency" ? "EUR" : "USD")
                 ],
                 DateTimeOffset.UtcNow));
+        }
+    }
+
+    private sealed class SequencedCashActivityAdapter(string providerId) : IBrokerageActivitySync
+    {
+        public string ProviderId { get; } = providerId;
+
+        public IReadOnlyList<string> CashTransactionIds { get; set; } = [];
+
+        public Task<BrokerageActivitySnapshotDto> GetActivitySnapshotAsync(
+            string externalAccountId,
+            DateTimeOffset? since = null,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(new BrokerageActivitySnapshotDto(
+                ProviderId,
+                externalAccountId,
+                DateTimeOffset.UtcNow,
+                [],
+                [],
+                CashTransactionIds
+                    .Select(static id => new BrokerageCashTransactionDto(
+                        id,
+                        "DIV",
+                        12m,
+                        "USD",
+                        DateTimeOffset.UtcNow.AddHours(-1),
+                        "AAPL"))
+                    .ToArray()));
         }
     }
 

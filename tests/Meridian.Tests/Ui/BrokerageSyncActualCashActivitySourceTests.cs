@@ -48,6 +48,22 @@ public sealed class BrokerageSyncActualCashActivitySourceTests
     }
 
     [Fact]
+    public async Task GetActualActivityAsync_PrefersRetainedHistory_EvenWhenProjectionIsStale()
+    {
+        // The latest projection no longer carries the coupon paid earlier in the period; the
+        // retained history does.
+        var projection = Projection(isStale: true);
+        var source = new BrokerageSyncActualCashActivitySource(
+            (_, _) => Task.FromResult<FundAccountBrokerageSyncActivityDto?>(projection),
+            (_, _) => Task.FromResult<IReadOnlyList<FundAccountBrokerageCashTransactionDto>>(
+                [Cash("coupon-1", "Bond Interest Received", 125.50m, "2026-06-15", "UST10")]));
+
+        var rows = await source.GetActualActivityAsync([Position()], PeriodStart, PeriodEnd);
+
+        rows.Should().ContainSingle(row => row.ExternalTransactionId == "coupon-1" && row.IncomeAmount == 125.50m);
+    }
+
+    [Fact]
     public async Task GetActualActivityAsync_SkipsAccountsThatAreNotLinkedFundAccounts()
     {
         var loads = 0;

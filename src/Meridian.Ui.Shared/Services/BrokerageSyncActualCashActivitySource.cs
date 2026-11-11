@@ -10,7 +10,7 @@ namespace Meridian.Ui.Shared.Services;
 /// <remarks>
 /// Deliberately narrow, because every row returned is compared and an unmatched row is itself a
 /// break: only rows that name a held symbol in an account whose id is a linked fund account are
-/// returned; a stale projection contributes nothing (its cash is not current evidence); and only
+/// returned; a stale projection with no retained history contributes nothing; and only
 /// interest/coupon and principal/paydown types are classified. Dividends are not returned until
 /// expected dividend events exist, since each would otherwise report as unexpected.
 /// </remarks>
@@ -19,12 +19,22 @@ public sealed class BrokerageSyncActualCashActivitySource : ISecurityActualCashA
     public const string SourceName = "brokerage-sync";
 
     private readonly Func<Guid, CancellationToken, Task<FundAccountBrokerageSyncActivityDto?>> _loadActivity;
+    private readonly Func<Guid, CancellationToken, Task<IReadOnlyList<FundAccountBrokerageCashTransactionDto>>>? _loadCashHistory;
 
+    /// <param name="loadActivity">Loads the account's current sync projection.</param>
+    /// <param name="loadCashHistory">
+    /// Optional: loads every cash transaction retained for the account. When supplied it is
+    /// preferred over the projection, whose single activity snapshot can miss cash paid earlier
+    /// in the period, and it is used even when the projection is stale because each retained row
+    /// was a real provider observation.
+    /// </param>
     public BrokerageSyncActualCashActivitySource(
-        Func<Guid, CancellationToken, Task<FundAccountBrokerageSyncActivityDto?>> loadActivity)
+        Func<Guid, CancellationToken, Task<FundAccountBrokerageSyncActivityDto?>> loadActivity,
+        Func<Guid, CancellationToken, Task<IReadOnlyList<FundAccountBrokerageCashTransactionDto>>>? loadCashHistory = null)
     {
         ArgumentNullException.ThrowIfNull(loadActivity);
         _loadActivity = loadActivity;
+        _loadCashHistory = loadCashHistory;
     }
 
     public async Task<IReadOnlyList<SecurityActualCashActivity>> GetActualActivityAsync(
@@ -47,10 +57,20 @@ public sealed class BrokerageSyncActualCashActivitySource : ISecurityActualCashA
             }
 
             var projection = await _loadActivity(fundAccountId, ct).ConfigureAwait(false);
-            if (projection is null || projection.Status.IsStale)
+            if (projection is null)
             {
                 continue;
             }
+
+            var history = _loadCashHistory is null
+                ? []
+                : await _loadCashHistory(fundAccountId, ct).ConfigureAwait(false);
+            if (history.Count == 0 && projection.Status.IsStale)
+            {
+                continue;
+            }
+
+            var cashTransactions = history.Count > 0 ? history : projection.CashTransactions;
 
             var securityBySymbol = accountPositions
                 .GroupBy(static position => position.Symbol, StringComparer.OrdinalIgnoreCase)
@@ -59,7 +79,7 @@ public sealed class BrokerageSyncActualCashActivitySource : ISecurityActualCashA
                     static group => group.First().SecurityId,
                     StringComparer.OrdinalIgnoreCase);
 
-            foreach (var cash in projection.CashTransactions)
+            foreach (var cash in cashTransactions)
             {
                 var payDate = DateOnly.FromDateTime(cash.PostedAt.UtcDateTime);
                 if (string.IsNullOrWhiteSpace(cash.Symbol)

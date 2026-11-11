@@ -954,7 +954,7 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<IAssetOperationsQueryService>(),
                 sp.GetService<ISecurityActualCashActivitySource>()
                     ?? (sp.GetService<BrokeragePortfolioSyncService>() is { } brokerageSync
-                        ? new BrokerageSyncActualCashActivitySource(brokerageSync.GetActivityAsync)
+                        ? new BrokerageSyncActualCashActivitySource(brokerageSync.GetActivityAsync, brokerageSync.GetCashTransactionHistoryAsync)
                         : null)));
         services.TryAddSingleton<FileAccountingConfigurationStore>(sp =>
             new FileAccountingConfigurationStore(
