@@ -302,13 +302,19 @@ public sealed class SecurityKindPersistenceTests
 
     private static object? Build(Type type, int variant, bool member = false)
     {
-        if (type == typeof(string)) return variant == 0 ? "ZZSAMPLE" : "YYSAMPLE";
+        if (type == typeof(string))
+            return variant == 0 ? "ZZSAMPLE" : "YYSAMPLE";
         // Fractions, so a sampled factor or rate stays inside any range the decode enforces.
-        if (type == typeof(decimal)) return variant == 0 ? 0.25m : 0.5m;
-        if (type == typeof(int)) return variant == 0 ? 7 : 8;
-        if (type == typeof(bool)) return variant == 0;
-        if (type == typeof(DateOnly)) return variant == 0 ? new DateOnly(2031, 3, 4) : new DateOnly(2032, 5, 6);
-        if (type == typeof(Guid)) return Guid.Parse(variant == 0 ? "11111111-2222-3333-4444-555555555555" : "21111111-2222-3333-4444-555555555555");
+        if (type == typeof(decimal))
+            return variant == 0 ? 0.25m : 0.5m;
+        if (type == typeof(int))
+            return variant == 0 ? 7 : 8;
+        if (type == typeof(bool))
+            return variant == 0;
+        if (type == typeof(DateOnly))
+            return variant == 0 ? new DateOnly(2031, 3, 4) : new DateOnly(2032, 5, 6);
+        if (type == typeof(Guid))
+            return Guid.Parse(variant == 0 ? "11111111-2222-3333-4444-555555555555" : "21111111-2222-3333-4444-555555555555");
         if (type.IsEnum)
         {
             var values = Enum.GetValues(type).Cast<object>().ToArray();
@@ -318,7 +324,8 @@ public sealed class SecurityKindPersistenceTests
         if (IsOption(type))
         {
             // Only the member itself is given a value; options nested in a sampled entry stay None.
-            if (!member) return null;
+            if (!member)
+                return null;
             var inner = Build(type.GetGenericArguments()[0], variant);
             return inner is null ? null : type.GetMethod("Some")!.Invoke(null, [inner]);
         }
@@ -326,7 +333,8 @@ public sealed class SecurityKindPersistenceTests
         if (IsList(type))
         {
             var empty = type.GetProperty("Empty")!.GetValue(null)!;
-            if (!member) return empty;
+            if (!member)
+                return empty;
             var element = Build(type.GetGenericArguments()[0], variant);
             return element is null ? null : type.GetMethod("Cons")!.Invoke(null, [element, empty]);
         }
@@ -338,7 +346,8 @@ public sealed class SecurityKindPersistenceTests
             for (var i = 0; i < fields.Length; i++)
             {
                 values[i] = IsOption(fields[i].PropertyType) ? null : Build(fields[i].PropertyType, variant);
-                if (values[i] is null && !IsOption(fields[i].PropertyType)) return null;
+                if (values[i] is null && !IsOption(fields[i].PropertyType))
+                    return null;
             }
 
             return FSharpValue.MakeRecord(type, values!, null);
@@ -348,7 +357,8 @@ public sealed class SecurityKindPersistenceTests
         {
             var cases = FSharpType.GetUnionCases(type, null);
             var nullary = cases.Where(static c => c.GetFields().Length == 0).ToArray();
-            if (nullary.Length > 0) return FSharpValue.MakeUnion(nullary[variant % nullary.Length], [], null);
+            if (nullary.Length > 0)
+                return FSharpValue.MakeUnion(nullary[variant % nullary.Length], [], null);
             var arguments = cases[0].GetFields()
                 .Select(field => IsOption(field.PropertyType) ? null : Build(field.PropertyType, variant))
                 .ToArray();
@@ -361,10 +371,13 @@ public sealed class SecurityKindPersistenceTests
     /// <summary>The label a union value serializes as: the case name, or the text an open case carries.</summary>
     private static string Label(object? value)
     {
-        if (value is null) return "<none>";
+        if (value is null)
+            return "<none>";
         var type = value.GetType();
-        if (IsOption(type)) return Label(type.GetProperty("Value")!.GetValue(value));
-        if (!FSharpType.IsUnion(type, null)) return value.ToString()!;
+        if (IsOption(type))
+            return Label(type.GetProperty("Value")!.GetValue(value));
+        if (!FSharpType.IsUnion(type, null))
+            return value.ToString()!;
         var fields = FSharpValue.GetUnionFields(value, type, null);
         return fields.Item2.Length == 1 && fields.Item2[0] is string text ? text : fields.Item1.Name;
     }
