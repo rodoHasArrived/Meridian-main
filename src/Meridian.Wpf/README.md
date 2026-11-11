@@ -6,7 +6,7 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-10-15
+last_reviewed: 2026-11-11
 ---
 
 # src/Meridian.Wpf
@@ -19,6 +19,8 @@ governance evidence is shown as unavailable. `SecurityMasterViewModelTests` cove
 Windows execution is required to verify the native view.
 An independent typed cash-flow calculation blocker appears alongside schedule-date evidence, so a
 resolved call/put schedule cannot hide unsupported signed interest.
+
+Direct Lending refresh resumes on the caller's context after its two reads, so the loan collection and status notifications are updated on the UI thread. Fund Operations awaits the whole dispatcher-run load (`InvokeAsync(...).Task.Unwrap()`), so the method no longer returns, or loses an exception, while that load is still running.
 
 Data Quality "Acknowledge All" removes only alerts the server acknowledged and reports partial failures; its action continuations stay on the UI thread. Data Browser CSV export writes the whole filtered result with RFC 4180 quoting and invariant-culture numbers.
 

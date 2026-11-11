@@ -6,7 +6,7 @@ module_id: SRC-BACKTESTING
 path: src/Meridian.Backtesting
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-11-10
+last_reviewed: 2026-11-11
 ---
 
 # src/Meridian.Backtesting
@@ -22,6 +22,10 @@ XIRR is computed from investor-boundary flows only (initial capital out, termina
 `MarketImpactFillModel` leaves an order working on a zero-volume bar (no traded liquidity) and caps
 square-root impact at `MaxImpactFraction` (50%), so a thin bar can no longer drive a sell fill price
 to zero or below.
+
+Reducing an OCO sibling after the other leg fills keeps the sibling's own filled shares in its
+total `Quantity`, so a partly filled bracket exit keeps working the full remaining position instead
+of losing the already-filled amount a second time.
 
 ## Purpose
 
