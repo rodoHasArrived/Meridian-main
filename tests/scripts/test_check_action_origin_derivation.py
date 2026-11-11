@@ -34,7 +34,7 @@ public sealed record UnrelatedRequest(string Actor);
 
 def scan(endpoint_files: dict[str, str], contracts: str = CONTRACT) -> dict:
     """Run the guard over a throwaway tree with these contracts and endpoint files."""
-    with tempfile.TemporaryDirectory() as temp_dir:
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
         root = Path(temp_dir)
         contracts_root = root / "src" / "Meridian.Contracts"
         endpoints_root = root / "src" / "Meridian.Ui.Shared" / "Endpoints"
@@ -50,7 +50,7 @@ def scan(endpoint_files: dict[str, str], contracts: str = CONTRACT) -> dict:
 
 class CheckActionOriginDerivationTests(unittest.TestCase):
     def test_discovers_dto_types_from_contracts(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             root.mkdir(exist_ok=True)
             (root / "Dtos.cs").write_text(CONTRACT, encoding="utf-8")

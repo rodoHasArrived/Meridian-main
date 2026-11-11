@@ -306,6 +306,87 @@ not been recorded.
   `formatDateTime` covers any other date layout through a pinned-locale `Intl.DateTimeFormat`.
   ESLint blocks `Intl.*` and `toLocale*String` in every non-test file under `src/screens/`, and
   the `directIntlFormatting` baseline is empty.
+- **Number style.** One style for a financial figure, wherever it appears:
+  - *Signed P&L*: `formatPnl` puts an explicit sign on every non-zero amount with thousands
+    separators and fixed decimals (`+$1,234.56`, `-$1,234.56`, `$0.00`); `pnlToneForValue`
+    gives the matching green/red tone, so sign and color never disagree.
+  - *Spelling*: profit and loss is "P&L" in every label. `normalizeFinancialLabel` rewrites
+    "PnL", "P/L" and "P & L"; the stat strip, metric card, record explorer and proof drawer
+    apply it to labels that arrive from a read model.
+  - *Currency*: pass the ISO code whenever more than one currency is in scope
+    (`formatMoney(value, { currency })`, or `formatAmountWithCode` for a code suffix).
+  - *Decimals*: currency minor units for money, instrument precision for prices and
+    quantities (`formatMoney`'s `decimals`, `formatQuantity`), whole units for a headline
+    figure. Figures render in tabular numerals.
+  - *Enforcement*: two ratchets hold what is left to migrate. `handRolledNumberFormatting`
+    counts `.toFixed(` in screens, which skips separators and the sign convention;
+    `localMoneyFormatters` counts money and P&L formatters defined in a screen instead of
+    imported from `@/lib/format`.
+- **Headline figures.** `StatStrip` and `MetricCard` apply the rules in `@/lib/metric-trust`
+  to every `MetricSnapshot`, so a screen cannot opt out by accident:
+  - *Source*: a figure states where it comes from. `provenance` carries source, as-of time
+    and scope; the strip prints what its figures share once under the row. When figures in one
+    strip come from different sources it names each source with the figures it supplies
+    ("Active runs, Open positions from System overview; Providers healthy from Cross-screen
+    counts · As of …"). A strip fed by the workstation load passes `source="…"` and
+    `figureSource="…"` (the payload that supplies its figures) and takes that payload's evidence
+    from the shell (`WorkspaceFigureContextProvider`). Evidence is kept per payload
+    (`figureSourceLoadedAt` and `figureSourcesStale` in `useWorkstationData`), never per refresh:
+    the as-of time is when that payload last loaded, not the time of the latest refresh, which
+    may have reloaded another workspace or nothing. A figure another payload supplies carries
+    its own `provenance` and `freshness` (Settings' provider health comes from the cross-screen
+    counts, not the overview), and a strip that names no payload states no as-of time. A screen
+    with its own freshness evidence stamps its metrics with `withMetricContext`, still dated
+    from the payload that supplies the values (`resolveFigureEvidence`): Trading's totals follow
+    the Trading payload, not a newer brokerage observation. Their scope is the fund account that
+    payload was loaded for (`figureSourceScope`, `resolveFigureScope`), not the selected one:
+    after an account switch the previous account's figures stay labelled as that account's, and
+    stale, until the new payload loads.
+  - *Change*: a bare change (`+8%`, `0%`, `+2`) is shown only with the `baseline` it is
+    measured against (`+8% vs prior session`) and is dropped otherwise. A change that names
+    its comparison (`3 new since your last visit`) and descriptive captions pass through.
+  - *Freshness*: `freshness: "stale" | "unverified"` mutes the figure, adds a clock, marks
+    the strip "Stale figures"/"Unverified figures" and explains the age on hover and to
+    assistive technology. Staleness is decided per payload: a payload whose own reload failed
+    marks just the figures it supplies, while the ones that did reload stay fresh, whatever the
+    refresh as a whole reported. It stays stale until that payload reloads; refreshing another
+    workspace clears the shell's error map but not this. An unconfirmed session keeps every
+    figure unverified, and a screen's own evidence (Trading's broker observation) can lower a
+    figure's verdict but never raise it (`combineMetricFreshness`). Portfolio's exposure and
+    unrealized P&L are sums over positions, so they are unverified, with a caption such as
+    "2 of 5 marks need review", while any position's mark is not accepted as current
+    (`withPortfolioMarkEvidence`): a recent load does not make a total better evidenced than
+    its inputs. Portfolio's totals go stale when the payload that
+    supplies them is listed or its load is past the freshness budget. Outside the shell, where no
+    per-payload record exists, the Portfolio poll settling as `partial` is the evidence (its
+    Portfolio request was rejected; a failing side feed such as an unconnected brokerage does
+    not count).
+  - *Disagreement*: when two panels on one page report different values for the same
+    quantity, `buildFigureDifferenceNote` and `FigureDifferenceNote` show "Why these differ"
+    with both values and each panel's source. Portfolio uses it for the header strip and the
+    Portfolio Explorer. Give a figure a `basis` when panels can measure it differently (the
+    header's exposure is gross, the explorer's is net): a gross-against-net gap is not reported
+    by itself, and is labelled with both bases when listed beside a like-for-like difference.
+- **Detail panes.** `DetailPane` (`components/meridian/detail-pane.tsx`) is the pane for a
+  selected table row:
+  - *One heading line*: object type, name and one status badge. There is no separate
+    "Selected from …" pill, "Detail" chip or status eyebrow; the shared stylesheet no longer
+    draws the pill for any panel.
+  - *Field rows*: `DetailFieldItem` puts a label beside a left-aligned value and lets the value
+    wrap under its label once the row is narrower than about 290px, so a value is never squeezed
+    into a column too narrow for a word. `DetailFields` renders a list of them from raw
+    `{ label, value, tone }` rows; `columns="auto"` flows a wide list into columns.
+  - *Typesetting* (`detail-pane.view-model.ts`): figures and identifiers use the data face,
+    phrases and written-out dates the body face; figures and dates stay on one line; prose wraps
+    at word boundaries only.
+  - *Identifiers*: GUID- and digest-shaped values, and rows marked `technical`, move to a
+    "Technical details" disclosure with a copy button.
+  - *No repetition*: pass `shownInRow` with the column labels the selected row always shows;
+    the pane lists what the row does not, plus the next action in `actions`.
+  - *Shared panes*: two tables may control one pane (Trading orders and fills do); the pane
+    shows the table selected last, and Escape returns focus to that table's selected row.
+  `EntitySummary` applies the same heading line and rows, so panels built on it follow the rules
+  without changes at the call site.
 - **Tables.** `DenseDataTable` (`components/meridian/ui-kit-primitives.tsx`) provides:
   - a sticky header inside a bounded scroll area;
   - `aria-sort` sorting, either built in from a column's `sortValue` (numbers start
@@ -345,11 +426,44 @@ not been recorded.
   lists the rule with a reason under `allowedContentIssues` in
   `scripts/dev/web-screenshot-routes.json`. Operations Continuity is the one exception today: its
   shared summary identifies a close workflow by fund-account identifier only.
-- **Status agreement.** The status bar's Sync item reports the workstation's own read of the API.
-  When the trust strip's provider posture needs review or is blocked, the bar repeats it as a
-  Providers item, so a green Sync is never its whole answer under a masthead warning. The Daily
-  Control Tower's Evidence line names only the event correlated with the leading queue row; with
-  none it says so and cites the latest event as workstation context, matching the Freshness card.
+- **Operator language.** The same harness check fails a route whose main content shows a request
+  path (`/api/...`), the words "lane", "payload", "mutation" or "caller-visible", or a slug-shaped
+  record identifier (`run-dev-1`, `default-fund`, `entity-fund-alpha`; `isSlugIdentifier` keeps
+  ordinary compounds such as "as-of" out). Twelve routes whose read models name records only by
+  key, the three Settings diagnostics pages that list backend routes, and Operations Continuity's
+  server-written "lane" copy are excused with reasons in the route catalog.
+- **Failed requests.** `ApiError.message` is operator copy: the reason the service gave, or a plain
+  sentence for the status. It never contains the request path or status code, so the many call
+  sites that render `error.message` cannot leak a route. `presentApiError` (`lib/api-errors.ts`)
+  returns the sentence, whether Retry can help (408, 429, 5xx and non-HTTP failures), and the
+  status, request path and correlation identifier as technical details; `ErrorNotice`
+  (`components/ui/error-notice.tsx`) renders them with the technical details collapsed. New error
+  states use `ErrorNotice`; the Recurring journals queue is the first.
+- **Disabled buttons.** Every `Button` variant shares one disabled look from `styles/index.css`:
+  neutral fill, dashed edge and muted label at full opacity (`--ws-disabled-*` tokens; label
+  4.8:1, edge at least 3:1 on every surface, asserted in `components/ui/button.test.tsx`). A busy
+  button keeps its own colours. Pass `disabledReason` whenever a button can be disabled; the
+  harness fails a route that renders a disabled primary button without one.
+- **Destructive bulk actions.** `OverflowMenu` (`components/ui/overflow-menu.tsx`) holds actions
+  that should not sit beside a primary action. Trading's "Cancel all open orders…" lives there,
+  shows why it is unavailable when there are no open orders, and still opens the confirmation step.
+- **Status agreement.** One rule (`src/lib/status-signals.ts`) classifies, ranks and summarizes
+  every status fact, and one shell attention state (`src/app-shell.attention.ts`) feeds the
+  masthead attention pill, every page status row, Today's status row and the status bar. The
+  same input therefore gives the same status on each surface; see "Status signals" below. The
+  status bar's Sync item reports the workstation's own read of the API, and when the attention
+  state needs review or is blocked the bar repeats the pill's worst issue as an Attention item, so
+  a green Sync is never its whole answer under a masthead warning. The Daily Control Tower's
+  Evidence line names only the event correlated with the leading decision's queue row; with none
+  it says so and cites the latest event as workstation context.
+- **Page freshness in the status bar.** The shell attention state covers shell-wide sources; the
+  freshness of the data on a page belongs to that page's status row. `OperationalTrustSummary`
+  reports the freshness fact it renders to the shell (`lib/page-trust-context.tsx`), and when
+  that fact needs review or is blocked the bar says "Sync connected" plus a Freshness item in the
+  row's own words instead of "up to date". Trading and Portfolio label a brokerage account
+  "Account", so the row does not state a second "scope" beside the header's fund picker. The
+  capture harness's `status-contradiction` rule checks every route, reading the `data-trust-fact`
+  and `data-trust-tone` attributes `StatusRow` puts on each named issue.
 - **Operating scope.** Copy link appends every scope dimension the current route did not write
   into its URL (`buildShareableLink`), so a link from any screen restores the sender's scope in a
   fresh browser. The scope picker offers the last five applied scopes (per browser) and the
@@ -506,11 +620,50 @@ cash forecast, statement import, historical prices, and running reports. Local d
 searchable when remote command or entity search is unavailable; unwired routes stay excluded.
 Accounting onboarding searches open the existing External GL surface, which hosts the bounded
 onboarding workspace and its retained comparison and readiness evidence.
-From 1200px the masthead is one 48px row: the session environment is the trust pill's leading,
-never-shrinking badge (`PAPER · SEEDED · 1 warning`; LIVE uses the alarm-red `--live-env` token and
-follows the resolved session, not the workspace bootstrap), and desktop launch is an icon button with
-the same accessible name. Between 981px and 1199px operator controls take a second row so search
-stays readable.
+From 1200px the masthead is one 48px row: the environment badge leads with the never-shrinking
+session environment and adds the data qualifier only when the data is not confirmed real
+(`PAPER · SEEDED`; LIVE uses the alarm-red `--live-env` token and follows the resolved session, not
+the workspace bootstrap), the attention pill names the worst open issue, and desktop launch is an
+icon button with the same accessible name. Between 981px and 1199px operator controls take a second
+row so search stays readable.
+
+### Status signals
+
+The shell shows status in four places, all derived from one attention state so they cannot
+disagree:
+
+- **Environment badge** (masthead): `PAPER`, `LIVE` or `DEMO`, plus `SEEDED`, `SIMULATED`,
+  `SAMPLE` or `UNKNOWN` when the data is not confirmed real. It says what the operator is looking
+  at and never changes colour for an issue. A first-run sample workspace is folded into the same
+  label, so there is no separate sample-data chip. Build, environment, provenance and provider
+  facts are in its disclosure.
+- **Attention pill** (masthead): the worst open issue across the workstation with a count of the
+  rest, or `All clear`. It always opens Today. The count matches the queue count beside `Today`
+  in the sidebar; a provider warning or failed workspace area that is also queued is counted once.
+- **Page status row** (`OperationalTrustSummary`, rendered by `StatusRow`): one line that reads
+  `All sources current` or names only the facts that are not ready
+  (`Scope: none selected`, `Freshness: 187d stale`). The per-fact breakdown, with detail and
+  recovery actions, is behind `Details`. The row also folds in shell source issues (provider
+  posture, unverified provenance, workspace data that did not load, degraded host), so a page
+  cannot read `All sources current` while the pill warns about the same sources.
+- **Status bar** (footer): Sync, plus the pill's worst issue when the state needs review or is
+  blocked.
+
+Rules worth knowing when adding a signal:
+
+- Anything short of `ready` is an issue and is named; `ready` facts are never listed in a summary
+  line. Blocked outranks review, which outranks pending/unknown.
+- Declared demo data on a Paper or Demo session is not an issue (the badge names it). Provenance
+  that was never confirmed needs review; non-real data in a LIVE session blocks.
+- LIVE is identity, not a warning.
+- Any request failure the status bar's Sync item reports as an error is a blocked `Workspace data`
+  signal: a workspace area that did not load, or a bootstrap request (session, host status, shared
+  counts) that failed while the workspaces loaded. The pill never reads `All clear` beside a Sync
+  error. A missing workflow catalog alone needs review.
+- The leading decision is the worst queued item by tone and does not depend on the route, even
+  though Today lists its queue finance-first.
+- New shell-wide signals belong in `buildAppShellAttentionState`; page-specific facts belong in the
+  page's `OperationalTrustSummary`. Do not add a status indicator that computes its own tone.
 
 Workspace routes open on their own job: the route heading leads, the workspace KPI strip follows it,
 and the sidebar is the only sub-route navigation (Trading, Portfolio, Strategy and Data no longer
@@ -551,7 +704,9 @@ instead of introducing one-off screen styling.
 - `src/app-shell.development-fixture-notice.ts` - app-shell no-host demo-data notice and evidence path view models.
 - `src/app-shell.route-focus.ts` - app-shell route announcement, document title, and hash-target focus view models.
 - `src/app-shell.status-panel.ts` - app-shell bootstrap, degraded workspace, and recovery status view models.
-- `src/app-shell.trust-strip.ts` - app-shell build, mode, source, and provider posture view models.
+- `src/app-shell.trust-strip.ts` - app-shell environment badge plus build, mode, source, and provider posture view models.
+- `src/app-shell.attention.ts` - the single shell attention state behind the masthead pill, page status rows, Today, and the status bar.
+- `src/lib/status-signals.ts` - the one rule that ranks status tones and summarizes a set of status facts.
 - `src/app-shell.workflow-continuity-types.ts` - shell workflow-continuity view model contract.
 - `src/screens/operations-continuity-screen.date-format.ts` - retained UTC timestamp and due-date formatting used by the Operations Continuity view model.
 - `src/components/ui/` - shared Meridian Design System primitives, including buttons, inputs, selects, badges, tooltips, dialogs/modals, sheets, checkbox/toggle, breadcrumb, form rows/grids, tabs, status banners, context menus, multi-select, toast, and panel surfaces.
@@ -737,10 +892,10 @@ No-host browser previews must keep fixture data visibly labeled as demo data. Th
 non-dismissable provenance strip routes operators through the typed demo evidence path: watchlist,
 live quote evidence, trading readiness, and provider setup, while keeping retry-to-live behavior
 available. Do not add a second full-width seeded-data warning below the masthead.
-The full-width `DataProvenanceBanner` shows the first time a provenance and environment pairing
-appears in a browser and again whenever either changes; after that it is a 4px top-edge stripe with
-the same status role and full text for assistive technology (`compactAfterSeen`). LIVE sessions,
-unresolved sessions and `unknown` provenance (it carries the retry) always keep the full banner.
+The masthead environment badge carries the visible provenance label, so `DataProvenanceBanner`
+renders as a 4px top-edge stripe with the same status role and full text for assistive technology
+(`labeledInMasthead`). LIVE sessions, unresolved sessions and `unknown` provenance (it carries the
+retry) always keep the full-width banner.
 The app-shell data-provenance badge combines the server-owned `/api/demo/mode` response with actual
 fixture usage. Explicit demo or fixture data always wins over a nominal live posture, and a missing
 or malformed mode response fails closed to simulated/unverified rather than being presented as real
@@ -1377,8 +1532,10 @@ access snapshot as `allowOwnerAccess` plus typed `User`, `Group`, or `Company` p
 renders those values as policy evidence only; flattened principal ids are rejected at the API
 boundary rather than assigned a client-inferred principal kind or used to infer authorization.
 The Reporting workspace also renders operator-managed schedule rows from the shared schedule
-payload and wires schedule save/upsert, run-now, pause, and resume controls through the shared
-schedule endpoints. Due schedules are leased and executed only by the hosted reporting worker; the
+payload and wires schedule save/upsert, run-now, pause, resume, disable, and delete (with an
+inline confirm step) controls through the shared schedule endpoints. Cadence presets cover daily,
+weekday, weekly, twice-monthly, first and last day of month, quarterly, and annual runs, and a
+time zone select sends the schedule's IANA `timeZoneId` (default `UTC`). Due schedules are leased and executed only by the hosted reporting worker; the
 browser has no public batch `run-due` control or API helper. Schedule drafts default from the current schedule, approved template, and
 distribution payload before posting back to the server. Retained delivery attempts render from the
 shared delivery-history payload, so browser Reporting shows actual
@@ -1470,8 +1627,13 @@ rows post approval or rejection decisions to the matching `/approve` and `/rejec
 governance endpoints. When the shared payload marks a template with report-writer grids, the browser
 summarizes those grid counts from `reportWriterGrids` and renders a no-code grid designer with
 source fields, row/column zones, metrics, formulas, grid-type and Top-N controls, sort posture, and operator-authored
-custom formula name/label/expression fields plus saved filter controls for field/operator/value
-slicing. Source fields come from the shared report-writer field catalog when present, so the browser
+custom formula name/label/expression fields plus filter controls for field/operator/value
+slicing. Every saved filter is loaded into the draft as its own row, operators can add or remove
+rows, and all complete rows are sent on preview and save (the engine keeps a row only when it
+matches every filter). The access-policy principal ID field and the
+schedule recipient principal ID field use `PrincipalIdInput`, which suggests role and role-profile
+names for `Group` principals and usernames for `User` principals (when the caller may list
+accounts) on first focus, while still accepting typed IDs. Source fields come from the shared report-writer field catalog when present, so the browser
 palette can include source-backed portfolio, analytics, consolidation, and generated contribution
 fields even when a saved grid has not already placed those fields. The designer also renders a live layout summary from the current draft zones so operators
 can confirm dimension, metric, formula, filter, and Top-N posture before preview or save. Operators can save the current grid layout as a
@@ -1493,7 +1655,7 @@ source-backed option posts the selected payload-owned rows to the render endpoin
 renders the source-owned field catalog with role and data-type metadata before preview. Formula
 preview row generation recognizes brace references, bare identifiers, `total(...)`, and shared
 formula functions such as `abs(...)`, `min(...)`, `max(...)`, `safeDivide(...)`, `percent(...)`,
-`basisPoints(...)`, and `round(...)`, so local sample rows include the same formula source fields
+`basisPoints(...)`, `round(...)`, and `if(...)`, so local sample rows include the same formula source fields
 the shared renderer will evaluate. The
 certified operational data-mart option is server-projected with row-lineage keys, lineage manifest
 pointers, evidence-index links, source run ids, validation/reconciliation posture, certification
@@ -1752,8 +1914,11 @@ now prioritizes the finance sequence Today, Exceptions, Close, Reconciliation, L
 Evidence, and Data Health before non-finance surfaces. Decision drivers emphasize the finance
 queue, trust posture, linked context, and evidence events before the queued work, so the first screen
 explains why the operator should act, who owns the issue, what output is affected, which action is
-next, and which retained evidence supports it. Scope, freshness, and provider-connectivity trust
-cards expose their remediation actions in the card that reports the warning.
+next, and which retained evidence supports it. The queue is listed finance-first, but the headline
+and the default evidence pane follow the worst queued decision, which is the one the masthead
+attention pill names on every route. Below the headline, the `Workstation status` row lists the
+shell attention signals (decisions, providers, provenance, workspace data, and host posture when
+degraded); each signal's recovery action is in its tile behind `Details`.
 Queue evidence association is fail-closed on the stable item/evidence identifier. Similar route,
 workspace, severity, or list position never attaches an unrelated proof event; missing correlation
 is displayed as unavailable evidence and timestamp posture.

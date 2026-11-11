@@ -1085,7 +1085,7 @@ export function buildAccountingWorkflowLaunchViewState({
 
   return {
     title: "Accounting workflow",
-    description: "Books-before-broker accounting, reconciliation, approvals, and retained report evidence are grouped in one operator lane.",
+    description: "Books-before-broker accounting, reconciliation, approvals, and retained report evidence are grouped in one operator workflow.",
     ariaLabel: "Accounting workflow launch paths",
     taskMode: activeTaskMode,
     activeLabel: `${activeStepLabel} active`,
@@ -1914,7 +1914,7 @@ function buildAccountingCloseWorkflowSteps({
       label: "Period lock",
       statusLabel: locked ? "Locked" : closePlan ? "Open" : "Pending",
       detail: locked
-        ? "The close period is locked; new close mutations require a governed reopen workflow."
+        ? "The close period is locked; new close changes require a governed reopen workflow."
         : closePlan
           ? "Period lock submits workflow version, report package, checklist approvals, manifest route, and ledger-book evidence to the shared service."
           : "Load a close plan before period-lock review.",

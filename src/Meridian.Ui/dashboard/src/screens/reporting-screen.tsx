@@ -1,3 +1,4 @@
+import { DetailFieldItem } from "@/components/meridian/detail-pane";
 import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import { FileText, Landmark, Network, PencilLine, RotateCcw, XCircle } from "lucide-react";
 import { useLocation } from "react-router-dom";
@@ -7,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FreshnessChip } from "@/components/ui/freshness-chip";
 import { useReportRunStream } from "@/hooks/use-report-run-stream";
+import { useVisibleInterval } from "@/hooks/use-visible-interval";
 import { humanizeStatus, SeverityBadge } from "@/components/operations";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
 import { OperationalTrustSummary } from "@/components/meridian/operational-trust-summary";
@@ -15,9 +17,12 @@ import { ReportingLineageSummary } from "@/components/meridian/reporting-lineage
 import { ReportingProductionSurface } from "@/components/meridian/reporting-production-surface";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { TechnicalDetails } from "@/components/ui/technical-details";
+import { resolveReportingScheduleDueAtUtc, resolveReportingSchedulePeriodDueAtUtc } from "@/lib/reporting-schedule-due";
 import { ReportingIncomeComparisonPanel } from "@/screens/reporting-income-comparison";
 import {
   approveReportTemplateDraft,
+  deleteReportingSchedule,
+  disableReportingSchedule,
   pauseReportingSchedule,
   provisionReportingStarterKit,
   rejectReportTemplateDraft,
@@ -86,8 +91,12 @@ import {
 } from "@/screens/reporting-screen.report-writer";
 import {
   ReportingScheduleManagementPanel,
+  REPORTING_SCHEDULE_UTC_TIME_ZONE,
+  normalizeReportingSchedulePeriodFrequency,
+  parseReportingScheduleDueDays,
   reportingScheduleArtifactFormats,
   reportingScheduleDeliveryModes,
+  type ReportingScheduleAction,
   type ReportingScheduleArtifactFormat,
   type ReportingScheduleDraftField,
   type ReportingScheduleDraftState,
@@ -283,6 +292,9 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
     updateWriterCustomFormula,
     updateWriterCustomDataset,
     updateWriterChartDraft,
+    addWriterFilter,
+    removeWriterFilter,
+    updateWriterFilter,
     addWriterFormatRule,
     removeWriterFormatRule,
     updateWriterFormatRule,
@@ -403,17 +415,11 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
     }
   }, [vm.workflowTaskPanel?.selectedProfileId]);
 
-  useEffect(() => {
-    if (!onRefreshLivePortfolioViews || !shouldAutoRefreshLivePortfolioViews) {
-      return;
-    }
-
-    const timer = window.setInterval(() => {
-      void handleRefreshLivePortfolioViews("auto");
-    }, livePortfolioAutoRefreshIntervalMs);
-
-    return () => window.clearInterval(timer);
-  }, [onRefreshLivePortfolioViews, shouldAutoRefreshLivePortfolioViews]);
+  // Paused while the tab is hidden; refreshes once on return.
+  useVisibleInterval(
+    () => handleRefreshLivePortfolioViews("auto"),
+    onRefreshLivePortfolioViews && shouldAutoRefreshLivePortfolioViews ? livePortfolioAutoRefreshIntervalMs : null
+  );
 
   function handleReportPackProfileKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     const command = resolveReportPackProfileKeyCommand(event.key);
@@ -481,8 +487,8 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
       message: trigger === "auto" ? "Refreshing live portfolio views from market tick cadence." : "Refreshing live portfolio views.",
       details: [
         trigger === "auto"
-          ? "Reporting is using the shared portfolio refresh lane on the live tick cadence."
-          : "Reporting is using the shared portfolio refresh lane."
+          ? "Reporting refreshes with the shared portfolio data on the live tick cadence."
+          : "Reporting refreshes with the shared portfolio data."
       ]
     });
 
@@ -509,17 +515,20 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
     }
   }
 
-  async function handleScheduleAction(schedule: ReportingScheduleRow, action: "pause" | "resume" | "run") {
+  async function handleScheduleAction(schedule: ReportingScheduleRow, action: ReportingScheduleAction) {
     const statusId = `${schedule.id}:${action}`;
     if (runningScheduleActionId) {
       return;
     }
 
-    const label = action === "run"
-      ? `Run ${schedule.id}`
-      : action === "pause"
-        ? `Pause ${schedule.id}`
-        : `Resume ${schedule.id}`;
+    const actionVerbs: Record<ReportingScheduleAction, string> = {
+      run: "Run",
+      pause: "Pause",
+      resume: "Resume",
+      disable: "Disable",
+      delete: "Delete"
+    };
+    const label = `${actionVerbs[action]} ${schedule.id}`;
     setScheduleActionStatus({
       id: statusId,
       label,
@@ -534,6 +543,10 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
         await pauseReportingSchedule(schedule.id);
       } else if (action === "resume") {
         await resumeReportingSchedule(schedule.id);
+      } else if (action === "disable") {
+        await disableReportingSchedule(schedule.id);
+      } else if (action === "delete") {
+        await deleteReportingSchedule(schedule.id);
       } else {
         const result = await runReportingScheduleNow(schedule.id);
         details = formatReportingScheduleRunDetails(result);
@@ -611,8 +624,16 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
             ? normalizeReportingScheduleRecipientPrincipalKind(value)
             : value
       } as ReportingScheduleDraftState;
-      if (field === "cronExpression" || field === "nextAsOfDate") {
-        next.dueAtUtc = resolveReportingScheduleDueAtUtc(next.nextAsOfDate, next.cronExpression, current.dueAtUtc);
+      if (field === "periodFrequency") {
+        next.periodFrequency = normalizeReportingSchedulePeriodFrequency(value);
+      }
+      if (
+        field === "cronExpression" || field === "nextAsOfDate" || field === "timeZoneId"
+        || field === "periodFrequency" || field === "dueDaysAfterPeriodEnd"
+      ) {
+        next.dueAtUtc = next.periodFrequency
+          ? resolveReportingSchedulePeriodDueAtUtc(next.nextAsOfDate, next.cronExpression, next.dueDaysAfterPeriodEnd, current.dueAtUtc, next.timeZoneId)
+          : resolveReportingScheduleDueAtUtc(next.nextAsOfDate, next.cronExpression, current.dueAtUtc, next.timeZoneId);
       }
       if (field === "nextAsOfDate") {
         next.runParameters = {
@@ -835,7 +856,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
         }}
         completeness={{
           value: `${pluralizeCount(vm.templateRows.length, "template")} · ${pluralizeCount(vm.runStatusRows.length, "run")}`,
-          detail: "Caller-visible Reporting records",
+          detail: "Reporting records you can access",
           tone: vm.templateRows.length > 0 ? "ready" : "review"
         }}
         blocker={governanceScopeUnavailable ? {
@@ -844,7 +865,6 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
           tone: "blocked"
         } : undefined}
         label="Reporting data confidence"
-        disclosure={isDailyReportingCockpitLanding}
       />
 
       {isDailyReportingCockpitLanding ? (
@@ -1504,6 +1524,9 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
               customDatasetText={writerCustomDatasetText[grid.id] ?? ""}
               onCustomDatasetChange={updateWriterCustomDataset}
               onChartDraftChange={updateWriterChartDraft}
+              onFilterAdd={addWriterFilter}
+              onFilterRemove={removeWriterFilter}
+              onFilterChange={updateWriterFilter}
               onFormatRuleAdd={addWriterFormatRule}
               onFormatRuleRemove={removeWriterFormatRule}
               onFormatRuleChange={updateWriterFormatRule}
@@ -1709,7 +1732,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                 {run.hasNextActions ? (
                   <div className="mt-2 flex flex-wrap items-center gap-2 rounded-md border border-primary/25 bg-primary/10 px-3 py-2" aria-label={`${run.id} governed workflow continuation`}>
                     <p className="min-w-0 flex-1 text-xs leading-5 text-primary">
-                      Legacy pack mutations are retired. Continue validation, approval, release, restatement, and distribution from the governed run.
+                      Report packs can no longer be changed here. Continue validation, approval, release, restatement, and distribution from the report run.
                     </p>
                     <Button asChild size="sm" variant="outline">
                       <a href={workstationRouteWithQuery("reportingRunDetail", { runId: run.id })}>
@@ -2209,7 +2232,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
       <section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
         <Card className="panel-surface">
           <CardHeader>
-            <div className="eyebrow-label">Reporting Lane</div>
+            <div className="eyebrow-label">Reporting</div>
             <CardTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5 text-primary" />
               Evidence and distribution
@@ -2393,17 +2416,9 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                 >
                   {vm.selectedProfile.readinessSummary}
                 </div>
-                <dl className="grid gap-2">
+                <dl className="border-t border-border/60">
                   {vm.selectedProfile.fields.map((field) => (
-                    <div
-                      key={field.label}
-                      className="grid grid-cols-[minmax(0,0.6fr)_minmax(0,1fr)] items-start gap-3 rounded-md border border-border/60 bg-secondary/25 px-3 py-2"
-                    >
-                      <dt className="text-xs text-muted-foreground">{field.label}</dt>
-                      <dd className={cn("text-right font-mono text-xs", field.className)}>
-                        {field.value}
-                      </dd>
-                    </div>
+                    <DetailFieldItem key={field.label} label={field.label} value={field.value} valueClassName={field.className} />
                   ))}
                 </dl>
                 <div className="grid gap-2 pt-2" role="list" aria-label={`${vm.selectedProfile.title} export actions`}>
@@ -2637,6 +2652,9 @@ function buildDefaultReportingScheduleDraft(reporting: AccountingWorkspaceRespon
     scheduleId,
     templateId,
     cronExpression: normalizeDraftText(schedule?.cronExpression, "0 8 1 * *"),
+    timeZoneId: normalizeDraftText(schedule?.timeZoneId, REPORTING_SCHEDULE_UTC_TIME_ZONE),
+    periodFrequency: normalizeReportingSchedulePeriodFrequency(schedule?.periodCadence?.frequency),
+    dueDaysAfterPeriodEnd: String(Math.max(0, schedule?.periodCadence?.dueDaysAfterPeriodEnd ?? 0)),
     nextAsOfDate,
     dueAtUtc,
     maxRetries: String(Math.max(0, schedule?.maxRetries ?? 1)),
@@ -2671,61 +2689,6 @@ function normalizeReportBuilderContextToken(value: string): string {
   return value.trim().toLowerCase().replace(/[^a-z0-9]+/g, "");
 }
 
-export function resolveReportingScheduleDueAtUtc(
-  nextAsOfDate: string,
-  cronExpression: string,
-  currentDueAtUtc: string
-): string {
-  const dateMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(nextAsOfDate.trim());
-  const cronFields = cronExpression.trim().split(/\s+/);
-  const minute = Number.parseInt(cronFields[0] ?? "", 10);
-  const hour = Number.parseInt(cronFields[1] ?? "", 10);
-  if (!dateMatch || !Number.isInteger(minute) || minute < 0 || minute > 59 || !Number.isInteger(hour) || hour < 0 || hour > 23) {
-    return currentDueAtUtc;
-  }
-
-  const year = Number.parseInt(dateMatch[1], 10);
-  const monthIndex = Number.parseInt(dateMatch[2], 10) - 1;
-  const day = Number.parseInt(dateMatch[3], 10);
-  let dueDate = new Date(Date.UTC(year, monthIndex, day));
-  if (
-    dueDate.getUTCFullYear() !== year
-    || dueDate.getUTCMonth() !== monthIndex
-    || dueDate.getUTCDate() !== day
-  ) {
-    return currentDueAtUtc;
-  }
-
-  const normalizedCron = cronFields.join(" ");
-  if (normalizedCron === "0 8 * * 1-5") {
-    while (dueDate.getUTCDay() === 0 || dueDate.getUTCDay() === 6) {
-      dueDate.setUTCDate(dueDate.getUTCDate() + 1);
-    }
-  } else if (normalizedCron === "0 8 * * 1") {
-    while (dueDate.getUTCDay() !== 1) {
-      dueDate.setUTCDate(dueDate.getUTCDate() + 1);
-    }
-  } else if (normalizedCron === "0 8 1 * *") {
-    if (dueDate.getUTCDate() !== 1) {
-      dueDate = new Date(Date.UTC(dueDate.getUTCFullYear(), dueDate.getUTCMonth() + 1, 1));
-    }
-  } else if (normalizedCron === "0 8 1 1,4,7,10 *") {
-    const quarterlyMonths = new Set([0, 3, 6, 9]);
-    let candidate = new Date(Date.UTC(dueDate.getUTCFullYear(), dueDate.getUTCMonth(), 1));
-    if (candidate < dueDate || !quarterlyMonths.has(candidate.getUTCMonth())) {
-      do {
-        candidate = new Date(Date.UTC(candidate.getUTCFullYear(), candidate.getUTCMonth() + 1, 1));
-      } while (!quarterlyMonths.has(candidate.getUTCMonth()));
-    }
-    dueDate = candidate;
-  }
-
-  const dueYear = dueDate.getUTCFullYear().toString().padStart(4, "0");
-  const dueMonth = (dueDate.getUTCMonth() + 1).toString().padStart(2, "0");
-  const dueDay = dueDate.getUTCDate().toString().padStart(2, "0");
-  return `${dueYear}-${dueMonth}-${dueDay}T${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}:00Z`;
-}
-
 function buildReportingScheduleUpsertRequest(
   draft: ReportingScheduleDraftState,
   brandingDraft: ReportBrandingDraftState,
@@ -2756,6 +2719,16 @@ function buildReportingScheduleUpsertRequest(
     scheduleId,
     templateId,
     cronExpression: normalizeDraftText(draft.cronExpression, "0 8 1 * *"),
+    // Always explicit: a null zone would keep whatever zone the server already retains.
+    timeZoneId: normalizeDraftText(draft.timeZoneId, REPORTING_SCHEDULE_UTC_TIME_ZONE),
+    ...(draft.periodFrequency
+      ? {
+          periodCadence: {
+            frequency: draft.periodFrequency,
+            dueDaysAfterPeriodEnd: parseReportingScheduleDueDays(draft.dueDaysAfterPeriodEnd)
+          }
+        }
+      : {}),
     nextAsOfDate,
     dueAtUtc: normalizeDraftText(draft.dueAtUtc, `${nextAsOfDate}T20:00:00Z`),
     maxRetries: parseScheduleMaxRetries(draft.maxRetries),

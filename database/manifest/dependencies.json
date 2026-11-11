@@ -17092,6 +17092,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ReportingSchedulePeriodCadenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ReportingSchedulePeriodFrequencyDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.ReportingScheduleRecordDto"
     },
     {
@@ -46011,6 +46023,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.ReportingSchedulePeriodCadenceDto",
+      "target": "contract:Meridian.Contracts.Workstation.ReportingSchedulePeriodFrequencyDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.ReportingScheduleRecordDto",
       "target": "contract:Meridian.Contracts.Workstation.ReportAccessPolicyDto"
     },
@@ -46037,6 +46055,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.ReportingScheduleRecordDto",
       "target": "contract:Meridian.Contracts.Workstation.ReportingScheduleDeliveryTargetDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.ReportingScheduleRecordDto",
+      "target": "contract:Meridian.Contracts.Workstation.ReportingSchedulePeriodCadenceDto"
     },
     {
       "kind": "contract-reference",
@@ -46091,6 +46115,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.ReportingScheduleUpsertRequestDto",
       "target": "contract:Meridian.Contracts.Workstation.ReportingScheduleDeliveryTargetDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.ReportingScheduleUpsertRequestDto",
+      "target": "contract:Meridian.Contracts.Workstation.ReportingSchedulePeriodCadenceDto"
     },
     {
       "kind": "contract-reference",
@@ -56999,7 +57029,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "2101cb27a1b9b5fe8eb38cf46bec21008f6d01e12f0f651d3bdc4e497532dd83",
+  "fingerprint": "a8edf88930b6c03a9e6dc810a1d6bb4e02205a878c07182d03cb2ae353236742",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -74142,6 +74172,18 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.ReportingSchedulePeriodCadenceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ReportingSchedulePeriodCadenceDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Workstation.ReportingSchedulePeriodFrequencyDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ReportingSchedulePeriodFrequencyDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.ReportingScheduleRecordDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.ReportingScheduleRecordDto"
@@ -83474,11 +83516,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3634,
-    "contract_set_memberships": 4546,
-    "edges": 9471,
+    "contract_references": 3637,
+    "contract_set_memberships": 4548,
+    "edges": 9476,
     "foreign_keys": 156,
     "logical_references": 6,
-    "nodes": 4592
+    "nodes": 4594
   }
 }

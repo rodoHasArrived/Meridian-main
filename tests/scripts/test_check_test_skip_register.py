@@ -100,7 +100,7 @@ class SkipRegisterFixture:
 
 class DiscoverSkipsTests(unittest.TestCase):
     def setUp(self) -> None:
-        self._tmp = tempfile.TemporaryDirectory()
+        self._tmp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self._tmp.cleanup)
         self.fixture = SkipRegisterFixture(Path(self._tmp.name))
 
@@ -448,7 +448,7 @@ class DiscoverSkipsTests(unittest.TestCase):
 
 class NullMetadataTests(unittest.TestCase):
     def setUp(self) -> None:
-        self._tmp = tempfile.TemporaryDirectory()
+        self._tmp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self._tmp.cleanup)
         self.fixture = SkipRegisterFixture(Path(self._tmp.name))
 
@@ -466,7 +466,7 @@ class NullMetadataTests(unittest.TestCase):
 
 class EvaluateTests(unittest.TestCase):
     def setUp(self) -> None:
-        self._tmp = tempfile.TemporaryDirectory()
+        self._tmp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self._tmp.cleanup)
         self.fixture = SkipRegisterFixture(Path(self._tmp.name))
 
@@ -623,7 +623,7 @@ class TrackingResolutionTests(unittest.TestCase):
     """A quarantine's tracking must point at something that exists, not just be non-empty."""
 
     def setUp(self) -> None:
-        self._tmp = tempfile.TemporaryDirectory()
+        self._tmp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self._tmp.cleanup)
         self.root = Path(self._tmp.name)
         self.fixture = SkipRegisterFixture(self.root)
@@ -839,14 +839,14 @@ class VerbatimAndRawLiteralTests(unittest.TestCase):
 
 class UndecodableSourceTests(unittest.TestCase):
     def test_a_utf16_source_is_decoded_rather_than_skipped(self):
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             path = Path(tmp) / "Utf16Tests.cs"
             path.write_bytes('[Fact(Skip = "held")]\npublic void T() { }\n'.encode("utf-16"))
 
             self.assertIn("Skip", MODULE.read_source(path))
 
     def test_an_undecodable_source_fails_the_gate_instead_of_being_ignored(self):
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             tests_dir = Path(tmp) / "tests"
             tests_dir.mkdir()
             # Invalid UTF-8 with no BOM: previously the whole file was dropped, so any skip in it

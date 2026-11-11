@@ -53,8 +53,11 @@ public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProv
 
     public string ProviderId => "alpaca";
 
+    // Review-only: this adapter reads a different endpoint than the one its earlier acceptance
+    // was granted on, and its output has not yet been compared with a trusted source. Its records
+    // are retained for review and are never applied automatically.
     public CorporateActionProviderReleaseStatusDto ReleaseStatus =>
-        CorporateActionProviderReleaseStatusDto.AcceptanceEligible;
+        CorporateActionProviderReleaseStatusDto.ReviewOnly;
 
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IConfiguration _configuration;

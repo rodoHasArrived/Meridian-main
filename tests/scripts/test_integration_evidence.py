@@ -24,7 +24,7 @@ SPEC.loader.exec_module(MODULE)
 
 class IntegrationEvidenceTests(unittest.TestCase):
     def setUp(self):
-        self.temp = tempfile.TemporaryDirectory()
+        self.temp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
         self.results = self.root / "results"
@@ -199,7 +199,7 @@ class IntegrationEvidenceGateTests(unittest.TestCase):
         self.assertEqual(gate["needs"], ["deterministic-integrations", "reuse-integrations"])
         script = gate["steps"][0]["run"]
         outputs = {"artifact-id": "12", "artifact-name": "evidence-12-1", "receipt-sha256": "a" * 64}
-        with tempfile.TemporaryDirectory() as temporary:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temporary:
             path = Path(temporary) / "output"
             for fresh, reuse in (("success", "skipped"), ("skipped", "success"),
                                  ("skipped", "skipped"), ("success", "success"),

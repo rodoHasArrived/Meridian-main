@@ -64,7 +64,7 @@ class DesktopBuildReceiptTests(unittest.TestCase):
         return json.loads(receipts[0])
 
     def _receipt_probe(self, mutation: str = "", *, isolation_key: str = "receipt-test") -> dict:
-        with tempfile.TemporaryDirectory() as temp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp:
             root = Path(temp)
             self._make_repo(root)
             return self._probe(root, f"""
@@ -155,7 +155,7 @@ Write-Output ('HARNESS_JSON=' + (@{{ accepted = $accepted; error = $errorMessage
                 self.assertFalse(result["accepted"], field)
 
     def test_receipt_writer_requires_complete_build_output(self) -> None:
-        with tempfile.TemporaryDirectory() as temp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp:
             root = Path(temp)
             self._make_repo(root)
             result = self._probe(root, f"""
@@ -199,7 +199,7 @@ Write-Output ('HARNESS_JSON=' + (@{{ cases = $results }} | ConvertTo-Json -Depth
         without_receipt: bool = False,
         health_transition: str = "",
     ) -> dict:
-        with tempfile.TemporaryDirectory() as temp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp:
             root = Path(temp)
             self._make_repo(root)
             options = {

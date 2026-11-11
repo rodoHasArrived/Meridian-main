@@ -690,6 +690,485 @@ public sealed class ReportingOperationalConcurrencyTests
     }
 
     [Fact]
+    public void Scenario_ScheduleDelete_RemovesTheRetainedDefinitionAndRejectsAStaleHost()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "Meridian.Tests",
+            nameof(ReportingOperationalConcurrencyTests),
+            Guid.NewGuid().ToString("N"));
+        var path = Path.Combine(root, "reporting-schedules.json");
+        var accessContext = new ReportAccessQueryContext(
+            ActorPrincipalId: "operator-a",
+            CompanyId: "company-a",
+            TenantId: "tenant-a",
+            RequireBoundScope: true);
+        Directory.CreateDirectory(root);
+        var firstStore = new FileReportingScheduleStore(
+            new ReportingScheduleStoreOptions(path),
+            NullLogger<FileReportingScheduleStore>.Instance);
+        var staleStore = new FileReportingScheduleStore(
+            new ReportingScheduleStoreOptions(path),
+            NullLogger<FileReportingScheduleStore>.Instance);
+        firstStore.Upsert(BuildCurrentSchedule("file-schedule-delete"));
+        firstStore.Upsert(BuildCurrentSchedule("file-schedule-keep"));
+        var firstHost = CreateScheduleService(firstStore);
+        var staleHost = CreateScheduleService(staleStore);
+
+        try
+        {
+            firstHost.SetState(
+                "file-schedule-delete",
+                ReportingScheduleStateDto.Paused,
+                accessContext);
+
+            var staleDelete = () => staleHost.Delete("file-schedule-delete", accessContext);
+            staleDelete.Should().Throw<ReportingScheduleConcurrencyException>(
+                "a host holding an older revision must not delete a schedule another host changed");
+            firstStore.Load().Should().HaveCount(2);
+
+            staleHost.Delete("file-schedule-delete", accessContext)
+                .ScheduleId
+                .Should()
+                .Be("file-schedule-delete");
+
+            firstStore.Load().Should().ContainSingle(schedule =>
+                schedule.ScheduleId == "file-schedule-keep");
+            staleHost.ListSchedules(accessContext).Should().ContainSingle(schedule =>
+                schedule.ScheduleId == "file-schedule-keep");
+            var deleteAgain = () => staleHost.Delete("file-schedule-delete", accessContext);
+            deleteAgain.Should().Throw<KeyNotFoundException>();
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public void Scenario_ScheduleDelete_IsRefusedWhileAnotherHostHoldsTheExecutionLease()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "Meridian.Tests",
+            nameof(ReportingOperationalConcurrencyTests),
+            Guid.NewGuid().ToString("N"));
+        var path = Path.Combine(root, "reporting-schedules.json");
+        var accessContext = new ReportAccessQueryContext(
+            ActorPrincipalId: "operator-a",
+            CompanyId: "company-a",
+            TenantId: "tenant-a",
+            RequireBoundScope: true);
+        Directory.CreateDirectory(root);
+        var runningHostStore = new FileReportingScheduleStore(
+            new ReportingScheduleStoreOptions(path),
+            NullLogger<FileReportingScheduleStore>.Instance);
+        var deletingHostStore = new FileReportingScheduleStore(
+            new ReportingScheduleStoreOptions(path),
+            NullLogger<FileReportingScheduleStore>.Instance);
+        runningHostStore.Upsert(BuildCurrentSchedule("leased-elsewhere"));
+        var retained = runningHostStore.Load().Should().ContainSingle().Subject;
+        var deletingHost = CreateScheduleService(deletingHostStore);
+
+        try
+        {
+            // Another host is mid-run: it holds the durable lease, and this host has no
+            // in-process record of that.
+            var otherHostLease = runningHostStore.TryClaimExecution(
+                retained,
+                "other-host",
+                DateTimeOffset.UtcNow,
+                TimeSpan.FromMinutes(2));
+            otherHostLease.Should().NotBeNull();
+
+            var delete = () => deletingHost.Delete("leased-elsewhere", accessContext);
+
+            delete.Should().Throw<ReportingScheduleExecutionLeaseException>();
+            runningHostStore.Load().Should().ContainSingle(
+                "a schedule another host is executing must not be deleted underneath it");
+
+            runningHostStore.ReleaseExecutionLease("tenant-a", "company-a", "leased-elsewhere", otherHostLease!);
+            deletingHost.Delete("leased-elsewhere", accessContext);
+            runningHostStore.Load().Should().BeEmpty();
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public void Scenario_ScheduleDeleteAndStateChange_AreRefusedForACallerTheAccessPolicyExcludes()
+    {
+        // Same tenant and company, and allowed to manage reporting, but not a principal of the
+        // schedule's restricted access policy (which admits only operator-a).
+        var store = new SharedAtomicScheduleStore([BuildCurrentSchedule("restricted-schedule")]);
+        var service = CreateScheduleService(store);
+        var outsider = new ReportAccessQueryContext(
+            ActorPrincipalId: "operator-b",
+            CompanyId: "company-a",
+            TenantId: "tenant-a",
+            RequireBoundScope: true);
+        var owner = outsider with { ActorPrincipalId = "operator-a" };
+        service.ListSchedules(outsider).Should().BeEmpty("the schedule is not visible to this caller");
+
+        var delete = () => service.Delete("restricted-schedule", outsider);
+        var disable = () => service.SetState("restricted-schedule", ReportingScheduleStateDto.Disabled, outsider);
+
+        delete.Should().Throw<UnauthorizedAccessException>();
+        disable.Should().Throw<UnauthorizedAccessException>();
+        store.Load().Should().ContainSingle(schedule =>
+            schedule.ScheduleId == "restricted-schedule"
+            && schedule.State != ReportingScheduleStateDto.Disabled);
+
+        service.Delete("restricted-schedule", owner);
+        store.Load().Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Scenario_ScheduleDelete_LegacyUnscopedScheduleIsRefusedAndRetained()
+    {
+        var store = new SharedAtomicScheduleStore([BuildSchedule("legacy-unscoped", "operator-a")]);
+        var service = CreateScheduleService(store);
+
+        var delete = () => service.Delete("legacy-unscoped", accessContext: null);
+
+        delete.Should().Throw<InvalidDataException>().WithMessage("*disable it instead*");
+        store.Load().Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task Scenario_DisabledSchedule_IsSkippedByTheWorkerUntilResumed()
+    {
+        var due = BuildSchedule("disabled-then-resumed", "operator-a") with
+        {
+            State = ReportingScheduleStateDto.Active,
+            DueAtUtc = FixedNow
+        };
+        var store = new SharedAtomicScheduleStore([due]);
+        var service = CreateRunnableScheduleService(store, new CountingRenderer());
+
+        service.SetState(due.ScheduleId, ReportingScheduleStateDto.Disabled);
+        var whileDisabled = await service.RunDueForWorkerAsync(FixedNow, CancellationToken.None);
+        service.SetState(due.ScheduleId, ReportingScheduleStateDto.Active);
+        var afterResume = await service.RunDueForWorkerAsync(FixedNow, CancellationToken.None);
+
+        whileDisabled.Result.Runs.Should().BeEmpty();
+        afterResume.Result.Runs.Should().ContainSingle();
+    }
+
+    [Theory]
+    [InlineData(ReportingSchedulePeriodFrequencyDto.Monthly, 2026, 2, 28, 2026, 3, 10)]
+    [InlineData(ReportingSchedulePeriodFrequencyDto.Quarterly, 2026, 4, 30, 2026, 5, 10)]
+    [InlineData(ReportingSchedulePeriodFrequencyDto.Annually, 2027, 1, 31, 2027, 2, 10)]
+    public async Task Scenario_PeriodCloseSchedule_AdvancesToTheNextPeriodEndAndDueOffset(
+        ReportingSchedulePeriodFrequencyDto frequency,
+        int asOfYear, int asOfMonth, int asOfDay,
+        int dueYear, int dueMonth, int dueDay)
+    {
+        // January 2026 period, due 10 days after period end at 08:00 UTC. A cron expression
+        // cannot express "as of period end, due N days later".
+        var firstDue = new DateTimeOffset(2026, 2, 10, 8, 0, 0, TimeSpan.Zero);
+        var due = BuildSchedule("period-close", "operator-a") with
+        {
+            State = ReportingScheduleStateDto.Active,
+            NextAsOfDate = new DateOnly(2026, 1, 31),
+            DueAtUtc = firstDue,
+            PeriodCadence = new ReportingSchedulePeriodCadenceDto(frequency, DueDaysAfterPeriodEnd: 10)
+        };
+        var store = new SharedAtomicScheduleStore([due]);
+        var service = CreateRunnableScheduleService(store, new CountingRenderer());
+
+        var result = await service.RunDueForWorkerAsync(firstDue, CancellationToken.None);
+
+        result.Result.Runs.Should().ContainSingle();
+        var advanced = store.Load().Should().ContainSingle().Subject;
+        advanced.NextAsOfDate.Should().Be(new DateOnly(asOfYear, asOfMonth, asOfDay));
+        advanced.DueAtUtc.Should().Be(new DateTimeOffset(dueYear, dueMonth, dueDay, 8, 0, 0, TimeSpan.Zero));
+        advanced.PeriodCadence.Should().Be(due.PeriodCadence);
+    }
+
+    [Fact]
+    public async Task Scenario_PeriodCloseSchedule_TakesItsAccountingPeriodFromTheLedgerNotTheCalendar()
+    {
+        // An April-start fiscal year: the period ending 31 May 2026 is fiscal 2027 period 02, so
+        // a selector built from the calendar date ("2026-05") would name the wrong period.
+        var april = new ReportingSchedulePeriodMatch(
+            "11111111-1111-1111-1111-111111111111", new DateOnly(2026, 4, 1), new DateOnly(2026, 4, 30));
+        var may = new ReportingSchedulePeriodMatch(
+            "22222222-2222-2222-2222-222222222222", new DateOnly(2026, 5, 1), new DateOnly(2026, 5, 31));
+        var resolver = new RecordingPeriodResolver(date =>
+            date >= april.StartDate && date <= april.EndDate ? april
+            : date >= may.StartDate && date <= may.EndDate ? may
+            : null);
+        var firstDue = new DateTimeOffset(2026, 5, 10, 8, 0, 0, TimeSpan.Zero);
+        var due = BuildSchedule("fiscal-period-close", "operator-a") with
+        {
+            RunParameters = BuildCurrentSchedule("parameters-only").RunParameters,
+            State = ReportingScheduleStateDto.Active,
+            NextAsOfDate = new DateOnly(2026, 4, 30),
+            DueAtUtc = firstDue,
+            PeriodCadence = new ReportingSchedulePeriodCadenceDto(ReportingSchedulePeriodFrequencyDto.Monthly, 10)
+        };
+        due = due with { RunParameters = due.RunParameters! with { PeriodId = "stale-selector" } };
+        var store = new SharedAtomicScheduleStore([due]);
+        var service = CreateRunnableScheduleService(store, new CountingRenderer(), resolver);
+
+        await service.RunDueForWorkerAsync(firstDue, CancellationToken.None);
+
+        var advanced = store.Load().Should().ContainSingle().Subject;
+        advanced.NextAsOfDate.Should().Be(new DateOnly(2026, 5, 31));
+        advanced.RunParameters!.AsOfDate.Should().Be(new DateOnly(2026, 5, 31));
+        advanced.RunParameters.PeriodId.Should().Be(
+            may.Selector,
+            "the next period selector is the one the ledger returned for the next period");
+        resolver.Dates.Should().Contain(new DateOnly(2026, 4, 30), "the run itself re-resolves its period first");
+    }
+
+    [Fact]
+    public async Task Scenario_PeriodCloseSchedule_ClosesOnTheLedgerPeriodEndForNonCalendarPeriods()
+    {
+        // A 4-4-5 style book: after the period ending 28 February comes a five-week period,
+        // 1 March to 4 April. Calendar arithmetic would close it on 31 March, four days early.
+        var fiveWeeks = new ReportingSchedulePeriodMatch(
+            "33333333-3333-3333-3333-333333333333", new DateOnly(2026, 3, 1), new DateOnly(2026, 4, 4));
+        var resolver = new RecordingPeriodResolver(date =>
+            date >= fiveWeeks.StartDate && date <= fiveWeeks.EndDate ? fiveWeeks : null);
+        var firstDue = new DateTimeOffset(2026, 3, 5, 8, 0, 0, TimeSpan.Zero);
+        var due = BuildSchedule("four-four-five", "operator-a") with
+        {
+            RunParameters = BuildCurrentSchedule("parameters-only").RunParameters,
+            State = ReportingScheduleStateDto.Active,
+            NextAsOfDate = new DateOnly(2026, 2, 28),
+            DueAtUtc = firstDue,
+            PeriodCadence = new ReportingSchedulePeriodCadenceDto(ReportingSchedulePeriodFrequencyDto.Monthly, 5)
+        };
+        var store = new SharedAtomicScheduleStore([due]);
+        var service = CreateRunnableScheduleService(store, new CountingRenderer(), resolver);
+
+        await service.RunDueForWorkerAsync(firstDue, CancellationToken.None);
+
+        var advanced = store.Load().Should().ContainSingle().Subject;
+        advanced.NextAsOfDate.Should().Be(
+            new DateOnly(2026, 4, 4),
+            "the close date is the durable period's own end, not the calendar month end");
+        advanced.RunParameters!.AsOfDate.Should().Be(new DateOnly(2026, 4, 4));
+        advanced.RunParameters.PeriodId.Should().Be(fiveWeeks.Selector);
+        advanced.DueAtUtc.Should().Be(
+            new DateTimeOffset(2026, 4, 9, 8, 0, 0, TimeSpan.Zero),
+            "the due date is the configured five days after the real period end");
+    }
+
+    [Fact]
+    public async Task Scenario_PeriodCloseSchedule_FallsBackToTheCalendarWhenTheLedgerCannotNameAPeriod()
+    {
+        var firstDue = new DateTimeOffset(2026, 5, 10, 8, 0, 0, TimeSpan.Zero);
+        var due = BuildSchedule("unopened-period", "operator-a") with
+        {
+            RunParameters = BuildCurrentSchedule("parameters-only").RunParameters,
+            State = ReportingScheduleStateDto.Active,
+            NextAsOfDate = new DateOnly(2026, 4, 30),
+            DueAtUtc = firstDue,
+            PeriodCadence = new ReportingSchedulePeriodCadenceDto(ReportingSchedulePeriodFrequencyDto.Monthly, 10)
+        };
+        var retainedSelector = due.RunParameters!.PeriodId;
+        var store = new SharedAtomicScheduleStore([due]);
+        var service = CreateRunnableScheduleService(
+            store,
+            new CountingRenderer(),
+            new RecordingPeriodResolver(_ => null));
+
+        await service.RunDueForWorkerAsync(firstDue, CancellationToken.None);
+
+        var advanced = store.Load().Should().ContainSingle().Subject;
+        advanced.NextAsOfDate.Should().Be(new DateOnly(2026, 5, 31));
+        advanced.RunParameters!.PeriodId.Should().Be(
+            retainedSelector,
+            "a selector is never invented from the date when the ledger has no unique period");
+    }
+
+    [Fact]
+    public async Task Scenario_PeriodCloseSchedule_ReturnsToItsConfiguredTimeAfterADaylightSavingGap()
+    {
+        // Configured for 02:30 New York. The 8 March run was moved to 03:00 EDT (07:00Z) because
+        // 02:30 does not exist that day; the next run must go back to 02:30, not stay at 03:00.
+        var gapShiftedDue = new DateTimeOffset(2026, 3, 8, 7, 0, 0, TimeSpan.Zero);
+        var due = BuildSchedule("gap-recovery", "operator-a") with
+        {
+            CronExpression = "30 2 8 * *",
+            TimeZoneId = "America/New_York",
+            State = ReportingScheduleStateDto.Active,
+            NextAsOfDate = new DateOnly(2026, 2, 28),
+            DueAtUtc = gapShiftedDue,
+            PeriodCadence = new ReportingSchedulePeriodCadenceDto(ReportingSchedulePeriodFrequencyDto.Monthly, 8)
+        };
+        var store = new SharedAtomicScheduleStore([due]);
+        var service = CreateRunnableScheduleService(store, new CountingRenderer());
+
+        await service.RunDueForWorkerAsync(gapShiftedDue, CancellationToken.None);
+
+        var advanced = store.Load().Should().ContainSingle().Subject;
+        advanced.NextAsOfDate.Should().Be(new DateOnly(2026, 3, 31));
+        advanced.DueAtUtc.Should().Be(
+            new DateTimeOffset(2026, 4, 8, 6, 30, 0, TimeSpan.Zero),
+            "8 April 02:30 EDT is the configured time; the gap adjustment applied to March only");
+    }
+
+    [Fact]
+    public void Scenario_ScheduleUpsert_PeriodCadenceIsValidatedAndReplacedOnEachUpsert()
+    {
+        var store = new SharedAtomicScheduleStore([]);
+        var service = CreateScheduleService(store);
+        ReportingScheduleUpsertRequestDto Request(ReportingSchedulePeriodCadenceDto? cadence) => new(
+            "period-cadence-lifecycle",
+            "investor-monthly-statement",
+            "0 8 1 * *",
+            new DateOnly(2026, 8, 31),
+            FixedNow.AddDays(1),
+            2,
+            "operator-a",
+            State: ReportingScheduleStateDto.Draft,
+            PeriodCadence: cadence);
+
+        var invalid = () => service.Upsert(Request(
+            new ReportingSchedulePeriodCadenceDto(ReportingSchedulePeriodFrequencyDto.Monthly, -1)));
+        invalid.Should().Throw<ArgumentException>().WithMessage("*period cadence*");
+        store.Load().Should().BeEmpty();
+
+        var monthly = new ReportingSchedulePeriodCadenceDto(ReportingSchedulePeriodFrequencyDto.Monthly, 5);
+        service.Upsert(Request(monthly)).PeriodCadence.Should().Be(monthly);
+        service.Upsert(Request(null)).PeriodCadence.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Scenario_ScheduleWithTimeZone_AdvancesInLocalTimeAcrossDaylightSaving()
+    {
+        // 08:00 New York is 13:00 UTC in winter and 12:00 UTC once daylight time starts
+        // (8 March 2026), so a UTC-pinned schedule would drift by an hour.
+        var winterDue = new DateTimeOffset(2026, 3, 7, 13, 0, 0, TimeSpan.Zero);
+        var due = BuildSchedule("new-york-daily", "operator-a") with
+        {
+            CronExpression = "0 8 * * *",
+            TimeZoneId = "America/New_York",
+            State = ReportingScheduleStateDto.Active,
+            DueAtUtc = winterDue
+        };
+        var store = new SharedAtomicScheduleStore([due]);
+        var service = CreateRunnableScheduleService(store, new CountingRenderer());
+
+        var result = await service.RunDueForWorkerAsync(
+            winterDue,
+            CancellationToken.None);
+
+        result.Result.Runs.Should().ContainSingle();
+        var advanced = store.Load().Should().ContainSingle().Subject;
+        advanced.DueAtUtc.Should().Be(new DateTimeOffset(2026, 3, 8, 12, 0, 0, TimeSpan.Zero));
+        advanced.DueAtUtc.Offset.Should().Be(TimeSpan.Zero);
+        advanced.TimeZoneId.Should().Be("America/New_York");
+    }
+
+    [Theory]
+    // Spring forward: 19:30 New York is 00:30Z the next day in winter and 23:30Z the same day
+    // in summer, so two consecutive local days share one UTC date.
+    [InlineData("2026-03-08T00:30:00Z", "2026-03-07", "2026-03-08T23:30:00Z", "2026-03-08")]
+    // Fall back: two consecutive local days are two UTC dates apart.
+    [InlineData("2026-10-31T23:30:00Z", "2026-10-31", "2026-11-02T00:30:00Z", "2026-11-01")]
+    public async Task Scenario_ScheduleWithTimeZone_AdvancesTheAsOfDateByLocalCalendarDays(
+        string dueAtUtc, string asOf, string expectedDueAtUtc, string expectedAsOf)
+    {
+        var firstDue = DateTimeOffset.Parse(dueAtUtc, System.Globalization.CultureInfo.InvariantCulture);
+        var due = BuildSchedule("new-york-evening", "operator-a") with
+        {
+            CronExpression = "30 19 * * *",
+            TimeZoneId = "America/New_York",
+            State = ReportingScheduleStateDto.Active,
+            NextAsOfDate = DateOnly.Parse(asOf, System.Globalization.CultureInfo.InvariantCulture),
+            DueAtUtc = firstDue
+        };
+        var store = new SharedAtomicScheduleStore([due]);
+        var service = CreateRunnableScheduleService(store, new CountingRenderer());
+
+        await service.RunDueForWorkerAsync(firstDue, CancellationToken.None);
+
+        var advanced = store.Load().Should().ContainSingle().Subject;
+        advanced.DueAtUtc.Should().Be(
+            DateTimeOffset.Parse(expectedDueAtUtc, System.Globalization.CultureInfo.InvariantCulture));
+        advanced.NextAsOfDate.Should().Be(
+            DateOnly.Parse(expectedAsOf, System.Globalization.CultureInfo.InvariantCulture),
+            "the as-of date moves by days on the schedule's local calendar, not by UTC dates");
+    }
+
+    [Fact]
+    public async Task Scenario_LastDayOfMonthSchedule_AdvancesToTheNextMonthEnd()
+    {
+        var januaryEnd = new DateTimeOffset(2026, 1, 31, 8, 0, 0, TimeSpan.Zero);
+        var due = BuildSchedule("month-end", "operator-a") with
+        {
+            CronExpression = "0 8 L * *",
+            State = ReportingScheduleStateDto.Active,
+            NextAsOfDate = new DateOnly(2026, 1, 31),
+            DueAtUtc = januaryEnd
+        };
+        var store = new SharedAtomicScheduleStore([due]);
+        var service = CreateRunnableScheduleService(store, new CountingRenderer());
+
+        await service.RunDueForWorkerAsync(januaryEnd, CancellationToken.None);
+
+        store.Load().Should().ContainSingle(schedule =>
+            schedule.DueAtUtc == new DateTimeOffset(2026, 2, 28, 8, 0, 0, TimeSpan.Zero)
+            && schedule.NextAsOfDate == new DateOnly(2026, 2, 28));
+    }
+
+    [Fact]
+    public void Scenario_ScheduleUpsert_UnknownTimeZoneFailsBeforePersistence()
+    {
+        var store = new SharedAtomicScheduleStore([]);
+        var service = CreateScheduleService(store);
+
+        var upsert = () => service.Upsert(new ReportingScheduleUpsertRequestDto(
+            "unknown-zone",
+            "investor-monthly-statement",
+            "0 8 1 * *",
+            new DateOnly(2026, 8, 31),
+            FixedNow.AddDays(1),
+            2,
+            "operator-a",
+            State: ReportingScheduleStateDto.Draft,
+            TimeZoneId: "Mars/Olympus_Mons"));
+
+        upsert.Should().Throw<ArgumentException>()
+            .WithMessage("*time zone*");
+        store.Load().Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Scenario_ScheduleUpsert_TimeZoneIsRetainedUntilExplicitlyResetToUtc()
+    {
+        var store = new SharedAtomicScheduleStore([]);
+        var service = CreateScheduleService(store);
+        ReportingScheduleUpsertRequestDto Request(string? timeZoneId) => new(
+            "zone-lifecycle",
+            "investor-monthly-statement",
+            "0 8 1 * *",
+            new DateOnly(2026, 8, 31),
+            FixedNow.AddDays(1),
+            2,
+            "operator-a",
+            State: ReportingScheduleStateDto.Draft,
+            TimeZoneId: timeZoneId);
+
+        service.Upsert(Request("Europe/London")).TimeZoneId.Should().Be("Europe/London");
+        service.Upsert(Request(null)).TimeZoneId.Should().Be("Europe/London");
+        service.Upsert(Request("UTC")).TimeZoneId.Should().BeNull();
+    }
+
+    [Fact]
     public void Scenario_ScheduleLease_ExpiresWithFencingAgainstLateOwner()
     {
         var schedule = BuildCurrentSchedule("lease-expiry") with
@@ -893,9 +1372,25 @@ public sealed class ReportingOperationalConcurrencyTests
                 () => FixedNow),
             store);
 
+    private sealed class RecordingPeriodResolver(Func<DateOnly, ReportingSchedulePeriodMatch?> resolve)
+        : IReportingSchedulePeriodResolver
+    {
+        public List<DateOnly> Dates { get; } = [];
+
+        public Task<ReportingSchedulePeriodMatch?> ResolvePeriodAsync(
+            ReportingRunParametersDto parameters,
+            DateOnly date,
+            CancellationToken ct = default)
+        {
+            Dates.Add(date);
+            return Task.FromResult(resolve(date));
+        }
+    }
+
     private static ReportingScheduleService CreateRunnableScheduleService(
         IReportingScheduleStore store,
-        IReportingSectionRenderer renderer)
+        IReportingSectionRenderer renderer,
+        IReportingSchedulePeriodResolver? periodResolver = null)
     {
         var catalog = new DefaultReportingTemplateCatalog();
         return new ReportingScheduleService(
@@ -909,7 +1404,10 @@ public sealed class ReportingOperationalConcurrencyTests
                 dependencyEvaluator: new AlwaysReadyEvaluator(),
                 utcNow: () => FixedNow,
                 options: new ReportingRunReadinessOptions(
-                    AllowLegacyUnscopedDrafts: true)));
+                    AllowLegacyUnscopedDrafts: true)))
+        {
+            PeriodResolver = periodResolver
+        };
     }
 
     private static ReportingRunSnapshot BuildSnapshot(

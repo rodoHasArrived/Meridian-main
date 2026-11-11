@@ -6,10 +6,14 @@ module_id: SRC-BACKTESTING
 path: src/Meridian.Backtesting
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-10-30
+last_reviewed: 2026-11-10
 ---
 
 # src/Meridian.Backtesting
+
+With short selling disabled, `SimulatedPortfolio` rejects any sell that would leave the position net short, including a sell larger than the current long (long 100, sell 150); it previously rejected only sells from a flat or short position.
+
+An annualised return too large for `decimal` (a 25% one-day gain compounds past it) is reported capped at 1e12 instead of aborting the metrics build. Walk-forward stitched out-of-sample total and annualised returns use the same cap.
 
 `MarketImpactFillModel` fills an all-or-none order completely or not at all; a limit order whose later slices cross the limit no longer returns a partial fill when partial fills are disallowed.
 

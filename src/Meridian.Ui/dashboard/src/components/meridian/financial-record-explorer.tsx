@@ -21,7 +21,7 @@ import type {
   FinancialRecordExplorerTone
 } from "@/types";
 import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
-import { pluralizeCount } from "@/lib/format";
+import { normalizeFinancialLabel, pluralizeCount } from "@/lib/format";
 
 export interface FinancialRecordExplorerScopeItem {
   id: string;
@@ -287,7 +287,7 @@ export function FinancialRecordExplorerShell({
         <div className="space-y-3">
           <ExplorerScopeBar items={dtoMode ? dtoMode.scopeItems.map((item) => ({ id: item.label, label: item.label, value: item.value })) : scopeItems} />
           <SavedViewSelector views={normalizedViews} selectedViewId={selectedViewId} onSelect={handleSelectSavedView} />
-          <ExplorerSummaryStrip items={dtoMode ? dtoMode.summaryItems.map((item) => ({ id: item.label, label: item.label, value: item.value, tone: normalizeTone(item.tone) })) : summaryItems} />
+          <ExplorerSummaryStrip items={dtoMode ? dtoMode.summaryItems.map((item) => ({ id: item.label, label: normalizeFinancialLabel(item.label), value: item.value, tone: normalizeTone(item.tone) })) : summaryItems} />
           <AppliedFilterStrip filters={dtoMode ? selectedFilters.length > 0 ? selectedFilters : dtoMode.filters : appliedFilters.map((filter) => ({ filterId: filter.id, label: filter.label, value: filter.value, operator: "equals", tone: "Default" as FinancialRecordExplorerTone }))} />
         </div>
         <ProofSummary title={headerTitle} actions={actions} explorer={dtoMode} />
@@ -634,7 +634,7 @@ function ExplorerGrid({
         <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
           <tr aria-rowindex={1}>
             {columns.map((column) => (
-              <th key={column.columnId} className={cn("px-3 py-2 text-left", column.isRightAligned ? "text-right" : "")}>{column.header}</th>
+              <th key={column.columnId} className={cn("px-3 py-2 text-left", column.isRightAligned ? "text-right" : "")}>{normalizeFinancialLabel(column.header)}</th>
             ))}
           </tr>
         </thead>

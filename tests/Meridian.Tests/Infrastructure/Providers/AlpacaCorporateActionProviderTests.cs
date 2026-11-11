@@ -35,7 +35,7 @@ public sealed class AlpacaCorporateActionProviderTests
 
         var results = await provider.FetchAsync("AAPL", securityId, CancellationToken.None);
 
-        provider.ReleaseStatus.Should().Be(CorporateActionProviderReleaseStatusDto.AcceptanceEligible);
+        provider.ReleaseStatus.Should().Be(CorporateActionProviderReleaseStatusDto.ReviewOnly);
         results.Select(result => result.ActionType).Should().Equal("Dividend", "Dividend", "StockSplit");
         results.Should().OnlyContain(result =>
             result.SecurityId == securityId
@@ -47,7 +47,7 @@ public sealed class AlpacaCorporateActionProviderTests
                 (character >= '0' && character <= '9') || (character >= 'a' && character <= 'f'))
             && result.EvidenceReference ==
                $"alpaca://corporate-actions/announcements/{result.SourceEventId}/versions/{result.EvidenceHash}"
-            && result.ReleaseStatus == CorporateActionProviderReleaseStatusDto.AcceptanceEligible);
+            && result.ReleaseStatus == CorporateActionProviderReleaseStatusDto.ReviewOnly);
         results[0].Should().Match<Meridian.Infrastructure.Adapters.Core.CorporateActionCommand>(dividend =>
             dividend.ExDate == new DateOnly(2016, 2, 4) && dividend.Amount == 0.52m
             && dividend.RecordDate == null && dividend.PayableDate == null,

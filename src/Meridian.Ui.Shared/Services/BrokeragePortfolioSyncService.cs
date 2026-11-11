@@ -724,10 +724,22 @@ public sealed class BrokeragePortfolioSyncService
     {
         var providerId = NormalizeProviderId(account.ProviderId);
         var externalAccountId = NormalizeOptional(account.AccountId);
-        return providerId is not null
-            && externalAccountId is not null
-            && authorizedExternalAccounts.TryGetValue(providerId, out var providerAccounts)
-            && providerAccounts.Contains(externalAccountId);
+        if (providerId is null
+            || externalAccountId is null
+            || !authorizedExternalAccounts.TryGetValue(providerId, out var providerAccounts))
+        {
+            return false;
+        }
+
+        if (providerAccounts.Contains(externalAccountId))
+            return true;
+
+        // A provider can name one account in more than one way. The filter is unchanged: an alias
+        // counts only when the caller is authorized for a link retained under that exact alias.
+        return account.Metadata is not null
+            && account.Metadata.TryGetValue(BrokerageExternalAccountMetadata.AccountIdAliases, out var aliases)
+            && aliases.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Any(providerAccounts.Contains);
     }
 
     private async Task<FundAccountBrokerageSyncActivityDto> BuildProjectionAsync(

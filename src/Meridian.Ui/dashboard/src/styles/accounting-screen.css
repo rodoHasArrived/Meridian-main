@@ -643,10 +643,10 @@
 
 /* Disabled accounting actions remain visibly unavailable without dropping
    labels below the contrast needed to understand the gate they represent. */
-.workspace-section-band button:disabled,
-.accounting-reference-panel button:disabled,
-.configure-activation-rail button:disabled,
-.row-detail-panel button:disabled {
+.workspace-section-band button:disabled:not(.mds-btn),
+.accounting-reference-panel button:disabled:not(.mds-btn),
+.configure-activation-rail button:disabled:not(.mds-btn),
+.row-detail-panel button:disabled:not(.mds-btn) {
   color: var(--ws-text-muted, #5E666F);
   opacity: 0.76;
 }

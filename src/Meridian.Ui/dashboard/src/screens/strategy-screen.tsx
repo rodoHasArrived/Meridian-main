@@ -1,3 +1,4 @@
+import { DetailFields } from "@/components/meridian/detail-pane";
 import { WorkspaceTaskWorkbench } from "@/components/meridian/workspace-task-workbench";
 import { useEffect, useMemo, useRef } from "react";
 import { BarChart3, BookOpenText, ChartScatter, Network, Sigma, Sparkles } from "lucide-react";
@@ -447,7 +448,7 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
         </div>
       </section>
 
-      <StatStrip metrics={data.metrics} label="Strategy headline metrics" />
+      <StatStrip metrics={data.metrics} label="Strategy headline metrics" source="Strategy workspace" figureSource="strategy" />
 
       {routeView === "overview" ? <StrategyOverviewHub vm={vm} /> : null}
 
@@ -1521,17 +1522,7 @@ function SelectedPlotStudyDetail({
         <h3 className="text-sm font-semibold text-foreground">{detail.title}</h3>
         <p className="mt-1 break-words font-mono text-[11px] text-muted-foreground">{detail.subtitle}</p>
         <p className="mt-2 text-xs leading-5 text-foreground/80">{detail.description}</p>
-        <dl className="mt-3 grid gap-2">
-          {detail.fields.map((field) => (
-            <div
-              key={field.label}
-              className="grid grid-cols-[minmax(0,0.4fr)_minmax(0,0.6fr)] gap-3 rounded-sm border border-border/60 bg-background/25 px-2.5 py-2"
-            >
-              <dt className={cn("text-[10px] text-muted-foreground", usesTrackedCaps(field.label) && "uppercase tracking-[0.14em]")}>{field.label}</dt>
-              <dd className="break-words text-right font-mono text-xs text-foreground">{field.value}</dd>
-            </div>
-          ))}
-        </dl>
+        <DetailFields fields={detail.fields} className="mt-3" />
       </div>
     </aside>
   );
@@ -1640,7 +1631,7 @@ function PlotToolStatisticsPanel({ vm }: { vm: StrategyPlotStatisticsState }) {
         <Card className="border-border/70 bg-background/35">
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Observation sheet</CardTitle>
-            <CardDescription>Recent records packaged for analyst review without leaving the Strategy lane.</CardDescription>
+            <CardDescription>Recent records packaged for analyst review without leaving Strategy.</CardDescription>
           </CardHeader>
           <CardContent>
             <DenseDataTable

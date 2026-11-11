@@ -11,6 +11,8 @@ last_reviewed: 2026-11-10
 
 # src/Meridian.FSharp.Ledger
 
+`FundEconomics` accruals round to 2 decimals with away-from-zero midpoint rounding, the same policy as `LedgerCurrencyRounding.RoundCurrency(decimal)` for posted ledger amounts. The kernels take no currency, so they do not apply per-currency minor units.
+
 ## Purpose
 
 FSharp Ledger contains deterministic ledger models, accounting calculations, reconciliation matching, and reconciliation-case workflow rules.

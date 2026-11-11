@@ -13,6 +13,9 @@ import {
   formatPrefixedCurrency,
   formatRatioAsPercent,
   formatSignedCurrency,
+  formatPnl,
+  normalizeFinancialLabel,
+  pnlToneForValue,
   pluralizeCount
 } from "@/lib/format";
 
@@ -217,3 +220,44 @@ describe("UTC date labels", () => {
   });
 });
 
+
+describe("formatPnl", () => {
+  it("signs every non-zero amount, groups thousands and fixes decimals", () => {
+    expect(formatPnl(1234.5)).toBe("+$1,234.50");
+    expect(formatPnl(-1234.5)).toBe("-$1,234.50");
+    expect(formatPnl(0)).toBe("$0.00");
+    expect(formatPnl(90, { decimals: 0 })).toBe("+$90");
+    expect(formatPnl(-4, { currency: "EUR" })).toBe("-€4.00");
+  });
+
+  it("renders the fallback for a missing value", () => {
+    expect(formatPnl(null)).toBe("—");
+    expect(formatPnl(Number.NaN, { fallback: "Not recorded" })).toBe("Not recorded");
+  });
+});
+
+describe("pnlToneForValue", () => {
+  it("is green for a gain, red for a loss and neutral otherwise", () => {
+    expect(pnlToneForValue(0.01)).toBe("success");
+    expect(pnlToneForValue(-0.01)).toBe("danger");
+    expect(pnlToneForValue(0)).toBe("default");
+    expect(pnlToneForValue(null)).toBe("default");
+  });
+});
+
+describe("normalizeFinancialLabel", () => {
+  it.each([
+    ["Unrealized PnL", "Unrealized P&L"],
+    ["Net P/L", "Net P&L"],
+    ["P & L impact", "P&L impact"],
+    ["Total P and L", "Total P&L"],
+    ["Realized P&L", "Realized P&L"]
+  ])("spells %s as %s", (label, expected) => {
+    expect(normalizeFinancialLabel(label)).toBe(expected);
+  });
+
+  it("leaves identifiers and unrelated words alone", () => {
+    expect(normalizeFinancialLabel("unrealizedPnl")).toBe("unrealizedPnl");
+    expect(normalizeFinancialLabel("Open positions")).toBe("Open positions");
+  });
+});
