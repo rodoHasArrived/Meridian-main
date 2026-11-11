@@ -54,19 +54,22 @@ script references without declared SRI; local byte-pin verification does not
 change that source-integrity limitation or prove live CDN access.
 
 The initial expanded export recorded 67 governance findings and 25 warnings.
-After integration through `0c10785dfc03`, all seven release gates, the complete
-127-test package Python suite and the strict 135/135-card matrix passed. Those
-results precede the subsequent brand runtime-alias update. After that update,
-all seven gates and parity checks passed again; the byte-identical component
-bundle retains the strict matrix proof. The metadata refresh records 743 tokens
-(39 new brand-scoped/default records), with other catalogue counts unchanged.
-The full Python and affected brand-browser reruns are pending. The earlier
-contrast and parity checks passed, including the forced-light cycle correction;
-the 13-test metadata suite includes unconditional-default precedence. Build/source
-freshness and release integrity passed for 1,346 curated files. Regenerate the
-artifact after final documentation edits and associate its checksum with the
-delivered source. Use the audit's continuation status for the precise scope,
-historical dashboard evidence and documentation gate that did not converge.
+The final merged source through `db7902` passed the complete 131-test Python
+suite and full contrast check. All seven release gates passed after the runtime
+alias update; parity passed 12 tests and the full 502-declared/227-shared-name
+check with zero findings. The 743-token metadata refresh adds 39 brand-scoped/
+default records, with other catalogue counts unchanged. The brand browser matrix
+passed 28 states, 1,932 AA pairs and 60 actual dark-role mapping checks. Native
+browser coverage passed 64 cases and 15 axe scans with zero reported violations.
+The byte-identical component bundle and public runtime retain the strict
+135/135-card proof. Source-hash and README checks reported zero errors.
+
+The 13-test metadata suite includes unconditional-default precedence.
+Build/source freshness and release integrity passed for 1,346 curated files.
+Regenerate the artifact after final documentation edits and associate its
+checksum with the delivered source. Use the audit's continuation status for the
+precise scope, historical dashboard evidence and documentation gate that did not
+converge.
 Build/export integrity validates the curated artifact; it cannot turn a failed
 or unrun gate into release certification. Keep NVDA/VoiceOver, Firefox/WebKit,
 native Windows/Edge and full-monorepo checks explicit when they were not run.

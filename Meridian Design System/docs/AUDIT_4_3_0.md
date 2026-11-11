@@ -589,13 +589,21 @@ their respective checkpoints. The incoming 4,947-assertion full-dashboard run
 above retains its own source and scope; these results are not combined into a
 new unrun full-suite count.
 
-After the brand runtime-alias update and metadata refresh through
-`1f01910387a2`, all seven release gates passed again. The parity suite passed
-12 tests, and the complete parity check passed with 502 declared names,
-227 shared names and zero findings. The component bundle is byte-identical to
-the one exercised by the strict 135-card run, so that component proof remains
-applicable. The affected 28-state brand browser matrix and complete Python suite
-are being rerun; their earlier counts above are not asserted as fresh results.
+Final verification after the brand runtime-alias update, 743-token metadata
+refresh and integration through `db7902` passed the complete **131-test Python
+suite** and full contrast check. All seven release gates passed after the
+runtime-alias update. The parity suite passed 12 tests, and the complete parity
+check passed with 502 declared names, 227 shared names and zero findings. The
+fresh brand browser matrix passed 28 states and 1,932 AA pairs; all 60 actual
+dark-role mappings matched their intended identities. The final native browser
+coverage passed 64 cases and 15 axe scans with zero reported violations.
+
+The last incoming Modal/comment-governance fixes retained the already-correct
+button type and standalone identity; all 25 governance tests passed. The
+component bundle and public runtime are byte-identical to those exercised by
+the strict 135-card run, so that component proof remains applicable. Source-hash
+and README checks reported zero errors. The initial and intermediate Python
+counts above remain historical; 131 is the final complete-suite result.
 
 The documentation generators were attempted and each generation step exited
 successfully, but the aggregate `verify-docs` check did not converge against the
