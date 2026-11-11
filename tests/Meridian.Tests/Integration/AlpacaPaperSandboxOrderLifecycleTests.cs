@@ -17,8 +17,9 @@ namespace Meridian.Tests.Integration;
 /// Opt-in order-lifecycle certification against Alpaca's real paper Trading API, driven through
 /// the production order manager, brokerage gateway, recovery journal and portfolio
 /// synchronization. Unlike <see cref="AlpacaPaperSandboxTests"/> these tests place, replace and
-/// cancel paper orders and take a one-share paper position that they close again, so they need
-/// their own second opt-in. Every order is one share, carries a run-unique client id, and is
+/// cancel paper orders and take a one-share paper position that they close again, so they sit
+/// behind the order opt-in they share with <see cref="AlpacaPaperOrderLifecycleTests"/>, which
+/// certifies the gateway on its own. Every order is one share, carries a run-unique client id, and is
 /// cancelled or flattened in a <c>finally</c> block; the transport refuses bulk cancellation,
 /// liquidation and anything outside the paper host.
 /// </summary>
@@ -64,7 +65,7 @@ public sealed class AlpacaPaperSandboxOrderLifecycleTests(ITestOutputHelper outp
             ["runId"] = SandboxRunId,
         };
 
-    [AlpacaPaperSandboxOrdersFact]
+    [AlpacaPaperOrdersFact]
     public async Task OrderManagerWithoutAdmissionEvidence_RefusesToRouteAndNothingReachesTheBroker()
     {
         var (key, secret) = AlpacaPaperSandbox.RequirePaperCredentials();
@@ -110,7 +111,7 @@ public sealed class AlpacaPaperSandboxOrderLifecycleTests(ITestOutputHelper outp
         output.WriteLine("Admission gates refused four ungated dispatches; submissions reaching the broker={0}.", clients.SubmissionCount);
     }
 
-    [AlpacaPaperSandboxOrdersFact]
+    [AlpacaPaperOrdersFact]
     public async Task RestingOrder_IsSubmittedRecoveredAmendedAndCancelledThroughTheGovernedPath()
     {
         var (key, secret) = AlpacaPaperSandbox.RequirePaperCredentials();
@@ -225,7 +226,7 @@ public sealed class AlpacaPaperSandboxOrderLifecycleTests(ITestOutputHelper outp
         cleanupProblems.Should().BeEmpty("the run must leave the paper account as it found it");
     }
 
-    [AlpacaPaperSandboxOrdersFact]
+    [AlpacaPaperOrdersFact]
     public async Task AcknowledgementLostAfterAcceptance_BlocksTradingUntilTheOneBrokerOrderIsRecovered()
     {
         var (key, secret) = AlpacaPaperSandbox.RequirePaperCredentials();
@@ -299,7 +300,7 @@ public sealed class AlpacaPaperSandboxOrderLifecycleTests(ITestOutputHelper outp
         cleanupProblems.Should().BeEmpty("the run must leave the paper account as it found it");
     }
 
-    [AlpacaPaperSandboxOrdersFact]
+    [AlpacaPaperOrdersFact]
     public async Task MarketableOrder_FillReconcilesHoldingsActivityAndRetainedStateAcrossARestart()
     {
         var (key, secret) = AlpacaPaperSandbox.RequirePaperCredentials();
@@ -709,19 +710,5 @@ public sealed class AlpacaPaperSandboxOrderLifecycleTests(ITestOutputHelper outp
         foreach (var problem in problems)
             output.WriteLine("CLEANUP INCOMPLETE: {0}; the paper account may hold '{1}' shares from this run.", problem, Symbol);
         return problems;
-    }
-}
-
-/// <summary>
-/// Gates the paper tests that place, replace and cancel orders behind a second, separate opt-in
-/// on top of the read-only sandbox opt-in.
-/// </summary>
-public sealed class AlpacaPaperSandboxOrdersFactAttribute : FactAttribute
-{
-    public AlpacaPaperSandboxOrdersFactAttribute()
-    {
-        if (!AlpacaPaperSandbox.IsOptedIn(AlpacaPaperSandbox.OptInVariable)
-            || !AlpacaPaperSandbox.IsOptedIn(AlpacaPaperSandbox.OrdersOptInVariable))
-            Skip = "Paper order-lifecycle validation places and cancels paper orders and is opt-in: set MERIDIAN_RUN_ALPACA_PAPER_SANDBOX=1, MERIDIAN_RUN_ALPACA_PAPER_SANDBOX_ORDERS=1 and the documented paper credentials.";
     }
 }

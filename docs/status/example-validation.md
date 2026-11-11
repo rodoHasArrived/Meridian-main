@@ -8,8 +8,8 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 1138 |
-| Valid | 640 |
+| Total code blocks | 1137 |
+| Valid | 639 |
 | Invalid | 0 |
 | Skipped | 498 |
 
@@ -18,7 +18,7 @@
 | Language | Total | Valid | Invalid | Skipped |
 |----------|------:|------:|--------:|--------:|
 | `(none)` | 119 | 0 | 0 | 119 |
-| `bash` | 269 | 269 | 0 | 0 |
+| `bash` | 268 | 268 | 0 | 0 |
 | `cpp` | 1 | 0 | 0 | 1 |
 | `csharp` | 269 | 269 | 0 | 0 |
 | `csv` | 1 | 0 | 0 | 1 |
@@ -179,7 +179,7 @@ No invalid code examples found.
 | `docs/status/evidence/dk1-pilot-parity-runbook.md` | 1 |
 | `docs/status/evidence/prd-106-portfolio-snapshot-hardening.md` | 1 |
 | `docs/testing/WAVE2_ACCEPTANCE_TESTS.md` | 3 |
-| `docs/testing/alpaca-paper-portfolio-sandbox.md` | 5 |
+| `docs/testing/alpaca-paper-portfolio-sandbox.md` | 4 |
 | `docs/testing/endpoint-fixture-isolation.md` | 1 |
 | `docs/testing/evidence/ai-throughput-pilot-2026-10-28-refinement/packet-rendering/refined.md` | 1 |
 | `docs/testing/evidence/ai-throughput-pilot-2026-10-28-refinement/packet-rendering/same-input-baseline.md` | 3 |

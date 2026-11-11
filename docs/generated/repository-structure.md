@@ -4269,6 +4269,7 @@ Meridian-main
 │   │   │   ├── DualPathEventPipeline.cs
 │   │   │   ├── EventPipeline.cs
 │   │   │   ├── FSharpEventValidator.cs
+│   │   │   ├── GroupCommitJsonlLog.cs
 │   │   │   ├── HotPathBatchSerializer.cs
 │   │   │   ├── IDedupStore.cs
 │   │   │   ├── IEventValidator.cs
@@ -6641,6 +6642,7 @@ Meridian-main
 │   │   │   ├── AtomicFileWriter.cs
 │   │   │   ├── AtomicFileWriterAdapter.cs
 │   │   │   ├── CompressionProfileManager.cs
+│   │   │   ├── JsonlAppendWriter.cs
 │   │   │   ├── JsonlWriteFence.cs
 │   │   │   ├── JsonlWriterLock.cs
 │   │   │   ├── WalChecksum.cs
@@ -10649,6 +10651,7 @@ Meridian-main
 │   │   │   │   ├── EventPipelineTracePropagationTests.cs
 │   │   │   │   ├── FSharpEventValidatorTests.cs
 │   │   │   │   ├── GoldenMasterPipelineReplayTests.cs
+│   │   │   │   ├── GroupCommitJsonlLogTests.cs
 │   │   │   │   ├── HotPathBatchSerializerTests.cs
 │   │   │   │   ├── IngestionJobServiceCoordinationTests.cs
 │   │   │   │   ├── IngestionJobServiceTests.cs
@@ -11193,6 +11196,7 @@ Meridian-main
 │   │   │   │   ├── AlpacaMessageParsingTests.cs
 │   │   │   │   ├── AlpacaMultiLegParentOrderTests.cs
 │   │   │   │   ├── AlpacaOptionsChainProviderTests.cs
+│   │   │   │   ├── AlpacaProviderModuleTradingEnvironmentTests.cs
 │   │   │   │   ├── AlpacaQuotePipelineGoldenTests.cs
 │   │   │   │   ├── AlpacaQuoteRoutingTests.cs
 │   │   │   │   ├── AlpacaStreamDiagnosticsTests.cs
@@ -11992,6 +11996,7 @@ Meridian-main
 │   │   │   ├── JsonFileIBDataResultStoreTests.cs
 │   │   │   ├── JsonFileSnapshotStoreTests.cs
 │   │   │   ├── JsonlAppendStreamTests.cs
+│   │   │   ├── JsonlAppendWriterTests.cs
 │   │   │   ├── JsonlBackfillBarWriterTests.cs
 │   │   │   ├── JsonlBatchWriteTests.cs
 │   │   │   ├── JsonlMarketDataStoreCorruptionTests.cs
