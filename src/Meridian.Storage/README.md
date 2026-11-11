@@ -6,10 +6,12 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-10
+last_reviewed: 2026-11-11
 ---
 
 # src/Meridian.Storage
+
+`BackfillStatusStore` keeps a verified coverage sidecar (`_status/backfill-symbol-coverage.json`, atomic write): per symbol, granularity, provider and feed, the session ranges whose bars were written. Backfill resume reads only this sidecar; the date-only checkpoint and bar-count sidecars remain for status surfaces and are not evidence for skipping. An unreadable or newer-format coverage file is treated as no coverage. `BackfillCoverageMath` owns the range merge and missing-range arithmetic.
 
 `JsonlBackfillBarWriter` gives every granularity its own file prefix (`bar_4hour`, `bar_weekly`, `bar_monthly` alongside the existing ones) and throws for an unknown granularity instead of writing it as `bar_daily`.
 
@@ -400,6 +402,14 @@ nothing. Replacement keeps the stored `source`, `confidence` and `manual_overrid
 already held instead of resetting them to `SecurityMaster`/null/false; new rows still get those
 defaults. Pre-existing rows become `Baseline` revisions available only from the migration
 (`history_available_from`), so earlier cutoffs report unknown history, not an absence.
+Every revision one replacement appends carries one recorded time, placed after everything the
+security already holds, so a recorded-as-of read never returns part of a replacement. A populated
+through-060 upgrade test runs the migration's own Baseline backfill across failure, retry and
+restart. Apply conditions from the 2026-11-10 review: stop Security Master writers while 062 runs
+(the backfill can deadlock with a writer holding a `securities` row lock), and let no pre-062 binary
+write afterwards, because it would change identifiers without recording a revision. The stored
+`listing_mic` is resolved by `SecurityListingIdentity.ResolvePrimaryListingMic`, the contract-level
+rule the data-quality scan's listing checks share.
 `ISecurityIdentifierHistoryStore` (implemented by `PostgresSecurityMasterStore`) reads every
 revision at a recorded cutoff and the recorded view of held identifiers with an optional
 valid-time filter. Recorded timestamps are transaction-start times kept monotonic per identity;

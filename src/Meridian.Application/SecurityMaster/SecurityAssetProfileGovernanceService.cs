@@ -4,7 +4,6 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.ReferenceData.SecurityMaster;
 using Meridian.Storage;
 using Meridian.Storage.Archival;
-using Microsoft.Extensions.Options;
 
 namespace Meridian.Application.SecurityMaster;
 
@@ -84,17 +83,20 @@ public sealed class SecurityAssetProfileGovernanceService : ISecurityAssetProfil
     }
 
     /// <summary>
-    /// Production composition: an approval by the actor who drafted the version is refused while
-    /// <see cref="SecurityMasterWorkbenchOptions.RequireIndependentProfileApprover"/> is on (off by default). The setting is
-    /// read at approval time so it hot-reloads. The other constructors keep self-approval allowed.
+    /// The composed constructor: an approval by an actor who drafted the version is refused while the
+    /// independent-approver requirement is in force, which is when
+    /// <see cref="SecurityMasterWorkbenchOptions.RequireIndependentProfileApprover"/> is on (off by default)
+    /// or the Institutional governance profile applies. The effective value is read from
+    /// <see cref="ISecurityMasterGovernanceRequirements"/> at approval time so the setting hot-reloads.
+    /// The other constructors keep self-approval allowed.
     /// </summary>
     public SecurityAssetProfileGovernanceService(
         StorageOptions storageOptions,
-        IOptionsMonitor<SecurityMasterWorkbenchOptions> workbenchOptions)
+        ISecurityMasterGovernanceRequirements governanceRequirements)
         : this(storageOptions)
     {
-        ArgumentNullException.ThrowIfNull(workbenchOptions);
-        _requireIndependentApprover = () => workbenchOptions.CurrentValue.RequireIndependentProfileApprover;
+        ArgumentNullException.ThrowIfNull(governanceRequirements);
+        _requireIndependentApprover = () => governanceRequirements.Current.RequireIndependentProfileApprover;
     }
 
     // The selectable catalog must stay aligned with write-time governance, which accepts a
