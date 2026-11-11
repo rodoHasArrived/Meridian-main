@@ -179,8 +179,8 @@ Total items: **236**
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 5022 | `NOTE` | ❌ | note: "Board package.", |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 5068 | `NOTE` | ❌ | note: "Board package.", |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 5270 | `NOTE` | ❌ | note: "pricing-correction" |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | 2819 | `NOTE` | ❌ | note: note \|\| null |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | 2832 | `NOTE` | ❌ | note: draft.deliveryNote, |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | 2778 | `NOTE` | ❌ | note: note \|\| null |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | 2791 | `NOTE` | ❌ | note: draft.deliveryNote, |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.test.ts` | 203 | `NOTE` | ❌ | note: "pricing-correction" |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.test.ts` | 488 | `NOTE` | ❌ | note: "Starter target" |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.test.ts` | 619 | `NOTE` | ❌ | note: "Board package." |

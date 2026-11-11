@@ -1,6 +1,7 @@
 import { DetailFieldItem } from "@/components/meridian/detail-pane";
 import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
-import { FileText, Landmark, Network, PencilLine, Plus, RotateCcw, XCircle } from "lucide-react";
+import { FileText, Landmark, Network, PencilLine, RotateCcw, XCircle } from "lucide-react";
+import { NewCustomReportBar } from "@/screens/reporting-screen.new-custom-report";
 import { useLocation } from "react-router-dom";
 import { formatCount, formatCurrency as formatCurrencyAmount, formatPercent as formatPercentAmount, pluralizeCount } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
@@ -56,8 +57,7 @@ import {
   type ReportingTemplateLifecycleActionRow,
   type ReportingTemplateRow,
   type ReportingWriterGridRow,
-  type ReportingWriterToken,
-  buildNewCustomReportWriterGrid
+  type ReportingWriterToken
 } from "@/screens/reporting-screen.view-model";
 import { ReportingPrivateCapitalReadinessPanel } from "@/screens/reporting-screen.private-capital-readiness";
 import {
@@ -276,28 +276,6 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
   const [brandingDraft, setBrandingDraft] = useState<ReportBrandingDraftState>(() => buildDefaultReportBrandingDraft(reportingData));
   const reportWriterDatasetSources = reportingData?.reportWriterDatasetSources ?? [];
   const [newCustomWriterGrids, setNewCustomWriterGrids] = useState<ReportingWriterGridRow[]>([]);
-  const newCustomReportOrdinal = useRef(0);
-  function addNewCustomWriterGrid() {
-    // A saved draft with the same name would be versioned onto that template, so skip any
-    // ordinal whose name a retained template or another unsaved grid already uses.
-    const usedNames = new Set([
-      ...vm.templateRows.map((template) => template.templateName.toLowerCase()),
-      ...newCustomWriterGrids.map((grid) => grid.templateId.toLowerCase())
-    ]);
-    do {
-      newCustomReportOrdinal.current += 1;
-    } while (usedNames.has(`custom-report-${newCustomReportOrdinal.current}`));
-    // Preview renders against an approved, accessible template; built-ins always qualify.
-    const host = vm.templateRows.find((template) => template.sourceLabel === "Built-in" && template.isAccessible)
-      ?? vm.templateRows.find((template) => template.canRunOnDemand)
-      ?? null;
-    const grid = buildNewCustomReportWriterGrid(
-      newCustomReportOrdinal.current,
-      reportWriterDatasetSources[0]?.fields,
-      host ? { templateId: host.templateName, templateVersion: host.version } : null
-    );
-    setNewCustomWriterGrids((current) => [grid, ...current]);
-  }
   const {
     writerDraftStatus,
     writerPreviewStatus,
@@ -1522,26 +1500,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
       ) : null}
 
       {isReportBuilderTaskMode ? (
-        <section
-          aria-label="Start a custom report"
-          className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border/70 bg-secondary/20 px-3 py-3"
-        >
-          <p className="min-w-0 text-xs leading-5 text-muted-foreground">
-            Start a blank report-writer grid, lay it out, then save it as a draft for controller review.
-          </p>
-          <span className="flex flex-wrap items-center gap-2">
-            {newCustomWriterGrids.length > 0 ? (
-              <Button type="button" size="sm" variant="ghost" onClick={() => setNewCustomWriterGrids([])}>
-                <XCircle className="h-4 w-4" aria-hidden="true" />
-                Discard new reports
-              </Button>
-            ) : null}
-            <Button type="button" size="sm" variant="outline" onClick={addNewCustomWriterGrid}>
-              <Plus className="h-4 w-4" aria-hidden="true" />
-              New custom report
-            </Button>
-          </span>
-        </section>
+        <NewCustomReportBar templates={vm.templateRows} datasetSources={reportWriterDatasetSources} grids={newCustomWriterGrids} onGridsChange={setNewCustomWriterGrids} />
       ) : null}
 
       {isReportBuilderTaskMode && writerGrids.length > 0 ? (

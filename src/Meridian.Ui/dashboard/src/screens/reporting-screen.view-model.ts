@@ -34,7 +34,7 @@ import {
   hasRetainedReportingAsOfDate,
   presentReportingAsOfDate
 } from "@/screens/reporting-screen.schedule-view-model";
-import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary, ReportWriterAggregateFunction, ReportWriterFilterOperator, ReportingRunStatusProjection, ReportingStarterKit, ReportingStarterSeedSchedule, ReportingTemplateGridFieldMetadata, ReportingTemplateGridMetadata, ReportingTemplateMetadata, ReportingWorkflowChangedLine, ReportingWorkflowEvidenceLink, ReportingWorkflowLineProvenance, ReportingWorkflowRecord } from "@/types";
+import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary, ReportWriterAggregateFunction, ReportWriterFilterOperator, ReportingRunStatusProjection, ReportingStarterKit, ReportingStarterSeedSchedule, ReportingTemplateGridMetadata, ReportingTemplateMetadata, ReportingWorkflowChangedLine, ReportingWorkflowEvidenceLink, ReportingWorkflowLineProvenance, ReportingWorkflowRecord } from "@/types";
 import { formatCount, formatNumber } from "@/lib/format";
 
 export type ReportingProfileBadgeTone = "primary" | "success" | "warning" | "muted";
@@ -1550,70 +1550,6 @@ function buildTemplateLifecycleActions(
   return [];
 }
 
-const newCustomReportDefaultFields: ReportingTemplateGridFieldMetadata[] = [
-  { name: "sector", label: "Sector", role: "Dimension", dataType: "string", dataset: "Preview fixture" },
-  { name: "strategy", label: "Strategy", role: "Dimension", dataType: "string", dataset: "Preview fixture" },
-  { name: "security", label: "Security", role: "Dimension", dataType: "string", dataset: "Preview fixture" },
-  { name: "marketValue", label: "Market value", role: "Metric", dataType: "decimal", dataset: "Preview fixture" },
-  { name: "pnl", label: "P&L", role: "Metric", dataType: "decimal", dataset: "Preview fixture" }
-];
-
-/**
- * Builds a blank report-writer grid so an operator can start a custom report in the browser.
- * Nothing is persisted until the operator saves it as a template draft. The field palette comes
- * from the first retained dataset source when one exists, otherwise from the preview fixture fields.
- */
-export function buildNewCustomReportWriterGrid(
-  ordinal: number,
-  fields: ReportingTemplateGridFieldMetadata[] | null | undefined,
-  previewHost: { templateId: string; templateVersion: string } | null
-): ReportingWriterGridRow {
-  const templateId = `custom-report-${ordinal}`;
-  const title = `Custom report ${ordinal}`;
-  const gridId = "grid-1";
-  const sourceFields = buildSourceFieldTokens(
-    {
-      gridId,
-      title,
-      kind: "Pivot",
-      dimensionCount: 0,
-      metricCount: 0,
-      formulaCount: 0,
-      sourceFields: fields && fields.length > 0 ? fields : newCustomReportDefaultFields
-    },
-    [],
-    [],
-    [],
-    []
-  );
-
-  return {
-    id: `new:${templateId}:${gridId}`,
-    gridId,
-    templateId,
-    templateVersion: "",
-    family: "CustomReport",
-    title,
-    kind: "Pivot",
-    topN: null,
-    sortBy: null,
-    sortDescending: true,
-    summary: "New custom report. Drag fields into Rows, Columns and Metrics, then save it as a draft for review.",
-    sourceFields,
-    rowFields: [],
-    columnFields: [],
-    metrics: [],
-    formulas: [],
-    filters: [],
-    topNLabel: "Pivot",
-    sortLabel: "Default order",
-    filterSummary: "No saved filters",
-    ariaLabel: `${title} new report-writer grid`,
-    isNew: true,
-    previewHost
-  };
-}
-
 function buildWriterGridRows(template: ReportingTemplateMetadata): ReportingWriterGridRow[] {
   return (template.reportWriterGrids ?? []).map((grid) => {
     const rowFields = buildFieldTokens(grid.rowFields, "row", grid.dimensionCount);
@@ -1742,7 +1678,7 @@ function buildFilterRows(grid: ReportingTemplateGridMetadata): ReportingWriterFi
   });
 }
 
-function buildSourceFieldTokens(
+export function buildSourceFieldTokens(
   grid: ReportingTemplateGridMetadata,
   rowFields: ReportingWriterToken[],
   columnFields: ReportingWriterToken[],
