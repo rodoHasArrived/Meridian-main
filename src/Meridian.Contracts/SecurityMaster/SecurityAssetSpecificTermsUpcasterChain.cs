@@ -1185,6 +1185,27 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             : [];
 
     /// <summary>
+    /// The module fields a rebuild of <paramref name="assetClass"/> writes a fixed default for
+    /// because the module requires a value and the class's flat row has nothing to derive it
+    /// from. The default says nothing about the instrument, so a retained economic document's
+    /// value replaces it (<see cref="SecurityTermsEnvelope.FoldRetainedEconomicTerms"/>) — the
+    /// fold otherwise fills only what is empty, and a default is not empty.
+    /// <para>
+    /// One field today, declared on its flattening: a bond's principal schedule is homed on
+    /// <c>sinkingFund</c> (S3-E7), whose <c>isProRata</c> member is a required flag the bond row
+    /// does not hold.
+    /// </para>
+    /// </summary>
+    public static IReadOnlyList<(string Module, string Field)> FlatInexpressibleDefaults(string? assetClass)
+        => TryGetClassFlattening(assetClass, out var mappings)
+            ? mappings
+                .Where(static mapping => mapping.InexpressibleDefaults is not null)
+                .SelectMany(static mapping => mapping.InexpressibleDefaults!.Select(field => (mapping.Sources[0].Module, field)))
+                .Distinct()
+                .ToArray()
+            : [];
+
+    /// <summary>
     /// The declared flat keys for <paramref name="assetClass"/> that no economic-terms module
     /// carries, so a projection rebuilt through this route cannot recover them. Required keys in
     /// this list are why the rebuilt record still carries the <see cref="FlattenedFromMarkerProperty"/>.
@@ -1235,7 +1256,8 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
         decimal? Scale = null,
         (string From, string To)[]? ElementMembers = null,
         string? VersionedElementMember = null,
-        bool FlatAuthoritative = false);
+        bool FlatAuthoritative = false,
+        string[]? InexpressibleDefaults = null);
 
     private static FlatTermMapping Map(string flatKey, params (string Module, string Field)[] sources) => new(flatKey, sources);
 
@@ -1315,7 +1337,9 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
                 "principalSchedule",
                 [("sinkingFund", "schedule")],
                 ElementMembers: [("amount", "amount"), ("sinkDate", "paymentDate")],
-                FlatAuthoritative: true)
+                FlatAuthoritative: true,
+                // The module requires a pro-rata flag the bond row does not hold.
+                InexpressibleDefaults: ["isProRata"])
         ]),
         ("Deposit",
         [

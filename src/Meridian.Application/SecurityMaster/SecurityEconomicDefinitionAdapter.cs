@@ -57,14 +57,16 @@ internal static class SecurityEconomicDefinitionAdapter
         // declared, non-empty call or put list replaces the retained one. And a field the class's
         // flat row carries exactly is never filled from the retained document: empty there means
         // the flat revision cleared it (covenants removed, a principal schedule dropped), not that
-        // the row could not hold it.
+        // the row could not hold it. Conversely a fixed default the rebuild writes for a field the
+        // row cannot express (a sinking fund's pro-rata flag on a bond) yields to the retained value.
         var economicTerms = BuildEconomicTermsJson(definition);
         if (SecurityTermsEnvelope.TryGetRetainedEconomicTerms(projection.AssetSpecificTerms, out var retained))
         {
             economicTerms = SecurityTermsEnvelope.FoldRetainedEconomicTerms(
                 economicTerms,
                 retained,
-                SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.FlatAuthoritativeFields(projection.AssetClass));
+                SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.FlatAuthoritativeFields(projection.AssetClass),
+                SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.FlatInexpressibleDefaults(projection.AssetClass));
         }
 
         return new SecurityEconomicDefinitionRecord(

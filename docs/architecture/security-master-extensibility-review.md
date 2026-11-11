@@ -970,6 +970,15 @@ values there that the flat decode does not reproduce; an amendment that clears o
 (a bond's scalar call date, an issuer name) on a row with a retained document is therefore
 still refilled, as it was before this stage. No corpus or golden byte changed.
 
+The same review raised the mirror case. A bond's principal schedule is homed on `sinkingFund`,
+whose `isProRata` member is a required flag the bond row does not hold, so the rebuild writes
+`false`. A hand-shaped bond document that says `true` keeps its retained document (the identity
+gate sees the difference), but the fold fills only what is empty and a default is not empty, so
+the flag was silently replaced on replay. The fold now also takes the class's
+`FlatInexpressibleDefaults` — fields the rebuild holds a fixed default for because the row cannot
+express them, declared on the flattening that homes the value — and lets the retained value
+replace those. One field is declared: `sinkingFund.isProRata` on Bond.
+
 What stays codec-only after this: Swap (the legs). What the economic document still does not
 carry for a bond is its floating-rate terms (index, spread, cap and floor), its seniority and
 its alternative maturity dates; no validation rule depends on a home for them.

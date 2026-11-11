@@ -468,11 +468,19 @@ public static class SecurityTermsEnvelope
     /// flat terms and resurrect the cleared value on the next replay. A retained module that
     /// holds nothing else is not folded at all.
     /// </para>
+    /// <para>
+    /// <paramref name="flatInexpressibleDefaults"/> names the opposite case
+    /// (<see cref="SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.FlatInexpressibleDefaults"/>):
+    /// a field the rebuild holds a fixed default for because the flat row cannot express it. The
+    /// retained value replaces that default, since a default is not empty and would otherwise
+    /// silently overwrite what the original document said.
+    /// </para>
     /// </summary>
     public static JsonElement FoldRetainedEconomicTerms(
         JsonElement rebuiltEconomicTerms,
         JsonElement retainedEconomicTerms,
-        IReadOnlyCollection<(string Module, string Field)>? flatAuthoritativeFields = null)
+        IReadOnlyCollection<(string Module, string Field)>? flatAuthoritativeFields = null,
+        IReadOnlyCollection<(string Module, string Field)>? flatInexpressibleDefaults = null)
     {
         if (rebuiltEconomicTerms.ValueKind != JsonValueKind.Object
             || retainedEconomicTerms.ValueKind != JsonValueKind.Object
@@ -532,7 +540,9 @@ public static class SecurityTermsEnvelope
                 var fill = current is null
                            || (current is JsonArray currentArray
                                && currentArray.Count == 0
-                               && field.Value is JsonArray { Count: > 0 });
+                               && field.Value is JsonArray { Count: > 0 })
+                           || (flatInexpressibleDefaults is { Count: > 0 }
+                               && flatInexpressibleDefaults.Contains((module.Name, field.Key)));
                 if (fill)
                 {
                     rebuiltModule[field.Key] = field.Value.DeepClone();

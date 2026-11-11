@@ -732,6 +732,50 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
     }
 
     [Fact]
+    public void RetainedEconomicTerms_KeepASinkingFundFlagTheBondRowCannotExpress()
+    {
+        // Codex review on #3475: a bond's principal schedule is recovered from the sinkingFund
+        // module, whose isProRata flag the bond row does not hold, so the rebuild writes false. The
+        // identity gate sees the difference and keeps the retained document; the fold must then
+        // restore the document's own flag rather than let the rebuild's default replace it.
+        var original = SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain(
+            "Bond",
+            new
+            {
+                maturity = "2030-01-01",
+                issueDate = "2024-01-01",
+                couponType = "Fixed",
+                couponRate = 4.25m,
+                dayCount = "30/360",
+                isCallable = false,
+                issuerName = "ACME Corp",
+                subclass = "SinkingFund",
+                par = 1000m,
+                paymentFrequency = "SemiAnnual",
+                principalSchedule = new object[] { new { paymentDate = "2028-01-01", amount = 400m } }
+            });
+        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("Bond", original));
+        var document = JsonNode.Parse(economic.EconomicTerms.GetRawText())!.AsObject();
+        document["sinkingFund"]!["isProRata"] = true;
+        document["sinkingFund"]!["sinkFrequency"] = "Annual";
+        var source = ToElement(document);
+
+        var replayed = SecurityEconomicDefinitionAdapter.ToProjection(
+            economic with { EconomicTerms = source, LegacyAssetSpecificTerms = null });
+        SecurityTermsEnvelope.TryGetRetainedEconomicTerms(replayed.AssetSpecificTerms, out _)
+            .Should().BeTrue("the bond row cannot express the flag or the frequency, so the document is not the flat row");
+        replayed.AssetSpecificTerms.GetProperty("principalSchedule").GetArrayLength().Should().Be(1);
+
+        var next = SecurityEconomicDefinitionAdapter.ToEconomicRecord(replayed);
+
+        var sinkingFund = next.EconomicTerms.GetProperty("sinkingFund");
+        sinkingFund.GetProperty("isProRata").GetBoolean().Should().BeTrue("the rebuild's default must not replace the document's flag");
+        sinkingFund.GetProperty("sinkFrequency").GetString().Should().Be("Annual");
+        next.EconomicTerms.GetRawText().Should().Be(source.GetRawText(), "a replay without an amendment leaves the document unchanged");
+    }
+
+    [Fact]
     public void FoldRetainedEconomicTerms_LeavesAFlatAuthoritativeFieldCleared_AndStillFillsTheRest()
     {
         using var rebuilt = JsonDocument.Parse(
@@ -756,6 +800,18 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
         var unscoped = SecurityTermsEnvelope.FoldRetainedEconomicTerms(rebuilt.RootElement, retained.RootElement);
         unscoped.GetProperty("covenants").GetProperty("covenants").GetArrayLength().Should().Be(1);
         unscoped.GetProperty("sinkingFund").GetProperty("schedule").GetArrayLength().Should().Be(1);
+
+        // A fixed default the row cannot express yields to the retained value; without the list
+        // the rebuild's non-empty default stands, as before.
+        using var defaulted = JsonDocument.Parse(
+            """{"sinkingFund":{"schedule":[{"sinkDate":"2030-06-15","amount":400}],"sinkFrequency":null,"isProRata":false}}""");
+        using var proRata = JsonDocument.Parse(
+            """{"sinkingFund":{"schedule":[{"sinkDate":"2030-06-15","amount":400}],"sinkFrequency":null,"isProRata":true}}""");
+        SecurityTermsEnvelope.FoldRetainedEconomicTerms(
+                defaulted.RootElement, proRata.RootElement, flatInexpressibleDefaults: [("sinkingFund", "isProRata")])
+            .GetProperty("sinkingFund").GetProperty("isProRata").GetBoolean().Should().BeTrue();
+        SecurityTermsEnvelope.FoldRetainedEconomicTerms(defaulted.RootElement, proRata.RootElement)
+            .GetProperty("sinkingFund").GetProperty("isProRata").GetBoolean().Should().BeFalse();
     }
 
     [Fact]
@@ -773,6 +829,10 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
             .Should().NotContain(pair => pair.Module == "tradingParameters",
                 "a scaled mapping is not an exact carrier");
         SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.FlatAuthoritativeFields("NotAClass").Should().BeEmpty();
+
+        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.FlatInexpressibleDefaults("Bond")
+            .Should().BeEquivalentTo([("sinkingFund", "isProRata")]);
+        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.FlatInexpressibleDefaults("DirectLoan").Should().BeEmpty();
     }
 
     [Theory]
