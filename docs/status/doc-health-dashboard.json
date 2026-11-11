@@ -1,11 +1,11 @@
 {
   "total_files": 949,
-  "orphaned_count": 391,
+  "orphaned_count": 390,
   "no_heading_count": 231,
   "stale_count": 0,
   "todo_count": 330,
   "health_score": 79,
-  "signal_digest": "sha256:1a72dce2a90e00a0f4fe81a42b99ccd9228001444a8b89cfa705f6a9c9167de1",
+  "signal_digest": "sha256:6b977bfbc5f6a6889cfb99813b9832daee412362801d518e9773e590cefe2a50",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -308,7 +308,6 @@
     "Meridian Design System/tests/A11Y_RUN_4.3.0.md",
     "Meridian Design System/tests/A11Y_STATIC_AUDIT_4.1.md",
     "Meridian Design System/tests/BROWSER_TEST_PLAN.md",
-    "Meridian Design System/tests/SPECIMEN_MATRIX.md",
     "benchmarks/BOTTLENECK_REPORT.md",
     "benchmarks/results/20260521_111257/batchserialization/results/Meridian.Benchmarks.BatchSerializationBenchmarks-report-github.md",
     "benchmarks/results/20260521_111257/canonicalizing/results/Meridian.Benchmarks.CanonicalizingPublisherBenchmarks-report-github.md",
