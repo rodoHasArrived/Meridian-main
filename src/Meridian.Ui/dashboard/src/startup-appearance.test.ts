@@ -13,7 +13,10 @@ describe("startup appearance", () => {
     const getItem = vi.fn(() => appearance);
     const setAttribute = vi.fn();
     expect(bootstrap).toBeTruthy();
-    runInNewContext(bootstrap!, { localStorage: { getItem }, document: { documentElement: { setAttribute } } });
+    runInNewContext(bootstrap!, {
+      window: { location: { pathname: "/workstation/trading" } },
+      localStorage: { getItem }, document: { documentElement: { setAttribute } }
+    });
     expect(getItem).toHaveBeenCalledWith(APPEARANCE_STORAGE_KEY);
     if (appearance === "light" || appearance === "dark") {
       expect(setAttribute).toHaveBeenCalledWith("data-theme", appearance);
@@ -25,6 +28,7 @@ describe("startup appearance", () => {
   it("keeps system appearance when storage is blocked", () => {
     const setAttribute = vi.fn();
     expect(() => runInNewContext(bootstrap!, {
+      window: { location: { pathname: "/workstation/trading" } },
       localStorage: { getItem() { throw new Error("Storage blocked"); } },
       document: { documentElement: { setAttribute } }
     })).not.toThrow();
