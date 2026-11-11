@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-21T15:53:39Z",
+  "generatedAt": "2026-11-11T10:18:38Z",
   "generatorVersion": "1.0",
   "repositoryRoot": "Meridian-main",
   "subsystems": [
@@ -562,8 +562,8 @@
         "src/Meridian.Backtesting"
       ],
       "projectReferences": [
-        "Meridian.Application",
         "Meridian.Backtesting.Sdk",
+        "Meridian.Contracts",
         "Meridian.Instruments",
         "Meridian.Storage",
         "Meridian.Strategies"
@@ -710,7 +710,6 @@
         "src/Meridian.Execution/Interfaces/IOrderGateway.cs"
       ],
       "projectReferences": [
-        "Meridian.Application",
         "Meridian.Contracts",
         "Meridian.Core",
         "Meridian.Execution.Sdk",
@@ -2028,13 +2027,13 @@
     },
     {
       "from": "Meridian.Backtesting",
-      "to": "Meridian.Application",
-      "reason": "Meridian.Backtesting references Meridian.Application directly via project reference."
+      "to": "Meridian.Backtesting.Sdk",
+      "reason": "Meridian.Backtesting references Meridian.Backtesting.Sdk directly via project reference."
     },
     {
       "from": "Meridian.Backtesting",
-      "to": "Meridian.Backtesting.Sdk",
-      "reason": "Meridian.Backtesting references Meridian.Backtesting.Sdk directly via project reference."
+      "to": "Meridian.Contracts",
+      "reason": "Meridian.Backtesting references Meridian.Contracts directly via project reference."
     },
     {
       "from": "Meridian.Backtesting",
@@ -2080,11 +2079,6 @@
       "from": "Meridian.Domain",
       "to": "Meridian.ProviderSdk",
       "reason": "Meridian.Domain references Meridian.ProviderSdk directly via project reference."
-    },
-    {
-      "from": "Meridian.Execution",
-      "to": "Meridian.Application",
-      "reason": "Meridian.Execution references Meridian.Application directly via project reference."
     },
     {
       "from": "Meridian.Execution",
@@ -2444,323 +2438,323 @@
   ],
   "recentChanges": [
     {
-      "path": "src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-21T05:33:44Z",
-      "lastCommit": "468399d31",
-      "lastSummary": "feat(security-master): one lot model keyed on the lot unit, with a notional lot",
-      "touches": 10
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-21T05:33:44Z",
-      "lastCommit": "468399d31",
-      "lastSummary": "feat(security-master): one lot model keyed on the lot unit, with a notional lot",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Application/SecurityMaster/AlternativeAssetLotExtensions.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-21T05:33:44Z",
-      "lastCommit": "468399d31",
-      "lastSummary": "feat(security-master): one lot model keyed on the lot unit, with a notional lot",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Contracts/SecurityMaster/NotionalLot.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-21T05:33:44Z",
-      "lastCommit": "468399d31",
-      "lastSummary": "feat(security-master): one lot model keyed on the lot unit, with a notional lot",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-21T05:33:44Z",
-      "lastCommit": "468399d31",
-      "lastSummary": "feat(security-master): one lot model keyed on the lot unit, with a notional lot",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-20T20:28:18Z",
-      "lastCommit": "0bd7b0bc4",
-      "lastSummary": "Fifth review round: mapper-faithful term reads, multi-word labels, late capability gate",
-      "touches": 16
-    },
-    {
-      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterDataQualityService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-20T20:28:18Z",
-      "lastCommit": "0bd7b0bc4",
-      "lastSummary": "Fifth review round: mapper-faithful term reads, multi-word labels, late capability gate",
-      "touches": 7
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.cs",
+      "path": "src/Meridian.Ui.Shared/README.md",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-20T20:28:18Z",
-      "lastCommit": "0bd7b0bc4",
-      "lastSummary": "Fifth review round: mapper-faithful term reads, multi-word labels, late capability gate",
+      "lastModified": "2026-11-11T10:11:02Z",
+      "lastCommit": "ec4959f76d",
+      "lastSummary": "fix(workstation): complete audit exports and themed table controls",
+      "touches": 15
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/trading-screen.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T10:11:02Z",
+      "lastCommit": "ec4959f76d",
+      "lastSummary": "fix(workstation): complete audit exports and themed table controls",
       "touches": 3
     },
     {
-      "path": "src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.CorporateActions.cs",
+      "path": "src/Meridian.Ui/dashboard/src/screens/trading-screen.tsx",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-20T20:14:06Z",
-      "lastCommit": "7d276fc6d",
-      "lastSummary": "Fourth review round: exact term keys, deposit rate units, reconciliation-time classes",
-      "touches": 5
+      "lastModified": "2026-11-11T10:11:02Z",
+      "lastCommit": "ec4959f76d",
+      "lastSummary": "fix(workstation): complete audit exports and themed table controls",
+      "touches": 3
     },
     {
-      "path": "src/Meridian.Instruments/AssetOperations/AssetObligationProjectionService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-20T20:14:06Z",
-      "lastCommit": "7d276fc6d",
-      "lastSummary": "Fourth review round: exact term keys, deposit rate units, reconciliation-time classes",
+      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.TableViews.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T10:11:02Z",
+      "lastCommit": "ec4959f76d",
+      "lastSummary": "fix(workstation): complete audit exports and themed table controls",
       "touches": 2
     },
     {
-      "path": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-20T20:14:06Z",
-      "lastCommit": "7d276fc6d",
-      "lastSummary": "Fourth review round: exact term keys, deposit rate units, reconciliation-time classes",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.SecurityCoverage.cs",
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/table-workbench.tsx",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-20T20:14:06Z",
-      "lastCommit": "7d276fc6d",
-      "lastSummary": "Fourth review round: exact term keys, deposit rate units, reconciliation-time classes",
+      "lastModified": "2026-11-11T10:11:02Z",
+      "lastCommit": "ec4959f76d",
+      "lastSummary": "fix(workstation): complete audit exports and themed table controls",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/trading-screen.audit-trail.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T10:11:02Z",
+      "lastCommit": "ec4959f76d",
+      "lastSummary": "fix(workstation): complete audit exports and themed table controls",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/styles/table-workbench.css",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T10:11:02Z",
+      "lastCommit": "ec4959f76d",
+      "lastSummary": "fix(workstation): complete audit exports and themed table controls",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T10:11:02Z",
+      "lastCommit": "ec4959f76d",
+      "lastSummary": "fix(workstation): complete audit exports and themed table controls",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-20T19:34:19Z",
-      "lastCommit": "53223bf3b",
-      "lastSummary": "Tighten the registry-lookup rules on the second review round",
+      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.AuditTableExport.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T10:11:02Z",
+      "lastCommit": "ec4959f76d",
+      "lastSummary": "fix(workstation): complete audit exports and themed table controls",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T10:11:02Z",
+      "lastCommit": "ec4959f76d",
+      "lastSummary": "fix(workstation): complete audit exports and themed table controls",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/AuditTrailHttpAuthority.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T10:11:02Z",
+      "lastCommit": "ec4959f76d",
+      "lastSummary": "fix(workstation): complete audit exports and themed table controls",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/trading-screen.audit-trail.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T10:11:02Z",
+      "lastCommit": "ec4959f76d",
+      "lastSummary": "fix(workstation): complete audit exports and themed table controls",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/README.md",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:55:09Z",
+      "lastCommit": "e62a4ddb50",
+      "lastSummary": "feat(workstation): implement unified browser workflows and table system",
+      "touches": 12
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:55:09Z",
+      "lastCommit": "e62a4ddb50",
+      "lastSummary": "feat(workstation): implement unified browser workflows and table system",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/ui-api-routes.generated.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:55:09Z",
+      "lastCommit": "e62a4ddb50",
+      "lastSummary": "feat(workstation): implement unified browser workflows and table system",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/types.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:55:09Z",
+      "lastCommit": "e62a4ddb50",
+      "lastSummary": "feat(workstation): implement unified browser workflows and table system",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:55:09Z",
+      "lastCommit": "e62a4ddb50",
+      "lastSummary": "feat(workstation): implement unified browser workflows and table system",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:55:09Z",
+      "lastCommit": "e62a4ddb50",
+      "lastSummary": "feat(workstation): implement unified browser workflows and table system",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/app.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:55:09Z",
+      "lastCommit": "e62a4ddb50",
+      "lastSummary": "feat(workstation): implement unified browser workflows and table system",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.reconciliation-workbench.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:55:09Z",
+      "lastCommit": "e62a4ddb50",
+      "lastSummary": "feat(workstation): implement unified browser workflows and table system",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/portfolio-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:55:09Z",
+      "lastCommit": "e62a4ddb50",
+      "lastSummary": "feat(workstation): implement unified browser workflows and table system",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:55:09Z",
+      "lastCommit": "e62a4ddb50",
+      "lastSummary": "feat(workstation): implement unified browser workflows and table system",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/app.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:55:09Z",
+      "lastCommit": "e62a4ddb50",
+      "lastSummary": "feat(workstation): implement unified browser workflows and table system",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/bond-migration-preview-panel.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:55:09Z",
+      "lastCommit": "e62a4ddb50",
+      "lastSummary": "feat(workstation): implement unified browser workflows and table system",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/data-provenance-banner.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:55:09Z",
+      "lastCommit": "e62a4ddb50",
+      "lastSummary": "feat(workstation): implement unified browser workflows and table system",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/workflow-continuity-dock.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:55:09Z",
+      "lastCommit": "e62a4ddb50",
+      "lastSummary": "feat(workstation): implement unified browser workflows and table system",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/workflow-continuity-dock.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:55:09Z",
+      "lastCommit": "e62a4ddb50",
+      "lastSummary": "feat(workstation): implement unified browser workflows and table system",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/hooks/use-portfolio-positions-table.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:55:09Z",
+      "lastCommit": "e62a4ddb50",
+      "lastSummary": "feat(workstation): implement unified browser workflows and table system",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.reconciliation-workbench.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:55:09Z",
+      "lastCommit": "e62a4ddb50",
+      "lastSummary": "feat(workstation): implement unified browser workflows and table system",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/data-screen-navigation-panels.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:55:09Z",
+      "lastCommit": "e62a4ddb50",
+      "lastSummary": "feat(workstation): implement unified browser workflows and table system",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/data-screen.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:55:09Z",
+      "lastCommit": "e62a4ddb50",
+      "lastSummary": "feat(workstation): implement unified browser workflows and table system",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/data-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:55:09Z",
+      "lastCommit": "e62a4ddb50",
+      "lastSummary": "feat(workstation): implement unified browser workflows and table system",
       "touches": 2
     },
     {
       "path": "src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-20T19:26:20Z",
-      "lastCommit": "0aa3eeb19",
-      "lastSummary": "Count and label the aggregate profile projection figures as declared",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/settings-screen.operations-control.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-20T19:26:20Z",
-      "lastCommit": "0aa3eeb19",
-      "lastSummary": "Count and label the aggregate profile projection figures as declared",
+      "lastModified": "2026-11-11T09:55:09Z",
+      "lastCommit": "e62a4ddb50",
+      "lastSummary": "feat(workstation): implement unified browser workflows and table system",
       "touches": 2
     },
     {
-      "path": "src/Meridian.Wpf/Views/SettingsPage.xaml",
+      "path": "src/Meridian.Ui/dashboard/src/screens/settings-task-chooser.tsx",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-20T19:26:20Z",
-      "lastCommit": "0aa3eeb19",
-      "lastSummary": "Count and label the aggregate profile projection figures as declared",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-20T17:45:32Z",
-      "lastCommit": "07233cb6e",
-      "lastSummary": "Move the Bond projection onto SecurityTermsProjectionRegistry satellites",
-      "touches": 15
-    },
-    {
-      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-20T17:45:32Z",
-      "lastCommit": "07233cb6e",
-      "lastSummary": "Move the Bond projection onto SecurityTermsProjectionRegistry satellites",
-      "touches": 13
-    },
-    {
-      "path": "src/Meridian.Storage/SecurityMaster/SecurityTermsProjectionRegistry.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-20T17:45:32Z",
-      "lastCommit": "07233cb6e",
-      "lastSummary": "Move the Bond projection onto SecurityTermsProjectionRegistry satellites",
-      "touches": 9
-    },
-    {
-      "path": "src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.TermsProjection.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-20T17:45:32Z",
-      "lastCommit": "07233cb6e",
-      "lastSummary": "Move the Bond projection onto SecurityTermsProjectionRegistry satellites",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Storage/SecurityMaster/PostgresBondReferenceProjectionStore.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-20T17:45:32Z",
-      "lastCommit": "07233cb6e",
-      "lastSummary": "Move the Bond projection onto SecurityTermsProjectionRegistry satellites",
+      "lastModified": "2026-11-11T09:55:09Z",
+      "lastCommit": "e62a4ddb50",
+      "lastSummary": "feat(workstation): implement unified browser workflows and table system",
       "touches": 2
     },
     {
-      "path": "src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-20T17:34:25Z",
-      "lastCommit": "ae83757a3",
-      "lastSummary": "Mark custom-profile IsProjected/IsSearchable as promotion intent, not live (A4)",
+      "path": "src/Meridian.Ui/dashboard/src/screens/strategy-screen.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:55:09Z",
+      "lastCommit": "e62a4ddb50",
+      "lastSummary": "feat(workstation): implement unified browser workflows and table system",
       "touches": 2
     },
     {
-      "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-20T17:34:25Z",
-      "lastCommit": "ae83757a3",
-      "lastSummary": "Mark custom-profile IsProjected/IsSearchable as promotion intent, not live (A4)",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.ReferenceData/SecurityMaster/SecurityAssetProfileCatalog.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-20T17:34:25Z",
-      "lastCommit": "ae83757a3",
-      "lastSummary": "Mark custom-profile IsProjected/IsSearchable as promotion intent, not live (A4)",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs",
+      "path": "src/Meridian.Ui/dashboard/src/screens/strategy-screen.tsx",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-20T17:34:25Z",
-      "lastCommit": "ae83757a3",
-      "lastSummary": "Mark custom-profile IsProjected/IsSearchable as promotion intent, not live (A4)",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-10-20T17:20:11Z",
-      "lastCommit": "408bf146f",
-      "lastSummary": "Replace asset-class name and substring checks with registry lookups (E5/E6)",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/README.md",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-20T16:05:10-07:00",
-      "lastCommit": "2ed48d5db",
-      "lastSummary": "refactor(storage): partition account cash continuity stores per scope (#3201)",
-      "touches": 60
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/README.md",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-20T16:05:10-07:00",
-      "lastCommit": "2ed48d5db",
-      "lastSummary": "refactor(storage): partition account cash continuity stores per scope (#3201)",
-      "touches": 22
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-20T16:05:10-07:00",
-      "lastCommit": "2ed48d5db",
-      "lastSummary": "refactor(storage): partition account cash continuity stores per scope (#3201)",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/FileAccountCashReconciliationStore.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-20T16:05:10-07:00",
-      "lastCommit": "2ed48d5db",
-      "lastSummary": "refactor(storage): partition account cash continuity stores per scope (#3201)",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Storage/AssetOperations/FileAccountCashForecastStore.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-20T16:05:10-07:00",
-      "lastCommit": "2ed48d5db",
-      "lastSummary": "refactor(storage): partition account cash continuity stores per scope (#3201)",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-20T16:05:10-07:00",
-      "lastCommit": "2ed48d5db",
-      "lastSummary": "refactor(storage): partition account cash continuity stores per scope (#3201)",
+      "lastModified": "2026-11-11T09:55:09Z",
+      "lastCommit": "e62a4ddb50",
+      "lastSummary": "feat(workstation): implement unified browser workflows and table system",
       "touches": 2
     },
     {
-      "path": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs",
+      "path": "src/Meridian.Ui/dashboard/src/screens/trading-screen.brokerage-recovery.tsx",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-20T15:38:53Z",
-      "lastCommit": "3b3e24a81",
-      "lastSummary": "Reject stale patch bases on Security Master term amends (E1)",
-      "touches": 10
+      "lastModified": "2026-11-11T09:55:09Z",
+      "lastCommit": "e62a4ddb50",
+      "lastSummary": "feat(workstation): implement unified browser workflows and table system",
+      "touches": 2
     },
     {
-      "path": "src/Meridian.Application/README.md",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-20T08:15:36Z",
-      "lastCommit": "ebe59f45d",
-      "lastSummary": "Extract shared fund-structure query projections",
-      "touches": 21
+      "path": "src/Meridian.Ui/dashboard/src/styles/app-shell.css",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:55:09Z",
+      "lastCommit": "e62a4ddb50",
+      "lastSummary": "feat(workstation): implement unified browser workflows and table system",
+      "touches": 2
     },
     {
-      "path": "src/Meridian.Execution/README.md",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-10-20T08:15:36Z",
-      "lastCommit": "19d59dd7b",
-      "lastSummary": "Give OMS report intake and shutdown an explicit lifecycle",
-      "touches": 12
-    },
-    {
-      "path": "src/Meridian.Strategies/README.md",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-10-20T08:15:36Z",
-      "lastCommit": "19d59dd7b",
-      "lastSummary": "Give OMS report intake and shutdown an explicit lifecycle",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.Execution/OrderManagementSystem.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-10-20T08:15:36Z",
-      "lastCommit": "19d59dd7b",
-      "lastSummary": "Give OMS report intake and shutdown an explicit lifecycle",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Strategies/Live/LiveTradingEngine.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-10-20T08:15:36Z",
-      "lastCommit": "19d59dd7b",
-      "lastSummary": "Give OMS report intake and shutdown an explicit lifecycle",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Execution/BrokerageServiceRegistration.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-10-20T08:15:36Z",
-      "lastCommit": "19d59dd7b",
-      "lastSummary": "Give OMS report intake and shutdown an explicit lifecycle",
+      "path": "src/Meridian.Ui/dashboard/package.json",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:55:09Z",
+      "lastCommit": "e62a4ddb50",
+      "lastSummary": "feat(workstation): implement unified browser workflows and table system",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Execution/IOrderManagementLifecycle.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-10-20T08:15:36Z",
-      "lastCommit": "19d59dd7b",
-      "lastSummary": "Give OMS report intake and shutdown an explicit lifecycle",
+      "path": "src/Meridian.Ui/dashboard/scripts/workstation-governance-baseline.json",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:55:09Z",
+      "lastCommit": "e62a4ddb50",
+      "lastSummary": "feat(workstation): implement unified browser workflows and table system",
       "touches": 1
     }
   ],

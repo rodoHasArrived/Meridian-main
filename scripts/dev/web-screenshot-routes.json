@@ -12,7 +12,7 @@
       "name": "web-daily-control-tower",
       "path": "/",
       "docLabel": "Daily Control Tower",
-      "waitForText": "Daily Control Tower Workstation",
+      "waitForText": "Daily Control Tower",
       "requiredApiRoutes": [
         "/api/workstation/first-run/",
         "/api/demo/mode",
@@ -21,9 +21,11 @@
         "/api/workstation/workflow-summary"
       ],
       "waitForTexts": [
-        "What needs an operator decision now",
-        "Finance queue",
+        "All authorized scopes",
         "Daily Control Tower"
+      ],
+      "waitForSelectors": [
+        "[aria-label=\"Finance queue\"] table"
       ]
     },
     {
@@ -50,7 +52,6 @@
         "/api/workstation/trading"
       ],
       "waitForTexts": [
-        "Net P&L",
         "Open orders",
         "Recent fills"
       ]
@@ -65,7 +66,6 @@
         "/api/workstation/trading"
       ],
       "waitForTexts": [
-        "Net P&L",
         "Live positions",
         "AAPL"
       ]
@@ -82,7 +82,6 @@
         "/api/risk/rules/DrawdownCircuitBreaker/config"
       ],
       "waitForTexts": [
-        "Net P&L",
         "Paper risk cockpit"
       ],
       "waitForAbsentTexts": [
@@ -121,7 +120,6 @@
         "/api/workstation/portfolio"
       ],
       "waitForTexts": [
-        "Total exposure",
         "VTI"
       ]
     },
@@ -135,7 +133,6 @@
         "/api/workstation/portfolio"
       ],
       "waitForTexts": [
-        "Total exposure",
         "Mean Reversion FX"
       ]
     },
@@ -261,7 +258,7 @@
       "waitForSelectors": [
         "select:has(option[value=\"run-42\"]:checked)",
         "#reconciliation-break-queue tr[data-dense-row-id=\"run-42:cash\"][aria-selected=\"true\"]",
-        "#reconciliation-break-detail-panel [aria-label=\"Reconciliation break detail for run-42:cash\"]"
+        "#reconciliation-break-detail-panel[aria-label=\"Reconciliation break detail for run-42:cash\"]"
       ],
       "waitForAbsentTexts": [
         "Loading reconciliation break queue..."
@@ -450,6 +447,40 @@
         "Ledger book",
         "Ledger period",
         "Ledger search results"
+      ]
+    },
+    {
+      "id": "W03FP",
+      "name": "web-accounting-factor-paydown",
+      "path": "/accounting/factor-paydown",
+      "docLabel": "Accounting \u2014 Factor paydown",
+      "waitForText": "Factor paydown",
+      "requiredApiRoutes": [
+        "/api/workstation/accounting",
+        "/api/workstation/runs/run-42/ledger/journal",
+        "/api/ledger/books",
+        "/api/ledger/periods"
+      ],
+      "waitForTexts": [
+        "Accounting scope",
+        "Retained factor evidence JSON"
+      ]
+    },
+    {
+      "id": "W03CO",
+      "name": "web-accounting-consolidation",
+      "path": "/accounting/consolidation",
+      "docLabel": "Accounting \u2014 Consolidation",
+      "waitForText": "Group consolidation",
+      "requiredApiRoutes": [
+        "/api/workstation/accounting",
+        "/api/workstation/runs/run-42/ledger/journal",
+        "/api/ledger/books",
+        "/api/ledger/periods"
+      ],
+      "waitForTexts": [
+        "Accounting scope",
+        "Group consolidation"
       ]
     },
     {
@@ -651,7 +682,7 @@
       "name": "web-reporting-workspace",
       "path": "/reporting",
       "docLabel": "Reporting",
-      "waitForText": "Reporting Workstation",
+      "waitForText": "Daily reporting cockpit",
       "requiredApiRoutes": [
         "/api/workstation/reporting"
       ],
@@ -700,7 +731,7 @@
       "name": "web-reporting-exports",
       "path": "/reporting/exports",
       "docLabel": "Reporting \u2014 Exports",
-      "waitForText": "Reporting Workstation",
+      "waitForText": "Governed export queue",
       "requiredApiRoutes": [
         "/api/workstation/reporting"
       ],
@@ -1159,7 +1190,7 @@
       "name": "web-settings-workspace",
       "path": "/settings",
       "docLabel": "Settings",
-      "waitForText": "Settings tasks",
+      "waitForText": "Setup checklist",
       "requiredApiRoutes": [
         "/api/workstation/session",
         "/api/status",
@@ -1175,7 +1206,7 @@
       "waitForTexts": [
         "Personalize my workstation",
         "Connect a provider",
-        "Investigate a problem"
+        "Review diagnostic exceptions"
       ]
     },
     {

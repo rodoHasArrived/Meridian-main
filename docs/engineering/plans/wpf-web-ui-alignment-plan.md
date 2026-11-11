@@ -4,6 +4,23 @@
 **Owner:** core-team
 **Reviewed:** 2026-08-05
 
+## Browser UX program delta — 2026-11-11
+
+The [browser improvement program](browser-workstation-ux-program.md) retains shared domain
+authority and records these browser-first presentation changes. WPF source is unchanged.
+
+| Capability | Browser delivery | WPF parity disposition |
+| --- | --- | --- |
+| Compact shell and context | Integrated provenance/status, one route H1, combined Context | Presentation follow-up; preserve desktop fail-closed provenance |
+| Browse tables and inspection | Shared workbench, typed entity inspector, compact detail rail | Shared read models and personal views available; desktop presentation follow-up |
+| Operator triage | Durable shared assignment/acknowledgement/snooze and activity; default combined inbox | Shared API available; desktop composition follow-up; no desktop-local state |
+| Approval collaboration | Discussion and reviewer reassignment through Operations Continuity | Shared versioned authority available; desktop controls follow-up |
+| Accounting workflow boundaries | Factor Paydown and Consolidation have scoped child routes | Existing desktop workflow placement retained; route split is browser presentation |
+| Prior-period figures | Posted-period comparison through shared contracts | Shared query available; desktop controls follow-up |
+| Operational charts | Retained provider/account/backfill/break/close evidence | Shared sources available; desktop visualizations follow-up |
+
+These entries describe implementation scope, not operator acceptance or live certification.
+
 This plan operationalizes the v0.25 design-charter decision to reactivate the WPF desktop
 workstation as an active, co-equal operator UI lane and bring it up to parity with the browser
 workstation. It is the working companion to roadmap item `W8-WPF-PARITY-001`.
