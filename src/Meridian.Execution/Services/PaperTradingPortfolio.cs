@@ -22,6 +22,12 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
     private readonly Meridian.Ledger.Ledger? _ledger;
     private readonly ILivePositionCorporateActionAdjuster? _corporateActionAdjuster;
     private readonly PositionLotSelectionMethod _lotSelectionMethod;
+
+    /// <summary>
+    /// The relief method every closing fill in this portfolio applies. It is fixed at
+    /// construction; an order carries no lot instruction that could override it.
+    /// </summary>
+    public PositionLotSelectionMethod LotSelectionMethod => _lotSelectionMethod;
     private readonly Lock _lock = new();
 
     // Multi-account state — the default account always exists at key DefaultAccountId.

@@ -304,6 +304,22 @@ no exact-total evidence. Selection/tie policy, canonical identities and acquisit
 short and corporate-action posting, compatibility retirement and live shadow acceptance remain
 separate gates. This continuation does not close W10-LOT-002.
 
+### Blotter close lot-selection refusal (2026-11-10)
+
+`POST /api/execution/positions/actions/close` accepted `ExecutionPositionActionRequest.LotSelection`
+and never read it. A close is submitted as an ordinary order, which carries no lot instruction, so
+the fill relieved lots by the book's own method whatever the request said. The endpoint now refuses
+a selection it cannot honour (`ExecutionEndpoints.DescribeUnsupportedLotSelection`): a specific lot
+is always refused, any selection is refused for a broker-backed position because the broker relieves
+its own lots, and for the paper book a method is accepted only when it equals
+`PaperTradingPortfolio.LotSelectionMethod`, the method the fill will apply anyway. Omitting the
+field is unchanged. `ExecutionWriteEndpointsTests.ClosePositionByKey_*` covers each case.
+
+This removes a silent divergence; it adds no selection capability. Production paper books are
+constructed with the FIFO default, and carrying a lot identifier from the close request through the
+order to `ConsumeLots` remains open, as do the paper HIFO/SpecificId policy, Backtesting's FIFO
+fallback for a missing specific lot, and the unused `PositionLotSelector`. W10-LOT-002 stays open.
+
 Local regression evidence for [PR #3163](https://github.com/rodoHasArrived/Meridian-main/pull/3163):
 821 execution/shared-basis tests and the complete 417-test Backtesting project passed with zero
 skips, including all 24 new paper-basis cases. The six original fractional-close cases failed

@@ -1190,7 +1190,7 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<ILogger<SecurityMasterExceptionCaseworkService>>()));
         services.TryAddSingleton<ReconciliationProjectionService>();
         services.TryAddSingleton<IReconciliationRunService, ReconciliationRunService>();
-        services.TryAddSingleton<Meridian.Ui.Shared.Contracts.Reconciliation.IReconciliationApiService>(sp =>
+        services.TryAddSingleton<Meridian.Contracts.Reconciliation.IReconciliationApiService>(sp =>
             new ReconciliationApiService(
                 sp.GetRequiredService<IStatementRunWorkflowService>(),
                 sp.GetService<IAccountQueryService>(),
@@ -1202,7 +1202,7 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<ILedgerBookService>(),
                 sp.GetService<IOperationsContinuityWorkflowService>(),
                 sp.GetService<IStatementRunWorkflowService>(),
-                sp.GetService<Meridian.Ui.Shared.Contracts.Reconciliation.IReconciliationApiService>(),
+                sp.GetService<Meridian.Contracts.Reconciliation.IReconciliationApiService>(),
                 sp.GetService<IReconciliationBreakQueueRepository>(),
                 sp.GetRequiredService<Meridian.Infrastructure.Reconciliation.ICanonicalStatementStore>(),
                 sp.GetRequiredService<Meridian.Infrastructure.Reconciliation.IStatementRunMatchArtifactStore>(),
@@ -1212,7 +1212,7 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<IOperationsContinuityWorkflowService>(),
                 sp.GetService<IReconciliationRunService>(),
                 sp.GetService<IReconciliationBreakQueueRepository>(),
-                sp.GetService<Meridian.Ui.Shared.Contracts.Reconciliation.IReconciliationApiService>()));
+                sp.GetService<Meridian.Contracts.Reconciliation.IReconciliationApiService>()));
         services.TryAddSingleton<CollateralIngestionBuffer>();
         services.TryAddSingleton<CollateralExposureService>();
 

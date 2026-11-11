@@ -484,6 +484,136 @@ public sealed class ExecutionWriteEndpointsTests
     }
 
     [Fact]
+    public async Task ClosePositionByKey_WhenLotSelectionNamesThePaperReliefMethod_SubmitsOrder()
+    {
+        // The paper book relieves FIFO, so naming FIFO asks for what will happen anyway.
+        await using var app = await CreateAppAsync(services =>
+            RegisterPaperPortfolioOms(services, CreatePaperPortfolioHoldingAapl()));
+
+        var response = await app.GetTestClient().PostAsync(
+            UiApiRoutes.ExecutionPositionActionClose,
+            JsonContent(new ExecutionPositionActionRequest(
+                "AAPL",
+                LotSelection: new PositionLotSelection(PositionLotSelectionMethod.Fifo))));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await ReadActionResultAsync(response)).Status.Should().Be("Accepted");
+    }
+
+    [Theory]
+    [InlineData(PositionLotSelectionMethod.Lifo)]
+    [InlineData(PositionLotSelectionMethod.Hifo)]
+    public async Task ClosePositionByKey_WhenLotSelectionDiffersFromPaperRelief_RejectsAndNamesTheAppliedMethod(
+        PositionLotSelectionMethod requested)
+    {
+        // Same book and order path as the accepted FIFO close; only the requested method differs.
+        // Accepting it would relieve FIFO lots while reporting the operator's HIFO/LIFO choice.
+        await using var app = await CreateAppAsync(services =>
+            RegisterPaperPortfolioOms(services, CreatePaperPortfolioHoldingAapl()));
+
+        var response = await app.GetTestClient().PostAsync(
+            UiApiRoutes.ExecutionPositionActionClose,
+            JsonContent(new ExecutionPositionActionRequest(
+                "AAPL",
+                LotSelection: new PositionLotSelection(requested))));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var result = await ReadActionResultAsync(response);
+        result.Status.Should().Be("Rejected");
+        result.Message.Should().Contain($"Lot selection {requested} cannot be honoured");
+        result.Message.Should().Contain("relieves lots by Fifo");
+    }
+
+    [Fact]
+    public async Task ClosePositionByKey_WhenLotSelectionMatchesANonDefaultPaperRelief_SubmitsOrder()
+    {
+        await using var app = await CreateAppAsync(services =>
+            RegisterPaperPortfolioOms(services, CreatePaperPortfolioHoldingAapl(PositionLotSelectionMethod.Hifo)));
+        var client = app.GetTestClient();
+
+        var matching = await client.PostAsync(
+            UiApiRoutes.ExecutionPositionActionClose,
+            JsonContent(new ExecutionPositionActionRequest(
+                "AAPL",
+                Quantity: 1m,
+                LotSelection: new PositionLotSelection(PositionLotSelectionMethod.Hifo))));
+        var fifo = await client.PostAsync(
+            UiApiRoutes.ExecutionPositionActionClose,
+            JsonContent(new ExecutionPositionActionRequest(
+                "AAPL",
+                Quantity: 1m,
+                LotSelection: new PositionLotSelection(PositionLotSelectionMethod.Fifo))));
+
+        matching.StatusCode.Should().Be(HttpStatusCode.OK);
+        fifo.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        (await ReadActionResultAsync(fifo)).Message.Should().Contain("relieves lots by Hifo");
+    }
+
+    [Theory]
+    [InlineData(PositionLotSelectionMethod.SpecificId, "lot-1")]
+    [InlineData(PositionLotSelectionMethod.SpecificId, null)]
+    [InlineData(PositionLotSelectionMethod.Fifo, "lot-1")]
+    public async Task ClosePositionByKey_WhenASpecificLotIsRequested_Rejects(
+        PositionLotSelectionMethod method,
+        string? specificLotId)
+    {
+        await using var app = await CreateAppAsync(services =>
+            RegisterPaperPortfolioOms(services, CreatePaperPortfolioHoldingAapl()));
+
+        var response = await app.GetTestClient().PostAsync(
+            UiApiRoutes.ExecutionPositionActionClose,
+            JsonContent(new ExecutionPositionActionRequest(
+                "AAPL",
+                LotSelection: new PositionLotSelection(method, specificLotId))));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var result = await ReadActionResultAsync(response);
+        result.Status.Should().Be("Rejected");
+        result.Message.Should().Contain("A specific lot cannot be closed from the blotter");
+    }
+
+    [Fact]
+    public async Task ClosePositionByKey_WhenBrokerBackedAndLotSelectionSupplied_RejectsAndDoesNotSubmit()
+    {
+        // Even FIFO is refused here: the broker relieves its own lots and the order cannot say otherwise.
+        var gateway = new RecordingBrokerageGateway(CreateRobinhoodOptionPosition("opt-close"));
+        await using var app = await CreateAppAsync(services => RegisterBrokerageOms(services, gateway));
+
+        var response = await app.GetTestClient().PostAsync(
+            UiApiRoutes.ExecutionPositionActionClose,
+            JsonContent(new ExecutionPositionActionRequest(
+                "opt-close",
+                Quantity: 1m,
+                LotSelection: new PositionLotSelection(PositionLotSelectionMethod.Fifo))));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var result = await ReadActionResultAsync(response);
+        result.Status.Should().Be("Rejected");
+        result.Message.Should().Contain("Robinhood (test)");
+        result.Message.Should().Contain("broker's own relief method applies");
+        gateway.SubmittedRequests.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ClosePositionByKey_WhenTheBookReliefMethodIsUnknown_RejectsLotSelection()
+    {
+        // A portfolio state that is not the paper book exposes no relief method to compare against.
+        await using var app = await CreateAppAsync(services =>
+            RegisterMinimalOms(services, new ExecutionPosition("AAPL", 5, 180m, 10m, 0m)));
+
+        var response = await app.GetTestClient().PostAsync(
+            UiApiRoutes.ExecutionPositionActionClose,
+            JsonContent(new ExecutionPositionActionRequest(
+                "AAPL",
+                LotSelection: new PositionLotSelection(PositionLotSelectionMethod.Fifo))));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var result = await ReadActionResultAsync(response);
+        result.Status.Should().Be("Rejected");
+        result.Message.Should().Contain("Lot selection Fifo cannot be honoured");
+    }
+
+    [Fact]
     public async Task ClosePositionByKey_WhenUserLacksExecuteTrades_ReturnsForbidden()
     {
         await using var app = await CreateAppAsync(
@@ -1456,6 +1586,28 @@ public sealed class ExecutionWriteEndpointsTests
         services.AddSingleton<Meridian.Execution.Models.IPortfolioState>(new StaticPortfolioState(positions));
     }
 
+
+    /// <summary>
+    /// The minimal OMS over a real paper book, with scaffold pricing so a close reaches the gateway
+    /// (see <c>ClosePositionByKey_WithPaperPosition_SubmitsOrder</c>).
+    /// </summary>
+    private static void RegisterPaperPortfolioOms(IServiceCollection services, PaperTradingPortfolio portfolio)
+    {
+        RegisterMinimalOms(services);
+        services.AddSingleton<Meridian.Execution.Models.IPortfolioState>(portfolio);
+        services.AddSingleton(new Meridian.Execution.Adapters.PaperTradingGatewayOptions
+        {
+            AllowScaffoldMarketFills = true
+        });
+    }
+
+    private static PaperTradingPortfolio CreatePaperPortfolioHoldingAapl(
+        PositionLotSelectionMethod lotSelectionMethod = PositionLotSelectionMethod.Fifo)
+    {
+        var portfolio = new PaperTradingPortfolio(100_000m, lotSelectionMethod: lotSelectionMethod);
+        portfolio.ApplyFill(CreateFill("AAPL", 5m, 180m));
+        return portfolio;
+    }
 
     private static void RegisterFundAccountScope(IServiceCollection services, Guid fundAccountId, bool isAllowed)
     {

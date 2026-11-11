@@ -35,7 +35,7 @@ using Meridian.Storage.Runtime;
 using Meridian.Ui.Services.Services.Integrations;
 using Meridian.Ui.Shared;
 using Meridian.Ui.Shared.Endpoints;
-using Meridian.Ui.Shared.Contracts.Reconciliation;
+using Meridian.Contracts.Reconciliation;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
