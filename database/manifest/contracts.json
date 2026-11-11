@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "baf588eb51ca917a8b84c99112e586fe09729081452424ee3392e0de1f934381",
+      "fingerprint": "6bee7beca4c8f44e721f47cf0e986604e575e9cb92ebc8d3ebbb336cb5a4afd3",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -2150,6 +2150,7 @@
         "Meridian.Contracts.SecurityMaster.SecurityVersionedTermDecoding",
         "Meridian.Contracts.SecurityMaster.SecurityVersionedTerms",
         "Meridian.Contracts.SecurityMaster.SplitCorporateActionTerms",
+        "Meridian.Contracts.SecurityMaster.StructuredCashFlowBlockedReasonCodes",
         "Meridian.Contracts.SecurityMaster.StructuredCashFlowCalendarEvidence",
         "Meridian.Contracts.SecurityMaster.StructuredCashFlowCoverageGap",
         "Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerLine",
@@ -4207,7 +4208,7 @@
       "directories": [
         "src/Meridian.Contracts/SecurityMaster"
       ],
-      "fingerprint": "a1061aaafe8c3ba30136c74550be17cb9c0755aef0b1e857f9bdafac9aeeaf13",
+      "fingerprint": "605b9ffcb80c8c3942b16051a2d58a6fed516e22e31444d84b72279f80228e68",
       "id": "security-master-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts.SecurityMaster"
@@ -4683,6 +4684,7 @@
         "Meridian.Contracts.SecurityMaster.SecurityVersionedTermDecoding",
         "Meridian.Contracts.SecurityMaster.SecurityVersionedTerms",
         "Meridian.Contracts.SecurityMaster.SplitCorporateActionTerms",
+        "Meridian.Contracts.SecurityMaster.StructuredCashFlowBlockedReasonCodes",
         "Meridian.Contracts.SecurityMaster.StructuredCashFlowCalendarEvidence",
         "Meridian.Contracts.SecurityMaster.StructuredCashFlowCoverageGap",
         "Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerLine",
@@ -4726,7 +4728,7 @@
       ]
     }
   ],
-  "fingerprint": "bc572b62de14cd57e91193cc64498c05f141c423a9a5aeae95f5ab2946c5278b",
+  "fingerprint": "66ac8947cef9b85204329d0201bfb1b8358f71db080655cba80802b2f8dcdf54",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -6922,7 +6924,7 @@
         "all-contracts",
         "security-master-contracts"
       ],
-      "fingerprint": "b9a13ede9459971aaaf7a6bc4801558df58ba0a2c441fd7b4641130fe6088f24",
+      "fingerprint": "be41866fce8209696a3d9d0b5533f2d973c9f53bd7f64b3f68cf0050e91e245f",
       "mapped_schemas": [
         "security_master"
       ],
@@ -7378,6 +7380,7 @@
         "Meridian.Contracts.SecurityMaster.SecurityVersionedTermDecoding",
         "Meridian.Contracts.SecurityMaster.SecurityVersionedTerms",
         "Meridian.Contracts.SecurityMaster.SplitCorporateActionTerms",
+        "Meridian.Contracts.SecurityMaster.StructuredCashFlowBlockedReasonCodes",
         "Meridian.Contracts.SecurityMaster.StructuredCashFlowCalendarEvidence",
         "Meridian.Contracts.SecurityMaster.StructuredCashFlowCoverageGap",
         "Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerLine",
@@ -282491,6 +282494,44 @@
     },
     {
       "base_types": [],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "bb834d8d1a04c71dfa843b284bd2241f1b87304c288e64be81477d3bb5faf277",
+      "full_name": "Meridian.Contracts.SecurityMaster.StructuredCashFlowBlockedReasonCodes",
+      "id": "Meridian.Contracts.SecurityMaster.StructuredCashFlowBlockedReasonCodes",
+      "kind": "class",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [],
+      "name": "StructuredCashFlowBlockedReasonCodes",
+      "namespace": "Meridian.Contracts.SecurityMaster",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.StructuredCashFlowBlockedReasonCodes",
+      "references": [],
+      "source": {
+        "line": 299,
+        "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs"
+      },
+      "sources": [
+        {
+          "line": 299,
+          "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
       "classification": "record",
       "containing_type": null,
       "contract_sets": [
@@ -282664,7 +282705,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "ab2035020dd7619e4cb6aa3fd1b5922d48d03eeed5da0ae78c5992eb574289fa",
+      "fingerprint": "7e90a73e46f4496d497295be25cd38d5d4f45826c17e70b22303827b4299132b",
       "full_name": "Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerLine",
       "id": "Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerLine",
       "kind": "record",
@@ -282683,7 +282724,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 295,
+          "source_line": 318,
           "type": "string"
         },
         {
@@ -282697,7 +282738,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 296,
+          "source_line": 319,
           "type": "string"
         },
         {
@@ -282711,7 +282752,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 300,
+          "source_line": 323,
           "type": "decimal"
         },
         {
@@ -282725,7 +282766,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 299,
+          "source_line": 322,
           "type": "decimal"
         },
         {
@@ -282739,7 +282780,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 298,
+          "source_line": 321,
           "type": "string?"
         },
         {
@@ -282753,7 +282794,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 297,
+          "source_line": 320,
           "type": "string?"
         }
       ],
@@ -282763,12 +282804,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerLine",
       "references": [],
       "source": {
-        "line": 294,
+        "line": 317,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs"
       },
       "sources": [
         {
-          "line": 294,
+          "line": 317,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs"
         }
       ],
@@ -282787,7 +282828,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "0340db02e589f8dd99bc02bdc8e30a07b1802789839bc4be537315d7c28b2c40",
+      "fingerprint": "243ee8236a15c6208778e22a699dfe52b79415d01b53eb886976b46940cddcc3",
       "full_name": "Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerPosting",
       "id": "Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerPosting",
       "kind": "record",
@@ -282806,7 +282847,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 307,
+          "source_line": 330,
           "type": "string"
         },
         {
@@ -282820,7 +282861,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 310,
+          "source_line": 333,
           "type": "bool"
         },
         {
@@ -282834,7 +282875,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<StructuredCashFlowLedgerLine>",
-          "source_line": 311,
+          "source_line": 334,
           "type": "IReadOnlyList<StructuredCashFlowLedgerLine>"
         },
         {
@@ -282848,7 +282889,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 306,
+          "source_line": 329,
           "type": "DateTimeOffset"
         },
         {
@@ -282862,7 +282903,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 309,
+          "source_line": 332,
           "type": "decimal"
         },
         {
@@ -282876,7 +282917,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 308,
+          "source_line": 331,
           "type": "decimal"
         }
       ],
@@ -282888,12 +282929,12 @@
         "Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerLine"
       ],
       "source": {
-        "line": 305,
+        "line": 328,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs"
       },
       "sources": [
         {
-          "line": 305,
+          "line": 328,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs"
         }
       ],
@@ -282912,7 +282953,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "b7ca917eb9e15a2f59506bad1329b25aff1150694994c2858001f1dded1ced64",
+      "fingerprint": "cda3f10fa895049768be0103a7dab0d41d83ee1a4885fba7e74e6f3f158676cc",
       "full_name": "Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerPostingResult",
       "id": "Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerPostingResult",
       "kind": "record",
@@ -282931,7 +282972,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 322,
+          "source_line": 345,
           "type": "string?"
         },
         {
@@ -282945,7 +282986,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 321,
+          "source_line": 344,
           "type": "bool"
         },
         {
@@ -282959,7 +283000,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<StructuredCashFlowLedgerPosting>",
-          "source_line": 323,
+          "source_line": 346,
           "type": "IReadOnlyList<StructuredCashFlowLedgerPosting>"
         },
         {
@@ -282973,7 +283014,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 320,
+          "source_line": 343,
           "type": "Guid"
         }
       ],
@@ -282985,12 +283026,12 @@
         "Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerPosting"
       ],
       "source": {
-        "line": 319,
+        "line": 342,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs"
       },
       "sources": [
         {
-          "line": 319,
+          "line": 342,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs"
         }
       ],
@@ -283504,7 +283545,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "686c3fa449579be35ec11a45daf128621183cb4d0dd438a00448e4b9904b3a31",
+      "fingerprint": "8f54592081c01e264647a64cf2ead8fd5cd348878b46b90328375ce871777ad5",
       "full_name": "Meridian.Contracts.SecurityMaster.StructuredCashFlowProjectionDto",
       "id": "Meridian.Contracts.SecurityMaster.StructuredCashFlowProjectionDto",
       "kind": "record",
@@ -283539,6 +283580,20 @@
           "origin": "positional_parameter",
           "raw_type": "string?",
           "source_line": 279,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "BlockedReasonCode",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "string?",
+          "source_line": 295,
           "type": "string?"
         },
         {
@@ -286067,7 +286122,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "a4f8191db6c199eb7eb45d95c6f85bf70519ccd74cae14476bd02d1605478ebc",
+      "fingerprint": "040519da10ca0e66b9fe8f82a8996bf4c7a761790304773f970f3552e9c7bf6b",
       "full_name": "Meridian.Contracts.SecurityMaster.UpsertCashFlowSourceRequest",
       "id": "Meridian.Contracts.SecurityMaster.UpsertCashFlowSourceRequest",
       "kind": "record",
@@ -286086,7 +286141,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 338,
+          "source_line": 361,
           "type": "string"
         },
         {
@@ -286100,7 +286155,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 337,
+          "source_line": 360,
           "type": "string?"
         },
         {
@@ -286115,7 +286170,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 341,
+          "source_line": 364,
           "type": "bool"
         },
         {
@@ -286129,7 +286184,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 336,
+          "source_line": 359,
           "type": "bool"
         },
         {
@@ -286143,7 +286198,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 334,
+          "source_line": 357,
           "type": "Guid"
         },
         {
@@ -286157,7 +286212,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "StructuredCashFlowSourceKind",
-          "source_line": 335,
+          "source_line": 358,
           "type": "StructuredCashFlowSourceKind"
         }
       ],
@@ -286169,12 +286224,12 @@
         "Meridian.Contracts.SecurityMaster.StructuredCashFlowSourceKind"
       ],
       "source": {
-        "line": 333,
+        "line": 356,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs"
       },
       "sources": [
         {
-          "line": 333,
+          "line": 356,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs"
         }
       ],

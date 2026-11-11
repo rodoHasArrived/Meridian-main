@@ -12838,6 +12838,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowBlockedReasonCodes"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowCalendarEvidence"
     },
     {
@@ -27161,6 +27167,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SplitCorporateActionTerms"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowBlockedReasonCodes"
     },
     {
       "kind": "contract-set-member",
@@ -57149,7 +57161,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "0f546e9de57bb9df2b3dc2ac3d09c0323d342ff65c1d8e21642f6f9e299b82e6",
+  "fingerprint": "b67e19658177b6b03ecd98f82c9192d006d09bb9dea4894718439865cd8a32ea",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -70035,6 +70047,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.SplitCorporateActionTerms",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SplitCorporateActionTerms"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowBlockedReasonCodes",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.StructuredCashFlowBlockedReasonCodes"
     },
     {
       "classification": "record",
@@ -83715,10 +83733,10 @@
   ],
   "summary": {
     "contract_references": 3641,
-    "contract_set_memberships": 4564,
-    "edges": 9496,
+    "contract_set_memberships": 4566,
+    "edges": 9498,
     "foreign_keys": 156,
     "logical_references": 6,
-    "nodes": 4607
+    "nodes": 4608
   }
 }
