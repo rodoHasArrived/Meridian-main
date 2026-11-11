@@ -13,6 +13,11 @@ stable, while this working tree also carries later additions labeled unreleased
 in `CHANGELOG.md`. The declared release channel, historical QA reports, and
 verification of this expanded export are separate facts.
 
+The follow-up preserves concurrent dashboard (`a81d7afb45`) and WPF
+(`2e78ac6654`) palette migrations already added to this PR. Its own code changes
+are confined to the design-system package; those application migrations were
+not reimplemented or independently certified by this package audit.
+
 ## Evidence and census
 
 The initial manifest contains **351 public exports across 210 source modules,
@@ -70,13 +75,14 @@ The following checks were exercised during this export task on the expanded tree
 | Dashboard design-system contract | `vitest run src/design-system-contract.test.ts`: 28/28 passed after preserving concurrent commit `a81d7afb45` |
 | Skill packages | `python build/scripts/docs/validate-skill-packages.py`: validated 13 packages |
 | Broad retained Python suite | 30 tests ran with one failure and 14 errors from obsolete checker API expectations and legacy contrast checks; the whole suite is not green |
+| Extracted archive | All 1,321 payload/inventory checksums verified; repeat export matched byte-for-byte. The extracted reference passed the same 22 accessibility states and desktop interaction checks over loopback HTTP |
 | Ordinary HTML state reference | 11 conditions in two themes, four desktop widths from 1280 to 1920, and 200% zoom passed the exercised checks; no remote requests or runtime errors |
 | Automated accessibility on the reference | Zero reported violations in the tested condition/theme combinations; color-contrast checks marked incomplete still require manual review |
 | Landing page | Chromium at 1366 × 768: canonical identity, 351/30/680/135 census, README/preview/audit/export links, no script errors, no horizontal overflow |
 
 The final current-tree run is recorded above separately from upstream history.
 The full specimen-card iframe matrix, NVDA/VoiceOver and Firefox/WebKit journeys
-remain unrun. Full monorepo `bash scripts/ci.sh` was not run for this standalone
+remain unrun. Direct `file://` navigation was blocked by this session’s Chromium administrator policy; browser evidence uses loopback HTTP with no external requests. Full monorepo `bash scripts/ci.sh` was not run for this standalone
 package follow-up; hosted integration checks remain authoritative for the PR.
 
 ## Operational coverage
