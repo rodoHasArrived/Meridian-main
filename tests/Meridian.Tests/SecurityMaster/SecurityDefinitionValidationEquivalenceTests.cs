@@ -294,7 +294,9 @@ public sealed class SecurityDefinitionValidationEquivalenceTests
             // S3-E contraction: the records no longer hold these values as non-optional fields.
             // The flat codec refuses a payload that omits them, so only a directly built record
             // can lack one.
-            ["Option"] = ["option_underlying_required"],
+            // The flat codec also reads an exercise style it does not recognise as no style, so an
+            // unrecognised one reaches a kind only on a directly built record.
+            ["Option"] = ["option_underlying_required", "option_exercise_style_invalid"],
             ["Warrant"] = ["warrant_underlying_required"],
             ["Swaption"] = ["swaption_strike_rate_required"],
             // A blank profile id reads as the OtherSecurity salvage, and a non-object or

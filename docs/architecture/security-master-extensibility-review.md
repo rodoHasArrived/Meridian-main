@@ -1111,6 +1111,17 @@ SecurityMaster and Architecture namespaces — 6,340 passed, 1 skipped, no fixtu
 `Meridian.FSharp.Tests` — 627 passed. The full local `bash scripts/ci.sh` was not run; GitHub
 `Meridian CI / quality-gate` remains authoritative.
 
+**Review follow-up (2026-11-11): the option exercise style.** Removing the closed
+`ExerciseStyle` union removed a guarantee the three `*_required` codes did not replace: the
+exercise module holds the style as text, the flat writer writes it verbatim, and the option
+decode reads any spelling other than `American`, `European` or `Bermudan` as no style. A
+directly built option record with another spelling therefore passed validation and lost its
+style on the next read. `option_exercise_style_invalid` now requires one of those three
+spellings, matched exactly because the reader matches exactly. The flat codec cannot produce
+the case (it already reads an unrecognised style as none), so the rule is pinned on directly
+built records and listed in `CodesCoveredByFSharpTests`. Swaption is unaffected: its style was
+already text, with its own rule, and its decode keeps the text verbatim.
+
 ### ADR-027 stage-3 S3-E4 — the profile envelope gains a module home — 2026-11-10
 
 The last of the four themes the census named. A new `profileEnvelope` term module

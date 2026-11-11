@@ -499,7 +499,9 @@ and S2-B4 (codec single-purpose) land. Planned increments:
     `ExerciseStyle` union are gone. Byte-neutral: no golden, corpus or sweep fixture changed.
     Values the records guaranteed by type are now required by the definition validator (three
     new `*_required` codes, five rules tightened from "valid when present" to "present and
-    valid"). Contract multipliers and the cap/floor strikes stay scalar: their homes are on
+    valid"). Review follow-up: the removed `ExerciseStyle` union had also guaranteed an
+    option's style spelling, so `option_exercise_style_invalid` now requires one of the three
+    spellings the flat codec reads back. Contract multipliers and the cap/floor strikes stay scalar: their homes are on
     wider modules that predate S3-E, and embedding a six-field module to carry one value would
     widen the record rather than shrink it.
   - **S3-E6 — residual scalar homes (implemented 2026-11-11).** Six term modules home the

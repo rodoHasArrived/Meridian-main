@@ -197,6 +197,15 @@ module SecurityMaster =
                 (error "option_strike_invalid" "Option strike must be greater than zero.")
             @ require underlyingSecurityId.IsSome
                 (error "option_underlying_required" "Option UnderlyingId is required.")
+            // The record held a closed ExerciseStyle union until the S3-E contraction; the module
+            // holds text, so the three spellings the flat codec reads back are required here. The
+            // match is exact because the reader's is: any other spelling would be written
+            // verbatim and then read as no style at all.
+            @ require
+                (modules.Exercise
+                 |> Option.bind (fun e -> e.ExerciseStyle)
+                 |> Option.forall (fun style -> List.contains style [ "American"; "European"; "Bermudan" ]))
+                (error "option_exercise_style_invalid" "Option ExerciseStyle must be American, European or Bermudan when present.")
             @ require (contractMultiplier |> Option.forall (fun multiplier -> multiplier > 0m))
                 (error "option_multiplier_invalid" "Option multiplier must be greater than zero.")
         | "Future" ->
@@ -757,7 +766,7 @@ module SecurityMaster =
         Map.ofList [
             "Option",
             [ "option_put_call_required"; "option_put_call_invalid"; "option_strike_invalid"; "option_underlying_required"
-              "option_multiplier_invalid" ]
+              "option_exercise_style_invalid"; "option_multiplier_invalid" ]
             "Future", [ "future_root_symbol_required"; "future_contract_month_required"; "future_multiplier_invalid" ]
             "Bond",
             [ "bond_coupon_invalid"; "bond_securitized_subclass_noncanonical"; "bond_bank_loan_subclass_noncanonical"

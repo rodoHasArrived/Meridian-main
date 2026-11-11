@@ -358,3 +358,27 @@ let ``a swap leg shape the flat codec never yields is refused on both surfaces``
     Assert.Contains(code, definitionCodes)
     for definitionCode in definitionCodes do
         Assert.Contains(definitionCode, kindCodes)
+
+// Codex review on #3475: the option record held a closed ExerciseStyle union until the S3-E
+// contraction. The exercise module holds text, and the flat codec reads any spelling but the three
+// it knows as no style, so a directly built record with another spelling would be written verbatim
+// and then lose its style on read. The definition surface now refuses it.
+[<Theory>]
+[<InlineData("American")>]
+[<InlineData("European")>]
+[<InlineData("Bermudan")>]
+let ``an option with a recognised exercise style passes both surfaces`` (style: string) =
+    let kindCodes, definitionCodes = bothSurfaces "Option" (optionWith { validOption with ExerciseStyle = Some style })
+    Assert.Empty kindCodes
+    Assert.Empty definitionCodes
+
+[<Theory>]
+[<InlineData("european")>]
+[<InlineData("Asian")>]
+[<InlineData(" ")>]
+let ``an option with an exercise style the flat codec would not read back is refused on both surfaces`` (style: string) =
+    let kindCodes, definitionCodes = bothSurfaces "Option" (optionWith { validOption with ExerciseStyle = Some style })
+    Assert.Contains("option_exercise_style_invalid", kindCodes)
+    Assert.Contains("option_exercise_style_invalid", definitionCodes)
+    for definitionCode in definitionCodes do
+        Assert.Contains(definitionCode, kindCodes)
