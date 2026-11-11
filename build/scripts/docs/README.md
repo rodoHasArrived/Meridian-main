@@ -152,6 +152,13 @@ changes can intentionally fail the check until documentation has been reviewed a
 refreshed. Use `--write-module` when only specific stale modules have been reviewed; reserve the
 broad `--write` refresh for a full accepted-baseline review.
 
+Dependency-only bumps (for example Dependabot) do not drift the source hash: `package-lock.json` is
+excluded, and `package.json` is fingerprinted with registry version ranges masked in
+`dependencies`, `devDependencies`, `optionalDependencies`, and `overrides`. Package names,
+`file:`/git/URL/workspace specifiers, npm alias targets, `peerDependencies`, scripts, engines, and
+every other field still participate. Malformed or duplicate-key `package.json` falls back to the raw
+content hash.
+
 ```bash
 python3 build/scripts/docs/validate-doc-hashes.py --summary
 python3 build/scripts/docs/validate-doc-hashes.py --write-module SRC-HOST --summary
