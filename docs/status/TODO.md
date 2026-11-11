@@ -1,6 +1,6 @@
 # TODO / FIXME / HACK / NOTE Scan
 
-Total items: **236**
+Total items: **239**
 
 | File | Line | Tag | Linked Issue | Text |
 | --- | ---: | --- | :---: | --- |
@@ -11,7 +11,10 @@ Total items: **236**
 | `.github/agents/cleanup-agent.md` | 385 | `TODO` | ❌ | - placeholder implementation comments (for example, `// TODO: implement`) in methods that are already implemented. |
 | `.github/agents/cleanup-agent.md` | 393 | `TODO` | ❌ | - Open-work comments (for example, `// TODO:` or `// FIXME:`) that describe genuine pending tasks — flag |
 | `Meridian Design System/components/core/ContextMenu.d.ts` | 68 | `NOTE` | ❌ | * NOTE: bundle-internal — like `useToast` / `useTableState`, this lowercase helper is NOT on the |
-| `Meridian Design System/components/core/MultiSelect.jsx` | 23 | `NOTE` | ❌ | // Note: caller must provide all IDs; this component only tracks selection state. |
+| `Meridian Design System/components/core/ObjectScope.d.ts` | 46 | `NOTE` | ❌ | note: string \| null; |
+| `Meridian Design System/components/decision/DecisionSnapshot.d.ts` | 78 | `NOTE` | ❌ | note: string; |
+| `Meridian Design System/templates/position-detail/positions-data.js` | 223 | `NOTE` | ❌ | note: "Contributions are measured against the General Account portfolio of $2.146B market value, as of Jun 30, 2026, risk run RA-2026-06-30.", |
+| `Meridian Design System/templates/position-detail/positions-data.js` | 467 | `NOTE` | ❌ | note: "Contributions are measured against the VUL sub-account of $412.0M market value. The instrument column is identical to the general-account holding — only the contribution column differs.", |
 | `Meridian Design System/tests/test_design_system_governance.py` | 28 | `NOTE` | ❌ | # NOTE: this exercises the real, current tree (ROOT), not a synthetic fixture. If this |
 | `benchmarks/run-bottleneck-benchmarks.sh` | 111 | `NOTE` | ❌ | # Note: --filter is intentionally not added here; each phase below supplies its own |
 | `config/appsettings.sample.json` | 439 | `NOTE` | ❌ | // NOTE: This key is a duplicate of the one near the top of this file for documentation purposes. |

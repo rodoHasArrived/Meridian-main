@@ -3051,9 +3051,28 @@ Meridian-main
 ├── manifests
 │   └── meridian-runtime-observability.yaml
 ├── Meridian Design System
+│   ├── api
+│   │   ├── accounting.js
+│   │   ├── analytics.js
+│   │   ├── coordination.js
+│   │   ├── data.js
+│   │   ├── decision.js
+│   │   ├── evidence.js
+│   │   ├── families.json
+│   │   ├── legacy.js
+│   │   ├── primitives.js
+│   │   ├── README.md
+│   │   ├── shell.js
+│   │   ├── template-eligibility.json
+│   │   └── trading.js
 │   ├── assets
 │   │   ├── brand
+│   │   │   ├── identity-sheet.png
+│   │   │   ├── identity-sheet.svg
 │   │   │   ├── meridian-hero.svg
+│   │   │   ├── meridian-lockup-light.svg
+│   │   │   ├── meridian-lockup-monochrome.svg
+│   │   │   ├── meridian-lockup.svg
 │   │   │   ├── meridian-mark-light.svg
 │   │   │   ├── meridian-mark-monochrome.svg
 │   │   │   ├── meridian-mark.svg
@@ -3063,6 +3082,19 @@ Meridian-main
 │   │   │   ├── meridian-wordmark-stacked.svg
 │   │   │   ├── meridian-wordmark.svg
 │   │   │   └── README.md
+│   │   ├── fonts
+│   │   │   ├── IBMPlexMono-Bold.ttf
+│   │   │   ├── IBMPlexMono-Italic.ttf
+│   │   │   ├── IBMPlexMono-Medium.ttf
+│   │   │   ├── IBMPlexMono-Regular.ttf
+│   │   │   ├── IBMPlexMono-SemiBold.ttf
+│   │   │   ├── IBMPlexSans-Bold.ttf
+│   │   │   ├── IBMPlexSans-Italic.ttf
+│   │   │   ├── IBMPlexSans-Medium.ttf
+│   │   │   ├── IBMPlexSans-Regular.ttf
+│   │   │   ├── IBMPlexSans-SemiBold.ttf
+│   │   │   ├── OFL-IBMPlexMono.txt
+│   │   │   └── OFL-IBMPlexSans.txt
 │   │   ├── icons
 │   │   │   ├── account-portfolio.svg
 │   │   │   ├── admin-maintenance.svg
@@ -3118,9 +3150,13 @@ Meridian-main
 │   │   ├── accounting
 │   │   │   ├── accounting-fx-alloc.card.html
 │   │   │   ├── accounting-ledger.card.html
+│   │   │   ├── accounting-proofing.card.html
 │   │   │   ├── accounting-reconcile.card.html
 │   │   │   ├── accounting-trial-aging.card.html
 │   │   │   ├── accounting.card.html
+│   │   │   ├── AccountingPeriodSelector.d.ts
+│   │   │   ├── AccountingPeriodSelector.jsx
+│   │   │   ├── AccountingPeriodSelector.prompt.md
 │   │   │   ├── AccountTree.d.ts
 │   │   │   ├── AccountTree.jsx
 │   │   │   ├── AccountTree.prompt.md
@@ -3133,37 +3169,89 @@ Meridian-main
 │   │   │   ├── AmountCell.d.ts
 │   │   │   ├── AmountCell.jsx
 │   │   │   ├── AmountCell.prompt.md
+│   │   │   ├── assurance.card.html
+│   │   │   ├── Assurance.d.ts
+│   │   │   ├── Assurance.jsx
+│   │   │   ├── Assurance.prompt.md
+│   │   │   ├── BasisBridge.d.ts
+│   │   │   ├── BasisBridge.jsx
+│   │   │   ├── BasisBridge.prompt.md
+│   │   │   ├── BasisComparisonMatrix.d.ts
+│   │   │   ├── BasisComparisonMatrix.jsx
+│   │   │   ├── BasisComparisonMatrix.prompt.md
+│   │   │   ├── CalculationTrace.d.ts
+│   │   │   ├── CalculationTrace.jsx
+│   │   │   ├── CalculationTrace.prompt.md
 │   │   │   ├── capital-commitments.card.html
+│   │   │   ├── close-and-posting.card.html
+│   │   │   ├── CloseCalendar.d.ts
+│   │   │   ├── CloseCalendar.jsx
+│   │   │   ├── CloseCalendar.prompt.md
 │   │   │   ├── CommitmentBar.d.ts
 │   │   │   ├── CommitmentBar.jsx
 │   │   │   ├── CommitmentBar.prompt.md
 │   │   │   ├── FxRevaluationTable.d.ts
 │   │   │   ├── FxRevaluationTable.jsx
 │   │   │   ├── FxRevaluationTable.prompt.md
+│   │   │   ├── IncomeSchedule.d.ts
+│   │   │   ├── IncomeSchedule.jsx
+│   │   │   ├── IncomeSchedule.prompt.md
+│   │   │   ├── investment-event.card.html
 │   │   │   ├── JournalEntryForm.d.ts
 │   │   │   ├── JournalEntryForm.jsx
 │   │   │   ├── JournalEntryForm.prompt.md
 │   │   │   ├── LedgerTable.d.ts
 │   │   │   ├── LedgerTable.jsx
 │   │   │   ├── LedgerTable.prompt.md
+│   │   │   ├── LifecycleRibbon.d.ts
+│   │   │   ├── LifecycleRibbon.jsx
+│   │   │   ├── LifecycleRibbon.prompt.md
 │   │   │   ├── Money.d.ts
 │   │   │   ├── money.js
 │   │   │   ├── Money.jsx
 │   │   │   ├── Money.prompt.md
+│   │   │   ├── PostingImpactPreview.d.ts
+│   │   │   ├── PostingImpactPreview.jsx
+│   │   │   ├── PostingImpactPreview.prompt.md
 │   │   │   ├── ReconciliationPanel.d.ts
 │   │   │   ├── ReconciliationPanel.jsx
 │   │   │   ├── ReconciliationPanel.prompt.md
+│   │   │   ├── RollforwardMatrix.d.ts
+│   │   │   ├── RollforwardMatrix.jsx
+│   │   │   ├── RollforwardMatrix.prompt.md
+│   │   │   ├── RollforwardTrace.d.ts
+│   │   │   ├── RollforwardTrace.jsx
+│   │   │   ├── RollforwardTrace.prompt.md
+│   │   │   ├── schedule-ladder.card.html
+│   │   │   ├── ScheduleLadder.d.ts
+│   │   │   ├── ScheduleLadder.jsx
+│   │   │   ├── ScheduleLadder.prompt.md
 │   │   │   ├── StatementTable.d.ts
 │   │   │   ├── StatementTable.jsx
 │   │   │   ├── StatementTable.prompt.md
 │   │   │   ├── TaxLotTable.d.ts
 │   │   │   ├── TaxLotTable.jsx
 │   │   │   ├── TaxLotTable.prompt.md
+│   │   │   ├── TieOutPanel.d.ts
+│   │   │   ├── TieOutPanel.jsx
+│   │   │   ├── TieOutPanel.prompt.md
 │   │   │   ├── TrialBalance.d.ts
 │   │   │   ├── TrialBalance.jsx
-│   │   │   └── TrialBalance.prompt.md
+│   │   │   ├── TrialBalance.prompt.md
+│   │   │   ├── VarianceCell.d.ts
+│   │   │   ├── VarianceCell.jsx
+│   │   │   └── VarianceCell.prompt.md
 │   │   ├── charts
+│   │   │   ├── analytical-figure-grid.card.html
+│   │   │   ├── analytical-figure.card.html
+│   │   │   ├── AnalyticalField.d.ts
+│   │   │   ├── AnalyticalField.jsx
+│   │   │   ├── AnalyticalField.prompt.md
+│   │   │   ├── AnalyticalFigure.d.ts
+│   │   │   ├── AnalyticalFigure.jsx
+│   │   │   ├── AnalyticalFigure.prompt.md
 │   │   │   ├── analytics-charts.card.html
+│   │   │   ├── asset-liability-ladders.card.html
 │   │   │   ├── attribution-charts.card.html
 │   │   │   ├── BarChart.d.ts
 │   │   │   ├── BarChart.jsx
@@ -3171,14 +3259,28 @@ Meridian-main
 │   │   │   ├── CandleChart.d.ts
 │   │   │   ├── CandleChart.jsx
 │   │   │   ├── CandleChart.prompt.md
+│   │   │   ├── CashFlowLadder.d.ts
+│   │   │   ├── CashFlowLadder.jsx
+│   │   │   ├── CashFlowLadder.prompt.md
 │   │   │   ├── chart-interaction.card.html
+│   │   │   ├── ChartAnnotations.jsx
 │   │   │   ├── ChartCard.d.ts
 │   │   │   ├── ChartCard.jsx
 │   │   │   ├── ChartCard.prompt.md
+│   │   │   ├── ChartFrame.d.ts
+│   │   │   ├── ChartFrame.jsx
+│   │   │   ├── ChartFrame.prompt.md
 │   │   │   ├── charts.card.html
 │   │   │   ├── ChartTooltip.d.ts
 │   │   │   ├── ChartTooltip.jsx
 │   │   │   ├── ChartTooltip.prompt.md
+│   │   │   ├── ComparisonPlate.d.ts
+│   │   │   ├── ComparisonPlate.jsx
+│   │   │   ├── ComparisonPlate.prompt.md
+│   │   │   ├── control-dependency.card.html
+│   │   │   ├── ControlDependencyGraph.d.ts
+│   │   │   ├── ControlDependencyGraph.jsx
+│   │   │   ├── ControlDependencyGraph.prompt.md
 │   │   │   ├── CorrelationHeatmap.d.ts
 │   │   │   ├── CorrelationHeatmap.jsx
 │   │   │   ├── CorrelationHeatmap.prompt.md
@@ -3188,20 +3290,41 @@ Meridian-main
 │   │   │   ├── DepthChart.d.ts
 │   │   │   ├── DepthChart.jsx
 │   │   │   ├── DepthChart.prompt.md
+│   │   │   ├── DistributionRange.jsx
+│   │   │   ├── DonutChart.jsx
+│   │   │   ├── DotMatrix.d.ts
+│   │   │   ├── DotMatrix.jsx
 │   │   │   ├── DrawdownChart.d.ts
 │   │   │   ├── DrawdownChart.jsx
 │   │   │   ├── DrawdownChart.prompt.md
+│   │   │   ├── DurationContribution.d.ts
+│   │   │   ├── DurationContribution.jsx
+│   │   │   ├── DurationContribution.prompt.md
 │   │   │   ├── EquityCurve.d.ts
 │   │   │   ├── EquityCurve.jsx
 │   │   │   ├── EquityCurve.prompt.md
+│   │   │   ├── figure.card.html
+│   │   │   ├── Figure.d.ts
+│   │   │   ├── Figure.jsx
+│   │   │   ├── Figure.prompt.md
 │   │   │   ├── Histogram.d.ts
 │   │   │   ├── Histogram.jsx
 │   │   │   ├── Histogram.prompt.md
+│   │   │   ├── IntervalBar.d.ts
+│   │   │   ├── IntervalBar.jsx
+│   │   │   ├── IntervalBar.prompt.md
+│   │   │   ├── LineageGraph.d.ts
+│   │   │   ├── LineageGraph.jsx
+│   │   │   ├── LineageGraph.prompt.md
 │   │   │   ├── market-coverage.card.html
+│   │   │   ├── MaturityLadder.d.ts
+│   │   │   ├── MaturityLadder.jsx
+│   │   │   ├── MaturityLadder.prompt.md
 │   │   │   ├── ownership-graph.card.html
 │   │   │   ├── OwnershipGraph.d.ts
 │   │   │   ├── OwnershipGraph.jsx
 │   │   │   ├── OwnershipGraph.prompt.md
+│   │   │   ├── PeerComparisonStrip.jsx
 │   │   │   ├── pnl-calendar.card.html
 │   │   │   ├── PnLCalendar.d.ts
 │   │   │   ├── PnLCalendar.jsx
@@ -3209,16 +3332,26 @@ Meridian-main
 │   │   │   ├── ScatterChart.d.ts
 │   │   │   ├── ScatterChart.jsx
 │   │   │   ├── ScatterChart.prompt.md
+│   │   │   ├── ScenarioSelector.jsx
+│   │   │   ├── SmallMultiples.d.ts
+│   │   │   ├── SmallMultiples.jsx
 │   │   │   ├── Sparkline.d.ts
 │   │   │   ├── Sparkline.jsx
 │   │   │   ├── Sparkline.prompt.md
 │   │   │   ├── TimeframeSwitcher.d.ts
 │   │   │   ├── TimeframeSwitcher.jsx
 │   │   │   ├── TimeframeSwitcher.prompt.md
+│   │   │   ├── TraceChart.d.ts
+│   │   │   ├── TraceChart.jsx
+│   │   │   ├── TraceChart.prompt.md
 │   │   │   ├── Treemap.d.ts
 │   │   │   ├── Treemap.jsx
 │   │   │   ├── Treemap.prompt.md
 │   │   │   ├── useChartCrosshair.js
+│   │   │   ├── viz-plates.card.html
+│   │   │   ├── viz-workbench.card.html
+│   │   │   ├── viz.js
+│   │   │   ├── WatchlistStrip.jsx
 │   │   │   ├── WaterfallChart.d.ts
 │   │   │   ├── WaterfallChart.jsx
 │   │   │   ├── WaterfallChart.prompt.md
@@ -3246,9 +3379,13 @@ Meridian-main
 │   │   │   ├── Callout.d.ts
 │   │   │   ├── Callout.jsx
 │   │   │   ├── Callout.prompt.md
+│   │   │   ├── Capsule.d.ts
+│   │   │   ├── Capsule.jsx
+│   │   │   ├── Capsule.prompt.md
 │   │   │   ├── Checkbox.d.ts
 │   │   │   ├── Checkbox.jsx
 │   │   │   ├── Checkbox.prompt.md
+│   │   │   ├── combobox-tree-accordion.card.html
 │   │   │   ├── Combobox.d.ts
 │   │   │   ├── Combobox.jsx
 │   │   │   ├── Combobox.prompt.md
@@ -3256,10 +3393,15 @@ Meridian-main
 │   │   │   ├── CommandPalette.d.ts
 │   │   │   ├── CommandPalette.jsx
 │   │   │   ├── CommandPalette.prompt.md
+│   │   │   ├── content-primitives.card.html
 │   │   │   ├── context-validators.card.html
 │   │   │   ├── ContextMenu.d.ts
 │   │   │   ├── ContextMenu.jsx
 │   │   │   ├── ContextMenu.prompt.md
+│   │   │   ├── ContinuityFrame.d.ts
+│   │   │   ├── ContinuityFrame.jsx
+│   │   │   ├── ContinuityFrame.prompt.md
+│   │   │   ├── coordinated-foundations.card.html
 │   │   │   ├── core.card.html
 │   │   │   ├── DatePicker.d.ts
 │   │   │   ├── DatePicker.jsx
@@ -3267,15 +3409,22 @@ Meridian-main
 │   │   │   ├── DateRangePicker.d.ts
 │   │   │   ├── DateRangePicker.jsx
 │   │   │   ├── DateRangePicker.prompt.md
+│   │   │   ├── Datum.d.ts
+│   │   │   ├── Datum.jsx
+│   │   │   ├── Datum.prompt.md
 │   │   │   ├── Delta.d.ts
 │   │   │   ├── Delta.jsx
 │   │   │   ├── Delta.prompt.md
 │   │   │   ├── DensityToggle.d.ts
 │   │   │   ├── DensityToggle.jsx
 │   │   │   ├── DensityToggle.prompt.md
+│   │   │   ├── dialog.card.html
 │   │   │   ├── Dialog.d.ts
 │   │   │   ├── Dialog.jsx
 │   │   │   ├── Dialog.prompt.md
+│   │   │   ├── Disclosure.d.ts
+│   │   │   ├── Disclosure.jsx
+│   │   │   ├── Disclosure.prompt.md
 │   │   │   ├── Drawer.d.ts
 │   │   │   ├── Drawer.jsx
 │   │   │   ├── Drawer.prompt.md
@@ -3296,6 +3445,11 @@ Meridian-main
 │   │   │   ├── Form.d.ts
 │   │   │   ├── Form.jsx
 │   │   │   ├── Form.prompt.md
+│   │   │   ├── format-authority.card.html
+│   │   │   ├── format.js
+│   │   │   ├── FormatProvider.d.ts
+│   │   │   ├── FormatProvider.jsx
+│   │   │   ├── FormatProvider.prompt.md
 │   │   │   ├── FormField.d.ts
 │   │   │   ├── FormField.jsx
 │   │   │   ├── FormField.prompt.md
@@ -3330,6 +3484,13 @@ Meridian-main
 │   │   │   ├── LinearGauge.jsx
 │   │   │   ├── LinearGauge.prompt.md
 │   │   │   ├── live-status.card.html
+│   │   │   ├── LocalDate.d.ts
+│   │   │   ├── localDate.js
+│   │   │   ├── LocalDate.jsx
+│   │   │   ├── LocalDate.prompt.md
+│   │   │   ├── MaterialityAssessment.d.ts
+│   │   │   ├── MaterialityAssessment.jsx
+│   │   │   ├── MaterialityAssessment.prompt.md
 │   │   │   ├── modal.card.html
 │   │   │   ├── Modal.d.ts
 │   │   │   ├── Modal.jsx
@@ -3345,18 +3506,37 @@ Meridian-main
 │   │   │   ├── NumberInput.d.ts
 │   │   │   ├── NumberInput.jsx
 │   │   │   ├── NumberInput.prompt.md
+│   │   │   ├── object-model.card.html
+│   │   │   ├── object-scope.card.html
+│   │   │   ├── object-trail.card.html
+│   │   │   ├── ObjectModel.d.ts
+│   │   │   ├── ObjectModel.jsx
+│   │   │   ├── ObjectModel.prompt.md
+│   │   │   ├── ObjectScope.d.ts
+│   │   │   ├── ObjectScope.jsx
+│   │   │   ├── ObjectScope.prompt.md
+│   │   │   ├── ObjectTrail.d.ts
+│   │   │   ├── ObjectTrail.jsx
+│   │   │   ├── ObjectTrail.prompt.md
 │   │   │   ├── PanelSurface.d.ts
 │   │   │   ├── PanelSurface.jsx
 │   │   │   ├── PanelSurface.prompt.md
+│   │   │   ├── pickers.card.html
 │   │   │   ├── Popover.d.ts
 │   │   │   ├── Popover.jsx
 │   │   │   ├── Popover.prompt.md
 │   │   │   ├── ProgressBar.d.ts
 │   │   │   ├── ProgressBar.jsx
 │   │   │   ├── ProgressBar.prompt.md
+│   │   │   ├── progressive-disclosure.card.html
 │   │   │   ├── RadioGroup.d.ts
 │   │   │   ├── RadioGroup.jsx
 │   │   │   ├── RadioGroup.prompt.md
+│   │   │   ├── reference-and-continuity.card.html
+│   │   │   ├── registry.card.html
+│   │   │   ├── Registry.d.ts
+│   │   │   ├── Registry.jsx
+│   │   │   ├── Registry.prompt.md
 │   │   │   ├── SegmentedControl.d.ts
 │   │   │   ├── SegmentedControl.jsx
 │   │   │   ├── SegmentedControl.prompt.md
@@ -3381,6 +3561,9 @@ Meridian-main
 │   │   │   ├── Stepper.d.ts
 │   │   │   ├── Stepper.jsx
 │   │   │   ├── Stepper.prompt.md
+│   │   │   ├── StrategyModel.d.ts
+│   │   │   ├── StrategyModel.jsx
+│   │   │   ├── StrategyModel.prompt.md
 │   │   │   ├── Tabs.d.ts
 │   │   │   ├── Tabs.jsx
 │   │   │   ├── Tabs.prompt.md
@@ -3391,6 +3574,10 @@ Meridian-main
 │   │   │   ├── TextArea.jsx
 │   │   │   ├── TextArea.prompt.md
 │   │   │   ├── theming.card.html
+│   │   │   ├── time-context.card.html
+│   │   │   ├── TimeContext.d.ts
+│   │   │   ├── TimeContext.jsx
+│   │   │   ├── TimeContext.prompt.md
 │   │   │   ├── Timestamp.d.ts
 │   │   │   ├── Timestamp.jsx
 │   │   │   ├── Timestamp.prompt.md
@@ -3407,6 +3594,10 @@ Meridian-main
 │   │   │   ├── useOverlayFocus.js
 │   │   │   ├── Validators.d.ts
 │   │   │   ├── Validators.js
+│   │   │   ├── value-authority.card.html
+│   │   │   ├── ValueAuthority.d.ts
+│   │   │   ├── ValueAuthority.jsx
+│   │   │   ├── ValueAuthority.prompt.md
 │   │   │   └── workstation-services.card.html
 │   │   ├── data
 │   │   │   ├── BulkActionBar.d.ts
@@ -3420,7 +3611,14 @@ Meridian-main
 │   │   │   ├── ColumnManager.prompt.md
 │   │   │   ├── data-editing.card.html
 │   │   │   ├── data-extras.card.html
+│   │   │   ├── data-grid.card.html
 │   │   │   ├── data.card.html
+│   │   │   ├── DataGrid.d.ts
+│   │   │   ├── DataGrid.jsx
+│   │   │   ├── DataGrid.prompt.md
+│   │   │   ├── DataStateSwitch.d.ts
+│   │   │   ├── DataStateSwitch.jsx
+│   │   │   ├── DataStateSwitch.prompt.md
 │   │   │   ├── DenseDataTable.d.ts
 │   │   │   ├── DenseDataTable.jsx
 │   │   │   ├── DenseDataTable.prompt.md
@@ -3445,12 +3643,22 @@ Meridian-main
 │   │   │   ├── FilteredDataTable.d.ts
 │   │   │   ├── FilteredDataTable.jsx
 │   │   │   ├── FilteredDataTable.prompt.md
+│   │   │   ├── gridFormat.js
 │   │   │   ├── KeyValueGrid.d.ts
 │   │   │   ├── KeyValueGrid.jsx
 │   │   │   ├── KeyValueGrid.prompt.md
+│   │   │   ├── linked-selection-coordination.card.html
+│   │   │   ├── linked-selection.card.html
+│   │   │   ├── LinkedSelectionProvider.d.ts
+│   │   │   ├── LinkedSelectionProvider.jsx
+│   │   │   ├── LinkedSelectionProvider.prompt.md
 │   │   │   ├── MetricCard.d.ts
 │   │   │   ├── MetricCard.jsx
 │   │   │   ├── MetricCard.prompt.md
+│   │   │   ├── optimistic-editing.card.html
+│   │   │   ├── OptimisticCell.d.ts
+│   │   │   ├── OptimisticCell.jsx
+│   │   │   ├── OptimisticCell.prompt.md
 │   │   │   ├── pagination.card.html
 │   │   │   ├── Pagination.d.ts
 │   │   │   ├── Pagination.jsx
@@ -3459,12 +3667,17 @@ Meridian-main
 │   │   │   ├── SavedViews.d.ts
 │   │   │   ├── SavedViews.jsx
 │   │   │   ├── SavedViews.prompt.md
+│   │   │   ├── selection-compare.card.html
+│   │   │   ├── SelectionCompare.d.ts
+│   │   │   ├── SelectionCompare.jsx
+│   │   │   ├── SelectionCompare.prompt.md
 │   │   │   ├── SelectionToolbar.d.ts
 │   │   │   ├── SelectionToolbar.jsx
 │   │   │   ├── SelectionToolbar.prompt.md
 │   │   │   ├── Skeleton.d.ts
 │   │   │   ├── Skeleton.jsx
 │   │   │   ├── Skeleton.prompt.md
+│   │   │   ├── sparkline-empty-columns.card.html
 │   │   │   ├── table-depth.card.html
 │   │   │   ├── TableHooks.js
 │   │   │   ├── Toolbar.d.ts
@@ -3482,11 +3695,63 @@ Meridian-main
 │   │   │   ├── WorksheetGrid.d.ts
 │   │   │   ├── WorksheetGrid.jsx
 │   │   │   └── WorksheetGrid.prompt.md
+│   │   ├── decision
+│   │   │   ├── ConsequenceRail.d.ts
+│   │   │   ├── ConsequenceRail.jsx
+│   │   │   ├── ConsequenceRail.prompt.md
+│   │   │   ├── decision.card.html
+│   │   │   ├── DecisionSnapshot.d.ts
+│   │   │   ├── DecisionSnapshot.jsx
+│   │   │   ├── DecisionSnapshot.prompt.md
+│   │   │   ├── EvidenceRail.d.ts
+│   │   │   ├── EvidenceRail.jsx
+│   │   │   └── EvidenceRail.prompt.md
 │   │   ├── operations
+│   │   │   ├── action-envelope.card.html
+│   │   │   ├── action-queue.card.html
+│   │   │   ├── ActionEnvelope.d.ts
+│   │   │   ├── ActionEnvelope.jsx
+│   │   │   ├── ActionEnvelope.prompt.md
+│   │   │   ├── ActionGuard.d.ts
+│   │   │   ├── ActionGuard.jsx
+│   │   │   ├── ActionGuard.prompt.md
+│   │   │   ├── ActionQueue.d.ts
+│   │   │   ├── ActionQueue.jsx
+│   │   │   ├── ActionQueue.prompt.md
+│   │   │   ├── adapter-diagnostics.card.html
+│   │   │   ├── AdapterDiagnostics.d.ts
+│   │   │   ├── AdapterDiagnostics.jsx
+│   │   │   ├── AdapterDiagnostics.prompt.md
+│   │   │   ├── annotation-layer.card.html
+│   │   │   ├── AnnotationLayer.d.ts
+│   │   │   ├── AnnotationLayer.jsx
+│   │   │   ├── AnnotationLayer.prompt.md
+│   │   │   ├── AttestationPanel.d.ts
+│   │   │   ├── AttestationPanel.jsx
+│   │   │   ├── AttestationPanel.prompt.md
 │   │   │   ├── case-triage.card.html
 │   │   │   ├── CaseQueue.d.ts
 │   │   │   ├── CaseQueue.jsx
 │   │   │   ├── CaseQueue.prompt.md
+│   │   │   ├── change-control.card.html
+│   │   │   ├── ChangeSetReview.d.ts
+│   │   │   ├── ChangeSetReview.jsx
+│   │   │   ├── ChangeSetReview.prompt.md
+│   │   │   ├── ClaimHeader.d.ts
+│   │   │   ├── ClaimHeader.jsx
+│   │   │   ├── ClaimHeader.prompt.md
+│   │   │   ├── conditions.js
+│   │   │   ├── ConnectionState.d.ts
+│   │   │   ├── ConnectionState.jsx
+│   │   │   ├── ConnectionState.prompt.md
+│   │   │   ├── data-conditions.card.html
+│   │   │   ├── DataCondition.d.ts
+│   │   │   ├── DataCondition.jsx
+│   │   │   ├── DataCondition.prompt.md
+│   │   │   ├── decision-flow.card.html
+│   │   │   ├── DecisionFlow.d.ts
+│   │   │   ├── DecisionFlow.jsx
+│   │   │   ├── DecisionFlow.prompt.md
 │   │   │   ├── diff-view.card.html
 │   │   │   ├── DiffView.d.ts
 │   │   │   ├── DiffView.jsx
@@ -3494,13 +3759,24 @@ Meridian-main
 │   │   │   ├── EventTimeline.d.ts
 │   │   │   ├── EventTimeline.jsx
 │   │   │   ├── EventTimeline.prompt.md
+│   │   │   ├── evidence-coverage.card.html
 │   │   │   ├── evidence-surfaces.card.html
+│   │   │   ├── EvidenceInspector.d.ts
+│   │   │   ├── EvidenceInspector.jsx
+│   │   │   ├── EvidenceInspector.prompt.md
 │   │   │   ├── EvidenceLink.d.ts
 │   │   │   ├── EvidenceLink.jsx
 │   │   │   ├── EvidenceLink.prompt.md
+│   │   │   ├── EvidencePreview.d.ts
+│   │   │   ├── EvidencePreview.jsx
+│   │   │   ├── EvidencePreview.prompt.md
 │   │   │   ├── GateRail.d.ts
 │   │   │   ├── GateRail.jsx
 │   │   │   ├── GateRail.prompt.md
+│   │   │   ├── handover-brief.card.html
+│   │   │   ├── HandoverBrief.d.ts
+│   │   │   ├── HandoverBrief.jsx
+│   │   │   ├── HandoverBrief.prompt.md
 │   │   │   ├── LogTail.d.ts
 │   │   │   ├── LogTail.jsx
 │   │   │   ├── LogTail.prompt.md
@@ -3511,26 +3787,55 @@ Meridian-main
 │   │   │   ├── ReadinessPanel.d.ts
 │   │   │   ├── ReadinessPanel.jsx
 │   │   │   ├── ReadinessPanel.prompt.md
+│   │   │   ├── ResolutionDrawer.d.ts
+│   │   │   ├── ResolutionDrawer.jsx
+│   │   │   ├── ResolutionDrawer.prompt.md
 │   │   │   ├── SeverityBadge.d.ts
 │   │   │   ├── SeverityBadge.jsx
 │   │   │   ├── SeverityBadge.prompt.md
 │   │   │   ├── SlaChip.d.ts
 │   │   │   ├── SlaChip.jsx
 │   │   │   ├── SlaChip.prompt.md
+│   │   │   ├── SourceCoverageSummary.d.ts
+│   │   │   ├── SourceCoverageSummary.jsx
+│   │   │   ├── SourceCoverageSummary.prompt.md
+│   │   │   ├── Status.d.ts
 │   │   │   ├── status.js
+│   │   │   ├── Status.jsx
+│   │   │   ├── Status.prompt.md
+│   │   │   ├── StrategyRunModel.d.ts
+│   │   │   ├── StrategyRunModel.jsx
+│   │   │   ├── StrategyRunModel.prompt.md
 │   │   │   ├── TrustStrip.d.ts
 │   │   │   ├── TrustStrip.jsx
 │   │   │   ├── TrustStrip.prompt.md
 │   │   │   ├── ValidationIssueList.d.ts
 │   │   │   ├── ValidationIssueList.jsx
 │   │   │   ├── ValidationIssueList.prompt.md
+│   │   │   ├── value-envelope.card.html
+│   │   │   ├── ValueEnvelope.d.ts
+│   │   │   ├── ValueEnvelope.jsx
+│   │   │   ├── ValueEnvelope.prompt.md
+│   │   │   ├── VersionConflictNotice.d.ts
+│   │   │   ├── VersionConflictNotice.jsx
+│   │   │   ├── VersionConflictNotice.prompt.md
 │   │   │   ├── WorkspaceSection.d.ts
 │   │   │   ├── WorkspaceSection.jsx
 │   │   │   └── WorkspaceSection.prompt.md
 │   │   ├── shell
+│   │   │   ├── global-search.card.html
+│   │   │   ├── GlobalSearch.d.ts
+│   │   │   ├── GlobalSearch.jsx
 │   │   │   ├── NavRail.d.ts
 │   │   │   ├── NavRail.jsx
 │   │   │   ├── NavRail.prompt.md
+│   │   │   ├── return-path.card.html
+│   │   │   ├── ReturnPath.d.ts
+│   │   │   ├── ReturnPath.jsx
+│   │   │   ├── screen-composition.card.html
+│   │   │   ├── ScreenComposition.d.ts
+│   │   │   ├── ScreenComposition.jsx
+│   │   │   ├── ScreenComposition.prompt.md
 │   │   │   ├── SessionControls.d.ts
 │   │   │   ├── SessionControls.jsx
 │   │   │   ├── SessionControls.prompt.md
@@ -3538,72 +3843,172 @@ Meridian-main
 │   │   │   ├── StatusBar.d.ts
 │   │   │   ├── StatusBar.jsx
 │   │   │   ├── StatusBar.prompt.md
+│   │   │   ├── workspace-context-collapse.card.html
+│   │   │   ├── workspace-context.card.html
+│   │   │   ├── workspace-layout.card.html
+│   │   │   ├── WorkspaceContextBar.d.ts
+│   │   │   ├── WorkspaceContextBar.jsx
+│   │   │   ├── WorkspaceContextBar.prompt.md
+│   │   │   ├── WorkspaceLayout.d.ts
+│   │   │   ├── WorkspaceLayout.jsx
+│   │   │   ├── WorkspaceLayout.prompt.md
+│   │   │   ├── workstation-shell.card.html
+│   │   │   ├── WorkstationShell.d.ts
+│   │   │   ├── WorkstationShell.jsx
+│   │   │   ├── WorkstationShell.prompt.md
 │   │   │   ├── WorkstationTopbar.d.ts
 │   │   │   ├── WorkstationTopbar.jsx
 │   │   │   └── WorkstationTopbar.prompt.md
-│   │   └── trading
-│   │       ├── Blotter.d.ts
-│   │       ├── Blotter.jsx
-│   │       ├── Blotter.prompt.md
-│   │       ├── depth-ladder.card.html
-│   │       ├── DepthLadder.d.ts
-│   │       ├── DepthLadder.jsx
-│   │       ├── DepthLadder.prompt.md
-│   │       ├── FillsFeed.d.ts
-│   │       ├── FillsFeed.jsx
-│   │       ├── FillsFeed.prompt.md
-│   │       ├── option-chain.card.html
-│   │       ├── OptionChainTable.d.ts
-│   │       ├── OptionChainTable.jsx
-│   │       ├── OptionChainTable.prompt.md
-│   │       ├── OrderTicket.d.ts
-│   │       ├── OrderTicket.jsx
-│   │       ├── OrderTicket.prompt.md
-│   │       └── trading.card.html
+│   │   ├── trading
+│   │   │   ├── Blotter.d.ts
+│   │   │   ├── Blotter.jsx
+│   │   │   ├── Blotter.prompt.md
+│   │   │   ├── depth-ladder.card.html
+│   │   │   ├── DepthLadder.d.ts
+│   │   │   ├── DepthLadder.jsx
+│   │   │   ├── DepthLadder.prompt.md
+│   │   │   ├── FillsFeed.d.ts
+│   │   │   ├── FillsFeed.jsx
+│   │   │   ├── FillsFeed.prompt.md
+│   │   │   ├── option-chain.card.html
+│   │   │   ├── OptionChainTable.d.ts
+│   │   │   ├── OptionChainTable.jsx
+│   │   │   ├── OptionChainTable.prompt.md
+│   │   │   ├── OrderTicket.d.ts
+│   │   │   ├── OrderTicket.jsx
+│   │   │   ├── OrderTicket.prompt.md
+│   │   │   ├── time-and-sales.card.html
+│   │   │   ├── TimeAndSalesTape.d.ts
+│   │   │   ├── TimeAndSalesTape.jsx
+│   │   │   ├── TimeAndSalesTape.prompt.md
+│   │   │   └── trading.card.html
+│   │   └── README.md
 │   ├── docs
 │   │   ├── changelog
 │   │   │   ├── README.md
 │   │   │   └── SYSTEM_STATE_2026-06.md
+│   │   ├── reviews
+│   │   │   ├── screenshots
+│   │   │   │   ├── 01-alm-2.png
+│   │   │   │   ├── 01-alm-4.png
+│   │   │   │   ├── 02-alm-2.png
+│   │   │   │   ├── 02-alm-4.png
+│   │   │   │   ├── 03-alm-4.png
+│   │   │   │   ├── alm-1.png
+│   │   │   │   ├── alm-3.png
+│   │   │   │   ├── backtest-diag.jpg
+│   │   │   │   ├── close.png
+│   │   │   │   ├── cm-2.png
+│   │   │   │   ├── diag.jpg
+│   │   │   │   ├── onboarding-diag.jpg
+│   │   │   │   ├── unit-failures.jpg
+│   │   │   │   └── unit-results.jpg
+│   │   │   ├── Adversarial Review.html
+│   │   │   ├── Improvement Brainstorm.html
+│   │   │   ├── Large Improvements.html
+│   │   │   ├── Release 4.0 Plan.html
+│   │   │   ├── Strategy Formation Review.html
+│   │   │   └── Template Improvements.html
+│   │   ├── accounting-interface-4-3.card.html
+│   │   ├── accounting-interface-proposal.card.html
+│   │   ├── ACCOUNTING_INTERFACE_4_2.md
+│   │   ├── ACCOUNTING_INTERFACE_4_3.md
+│   │   ├── adoption-census-4.0.json
+│   │   ├── architecture.card.html
+│   │   ├── ARCHITECTURE.md
 │   │   ├── COMPONENT_API_REFERENCE.card.html
+│   │   ├── conformance.card.html
 │   │   ├── contract-audit.card.html
 │   │   ├── CONTRACT_AUDIT.md
 │   │   ├── cookbook.card.html
 │   │   ├── COOKBOOK.md
+│   │   ├── COORDINATED_COMPONENTS.md
+│   │   ├── DEPLOYMENT_CHECKLIST_4_1.md
+│   │   ├── eligibility.card.html
 │   │   ├── GETTING_STARTED.md
+│   │   ├── METRICS.md
 │   │   ├── PERFORMANCE.md
+│   │   ├── QA_DARK_AUDIT.md
+│   │   ├── QA_REPORT_3.1.0.md
+│   │   ├── QA_REPORT_3.3.1.md
+│   │   ├── QA_REPORT_3.5.md
+│   │   ├── QA_REPORT_4.2.0.md
+│   │   ├── QA_REPORT_4.3.0.md
+│   │   ├── README.md
+│   │   ├── RELEASE_NOTES_3.1.0.md
+│   │   ├── RELEASE_NOTES_3.2.0.md
+│   │   ├── RELEASE_NOTES_3.3.1.md
+│   │   ├── RELEASE_NOTES_3.5.0.md
+│   │   ├── RELEASE_NOTES_4.2.0.md
+│   │   ├── RELEASE_NOTES_4.3.0.md
+│   │   ├── RELEASE_NOTES_R2.md
+│   │   ├── semantic-safety.card.html
+│   │   ├── SEMANTIC_SAFETY_4_4.md
+│   │   ├── suite-cohesion-proposal.card.html
+│   │   ├── SUITE_COHESION_4_4.md
 │   │   ├── system-map.card.html
-│   │   └── UPGRADING.md
+│   │   ├── UPGRADING.md
+│   │   ├── ux-depth-proposal.card.html
+│   │   ├── UX_DEPTH_4_1.md
+│   │   ├── workstation-blueprint.card.html
+│   │   └── WORKSTATION_BLUEPRINT.md
 │   ├── guidelines
 │   │   ├── accessibility.card.html
 │   │   ├── ACCESSIBILITY.md
+│   │   ├── ACTION_SEMANTICS.md
+│   │   ├── ADAPTER_SEMANTICS.md
+│   │   ├── ANALYTICAL_SCOPE.md
 │   │   ├── brand-hero.card.html
 │   │   ├── brand-icons.card.html
 │   │   ├── brand-marks.card.html
+│   │   ├── BRAND_GUIDELINES.md
+│   │   ├── CARD_INDEX.md
 │   │   ├── colors-accent.card.html
 │   │   ├── colors-charts.card.html
 │   │   ├── colors-modes.card.html
 │   │   ├── colors-states.card.html
 │   │   ├── colors-surfaces.card.html
+│   │   ├── CONFORMANCE.md
 │   │   ├── CONTENT_FUNDAMENTALS.md
 │   │   ├── dark-mode-validation.card.html
+│   │   ├── decision-spine.card.html
+│   │   ├── DECISION_SEMANTICS.md
 │   │   ├── depth-stacking.card.html
 │   │   ├── depth-surfaces.card.html
 │   │   ├── entity-schemas.card.html
 │   │   ├── ENTITY_SCHEMAS.md
+│   │   ├── extending.card.html
+│   │   ├── EXTENDING.md
 │   │   ├── ICONOGRAPHY.md
 │   │   ├── keyboard-map.card.html
 │   │   ├── motion.card.html
+│   │   ├── NUMERIC_AUTHORITY.md
+│   │   ├── OBJECT_MODEL.md
+│   │   ├── operating-language.card.html
+│   │   ├── OPERATING_LANGUAGE.md
+│   │   ├── PATTERNS.md
+│   │   ├── PROGRESSIVE_DISCLOSURE.md
+│   │   ├── README.md
+│   │   ├── SESSION_CONTINUITY.md
 │   │   ├── spacing-density.card.html
 │   │   ├── spacing-radii.card.html
 │   │   ├── states-antipatterns.card.html
 │   │   ├── STATES_AND_ANTIPATTERNS.md
+│   │   ├── TABULAR_CONTRACT.md
+│   │   ├── TEMPLATE_CONTRACT.md
+│   │   ├── TIME_SEMANTICS.md
 │   │   ├── token-reference.card.html
 │   │   ├── TOKEN_REFERENCE.md
 │   │   ├── type-numerals.card.html
 │   │   ├── type-scale.card.html
 │   │   ├── type-stack.card.html
+│   │   ├── VALUE_ENVELOPE.md
 │   │   ├── VISUAL_FOUNDATIONS.md
-│   │   └── WORKSTATION_BLUEPRINT.md
+│   │   ├── visualization-grammar.card.html
+│   │   ├── VISUALIZATION_GRAMMAR.md
+│   │   ├── workstation-hierarchy.card.html
+│   │   ├── WORKSTATION_BLUEPRINT.md
+│   │   └── WORKSTATION_HIERARCHY.md
 │   ├── preview
 │   │   ├── brand-icons.html
 │   │   ├── brand-marks.html
@@ -3648,13 +4053,54 @@ Meridian-main
 │   │   ├── acct-ledger.png
 │   │   └── acct-template-check.png
 │   ├── screenshots
+│   │   ├── 01-account-sheet-4200.jpg
+│   │   ├── 01-b5-check.png
+│   │   ├── 01-cclab-debug.jpg
+│   │   ├── 01-debug-cmd.jpg
+│   │   ├── 01-flow-td.png
+│   │   ├── 01-reversal.png
+│   │   ├── 02-account-sheet-4200.jpg
+│   │   ├── 02-b5-check.png
+│   │   ├── 02-cclab-debug.jpg
+│   │   ├── 02-debug-cmd.jpg
+│   │   ├── 02-flow-td.png
+│   │   ├── 02-reversal.png
+│   │   ├── 03-flow-td.png
+│   │   ├── a11y-run-4.2.0-rerun.jpg
+│   │   ├── a11y-run-4.2.0-tail.jpg
+│   │   ├── a11y-run-4.2.0.jpg
+│   │   ├── b5-check.png
+│   │   ├── blank-check.png
+│   │   ├── c01-c02-hits.jpg
+│   │   ├── cclab-debug.jpg
+│   │   ├── cclab-debug2.jpg
+│   │   ├── conformance-4.2.0-failures.jpg
+│   │   ├── conformance-4.2.0.jpg
 │   │   ├── core-top.png
-│   │   └── gallery-01.png
+│   │   ├── entry-inspector.png
+│   │   ├── flow-td-00.png
+│   │   ├── gallery-01.png
+│   │   ├── opswall-check.png
+│   │   ├── probe-td.png
+│   │   └── unit-4.2.0.jpg
 │   ├── scripts
+│   │   ├── bundle_extensions.json
 │   │   ├── check_contrast.py
 │   │   ├── check_design_system_governance.py
+│   │   ├── check_suite_cohesion.py
+│   │   ├── check_template_eligibility.py
+│   │   ├── check_token_parity.py
+│   │   ├── codemod_4_0.py
+│   │   ├── compile_bundle_extensions.py
 │   │   ├── create-workstation.sh
+│   │   ├── generate_families.py
+│   │   ├── generate_inventory.py
 │   │   ├── governance-baseline.json
+│   │   ├── README.md
+│   │   ├── release_identity.py
+│   │   ├── sync_catalog.py
+│   │   ├── sync_template_scaffold.py
+│   │   ├── validate_release.py
 │   │   └── visual_diff.py
 │   ├── src
 │   │   └── Meridian.Ui
@@ -3663,9 +4109,27 @@ Meridian-main
 │   │               └── styles
 │   │                   └── index.css
 │   ├── templates
+│   │   ├── _scaffold
+│   │   │   ├── action-bridge.jsx
+│   │   │   ├── app-map.js
+│   │   │   ├── books.js
+│   │   │   ├── ds-base.js
+│   │   │   ├── instructions.js
+│   │   │   ├── operator-layer.js
+│   │   │   ├── prefs.js
+│   │   │   ├── support.js
+│   │   │   ├── trail-bridge.jsx
+│   │   │   └── world.js
+│   │   ├── _strategy-executor
+│   │   │   ├── executor-store.js
+│   │   │   ├── README.md
+│   │   │   └── screen-kit.js
 │   │   ├── accounting-workstation
 │   │   │   ├── views
+│   │   │   │   ├── AccountSheetView.jsx
 │   │   │   │   ├── AccountsView.jsx
+│   │   │   │   ├── ConsolidationView.jsx
+│   │   │   │   ├── EntryInspector.jsx
 │   │   │   │   ├── FxRevaluationView.jsx
 │   │   │   │   ├── JournalDrawer.jsx
 │   │   │   │   ├── LedgerView.jsx
@@ -3680,17 +4144,37 @@ Meridian-main
 │   │   │   ├── ds-base.js
 │   │   │   ├── screen.jsx
 │   │   │   └── support.js
+│   │   ├── adapter-operations
+│   │   │   ├── .thumbnail
+│   │   │   ├── AdapterOperations.dc.html
+│   │   │   ├── ds-base.js
+│   │   │   └── support.js
 │   │   ├── alerting-workstation
 │   │   │   ├── .thumbnail
 │   │   │   ├── AlertingWorkstation.dc.html
 │   │   │   ├── ds-base.js
 │   │   │   ├── screen.jsx
 │   │   │   └── support.js
+│   │   ├── alm-review
+│   │   │   ├── .thumbnail
+│   │   │   ├── AlmReview.dc.html
+│   │   │   ├── ds-base.js
+│   │   │   └── support.js
 │   │   ├── amx-governance
 │   │   │   ├── .thumbnail
 │   │   │   ├── AmxGovernance.dc.html
 │   │   │   ├── ds-base.js
 │   │   │   ├── screen.jsx
+│   │   │   └── support.js
+│   │   ├── analytical-workbench
+│   │   │   ├── .thumbnail
+│   │   │   ├── AnalyticalWorkbench.dc.html
+│   │   │   ├── ds-base.js
+│   │   │   └── support.js
+│   │   ├── asset-sheet
+│   │   │   ├── .thumbnail
+│   │   │   ├── AssetSheet.dc.html
+│   │   │   ├── ds-base.js
 │   │   │   └── support.js
 │   │   ├── backtest-builder
 │   │   │   ├── .thumbnail
@@ -3716,12 +4200,23 @@ Meridian-main
 │   │   │   ├── BlankWorkstation.dc.html
 │   │   │   ├── ds-base.js
 │   │   │   └── support.js
+│   │   ├── books-loop
+│   │   │   ├── .thumbnail
+│   │   │   ├── BooksLoop.dc.html
+│   │   │   ├── ds-base.js
+│   │   │   └── support.js
 │   │   ├── charting-workstation
 │   │   │   ├── .thumbnail
 │   │   │   ├── ChartingWorkstation.dc.html
 │   │   │   ├── ds-base.js
 │   │   │   ├── index.html
 │   │   │   ├── screen.jsx
+│   │   │   └── support.js
+│   │   ├── close-management
+│   │   │   ├── .thumbnail
+│   │   │   ├── CloseManagement.dc.html
+│   │   │   ├── CloseTieOut.dc.html
+│   │   │   ├── ds-base.js
 │   │   │   └── support.js
 │   │   ├── covered-call-lab
 │   │   │   ├── .thumbnail
@@ -3731,6 +4226,7 @@ Meridian-main
 │   │   │   └── support.js
 │   │   ├── dashboard-workstation
 │   │   │   ├── .thumbnail
+│   │   │   ├── chart.jsx
 │   │   │   ├── DashboardWorkstation.dc.html
 │   │   │   ├── ds-base.js
 │   │   │   ├── index.html
@@ -3754,11 +4250,44 @@ Meridian-main
 │   │   │   ├── IngestionOperations.dc.html
 │   │   │   ├── screen.jsx
 │   │   │   └── support.js
+│   │   ├── interaction-depth
+│   │   │   ├── .thumbnail
+│   │   │   ├── ds-base.js
+│   │   │   ├── InteractionDepth.dc.html
+│   │   │   ├── screen.jsx
+│   │   │   └── support.js
+│   │   ├── investment-event-ledger
+│   │   │   ├── .thumbnail
+│   │   │   ├── ds-base.js
+│   │   │   ├── InvestmentEventLedger.dc.html
+│   │   │   └── support.js
 │   │   ├── journaling-workstation
 │   │   │   ├── .thumbnail
 │   │   │   ├── ds-base.js
 │   │   │   ├── JournalingWorkstation.dc.html
 │   │   │   ├── screen.jsx
+│   │   │   └── support.js
+│   │   ├── ops-wall
+│   │   │   ├── .thumbnail
+│   │   │   ├── ds-base.js
+│   │   │   ├── OpsWall.dc.html
+│   │   │   └── support.js
+│   │   ├── ownership-graph
+│   │   │   ├── .thumbnail
+│   │   │   ├── ds-base.js
+│   │   │   ├── OwnershipGraph.dc.html
+│   │   │   └── support.js
+│   │   ├── position-detail
+│   │   │   ├── .thumbnail
+│   │   │   ├── ds-base.js
+│   │   │   ├── PositionDetail.dc.html
+│   │   │   ├── positions-data.js
+│   │   │   └── support.js
+│   │   ├── reconciliation
+│   │   │   ├── .thumbnail
+│   │   │   ├── ds-base.js
+│   │   │   ├── Reconciliation.dc.html
+│   │   │   ├── ReconciliationException.dc.html
 │   │   │   └── support.js
 │   │   ├── reconciliation-workstation
 │   │   │   ├── .thumbnail
@@ -3787,8 +4316,11 @@ Meridian-main
 │   │   │   ├── .thumbnail
 │   │   │   ├── ds-base.js
 │   │   │   ├── index.html
+│   │   │   ├── record-state.js
+│   │   │   ├── registry-table.jsx
 │   │   │   ├── screen.jsx
 │   │   │   ├── securities-data.js
+│   │   │   ├── SecurityDetail.dc.html
 │   │   │   ├── SecurityMasterRegistry.dc.html
 │   │   │   └── support.js
 │   │   ├── session-start
@@ -3814,6 +4346,19 @@ Meridian-main
 │   │   │   ├── screen.jsx
 │   │   │   ├── StrategyBuilder.dc.html
 │   │   │   └── support.js
+│   │   ├── strategy-formation
+│   │   │   ├── .thumbnail
+│   │   │   ├── ds-base.js
+│   │   │   ├── flow-bridge.jsx
+│   │   │   ├── StrategyBuilder.dc.html
+│   │   │   ├── StrategyFormation.dc.html
+│   │   │   ├── StrategyOnboarding.dc.html
+│   │   │   └── support.js
+│   │   ├── strategy-governance
+│   │   │   ├── .thumbnail
+│   │   │   ├── ds-base.js
+│   │   │   ├── StrategyGovernance.dc.html
+│   │   │   └── support.js
 │   │   ├── strategy-onboarding
 │   │   │   ├── .thumbnail
 │   │   │   ├── ds-base.js
@@ -3822,23 +4367,44 @@ Meridian-main
 │   │   │   └── support.js
 │   │   ├── strategy-runs
 │   │   │   ├── .thumbnail
+│   │   │   ├── BacktestBuilder.dc.html
+│   │   │   ├── BacktestCompare.dc.html
+│   │   │   ├── CoveredCallLab.dc.html
 │   │   │   ├── ds-base.js
+│   │   │   ├── RunLedger.dc.html
 │   │   │   ├── screen.jsx
+│   │   │   ├── spark.jsx
 │   │   │   ├── StrategyRuns.dc.html
 │   │   │   └── support.js
-│   │   └── trading-desk
-│   │       ├── .thumbnail
-│   │       ├── ds-base.js
-│   │       ├── screen.jsx
-│   │       ├── support.js
-│   │       └── TradingDesk.dc.html
+│   │   ├── trading-desk
+│   │   │   ├── .thumbnail
+│   │   │   ├── ds-base.js
+│   │   │   ├── screen.jsx
+│   │   │   ├── support.js
+│   │   │   └── TradingDesk.dc.html
+│   │   ├── PRODUCTION_SCREENS.md
+│   │   └── README.md
 │   ├── tests
+│   │   ├── a11y-run.html
+│   │   ├── A11Y_RUN_4.2.0.md
+│   │   ├── A11Y_RUN_4.3.0.md
+│   │   ├── A11Y_STATIC_AUDIT_4.1.md
+│   │   ├── action-contract.html
+│   │   ├── books-loop.html
+│   │   ├── BROWSER_TEST_PLAN.md
+│   │   ├── conformance-rules.js
+│   │   ├── conformance.html
+│   │   ├── decision-preview.html
 │   │   ├── gallery.html
+│   │   ├── mock-transport.js
 │   │   ├── qa-hifi-pass.html
+│   │   ├── README.md
+│   │   ├── semantic-safety.html
 │   │   ├── smoke.html
 │   │   ├── test_contrast.py
 │   │   ├── test_design_system_governance.py
 │   │   ├── unit-tests.html
+│   │   ├── unit.html
 │   │   └── verify-new-components.html
 │   ├── tokens
 │   │   ├── base.css
@@ -3848,12 +4414,15 @@ Meridian-main
 │   │   ├── dark-mode.card.html
 │   │   ├── elevation.css
 │   │   ├── fonts.css
+│   │   ├── parity-manifest.json
 │   │   ├── playground.card.html
 │   │   ├── print.css
+│   │   ├── README.md
 │   │   ├── theme.css
 │   │   ├── theming.card.html
 │   │   ├── token-browser.card.html
 │   │   ├── typography.css
+│   │   ├── visualization.css
 │   │   └── white-label.card.html
 │   ├── ui_kits
 │   │   ├── accounting
@@ -3883,15 +4452,20 @@ Meridian-main
 │   ├── CHANGELOG.md
 │   ├── colors_and_type.css
 │   ├── CONTENT_FUNDAMENTALS.md
+│   ├── CONTRIBUTING.md
+│   ├── github.md
 │   ├── governance-baseline.json
 │   ├── ICONOGRAPHY.md
 │   ├── index.html
 │   ├── INSPIRATION_BRIEF.md
 │   ├── PATTERNS.md
 │   ├── README.md
+│   ├── release.json
 │   ├── SKILL.md
 │   ├── styles.css
 │   ├── support.js
+│   ├── THIRD_PARTY_NOTICES.md
+│   ├── thumbnail.html
 │   └── VISUAL_FOUNDATIONS.md
 ├── plugins
 │   ├── frontend-web-dev
