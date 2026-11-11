@@ -6,7 +6,7 @@
   <title>Data Extras</title>
   <link rel="stylesheet" href="../../styles.css" />
   <script src="../../_preview_runtime.js"></script>
-  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <script src="../../_preview_jsx.js"></script>
   <script src="../../_ds_bundle.js"></script>
 </head>
 <body style="margin:0;padding:20px;background:var(--bg-canvas,#F2F0EB);font-family:var(--font-body);">
@@ -41,6 +41,7 @@ const COLS = [
 
 function Demo() {
   const [visible, setVisible] = useState(COLS.map(c => c.key));
+  const [lastAction, setLastAction] = useState(null);
 
   return (
     <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
@@ -87,13 +88,13 @@ function Demo() {
       <Section title="EmptyState · zero-data placeholders">
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
           <div style={{ border:"1px solid var(--border)", borderRadius:6, overflow:"hidden" }}>
-            <EmptyState icon="table" title="No transactions" detail="Run a backfill to populate this ledger." action="Run backfill" onAction={() => {}} compact />
+            <EmptyState icon="table" title="No transactions" detail="Run a backfill to populate this ledger." action="Run backfill" onAction={() => setLastAction("Synthetic backfill requested; no API called.")} compact />
           </div>
           <div style={{ border:"1px solid var(--border)", borderRadius:6, overflow:"hidden" }}>
             <EmptyState icon="search" title="No results" detail="Try adjusting your search or filters." compact />
           </div>
           <div style={{ border:"1px solid var(--border)", borderRadius:6, overflow:"hidden" }}>
-            <EmptyState icon="chart" title="No data yet" detail="Strategy hasn't been run." action="Run strategy" onAction={() => {}} compact />
+            <EmptyState icon="chart" title="No data yet" detail="Strategy hasn't been run." action="Run strategy" onAction={() => setLastAction("Synthetic strategy run requested; no API called.")} compact />
           </div>
           <div style={{ border:"1px solid var(--border)", borderRadius:6, overflow:"hidden" }}>
             <EmptyState icon="inbox" title="Inbox empty" compact />
@@ -101,6 +102,7 @@ function Demo() {
         </div>
       </Section>
 
+      {lastAction ? <p role="status" style={{color:"var(--text-primary)"}}>{lastAction}</p> : null}
       {/* ColumnChooser */}
       <Section title="ColumnChooser · hide / show columns">
         <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:12 }}>
@@ -115,7 +117,7 @@ function Demo() {
               padding:"3px 8px", borderRadius:3, fontSize:11,
               fontFamily:"var(--font-data)", fontVariant:"all-small-caps",
               background: visible.includes(c.key) ? "var(--bg-active)" : "var(--bg-medium)",
-              color: visible.includes(c.key) ? "var(--brand-signal,#C56343)" : "var(--text-disabled)",
+              color: visible.includes(c.key) ? "var(--text-primary)" : "var(--text-muted)",
               border:"1px solid var(--border)",
             }}>{c.label}</span>
           ))}

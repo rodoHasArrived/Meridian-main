@@ -3,7 +3,7 @@
 // AgeBand, BusinessAgeHours). Mono, severity-tinted, deterministic: pass `now` to pin
 // the countdown (it never self-ticks — re-render to advance it).
 import React from "react";
-import { normalizeSeverity } from "./status";
+import { normalizeSeverity } from "./status.js";
 
 let injected = false;
 function inject() {
@@ -25,7 +25,8 @@ function inject() {
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "sla-chip");
-  el.textContent = css;
+  el.textContent = css + `
+.mds-sla--blocked,.mds-sla--blocked span,.mds-sla--blocked .mds-sla__val{color:var(--text-primary,#20252B);}`;
   document.head.appendChild(el);
 }
 

@@ -1,3 +1,4 @@
+import type React from "react";
 /**
  * The way back out of an object — the return half of a handoff.
  *
@@ -39,4 +40,4 @@ export interface ReturnPathProps {
   showIds?: boolean;
 }
 
-export declare function ReturnPath(props: ReturnPathProps): JSX.Element | null;
+export declare function ReturnPath(props: ReturnPathProps): React.JSX.Element | null;

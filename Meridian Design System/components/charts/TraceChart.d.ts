@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * Trace chart — the annotated line primitive the Meridian visualization grammar
  * is built on. Everything the grammar requires is structural, not optional:
@@ -81,4 +82,4 @@ export interface TraceChartProps extends Omit<React.HTMLAttributes<HTMLDivElemen
   /** Visually-hidden exact-value table. Leave on. */
   tableFallback?: boolean;
 }
-export declare function TraceChart(props: TraceChartProps): JSX.Element;
+export declare function TraceChart(props: TraceChartProps): React.JSX.Element;

@@ -30,7 +30,7 @@ export function Breadcrumb({ items = [], separator = "·" }) {
                 onClick={item.onClick}
                 style={{
                   appearance:"none", border:"none", background:"transparent", padding:0,
-                  color:"var(--brand-signal-ink,#944A32)", fontFamily:"var(--font-data)", fontSize:12,
+                  color:"var(--interaction-link,var(--link,#2A5F96))", fontFamily:"var(--font-data)", fontSize:12,
                   cursor:item.onClick ? "pointer" : "default",
                   textDecoration:"none",
                 }}

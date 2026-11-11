@@ -13,9 +13,10 @@ import React from "react";
 
 const SECTIONS = ["object", "context", "time", "evidence", "calculations", "materiality", "guards", "consequences", "decision"];
 
-function deepFreeze(value) {
-  if (value == null || typeof value !== "object" || Object.isFrozen(value)) return value;
-  Object.getOwnPropertyNames(value).forEach((k) => deepFreeze(value[k]));
+function deepFreeze(value, visited = new WeakSet()) {
+  if (value == null || typeof value !== "object" || React.isValidElement(value) || visited.has(value)) return value;
+  visited.add(value);
+  Object.getOwnPropertyNames(value).forEach((k) => deepFreeze(value[k], visited));
   return Object.freeze(value);
 }
 
@@ -36,8 +37,8 @@ const captureSnapshot = (input = {}) => {
   });
 };
 
-const evidenceKey = (list) => (list || []).map((e) => `${e.id}@${e.version || ""}#${e.hash || ""}:${e.condition || ""}`).sort().join("|");
-const calcKey = (list) => (list || []).map((c) => `${c.id}@${c.version || ""}#${c.inputHash || ""}`).sort().join("|");
+const evidenceKey = (list) => (list || []).map((e) => `${e.id}@${e.version ?? ""}#${e.hash || ""}:${e.condition || ""}`).sort().join("|");
+const calcKey = (list) => (list || []).map((c) => `${c.id}@${c.version ?? ""}#${c.inputHash || ""}`).sort().join("|");
 
 /** Findings, not a boolean: a snapshot can be superseded, or merely worth re-reading. */
 const verifySnapshot = (snapshot, current = {}) => {
@@ -49,6 +50,9 @@ const verifySnapshot = (snapshot, current = {}) => {
   }
   if (current.object && snapshot.object && current.object.id && current.object.id !== snapshot.object.id) {
     push("object.id", snapshot.object.id, current.object.id, "void", "This proof is about a different object.");
+  }
+  if (current.object && snapshot.object && current.object.type != null && snapshot.object.type != null && current.object.type !== snapshot.object.type) {
+    push("object.type", snapshot.object.type, current.object.type, "void", "This proof is about a different kind of object.");
   }
   if (current.evidence && evidenceKey(current.evidence) !== evidenceKey(snapshot.evidence)) {
     push("evidence", `${snapshot.evidence.length} items`, `${current.evidence.length} items`, "void", "The evidence set behind the decision changed.");
@@ -156,7 +160,7 @@ export function DecisionSnapshotPanel({
     ["Evidence", `${snapshot.evidence.length} ${snapshot.evidence.length === 1 ? "item" : "items"}`, snapshot.evidence.length ? snapshot.evidence.map((e) => `${e.id}${e.version ? ` v${e.version}` : ""}${e.condition ? ` (${e.condition})` : ""}`).join(" · ") : "No evidence bound to this decision"],
     ["Calculation", snapshot.calculations.length ? snapshot.calculations.map((c) => `${c.id} v${c.version}`).join(" · ") : "—", snapshot.calculations.some((c) => c.inputHash) ? snapshot.calculations.map((c) => c.inputHash).filter(Boolean).join(" · ") : null],
     ["Materiality", snapshot.materiality ? (snapshot.materiality.label || snapshot.materiality.classification || String(snapshot.materiality)) : "—", snapshot.materiality && snapshot.materiality.note ? snapshot.materiality.note : null],
-    ["Guards", `${snapshot.guards.length} evaluated`, snapshot.guards.length ? snapshot.guards.map((g) => `${g.label || g.id} — ${g.status || "satisfied"}`).join(" · ") : null],
+    ["Guards", `${snapshot.guards.length} evaluated`, snapshot.guards.length ? snapshot.guards.map((g) => `${g.label || g.id} — ${g.state || g.status || "unknown"}`).join(" · ") : null],
     ["Reversibility", snapshot.consequences && snapshot.consequences.reversibility ? snapshot.consequences.reversibility : "—", null],
     ["Decision", snapshot.decision ? [snapshot.decision.type, snapshot.decision.actorName || snapshot.decision.actorId, snapshot.decision.authority].filter(Boolean).join(" · ") : "Not yet decided", snapshot.decision && snapshot.decision.rationale ? snapshot.decision.rationale : null],
     ["Captured", snapshot.capturedAt, null],

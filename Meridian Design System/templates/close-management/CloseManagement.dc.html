@@ -1,18 +1,23 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../_scaffold/vendor/react-18.3.1.production.min.js"></script>
+<script src="../_scaffold/vendor/react-dom-18.3.1.production.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
 <script src="./support.js"></script>
+<title>Investigate · Close Management — Meridian</title>
 </head>
 <body>
 <x-dc>
 <!-- @template name="Investigate · Close Management" description="Close governance as one plane in three modes — calendar, dependencies, owners — over a single selection contract, with a persistent inspector carrying the blocker, its evidence, downstream impact, and the one resolution action. The tie-out proof — DataGrid with a Σ debit = Σ credit contract and ValueEnvelope figures — is the drill-in from the reconciliation controls." -->
 <helmet>
 <script src="./ds-base.js"></script>
+<script src="../_scaffold/template-actions.js"></script>
 <meta name="dc-template" content="close-management">
 <style>html,body{margin:0;padding:0;height:100%}
-[data-cm-show="off"]{display:none}
+[data-cm-show="off"]{display:none!important}
 .cm-screen{height:100vh;display:flex;flex-direction:column;background:var(--bg);font-family:var(--font-body);color:var(--text-secondary);font-size:13px}
 .cm-frame{flex:1;min-height:0;display:flex}
 .cm-pane{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column}
@@ -54,6 +59,7 @@
 .cm-row:focus-visible{outline:2px solid var(--interaction-focus);outline-offset:-2px}
 .cm-row .cm-when{margin-left:auto;font:11px var(--font-data);color:var(--text-muted);white-space:nowrap}
 .cm-row .cm-st{font:600 10px var(--font-data);letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted);min-width:88px}
+.cm-row[data-on="on"] .cm-st,.cm-row[data-on="on"] .cm-when{color:var(--text-secondary)}
 .cm-overlay{position:absolute;inset:0;z-index:5;background:var(--bg);border:1px solid var(--border-strong);padding:12px;overflow:auto}
 @media (max-width:900px){.cm-days{flex-wrap:wrap}.cm-main{overflow-y:auto;padding-bottom:12px}.cm-body{grid-template-columns:1fr}.cm-plane{overflow:visible}.cm-rail{border-left:0;border-top:1px solid var(--border);padding-left:0;padding-top:10px;overflow:visible}.cm-seg{width:100%}.cm-tab{flex:1;min-height:42px}.cm-path{height:auto;flex-wrap:wrap}.cm-day{min-width:33%}.cm-overlay{position:fixed;inset:auto 0 0 0;max-height:88vh}}</style>
 </helmet>
@@ -67,12 +73,12 @@
 <div class="cm-pane">
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkspaceContextBar" value="{{ context }}" condition="{{ contextCondition }}" collapse="auto" hint-size="100%,40px"></x-import>
 <main class="cm-main">
-<h1 style="font:600 20px var(--font-display);margin:0;color:var(--text-primary)">Close management</h1>
+<h1 style="font:600 20px var(--font-display);margin:0;color:var(--text-primary)">Close management</h1><p style="margin:0;padding:6px 12px;font:11px/16px var(--font-body);color:var(--text-secondary);background:var(--card-surface);border-bottom:1px solid var(--border)">Synthetic workflow: resolution and attestation only change this local example. No live journal, approval, assignment or external evidence request is submitted.</p>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.ObjectHeader" dc-props="{{ periodHeader }}" on-open-exceptions="{{ viewDeps }}" hint-size="100%,92px"></x-import>
 <div class="cm-head">
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.SeverityBadge" status="{{ closeStatus }}" hint-size="90px,18px"></x-import>
 <div style="flex:1"></div>
-<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" onClick="{{ noop }}" hint-size="120px,28px">Export outline</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" onClick="{{ noop }}" hint-size="120px,28px" on-click="{{ onExportOutline }}">Export example outline</x-import>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" disabled="{{ attestDisabled }}" title="{{ attestTitle }}" onClick="{{ goAttest }}" hint-size="120px,28px">Attest close</x-import>
 </div>
 <p class="cm-state" data-cm-show="{{ blockedShow }}"><b>{{ blockedCount }} controls are blocked.</b> {{ rootBlocker }} is the root blocker. Resolving it releases <b>{{ downstreamCount }} downstream controls</b> and shortens the critical path from {{ criticalNow }} to {{ criticalIfResolved }}. Unresolved by the {{ deadlineLabel }} deadline, the close slips <b>{{ slipLabel }}</b>.</p>
@@ -83,10 +89,10 @@
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.Datum" role="target" orientation="vertical" position="{{ deadlinePos }}" label="Attestation due" label-placement="before" hint-size="1px,100%"></x-import>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.Datum" role="selection" orientation="vertical" position="{{ selectedPos }}" hint-size="1px,100%"></x-import>
 </div>
-<div class="cm-seg" role="tablist">
-<button type="button" class="cm-tab" data-on="{{ calendarOn }}" onClick="{{ viewCalendar }}">Calendar</button>
-<button type="button" class="cm-tab" data-on="{{ depsOn }}" onClick="{{ viewDeps }}">Dependencies</button>
-<button type="button" class="cm-tab" data-on="{{ ownersOn }}" onClick="{{ viewOwners }}">Owners</button>
+<div class="cm-seg" role="group" aria-label="Close view">
+<button type="button" class="cm-tab" data-on="{{ calendarOn }}" onClick="{{ viewCalendar }}" aria-pressed="{{ calendarPressed }}">Calendar</button>
+<button type="button" class="cm-tab" data-on="{{ depsOn }}" onClick="{{ viewDeps }}" aria-pressed="{{ depsPressed }}">Dependencies</button>
+<button type="button" class="cm-tab" data-on="{{ ownersOn }}" onClick="{{ viewOwners }}" aria-pressed="{{ ownersPressed }}">Owners</button>
 </div>
 <div class="cm-body">
 <div class="cm-plane">
@@ -129,15 +135,15 @@
 </div>
 <div style="display:flex;gap:8px;flex-wrap:wrap;position:sticky;bottom:0;background:var(--bg);padding:8px 0">
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" disabled="{{ resolveDisabled }}" onClick="{{ openResolution }}" hint-size="150px,32px">Open resolution</x-import>
-<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" onClick="{{ noop }}" hint-size="100px,32px">Reassign</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" onClick="{{ noop }}" hint-size="100px,32px" disabled="{{ true }}" title="Reassignment requires an application ownership instruction and operator directory." aria-description="Reassignment requires an application ownership instruction and operator directory.">Reassign</x-import>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" disabled="{{ tieOutDisabled }}" title="{{ tieOutTitle }}" onClick="{{ openTieOut }}" hint-size="110px,32px">Open tie-out</x-import>
 </div>
 </aside>
 <div class="cm-overlay" data-cm-show="{{ resolutionShow }}">
-<x-import component-from-global-scope="MeridianDesignSystem_205d17.ResolutionDrawer" inline="{{ true }}" title="Price approval C-118 failed validation" case-id="C-118" version="{{ 4 }}" severity="blocked" condition="stale" object="Pricing run PR-2026-07-31 · 3 securities" statement="Three evaluated prices for the July 31 run exceed the 4-hour freshness threshold and one security has no vendor price at all. Price approval cannot complete, which blocks valuation posting, ledger reconciliation, and close attestation." fields="{{ resFields }}" evidence-items="{{ resEvidence }}" root-causes="{{ rootCauses }}" root-cause="{{ rootCause }}" on-root-cause-change="{{ onRootCause }}" root-cause-note="{{ rootCauseNote }}" on-root-cause-note-change="{{ onRootCauseNote }}" correction="Rerun the vendor pricing pull for the three stale securities and record a documented manual price for CUSIP 46625HKA7, which the vendor does not cover." correction-facts="{{ resCorrection }}" impact-items="{{ resImpact }}" ownership="{{ resOwnership }}" require-reason="{{ true }}" reason="{{ resReason }}" on-reason-change="{{ onResReason }}" primary-action="resolve" on-resolve="{{ onResolve }}" on-escalate="{{ noop }}" on-defer="{{ noop }}" on-request-evidence="{{ noop }}" on-back="{{ closeResolution }}" back-label="Back to close" hint-size="100%,700px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ResolutionDrawer" inline="{{ true }}" title="Price approval C-118 failed validation" case-id="C-118" version="{{ 4 }}" severity="blocked" condition="stale" object="Pricing run PR-2026-07-31 · 3 securities" statement="Three evaluated prices for the July 31 run exceed the 4-hour freshness threshold and one security has no vendor price at all. Price approval cannot complete, which blocks valuation posting, ledger reconciliation, and close attestation." fields="{{ resFields }}" evidence-items="{{ resEvidence }}" root-causes="{{ rootCauses }}" root-cause="{{ rootCause }}" on-root-cause-change="{{ onRootCause }}" root-cause-note="{{ rootCauseNote }}" on-root-cause-note-change="{{ onRootCauseNote }}" correction="Rerun the vendor pricing pull for the three stale securities and record a documented manual price for CUSIP 46625HKA7, which the vendor does not cover." correction-facts="{{ resCorrection }}" impact-items="{{ resImpact }}" ownership="{{ resOwnership }}" require-reason="{{ true }}" reason="{{ resReason }}" on-reason-change="{{ onResReason }}" primary-action="resolve" on-resolve="{{ onResolve }}" on-back="{{ closeResolution }}" back-label="Back to close" hint-size="100%,700px"></x-import>
 </div>
 <div class="cm-overlay" data-cm-show="{{ attestShow }}">
-<x-import component-from-global-scope="MeridianDesignSystem_205d17.AttestationPanel" title="July statutory close" scope="Statutory close package · all entities" period="July 2026" object-id="CLOSE-STAT-2026-07" snapshot="snap-2026-08-01T16:05Z" version="{{ 18 }}" signatory-role="Controller" role="Controller" gates="{{ attestGates }}" evidence="{{ attestEvidence }}" signatories="{{ signatories }}" current-user="R. Delacroix" segregation="{{ true }}" certification="I attest that the above close package is complete and accurately reflects the approved records for the stated reporting period." require-comment="{{ true }}" comment="{{ attestComment }}" on-comment-change="{{ onAttestComment }}" state="{{ attestState }}" superseded-by="{{ supersededBy }}" on-approve="{{ onApprove }}" on-request-changes="{{ noop }}" on-reject="{{ noop }}" hint-size="100%,700px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.AttestationPanel" title="July statutory close" scope="Statutory close package · all entities" period="July 2026" object-id="CLOSE-STAT-2026-07" snapshot="snap-2026-08-01T16:05Z" version="{{ 18 }}" signatory-role="Controller" role="Controller" gates="{{ attestGates }}" evidence="{{ attestEvidence }}" signatories="{{ signatories }}" current-user="R. Delacroix" segregation="{{ true }}" certification="I attest that the above close package is complete and accurately reflects the approved records for the stated reporting period." require-comment="{{ true }}" comment="{{ attestComment }}" on-comment-change="{{ onAttestComment }}" state="{{ attestState }}" superseded-by="{{ supersededBy }}" on-approve="{{ onApprove }}" hint-size="100%,700px"></x-import>
 <div style="display:flex;gap:8px;padding-top:10px">
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" onClick="{{ closeAttest }}" hint-size="130px,32px">Back to close</x-import>
 </div>
@@ -242,7 +248,7 @@ class Component extends DCLogic {
     // Every close control, named once — a ?task= deep link then reads as its title in the
     // masthead crumb rather than "Close task t4" (4.4 · E-1).
     const M=window.MeridianAppMap;if(M&&M.nameObject)TASKS.forEach(t=>M.nameObject("task",t.id,t.title))}
-  componentDidUpdate(){this.applyChrome()}
+  componentDidUpdate(previous){this.applyChrome();if(previous.dataState!==this.props.dataState&&this.state.previewReady)this.setState({previewReady:false})}
 
   descendants(id,tasks){
     const out=new Set();const walk=(x)=>tasks.forEach(t=>{if((t.dependsOn||[]).includes(x)&&!out.has(t.id)){out.add(t.id);walk(t.id)}});walk(id);return [...out];
@@ -289,11 +295,13 @@ class Component extends DCLogic {
 
     return {
       noop,
-      dataState:this.props.dataState??"ready",
+      onExportOutline: () => window.MeridianTemplateActions.downloadJson("close-outline-example.json", tasks),
+
+      dataState:this.state.previewReady?"ready":(this.props.dataState??"ready"),
       navSections:(window.MeridianAppMap?window.MeridianAppMap.sections("close"):[]),
       onNav:(id)=>window.MeridianAppMap&&window.MeridianAppMap.go(id),
       environment:String(this.props.environment??"PAPER").toUpperCase(),
-      onRetry:()=>this.setState({continuity:"live"}),
+      onRetry:()=>this.setState({continuity:"live",previewReady:true}),
       continuity:s.continuity,
       snapshotSince:Date.now()-5*60*1000,
 
@@ -347,7 +355,7 @@ class Component extends DCLogic {
       closeView:s.closeView,
       onCloseView:v=>this.setState({closeView:v}),
       graphView:s.graphView,
-      calendarOn:on("calendar"),depsOn:on("deps"),ownersOn:on("owners"),
+      calendarOn:on("calendar"),calendarPressed:on("calendar")==="on",depsOn:on("deps"),depsPressed:on("deps")==="on",ownersOn:on("owners"),ownersPressed:on("owners")==="on",
       calendarShow:on("calendar"),depsShow:on("deps"),ownersShow:on("owners"),
       viewCalendar:view("calendar"),viewDeps:view("deps"),viewOwners:view("owners"),
       ownerGroups:owners,

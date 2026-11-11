@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * Chart-of-accounts tree — an expandable account hierarchy with roll-up balances. A parent
  * with no explicit `balance` sums its descendants; parents render bold, leaves muted. Disclosure
@@ -26,4 +27,4 @@ export interface AccountTreeProps {
   /** Header label over the balance column. @default "Balance" */
   valueLabel?: string;
 }
-export declare function AccountTree(props: AccountTreeProps): JSX.Element;
+export declare function AccountTree(props: AccountTreeProps): React.JSX.Element;

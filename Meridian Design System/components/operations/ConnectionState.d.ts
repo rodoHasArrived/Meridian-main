@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * Connection state — the visible half of Meridian's last-known-good contract:
  * `live · delayed · partial · offline · error`. Sits next to the evidence it
@@ -17,7 +18,7 @@
  */
 export interface ConnectionStateProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Connection condition. */
-  state?: "live" | "delayed" | "partial" | "offline" | "error";
+  state?: "live" | "delayed" | "partial" | "offline" | "error" | "unknown";
   /** What is connected ("Prices", "Custodian feed") — prefixes the label. */
   subject?: string;
   /** Age or timestamp of the last good data ("42s", "11:29:42 UTC"). */
@@ -32,4 +33,4 @@ export interface ConnectionStateProps extends React.HTMLAttributes<HTMLDivElemen
   /** Full-width strip instead of a fitted chip. */
   block?: boolean;
 }
-export declare function ConnectionState(props: ConnectionStateProps): JSX.Element;
+export declare function ConnectionState(props: ConnectionStateProps): React.JSX.Element;

@@ -5,6 +5,7 @@
 // an approved accounting amount and a later external source can both be valid in their own role.
 import React from "react";
 import { formatNumber } from "./format.js";
+import { conditionMeta } from "../operations/conditions";
 
 const STAGES = ["source", "calculated", "override", "approved", "posted", "reported"];
 const STAGE = {
@@ -15,7 +16,12 @@ const STAGE = {
   posted:     { label: "Posted",     glyph: "▣", note: "Written to the ledger for the period" },
   reported:   { label: "Reported",   glyph: "▲", note: "Published in an external report" },
 };
-const CONDITION = { confirmed: "Confirmed", provisional: "Provisional", estimated: "Estimated", stale: "Stale", overridden: "Overridden", missing: "Missing", pending: "Pending", na: "Not applicable" };
+const candidateCondition = candidate => candidate.condition ? conditionMeta(candidate.condition) : null;
+const candidateValue = (candidate, format) => {
+  const key = candidateCondition(candidate)?.key;
+  return key === "restricted" ? "Restricted" : key === "missing" || key === "na" ? "—" : fmt(candidate.value, format);
+};
+const candidateUnit = (candidate, unit) => unit && typeof candidate.value === "number" && !["restricted", "missing", "na"].includes(candidateCondition(candidate)?.key) ? ` ${unit}` : "";
 
 const order = s => { const i = STAGES.indexOf(s); return i < 0 ? 99 : i; };
 export function resolveAuthority(authority) {
@@ -40,7 +46,8 @@ function inject() {
 .mds-auth__row:last-child{border-bottom:0}
 .mds-auth__row--is{background:var(--interaction-selected-surface,var(--selected-surface,#E7EDF2));box-shadow:inset 2px 0 0 var(--interaction-selected,var(--selected,#496C8F))}
 .mds-auth__row--is{padding-left:8px}
-.mds-auth__row--after{opacity:.6}
+.mds-auth__row--after{color:var(--text-secondary,#535C65)}
+.mds-auth__row--is .mds-auth__meta{color:var(--text-secondary,#535C65)}
 .mds-auth__glyph{font:11px var(--font-data,monospace);color:var(--text-muted,#606870);text-align:center}
 .mds-auth__stage{font:600 11px/1.4 var(--font-body)}
 .mds-auth__meta{display:block;font:10px/1.45 var(--font-data,monospace);color:var(--text-muted,#606870)}
@@ -80,11 +87,11 @@ export function AuthorityStack({ authority, label = "Value authority", unit, for
       {a.candidates.map((c, i) => {
         const s = STAGE[c.stage] || { label: c.stage, glyph: "·", note: "" };
         const on = c.stage === a.authoritativeStage;
-        const meta = [c.version != null ? `v${c.version}` : null, c.effectiveAt, c.sourceRef, c.actorId, c.condition ? CONDITION[c.condition] || c.condition : null].filter(Boolean).join(" · ");
+        const meta = [c.version != null ? `v${c.version}` : null, c.effectiveAt, c.sourceRef, c.actorId, c.condition ? candidateCondition(c).label : null].filter(Boolean).join(" · ");
         return <li key={c.stage + i} className={`mds-auth__row${on ? " mds-auth__row--is" : ""}${isIndex >= 0 && i > isIndex ? " mds-auth__row--after" : ""}`} data-stage={c.stage} data-authoritative={on ? "true" : undefined}>
           <span className="mds-auth__glyph" aria-hidden="true">{s.glyph}</span>
           <span><span className="mds-auth__stage">{s.label}</span>{showMeta && meta ? <span className="mds-auth__meta">{meta}</span> : null}</span>
-          <span className="mds-auth__val">{fmt(c.value, format)}{unit && typeof c.value === "number" ? ` ${unit}` : ""}
+          <span className="mds-auth__val">{candidateValue(c, format)}{candidateUnit(c, unit)}
             {on ? <span className="mds-auth__mark">Authoritative</span> : null}</span>
         </li>;
       })}
@@ -117,8 +124,8 @@ export function AuthorityPanel({ authority, unit, format, caption, className = "
         return <tr key={c.stage + i} data-authoritative={on ? "true" : undefined}>
           <td>{(STAGE[c.stage] || {}).label || c.stage}{on ? <span className="mds-auth__mark">Authoritative</span> : null}</td>
           <td>{c.version != null ? `v${c.version}` : "—"}</td><td>{c.effectiveAt || "—"}</td><td>{c.actorId || "—"}</td>
-          <td>{c.condition ? CONDITION[c.condition] || c.condition : "—"}</td>
-          <td className="num">{fmt(c.value, format)}{unit && typeof c.value === "number" ? ` ${unit}` : ""}</td>
+          <td>{c.condition ? candidateCondition(c).label : "—"}</td>
+          <td className="num">{candidateValue(c, format)}{candidateUnit(c, unit)}</td>
         </tr>;
       })}</tbody>
     </table>

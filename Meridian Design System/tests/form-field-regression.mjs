@@ -106,10 +106,10 @@ try {
   await render({ reconciliation: true });
   const search = page.getByRole('textbox', { name: 'Filter reconciliation items by memo or reference', exact: true });
   await search.fill('A-1');
-  await page.getByRole('checkbox', { name: 'Matched: Statement A-1', exact: true }).check();
+  await page.getByRole('checkbox', { name: 'Match Statement item A-1', exact: true }).check();
   assert.deepEqual(await page.evaluate(() => window.matchCalls.at(-1)), { kind: 'item', id: 'a1', checked: true }, 'Checkbox boolean payload reaches the item callback');
   await search.fill('');
-  await page.getByRole('checkbox', { name: 'Matched status for all Statement items', exact: true }).uncheck();
+  await page.getByRole('checkbox', { name: 'Mark all Statement items matched', exact: true }).uncheck();
   assert.deepEqual(await page.evaluate(() => window.matchCalls.at(-1)), { kind: 'all', side: 'Statement', checked: false }, 'Bulk matching receives a boolean');
   assert.equal(await page.getByRole('checkbox', { name: /^Matched: Statement/ }).evaluateAll(inputs => inputs.filter(input => input.checked).length), 0);
   await render({ journal: true });

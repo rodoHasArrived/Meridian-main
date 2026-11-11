@@ -194,20 +194,51 @@ class Audit:
             if not self.allowed(path, "legacy_workspace_mentions_allowed"):
                 self.add("legacy-workspace", path, f"{match.group(1)} is not a visible root workspace name")
     def entries(self):
-        """Public manifest entries plus retained standalone entries, not embedded subviews."""
+        """Read every declared entry; filename conventions cannot hide compatibility pages."""
+        registry = self.root / "api/template-eligibility.json"
+        if registry.is_file():
+            templates = self.read_json("api/template-eligibility.json").get("templates", {})
+            if not isinstance(templates, dict):
+                self.add("template", registry, "Template registry must be an object")
+                return set()
+            entries = set()
+            for slug, record in sorted(templates.items()):
+                if not isinstance(slug, str) or Path(slug).name != slug or slug in (".", "..") or "\\" in slug:
+                    self.add("template", registry, f"Invalid template directory {slug!r}")
+                    continue
+                declared = record.get("entries", []) if isinstance(record, dict) else []
+                if not isinstance(declared, list) or not declared:
+                    self.add("template", registry, f"{slug}: no declared .dc.html entry")
+                    continue
+                seen = set()
+                for filename in declared:
+                    if not isinstance(filename, str) or Path(filename).name != filename or "\\" in filename or not filename.endswith(".dc.html"):
+                        self.add("template", registry, f"{slug}: invalid entry filename {filename!r}")
+                        continue
+                    if filename in seen:
+                        self.add("template", registry, f"{slug}: duplicate declared entry {filename}")
+                        continue
+                    seen.add(filename)
+                    entry = self.root / "templates" / slug / filename
+                    if not entry.is_file(): self.add("template", registry, f"{slug}: declared entry {filename} missing")
+                    else: entries.add(entry)
+                actual = {p.name for p in (self.root / "templates" / slug).glob("*.dc.html")}
+                for filename in sorted(actual - seen):
+                    self.add("template", registry, f"{slug}: undeclared entry {filename}")
+            for item in self.manifest.get("templates", []):
+                if item.get("entryPath") and self.root / item["entryPath"] not in entries:
+                    self.add("template", registry, f"Published entry is not declared: {item['entryPath']}")
+            return entries
+        # Isolated non-release fixtures can exercise the document API without a registry.
+        # Actual releases fail package_checks if the required registry is missing.
         entries = {self.root / t["entryPath"] for t in self.manifest.get("templates", []) if t.get("entryPath")}
-        declared_folders = {p.parent for p in entries}
         for folder in (self.root / "templates").glob("*"):
-            if not folder.is_dir() or folder.name.startswith("_") or folder in declared_folders: continue
-            pascal = "".join(part.capitalize() for part in folder.name.split("-"))
-            candidates = [folder / (pascal + ".dc.html"), folder / "index.html"]
-            preferred = next((p for p in candidates if p.is_file()), None)
-            if preferred: entries.add(preferred)
-            else:
-                actual = list(folder.glob("*.dc.html"))
-                if len(actual) == 1: entries.add(actual[0])
-                elif not actual: self.add("template", folder, "No template entry exists")
-                else: self.add("template", folder, "Ambiguous retained entries; declare the entry in the manifest")
+            if not folder.is_dir() or folder.name.startswith("_"): continue
+            candidates = list(folder.glob("*.dc.html"))
+            if candidates:
+                mounted = {child for owner in candidates for child in self.dependencies(owner)}
+                entries.update(set(candidates) - mounted)
+            elif (folder / "index.html").is_file(): entries.add(folder / "index.html")
         return entries
     def template_checks(self):
         for entry in sorted(self.entries()):
@@ -268,8 +299,36 @@ class Audit:
             on_disk = {p.name for p in (self.root / "templates").iterdir() if p.is_dir() and not p.name.startswith("_")}
             for name in sorted(on_disk - classified): self.add("eligibility", self.root / "api/template-eligibility.json", f"Unclassified template {name}")
             for name in sorted(classified - on_disk): self.add("eligibility", self.root / "api/template-eligibility.json", f"Classified template {name} no longer exists")
+    def runtime_reference_checks(self):
+        """No page may read a retired component namespace or fetch its runtime from a remote host.
+
+        Neither fault shows in source structure: a page on the previous build's namespace throws
+        on load and renders blank, and a page that loads React or the JSX compiler from a CDN
+        needs a network the package otherwise never uses. The standalone reconciliation page is
+        a self-contained archive that embeds its own bundle on purpose; the preview regression
+        names the retired namespace only to assert it is gone.
+        """
+        manifest = self.read_json("_ds_manifest.json", required=False) or {}
+        namespace = manifest.get("namespace", "")
+        exempt = {"Accounting Reconciliation (standalone).html", "tests/template-preview-regression.mjs"}
+        generated = {"_ds_bundle.js", "_preview_jsx.js", "_preview_runtime.js"}
+        stale = re.compile(r"MeridianDesignSystem_[0-9a-f]{6}\b")
+        remote = re.compile(r"<script\b[^>]*\bsrc\s*=\s*[\"']https?://", re.I)
+        for path in sorted(self.root.rglob("*")):
+            rel = path.relative_to(self.root)
+            if not path.is_file() or path.suffix not in (".html", ".jsx", ".js", ".mjs", ".sh"): continue
+            if any(part in ("node_modules", ".git", "dist") for part in rel.parts): continue
+            if rel.parts[:2] == ("docs", "reviews") or path.name in generated: continue
+            text = self.text(path)
+            if namespace and rel.as_posix() not in exempt:
+                for name in sorted(set(stale.findall(text)) - {namespace}):
+                    self.add("namespace", path, f"Reads {name}; the bundle publishes {namespace}")
+            if path.suffix == ".html" and remote.search(text):
+                self.add("offline", path, "Loads a script from a remote host; use _preview_runtime.js and "
+                         "_preview_jsx.js (pages) or templates/_scaffold/vendor (template entries)")
     def run(self):
         self.component_checks()
+        self.runtime_reference_checks()
         for folder in ("components", "templates"):
             for path in sorted((self.root / folder).rglob("*")):
                 if path.is_file() and path.suffix in (".jsx", ".html") and not path.name.endswith((".card.html", ".stories.html")):

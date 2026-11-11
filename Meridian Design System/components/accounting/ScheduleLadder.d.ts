@@ -1,3 +1,4 @@
+import * as React from "react";
 import type { DataConditionKey, VarianceState } from "./VarianceCell";
 
 export type ScheduleNotation="factor"|"rate"|"percent"|"bp"|"currency"|"accounting"|"quantity"|"number";
@@ -81,7 +82,7 @@ export interface ScheduleLadderProps extends Omit<React.HTMLAttributes<HTMLEleme
   onSelectRow?:(row:ScheduleLadderRow)=>void;
   onOpenTrace?:(row:ScheduleLadderRow)=>void;
 }
-export declare function ScheduleLadder(props:ScheduleLadderProps):JSX.Element|null;
+export declare function ScheduleLadder(props:ScheduleLadderProps):React.JSX.Element|null;
 
 export interface ScheduleLadderSetProps extends React.HTMLAttributes<HTMLElement>{
   properties?:Record<string,unknown>;
@@ -91,6 +92,6 @@ export interface ScheduleLadderSetProps extends React.HTMLAttributes<HTMLElement
   /** True renders inapplicable schedules as stated absence lines instead of hiding them. */
   showNotApplicable?:boolean;
 }
-export declare function ScheduleLadderSet(props:ScheduleLadderSetProps):JSX.Element;
+export declare function ScheduleLadderSet(props:ScheduleLadderSetProps):React.JSX.Element;
 
 export declare function scheduleApplies(properties:Record<string,unknown>|undefined,requires?:ScheduleRequirement):boolean;

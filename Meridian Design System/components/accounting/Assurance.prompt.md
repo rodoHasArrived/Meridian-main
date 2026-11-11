@@ -9,3 +9,5 @@ assuranceState(rec, 97000).voided             // true — the balance moved
 ```
 
 Reach for it on a trial balance (an Assurance column, row → Account Sheet), on an Account Sheet (the strip plus the one advancing verb), and on Period Close (the matrix is the close's real progress bar; the lock gate names the uncovered material accounts). Pair with `DecisionSnapshot` when a signature should bind to what was reviewed, not only to the figure.
+
+Current matrix/coverage require a known current balance and balance-bound signatures. A missing current snapshot renders Missing and uncovered. Standalone historical Assurance.state(record) may still read the historical stage without claiming current coverage.

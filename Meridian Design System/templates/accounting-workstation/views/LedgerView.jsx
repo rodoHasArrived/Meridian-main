@@ -33,8 +33,9 @@ function AcctLedgerView(props) {
 
   const exportCsv = () => {
     const head = "date,ref,account,memo,debit,credit,status";
+    const cell = (value) => '"' + String(value ?? "").replace(/"/g, '""') + '"';
     const body = filtered.map((r) =>
-      [r.date, r.ref, '"' + r.account + '"', '"' + (r.memo || "") + '"', r.debit || "", r.credit || "", r.status || "posted"].join(",")
+      [r.date, r.ref, r.account, r.memo, r.debit, r.credit, r.status ?? "posted"].map(cell).join(",")
     );
     const blob = new Blob([[head, ...body].join("\n")], { type: "text/csv" });
     const a = document.createElement("a");
@@ -51,7 +52,7 @@ function AcctLedgerView(props) {
           <Input placeholder="Filter memo, ref, account…" value={q}
             onChange={(e) => setQ(e.target.value)} style={{ width: 230 }} aria-label="Filter postings" />
           <Select value={account} onChange={setAccount}
-            options={[{ value: "all", label: "All accounts" }, ...accounts.map((a) => ({ value: a, label: a }))]} />
+            ariaLabel="Ledger account" options={[{ value: "all", label: "All accounts" }, ...accounts.map((a) => ({ value: a, label: a }))]} />
         </ToolbarGroup>
         <ToolbarSpacer />
         <ToolbarGroup>

@@ -2,18 +2,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<title>Meridian — Canvas &amp; surfaces</title>
 <meta charset="UTF-8">
 <link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../docs/specimen-layout.css">
 <style>
   body { margin: 0; padding: 14px; background: var(--bg); font-family: var(--font-body); }
   .row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
   .sw { border-radius: 8px; border: 1px solid var(--border); padding: 10px 10px 8px; height: 96px; display: flex; flex-direction: column; justify-content: flex-end; gap: 2px; box-shadow: var(--shadow-card); }
   .n { font-family: var(--font-body); font-size: 10px; font-weight: 600; font-variant: all-small-caps; letter-spacing: .03em; color: var(--text-primary); }
-  .v { font-family: var(--font-data); font-size: 9px; color: var(--text-muted); }
+  .v { font-family: var(--font-data); font-size: 9px; color: var(--text-secondary); }
   .dark .n { color: #EBE8E1; } .dark .v { color: #AEB7C0; }
 </style>
 </head>
-<body>
+<body class="mds-specimen">
   <div class="row">
     <div class="sw" style="background: var(--bg);"><div class="n">canvas</div><div class="v">#F2F0EB</div></div>
     <div class="sw" style="background: var(--bg-medium);"><div class="n">medium</div><div class="v">#EBE8E1</div></div>

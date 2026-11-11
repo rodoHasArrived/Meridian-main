@@ -42,4 +42,4 @@ export interface ScatterChartProps {
   /** 3.5 · Forwarded to ChartFrame — visually-hidden data table/list behind the pixels. */
   accessibleData?: string | { label: string; value: React.ReactNode }[] | { caption?: string; columns: React.ReactNode[]; rows: React.ReactNode[][] };
 }
-export declare function ScatterChart(props: ScatterChartProps): JSX.Element;
+export declare function ScatterChart(props: ScatterChartProps): React.JSX.Element;

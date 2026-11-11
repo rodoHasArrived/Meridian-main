@@ -1,1 +1,3 @@
 Selection toolbar — a floating action bar that appears when rows are selected in a table. Shows the count of selected items, shortcuts to "Select all" / "Clear", and a primary action plus additional ghost-variant actions. Slides in from the bottom with a subtle animation. Typically placed above a DataGrid or ReconciliationPanel.
+
+Actions may set `disabled: true` with `disabledReason`. The native disabled button cannot dispatch; the reason is exposed in its tooltip and accessible description. Keep unavailable transport or permission actions visibly disabled with a concrete operator-facing reason.

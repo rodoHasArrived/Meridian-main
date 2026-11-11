@@ -16,6 +16,8 @@ import { CapitalCallLines, capitalAmount, capitalCallIsOverdue, capitalIsPositiv
 import type { CapitalCallIssuanceIntakeRunResult } from "@/lib/api/capital-call-issuance.api";
 import type { LedgerBook, SessionInfo } from "@/types";
 import type { PrivateCapitalCall, PrivateCapitalCommitment, PrivateCapitalNotice, PrivateCapitalWorkbench } from "@/types/private-capital";
+import { Select } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export function CapitalCallIssuanceScreen({ session }: { session?: SessionInfo | null }) {
   return <CapitalScopeSelection key={`${session?.displayName}:${session?.role}:${session?.environment}`} />;
@@ -52,10 +54,10 @@ function CapitalScopeSelection() {
       <CardContent className="space-y-3"><form className="flex flex-wrap items-end gap-3" onSubmit={event => {
         event.preventDefault(); const next = new URLSearchParams(params); next.set("ledgerBookId", draftBook); setParams(next);
       }}><label className="grid gap-1 text-sm">Ledger book
-          <select className="rounded border border-border bg-background p-2" value={draftBook} disabled={loading || locked}
+          <Select value={draftBook} disabled={loading || locked}
             onChange={event => setDraftBook(event.target.value)}><option value="">Select a retained book</option>
             {books.map(book => <option key={book.ledgerBookId} value={book.ledgerBookId}>{book.displayName} · {book.baseCurrency} · {book.accountingBasis}</option>)}
-          </select></label><Button type="submit" variant="outline" disabled={!draftBook || locked || loading || (!unapplied && !!bookId)}>Use book</Button>
+          </Select></label><Button type="submit" variant="outline" disabled={!draftBook || locked || loading || (!unapplied && !!bookId)}>Use book</Button>
           <Button type="button" variant="ghost" disabled={loading || locked} onClick={() => setRevision(value => value + 1)}>Reload books</Button>
         </form>
         {loading ? <p role="status">Loading retained ledger books…</p> : null}
@@ -160,7 +162,7 @@ function CommitmentRegister({ rows, currency, bookId, locked, mutate }: { rows: 
       <h3 className="text-sm font-semibold">Review {row.commitmentId} · revision {row.revision}</h3>
       <p className="text-sm">Effective {row.effectiveFrom}; investment period ends {row.investmentPeriodEndDate ?? "not specified"}. Prepared by {row.createdBy}; approval {row.approvedBy ? `by ${row.approvedBy}` : "pending"}.</p>
       <ul className="list-disc break-all pl-5 text-xs">{row.evidenceLinks.map(link => <li key={link}>{link}</li>)}</ul>
-      {row.approvalStatus === 0 ? <><label className="flex gap-2 text-sm"><input type="checkbox" checked={confirmed} disabled={locked} onChange={event => setConfirmed(event.target.checked)} />I reviewed the retained terms, investor, scope and evidence for this revision.</label>
+      {row.approvalStatus === 0 ? <><Checkbox className="flex gap-2 text-sm" checked={confirmed} disabled={locked} onChange={event => setConfirmed(event.target.checked)} label={<>I reviewed the retained terms, investor, scope and evidence for this revision.</>} />
         <Button disabled={locked || !confirmed} disabledReason={locked ? "Wait for the current operation or resolve its unconfirmed outcome." : !confirmed ? "Review the retained terms, investor, scope and evidence first." : undefined} onClick={() => void mutate("Commitment approval", signal => api.approvePrivateCapitalCommitment(bookId, row.commitmentId, row.revision, { signal }))}>Approve reviewed revision</Button></> : <p className="text-sm">This revision is already approved.</p>}
     </section> : null}
   </CardContent></Card>;
@@ -175,7 +177,7 @@ function CallDetail({ call, generatedAtUtc, notices, locked, mutate }: { call: P
     <TechnicalDetails label="Retained plan and preparation"><p className="break-all text-xs">Period {call.periodId} · Plan {call.planHash} · {call.createdBy} · {call.createdAtUtc}</p></TechnicalDetails>
     <CapitalCallLines call={call} />
     <div className="rounded border border-border p-3 space-y-2"><p className="text-sm">Queue issuance drafts for the retained allocation. Review, approval and posting take place in Journal entries.</p>
-      <label className="flex gap-2 text-sm"><input type="checkbox" checked={confirmIssuance} disabled={locked} onChange={event => setConfirmIssuance(event.target.checked)} />I reviewed this retained call allocation.</label>
+      <Checkbox className="flex gap-2 text-sm" checked={confirmIssuance} disabled={locked} onChange={event => setConfirmIssuance(event.target.checked)} label={<>I reviewed this retained call allocation.</>} />
       <Button disabled={locked || !confirmIssuance} disabledReason={locked ? "Wait for the current operation or resolve its unconfirmed outcome." : !confirmIssuance ? "Review and confirm the retained call allocation first." : undefined} onClick={() => void mutate("Issuance draft intake", signal => api.intakePrivateCapitalCall(call.scope.ledgerBookId, call.callId, { signal }))}>Queue reviewed issuance drafts</Button>
       <Link className="ml-3 text-sm text-primary underline" to={capitalJournalRoute(call.scope.ledgerBookId, call.periodId)}>Open journal approval queue</Link>
     </div>

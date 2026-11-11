@@ -354,6 +354,12 @@ not been recorded.
   `formatDateTime` covers any other date layout through a pinned-locale `Intl.DateTimeFormat`.
   ESLint blocks `Intl.*` and `toLocale*String` in every non-test file under `src/screens/`, and
   the `directIntlFormatting` baseline is empty.
+- **Calendar dates.** A trade, ex-, due, effective, or period date is carried as a `YYYY-MM-DD`
+  string through `@/lib/local-date` (`LocalDate`, the native port of the Design System 4.3 carrier)
+  and rendered with `LocalDateText` from `@/components/ui/local-date-text`, which emits
+  `<time dateTime>`. Do not cut a day out of `toISOString()`: use `utcToday()` where the server
+  evaluates the day in UTC and `LocalDate.dayOfInstant` for the operator's own day. Impossible days
+  such as `2026-02-30` are null, never rolled into another day.
 - **Number style.** One style for a financial figure, wherever it appears:
   - *Signed P&L*: `formatPnl` puts an explicit sign on every non-zero amount with thousands
     separators and fixed decimals (`+$1,234.56`, `-$1,234.56`, `$0.00`); `pnlToneForValue`
@@ -2114,6 +2120,38 @@ Live shell chrome and Accounting adapters remain dashboard-native TypeScript: `W
 `WorkstationStatusBar`, `TrialBalanceTable`, `AgingTable`, and `ReconciliationComparisonPanel`
 adapt the manifest-backed design-system references without importing root JSX or runtime-injected
 package CSS into the dashboard build.
+
+Four components new in 4.3 are also dashboard-native ports wired into live screens; each renders
+only from data the screen already loads:
+
+- `LocalDate` / `LocalDateText` (`src/lib/local-date.ts`, `src/components/ui/local-date-text.tsx`)
+  carry and render calendar dates in the Data corporate-action inbox and the Accounting
+  prepare-next-period dates, and `utcToday()` names the UTC "today" default used by the Reporting
+  as-of defaults and the Settings asset-profile effective dates. Visible text is unchanged.
+- `SelectionCompare` (`src/components/charts/SelectionCompare.tsx`, with `ComparisonPlate` /
+  `PlateGrid`) adds a per-row `Chart` toggle, an inline tray capped at six runs, and an inline sheet
+  of equity paths on one shared scale to the Strategy run library. The set is chart-only and
+  separate from the two-run Compare/Diff/Promote selection. Curves come from the existing run
+  equity-curve client when the sheet opens; a run without a curve keeps its plate and says why.
+  Paths are rebased to 100 at each run's first curve point, and Total return is the run record's
+  figure. The package's overlay sheet and corner-docked tray are not ported.
+- `RollforwardTrace` and `TieOutPanel` (`src/components/accounting/`, arithmetic in
+  `proof-arithmetic.ts`) are read-only. The Capital Account workbench proves each investor row from
+  its subledger entries' net capital activity and reports an account with no entries as
+  "Not itemised", never as tied. The Accounting reconciliation band mounts the tie-out as the proof
+  of the figures `ReconciliationComparisonPanel` already shows, with status passed explicitly so
+  offsetting breaks never read as tied. Accept, resolve, escalate, reopen, and add-item actions and
+  the reviewer line are omitted because no endpoint backs them. The external GL reconciliation is read
+  on the External GL workstream, so the tie-out appears in the Reconciliation band after that
+  workstream has been opened in the same Accounting session.
+- `OptimisticCell` (`src/components/data/optimistic-cell.tsx`, with `OptimisticProvider`,
+  `OptimisticRowBar`, and `EditableCell`) edits provider module priority in place on the Settings
+  provider card. The write is the existing provider-module update and always resends the module's
+  `enabled` flag. An edit reads Provisional, then Confirmed (saved, not live until the provider host
+  restarts); a server refusal reads Rejected with the server's reason; a write with no answer is
+  read back and otherwise shown as Unlanded. Revert is a second write of the prior value under a
+  reason held in this browser session only, because the provider API has no reason or audit field.
+  The edit drawer remains the full-form path.
 Cash Ladder uses the shared `Select` for scenarios and `Input type="number"` for the minimum
 balance draft. Blank input still requests the service default; Enter and Apply threshold keep
 the existing request and account-reset behavior. The provider integration workbench uses shared
@@ -2140,6 +2178,43 @@ system Chromium when needed. Its report and screenshots record theme values,
 loaded fonts, workspace navigation, proof-dialog keyboard behavior, density,
 native Accounting borders/selection, and fresh accessibility scans. Fixture API
 gaps remain explicit in the report and are not backend validation.
+
+The full PR #3501 adoption review is recorded in
+`Meridian Design System/api/project-compatibility.json`. It covers every browser
+screen and shared adapter, including concrete reasons for retaining specialized
+accounting tables, native file controls and embedded row actions. The dashboard
+keeps its existing React, routes, service contracts and financial semantics.
+
+Provider institution search now uses shared search input and selectable dense
+results while retaining explicit server search and exact institution identifiers.
+Maintenance history uses a shared filter and the read-only dense adapter through
+the governed TableWorkbench. Its default remains service order with a 25-row
+limit; concurrent personal-view, search and export controls are preserved. Report-writer token actions
+use shared buttons with visible keyboard focus and disabled reasons, preserving
+reordering, removal and drag behavior. Other compatible forms and flat tables
+use the same adapters; specialized financial tables retain their row/header and
+grouping semantics. `DenseDataTable.tableClassName` preserves a screen's existing
+minimum table width without introducing a row cap or sort.
+
+Reproduce package-wide offline validation from the design-system directory with
+`npm run test:library` and `npm run test:types`; the package's test guide documents
+the source-level interaction suites. These synthetic checks establish component
+and browser behavior. Live providers, backend writes, native Windows/Edge and
+assistive-technology announcement journeys require their own evidence.
+
+`node scripts/smoke-design-system-adoption.mjs --url http://127.0.0.1:5173/workstation --output /tmp/meridian-adoption`
+reproduces the institution, maintenance and report-token acceptance matrix against
+the fixture-only server. Its defaults run both themes at three desktop sizes and
+a 200% desktop zoom layout equivalent, with exact request/selection/cancellation
+IDs, keyboard ordering, drag actions and scoped accessibility checks. The optional
+`--only` and `--sizes` filters produce explicitly focused evidence.
+
+The final adoption checkpoint passes 5,100 tests across all 455 dashboard test
+files, strict types, production build, 31 tooling checks and ratchets. Lint has
+zero errors and 98 existing warnings. The maintained browser passes 64 checks
+and 15 axe scans; the three adoption journeys pass 24 checks and 24 scoped axe
+scans. All use synthetic fixtures; these counts do not certify backend services
+or native Windows/assistive-technology behavior.
 
 ### Workspace-specific styling
 

@@ -1,3 +1,4 @@
+import type React from "react";
 /**
  * Selection toolbar — a floating action bar that appears when rows are selected in a table.
  * Shows the count of selected items, shortcuts to "Select all" / "Clear", and a primary action
@@ -13,6 +14,9 @@ export interface SelectionAction {
   variant?: "primary" | "ghost" | "danger";
   /** Optional tooltip. */
   tooltip?: string;
+  /** Native disabled action; its reason is exposed in the accessible description and tooltip. */
+  disabled?: boolean;
+  disabledReason?: string;
 }
 
 export interface SelectionToolbarProps {
@@ -37,4 +41,4 @@ export interface SelectionToolbarProps {
   /** CSS class to apply to the root element. */
   className?: string;
 }
-export declare function SelectionToolbar(props: SelectionToolbarProps): JSX.Element;
+export declare function SelectionToolbar(props: SelectionToolbarProps): React.JSX.Element;

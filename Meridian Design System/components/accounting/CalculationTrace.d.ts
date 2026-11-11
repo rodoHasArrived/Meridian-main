@@ -1,3 +1,4 @@
+import * as React from "react";
 export type CalculationTraceLevel = "summary" | "expanded" | "audit";
 export interface CalculationStep {
   id?: string;
@@ -25,7 +26,7 @@ export interface CalculationStep {
   material?: boolean;
 }
 export interface CalculationTraceOverride { label?: string; value: React.ReactNode; by?: string }
-export interface CalculationTraceProps extends React.HTMLAttributes<HTMLElement> {
+export interface CalculationTraceProps extends Omit<React.HTMLAttributes<HTMLElement>, "title"> {
   title: React.ReactNode;
   /** Domain-readable formula — "Opening balance + activity − settlements = closing balance". */
   formula?: React.ReactNode;
@@ -53,4 +54,4 @@ export interface CalculationTraceProps extends React.HTMLAttributes<HTMLElement>
   /** Why a regenerated value could differ — shown at the audit level. */
   reproducibility?: React.ReactNode;
 }
-export declare function CalculationTrace(props: CalculationTraceProps): JSX.Element;
+export declare function CalculationTrace(props: CalculationTraceProps): React.JSX.Element;

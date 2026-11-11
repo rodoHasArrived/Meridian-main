@@ -30,7 +30,7 @@ export const Registry = {
   timeRole: TIME_ROLES.reduce((m, r) => { m[r.id] = { label: r.label, note: r.definition }; return m; }, {}),
   seriesRole: { actual: "Actual", prior: "Prior", benchmark: "Benchmark", scenario: "Scenario", target: "Target", estimated: "Estimated" },
   condition: { confirmed: "Confirmed", provisional: "Provisional", estimated: "Estimated", stale: "Stale",
-    overridden: "Overridden", missing: "Missing", na: "Not applicable", pending: "Pending", exception: "Exception", reconciled: "Reconciled" },
+    overridden: "Overridden", missing: "Missing", restricted: "Restricted", na: "Not applicable", pending: "Pending", exception: "Exception", reconciled: "Reconciled" },
   environment: { live: "Live", paper: "Paper", fixture: "Fixture" },
   objectType: OBJECT_TYPES.reduce((m, o) => { m[o.id] = { label: o.label, note: o.plural }; return m; }, {}),
   authority: { source: "Source of record", derived: "Derived", desk: "Desk mark", override: "Override", estimate: "Estimate", unattributed: "Unattributed" },

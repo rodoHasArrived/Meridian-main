@@ -98,7 +98,7 @@ export function TimeContextProvider({ value, defaultValue, onChange, children })
   }, [time, controlled, onChange]);
   const api = React.useMemo(() => ({
     time, update,
-    reset: () => update(defaultValue || {}),
+    reset: () => { const next = { ...(defaultValue || {}) }; if (!controlled) setInternal(next); onChange?.(next); },
     get: (id) => time[id],
     coherence: checkTimeCoherence(time),
   }), [time, update, defaultValue]);
@@ -138,7 +138,7 @@ function inject() {
 .mds-time__issue[data-severity="info"]{background:var(--card-surface,#F8F7F3)}
 .mds-time__sev{font:600 10px var(--font-data,monospace);letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted,#606870)}
 .mds-time__issue[data-severity="error"] .mds-time__sev{color:var(--red-dim,#883832)}
-.mds-time__issue[data-severity="warning"] .mds-time__sev{color:var(--orange,#986717)}
+.mds-time__issue[data-severity="warning"] .mds-time__sev{color:var(--orange-dim,#724D11)}
 .mds-time__ok{font:12px var(--font-body);color:var(--text-muted,#606870);margin:0}
 .mds-timerole{display:inline-grid;gap:1px}
 .mds-timerole__l{font:11px var(--font-body);color:var(--text-muted,#606870)}
@@ -199,7 +199,7 @@ export function TimeContextPanel({
             <span>{issue.message}</span>
           </li>)}
         </ul>
-      : <p className="mds-time__ok">Dates are coherent — no ordering, period, or staleness conflict.</p>) : null}
+      : <p className="mds-time__ok">{Object.values(time).some((value) => value != null && value !== "") ? "Dates are coherent — no ordering, period, or staleness conflict." : "No dates declared — coherence not evaluated."}</p>) : null}
   </div>;
 }
 

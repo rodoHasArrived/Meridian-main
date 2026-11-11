@@ -1,10 +1,11 @@
+import * as React from "react";
 /**
  * ActionQueue — the tray of consequential actions in flight. `ActionEnvelope` states the fate of ONE
  * instruction where it was issued; the queue keeps EVERY unresolved instruction on screen until it
  * resolves, with the ladder submitted → acknowledged → confirmed | rejected | timed out, each row
  * carrying its idempotency key, elapsed clock and retry path. No new vocabulary: rungs derive from
- * `ActionEnvelope`'s four fates (`inflight` under the ack window = submitted, past it = acknowledged;
- * `unlanded` = timed out).
+ * `ActionEnvelope`'s four fates (`inflight` stays submitted; `landed` without a receipt is acknowledged,
+ * with a receipt is confirmed; `unlanded` is timed out).
  *
  * @example
  * <ActionEnvelopeProvider actions={actions} transport={transport}>
@@ -18,14 +19,14 @@ import type { Instruction } from "./ActionEnvelope";
 export type QueueRung = "submitted" | "acknowledged" | "confirmed" | "rejected" | "timedout";
 export interface QueueRungMeta { id: QueueRung; label: string; meaning: string; }
 export declare const QUEUE_RUNGS: ReadonlyArray<QueueRungMeta>;
-/** Derive the rung for an instruction. `ackMs` is the submitted → acknowledged window. */
+/** Derive the rung from the answer and receipt. Deprecated clock arguments are accepted and ignored. */
 export declare function rungFor(instruction: Instruction | null, ackMs?: number, now?: number): QueueRung;
 
 export interface ActionQueueProps extends React.HTMLAttributes<HTMLElement> {
   /** Omit inside an `ActionEnvelopeProvider` to read the live list. */
   instructions?: Instruction[];
   label?: string;
-  /** Submitted → acknowledged after this many ms in flight. @default 1500 */
+  /** Compatibility prop, ignored. Elapsed time never establishes acknowledgement. */
   ackMs?: number;
   /** Confirmed and acknowledged-rejected rows leave the tray after this. @default 6000 */
   settleMs?: number;
@@ -42,7 +43,7 @@ export interface ActionQueueProps extends React.HTMLAttributes<HTMLElement> {
   /** Corner tray renders nothing when empty. @default true */
   hideWhenEmpty?: boolean;
 }
-export declare function ActionQueue(props: ActionQueueProps): JSX.Element | null;
+export declare function ActionQueue(props: ActionQueueProps): React.JSX.Element | null;
 
 export interface ActionQueueChipProps extends React.HTMLAttributes<HTMLSpanElement> {
   instructions?: Instruction[];
@@ -50,4 +51,4 @@ export interface ActionQueueChipProps extends React.HTMLAttributes<HTMLSpanEleme
   label?: string;
 }
 /** Status-bar mark: unresolved count, red when any fate is unknown. */
-export declare function ActionQueueChip(props: ActionQueueChipProps): JSX.Element;
+export declare function ActionQueueChip(props: ActionQueueChipProps): React.JSX.Element;

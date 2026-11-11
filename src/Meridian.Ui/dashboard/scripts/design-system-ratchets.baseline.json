@@ -4,7 +4,6 @@
   },
   "directIntlFormatting": {},
   "rawTables": {
-    "src/screens/accounting-screen.close-cockpit-panels.tsx": 1,
     "src/screens/accounting-screen.consolidation-results.tsx": 2,
     "src/screens/accounting-screen.factor-paydown-panel.tsx": 1,
     "src/screens/accounting-screen.onboarding-panel.tsx": 1,
@@ -14,7 +13,7 @@
     "src/screens/reporting-income-comparison.tsx": 1,
     "src/screens/reporting-retained-amounts.tsx": 1,
     "src/screens/reporting-screen.report-writer.tsx": 1,
-    "src/screens/statement-import-preview.tsx": 2
+    "src/screens/statement-import-preview.tsx": 1
   },
   "handRolledNumberFormatting": {
     "src/screens/accounting-screen.formatting.ts": 2,

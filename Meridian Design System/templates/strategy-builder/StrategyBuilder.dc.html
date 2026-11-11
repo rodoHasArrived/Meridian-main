@@ -1,34 +1,43 @@
 <!DOCTYPE html>
-<html data-theme="light">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Strategy builder — Meridian compatibility entry</title>
+<script src="../_scaffold/vendor/react-18.3.1.production.min.js"></script>
+<script src="../_scaffold/vendor/react-dom-18.3.1.production.min.js"></script>
+<script src="../../_preview_jsx.js"></script>
+<script src="../../_ds_bundle.js"></script>
 <script src="./support.js"></script>
 </head>
 <body>
 <x-dc>
-<!-- @template name="Strategy Builder" description="Cell-based strategy worksheet — formula bar, computed grid, parameters & cell inspector" -->
-<helmet>
-<script src="./ds-base.js"></script>
-<meta name="dc-template" content="strategy-builder">
-</helmet>
-<!-- Wait for the compiled namespace before mounting the source screen. -->
-<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="ready">
-<x-import component-from-global-scope="StrategyBuilderScreen" from="./screen.jsx" environment="{{ environment }}" state="{{ dataState }}" hint-size="100%,820px"></x-import>
+<!-- @template name="Compatibility · Strategy builder" description="Retained entry for the current Strategy builder view; delegates to its documented canonical workstation." -->
+<helmet><script src="./ds-base.js"></script><meta name="dc-template" content="strategy-builder"></helmet>
+<main aria-label="Strategy builder compatibility entry" style="height:100vh;min-height:0">
+<h1 style="position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)">Strategy builder</h1>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Strategy builder" action-label="Retry preview" on-action="{{ retry }}" hint-size="100%,100vh">
+<x-import component-from-global-scope="MeridianTemplateCompatibility" from="../_scaffold/compatibility-frame.jsx" target="../strategy-formation/StrategyFormation.dc.html?view=builder" title="Strategy builder canonical workstation" theme="{{ theme }}" density="{{ density }}" environment="{{ environment }}" hint-size="100%,100vh"></x-import>
 </x-import>
+</main>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1920,&quot;height&quot;:1080},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;default&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;PAPER&quot;,&quot;options&quot;:[&quot;PAPER&quot;,&quot;LIVE&quot;,&quot;FIXTURE&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1920,&quot;height&quot;:1080},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;default&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;FIXTURE&quot;,&quot;options&quot;:[&quot;FIXTURE&quot;,&quot;PAPER&quot;,&quot;LIVE&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;}}">
 class Component extends DCLogic {
+  state = { previewReady: false };
+  componentDidUpdate(previous) {
+    if (previous.dataState !== this.props.dataState && this.state.previewReady) this.setState({ previewReady: false });
+  }
   renderVals() {
-    // Preview tweaks seed the shared preferences; an operator choice wins.
     const prefs = window.MeridianPrefs;
     const theme = prefs ? prefs.theme(this.props.theme ?? "light") : (this.props.theme ?? "light");
     const density = prefs ? prefs.density(this.props.density ?? "default") : (this.props.density ?? "default");
-    const environment = prefs ? prefs.environment(this.props.environment ?? "PAPER") : (this.props.environment ?? "PAPER");
+    const environment = prefs ? prefs.environment(this.props.environment ?? "FIXTURE") : (this.props.environment ?? "FIXTURE");
     document.documentElement.setAttribute("data-theme", theme);
     document.documentElement.setAttribute("data-environment", environment);
-    document.body.setAttribute("data-theme-density", density);
-    return { environment, dataState: this.props.dataState ?? "ready" };
+    if (document.body) document.body.setAttribute("data-theme-density", density);
+    return { theme, density, environment,
+      dataState: this.state.previewReady ? "ready" : (this.props.dataState ?? "ready"),
+      retry: () => this.setState({ previewReady: true }) };
   }
 }
 </script>

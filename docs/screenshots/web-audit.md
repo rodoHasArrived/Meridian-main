@@ -100,3 +100,15 @@ Those input checks used synthetic data and prevented all API writes.
 These remain Linux Chromium and synthetic-data results. Windows, assistive technology, live
 providers and production activation are outside this evidence. See the implementation record
 linked above for builds, tests and remaining source limits.
+
+Final accessible-name checks retain the full native masthead summary, including screen-reader
+provenance, and keep the visible Inspect record label in its accessible name. The maintained
+smoke checks open retained Portfolio evidence explicitly, separately from current holdings.
+Six exact read-only smoke fixtures provide empty personal views or explicitly unavailable/empty
+history; they exercise no persistence, provider uptime or live financial operations.
+
+The final maintained browser command passed all 64 checks (22 base and 42 expanded). All 15
+axe scans reported zero violations; nine scans retain incomplete/manual checks. No unexpected
+runtime, asset or expanded request errors occurred, and all 163 published files remained
+byte-identical. Seventeen known fixture gaps remain explicit. This is synthetic Linux Chromium
+evidence, not live-provider or native Windows certification.

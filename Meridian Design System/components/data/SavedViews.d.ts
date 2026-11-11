@@ -33,4 +33,4 @@ export interface SavedViewsProps {
   /** Fired after a view is applied or saved. `name` is null for the default reset. */
   onApply?: ((name: string | null, state: any) => void) | null;
 }
-export declare function SavedViews(props: SavedViewsProps): JSX.Element;
+export declare function SavedViews(props: SavedViewsProps): React.JSX.Element;

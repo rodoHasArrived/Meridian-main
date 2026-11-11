@@ -4,6 +4,7 @@
 import React from "react";
 import { Button } from "../core/Button";
 import { formatNumber, formatAccounting } from "../core/format.js";
+import { knownAmount, sumKnown, optionalSide } from "./knownAmounts.js";
 
 const CLASSES={blocking:{label:"Blocking",tone:"stop",glyph:"▲"},warning:{label:"Warning",tone:"warn",glyph:"◆"},info:{label:"Informational",tone:"info",glyph:"●"}};
 const OPEN=["open","adjustment","reopened"];
@@ -39,7 +40,7 @@ let injected=false;function inject(){if(injected||typeof document==="undefined")
 .mds-post__actions{margin-left:auto;display:flex;gap:6px}
 `;document.head.appendChild(el)}
 
-const m=v=>formatNumber(Number(v)||0,{decimals:2});
+const m=value=>knownAmount(value)===null?"Missing":formatNumber(value,{decimals:2});
 const acct=v=>formatAccounting(Number(v)||0,{decimals:2});
 
 export function PostingImpactPreview({
@@ -49,12 +50,19 @@ export function PostingImpactPreview({
   onPost,onCancel,postLabel="Post journal",className="",...rest
 }){
   inject();
-  const debit=lines.reduce((n,x)=>n+(Number(x.debit)||0),0);
-  const credit=lines.reduce((n,x)=>n+(Number(x.credit)||0),0);
-  const balanced=Math.abs(debit-credit)<.005;
+  const sides=lines.map(line=>({debit:optionalSide(line.debit),credit:optionalSide(line.credit)}));
+  const debit=sumKnown(sides.map(side=>side.debit));
+  const credit=sumKnown(sides.map(side=>side.credit));
+  const inputsKnown=debit!==null&&credit!==null;
+  const invalidSides=sides.some(side=>side.debit===null||side.credit===null||side.debit<0||side.credit<0||(side.debit>0&&side.credit>0));
+  const hasActivity=sides.some(side=>side.debit>0||side.credit>0);
+  const balanced=inputsKnown&&Math.abs(debit-credit)<.005;
   const periodOpen=OPEN.includes(String(periodState).toLowerCase().replace(/[_\s]+/g,"-"))||String(periodState).toLowerCase().includes("soft");
   const derived=[
-    !balanced&&{id:"balance",severity:"blocking",label:"Debits do not equal credits",detail:`Out by ${m(Math.abs(debit-credit))}`},
+    !inputsKnown&&{id:"inputs",severity:"blocking",label:"Posting amounts are unavailable",detail:"Missing amounts are not zero; supply valid journal amounts before posting"},
+    invalidSides&&{id:"sides",severity:"blocking",label:"Journal lines contain invalid debit or credit amounts",detail:"Use nonnegative amounts on a single side of each line"},
+    !hasActivity&&{id:"activity",severity:"blocking",label:"Journal has no nonzero postings",detail:"An empty or all-zero preview cannot be posted"},
+    inputsKnown&&!balanced&&{id:"balance",severity:"blocking",label:"Debits do not equal credits",detail:`Out by ${m(Math.abs(debit-credit))}`},
     !periodOpen&&{id:"period",severity:"blocking",label:`Period is ${periodState}`,detail:"Reopen authorization required before posting"},
     periodOpen&&String(periodState).toLowerCase().includes("soft")&&{id:"soft",severity:"warning",label:"Soft-closed period",detail:"Late entry requires controller approval"},
     authority===false&&{id:"authority",severity:"blocking",label:"User lacks posting authority",detail:"Request a signatory with posting rights"},
@@ -63,8 +71,12 @@ export function PostingImpactPreview({
   const blockers=all.filter(c=>c.severity==="blocking");
   const warnings=all.filter(c=>c.severity==="warning");
   const needsAck=(requireAcknowledgement??warnings.length>0)&&warnings.length>0;
-  const[ack,setAck]=React.useState(false);
+  let draftKey;
+  try { draftKey=JSON.stringify({period,periodState,postingPeriod,asOf,lines,effects,statements,positions,downstream,controls,checks,reversal,requireAcknowledgement,authority},(key,value)=>key==="_owner"||typeof value==="function"?undefined:typeof value==="bigint"?String(value):value); } catch { draftKey=null; }
+  const[ackKey,setAckKey]=React.useState(null);
+  const ack=draftKey!==null&&ackKey===draftKey;
   const blocked=blockers.length>0||(needsAck&&!ack);
+  const sideText=value=>value===undefined||(typeof value==="string"&&value.trim()==="")||knownAmount(value)===0?"—":m(value);
 
   return <section className={`mds-post${className?" "+className:""}`} {...rest}>
     <header className="mds-post__head">
@@ -87,8 +99,8 @@ export function PostingImpactPreview({
       <caption className="mds-post__section" style={{captionSide:"top",textAlign:"left"}}>Journal lines</caption>
       <thead><tr><th scope="col">Account</th><th scope="col">Description</th><th scope="col">Debit</th><th scope="col">Credit</th></tr></thead>
       <tbody>
-        {lines.map((x,i)=><tr key={x.id||i}><td>{x.account}</td><td>{x.description||"—"}</td><td>{x.debit?m(x.debit):"—"}</td><td>{x.credit?m(x.credit):"—"}</td></tr>)}
-        <tr data-total="true"><td colSpan="2">{balanced?"Balanced":"Out of balance"}</td><td>{m(debit)}</td><td>{m(credit)}</td></tr>
+        {lines.map((x,i)=><tr key={x.id||i}><td>{x.account}</td><td>{x.description||"—"}</td><td>{sideText(x.debit)}</td><td>{sideText(x.credit)}</td></tr>)}
+        <tr data-total="true"><td colSpan="2">{!inputsKnown?"Inputs unavailable":balanced?"Balanced":"Out of balance"}</td><td>{m(debit)}</td><td>{m(credit)}</td></tr>
       </tbody>
     </table>
 
@@ -105,7 +117,7 @@ export function PostingImpactPreview({
     {controls.length||downstream.length?<><div className="mds-post__section">Downstream reports and controls</div><ul className="mds-post__list">{[...controls,...downstream].map((s,i)=><li key={i}>{typeof s==="string"?s:`${s.label}${s.value?` · ${s.value}`:""}`}</li>)}</ul></>:null}
     {reversal?<><div className="mds-post__section">Reversal behavior</div><ul className="mds-post__list"><li>{reversal}</li></ul></>:null}
 
-    {needsAck?<label className="mds-post__ack"><input type="checkbox" checked={ack} onChange={e=>setAck(e.target.checked)}/><span>I acknowledge {warnings.length} warning{warnings.length===1?"":"s"} on this posting.</span></label>:null}
+    {needsAck?<label className="mds-post__ack"><input type="checkbox" checked={ack} onChange={e=>setAckKey(e.target.checked?draftKey:null)}/><span>I acknowledge {warnings.length} warning{warnings.length===1?"":"s"} on this posting.</span></label>:null}
 
     <footer className="mds-post__foot">
       <span>{blockers.length?`${blockers.length} blocking condition${blockers.length===1?"":"s"}`:balanced?"Ready to post":"Not ready"}{warnings.length?` · ${warnings.length} warning${warnings.length===1?"":"s"}`:""}</span>

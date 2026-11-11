@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * Journal-entry form — balanced double-entry input. A header (date / reference / memo) sits over
  * a line grid of Account · Debit · Credit with live column totals and a balance gauge that stays
@@ -37,4 +38,4 @@ export interface JournalEntryFormProps {
   /** When set, renders a Post button (enabled only when balanced and unblocked). */
   onPost?: (entry: { header: JournalHeader; lines: JournalLine[] }) => void;
 }
-export declare function JournalEntryForm(props: JournalEntryFormProps): JSX.Element;
+export declare function JournalEntryForm(props: JournalEntryFormProps): React.JSX.Element;

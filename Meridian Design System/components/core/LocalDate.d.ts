@@ -1,3 +1,4 @@
+import type React from "react";
 /**
  * LocalDate — the calendar-date authority on the namespace (`MeridianDesignSystem.LocalDate`),
  * the sibling of `Format`. A trade, settlement or accounting date is a DATE, not an instant:
@@ -39,4 +40,4 @@ export interface LocalDateTextProps extends React.HTMLAttributes<HTMLElement> {
   format?: "iso" | "long" | "month";
 }
 /** A calendar date as a `<time>` element. */
-export declare function LocalDateText(props: LocalDateTextProps): JSX.Element;
+export declare function LocalDateText(props: LocalDateTextProps): React.JSX.Element;

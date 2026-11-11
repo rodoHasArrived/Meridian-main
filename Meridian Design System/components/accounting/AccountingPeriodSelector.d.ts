@@ -1,3 +1,4 @@
+import * as React from "react";
 export type PeriodState = "future" | "open" | "soft-closed" | "hard-closed" | "locked" | "adjustment" | "reopened" | "prior-period" | "archive";
 export interface AccountingPeriod {
   value: string;
@@ -31,4 +32,4 @@ export interface AccountingPeriodSelectorProps extends Omit<React.HTMLAttributes
   /** The distinct date roles in effect — never collapse these into one field. */
   dates?: Partial<Record<"transaction" | "trade" | "settlement" | "accounting" | "posting" | "reporting" | "asOf", React.ReactNode>>;
 }
-export declare function AccountingPeriodSelector(props: AccountingPeriodSelectorProps): JSX.Element;
+export declare function AccountingPeriodSelector(props: AccountingPeriodSelectorProps): React.JSX.Element;

@@ -68,4 +68,4 @@ export interface DotMatrixProps {
   ariaLabel?: string;
   caption?: string;
 }
-export declare function DotMatrix(props: DotMatrixProps): JSX.Element;
+export declare function DotMatrix(props: DotMatrixProps): React.JSX.Element;

@@ -25,6 +25,8 @@ import {
 } from "@/screens/data-screen.view-model";
 import { cn } from "@/lib/utils";
 import { usesTrackedCaps } from "@/design-system/label-case";
+import { TextArea } from "@/components/ui/text-area";
+import { Select } from "@/components/ui/select";
 
 type DataOperationsVm = ReturnType<typeof useDataViewModel>;
 
@@ -337,13 +339,13 @@ export function DataQueryWorkstream({
       </CardHeader>
       <CardContent>
         <div className="grid gap-3">
-          <textarea
+          <TextArea
             value={queryPanel.sql}
             onChange={(event) => queryPanel.setSql(event.target.value)}
             rows={5}
             spellCheck={false}
             aria-label="SQL statement"
-            className="w-full rounded-md border border-border/70 bg-background p-2 font-mono text-sm"
+            className="w-full font-mono text-sm"
           />
           <details className="rounded-md border border-border/70 bg-secondary/15 px-3 py-2">
             <summary className="cursor-pointer text-sm font-semibold text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40">
@@ -355,8 +357,8 @@ export function DataQueryWorkstream({
             <div className="mt-3 grid gap-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
               <label className="grid gap-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 Recent queries
-                <select
-                  className="min-h-9 rounded-md border border-border/70 bg-background px-2 py-1 text-sm font-normal normal-case tracking-normal text-foreground"
+                <Select
+                  className="min-h-9 text-sm font-normal normal-case tracking-normal"
                   aria-label="Recent SQL query history"
                   defaultValue=""
                   onChange={(event) => {
@@ -372,7 +374,7 @@ export function DataQueryWorkstream({
                       {entry.sql}
                     </option>
                   ))}
-                </select>
+                </Select>
               </label>
               <div className="grid gap-1">
                 <label

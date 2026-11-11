@@ -1,9 +1,14 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../_scaffold/vendor/react-18.3.1.production.min.js"></script>
+<script src="../_scaffold/vendor/react-dom-18.3.1.production.min.js"></script>
+<script src="../../_preview_jsx.js"></script>
+<script src="../../_ds_bundle.js"></script>
 <script src="./support.js"></script>
+<title>Admin · Settings and Admin — Meridian</title>
 </head>
 <body>
 <x-dc>
@@ -20,7 +25,7 @@
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkstationShell" height="100vh" labelled-by="workspace-title" topbar="{{ topbar }}" nav="{{ nav }}" status-bar="{{ statusBar }}" hint-size="100%,780px">
 <div data-screen-label="Settings" style="display:flex;min-height:100%">
 <nav aria-label="Settings sections" style="width:200px;flex:none;background:var(--sidebar-bg,#EBE8E1);border-right:1px solid var(--sidebar-border,#D2CDC3);padding:14px 0;display:flex;flex-direction:column;gap:2px;align-self:stretch">
-<a href="#sect-0" onClick="{{ jump0 }}" style="display:flex;justify-content:space-between;align-items:center;padding:7px 16px;font-size:13px;text-decoration:none;color:var(--nav-item,#535C65);border-left:2px solid var(--sidebar-active-ind,#C56343);background:var(--sidebar-active,#E7EDF2)">Organization<span style="font:600 10px var(--font-data);color:var(--text-muted)">G 1</span></a>
+<a href="#sect-0" onClick="{{ jump0 }}" style="display:flex;justify-content:space-between;align-items:center;padding:7px 16px;font-size:13px;text-decoration:none;color:var(--nav-item,#535C65);border-left:2px solid var(--sidebar-active-ind,#C56343);background:var(--sidebar-active,#E7EDF2)">Organization<span style="font:600 10px var(--font-data);color:var(--text-primary)">G 1</span></a>
 <a href="#sect-1" onClick="{{ jump1 }}" style="display:flex;justify-content:space-between;align-items:center;padding:7px 16px;font-size:13px;text-decoration:none;color:var(--nav-item,#535C65);border-left:2px solid transparent" style-hover="color:var(--text-primary)">Data providers<span style="font:600 10px var(--font-data);color:var(--text-muted)">G 2</span></a>
 <a href="#sect-2" onClick="{{ jump2 }}" style="display:flex;justify-content:space-between;align-items:center;padding:7px 16px;font-size:13px;text-decoration:none;color:var(--nav-item,#535C65);border-left:2px solid transparent" style-hover="color:var(--text-primary)">Notifications<span style="font:600 10px var(--font-data);color:var(--text-muted)">G 3</span></a>
 <a href="#sect-3" onClick="{{ jump3 }}" style="display:flex;justify-content:space-between;align-items:center;padding:7px 16px;font-size:13px;text-decoration:none;color:var(--red-dim,#883832);border-left:2px solid transparent" style-hover="color:var(--red,#B54B42)">Danger zone<span style="font:600 10px var(--font-data);color:var(--text-muted)">G 4</span></a>
@@ -47,10 +52,10 @@
 <h2 style="font:600 15px var(--font-display);margin:0;color:var(--text-primary)">Organization</h2>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.FormField" label="Organization name" required="{{ true }}" error="{{ orgError }}" hint-size="100%,60px">
-<x-import component-from-global-scope="MeridianDesignSystem_205d17.Input" value="{{ orgName }}" on-change="{{ onOrgName }}" hint-size="100%,32px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Input" aria-label="Organization name" value="{{ orgName }}" on-change="{{ onOrgName }}" hint-size="100%,32px"></x-import>
 </x-import>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.FormField" label="Display timezone" hint="All Meridian surfaces render UTC; this affects exports only." hint-size="100%,60px">
-<x-import component-from-global-scope="MeridianDesignSystem_205d17.Select" value="{{ tz }}" options="{{ tzOptions }}" on-change="{{ onTz }}" hint-size="100%,32px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Select" aria-label="Display timezone" value="{{ tz }}" options="{{ tzOptions }}" on-change="{{ onTz }}" hint-size="100%,32px"></x-import>
 </x-import>
 </div>
 </div>
@@ -58,7 +63,7 @@
 <h2 style="font:600 15px var(--font-display);margin:0;color:var(--text-primary)">Data providers</h2>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start">
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.FormField" label="API rate limit" hint="Requests per minute across all provider connections." hint-size="100%,60px">
-<x-import component-from-global-scope="MeridianDesignSystem_205d17.NumberInput" value="{{ rateLimit }}" min="{{ 10 }}" max="{{ 600 }}" step="{{ 10 }}" on-change="{{ onRateLimit }}" hint-size="120px,32px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.NumberInput" aria-label="API rate limit" value="{{ rateLimit }}" min="{{ 10 }}" max="{{ 600 }}" step="{{ 10 }}" on-change="{{ onRateLimit }}" hint-size="120px,32px"></x-import>
 </x-import>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.FormField" label="Collection behavior" hint-size="100%,80px">
 <div style="display:flex;flex-direction:column;gap:8px;padding-top:4px">
@@ -121,7 +126,7 @@ class Component extends DCLogic {
     if (document.body) document.body.setAttribute("data-theme-density", (window.MeridianPrefs?window.MeridianPrefs.density(this.props.density ?? "default"):(this.props.density ?? "default")));
   }
   componentDidMount() { this.applyChrome(); }
-  componentDidUpdate() { this.applyChrome(); }
+  componentDidUpdate(previous) { this.applyChrome(); if (previous.dataState !== this.props.dataState && this.state.previewReady) this.setState({ previewReady: false }); }
 
   state = {
     orgName: "Meridian Capital Research", tz: "UTC",
@@ -205,8 +210,8 @@ class Component extends DCLogic {
     const saveIns = this._actions ? this._actions.instructionFor("settings.save") : null;
     const saving = saveIns && saveIns.state === "inflight";
     return {
-      dataState: this.props.dataState ?? "ready",
-      onRetry: () => {},
+      dataState: this.state.previewReady ? "ready" : (this.props.dataState ?? "ready"),
+      onRetry: () => this.setState({ previewReady: true }),
       paletteCommands: layer.commands, paletteGroups: layer.groupOrder, paletteResolve: layer.resolve, palettePlaceholder: layer.placeholder, hotkeyBindings: layer.bindings,
       actionDecls: {
         "settings.save": { label: "Save settings", endpoint: "PUT /v1/config", permission: { required: "admin.config", held: true, actor: "r.alvarez" }, posture: "confirmed", failureSurface: "Action queue · header · status bar" },

@@ -7,6 +7,7 @@ import { Activity, ArrowRight, ExternalLink, GitBranch, KeyRound, LoaderCircle, 
 import { ProviderSetupPanel } from "@/components/data/provider-setup-panel";
 import { LifecycleControlPanel } from "@/components/meridian/lifecycle-control-panel";
 import { formatCount, formatNumber as formatNumberAmount, formatUtcDate, formatUtcTimestamp } from "@/lib/format";
+import { utcToday } from "@/lib/local-date";
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { StatStrip } from "@/components/meridian/stat-strip";
@@ -5009,8 +5010,13 @@ function normalizeAssetProfileId(value: string): string {
   return value.trim().toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "");
 }
 
+/**
+ * Today as an asset-profile `effectiveFrom`. Deliberately the UTC calendar day, the same day
+ * `isWriteSelectableAssetProfile` compares effective windows against, so a profile approved here
+ * is selectable for writes straight away for every operator.
+ */
 function todayDateOnly(): string {
-  return new Date().toISOString().slice(0, 10);
+  return utcToday();
 }
 
 function createBrowserGuid(): string {
@@ -5139,11 +5145,11 @@ function FilterSelect({
   return (
     <label className="grid gap-1 text-xs font-medium text-muted-foreground">
       {label}
-      <select
+      <Select
         value={value}
         onChange={(event) => onChange(event.target.value)}
         disabled={disabled}
-        className="h-9 rounded-md border border-border/70 bg-background px-2 text-sm text-foreground"
+        className="h-9 text-sm"
         aria-label={ariaLabel ?? label}
       >
         {options.map((option) => (
@@ -5151,7 +5157,7 @@ function FilterSelect({
             {option.label}
           </option>
         ))}
-      </select>
+      </Select>
     </label>
   );
 }
@@ -6161,8 +6167,8 @@ function ProviderOpenApiImportForm({
       </div>
       <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
         OpenAPI JSON
-        <textarea
-          className="min-h-24 rounded-md border border-border/70 bg-background px-3 py-2 font-mono text-xs text-foreground outline-hidden focus:border-primary"
+        <TextArea rows={2}
+          className="min-h-24 font-mono text-xs"
           value={state.openApiDocumentJson}
           onChange={(event) => updateField("openApiDocumentJson", event.target.value)}
           disabled={state.busy}

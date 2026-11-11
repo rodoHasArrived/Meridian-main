@@ -14,7 +14,7 @@ const meta = s => STATE[s] || { label: s || "Unknown", glyph: "·", rank: 1 };
 export function summarizeGuards(guards) {
   const g = guards || [];
   const blocking = g.filter(x => x.state === "blocking"), warning = g.filter(x => x.state === "warning");
-  const pending = g.filter(x => x.state === "pending");
+  const pending = g.filter(x => x.state === "pending" || !Object.prototype.hasOwnProperty.call(STATE, x.state));
   return {
     total: g.length, satisfied: g.filter(x => x.state === "satisfied").length,
     warning: warning.length, blocking: blocking.length, pending: pending.length,
@@ -80,7 +80,7 @@ export function ActionGuardList({ guards = [], label = "Guards", showSummary = t
         <span><span className="mds-guard__lbl">{g.label}</span>
           <span className="mds-guard__meta">{m.label}{g.policyRef ? ` · ${g.policyRef}` : ""}{g.evidenceRefs && g.evidenceRefs.length ? ` · ${g.evidenceRefs.length} evidence ${g.evidenceRefs.length === 1 ? "item" : "items"}` : ""}</span>
           {g.reason ? <span className="mds-guard__why">{g.reason}</span> : null}
-          {g.remediation ? <button type="button" className="mds-guard__fix"
+          {g.remediation ? <button type="button" className="mds-guard__fix" disabled={!onRemediate} title={onRemediate?undefined:"Remediation is unavailable in this view"}
             onClick={() => onRemediate && onRemediate(g.remediation, g)}>{g.remediation.label}
             {g.remediation.requiredRole ? <span className="mds-guard__role">{g.remediation.requiredRole}</span> : null}</button> : null}
         </span></li>;
@@ -110,7 +110,7 @@ export function ActionAvailability({ action, guards = [], available, reason, req
     {!ok ? <dl>
       {why ? <><dt>Reason</dt><dd>{why}</dd></> : null}
       {blocker && blocker.policyRef ? <><dt>Policy</dt><dd>{blocker.policyRef}</dd></> : null}
-      {fix ? <><dt>Resolution</dt><dd><button type="button" className="mds-guard__fix" style={{ marginTop: 0 }}
+      {fix ? <><dt>Resolution</dt><dd><button type="button" className="mds-guard__fix" style={{ marginTop: 0 }} disabled={!onRemediate} title={onRemediate?undefined:"Remediation is unavailable in this view"}
         onClick={() => onRemediate && onRemediate(fix, blocker)}>{fix.label}</button></dd></> : null}
       {role ? <><dt>Authority</dt><dd>{role}</dd></> : null}
     </dl> : null}

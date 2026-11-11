@@ -1,3 +1,4 @@
+import type React from "react";
 /** Identity fact band — label-over-value grid with per-item mono/color control. */
 export interface EntitySummaryItem {
   label: string;
@@ -20,4 +21,4 @@ export interface EntitySummaryProps {
   /** Wire the withheld-facets reveal — usually `setDetailFor(region, level)`. */
   onReveal?: (level: "summary" | "full") => void;
 }
-export declare function EntitySummary(props: EntitySummaryProps): JSX.Element;
+export declare function EntitySummary(props: EntitySummaryProps): React.JSX.Element;

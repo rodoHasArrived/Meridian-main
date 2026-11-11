@@ -67,6 +67,8 @@ export function SplitPane({
   inject();
   const horiz = direction === "horizontal";
   const rootRef = React.useRef(null);
+  const dragCleanup = React.useRef(null);
+  React.useEffect(() => () => dragCleanup.current?.(), []);
   const [total, setTotal] = React.useState(0);
 
   // Clamp against min/max AND against what the other pane needs — without minSecondary a large
@@ -79,10 +81,10 @@ export function SplitPane({
   }, [min, max, minSecondary, total]);
 
   const [size, setSize] = React.useState(() => {
-    if (persistKey && typeof localStorage !== "undefined") {
+    try { if (persistKey && typeof localStorage !== "undefined") {
       const v = parseFloat(localStorage.getItem("mds-split:" + persistKey));
       if (Number.isFinite(v)) return v;
-    }
+    } } catch { /* Storage availability must not prevent resizing. */ }
     return resolve(initial, 0) || 280;
   });
   const [drag, setDrag] = React.useState(false);
@@ -90,7 +92,7 @@ export function SplitPane({
   const collapsed = collapsedProp != null ? collapsedProp : selfCollapsed;
 
   const persist = (v) => {
-    if (persistKey && typeof localStorage !== "undefined") localStorage.setItem("mds-split:" + persistKey, String(v));
+    try { if (persistKey && typeof localStorage !== "undefined") localStorage.setItem("mds-split:" + persistKey, String(v)); } catch { /* Keep the in-memory size. */ }
   };
 
   // Track the container so percentage bounds and re-clamping work on window/layout resize.
@@ -134,6 +136,7 @@ export function SplitPane({
       onResize?.(last);
     };
     const up = () => {
+      dragCleanup.current = null;
       setDrag(false);
       document.body.classList.remove("mds-split-dragging", "mds-split-dragging--h", "mds-split-dragging--v");
       node.releasePointerCapture?.(e.pointerId);
@@ -146,6 +149,12 @@ export function SplitPane({
     node.addEventListener("pointermove", move);
     node.addEventListener("pointerup", up);
     node.addEventListener("pointercancel", up);
+    dragCleanup.current = () => {
+      document.body.classList.remove("mds-split-dragging", "mds-split-dragging--h", "mds-split-dragging--v");
+      node.removeEventListener("pointermove", move);
+      node.removeEventListener("pointerup", up);
+      node.removeEventListener("pointercancel", up);
+    };
   };
 
   const commit = (v) => {

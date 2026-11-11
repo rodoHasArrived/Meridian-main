@@ -1,5 +1,5 @@
 <!-- @dsCard group="Accounting" viewport="1280x1040" name="Schedule ladder" subtitle="ScheduleLadder · ScheduleLadderSet — expected versus actual factor and rate schedules, conditional on security properties" -->
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Schedule ladder</title><link rel="stylesheet" href="../../styles.css"><script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script><script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script><script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script><script src="../../_ds_bundle.js"></script><style>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Schedule ladder</title><link rel="stylesheet" href="../../styles.css"><script src="../../_preview_runtime.js"></script><script src="../../_preview_jsx.js"></script><script src="../../_ds_bundle.js"></script><style>
 body{margin:0;padding:20px;background:var(--bg);font-family:var(--font-body)}
 .wrap{display:grid;grid-template-columns:250px 1fr;gap:16px;max-width:1240px;align-items:start}
 .rail{display:grid;gap:10px;position:sticky;top:0}
@@ -11,11 +11,12 @@ body{margin:0;padding:20px;background:var(--bg);font-family:var(--font-body)}
 .picks button[aria-pressed="true"]{border-color:var(--selected);background:var(--bg-active)}
 .picks b{font:600 11px/15px var(--font-body);color:var(--text-primary)}
 .picks span{font:9px/13px var(--font-data);color:var(--text-muted)}
+.picks button[aria-pressed="true"] span{color:var(--text-secondary)}
 .props{border:1px solid var(--border);background:var(--bg-light);padding:9px}
 .props h2{margin:0 0 6px;font:600 9px/13px var(--font-data);letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted)}
 .chips{display:flex;flex-wrap:wrap;gap:4px}
 .chips i{font:10px/14px var(--font-data);font-style:normal;padding:1px 5px;border:1px solid var(--border);color:var(--text-secondary);background:var(--bg)}
-.chips i[data-off="true"]{color:var(--text-muted);opacity:.55;text-decoration:line-through}
+.chips i[data-off="true"]{color:var(--text-muted);text-decoration:line-through}
 .main{display:grid;gap:14px;min-width:0}
 .note{font:10px/15px var(--font-body);color:var(--text-muted);margin:0}
 @media(max-width:1040px){body{padding:12px}.wrap{grid-template-columns:1fr}.rail{position:static}}

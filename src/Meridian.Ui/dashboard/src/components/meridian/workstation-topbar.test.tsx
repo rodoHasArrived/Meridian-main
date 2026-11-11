@@ -86,7 +86,8 @@ describe("WorkstationTopbar", () => {
 
     expect(screen.getByRole("region", { name: "Trust status" })).toHaveAttribute("aria-live", "polite");
     const summary = screen.getByText("PAPER").closest("summary");
-    expect(summary).toHaveAccessibleName("PAPER SEEDED Seeded demo data");
+    expect(summary).not.toHaveAttribute("aria-label");
+    expect(summary).toHaveAccessibleName(expect.stringMatching(/^PAPER\s*SEEDED.*not real market or account data/));
     expect(summary).toHaveAccessibleDescription(expect.stringMatching(/^Environment, provenance, and provider posture\./));
     await userEvent.click(screen.getByText("PAPER"));
     expect(screen.getByRole("link", { name: "Mode Paper Open settings." })).toHaveAttribute("href", "/settings");

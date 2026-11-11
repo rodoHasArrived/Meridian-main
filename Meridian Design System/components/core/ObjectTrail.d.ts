@@ -1,3 +1,4 @@
+import type React from "react";
 /**
  * ObjectTrail — per-operator traversal across the seventeen object types (4.1, track A of session
  * continuity). `Breadcrumb` states where an object sits in a hierarchy; the trail states where the
@@ -70,7 +71,7 @@ export declare function ObjectTrailProvider(props: {
   /** Called on back / forward / jump. `versionMoved` is the screen's cue to state the change. */
   onNavigate?: (entry: TrailEntry, detail: { direction: "back" | "forward" | "jump"; versionMoved: boolean }) => void;
   children?: React.ReactNode;
-}): JSX.Element;
+}): React.JSX.Element;
 export declare function useObjectTrail(): ObjectTrailApi;
 export declare function trailRef(entry: TrailEntry): string;
 export declare function trailMoved(entry: TrailEntry): boolean;
@@ -88,7 +89,7 @@ export declare function ObjectTrail(props: React.HTMLAttributes<HTMLElement> & {
   /** Pinned chips shown inline before the disclosure. @default 4 */
   maxPinned?: number;
   recentsLabel?: React.ReactNode;
-}): JSX.Element | null;
+}): React.JSX.Element | null;
 
 /** Vertical trail for a rail or an arrival screen — pinned above recents, each with its version
  *  state. Empty is a statement, never a blank panel. */
@@ -99,4 +100,4 @@ export declare function ObjectTrailList(props: React.HTMLAttributes<HTMLDivEleme
   /** @default true */
   showPinned?: boolean;
   emptyStatement?: React.ReactNode;
-}): JSX.Element | null;
+}): React.JSX.Element | null;

@@ -1,17 +1,22 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../_scaffold/vendor/react-18.3.1.production.min.js"></script>
+<script src="../_scaffold/vendor/react-dom-18.3.1.production.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
 <script src="./support.js"></script>
+<title>ReconciliationException — Meridian</title>
 </head>
 <body>
 <x-dc>
+<!-- @template name="Companion · ReconciliationException" description="Declared companion view of the reconciliation template; retains the same shared object and workflow state." -->
 <helmet>
 <script src="./ds-base.js"></script>
 <meta name="dc-template" content="reconciliation-exception">
 <style>html,body{margin:0;padding:0;height:100%}
-[data-rx-show="off"]{display:none}
+[data-rx-show="off"]{display:none!important}
 .rx-screen{height:100vh;display:flex;flex-direction:column;background:var(--bg);font-family:var(--font-body);color:var(--text-secondary);font-size:13px}
 .rx-frame{flex:1;min-height:0;display:flex}
 .rx-pane{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column}
@@ -22,7 +27,7 @@
 .rx-stage{min-width:0;display:flex;flex-direction:column;min-height:0;overflow-y:auto;padding:0 16px 16px}
 .rx-rail{border-left:1px solid var(--border-strong);background:var(--card-surface);display:flex;flex-direction:column;min-height:0;overflow-y:auto;padding-bottom:12px}
 .rx-bar{flex:none;border-top:1px solid var(--border-strong);background:var(--card-surface);display:flex;align-items:center;gap:20px;padding:8px 16px;min-height:52px;flex-wrap:wrap}
-.rx-bar span{font:12px var(--font-data);color:var(--text-muted)}
+.rx-bar>span{font:12px var(--font-data);color:var(--text-muted)}
 .rx-bar b{color:var(--text-primary);font-weight:600;font-variant-numeric:tabular-nums}
 .rx-guard{max-width:44ch;color:var(--text-secondary)!important;text-wrap:pretty}
 .rx-h{font:600 11px var(--font-body);letter-spacing:.01em;color:var(--text-muted);margin:0}
@@ -36,6 +41,7 @@
 .rx-step{display:grid;grid-template-columns:20px 1fr;gap:9px;align-items:start;width:100%;text-align:left;background:none;border:0;border-left:2px solid transparent;padding:9px 10px;min-height:38px;cursor:pointer;font-family:var(--font-body);color:var(--text-secondary)}
 .rx-step:hover{background:var(--interaction-hover,#DDE5EC)}
 .rx-step:focus-visible{outline:2px solid var(--interaction-focus);outline-offset:-2px}
+.rx-step[data-state="active"] .rx-step__d{color:var(--text-primary)}
 .rx-step[data-state="active"]{border-left-color:var(--interaction-selected);background:var(--interaction-selected-surface)}
 .rx-step[data-state="done"] .rx-step__n{background:var(--green);border-color:var(--green);color:var(--text-on-fill,#fff)}
 .rx-step[data-state="locked"]{opacity:.55;cursor:not-allowed}
@@ -73,10 +79,10 @@
 <div class="rx-pane">
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkspaceContextBar" value="{{ context }}" condition="{{ contextCondition }}" collapse="auto" hint-size="100%,40px"></x-import>
 <div class="rx-switch">
-<div class="rx-seg" role="tablist">
-<button type="button" class="rx-tab" data-on="{{ queuePaneOn }}" onClick="{{ showQueue }}">Queue</button>
-<button type="button" class="rx-tab" data-on="{{ stagePaneOn }}" onClick="{{ showStage }}">Step {{ stepNumber }}</button>
-<button type="button" class="rx-tab" data-on="{{ railPaneOn }}" onClick="{{ showRail }}">Evidence</button>
+<div class="rx-seg" role="group" aria-label="Exception reading view">
+<button type="button" class="rx-tab" data-on="{{ queuePaneOn }}" onClick="{{ showQueue }}" aria-pressed="{{ queuePanePressed }}">Queue</button>
+<button type="button" class="rx-tab" data-on="{{ stagePaneOn }}" onClick="{{ showStage }}" aria-pressed="{{ stagePanePressed }}">Step {{ stepNumber }}</button>
+<button type="button" class="rx-tab" data-on="{{ railPaneOn }}" onClick="{{ showRail }}" aria-pressed="{{ railPanePressed }}">Evidence</button>
 </div>
 </div>
 <div class="rx-panes">
@@ -107,6 +113,7 @@
 </aside>
 
 <main class="rx-stage" data-pane="{{ stagePane }}">
+<h1 style="position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)">Reconciliation exception</h1><p style="margin:0;padding:6px 12px;font:11px/16px var(--font-body);color:var(--text-secondary);background:var(--card-surface);border-bottom:1px solid var(--border)">Synthetic workflow: resolution and attestation only change this local example. No live journal, approval, assignment or external evidence request is submitted.</p>
 <div class="rx-head">
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.ObjectHeader" dc-props="{{ objectHeader }}" on-open-evidence="{{ showEvidence }}" on-open-exceptions="{{ showQueue }}" hint-size="100%,96px"></x-import>
 <div class="rx-title">
@@ -140,7 +147,7 @@
 </div>
 
 <div class="rx-panel" data-rx-show="{{ show3 }}">
-<x-import component-from-global-scope="MeridianDesignSystem_205d17.EvidencePreview" dc-props="{{ evidence }}" on-next="{{ onEvidenceNext }}" on-previous="{{ onEvidencePrev }}" on-link="{{ goTrace }}" on-open-original="{{ noop }}" on-copy-citation="{{ noop }}" hint-size="100%,560px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.EvidencePreview" dc-props="{{ evidence }}" on-next="{{ onEvidenceNext }}" on-previous="{{ onEvidencePrev }}" on-link="{{ goTrace }}" hint-size="100%,560px"></x-import>
 </div>
 
 <div class="rx-panel" data-rx-show="{{ show4 }}">
@@ -148,7 +155,7 @@
 </div>
 
 <div class="rx-panel" data-rx-show="{{ show5 }}">
-<x-import component-from-global-scope="MeridianDesignSystem_205d17.ResolutionDrawer" inline="{{ true }}" title="Custodian balance does not tie to ledger" case-id="{{ caseId }}" version="{{ recordVersion }}" severity="exception" condition="confirmed" object="Account 408219 · CUSIP 912828ZK5" statement="{{ caseStatement }}" fields="{{ resFields }}" evidence-items="{{ resEvidence }}" root-causes="{{ rootCauses }}" root-cause="{{ rootCause }}" on-root-cause-change="{{ onRootCause }}" root-cause-note="{{ rootCauseNote }}" on-root-cause-note-change="{{ onRootCauseNote }}" correction="Create a reconciling item for unsettled cash through August 2, 2026, and stage the coupon-frequency correction that produced the accrual difference." correction-facts="{{ resCorrection }}" impact-items="{{ resImpact }}" ownership="{{ resOwnership }}" require-reason="{{ true }}" reason="{{ resReason }}" on-reason-change="{{ onResReason }}" primary-action="resolve" on-resolve="{{ onResolve }}" on-escalate="{{ onEscalate }}" on-defer="{{ noop }}" on-request-evidence="{{ goEvidence }}" hint-size="100%,720px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ResolutionDrawer" inline="{{ true }}" title="Custodian balance does not tie to ledger" case-id="{{ caseId }}" version="{{ recordVersion }}" severity="exception" condition="confirmed" object="Account 408219 · CUSIP 912828ZK5" statement="{{ caseStatement }}" fields="{{ resFields }}" evidence-items="{{ resEvidence }}" root-causes="{{ rootCauses }}" root-cause="{{ rootCause }}" on-root-cause-change="{{ onRootCause }}" root-cause-note="{{ rootCauseNote }}" on-root-cause-note-change="{{ onRootCauseNote }}" correction="Create a reconciling item for unsettled cash through August 2, 2026, and stage the coupon-frequency correction that produced the accrual difference." correction-facts="{{ resCorrection }}" impact-items="{{ resImpact }}" ownership="{{ resOwnership }}" require-reason="{{ true }}" reason="{{ resReason }}" on-reason-change="{{ onResReason }}" primary-action="resolve" on-resolve="{{ onResolve }}" on-escalate="{{ onEscalate }}" on-request-evidence="{{ goEvidence }}" hint-size="100%,720px"></x-import>
 </div>
 
 <div class="rx-panel" data-rx-show="{{ show6 }}">
@@ -169,11 +176,11 @@
 </div>
 
 <div class="rx-panel" data-rx-show="{{ show8 }}">
-<x-import component-from-global-scope="MeridianDesignSystem_205d17.VersionConflictNotice" title="This record changed while you were editing it." record="CUSIP 912828ZK5 · Account 408219" fields="{{ conflictFields }}" base-version="{{ 17 }}" latest-version="{{ 18 }}" latest-author="A. Patel" latest-at="Aug 1, 2026 11:42 UTC" choices="{{ conflictChoices }}" on-field-choice="{{ onConflictChoice }}" require-reason="{{ true }}" on-reload="{{ noop }}" on-merge-non-conflicting="{{ onMergeNonConflicting }}" on-reapply="{{ onReapply }}" on-save-draft="{{ noop }}" hint-size="100%,560px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.VersionConflictNotice" title="This record changed while you were editing it." record="CUSIP 912828ZK5 · Account 408219" fields="{{ conflictFields }}" base-version="{{ 17 }}" latest-version="{{ 18 }}" latest-author="A. Patel" latest-at="Aug 1, 2026 11:42 UTC" choices="{{ conflictChoices }}" on-field-choice="{{ onConflictChoice }}" require-reason="{{ true }}" on-merge-non-conflicting="{{ onMergeNonConflicting }}" on-reapply="{{ onReapply }}" hint-size="100%,560px"></x-import>
 </div>
 
 <div class="rx-panel" data-rx-show="{{ show9 }}">
-<x-import component-from-global-scope="MeridianDesignSystem_205d17.AttestationPanel" title="Reconciliation sign-off" scope="Account 408219 custodian reconciliation" period="July 2026 · statutory" object-id="REC-408219-2026-07" snapshot="snap-2026-08-01T11:52Z" version="{{ attestVersion }}" signatory-role="Controller" role="{{ userRole }}" gates="{{ attestGates }}" evidence="{{ attestEvidence }}" signatories="{{ signatories }}" current-user="M. Okafor" segregation="{{ true }}" certification="I attest that the July 2026 custodian reconciliation for account 408219 is complete, that the residual difference has been classified and corrected, and that the supporting evidence set accurately reflects the approved records for the stated reporting period." require-comment="{{ true }}" comment="{{ attestComment }}" on-comment-change="{{ onAttestComment }}" state="{{ attestState }}" on-approve="{{ onApprove }}" on-request-changes="{{ noop }}" on-reject="{{ noop }}" hint-size="100%,740px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.AttestationPanel" title="Reconciliation sign-off" scope="Account 408219 custodian reconciliation" period="July 2026 · statutory" object-id="REC-408219-2026-07" snapshot="snap-2026-08-01T11:52Z" version="{{ attestVersion }}" signatory-role="Controller" role="{{ userRole }}" gates="{{ attestGates }}" evidence="{{ attestEvidence }}" signatories="{{ signatories }}" current-user="M. Okafor" segregation="{{ true }}" certification="I attest that the July 2026 custodian reconciliation for account 408219 is complete, that the residual difference has been classified and corrected, and that the supporting evidence set accurately reflects the approved records for the stated reporting period." require-comment="{{ true }}" comment="{{ attestComment }}" on-comment-change="{{ onAttestComment }}" state="{{ attestState }}" on-approve="{{ onApprove }}" hint-size="100%,740px"></x-import>
 </div>
 
 <div class="rx-panel" data-rx-show="{{ showBlocked }}">
@@ -188,10 +195,10 @@
 
 <aside class="rx-rail" data-pane="{{ railPane }}" aria-label="Evidence and consequence">
 <div class="rx-sec" style="border-bottom:0;padding-bottom:0">
-<div class="rx-seg" role="tablist">
-<button type="button" class="rx-tab" data-on="{{ eviOn }}" onClick="{{ showEvidence }}">Evidence</button>
-<button type="button" class="rx-tab" data-on="{{ traceOn }}" onClick="{{ showTrace }}">Calculation</button>
-<button type="button" class="rx-tab" data-on="{{ auditOn }}" onClick="{{ showAudit }}">Audit</button>
+<div class="rx-seg" role="group" aria-label="Exception reading view">
+<button type="button" class="rx-tab" data-on="{{ eviOn }}" onClick="{{ showEvidence }}" aria-pressed="{{ eviPressed }}">Evidence</button>
+<button type="button" class="rx-tab" data-on="{{ traceOn }}" onClick="{{ showTrace }}" aria-pressed="{{ tracePressed }}">Calculation</button>
+<button type="button" class="rx-tab" data-on="{{ auditOn }}" onClick="{{ showAudit }}" aria-pressed="{{ auditPressed }}">Audit</button>
 </div>
 </div>
 <div data-rx-show="{{ eviShow }}">
@@ -313,7 +320,7 @@ class Component extends DCLogic {
       this.setState(s=>({done,step:n>=1&&n<=9?n:s.step}));
     }catch(e){}
   }
-  componentDidUpdate(){this.applyChrome()}
+  componentDidUpdate(previous){this.applyChrome();if(previous.dataState!==this.props.dataState&&this.state.previewReady)this.setState({previewReady:false})}
 
   // URL-backed workflow state — the step and its proof set survive a reload or a handoff.
   syncUrl(step,done){
@@ -392,11 +399,11 @@ class Component extends DCLogic {
 
     return {
       noop,
-      dataState:this.props.dataState??"ready",
+      dataState:this.state.previewReady?"ready":(this.props.dataState??"ready"),
       navSections:(window.MeridianAppMap?window.MeridianAppMap.sections("exception"):[]),
       onNav:(id)=>window.MeridianAppMap&&window.MeridianAppMap.go(id),
       environment:String(this.props.environment??"PAPER").toUpperCase(),
-      onRetry:()=>this.setState({continuity:"live"}),
+      onRetry:()=>this.setState({continuity:"live",previewReady:true}),
       continuity:s.continuity,
       onContinuityRetry:s.continuity==="live"?null:()=>this.setState({continuity:"live"}),
       snapshotSince:Date.now()-11*60*1000,
@@ -469,12 +476,12 @@ class Component extends DCLogic {
       stepNumber:step,
 
       queuePane:pane("queue"),stagePane:pane("stage"),railPane:pane("rail"),
-      queuePaneOn:pane("queue"),stagePaneOn:pane("stage"),railPaneOn:pane("rail"),
+      queuePaneOn:pane("queue"),queuePanePressed:pane("queue")==="on",stagePaneOn:pane("stage"),stagePanePressed:pane("stage")==="on",railPaneOn:pane("rail"),railPanePressed:pane("rail")==="on",
       showQueue:()=>this.setState({pane:"queue"}),
       showStage:()=>this.setState({pane:"stage"}),
       showRail:()=>this.setState({pane:"rail"}),
 
-      eviOn:insp("evidence"),traceOn:insp("trace"),auditOn:insp("audit"),
+      eviOn:insp("evidence"),eviPressed:insp("evidence")==="on",traceOn:insp("trace"),tracePressed:insp("trace")==="on",auditOn:insp("audit"),auditPressed:insp("audit")==="on",
       eviShow:insp("evidence"),traceShow:insp("trace"),auditShow:insp("audit"),
       showEvidence:()=>this.setState({inspector:"evidence"}),
       showTrace:()=>this.setState({inspector:"trace"}),
@@ -518,7 +525,7 @@ class Component extends DCLogic {
         {id:"residual",label:"Unclassified residual",value:331.68,condition:"exception",explained:false,evidence:"No evidence linked"},
       ],
       onAcceptTolerance:()=>this.complete(2,3),
-      onEscalate:noop,
+      onEscalate:undefined,
       goEvidence:()=>this.complete(2,3),
       goTrace:()=>this.complete(3,4),
       goPosting:()=>this.complete(6,7),

@@ -8,3 +8,5 @@ Live/delayed/partial/offline/error state for a data surface, placed beside the e
 ```
 
 Never swap a rendered view for a loading skeleton after a drop: keep the last good data, mark it, and let this strip carry the condition. Use `DataCondition` for a *value's* condition and `FreshnessIndicator` for a single feed's age inside chrome; `ConnectionState` is for the workspace surface.
+
+Unrecognized runtime connection values read Unknown rather than claiming Live. Network activity and retaining last good data remain the parent responsibility.

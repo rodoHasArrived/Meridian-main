@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Meridian — keyboard / ARIA / responsive run (Chromium)</title><link rel="stylesheet" href="../styles.css"><script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script><script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script><script src="../_ds_bundle.js"></script><style>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Meridian — keyboard / ARIA / responsive run (Chromium)</title><link rel="stylesheet" href="../styles.css"><script src="../_preview_runtime.js"></script><script src="../_ds_bundle.js"></script><style>
 body{margin:0;background:var(--bg);font-family:var(--font-body);color:var(--text-primary)}.top{height:40px;background:var(--topbar-bg);color:var(--topbar-text);display:flex;align-items:center;gap:14px;padding:0 16px;font-weight:600;letter-spacing:.08em;font-size:11.5px}.top .st{margin-left:auto;font:11px var(--font-data)}main{padding:16px 20px;display:grid;gap:14px;max-width:1400px}h1{margin:0;font-size:16px;font-weight:650}p.lede{margin:0;font-size:11.5px;line-height:1.5;color:var(--text-secondary);max-width:96ch;text-wrap:pretty}table{border-collapse:collapse;width:100%;font-size:11.5px}th{text-align:left;font:600 9.5px var(--font-data);letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);padding:6px 8px;border-bottom:1px solid var(--border)}td{padding:6px 8px;border-bottom:1px solid var(--border-divider);vertical-align:top}td.k{font-family:var(--font-data);font-size:10.5px;white-space:nowrap}td.v{font:600 10px var(--font-data);letter-spacing:.05em;white-space:nowrap}.PASS{color:var(--green-dim,#2E6B3A)}.FAIL{color:var(--red-dim,#873832)}.OPEN{color:var(--text-muted)}#stage{position:fixed;left:0;top:0;width:1280px;height:800px;opacity:.001;pointer-events:none;overflow:hidden}#frame{position:fixed;left:0;top:0;border:0;opacity:.001;pointer-events:none}
 </style></head><body>
 <div class="top">MERIDIAN DESIGN SYSTEM <span>KEYBOARD · ARIA · RESPONSIVE RUN</span><span class="st" id="status">running…</span></div>
@@ -120,12 +120,12 @@ T("WorkspaceLayout", "Modified status: how many times the live region mutates fo
 T("ObjectTrail", "Disclosure not menu (no aria-haspopup), aria-controls resolves, Escape closes and focus stays on the trigger", async () => {
   const CAT = [{ type: "journal", id: "JE-1", label: "Amortization", version: 1, currentVersion: 1 }, { type: "position", id: "P-1", label: "UST 4.375", version: 2, currentVersion: 2 }];
   await mount(e(DS.ObjectTrailProvider, { screenId: "a11y-run", persist: false, defaultEntries: CAT, onNavigate: () => {} }, e(DS.ObjectTrail)));
-  const trig = qa("button").find((b) => b.getAttribute("aria-controls") && /[Rr]ecent/.test(nameOf(b)));
+  const trig = qa("button").find((b) => b.classList.contains("mds-trail__more") && /[Rr]ecent/.test(nameOf(b)));
   if (!trig) return { ok: false, note: "no recents trigger with aria-controls found; buttons: " + qa("button").map(nameOf).join(" | ") };
   const hp = trig.getAttribute("aria-haspopup"); trig.focus(); trig.click(); await tick();
   const panel = document.getElementById(trig.getAttribute("aria-controls")), openOk = !!panel && trig.getAttribute("aria-expanded") === "true";
   key(document.activeElement, "Escape"); await tick();
-  const closed = qa("button").find((b) => b.getAttribute("aria-controls") === trig.getAttribute("aria-controls")).getAttribute("aria-expanded") !== "true", focus = document.activeElement.getAttribute("aria-controls") === trig.getAttribute("aria-controls");
+  const closed = trig.getAttribute("aria-expanded") !== "true", focus = document.activeElement === trig;
   return { ok: !hp && openOk && closed && focus, note: `trigger "${nameOf(trig)}" · aria-haspopup=${hp || "none"} · open: panel found=${!!panel} expanded=${openOk} · Esc: closed=${closed} focus on trigger=${focus}` };
 }),
 // ---- CommandPalette

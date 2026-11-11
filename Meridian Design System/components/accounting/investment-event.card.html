@@ -5,10 +5,14 @@
 <meta charset="UTF-8" />
 <title>Investment event</title>
 <link rel="stylesheet" href="../../styles.css" />
-<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_preview_runtime.js"></script>
+<script src="../../_preview_jsx.js"></script>
 <script src="../../_ds_bundle.js"></script>
+<style>
+.event-grid{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr)}
+.event-grid > *{min-width:0}
+@media(max-width:900px){.event-grid{grid-template-columns:minmax(0,1fr)}}
+</style>
 </head>
 <body style="margin:0;padding:20px;background:var(--bg-canvas);font-family:var(--font-body);">
 <div id="root"></div>
@@ -42,7 +46,7 @@ const LANES = [
 
 function Panel({ eyebrow, title, note, children, span }) {
   return (
-    <section style={{ background:"var(--bg-light)", border:"1px solid var(--border)", borderRadius:2, padding:14, gridColumn: span }}>
+    <section style={{ background:"var(--bg-light)", border:"1px solid var(--border)", borderRadius:2, padding:14, minWidth:0, gridColumn: span }}>
       <Eyebrow>{eyebrow}</Eyebrow>
       <h2 style={{ font:"600 15px var(--font-display)", color:"var(--text-primary)", margin:"6px 0 4px" }}>{title}</h2>
       {note ? <p style={{ fontSize:12, lineHeight:"17px", color:"var(--text-muted)", margin:"0 0 12px", maxWidth:"80ch" }}>{note}</p> : null}
@@ -56,7 +60,7 @@ function Demo() {
   const [period, setPeriod] = React.useState(LABELS[0]);
   const row = SCHEDULE.find((r) => r.id === period) || SCHEDULE[0];
   return (
-    <div style={{ display:"grid", gridTemplateColumns:"1.35fr 1fr", gap:16, maxWidth:1240 }}>
+    <div className="event-grid" style={{ display:"grid", gap:16, maxWidth:1240 }}>
       <div style={{ gridColumn:"1 / -1" }}>
         <ClaimHeader
           context={["Investment accounting","EVT-2026-08421","Statutory"]}

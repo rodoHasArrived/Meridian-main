@@ -30,9 +30,11 @@ function inject() {
   document.head.appendChild(el);
 }
 
-export function NumberInput({ label, value = 0, onChange, min, max, step = 1, disabled = false }) {
+export function NumberInput({ label, value = 0, onChange, min, max, step = 1, disabled = false, id, "aria-label": ariaLabel, ...rest }) {
   inject();
   const [localValue, setLocalValue] = useState(value);
+  const generatedId = React.useId();
+  const inputId = id || generatedId;
 
   const handleChange = (newVal) => {
     if (min !== undefined && newVal < min) newVal = min;
@@ -43,17 +45,21 @@ export function NumberInput({ label, value = 0, onChange, min, max, step = 1, di
 
   return (
     <div>
-      {label && <label className="mds-number-label">{label}</label>}
+      {label && <label className="mds-number-label" htmlFor={inputId}>{label}</label>}
       <div className="mds-number-wrap">
         <button type="button"
           className="mds-number-btn"
+          aria-label={`Decrease ${label || "number"}`}
           onClick={() => handleChange(localValue - step)}
           disabled={disabled || (min !== undefined && localValue <= min)}
         >
           −
         </button>
         <input
+          {...rest}
           type="number"
+          id={inputId}
+          aria-label={label || id ? ariaLabel : ariaLabel || "Number"}
           className="mds-number-input"
           value={localValue}
           onChange={(e) => handleChange(parseFloat(e.target.value) || 0)}
@@ -64,6 +70,7 @@ export function NumberInput({ label, value = 0, onChange, min, max, step = 1, di
         />
         <button type="button"
           className="mds-number-btn"
+          aria-label={`Increase ${label || "number"}`}
           onClick={() => handleChange(localValue + step)}
           disabled={disabled || (max !== undefined && localValue >= max)}
         >

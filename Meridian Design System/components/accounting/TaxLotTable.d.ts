@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * Tax-lot table — cost-basis lots with holding-period classification and unrealized (or realized)
  * P&L. Each lot shows acquisition date + days held, quantity, cost basis, market value (or
@@ -41,4 +42,4 @@ export interface TaxLotTableProps {
   /** Highlight one row (index into `lots`). */
   selectedIndex?: number;
 }
-export declare function TaxLotTable(props: TaxLotTableProps): JSX.Element;
+export declare function TaxLotTable(props: TaxLotTableProps): React.JSX.Element;

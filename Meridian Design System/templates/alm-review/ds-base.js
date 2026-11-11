@@ -28,19 +28,17 @@
   // has them with no per-screen <script> — order preserved with async=false.
   // books.js is the one scoped accounting read model (increment B) and instructions.js is the
   // pending-instruction store that outlives a screen — both spine, both loaded once, here.
+  let lastSpine = null;
   for (const p of ['prefs.js', 'world.js', 'app-map.js', 'books.js', 'instructions.js']) {
     const s = document.createElement('script');
     s.src = scaffold + '/' + p;
     s.async = false;
     s.onerror = () => console.warn('ds-base.js: ' + p + ' not found at ' + scaffold + ' — copy templates/_scaffold/ alongside this template');
     document.head.appendChild(s);
+    lastSpine = s;
   }
 
-  const s = document.createElement('script');
-  s.src = base + '/_ds_bundle.js';
-  s.async = false;
-  s.onerror = () => console.error('ds-base.js: failed to load ' + s.src + ' — if this is a consuming project, point the base line in ds-base.js at the bound _ds/<folder> tree relative to this page (e.g. _ds/<folder> at the project root, ../_ds/<folder> one level down); in a fresh design system this can just mean the bundle is not compiled yet');
-  s.onload = () => {
+  const afterBundle = () => {
     // Graceful degradation: templates wrap their work plane in DataStateSwitch. Against an older
     // bundle that predates it, fall back to a pass-through so the screen still renders.
     const ns = window.MeridianDesignSystem_205d17;
@@ -52,7 +50,20 @@
     }
     mountSearch();
   };
-  document.head.appendChild(s);
+  // An entry that loads its runtime locally (see templates/README.md, "Offline") has already
+  // loaded the bundle from a static tag, so the namespace exists before any screen logic runs.
+  // Loading it a second time would replace every component with a new identity mid-render;
+  // run the post-load step once the spine is in instead.
+  if (window.MeridianDesignSystem_205d17) {
+    if (lastSpine) lastSpine.addEventListener('load', afterBundle); else afterBundle();
+  } else {
+    const s = document.createElement('script');
+    s.src = base + '/_ds_bundle.js';
+    s.async = false;
+    s.onerror = () => console.error('ds-base.js: failed to load ' + s.src + ' — if this is a consuming project, point the base line in ds-base.js at the bound _ds/<folder> tree relative to this page (e.g. _ds/<folder> at the project root, ../_ds/<folder> one level down); in a fresh design system this can just mean the bundle is not compiled yet');
+    s.onload = afterBundle;
+    document.head.appendChild(s);
+  }
 
   // ── Environment badge — chrome the system owns, not the screen ───────────────
   // The contract requires a visible Live / Paper / Fixture badge on every surface. Screens built

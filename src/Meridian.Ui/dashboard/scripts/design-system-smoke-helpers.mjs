@@ -12,7 +12,7 @@ export const DESIGN_SYSTEM_VIEWPORTS = [
 ];
 export const DESIGN_SYSTEM_ROUTES = [
   { path: "accounting/reconciliation", label: "Reconciliation", ready: "Reconciliation break queue" },
-  { path: "portfolio", label: "Portfolio", ready: "Portfolio Explorer" },
+  { path: "portfolio", label: "Portfolio", ready: "Execution-linked holdings" },
   { path: "trading", label: "Trading", ready: "Trading" }
 ];
 
@@ -69,8 +69,49 @@ export function parseDesignSystemOptions(args) {
   };
 }
 
+/**
+ * Smoke-only GET support for exact fixture identities. Personal views are empty;
+ * history is unavailable/empty, never reconstructed from current task/provider state.
+ */
+export function readOnlySmokeResponse(url, method = "GET") {
+  if (method !== "GET") return null;
+  const requestUrl = new URL(url, "http://meridian.test");
+  const pathname = requestUrl.pathname;
+  const views = new Set([
+    "/api/workstation/tables/close-checklist-progress-data/views",
+    "/api/workstation/tables/portfolio-positions/views",
+    "/api/workstation/tables/provider-evidence-age-data/views",
+    "/api/workstation/tables/accounting-reconciliation-breaks/views"
+  ]);
+  let body, limitation;
+  if (views.has(pathname)) {
+    body = [];
+    limitation = "Synthetic empty personal-view list; persistence is not exercised.";
+  } else if (pathname === "/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6/checklist/history") {
+    body = {
+      workflowId: "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6", asOf: "2026-11-11T00:00:00Z",
+      status: "Unavailable", reason: "Synthetic smoke fixture has no retained checklist snapshots.",
+      coverageStart: null, coverageEnd: null, isPartial: true, missingAuditIds: [], versionGaps: [], observations: []
+    };
+    limitation = "Retained checklist history is unavailable; no observations are fabricated.";
+  } else if (pathname === "/api/workstation/provider-verification-history/provider-alpaca-paper") {
+    body = { connectionId: "provider-alpaca-paper", providerId: "alpaca", asOfUtc: "2026-11-11T00:00:00Z", observations: [], isTruncated: false };
+    limitation = "Synthetic empty verification history; no provider uptime or live verification claim.";
+  } else if (pathname === "/api/symbols/search" && requestUrl.search === "?query=portfolio") {
+    body = [];
+    limitation = "Synthetic empty symbol search for the exact command-palette keyboard scene; no provider lookup is claimed.";
+  } else return null;
+  return {
+    status: 200, body,
+    headers: { "x-meridian-dev-fixture": "true", "x-meridian-smoke-support": "empty-read-only" },
+    smokeFixture: { method, path: pathname, limitation }
+  };
+}
+
 /** Explicit fixture additions cover observed read-only support and one harmless visit record. */
 export function supportingSmokeResponse(url, method = "GET") {
+  const readOnly = readOnlySmokeResponse(url, method);
+  if (readOnly) return readOnly;
   const pathname = new URL(url, "http://meridian.test").pathname;
   if (method === "GET" && pathname === "/api/risk/escalations") return { status: 200, body: [] };
   if (["GET", "POST"].includes(method) && pathname === "/api/workstation/operator/visits/reconciliation-breaks") {

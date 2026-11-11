@@ -7,7 +7,7 @@
 // always agrees with what the operations components render. The wire contract — which
 // domain words map to which of the five canonical severities — is documented in
 // guidelines/ENTITY_SCHEMAS.md › Status vocabulary.
-import { severityKeys, severityLabels, normalizeSeverity, humanizeStatus } from "./status";
+import { severityKeys, severityLabels, normalizeSeverity, humanizeStatus } from "./status.js";
 
 export const Status = {
   severityKeys,

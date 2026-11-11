@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { buildProfileFieldPayload, isWriteSelectableAssetProfile } from "./settings-profile-backed-security";
 import type {
@@ -66,6 +66,35 @@ describe("isWriteSelectableAssetProfile", () => {
   it("hides Draft and Retired versions", () => {
     expect(isWriteSelectableAssetProfile(profileWith("Draft", "2026-05-29", null), today)).toBe(false);
     expect(isWriteSelectableAssetProfile(profileWith("Retired", "2026-05-29", null), today)).toBe(false);
+  });
+});
+
+describe.each(["America/New_York", "Asia/Tokyo"])("isWriteSelectableAssetProfile for an operator in %s", (zone) => {
+  const originalTimeZone = process.env.TZ;
+
+  beforeAll(() => {
+    process.env.TZ = zone;
+  });
+  afterAll(() => {
+    if (originalTimeZone === undefined) {
+      delete process.env.TZ;
+    } else {
+      process.env.TZ = originalTimeZone;
+    }
+  });
+
+  it("evaluates the effective window on the UTC day, as governance does, not on the operator's local day", () => {
+    expect(new Date("2026-01-15T12:00:00Z").getTimezoneOffset()).not.toBe(0);
+
+    // 02:00 UTC on the 14th is still the 13th in New York; 22:00 UTC on the 13th is already the
+    // 14th in Tokyo. The window follows the UTC date in both.
+    const earlyUtc14 = new Date("2026-08-14T02:00:00Z");
+    expect(isWriteSelectableAssetProfile(profileWith("Approved", "2026-08-14", null), earlyUtc14)).toBe(true);
+    expect(isWriteSelectableAssetProfile(profileWith("Superseded", "2026-05-29", "2026-08-13"), earlyUtc14)).toBe(false);
+
+    const lateUtc13 = new Date("2026-08-13T22:00:00Z");
+    expect(isWriteSelectableAssetProfile(profileWith("Approved", "2026-08-14", null), lateUtc13)).toBe(false);
+    expect(isWriteSelectableAssetProfile(profileWith("Superseded", "2026-05-29", "2026-08-13"), lateUtc13)).toBe(true);
   });
 });
 

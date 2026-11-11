@@ -9,7 +9,20 @@ The browser uses normal motion, a 1440 × 900 viewport, and the package's own
 card runtime declarations. Output is synthetic UI evidence, not certification
 of application workflows, providers, live CDN access or assistive technology.
 
-## Prepare the local peer cache
+## Runtime
+
+Every card loads the package's own `_preview_runtime.js` (React and React DOM) and
+`_preview_jsx.js` (the JSX compiler for its readable `<script type="text/babel">` source), so the
+matrix needs no network and no peer cache:
+
+```bash
+node tests/specimen-matrix.mjs
+```
+
+Any remote request is blocked, recorded and fails the run, and a card that declares a remote
+script fails it too. The peer cache below is kept only for diagnosing such a card.
+
+## Prepare the local peer cache (diagnostic only)
 
 Install the package's development dependencies with `npm ci`, then prepare a
 separate cache using the three exact versions the cards declare:

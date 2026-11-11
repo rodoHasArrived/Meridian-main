@@ -63,7 +63,8 @@ export function PnLCalendar({ month, values = {}, bars = null, heat = true, valu
   const [y, m] = String(month).split("-").map(Number);
   const days = new Date(Date.UTC(y, m, 0)).getUTCDate();
   const lead = (new Date(Date.UTC(y, m - 1, 1)).getUTCDay() + 6) % 7; // Monday-first
-  const nums = Object.values(values).filter((v) => Number.isFinite(v));
+  const monthKeys = Array.from({ length: Number.isFinite(days) ? days : 0 }, (_, index) => `${y}-${pad(m)}-${pad(index + 1)}`);
+  const nums = monthKeys.map(key => values[key]).filter((value) => Number.isFinite(value));
   const maxAbs = Math.max(1e-9, ...nums.map((v) => Math.abs(v)));
   const total = nums.reduce((a, v) => a + v, 0);
   const fmt =
