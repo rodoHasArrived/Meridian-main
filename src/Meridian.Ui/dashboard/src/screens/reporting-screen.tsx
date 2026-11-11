@@ -487,8 +487,8 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
       message: trigger === "auto" ? "Refreshing live portfolio views from market tick cadence." : "Refreshing live portfolio views.",
       details: [
         trigger === "auto"
-          ? "Reporting is using the shared portfolio refresh lane on the live tick cadence."
-          : "Reporting is using the shared portfolio refresh lane."
+          ? "Reporting refreshes with the shared portfolio data on the live tick cadence."
+          : "Reporting refreshes with the shared portfolio data."
       ]
     });
 
@@ -856,7 +856,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
         }}
         completeness={{
           value: `${pluralizeCount(vm.templateRows.length, "template")} · ${pluralizeCount(vm.runStatusRows.length, "run")}`,
-          detail: "Caller-visible Reporting records",
+          detail: "Reporting records you can access",
           tone: vm.templateRows.length > 0 ? "ready" : "review"
         }}
         blocker={governanceScopeUnavailable ? {
@@ -1732,7 +1732,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                 {run.hasNextActions ? (
                   <div className="mt-2 flex flex-wrap items-center gap-2 rounded-md border border-primary/25 bg-primary/10 px-3 py-2" aria-label={`${run.id} governed workflow continuation`}>
                     <p className="min-w-0 flex-1 text-xs leading-5 text-primary">
-                      Legacy pack mutations are retired. Continue validation, approval, release, restatement, and distribution from the governed run.
+                      Report packs can no longer be changed here. Continue validation, approval, release, restatement, and distribution from the report run.
                     </p>
                     <Button asChild size="sm" variant="outline">
                       <a href={workstationRouteWithQuery("reportingRunDetail", { runId: run.id })}>
@@ -2232,7 +2232,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
       <section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
         <Card className="panel-surface">
           <CardHeader>
-            <div className="eyebrow-label">Reporting Lane</div>
+            <div className="eyebrow-label">Reporting</div>
             <CardTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5 text-primary" />
               Evidence and distribution

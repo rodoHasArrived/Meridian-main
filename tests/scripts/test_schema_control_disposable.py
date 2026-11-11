@@ -278,7 +278,7 @@ raise SystemExit(disposable.run_disposable(
 
 class SchemaControlDisposableTests(unittest.TestCase):
     def setUp(self) -> None:
-        temporary = tempfile.TemporaryDirectory()
+        temporary = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(temporary.cleanup)
         self.directory = Path(temporary.name)
         self.root = self.directory / 'worktree'

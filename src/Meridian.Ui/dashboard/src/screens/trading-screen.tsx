@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { GuardrailPanelBody } from "@/components/ui/guardrail-utilization";
 import { Input } from "@/components/ui/input";
+import { OverflowMenu } from "@/components/ui/overflow-menu";
 import { OrderStatusBanner } from "@/components/ui/order-status-banner";
 import { Select } from "@/components/ui/select";
 import { TechnicalDetails } from "@/components/ui/technical-details";
@@ -620,6 +621,9 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
           tone: sourceTone
         }}
         scope={{
+          // "Scope" means the operating scope chosen in the header. Without one the page answers
+          // for a brokerage account, and says so, instead of a second "scope" the header denies.
+          label: fundAccountId ? "Scope" : "Account",
           value: fundAccountId ?? data.brokerage.account ?? "All loaded accounts",
           detail: fundAccountId ? "Operating fund account" : "Brokerage account scope",
           tone: fundAccountId || data.brokerage.account ? "ready" : "unknown"
@@ -881,18 +885,6 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               <div className="panel-action-zone">
                 <Button
                   size="sm"
-                  variant="destructive"
-                  onClick={() => confirmVm.openConfirm({ kind: "cancel-all" })}
-                  disabled={blotterVm.cancelAllDisabled}
-                  disabledReason={blotterVm.cancelAllDisabledReason}
-                  aria-label={blotterVm.cancelAllAriaLabel}
-                  title="Cancel all open orders"
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Cancel all
-                </Button>
-                <Button
-                  size="sm"
                   variant="outline"
                   onClick={orderTicket.toggleTicket}
                   aria-expanded={orderTicket.open}
@@ -901,6 +893,20 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                   <PlusCircle className="mr-2 h-4 w-4" />
                   {orderTicket.openButtonLabel}
                 </Button>
+                {/* Cancelling every open order is rare and destructive, so it sits behind "more
+                    actions" instead of beside New order. Choosing it still opens the confirmation. */}
+                <OverflowMenu
+                  label="More order actions"
+                  items={[{
+                    id: "cancel-all",
+                    label: "Cancel all open orders…",
+                    description: blotterVm.cancelAllDisabledReason ?? "Asks for confirmation before anything is cancelled.",
+                    icon: <Trash2 className="h-4 w-4" aria-hidden="true" />,
+                    danger: true,
+                    disabled: blotterVm.cancelAllDisabled,
+                    onSelect: () => confirmVm.openConfirm({ kind: "cancel-all" })
+                  }]}
+                />
               </div>
             </div>
           </CardHeader>

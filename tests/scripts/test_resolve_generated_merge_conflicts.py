@@ -22,7 +22,7 @@ MARKER = "<!-- auto-sync:coverage -->"
 
 class GeneratedMergeRecoveryTests(unittest.TestCase):
     def setUp(self) -> None:
-        self.temp = tempfile.TemporaryDirectory()
+        self.temp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self.temp.cleanup)
         self.repo = Path(self.temp.name)
         self.git("init", "--initial-branch=main")
@@ -293,7 +293,7 @@ class GeneratedMergeRecoveryTests(unittest.TestCase):
         # Each malformed parent must fail even if selecting the other parent's
         # bytes would appear to fix the output.
         for malformed in ("missing marker\n", f"{MARKER}\n{MARKER}\n", f"inline {MARKER}\n"):
-            with self.subTest(marker=malformed), tempfile.TemporaryDirectory() as temporary:
+            with self.subTest(marker=malformed), tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temporary:
                 original = self.repo
                 self.repo = Path(temporary)
                 try:

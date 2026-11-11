@@ -45,7 +45,7 @@ class DoctorProfileTests(unittest.TestCase):
         cls.buildctl = load_buildctl()
 
     def setUp(self) -> None:
-        temporary = tempfile.TemporaryDirectory()
+        temporary = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(temporary.cleanup)
         self.root = Path(temporary.name)
         self.write("global.json", json.dumps({
@@ -429,7 +429,7 @@ class CiPrerequisitePreflightTests(unittest.TestCase):
     """Exercise real CI/setup scripts and preflight with isolated, inert tools."""
 
     def setUp(self) -> None:
-        temporary = tempfile.TemporaryDirectory()
+        temporary = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(temporary.cleanup)
         self.root = Path(temporary.name)
         self.bin = self.root / "test-bin"

@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { buildAttentionSignalFact } from "@/components/meridian/attention-signal-fact";
 import { StatusRow, type StatusRowFact } from "@/components/meridian/status-row";
+import { useReportPageFreshness } from "@/lib/page-trust-context";
 import { useShellStatusSignals } from "@/lib/shell-status-signals-context";
 import { isStatusIssue } from "@/lib/status-signals";
 
@@ -47,6 +48,12 @@ export function OperationalTrustSummary({
   className
 }: OperationalTrustSummaryProps) {
   const shell = useShellStatusSignals();
+  // The footer status bar repeats this exact fact, so it never says "up to date" over a page
+  // whose own freshness needs review.
+  useReportPageFreshness(
+    freshness.tone ?? "unknown",
+    typeof freshness.value === "string" || typeof freshness.value === "number" ? String(freshness.value) : null
+  );
   const facts: StatusRowFact[] = [
     toFact("source", "Source", source),
     toFact("scope", "Scope", scope),

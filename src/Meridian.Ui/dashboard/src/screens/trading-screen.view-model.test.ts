@@ -420,7 +420,7 @@ describe("trading blotter view model", () => {
     expect(state.hasFills).toBe(true);
     expect(state.cancelAllDisabled).toBe(false);
     expect(state.cancelAllDisabledReason).toBeNull();
-    expect(state.cancelAllAriaLabel).toBe("Cancel all 1 open orders");
+    expect(state.cancelAllAriaLabel).toBe("Cancel all 1 open order");
     expect(state.positionRows[1]).toMatchObject({
       id: "tsla-short-1",
       isSelected: true,

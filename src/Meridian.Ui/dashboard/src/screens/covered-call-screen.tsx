@@ -167,7 +167,7 @@ export function CoveredCallScreen() {
           Covered Call Backtest
         </span>
       }
-      scope="Strategy Lane"
+      scope="Strategy"
       description="Run the existing CoveredCallOverwriteStrategy against historical bars. Pick an underlying, configure filters, preview the live option chain, then evaluate equity curve, position timeline, and payoff."
     >
       <Card>

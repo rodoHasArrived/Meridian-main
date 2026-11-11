@@ -18,7 +18,7 @@ SPEC.loader.exec_module(module)
 
 class SampleConfigDataSourceTests(unittest.TestCase):
     def validate(self, document: dict) -> tuple[int, str]:
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             sample = Path(tmp) / "sample.json"
             sample.write_text(json.dumps(document), encoding="utf-8")
             output = io.StringIO()
@@ -84,7 +84,7 @@ class SampleConfigDataSourceTests(unittest.TestCase):
                 self.assertIn(expected, output)
 
     def test_positional_nulls_and_metadata_without_factory_do_not_advertise_streaming(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             catalog = Path(tmp) / "catalog.cs"
             catalog.write_text('''
                 new("history", null, typeof(History)),

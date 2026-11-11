@@ -1034,6 +1034,17 @@ public sealed class BackfillWorkerService : IDisposable, IAsyncDisposable
     /// </summary>
     private async Task<IReadOnlyList<HistoricalBar>> FetchBarsAsync(BackfillRequest request, CancellationToken ct)
     {
+        // This worker only has a daily-bar fetch and a session-date HistoricalBar store. Fetching
+        // daily bars for any other granularity and persisting them under that granularity's file
+        // prefix would make gap analysis count the range as filled with data that was never
+        // retrieved, so fail the request instead of mislabeling it.
+        if (request.Granularity != DataGranularity.Daily)
+        {
+            throw new NotSupportedException(
+                $"Queued backfill only supports daily bars; {request.Granularity.ToDisplayName()} " +
+                $"was requested for {request.Symbol}. No data was fetched or written.");
+        }
+
         // Track the request
         if (request.AssignedProvider != null)
         {

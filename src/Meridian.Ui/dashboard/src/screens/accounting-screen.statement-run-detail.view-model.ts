@@ -216,7 +216,7 @@ function resolveReconcileDisabledReason(input: {
   }
 
   if (input.forbidden) {
-    return "This account does not hold reconciliation mutation permission; the server declined the last attempt.";
+    return "This account does not hold permission to change reconciliations; the server declined the last attempt.";
   }
 
   if (input.inFlight) {

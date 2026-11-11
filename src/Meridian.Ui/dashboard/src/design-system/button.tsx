@@ -21,8 +21,12 @@ import { cn } from "@/lib/utils";
  * **Busy state:** pass `busy` to replace the label with a spinner and set `aria-busy`.
  * Pair with `busyLabel` to provide an accessible announcement (e.g. `"Saving..."`).
  *
- * **Disabled reason:** pass `disabledReason` to surface an explanatory tooltip when the
- * button is disabled, without changing visible text.
+ * **Disabled reason:** pass `disabledReason` whenever a button can be disabled. It becomes the
+ * button's tooltip and accessible description, so the operator learns what unblocks the action.
+ * The screenshot harness fails a route that renders a disabled primary button without one.
+ *
+ * **Disabled look:** every variant shares one disabled style (neutral fill, dashed edge, muted
+ * label at full opacity) from `styles/index.css`; do not restyle it per screen.
  *
  * **AsChild:** set `asChild` to render the button styles and accessibility props on a child
  * `<Link>` or `<a>` instead of a native `<button>`. The child must accept `className`.
@@ -84,10 +88,9 @@ export const DesignSystemButton = forwardRef<HTMLButtonElement, DesignSystemButt
   }, ref) => {
     const vm = buildButtonCommandViewModel({ disabled, busy, busyLabel, disabledReason, title });
     const classes = cn(
-      "mds-btn inline-flex items-center justify-center gap-2 rounded-[2px] border font-semibold transition-[background-color,border-color,color] duration-150 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50",
+      "mds-btn inline-flex items-center justify-center gap-2 rounded-[2px] border font-semibold transition-[background-color,border-color,color] duration-150 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
       buttonVariantClasses[variant],
       buttonSizeClasses[size],
-      vm.disabled && asChild && "pointer-events-none opacity-50",
       className
     );
 

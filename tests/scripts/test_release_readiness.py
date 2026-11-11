@@ -207,7 +207,7 @@ class ReleaseReadinessTests(unittest.TestCase):
                 readiness.identity(*values)
 
     def test_duplicate_or_malformed_receipts_fail_closed(self):
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             path = Path(directory)
             self.assertIsNone(readiness.read_receipt(path, 'signing.json'))
             (path / 'signing.json').write_text('{bad')
@@ -218,7 +218,7 @@ class ReleaseReadinessTests(unittest.TestCase):
             self.assertEqual(readiness.read_receipt(path, 'signing.json'), {})
 
     def test_cli_persists_actionable_report_when_all_upstream_evidence_is_absent(self):
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             output = Path(directory) / 'report.json'
             environment = dict(os.environ, GITHUB_SHA='a' * 40, GITHUB_RUN_ID='42', GITHUB_RUN_ATTEMPT='2',
                                RELEASE_NEEDS='{}', GITHUB_STEP_SUMMARY=str(Path(directory) / 'summary.md'))

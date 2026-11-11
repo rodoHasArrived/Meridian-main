@@ -9,7 +9,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import * as workstationApi from "@/lib/api";
-import { formatCurrency, formatMoney as formatMoneyValue, formatQuantity as formatQuantityValue, formatUtcTimestamp } from "@/lib/format";
+import { formatCurrency, formatMoney as formatMoneyValue, formatQuantity as formatQuantityValue, formatUtcTimestamp, pluralizeCount } from "@/lib/format";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 import { useBrokerageRecoveryObservation } from "./trading-screen.brokerage-recovery-state";
 import type { ApiRequestOptions, ApprovePromotionRequest, RejectPromotionRequest } from "@/lib/api";
@@ -686,7 +686,7 @@ export function buildTradingBlotterViewModel({
     fillEmptyText,
     cancelAllDisabled: orderRows.length === 0,
     cancelAllDisabledReason: orderRows.length === 0 ? "No open orders require cancellation." : null,
-    cancelAllAriaLabel: orderRows.length === 0 ? "No open orders to cancel" : `Cancel all ${orderRows.length} open orders`,
+    cancelAllAriaLabel: orderRows.length === 0 ? "No open orders to cancel" : `Cancel all ${pluralizeCount(orderRows.length, "open order")}`,
     selectPosition,
     selectOrder,
     selectFill

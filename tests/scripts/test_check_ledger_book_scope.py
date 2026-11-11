@@ -19,7 +19,7 @@ SPEC.loader.exec_module(guard)
 
 def scan(sources: dict[str, str]) -> list[tuple[str, int, str]]:
     """Run the guard over a throwaway `src/` tree built from these files."""
-    with tempfile.TemporaryDirectory() as temp_dir:
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
         source_root = Path(temp_dir) / "src"
         for rel, content in sources.items():
             path = source_root / rel
@@ -126,7 +126,7 @@ var bookId = draft.LedgerBookId ?? throw new InvalidOperationException("required
         self.assertEqual(guard.find_scope_coercions(REPO_ROOT / "src"), [])
 
     def test_guard_exits_non_zero_and_names_the_offending_line(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             source_root = Path(temp_dir) / "src" / "Meridian.Ui.Shared" / "Services"
             source_root.mkdir(parents=True)
             (source_root / "BatchService.cs").write_text(
