@@ -186,7 +186,8 @@ public sealed class AlpacaPaperSandboxTests(ITestOutputHelper output)
             verified.State.Should().Be(BrokerageConnectionStateDto.Connected);
             verified.Environment.Should().Be("paper");
             verified.LastError.Should().BeNullOrEmpty();
-            string.IsNullOrWhiteSpace(verified.ExternalAccountId).Should().BeFalse("verification must record the broker account it reached");
+            (verified.ExternalAccountId == externalAccountId).Should().BeTrue(
+                "verification and the brokerage gateway must name the account the same way");
             (await connection.RevokeAsync(timeout.Token)).IsConfigured.Should().BeFalse();
         }
         finally

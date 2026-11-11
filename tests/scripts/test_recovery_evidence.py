@@ -57,7 +57,7 @@ class RecoveryEvidenceTests(unittest.TestCase):
             raise RuntimeError("PowerShell 7 (pwsh) is required to run recovery evidence tests.")
 
     def setUp(self):
-        self.temp = tempfile.TemporaryDirectory()
+        self.temp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self.temp.cleanup)
         self.directory = Path(self.temp.name)
 

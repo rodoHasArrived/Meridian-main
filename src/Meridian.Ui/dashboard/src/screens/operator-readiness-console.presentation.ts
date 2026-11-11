@@ -41,6 +41,12 @@ export function formatReadinessUtcMinute(value: string | null | undefined, fallb
   return formatUtcTimestamp(date);
 }
 
+/** Ends a message with one period, so a message that already has one does not get a second. */
+export function sentence(message: string): string {
+  const trimmed = message.trim();
+  return /[.!?]$/.test(trimmed) ? trimmed : `${trimmed}.`;
+}
+
 export function toErrorMessage(err: unknown, fallback: string): string {
   if (err instanceof Error && err.message.trim()) {
     return err.message;

@@ -194,6 +194,10 @@
     --ws-border: #E4E3DE;
     --ws-border-hover: #C6C3BB;
     --ws-border-strong: #AFABA1;
+    /* Disabled controls: neutral fill, readable label (4.8:1), edge at 3:1 or better on every surface. */
+    --ws-disabled-bg: #EDEAE4;
+    --ws-disabled-fg: #5E666F;
+    --ws-disabled-border: #85807A;
     --ws-text: #22252A;
     --ws-text-muted: #5E666F;
     --ws-text-secondary: #4E5258;
@@ -451,6 +455,10 @@
       --ws-border: #4A443C;
       --ws-border-hover: #5F584E;
       --ws-border-strong: #736B60;
+      /* Disabled controls: neutral fill, readable label (4.9:1), edge at 3:1 or better on every surface. */
+      --ws-disabled-bg: #292520;
+      --ws-disabled-fg: #9A9289;
+      --ws-disabled-border: #857D71;
       --ws-text: #EFEBE4;
       --ws-text-muted: #9A9289;
       --ws-text-secondary: #B5AEA4;
@@ -582,6 +590,10 @@
     --ws-border: #4A443C;
     --ws-border-hover: #5F584E;
     --ws-border-strong: #736B60;
+    /* Disabled controls: neutral fill, readable label (4.9:1), edge at 3:1 or better on every surface. */
+    --ws-disabled-bg: #292520;
+    --ws-disabled-fg: #9A9289;
+    --ws-disabled-border: #857D71;
     --ws-text: #EFEBE4;
     --ws-text-muted: #9A9289;
     --ws-text-secondary: #B5AEA4;
@@ -715,6 +727,10 @@
     --ws-border: #E4E3DE;
     --ws-border-hover: #C6C3BB;
     --ws-border-strong: #AFABA1;
+    /* Disabled controls: neutral fill, readable label (4.8:1), edge at 3:1 or better on every surface. */
+    --ws-disabled-bg: #EDEAE4;
+    --ws-disabled-fg: #5E666F;
+    --ws-disabled-border: #85807A;
     --ws-text: #22252A;
     --ws-text-muted: #5E666F;
     --ws-text-secondary: #4E5258;
@@ -1484,4 +1500,34 @@
   :where(a) {
     color: LinkText;
   }
+}
+
+/* ── Disabled buttons ───────────────────────────────────────────────────────
+   One look for every variant: a neutral fill, a dashed edge and a muted label, all at full
+   opacity. Halving the opacity of the accent fill left a washed-out primary button whose label
+   could not be read; the dashed edge is the cue that does not depend on colour. The reason a
+   button is disabled travels with it as `disabledReason` (its tooltip and description).
+   Unlayered on purpose: these rules have to win over the variant utilities on the same element. */
+.mds-btn:disabled,
+.mds-btn[aria-disabled="true"] {
+  background-color: var(--ws-disabled-bg);
+  border-color: var(--ws-disabled-border);
+  border-style: dashed;
+  color: var(--ws-disabled-fg);
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+.mds-btn[aria-disabled="true"] {
+  pointer-events: none;
+}
+
+/* A busy button keeps its own colours: it is working, not unavailable. */
+.mds-btn[aria-busy="true"]:disabled {
+  background-color: revert-layer;
+  border-color: revert-layer;
+  border-style: solid;
+  color: revert-layer;
+  cursor: progress;
+  opacity: 0.85;
 }

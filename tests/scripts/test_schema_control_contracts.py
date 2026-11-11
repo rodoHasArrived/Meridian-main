@@ -10,7 +10,7 @@ from tools.schema_control.contracts import build_contract_manifest
 
 class ContractManifestTests(unittest.TestCase):
     def setUp(self) -> None:
-        self._temporary_directory = tempfile.TemporaryDirectory()
+        self._temporary_directory = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self._temporary_directory.cleanup)
         self.root = Path(self._temporary_directory.name)
         self.contracts = self.root / "src" / "Meridian.Contracts"

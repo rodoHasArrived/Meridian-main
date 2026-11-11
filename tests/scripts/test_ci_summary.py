@@ -21,7 +21,7 @@ SPEC.loader.exec_module(MODULE)
 
 class CiSummaryTests(unittest.TestCase):
     def test_parse_steps_reads_ci_step_tsv(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             path = Path(tmp) / "steps.tsv"
             path.write_text("Restore\t0\t3\nBuild\t1\t12\n", encoding="utf-8")
 
@@ -87,7 +87,7 @@ class CiSummaryTests(unittest.TestCase):
         self.assertIn("Workflow hygiene or lane manifest validation failed.", findings)
 
     def test_load_dotnet_summary_reports_failed_slices(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             path = Path(tmp) / "summary.json"
             path.write_text(
                 json.dumps(
@@ -110,7 +110,7 @@ class CiSummaryTests(unittest.TestCase):
         self.assertEqual(failed, ["ui (tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj) exited 1"])
 
     def test_load_dotnet_summary_handles_malformed_json(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             path = Path(tmp) / "summary.json"
             path.write_text("{", encoding="utf-8")
 
@@ -120,7 +120,7 @@ class CiSummaryTests(unittest.TestCase):
         self.assertEqual(failed, ["Failed to read or parse .NET test summary."])
 
     def test_load_dotnet_summary_handles_partial_result_entries(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             path = Path(tmp) / "summary.json"
             path.write_text(
                 json.dumps({"results": [{"exit_code": 1}, "invalid", {"path": "tests/example.csproj"}]}),
@@ -214,7 +214,7 @@ class CiSummaryTests(unittest.TestCase):
         self.assertNotIn("bash scripts/ci.sh --lane verify-browser;", summary)
 
     def test_cli_writes_same_failed_check_guidance_to_artifact_and_job_summary(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)
             steps = root / "steps.tsv"
             output = root / "artifacts" / "summary.md"

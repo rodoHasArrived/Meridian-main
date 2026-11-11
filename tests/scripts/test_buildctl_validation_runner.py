@@ -52,14 +52,14 @@ class ValidationRunnerTests(unittest.TestCase):
         self.assertIsNone(self.buildctl._edit_start(None, now))
 
     def test_bad_edit_timestamp_fails_before_evidence_or_execution(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir, patch.object(self.buildctl, "REPO_ROOT", Path(temp_dir)), \
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir, patch.object(self.buildctl, "REPO_ROOT", Path(temp_dir)), \
                 patch.object(self.buildctl, "_run_passthrough") as run, redirect_stderr(io.StringIO()):
             self.assertEqual(self.buildctl.cmd_test(self._args(edit_started_at="not-a-timestamp")), 2)
             self.assertFalse((Path(temp_dir) / ".ai").exists())
         run.assert_not_called()
 
     def test_cache_states_do_not_infer_warmth_from_named_profiles_or_keys(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir, patch.object(self.buildctl, "REPO_ROOT", Path(temp_dir)):
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir, patch.object(self.buildctl, "REPO_ROOT", Path(temp_dir)):
             self.assertEqual(self.buildctl._test_cache_state(self._args(), None, "new"), "fresh-isolated")
             self.assertEqual(self.buildctl._test_cache_state(self._args(isolation_key="named"), None, "named"), "explicit-output")
             self.assertEqual(self.buildctl._test_cache_state(self._args(no_isolation=True), None, None), "shared-output")
@@ -72,7 +72,7 @@ class ValidationRunnerTests(unittest.TestCase):
             self.assertEqual(self.buildctl._test_cache_state(self._args(no_build=True), {"built": True}, "profile-key"), "explicit-output-reuse")
 
     def test_profile_warm_edit_to_result_tracks_failures_without_skipping_compilation(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir, patch.object(self.buildctl, "REPO_ROOT", Path(temp_dir)), \
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir, patch.object(self.buildctl, "REPO_ROOT", Path(temp_dir)), \
                 patch.object(self.buildctl, "_run", return_value=subprocess.CompletedProcess([], 0, "10.0.100\n")), \
                 patch.object(self.buildctl, "_get_active_repo_build_processes", return_value=[]), \
                 redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
@@ -104,7 +104,7 @@ class ValidationRunnerTests(unittest.TestCase):
             self.assertEqual([command[1] for command in commands], ["restore", "build", "test"] * 2)
 
     def test_validation_lock_blocks_second_runner(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             repo_root = Path(temp_dir)
             first = self.buildctl._acquire_validation_lock(
                 repo_root,
@@ -229,7 +229,7 @@ class ValidationRunnerTests(unittest.TestCase):
             ({}, ["restore", "build", "test"]),
         )
         for options, expected_commands in scenarios:
-            with self.subTest(options=options), tempfile.TemporaryDirectory() as temp_dir:
+            with self.subTest(options=options), tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
                 repo_root = Path(temp_dir)
                 for kind in ("bin", "obj"):
                     (repo_root / "artifacts" / kind / "existing-output").mkdir(parents=True)
@@ -264,7 +264,7 @@ class ValidationRunnerTests(unittest.TestCase):
         assignments = ("VSTestNoBuild=false", "/p:vstestnobuild=false", "-P:VSTESTNOBUILD=false")
         for no_build in (False, True):
             for assignment in assignments:
-                with self.subTest(no_build=no_build, assignment=assignment), tempfile.TemporaryDirectory() as temp_dir:
+                with self.subTest(no_build=no_build, assignment=assignment), tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
                     stderr = io.StringIO()
                     with (
                         patch.object(self.buildctl, "REPO_ROOT", Path(temp_dir)),
@@ -334,7 +334,7 @@ class ValidationRunnerTests(unittest.TestCase):
 
     def test_queue_timing_includes_wait_and_records_interruption(self) -> None:
         for outcome in ("pass", "blocked", "interrupted", "error"):
-            with self.subTest(outcome=outcome), tempfile.TemporaryDirectory() as temp_dir:
+            with self.subTest(outcome=outcome), tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
                 root = Path(temp_dir)
                 clock = [100.0]
 
@@ -381,7 +381,7 @@ class ValidationRunnerTests(unittest.TestCase):
             commands.append(command)
             return (exit_codes or {}).get(command[1], 0)
 
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             repo_root = Path(temp_dir)
             with (
                 patch.object(self.buildctl, "REPO_ROOT", repo_root),
@@ -402,7 +402,7 @@ class ValidationRunnerTests(unittest.TestCase):
         self.assertEqual(len({self.buildctl._new_run_id("test") for _ in range(1000)}), 1000)
 
     def test_reports_use_unique_subdirectories_and_reject_repeated_ids(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir, patch.object(self.buildctl, "REPO_ROOT", Path(temp_dir)), \
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir, patch.object(self.buildctl, "REPO_ROOT", Path(temp_dir)), \
                 patch.object(self.buildctl, "_run_passthrough", return_value=0), \
                 patch.object(self.buildctl, "_get_active_repo_build_processes", return_value=[]):
             for run_id in ("first", "second"):
@@ -415,7 +415,7 @@ class ValidationRunnerTests(unittest.TestCase):
             self.assertEqual(first.read_bytes(), evidence)
 
     def test_no_build_is_forwarded_without_restoring_or_mutating_build_outputs(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir, patch.object(self.buildctl, "REPO_ROOT", Path(temp_dir)), \
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir, patch.object(self.buildctl, "REPO_ROOT", Path(temp_dir)), \
                 patch.object(self.buildctl, "_run_passthrough", return_value=0) as run, \
                 patch.object(self.buildctl, "_get_active_repo_build_processes", return_value=[]):
             self.assertEqual(self.buildctl.cmd_test(self._args(no_build=True, isolation_key="existing", configuration="Debug")), 0)
@@ -424,7 +424,7 @@ class ValidationRunnerTests(unittest.TestCase):
             self.assertIn("--no-build", commands[-1])
 
     def test_restore_uses_same_configuration_and_normalized_properties_as_build(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir, patch.object(self.buildctl, "REPO_ROOT", Path(temp_dir)), \
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir, patch.object(self.buildctl, "REPO_ROOT", Path(temp_dir)), \
                 patch.object(self.buildctl, "_run_passthrough", return_value=0) as run, \
                 patch.object(self.buildctl, "_get_active_repo_build_processes", return_value=[]):
             self.assertEqual(self.buildctl.cmd_test(self._args(configuration="Debug", property=["UseAppHost=true", "/P:USEAPPHOST=false"])), 0)
@@ -434,7 +434,7 @@ class ValidationRunnerTests(unittest.TestCase):
                 self.assertEqual([arg for arg in command if "useapphost=" in arg.lower()], ["/p:useapphost=false"])
 
     def test_build_and_test_cannot_bypass_shared_output_lock(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir, patch.object(self.buildctl, "REPO_ROOT", Path(temp_dir)), \
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir, patch.object(self.buildctl, "REPO_ROOT", Path(temp_dir)), \
                 patch.object(self.buildctl, "_run_passthrough") as run, \
                 patch.object(self.buildctl, "_prune_for_isolation") as prune:
             self.assertTrue(self.buildctl._acquire_validation_lock(Path(temp_dir), run_id="owner", command="owner", queue=False, timeout_seconds=0))
@@ -445,7 +445,7 @@ class ValidationRunnerTests(unittest.TestCase):
             self.assertEqual(self.buildctl._read_validation_lock()["runId"], "owner")
 
     def test_build_holds_lock_through_prune_restore_build_and_releases_on_failure(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir, patch.object(self.buildctl, "REPO_ROOT", Path(temp_dir)), \
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir, patch.object(self.buildctl, "REPO_ROOT", Path(temp_dir)), \
                 patch.object(self.buildctl, "_get_active_repo_build_processes", return_value=[]):
             phases = []
             def checked(phase):
@@ -461,7 +461,7 @@ class ValidationRunnerTests(unittest.TestCase):
             self.assertIsNone(self.buildctl._read_validation_lock())
 
     def test_diagnostic_build_and_restore_commands_share_the_writer_lock(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir, patch.object(self.buildctl, "REPO_ROOT", Path(temp_dir)), \
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir, patch.object(self.buildctl, "REPO_ROOT", Path(temp_dir)), \
                 patch.object(self.buildctl, "_run") as run:
             self.assertTrue(self.buildctl._acquire_validation_lock(Path(temp_dir), run_id="owner", command="owner", queue=False, timeout_seconds=0))
             self.assertEqual(self.buildctl.cmd_build_profile(self._args()), 3)
@@ -493,7 +493,7 @@ class ValidationRunnerTests(unittest.TestCase):
             run.assert_not_called()
 
     def test_fresh_run_cannot_reuse_preexisting_output_without_run_metadata(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir, patch.object(self.buildctl, "REPO_ROOT", Path(temp_dir)), \
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir, patch.object(self.buildctl, "REPO_ROOT", Path(temp_dir)), \
                 patch.object(self.buildctl, "_run_passthrough") as run, \
                 patch.object(self.buildctl, "_get_active_repo_build_processes", return_value=[]):
             (Path(temp_dir) / "artifacts/bin/existing").mkdir(parents=True)
@@ -502,7 +502,7 @@ class ValidationRunnerTests(unittest.TestCase):
             self.assertIsNone(self.buildctl._read_validation_lock())
 
     def test_profile_reuses_builds_but_fresh_validation_uses_new_outputs(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir, patch.object(self.buildctl, "REPO_ROOT", Path(temp_dir)), \
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir, patch.object(self.buildctl, "REPO_ROOT", Path(temp_dir)), \
                 patch.object(self.buildctl, "_run", return_value=subprocess.CompletedProcess([], 0, "10.0.100\n")), \
                 patch.object(self.buildctl, "_run_passthrough", return_value=0) as run, \
                 patch.object(self.buildctl, "_get_active_repo_build_processes", return_value=[]):
@@ -521,7 +521,7 @@ class ValidationRunnerTests(unittest.TestCase):
             self.assertIsNone(record["profile"])
 
     def test_profile_compatibility_failure_never_launches_dotnet_build_or_test(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir, patch.object(self.buildctl, "REPO_ROOT", Path(temp_dir)), \
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir, patch.object(self.buildctl, "REPO_ROOT", Path(temp_dir)), \
                 patch.object(self.buildctl, "_run", return_value=subprocess.CompletedProcess([], 0, "10.0.100\n")), \
                 patch.object(self.buildctl, "_run_passthrough", return_value=0) as run, \
                 patch.object(self.buildctl, "_get_active_repo_build_processes", return_value=[]):
@@ -533,7 +533,7 @@ class ValidationRunnerTests(unittest.TestCase):
             self.assertIsNone(self.buildctl._read_validation_lock())
 
     def test_output_lock_queues_between_processes(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             self.assertTrue(self.buildctl._acquire_validation_lock(root, run_id="parent", command="parent", queue=False, timeout_seconds=0))
             script = "import sys; from pathlib import Path; sys.path.insert(0, sys.argv[1]); import buildctl; root=Path(sys.argv[2]); print('ready', flush=True); ok=buildctl._acquire_validation_lock(root, run_id='child', command='child', queue=True, timeout_seconds=5); buildctl._release_validation_lock(root, 'child') if ok else None; sys.exit(0 if ok else 1)"
