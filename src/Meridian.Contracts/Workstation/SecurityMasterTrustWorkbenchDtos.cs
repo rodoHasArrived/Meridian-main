@@ -207,6 +207,41 @@ public sealed record SecurityMasterChangeHistoryItemDto(
     IReadOnlyList<string> ChangedFields,
     string ChangedFieldsSummary);
 
+/// <summary>Whether a record's declared call and put schedule resolved to dated rows or is blocked.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter<SecurityMasterDeclaredExerciseStatus>))]
+public enum SecurityMasterDeclaredExerciseStatus
+{
+    /// <summary>The declared schedule resolved; its exercise and notice-deadline rows are in the schedule book.</summary>
+    Resolved = 0,
+
+    /// <summary>The declared schedule could not be resolved; no call or put row is shown and the scalar call date is not used.</summary>
+    Blocked = 1
+}
+
+/// <summary>One reason a declared call or put schedule is blocked: a stable code and the operator-facing reason.</summary>
+public sealed record SecurityMasterScheduleBlockerDto(string Code, string Reason);
+
+/// <summary>
+/// The typed outcome of a record's declared call and put schedule at the snapshot's evaluation date.
+/// Present only for a record that declares a schedule its terms stamp decodes; a record that declares
+/// none carries no outcome and keeps the scalar call date. <see cref="Blockers"/> is empty for a
+/// resolved outcome. The same outcome the asset-operations obligation timeline carries in its
+/// extension payload (ADR-025).
+/// </summary>
+/// <param name="Status">Resolved or blocked.</param>
+/// <param name="AsOf">The evaluation date the schedule was resolved at.</param>
+/// <param name="SecurityVersion">The retained terms version the outcome was read from.</param>
+/// <param name="WindowCount">The number of resolved exercise windows; 0 when blocked.</param>
+/// <param name="Blockers">Why the schedule is blocked, each with its code; empty when resolved.</param>
+/// <param name="Diagnostics">The notice watch's diagnostics, such as the elapsed-deadline note.</param>
+public sealed record SecurityMasterDeclaredExerciseOutcomeDto(
+    SecurityMasterDeclaredExerciseStatus Status,
+    DateOnly AsOf,
+    long? SecurityVersion,
+    int WindowCount,
+    IReadOnlyList<SecurityMasterScheduleBlockerDto> Blockers,
+    IReadOnlyList<string> Diagnostics);
+
 public sealed record SecurityMasterScheduleSummaryDto(
     bool SupportsCashflowSchedule,
     bool SupportsFactorHistory,
@@ -215,7 +250,9 @@ public sealed record SecurityMasterScheduleSummaryDto(
     DateOnly? CurrentFactorDate,
     DateOnly? NextLifecycleDate,
     string SourceSummary,
-    string Summary);
+    string Summary,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    SecurityMasterDeclaredExerciseOutcomeDto? DeclaredExercise = null);
 
 public sealed record SecurityMasterScheduleBookDto(
     bool SupportsCashflowSchedule,
@@ -229,7 +266,9 @@ public sealed record SecurityMasterScheduleBookDto(
     string Summary,
     IReadOnlyList<SecurityMasterScheduleEventDto> Events,
     IReadOnlyList<SecurityMasterFactorPointDto> FactorHistory,
-    IReadOnlyList<SecurityMasterScheduleProvenanceDto> ProvenanceHistory);
+    IReadOnlyList<SecurityMasterScheduleProvenanceDto> ProvenanceHistory,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    SecurityMasterDeclaredExerciseOutcomeDto? DeclaredExercise = null);
 
 public sealed record SecurityMasterScheduleEventDto(
     string EventId,

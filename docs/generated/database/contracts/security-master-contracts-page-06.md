@@ -2,11 +2,38 @@
 
 # `security-master-contracts` data objects - page 6 of 7
 
-Objects 401-480 of 504. References crossing pages remain available in the dependency manifest.
+Objects 401-480 of 507. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAppendRequestDto["SecurityMasterCorporateActionAppendRequestDto"] {
+        +string Actor
+        +CorporateActionDto CorporateAction
+        +string? CorrelationId
+        +string? FundProfileId
+        +string? Reason
+        +Guid SecurityId
+        +string? SourceRecordId
+        +string SourceSystem
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAppendResultDto["SecurityMasterCorporateActionAppendResultDto"] {
+        +SecurityMasterCorporateActionAuditDto Audit
+        +CorporateActionDto CorporateAction
+        +SecurityMasterCorporateActionRestatementDto? Restatement
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAuditDto["SecurityMasterCorporateActionAuditDto"] {
+        +string Actor
+        +string AuditId
+        +Guid CorporateActionId
+        +string? CorrelationId
+        +string EventType
+        +string? Reason
+        +DateTimeOffset RecordedAtUtc
+        +Guid SecurityId
+        +string? SourceRecordId
+        +string SourceSystem
+    }
     class Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionRestatementDto["SecurityMasterCorporateActionRestatementDto"] {
         +IReadOnlyList~RestatementCandidateDto~ Candidates
         +string EvaluationStatus
@@ -432,25 +459,8 @@ classDiagram
         +decimal? FixingRate
         +DateOnly ResetDate
     }
-    class Meridian_Contracts_SecurityMaster_StructuredCashFlowScenario["StructuredCashFlowScenario"] {
-    }
-    class Meridian_Contracts_SecurityMaster_StructuredCashFlowScheduleEntry["StructuredCashFlowScheduleEntry"] {
-        +DateOnly? AccrualEnd
-        +DateOnly? AccrualStart
-        +decimal Factor
-        +decimal InterestAmount
-        +DateTimeOffset PeriodDate
-        +decimal PrincipalAmount
-        +Meridian_Contracts_FixedIncome_BondFloatingRateEvidence? RateEvidence
-        +DateOnly? UnadjustedEnd
-        +DateOnly? UnadjustedStart
-    }
-    class Meridian_Contracts_SecurityMaster_StructuredCashFlowScheduleEvidence["StructuredCashFlowScheduleEvidence"] {
-        +IReadOnlyList~StructuredCashFlowCalendarEvidence~ Calendars
-        +IReadOnlyList~StructuredCashFlowCoverageGap~ CoverageGaps
-        +string DeclaredMappingVersion
-        +string KernelVersion
-    }
+    Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAppendResultDto --> Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAuditDto
+    Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAppendResultDto --> Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionRestatementDto
     Meridian_Contracts_SecurityMaster_SecurityMasterReportingReference --> Meridian_Contracts_SecurityMaster_SecurityMasterReportingResolutionMode
     Meridian_Contracts_SecurityMaster_SecurityOverrideAuditEntryDto --> Meridian_Contracts_SecurityMaster_SecurityOverrideApprovalStatusDto
     Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto --> Meridian_Contracts_SecurityMaster_SecurityPriceKind
@@ -485,11 +495,5 @@ classDiagram
     Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerPostingResult --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerPosting
     Meridian_Contracts_SecurityMaster_StructuredCashFlowLeg --> Meridian_Contracts_SecurityMaster_StructuredCashFlowNotionalStep
     Meridian_Contracts_SecurityMaster_StructuredCashFlowLeg --> Meridian_Contracts_SecurityMaster_StructuredCashFlowResetFixing
-    Meridian_Contracts_SecurityMaster_StructuredCashFlowLegSchedule --> Meridian_Contracts_SecurityMaster_StructuredCashFlowScheduleEntry
     Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLegSchedule
-    Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowScenario
-    Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowScheduleEntry
-    Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowScheduleEvidence
-    Meridian_Contracts_SecurityMaster_StructuredCashFlowScheduleEvidence --> Meridian_Contracts_SecurityMaster_StructuredCashFlowCalendarEvidence
-    Meridian_Contracts_SecurityMaster_StructuredCashFlowScheduleEvidence --> Meridian_Contracts_SecurityMaster_StructuredCashFlowCoverageGap
 ```
