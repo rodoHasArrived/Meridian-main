@@ -1,0 +1,1 @@
+import{A as e,M as t,d as n,f as r,p as i}from"./button-Cs2C9zE7.js";var a=t(e(),1),o=r(),s=(0,a.forwardRef)(({className:e,children:t,...r},a)=>(0,o.jsx)(`label`,{ref:a,className:i(`text-xs font-medium text-muted-foreground`,n(t)&&`uppercase tracking-[0.14em]`,e),...r,children:t}));s.displayName=`Label`;export{s as t};

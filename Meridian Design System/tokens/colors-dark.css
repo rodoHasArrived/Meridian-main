@@ -23,7 +23,7 @@
 
     /* Tier-1 theme inputs the app also reads directly. theme.css authors them as light
        literals and only the component tokens flip, so in dark mode --theme-bg-canvas and the
-       other nine still resolved to the LIGHT value: app CSS pasted against the name contract
+       other ten still resolved to the LIGHT value: app CSS pasted against the name contract
        painted a paper panel on a graphite screen. Re-point them at the flipped component
        token in both dark blocks. The forced-light block needs no restatement: it sets every
        one of these component tokens to a literal, so the reference resolves light there. */
@@ -37,6 +37,7 @@
     --theme-secondary-text: var(--text-secondary);
     --theme-muted-text:     var(--text-muted);
     --theme-accent:         var(--accent);
+    --theme-border-focus:   var(--border-focus);
 
     /* Surfaces — cool carbon, flat */
     --bg:                 #11171D;  /* canvas */
@@ -125,7 +126,7 @@
 
   /* Tier-1 theme inputs the app also reads directly. theme.css authors them as light
      literals and only the component tokens flip, so in dark mode --theme-bg-canvas and the
-     other nine still resolved to the LIGHT value: app CSS pasted against the name contract
+     other ten still resolved to the LIGHT value: app CSS pasted against the name contract
      painted a paper panel on a graphite screen. Re-point them at the flipped component
      token in both dark blocks. The forced-light block needs no restatement: it sets every
      one of these component tokens to a literal, so the reference resolves light there. */
@@ -139,6 +140,7 @@
   --theme-secondary-text: var(--text-secondary);
   --theme-muted-text:     var(--text-muted);
   --theme-accent:         var(--accent);
+  --theme-border-focus:   var(--border-focus);
 
   --bg:                 #11171D;
   --bg-light:           #171E25;

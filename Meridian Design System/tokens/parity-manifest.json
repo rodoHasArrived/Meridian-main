@@ -20,7 +20,7 @@
     "valuesSharedSince": "4.3.0",
     "nameSurfaceRecordedAt": "2026-09-01",
     "nameSurfaceRecordedFromTree": "fa43d2e476a0",
-    "note": "131 contract names read off index.css at the tree above. Value parity is checked live against index.css whenever the package sits in the monorepo, across every name both sides declare (159 at the 4.3.0 integration), not only the 131 pinned here. ThemeTokens.xaml is listed as a source but is light-only XAML; its runtime twin ColorPalette.cs is held to it by scripts/check_contrast.py (runtime-palette)."
+    "note": "131 contract names read off index.css at the tree above. Value parity is checked live against index.css whenever the package sits in the monorepo, across every name both sides declare (194 at the 4.3.0 integration), not only the 131 pinned here. ThemeTokens.xaml is listed as a source but is light-only XAML; its runtime twin ColorPalette.cs is held to it by scripts/check_contrast.py (runtime-palette)."
   },
   "aliasContract": [
     "--ws-page-bg",
@@ -60,18 +60,6 @@
       "upstream": "unified 2px corner (3px / 4px on the two larger steps)",
       "here": "2 / 4 / 6 instrument-control scale",
       "why": "The workstation keeps its unified 2px corner on purpose: dense tables and stacked panels read as one ruled sheet. The package scale is for consumers composing looser surfaces. A product decision, not drift."
-    },
-    {
-      "names": ["--font-display", "--font-body", "--font-data"],
-      "upstream": "locally installed Segoe UI Variable / Cascadia Mono",
-      "here": "bundled IBM Plex Sans / IBM Plex Mono",
-      "why": "The workstation resolves type through local faces only, so an offline or strict-CSP operator deployment fetches no font. Adopting the bundled Plex files there changes every dense-table metric and is a separate, screenshot-reviewed change."
-    },
-    {
-      "names": ["--chart-compare-1", "--chart-compare-2"],
-      "upstream": "categorical series 2 and 4 (comparison SYMBOLS on the historical chart)",
-      "here": "prior-period slate and neutral benchmark",
-      "why": "Same name, different job. Upstream overlays several comparison instruments at once and needs hues that separate; here the pair is the prior period and a benchmark of ONE subject, which must recede behind the actual trace."
     }
   ],
   "tokens": {

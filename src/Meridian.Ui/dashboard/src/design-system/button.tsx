@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 /**
  * Primary interactive element for user actions.
  *
- * **Variants:** `"default"` (cyan primary), `"secondary"` (muted surface),
+ * **Variants:** `"default"` (graphite/paper primary), `"secondary"` (muted surface),
  * `"outline"` (transparent with border), `"ghost"` (text-only), `"destructive"` (danger-toned).
  *
  * **Sizes:** `"sm"` (32 px), `"default"` (36 px), `"lg"` (44 px, for hero/full-width CTAs),
@@ -56,7 +56,7 @@ type ButtonChildProps = React.HTMLAttributes<HTMLElement> & {
 };
 
 const buttonVariantClasses: Record<NonNullable<DesignSystemButtonProps["variant"]>, string> = {
-  default: "mds-btn--primary border-primary bg-primary text-primary-foreground hover:bg-[color-mix(in_srgb,hsl(var(--primary))_88%,var(--ws-surface))] active:bg-[color-mix(in_srgb,hsl(var(--primary))_78%,var(--ws-surface))]",
+  default: "mds-btn--primary border-primary bg-primary text-primary-foreground hover:bg-[var(--ws-primary-hover)] active:bg-[var(--ws-primary-pressed)]",
   secondary: "mds-btn--ghost mds-btn--secondary border-border bg-secondary text-secondary-foreground hover:border-[var(--border-hover)] hover:bg-[var(--ws-row-hover)] active:bg-[var(--ws-rail-active)]",
   outline: "mds-btn--ghost mds-btn--outline border-border bg-transparent text-foreground hover:border-[var(--border-hover)] hover:bg-[var(--ws-row-hover)] active:bg-[var(--ws-rail-active)]",
   ghost: "mds-btn--link mds-btn--ghost-action border-transparent bg-transparent text-muted-foreground hover:bg-[var(--ws-row-hover)] hover:text-foreground active:bg-[var(--ws-rail-active)]",

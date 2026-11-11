@@ -48,7 +48,7 @@ function inject(): void {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.stm-wrap:focus-visible{outline:var(--focus-ring,2px solid var(--ws-focus,#2D6FB3));outline-offset:-2px;}
+.stm-wrap:focus-visible{outline:var(--focus-ring,2px solid var(--focus,#2D6FB3));outline-offset:-2px;}
 .stm__empty{padding:16px 14px;font-family:var(--font-body,inherit);font-size:12px;color:var(--text-muted,#606870);text-align:center;}
 .stm-wrap{overflow-x:auto;border:1px solid var(--border,#D2CDC3);
   border-radius:var(--radius-chip,2px);background:var(--bg-light,#F8F7F3);}

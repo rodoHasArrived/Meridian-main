@@ -124,9 +124,8 @@ scenario signal, blue focus/selection, and its own material hierarchy. The
 browser workstation and WPF theme tokens were migrated to this palette in the
 same pull request, so the parity manifest now declares `valuesShared: true` and
 `scripts/check_token_parity.py` compares every name both sides declare in all
-four theme scopes. Three differences are deliberate and recorded under
-`upstreamValueDivergences`: the workstation's unified 2px radii, its locally
-installed type faces, and its categorical chart-comparison hues. See
+four theme scopes. One difference is deliberate and recorded under
+`upstreamValueDivergences`: the workstation's unified 2px radii. See
 [Application integration](#application-integration) for what moved in each
 direction.
 
@@ -162,61 +161,91 @@ are documented in [Export handoff](EXPORT_4_3_0.md).
 ## Application integration
 
 The integration pass compared the package with the two consumers in the monorepo
-and changed whichever side was worse. Static gates and unit tests back these
-statements; no browser, screen-reader or Windows run was made for them.
+and changed whichever side was worse. It ran alongside the workstation
+foundation integration in `0cc7555bd5` and was merged onto it. Static gates and
+unit tests back these statements; no browser, screen-reader or Windows run was
+made for them.
 
 **Package changed to match the application**
 
-- State and severity chip text reads the 75% `-dim` variant of its hue again.
-  The 4.3.0 retone had wired every `*-fg` to the raw hue, which measured
-  3.3-4.5:1 on its own wash in light mode; the workstation had kept the `-dim`
-  wiring. `--accent-ink`, `--brand-field-dim` and `--pending-dim` are new, for
-  the three hues that had no text variant.
-- The ten `--theme-*` contract names follow dark mode. They resolved to their
-  light literals on a dark screen; both dark blocks now re-point them.
+- State and severity chip text reads a text-safe variant of its hue again. The
+  4.3.0 retone had wired every `*-fg` to the raw hue, which measured 3.3-4.5:1
+  on its own wash in light mode; the workstation had kept the `-dim` wiring.
+  `--brand-signal-text` and `--brand-field-text` are new here, with the names
+  and mix ratios the workstation already used, and `--pending-dim` is declared
+  (one component read it before anything defined it).
+- The ten `--theme-*` contract names and `--theme-border-focus` follow dark
+  mode. They resolved to their light literals on a dark screen; both dark
+  blocks now re-point them.
 - `--series-estimated` and `--viz-band-outline` are restated for forced light.
 - `--accent-a10` is declared again, and 76 references to 19 names the package
   never declared now name the canonical token, so they stop painting a light
-  literal in dark mode.
-- 1,232 `var(--token, literal)` fallbacks carried a previous palette and now
-  carry the value the token resolves to.
+  literal in dark mode. `--theme-font-mono` names the same fallbacks as
+  `--font-data`.
+- More than a thousand `var(--token, literal)` fallbacks carried a previous
+  palette and now carry the value the token resolves to.
 - Component defects the workstation ports had already fixed:
   `ReconciliationPanel` match checkboxes (threw on first tick), `toNumber`
   dropping the sign of a formatted negative, `LedgerTable` inventing running
   balances and losing header focus on sort, `Pagination` jumping back to a
   stale page, `Sparkline` / `EquityCurve` / `CandleChart` on one or zero
   points, `JournalEntryForm` labelling and a colliding datalist id, and
-  scroll regions that keyboard users could not reach.
+  scroll regions that keyboard users could not reach. `Checkbox` forwards
+  `aria-label`.
 - The brand art's live `<text>` runs name IBM Plex Sans, the face the package
   ships, not Inter.
 
 **Application changed to match the package**
 
-- Focus rings and text selection use the interaction blue. `--cyan-focus`
-  pointed at the terracotta signal, and 13 focus rules hard-coded the previous
-  copper at 35-55% alpha.
-- Paper mode is the Field slate and pending is the warm taupe; both had
-  stayed on the signal and the information blue.
-- The primary button's hover and pressed fills are graphite mixes. They were
-  the lighter terracotta under a paper label (3.17:1).
-- Terracotta text uses `--accent-ink`; the sidebar, `--chart-1..5` and four
-  categorical series tokens that were still on the previous palette are
-  retoned, as are the dark-mode hover border and disabled-control tokens.
-- The dashboard's brand art is identity v1.0, and `ColorPalette.cs` matches
-  the WPF theme tokens it mirrors (14 values were on the previous palette).
+- Eighteen hard-coded copper `rgba()` literals from the previous palette are
+  gone from the workstation stylesheets: focus rings and text selection use
+  `--focus`, table row hover and selection use the row tokens, and the rest
+  derive from `--ws-accent`.
+- Terracotta text (active tabs, filter segments, toolbar chips, directory
+  links) uses `--brand-signal-text`; the raw signal is 3.7:1 on a panel.
+- `--accent-foreground` is the dark ink the package puts on a terracotta fill
+  (4.7:1; white was 4.0:1). Dark-mode disabled controls and dark chrome text
+  take cool values in place of the previous warm palette's.
+- `--chart-dd`, `--shadow-menu`, `--focus-ring-offset` and `--info-surface`
+  take the package values.
 - Order quantity and price fields reject exponent and hex notation, the
   operations status vocabulary has one normaliser, `AccountTree` is keyboard
   navigable, tables have empty states, and scroll regions are focusable.
+- WPF `OnAccentTextColor` is the same dark ink.
 
-**Gate changes.** `check_contrast.py` rows that held `--accent` and
-`--accent-dim` to the text threshold now hold `--accent-ink` to it and the
-signal to the 3:1 non-text threshold, matching the 4.3.0 role of each token.
-The paper and pending chip rows measure against their own wash. The
-workstation button check measures the graphite states the button paints. The
-bundle-parity check skips sources the manifest no longer exports. No threshold
-was lowered.
+**Gate changes.** `check_token_parity.py` gained two passes: the theme inputs
+must flip in dark, and every token name declared by both the package and the
+workstation (194 at this commit) must resolve to the same value in light, auto
+dark, manual dark and forced light. The only recorded difference is the
+workstation's unified 2px radii. In `check_contrast.py`, rows that held
+`--accent` and `--accent-dim` to the text threshold now hold
+`--brand-signal-text` to it and the signal to the 3:1 non-text threshold,
+matching the 4.3.0 role of each token. The paper and pending chip rows measure
+against their own wash. The workstation button check measures the graphite
+states the button paints. The bundle-parity check skips sources the manifest no
+longer exports, and test files are not scanned as call sites. No threshold was
+lowered.
 
 **Still failing.** Six white-label `data-brand` presets declare no dark accent
-and no focus token (12 findings in `check_contrast.py`). No consumer in this
-repository sets `data-brand`. The governance gate is unchanged at 67 findings
-and 25 warnings.
+and no focus token (12 findings in `check_contrast.py`); the previous package
+version carried both. No consumer in this repository sets `data-brand`. The
+governance gate is unchanged at 67 findings and 25 warnings.
+
+## PR review repairs
+
+The follow-up on `0cc7555bd5` preserves the concurrent workstation foundation
+integration. Interaction Depth now keeps its grid component identity across
+query, selection and model updates, and row context actions use the actual
+right-clicked row key. Header context menus cannot reuse an earlier selection.
+`tests/interaction-depth-regression.mjs` exercises typing/focus, keyboard
+selection, virtualized scroll continuity and the resulting row mutation receipt
+in Chromium. Rebuild the package before exporting these repairs.
+
+The eight earlier action-bridge, action-envelope, settings-key, continuity,
+formatting and date findings were verified against their existing fixes;
+their source behavior was preserved. The CI secret finding was an independently
+verified SHA-256 of `components/data/KeyValueGrid.jsx` in the two build-provenance
+files. Its scanner exception matches only that complete digest in those exact
+paths. Negative controls confirm that other content in those files and the same
+digest elsewhere remain detectable. Remaining release/governance limitations
+above still apply.

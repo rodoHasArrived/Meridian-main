@@ -83,9 +83,9 @@ publisher trust. Re-exporting unchanged inputs produces the same archive bytes.
   deliberately. `tokens/parity-manifest.json` records the names and, since the
   4.3.0 migration, the values the package shares with the Meridian browser
   workstation; `scripts/check_token_parity.py` checks both when the package
-  sits in that repository and skips the comparison when it does not. The three
-  recorded divergences (radii, type faces, chart-comparison hues) are the
-  application's own choices and are not defects in either side.
+  sits in that repository and skips the comparison when it does not. The one
+  recorded divergence, the application's unified 2px radii, is its own choice
+  and not a defect in either side.
 
 The archive excludes uploads, scraps, screenshots, embedded application-source
 snapshots, local dependency directories, and previous export output. It retains

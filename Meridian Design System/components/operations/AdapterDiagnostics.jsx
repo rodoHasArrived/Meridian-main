@@ -40,7 +40,7 @@ function inject() {
 .mds-adpt__t span{font:600 9px var(--font-data,monospace);letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted,#606870)}
 .mds-adpt__t[data-sev="blocked"] b{color:var(--severity-blocked-fg,#883832)}
 .mds-adpt__t[data-sev="action"] b{color:var(--severity-action-fg,#724D11)}
-.mds-adpt__t[data-sev="review"] b{color:var(--severity-review-fg,#944A32)}
+.mds-adpt__t[data-sev="review"] b{color:var(--severity-review-fg,#8E4730)}
 .mds-adpt__t[data-sev="ready"] b{color:var(--severity-ready-fg,#225840)}
 .mds-adpt__cols,.mds-adpt__row{display:grid;grid-template-columns:104px minmax(150px,1fr) 96px 118px 116px 122px;gap:10px;align-items:baseline}
 .mds-adpt__cols{padding:5px 13px;border-bottom:1px solid var(--border-divider,#E2DED5);background:var(--card-surface-raised,#FCFBF8);font:600 9px var(--font-data,monospace);letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted,#606870)}
@@ -82,8 +82,8 @@ function inject() {
 .mds-apc[data-sev="blocked"] .mds-apc__dot{background:var(--severity-blocked-fg,#883832)}
 .mds-apc[data-sev="action"]{color:var(--severity-action-fg,#724D11);border-color:var(--severity-action-bd,#986717);background:var(--severity-action-bg,#986717)}
 .mds-apc[data-sev="action"] .mds-apc__dot{background:var(--severity-action-fg,#724D11)}
-.mds-apc[data-sev="review"]{color:var(--severity-review-fg,#944A32);border-color:var(--severity-review-bd,#C56343);background:var(--severity-review-bg,#C56343)}
-.mds-apc[data-sev="review"] .mds-apc__dot{background:var(--severity-review-fg,#944A32)}
+.mds-apc[data-sev="review"]{color:var(--severity-review-fg,#8E4730);border-color:var(--severity-review-bd,#C56343);background:var(--severity-review-bg,#C56343)}
+.mds-apc[data-sev="review"] .mds-apc__dot{background:var(--severity-review-fg,#8E4730)}
 .mds-apc[data-sev="ready"]{color:var(--severity-ready-fg,#225840);border-color:var(--severity-ready-bd,#2E7655);background:var(--severity-ready-bg,#2E7655)}
 .mds-apc[data-sev="ready"] .mds-apc__dot{background:var(--severity-ready-fg,#225840)}
 .mds-apc__next{font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-muted,#606870)}

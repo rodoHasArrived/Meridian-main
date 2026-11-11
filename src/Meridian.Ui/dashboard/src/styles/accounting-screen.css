@@ -72,7 +72,7 @@
   background: var(--ws-surface, #F8F7F3);
   padding: 0.125rem 0.5rem;
   color: var(--ws-text, #20252B);
-  font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+  font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace;
   font-size: 0.6875rem;
   font-weight: 760;
   line-height: 1;
@@ -265,7 +265,7 @@
 }
 
 .reconcile-table tbody tr:focus-visible {
-  outline: 2px solid var(--ws-accent, #C56343);
+  outline: 2px solid var(--interaction-focus, #2D6FB3);
   outline-offset: -2px;
 }
 
@@ -283,7 +283,7 @@
   overflow: hidden;
   margin-top: 0.25rem;
   color: var(--ws-text-muted, #606870);
-  font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+  font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace;
   font-size: 0.6875rem;
   line-height: 1.25;
   text-overflow: ellipsis;
@@ -292,7 +292,7 @@
 
 .reconcile-table td.num {
   color: var(--ws-text, #20252B);
-  font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+  font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace;
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum" 1;
   font-size: 0.8125rem;
@@ -331,7 +331,7 @@
   display: block;
   margin-top: 0.4rem;
   color: var(--ws-text, #20252B);
-  font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+  font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace;
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum" 1;
   font-size: 0.95rem;
@@ -398,8 +398,8 @@
 .accounting-journal-header-grid input:focus,
 .accounting-journal-table input:focus,
 .accounting-journal-table select:focus {
-  border-color: var(--ws-accent, #C56343);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ws-accent, #C56343) 20%, transparent);
+  border-color: var(--interaction-focus, #2D6FB3);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--interaction-focus, #2D6FB3) 20%, transparent);
 }
 
 .accounting-journal-table-wrap {
@@ -467,7 +467,7 @@
   border-top: 2px solid var(--ws-border-strong, #AAA49A);
   background: var(--ws-surface-subtle, #EBE8E1);
   color: var(--ws-text, #20252B);
-  font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+  font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace;
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum" 1;
   font-weight: 700;
@@ -475,7 +475,7 @@
 
 .accounting-journal-total-row td:first-child {
   color: var(--ws-text-muted, #606870);
-  font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
   font-size: 0.75rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -587,7 +587,7 @@
 
 #manual-je-validation-heading:focus,
 .accounting-journal-table tr:focus {
-  outline: 2px solid var(--ws-accent, #C56343);
+  outline: 2px solid var(--interaction-focus, #2D6FB3);
   outline-offset: 2px;
 }
 

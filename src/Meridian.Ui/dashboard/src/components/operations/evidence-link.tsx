@@ -14,10 +14,10 @@ const CSS = `
   color:var(--text-primary,#20252B);text-decoration:none;cursor:pointer;
   transition:border-color 120ms ease,background-color 120ms ease;}
 .mds-evidence:hover{border-color:var(--border-hover,#BEB8AD);background:var(--bg-hover,#EDEFF0);}
-.mds-evidence:focus-visible{outline:var(--focus-ring,2px solid var(--ws-focus,#2D6FB3));outline-offset:var(--focus-ring-offset,2px);}
+.mds-evidence:focus-visible{outline:var(--focus-ring,2px solid var(--interaction-focus, #2D6FB3));outline-offset:var(--focus-ring-offset,2px);}
 .mds-evidence__dot{width:7px;height:7px;border-radius:50%;flex:0 0 auto;background:var(--state-muted-fg,#606870);}
 .mds-evidence--ready .mds-evidence__dot{background:var(--state-healthy-fg,#225840);}
-.mds-evidence--review .mds-evidence__dot{background:var(--severity-review-fg,#944A32);}
+.mds-evidence--review .mds-evidence__dot{background:var(--severity-review-fg,#8E4730);}
 .mds-evidence--action .mds-evidence__dot{background:var(--state-warn-fg,#724D11);}
 .mds-evidence--blocked .mds-evidence__dot{background:var(--state-danger-fg,#883832);}
 .mds-evidence__label{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}

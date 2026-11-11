@@ -23,7 +23,7 @@ function inject() {
   background:var(--severity-info-fg,#606870);}
 .mds-issue--blocked .mds-issue__dot{background:var(--severity-blocked-fg,#883832);}
 .mds-issue--action .mds-issue__dot{background:var(--severity-action-fg,#724D11);}
-.mds-issue--review .mds-issue__dot{background:var(--severity-review-fg,#944A32);}
+.mds-issue--review .mds-issue__dot{background:var(--severity-review-fg,#8E4730);}
 .mds-issue--ready .mds-issue__dot{background:var(--severity-ready-fg,#225840);}
 .mds-issue__code{font-family:var(--font-data,monospace);font-size:11px;font-weight:700;
   color:var(--text-secondary,#535C65);white-space:nowrap;}

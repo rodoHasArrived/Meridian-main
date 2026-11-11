@@ -23,7 +23,7 @@
 }
 
 .companion-pane-badge {
-  font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+  font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace;
   font-size: 0.75rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -66,12 +66,12 @@
 
 .pop-out-pane-fallback {
   font-size: 0.6875rem;
-  color: var(--accent-ink, #944A32);
+  color: var(--brand-signal-text, #8E4730);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 
 .pop-out-pane-fallback:focus-visible {
-  outline: 2px solid var(--cyan-primary, #C56343);
+  outline: 2px solid var(--interaction-focus, #2D6FB3);
   outline-offset: 2px;
 }

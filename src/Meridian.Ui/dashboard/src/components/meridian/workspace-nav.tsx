@@ -123,7 +123,13 @@ export function WorkspaceNav({
                   )}
                   onClick={onNavigate}
                 >
-                  <img className={designSystemNavRailClasses.itemIcon} src={iconSrc} width="16" height="16" alt="" aria-hidden="true" />
+                  {/* External SVG images cannot inherit the link's currentColor. A mask
+                      keeps the canonical asset shape and follows every theme/state. */}
+                  <span
+                    className={cn(designSystemNavRailClasses.itemIcon, "operator-nav-item__asset")}
+                    style={{ maskImage: `url("${iconSrc}")` }}
+                    aria-hidden="true"
+                  />
                   <span className="operator-nav-label truncate font-medium">{item.label}</span>
                 </Link>
                 <AttentionCount count={item.attentionCount} />

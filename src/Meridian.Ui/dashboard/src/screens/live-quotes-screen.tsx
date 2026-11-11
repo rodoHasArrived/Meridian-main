@@ -1197,7 +1197,7 @@ function PriceSparkline({ sparkline }: { sparkline: LiveQuotesSparklineViewModel
         x={sparkline.labelX}
         y={sparkline.highLabelY}
         textAnchor="end"
-        fontFamily="Cascadia Mono, JetBrains Mono, ui-monospace"
+        fontFamily="IBM Plex Mono, ui-monospace, monospace"
         fontSize="10"
         fill="currentColor"
         fillOpacity="0.55"
@@ -1208,7 +1208,7 @@ function PriceSparkline({ sparkline }: { sparkline: LiveQuotesSparklineViewModel
         x={sparkline.labelX}
         y={sparkline.lowLabelY}
         textAnchor="end"
-        fontFamily="Cascadia Mono, JetBrains Mono, ui-monospace"
+        fontFamily="IBM Plex Mono, ui-monospace, monospace"
         fontSize="10"
         fill="currentColor"
         fillOpacity="0.55"

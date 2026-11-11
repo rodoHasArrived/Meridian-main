@@ -1,11 +1,10 @@
 // Meridian EmptyState (Concrete) — a consistent zero-data placeholder for tables and
 // panels. A muted line-icon, a title, an optional detail line, and an optional primary
-// action (steel accent). Flat, no decoration.
+// action (graphite/paper). Flat, no decoration.
 import type { AriaRole, JSX } from "react";
 import { injectStyle } from "../operations/inject-style";
 
-// The workstation's --accent is a bare HSL triple for Tailwind, so the action reads the full-color
-// --ws-accent tokens and the accent foreground, as the primary Button does (light and dark).
+// Use the same structural action and blue focus roles as the native primary Button.
 const CSS = `
 .mds-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;
   text-align:center;font-family:var(--font-body);padding:48px 24px;gap:12px;}
@@ -14,11 +13,11 @@ const CSS = `
 .mds-empty__title{font-size:14px;font-weight:600;color:var(--text-secondary,#535C65);}
 .mds-empty--compact .mds-empty__title{font-size:13px;}
 .mds-empty__detail{font-size:12px;color:var(--text-muted,#606870);max-width:280px;line-height:1.5;}
-.mds-empty__action{margin-top:4px;padding:7px 16px;border:1px solid var(--ws-accent,#C56343);
-  background:var(--ws-accent,#C56343);color:hsl(var(--accent-foreground,0 0% 100%));border-radius:var(--radius-button,2px);
+.mds-empty__action{margin-top:4px;padding:7px 16px;border:1px solid var(--brand-axis,#29323A);
+  background:var(--brand-axis,#29323A);color:var(--ink-inverse,#F5F3EE);border-radius:var(--radius-button,2px);
   font-family:var(--font-body);font-size:12px;font-weight:600;cursor:pointer;transition:background .12s ease;}
-.mds-empty__action:hover{background:var(--ws-accent-pressed,#CB6E4E);border-color:var(--ws-accent-pressed,#CB6E4E);}
-.mds-empty__action:focus-visible{outline:var(--focus-ring,2px solid var(--ws-focus,#2D6FB3));outline-offset:2px;}
+.mds-empty__action:hover{background:var(--ws-primary-hover,#424A50);border-color:var(--brand-axis,#29323A);}
+.mds-empty__action:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3);outline-offset:2px;}
 `;
 
 export type EmptyStateIcon = "table" | "search" | "chart" | "docs" | "inbox";

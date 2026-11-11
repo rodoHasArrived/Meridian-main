@@ -1,100 +1,104 @@
-/* Monospace resolves through the local Cascadia Mono @font-face below and the
-   system `ui-monospace` stack — no external font fetch. A render-blocking
-   external Google Fonts import for JetBrains Mono was removed: it failed under
-   offline / air-gapped / strict-CSP operator deployments and leaked the client
-   IP + User-Agent for a font that is only ever a mid-stack fallback. A locally
-   installed JetBrains Mono is still picked up by name where present. Do not
-   re-add an external font import; self-host the WOFF2 as a bundled @font-face
-   if the exact face is required. */
-
 @import "tailwindcss" source(none);
 @config "../../tailwind.config.ts";
 
+/* Meridian webfonts — Programmed Institutionalism.
+   Interface: IBM Plex Sans (modern grotesk, per the identity brief).
+   Data/code: IBM Plex Mono — ALL numerics are mono + tabular; prices never jump.
+   Both families are SELF-HOSTED from assets/fonts/ (OFL — licenses alongside):
+   zero egress, identical rendering everywhere. local() first so an installed
+   copy short-circuits the download. The identity wordmark on the brand sheet
+   uses a geometric grotesk we don't have binaries for; IBM Plex Sans is the
+   documented substitute until the real face is supplied. */
+
+/* IBM Plex Sans — self-hosted. */
 @font-face {
-  font-family: "Segoe UI Variable Display";
-  src: local("Segoe UI Variable Display"), local("Segoe UI Variable Display Semibold"), local("Segoe UI Semibold");
-  font-weight: 100 900;
+  font-family: "IBM Plex Sans";
+  src: local("IBM Plex Sans"), local("IBMPlexSans"),
+       url("../assets/fonts/IBMPlexSans-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Sans";
+  src: local("IBM Plex Sans Italic"), local("IBMPlexSans-Italic"),
+       url("../assets/fonts/IBMPlexSans-Italic.ttf") format("truetype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Sans";
+  src: local("IBM Plex Sans Medium"), local("IBMPlexSans-Medium"),
+       url("../assets/fonts/IBMPlexSans-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Sans";
+  src: local("IBM Plex Sans SemiBold"), local("IBMPlexSans-SemiBold"),
+       url("../assets/fonts/IBMPlexSans-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Sans";
+  src: local("IBM Plex Sans Bold"), local("IBMPlexSans-Bold"),
+       url("../assets/fonts/IBMPlexSans-Bold.ttf") format("truetype");
+  font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
 
+/* IBM Plex Mono — self-hosted. local() first so an installed copy wins. */
 @font-face {
-  font-family: "Segoe UI Variable Text";
-  src: local("Segoe UI Variable Text"), local("Segoe UI Variable"), local("Segoe UI");
-  font-weight: 100 900;
+  font-family: "IBM Plex Mono";
+  src: local("IBM Plex Mono"), local("IBMPlexMono"),
+       url("../assets/fonts/IBMPlexMono-Regular.ttf") format("truetype");
+  font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
-
 @font-face {
-  font-family: "Cascadia Mono";
-  src: local("Cascadia Mono"), local("Cascadia Code"), local("CascadiaMono");
-  font-weight: 200 700;
+  font-family: "IBM Plex Mono";
+  src: local("IBM Plex Mono Italic"), local("IBMPlexMono-Italic"),
+       url("../assets/fonts/IBMPlexMono-Italic.ttf") format("truetype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: local("IBM Plex Mono Medium"), local("IBMPlexMono-Medium"),
+       url("../assets/fonts/IBMPlexMono-Medium.ttf") format("truetype");
+  font-weight: 500;
   font-style: normal;
   font-display: swap;
 }
-
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: local("IBM Plex Mono SemiBold"), local("IBMPlexMono-SemiBold"),
+       url("../assets/fonts/IBMPlexMono-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: local("IBM Plex Mono Bold"), local("IBMPlexMono-Bold"),
+       url("../assets/fonts/IBMPlexMono-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
 @layer base {
-  /* Light appearance remains an explicit alias for nested panels that already
-     opt into it. The workstation default below uses the same tokens.
-     Programmed Institutionalism 4.3.0 palette: canvas #F2F0EB · panel #F8F7F3 ·
-     graphite primary #29323A · terracotta signal #C56343 · border #D2CDC3. Radii
-     stay at 2px; card shadow is a hairline (borders carry elevation).
-     Keep in sync with the :root block below.
-  ──────────────────────────────────────────────────────────────────────────*/
+  /* Both the page and explicitly light nested panels own the complete bridge.
+     Redeclaring the aliases here makes them resolve against local light primitives
+     when the surrounding page uses automatic or manual dark appearance. */
+  :root,
   [data-appearance="light"] {
-    --background: 43 21% 94%;
-    --foreground: 213 15% 15%;
-    --card: 48 26% 96%;
-    --card-foreground: 213 15% 15%;
-    --popover: 48 26% 96%;
-    --popover-foreground: 213 15% 15%;
-    --primary: 208 17% 19%;
-    --primary-foreground: 43 26% 95%;
-    --secondary: 42 20% 90%;
-    --secondary-foreground: 213 15% 15%;
-    --muted: 45 40% 98%;
-    --muted-foreground: 210 8% 41%;
-    --accent: 15 53% 52%;
-    --accent-foreground: 210 27.8% 7.1%;
-    --border: 40 14% 79%;
-    --input: 40 14% 79%;
-    --ring: 210 60% 44%;
-    --paper: 209.3 18.1% 44.5%;
-    --live: 15 53% 52%;
-    --live-env: 5 47% 48%;
-    --warning: 37 74% 34%;
-    --success: 152 44% 32%;
-    --danger: 5 47% 48%;
-    --panel-strong: 48 26% 96%;
-    --panel-soft: 42 20% 90%;
-    --surface-raise: 45 40% 98%;
-    --sidebar: 42 20% 90%;
-    --sidebar-foreground: 210 9.8% 36.1%;
-    --sidebar-primary: 15 53% 52%;
-    --sidebar-primary-foreground: 210 27.8% 7.1%;
-    --sidebar-accent: 207.3 29.7% 92.7%;
-    --sidebar-accent-foreground: 213 15% 15%;
-    --sidebar-border: 40 14% 79%;
-    --sidebar-ring: 210 60% 44%;
-    --chart-1: 15 53% 52%;
-    --chart-2: 152 44% 32%;
-    --chart-3: 5 47% 48%;
-    --chart-4: 37 74% 34%;
-    --chart-5: 156 2.2% 55.9%;
-    --shadow-color: 218 15% 11%;
-    --shadow-opacity: 0.06;
-    --shadow-blur: 1px;
-    --shadow-spread: 0px;
-    --shadow-offset-x: 0px;
-    --shadow-offset-y: 1px;
-    --radius-chip: 2px;
-    --radius-button: 2px;
-    --radius-card: 2px;
-    --radius-checkbox: 2px;
-  }
-
-  :root {
     /* ─── Track A: HSL / Tailwind ─────────────────────────────────────────────
        These HSL channel variables feed Tailwind utility classes (bg-background,
        text-foreground, border-border, ring-primary, etc.). ALL components/ui/
@@ -119,12 +123,29 @@
     --muted: 45 40% 98%;
     --muted-foreground: 210 8% 41%;
     --accent: 15 53% 52%;
-    --accent-foreground: 210 27.8% 7.1%;
+    --accent-foreground: 209 27% 7%;
     --border: 40 14% 79%;
     --input: 40 14% 79%;
     --ring: 210 60% 44%;
-    --paper: 209.3 18.1% 44.5%;
-    --live: 15 53% 52%;
+    --focus: #2D6FB3;
+    --info-surface: #E3ECF2;
+    --topbar-text-muted: #A9B1B8;
+    --topbar-text-faint: #969EA6;
+    --statusbar-text: #C9CFD4;
+    --selected: #496C8F;
+    --selected-surface: #E7EDF2;
+    --interaction-hover: #DDE5EC;
+    --link: #2A5F96;
+    --link-hover: #1F4A76;
+    --brand-field: #5D7286;
+    --brand-axis: #29323A;
+    --ink-inverse: #F5F3EE;
+    --navy: #2E4B6E;
+    --pending: #7A6B52;
+    --neutral: #6D757D;
+    --missing: #A34A42;
+    --paper: 209 18% 45%;
+    --live: 152 44% 32%;
     --live-env: 5 47% 48%;
     --warning: 37 74% 34%;
     --success: 152 44% 32%;
@@ -136,10 +157,10 @@
        Maps the operator rail surface to the light institutional rail.
     ──────────────────────────────────────────────────────────────────────────*/
     --sidebar: 42 20% 90%;
-    --sidebar-foreground: 210 9.8% 36.1%;
-    --sidebar-primary: 15 53% 52%;
-    --sidebar-primary-foreground: 210 27.8% 7.1%;
-    --sidebar-accent: 207.3 29.7% 92.7%;
+    --sidebar-foreground: 210 10% 36%;
+    --sidebar-primary: 210 32% 42%;
+    --sidebar-primary-foreground: 43 26% 95%;
+    --sidebar-accent: 207 30% 93%;
     --sidebar-accent-foreground: 213 15% 15%;
     --sidebar-border: 40 14% 79%;
     --sidebar-ring: 210 60% 44%;
@@ -149,11 +170,11 @@
        terracotta #C56343 · forest #2E7655 · brick #B54B42 · ochre #986717 ·
        warm slate benchmark #7E7A72.
     ──────────────────────────────────────────────────────────────────────────*/
-    --chart-1: 15 53% 52%;
+    --chart-1: 208 17% 19%;
     --chart-2: 152 44% 32%;
     --chart-3: 5 47% 48%;
     --chart-4: 37 74% 34%;
-    --chart-5: 156 2.2% 55.9%;
+    --chart-5: 210 7% 46%;
     /* ─── Border radii — Concrete: unified 2px everywhere ────────────────────
        The Concrete system uses one tight 2px corner across chips, controls,
        and surfaces; structure comes from borders, not rounding. The named
@@ -186,7 +207,7 @@
        CSS, aligned to the handoff --ws-* block. Compatibility aliases below
        must point at these --ws-* tokens.
          canvas #F2F0EB · band #EBE8E1 · panel #F8F7F3 · raised #FCFBF8
-         border #D2CDC3 (hover #BEB8AD · strong #AAA49A) · terracotta #C56343
+         border #D2CDC3 (hover #C6C3BB · strong #AAA49A) · terracotta #C56343
          selection/active rail use the interaction blue family (#E7EDF2)
     ──────────────────────────────────────────────────────────────────────────*/
     --ws-page-bg: #F2F0EB;
@@ -209,15 +230,16 @@
     same everywhere; the package has declared them since the restyle and the
     workstation never did, which is why app-shell.css was still painting the
     pre-restyle mint, yellow and pink. */
+    --chrome-paper: #7F9DB8;
     --chrome-ok: #65A983;
     --chrome-warn: #C69B4D;
     --chrome-err: #D97A70;
     /* Type faces as tokens. Thirteen call sites name these and the workstation declared
     none of them, so every one resolved to nothing and inherited instead. Values mirror
     the package's tokens/typography.css. */
-    --font-display: "Segoe UI Variable Display", "Segoe UI Semibold", "Segoe UI", system-ui, -apple-system, sans-serif;
-    --font-body: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
-    --font-data: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+    --font-display: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+    --font-body: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+    --font-data: "IBM Plex Mono", ui-monospace, Consolas, monospace;
     --ws-rail-bg: #EBE8E1;
     --ws-rail-active: #E7EDF2;
     --ws-row-hover: #EDEFF0;
@@ -226,13 +248,39 @@
     --ws-inspector-bg: #F8F7F3;
     --ws-canvas-bg: #FCFBF8;
     --ws-accent: #C56343;
-    --ws-accent-hover: #D2795A;
+    --ws-accent-hover: #D2795A;  /* 4.55:1 under the white label */
     --ws-accent-pressed: #CB6E4E;
-    /* Focus and keyboard selection are the interaction blue, never the signal. */
-    --ws-focus: #2D6FB3;
     /* Concrete is flat: the workstation shadow token carries NO card shadow;
        borders carry structure. Only detached overlays float (--shadow-float). */
     --ws-shadow: none;
+
+    /* Design-system 4.3 role bridge. Palette names never determine interaction roles. */
+    --brand-signal: var(--ws-accent);
+    --brand-signal-hover: var(--ws-accent-hover);
+    --brand-signal-dim: var(--ws-accent-pressed);
+    --brand-signal-text: color-mix(in srgb, var(--brand-signal) 72%, var(--dim-mix));
+    --brand-field-text: color-mix(in srgb, var(--brand-field) 85%, var(--dim-mix));
+    --scenario-signal: var(--brand-signal);
+    --interaction-focus: var(--focus);
+    --interaction-selected: var(--selected);
+    --interaction-selected-surface: var(--selected-surface);
+    --interaction-hovered: var(--interaction-hover);
+    --interaction-link: var(--link);
+    --interaction-link-hover: var(--link-hover);
+    --semantic-info: var(--purple);
+    --border-focus: var(--interaction-focus);
+    --focus-ring: 2px solid var(--interaction-focus);
+    --focus-ring-offset: 1px;
+    --theme-border-focus: var(--interaction-focus);
+    --theme-font-display: var(--font-display);
+    --theme-font-body: var(--font-body);
+    --theme-font-mono: var(--font-data);
+    --pending-dim: color-mix(in srgb, var(--pending) 75%, var(--dim-mix));
+    --ws-primary-hover: color-mix(in srgb, var(--brand-axis) 88%, var(--ws-surface));
+    --ws-primary-pressed: color-mix(in srgb, var(--brand-axis) 78%, var(--ws-surface));
+    --chart-primary: var(--brand-axis);
+    --chart-scenario: var(--scenario-signal);
+    --numeric-data: slashed-zero tabular-nums;
 
     /* Compatibility bridge for shared design-system components. Keep these
        aliases token-based so automatic and operator-selected themes inherit
@@ -265,9 +313,6 @@
     --orange: #986717;
     --amber: var(--orange);
     --purple: #2F648A;
-    --pending: #7A6B52;      /* awaiting an upstream event: warm, not the information blue */
-    --brand-field: #5D7286;  /* the Field slate: paper mode and repeated marks, never the signal */
-    --series-prior: #7890A4; /* prior-period slate: comparison trace and interval band */
     /* The -dim variants the severity/state foregrounds below read. These are
        derived exactly as the design-system package derives them, so the two
        tracks cannot drift. The package declared them and this track did not,
@@ -277,11 +322,6 @@
     --red-dim:    color-mix(in srgb, var(--red)    75%, var(--dim-mix));
     --orange-dim: color-mix(in srgb, var(--orange) 75%, var(--dim-mix));
     --purple-dim: color-mix(in srgb, var(--purple) 75%, var(--dim-mix));
-    /* Text inks for the three hues with no -dim: the signal, the Field slate and pending
-       are each under 4.5:1 as text on their own wash in light mode. Same 75% rule. */
-    --accent-ink: color-mix(in srgb, var(--ws-accent) 75%, var(--dim-mix));
-    --brand-field-dim: color-mix(in srgb, var(--brand-field) 75%, var(--dim-mix));
-    --pending-dim: color-mix(in srgb, var(--pending) 75%, var(--dim-mix));
 
     --bg: var(--ws-page-bg);
     --bg-medium: var(--ws-surface-subtle);
@@ -304,13 +344,11 @@
     --surface-input: var(--ws-surface-subtle);
     --cyan-primary: var(--ws-accent);
     --cyan-secondary: var(--ws-accent-hover);
-    --cyan-focus: var(--ws-focus);
+    --cyan-focus: var(--interaction-focus);
     --cyan-pressed: var(--ws-accent-pressed);
 
     /* ─── Environment modes (Live · Paper · Fixture) — derived from Tier 2.
-       Paper is the Field slate (--brand-field), not the signal: a simulated
-       session must not read as the brand or as a Review chip. Hex, NOT the Track-A HSL
-       channel triple, so color-mix() stays valid. ─────────────────────────*/
+       Paper uses the Field slate, distinct from live red and the brand signal. ─────────────────────────*/
     --mode-live: var(--red);
     --mode-paper: var(--brand-field);
     --mode-fixture: var(--orange);
@@ -326,7 +364,7 @@
     --state-danger-fg: var(--red-dim);
     --state-danger-bd: color-mix(in srgb, var(--red) 35%, transparent);
     --state-danger-bg: color-mix(in srgb, var(--red) 10%, transparent);
-    --state-paper-fg: var(--brand-field-dim);
+    --state-paper-fg: var(--brand-field-text);
     --state-paper-bd: color-mix(in srgb, var(--brand-field) 34%, transparent);
     --state-paper-bg: color-mix(in srgb, var(--brand-field) 10%, transparent);
     --state-strategy-fg: var(--purple-dim);
@@ -343,14 +381,14 @@
     --state-pending-bg: color-mix(in srgb, var(--pending) 10%, transparent);
 
     /* ─── Severity layer (operator status chips) — DERIVED trios ────────────
-       Blocked (brick) · Action (ochre) · Review (terracotta ink) · Ready (forest) · Info.*/
+       Blocked (red) · Action (ochre) · Review (steel) · Ready (spruce) · Info.*/
     --severity-blocked-fg: var(--red-dim);
     --severity-blocked-bd: color-mix(in srgb, var(--red) 40%, transparent);
     --severity-blocked-bg: color-mix(in srgb, var(--red) 10%, transparent);
     --severity-action-fg: var(--orange-dim);
     --severity-action-bd: color-mix(in srgb, var(--orange) 42%, transparent);
     --severity-action-bg: color-mix(in srgb, var(--orange) 11%, transparent);
-    --severity-review-fg: var(--accent-ink);
+    --severity-review-fg: var(--brand-signal-text);
     --severity-review-bd: color-mix(in srgb, var(--ws-accent) 36%, transparent);
     --severity-review-bg: color-mix(in srgb, var(--ws-accent) 10%, transparent);
     --severity-ready-fg: var(--green-dim);
@@ -371,26 +409,26 @@
     --chart-grid-major: #D2CDC3;
     --chart-up: #2E7655;
     --chart-dn: #B54B42;
-    --chart-ma20: #5D7286;
-    --chart-ma50: #2E4B6E;
-    --chart-bench: #8C918F;
-    --chart-band: color-mix(in srgb, var(--series-prior) 14%, transparent);
+    --chart-ma20: var(--brand-field);
+    --chart-ma50: var(--navy);
+    --chart-bench: var(--chart-compare-2);
+    --chart-band: color-mix(in srgb, var(--chart-compare-1) 14%, transparent);
     --chart-crosshair: #C56343;
     /* Overlay channels the historical chart reads: comparison symbols, moving averages,
        Bollinger envelope and RSI. They were referenced and never declared, so every
        overlay rendered its literal — the pre-restyle saturated violet/yellow/teal/blue
        /pink — no matter what this block said. The seven series are the palette; the
        named channels alias them, so an overlay follows the mode with everything else. */
-    --chart-series-1: #2E7655;
-    --chart-series-2: #C56343;
-    --chart-series-3: #7C5CBF;
-    --chart-series-4: #B08A2E;
-    --chart-series-5: #B54B42;
-    --chart-series-6: #986717;
-    --chart-series-7: #606870;
-    --chart-compare-1: var(--chart-series-2);
-    --chart-compare-2: var(--chart-series-4);
-    --chart-compare-3: var(--chart-series-1);
+    --chart-series-1: var(--green);
+    --chart-series-2: var(--brand-field);
+    --chart-series-3: var(--purple);
+    --chart-series-4: var(--navy);
+    --chart-series-5: var(--red);
+    --chart-series-6: var(--orange);
+    --chart-series-7: var(--neutral);
+    --chart-compare-1: #7890A4;
+    --chart-compare-2: #8C918F;
+    --chart-compare-3: var(--green);
     --chart-sma-20: var(--chart-ma20);
     --chart-sma-50: var(--chart-ma50);
     --chart-bollinger: var(--chart-bench);
@@ -407,7 +445,7 @@
   }
 
   /* ─── Dark mode — graphite charcoal, equally flat ───────────────────────────
-     Cool graphite dark (package tokens/colors-dark.css): canvas #11171D · panel #171E25 ·
+     Warm graphite dark (handoff colors-dark.css): canvas #14120F · panel #201D19 ·
      band #1D252D · terracotta signal #D88466 · border #2C3640. Only the base tokens
      flip; every derived severity/state/mode trio re-derives from --green/--red/
      --orange/--purple/--ws-accent via color-mix(), so the ops layer follows for
@@ -437,8 +475,26 @@
       --border: 210 19% 21%;
       --input: 210 19% 21%;
       --ring: 211 72% 63%;
-      --paper: 208.4 28.6% 61%;
-      --live: 16 59% 62%;
+      --focus: #5C9FE5;
+      --info-surface: #20303B;
+      /* Chrome text on the deeper dark chrome (#0D1217): the package's dark values. */
+      --topbar-text-muted: #9AA2A9;
+      --topbar-text-faint: #7F8993;
+      --statusbar-text: #BEC4CA;
+      --selected: #7F9DB8;
+      --selected-surface: #2C4054;
+      --interaction-hover: #25303A;
+      --link: #7FB6EC;
+      --link-hover: #A7CDF4;
+      --brand-field: #7F9DB8;
+      --brand-axis: #F1EFEA;
+      --ink-inverse: #20252B;
+      --navy: #85A3C4;
+      --pending: #A39374;
+      --neutral: #9AA2A9;
+      --missing: #D4776C;
+      --paper: 208 29% 61%;
+      --live: 146 28% 53%;
       --live-env: 6 58% 65%;
       --warning: 39 51% 54%;
       --success: 146 28% 53%;
@@ -447,18 +503,18 @@
       --panel-soft: 210 22% 15%;
       --surface-raise: 210 23% 16%;
       --sidebar: 210 22% 15%;
-      --sidebar-foreground: 210 10.2% 76.9%;
-      --sidebar-primary: 16 59% 62%;
-      --sidebar-primary-foreground: 20 17.6% 6.7%;
-      --sidebar-accent: 210 31.2% 25.1%;
+      --sidebar-foreground: 210 10% 77%;
+      --sidebar-primary: 208 29% 61%;
+      --sidebar-primary-foreground: 213 15% 15%;
+      --sidebar-accent: 210 31% 25%;
       --sidebar-accent-foreground: 43 20% 93%;
       --sidebar-border: 210 19% 21%;
       --sidebar-ring: 211 72% 63%;
-      --chart-1: 16 59% 62%;
+      --chart-1: 43 20% 93%;
       --chart-2: 146 28% 53%;
       --chart-3: 6 58% 65%;
       --chart-4: 39 51% 54%;
-      --chart-5: 208 8% 63.3%;
+      --chart-5: 208 8% 63%;
 
       /* Track B — --ws-* + semantic hexes */
       --ws-page-bg: #11171D;
@@ -487,9 +543,9 @@
       /* Type faces as tokens. Thirteen call sites name these and the workstation declared
       none of them, so every one resolved to nothing and inherited instead. Values mirror
       the package's tokens/typography.css. */
-      --font-display: "Segoe UI Variable Display", "Segoe UI Semibold", "Segoe UI", system-ui, -apple-system, sans-serif;
-      --font-body: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
-      --font-data: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+      --font-display: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+      --font-body: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+      --font-data: "IBM Plex Mono", ui-monospace, Consolas, monospace;
       --ws-rail-bg: #1D252D;
       --ws-rail-active: #2C4054;
       --ws-row-hover: #25303A;
@@ -500,16 +556,12 @@
       --ws-accent: #D88466;
       --ws-accent-hover: #E5A088;
       --ws-accent-pressed: #E19479;
-      --ws-focus: #5C9FE5;
 
       --accent-ghost: #35251F;
       --green: #65A983;
       --red: #D97A70;
       --orange: #C69B4D;
       --purple: #79A8C8;
-      --pending: #A39374;
-      --brand-field: #7F9DB8;
-      --series-prior: #7F9DB8;
       /* The -dim variants the severity/state foregrounds below read. These are
          derived exactly as the design-system package derives them, so the two
          tracks cannot drift. The package declared them and this track did not,
@@ -519,11 +571,6 @@
       --red-dim:    color-mix(in srgb, var(--red)    75%, var(--dim-mix));
       --orange-dim: color-mix(in srgb, var(--orange) 75%, var(--dim-mix));
       --purple-dim: color-mix(in srgb, var(--purple) 75%, var(--dim-mix));
-      /* Text inks for the three hues with no -dim: the signal, the Field slate and pending
-         are each under 4.5:1 as text on their own wash in light mode. Same 75% rule. */
-      --accent-ink: color-mix(in srgb, var(--ws-accent) 75%, var(--dim-mix));
-      --brand-field-dim: color-mix(in srgb, var(--brand-field) 75%, var(--dim-mix));
-      --pending-dim: color-mix(in srgb, var(--pending) 75%, var(--dim-mix));
 
       --border-hover: var(--ws-border-hover);
       --border-strong: var(--ws-border-strong);
@@ -534,25 +581,25 @@
       --chart-grid-major: #2C3640;
       --chart-up: #65A983;
       --chart-dn: #D97A70;
-      --chart-ma20: #7F9DB8;
-      --chart-ma50: #85A3C4;
-      --chart-bench: #9AA2A9;
+      --chart-ma20: var(--brand-field);
+      --chart-ma50: var(--navy);
+      --chart-bench: var(--chart-compare-2);
       --chart-crosshair: #D88466;
       /* Overlay channels the historical chart reads: comparison symbols, moving averages,
          Bollinger envelope and RSI. They were referenced and never declared, so every
          overlay rendered its literal — the pre-restyle saturated violet/yellow/teal/blue
          /pink — no matter what this block said. The seven series are the palette; the
          named channels alias them, so an overlay follows the mode with everything else. */
-      --chart-series-1: #65A983;
-      --chart-series-2: #D88466;
-      --chart-series-3: #9089B5;
-      --chart-series-4: #C29A4A;
-      --chart-series-5: #D97A70;
-      --chart-series-6: #B8923F;
-      --chart-series-7: #929CA6;
-      --chart-compare-1: var(--chart-series-2);
-      --chart-compare-2: var(--chart-series-4);
-      --chart-compare-3: var(--chart-series-1);
+      --chart-series-1: var(--green);
+      --chart-series-2: var(--brand-field);
+      --chart-series-3: var(--purple);
+      --chart-series-4: var(--navy);
+      --chart-series-5: var(--red);
+      --chart-series-6: var(--orange);
+      --chart-series-7: var(--neutral);
+      --chart-compare-1: #7F9DB8;
+      --chart-compare-2: #9AA2A9;
+      --chart-compare-3: var(--green);
       --chart-sma-20: var(--chart-ma20);
       --chart-sma-50: var(--chart-ma50);
       --chart-bollinger: var(--chart-bench);
@@ -581,8 +628,26 @@
     --border: 210 19% 21%;
     --input: 210 19% 21%;
     --ring: 211 72% 63%;
-    --paper: 208.4 28.6% 61%;
-    --live: 16 59% 62%;
+    --focus: #5C9FE5;
+    --info-surface: #20303B;
+    /* Chrome text on the deeper dark chrome (#0D1217): the package's dark values. */
+    --topbar-text-muted: #9AA2A9;
+    --topbar-text-faint: #7F8993;
+    --statusbar-text: #BEC4CA;
+    --selected: #7F9DB8;
+    --selected-surface: #2C4054;
+    --interaction-hover: #25303A;
+    --link: #7FB6EC;
+    --link-hover: #A7CDF4;
+    --brand-field: #7F9DB8;
+    --brand-axis: #F1EFEA;
+    --ink-inverse: #20252B;
+    --navy: #85A3C4;
+    --pending: #A39374;
+    --neutral: #9AA2A9;
+    --missing: #D4776C;
+    --paper: 208 29% 61%;
+    --live: 146 28% 53%;
     --live-env: 6 58% 65%;
     --warning: 39 51% 54%;
     --success: 146 28% 53%;
@@ -591,18 +656,18 @@
     --panel-soft: 210 22% 15%;
     --surface-raise: 210 23% 16%;
     --sidebar: 210 22% 15%;
-    --sidebar-foreground: 210 10.2% 76.9%;
-    --sidebar-primary: 16 59% 62%;
-    --sidebar-primary-foreground: 20 17.6% 6.7%;
-    --sidebar-accent: 210 31.2% 25.1%;
+    --sidebar-foreground: 210 10% 77%;
+    --sidebar-primary: 208 29% 61%;
+    --sidebar-primary-foreground: 213 15% 15%;
+    --sidebar-accent: 210 31% 25%;
     --sidebar-accent-foreground: 43 20% 93%;
     --sidebar-border: 210 19% 21%;
     --sidebar-ring: 211 72% 63%;
-    --chart-1: 16 59% 62%;
+    --chart-1: 43 20% 93%;
     --chart-2: 146 28% 53%;
     --chart-3: 6 58% 65%;
     --chart-4: 39 51% 54%;
-    --chart-5: 208 8% 63.3%;
+    --chart-5: 208 8% 63%;
 
     /* Track B — --ws-* + semantic hexes */
     --ws-page-bg: #11171D;
@@ -631,9 +696,9 @@
     /* Type faces as tokens. Thirteen call sites name these and the workstation declared
     none of them, so every one resolved to nothing and inherited instead. Values mirror
     the package's tokens/typography.css. */
-    --font-display: "Segoe UI Variable Display", "Segoe UI Semibold", "Segoe UI", system-ui, -apple-system, sans-serif;
-    --font-body: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
-    --font-data: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+    --font-display: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+    --font-body: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+    --font-data: "IBM Plex Mono", ui-monospace, Consolas, monospace;
     --ws-rail-bg: #1D252D;
     --ws-rail-active: #2C4054;
     --ws-row-hover: #25303A;
@@ -644,16 +709,12 @@
     --ws-accent: #D88466;
     --ws-accent-hover: #E5A088;
     --ws-accent-pressed: #E19479;
-    --ws-focus: #5C9FE5;
 
     --accent-ghost: #35251F;
     --green: #65A983;
     --red: #D97A70;
     --orange: #C69B4D;
     --purple: #79A8C8;
-    --pending: #A39374;
-    --brand-field: #7F9DB8;
-    --series-prior: #7F9DB8;
     /* The -dim variants the severity/state foregrounds below read. These are
        derived exactly as the design-system package derives them, so the two
        tracks cannot drift. The package declared them and this track did not,
@@ -663,11 +724,6 @@
     --red-dim:    color-mix(in srgb, var(--red)    75%, var(--dim-mix));
     --orange-dim: color-mix(in srgb, var(--orange) 75%, var(--dim-mix));
     --purple-dim: color-mix(in srgb, var(--purple) 75%, var(--dim-mix));
-    /* Text inks for the three hues with no -dim: the signal, the Field slate and pending
-       are each under 4.5:1 as text on their own wash in light mode. Same 75% rule. */
-    --accent-ink: color-mix(in srgb, var(--ws-accent) 75%, var(--dim-mix));
-    --brand-field-dim: color-mix(in srgb, var(--brand-field) 75%, var(--dim-mix));
-    --pending-dim: color-mix(in srgb, var(--pending) 75%, var(--dim-mix));
 
     --border-hover: var(--ws-border-hover);
     --border-strong: var(--ws-border-strong);
@@ -677,25 +733,25 @@
     --chart-grid-major: #2C3640;
     --chart-up: #65A983;
     --chart-dn: #D97A70;
-    --chart-ma20: #7F9DB8;
-    --chart-ma50: #85A3C4;
-    --chart-bench: #9AA2A9;
+    --chart-ma20: var(--brand-field);
+    --chart-ma50: var(--navy);
+    --chart-bench: var(--chart-compare-2);
     --chart-crosshair: #D88466;
     /* Overlay channels the historical chart reads: comparison symbols, moving averages,
        Bollinger envelope and RSI. They were referenced and never declared, so every
        overlay rendered its literal — the pre-restyle saturated violet/yellow/teal/blue
        /pink — no matter what this block said. The seven series are the palette; the
        named channels alias them, so an overlay follows the mode with everything else. */
-    --chart-series-1: #65A983;
-    --chart-series-2: #D88466;
-    --chart-series-3: #9089B5;
-    --chart-series-4: #C29A4A;
-    --chart-series-5: #D97A70;
-    --chart-series-6: #B8923F;
-    --chart-series-7: #929CA6;
-    --chart-compare-1: var(--chart-series-2);
-    --chart-compare-2: var(--chart-series-4);
-    --chart-compare-3: var(--chart-series-1);
+    --chart-series-1: var(--green);
+    --chart-series-2: var(--brand-field);
+    --chart-series-3: var(--purple);
+    --chart-series-4: var(--navy);
+    --chart-series-5: var(--red);
+    --chart-series-6: var(--orange);
+    --chart-series-7: var(--neutral);
+    --chart-compare-1: #7F9DB8;
+    --chart-compare-2: #9AA2A9;
+    --chart-compare-3: var(--green);
     --chart-sma-20: var(--chart-ma20);
     --chart-sma-50: var(--chart-ma50);
     --chart-bollinger: var(--chart-bench);
@@ -724,12 +780,29 @@
     --muted: 45 40% 98%;
     --muted-foreground: 210 8% 41%;
     --accent: 15 53% 52%;
-    --accent-foreground: 210 27.8% 7.1%;
+    --accent-foreground: 209 27% 7%;
     --border: 40 14% 79%;
     --input: 40 14% 79%;
     --ring: 210 60% 44%;
-    --paper: 209.3 18.1% 44.5%;
-    --live: 15 53% 52%;
+    --focus: #2D6FB3;
+    --info-surface: #E3ECF2;
+    --topbar-text-muted: #A9B1B8;
+    --topbar-text-faint: #969EA6;
+    --statusbar-text: #C9CFD4;
+    --selected: #496C8F;
+    --selected-surface: #E7EDF2;
+    --interaction-hover: #DDE5EC;
+    --link: #2A5F96;
+    --link-hover: #1F4A76;
+    --brand-field: #5D7286;
+    --brand-axis: #29323A;
+    --ink-inverse: #F5F3EE;
+    --navy: #2E4B6E;
+    --pending: #7A6B52;
+    --neutral: #6D757D;
+    --missing: #A34A42;
+    --paper: 209 18% 45%;
+    --live: 152 44% 32%;
     --live-env: 5 47% 48%;
     --warning: 37 74% 34%;
     --success: 152 44% 32%;
@@ -738,18 +811,18 @@
     --panel-soft: 42 20% 90%;
     --surface-raise: 45 40% 98%;
     --sidebar: 42 20% 90%;
-    --sidebar-foreground: 210 9.8% 36.1%;
-    --sidebar-primary: 15 53% 52%;
-    --sidebar-primary-foreground: 210 27.8% 7.1%;
-    --sidebar-accent: 207.3 29.7% 92.7%;
+    --sidebar-foreground: 210 10% 36%;
+    --sidebar-primary: 210 32% 42%;
+    --sidebar-primary-foreground: 43 26% 95%;
+    --sidebar-accent: 207 30% 93%;
     --sidebar-accent-foreground: 213 15% 15%;
     --sidebar-border: 40 14% 79%;
     --sidebar-ring: 210 60% 44%;
-    --chart-1: 15 53% 52%;
+    --chart-1: 208 17% 19%;
     --chart-2: 152 44% 32%;
     --chart-3: 5 47% 48%;
     --chart-4: 37 74% 34%;
-    --chart-5: 156 2.2% 55.9%;
+    --chart-5: 210 7% 46%;
 
     --ws-page-bg: #F2F0EB;
     --ws-surface: #F8F7F3;
@@ -777,9 +850,9 @@
     /* Type faces as tokens. Thirteen call sites name these and the workstation declared
     none of them, so every one resolved to nothing and inherited instead. Values mirror
     the package's tokens/typography.css. */
-    --font-display: "Segoe UI Variable Display", "Segoe UI Semibold", "Segoe UI", system-ui, -apple-system, sans-serif;
-    --font-body: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
-    --font-data: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+    --font-display: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+    --font-body: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+    --font-data: "IBM Plex Mono", ui-monospace, Consolas, monospace;
     --ws-rail-bg: #EBE8E1;
     --ws-rail-active: #E7EDF2;
     --ws-row-hover: #EDEFF0;
@@ -788,19 +861,14 @@
     --ws-inspector-bg: #F8F7F3;
     --ws-canvas-bg: #FCFBF8;
     --ws-accent: #C56343;
-    --ws-accent-hover: #D2795A;
+    --ws-accent-hover: #D2795A;  /* 4.55:1 under the white label */
     --ws-accent-pressed: #CB6E4E;
-    /* Focus and keyboard selection are the interaction blue, never the signal. */
-    --ws-focus: #2D6FB3;
 
     --accent-ghost: #F6E6DF;
     --green: #2E7655;
     --red: #B54B42;
     --orange: #986717;
     --purple: #2F648A;
-    --pending: #7A6B52;      /* awaiting an upstream event: warm, not the information blue */
-    --brand-field: #5D7286;  /* the Field slate: paper mode and repeated marks, never the signal */
-    --series-prior: #7890A4; /* prior-period slate: comparison trace and interval band */
     /* The -dim variants the severity/state foregrounds below read. These are
        derived exactly as the design-system package derives them, so the two
        tracks cannot drift. The package declared them and this track did not,
@@ -810,11 +878,6 @@
     --red-dim:    color-mix(in srgb, var(--red)    75%, var(--dim-mix));
     --orange-dim: color-mix(in srgb, var(--orange) 75%, var(--dim-mix));
     --purple-dim: color-mix(in srgb, var(--purple) 75%, var(--dim-mix));
-    /* Text inks for the three hues with no -dim: the signal, the Field slate and pending
-       are each under 4.5:1 as text on their own wash in light mode. Same 75% rule. */
-    --accent-ink: color-mix(in srgb, var(--ws-accent) 75%, var(--dim-mix));
-    --brand-field-dim: color-mix(in srgb, var(--brand-field) 75%, var(--dim-mix));
-    --pending-dim: color-mix(in srgb, var(--pending) 75%, var(--dim-mix));
 
     --border-hover: var(--ws-border-hover);
     --border-strong: var(--ws-border-strong);
@@ -824,25 +887,25 @@
     --chart-grid-major: #D2CDC3;
     --chart-up: #2E7655;
     --chart-dn: #B54B42;
-    --chart-ma20: #5D7286;
-    --chart-ma50: #2E4B6E;
-    --chart-bench: #8C918F;
+    --chart-ma20: var(--brand-field);
+    --chart-ma50: var(--navy);
+    --chart-bench: var(--chart-compare-2);
     --chart-crosshair: #C56343;
     /* Overlay channels the historical chart reads: comparison symbols, moving averages,
        Bollinger envelope and RSI. They were referenced and never declared, so every
        overlay rendered its literal — the pre-restyle saturated violet/yellow/teal/blue
        /pink — no matter what this block said. The seven series are the palette; the
        named channels alias them, so an overlay follows the mode with everything else. */
-    --chart-series-1: #2E7655;
-    --chart-series-2: #C56343;
-    --chart-series-3: #7C5CBF;
-    --chart-series-4: #B08A2E;
-    --chart-series-5: #B54B42;
-    --chart-series-6: #986717;
-    --chart-series-7: #606870;
-    --chart-compare-1: var(--chart-series-2);
-    --chart-compare-2: var(--chart-series-4);
-    --chart-compare-3: var(--chart-series-1);
+    --chart-series-1: var(--green);
+    --chart-series-2: var(--brand-field);
+    --chart-series-3: var(--purple);
+    --chart-series-4: var(--navy);
+    --chart-series-5: var(--red);
+    --chart-series-6: var(--orange);
+    --chart-series-7: var(--neutral);
+    --chart-compare-1: #7890A4;
+    --chart-compare-2: #8C918F;
+    --chart-compare-3: var(--green);
     --chart-sma-20: var(--chart-ma20);
     --chart-sma-50: var(--chart-ma50);
     --chart-bollinger: var(--chart-bench);
@@ -883,7 +946,7 @@
   }
 
   ::selection {
-    background: color-mix(in srgb, var(--ws-focus) 22%, transparent);
+    background: color-mix(in srgb, var(--focus) 22%, transparent);
   }
 
   /* Scrollbar refinement */
@@ -952,7 +1015,7 @@
     border-radius: var(--radius-xs);
     background: var(--severity-info-bg);
     color: var(--severity-info-fg);
-    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+    font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace;
     font-size: 0.75rem;
     font-weight: 700;
     line-height: 1;
@@ -1147,7 +1210,7 @@
   }
 
   .development-fixture-path-label {
-    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+    font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace;
     font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 0.12em;
@@ -1201,7 +1264,7 @@
     height: 1rem;
     border-radius: var(--radius-xs);
     background: rgba(242, 201, 76, 0.18);
-    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+    font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace;
     font-size: 0.75rem;
     font-weight: 600;
     line-height: 1;
@@ -1348,7 +1411,7 @@
   .workspace-header-card-value {
     margin-top: 0.5rem;
     color: #FDFAF5;
-    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+    font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace;
     font-size: 0.75rem;
     line-height: 1.5;
   }
@@ -1363,7 +1426,7 @@
     border-radius: var(--radius-sm);
     background: var(--ws-surface-subtle);
     color: var(--fg);
-    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+    font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace;
     font-size: 0.6875rem;
     white-space: nowrap;
   }
@@ -1456,11 +1519,20 @@
   .focus-visible\:ring-primary\/40:focus-visible,
   .focus-visible\:ring-primary\/35:focus-visible,
   .focus\:ring-primary\/40:focus,
-  .focus\:ring-primary\/35:focus {
+  .focus\:ring-primary\/35:focus,
+  [class*="focus-visible:ring-primary"]:focus-visible,
+  [class*="focus:ring-primary"]:focus,
+  [class*="focus-within:ring-primary"]:focus-within {
     --tw-ring-color: var(--cyan-focus);
   }
 
-  .focus-visible\:border-primary\/70:focus-visible {
+  [class*="peer-focus-visible:ring-primary"]:is(:where(.peer):focus-visible ~ *) {
+    --tw-ring-color: var(--interaction-focus);
+  }
+
+  .focus-visible\:border-primary\/70:focus-visible,
+  .focus-visible\:border-primary:focus-visible,
+  .focus-within\:border-primary:focus-within {
     border-color: var(--cyan-focus);
   }
 }

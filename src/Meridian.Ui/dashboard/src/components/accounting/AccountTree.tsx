@@ -57,14 +57,14 @@ function inject(): void {
   padding:6px 12px;border-top:1px solid var(--border,#D2CDC3);}
 .act__row:hover{background:var(--bg-hover,#EDEFF0);}
 .act__row--sel{cursor:pointer;}
-.act__row--on{background:var(--bg-active,#E7EDF2);box-shadow:inset 3px 0 0 var(--accent,#C56343);}
+.act__row--on{background:var(--bg-active,#E7EDF2);box-shadow:inset 3px 0 0 var(--interaction-selected,#496C8F);}
 .act__name{display:flex;align-items:center;gap:8px;min-width:0;
   font-family:var(--font-body,inherit);font-size:12px;color:var(--text-primary,#20252B);}
 .act__name--group{font-weight:600;}
 .act__tw{width:14px;height:14px;flex:0 0 auto;display:inline-flex;align-items:center;
   justify-content:center;font-size:9px;color:var(--text-muted,#606870);
   cursor:pointer;border-radius:var(--radius-chip,2px);user-select:none;}
-.act__tw:focus-visible,.act__row:focus-visible{outline:2px solid var(--accent,#C56343);outline-offset:1px;}
+.act__tw:focus-visible,.act__row:focus-visible{outline:2px solid var(--interaction-focus, #2D6FB3);outline-offset:1px;}
 .act__tw:hover{background:var(--bg-active,#E7EDF2);color:var(--text-secondary,#535C65);}
 .act__tw--leaf{cursor:default;opacity:0;}
 .act__code{font-family:var(--font-data,monospace);font-size:11px;color:var(--text-muted,#606870);

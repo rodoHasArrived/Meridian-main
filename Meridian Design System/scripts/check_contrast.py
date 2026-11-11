@@ -38,18 +38,18 @@ PAIRS = [
     ("muted text on hover row",    "--text-muted",     "--bg-hover",     4.5),
     # 4.3.0 retoned the accent to the terracotta signal (#C56343, 3.74:1 on the card) and made
     # --accent-dim the pressed FILL, lighter than the signal. Neither is a text ink any more:
-    # the signal is held to the 3:1 non-text threshold and signal-coloured TEXT is --accent-ink.
+    # the signal is held to the 3:1 non-text threshold and signal-coloured TEXT is --brand-signal-text.
     # These rows used to hold --accent and --accent-dim to 4.5:1 as text and failed from the
     # retone onward while the components still used both as text.
     ("accent on card (non-text)",  "--accent",         "--bg-light",     3.0),
-    ("accent-ink text on card",    "--accent-ink",     "--bg-light",     4.5),
+    ("brand-signal-text text on card",    "--brand-signal-text",     "--bg-light",     4.5),
     # The header band is a third surface, and the accent is only 4.39:1 on it — which is why
     # DenseDataTable's sort arrow and rank, which sit there, now take the ink variant. The
     # accent keeps a non-text row on the band (borders, icons, the 3:1 threshold); text on the
-    # band is --accent-ink. Checking the accent only against the card and the canvas missed a
+    # band is --brand-signal-text. Checking the accent only against the card and the canvas missed a
     # pair that ships on every sorted table.
     ("accent on header band (non-text)", "--accent",   "--bg-medium",    3.0),
-    ("accent-ink text on header band",   "--accent-ink", "--bg-medium",  4.5),
+    ("brand-signal-text text on header band",   "--brand-signal-text", "--bg-medium",  4.5),
     ("primary button label",       "--text-on-accent", "--accent",       4.5),
     # The hover state was omitted here until 2026-09, so a hover fill that failed AA
     # shipped behind a green gate. All three button states are checked now.
@@ -85,11 +85,11 @@ WASH_PAIRS = [
     # An accent wash lifts the surface toward the accent, so the accent itself loses contrast on
     # it — 4.41:1 on a card, 4.07 on canvas, 3.87 on the header band, where the steel pair
     # cleared AA. Same shape as the header-band rows above: the accent is a borders-and-icons
-    # colour on its own wash, and wash *text* is --accent-ink.
+    # colour on its own wash, and wash *text* is --brand-signal-text.
     ("accent on accent wash (non-text)", "--accent",     "--accent", 0.10, "--bg-light",  3.0),
-    ("accent-ink text on accent wash",   "--accent-ink", "--accent", 0.10, "--bg-light",  4.5),
-    ("accent-ink on accent wash, canvas","--accent-ink", "--accent", 0.10, "--bg",        4.5),
-    ("accent-ink on accent wash, band",  "--accent-ink", "--accent", 0.10, "--bg-medium", 4.5),
+    ("brand-signal-text text on accent wash",   "--brand-signal-text", "--accent", 0.10, "--bg-light",  4.5),
+    ("brand-signal-text on accent wash, canvas","--brand-signal-text", "--accent", 0.10, "--bg",        4.5),
+    ("brand-signal-text on accent wash, band",  "--brand-signal-text", "--accent", 0.10, "--bg-medium", 4.5),
     ("red-dim on red-a20 wash",       "--red-dim",    "--red",    0.20, "--bg-light", 4.5),
     # The actual status chips, foreground token against its own wash, on each surface a chip
     # sits on. Checking only the -dim tokens in the abstract missed that the *-fg tokens were
@@ -1054,7 +1054,7 @@ def check_accent_on_wash(root: Path) -> list[str]:
                     failures.append(
                         f"[accent-wash] {_rel(path, root)}:{text.count(chr(10), 0, m.start()) + 1}: "
                         f"{selector[:44]} puts --accent text on an accent-tinted surface "
-                        "(3.33:1) — wash text is --accent-ink")
+                        "(3.33:1) — wash text is --brand-signal-text")
     for f in failures[:10]:
         print(f)
     if not failures:

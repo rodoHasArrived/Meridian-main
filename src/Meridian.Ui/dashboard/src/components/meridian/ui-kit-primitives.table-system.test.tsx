@@ -197,7 +197,7 @@ describe("DenseDataTable table system", () => {
 
     const css = readFileSync(resolve(process.cwd(), "src/styles/ui-kit-primitives.css"), "utf8");
     const rule = css.match(/\.dense-data-table-wrap:focus-visible\s*\{([^}]*)\}/);
-    expect(rule?.[1]).toContain("outline: var(--focus-ring, 2px solid var(--ws-focus, #2D6FB3))");
+    expect(rule?.[1]).toContain("outline: var(--focus-ring, 2px solid var(--focus, #2D6FB3))");
   });
 
   it("keeps virtualized tables within their fixed row height when spacious density is chosen", () => {

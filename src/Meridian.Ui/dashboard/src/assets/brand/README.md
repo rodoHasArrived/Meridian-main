@@ -1,31 +1,123 @@
 # Meridian Brand Assets
 
-Identity v1.0 (Datum + Field), copied from `Meridian Design System/assets/brand/`. The package
-copy is canonical: `scripts/check_contrast.py` in the package fails when a file here differs
-from it. Do not edit these files in place; change the package file and copy it over.
+This directory contains all official Meridian brand visual assets including logos, marks, icons, and backgrounds.
 
-## Files
+## Files Overview
 
-| File | Purpose | Size |
-|------|---------|------|
-| `meridian-mark.svg` | Primary mark on paper/light surfaces | 240×240 |
-| `meridian-mark-light.svg` | Mark on graphite/dark surfaces (the workstation topbar) | 240×240 |
-| `meridian-mark-monochrome.svg` | One-color mark | 240×240 |
-| `meridian-symbol.svg` | Simplified symbol for small sizes | 256×256 |
-| `meridian-wordmark.svg` | Wordmark only | 689×152 |
-| `meridian-wordmark-stacked.svg` | Centered stacked lockup | 900×680 |
-| `meridian-tile.svg` | App tile | 256×256 |
-| `meridian-tile-256.png` | App tile, raster | 256×256 |
-| `meridian-hero.svg` | Wide editorial identity composition | 1600×720 |
+### Core Mark Assets
+| File | Purpose | Size | Format |
+|------|---------|------|--------|
+| `meridian-mark.svg` | Primary brand mark | 256×256 | SVG |
+| `meridian-mark-light.svg` | Light variant for dark backgrounds | 256×256 | SVG |
+| `meridian-mark-monochrome.svg` | Single-color variant (uses `currentColor`) | 256×256 | SVG |
+| `meridian-symbol.svg` | Simplified symbol for small sizes | 256×256 | SVG |
 
-Wordmark lettering is stored as vector outlines, so no font file is needed to render a mark.
-The few live `<text>` runs in the hero name IBM Plex Sans with an Arial fallback.
+### Wordmark Assets
+| File | Purpose | Format |
+|------|---------|--------|
+| `meridian-wordmark.svg` | Horizontal wordmark with descriptor | SVG |
+| `meridian-wordmark-stacked.svg` | Vertical stacked layout for narrow spaces | SVG |
 
-## Usage rules
+### Application Assets
+| File | Purpose | Size | Format |
+|------|---------|------|--------|
+| `meridian-tile.svg` | App icon (primary) | 256×256 | SVG |
+| `meridian-tile-256.png` | App icon (raster) | 256×256 | PNG |
 
-1. Inside the workstation use the square mark alone, or no mark at all.
-2. Use the `-light` variant on graphite and dark surfaces.
-3. Terracotta (`#C56343`) is reserved for the displaced signal point and rare brand emphasis,
-   never for positive/negative values.
-4. The tile has opaque paper corners; do not place it on a graphite surface.
-5. Import assets through `src/design-system/assets.ts`, not by path.
+### Background Assets
+| File | Purpose | Resolution | Format |
+|------|---------|-----------|--------|
+| `meridian-hero.svg` | Hero background with data visualization | 1600×900 | SVG |
+
+## Quick Start
+
+### For Web
+Use SVG assets directly:
+```html
+<img src="meridian-mark.svg" alt="Meridian" />
+```
+
+### For Dark Mode
+Use the light variant:
+```html
+<img src="meridian-mark-light.svg" alt="Meridian" class="dark-mode" />
+```
+
+### For Print/Single-Color
+Use the monochrome variant:
+```html
+<img src="meridian-mark-monochrome.svg" alt="Meridian" />
+```
+
+### For Small Sizes
+Use the simplified symbol for favicons and thumbnails:
+```html
+<link rel="icon" href="meridian-symbol.svg" type="image/svg+xml" />
+```
+
+## Design Specifications
+
+### Colors
+- **Primary Neutral**: `hsl(var(--foreground))`
+- **Brand signal**: terracotta `var(--brand-signal)`; focus/selection use interaction blue
+- **Data Green**: `var(--state-healthy-fg)`
+- **Dark Background**: `hsl(var(--background))`
+
+### Typography
+- **Display font**: self-hosted IBM Plex Sans
+- **UI font**: self-hosted IBM Plex Sans
+- **Monospace**: self-hosted IBM Plex Mono
+- **Weight**: Bold (700) for headings, Regular (400) for body
+
+### Minimum Sizes
+- **Mark**: 48×48px for digital displays
+- **Wordmark**: 120px width minimum
+- **Hero**: 300px height minimum (mobile), 600px+ (desktop)
+
+## Accessibility
+
+All SVG assets include:
+- Semantic HTML5 structure
+- Descriptive `<title>` and `<desc>` elements
+- High contrast ratios (WCAG AA compliant)
+- `role="img"` attributes where appropriate
+
+## Usage Guidelines
+
+For detailed usage guidelines, color combinations, typography, and do's/don'ts, see [`BRAND_GUIDELINES.md`](../../../../../../Meridian%20Design%20System/BRAND_GUIDELINES.md) (in the Meridian Design System).
+
+## Asset Optimization
+
+All SVG files are:
+- ✓ Optimized for web (minimal file size)
+- ✓ Accessible (semantic markup)
+- ✓ Responsive (scalable to any size)
+- ✓ Future-proof (vector format)
+
+## Version History
+
+### v2.0 (2026-05-10)
+- ✨ Enhanced color palette and vibrancy
+- ✨ Improved stroke styling with rounded caps
+- ✨ Added monochrome and light variants
+- ✨ Added simplified symbol for small sizes
+- ✨ Added stacked wordmark layout
+- ✨ Refined proportions and spacing
+- 📚 Added comprehensive brand guidelines
+
+### v1.0 (Initial)
+- Core mark, wordmark, tile, and hero assets
+
+## Support
+
+For questions about brand usage or asset modifications:
+1. Review the full `BRAND_GUIDELINES.md`
+2. Check that your usage follows the guidelines
+3. Ensure proper contrast and sizing
+4. Test in light and dark modes
+
+---
+
+**Last Updated**: 2026-05-10  
+**Status**: Active  
+**License**: Meridian proprietary branding

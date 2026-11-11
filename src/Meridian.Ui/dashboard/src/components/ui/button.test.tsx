@@ -10,6 +10,13 @@ describe("Button", () => {
     expect(Button).toBe(DesignSystemButton);
   });
 
+  it("keeps primary interaction states on structural action roles", () => {
+    render(<Button>Save</Button>);
+    const button = screen.getByRole("button", { name: "Save" });
+    expect(button).toHaveClass("hover:bg-[var(--ws-primary-hover)]", "active:bg-[var(--ws-primary-pressed)]");
+    expect(button.className).not.toContain("ws-accent");
+  });
+
   it("preserves busy and disabled semantics when rendered through the design-system adapter", () => {
     render(
       <DesignSystemButton busy busyLabel="Saving..." disabledReason="Save is already running." aria-label="Save mapping">

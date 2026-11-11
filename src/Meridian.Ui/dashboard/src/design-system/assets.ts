@@ -4,7 +4,6 @@ import meridianHeroUrl from "@/assets/brand/meridian-hero.svg";
 import meridianMarkLightUrl from "@/assets/brand/meridian-mark-light.svg";
 import meridianMarkMonochromeUrl from "@/assets/brand/meridian-mark-monochrome.svg";
 import meridianMarkUrl from "@/assets/brand/meridian-mark.svg";
-import meridianSymbolUrl from "@/assets/brand/meridian-symbol.svg";
 import meridianTilePngUrl from "@/assets/brand/meridian-tile-256.png";
 import meridianTileUrl from "@/assets/brand/meridian-tile.svg";
 import meridianWordmarkStackedUrl from "@/assets/brand/meridian-wordmark-stacked.svg";
@@ -112,7 +111,7 @@ export const meridianBrandAssets = {
   mark: meridianMarkUrl,
   markLight: meridianMarkLightUrl,
   markMonochrome: meridianMarkMonochromeUrl,
-  symbol: meridianSymbolUrl,
+  symbol: meridianMarkUrl,
   tile: meridianTileUrl,
   tilePng: meridianTilePngUrl,
   wordmark: meridianWordmarkUrl,

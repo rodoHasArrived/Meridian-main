@@ -31,7 +31,7 @@
   border-radius: var(--radius-sm);
   background: rgba(20, 18, 15, 0.92);
   color: var(--fg-muted);
-  font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+  font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace;
   font-size: 0.75rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -52,9 +52,9 @@
 }
 
 .meridian-toolbar-chip.active {
-  border-color: rgba(217, 138, 100, 0.35);
-  background: rgba(217, 138, 100, 0.10);
-  color: var(--cyan-primary);
+  border-color: color-mix(in srgb, var(--ws-accent) 35%, transparent);
+  background: color-mix(in srgb, var(--ws-accent) 10%, transparent);
+  color: var(--brand-signal-text);
 }
 
 .meridian-toolbar-right {
@@ -74,7 +74,7 @@
 }
 
 .dense-data-table-wrap:focus-visible {
-  outline: var(--focus-ring, 2px solid var(--ws-focus, #2D6FB3));
+  outline: var(--focus-ring, 2px solid var(--focus, #2D6FB3));
   outline-offset: -2px;
 }
 
@@ -130,7 +130,7 @@
 .dense-data-table th {
   padding: var(--dense-head-py) var(--dense-cell-px);
   color: var(--fg-muted);
-  font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+  font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace;
   font-size: 0.75rem;
   font-weight: 500;
   letter-spacing: 0.14em;
@@ -156,17 +156,17 @@
 }
 
 .dense-data-table tbody tr:hover {
-  background: rgba(217, 138, 100, 0.06);
+  background: var(--ws-row-hover);
 }
 
 .dense-data-table tbody tr.selected {
-  background: rgba(217, 138, 100, 0.10);
+  background: var(--ws-row-selected);
 }
 
 .dense-data-table tbody tr.selectable:focus-visible {
-  outline: 2px solid rgba(217, 138, 100, 0.45);
+  outline: 2px solid var(--focus);
   outline-offset: -2px;
-  background: rgba(217, 138, 100, 0.08);
+  background: var(--ws-row-hover);
 }
 
 .dense-data-table-empty {
@@ -222,7 +222,7 @@
 }
 
 .dense-data-table-columns > summary:focus-visible {
-  outline: 2px solid rgba(217, 138, 100, 0.45);
+  outline: 2px solid var(--focus);
   outline-offset: 2px;
 }
 
@@ -275,20 +275,20 @@
 
 .dense-data-table-sort-button:focus-visible {
   border-radius: var(--radius-sm);
-  outline: 2px solid rgba(217, 138, 100, 0.45);
+  outline: 2px solid var(--focus);
   outline-offset: 2px;
 }
 
 .dense-data-table-sort-indicator {
   opacity: 0.45;
-  color: var(--cyan-primary);
+  color: var(--brand-signal-text);
   font-size: 0.6875rem;
   line-height: 1;
 }
 
 .dense-data-table-sorted .dense-data-table-sort-indicator {
   opacity: 1;
-  color: var(--accent, #C56343);
+  color: var(--interaction-selected, #496C8F);
 }
 
 .dense-data-table-sorted .dense-data-table-sort-button {
@@ -306,18 +306,18 @@
 .dense-data-table-row-cap button {
   min-height: 1.75rem;
   padding: 0 0.625rem;
-  border: 1px solid rgba(217, 138, 100, 0.32);
+  border: 1px solid color-mix(in srgb, var(--ws-accent) 32%, transparent);
   border-radius: var(--radius-sm);
-  background: rgba(217, 138, 100, 0.10);
-  color: var(--cyan-primary);
-  font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+  background: color-mix(in srgb, var(--ws-accent) 10%, transparent);
+  color: var(--brand-signal-text);
+  font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace;
   font-size: 0.6875rem;
   font-weight: 600;
   cursor: pointer;
 }
 
 .dense-data-table-row-cap button:focus-visible {
-  outline: 2px solid rgba(217, 138, 100, 0.45);
+  outline: 2px solid var(--focus);
   outline-offset: 2px;
 }
 
@@ -410,9 +410,9 @@
 }
 
 .meridian-toolbar-chip.active {
-  border-color: rgba(168, 84, 54, 0.34);
-  background: rgba(168, 84, 54, 0.10);
-  color: var(--cyan-primary);
+  border-color: color-mix(in srgb, var(--ws-accent) 34%, transparent);
+  background: color-mix(in srgb, var(--ws-accent) 10%, transparent);
+  color: var(--brand-signal-text);
 }
 
 .entity-summary-title {
@@ -437,7 +437,7 @@
 }
 
 .dense-data-table thead {
-  background: #F4F3EF;
+  background: var(--ws-surface-subtle);
 }
 
 .dense-data-table th {

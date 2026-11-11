@@ -304,7 +304,7 @@ Tailwind 4 uses its matching `@tailwindcss/postcss` adapter. The main stylesheet
 once, scoped with `source(none)`, and explicitly loads the existing `tailwind.config.ts` so
 Meridian's semantic colors, typography, shadows and utility sources remain part of generated CSS.
 Every config font stack ends in a CSS generic family (`monospace`, `sans-serif`): Chromium does not
-resolve `ui-monospace`, so without it a machine lacking Cascadia/JetBrains/Consolas renders data
+resolve `ui-monospace`, so without it a machine unable to load the bundled IBM Plex Mono face renders data
 text in the serif default. `design-system-contract.test.ts` guards both rules. The lockfile retains
 patched `source-map-js` 1.2.2.
 
@@ -715,7 +715,7 @@ references remain nullable, while required policy and mode fields must also be p
 
 The browser workstation visual system is light-first and aligned to the Meridian Design System's
 Institutional Ops palette: paper canvas, white cards, near-black masthead/status chrome, hairline
-borders, shallow shadows, Segoe UI body/display type, and Cascadia/JetBrains Mono data text. Keep
+borders, flat panels, self-hosted IBM Plex Sans interface type, and IBM Plex Mono data text. Keep
 visual changes on the shared tokens and primitives in `src/styles/index.css` and `src/components/ui/`
 instead of introducing one-off screen styling.
 
@@ -2003,7 +2003,7 @@ order-pinned and reviewable.
 Tailwind 4 compilation uses `@tailwindcss/postcss`; the stylesheet imports `tailwindcss` and
 explicitly loads `tailwind.config.ts` with `@config`. Automatic monorepo scanning is disabled with
 `source(none)` so the config's existing dashboard content globs own utility discovery. Keep the
-Segoe UI/Cascadia font stacks, semantic colors, and radius/shadow tokens in that shared config.
+IBM Plex Sans/Mono font stacks, semantic colors, and radius/shadow tokens in that shared config.
 Tailwind handles CSS imports and vendor prefixes, so a separate Autoprefixer plugin is unnecessary.
 The pre-module startup CSS in `index.html` belongs to the base layer so it yields to the loaded
 workstation, and base button cursors and placeholder colors preserve the existing defaults.
@@ -2027,16 +2027,21 @@ the package through copied `src/assets/` files and the `src/design-system/assets
 and runtime CSS alignment under test.
 Workstation tokens in `src/styles/index.css` follow the package's 4.3.0 roles: graphite (`#29323A`)
 is the primary action and chrome color, terracotta (`#C56343`) is the brand/attention signal only,
-and focus and selection use the interaction blue family (`#2D6FB3` ring via `--ws-focus`, `#E7EDF2`
-selected surface). Paper mode is the Field slate (`--brand-field`), pending is the warm taupe
-(`--pending`), and terracotta text uses `--accent-ink`; chip text always reads a `-dim`/`-ink`
-variant because the raw hues are under 4.5:1 on their own wash. Light, auto-dark, manual-dark, and
-forced-light scopes take their values from the package's `tokens/` files. From the package
-directory, `python3 scripts/check_token_parity.py` fails when any token name declared on both sides
-resolves to a different value in any of the four scopes, and `python3 scripts/check_contrast.py`
-checks chip and button contrast, fallback literals, brand art and the WPF runtime palette. Three
-differences are deliberate and listed in `tokens/parity-manifest.json`: the unified 2px radii,
-the locally installed type faces, and the categorical chart-comparison hues.
+and focus and selection use the interaction blue family (`#2D6FB3` ring, `#E7EDF2` selected
+surface). Light, auto-dark, manual-dark, and forced-light scopes take their values from the package's
+`tokens/` files. Primary hover/pressed states remain structural; the Paper environment uses Field
+slate, and chart observations/comparisons use graphite/slate/neutral roles. All ten licensed IBM
+Plex font faces and their OFL notices are bundled from `src/assets/fonts/`; no font CDN is used.
+The host-served distribution also includes the OFL notices under `notices/`. Workspace icons
+use the canonical SVGs as masks so navigation colors remain legible in dark and forced-color modes.
+The startup shell and SVG chart labels use the same faces. Operator-selected density and the
+existing control/table sizes remain unchanged.
+Every token name that `index.css` and the package both declare must resolve to the same value in
+all four scopes: from the package directory, `python3 scripts/check_token_parity.py` fails on any
+difference that is not listed in `tokens/parity-manifest.json` (only the unified 2px radii are), and
+`python3 scripts/check_contrast.py` checks chip and button contrast, `var()` fallback literals,
+brand art and the WPF runtime palette. Text in the signal colour uses `--brand-signal-text`, never
+`--ws-accent` (3.7:1 on a panel), and focus rules use `--focus`.
 Live shell chrome and Accounting adapters remain dashboard-native TypeScript: `WorkstationTopbar`,
 `WorkstationStatusBar`, `TrialBalanceTable`, `AgingTable`, and `ReconciliationComparisonPanel`
 adapt the manifest-backed design-system references without importing root JSX or runtime-injected

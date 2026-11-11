@@ -9,7 +9,9 @@ namespace Meridian.Ui.Services.Services;
 /// QuantScript and the ScottPlot surfaces render from here rather than from the XAML resources,
 /// so a value that moves there must move here in the same change or the two identities split —
 /// which is exactly what happened when the desktop lane was restyled and this file was not.
-/// Every value below names the XAML key it mirrors.
+/// The static palette follows the institutional light card/data surfaces in Design System 4.3.0.
+/// ThemeServiceBase changes window theme state, not these immutable values; plot backgrounds and
+/// their ink therefore remain paired in either window mode. Every core value names its XAML twin.
 /// </para>
 /// </summary>
 public static class ColorPalette
@@ -20,101 +22,89 @@ public static class ColorPalette
     public readonly record struct ArgbColor(byte A, byte R, byte G, byte B);
 
 
-    /// <summary>Success/Active state (forest) — ConsoleAccentGreen #2E7655.</summary>
+    /// <summary>Success/Active state — ConsoleAccentGreen #2E7655.</summary>
     public static readonly ArgbColor Success = new(255, 46, 118, 85);
 
-    /// <summary>Warning state (amber ochre) — ConsoleAccentOrange #986717.</summary>
+    /// <summary>Warning state — ConsoleAccentOrange #986717.</summary>
     public static readonly ArgbColor Warning = new(255, 152, 103, 23);
 
-    /// <summary>Error/Danger state (brick) — ConsoleAccentRed #B54B42.</summary>
+    /// <summary>Error/Danger state — ConsoleAccentRed #B54B42.</summary>
     public static readonly ArgbColor Error = new(255, 181, 75, 66);
 
-    /// <summary>Informational state (interaction blue) — ConsoleAccentBlue #2D6FB3.</summary>
+    /// <summary>Informational interaction — ConsoleAccentBlue #2D6FB3.</summary>
     public static readonly ArgbColor Info = new(255, 45, 111, 179);
 
-    /// <summary>Inactive/Disabled state (cool gray) — ConsoleTextDisabled #A4ABB2.</summary>
+    /// <summary>Inactive/Disabled state — ConsoleTextDisabled #A4ABB2.</summary>
     public static readonly ArgbColor Inactive = new(255, 164, 171, 178);
 
-    /// <summary>Critical severity (coral).</summary>
+    /// <summary>Critical severity retains the error role.</summary>
     public static readonly ArgbColor Critical = Error;
 
-    /// <summary>Warning events (amber).</summary>
+    /// <summary>Warning events retain the warning role.</summary>
     public static readonly ArgbColor WarningEvent = Warning;
 
+    /// <summary>Actual chart trace, graphite rather than brand signal — ChartPrimaryLineColor #29323A.</summary>
+    public static readonly ArgbColor ChartPrimary = new(255, 41, 50, 58);
 
-
-    /// <summary>Primary chart line color (terracotta signal) — ChartPrimaryLineColor #C56343.</summary>
-    public static readonly ArgbColor ChartPrimary = new(255, 197, 99, 67);
-
-    /// <summary>Secondary chart line color (neutral gray) — ChartSecondaryLineColor #8C918F.</summary>
+    /// <summary>Secondary comparison trace — ChartSecondaryLineColor #8C918F.</summary>
     public static readonly ArgbColor ChartSecondary = new(255, 140, 145, 143);
 
-    /// <summary>Tertiary chart line color (amber ochre) — ChartWarningLineColor #986717.</summary>
-    public static readonly ArgbColor ChartTertiary = new(255, 152, 103, 23);
+    /// <summary>Warning chart trace — ChartWarningLineColor #986717.</summary>
+    public static readonly ArgbColor ChartTertiary = Warning;
 
-    /// <summary>Chart positive/up color (muted forest) — ChartEquityColor #2E7655.</summary>
+    /// <summary>Chart positive/up color — ChartEquityColor #2E7655.</summary>
     public static readonly ArgbColor ChartPositive = Success;
 
-    /// <summary>Chart negative/down color (brick) — ChartDrawdownColor #B54B42.</summary>
+    /// <summary>Chart negative/down color — ChartDrawdownColor #B54B42.</summary>
     public static readonly ArgbColor ChartNegative = Error;
 
-    /// <summary>Chart card background (panel paper) — ChartSurfaceColor #F8F7F3.</summary>
+    /// <summary>Chart card background — ChartSurfaceColor #F8F7F3.</summary>
     public static readonly ArgbColor ChartBackground = new(255, 248, 247, 243);
 
-    /// <summary>Chart plot-area background — ChartPlotAreaColor #FCFBF8.</summary>
+    /// <summary>Chart data well — ChartPlotAreaColor #FCFBF8.</summary>
     public static readonly ArgbColor ChartDataBackground = new(255, 252, 251, 248);
 
-    /// <summary>Chart grid line color (hairline rule) — ChartGridLineColor #E2DED5.</summary>
+    /// <summary>Chart grid rule — ChartGridLineColor #E2DED5.</summary>
     public static readonly ArgbColor ChartGrid = new(255, 226, 222, 213);
 
-    /// <summary>Chart axis and tick-label color (Slate) — ChartAxisLabelColor #606870.</summary>
+    /// <summary>Chart axis and tick-label ink — ChartAxisLabelColor #606870.</summary>
     public static readonly ArgbColor ChartAxis = new(255, 96, 104, 112);
 
-    /// <summary>Chart border color — ChartBorderColor #D2CDC3.</summary>
+    /// <summary>Chart border rule — ChartBorderColor #D2CDC3.</summary>
     public static readonly ArgbColor ChartBorder = new(255, 210, 205, 195);
 
-
-
-    /// <summary>Data quality excellent (muted forest).</summary>
+    /// <summary>Data quality excellent retains the success role.</summary>
     public static readonly ArgbColor QualityExcellent = Success;
 
-    /// <summary>Data quality fair (amber ochre).</summary>
+    /// <summary>Data quality fair retains the warning role.</summary>
     public static readonly ArgbColor QualityFair = Warning;
 
-
-
-    /// <summary>Accent color for interactive elements.</summary>
+    /// <summary>Interaction accent, independent of the terracotta brand signal.</summary>
     public static readonly ArgbColor Accent = Info;
 
-    /// <summary>Subtle background color.</summary>
+    /// <summary>Inset data background.</summary>
     public static readonly ArgbColor SubtleBackground = ChartDataBackground;
 
-    /// <summary>Card background color.</summary>
+    /// <summary>Card background.</summary>
     public static readonly ArgbColor CardBackground = ChartBackground;
 
-    /// <summary>Muted text color.</summary>
+    /// <summary>Muted text ink.</summary>
     public static readonly ArgbColor MutedText = ChartAxis;
 
-    /// <summary>Light text on the near-black chrome bars — TopBarText #F1EFEA.
-    /// Only for ink over <c>TopBarBackground</c>/<c>StatusBarBackground</c>; the workstation
-    /// itself is a light canvas, so this is unreadable on a card or a plot area.</summary>
+    /// <summary>Inverse chrome text — TopBarText #F1EFEA; never for paper cards or plot wells.</summary>
     public static readonly ArgbColor LightText = new(255, 241, 239, 234);
 
+    /// <summary>20% success wash — ConsoleAccentGreenAlpha20.</summary>
+    public static readonly ArgbColor SuccessBackground = new(51, Success.R, Success.G, Success.B);
 
+    /// <summary>20% warning wash — ConsoleAccentOrangeAlpha20.</summary>
+    public static readonly ArgbColor WarningBackground = new(51, Warning.R, Warning.G, Warning.B);
 
-    /// <summary>Semi-transparent success background — mirrors ConsoleAccentGreenAlpha.</summary>
-    public static readonly ArgbColor SuccessBackground = new(40, 46, 118, 85);
+    /// <summary>20% error wash — ConsoleAccentRedAlpha20.</summary>
+    public static readonly ArgbColor ErrorBackground = new(51, Error.R, Error.G, Error.B);
 
-    /// <summary>Semi-transparent warning background — mirrors ConsoleAccentOrangeAlpha.</summary>
-    public static readonly ArgbColor WarningBackground = new(40, 152, 103, 23);
-
-    /// <summary>Semi-transparent error background — mirrors ConsoleAccentRedAlpha.</summary>
-    public static readonly ArgbColor ErrorBackground = new(40, 181, 75, 66);
-
-    /// <summary>Semi-transparent info background — mirrors ConsoleAccentBlueAlpha.</summary>
-    public static readonly ArgbColor InfoBackground = new(40, 45, 111, 179);
-
-
+    /// <summary>20% information wash — ConsoleAccentBlueAlpha20.</summary>
+    public static readonly ArgbColor InfoBackground = new(51, Info.R, Info.G, Info.B);
 
     /// <summary>Gets the color for a notification type.</summary>
     public static ArgbColor GetNotificationColor(NotificationType type) => type switch

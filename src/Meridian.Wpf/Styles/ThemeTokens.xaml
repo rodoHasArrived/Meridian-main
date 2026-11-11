@@ -64,7 +64,7 @@
     <Color x:Key="ChartAxisLabelColor">#606870</Color>
     <Color x:Key="ChartBorderColor">#D2CDC3</Color>
     <Color x:Key="ChartCrosshairColor">#C56343</Color>
-    <Color x:Key="ChartPrimaryLineColor">#C56343</Color>
+    <Color x:Key="ChartPrimaryLineColor">#29323A</Color>
     <Color x:Key="ChartSecondaryLineColor">#8C918F</Color>
     <Color x:Key="ChartEquityColor">#2E7655</Color>
     <Color x:Key="ChartEquityAlpha20Color">#332E7655</Color>
@@ -72,7 +72,7 @@
     <Color x:Key="ChartDrawdownAlpha20Color">#33B54B42</Color>
     <Color x:Key="ChartWarningLineColor">#986717</Color>
 
-    <!-- Mode indicator colors -->
+    <!-- Environment roles: live red, simulated paper slate, fixture warning amber. -->
     <Color x:Key="ModeLiveColor">#B54B42</Color>
     <Color x:Key="ModePaperColor">#5D7286</Color>
     <Color x:Key="ModeFixtureColor">#986717</Color>
@@ -124,8 +124,7 @@
     <SolidColorBrush x:Key="ErrorColorBrush"               Color="{StaticResource ConsoleAccentRed}" />
     <SolidColorBrush x:Key="InfoColorBrush"                Color="{StaticResource ConsoleAccentBlue}" />
     <SolidColorBrush x:Key="ConsoleAccentBlueBrush"        Color="{StaticResource ConsoleAccentBlue}" />
-    <!-- Opaque hover fill. The 80% alpha brush composites to ~#B9755D over a card,
-         only 3.64:1 under the white label; this is 4.55:1. -->
+    <!-- Opaque interaction hover fill; primary actions use the separate graphite family. -->
     <SolidColorBrush x:Key="ConsoleAccentBlueHoverBrush"   Color="{StaticResource ConsoleAccentBlueVibrant}" />
     <SolidColorBrush x:Key="ConsoleAccentBlueDimBrush"     Color="{StaticResource ConsoleAccentBlueDim}" />
     <SolidColorBrush x:Key="AccentCyanBrush"               Color="{StaticResource ConsoleAccentCyan}" />
@@ -261,7 +260,7 @@
     <SolidColorBrush x:Key="OutlineDimBrush"       Color="{StaticResource ConsoleBorderColor}" />
 
     <!-- Nav active state: light sidebar selection -->
-    <SolidColorBrush x:Key="NavActiveBackgroundBrush"   Color="#F2E3DB" />
+    <SolidColorBrush x:Key="NavActiveBackgroundBrush"   Color="{StaticResource ConsoleBackgroundActive}" />
     <SolidColorBrush x:Key="NavActiveBorderBrush"       Color="{StaticResource ConsoleAccentBlue}" />
 
     <!-- ── Light institutional sidebar palette ── -->

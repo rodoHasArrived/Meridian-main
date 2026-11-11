@@ -19,7 +19,7 @@ function inject() {
 .mds-evidence:focus-visible{outline:var(--focus-ring);outline-offset:var(--focus-ring-offset);}
 .mds-evidence__dot{width:7px;height:7px;border-radius:50%;flex:0 0 auto;background:var(--state-muted-fg,#606870);}
 .mds-evidence--ready .mds-evidence__dot{background:var(--state-healthy-fg,#225840);}
-.mds-evidence--review .mds-evidence__dot{background:var(--severity-review-fg,#944A32);}
+.mds-evidence--review .mds-evidence__dot{background:var(--severity-review-fg,#8E4730);}
 .mds-evidence--action .mds-evidence__dot{background:var(--state-warn-fg,#724D11);}
 .mds-evidence--blocked .mds-evidence__dot{background:var(--state-danger-fg,#883832);}
 .mds-evidence__label{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}

@@ -368,7 +368,7 @@ export function DataGrid({
                 const isSel = sel.indexOf(k) > -1;
                 return (
                   <React.Fragment key={k}>
-                    <tr style={{ height: h }} data-selected={isSel || (activeKey !== undefined && k === activeKey) ? "true" : undefined}
+                    <tr style={{ height: h }} data-row-key={k} data-selected={isSel || (activeKey !== undefined && k === activeKey) ? "true" : undefined}
                       data-clickable={onRowClick ? "true" : undefined} tabIndex={onRowClick ? 0 : undefined}
                       aria-rowindex={shouldVirt ? i + 2 : undefined}
                       onKeyDown={onRowClick ? (e) => { if ((e.key === "Enter" || e.key === " ") && e.target === e.currentTarget) { e.preventDefault(); onRowClick(r, k, i); } } : undefined}
