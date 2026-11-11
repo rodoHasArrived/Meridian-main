@@ -107,8 +107,10 @@ public sealed class PrivateCapitalBankObservationServiceTests
     {
         var json = JsonSerializer.Serialize(Source(), new JsonSerializerOptions(JsonSerializerDefaults.Web));
         var node = JsonNode.Parse(json)!.AsObject();
-        if (failure == "missing") node.Remove("direction");
-        if (failure == "unknown") node["approveAutomatically"] = true;
+        if (failure == "missing")
+            node.Remove("direction");
+        if (failure == "unknown")
+            node["approveAutomatically"] = true;
         var bytes = Encoding.UTF8.GetBytes(failure switch
         {
             "duplicate" => "{\"amount\":1," + json[1..],
@@ -221,7 +223,8 @@ public sealed class PrivateCapitalBankObservationServiceTests
                 hash, Now.AddMinutes(-10), "synthetic-upload", "source-operator", Scope.TenantId, Scope.CompanyId,
                 EvidenceExtractionStatusDto.Accepted, [],
                 new(failure == "unreviewed" ? EvidenceDocumentReviewStatusDto.Unreviewed : EvidenceDocumentReviewStatusDto.Accepted,
-                    "source-reviewer", Now.AddMinutes(-5)), []) { ContentType = "application/json" };
+                    "source-reviewer", Now.AddMinutes(-5)), [])
+            { ContentType = "application/json" };
             var identity = new EvidenceVaultIdentityDto(VaultId, "fund", Scope.FundProfileId, "retained.json",
                 "/api/evidence", Now.AddMinutes(-10), hash, 1, "file-bundle")
             {

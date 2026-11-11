@@ -261,12 +261,12 @@ public sealed partial class PostgresLedgerJournalStore
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
         if (!await reader.ReadAsync(ct).ConfigureAwait(false))
             throw new LedgerValidationException("Retained banking authority is unavailable in the ledger database.");
-        var source = new BankTransactionDto(reader.GetGuid(0),reader.GetGuid(1),reader.GetString(2),
-            reader.GetFieldValue<DateOnly>(3),reader.GetFieldValue<DateOnly>(4),reader.GetFieldValue<DateOnly>(5),
-            reader.GetDecimal(6),reader.GetString(7),reader.IsDBNull(8)?null:reader.GetString(8),
-            reader.GetFieldValue<DateTimeOffset>(9),reader.GetBoolean(10),reader.IsDBNull(11)?null:reader.GetString(11),
-            reader.IsDBNull(12)?null:reader.GetGuid(12),reader.IsDBNull(13)?null:reader.GetString(13),
-            reader.IsDBNull(14)?null:reader.GetString(14));
+        var source = new BankTransactionDto(reader.GetGuid(0), reader.GetGuid(1), reader.GetString(2),
+            reader.GetFieldValue<DateOnly>(3), reader.GetFieldValue<DateOnly>(4), reader.GetFieldValue<DateOnly>(5),
+            reader.GetDecimal(6), reader.GetString(7), reader.IsDBNull(8) ? null : reader.GetString(8),
+            reader.GetFieldValue<DateTimeOffset>(9), reader.GetBoolean(10), reader.IsDBNull(11) ? null : reader.GetString(11),
+            reader.IsDBNull(12) ? null : reader.GetGuid(12), reader.IsDBNull(13) ? null : reader.GetString(13),
+            reader.IsDBNull(14) ? null : reader.GetString(14));
         if (!PrivateCapitalPostingAuthority.MatchesBankTransaction(authority, source))
             throw new LedgerValidationException("Retained bank evidence changed or was voided; renew funding review.");
     }

@@ -22,8 +22,14 @@ public static class PrivateCapitalCallPlanHash
             call.Purpose,
             Lines = call.Lines.OrderBy(x => x.CommitmentId, StringComparer.Ordinal).Select(x => new
             {
-                x.InstallmentId, x.CommitmentId, x.CommitmentRevision, x.InvestorId,
-                x.CapitalAccountId, x.Amount, x.UncalledBefore, x.UncalledAfter
+                x.InstallmentId,
+                x.CommitmentId,
+                x.CommitmentRevision,
+                x.InvestorId,
+                x.CapitalAccountId,
+                x.Amount,
+                x.UncalledBefore,
+                x.UncalledAfter
             })
         };
         return Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(canonical))).ToLowerInvariant();

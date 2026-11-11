@@ -31,11 +31,16 @@ public sealed class ReportingGovernanceCanonicalValidationTests
         json["templateParameters"] = new System.Text.Json.Nodes.JsonObject
         {
             ["operationalNoticeTemplateId"] = "capital-call-notice",
-            ["capitalCallId"] = "call-a", ["commitmentId"] = "commitment-a", ["commitmentRevision"] = "1",
-            ["capitalAccountId"] = "capital-a", ["installmentId"] = "installment-a",
+            ["capitalCallId"] = "call-a",
+            ["commitmentId"] = "commitment-a",
+            ["commitmentRevision"] = "1",
+            ["capitalAccountId"] = "capital-a",
+            ["installmentId"] = "installment-a",
             ["issuanceJournalEntryId"] = "20000000-0000-0000-0000-000000000001",
-            ["planHash"] = new string('a', 64), ["callAmount"] = "100",
-            ["recipientPrincipalId"] = "lp-user-a", ["reviewGroupPrincipalId"] = "capital-reviewers"
+            ["planHash"] = new string('a', 64),
+            ["callAmount"] = "100",
+            ["recipientPrincipalId"] = "lp-user-a",
+            ["reviewGroupPrincipalId"] = "capital-reviewers"
         };
         var canonical = json.ToJsonString();
         scenario = scenario with
@@ -50,7 +55,9 @@ public sealed class ReportingGovernanceCanonicalValidationTests
                 },
                 Access = scenario.Request.Access with
                 {
-                    Mode = ReportingGovernanceAccessMode.Restricted, OwnerPrincipalId = "creator", AllowOwnerAccess = true,
+                    Mode = ReportingGovernanceAccessMode.Restricted,
+                    OwnerPrincipalId = "creator",
+                    AllowOwnerAccess = true,
                     Principals = [new ReportingAccessPrincipalScope(ReportingAccessPrincipalKind.User, "lp-user-a"),
                         new ReportingAccessPrincipalScope(ReportingAccessPrincipalKind.Group, "capital-reviewers")]
                 }

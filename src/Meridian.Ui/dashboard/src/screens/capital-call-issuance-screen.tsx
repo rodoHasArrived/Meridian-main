@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
+import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBanner } from "@/components/ui/status-banner";
+import { TechnicalDetails } from "@/components/ui/technical-details";
 import { ApiError, describeApiError } from "@/lib/api-errors";
 import * as api from "@/lib/api/private-capital.api";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
@@ -111,7 +113,8 @@ function CapitalBookWorkbench({ bookId, onLockedChange }: { bookId: string; onLo
   const locked = loading || !!busy || uncertain;
   const call = workbench?.calls.find(row => row.callId === selectedCall) ?? null;
   return <div className="space-y-4">
-    <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-sm text-muted-foreground">{workbench ? `${workbench.scope.fundProfileId} · Entity ${workbench.scope.entityId} · ${workbench.scope.currency}` : "Loading book authority"}</p>
+    <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-sm text-muted-foreground">{workbench ? `Retained capital activity · ${workbench.scope.currency}` : "Loading book authority"}</p>
+      {workbench ? <TechnicalDetails label="Operating authority"><p className="break-all text-xs">Fund {workbench.scope.fundProfileId} · Entity {workbench.scope.entityId} · Book {workbench.scope.ledgerBookId}</p></TechnicalDetails> : null}
       <Button variant="outline" disabled={loading || !!busy} onClick={() => void refresh()}>Refresh retained records</Button></div>
     {loading ? <p role="status">Loading commitment and posting authority…</p> : null}
     {busy ? <p role="status" className="text-sm">{busy} is in progress…</p> : null}
@@ -140,21 +143,24 @@ function CommitmentRegister({ rows, currency, bookId, locked, mutate }: { rows: 
   const [reviewed, setReviewed] = useState<string | null>(null);
   const [confirmed, setConfirmed] = useState(false);
   const row = rows.find(value => `${value.commitmentId}:${value.revision}` === reviewed);
+  const columns: DenseDataTableColumn<PrivateCapitalCommitment>[] = [
+    { id: "commitment", label: "Commitment / investor", render: value => <span className="font-medium">{value.commitmentId}<span className="block text-xs text-muted-foreground">{value.investorId} · {value.capitalAccountId}</span></span> },
+    { id: "revision", label: "Revision / status", render: value => <span>v{value.revision} <Badge variant={value.approvalStatus === 1 ? "success" : "outline"}>{value.approvalStatus === 1 ? "Approved" : "Draft"}</Badge>{!value.isActive ? " · Inactive" : ""}</span> },
+    ...([["totalCommitment", "Total"], ["calledAmount", "Called"], ["fundedAmount", "Funded"], ["uncalledAmount", "Uncalled"]] as const)
+      .map(([field, label]) => ({ id: field, label, numeric: true, className: "whitespace-nowrap", render: (value: PrivateCapitalCommitment) => <span className="font-mono">{capitalAmount(value[field], currency)}</span> })),
+    { id: "review", label: "Review", render: value => <Button size="sm" variant="outline" disabled={locked} onClick={() => { setReviewed(`${value.commitmentId}:${value.revision}`); setConfirmed(false); }}>Review {value.commitmentId}</Button> }
+  ];
   return <Card><CardHeader><CardTitle>Retained commitment register</CardTitle><CardDescription>Draft revisions become eligible for call allocation only after an explicit review and server approval.</CardDescription></CardHeader><CardContent className="space-y-3">
-    {!rows.length ? <p role="status" className="text-sm">No commitments retained for this book.</p> : <div className="overflow-x-auto"><table className="w-full min-w-[850px] text-left text-sm"><caption className="sr-only">Commitment register and posted capital balances</caption><thead><tr>
-      {['Commitment / investor', 'Revision / status', 'Total', 'Called', 'Funded', 'Uncalled', 'Review'].map(label => <th scope="col" key={label} className="p-2">{label}</th>)}
-    </tr></thead><tbody>{rows.map(value => <tr key={`${value.commitmentId}:${value.revision}`} className="border-t border-border">
-      <th scope="row" className="p-2 font-medium">{value.commitmentId}<span className="block text-xs text-muted-foreground">{value.investorId} · {value.capitalAccountId}</span></th>
-      <td className="p-2">v{value.revision} <Badge variant={value.approvalStatus === 1 ? "success" : "outline"}>{value.approvalStatus === 1 ? "Approved" : "Draft"}</Badge>{!value.isActive ? " · Inactive" : ""}</td>
-      {[value.totalCommitment, value.calledAmount, value.fundedAmount, value.uncalledAmount].map((amount, index) => <td key={index} className="p-2 font-mono">{capitalAmount(amount, currency)}</td>)}
-      <td className="p-2"><Button size="sm" variant="outline" disabled={locked} onClick={() => { setReviewed(`${value.commitmentId}:${value.revision}`); setConfirmed(false); }}>Review {value.commitmentId}</Button></td>
-    </tr>)}</tbody></table></div>}
+    <DenseDataTable rows={rows} columns={columns} getRowId={value => `${value.commitmentId}:${value.revision}`}
+      getRowAriaLabel={value => `Commitment ${value.commitmentId}, revision ${value.revision}, investor ${value.investorId}`}
+      ariaLabel="Commitment register and posted capital balances" caption="Commitment register and posted capital balances"
+      emptyText="No commitments retained for this book." />
     {row ? <section className="space-y-2 rounded border border-border p-3" aria-label="Commitment review">
       <h3 className="text-sm font-semibold">Review {row.commitmentId} · revision {row.revision}</h3>
       <p className="text-sm">Effective {row.effectiveFrom}; investment period ends {row.investmentPeriodEndDate ?? "not specified"}. Prepared by {row.createdBy}; approval {row.approvedBy ? `by ${row.approvedBy}` : "pending"}.</p>
       <ul className="list-disc break-all pl-5 text-xs">{row.evidenceLinks.map(link => <li key={link}>{link}</li>)}</ul>
       {row.approvalStatus === 0 ? <><label className="flex gap-2 text-sm"><input type="checkbox" checked={confirmed} disabled={locked} onChange={event => setConfirmed(event.target.checked)} />I reviewed the retained terms, investor, scope and evidence for this revision.</label>
-        <Button disabled={locked || !confirmed} onClick={() => void mutate("Commitment approval", signal => api.approvePrivateCapitalCommitment(bookId, row.commitmentId, row.revision, { signal }))}>Approve reviewed revision</Button></> : <p className="text-sm">This revision is already approved.</p>}
+        <Button disabled={locked || !confirmed} disabledReason={locked ? "Wait for the current operation or resolve its unconfirmed outcome." : !confirmed ? "Review the retained terms, investor, scope and evidence first." : undefined} onClick={() => void mutate("Commitment approval", signal => api.approvePrivateCapitalCommitment(bookId, row.commitmentId, row.revision, { signal }))}>Approve reviewed revision</Button></> : <p className="text-sm">This revision is already approved.</p>}
     </section> : null}
   </CardContent></Card>;
 }
@@ -162,13 +168,13 @@ function CommitmentRegister({ rows, currency, bookId, locked, mutate }: { rows: 
 function CallDetail({ call, generatedAtUtc, notices, locked, mutate }: { call: PrivateCapitalCall; generatedAtUtc: string; notices: PrivateCapitalNotice[]; locked: boolean; mutate: CapitalMutation }) {
   const [confirmIssuance, setConfirmIssuance] = useState(false);
   return <section className="space-y-3" aria-label={`Call ${call.callId}`}>
-    <p className="text-sm">Notice {call.noticeDate} · Due {call.dueDate} · Period {call.periodId} · {call.purpose ?? "No purpose specified"}</p>
+    <p className="text-sm">Notice {call.noticeDate} · Due {call.dueDate} · {call.purpose ?? "No purpose specified"}</p>
     {capitalCallIsOverdue(call, generatedAtUtc) ? <StatusBanner role="status" tone="warning" title="Overdue receivable" detail={`A posted receivable remains outstanding after ${call.dueDate}. Evaluated at server observation ${generatedAtUtc}.`} /> : null}
-    <details className="text-xs"><summary>Retained plan and preparation</summary><p className="break-all">{call.planHash} · {call.createdBy} · {call.createdAtUtc}</p></details>
+    <TechnicalDetails label="Retained plan and preparation"><p className="break-all text-xs">Period {call.periodId} · Plan {call.planHash} · {call.createdBy} · {call.createdAtUtc}</p></TechnicalDetails>
     <CapitalCallLines call={call} />
     <div className="rounded border border-border p-3 space-y-2"><p className="text-sm">Queue issuance drafts for the retained allocation. Review, approval and posting take place in Journal entries.</p>
       <label className="flex gap-2 text-sm"><input type="checkbox" checked={confirmIssuance} disabled={locked} onChange={event => setConfirmIssuance(event.target.checked)} />I reviewed this retained call allocation.</label>
-      <Button disabled={locked || !confirmIssuance} onClick={() => void mutate("Issuance draft intake", signal => api.intakePrivateCapitalCall(call.scope.ledgerBookId, call.callId, { signal }))}>Queue reviewed issuance drafts</Button>
+      <Button disabled={locked || !confirmIssuance} disabledReason={locked ? "Wait for the current operation or resolve its unconfirmed outcome." : !confirmIssuance ? "Review and confirm the retained call allocation first." : undefined} onClick={() => void mutate("Issuance draft intake", signal => api.intakePrivateCapitalCall(call.scope.ledgerBookId, call.callId, { signal }))}>Queue reviewed issuance drafts</Button>
       <Link className="ml-3 text-sm text-primary underline" to={capitalJournalRoute(call.scope.ledgerBookId, call.periodId)}>Open journal approval queue</Link>
     </div>
     <CapitalFundingForm call={call} locked={locked} mutate={mutate} />
@@ -206,8 +212,9 @@ function PostedCapitalReceipts({ workbench }: { workbench: PrivateCapitalWorkben
   return <Card><CardHeader><CardTitle>Posted capital activity</CardTitle><CardDescription>Only durable posting receipts establish called or funded balances. Funding receipt identity and bank line remain inspectable.</CardDescription></CardHeader><CardContent>
     {workbench.receipts.length === 0 ? <p role="status" className="text-sm">No posted capital activity for this book.</p> : <ul className="space-y-3">{workbench.receipts.map(receipt => <li key={receipt.postingId} className="rounded border border-border p-3 text-sm">
       <div className="flex flex-wrap items-center gap-2"><Badge variant="success">Posted</Badge><span>{receipt.kind} · {receipt.installmentId} · {capitalAmount(receipt.amount, receipt.scope.currency)}</span></div>
-      <p className="mt-1 text-xs">{receipt.effectiveDate} · Receipt {receipt.fundingReceiptId ?? "Issuance"} · Bank line {receipt.bankLineId ?? "Not applicable"}</p>
-      <Link className="text-xs text-primary underline" to={capitalJournalRoute(receipt.scope.ledgerBookId, "", receipt.journalEntryId)}>Inspect journal {receipt.journalEntryId}</Link>
+      <p className="mt-1 text-xs">Effective {receipt.effectiveDate}</p>
+      <TechnicalDetails label="Posting references"><p className="break-all text-xs">Receipt {receipt.fundingReceiptId ?? "Issuance"} · Bank line {receipt.bankLineId ?? "Not applicable"} · Journal {receipt.journalEntryId}</p></TechnicalDetails>
+      <Link className="text-xs text-primary underline" to={capitalJournalRoute(receipt.scope.ledgerBookId, "", receipt.journalEntryId)}>Inspect posted journal</Link>
     </li>)}</ul>}
   </CardContent></Card>;
 }

@@ -31,7 +31,8 @@ public sealed class PrivateCapitalBankObservationService(
     {
         scope = PrivateCapitalAuthorityRules.NormalizeScope(scope);
         ArgumentNullException.ThrowIfNull(request);
-        if (string.IsNullOrWhiteSpace(actor)) throw new ArgumentException("Authenticated import actor is required.");
+        if (string.IsNullOrWhiteSpace(actor))
+            throw new ArgumentException("Authenticated import actor is required.");
         if (!EvidenceVaultReference.TryParseCanonical(request.EvidenceLink, out var vaultId))
             throw new ArgumentException("Select a canonical retained Evidence Vault source.");
         if (string.IsNullOrWhiteSpace(request.DocumentId) || request.DocumentId.Length > 200 || request.DocumentId.Any(char.IsControl))
@@ -42,7 +43,8 @@ public sealed class PrivateCapitalBankObservationService(
         if (identity.VaultId != vaultId || !ScopeMatches(identity.TenantId, scope.TenantId) || !ScopeMatches(identity.Scope, scope.CompanyId))
             throw Blocked("The bank observation source belongs to another tenant/company.");
         var documents = identity.Documents.Where(x => x.DocumentId == documentId).ToArray();
-        if (documents.Length != 1) throw Blocked("The exact bank observation document is unavailable or ambiguous.");
+        if (documents.Length != 1)
+            throw Blocked("The exact bank observation document is unavailable or ambiguous.");
         var document = documents[0];
         var now = _clock.GetUtcNow();
         if (!ScopeMatches(document.TenantId, scope.TenantId) || !ScopeMatches(document.Scope, scope.CompanyId)
@@ -63,7 +65,8 @@ public sealed class PrivateCapitalBankObservationService(
             while (length < buffer.Length)
             {
                 var read = await content.ReadAsync(buffer.AsMemory(length), ct).ConfigureAwait(false);
-                if (read == 0) break;
+                if (read == 0)
+                    break;
                 length += read;
             }
             if (length == 0 || length > MaxSourceBytes)
@@ -81,7 +84,8 @@ public sealed class PrivateCapitalBankObservationService(
                 throw new JsonException("A single observation object is required.");
             var names = new HashSet<string>(StringComparer.Ordinal);
             foreach (var field in parsed.RootElement.EnumerateObject())
-                if (!names.Add(field.Name)) throw new JsonException("Duplicate observation fields are not supported.");
+                if (!names.Add(field.Name))
+                    throw new JsonException("Duplicate observation fields are not supported.");
             ValidateRawAmount(parsed.RootElement);
             source = JsonSerializer.Deserialize<PrivateCapitalBankObservationSourceDto>(bytes, SourceJson)
                 ?? throw new JsonException("The observation is empty.");
@@ -152,7 +156,8 @@ public sealed class PrivateCapitalBankObservationService(
             _ => null
         };
         const string message = "The bank observation amount must use a plain positive decimal without signs, exponents or separators, exactly representable as numeric(19,4).";
-        if (string.IsNullOrEmpty(text)) throw Blocked(message);
+        if (string.IsNullOrEmpty(text))
+            throw Blocked(message);
         var parts = text.Split('.');
         if (parts.Length > 2 || parts.Any(part => part.Length == 0 || part.Any(ch => ch is < '0' or > '9')))
             throw Blocked(message);
@@ -169,7 +174,8 @@ public sealed class PrivateCapitalBankObservationService(
         // The bank transaction identity is global. Check foreign-entity collisions without returning their data.
         var matches = (await store.GetBankTransactionsAsync(null, ct).ConfigureAwait(false))
             .Where(x => x.BankTransactionId == id).ToArray();
-        if (matches.Length > 1) throw Blocked("Retained bank transaction identity is ambiguous.");
+        if (matches.Length > 1)
+            throw Blocked("Retained bank transaction identity is ambiguous.");
         return matches.SingleOrDefault();
     }
 

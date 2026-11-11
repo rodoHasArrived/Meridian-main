@@ -2350,13 +2350,17 @@ public sealed partial class WorkstationEndpointsTests
         // authority refuses this shared-account/different-investor mapping for new writes.
         await retainedDrafts.SaveAsync(lp1Draft with
         {
-            Status = ManualJournalEntryStatusDto.Submitted, ApprovalId = "retained-legacy-lp-1",
-            TenantId = "tenant-test", CompanyId = "tenant-test"
+            Status = ManualJournalEntryStatusDto.Submitted,
+            ApprovalId = "retained-legacy-lp-1",
+            TenantId = "tenant-test",
+            CompanyId = "tenant-test"
         });
         await retainedDrafts.SaveAsync(lp2Draft with
         {
-            Status = ManualJournalEntryStatusDto.Submitted, ApprovalId = "retained-legacy-lp-2",
-            TenantId = "tenant-test", CompanyId = "tenant-test"
+            Status = ManualJournalEntryStatusDto.Submitted,
+            ApprovalId = "retained-legacy-lp-2",
+            TenantId = "tenant-test",
+            CompanyId = "tenant-test"
         });
 
         using var ambiguousResponse = await client.GetAsync(

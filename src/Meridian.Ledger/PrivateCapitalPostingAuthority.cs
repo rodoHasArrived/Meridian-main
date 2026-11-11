@@ -26,11 +26,21 @@ public static class PrivateCapitalPostingAuthority
         recordedAt = recordedAt.AddTicks(-(recordedAt.Ticks % 10));
         return Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new
         {
-            source.BankTransactionId, source.EntityId, source.TransactionType, source.EffectiveDate,
-            source.TransactionDate, source.SettlementDate,
+            source.BankTransactionId,
+            source.EntityId,
+            source.TransactionType,
+            source.EffectiveDate,
+            source.TransactionDate,
+            source.SettlementDate,
             Amount = source.Amount.ToString("G29", System.Globalization.CultureInfo.InvariantCulture),
-            source.Currency, source.ExternalRef, RecordedAt = recordedAt, source.IsVoided,
-            source.RecordedBy, source.PendingPaymentId, source.EvidenceId, source.CanonicalInputHash
+            source.Currency,
+            source.ExternalRef,
+            RecordedAt = recordedAt,
+            source.IsVoided,
+            source.RecordedBy,
+            source.PendingPaymentId,
+            source.EvidenceId,
+            source.CanonicalInputHash
         }, JsonOptions));
     }
 
@@ -99,7 +109,8 @@ public static class PrivateCapitalPostingAuthority
         if (draft.PrivateCapitalAuthorityJson is null)
             return "Capital-call issuance and funding require an approved retained commitment and call plan.";
         PrivateCapitalPostingAuthorityDto authority;
-        try { authority = Deserialize(draft.PrivateCapitalAuthorityJson); }
+        try
+        { authority = Deserialize(draft.PrivateCapitalAuthorityJson); }
         catch (InvalidOperationException exception) { return exception.Message; }
         var scope = authority.Scope;
         if (scope is null || !Same(scope.TenantId, draft.TenantId) || !Same(scope.CompanyId, draft.CompanyId)

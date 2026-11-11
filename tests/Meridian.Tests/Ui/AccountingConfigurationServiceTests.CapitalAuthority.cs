@@ -66,7 +66,8 @@ public sealed partial class AccountingConfigurationServiceTests
             Event = native.Event with { IdempotencyKey = context.IdempotencyKey },
             Metadata = native.Metadata with
             {
-                IdempotencyKey = context.IdempotencyKey, FundEventId = context.FundEventId,
+                IdempotencyKey = context.IdempotencyKey,
+                FundEventId = context.FundEventId,
                 SettlementReference = context.SettlementReference
             }
         };

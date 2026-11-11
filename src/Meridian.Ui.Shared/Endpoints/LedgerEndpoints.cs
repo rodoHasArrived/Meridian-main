@@ -1763,7 +1763,8 @@ public static partial class LedgerEndpoints
         })
         .AddEndpointFilter(async (invocation, next) =>
         {
-            try { return await next(invocation).ConfigureAwait(false); }
+            try
+            { return await next(invocation).ConfigureAwait(false); }
             catch (LedgerValidationException ex)
             { return Results.Conflict(new { error = ex.Message }); }
             catch (Npgsql.PostgresException ex) when (ex.SqlState is "40001" or "40P01" or "23505")

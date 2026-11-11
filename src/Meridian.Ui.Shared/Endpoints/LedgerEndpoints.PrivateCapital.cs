@@ -127,9 +127,13 @@ public static partial class LedgerEndpoints
                 var runner = context.RequestServices.GetRequiredService<AutomatedJournalIntakeRunner>();
                 return Results.Json(await runner.RunCapitalCallFundingIntakeAsync(request with
                 {
-                    Actor = actor, FundProfileId = scope.FundProfileId, Currency = scope.Currency,
-                    LedgerBookId = scope.LedgerBookId, EntityId = scope.EntityId,
-                    TenantId = scope.TenantId, CompanyId = scope.CompanyId
+                    Actor = actor,
+                    FundProfileId = scope.FundProfileId,
+                    Currency = scope.Currency,
+                    LedgerBookId = scope.LedgerBookId,
+                    EntityId = scope.EntityId,
+                    TenantId = scope.TenantId,
+                    CompanyId = scope.CompanyId
                 }, context.RequestAborted).ConfigureAwait(false), json);
             }).ConfigureAwait(false)).WithName("IntakeRetainedPrivateCapitalFunding"));
 
@@ -152,7 +156,8 @@ public static partial class LedgerEndpoints
                     || !EndpointAuthorization.TryGetPermissions(context, out var permissions))
                     return EndpointHelpers.Forbidden();
                 var notices = context.RequestServices.GetService<CapitalCallNoticeReportingService>();
-                if (notices is null) return PrivateCapitalUnavailable("Governed capital-call reporting is not configured.");
+                if (notices is null)
+                    return PrivateCapitalUnavailable("Governed capital-call reporting is not configured.");
                 var groups = EndpointAuthorization.ResolveReportGroupPrincipalIds(context).ToImmutableArray();
                 var access = PrivateCapitalReportAccess(context, scope, actor);
                 var caller = new ReportingGovernanceCallerContext(actor, scope.TenantId, scope.CompanyId, permissions,
@@ -189,7 +194,8 @@ public static partial class LedgerEndpoints
         try
         {
             var book = await books.GetBookAsync(bookId, context.RequestAborted).ConfigureAwait(false);
-            if (book is null) return Results.NotFound();
+            if (book is null)
+                return Results.NotFound();
             var owner = await registry.ResolveAsync(book.FundProfileId, context.RequestAborted).ConfigureAwait(false);
             if (owner is null || !string.Equals(owner.FundProfileId, book.FundProfileId, StringComparison.OrdinalIgnoreCase)
                 || !CloseWorkflowOwnerMatches(owner, tenant))
@@ -217,7 +223,8 @@ public static partial class LedgerEndpoints
     private static async Task VerifyPrivateCapitalPeriodAsync(HttpContext context, PrivateCapitalScopeDto scope,
         string? periodId, DateOnly date)
     {
-        if (!Guid.TryParse(periodId, out var id)) throw new ArgumentException("An exact accounting period is required.");
+        if (!Guid.TryParse(periodId, out var id))
+            throw new ArgumentException("An exact accounting period is required.");
         var books = context.RequestServices.GetRequiredService<ILedgerBookService>();
         var periods = await books.ListPeriodsAsync(new LedgerPeriodQuery(scope.LedgerBookId), context.RequestAborted).ConfigureAwait(false);
         var period = periods.SingleOrDefault(p => p.PeriodId == id);
@@ -229,7 +236,8 @@ public static partial class LedgerEndpoints
     private static async Task VerifyPrivateCapitalEvidenceAsync(HttpContext context, PrivateCapitalScopeDto scope,
         IReadOnlyList<string>? links)
     {
-        if (links is not { Count: > 0 }) throw new ArgumentException("Retained Evidence Vault source documents are required.");
+        if (links is not { Count: > 0 })
+            throw new ArgumentException("Retained Evidence Vault source documents are required.");
         var vault = context.RequestServices.GetService<IEvidenceArtifactStore>()
             ?? throw new NotSupportedException("Evidence Vault is not configured.");
         foreach (var link in links)

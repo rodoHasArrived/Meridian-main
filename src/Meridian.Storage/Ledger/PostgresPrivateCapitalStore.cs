@@ -133,7 +133,8 @@ public sealed class PostgresPrivateCapitalStore : IPrivateCapitalStore
         var approved = current with
         {
             ApprovalStatus = PrivateCapitalCommitmentApprovalStatus.Approved,
-            ApprovedBy = actor.Trim(), ApprovedAtUtc = approvedAtUtc
+            ApprovedBy = actor.Trim(),
+            ApprovedAtUtc = approvedAtUtc
         };
         await using var command = new NpgsqlCommand($"""
             update {_schema}.private_capital_commitments set document=cast(@document as jsonb)
@@ -368,8 +369,12 @@ public sealed class PostgresPrivateCapitalStore : IPrivateCapitalStore
     {
         static PrivateCapitalCommitmentDto Draft(PrivateCapitalCommitmentDto x) => x with
         {
-            ApprovalStatus = PrivateCapitalCommitmentApprovalStatus.Draft, ApprovedBy = null, ApprovedAtUtc = null,
-            CreatedAtUtc = default, CalledAmount = 0m, FundedAmount = 0m
+            ApprovalStatus = PrivateCapitalCommitmentApprovalStatus.Draft,
+            ApprovedBy = null,
+            ApprovedAtUtc = null,
+            CreatedAtUtc = default,
+            CalledAmount = 0m,
+            FundedAmount = 0m
         };
         return JsonSerializer.Serialize(Draft(left), JsonOptions) == JsonSerializer.Serialize(Draft(right), JsonOptions);
     }
@@ -377,7 +382,8 @@ public sealed class PostgresPrivateCapitalStore : IPrivateCapitalStore
     private async Task<NpgsqlConnection> OpenAsync(CancellationToken ct)
     {
         var connection = new NpgsqlConnection(_options.ConnectionString);
-        try { await connection.OpenAsync(ct).ConfigureAwait(false); return connection; }
+        try
+        { await connection.OpenAsync(ct).ConfigureAwait(false); return connection; }
         catch { await connection.DisposeAsync().ConfigureAwait(false); throw; }
     }
 

@@ -73,7 +73,7 @@ export function CapitalCommitmentForm({ bookId, locked, mutate }: { bookId: stri
       <FormRow label="Retained commitment evidence (one reference per line)" labelFor={`${id}-evidence`}><textarea id={`${id}-evidence`} className="min-h-20 w-full rounded border border-border bg-background p-2 text-sm"
         value={evidence} onChange={event => { setEvidence(event.target.value); setConfirmed(false); }} /></FormRow>
       <label className="flex gap-2 text-sm"><input type="checkbox" checked={confirmed} onChange={event => setConfirmed(event.target.checked)} />I checked the source terms and retained evidence.</label>
-      <Button type="submit" disabled={!confirmed}>Retain commitment draft</Button>
+      <Button type="submit" disabled={locked || !confirmed} disabledReason={locked ? "Wait for the current operation or resolve its unconfirmed outcome." : !confirmed ? "Check the source terms and retained evidence first." : undefined}>Retain commitment draft</Button>
     </fieldset></form>{error ? <p role="alert" className="mt-2 text-sm text-danger">{error}</p> : null}
   </CardContent></Card>;
 }
@@ -120,7 +120,7 @@ export function CapitalCallPlanForm({ bookId, commitments, locked, mutate, onRet
       {preview.result.call ? <><CapitalCallLines call={preview.result.call} /><p className="break-all text-xs text-muted-foreground">Plan {preview.result.call.planHash}</p></> : null}
       {preview.result.isReady && preview.result.call ? <fieldset disabled={locked} className="space-y-2"><legend className="sr-only">Call allocation review</legend>
         <label className="flex gap-2 text-sm"><input type="checkbox" checked={confirmed} onChange={event => setConfirmed(event.target.checked)} />I reviewed each allocation and the uncalled balances.</label>
-        <Button disabled={!confirmed} onClick={() => { const reviewed = preview; void mutate("Call plan retention", async signal => {
+        <Button disabled={locked || !confirmed} disabledReason={locked ? "Wait for the current operation or resolve its unconfirmed outcome." : !confirmed ? "Review and confirm each allocation and uncalled balance first." : undefined} onClick={() => { const reviewed = preview; void mutate("Call plan retention", async signal => {
           const call = await api.retainPrivateCapitalCall(bookId, reviewed.request, reviewed.result.call!.planHash, { signal }); onRetained(call.callId); return call;
         }); }}>Retain reviewed call</Button>
       </fieldset> : null}
@@ -154,7 +154,7 @@ export function CapitalFundingForm({ call, locked, mutate }: { call: PrivateCapi
     } catch (cause) { setError(describeApiError(cause, "Funding could not be prepared.").summary); }
   }
   return <section className="space-y-3 rounded border border-border p-3" aria-label="Funding receipt preparation">
-    <h3 className="text-sm font-semibold">Record cash receipt</h3><p className="text-sm text-muted-foreground">Use one identity per actual receipt and bank line. Partial receipts remain separate; only posted funding reduces the receivable. Funding uses this call's accounting period ({call.periodId}); a closed period blocks the workflow. Receipts for another accounting period are unavailable here.</p>
+    <h3 className="text-sm font-semibold">Record cash receipt</h3><p className="text-sm text-muted-foreground">Use one identity per actual receipt and bank line. Partial receipts remain separate; only posted funding reduces the receivable. Funding uses the call's accounting period; a closed period blocks the workflow. Receipts for another accounting period are unavailable here.</p>
     <CapitalBankObservationImport scope={call.scope} locked={locked} mutate={mutate} onImported={result => {
       setValues(current => ({ ...current, bankLineId: result.bankTransaction.bankTransactionId,
         fundedAmount: String(result.bankTransaction.amount), receivedDate: result.bankTransaction.effectiveDate }));
@@ -168,7 +168,7 @@ export function CapitalFundingForm({ call, locked, mutate }: { call: PrivateCapi
         <FormRow label="Retained bank or remittance evidence (one reference per line)" labelFor={`${id}-evidence`}><textarea id={`${id}-evidence`} className="min-h-20 w-full rounded border border-border bg-background p-2 text-sm"
           value={evidence} onChange={event => { setEvidence(event.target.value); setConfirmed(false); }} /></FormRow>
         <label className="flex gap-2 text-sm"><input type="checkbox" checked={confirmed} onChange={event => setConfirmed(event.target.checked)} />I matched this cash receipt to the installment and retained bank evidence.</label>
-        <Button type="submit" disabled={!confirmed}>Queue funding draft for review</Button>
+        <Button type="submit" disabled={locked || !confirmed} disabledReason={locked ? "Wait for the current operation or resolve its unconfirmed outcome." : !confirmed ? "Match the cash receipt to the installment and retained bank evidence first." : undefined}>Queue funding draft for review</Button>
       </fieldset></form>}
     {error ? <p role="alert" className="text-sm text-danger">{error}</p> : null}
   </section>;

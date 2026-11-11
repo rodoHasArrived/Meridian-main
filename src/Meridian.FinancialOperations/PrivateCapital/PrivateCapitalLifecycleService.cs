@@ -138,7 +138,8 @@ public sealed class PrivateCapitalLifecycleService(IPrivateCapitalStore store, T
             throw new InvalidOperationException("The call preview changed. Preview and review the current allocation before retaining it.");
         return await store.SaveCallAsync(preview.Call with
         {
-            CreatedBy = RequireActor(actor), CreatedAtUtc = _clock.GetUtcNow()
+            CreatedBy = RequireActor(actor),
+            CreatedAtUtc = _clock.GetUtcNow()
         }, ct).ConfigureAwait(false);
     }
 

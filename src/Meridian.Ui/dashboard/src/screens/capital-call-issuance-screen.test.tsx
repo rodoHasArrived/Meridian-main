@@ -216,4 +216,18 @@ describe("Native commitment-to-cash workbench", () => {
     expect(screen.getByLabelText("I matched this cash receipt to the installment and retained bank evidence.")).not.toBeChecked();
     expect(mocks.intakePrivateCapitalFunding).not.toHaveBeenCalled();
   });
+  it("keeps exact retained decimal text and revision identity in the shared tables", async () => {
+    const exact = "12345678901234567890.1200";
+    mocks.getPrivateCapitalWorkbench.mockResolvedValue({ ...capitalWorkbench(),
+      commitments: [{ ...capitalCommitment, totalCommitment: exact }],
+      calls: [{ ...capitalCall, lines: [{ ...capitalCall.lines[0], amount: exact }] }] });
+    mount(); await ready();
+    const register = within(screen.getByRole("table", { name: "Commitment register and posted capital balances" }));
+    expect(register.getByText(`${exact} USD`)).toBeInTheDocument();
+    expect(register.getByRole("row", { name: "Commitment commitment-a, revision 1, investor investor-a" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "call-a · 250000.01 USD" }));
+    const allocation = within(screen.getByRole("table", { name: "Call allocation and posted progress" }));
+    expect(allocation.getByText(`${exact} USD`)).toBeInTheDocument();
+    expect(allocation.getByRole("row", { name: "Installment call-a:commitment-a, investor investor-a, commitment revision 1" })).toBeInTheDocument();
+  });
 });

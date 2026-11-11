@@ -213,8 +213,11 @@ public sealed class PrivateCapitalAuthorityPostgresTests
         var authority = PrivateCapitalPostingAuthority.Deserialize(aliasedTags[PrivateCapitalPostingAuthority.MetadataTag]);
         aliasedTags[PrivateCapitalPostingAuthority.MetadataTag] = PrivateCapitalPostingAuthority.Serialize(authority with
         { BankLineId = source.BankTransactionId.ToString("B").ToUpperInvariant() });
-        aliased = aliased with { Entry = new JournalEntry(aliased.Entry.JournalEntryId, aliased.Entry.Timestamp,
-            aliased.Entry.Description, aliased.Entry.Lines, aliased.Entry.Metadata with { Tags = aliasedTags }) };
+        aliased = aliased with
+        {
+            Entry = new JournalEntry(aliased.Entry.JournalEntryId, aliased.Entry.Timestamp,
+            aliased.Entry.Description, aliased.Entry.Lines, aliased.Entry.Metadata with { Tags = aliasedTags })
+        };
         var reusedAlias = () => fixture.PostAsync(aliased);
         await reusedAlias.Should().ThrowAsync<LedgerValidationException>();
         var tooMuch = await fixture.FundingAsync(firstCall, "a", "receipt-3", 36m);
@@ -274,7 +277,9 @@ public sealed class PrivateCapitalAuthorityPostgresTests
                     "bank-observation.json", Convert.ToBase64String(bytes), "application/json", "bank-statement",
                     observation.StatementReference, "source-maker")
                 {
-                    Actor = "source-maker", TenantId = fixture.Scope.TenantId, Scope = fixture.Scope.CompanyId,
+                    Actor = "source-maker",
+                    TenantId = fixture.Scope.TenantId,
+                    Scope = fixture.Scope.CompanyId,
                     Classification = EvidenceDocumentClassificationDto.BankEvidence
                 });
                 await vault.ReviewDocumentAsync(intake.VaultIdentity.VaultId, intake.Document!.DocumentId,
@@ -288,7 +293,8 @@ public sealed class PrivateCapitalAuthorityPostgresTests
         }
         finally
         {
-            if (Directory.Exists(root)) Directory.Delete(root, recursive: true);
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
         }
     }
 
@@ -421,7 +427,8 @@ public sealed class PrivateCapitalAuthorityPostgresTests
 
     private static async Task<Exception?> AttemptAsync(Func<Task> operation)
     {
-        try { await operation(); return null; }
+        try
+        { await operation(); return null; }
         catch (Exception exception) { return exception; }
     }
 
@@ -507,11 +514,14 @@ public sealed class PrivateCapitalAuthorityPostgresTests
                 : $"capital-call-funding:{commitmentId}:{line.InstallmentId}:receipt:{Uri.EscapeDataString(receipt!)}";
             var dimensions = new LedgerLineDimensionSet
             {
-                EntityId = Scope.EntityId, FundId = Scope.FundProfileId,
-                InvestorId = line.InvestorId, CapitalAccountId = line.CapitalAccountId,
+                EntityId = Scope.EntityId,
+                FundId = Scope.FundProfileId,
+                InvestorId = line.InvestorId,
+                CapitalAccountId = line.CapitalAccountId,
                 ExternalGlDimensions = new Dictionary<string, string>
                 {
-                    ["capitalCallId"] = call.CallId, ["commitmentId"] = commitmentId,
+                    ["capitalCallId"] = call.CallId,
+                    ["commitmentId"] = commitmentId,
                     ["commitmentRevision"] = line.CommitmentRevision.ToString(System.Globalization.CultureInfo.InvariantCulture),
                     ["capitalActivityKind"] = kind == "Issuance" ? "CapitalCallIssuance" : "CapitalCallFunding"
                 }
@@ -521,7 +531,8 @@ public sealed class PrivateCapitalAuthorityPostgresTests
                 FundEventType: "CapitalCall", CapitalAccountId: line.CapitalAccountId, InvestorId: line.InvestorId,
                 Tags: new Dictionary<string, string>
                 {
-                    ["tenantId"] = Scope.TenantId, ["companyId"] = Scope.CompanyId,
+                    ["tenantId"] = Scope.TenantId,
+                    ["companyId"] = Scope.CompanyId,
                     [PrivateCapitalPostingAuthority.MetadataTag] = PrivateCapitalPostingAuthority.Serialize(authority)
                 });
             var debit = kind == "Issuance" ? LedgerAccounts.CapitalCallReceivableFor(line.InvestorId)

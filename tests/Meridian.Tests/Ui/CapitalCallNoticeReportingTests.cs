@@ -233,7 +233,7 @@ public sealed class CapitalCallNoticeReportingTests
         await queue.DidNotReceive().GetAllAsync(Arg.Any<ReconciliationBreakQueueScope>(),
             Arg.Any<ReconciliationBreakQueueStatus?>(), Arg.Any<CancellationToken>());
         var foreign = async () => await reconciliation.ResolveAsync(parameters with
-            { Scope = parameters.Scope with { InvestorId = "investor-b" } }, checkpoint, Access());
+        { Scope = parameters.Scope with { InvestorId = "investor-b" } }, checkpoint, Access());
         await foreign.Should().ThrowAsync<ReportingReconciliationEvidenceInvalidException>();
     }
 
@@ -262,7 +262,8 @@ public sealed class CapitalCallNoticeReportingTests
             Dimensions: new LedgerDimensionSetDto(EntityId: "entity-a", InvestorId: "investor-a", CapitalAccountId: "capital-a",
                 ExternalGlDimensions: new Dictionary<string, string>
                 {
-                    ["capitalCallId"] = "call-a", ["capitalActivityKind"] = "CapitalCallIssuance"
+                    ["capitalCallId"] = "call-a",
+                    ["capitalActivityKind"] = "CapitalCallIssuance"
                 })), Call().PeriodId, NoticeDate, new ReportingLedgerBookSelectionDto(Scope.LedgerBookId),
         ReportingAccountingBasisDto.Management, "USD", ReportingConsolidationLevelDto.Investor,
         ReportingOutputFormatDto.ClientPackage, ReportingFinalityDto.Draft, true, true,
@@ -274,10 +275,15 @@ public sealed class CapitalCallNoticeReportingTests
     {
         IReadOnlyDictionary<string, string> Row(string debit, string credit) => new Dictionary<string, string>
         {
-            ["investorId"] = "investor-a", ["capitalAccountId"] = "capital-a",
-            ["journalEntryId"] = JournalId.ToString("D"), ["externalGl.capitalCallId"] = "call-a",
-            ["externalGl.capitalActivityKind"] = "CapitalCallIssuance", ["externalGl.commitmentId"] = "commitment-a",
-            ["externalGl.commitmentRevision"] = "2", ["debit"] = debit, ["credit"] = credit,
+            ["investorId"] = "investor-a",
+            ["capitalAccountId"] = "capital-a",
+            ["journalEntryId"] = JournalId.ToString("D"),
+            ["externalGl.capitalCallId"] = "call-a",
+            ["externalGl.capitalActivityKind"] = "CapitalCallIssuance",
+            ["externalGl.commitmentId"] = "commitment-a",
+            ["externalGl.commitmentRevision"] = "2",
+            ["debit"] = debit,
+            ["credit"] = credit,
             ["recordedAtUtc"] = "2026-11-10T12:00:00.0000000+00:00"
         };
         return [Row("100", "0"), Row("0", "100")];

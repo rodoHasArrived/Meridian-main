@@ -126,7 +126,8 @@ public sealed class PrivateCapitalLifecycleServiceTests
         var call = (await new PrivateCapitalLifecycleService(store.Object).PreviewCallAsync(Scope, Request())).Call!;
         var observed = call with
         {
-            CreatedAtUtc = DateTimeOffset.UtcNow, CreatedBy = "operator",
+            CreatedAtUtc = DateTimeOffset.UtcNow,
+            CreatedBy = "operator",
             Lines = call.Lines.Select(x => x with { IssuedAmount = x.Amount, IssuanceJournalEntryId = Guid.NewGuid() }).ToArray()
         };
 

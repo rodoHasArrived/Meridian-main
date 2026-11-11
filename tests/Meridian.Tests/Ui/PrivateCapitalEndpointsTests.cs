@@ -139,8 +139,10 @@ public sealed class PrivateCapitalEndpointsTests
     {
         var fixture = new Fixture();
         var request = CommitmentRequest();
-        if (failure == "missing") request = request with { EvidenceLinks = [] };
-        if (failure == "noncanonical") request = request with { EvidenceLinks = ["https://example.test/agreement.pdf"] };
+        if (failure == "missing")
+            request = request with { EvidenceLinks = [] };
+        if (failure == "noncanonical")
+            request = request with { EvidenceLinks = ["https://example.test/agreement.pdf"] };
         if (failure == "foreign")
             fixture.Vault.TryGetVaultIdentityAsync(VaultId, Tenant, Company, Arg.Any<CancellationToken>())
                 .Returns((EvidenceVaultIdentityDto?)null);
@@ -172,11 +174,20 @@ public sealed class PrivateCapitalEndpointsTests
         var response = await app.GetTestClient().PostAsJsonAsync(Url("/commitments"),
             new
             {
-                commitmentId = "commitment-1", investorId = "investor-1", capitalAccountId = "capital-1",
-                totalCommitment = exact, commitmentDate = NoticeDate, effectiveFrom = NoticeDate,
-                evidenceLinks = new[] { EvidenceLink }, actor = "forged-body-actor", createdBy = "forged-body-actor",
-                tenantId = "foreign-tenant", companyId = "foreign-company", fundProfileId = "foreign-fund",
-                ledgerBookId = Guid.NewGuid(), currency = "EUR"
+                commitmentId = "commitment-1",
+                investorId = "investor-1",
+                capitalAccountId = "capital-1",
+                totalCommitment = exact,
+                commitmentDate = NoticeDate,
+                effectiveFrom = NoticeDate,
+                evidenceLinks = new[] { EvidenceLink },
+                actor = "forged-body-actor",
+                createdBy = "forged-body-actor",
+                tenantId = "foreign-tenant",
+                companyId = "foreign-company",
+                fundProfileId = "foreign-fund",
+                ledgerBookId = Guid.NewGuid(),
+                currency = "EUR"
             });
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -217,10 +228,14 @@ public sealed class PrivateCapitalEndpointsTests
     {
         var fixture = new Fixture();
         var period = Period();
-        if (failure == "foreign-book") period = period with { LedgerBookId = Guid.NewGuid() };
-        if (failure == "soft-closed") period = period with { Status = LedgerPeriodStatusDto.SoftClosed };
-        if (failure == "hard-closed") period = period with { Status = LedgerPeriodStatusDto.HardClosed };
-        if (failure == "outside-date") period = period with { EndDate = NoticeDate.AddDays(-1) };
+        if (failure == "foreign-book")
+            period = period with { LedgerBookId = Guid.NewGuid() };
+        if (failure == "soft-closed")
+            period = period with { Status = LedgerPeriodStatusDto.SoftClosed };
+        if (failure == "hard-closed")
+            period = period with { Status = LedgerPeriodStatusDto.HardClosed };
+        if (failure == "outside-date")
+            period = period with { EndDate = NoticeDate.AddDays(-1) };
         fixture.Books.ListPeriodsAsync(Arg.Any<LedgerPeriodQuery>(), Arg.Any<CancellationToken>())
             .Returns(failure == "unowned" ? Array.Empty<LedgerPeriodDto>() : [period]);
         await using var app = await fixture.StartAsync(permission: UserPermission.ManageDirectLending);
@@ -260,7 +275,8 @@ public sealed class PrivateCapitalEndpointsTests
     {
         var services = new ServiceCollection();
         services.AddLogging();
-        if (configured) services.AddSingleton(Substitute.For<IPrivateCapitalStore>());
+        if (configured)
+            services.AddSingleton(Substitute.For<IPrivateCapitalStore>());
         services.AddWorkstationSharedServices(new ConfigurationBuilder().Build());
         using var provider = services.BuildServiceProvider();
 
@@ -282,7 +298,8 @@ public sealed class PrivateCapitalEndpointsTests
     private static EvidenceVaultIdentityDto Identity(EvidenceDocumentReviewStatusDto status = EvidenceDocumentReviewStatusDto.Accepted)
         => new(VaultId, "agreement", "commitment-1", "manifest.json", "/manifest", Now, new string('a', 64), 1, "file")
         {
-            TenantId = Tenant, Scope = Company,
+            TenantId = Tenant,
+            Scope = Company,
             Documents = [new("document-1", "synthetic-agreement.pdf", EvidenceDocumentClassificationDto.Agreement,
                 new string('a', 64), Now, "upload", Actor, Tenant, Company, EvidenceExtractionStatusDto.Accepted,
                 [], new(status), [])]
@@ -315,15 +332,20 @@ public sealed class PrivateCapitalEndpointsTests
             var builder = WebApplication.CreateBuilder();
             builder.WebHost.UseTestServer();
             builder.Services.AddSingleton(Store);
-            if (missing != "lifecycle") builder.Services.AddSingleton(new PrivateCapitalLifecycleService(Store));
-            if (missing != "books") builder.Services.AddSingleton(Books);
-            if (missing != "registry") builder.Services.AddSingleton(Registry);
-            if (missing != "vault") builder.Services.AddSingleton(Vault);
+            if (missing != "lifecycle")
+                builder.Services.AddSingleton(new PrivateCapitalLifecycleService(Store));
+            if (missing != "books")
+                builder.Services.AddSingleton(Books);
+            if (missing != "registry")
+                builder.Services.AddSingleton(Registry);
+            if (missing != "vault")
+                builder.Services.AddSingleton(Vault);
             var app = builder.Build();
             app.Use(async (context, next) =>
             {
                 context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permission;
-                if (actor is not null) context.Items[LoginSessionMiddleware.CurrentUserKey] = actor;
+                if (actor is not null)
+                    context.Items[LoginSessionMiddleware.CurrentUserKey] = actor;
                 context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = Tenant;
                 context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = Company;
                 await next();

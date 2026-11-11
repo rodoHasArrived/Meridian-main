@@ -56,9 +56,14 @@ public sealed partial class AutomatedJournalIntakeRunner
         }
         return request with
         {
-            Commitments = terms, Purpose = call.Purpose, CallId = call.CallId,
-            FundProfileId = call.Scope.FundProfileId, TenantId = call.Scope.TenantId,
-            CompanyId = call.Scope.CompanyId, EntityId = call.Scope.EntityId, Currency = call.Scope.Currency
+            Commitments = terms,
+            Purpose = call.Purpose,
+            CallId = call.CallId,
+            FundProfileId = call.Scope.FundProfileId,
+            TenantId = call.Scope.TenantId,
+            CompanyId = call.Scope.CompanyId,
+            EntityId = call.Scope.EntityId,
+            Currency = call.Scope.Currency
         };
     }
 

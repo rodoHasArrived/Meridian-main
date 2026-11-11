@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { FormGrid, FormRow } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { TechnicalDetails } from "@/components/ui/technical-details";
 import { importPrivateCapitalBankObservation } from "@/lib/api/private-capital.api";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { capitalAmount, capitalIsPositive, type CapitalMutation } from "@/screens/private-capital-presenters";
@@ -49,8 +50,8 @@ export function CapitalBankObservationImport({ scope, locked, mutate, onImported
       <Button type="submit" variant="outline" disabled={!evidenceLink.trim() || !documentId.trim()}>Import reviewed bank observation</Button>
     </fieldset></form>
     {imported ? <div role="status" className="space-y-1 text-xs"><p>{imported.isReplay ? "Existing bank observation recovered." : "Bank observation retained."} Review the receipt match again before queueing any funding draft.</p>
-      <p>Bank line {imported.bankTransaction.bankTransactionId} · {capitalAmount(imported.bankTransaction.amount, imported.bankTransaction.currency)} · Effective {imported.bankTransaction.effectiveDate}</p>
-      <p className="break-all">Source SHA-256 {imported.sourceHashSha256}</p>
+      <p>{capitalAmount(imported.bankTransaction.amount, imported.bankTransaction.currency)} · Effective {imported.bankTransaction.effectiveDate}</p>
+      <TechnicalDetails label="Imported bank source references"><p className="break-all">Bank line {imported.bankTransaction.bankTransactionId} · Source SHA-256 {imported.sourceHashSha256}</p></TechnicalDetails>
     </div> : null}
   </section>;
 }

@@ -693,9 +693,12 @@ public sealed partial class AutomatedJournalIntakeRunner
         ValidateFundingTerms(request, nativeCall);
         request = request with
         {
-            CallId = nativeCall.CallId, FundProfileId = nativeCall.Scope.FundProfileId,
-            TenantId = nativeCall.Scope.TenantId, CompanyId = nativeCall.Scope.CompanyId,
-            EntityId = nativeCall.Scope.EntityId, Currency = nativeCall.Scope.Currency
+            CallId = nativeCall.CallId,
+            FundProfileId = nativeCall.Scope.FundProfileId,
+            TenantId = nativeCall.Scope.TenantId,
+            CompanyId = nativeCall.Scope.CompanyId,
+            EntityId = nativeCall.Scope.EntityId,
+            Currency = nativeCall.Scope.Currency
         };
         var bankTransactions = await ResolveFundingBankTransactionsAsync(request, nativeCall, ct).ConfigureAwait(false);
         var evaluatedAtUtc = (request.AsOf ?? _timeProvider.GetUtcNow()).ToUniversalTime();

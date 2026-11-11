@@ -1,5 +1,6 @@
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
-import type { CapitalDecimal, PrivateCapitalCall, PrivateCapitalCommitment } from "@/types/private-capital";
+import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import type { CapitalDecimal, PrivateCapitalCall, PrivateCapitalCallLine, PrivateCapitalCommitment } from "@/types/private-capital";
 
 export type CapitalMutation = (label: string, action: (signal: AbortSignal) => Promise<unknown>, options?: { refresh?: boolean }) => Promise<boolean>;
 /** Preserve exact decimal text; formatting never rounds or calculates a financial result. */
@@ -35,9 +36,13 @@ export function capitalJournalRoute(bookId: string, periodId: string, journalEnt
     ...(periodId ? { periodId } : {}), ...(journalEntryId ? { journalEntryId } : {}) })}`;
 }
 export function CapitalCallLines({ call }: { call: PrivateCapitalCall }) {
-  return <div className="overflow-x-auto"><table className="w-full min-w-[850px] text-left text-sm"><caption className="sr-only">Call allocation and posted progress</caption><thead><tr>
-    {['Installment / investor', 'Allocation', 'Uncalled before', 'Uncalled after', 'Issued', 'Funded', 'Outstanding'].map(label => <th key={label} scope="col" className="p-2">{label}</th>)}
-  </tr></thead><tbody>{call.lines.map(line => <tr key={line.installmentId} className="border-t border-border"><th scope="row" className="p-2 font-medium">{line.installmentId}<span className="block text-xs text-muted-foreground">{line.investorId} · Commitment v{line.commitmentRevision}</span></th>
-    {[line.amount, line.uncalledBefore, line.uncalledAfter, line.issuedAmount, line.fundedAmount, line.outstandingAmount].map((value, index) => <td key={index} className="p-2 font-mono">{capitalAmount(value, call.scope.currency)}</td>)}
-  </tr>)}</tbody></table></div>;
+  const columns: DenseDataTableColumn<PrivateCapitalCallLine>[] = [
+    { id: "installment", label: "Installment / investor", render: line => <span className="font-medium">{line.installmentId}<span className="block text-xs text-muted-foreground">{line.investorId} · Commitment v{line.commitmentRevision}</span></span> },
+    ...([["amount", "Allocation"], ["uncalledBefore", "Uncalled before"], ["uncalledAfter", "Uncalled after"],
+      ["issuedAmount", "Issued"], ["fundedAmount", "Funded"], ["outstandingAmount", "Outstanding"]] as const)
+      .map(([field, label]) => ({ id: field, label, numeric: true, className: "whitespace-nowrap", render: (line: PrivateCapitalCallLine) => <span className="font-mono">{capitalAmount(line[field], call.scope.currency)}</span> }))
+  ];
+  return <DenseDataTable rows={call.lines} columns={columns} getRowId={line => line.installmentId}
+    getRowAriaLabel={line => `Installment ${line.installmentId}, investor ${line.investorId}, commitment revision ${line.commitmentRevision}`}
+    ariaLabel="Call allocation and posted progress" caption="Call allocation and posted progress" emptyText="No retained call allocations." />;
 }

@@ -175,7 +175,7 @@ public sealed class CapitalCallIssuanceIntakeTests
                 {
                     Dimensions = line.Dimensions! with
                     {
-                        ExternalGlDimensions = new Dictionary<string,string>(line.Dimensions!.ExternalGlDimensions)
+                        ExternalGlDimensions = new Dictionary<string, string>(line.Dimensions!.ExternalGlDimensions)
                         {
                             [key] = "edited"
                         }
