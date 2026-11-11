@@ -12,7 +12,7 @@
       "name": "web-daily-control-tower",
       "path": "/",
       "docLabel": "Daily Control Tower",
-      "waitForText": "Daily Control Tower Workstation",
+      "waitForText": "What needs an operator decision now",
       "requiredApiRoutes": [
         "/api/workstation/first-run/",
         "/api/demo/mode",
@@ -32,6 +32,12 @@
       "path": "/trading",
       "docLabel": "Trading \u2014 Orders blotter",
       "waitForText": "Trading overview",
+      "allowedContentIssues": [
+        {
+          "kind": "slug-identifier",
+          "reason": "A paper session has no name other than its session key in the trading read model."
+        }
+      ],
       "requiredApiRoutes": [
         "/api/workstation/trading"
       ],
@@ -97,6 +103,12 @@
       "path": "/trading/readiness",
       "docLabel": "Operator Readiness Console",
       "waitForText": "Operator Readiness Console",
+      "allowedContentIssues": [
+        {
+          "kind": "slug-identifier",
+          "reason": "A paper session has no name other than its session key in the readiness read model."
+        }
+      ],
       "requiredApiRoutes": [
         "/api/workstation/trading/readiness",
         "/api/workstation/operator/inbox"
@@ -344,6 +356,12 @@
       "path": "/accounting/ledger?view=trial-balance&runId=run-42",
       "docLabel": "Accounting \u2014 Trial Balance Detail",
       "waitForText": "Trial Balance",
+      "allowedContentIssues": [
+        {
+          "kind": "slug-identifier",
+          "reason": "Trial-balance dimensions print fund and entity keys; the trial-balance read model carries dimension keys without display names."
+        }
+      ],
       "requiredApiRoutes": [
         "/api/workstation/accounting",
         "/api/ledger/books",
@@ -378,6 +396,12 @@
       "path": "/accounting/configure",
       "docLabel": "Accounting \u2014 Configure",
       "waitForText": "Configure",
+      "allowedContentIssues": [
+        {
+          "kind": "slug-identifier",
+          "reason": "Scope coverage lists fund, entity and strategy by key: the configuration read model exposes scope keys without display names."
+        }
+      ],
       "requiredApiRoutes": [
         "/api/workstation/accounting",
         "/api/accounting-system/production-readiness",
@@ -399,6 +423,14 @@
         {
           "kind": "opaque-identifier",
           "reason": "A close workflow is identified by period and fund account, and OperationsContinuityWorkflowSummary exposes only fundAccountId. Remove this entry once the shared read model carries a fund-account display name."
+        },
+        {
+          "kind": "slug-identifier",
+          "reason": "Breaks, approvals and accounting records are named by key in OperationsContinuityWorkflowSummary, the same gap as the fund-account identifier above."
+        },
+        {
+          "kind": "internal-term",
+          "reason": "\"Lane\" is the shared Operations Continuity read model's word for a close work stream and arrives in server-written summaries shown by both workstations. Rename it in the shared contract, not in one client."
         }
       ],
       "requiredApiRoutes": [
@@ -445,6 +477,12 @@
       "path": "/accounting/ledger",
       "docLabel": "Accounting \u2014 Ledger Explorer",
       "waitForText": "Ledger Explorer",
+      "allowedContentIssues": [
+        {
+          "kind": "slug-identifier",
+          "reason": "Journal entries and their source entity are identified by key; the posted-ledger read model has no journal number or entity display name yet."
+        }
+      ],
       "requiredApiRoutes": [
         "/api/workstation/accounting",
         "/api/workstation/runs/run-42/ledger/journal",
@@ -513,6 +551,12 @@
       "path": "/accounting/approvals/inbox",
       "docLabel": "Accounting \u2014 Approval Inbox",
       "waitForText": "Approval Inbox",
+      "allowedContentIssues": [
+        {
+          "kind": "slug-identifier",
+          "reason": "An approval request is listed with its request key under the title because the approval inbox contract carries no separate reference number. Move the key to Audit details once it does."
+        }
+      ],
       "requiredApiRoutes": [
         "/api/workstation/accounting"
       ],
@@ -632,6 +676,12 @@
         "/api/workstation/reconciliation/margin-control"
       ],
       "waitForText": "Margin Control Center",
+      "allowedContentIssues": [
+        {
+          "kind": "slug-identifier",
+          "reason": "The margin table shows the Security Master key beside each symbol; the margin read model carries no security display name."
+        }
+      ],
       "waitForTexts": [
         "Multi-prime rollup",
         "MARGIN_SHADOW_VARIANCE"
@@ -657,7 +707,7 @@
       "name": "web-reporting-workspace",
       "path": "/reporting",
       "docLabel": "Reporting",
-      "waitForText": "Reporting Workstation",
+      "waitForText": "Daily Reporting Cockpit",
       "requiredApiRoutes": [
         "/api/workstation/reporting"
       ],
@@ -706,7 +756,7 @@
       "name": "web-reporting-exports",
       "path": "/reporting/exports",
       "docLabel": "Reporting \u2014 Exports",
-      "waitForText": "Reporting Workstation",
+      "waitForText": "Governed export queue",
       "requiredApiRoutes": [
         "/api/workstation/reporting"
       ],
@@ -828,6 +878,12 @@
       "path": "/reporting/runs/detail?runId=report-run-investor-202605",
       "docLabel": "Reporting \u2014 Run Detail",
       "waitForText": "Report Run Detail",
+      "allowedContentIssues": [
+        {
+          "kind": "slug-identifier",
+          "reason": "Run Detail is the audit view of one report run and prints run, series, template and correlation keys as fields. Move them under Technical details with the DetailPane work (V1)."
+        }
+      ],
       "requiredApiRoutes": [
         "/api/fund-structure/reporting/runs/report-run-investor-202605",
         "/api/fund-structure/reporting/runs/series/report-series-investor-monthly-statement",
@@ -868,6 +924,12 @@
       "path": "/strategy",
       "docLabel": "Strategy",
       "waitForText": "Strategy overview",
+      "allowedContentIssues": [
+        {
+          "kind": "slug-identifier",
+          "reason": "The selected run shows its run key as a context field; move it under Technical details with the DetailPane work (V1)."
+        }
+      ],
       "requiredApiRoutes": [
         "/api/workstation/strategy"
       ],
@@ -964,6 +1026,12 @@
       "path": "/strategy/run-ledger",
       "docLabel": "Strategy \u2014 Run Ledger Explorer",
       "waitForText": "Strategy Run Ledger Explorer",
+      "allowedContentIssues": [
+        {
+          "kind": "slug-identifier",
+          "reason": "A strategy run is named by its run key; the run-ledger read model carries no run display name."
+        }
+      ],
       "requiredApiRoutes": [
         "/api/workstation/financial-record-explorers/ledger"
       ],
@@ -996,7 +1064,7 @@
       "name": "web-data-watchlist",
       "path": "/data/quotes?view=watchlist",
       "docLabel": "Data \u2014 Market Data (Watchlist view)",
-      "waitForText": "Data Lane",
+      "waitForText": "Symbol watchlist",
       "requiredApiRoutes": [
         "/api/workstation/data"
       ],
@@ -1014,7 +1082,7 @@
       "name": "web-data-live-quotes",
       "path": "/data/quotes",
       "docLabel": "Data \u2014 Market Data (Live Quotes view)",
-      "waitForText": "Data Lane",
+      "waitForText": "Live Market Data Workspace",
       "requiredApiRoutes": [
         "/api/workstation/data"
       ],
@@ -1263,6 +1331,12 @@
       "path": "/settings/diagnostics/advanced",
       "docLabel": "Settings \u2014 Advanced Diagnostics",
       "waitForText": "Advanced diagnostics",
+      "allowedContentIssues": [
+        {
+          "kind": "api-path",
+          "reason": "This Settings diagnostics page is the catalog of backend routes; the request path is the subject of each row."
+        }
+      ],
       "requiredApiRoutes": [
         "/api/workstation/session",
         "/api/status",
@@ -1291,6 +1365,12 @@
       "path": "/settings/diagnostics/advanced#diagnostic-endpoints",
       "docLabel": "Settings \u2014 Diagnostic Endpoints",
       "waitForText": "Advanced diagnostics",
+      "allowedContentIssues": [
+        {
+          "kind": "api-path",
+          "reason": "This Settings diagnostics page is the catalog of backend routes; the request path is the subject of each row."
+        }
+      ],
       "requiredApiRoutes": [
         "/api/workstation/session",
         "/api/status",
@@ -1392,6 +1472,12 @@
       "path": "/settings/diagnostics/advanced#runtime-feature-capabilities",
       "docLabel": "Settings \u2014 Feature Coverage",
       "waitForText": "Advanced diagnostics",
+      "allowedContentIssues": [
+        {
+          "kind": "api-path",
+          "reason": "This Settings diagnostics page is the catalog of backend routes; the request path is the subject of each row."
+        }
+      ],
       "requiredApiRoutes": [
         "/api/workstation/session",
         "/api/status",
@@ -1418,6 +1504,12 @@
       "path": "/settings/providers/alpaca/advanced",
       "docLabel": "Settings \u2014 Provider Advanced Controls",
       "waitForText": "Advanced provider controls",
+      "allowedContentIssues": [
+        {
+          "kind": "slug-identifier",
+          "reason": "Advanced provider setup edits the template or manifest identifier directly; the identifier is the subject of the field."
+        }
+      ],
       "requiredApiRoutes": [
         "/api/workstation/session",
         "/api/status",

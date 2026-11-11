@@ -39,7 +39,7 @@ internal static class BacktestMetricsEngine
         // whole metrics build. Report it as a total loss (-100%) instead.
         var annualisedReturn = totalReturn <= -1m
             ? -1m
-            : (decimal)(Math.Pow(1.0 + (double)totalReturn, 1.0 / years) - 1.0);
+            : ReportedReturn.FromDouble(Math.Pow(1.0 + (double)totalReturn, 1.0 / years) - 1.0);
         var sharpe = ComputeSharpe(datedDailyReturns, request.RiskFreeRate, request.RiskFreeRateSeries);
         var sortino = ComputeSortino(datedDailyReturns, request.RiskFreeRate, request.RiskFreeRateSeries);
         var (maxDrawdown, maxDrawdownPct, recoveryDays) = ComputeMaxDrawdown(snapshots, initial);

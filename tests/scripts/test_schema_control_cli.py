@@ -24,7 +24,7 @@ from tools.schema_control.cli import (
 
 class SchemaControlCliTests(unittest.TestCase):
     def test_inventory_detects_new_collisions_against_exact_git_base(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             root = Path(directory)
             migrations = root / "src/Ledger/Migrations"
             migrations.mkdir(parents=True)
@@ -71,7 +71,7 @@ class SchemaControlCliTests(unittest.TestCase):
             self.assertTrue(any("ordinal 9 collision" in item["message"] for item in collisions))
 
     def test_new_migration_cli_and_generated_docs_fail_closed(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             root = Path(directory)
             migrations = root / "src/Ledger/Migrations"
             migrations.mkdir(parents=True)
@@ -128,7 +128,7 @@ class SchemaControlCliTests(unittest.TestCase):
             self.assertTrue(readme.read_text().endswith("Preserve this footer.\n"))
 
     def test_configured_output_paths_reject_absolute_and_escaping_paths(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             root = Path(directory) / "repository"
             root.mkdir()
 
@@ -146,7 +146,7 @@ class SchemaControlCliTests(unittest.TestCase):
                         )
 
     def test_new_migration_cli_normalizes_windows_generated_path(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             root = Path(directory)
             migration_directory = "src/Ledger/Migrations"
             (root / migration_directory).mkdir(parents=True)
@@ -191,7 +191,7 @@ class SchemaControlCliTests(unittest.TestCase):
                 self.assertEqual(0, main(["--root", str(root), "generate-migration-docs", "--check"]))
 
     def test_configured_output_paths_reject_directory_link_escaping_repository(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             root = Path(directory) / "repository"
             root.mkdir()
             outside = Path(directory) / "outside"
@@ -222,7 +222,7 @@ class SchemaControlCliTests(unittest.TestCase):
                 )
 
     def test_promote_validates_all_sources_before_replacing_outputs(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             root = Path(directory) / "repository"
             candidate = root / "build/schema-control/candidate"
             (candidate / "manifest").mkdir(parents=True)
@@ -244,7 +244,7 @@ class SchemaControlCliTests(unittest.TestCase):
             self.assertFalse((tracked_manifest / "new.json").exists())
 
     def test_promote_rejects_repository_root_destination(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             root = Path(directory) / "repository"
             candidate = root / "build/schema-control/candidate"
             (candidate / "manifest").mkdir(parents=True)
@@ -310,7 +310,7 @@ class SchemaControlCliTests(unittest.TestCase):
         self.assertEqual("migration-set-registry-removed", findings[0].rule_id)
 
     def test_candidate_preparation_removes_only_owned_stale_artifacts(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             root = Path(directory) / "repository"
             candidate = root / "build/schema-control/candidate"
             (candidate / "manifest").mkdir(parents=True)
@@ -377,7 +377,7 @@ class SchemaControlCliTests(unittest.TestCase):
         )
 
     def test_inventory_returns_one_for_duplicate_tracked_ordinal(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             root = Path(directory)
             migrations = root / "db/Migrations"
             migrations.mkdir(parents=True)
@@ -418,7 +418,7 @@ class SchemaControlCliTests(unittest.TestCase):
             self.assertEqual(1, report["summary"]["errors"])
 
     def test_inventory_fails_closed_for_overdue_waiver(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             root = Path(directory)
             migrations = root / "db/Migrations"
             migrations.mkdir(parents=True)
@@ -467,7 +467,7 @@ class SchemaControlCliTests(unittest.TestCase):
             )
 
     def test_snapshot_orchestration_uses_database_and_contract_layers(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             root = Path(directory)
             (root / "database/policies").mkdir(parents=True)
             (root / "db/Migrations").mkdir(parents=True)

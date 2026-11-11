@@ -294,12 +294,12 @@ export function buildRouteFocusCardState({
     id: "data-route-focus-overview",
     role: "region",
     ariaLabel: "Data workspace route focus",
-    eyebrow: "Lane Evidence",
+    eyebrow: "Workspace evidence",
     title: "Provider and export readiness",
     description: "Keep provider recovery, backfill pressure, and export handoffs visible while Data prepares inputs for Accounting and Reporting.",
     rows: [
       { id: "primary-checks", label: "Primary checks", value: "Providers / backfills / exports" },
-      { id: "security-coverage", label: "Security coverage", value: "Accounting lane" },
+      { id: "security-coverage", label: "Security coverage", value: "Accounting" },
       { id: "operator-handoff", label: "Operator handoff", value: "Reporting export evidence" }
     ],
     action: {

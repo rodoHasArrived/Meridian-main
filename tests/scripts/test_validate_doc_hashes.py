@@ -23,7 +23,7 @@ spec.loader.exec_module(doc_hashes)
 
 class SourceDocHashPortabilityTests(unittest.TestCase):
     def test_source_order_is_ordinal_and_independent_of_checkout_root(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             root = Path(directory)
             source = root / "src" / "Sample"
             source.mkdir(parents=True)
@@ -37,7 +37,7 @@ class SourceDocHashPortabilityTests(unittest.TestCase):
             self.assertEqual(expected, doc_hashes.tree_hash(root, source))
 
     def test_source_text_hash_survives_lf_to_crlf_checkout(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             root = Path(directory)
             source = root / "src"
             source.mkdir()
@@ -51,7 +51,7 @@ class SourceDocHashPortabilityTests(unittest.TestCase):
             self.assertNotEqual(before, doc_hashes.tree_hash(root, source))
 
     def test_readme_normalizes_newlines_but_preserves_documentation_changes(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             root = Path(directory)
             registry = root / "docs/source/data/source-modules.yml"
             registry.parent.mkdir(parents=True)
@@ -71,7 +71,7 @@ class SourceDocHashPortabilityTests(unittest.TestCase):
             self.assertNotEqual(before, doc_hashes.build_manifest(root)["modules"][0]["readme_hash"])
 
     def test_non_utf8_source_bytes_are_not_normalized(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             root = Path(directory)
             source = root / "src"
             source.mkdir()
@@ -82,7 +82,7 @@ class SourceDocHashPortabilityTests(unittest.TestCase):
             self.assertEqual(expected, doc_hashes.tree_hash(root, source))
 
     def test_build_and_dependency_outputs_stay_excluded(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             root = Path(directory)
             source = root / "src"
             source.mkdir()
@@ -97,7 +97,7 @@ class SourceDocHashPortabilityTests(unittest.TestCase):
 
 class ReviewedReadmeFingerprintTests(unittest.TestCase):
     def setUp(self) -> None:
-        temporary = tempfile.TemporaryDirectory()
+        temporary = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(temporary.cleanup)
         self.root = Path(temporary.name)
         self.source = self.root / "src/Sample"

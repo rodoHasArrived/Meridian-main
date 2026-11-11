@@ -11,6 +11,7 @@ import {
   describeCaptureContentIssues,
   finalizeCaptureRun,
   findCaptureContentIssues,
+  isSlugIdentifier,
   partitionCaptureContentIssues,
   waitForServer,
   writeCaptureManifest
@@ -204,7 +205,71 @@ test("rendered identifiers are reported once each, whatever their case", () => {
     { kind: "opaque-identifier", excerpt: "00000000-0000-0000-0000-0000000000aa" }
   ]);
   // Readable codes, dates and partial hex are not identifiers.
-  assert.deepEqual(findCaptureContentIssues("Period 2026-05 · fund-alpha · run-42 · deadbeef-cafe"), []);
+  assert.deepEqual(findCaptureContentIssues("Period 2026-05 · fund-alpha · deadbeef-cafe"), []);
+});
+
+test("request paths and words about the system are reported", () => {
+  assert.deepEqual(
+    findCaptureContentIssues(
+      "Recurring queue unavailable: Request failed for /api/ledger/journal-automation/recurring/occurrences?fundProfileId=x (500)\n"
+      + "Strategy Lane · PlotTool\nNo payload is available.\nLegacy pack mutations are retired.\nCaller-visible Reporting records"
+    ),
+    [
+      { kind: "api-path", excerpt: "/api/ledger/journal-automation/recurring/occurrences?fundProfileId=x" },
+      { kind: "internal-term", excerpt: "Lane" },
+      { kind: "internal-term", excerpt: "payload" },
+      { kind: "internal-term", excerpt: "mutations" },
+      { kind: "internal-term", excerpt: "Caller-visible" }
+    ]
+  );
+  // Words that merely contain a banned term, and a path that is not a request path, are fine.
+  assert.deepEqual(findCaptureContentIssues("Planet · explanation · permutation · Rapid API usage · api/keys"), []);
+});
+
+test("slug-shaped record identifiers are reported and ordinary compounds are not", () => {
+  for (const slug of ["run-dev-1", "default-fund", "entity-fund-alpha", "sec-dev-001", "investor-anchor-lp", "cfo-1"]) {
+    assert.equal(isSlugIdentifier(slug), true, slug);
+  }
+  for (const compound of [
+    "as-of", "read-only", "point-in-time", "end-of-day", "fund-level", "account-period", "tier-1", "phase-2",
+    "rule-144a", "mark-to-market", "strat-mean-reversion", "fund"
+  ]) {
+    assert.equal(isSlugIdentifier(compound), false, compound);
+  }
+  assert.deepEqual(
+    findCaptureContentIssues("Fund: default-fund, Entity: entity-fund-alpha as-of 2026-06-30 (read-only), run run-dev-1"),
+    [
+      { kind: "slug-identifier", excerpt: "default-fund" },
+      { kind: "slug-identifier", excerpt: "entity-fund-alpha" },
+      { kind: "slug-identifier", excerpt: "run-dev-1" }
+    ]
+  );
+  // Dates, file names, addresses and upper-case codes are not slugs.
+  assert.deepEqual(findCaptureContentIssues("2026-06-30 · notes-2026.pdf · ops-1@example.com · PO-1 · FL-1"), []);
+});
+
+test("a disabled primary action without a reason is reported from the DOM probe", () => {
+  assert.deepEqual(
+    findCaptureContentIssues("Submit approval", { unexplainedDisabledActions: ["Submit approval", "Submit approval", ""] }),
+    [
+      { kind: "disabled-primary-without-reason", excerpt: "Submit approval" },
+      { kind: "disabled-primary-without-reason", excerpt: "(unlabelled button)" }
+    ]
+  );
+  const excused = partitionCaptureContentIssues("", {
+    allowedContentIssues: [{ kind: "disabled-primary-without-reason", reason: "Reason is shown inline beside the button." }]
+  }, { unexplainedDisabledActions: ["Add symbol set"] });
+  assert.equal(excused.blocking.length, 0);
+  assert.equal(excused.allowed.length, 1);
+});
+
+test("a status bar that contradicts the page's freshness is reported", () => {
+  const contradiction = 'status bar "Sync up to date Workspace Portfolio" vs page "Freshness Needs review Stale · 187d ago"';
+  assert.deepEqual(
+    findCaptureContentIssues("Portfolio", { statusContradictions: [contradiction] }),
+    [{ kind: "status-contradiction", excerpt: contradiction }]
+  );
+  assert.deepEqual(findCaptureContentIssues("Portfolio", { statusContradictions: [] }), []);
 });
 
 test("a count of one before a plural noun is reported", () => {

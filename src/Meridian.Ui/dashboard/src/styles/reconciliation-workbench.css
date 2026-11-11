@@ -1,7 +1,7 @@
 .reconciliation-workbench { min-width: 0; display: grid; gap: .75rem; }
 .reconciliation-workbench-shell .workspace-workbench-shell-layout--with-inspector { grid-template-columns: minmax(0, 1fr) minmax(19rem, 23rem); }
 .reconciliation-workbench-shell .workspace-workbench-shell-main { min-width: 0; }
-.reconciliation-inspector { display: grid; gap: .75rem; padding: .75rem; border: 1px solid var(--ws-border); background: var(--ws-surface); border-radius: 2px; overflow-wrap: anywhere; }
+.reconciliation-inspector { display: grid; gap: .75rem; padding: .75rem; border: 1px solid var(--ws-border); background: var(--ws-surface); border-radius: 2px; overflow-wrap: break-word; }
 .reconciliation-queue-toolbar { display: flex; flex-wrap: wrap; align-items: end; gap: .5rem; }
 .reconciliation-queue-toolbar label { display: grid; gap: .25rem; font-size: .75rem; flex: 1 1 8rem; }
 .reconciliation-queue-toolbar label:first-child { flex-basis: 12rem; }
@@ -20,9 +20,6 @@
 .reconciliation-inspector .entity-summary { border: 0; background: transparent; padding: 0; }
 .reconciliation-inspector .entity-summary-head { display: grid; gap: .75rem; }
 .reconciliation-inspector .entity-summary-actions { justify-content: start; flex-wrap: wrap; }
-.reconciliation-inspector .entity-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.reconciliation-inspector .entity-summary-field { padding: .5rem; }
-.reconciliation-inspector .entity-summary-field dd { overflow-wrap: anywhere; }
 .reconciliation-workbench-shell .workspace-workbench-shell-main { grid-template-columns: minmax(0, 1fr); }
 .reconciliation-workbench-shell .workspace-workbench-shell-main > * { min-width: 0; }
 .reconciliation-run-context { display: grid; grid-template-columns: minmax(15rem, 1fr) minmax(0, 2fr); align-items: end; gap: .75rem; }

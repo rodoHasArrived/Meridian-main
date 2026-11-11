@@ -143,6 +143,36 @@ public sealed class BacktestMetricsEngineTests
     }
 
     [Fact]
+    public void Compute_LargeGainOverOneDay_CapsAnnualisedReturnInsteadOfOverflowing()
+    {
+        // 25% in one day compounds to roughly 2e35 a year, past decimal.MaxValue (~7.9e28). The
+        // unchecked decimal cast threw OverflowException and aborted the whole metrics build.
+        var startDate = new DateOnly(2024, 1, 2);
+        var snapshots = BuildSnapshots([100m, 125m], startDate);
+        var request = new BacktestRequest(From: startDate, To: startDate.AddDays(1), InitialCash: 100m);
+
+        var act = () => BacktestMetricsEngine.Compute(snapshots, [], [], request);
+
+        act.Should().NotThrow();
+        act().TotalReturn.Should().Be(0.25m);
+        act().AnnualizedReturn.Should().Be((decimal)ReportedReturn.MaxMagnitude);
+    }
+
+    [Fact]
+    public void Compute_OrdinaryGain_AnnualisedReturnIsNotCapped()
+    {
+        var startDate = new DateOnly(2024, 1, 2);
+        var snapshots = BuildSnapshots([100m, 110m], startDate).ToList();
+        // Stretch the two observations a full year apart: 10% over one year annualises to 10%.
+        snapshots[1] = snapshots[1] with { Date = startDate.AddDays(365) };
+        var request = new BacktestRequest(From: startDate, To: startDate.AddDays(365), InitialCash: 100m);
+
+        var metrics = BacktestMetricsEngine.Compute(snapshots, [], [], request);
+
+        metrics.AnnualizedReturn.Should().BeApproximately(0.10m, 0.0001m);
+    }
+
+    [Fact]
     public void Compute_LossGreaterThanInitialCapital_ReportsTotalLossInsteadOfThrowing()
     {
         // Leverage or shorts can push equity below zero. Math.Pow of a negative base returned NaN

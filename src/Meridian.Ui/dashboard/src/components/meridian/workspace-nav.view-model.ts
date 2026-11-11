@@ -220,7 +220,7 @@ export function buildWorkspaceNavViewModel(
     deliveryEyebrow: "Shell controls",
     deliveryTitle: "Palette-first routing",
     deliveryDescription:
-      "Use the shared command palette and canonical routes to move between lanes while legacy aliases stay available.",
+      "Use the shared command palette and canonical routes to move between workspaces while legacy aliases stay available.",
     deliveryShortcutLabel: "Ctrl K",
     deliveryShortcutAriaLabel: "Open command palette with Control K",
     items

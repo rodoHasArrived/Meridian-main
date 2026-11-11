@@ -1,5 +1,5 @@
 import { describeOperatingScope, operatingScopeKey } from "@/lib/operating-scope/recent-scopes";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -38,6 +38,8 @@ export interface ScopePickerProps {
   defaultScope?: AppShellOperatingScopeInput | null;
   /** Saves the draft as the operator's default (null clears it). Omit to hide the default controls. */
   onSaveDefault?: (scope: AppShellOperatingScopeInput | null) => Promise<void> | void;
+  /** On-demand workflow detail shown under the scope controls; following a link in it closes the picker. */
+  workflowContext?: ReactNode;
   /** Overridable for tests. */
   searchSymbols?: typeof searchSymbolsQuery;
 }
@@ -53,6 +55,7 @@ export function ScopePicker({
   recentScopes = [],
   defaultScope = null,
   onSaveDefault,
+  workflowContext,
   searchSymbols = searchSymbolsQuery
 }: ScopePickerProps) {
   const [defaultStatus, setDefaultStatus] = useState<string | null>(null);
@@ -310,6 +313,16 @@ export function ScopePicker({
             </div>
           </div>
         </div>
+        {workflowContext ? (
+          <div
+            className="scope-picker-workflow-context"
+            onClick={(event) => {
+              if ((event.target as Element).closest("a")) onOpenChange(false);
+            }}
+          >
+            {workflowContext}
+          </div>
+        ) : null}
       </DialogContent>
     </Dialog>
   );

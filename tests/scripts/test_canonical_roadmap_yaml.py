@@ -59,7 +59,7 @@ class CanonicalRoadmapYamlTests(unittest.TestCase):
         self.assertEqual(len(CANONICAL_NAMES), parser.call_count)
 
     def test_malformed_yaml_includes_path_line_and_column(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             path = Path(tmp) / "docs" / "roadmap" / "data" / "roadmap-items.yml"
             path.parent.mkdir(parents=True)
             path.write_text(MALFORMED, encoding="utf-8")
@@ -77,7 +77,7 @@ class CanonicalRoadmapYamlTests(unittest.TestCase):
         self.assertIn("build/scripts/docs/requirements.txt", message)
 
     def test_json_loading_does_not_require_yaml_dependency(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             path = Path(tmp) / "fixture.json"
             path.write_text('{"summary": "Review: pending"}', encoding="utf-8")
             with mock.patch("builtins.__import__", side_effect=without_yaml):
@@ -86,7 +86,7 @@ class CanonicalRoadmapYamlTests(unittest.TestCase):
     def test_valid_colon_hash_and_folded_text_survive_unchanged(self) -> None:
         content = 'quoted: "Review: pending #2948"\nfolded: >-\n  Review: pending\n  and repair: required\n'
         expected = {"quoted": "Review: pending #2948", "folded": "Review: pending and repair: required"}
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             path = Path(tmp) / "roadmap.yml"
             path.write_text(content, encoding="utf-8")
             self.assertEqual(expected, common.load_data(path))
@@ -104,7 +104,7 @@ class CanonicalRoadmapYamlTests(unittest.TestCase):
                 normalizer.render(str(path), "unused.yaml", set())
 
     def test_normalizer_preserves_canonical_registry_values(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             for name in sorted(CANONICAL_NAMES):
                 with self.subTest(registry=name):
                     source = ROOT / "docs" / "roadmap" / "data" / name
@@ -115,7 +115,7 @@ class CanonicalRoadmapYamlTests(unittest.TestCase):
     def test_normalizer_preserves_scalar_types_and_quoted_text(self) -> None:
         expected = {"summary": "Review: pending #2948", "numeric_text": "01", "enabled": True,
                     "count": 2, "ratio": 1.5, "optional": None, "items": []}
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             source = Path(tmp) / "source.yml"
             output = Path(tmp) / "output.yml"
             source.write_text(yaml.safe_dump(expected), encoding="utf-8")
@@ -125,7 +125,7 @@ class CanonicalRoadmapYamlTests(unittest.TestCase):
     def test_normalizer_preserves_caller_locale_timezone_and_unicode(self) -> None:
         original_locale = locale.setlocale(locale.LC_ALL)
         self.addCleanup(locale.setlocale, locale.LC_ALL, original_locale)
-        with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(os.environ, {"TZ": "Pacific/Honolulu"}):
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp, mock.patch.dict(os.environ, {"TZ": "Pacific/Honolulu"}):
             source = Path(tmp) / "source.yml"
             output = Path(tmp) / "output.yml"
             source.write_text('summary: "Cafe\u0301 – re\u0301sume\u0301"\n', encoding="utf-8")
@@ -139,7 +139,7 @@ class CanonicalRoadmapYamlTests(unittest.TestCase):
     def test_failed_normalizer_preserves_caller_locale_and_timezone(self) -> None:
         original_locale = locale.setlocale(locale.LC_ALL)
         self.addCleanup(locale.setlocale, locale.LC_ALL, original_locale)
-        with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(os.environ, {"TZ": "Pacific/Honolulu"}):
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp, mock.patch.dict(os.environ, {"TZ": "Pacific/Honolulu"}):
             source = Path(tmp) / "source.yml"
             output = Path(tmp) / "output.yml"
             source.write_text(MALFORMED, encoding="utf-8")
@@ -152,7 +152,7 @@ class CanonicalRoadmapYamlTests(unittest.TestCase):
             self.assertFalse(output.exists())
 
     def test_malformed_yaml_fails_every_validation_and_render_entry_point(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)
             shutil.copytree(ROOT / "docs" / "roadmap" / "data", root / "docs" / "roadmap" / "data")
             shutil.copytree(ROOT / "docs" / "source" / "data", root / "docs" / "source" / "data")
@@ -177,7 +177,7 @@ class CanonicalRoadmapYamlTests(unittest.TestCase):
             self.assertFalse((root / "docs" / "roadmap" / "generated").exists())
 
     def test_malformed_input_cannot_overwrite_existing_normalized_output(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             source = Path(tmp) / "source.yml"
             output = Path(tmp) / "output.yml"
             source.write_text(MALFORMED, encoding="utf-8")

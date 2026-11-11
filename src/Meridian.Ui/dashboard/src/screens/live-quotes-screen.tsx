@@ -86,7 +86,7 @@ export function LiveQuotesScreen() {
           {workspaceVm.title}
         </span>
       }
-      scope="Data Lane"
+      scope="Data"
       description={`${workspaceVm.description} Refreshes every ${vm.pollIntervalSecondsLabel}s unless paused.`}
     >
       <Card>

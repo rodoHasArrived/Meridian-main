@@ -3,6 +3,8 @@ import { cn } from "@/lib/utils";
 
 export interface ContextMenuItem {
   danger?: boolean;
+  /** A second line under the label. For a disabled item, say why it is unavailable. */
+  description?: ReactNode;
   disabled?: boolean;
   icon?: ReactNode;
   id: string;
@@ -104,8 +106,9 @@ export function ContextMenu({ className, items, label = "Context menu", onClose,
             className={cn(
               "flex w-full items-center gap-2 px-3 py-2 text-left transition-colors [outline-offset:-2px]",
               "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
-              item.danger ? "text-danger hover:bg-danger/10" : "hover:bg-[var(--ws-row-hover)]",
-              item.disabled && "cursor-not-allowed opacity-50"
+              item.disabled
+                ? "cursor-not-allowed text-muted-foreground"
+                : item.danger ? "text-danger hover:bg-danger/10" : "hover:bg-[var(--ws-row-hover)]"
             )}
             onClick={() => {
               if (item.disabled) {
@@ -117,7 +120,12 @@ export function ContextMenu({ className, items, label = "Context menu", onClose,
             }}
           >
             {item.icon ? <span className="inline-flex h-4 w-4 items-center justify-center text-muted-foreground">{item.icon}</span> : null}
-            <span className="min-w-0 flex-1 truncate">{item.label}</span>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate">{item.label}</span>
+              {item.description ? (
+                <span className="block whitespace-normal text-xs leading-4 text-muted-foreground">{item.description}</span>
+              ) : null}
+            </span>
           </button>
         ))}
       </div>

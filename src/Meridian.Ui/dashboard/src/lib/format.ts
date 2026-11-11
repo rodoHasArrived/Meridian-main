@@ -9,6 +9,9 @@
 // surfaces (ledger, statements, journal grids) intentionally use the statement
 // convention in `components/accounting/money.ts` (parenthesized negatives, zero-dash);
 // the two conventions differ by design — see the note in that file.
+//
+// STYLE GUIDE: the "Number style" section of the dashboard README is the operator-facing
+// contract these helpers implement (signed P&L, the "P&L" spelling, currency codes, decimals).
 
 const FORMAT_LOCALE = "en-US";
 const DEFAULT_FALLBACK = "—";
@@ -244,6 +247,47 @@ export function formatMoney(value: NullableNumber, options: MoneyFormatOptions =
     return context === "accounting" ? `(${magnitude})` : `-${magnitude}`;
   }
   return signed && value > 0 ? `+${magnitude}` : magnitude;
+}
+
+/** Tone of a signed P&L figure: gain, loss, or flat/unknown. */
+export type PnlTone = "success" | "danger" | "default";
+
+/** Green for a gain, red for a loss, neutral for zero or a missing value. */
+export function pnlToneForValue(value: NullableNumber): PnlTone {
+  if (!isRenderable(value) || value === 0) {
+    return "default";
+  }
+  return value > 0 ? "success" : "danger";
+}
+
+export interface PnlFormatOptions {
+  /** ISO 4217 code. @default "USD" */
+  currency?: string;
+  /** Fraction digits. @default 2; pass 0 for a headline figure. */
+  decimals?: number;
+  fallback?: string;
+}
+
+/**
+ * The one signed P&L style: an explicit sign on every non-zero amount, thousands separators and
+ * fixed decimals, e.g. "+$1,234.56" / "-$1,234.56" / "$0.00". Pair it with `pnlToneForValue` so
+ * the sign and the color always agree.
+ */
+export function formatPnl(value: NullableNumber, options: PnlFormatOptions = {}): string {
+  const { currency, decimals = 2, fallback } = options;
+  return formatMoney(value, { context: "trading", signed: true, decimals, currency, fallback });
+}
+
+const PROFIT_AND_LOSS_SPELLING = /\bP(?:n|N|\/|\s?&\s?|\sand\s)L\b/g;
+
+/**
+ * Operator-facing spelling of financial terms in a label. Profit and loss is always "P&L", never
+ * "PnL", "P/L" or "P & L", so a label that arrives from a read model or a fixture reads the same
+ * as one written in a screen. Shared label seams (stat strip, metric card, record explorer) apply
+ * it; identifiers and field names are not labels and are left alone.
+ */
+export function normalizeFinancialLabel(label: string): string {
+  return label.replace(PROFIT_AND_LOSS_SPELLING, "P&L");
 }
 
 export interface QuantityFormatOptions {

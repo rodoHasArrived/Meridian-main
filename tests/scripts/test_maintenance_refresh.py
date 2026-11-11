@@ -25,7 +25,7 @@ SPEC.loader.exec_module(refresh)
 
 class MaintenanceRefreshTests(unittest.TestCase):
     def setUp(self):
-        self.temporary = tempfile.TemporaryDirectory()
+        self.temporary = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name) / "repo"
         self.root.mkdir()
