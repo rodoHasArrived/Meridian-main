@@ -14,6 +14,7 @@
     "test:browser": "node tests/release-browser.mjs",
     "test:agency": "node tests/agency-regression.mjs",
     "test:patches": "node tests/local-patches-regression.mjs && node tests/interaction-depth-regression.mjs && npm run test:components",
+    "test:specimens": "node tests/specimen-matrix.mjs",
     "test:components": "node tests/scenario-selector-regression.mjs && node tests/optimistic-observer-regression.mjs && node tests/modal-label-regression.mjs && node tests/chart-accessibility-regression.mjs",
     "test:gallery": "node --test tests/gallery.test.mjs",
     "test:gallery:browser": "node tests/gallery-browser.mjs"

@@ -16,10 +16,10 @@ export function CategoryBars({ rows, label }: { rows: CategoryBar[]; label: stri
       {valid.map((row, index) => {
         const y = index * 36 + 12;
         return <g key={row.id}>
-          <text x="0" y={y + 14} fill="var(--chart-axis, #5E666F)" fontSize="12"><title>{row.label}</title>{row.label.length > 22 ? `${row.label.slice(0, 21)}…` : row.label}</text>
-          <rect x="180" y={y} width="420" height="20" fill="var(--chart-grid, #E4E3DE)" />
-          <rect x="180" y={y} width={420 * row.value / max} height="20" fill="var(--chart-primary, #A85436)" />
-          <text x="610" y={y + 14} fill="var(--chart-axis, #5E666F)" fontSize="12">{row.valueLabel}</text>
+          <text x="0" y={y + 14} fill="var(--chart-axis, #606870)" fontSize="12"><title>{row.label}</title>{row.label.length > 22 ? `${row.label.slice(0, 21)}…` : row.label}</text>
+          <rect x="180" y={y} width="420" height="20" fill="var(--chart-grid, #E2DED5)" />
+          <rect x="180" y={y} width={420 * row.value / max} height="20" fill="var(--chart-primary, #29323A)" />
+          <text x="610" y={y + 14} fill="var(--chart-axis, #606870)" fontSize="12">{row.valueLabel}</text>
         </g>;
       })}
     </svg>
