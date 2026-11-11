@@ -2162,6 +2162,8 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
           sinceLastVisitDelta(summarizeSinceLastVisit(data.breakQueue ?? [], breakQueueVisit.baseline))
         )}
         label="Accounting headline metrics"
+        source="Accounting workspace"
+        figureSource="accounting"
       />
       {currentDailyValuationSchedule && (sectionVisibility.showCloseCockpitLanding || sectionVisibility.showWorkflowDetails) ? <ValuationMarkPreviewPanel preview={valuationMarkPreview} /> : null}
 

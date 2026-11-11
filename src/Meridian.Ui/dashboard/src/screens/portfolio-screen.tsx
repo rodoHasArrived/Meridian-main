@@ -64,6 +64,7 @@ import type {
   FinancialRecordExplorerDto,
   EquityCurveSummary,
   FinancialRecordExplorerSavedViewSaveRequestDto,
+  MetricFreshness,
   MultiAssetCoverageSummary,
   PortfolioWorkspaceResponse,
   StrategyWorkspaceResponse,
@@ -71,6 +72,11 @@ import type {
 } from "@/types";
 import { eyebrowClassName } from "@/design-system/label-case";
 import { formatCount } from "@/lib/format";
+import { metricFreshnessFromTrustTone, withMetricContext } from "@/lib/metric-trust";
+import { resolveFigureEvidence, resolveFigureScope, useWorkspaceFigureContext } from "@/lib/workspace-figure-context";
+import { FigureDifferenceNote } from "@/components/meridian/figure-difference-note";
+import { buildPortfolioFigureDifferenceNote } from "@/screens/portfolio-screen.figure-differences";
+import { withPortfolioMarkEvidence } from "@/screens/portfolio-screen.headline-evidence";
 
 interface PortfolioScreenProps {
   portfolio?: PortfolioWorkspaceResponse | null;
@@ -343,6 +349,7 @@ export function PortfolioScreen({
 }: PortfolioScreenProps) {
   const location = useLocation();
   const navigate = useNavigate();
+  const figureContext = useWorkspaceFigureContext();
   const routeView = resolvePortfolioRouteView(location.pathname);
   const routeCopy = portfolioRouteViewCopy[routeView];
   const showOverview = routeView === "overview";
@@ -583,7 +590,17 @@ export function PortfolioScreen({
         })
       : null;
   const heartbeat = portfolio?.brokerage.lastHeartbeat ?? trading?.brokerage.lastHeartbeat ?? null;
-  const freshnessTone: OperationalTrustTone = freshnessVm?.state === "failing"
+  // The totals on screen are a retained payload when the latest reload of the payload that
+  // supplies them failed. In the shell that is the payload's own recorded outcome, which every
+  // load path updates: a poll that failed earlier must not keep the totals stale after a shell or
+  // workspace refresh reloaded them. Only outside the shell is the Portfolio poll's `partial`
+  // phase (its Portfolio request was rejected) the evidence there is.
+  const headlineSource = vm.metricsFromTrading ? "trading" : "portfolio";
+  const headlineFigures = resolveFigureEvidence(figureContext, headlineSource);
+  const headlineRefreshFailed = figureContext
+    ? figureContext.staleSources.includes(headlineSource)
+    : !vm.metricsFromTrading && refreshStatus?.phase === "partial";
+  const evidenceTone: OperationalTrustTone = freshnessVm?.state === "failing"
     ? "blocked"
     : freshnessVm?.state === "aging"
       ? "review"
@@ -592,6 +609,46 @@ export function PortfolioScreen({
         : heartbeat
           ? "ready"
           : "unknown";
+  const freshnessTone: OperationalTrustTone = headlineRefreshFailed && evidenceTone !== "blocked" ? "review" : evidenceTone;
+  // The headline totals state the evidence of the payload that supplies them, so a stale
+  // workspace cannot show figures that look current and another payload's time is not borrowed.
+  // That payload last loaded at the shell's recorded time for it (Trading's when the totals come
+  // from Trading), else, for Portfolio's own totals, at the Portfolio lifecycle's last success,
+  // which survives a partial refresh. The brokerage snapshot and the readiness evidence date
+  // other things and are used only when no load of the supplying payload is known at all.
+  const headlineLoadedAt = headlineFigures.asOf
+    ?? (!vm.metricsFromTrading && hasRefreshEvidence ? refreshStatus?.lastSucceededAt ?? null : null);
+  const headlinePastBudget = headlineLoadedAt !== null
+    && Date.now() - new Date(headlineLoadedAt).getTime() > PORTFOLIO_FRESHNESS_BUDGET_MS;
+  const headlineFreshness: MetricFreshness = headlineRefreshFailed || headlinePastBudget
+    ? "stale"
+    : headlineFigures.freshness === "stale" || headlineFigures.freshness === "unverified"
+      ? headlineFigures.freshness
+      : headlineLoadedAt !== null
+        ? "fresh"
+        : metricFreshnessFromTrustTone(freshnessTone);
+  // Their scope is every position in the workspace read model: selecting a brokerage account
+  // filters the brokerage table, not these totals, so that account must not be named as scope.
+  // Totals borrowed from Trading cover the fund account the Trading payload was loaded for.
+  const borrowedTradingAccount = vm.metricsFromTrading ? resolveFigureScope(figureContext, "trading") : null;
+  const headlineProvenance = {
+    source: vm.metricsFromTrading ? "Trading workspace" : vm.positionSourceLabel,
+    asOf: headlineLoadedAt ?? brokeragePortfolio?.asOf ?? heartbeat,
+    scope: borrowedTradingAccount ?? "All workspace positions"
+  };
+  // Portfolio's own totals are sums over the positions, so they also carry those positions' mark
+  // evidence. Trading's cards are server totals and are stated as loaded.
+  const headlineMetrics = withMetricContext(
+    vm.metricsFromTrading ? vm.metricCards : withPortfolioMarkEvidence(vm.fallbackStats, vm.positionRows, headlineFreshness),
+    { provenance: headlineProvenance, freshness: headlineFreshness }
+  );
+  const figureDifferenceNote = showBrokerageSync
+    ? null
+    : buildPortfolioFigureDifferenceNote({
+        headerMetrics: headlineMetrics,
+        headerProvenance: headlineProvenance,
+        explorer: portfolioExplorerPresentation
+      });
   const completenessTone: OperationalTrustTone = vm.hasPositions && vm.hasRuns
     ? "ready"
     : vm.hasPositions || vm.hasRuns
@@ -718,14 +775,15 @@ export function PortfolioScreen({
       </section>
 
       <StatStrip
-        metrics={vm.metricsFromTrading ? vm.metricCards : vm.fallbackStats}
+        metrics={headlineMetrics}
         label="Portfolio headline metrics"
         compact={showOverview}
       />
 
+      {figureDifferenceNote ? <FigureDifferenceNote note={figureDifferenceNote} /> : null}
+
       <OperationalTrustSummary
         label="Portfolio data confidence"
-        disclosure
         source={{
           value: vm.positionSourceLabel,
           detail: "Holdings source used by this route",
@@ -744,7 +802,9 @@ export function PortfolioScreen({
         }}
         freshness={{
           value: freshnessVm?.text ?? heartbeat ?? "Unavailable",
-          detail: freshnessVm?.title ?? (heartbeat ? "Latest brokerage heartbeat" : "Latest loaded portfolio evidence"),
+          detail: headlineRefreshFailed
+            ? "The latest refresh did not complete; the last loaded figures are shown."
+            : freshnessVm?.title ?? (heartbeat ? "Latest brokerage heartbeat" : "Latest loaded portfolio evidence"),
           tone: freshnessTone
         }}
         completeness={{
