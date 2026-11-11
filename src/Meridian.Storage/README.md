@@ -30,7 +30,8 @@ Archive maintenance status counts today's executions from the start of the UTC d
 `CompositeSink` tolerates individual sink failures under `ContinueOnPartialFailure` only while at least
 one sink accepts the write. When no sink accepts an append, or no sink can be flushed because every
 circuit is open, it throws, so the pipeline never treats an unpersisted event as durable or truncates
-the WAL holding it.
+the WAL holding it. Under `FailOnAnyFailure` an append also throws while any sink's circuit breaker
+is open, instead of skipping that sink and writing to the healthy ones only.
 
 Governed short opening/cover now binds explicit direction to the authoritative Short/Liability
 position and liability carrying account. Opening debits cash and credits retained proceeds;
