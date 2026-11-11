@@ -7,6 +7,7 @@ import { Activity, ArrowRight, ExternalLink, GitBranch, KeyRound, LoaderCircle, 
 import { ProviderSetupPanel } from "@/components/data/provider-setup-panel";
 import { LifecycleControlPanel } from "@/components/meridian/lifecycle-control-panel";
 import { formatCount, formatNumber as formatNumberAmount, formatUtcDate, formatUtcTimestamp } from "@/lib/format";
+import { utcToday } from "@/lib/local-date";
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { StatStrip } from "@/components/meridian/stat-strip";
@@ -5009,8 +5010,13 @@ function normalizeAssetProfileId(value: string): string {
   return value.trim().toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "");
 }
 
+/**
+ * Today as an asset-profile `effectiveFrom`. Deliberately the UTC calendar day, the same day
+ * `isWriteSelectableAssetProfile` compares effective windows against, so a profile approved here
+ * is selectable for writes straight away for every operator.
+ */
 function todayDateOnly(): string {
-  return new Date().toISOString().slice(0, 10);
+  return utcToday();
 }
 
 function createBrowserGuid(): string {

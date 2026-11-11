@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { LocalDateText } from "@/components/ui/local-date-text";
 import { Select } from "@/components/ui/select";
 import { StatusBanner } from "@/components/ui/status-banner";
 import type {
@@ -47,7 +48,7 @@ const queueColumns: TableWorkbenchColumn<CorporateActionInboxRowModel>[] = [
     label: "Ex-date / deadline",
     render: (row) => (
       <span className="block">
-        <span className="block font-mono text-foreground">{row.exDateLabel}</span>
+        <CalendarDateLabel className="block font-mono text-foreground" label={row.exDateLabel} />
         <span className={row.daysUntilEx !== null && row.daysUntilEx < 0 ? "text-xs text-danger" : "text-xs text-muted-foreground"}>{row.countdownLabel}</span>
       </span>
     )
@@ -100,6 +101,16 @@ const queueColumns: TableWorkbenchColumn<CorporateActionInboxRowModel>[] = [
     )
   }
 ];
+
+/**
+ * An ex-date, record date or payable date label from the inbox model. A real calendar date becomes
+ * a `<time>`; a label the server did not supply as one ("Not supplied") is printed as it was.
+ */
+function CalendarDateLabel({ label, className }: { label: string; className?: string }) {
+  return <LocalDateText className={className} value={label} fallback={label} />;
+}
+
+const INBOX_ROW_DATE_FACT_FIELDS: ReadonlySet<string> = new Set(["Ex-date", "Record date", "Payable date"]);
 
 function uniqueOptions(rows: CorporateActionInboxRowModel[], field: "statusLabel" | "assignmentLabel" | "conflictLabel") {
   return [...new Set(rows.map((row) => row[field]))].sort((left, right) => left.localeCompare(right));
@@ -179,13 +190,16 @@ function WorkspaceSection({ title, children }: { title: string; children: React.
 
 function SourceFacts({ row }: { row: CorporateActionInboxRowModel }) {
   const suppliedFacts = row.durableCase?.sourceFacts ?? [];
-  const facts = suppliedFacts.length > 0 ? suppliedFacts : [
+  // Only the facts this screen derives from the inbox row are known to be calendar dates; a
+  // server-supplied fact is printed as supplied, whatever its field is called.
+  const derivedFromInboxRow = suppliedFacts.length === 0;
+  const facts = derivedFromInboxRow ? [
     { field: "Action type", value: row.actionType, source: row.winningSource, agreesWithWinner: true, evidenceId: row.sourceEvidenceReference },
     { field: "Ex-date", value: row.exDateLabel, source: row.winningSource, agreesWithWinner: true, evidenceId: row.sourceEvidenceReference },
     { field: "Record date", value: row.recordDateLabel, source: row.winningSource, agreesWithWinner: true, evidenceId: row.sourceEvidenceReference },
     { field: "Payable date", value: row.payableDateLabel, source: row.winningSource, agreesWithWinner: true, evidenceId: row.sourceEvidenceReference },
     { field: "Terms", value: row.valueLabel, source: row.winningSource, agreesWithWinner: true, evidenceId: row.sourceEvidenceReference }
-  ];
+  ] : suppliedFacts;
   return (
     <div className="overflow-x-auto">
       <TableWorkbench workbenchId="data-corporate-action-source-facts" sourceKey={row.rowId}
@@ -194,7 +208,7 @@ function SourceFacts({ row }: { row: CorporateActionInboxRowModel }) {
         getRowId={(fact) => fact.id} getSearchText={(fact) => `${fact.field} ${fact.value} ${fact.source} ${fact.evidenceId ?? ""}`}
         ariaLabel="Corporate action source facts and provenance" emptyText="No retained source facts."
         columns={[{ id: "field", label: "Field", render: (fact) => fact.field, exportValue: (fact) => fact.field },
-          { id: "value", label: "Winning value", render: (fact) => fact.value, exportValue: (fact) => fact.value },
+          { id: "value", label: "Winning value", render: (fact) => derivedFromInboxRow && INBOX_ROW_DATE_FACT_FIELDS.has(fact.field) ? <CalendarDateLabel label={fact.value} /> : fact.value, exportValue: (fact) => fact.value },
           { id: "source", label: "Source", render: (fact) => fact.source, exportValue: (fact) => fact.source },
           { id: "evidence", label: "Evidence", render: (fact) => fact.evidenceId ?? "Not supplied", exportValue: (fact) => fact.evidenceId }]} />
       <p className="mt-2 text-xs text-muted-foreground">
@@ -308,7 +322,7 @@ function CaseWorkspace({ row, panel }: { row: CorporateActionInboxRowModel; pane
         <Badge variant={row.tone === "warning" ? "warning" : "outline"}>{row.statusLabel}</Badge>
       </div>
       <dl className="grid gap-2 text-xs sm:grid-cols-2 xl:grid-cols-4">
-        {[
+        {([
           ["Proposal", row.proposalIdLabel],
           ["Version", row.versionLabel],
           ["Assignment", row.assignmentLabel],
@@ -319,10 +333,10 @@ function CaseWorkspace({ row, panel }: { row: CorporateActionInboxRowModel; pane
           ["Source event", row.sourceEventLabel],
           ["Source observed", row.sourceObservedAtLabel],
           ["Source evidence", row.sourceEvidenceReference ?? "Not supplied"],
-          ["Ex-date", `${row.exDateLabel} (${row.countdownLabel})`],
-          ["Record date", row.recordDateLabel],
-          ["Payable date", row.payableDateLabel]
-        ].map(([label, value]) => (
+          ["Ex-date", <><CalendarDateLabel label={row.exDateLabel} /> ({row.countdownLabel})</>],
+          ["Record date", <CalendarDateLabel label={row.recordDateLabel} />],
+          ["Payable date", <CalendarDateLabel label={row.payableDateLabel} />]
+        ] satisfies Array<[string, React.ReactNode]>).map(([label, value]) => (
           <div key={label} className="rounded-[2px] border border-border bg-secondary/10 px-2.5 py-2">
             <dt className="text-muted-foreground">{label}</dt>
             <dd className="mt-0.5 font-medium text-foreground">{value}</dd>
@@ -460,7 +474,7 @@ function AcceptCanonicalFactDialog({ panel }: { panel: CorporateActionInboxViewM
           <dl className="grid gap-2 rounded-[2px] border border-border bg-secondary/10 p-3 text-xs sm:grid-cols-2">
             <div><dt className="text-muted-foreground">Winning source</dt><dd className="font-medium">{row.winningSource}</dd></div>
             <div><dt className="text-muted-foreground">Terms</dt><dd className="font-mono">{row.valueLabel}</dd></div>
-            <div><dt className="text-muted-foreground">Ex-date</dt><dd className="font-mono">{row.exDateLabel}</dd></div>
+            <div><dt className="text-muted-foreground">Ex-date</dt><dd className="font-mono"><CalendarDateLabel label={row.exDateLabel} /></dd></div>
             <div><dt className="text-muted-foreground">Version</dt><dd className="font-mono">{row.versionLabel}</dd></div>
             <div><dt className="text-muted-foreground">Scope</dt><dd className="font-mono">{row.acceptanceScope ? `${row.acceptanceScope.tenantId} / ${row.acceptanceScope.companyId}` : "Not supplied"}</dd></div>
             <div><dt className="text-muted-foreground">Idempotency key</dt><dd className="break-all font-mono">{panel.pendingAcceptanceRequest?.idempotencyKey ?? "Not supplied"}</dd></div>

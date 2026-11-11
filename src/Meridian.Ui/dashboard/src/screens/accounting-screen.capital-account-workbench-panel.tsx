@@ -1,6 +1,7 @@
 import { TableWorkbench } from "@/components/meridian/table-workbench";
-import { RefreshCcw } from "lucide-react";
+import { ChevronDown, RefreshCcw } from "lucide-react";
 import { Link } from "react-router-dom";
+import { RollforwardTrace } from "@/components/accounting/RollforwardTrace";
 import { MetricSnapshotCard } from "@/components/meridian/metric-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,11 +12,21 @@ import { cn } from "@/lib/utils";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { accountingToolingBadgeVariant, accountingToolingBorderClass } from "@/screens/accounting-screen.styles";
 import { AccountingChip } from "@/screens/accounting-screen.workbench-context";
-import type { CapitalAccountWorkbenchViewModel } from "@/screens/accounting-screen.view-model";
+import type { CapitalAccountWorkbenchProofViewModel } from "@/screens/accounting-screen.capital-accounts.view-model";
 import { pluralizeCount } from "@/lib/format";
 import { usesTrackedCaps } from "@/design-system/label-case";
+import { StatusBadge, type DesignSystemSeverity } from "@/design-system/status";
+import type { RollforwardVerdict } from "@/components/accounting/proof-arithmetic";
 
-export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWorkbenchViewModel }) {
+// Only a real proof is green. Figures that agree by construction ("Not itemised") ask for review.
+const ROLLFORWARD_VERDICT_SEVERITY: Record<RollforwardVerdict, DesignSystemSeverity> = {
+  tied: "ready",
+  unsupported: "review",
+  out: "blocked",
+  indeterminate: "blocked"
+};
+
+export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWorkbenchProofViewModel }) {
   if (!view.available) {
     return (
       <Card className="panel-surface" role="region" aria-labelledby="capital-account-workbench-heading">
@@ -177,6 +188,35 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
 <div className="text-foreground">{row.netActivityLabel}</div>
                         <div className="mt-1 text-xs text-muted-foreground">{row.rollForwardLabel}</div>
                         <div className="mt-1 text-xs text-muted-foreground">{row.activityMixLabel}</div>
+</> },{ id: "rollforward", label: "Rollforward proof", exportValue: row => row.rollforward.verdictLabel, render: row => <>
+                        <details
+                          className="group min-w-[20rem] max-w-2xl rounded-[var(--radius-card)] border border-border bg-secondary/15"
+                          open={row.rollforward.verdict !== "tied"}
+                        >
+                          <summary className="flex min-h-9 cursor-pointer list-none flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2 text-xs font-medium text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--interaction-focus)] [&::-webkit-details-marker]:hidden">
+                            <span>Rollforward proof<span className="sr-only"> for {row.title}</span></span>
+                            <StatusBadge
+                              status={ROLLFORWARD_VERDICT_SEVERITY[row.rollforward.verdict]}
+                              label={row.rollforward.verdictLabel}
+                            />
+                            <ChevronDown
+                              className="ml-auto h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180"
+                              aria-hidden="true"
+                            />
+                          </summary>
+                          <div className="border-t border-border/70 px-3 py-3">
+                            <RollforwardTrace
+                              openingLabel={row.rollforward.openingLabel}
+                              opening={row.rollforward.opening}
+                              movements={row.rollforward.movements}
+                              closingLabel={row.rollforward.closingLabel}
+                              closing={row.rollforward.closing}
+                              currency={row.rollforward.currency}
+                              openingDerivation={row.rollforward.openingDerivation}
+                              unsupportedReason={row.rollforward.unsupportedReason}
+                            />
+                          </div>
+                        </details>
 </> },{ id: "field-3", label: "Evidence", exportValue: row => row.evidenceLabel, render: row => <>
 {row.evidenceLabel}
 </> },{ id: "field-4", label: "Cash support", exportValue: row => `${row.paymentEvidenceLabel} | ${row.paymentEvidenceSummaryLabel} | ${row.paymentEvidenceRequiredLabel}`, render: row => <>
