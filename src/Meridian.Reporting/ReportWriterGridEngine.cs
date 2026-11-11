@@ -824,7 +824,7 @@ public static class ReportWriterGridEngine
                     row.NumericValues[formula.Name] = value;
                     row.Values[formula.Name] = FormatDecimal(value);
                 }
-                catch (Exception ex) when (ex is InvalidOperationException or DivideByZeroException)
+                catch (Exception ex) when (ex is InvalidOperationException or DivideByZeroException or OverflowException)
                 {
                     warnings.Add($"Formula '{formula.Name}' could not be evaluated: {ex.Message}");
                     row.Values[formula.Name] = string.Empty;
@@ -1264,6 +1264,11 @@ public static class ReportWriterGridEngine
         private readonly Func<string, bool> _isKnownReference;
         private int _position;
 
+        // Greater than zero while parsing the branch of if(...) that was not selected. The
+        // branch is still parsed (so syntax errors surface) but field lookups and division by
+        // zero inside it cannot fail the formula.
+        private int _skipDepth;
+
         public FormulaEvaluator(
             string expression,
             Func<string, decimal?> valueResolver,
@@ -1288,7 +1293,60 @@ public static class ReportWriterGridEngine
             return value;
         }
 
+        // expression := additive [ ("=" | "==" | "<>" | "!=" | "<" | "<=" | ">" | ">=") additive ]
+        // A comparison yields 1 when true and 0 when false, so it can feed if(...) or arithmetic.
         private decimal ParseExpression()
+        {
+            var left = ParseAdditive();
+            SkipWhitespace();
+            var comparison = TryConsumeComparisonOperator();
+            if (comparison is null)
+            {
+                return left;
+            }
+
+            var right = ParseAdditive();
+            var holds = comparison switch
+            {
+                "=" => left == right,
+                "<>" => left != right,
+                "<" => left < right,
+                "<=" => left <= right,
+                ">" => left > right,
+                _ => left >= right,
+            };
+            return holds ? 1m : 0m;
+        }
+
+        private string? TryConsumeComparisonOperator()
+        {
+            switch (Peek())
+            {
+                case '=':
+                    _position++;
+                    TryConsume('=');
+                    return "=";
+                case '!':
+                    _position++;
+                    Expect('=');
+                    return "<>";
+                case '<':
+                    _position++;
+                    if (TryConsume('>'))
+                    {
+                        return "<>";
+                    }
+
+                    return TryConsume('=') ? "<=" : "<";
+                case '>':
+                    _position++;
+                    return TryConsume('=') ? ">=" : ">";
+                default:
+                    return null;
+            }
+        }
+
+        private decimal ParseAdditive()
         {
             var value = ParseTerm();
             while (true)
@@ -1296,11 +1354,13 @@ public static class ReportWriterGridEngine
                 SkipWhitespace();
                 if (TryConsume('+'))
                 {
-                    value += ParseTerm();
+                    var operand = ParseTerm();
+                    value = _skipDepth > 0 ? 0m : value + operand;
                 }
                 else if (TryConsume('-'))
                 {
-                    value -= ParseTerm();
+                    var operand = ParseTerm();
+                    value = _skipDepth > 0 ? 0m : value - operand;
                 }
                 else
                 {
@@ -1317,11 +1377,17 @@ public static class ReportWriterGridEngine
                 SkipWhitespace();
                 if (TryConsume('*'))
                 {
-                    value *= ParseFactor();
+                    var operand = ParseFactor();
+                    value = _skipDepth > 0 ? 0m : value * operand;
                 }
                 else if (TryConsume('/'))
                 {
                     var divisor = ParseFactor();
+                    if (_skipDepth > 0)
+                    {
+                        continue;
+                    }
+
                     if (divisor == 0m)
                     {
                         // Raw '/' surfaces division by zero as a warning (see ApplyFormulas). Callers
@@ -1411,6 +1477,7 @@ public static class ReportWriterGridEngine
                 ["percent"] = static self => self.EvaluateRatio(100m),
                 ["basisPoints"] = static self => self.EvaluateRatio(10000m),
                 ["round"] = static self => self.EvaluateRound(),
+                ["if"] = static self => self.EvaluateIf(),
             }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
 
         public static bool IsFunctionName(string identifier) => Functions.ContainsKey(identifier);
@@ -1424,8 +1491,44 @@ public static class ReportWriterGridEngine
         {
             var field = ParseFieldArgument();
             Expect(')');
+            if (_skipDepth > 0)
+            {
+                return 0m;
+            }
+
             return _totalResolver(field)
                    ?? throw new InvalidOperationException($"total field '{field}' was not found.");
+        }
+
+        // if(condition, whenTrue, whenFalse): any non-zero condition selects whenTrue. Only the
+        // selected branch is evaluated, so if({mv} = 0, 0, {pnl} / {mv}) never divides by zero.
+        private decimal EvaluateIf()
+        {
+            var condition = ParseExpression();
+            Expect(',');
+            var whenTrue = ParseBranch(selected: condition != 0m);
+            Expect(',');
+            var whenFalse = ParseBranch(selected: condition == 0m);
+            Expect(')');
+            return condition != 0m ? whenTrue : whenFalse;
+        }
+
+        private decimal ParseBranch(bool selected)
+        {
+            if (selected)
+            {
+                return ParseExpression();
+            }
+
+            _skipDepth++;
+            try
+            {
+                return ParseExpression();
+            }
+            finally
+            {
+                _skipDepth--;
+            }
         }
 
         private decimal EvaluateAbs()
@@ -1442,12 +1545,20 @@ public static class ReportWriterGridEngine
         private decimal EvaluateSafeDivide()
         {
             var values = ParseExpressionArgumentList(minimumCount: 2, maximumCount: 3);
-            return DivideOrFallback(values[0], values[1], values.Count == 3 ? values[2] : 0m);
+            return _skipDepth > 0
+                ? 0m
+                : DivideOrFallback(values[0], values[1], values.Count == 3 ? values[2] : 0m);
         }
 
         private decimal EvaluateRatio(decimal scale)
         {
             var values = ParseExpressionArgumentList(minimumCount: 2, maximumCount: 3);
+            if (_skipDepth > 0)
+            {
+                // An unselected if(...) branch is parsed for syntax only; no arithmetic runs.
+                return 0m;
+            }
+
             var ratio = DivideOrFallback(values[0], values[1], values.Count == 3 ? values[2] : 0m);
             return ratio * scale;
         }
@@ -1467,8 +1578,13 @@ public static class ReportWriterGridEngine
         private static decimal DivideOrFallback(decimal numerator, decimal denominator, decimal fallbackWhenZeroDenominator) =>
             denominator == 0m ? fallbackWhenZeroDenominator : numerator / denominator;
 
-        private static int ToScale(decimal value)
+        private int ToScale(decimal value)
         {
+            if (_skipDepth > 0)
+            {
+                return 0;
+            }
+
             if (value < 0m || value > 8m || value != decimal.Truncate(value))
             {
                 throw new InvalidOperationException("round scale must be a whole number between 0 and 8.");
@@ -1505,8 +1621,10 @@ public static class ReportWriterGridEngine
         }
 
         private decimal ResolveValue(string field) =>
-            _valueResolver(field)
-            ?? throw new InvalidOperationException($"field '{field}' was not found or was not numeric.");
+            _skipDepth > 0
+                ? 0m
+                : _valueResolver(field)
+                  ?? throw new InvalidOperationException($"field '{field}' was not found or was not numeric.");
 
         private decimal ParseNumber()
         {

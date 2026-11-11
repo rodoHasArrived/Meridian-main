@@ -1,37 +1,64 @@
 import { describe, expect, it } from "vitest";
-import { buildReportWriterPreviewRows, extractReportWriterFormulaFields } from "@/screens/reporting-screen.report-writer-helpers";
+import { buildWriterFilters, isReportWriterFormulaFunction } from "@/screens/reporting-screen.report-writer-helpers";
+import type { ReportWriterDraftSettings } from "@/screens/reporting-screen.report-writer";
 
-describe("report-writer formula references", () => {
-  it("reads a hyphen between known names as subtraction", () => {
-    const known = ["pnl", "fees", "net-pnl"];
+function settings(overrides: Partial<ReportWriterDraftSettings>): ReportWriterDraftSettings {
+  return {
+    name: "template",
+    displayName: "Template Draft",
+    gridKind: "Pivot",
+    topN: "10",
+    previewDataset: "portfolioPositions",
+    accessMode: "CompanyWide",
+    principalKind: "Group",
+    principalId: "reporting-ops",
+    filterField: "",
+    filterOperator: "Equals",
+    filterValue: "",
+    extraFilters: [],
+    ...overrides
+  };
+}
 
-    expect(extractReportWriterFormulaFields("pnl-fees", known)).toEqual(["pnl", "fees"]);
-    expect(extractReportWriterFormulaFields("net-pnl-fees", known)).toEqual(["net-pnl", "fees"]);
-    expect(extractReportWriterFormulaFields("{net-pnl} + pnl-1", known)).toEqual(["net-pnl", "pnl"]);
+describe("buildWriterFilters", () => {
+  it("returns null when no filter row is complete", () => {
+    expect(buildWriterFilters(settings({}))).toBeNull();
+    expect(buildWriterFilters(settings({ filterField: "sector", filterValue: "  " }))).toBeNull();
   });
 
-  it("keeps an unknown hyphenated identifier whole", () => {
-    expect(extractReportWriterFormulaFields("gross-costs", ["pnl"])).toEqual(["gross-costs"]);
-    expect(extractReportWriterFormulaFields("pnl-fees")).toEqual(["pnl-fees"]);
+  it("keeps the first filter and every complete extra filter in order", () => {
+    const filters = buildWriterFilters(settings({
+      filterField: "strategy",
+      filterValue: "Core",
+      extraFilters: [
+        { id: "a", field: "marketValue", operator: "GreaterThanOrEqual", value: "100" },
+        { id: "b", field: "", operator: "Equals", value: "ignored" },
+        { id: "c", field: "sector", operator: "Contains", value: "" },
+        { id: "d", field: "counterparty", operator: "IsNotBlank", value: "ignored" }
+      ]
+    }));
+
+    expect(filters).toEqual([
+      { field: "strategy", operator: "Equals", value: "Core", label: "strategy = Core" },
+      { field: "marketValue", operator: "GreaterThanOrEqual", value: "100", label: "marketValue >= 100" },
+      { field: "counterparty", operator: "IsNotBlank", value: null, label: expect.stringContaining("counterparty") }
+    ]);
   });
 
-  it("does not invent a hyphenated preview column for a subtraction formula", () => {
-    const rows = buildReportWriterPreviewRows(
-      {
-        gridId: "grid-1",
-        title: "Grid",
-        kind: "Detail",
-        rowFields: ["sector"],
-        columnFields: [],
-        metrics: [
-          { name: "pnl", sourceField: "pnl", function: "Sum", label: "P&L" },
-          { name: "fees", sourceField: "fees", function: "Sum", label: "Fees" }
-        ],
-        formulas: [{ name: "afterFees", expression: "pnl-fees", label: "After fees" }]
-      },
-      "portfolioPositions"
-    );
+  it("keeps extra filters when the first row is cleared", () => {
+    const filters = buildWriterFilters(settings({
+      extraFilters: [{ id: "a", field: "sector", operator: "Equals", value: "Tech" }]
+    }));
 
-    expect(Object.keys(rows[0]).sort()).toEqual(["fees", "pnl", "previewDataset", "sector"]);
+    expect(filters).toEqual([{ field: "sector", operator: "Equals", value: "Tech", label: "sector = Tech" }]);
+  });
+});
+
+describe("isReportWriterFormulaFunction", () => {
+  it("recognises if alongside the existing engine functions, case-insensitively", () => {
+    for (const name of ["if", "IF", "abs", "safeDivide", "basisPoints", "round"]) {
+      expect(isReportWriterFormulaFunction(name)).toBe(true);
+    }
+    expect(isReportWriterFormulaFunction("case")).toBe(false);
   });
 });

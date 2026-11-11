@@ -6579,6 +6579,7 @@ Meridian-main
 │   │   ├── ReportingReconciliationEvidenceContracts.cs
 │   │   ├── ReportingReleaseConsistencyGate.cs
 │   │   ├── ReportingRetainedLedgerPopulationValidation.cs
+│   │   ├── ReportingSchedulePeriodPlanner.cs
 │   │   ├── ReportingStarterKitCatalog.cs
 │   │   ├── ReportSnapshotDiffEngine.cs
 │   │   ├── ReportWriterFormulaReferences.cs
@@ -7451,6 +7452,8 @@ Meridian-main
 │   │   │   │   │   │   ├── operational-trust-summary.tsx
 │   │   │   │   │   │   ├── pop-out-pane-button.test.tsx
 │   │   │   │   │   │   ├── pop-out-pane-button.tsx
+│   │   │   │   │   │   ├── principal-id-input.test.tsx
+│   │   │   │   │   │   ├── principal-id-input.tsx
 │   │   │   │   │   │   ├── proof-drawer.test.tsx
 │   │   │   │   │   │   ├── proof-drawer.tsx
 │   │   │   │   │   │   ├── quant-notebook.test.tsx
@@ -7900,6 +7903,9 @@ Meridian-main
 │   │   │   │   │   ├── reporting-provenance-adapter.ts
 │   │   │   │   │   ├── reporting-publication.test.ts
 │   │   │   │   │   ├── reporting-publication.ts
+│   │   │   │   │   ├── reporting-schedule-api.ts
+│   │   │   │   │   ├── reporting-schedule-due.ts
+│   │   │   │   │   ├── reporting-schedule-endpoints.ts
 │   │   │   │   │   ├── reporting-trace.test.ts
 │   │   │   │   │   ├── reporting-trace.ts
 │   │   │   │   │   ├── reporting-workspace.test.ts
@@ -7922,6 +7928,8 @@ Meridian-main
 │   │   │   │   │   ├── system-status.ts
 │   │   │   │   │   ├── theme.test.ts
 │   │   │   │   │   ├── theme.ts
+│   │   │   │   │   ├── time-zone.test.ts
+│   │   │   │   │   ├── time-zone.ts
 │   │   │   │   │   ├── time.test.ts
 │   │   │   │   │   ├── time.ts
 │   │   │   │   │   ├── ui-api-routes.generated.ts
@@ -8245,6 +8253,8 @@ Meridian-main
 │   │   │   │   │   ├── reporting-screen.private-capital-readiness.tsx
 │   │   │   │   │   ├── reporting-screen.production-surface.test.ts
 │   │   │   │   │   ├── reporting-screen.production-surface.ts
+│   │   │   │   │   ├── reporting-screen.report-writer-filters.tsx
+│   │   │   │   │   ├── reporting-screen.report-writer-formula-references.test.ts
 │   │   │   │   │   ├── reporting-screen.report-writer-helpers.test.ts
 │   │   │   │   │   ├── reporting-screen.report-writer-helpers.ts
 │   │   │   │   │   ├── reporting-screen.report-writer.tsx
@@ -9038,6 +9048,7 @@ Meridian-main
 │   │   │   ├── ReportingRunReadinessService.cs
 │   │   │   ├── ReportingRunStore.cs
 │   │   │   ├── ReportingScheduleHostedService.cs
+│   │   │   ├── ReportingSchedulePeriodResolver.cs
 │   │   │   ├── ReportingScheduleService.cs
 │   │   │   ├── ReportingScheduleService.DeliveryAuthority.cs
 │   │   │   ├── ReportingScheduleService.OperationalAuthority.cs
@@ -11508,6 +11519,7 @@ Meridian-main
 │   │   │   ├── ReportingGovernanceCanonicalValidationTests.cs
 │   │   │   ├── ReportingIncomeComparisonSerializationTests.cs
 │   │   │   ├── ReportingOrchestrationServiceTests.cs
+│   │   │   ├── ReportingSchedulePeriodPlannerTests.cs
 │   │   │   ├── ReportingSecureDistributionAuthorizationTests.cs
 │   │   │   ├── ReportingSecureDistributionTests.cs
 │   │   │   ├── ReportSnapshotDiffEngineTests.cs
@@ -12196,6 +12208,7 @@ Meridian-main
 │   │   │   ├── LedgerReportingAuthoritativeSourceTests.cs
 │   │   │   ├── LedgerReportingAuthoritativeSourceTests.SuccessorOriginIntegrity.cs
 │   │   │   ├── LedgerReportingAuthoritativeSourceTests.SuccessorReportPack.cs
+│   │   │   ├── LedgerReportingSchedulePeriodResolverTests.cs
 │   │   │   ├── LegacyReportingRouteRetirementEndpointTests.cs
 │   │   │   ├── LiveBrokeragePortfolioSyncServiceTests.cs
 │   │   │   ├── LiveTradingEngineHostRegistrationTests.cs

@@ -1990,10 +1990,20 @@ previews can display the same audit trace as retained exports. Template governan
 blocks report-writer formulas that reference unknown metrics/formulas, unsupported `total(...)`
 fields, or self/forward/circular formula dependencies before those templates can enter review or
 approval, while recognizing supported helpers such as `safeDivide(...)`, `percent(...)`,
-`basisPoints(...)`, and `round(...)` as functions instead of missing row fields.
+`basisPoints(...)`, `round(...)`, and `if(...)` as functions instead of missing row fields.
 Draft formula validation reads hyphenated bare references with the same
 `ReportWriterFormulaReferences` rule as the grid engine, so `pnl-fees` between two known metrics
 validates as subtraction while a real `net-pnl` metric stays one reference.
+`IReportingSchedulePeriodResolver` (`LedgerReportingSchedulePeriodResolver` over
+`ILedgerJournalStore`) gives `ReportingScheduleService` the durable accounting-period id for a
+period-close schedule's as-of date; the schedule service never derives a period selector from a
+calendar date. Its `ResolveNextClosePeriodAsync` names the next period to close (the following
+period for monthly, the fiscal quarter-end or year-end period by ledger period number for
+quarterly and annual), and the schedule takes its as-of date, due date and period id from it.
+When that lookup fails at advance time the schedule moves on by calendar and records
+`UnresolvedPeriodCloseAfter`; `RealignPeriodCloseToLedgerAsync` repeats the lookup before the next
+run, corrects the date and persists it under the execution lease before the run starts (lease
+renewal matches the stored payload), deferring a due run that is not yet due on the corrected date.
 Browser and WPF clients should render that shared
 template state instead of treating built-in templates as the full authoring workflow.
 Template definitions and report-pack workflow records now carry shared access policies for

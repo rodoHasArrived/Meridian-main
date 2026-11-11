@@ -17,6 +17,8 @@ import { ReportingLineageSummary } from "@/components/meridian/reporting-lineage
 import { ReportingProductionSurface } from "@/components/meridian/reporting-production-surface";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { TechnicalDetails } from "@/components/ui/technical-details";
+import { deleteReportingSchedule, disableReportingSchedule } from "@/lib/reporting-schedule-api";
+import { resolveReportingScheduleDueAtUtc, resolveReportingSchedulePeriodDueAtUtc } from "@/lib/reporting-schedule-due";
 import { ReportingIncomeComparisonPanel } from "@/screens/reporting-income-comparison";
 import {
   approveReportTemplateDraft,
@@ -89,8 +91,12 @@ import {
 } from "@/screens/reporting-screen.report-writer";
 import {
   ReportingScheduleManagementPanel,
+  REPORTING_SCHEDULE_UTC_TIME_ZONE,
+  normalizeReportingSchedulePeriodFrequency,
+  parseReportingScheduleDueDays,
   reportingScheduleArtifactFormats,
   reportingScheduleDeliveryModes,
+  type ReportingScheduleAction,
   type ReportingScheduleArtifactFormat,
   type ReportingScheduleDraftField,
   type ReportingScheduleDraftState,
@@ -309,6 +315,9 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
     updateWriterCustomFormula,
     updateWriterCustomDataset,
     updateWriterChartDraft,
+    addWriterFilter,
+    removeWriterFilter,
+    updateWriterFilter,
     addWriterFormatRule,
     removeWriterFormatRule,
     updateWriterFormatRule,
@@ -529,17 +538,20 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
     }
   }
 
-  async function handleScheduleAction(schedule: ReportingScheduleRow, action: "pause" | "resume" | "run") {
+  async function handleScheduleAction(schedule: ReportingScheduleRow, action: ReportingScheduleAction) {
     const statusId = `${schedule.id}:${action}`;
     if (runningScheduleActionId) {
       return;
     }
 
-    const label = action === "run"
-      ? `Run ${schedule.id}`
-      : action === "pause"
-        ? `Pause ${schedule.id}`
-        : `Resume ${schedule.id}`;
+    const actionVerbs: Record<ReportingScheduleAction, string> = {
+      run: "Run",
+      pause: "Pause",
+      resume: "Resume",
+      disable: "Disable",
+      delete: "Delete"
+    };
+    const label = `${actionVerbs[action]} ${schedule.id}`;
     setScheduleActionStatus({
       id: statusId,
       label,
@@ -554,6 +566,10 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
         await pauseReportingSchedule(schedule.id);
       } else if (action === "resume") {
         await resumeReportingSchedule(schedule.id);
+      } else if (action === "disable") {
+        await disableReportingSchedule(schedule.id);
+      } else if (action === "delete") {
+        await deleteReportingSchedule(schedule.id);
       } else {
         const result = await runReportingScheduleNow(schedule.id);
         details = formatReportingScheduleRunDetails(result);
@@ -631,8 +647,16 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
             ? normalizeReportingScheduleRecipientPrincipalKind(value)
             : value
       } as ReportingScheduleDraftState;
-      if (field === "cronExpression" || field === "nextAsOfDate") {
-        next.dueAtUtc = resolveReportingScheduleDueAtUtc(next.nextAsOfDate, next.cronExpression, current.dueAtUtc);
+      if (field === "periodFrequency") {
+        next.periodFrequency = normalizeReportingSchedulePeriodFrequency(value);
+      }
+      if (
+        field === "cronExpression" || field === "nextAsOfDate" || field === "timeZoneId"
+        || field === "periodFrequency" || field === "dueDaysAfterPeriodEnd"
+      ) {
+        next.dueAtUtc = next.periodFrequency
+          ? resolveReportingSchedulePeriodDueAtUtc(next.nextAsOfDate, next.cronExpression, next.dueDaysAfterPeriodEnd, current.dueAtUtc, next.timeZoneId)
+          : resolveReportingScheduleDueAtUtc(next.nextAsOfDate, next.cronExpression, current.dueAtUtc, next.timeZoneId);
       }
       if (field === "nextAsOfDate") {
         next.runParameters = {
@@ -1546,6 +1570,9 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
               customDatasetText={writerCustomDatasetText[grid.id] ?? ""}
               onCustomDatasetChange={updateWriterCustomDataset}
               onChartDraftChange={updateWriterChartDraft}
+              onFilterAdd={addWriterFilter}
+              onFilterRemove={removeWriterFilter}
+              onFilterChange={updateWriterFilter}
               onFormatRuleAdd={addWriterFormatRule}
               onFormatRuleRemove={removeWriterFormatRule}
               onFormatRuleChange={updateWriterFormatRule}
@@ -2671,6 +2698,9 @@ function buildDefaultReportingScheduleDraft(reporting: AccountingWorkspaceRespon
     scheduleId,
     templateId,
     cronExpression: normalizeDraftText(schedule?.cronExpression, "0 8 1 * *"),
+    timeZoneId: normalizeDraftText(schedule?.timeZoneId, REPORTING_SCHEDULE_UTC_TIME_ZONE),
+    periodFrequency: normalizeReportingSchedulePeriodFrequency(schedule?.periodCadence?.frequency),
+    dueDaysAfterPeriodEnd: String(Math.max(0, schedule?.periodCadence?.dueDaysAfterPeriodEnd ?? 0)),
     nextAsOfDate,
     dueAtUtc,
     maxRetries: String(Math.max(0, schedule?.maxRetries ?? 1)),
@@ -2705,61 +2735,6 @@ function normalizeReportBuilderContextToken(value: string): string {
   return value.trim().toLowerCase().replace(/[^a-z0-9]+/g, "");
 }
 
-export function resolveReportingScheduleDueAtUtc(
-  nextAsOfDate: string,
-  cronExpression: string,
-  currentDueAtUtc: string
-): string {
-  const dateMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(nextAsOfDate.trim());
-  const cronFields = cronExpression.trim().split(/\s+/);
-  const minute = Number.parseInt(cronFields[0] ?? "", 10);
-  const hour = Number.parseInt(cronFields[1] ?? "", 10);
-  if (!dateMatch || !Number.isInteger(minute) || minute < 0 || minute > 59 || !Number.isInteger(hour) || hour < 0 || hour > 23) {
-    return currentDueAtUtc;
-  }
-
-  const year = Number.parseInt(dateMatch[1], 10);
-  const monthIndex = Number.parseInt(dateMatch[2], 10) - 1;
-  const day = Number.parseInt(dateMatch[3], 10);
-  let dueDate = new Date(Date.UTC(year, monthIndex, day));
-  if (
-    dueDate.getUTCFullYear() !== year
-    || dueDate.getUTCMonth() !== monthIndex
-    || dueDate.getUTCDate() !== day
-  ) {
-    return currentDueAtUtc;
-  }
-
-  const normalizedCron = cronFields.join(" ");
-  if (normalizedCron === "0 8 * * 1-5") {
-    while (dueDate.getUTCDay() === 0 || dueDate.getUTCDay() === 6) {
-      dueDate.setUTCDate(dueDate.getUTCDate() + 1);
-    }
-  } else if (normalizedCron === "0 8 * * 1") {
-    while (dueDate.getUTCDay() !== 1) {
-      dueDate.setUTCDate(dueDate.getUTCDate() + 1);
-    }
-  } else if (normalizedCron === "0 8 1 * *") {
-    if (dueDate.getUTCDate() !== 1) {
-      dueDate = new Date(Date.UTC(dueDate.getUTCFullYear(), dueDate.getUTCMonth() + 1, 1));
-    }
-  } else if (normalizedCron === "0 8 1 1,4,7,10 *") {
-    const quarterlyMonths = new Set([0, 3, 6, 9]);
-    let candidate = new Date(Date.UTC(dueDate.getUTCFullYear(), dueDate.getUTCMonth(), 1));
-    if (candidate < dueDate || !quarterlyMonths.has(candidate.getUTCMonth())) {
-      do {
-        candidate = new Date(Date.UTC(candidate.getUTCFullYear(), candidate.getUTCMonth() + 1, 1));
-      } while (!quarterlyMonths.has(candidate.getUTCMonth()));
-    }
-    dueDate = candidate;
-  }
-
-  const dueYear = dueDate.getUTCFullYear().toString().padStart(4, "0");
-  const dueMonth = (dueDate.getUTCMonth() + 1).toString().padStart(2, "0");
-  const dueDay = dueDate.getUTCDate().toString().padStart(2, "0");
-  return `${dueYear}-${dueMonth}-${dueDay}T${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}:00Z`;
-}
-
 function buildReportingScheduleUpsertRequest(
   draft: ReportingScheduleDraftState,
   brandingDraft: ReportBrandingDraftState,
@@ -2790,6 +2765,16 @@ function buildReportingScheduleUpsertRequest(
     scheduleId,
     templateId,
     cronExpression: normalizeDraftText(draft.cronExpression, "0 8 1 * *"),
+    // Always explicit: a null zone would keep whatever zone the server already retains.
+    timeZoneId: normalizeDraftText(draft.timeZoneId, REPORTING_SCHEDULE_UTC_TIME_ZONE),
+    ...(draft.periodFrequency
+      ? {
+          periodCadence: {
+            frequency: draft.periodFrequency,
+            dueDaysAfterPeriodEnd: parseReportingScheduleDueDays(draft.dueDaysAfterPeriodEnd)
+          }
+        }
+      : {}),
     nextAsOfDate,
     dueAtUtc: normalizeDraftText(draft.dueAtUtc, `${nextAsOfDate}T20:00:00Z`),
     maxRetries: parseScheduleMaxRetries(draft.maxRetries),
