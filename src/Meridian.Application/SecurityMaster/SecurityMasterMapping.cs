@@ -1666,189 +1666,165 @@ internal static partial class SecurityMasterMapping
         });
     }
 
-    private static FSharpOption<VotingRightsCat> ToVotingRightsCatOption(string? raw)
-        => raw switch
-        {
-            "FullVoting" => FSharpOption<VotingRightsCat>.Some(VotingRightsCat.FullVoting),
-            "LimitedVoting" => FSharpOption<VotingRightsCat>.Some(VotingRightsCat.LimitedVoting),
-            "NonVoting" => FSharpOption<VotingRightsCat>.Some(VotingRightsCat.NonVoting),
-            "DualClass" => FSharpOption<VotingRightsCat>.Some(VotingRightsCat.DualClass),
-            "SuperVoting" => FSharpOption<VotingRightsCat>.Some(VotingRightsCat.SuperVoting),
-            not null => FSharpOption<VotingRightsCat>.Some(VotingRightsCat.NewOtherVotingRights(raw)),
-            null => FSharpOption<VotingRightsCat>.None
-        };
-
-    private static DividendType ToDividendType(string raw)
-        => raw switch
-        {
-            "Fixed" => DividendType.Fixed,
-            "Floating" => DividendType.Floating,
-            "Cumulative" => DividendType.Cumulative,
-            _ => throw new InvalidOperationException($"Unsupported dividend type '{raw}'.")
-        };
-
-    private static FSharpOption<ParticipationTerms> ToParticipationTermsOption(SchemaBoundTerms? terms)
-        => terms is { } participation
-            ? FSharpOption<ParticipationTerms>.Some(new ParticipationTerms(
-                participation.OptionalBoolean("participatesInCommonDividends") ?? false,
-                ToOption(participation.OptionalDecimal("additionalDividendThreshold"))))
-            : FSharpOption<ParticipationTerms>.None;
-
-    private static LiquidationPreference ToLiquidationPreference(SchemaBoundTerms terms)
-        => terms.RequiredString("kind") switch
-        {
-            "Pari" => LiquidationPreference.Pari,
-            "Senior" => LiquidationPreference.NewSenior(terms.RequiredDecimal("multiple")),
-            "Subordinated" => LiquidationPreference.Subordinated,
-            var raw => throw new InvalidOperationException($"Unsupported liquidation preference '{raw}'.")
-        };
-
-    // The schema declares preferredTerms as an object but registers no inner shape for it, so its
-    // members (and the two blocks nested in it) read through the ledgered view
-    // (UnboundCompatibilityReads) until the shape is declared.
-    private static PreferredTerms ToPreferredTerms(SchemaBoundTerms preferredTerms)
+    /// <summary>
+    /// The pre-contraction codec evaluated required flat fields in constructor order. That order
+    /// is observable in historical replay refusals; module constructors must not choose a new
+    /// first failure. All reads still pass through the schema-bound view and no value is repaired.
+    /// Optional read-mode fields are tolerant, so only required scalar reads belong here.
+    /// </summary>
+    private static void EnsureLegacyRequiredReadOrder(
+        string assetClass, SchemaBoundTerms bound, SchemaBoundTerms boundTerms)
     {
-        var terms = preferredTerms.Unbound;
-        return new(
-            ToOption(terms.OptionalDecimal("dividendRate")),
-            ToDividendType(terms.RequiredString("dividendType")),
-            ToOption(terms.OptionalDecimal("redemptionPrice")),
-            ToOption(terms.OptionalDateOnly("redemptionDate")),
-            ToOption(terms.OptionalDateOnly("callableDate")),
-            ToParticipationTermsOption(terms.OptionalObject("participationTerms")),
-            ToLiquidationPreference(terms.RequiredObject("liquidationPreference")));
-    }
-
-    // Bound to the inner shape the schema registers as Equity.convertibleTerms.
-    private static ConvertibleTerms ToConvertibleTerms(SchemaBoundTerms terms)
-        => new(
-            SecurityId.NewSecurityId(terms.RequiredGuid("underlyingSecurityId")),
-            terms.RequiredDecimal("conversionRatio"),
-            ToOption(terms.OptionalDecimal("conversionPrice")),
-            ToOption(terms.OptionalDateOnly("conversionStartDate")),
-            ToOption(terms.OptionalDateOnly("conversionEndDate")));
-
-    private static FSharpOption<EquityClassification> ToEquityClassificationOption(
-        SchemaBoundTerms terms, SecurityKindMappingMode mode)
-    {
-        var raw = terms.OptionalString("classification");
-        return raw switch
+        switch (assetClass)
         {
-            "Common" => FSharpOption<EquityClassification>.Some(EquityClassification.Common),
-            "Preferred" => FSharpOption<EquityClassification>.Some(
-                EquityClassification.NewPreferred(ToPreferredTerms(terms.RequiredObject("preferredTerms")))),
-            "Convertible" => FSharpOption<EquityClassification>.Some(
-                EquityClassification.NewConvertible(ToConvertibleTerms(terms.RequiredObject("convertibleTerms")))),
-            "ConvertiblePreferred" => FSharpOption<EquityClassification>.Some(
-                EquityClassification.NewConvertiblePreferred(
-                    ToPreferredTerms(terms.RequiredObject("preferredTerms")),
-                    ToConvertibleTerms(terms.RequiredObject("convertibleTerms")))),
-            // A write selecting "Other" must NAME the classification: defaulting a missing
-            // otherClassification to the placeholder "Other" would persist an economically
-            // meaningless label as the security's classification.
-            "Other" when mode == SecurityKindMappingMode.Write =>
-                terms.OptionalString("otherClassification") is { } named && !string.IsNullOrWhiteSpace(named)
-                    ? FSharpOption<EquityClassification>.Some(EquityClassification.NewOther(named))
-                    : throw new InvalidOperationException(
-                        "An equity classification of 'Other' requires a non-empty 'otherClassification' naming the " +
-                        "classification. Supply it, or use one of the declared classifications " +
-                        "(Common, Preferred, Convertible, ConvertiblePreferred)."),
-            "Other" => FSharpOption<EquityClassification>.Some(
-                EquityClassification.NewOther(terms.OptionalString("otherClassification") ?? "Other")),
-            null => FSharpOption<EquityClassification>.None,
-            // A WRITE fails closed on an unrecognized discriminant: silently persisting a typo
-            // ("Commmon") as Other(raw) would change the security's economic classification.
-            _ when mode == SecurityKindMappingMode.Write =>
-                throw new InvalidOperationException(
-                    $"Unknown equity classification '{raw}'. Declared classifications are Common, Preferred, " +
-                    "Convertible, and ConvertiblePreferred; use 'Other' with 'otherClassification' for anything else."),
-            // Read tolerance: rows written before the serializer emitted the "Other" discriminant
-            // carry the raw label in the classification slot. Treat any unrecognized value as an
-            // Other classification instead of failing every read of the row.
-            _ => FSharpOption<EquityClassification>.Some(EquityClassification.NewOther(raw))
-        };
-    }
-
-    public static JsonElement BuildPreferredEquityTermsPatch(SecurityProjectionRecord current, AmendPreferredEquityTermsRequest request)
-    {
-        if (!SecurityAssetClassCatalog.GetOrDefault(current.AssetClass).SupportsEquityClassification)
-            throw new InvalidOperationException($"Security '{current.SecurityId}' is not an equity and cannot accept preferred term amendments.");
-
-        var assetSpecificNode = JsonNode.Parse(current.AssetSpecificTerms.GetRawText()) as JsonObject
-            ?? throw new InvalidOperationException("Current asset-specific terms payload is not a JSON object.");
-        var classification = assetSpecificNode["classification"]?.GetValue<string>();
-
-        if (classification is not ("Preferred" or "ConvertiblePreferred"))
-            throw new InvalidOperationException($"Security '{current.SecurityId}' does not currently have preferred-equity terms.");
-
-        var existingJson = (assetSpecificNode["preferredTerms"] as JsonObject)?.ToJsonString();
-        var preferredTermsNode = (existingJson is not null
-            ? JsonNode.Parse(existingJson) as JsonObject
-            : null) ?? new JsonObject();
-
-        if (request.DividendRate is not null)
-            preferredTermsNode["dividendRate"] = JsonValue.Create(request.DividendRate);
-        if (request.DividendType is not null)
-            preferredTermsNode["dividendType"] = request.DividendType;
-        if (request.RedemptionPrice is not null)
-            preferredTermsNode["redemptionPrice"] = JsonValue.Create(request.RedemptionPrice);
-        if (request.RedemptionDate is not null)
-            preferredTermsNode["redemptionDate"] = request.RedemptionDate.Value.ToString("yyyy-MM-dd");
-        if (request.CallableDate is not null)
-            preferredTermsNode["callableDate"] = request.CallableDate.Value.ToString("yyyy-MM-dd");
-
-        if (request.ParticipatesInCommonDividends is not null || request.AdditionalDividendThreshold is not null)
-        {
-            var existingPart = (preferredTermsNode["participationTerms"] as JsonObject)?.ToJsonString();
-            var participationNode = (existingPart is not null
-                ? JsonNode.Parse(existingPart) as JsonObject
-                : null) ?? new JsonObject();
-            if (request.ParticipatesInCommonDividends is not null)
-                participationNode["participatesInCommonDividends"] = JsonValue.Create(request.ParticipatesInCommonDividends.Value);
-            if (request.AdditionalDividendThreshold is not null)
-                participationNode["additionalDividendThreshold"] = JsonValue.Create(request.AdditionalDividendThreshold);
-            preferredTermsNode["participationTerms"] = participationNode;
+            case "Option":
+                _ = bound.RequiredGuid("underlyingId");
+                _ = bound.RequiredString("putCall");
+                _ = bound.RequiredDecimal("strike");
+                _ = bound.RequiredDateOnly("expiry");
+                _ = bound.RequiredDecimal("multiplier");
+                break;
+            case "Future":
+                _ = bound.RequiredString("rootSymbol");
+                _ = bound.RequiredString("contractMonth");
+                _ = bound.RequiredDateOnly("expiry");
+                _ = bound.RequiredDecimal("multiplier");
+                break;
+            case "Bond":
+                _ = bound.RequiredDateOnly("maturity");
+                break;
+            case "FxSpot":
+                _ = bound.RequiredString("baseCurrency");
+                _ = bound.RequiredString("quoteCurrency");
+                break;
+            case "Deposit":
+                _ = bound.RequiredString("depositType");
+                _ = bound.RequiredString("institutionName");
+                break;
+            case "CertificateOfDeposit":
+                _ = bound.RequiredString("issuerName");
+                _ = bound.RequiredDateOnly("maturity");
+                break;
+            case "CommercialPaper":
+                _ = bound.RequiredString("issuerName");
+                _ = bound.RequiredDateOnly("maturity");
+                break;
+            case "TreasuryBill":
+                _ = bound.RequiredDateOnly("maturity");
+                break;
+            case "Repo":
+                _ = bound.RequiredString("counterparty");
+                _ = bound.RequiredDateOnly("startDate");
+                _ = bound.RequiredDateOnly("endDate");
+                break;
+            case "CashSweep":
+                _ = bound.RequiredString("programName");
+                _ = bound.RequiredString("sweepVehicleType");
+                break;
+            case "OtherSecurity":
+                _ = bound.RequiredString("category");
+                break;
+            case "Swap":
+                _ = bound.RequiredDateOnly("effectiveDate");
+                _ = bound.RequiredDateOnly("maturityDate");
+                break;
+            case "DirectLoan":
+                _ = bound.RequiredString("borrower");
+                break;
+            case "StructuredCredit":
+                _ = boundTerms.RequiredString("tranche");
+                _ = boundTerms.RequiredString("collateralType");
+                _ = boundTerms.RequiredDecimal("originalFace");
+                _ = boundTerms.RequiredString("couponOrIndex");
+                break;
+            case "PrivateFundInterest":
+                _ = boundTerms.RequiredString("gpSponsor");
+                _ = boundTerms.RequiredString("strategy");
+                _ = boundTerms.RequiredInt("vintage");
+                _ = boundTerms.RequiredDecimal("commitment");
+                _ = boundTerms.RequiredDateOnly("navDate");
+                break;
+            case "PrivateCompanyEquity":
+                _ = boundTerms.RequiredString("issuer");
+                _ = boundTerms.RequiredString("shareClass");
+                _ = boundTerms.RequiredString("round");
+                _ = boundTerms.RequiredDecimal("costBasis");
+                break;
+            case "RealEstateHolding":
+                _ = boundTerms.RequiredString("propertyType");
+                _ = boundTerms.RequiredString("addressOrMarket");
+                _ = boundTerms.RequiredDecimal("ownershipPercent");
+                _ = boundTerms.RequiredDecimal("appraisalValue");
+                _ = boundTerms.RequiredDateOnly("valuationDate");
+                break;
+            case "CommitmentGuarantee":
+                _ = boundTerms.RequiredString("counterparty");
+                _ = boundTerms.RequiredDecimal("committedAmount");
+                _ = boundTerms.RequiredDateOnly("effectiveDate");
+                break;
+            case "Commodity":
+                _ = bound.RequiredString("commodityType");
+                break;
+            case "CryptoCurrency":
+                _ = bound.RequiredString("baseCurrency");
+                _ = bound.RequiredString("quoteCurrency");
+                break;
+            case "Cfd":
+                _ = bound.RequiredString("underlyingAssetClass");
+                break;
+            case "Warrant":
+                _ = bound.RequiredGuid("underlyingId");
+                _ = bound.RequiredString("warrantType");
+                break;
+            case "FxForward":
+                _ = bound.RequiredString("baseCurrency");
+                _ = bound.RequiredString("quoteCurrency");
+                _ = bound.RequiredDateOnly("valueDate");
+                break;
+            case "NonDeliverableForward":
+                _ = bound.RequiredString("baseCurrency");
+                _ = bound.RequiredString("quoteCurrency");
+                _ = bound.RequiredString("settlementCurrency");
+                _ = bound.RequiredDateOnly("fixingDate");
+                _ = bound.RequiredDateOnly("valueDate");
+                break;
+            case "CreditDefaultSwap":
+                _ = bound.RequiredString("referenceEntity");
+                _ = bound.RequiredString("protectionSide");
+                _ = bound.RequiredDecimal("notional");
+                _ = bound.RequiredDecimal("fixedCouponBps");
+                _ = bound.RequiredDateOnly("effectiveDate");
+                _ = bound.RequiredDateOnly("maturityDate");
+                break;
+            case "Swaption":
+                _ = bound.RequiredString("payerReceiver");
+                _ = bound.RequiredDecimal("strikeRate");
+                _ = bound.RequiredDateOnly("expiry");
+                _ = bound.RequiredDateOnly("underlyingMaturityDate");
+                _ = bound.RequiredDecimal("notional");
+                break;
+            case "CapFloor":
+                _ = bound.RequiredString("capFloorType");
+                _ = bound.RequiredString("referenceIndex");
+                _ = bound.RequiredDecimal("notional");
+                _ = bound.RequiredDateOnly("effectiveDate");
+                _ = bound.RequiredDateOnly("maturityDate");
+                break;
+            case "StructuredNote":
+                _ = bound.RequiredString("issuerName");
+                _ = bound.RequiredString("underlyingDescription");
+                _ = bound.RequiredDateOnly("maturity");
+                break;
         }
-
-        if (request.LiquidationPreferenceKind is not null)
-        {
-            var existingLiq = (preferredTermsNode["liquidationPreference"] as JsonObject)?.ToJsonString();
-            var liquidationNode = (existingLiq is not null
-                ? JsonNode.Parse(existingLiq) as JsonObject
-                : null) ?? new JsonObject();
-            liquidationNode["kind"] = request.LiquidationPreferenceKind;
-            if (request.LiquidationPreferenceMultiple is not null)
-                liquidationNode["multiple"] = JsonValue.Create(request.LiquidationPreferenceMultiple);
-            preferredTermsNode["liquidationPreference"] = liquidationNode;
-        }
-
-        assetSpecificNode["preferredTerms"] = preferredTermsNode;
-        return JsonSerializer.SerializeToElement(assetSpecificNode);
     }
 
+    // Unrecognized classes have no schema-bound view. Keep their four tolerant compatibility
+    // reads at the call site in their original order; this helper only nests their stored values.
+    private static SecurityKind ToUnrecognizedClassKind(
+        string assetClass, string? subType, DateOnly? maturity, string? issuerName, string? settlementType)
+        => SecurityKind.NewOtherSecurity(new OtherSecurityTerms(
+            new MaturityTerms(null, null, ToOption(maturity)),
+            new ClassificationDetailTerms(assetClass, ToOption(subType)),
+            new IssuerRef(ToOption(issuerName), null, ToOption(settlementType), null, null, null, null)));
 
-    public static JsonElement BuildConvertibleEquityTermsPatch(SecurityProjectionRecord current, AmendConvertibleEquityTermsRequest request)
-    {
-        if (!SecurityAssetClassCatalog.GetOrDefault(current.AssetClass).SupportsEquityClassification)
-            throw new InvalidOperationException($"Security '{current.SecurityId}' is not an equity and cannot accept convertible term amendments.");
-
-        var assetSpecificNode = JsonNode.Parse(current.AssetSpecificTerms.GetRawText()) as JsonObject
-            ?? throw new InvalidOperationException("Current asset-specific terms payload is not a JSON object.");
-        var classification = assetSpecificNode["classification"]?.GetValue<string>();
-
-        if (classification is not ("Convertible" or "ConvertiblePreferred"))
-            throw new InvalidOperationException($"Security '{current.SecurityId}' does not currently have convertible-equity terms.");
-
-        var convertibleTermsNode = new JsonObject
-        {
-            ["underlyingSecurityId"] = request.UnderlyingSecurityId,
-            ["conversionRatio"] = JsonValue.Create(request.ConversionRatio),
-            ["conversionPrice"] = JsonValue.Create(request.ConversionPrice),
-            ["conversionStartDate"] = JsonValue.Create(request.ConversionStartDate),
-            ["conversionEndDate"] = JsonValue.Create(request.ConversionEndDate)
-        };
-
-        assetSpecificNode["convertibleTerms"] = convertibleTermsNode;
-        return JsonSerializer.SerializeToElement(assetSpecificNode);
-    }
 }

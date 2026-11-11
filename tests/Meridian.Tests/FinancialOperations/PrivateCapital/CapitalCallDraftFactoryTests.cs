@@ -92,4 +92,19 @@ public sealed class CapitalCallDraftFactoryTests
         draft.Lines.Should().Contain(line =>
             line.account.Name == "Capital Call Receivable" && line.credit == 2_500_000m);
     }
+
+    [Fact]
+    public void DistinctFundingReceipts_KeepCallLineageAndHaveDistinctStablePostingIdentities()
+    {
+        var first = CapitalCallDraftFactory.BuildCapitalCallFundingDraft(Commitment(), "inst-1", 100m,
+            new DateOnly(2026, 4, 5), OccurredAt, fundingReceiptId: "receipt-1");
+        var second = CapitalCallDraftFactory.BuildCapitalCallFundingDraft(Commitment(), "inst-1", 200m,
+            new DateOnly(2026, 4, 6), OccurredAt, fundingReceiptId: "receipt-2");
+        var replay = CapitalCallDraftFactory.BuildCapitalCallFundingDraft(Commitment(), "inst-1", 100m,
+            new DateOnly(2026, 4, 5), OccurredAt, fundingReceiptId: "receipt-1");
+        first.Metadata.IdempotencyKey.Should().NotBe(second.Metadata.IdempotencyKey);
+        first.Metadata.IdempotencyKey.Should().Be(replay.Metadata.IdempotencyKey);
+        first.Metadata.FundEventId.Should().Be(second.Metadata.FundEventId);
+        first.Metadata.Tags!["drawdownInstallmentId"].Should().Be("inst-1");
+    }
 }

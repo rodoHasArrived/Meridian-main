@@ -7858,6 +7858,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ApprovePrivateCapitalCommitmentRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.AssetAccountingApprovalReceiptDto"
     },
     {
@@ -8248,6 +8254,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.CreatePrivateCapitalCommitmentRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.CurrencyMinorUnits"
     },
     {
@@ -8309,6 +8321,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.FinancialStatementPackageDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.GeneratePrivateCapitalNoticeRequest"
     },
     {
       "kind": "contract-set-member",
@@ -8393,6 +8411,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.IPrivateCapitalFundEventCommandCenterService"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ImportPrivateCapitalBankObservationRequest"
     },
     {
       "kind": "contract-set-member",
@@ -8896,6 +8920,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PreviewPrivateCapitalCallRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalActivityProjectionDto"
     },
     {
@@ -8903,6 +8933,36 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalActivityRoutes"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalBankObservationImportResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalBankObservationSourceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalCallDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalCallLineDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalCallPreviewDto"
     },
     {
       "kind": "contract-set-member",
@@ -8921,6 +8981,18 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalCapitalAccountSubledgerEntryDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalCommitmentApprovalStatus"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalCommitmentDto"
     },
     {
       "kind": "contract-set-member",
@@ -8980,6 +9052,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalNoticeSummaryDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalPaymentIntentEvidenceDto"
     },
     {
@@ -8992,7 +9070,31 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalPostingAuthorityDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalPostingReceiptDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalReportOutputDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalScopeDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalWorkbenchDto"
     },
     {
       "kind": "contract-set-member",
@@ -9047,6 +9149,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.RestatementWorkflowDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.RetainPrivateCapitalCallRequest"
     },
     {
       "kind": "contract-set-member",
@@ -22948,6 +23056,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ApprovePrivateCapitalCommitmentRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.AssetAccountingApprovalReceiptDto"
     },
     {
@@ -23338,6 +23452,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.CreatePrivateCapitalCommitmentRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.CurrencyMinorUnits"
     },
     {
@@ -23399,6 +23519,12 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.FinancialStatementPackageDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.GeneratePrivateCapitalNoticeRequest"
     },
     {
       "kind": "contract-set-member",
@@ -23483,6 +23609,12 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.IPrivateCapitalFundEventCommandCenterService"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ImportPrivateCapitalBankObservationRequest"
     },
     {
       "kind": "contract-set-member",
@@ -23986,6 +24118,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PreviewPrivateCapitalCallRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalActivityProjectionDto"
     },
     {
@@ -23993,6 +24131,36 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalActivityRoutes"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalBankObservationImportResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalBankObservationSourceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalCallDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalCallLineDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalCallPreviewDto"
     },
     {
       "kind": "contract-set-member",
@@ -24011,6 +24179,18 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalCapitalAccountSubledgerEntryDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalCommitmentApprovalStatus"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalCommitmentDto"
     },
     {
       "kind": "contract-set-member",
@@ -24070,6 +24250,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalNoticeSummaryDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalPaymentIntentEvidenceDto"
     },
     {
@@ -24082,7 +24268,31 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalPostingAuthorityDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalPostingReceiptDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalReportOutputDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalScopeDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalWorkbenchDto"
     },
     {
       "kind": "contract-set-member",
@@ -24137,6 +24347,12 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.RestatementWorkflowDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.RetainPrivateCapitalCallRequest"
     },
     {
       "kind": "contract-set-member",
@@ -37221,6 +37437,30 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PrivateCapitalBankObservationImportResultDto",
+      "target": "contract:Meridian.Contracts.Banking.BankTransactionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PrivateCapitalCallDto",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalCallLineDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PrivateCapitalCallDto",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PrivateCapitalCallPreviewDto",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalCallDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Ledger.PrivateCapitalCapitalAccountSubledgerDto",
       "target": "contract:Meridian.Contracts.Ledger.AccountingConfigurationValidationIssueDto"
     },
@@ -37289,6 +37529,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.PrivateCapitalCapitalAccountSubledgerEntryDto",
       "target": "contract:Meridian.Contracts.Ledger.ManualJournalEntryTypeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PrivateCapitalCommitmentDto",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalCommitmentApprovalStatus"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PrivateCapitalCommitmentDto",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalScopeDto"
     },
     {
       "kind": "contract-reference",
@@ -37425,6 +37677,18 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PrivateCapitalPostingAuthorityDto",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PrivateCapitalPostingReceiptDto",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Ledger.PrivateCapitalReportOutputDto",
       "target": "contract:Meridian.Contracts.Ledger.AccountingConfigurationValidationIssueDto"
     },
@@ -37433,6 +37697,36 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.PrivateCapitalReportOutputDto",
       "target": "contract:Meridian.Contracts.Ledger.ManualJournalEntryStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PrivateCapitalWorkbenchDto",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalCallDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PrivateCapitalWorkbenchDto",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalCommitmentDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PrivateCapitalWorkbenchDto",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalNoticeSummaryDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PrivateCapitalWorkbenchDto",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalPostingReceiptDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PrivateCapitalWorkbenchDto",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalScopeDto"
     },
     {
       "kind": "contract-reference",
@@ -37517,6 +37811,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.RestatementWorkflowDto",
       "target": "contract:Meridian.Contracts.Ledger.ManualJournalEntryStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.RetainPrivateCapitalCallRequest",
+      "target": "contract:Meridian.Contracts.Ledger.PreviewPrivateCapitalCallRequest"
     },
     {
       "kind": "contract-reference",
@@ -51182,6 +51482,222 @@
       "target": "database:ledger.accounting_periods_pkey"
     },
     {
+      "constraint": "private_capital_calls_ledger_book_id_fkey",
+      "kind": "foreign-key",
+      "label": "ledger_book_id",
+      "source": "database:ledger.private_capital_calls",
+      "target": "database:ledger.ledger_books"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.private_capital_calls_document_check on ledger.private_capital_calls",
+      "target": "database:ledger.private_capital_calls.document"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.private_capital_calls_ledger_book_id_fkey on ledger.private_capital_calls",
+      "target": "database:ledger.ledger_books.ledger_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.private_capital_calls_ledger_book_id_fkey on ledger.private_capital_calls",
+      "target": "database:ledger.ledger_books_pkey"
+    },
+    {
+      "constraint": "private_capital_commitments_ledger_book_id_fkey",
+      "kind": "foreign-key",
+      "label": "ledger_book_id",
+      "source": "database:ledger.private_capital_commitments",
+      "target": "database:ledger.ledger_books"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.private_capital_commitments_document_check on ledger.private_capital_commitments",
+      "target": "database:ledger.private_capital_commitments.document"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.private_capital_commitments_ledger_book_id_fkey on ledger.private_capital_commitments",
+      "target": "database:ledger.ledger_books.ledger_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.private_capital_commitments_ledger_book_id_fkey on ledger.private_capital_commitments",
+      "target": "database:ledger.ledger_books_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.private_capital_commitments_revision_check on ledger.private_capital_commitments",
+      "target": "database:ledger.private_capital_commitments.revision"
+    },
+    {
+      "constraint": "private_capital_postings_journal_entry_id_fkey",
+      "kind": "foreign-key",
+      "label": "journal_entry_id",
+      "source": "database:ledger.private_capital_postings",
+      "target": "database:ledger.journal_entries"
+    },
+    {
+      "constraint": "private_capital_postings_ledger_book_id_fkey",
+      "kind": "foreign-key",
+      "label": "ledger_book_id",
+      "source": "database:ledger.private_capital_postings",
+      "target": "database:ledger.ledger_books"
+    },
+    {
+      "constraint": "private_capital_postings_tenant_id_company_id_fund_profile_fkey",
+      "kind": "foreign-key",
+      "label": "tenant_id, company_id, fund_profile_id, ledger_book_id, call_id",
+      "source": "database:ledger.private_capital_postings",
+      "target": "database:ledger.private_capital_calls"
+    },
+    {
+      "constraint": "private_capital_postings_tenant_id_company_id_fund_profil_fkey1",
+      "kind": "foreign-key",
+      "label": "tenant_id, company_id, fund_profile_id, ledger_book_id, commitment_id, commitment_revision",
+      "source": "database:ledger.private_capital_postings",
+      "target": "database:ledger.private_capital_commitments"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.private_capital_postings_amount_check on ledger.private_capital_postings",
+      "target": "database:ledger.private_capital_postings.amount"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.private_capital_postings_check on ledger.private_capital_postings",
+      "target": "database:ledger.private_capital_postings.bank_line_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.private_capital_postings_check on ledger.private_capital_postings",
+      "target": "database:ledger.private_capital_postings.funding_receipt_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.private_capital_postings_check on ledger.private_capital_postings",
+      "target": "database:ledger.private_capital_postings.kind"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.private_capital_postings_journal_entry_id_fkey on ledger.private_capital_postings",
+      "target": "database:ledger.journal_entries.journal_entry_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.private_capital_postings_journal_entry_id_fkey on ledger.private_capital_postings",
+      "target": "database:ledger.journal_entries_journal_entry_id_key"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.private_capital_postings_kind_check on ledger.private_capital_postings",
+      "target": "database:ledger.private_capital_postings.kind"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.private_capital_postings_ledger_book_id_fkey on ledger.private_capital_postings",
+      "target": "database:ledger.ledger_books.ledger_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.private_capital_postings_ledger_book_id_fkey on ledger.private_capital_postings",
+      "target": "database:ledger.ledger_books_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.private_capital_postings_tenant_id_company_id_fund_profil_fkey1 on ledger.private_capital_postings",
+      "target": "database:ledger.private_capital_commitments.commitment_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.private_capital_postings_tenant_id_company_id_fund_profil_fkey1 on ledger.private_capital_postings",
+      "target": "database:ledger.private_capital_commitments.company_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.private_capital_postings_tenant_id_company_id_fund_profil_fkey1 on ledger.private_capital_postings",
+      "target": "database:ledger.private_capital_commitments.fund_profile_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.private_capital_postings_tenant_id_company_id_fund_profil_fkey1 on ledger.private_capital_postings",
+      "target": "database:ledger.private_capital_commitments.ledger_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.private_capital_postings_tenant_id_company_id_fund_profil_fkey1 on ledger.private_capital_postings",
+      "target": "database:ledger.private_capital_commitments.revision"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.private_capital_postings_tenant_id_company_id_fund_profil_fkey1 on ledger.private_capital_postings",
+      "target": "database:ledger.private_capital_commitments.tenant_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.private_capital_postings_tenant_id_company_id_fund_profil_fkey1 on ledger.private_capital_postings",
+      "target": "database:ledger.private_capital_commitments_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.private_capital_postings_tenant_id_company_id_fund_profile_fkey on ledger.private_capital_postings",
+      "target": "database:ledger.private_capital_calls.call_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.private_capital_postings_tenant_id_company_id_fund_profile_fkey on ledger.private_capital_postings",
+      "target": "database:ledger.private_capital_calls.company_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.private_capital_postings_tenant_id_company_id_fund_profile_fkey on ledger.private_capital_postings",
+      "target": "database:ledger.private_capital_calls.fund_profile_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.private_capital_postings_tenant_id_company_id_fund_profile_fkey on ledger.private_capital_postings",
+      "target": "database:ledger.private_capital_calls.ledger_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.private_capital_postings_tenant_id_company_id_fund_profile_fkey on ledger.private_capital_postings",
+      "target": "database:ledger.private_capital_calls.tenant_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.private_capital_postings_tenant_id_company_id_fund_profile_fkey on ledger.private_capital_postings",
+      "target": "database:ledger.private_capital_calls_pkey"
+    },
+    {
       "constraint": "tax_lot_mutations_corrects_mutation_batch_id_fkey",
       "kind": "foreign-key",
       "label": "corrects_mutation_batch_id",
@@ -56217,6 +56733,24 @@
       "kind": "contains",
       "label": "",
       "source": "schema:ledger",
+      "target": "database:ledger.private_capital_calls"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
+      "target": "database:ledger.private_capital_commitments"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
+      "target": "database:ledger.private_capital_postings"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
       "target": "database:ledger.tax_lot_mutations"
     },
     {
@@ -57239,7 +57773,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "a41601f7e8c9edeaeb4e2558a99e7aba88f7d1e42cb606317aae5904f65888fd",
+  "fingerprint": "bcd7bd5037f091f591d60298f126985792db444473e72948a32a117f2418545f",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -65147,6 +65681,12 @@
       "label": "Meridian.Contracts.Ledger.ApprovePostingRulePromotionRequest"
     },
     {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Ledger.ApprovePrivateCapitalCommitmentRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ApprovePrivateCapitalCommitmentRequest"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.Ledger.AssetAccountingApprovalReceiptDto",
       "kind": "contract-type",
@@ -65537,6 +66077,12 @@
       "label": "Meridian.Contracts.Ledger.CreatePreparedClosePlanRequestDto"
     },
     {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Ledger.CreatePrivateCapitalCommitmentRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.CreatePrivateCapitalCommitmentRequest"
+    },
+    {
       "classification": "class",
       "id": "contract:Meridian.Contracts.Ledger.CurrencyMinorUnits",
       "kind": "contract-type",
@@ -65601,6 +66147,12 @@
       "id": "contract:Meridian.Contracts.Ledger.FinancialStatementPackageDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.FinancialStatementPackageDto"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Ledger.GeneratePrivateCapitalNoticeRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.GeneratePrivateCapitalNoticeRequest"
     },
     {
       "classification": "dto",
@@ -65685,6 +66237,12 @@
       "id": "contract:Meridian.Contracts.Ledger.IPrivateCapitalFundEventCommandCenterService",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.IPrivateCapitalFundEventCommandCenterService"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Ledger.ImportPrivateCapitalBankObservationRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ImportPrivateCapitalBankObservationRequest"
     },
     {
       "classification": "dto",
@@ -66185,6 +66743,12 @@
       "label": "Meridian.Contracts.Ledger.PreviewJournalTemplateRequest"
     },
     {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Ledger.PreviewPrivateCapitalCallRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.PreviewPrivateCapitalCallRequest"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.Ledger.PrivateCapitalActivityProjectionDto",
       "kind": "contract-type",
@@ -66195,6 +66759,36 @@
       "id": "contract:Meridian.Contracts.Ledger.PrivateCapitalActivityRoutes",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.PrivateCapitalActivityRoutes"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.PrivateCapitalBankObservationImportResultDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.PrivateCapitalBankObservationImportResultDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.PrivateCapitalBankObservationSourceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.PrivateCapitalBankObservationSourceDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.PrivateCapitalCallDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.PrivateCapitalCallDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.PrivateCapitalCallLineDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.PrivateCapitalCallLineDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.PrivateCapitalCallPreviewDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.PrivateCapitalCallPreviewDto"
     },
     {
       "classification": "dto",
@@ -66213,6 +66807,18 @@
       "id": "contract:Meridian.Contracts.Ledger.PrivateCapitalCapitalAccountSubledgerEntryDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.PrivateCapitalCapitalAccountSubledgerEntryDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Ledger.PrivateCapitalCommitmentApprovalStatus",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.PrivateCapitalCommitmentApprovalStatus"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.PrivateCapitalCommitmentDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.PrivateCapitalCommitmentDto"
     },
     {
       "classification": "dto",
@@ -66270,6 +66876,12 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.PrivateCapitalNoticeSummaryDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.PrivateCapitalNoticeSummaryDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Ledger.PrivateCapitalPaymentIntentEvidenceDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.PrivateCapitalPaymentIntentEvidenceDto"
@@ -66282,9 +66894,33 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.PrivateCapitalPostingAuthorityDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.PrivateCapitalPostingAuthorityDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.PrivateCapitalPostingReceiptDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.PrivateCapitalPostingReceiptDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Ledger.PrivateCapitalReportOutputDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.PrivateCapitalReportOutputDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.PrivateCapitalScopeDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.PrivateCapitalScopeDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.PrivateCapitalWorkbenchDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.PrivateCapitalWorkbenchDto"
     },
     {
       "classification": "dto",
@@ -66339,6 +66975,12 @@
       "id": "contract:Meridian.Contracts.Ledger.RestatementWorkflowDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.RestatementWorkflowDto"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Ledger.RetainPrivateCapitalCallRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.RetainPrivateCapitalCallRequest"
     },
     {
       "classification": "dto",
@@ -78897,6 +79539,179 @@
       "label": "ledger.period_close_events_period_id_fkey on ledger.period_close_events"
     },
     {
+      "id": "database:ledger.private_capital_calls",
+      "kind": "database-table",
+      "label": "ledger.private_capital_calls",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.private_capital_calls.call_id",
+      "kind": "database-object",
+      "label": "ledger.private_capital_calls.call_id"
+    },
+    {
+      "id": "database:ledger.private_capital_calls.company_id",
+      "kind": "database-object",
+      "label": "ledger.private_capital_calls.company_id"
+    },
+    {
+      "id": "database:ledger.private_capital_calls.document",
+      "kind": "database-object",
+      "label": "ledger.private_capital_calls.document"
+    },
+    {
+      "id": "database:ledger.private_capital_calls.fund_profile_id",
+      "kind": "database-object",
+      "label": "ledger.private_capital_calls.fund_profile_id"
+    },
+    {
+      "id": "database:ledger.private_capital_calls.ledger_book_id",
+      "kind": "database-object",
+      "label": "ledger.private_capital_calls.ledger_book_id"
+    },
+    {
+      "id": "database:ledger.private_capital_calls.tenant_id",
+      "kind": "database-object",
+      "label": "ledger.private_capital_calls.tenant_id"
+    },
+    {
+      "id": "database:ledger.private_capital_calls_document_check on ledger.private_capital_calls",
+      "kind": "database-object",
+      "label": "ledger.private_capital_calls_document_check on ledger.private_capital_calls"
+    },
+    {
+      "id": "database:ledger.private_capital_calls_ledger_book_id_fkey on ledger.private_capital_calls",
+      "kind": "database-object",
+      "label": "ledger.private_capital_calls_ledger_book_id_fkey on ledger.private_capital_calls"
+    },
+    {
+      "id": "database:ledger.private_capital_calls_pkey",
+      "kind": "database-object",
+      "label": "ledger.private_capital_calls_pkey"
+    },
+    {
+      "id": "database:ledger.private_capital_commitments",
+      "kind": "database-table",
+      "label": "ledger.private_capital_commitments",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.private_capital_commitments.commitment_id",
+      "kind": "database-object",
+      "label": "ledger.private_capital_commitments.commitment_id"
+    },
+    {
+      "id": "database:ledger.private_capital_commitments.company_id",
+      "kind": "database-object",
+      "label": "ledger.private_capital_commitments.company_id"
+    },
+    {
+      "id": "database:ledger.private_capital_commitments.document",
+      "kind": "database-object",
+      "label": "ledger.private_capital_commitments.document"
+    },
+    {
+      "id": "database:ledger.private_capital_commitments.fund_profile_id",
+      "kind": "database-object",
+      "label": "ledger.private_capital_commitments.fund_profile_id"
+    },
+    {
+      "id": "database:ledger.private_capital_commitments.ledger_book_id",
+      "kind": "database-object",
+      "label": "ledger.private_capital_commitments.ledger_book_id"
+    },
+    {
+      "id": "database:ledger.private_capital_commitments.revision",
+      "kind": "database-object",
+      "label": "ledger.private_capital_commitments.revision"
+    },
+    {
+      "id": "database:ledger.private_capital_commitments.tenant_id",
+      "kind": "database-object",
+      "label": "ledger.private_capital_commitments.tenant_id"
+    },
+    {
+      "id": "database:ledger.private_capital_commitments_document_check on ledger.private_capital_commitments",
+      "kind": "database-object",
+      "label": "ledger.private_capital_commitments_document_check on ledger.private_capital_commitments"
+    },
+    {
+      "id": "database:ledger.private_capital_commitments_ledger_book_id_fkey on ledger.private_capital_commitments",
+      "kind": "database-object",
+      "label": "ledger.private_capital_commitments_ledger_book_id_fkey on ledger.private_capital_commitments"
+    },
+    {
+      "id": "database:ledger.private_capital_commitments_pkey",
+      "kind": "database-object",
+      "label": "ledger.private_capital_commitments_pkey"
+    },
+    {
+      "id": "database:ledger.private_capital_commitments_revision_check on ledger.private_capital_commitments",
+      "kind": "database-object",
+      "label": "ledger.private_capital_commitments_revision_check on ledger.private_capital_commitments"
+    },
+    {
+      "id": "database:ledger.private_capital_postings",
+      "kind": "database-table",
+      "label": "ledger.private_capital_postings",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.private_capital_postings.amount",
+      "kind": "database-object",
+      "label": "ledger.private_capital_postings.amount"
+    },
+    {
+      "id": "database:ledger.private_capital_postings.bank_line_id",
+      "kind": "database-object",
+      "label": "ledger.private_capital_postings.bank_line_id"
+    },
+    {
+      "id": "database:ledger.private_capital_postings.funding_receipt_id",
+      "kind": "database-object",
+      "label": "ledger.private_capital_postings.funding_receipt_id"
+    },
+    {
+      "id": "database:ledger.private_capital_postings.kind",
+      "kind": "database-object",
+      "label": "ledger.private_capital_postings.kind"
+    },
+    {
+      "id": "database:ledger.private_capital_postings_amount_check on ledger.private_capital_postings",
+      "kind": "database-object",
+      "label": "ledger.private_capital_postings_amount_check on ledger.private_capital_postings"
+    },
+    {
+      "id": "database:ledger.private_capital_postings_check on ledger.private_capital_postings",
+      "kind": "database-object",
+      "label": "ledger.private_capital_postings_check on ledger.private_capital_postings"
+    },
+    {
+      "id": "database:ledger.private_capital_postings_journal_entry_id_fkey on ledger.private_capital_postings",
+      "kind": "database-object",
+      "label": "ledger.private_capital_postings_journal_entry_id_fkey on ledger.private_capital_postings"
+    },
+    {
+      "id": "database:ledger.private_capital_postings_kind_check on ledger.private_capital_postings",
+      "kind": "database-object",
+      "label": "ledger.private_capital_postings_kind_check on ledger.private_capital_postings"
+    },
+    {
+      "id": "database:ledger.private_capital_postings_ledger_book_id_fkey on ledger.private_capital_postings",
+      "kind": "database-object",
+      "label": "ledger.private_capital_postings_ledger_book_id_fkey on ledger.private_capital_postings"
+    },
+    {
+      "id": "database:ledger.private_capital_postings_tenant_id_company_id_fund_profil_fkey1 on ledger.private_capital_postings",
+      "kind": "database-object",
+      "label": "ledger.private_capital_postings_tenant_id_company_id_fund_profil_fkey1 on ledger.private_capital_postings"
+    },
+    {
+      "id": "database:ledger.private_capital_postings_tenant_id_company_id_fund_profile_fkey on ledger.private_capital_postings",
+      "kind": "database-object",
+      "label": "ledger.private_capital_postings_tenant_id_company_id_fund_profile_fkey on ledger.private_capital_postings"
+    },
+    {
       "id": "database:ledger.tax_lot_mutations",
       "kind": "database-table",
       "label": "ledger.tax_lot_mutations",
@@ -83828,11 +84643,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3649,
-    "contract_set_memberships": 4571,
-    "edges": 9511,
-    "foreign_keys": 156,
+    "contract_references": 3663,
+    "contract_set_memberships": 4607,
+    "edges": 9599,
+    "foreign_keys": 162,
     "logical_references": 6,
-    "nodes": 4611
+    "nodes": 4663
   }
 }

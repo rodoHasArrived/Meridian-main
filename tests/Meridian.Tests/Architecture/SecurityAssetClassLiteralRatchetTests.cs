@@ -36,13 +36,8 @@ public sealed class SecurityAssetClassLiteralRatchetTests
     // held to the catalog by SecurityDefinitionValidationEquivalenceTests: the ledgered class keys
     // must be declared catalog classes, every declared class runs the clean-twin theory, and the
     // mutation table must cover exactly the ledgered codes.
-    // SecurityMasterMapping.RequiredReadOrder.cs is a partial of the flat decode in
-    // SecurityMasterMapping.cs: it replays, per class, the order in which that decode used to read
-    // its required fields, and is held to the catalog by the same guards as the decode itself
-    // (SecurityKindMappingTests and the schema-bound decode sweep run every declared class through it).
     private static readonly string[] KnownDispatchSites =
     [
-        "src/Meridian.Application/SecurityMaster/SecurityMasterMapping.RequiredReadOrder.cs",
         "src/Meridian.Application/SecurityMaster/SecurityMasterMapping.cs",
         "src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs",
         "src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs",
