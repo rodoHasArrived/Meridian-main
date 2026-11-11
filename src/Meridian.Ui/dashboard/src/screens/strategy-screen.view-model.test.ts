@@ -1200,6 +1200,7 @@ describe("strategy-screen view model", () => {
 
   it("prefers API-backed PlotTool payload when provided", () => {
     const apiPlotTool: StrategyPlotToolPayload = {
+      analyticsEvidenceStatus: "Retained",
       activeView: "workspace",
       tabs: [],
       studies: [],
@@ -1255,6 +1256,20 @@ describe("strategy-screen view model", () => {
 
     expect(state.plotTool.workspace.title).toBe("API workspace");
     expect(state.plotTool.statistics.title).toBe("API stats");
+    expect(state.plotTool.workspace.points).toEqual([]);
+    expect(state.plotTool.workspace.scatterChart.points).toEqual([]);
+    expect(state.plotTool.statistics.distributionBars).toEqual([]);
+  });
+
+  it("withholds statistical observations whose producer has not declared retained or illustrative evidence", () => {
+    const state = buildStrategyRunLibraryState({ runs, selectedIds: [], selectedRun: null,
+      comparison: [], runDiff: null, promotionHistory: [], activeCommand: null, actionError: null,
+      plotToolFromApi: { workspace: { points: [{ x: 1, y: 2, emphasis: true }] },
+        statistics: { distributionBars: [1, 2, 3] }, studies: [], tabs: [] } });
+    expect(state.plotTool.analyticsEvidenceStatus).toBe("Unverified");
+    expect(state.plotTool.workspace.points).toEqual([]);
+    expect(state.plotTool.statistics.distributionBars).toEqual([]);
+    expect(state.plotTool.statistics.sampleRows).toEqual([]);
   });
 
   it("uses an honest empty PlotTool state when no API payload is provided", () => {

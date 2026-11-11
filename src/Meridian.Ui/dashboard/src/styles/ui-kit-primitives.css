@@ -556,6 +556,19 @@
   border-radius: var(--radius-chip);
 }
 
+/* Field prose uses body type; stable codes opt in to the data font. */
+.entity-summary-field dd {
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+.entity-summary-field dd code,
+.entity-summary-field dd .font-mono { overflow-wrap: anywhere; }
+.dense-data-table time,
+.entity-summary-field time { white-space: nowrap; }
+.dense-data-table td { font-variant-numeric: tabular-nums; }
+
 /* The wrap is a tab stop when its rows are not selectable, so it needs its own visible ring. */
 .dense-data-table-wrap:focus-visible {
   outline: var(--focus-ring, 2px solid var(--focus, #2D6FB3));

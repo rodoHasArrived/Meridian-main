@@ -1,7 +1,8 @@
 import { useId, type ReactNode } from "react";
 import { Menu, Search } from "lucide-react";
-import { DesignSystemTrustStrip } from "@/design-system/trust-strip";
-import type { AppShellTrustStripState } from "@/app-shell.view-model";
+import { DesignSystemTrustStrip, trustStripProvenance } from "@/design-system/trust-strip";
+import type { AppShellAttentionState, AppShellTrustStripState, AppShellWorkflowContinuityViewModel } from "@/app-shell.view-model";
+import type { DataProvenanceKind } from "@/app-shell.data-provenance-badge";
 import type { SessionInfo } from "@/types";
 
 export interface DesignSystemMastheadCommandTrigger {
@@ -23,6 +24,11 @@ export interface DesignSystemMastheadProps {
   trustStrip: AppShellTrustStripState;
   session: SessionInfo | null;
   actions?: ReactNode;
+  provenance?: DataProvenanceKind;
+  onRetryLiveData?: () => void;
+  retryBusy?: boolean;
+  decisionBrief?: AppShellWorkflowContinuityViewModel["decisionBrief"];
+  attention?: AppShellAttentionState;
 }
 
 /**
@@ -40,13 +46,19 @@ export function DesignSystemMasthead({
   onOpenCommandPalette,
   trustStrip,
   session,
-  actions
+  actions,
+  provenance = trustStripProvenance(trustStrip),
+  onRetryLiveData,
+  retryBusy,
+  decisionBrief,
+  attention
 }: DesignSystemMastheadProps) {
   const commandDescriptionId = useId();
   return (
     <header
       className="workstation-masthead mds-masthead ws-masthead"
       data-design-system-component="Masthead"
+      data-provenance={provenance}
     >
       <div className="workstation-brand-group mds-masthead__brand-group ws-brand">
         <button
@@ -88,7 +100,14 @@ export function DesignSystemMasthead({
         {commandTrigger.label}. Keyboard shortcut: {commandTrigger.shortcutLabel}.
       </span>
 
-      <DesignSystemTrustStrip viewModel={trustStrip} />
+      <DesignSystemTrustStrip
+        viewModel={trustStrip}
+        provenance={provenance}
+        onRetryLiveData={onRetryLiveData}
+        retryBusy={retryBusy}
+        decisionBrief={decisionBrief}
+        attention={attention}
+      />
 
       <div className="workstation-actions mds-masthead__actions">
         {actions}
@@ -96,7 +115,7 @@ export function DesignSystemMasthead({
           <div
             className="workstation-session-card mds-session-card"
             role="group"
-            aria-label={`Current session: ${session.environment}, ${session.displayName}, ${session.role}`}
+            aria-label={`Current session: ${session.displayName}, ${session.role}`}
             title={`${session.displayName} · ${session.role}`}
           >
             {/* The environment is the masthead environment badge's leading, never-shrinking

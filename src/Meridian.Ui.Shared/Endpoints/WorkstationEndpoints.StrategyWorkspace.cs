@@ -30,6 +30,10 @@ public static partial class WorkstationEndpoints
         var runDetails = await Task.WhenAll(
                 runs.Select(run => readService.GetRunDetailAsync(run.RunId, scope, context.RequestAborted)))
             .ConfigureAwait(false);
+        var comparisons = await readService.CompareRunsAsync(runs.Select(run => run.RunId), scope, context.RequestAborted).ConfigureAwait(false);
+        var comparisonById = comparisons.ToDictionary(run => run.RunId, StringComparer.Ordinal);
+        var retainedCurves = await Task.WhenAll(runs.Select(run => readService.GetEquityCurveAsync(run.RunId, scope, context.RequestAborted))).ConfigureAwait(false);
+        var curveById = runs.Zip(retainedCurves).ToDictionary(pair => pair.First.RunId, pair => pair.Second, StringComparer.Ordinal);
 
         if (runs.Length == 0)
         {
@@ -64,7 +68,23 @@ public static partial class WorkstationEndpoints
                 new WorkstationMetricCard("winning-runs", "Positive P&L", winningRuns.ToString(CultureInfo.InvariantCulture), winningRuns == 0 ? "0%" : $"+{winningRuns}", "default")
             ],
             Runs: runs
-                .Zip(runDetails, static (run, detail) => BuildStrategyRunCard(run, detail))
+                .Zip(runDetails, (run, detail) =>
+                {
+                    var curve = curveById.GetValueOrDefault(run.RunId);
+                    var points = curve?.Points ?? [];
+                    var indices = points.Count <= 24 ? Enumerable.Range(0, points.Count)
+                        : Enumerable.Range(0, 24).Select(index => index * (points.Count - 1) / 23);
+                    var selectedPoints = indices.Select(index => points[index]).ToArray();
+                    var comparison = comparisonById.GetValueOrDefault(run.RunId);
+                    return BuildStrategyRunCard(run, detail) with
+                    {
+                        Sharpe = comparison?.SharpeRatio is double sharpe && double.IsFinite(sharpe)
+                            ? sharpe.ToString("0.00", CultureInfo.InvariantCulture) : "—",
+                        MaxDrawdown = comparison?.MaxDrawdown,
+                        TrendValues = selectedPoints.Select(point => point.TotalEquity).ToArray(),
+                        TrendDates = selectedPoints.Select(point => point.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)).ToArray()
+                    };
+                })
                 .ToArray(),
             Comparisons: BuildModeComparisons(runs),
             Timeline: runs.Select(BuildTimelineCard).ToArray(),

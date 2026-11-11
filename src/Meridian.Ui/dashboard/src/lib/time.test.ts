@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { formatRelativeAge } from "@/lib/time";
+import { formatDateTimeUtc, formatRelativeAge } from "@/lib/time";
+
+describe("formatDateTimeUtc", () => {
+  it("preserves an explicit UTC instant and distinguishes unavailable dates", () => {
+    expect(formatDateTimeUtc("2026-11-11T02:30:00+02:00")).toBe("Nov 11, 2026, 00:30 UTC");
+    expect(formatDateTimeUtc("invalid")).toBe("Timestamp unavailable");
+    expect(formatDateTimeUtc(null)).toBe("Timestamp unavailable");
+  });
+});
 
 describe("formatRelativeAge", () => {
   it("returns Never for missing or invalid timestamps", () => {

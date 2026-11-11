@@ -65,6 +65,26 @@ public sealed class LedgerAccountRunningBalanceScopeTests
     }
 
     [Fact]
+    public void BuildAccountRunningBalance_FiltersSelectedBasisBeforeAggregatingMatchingLines()
+    {
+        var entries = new[]
+        {
+            Record(1, "Primary receipt", null, 100m),
+            Record(2, "GAAP receipt", null, 40m) with { AccountingBasis = AccountingBasisKindDto.Gaap }
+        };
+        var primary = LedgerEndpoints.BuildAccountRunningBalance(entries, PeriodId, BookId, "Cash", null, null,
+            accountingBasis: AccountingBasisKindDto.Primary);
+        var gaap = LedgerEndpoints.BuildAccountRunningBalance(entries, PeriodId, BookId, "Cash", null, null,
+            accountingBasis: AccountingBasisKindDto.Gaap);
+        primary.Points.Select(point => point.Description).Should().Equal("Primary receipt");
+        primary.EndingBalance.Should().Be(100m);
+        gaap.Points.Select(point => point.Description).Should().Equal("GAAP receipt");
+        gaap.EndingBalance.Should().Be(40m);
+        LedgerEndpoints.BuildAccountRunningBalance(entries, PeriodId, BookId, "Cash", null, null)
+            .EndingBalance.Should().Be(140m, "omitting the basis preserves the legacy all-basis projection");
+    }
+
+    [Fact]
     public void TryParseRunningBalanceDimensionScope_DistinguishesAbsentNullAndInvalid()
     {
         var options = new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web);

@@ -40,3 +40,5 @@ export * from "./types/bond-reference.types";
 export * from "./types/contractual-cash-flow.types";
 export * from "./types/provider-ownership.types";
 export * from "./types/private-capital";
+
+export * from "./types/number-passport-reference";

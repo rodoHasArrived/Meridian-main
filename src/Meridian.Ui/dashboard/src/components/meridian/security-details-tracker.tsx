@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
 import { Input } from "@/components/ui/input";
+import { EntityLink } from "@/components/meridian/entity-inspector";
+import { workstationRouteWithQuery } from "@/lib/workspace";
 import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
 import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { getOperatorOverrides as defaultGetOperatorOverrides, patchOperatorOverrides as defaultPatchOperatorOverrides } from "@/lib/api";
@@ -272,7 +274,12 @@ export function SecurityDetailsPanel({
           )}
         </CardTitle>
         <CardDescription>
-          Extended reference data for <span className="font-mono">{securityId}</span>. Operator overrides sync to the
+          Extended reference data for <EntityLink record={{ kind: "security", id: securityId,
+            label: identity?.displayName ?? entry?.displayName ?? "Security name unavailable",
+            workspaceHref: workstationRouteWithQuery("accountingSecurityMaster", { securityId }),
+            summary: [{ label: "Name", value: identity?.displayName ?? entry?.displayName ?? "Security name unavailable" },
+              { label: "Asset class", value: identity?.assetClass ?? entry?.classification.assetClass ?? "Unavailable" }]
+          }} />. Operator overrides sync to the
           server when available and fall back to local storage when offline.
         </CardDescription>
         <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">

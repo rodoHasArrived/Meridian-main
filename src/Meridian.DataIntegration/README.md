@@ -11,6 +11,11 @@ last_reviewed: 2026-11-11
 
 # src/Meridian.DataIntegration
 
+`IProviderVerificationHistoryReader` projects existing verification audit events for an exact
+tenant, connection, external account and environment. It exposes only recording time and pass/fail,
+keeps the newest bounded observations in time order, and reports truncation. An unappended pending
+audit or malformed log refuses the read; chart reads neither probe providers nor repair the vault.
+
 `IProviderCredentialOwnershipMigration` moves a reviewed retained provider-wide record into an empty
 owned scope within the encrypted vault publication boundary. Non-secret receipts support restart
 retry and unrotated rollback; rotated generations refuse rollback. Transfers reset verification,
