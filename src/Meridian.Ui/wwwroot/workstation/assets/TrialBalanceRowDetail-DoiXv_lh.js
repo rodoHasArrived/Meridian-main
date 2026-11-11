@@ -1,4 +1,8 @@
+<<<<<<<< HEAD:src/Meridian.Ui/wwwroot/workstation/assets/TrialBalanceRowDetail-DoiXv_lh.js
 import{n as e}from"./rolldown-runtime-WkwZ5CU-.js";import{Ls as t,Os as n,m as r,p as i,t as a}from"./button-CR1M6Zuz.js";import{L as o}from"./index-D0lUisag.js";import{t as s}from"./technical-details-BCw6Ottk.js";import{n as c}from"./ui-kit-primitives-BDy3_FeU.js";import{C as l,b as u}from"./accounting-screen.basis-bridge.view-model-8ZvtJzLN.js";var d=e(t(),1),f=i(),p=!1;function m(){if(p||typeof document>`u`)return;p=!0;let e=document.createElement(`style`);e.setAttribute(`data-mds`,`accounttree`),e.textContent=`
+========
+import{b as e,d as t,f as n,j as r,k as i,t as a}from"./button-o4OpE8w3.js";import{k as o}from"./index-BNeKovOY.js";import{t as s}from"./technical-details-BxF1QsL5.js";import{r as c}from"./ui-kit-primitives-9TySX8lo.js";import{S as l,y as u}from"./accounting-screen.basis-bridge.view-model-f_xjBu9m.js";var d=r(i(),1),f=t(),p=!1;function m(){if(p||typeof document>`u`)return;p=!0;let e=document.createElement(`style`);e.setAttribute(`data-mds`,`accounttree`),e.textContent=`
+>>>>>>>> origin/claude/zealous-cannon-fjs0ip:src/Meridian.Ui/wwwroot/workstation/assets/TrialBalanceRowDetail-XiUug-qP.js
 .act{border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-chip,2px);
   overflow:hidden;background:var(--bg-light,#F8F7F3);}
 .act__head{display:grid;grid-template-columns:1fr auto;gap:12px;padding:8px 12px;

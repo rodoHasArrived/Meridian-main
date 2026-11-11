@@ -4,7 +4,7 @@
 // behaviours (docs/UX_DEPTH_4_1.md › D-3), the way analytical-workbench is for the figure grammar.
 function InteractionDepthPlane({ rowCount = 50000, compareMax = 6, objectVersion = 3, onSummary, onApi, onAnnotationsChange }) {
   const DS = window.MeridianDesignSystem_205d17 || {};
-  const { DataGrid, ContextMenu, SavedViews, ColumnChooser, SelectionToolbar, OptimisticProvider, OptimisticCell, OptimisticRowBar, OptimisticHooks,
+  const { OptimisticProvider, OptimisticCell,
     AnnotationProvider, AnnotationAnchor, AnnotationPanel, SelectionCompareProvider, CompareToggle, CompareTray, CompareSheet, Format, Eyebrow } = DS;
   const fmt = (v, d = 2) => (Format && Format.formatNumber ? Format.formatNumber(v, { decimals: d }) : Number(v).toFixed(d));
   const price = (v) => (Format && Format.formatPrice ? Format.formatPrice(v, { decimals: 2 }) : Number(v).toFixed(2));
@@ -87,67 +87,19 @@ function InteractionDepthPlane({ rowCount = 50000, compareMax = 6, objectVersion
     { name: "Energy · by venue", state: { sector: "Energy", query: "", sortKey: "venue", sortDir: "asc", visible: ["cmp", "symbol", "venue", "price", "qty", "limit"] } },
   ];
 
-  function Inner() {
-    const ledger = OptimisticHooks.useOptimistic();
-    const bulk = (field, value) => { const ids = new Set(selected); filtered.forEach((r) => { if (ids.has(r.id)) ledger.commit({ rowId: r.id, field, prior: valueOf(r, field), value }); }); };
-    const move = (d) => { const i = filtered.findIndex((r) => r.id === active); const n = Math.min(filtered.length - 1, Math.max(0, (i < 0 ? -1 : i) + d)); if (filtered[n]) setActive(filtered[n].id); };
-    React.useEffect(() => { onApi && onApi({ selectAll: () => setSelected(filtered.map((r) => r.id)), clear: () => setSelected([]), bulkBudget: (v) => bulk("budget", v), focusGrid: () => planeRef.current && planeRef.current.focus(), move }); }, [filtered, selected, active]);
-    const onKey = (e) => {
-      if (e.target.closest("input,textarea,[role=dialog]")) return;
-      if (e.key === "j" || e.key === "ArrowDown") { e.preventDefault(); move(1); }
-      else if (e.key === "k" || e.key === "ArrowUp") { e.preventDefault(); move(-1); }
-      else if (e.key === "x" && active) { e.preventDefault(); setSelected((s) => (s.includes(active) ? s.filter((k) => k !== active) : [...s, active])); }
-      else if (e.key === "c" && active) { e.preventDefault(); const r = filtered.find((x) => x.id === active); if (r) window.__mdsCompareToggle && window.__mdsCompareToggle(item(r)); }
-      else if (e.key === "Escape") { setSelected([]); setMenu(null); }
-    };
-    const activeRow = filtered.find((r) => r.id === active);
-    return (
-      <div ref={planeRef} tabIndex={0} aria-label="Instrument grid · j/k move, x select, c compare, right-click for verbs" onKeyDown={onKey} style={{ height: "100%", display: "flex", flexDirection: "column", gap: 8, outline: "none", minHeight: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-          <SavedViews storageKey="mds.interaction-depth" getState={viewState} applyState={applyView} presets={PRESETS} defaultLabel="All instruments" />
-          <label style={{ display: "inline-flex", alignItems: "center", gap: 6, font: "11px var(--font-data)", color: "var(--text-muted)" }}>Sector
-            <select value={sector} onChange={(e) => setSector(e.target.value)} style={{ height: "var(--theme-control-height)", border: "1px solid var(--border)", borderRadius: "var(--radius-button)", background: "var(--bg-light)", color: "var(--text-primary)", font: "12px var(--font-body)", padding: "0 6px" }}>
-              {["All", ...SECTORS].map((s) => <option key={s}>{s}</option>)}
-            </select></label>
-          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Symbol or name" aria-label="Filter by symbol or name" style={{ height: "var(--theme-control-height)", width: 180, boxSizing: "border-box", border: "1px solid var(--border)", borderRadius: "var(--radius-button)", background: "var(--bg-light)", color: "var(--text-primary)", font: "12px var(--font-body)", padding: "0 8px" }} />
-          <span style={{ flex: 1 }} />
-          <span style={{ font: "11px var(--font-data)", color: "var(--text-muted)", fontVariantNumeric: "tabular-nums" }}>{fmt(filtered.length, 0)} of {fmt(rows.length, 0)} rows · windowed</span>
-          <ColumnChooser columns={ALL_COLS.map(([key, label]) => ({ key, label }))} visible={visible} onChange={setVisible} />
-        </div>
-        {selected.length > 0 && (
-          <SelectionToolbar count={selected.length} total={filtered.length} onSelectAll={() => setSelected(filtered.map((r) => r.id))} onClear={() => setSelected([])}
-            primaryAction={{ label: "Set ack budget → 250", onClick: () => bulk("budget", "250") }}
-            actions={[{ label: "Set budget → 80 (rejects)", onClick: () => bulk("budget", "80") }, { label: "Raise limits ×1.1", onClick: () => { const ids = new Set(selected); filtered.forEach((r) => { if (ids.has(r.id)) ledger.commit({ rowId: r.id, field: "limit", prior: valueOf(r, "limit"), value: String(Math.round(Number(valueOf(r, "limit")) * 1.1)) }); }); } }]} />
-        )}
-        <OptimisticRowBar rowIds={selected.length ? selected : undefined} label={selected.length ? `edits in ${selected.length} selected` : "edits on this screen"} />
-        <div style={{ flex: 1, minHeight: 0 }} onContextMenu={(e) => { const tr = e.target.closest("tr[data-key],[data-row-key],tr"); e.preventDefault(); const key = tr && (tr.getAttribute("data-key") || tr.getAttribute("data-row-key")); if (key) setActive(key); setMenu({ x: e.clientX, y: e.clientY, key: key || active }); }}>
-          <DataGrid rowKey="id" columns={columns} rows={filtered} select selected={selected} onSelectedChange={setSelected} activeKey={active} onRowClick={(r) => setActive(r.id)}
-            sortKey={sortKey} sortDir={sortDir} onSort={(k) => { if (k === sortKey) setSortDir((d) => (d === "asc" ? "desc" : "asc")); else { setSortKey(k); setSortDir("asc"); } }}
-            virtualize maxHeight="100%" label="Instruments" style={{ height: "100%" }} />
-        </div>
-        {menu && ContextMenu && (() => { const r = filtered.find((x) => x.id === menu.key) || activeRow; return (
-          <ContextMenu x={menu.x} y={menu.y} onClose={() => setMenu(null)} items={r ? [
-            { label: `Open ${r.symbol}`, onClick: () => setActive(r.id) },
-            { label: selected.includes(r.id) ? "Deselect row" : "Select row", onClick: () => setSelected((s) => (s.includes(r.id) ? s.filter((k) => k !== r.id) : [...s, r.id])) },
-            { label: "Add to comparison", onClick: () => window.__mdsCompareToggle && window.__mdsCompareToggle(item(r)) },
-            { type: "divider" },
-            { label: "Set ack budget → 250", onClick: () => ledger.commit({ rowId: r.id, field: "budget", prior: valueOf(r, "budget"), value: "250" }) },
-            { label: "Revert this row's confirmed edits…", disabled: !ledger.forRow(r.id).some((e) => e.status === "confirmed"), onClick: () => ledger.revert(ledger.forRow(r.id).filter((e) => e.status === "confirmed").map((e) => e.id), "Reverted from row menu") },
-          ] : [{ label: "No row under the pointer", disabled: true }]} />); })()}
-      </div>
-    );
-  }
-
-  function CompareBridge() { const c = DS.SelectionCompareHooks.useSelectionCompare(); React.useEffect(() => { window.__mdsCompareToggle = c.toggle; return () => { delete window.__mdsCompareToggle; }; }, [c.toggle]); return null; }
-
   return (
     <SelectionCompareProvider max={compareMax} categories={TENORS} format={(v) => `${v.toFixed(0)}%`}>
       <AnnotationProvider objectId="registry:instruments" objectVersion={objectVersion} author="you" onChange={onAnnotationsChange}
         annotations={[{ id: "seed-1", anchor: { kind: "cell", ref: `row:${rows[0].id}/symbol`, label: rows[0].symbol }, text: "Limit raised to 1.2m on 14 Aug under RISK-014 §3. Follows the registry — a re-import will mark this stale.", author: "a.patel", at: Date.now() - 7200000, version: 2, lifecycle: "follow" }]}>
         <OptimisticProvider commit={commit} revert={revert} onSettle={onSettle}>
-          <CompareBridge />
+          <InteractionDepthCompareBridge DS={DS} />
           <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) 300px", gap: 10, height: "100%", minHeight: 0 }}>
-            <Inner />
+            <InteractionDepthGrid DS={DS} rows={rows} filtered={filtered} columns={columns}
+              selected={selected} setSelected={setSelected} active={active} setActive={setActive}
+              valueOf={valueOf} onApi={onApi} planeRef={planeRef} item={item} fmt={fmt}
+              viewState={viewState} applyView={applyView} PRESETS={PRESETS} sector={sector} setSector={setSector} SECTORS={SECTORS}
+              query={query} setQuery={setQuery} ALL_COLS={ALL_COLS} visible={visible} setVisible={setVisible}
+              sortKey={sortKey} sortDir={sortDir} setSortKey={setSortKey} setSortDir={setSortDir} menu={menu} setMenu={setMenu} />
             <div style={{ display: "flex", flexDirection: "column", gap: 10, minHeight: 0 }}>
               <div style={{ border: "1px solid var(--border)", background: "var(--bg-light)", display: "flex", flexDirection: "column", minHeight: 0, flex: 1 }}>
                 <AnnotationPanel style={{ flex: 1, minHeight: 0 }} title="Annotations · registry" />
@@ -167,5 +119,71 @@ function InteractionDepthPlane({ rowCount = 50000, compareMax = 6, objectVersion
     </SelectionCompareProvider>
   );
 }
+// Keep this component type stable: query/selection changes must preserve input focus,
+// virtualized scroll state and any in-progress cell edit.
+function InteractionDepthGrid({ DS, rows, filtered, columns, selected, setSelected, active, setActive,
+  valueOf, onApi, planeRef, item, fmt, viewState, applyView, PRESETS, sector, setSector, SECTORS,
+  query, setQuery, ALL_COLS, visible, setVisible, sortKey, sortDir, setSortKey, setSortDir, menu, setMenu }) {
+  const { DataGrid, ContextMenu, SavedViews, ColumnChooser, SelectionToolbar, OptimisticRowBar, OptimisticHooks } = DS;
+  const ledger = OptimisticHooks.useOptimistic();
+  const bulk = (field, value) => { const ids = new Set(selected); filtered.forEach((r) => { if (ids.has(r.id)) ledger.commit({ rowId: r.id, field, prior: valueOf(r, field), value }); }); };
+  const move = (d) => { const i = filtered.findIndex((r) => r.id === active); const n = Math.min(filtered.length - 1, Math.max(0, (i < 0 ? -1 : i) + d)); if (filtered[n]) setActive(filtered[n].id); };
+  // Model settlement changes valueOf without changing the filtered rows or selection.
+  // Republish the host commands so their compensating-write prior stays current.
+  React.useEffect(() => { onApi && onApi({ selectAll: () => setSelected(filtered.map((r) => r.id)), clear: () => setSelected([]), bulkBudget: (v) => bulk("budget", v), focusGrid: () => planeRef.current && planeRef.current.focus(), move }); }, [filtered, selected, active, valueOf, ledger, onApi]);
+  const onKey = (e) => {
+    if (e.target.closest("input,textarea,[role=dialog]")) return;
+    if (e.key === "j" || e.key === "ArrowDown") { e.preventDefault(); move(1); }
+    else if (e.key === "k" || e.key === "ArrowUp") { e.preventDefault(); move(-1); }
+    else if (e.key === "x" && active) { e.preventDefault(); setSelected((s) => (s.includes(active) ? s.filter((k) => k !== active) : [...s, active])); }
+    else if (e.key === "c" && active) { e.preventDefault(); const r = filtered.find((x) => x.id === active); if (r) window.__mdsCompareToggle && window.__mdsCompareToggle(item(r)); }
+    else if (e.key === "Escape") { setSelected([]); setMenu(null); }
+  };
+  return (
+    <div ref={planeRef} tabIndex={0} aria-label="Instrument grid · j/k move, x select, c compare, right-click for verbs" onKeyDown={onKey} style={{ height: "100%", display: "flex", flexDirection: "column", gap: 8, outline: "none", minHeight: 0 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+        <SavedViews storageKey="mds.interaction-depth" getState={viewState} applyState={applyView} presets={PRESETS} defaultLabel="All instruments" />
+        <label style={{ display: "inline-flex", alignItems: "center", gap: 6, font: "11px var(--font-data)", color: "var(--text-muted)" }}>Sector
+          <select value={sector} onChange={(e) => setSector(e.target.value)} style={{ height: "var(--theme-control-height)", border: "1px solid var(--border)", borderRadius: "var(--radius-button)", background: "var(--bg-light)", color: "var(--text-primary)", font: "12px var(--font-body)", padding: "0 6px" }}>
+            {["All", ...SECTORS].map((s) => <option key={s}>{s}</option>)}
+          </select></label>
+        <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Symbol or name" aria-label="Filter by symbol or name" style={{ height: "var(--theme-control-height)", width: 180, boxSizing: "border-box", border: "1px solid var(--border)", borderRadius: "var(--radius-button)", background: "var(--bg-light)", color: "var(--text-primary)", font: "12px var(--font-body)", padding: "0 8px" }} />
+        <span style={{ flex: 1 }} />
+        <span style={{ font: "11px var(--font-data)", color: "var(--text-muted)", fontVariantNumeric: "tabular-nums" }}>{fmt(filtered.length, 0)} of {fmt(rows.length, 0)} rows · windowed</span>
+        <ColumnChooser columns={ALL_COLS.map(([key, label]) => ({ key, label }))} visible={visible} onChange={setVisible} />
+      </div>
+      {selected.length > 0 && (
+        <SelectionToolbar count={selected.length} total={filtered.length} onSelectAll={() => setSelected(filtered.map((r) => r.id))} onClear={() => setSelected([])}
+          primaryAction={{ label: "Set ack budget → 250", onClick: () => bulk("budget", "250") }}
+          actions={[{ label: "Set budget → 80 (rejects)", onClick: () => bulk("budget", "80") }, { label: "Raise limits ×1.1", onClick: () => { const ids = new Set(selected); filtered.forEach((r) => { if (ids.has(r.id)) ledger.commit({ rowId: r.id, field: "limit", prior: valueOf(r, "limit"), value: String(Math.round(Number(valueOf(r, "limit")) * 1.1)) }); }); } }]} />
+      )}
+      <OptimisticRowBar rowIds={selected.length ? selected : undefined} label={selected.length ? `edits in ${selected.length} selected` : "edits on this screen"} />
+      <div style={{ flex: 1, minHeight: 0 }} onContextMenu={(e) => { const tr = e.target.closest("tr[data-row-key]"); e.preventDefault(); const key = tr ? tr.getAttribute("data-row-key") : null; if (key !== null) setActive(key); setMenu({ x: e.clientX, y: e.clientY, key }); }}>
+        <DataGrid rowKey="id" columns={columns} rows={filtered} select selected={selected} onSelectedChange={setSelected} activeKey={active} onRowClick={(r) => setActive(r.id)}
+          sortKey={sortKey} sortDir={sortDir} onSort={(k) => { if (k === sortKey) setSortDir((d) => (d === "asc" ? "desc" : "asc")); else { setSortKey(k); setSortDir("asc"); } }}
+          virtualize maxHeight="100%" label="Instruments" style={{ height: "100%" }} />
+      </div>
+      {menu && ContextMenu && (() => { const r = filtered.find((x) => x.id === menu.key); return (
+        <ContextMenu x={menu.x} y={menu.y} onClose={() => setMenu(null)} items={r ? [
+          { label: `Open ${r.symbol}`, onClick: () => setActive(r.id) },
+          { label: selected.includes(r.id) ? "Deselect row" : "Select row", onClick: () => setSelected((s) => (s.includes(r.id) ? s.filter((k) => k !== r.id) : [...s, r.id])) },
+          { label: "Add to comparison", onClick: () => window.__mdsCompareToggle && window.__mdsCompareToggle(item(r)) },
+          { type: "divider" },
+          { label: "Set ack budget → 250", onClick: () => ledger.commit({ rowId: r.id, field: "budget", prior: valueOf(r, "budget"), value: "250" }) },
+          { label: "Revert this row's confirmed edits…", disabled: !ledger.forRow(r.id).some((e) => e.status === "confirmed"), onClick: () => ledger.revert(ledger.forRow(r.id).filter((e) => e.status === "confirmed").map((e) => e.id), "Reverted from row menu") },
+        ] : [{ label: "No row under the pointer", disabled: true }]} />); })()}
+    </div>
+  );
+}
+
+function InteractionDepthCompareBridge({ DS }) {
+  const compare = DS.SelectionCompareHooks.useSelectionCompare();
+  React.useEffect(() => {
+    window.__mdsCompareToggle = compare.toggle;
+    return () => { delete window.__mdsCompareToggle; };
+  }, [compare.toggle]);
+  return null;
+}
+
 window.InteractionDepthPlane = InteractionDepthPlane;
 if (typeof module !== "undefined") module.exports = { InteractionDepthPlane };

@@ -23,7 +23,6 @@ import type { DenseDataTableColumn } from "@/components/meridian/ui-kit-primitiv
 import { TableWorkbench, type TableWorkbenchColumn } from "@/components/meridian/table-workbench";
 import { exportTableQuery } from "@/lib/table-workbench";
 import { formatNumber, formatPercent, formatRatioAsPercent } from "@/lib/format";
-import { DetailRail } from "@/components/meridian/detail-rail";
 import { EntityLink } from "@/components/meridian/entity-inspector";
 import { AccountBalanceHistoryChart } from "@/components/meridian/account-balance-history-chart";
 import { StatStrip } from "@/components/meridian/stat-strip";
@@ -1430,13 +1429,18 @@ export function PortfolioScreen({
                   ariaLabel={vm.runListLabel}
                   caption="Select a run row to update the run evidence detail panel."
                 />
-                <DetailRail id={vm.runDetailId} title={vm.selectedRun?.title ?? vm.runDetailEmptyTitle}
-                  ariaLabel={vm.selectedRun?.ariaLabel ?? "Run evidence detail"} fields={vm.selectedRun?.fields ?? []}
-                  status={vm.selectedRun ? <Badge variant={vm.selectedRun.statusBadgeVariant}>{vm.selectedRun.statusBadgeLabel}</Badge> : null}
-                  actions={vm.selectedRun ? <Button asChild size="sm" variant="outline"><Link to={vm.selectedRun.evidenceAction.href} aria-label={vm.selectedRun.evidenceAction.ariaLabel}><Network className="h-4 w-4" />{vm.selectedRun.evidenceAction.label}</Link></Button> : null}>
-                  <p className="mt-3 text-sm text-muted-foreground">{vm.selectedRun?.statusDetail ?? vm.runEmptyText}</p>
-                  {vm.selectedRun ? <TechnicalDetails label="Audit details" className="mt-3"><p className="text-xs break-words">{vm.selectedRun.subtitle}</p></TechnicalDetails> : null}
-                </DetailRail>
+                <DetailPane
+                  id={vm.runDetailId}
+                  objectType="Strategy run"
+                  title={vm.selectedRun?.title}
+                  ariaLabel={vm.selectedRun?.ariaLabel ?? "Run evidence detail"}
+                  fields={vm.selectedRun?.fields.map(field => field.label === "Run ID" ? { ...field, technical: true } : field) ?? []}
+                  shownInRow={["Status"]}
+                  status={vm.selectedRun ? { label: vm.selectedRun.statusBadgeLabel, tone: vm.selectedRun.statusBadgeVariant } : null}
+                  summary={vm.selectedRun?.statusDetail}
+                  actions={vm.selectedRun ? <Button asChild size="sm" variant="outline"><Link to={vm.selectedRun.evidenceAction.href} aria-label={vm.selectedRun.evidenceAction.ariaLabel}><Network className="h-4 w-4" />{vm.selectedRun.evidenceAction.label}</Link></Button> : null}
+                  empty={{ title: vm.runDetailEmptyTitle, text: vm.runEmptyText }}
+                />
                 </div>
               </div>
             ) : (

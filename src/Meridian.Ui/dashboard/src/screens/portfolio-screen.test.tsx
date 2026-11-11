@@ -1262,7 +1262,17 @@ describe("PortfolioScreen", () => {
     expect(detail).toBeDefined();
     expect(screen.getByText(/drawdown review required/i)).toBeDefined();
     expect(within(detail).getAllByText("Needs Review").length).toBeGreaterThan(0);
-    expect(screen.getByText("run-2")).toBeDefined();
+    expect(within(detail).getByRole("heading", { name: "Strategy run Volatility Carry" })).toBeInTheDocument();
+    const runReference = within(detail).getByText("run-2");
+    expect(runReference).not.toBeVisible();
+    const technicalDetails = within(detail).getByText("Technical details").closest("details");
+    expect(technicalDetails).not.toHaveAttribute("open");
+    await user.click(within(detail).getByText("Technical details"));
+    expect(technicalDetails).toHaveAttribute("open");
+    expect(runReference).toBeVisible();
+    expect(within(detail).getByRole("button", { name: "Copy Run ID" })).toBeInTheDocument();
+    expect(within(detail).getByRole("link", { name: "Open Volatility Carry evidence packet" }))
+      .toHaveAttribute("href", "/reporting/evidence?subjectKind=strategy-run&subjectId=run-2");
   });
 
   it("loads shared selected-run portfolio drill-in evidence on demand", async () => {

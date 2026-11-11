@@ -632,6 +632,8 @@ describe("dashboard design-system contract", () => {
     for (const filename of ["OFL-IBMPlexSans.txt", "OFL-IBMPlexMono.txt"]) {
       expect(readFileSync(resolveDashboardAsset(`fonts/${filename}`)))
         .toEqual(readFileSync(resolve(process.cwd(), "../../../Meridian Design System/assets/fonts", filename)));
+      expect(readFileSync(resolve(process.cwd(), "public/notices", filename)))
+        .toEqual(readFileSync(resolveDashboardAsset(`fonts/${filename}`)));
     }
     const canonicalBrand = resolve(process.cwd(), "../../../Meridian Design System/assets/brand");
     for (const filename of readdirSync(resolveDashboardAsset("brand")).filter((name) => /\.(svg|png)$/.test(name))) {

@@ -4399,57 +4399,81 @@ describe("AccountingScreen", () => {
 
   it("selects Security Master results and adds source evidence on the manual journal entry workbench", async () => {
     const user = userEvent.setup();
-    vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce({
-      ...manualJournalWorkbench,
-      drafts: [{
-        ...manualJournalDraft,
-        lines: manualJournalDraft.lines.map((line) => line.lineId === "line-debit" ? { ...line, securityId: null, securityDisplayName: null } : line),
-        evidenceLinks: [],
-        evidenceAttachments: []
-      }]
+    let retainedVersion = manualJournalDraft.version;
+    let versionAtAttachment = retainedVersion;
+    // Security selection starts the real autosave timer. Its mock must retain the draft even
+    // when slower CI interactions allow that save to finish before evidence is attached.
+    await vi.mocked(api.saveManualJournalEntryDraft).withImplementation(async ({ draft }) => {
+      const saved = { ...draft, version: draft.version + 1 };
+      retainedVersion = saved.version;
+      return saved;
+    }, async () => {
+      vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce({
+        ...manualJournalWorkbench,
+        drafts: [{
+          ...manualJournalDraft,
+          lines: manualJournalDraft.lines.map((line) => line.lineId === "line-debit" ? { ...line, securityId: null, securityDisplayName: null } : line),
+          evidenceLinks: [],
+          evidenceAttachments: []
+        }]
+      });
+      vi.mocked(api.attachManualJournalEntryEvidence).mockImplementationOnce((request) => {
+        versionAtAttachment = retainedVersion;
+        const attached = {
+          ...manualJournalDraft,
+          version: request.version + 1,
+          lines: manualJournalDraft.lines.map((line) => line.lineId === "line-debit" ? {
+            ...line,
+            securityId: "22222222-2222-2222-2222-222222222222",
+            securityDisplayName: "Apple Inc."
+          } : line),
+          evidenceLinks: request.evidenceLinks ?? [],
+          evidenceAttachments: [request.attachment]
+        };
+        retainedVersion = attached.version;
+        return Promise.resolve(attached);
+      });
+      vi.mocked(api.validateManualJournalEntryDraft).mockImplementationOnce((request) => Promise.resolve(request.draft));
+
+      await renderAccountingScreen(data, "/accounting/journal-entries");
+
+      await user.type(screen.getByPlaceholderText("Ticker, ISIN, CUSIP, FIGI, name"), "AAPL");
+      await user.click(screen.getByRole("button", { name: "Search Security Master" }));
+      await user.click(await screen.findByRole("button", { name: /Apple Inc./ }));
+      expect(screen.getByRole("button", { name: /Apple Inc./ })).toBeInTheDocument();
+
+      const evidence = within(requirePresent(screen.getByRole("heading", { name: "Source evidence" }).parentElement?.parentElement?.parentElement, "source evidence panel"));
+      fireEvent.change(evidence.getByLabelText("Label"), { target: { value: "Trade blotter" } });
+      fireEvent.change(evidence.getByLabelText("Route or path"), {
+        target: { value: "/api/workstation/evidence/subjects/accounting-record/trade-blotter" }
+      });
+      await user.click(evidence.getByRole("button", { name: "Attach" }));
+
+      expect(await evidence.findByText("Trade blotter")).toBeInTheDocument();
+      expect(api.attachManualJournalEntryEvidence).toHaveBeenCalledWith(expect.objectContaining({
+        journalEntryId: "manual-je-1",
+        fundProfileId: "fund-alpha",
+        version: versionAtAttachment,
+        evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/trade-blotter"],
+        attachment: expect.objectContaining({
+          displayName: "Trade blotter",
+          uri: "/api/workstation/evidence/subjects/accounting-record/trade-blotter",
+          evidenceKind: "SourceDocument"
+        })
+      }));
+      expect(screen.getByRole("button", { name: "Submit approval" })).toBeDisabled();
+      await user.click(screen.getByRole("button", { name: "Validate" }));
+      await waitFor(() => expect(screen.getByRole("button", { name: "Submit approval" })).toBeEnabled());
+      expect(screen.getByText("Validation is current for this draft and no issues were returned.")).toBeInTheDocument();
+      expect(api.validateManualJournalEntryDraft).toHaveBeenCalledWith(expect.objectContaining({
+        draft: expect.objectContaining({
+          evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/trade-blotter"],
+          lines: expect.arrayContaining([expect.objectContaining({
+            lineId: "line-debit", securityId: "22222222-2222-2222-2222-222222222222", securityDisplayName: "Apple Inc."
+          })])
+        })
+      }));
     });
-    vi.mocked(api.attachManualJournalEntryEvidence).mockImplementationOnce((request) => Promise.resolve({
-      ...manualJournalDraft,
-      version: manualJournalDraft.version + 1,
-      lines: manualJournalDraft.lines.map((line) => line.lineId === "line-debit" ? {
-        ...line,
-        securityId: "22222222-2222-2222-2222-222222222222",
-        securityDisplayName: "Apple Inc."
-      } : line),
-      evidenceLinks: request.evidenceLinks ?? [],
-      evidenceAttachments: [request.attachment]
-    }));
-    vi.mocked(api.validateManualJournalEntryDraft).mockImplementationOnce((request) => Promise.resolve(request.draft));
-
-    await renderAccountingScreen(data, "/accounting/journal-entries");
-
-    await user.type(screen.getByPlaceholderText("Ticker, ISIN, CUSIP, FIGI, name"), "AAPL");
-    await user.click(screen.getByRole("button", { name: "Search Security Master" }));
-    await user.click(await screen.findByRole("button", { name: /Apple Inc./ }));
-    expect(screen.getByRole("button", { name: /Apple Inc./ })).toBeInTheDocument();
-
-    fireEvent.change(screen.getByLabelText("Label"), { target: { value: "Trade blotter" } });
-    fireEvent.change(screen.getByLabelText("Route or path"), {
-      target: { value: "/api/workstation/evidence/subjects/accounting-record/trade-blotter" }
-    });
-    await user.click(screen.getByRole("button", { name: "Attach" }));
-
-    expect(await screen.findByText("Trade blotter")).toBeInTheDocument();
-    expect(api.attachManualJournalEntryEvidence).toHaveBeenCalledWith(expect.objectContaining({
-      journalEntryId: "manual-je-1",
-      fundProfileId: "fund-alpha",
-      version: 1,
-      evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/trade-blotter"],
-      attachment: expect.objectContaining({
-        displayName: "Trade blotter",
-        uri: "/api/workstation/evidence/subjects/accounting-record/trade-blotter",
-        evidenceKind: "SourceDocument"
-      })
-    }));
-    expect(screen.getByRole("button", { name: "Submit approval" })).toBeDisabled();
-    await user.click(screen.getByRole("button", { name: "Validate" }));
-    await waitFor(() => expect(screen.getByRole("button", { name: "Submit approval" })).toBeEnabled());
-    expect(screen.getByText("Validation is current for this draft and no issues were returned.")).toBeInTheDocument();
   });
 
   it("renders approvals as a dedicated workstream and posts approval decisions", async () => {
