@@ -517,7 +517,15 @@ accepts older numeric status payloads; persisted queue records already use text 
   `SecurityMasterConflictFieldCategories` classifies a conflict by whole field-path segments
   against declared names (`SecurityIdentifierKind` values, `TradingParametersDto` fields and
   explicit lifecycle, corporate-action, classification, currency and display names), never by
-  substrings. The contract-owned `InstrumentTypeDescriptorCatalog` carries additive provider-routing,
+  substrings. `SecurityMasterConflictRouting` routes a conflict to the identity or terms review
+  surface the same way, adding the term keys and aliases the record's own asset class declares in
+  `SecurityAssetTermsSchema`. Each `SecurityAssetClassDescriptor` owns its routing keys (name,
+  aliases, `ClassificationLabels`) and its `ReclassifyingProfileIds`; the pack registry's profile
+  lookup is derived from them. `SecurityListingIdentity` keeps the primary listing market, a
+  listing identifier and a venue MIC as three concepts and declares the consistency rules between
+  them (LI001 to LI003). `BondExerciseNoticeWatch` reads declared call and put schedules for every
+  class whose terms schema declares the arrays; classes without a coupon schedule resolve the
+  declared dates through `BondExerciseEconomics.TryResolveDeclaredDates`. The contract-owned `InstrumentTypeDescriptorCatalog` carries additive provider-routing,
   validation, lifecycle, ledger, and risk hints for existing `InstrumentType` values without
   changing enum wire values. Its sibling `CorporateActionTypeDescriptorCatalog` does the same
   for the canonical corporate-action vocabulary in `CorporateActionEventTypes`: per-type ISO

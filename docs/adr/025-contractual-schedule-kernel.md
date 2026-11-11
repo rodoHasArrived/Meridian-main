@@ -1006,6 +1006,89 @@ This command verifies referenced files and directories exist; it does not valida
     `SecurityMasterWorkbenchQueryServiceCallScheduleTests` and
     `SecurityMasterWorkbenchDeclaredExerciseCompositionTests`.
 
+- **Typed declared-exercise outcome on the schedule summary and book (2026-11-10).** The 8b entry
+  above put a blocked outcome in summary text only, because no contract shape could change while
+  pull request #3439 was open. It has merged, and the outcome is now a contract member.
+  - **Member.** `SecurityMasterScheduleSummaryDto.DeclaredExercise` and
+    `SecurityMasterScheduleBookDto.DeclaredExercise` carry a
+    `SecurityMasterDeclaredExerciseOutcomeDto`: status (`Resolved` or `Blocked`), the evaluation
+    date, the retained terms version, the window count, the blockers with their codes and reasons,
+    and the watch's diagnostics. It is the notice watch's result with nothing re-derived, and it is
+    the same outcome the timeline carries in its extension payload. A record that declares no
+    schedule carries none, and the member is omitted from JSON when absent, so such a record
+    serializes as before.
+  - **Readiness.** This replaces the "Readiness is not changed" bullet above. A blocked outcome
+    puts the passport's `payment-schedule` item, its terms-and-obligations and cash-flow readiness
+    sections and close readiness under review, with a blocking count, and the close row's next
+    action names the blocker codes. The `economics` item is unchanged: pricing and the retained
+    economic terms are not what is blocked. A resolved outcome and a record with no outcome keep
+    their statuses.
+  - **Text.** The summary and source-summary sentences are unchanged, so a client that prints only
+    text shows what it showed.
+  - **Clients.** The TypeScript types mirror the member. No dashboard screen or WPF view reads it
+    yet: both render the passport statuses, which now change.
+  - Tests: the outcome, its serialization through the API context, the flipped passport pin and
+    the unchanged statuses in `SecurityMasterWorkbenchDeclaredExerciseScheduleBookTests`; the four
+    declaring bonds of `SecurityMasterWorkbenchScheduleBookGoldenTests` gained the member and
+    nothing else, and that golden's clock is now fixed because the outcome states its date.
+
+- **Declared call and put schedules for CertificateOfDeposit and StructuredCredit (increment 8f)
+  (2026-11-10).** These two classes declare `callSchedule` and `putSchedule` (terms versions 3 and
+  4) and their write rules already admit entries, but every reader kept the scalar. A row that
+  declares a schedule its stamp decodes is now read from it on the notice watch, the obligation
+  timeline and the workbench schedule book, through the shared resolver of 8a and 8b.
+  - **Class gate.** The gate is the terms schema: a class is a declaring class when its schema
+    declares one of the arrays (`BondExerciseNoticeWatch.DeclaresExerciseScheduleFields`). No class
+    is named. A class without the arrays stays `UnsupportedAssetClass`.
+  - **No coupon schedule kernel.** Neither class's terms carry an issue date or a payment
+    frequency, so `ScheduleSpecFactory` cannot build a schedule spec for them and none is
+    generated. The watch resolves the declared dates directly
+    (`BondExerciseEconomics.TryResolveDeclaredDates`). No coupon is accrued and no discount time is
+    taken: the result supports dated rows and notice windows, not pricing, and bond analytics and
+    the cash ladder are unchanged and remain Bond-only.
+  - **Entry rules.** The supported-entry rules are Bond's, now one shared `TryReadEntry`: a dated
+    `European` or `Bermudan` entry, a positive `Fixed` price in `PercentOfPar`, `WholeOnly`. The
+    retained-declaration check is the same too, so a CertificateOfDeposit whose scalar
+    `callableDate` is not its earliest declared call date is refused, and an entry with no
+    exercise style is refused. A Bermudan entry needs its own `exerciseFrequency`, because there
+    is no coupon frequency to fall back to.
+  - **Dates.** An exercise date is the declared date. It is adjusted only where a resolved
+    conventions block declares a payment adjustment, which cannot happen today (next bullet). Dates
+    before the evaluation date or after the maturity are dropped. Notice bounds follow the rules
+    above; `Business` notice needs declared payment calendars and is therefore refused.
+  - **A populated `scheduleConventions` block blocks.** The block is passed to
+    `ScheduleSpecFactory`, the one authority for it. For these classes the factory refuses it,
+    because the terms declare no schedule anchors, and the watch reports that refusal as
+    `DeclaredScheduleRequired`. Reading the entries as if the block were absent would drop a
+    declared payment adjustment. A block recovered from an economic Accrual module (ADR-027) is
+    such a block, so those rows are blocked; a recovered row with no Accrual module has no block
+    and its `European` entries resolve.
+  - **Life.** The evaluation date must be before the retained maturity (`EvaluationOutsideLife`);
+    a StructuredCredit row with no maturity is blocked with the same code. There is no issue date
+    to bound the life below; the terms-effective gate covers a row not yet in force.
+  - **Factored principal does not block.** A factor is how StructuredCredit carries principal. The
+    windows are dates and a price in percent of par; no redemption cash is computed.
+  - **What changed for a declaring row.** The timeline showed no option event for these classes,
+    because the scalar probe reads `callDate` and a CertificateOfDeposit's scalar is
+    `callableDate`. It now shows the declared exercise and notice-deadline events under the
+    declared stamp. The schedule book showed one `Call` row from the economic first call date for
+    a CertificateOfDeposit and none for a StructuredCredit; it now shows the declared rows, or the
+    blocker and no row. A resolved CertificateOfDeposit keeps the `call-<date>` row id it had.
+    The notice-watch read service answers for these classes instead of `UnsupportedAssetClass`.
+  - **Unchanged.** A row of either class that declares no schedule, or whose stamp is below the
+    arrays' version, keeps the scalar read. Bond behaviour is unchanged: the bond path's entry
+    reading moved into the shared method with no rule changed, and the bond analytics, cash-ladder
+    and notice-watch suites pass without edits.
+  - Tests: `DeclaredExerciseNonBondClassTests` (resolution, the same windows a bond gives for the
+    same entries, each blocker, the stamp gate, and the same dates and blocker on the book and the
+    timeline); the two declaring cases of `SecurityMasterWorkbenchScheduleBookGoldenTests` and of
+    `AssetObligationTimelineGoldenTests` changed on purpose, with every previously listed timeline
+    event retained unchanged.
+  - **Still open.** A notice watch screen (8c) and American and make-whole windows in bond
+    analytics (8e). Giving these two classes schedule anchors, so a conventions block and
+    business-day notice can be honoured, is a terms-version change under ADR-024 and is not part
+    of this entry.
+
 ## Calculation-only contractual companion — 2026-10-29
 
 The optional `cashFlowContract` version-1 document is readable at Bond/CD terms version 4,

@@ -46,10 +46,13 @@ public sealed record BondExerciseNoticeWatchResult(
 }
 
 /// <summary>
-/// Reads the declared call and put schedule notice windows of a retained Bond row. It resolves scenarios
-/// through <see cref="BondExerciseEconomics"/>'s TryResolveScenarios,
-/// so exercise and notice dates are the ones analytics and the cash ladder use, under the same stamp gate
-/// and retained-declaration rules. It only reads terms and never writes them.
+/// Reads the declared call and put schedule notice windows of a retained row. For a Bond it resolves
+/// scenarios through <see cref="BondExerciseEconomics"/>'s TryResolveScenarios, so exercise and notice
+/// dates are the ones analytics and the cash ladder use, under the same stamp gate and
+/// retained-declaration rules. For another class whose terms declare a call or put schedule
+/// (CertificateOfDeposit, StructuredCredit) it resolves the declared dates through
+/// <see cref="BondExerciseEconomics.TryResolveDeclaredDates"/>: the same entry and notice rules with
+/// no coupon schedule behind them (ADR-025, increment 8f). It only reads terms and never writes them.
 /// </summary>
 public static class BondExerciseNoticeWatch
 {
@@ -116,13 +119,18 @@ public static class BondExerciseNoticeWatch
         // A null horizon is the to-maturity read: no bound to validate and no window filtered out.
         if (horizonDays is < 1 or > MaxHorizonDays)
             return Refuse("InvalidHorizon", $"The notice horizon must be between 1 and {MaxHorizonDays} days.");
-        if (!SecurityAssetClassCatalog.GetOrDefault(security.AssetClass).CarriesBondCouponStructure)
-            return Refuse("UnsupportedAssetClass", "Exercise notice windows support canonical Bond securities only.");
+        var descriptor = SecurityAssetClassCatalog.GetOrDefault(security.AssetClass);
+        if (!descriptor.CarriesBondCouponStructure && !DeclaresExerciseScheduleFields(descriptor.AssetClass))
+            return Refuse("UnsupportedAssetClass",
+                "Exercise notice windows support asset classes whose terms declare a call or put schedule.");
         if (SecurityContractualCashFlowTerms.IsDeclared(security.AssetClass, security.AssetSpecificTerms))
             return Refuse("UnsupportedCashFlowContract",
-                "This bond declares a contractual cash-flow companion; use its contractual cash-flow preview for exercise notices.");
+                "This record declares a contractual cash-flow companion; use its contractual cash-flow preview for exercise notices.");
 
         var terms = StructuredCashFlowTermsResolver.Resolve(security);
+        if (!descriptor.CarriesBondCouponStructure)
+            return EvaluateDeclaredDates(security, terms, calendars, asOf, horizonDays);
+
         var couponKind = BondContractualEconomics.Text(security.AssetSpecificTerms, "couponType");
         if (couponKind is not ("Fixed" or "ZeroCoupon"))
             return Refuse("UnsupportedCouponStructure", "Exercise notice windows support explicitly typed Fixed and ZeroCoupon bonds.");
@@ -162,6 +170,51 @@ public static class BondExerciseNoticeWatch
                 out var scenarios, out refusal))
             return Refuse("ExerciseScheduleRefused", refusal!);
 
+        return Windows(security, scenarios, asOf, horizonDays, maturity);
+    }
+
+    /// <summary>
+    /// Whether the class's terms schema declares a call or put schedule. A schema fact, so a class
+    /// gains the watch by declaring the arrays and not by being named here.
+    /// </summary>
+    public static bool DeclaresExerciseScheduleFields(string assetClass)
+        => SecurityAssetTermsSchema.Field(assetClass, SecurityVersionedTerms.CallScheduleKey) is not null
+           || SecurityAssetTermsSchema.Field(assetClass, SecurityVersionedTerms.PutScheduleKey) is not null;
+
+    /// <summary>
+    /// The watch for a class that declares call and put schedules but has no coupon schedule kernel:
+    /// its terms carry no issue date or payment frequency, so no schedule spec exists to resolve.
+    /// </summary>
+    /// <remarks>
+    /// The record's maturity bounds the windows; there is no issue date to bound them below, and the
+    /// caller's terms-effective gate covers a row that is not yet in force. A populated
+    /// <c>scheduleConventions</c> block is passed through <see cref="ScheduleSpecFactory"/>, the one
+    /// authority for it: where the factory refuses the block (today, for every such class, because the
+    /// terms declare no schedule anchors), the schedule is blocked rather than read as if the block
+    /// were absent. With no block the declared dates are used as written.
+    /// </remarks>
+    private static BondExerciseNoticeWatchResult EvaluateDeclaredDates(SecurityDetailDto security,
+        StructuredCashFlowTerms terms, IBusinessDayCalendarSource? calendars, DateOnly asOf, int? horizonDays)
+    {
+        BondExerciseNoticeWatchResult Refuse(string code, string reason) => Blocked(security, asOf, horizonDays ?? 0, code, reason);
+
+        if (terms.MaturityDate is not { } maturity || asOf >= maturity)
+            return Refuse("EvaluationOutsideLife", "The evaluation date must be before the retained maturity.");
+        var declared = ScheduleSpecFactory.Resolve(security, terms, calendars);
+        if (declared.Status == DeclaredScheduleStatus.Refused)
+            return Refuse("DeclaredScheduleRequired", declared.Refusal?.Message
+                ?? "The declared schedule conventions could not be resolved for this asset class.");
+
+        // As for a bond, scenario selection starts the day before so an exercise on the evaluation date stays visible.
+        if (!BondExerciseEconomics.TryResolveDeclaredDates(security, maturity, declared, asOf.AddDays(-1), calendars,
+                out var scenarios, out var refusal))
+            return Refuse("ExerciseScheduleRefused", refusal!);
+        return Windows(security, scenarios, asOf, horizonDays, maturity);
+    }
+
+    private static BondExerciseNoticeWatchResult Windows(SecurityDetailDto security,
+        IReadOnlyList<BondRedemptionScenario> scenarios, DateOnly asOf, int? horizonDays, DateOnly maturity)
+    {
         DateOnly? horizonEnd = horizonDays is { } days ? asOf.AddDays(days) : null;
         var windows = new List<BondExerciseNoticeWindow>();
         foreach (var scenario in scenarios.Where(item => item.ExerciseDate >= asOf))

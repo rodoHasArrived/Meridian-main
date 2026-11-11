@@ -224,6 +224,8 @@ public sealed class SecurityMasterTermBlockEndpointsTests
         });
         builder.Services.Configure<SecurityMasterWorkbenchOptions>(
             builder.Configuration.GetSection(SecurityMasterWorkbenchOptions.SectionName));
+        Meridian.Application.Composition.SecurityMasterGovernanceServiceCollectionExtensions
+            .AddSecurityMasterGovernanceRequirements(builder.Services);
         builder.Services.AddSingleton(queryService);
         builder.Services.AddSingleton(service);
 

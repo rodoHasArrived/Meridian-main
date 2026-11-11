@@ -12352,6 +12352,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityListingIdentity"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityListingIdentityFinding"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityLotModel"
     },
     {
@@ -12395,6 +12407,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterConflictKinds"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterConflictRouting"
     },
     {
       "kind": "contract-set-member",
@@ -17458,6 +17476,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SecurityMasterDeclaredExerciseOutcomeDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SecurityMasterDeclaredExerciseStatus"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.SecurityMasterDownstreamImpactDto"
     },
     {
@@ -17591,6 +17621,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.SecurityMasterRevisionStateDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SecurityMasterScheduleBlockerDto"
     },
     {
       "kind": "contract-set-member",
@@ -26632,6 +26668,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityListingIdentity"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityListingIdentityFinding"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityLotModel"
     },
     {
@@ -26675,6 +26723,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterConflictKinds"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterConflictRouting"
     },
     {
       "kind": "contract-set-member",
@@ -46533,6 +46587,18 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.SecurityMasterDeclaredExerciseOutcomeDto",
+      "target": "contract:Meridian.Contracts.Workstation.SecurityMasterDeclaredExerciseStatus"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.SecurityMasterDeclaredExerciseOutcomeDto",
+      "target": "contract:Meridian.Contracts.Workstation.SecurityMasterScheduleBlockerDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.SecurityMasterDownstreamImpactDto",
       "target": "contract:Meridian.Contracts.Workstation.SecurityMasterImpactLinkDto"
     },
@@ -46660,6 +46726,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.SecurityMasterScheduleBookDto",
+      "target": "contract:Meridian.Contracts.Workstation.SecurityMasterDeclaredExerciseOutcomeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.SecurityMasterScheduleBookDto",
       "target": "contract:Meridian.Contracts.Workstation.SecurityMasterFactorPointDto"
     },
     {
@@ -46673,6 +46745,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.SecurityMasterScheduleBookDto",
       "target": "contract:Meridian.Contracts.Workstation.SecurityMasterScheduleProvenanceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.SecurityMasterScheduleSummaryDto",
+      "target": "contract:Meridian.Contracts.Workstation.SecurityMasterDeclaredExerciseOutcomeDto"
     },
     {
       "kind": "contract-reference",
@@ -57041,7 +57119,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "e40c6d2d348e9841dbadaf0281630b73545ec6a9ffdbf26fe7f8dc004b4a60e6",
+  "fingerprint": "b56ca2f76485e93dfabd5a371ddc12582a539633d999e4033542a21a1ed031b4",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -69444,6 +69522,18 @@
     },
     {
       "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityListingIdentity",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityListingIdentity"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityListingIdentityFinding",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityListingIdentityFinding"
+    },
+    {
+      "classification": "class",
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityLotModel",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityLotModel"
@@ -69489,6 +69579,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterConflictKinds",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityMasterConflictKinds"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterConflictRouting",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityMasterConflictRouting"
     },
     {
       "classification": "dto",
@@ -74550,6 +74646,18 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.SecurityMasterDeclaredExerciseOutcomeDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SecurityMasterDeclaredExerciseOutcomeDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Workstation.SecurityMasterDeclaredExerciseStatus",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SecurityMasterDeclaredExerciseStatus"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.SecurityMasterDownstreamImpactDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.SecurityMasterDownstreamImpactDto"
@@ -74685,6 +74793,12 @@
       "id": "contract:Meridian.Contracts.Workstation.SecurityMasterRevisionStateDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.SecurityMasterRevisionStateDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.SecurityMasterScheduleBlockerDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SecurityMasterScheduleBlockerDto"
     },
     {
       "classification": "dto",
@@ -83558,11 +83672,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3634,
-    "contract_set_memberships": 4553,
-    "edges": 9478,
+    "contract_references": 3638,
+    "contract_set_memberships": 4562,
+    "edges": 9491,
     "foreign_keys": 156,
     "logical_references": 6,
-    "nodes": 4599
+    "nodes": 4605
   }
 }

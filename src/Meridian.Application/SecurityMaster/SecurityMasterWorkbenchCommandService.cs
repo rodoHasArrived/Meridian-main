@@ -78,12 +78,13 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
         ISecurityFieldProvenanceStore? fieldProvenance = null,
         ISecurityMasterStore? projectionStore = null,
         Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null,
-        Microsoft.Extensions.Options.IOptionsMonitor<SecurityMasterWorkbenchOptions>? workbenchOptions = null)
+        ISecurityMasterGovernanceRequirements? governanceRequirements = null)
     {
-        if (workbenchOptions is not null)
+        if (governanceRequirements is not null)
         {
-            // Read at each submit/approve so the setting hot-reloads.
-            _requireIndependentReviewer = () => workbenchOptions.CurrentValue.RequireIndependentReviewer;
+            // The effective requirement (its own setting or the Institutional profile), read at each
+            // submit/approve so the setting hot-reloads.
+            _requireIndependentReviewer = () => governanceRequirements.Current.RequireIndependentReviewer;
         }
 
         _eventStore = eventStore ?? throw new ArgumentNullException(nameof(eventStore));

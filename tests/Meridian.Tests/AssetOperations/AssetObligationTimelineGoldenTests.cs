@@ -21,7 +21,9 @@ namespace Meridian.Tests.AssetOperations;
 /// <para>The cases are bonds read with and without a bond reference (scalar call, mandatory put and
 /// pre-refund dates in every combination the scalar probe distinguishes), a Bond stamped 2 that carries
 /// a stray call schedule, a Bond stamped 3 that declares conventions and no exercise schedule, and a
-/// CertificateOfDeposit and a StructuredCredit that declare a call schedule.</para>
+/// CertificateOfDeposit and a StructuredCredit that declare a call schedule. Since increment 8f those
+/// last two are declaring records: their cases gained the declared call and notice-deadline events,
+/// the declared stamp and the outcome payload, with every other event unchanged.</para>
 /// <para>A missing or mismatched fixture writes <c>asset-obligation-timeline-undeclared.received.json</c>
 /// beside the test binaries and fails. It never skips. Replace the committed fixture under
 /// tests/fixtures/schedules/golden/ only when the change in governed output is intended.</para>
