@@ -2149,8 +2149,9 @@ keeps its existing React, routes, service contracts and financial semantics.
 
 Provider institution search now uses shared search input and selectable dense
 results while retaining explicit server search and exact institution identifiers.
-Maintenance history uses a shared filter and read-only dense table without
-sorting or changing the 25-row service-order limit. Report-writer token actions
+Maintenance history uses a shared filter and the read-only dense adapter through
+the governed TableWorkbench. Its default remains service order with a 25-row
+limit; concurrent personal-view, search and export controls are preserved. Report-writer token actions
 use shared buttons with visible keyboard focus and disabled reasons, preserving
 reordering, removal and drag behavior. Other compatible forms and flat tables
 use the same adapters; specialized financial tables retain their row/header and
@@ -2169,6 +2170,13 @@ the fixture-only server. Its defaults run both themes at three desktop sizes and
 a 200% desktop zoom layout equivalent, with exact request/selection/cancellation
 IDs, keyboard ordering, drag actions and scoped accessibility checks. The optional
 `--only` and `--sizes` filters produce explicitly focused evidence.
+
+The final adoption checkpoint passes 5,100 tests across all 455 dashboard test
+files, strict types, production build, 31 tooling checks and ratchets. Lint has
+zero errors and 98 existing warnings. The maintained browser passes 64 checks
+and 15 axe scans; the three adoption journeys pass 24 checks and 24 scoped axe
+scans. All use synthetic fixtures; these counts do not certify backend services
+or native Windows/assistive-technology behavior.
 
 ### Workspace-specific styling
 

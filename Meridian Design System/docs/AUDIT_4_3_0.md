@@ -1,6 +1,6 @@
 # Current export audit
 
-**Reviewed:** 2026-11-11 · **Source:** PR #3501, including concurrent work through `41787fd4ea` (merged into `6b24478038`).
+**Reviewed:** 2026-11-11 · **Source:** PR #3501, including concurrent work through `58b1069f6e` (merged into `c8370be6a4`).
 
 The full compatibility audit at the end of this report supersedes the earlier
 phase limitations about 67 governance findings, declaration gaps and partial
@@ -715,7 +715,47 @@ journeys assert one active panel. Unsupported consequential sample actions have
 explicit disabled reasons instead of successful-looking no-ops. Read-only
 exports/navigation use actual synthetic content and release object URLs.
 
+The late incoming repair of 11 retained `screen.jsx` modules was reviewed and
+parsed separately. Their namespace and DataGrid column/selection contracts now
+match the public API. They are not directly loaded by the declared canonical
+entries, so canonical journey results are not credited as their interaction
+proof. Their exact source hashes and source-level review remain recorded.
+
 ### Final verification and scope
+
+Executed against the final combined source:
+
+- The final unfiltered library run passes **3,817 checks**, with **zero
+  failures** and one explicitly blocked manual/native-AT harness result. It
+  loads all **135 specimens**, **49 declared template entries**, **351 compiled
+  exports** and **11 theme selectors**; all **49 primary journeys pass**. The
+  bundle/compiler and complete runtime-source snapshot stay unchanged.
+- All **42 source-regression/type suites pass**, with zero source mutations
+  during execution; strict declarations compile all **351 public values**.
+- All **177 Python tests pass**, including strict contrast, governance,
+  eligibility, metadata, compatibility-validator negative controls and release
+  integrity. All **seven release gates pass**, with **zero governance failures
+  or warnings**. The authored-fallback portability gate remains enabled.
+- The complete dashboard union passes **5,100 tests in 455 unique files**, with
+  zero failures/skips. A duplicate execution of two identical assertions is
+  retained as provenance and counted once. A maintenance focus-test diagnostic
+  is retained separately; its corrected original batch and every remaining
+  file pass.
+- Production build, strict types, lint and **31 Node tooling checks pass**. Lint
+  retains **98 existing warnings**. Ratchets pass without increased allowances:
+  **533 typography occurrences** and **13 raw table occurrences** remain.
+- The maintained workstation browser passes **64 checks and 15 axe scans**;
+  the three adoption journeys pass **24 cases and 24 scoped axe scans**. Both
+  report zero automated accessibility violations, unexpected runtime/asset
+  errors and exceptions. The maintained report retains 17 fixture gaps and
+  manual incomplete checks; these are not backend or manual-AT passes.
+
+The curated export contains **1,407 payload files** under one safe archive
+root. Independent verification checks CRC/decompression, every inventory byte
+count/hash, all 1,408 internal checksum records and the adjacent ZIP checksum
+against the current source. A repeated export is byte-identical with unchanged
+source fingerprints. The delivered SHA-256 is recorded in its sidecar and the
+PR description; it is not embedded in its own payload.
 
 The final command record is joined from the executed library report,
 `api/source-contract-results.json`, the full dashboard results and release

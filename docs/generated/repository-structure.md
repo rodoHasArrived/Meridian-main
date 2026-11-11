@@ -3058,15 +3058,18 @@ Meridian-main
 │   │   ├── accounting.js
 │   │   ├── analytics.js
 │   │   ├── coordination.js
+│   │   ├── dashboard-validation.json
 │   │   ├── data.js
 │   │   ├── decision.js
 │   │   ├── evidence.js
 │   │   ├── families.json
 │   │   ├── legacy.js
 │   │   ├── primitives.js
+│   │   ├── project-compatibility.json
 │   │   ├── README.md
 │   │   ├── retired-exports.json
 │   │   ├── shell.js
+│   │   ├── source-contract-results.json
 │   │   ├── template-eligibility.json
 │   │   └── trading.js
 │   ├── assets
@@ -3204,6 +3207,7 @@ Meridian-main
 │   │   │   ├── JournalEntryForm.d.ts
 │   │   │   ├── JournalEntryForm.jsx
 │   │   │   ├── JournalEntryForm.prompt.md
+│   │   │   ├── knownAmounts.js
 │   │   │   ├── LedgerTable.d.ts
 │   │   │   ├── LedgerTable.jsx
 │   │   │   ├── LedgerTable.prompt.md
@@ -3363,10 +3367,14 @@ Meridian-main
 │   │   │   ├── Treemap.d.ts
 │   │   │   ├── Treemap.jsx
 │   │   │   ├── Treemap.prompt.md
+│   │   │   ├── useChartCrosshair.d.ts
 │   │   │   ├── useChartCrosshair.js
+│   │   │   ├── useChartCrosshair.prompt.md
 │   │   │   ├── viz-plates.card.html
 │   │   │   ├── viz-workbench.card.html
+│   │   │   ├── viz.d.ts
 │   │   │   ├── viz.js
+│   │   │   ├── viz.prompt.md
 │   │   │   ├── WatchlistStrip.d.ts
 │   │   │   ├── WatchlistStrip.jsx
 │   │   │   ├── WatchlistStrip.prompt.md
@@ -3464,7 +3472,9 @@ Meridian-main
 │   │   │   ├── Form.jsx
 │   │   │   ├── Form.prompt.md
 │   │   │   ├── format-authority.card.html
+│   │   │   ├── format.d.ts
 │   │   │   ├── format.js
+│   │   │   ├── format.prompt.md
 │   │   │   ├── FormatProvider.d.ts
 │   │   │   ├── FormatProvider.jsx
 │   │   │   ├── FormatProvider.prompt.md
@@ -3504,6 +3514,8 @@ Meridian-main
 │   │   │   ├── live-status.card.html
 │   │   │   ├── LocalDate.d.ts
 │   │   │   ├── localDate.js
+│   │   │   ├── localDate.js.d.ts
+│   │   │   ├── localDate.js.prompt.md
 │   │   │   ├── LocalDate.jsx
 │   │   │   ├── LocalDate.prompt.md
 │   │   │   ├── MaterialityAssessment.d.ts
@@ -3608,10 +3620,13 @@ Meridian-main
 │   │   │   ├── TreeView.d.ts
 │   │   │   ├── TreeView.jsx
 │   │   │   ├── TreeView.prompt.md
+│   │   │   ├── useFormState.d.ts
 │   │   │   ├── useFormState.js
+│   │   │   ├── useFormState.prompt.md
 │   │   │   ├── useOverlayFocus.js
 │   │   │   ├── Validators.d.ts
 │   │   │   ├── Validators.js
+│   │   │   ├── Validators.prompt.md
 │   │   │   ├── value-authority.card.html
 │   │   │   ├── ValueAuthority.d.ts
 │   │   │   ├── ValueAuthority.jsx
@@ -3697,7 +3712,9 @@ Meridian-main
 │   │   │   ├── Skeleton.prompt.md
 │   │   │   ├── sparkline-empty-columns.card.html
 │   │   │   ├── table-depth.card.html
+│   │   │   ├── TableHooks.d.ts
 │   │   │   ├── TableHooks.js
+│   │   │   ├── TableHooks.prompt.md
 │   │   │   ├── Toolbar.d.ts
 │   │   │   ├── Toolbar.jsx
 │   │   │   ├── Toolbar.prompt.md
@@ -3966,6 +3983,7 @@ Meridian-main
 │   │   ├── RELEASE_NOTES_R2.md
 │   │   ├── semantic-safety.card.html
 │   │   ├── SEMANTIC_SAFETY_4_4.md
+│   │   ├── specimen-layout.css
 │   │   ├── suite-cohesion-proposal.card.html
 │   │   ├── SUITE_COHESION_4_4.md
 │   │   ├── system-map.card.html
@@ -4124,6 +4142,7 @@ Meridian-main
 │   │   ├── generate_families.py
 │   │   ├── generate_inventory.py
 │   │   ├── governance-baseline.json
+│   │   ├── project_compatibility.py
 │   │   ├── README.md
 │   │   ├── release_identity.py
 │   │   ├── sync_catalog.py
@@ -4146,11 +4165,13 @@ Meridian-main
 │   │   │   ├── action-bridge.jsx
 │   │   │   ├── app-map.js
 │   │   │   ├── books.js
+│   │   │   ├── compatibility-frame.jsx
 │   │   │   ├── ds-base.js
 │   │   │   ├── instructions.js
 │   │   │   ├── operator-layer.js
 │   │   │   ├── prefs.js
 │   │   │   ├── support.js
+│   │   │   ├── template-actions.js
 │   │   │   ├── trail-bridge.jsx
 │   │   │   └── world.js
 │   │   ├── _strategy-executor
@@ -4422,19 +4443,48 @@ Meridian-main
 │   │   ├── A11Y_RUN_4.2.0.md
 │   │   ├── A11Y_RUN_4.3.0.md
 │   │   ├── A11Y_STATIC_AUDIT_4.1.md
+│   │   ├── accounting-interaction-regression.mjs
 │   │   ├── action-contract.html
 │   │   ├── agency-regression.mjs
 │   │   ├── books-loop.html
 │   │   ├── brand-contrast-regression.mjs
 │   │   ├── BROWSER_TEST_PLAN.md
 │   │   ├── chart-accessibility-regression.mjs
+│   │   ├── chart-trading-contract-regression.mjs
 │   │   ├── component-hook-regression.mjs
 │   │   ├── conformance-card-regression.mjs
 │   │   ├── conformance-rules.js
 │   │   ├── conformance-settle-regression.mjs
 │   │   ├── conformance.html
+│   │   ├── core-behavior-coverage.json
+│   │   ├── core-composition-regression.mjs
+│   │   ├── core-control-regression.mjs
+│   │   ├── core-delegated-lifecycle-regression.mjs
+│   │   ├── core-form-regression.mjs
+│   │   ├── core-gap-regression.mjs
+│   │   ├── core-interaction-regression.mjs
+│   │   ├── core-logic-regression.mjs
+│   │   ├── core-selection-disclosure-regression.mjs
+│   │   ├── core-state-regression.mjs
+│   │   ├── core-table-regression.mjs
 │   │   ├── decision-preview.html
+│   │   ├── desktop-zoom-control.html
+│   │   ├── domain-action-state-regression.mjs
+│   │   ├── domain-behavior-coverage.json
+│   │   ├── domain-carrier-lifecycle-regression.mjs
+│   │   ├── domain-chart-state-regression.mjs
+│   │   ├── domain-decisionflow-async-regression.mjs
+│   │   ├── domain-empty-control-regression.mjs
+│   │   ├── domain-evidence-regression.mjs
+│   │   ├── domain-integrity-regression.mjs
+│   │   ├── domain-ladder-action-regression.mjs
+│   │   ├── domain-logic-regression.mjs
+│   │   ├── domain-operations-state-regression.mjs
+│   │   ├── domain-snapshot-react-regression.mjs
+│   │   ├── domain-workflow-regression.mjs
 │   │   ├── form-field-regression.mjs
+│   │   ├── full-library-browser.mjs
+│   │   ├── FULL_LIBRARY_BROWSER.md
 │   │   ├── gallery-browser.mjs
 │   │   ├── gallery.css
 │   │   ├── gallery.html
@@ -4446,6 +4496,7 @@ Meridian-main
 │   │   ├── modal-label-regression.mjs
 │   │   ├── optimistic-observer-regression.mjs
 │   │   ├── optimistic-settlement-regression.mjs
+│   │   ├── public-contract-types.mjs
 │   │   ├── qa-hifi-pass.html
 │   │   ├── README.md
 │   │   ├── release-browser.mjs
@@ -4454,12 +4505,17 @@ Meridian-main
 │   │   ├── semantic-role-regression.mjs
 │   │   ├── semantic-safety.html
 │   │   ├── smoke.html
+│   │   ├── source-contracts.mjs
 │   │   ├── specimen-matrix.mjs
 │   │   ├── SPECIMEN_MATRIX.md
+│   │   ├── template-governance-regression.mjs
+│   │   ├── template-journeys.json
 │   │   ├── template-preview-regression.mjs
 │   │   ├── test_contrast.py
 │   │   ├── test_design_system_governance.py
+│   │   ├── test_governance_entries.py
 │   │   ├── test_manifest_metadata.py
+│   │   ├── test_project_compatibility.py
 │   │   ├── test_release.py
 │   │   ├── test_sync_color_fallbacks.py
 │   │   ├── test_token_parity.py
@@ -7952,6 +8008,7 @@ Meridian-main
 │   │   │   │   ├── design-system-smoke-runner.mjs
 │   │   │   │   ├── design-system-smoke.test.mjs
 │   │   │   │   ├── run-vitest-stable.mjs
+│   │   │   │   ├── smoke-design-system-adoption.mjs
 │   │   │   │   ├── smoke-design-system.mjs
 │   │   │   │   ├── smoke-workstation.mjs
 │   │   │   │   ├── sync-design-system-assets.d.mts
