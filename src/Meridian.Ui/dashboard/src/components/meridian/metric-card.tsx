@@ -23,6 +23,8 @@ function MetricSnapshotCardComponent(metric: MetricSnapshot) {
       trend={deriveTrend(vm.deltaAriaLabel)}
       ariaLabel={vm.ariaLabel}
       deltaAriaLabel={vm.deltaAriaLabel ?? undefined}
+      freshnessLabel={vm.freshnessLabel ?? undefined}
+      provenance={vm.provenanceText ?? undefined}
     />
   );
 }

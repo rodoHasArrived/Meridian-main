@@ -21,6 +21,8 @@ import {
   type AppShellOperatingScopeInput
 } from "@/app-shell.operating-scope";
 import { CommandPalette } from "@/components/meridian/command-palette";
+import { KeyboardShortcutsSheet } from "@/components/meridian/keyboard-shortcuts-sheet";
+import { getGlobalKeyBinding, matchesKeyCombo } from "@/lib/keymap";
 import { ScopePicker } from "@/components/meridian/scope-picker";
 import { collectScopeFundAccounts } from "@/lib/operating-scope/fund-accounts";
 import {
@@ -46,6 +48,7 @@ import { ScopePickerOpenerProvider } from "@/lib/operating-scope/scope-picker-co
 import { readRecentScopes, rememberRecentScope } from "@/lib/operating-scope/recent-scopes";
 import { CrossScreenCountsProvider } from "@/lib/cross-screen-counts-context";
 import { ShellStatusSignalsProvider } from "@/lib/shell-status-signals-context";
+import { deriveWorkspaceFigureContext, WorkspaceFigureContextProvider } from "@/lib/workspace-figure-context";
 import { buildLayoutRestorePlan, readUserLayouts, type LayoutRestorePlan } from "@/lib/saved-layouts";
 import { WorkspaceNav } from "@/components/meridian/workspace-nav";
 import { Skeleton } from "@/components/data/skeleton";
@@ -349,6 +352,7 @@ function AppShell({
   onRetryDemoModeProbe?: () => void;
 }) {
   const [commandOpen, setCommandOpen] = useState(false);
+  const [keyboardHelpOpen, setKeyboardHelpOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
   const [scopePickerOpen, setScopePickerOpen] = useState(false);
   const openScopePicker = useCallback(() => setScopePickerOpen(true), []);
@@ -445,6 +449,9 @@ function AppShell({
     loading,
     error,
     workspaceErrors,
+    figureSourceLoadedAt,
+    figureSourcesStale,
+    figureSourceScope,
     refreshStatus,
     portfolioRefreshStatus,
     refresh,
@@ -464,6 +471,16 @@ function AppShell({
     demoMode,
     sampleWorkspace: firstRunStatus?.workspace.isSample ?? false
   });
+  const workspaceFigureContext = useMemo(
+    () => deriveWorkspaceFigureContext({
+      status: refreshStatus,
+      provenance: dataProvenance,
+      staleSources: figureSourcesStale,
+      sourceLoadedAt: figureSourceLoadedAt,
+      sourceScope: figureSourceScope
+    }),
+    [refreshStatus, dataProvenance, figureSourcesStale, figureSourceLoadedAt, figureSourceScope]
+  );
   const handleWorkflowPresetUsed = (presetId: string) =>
     markWorkflowPresetUsed(presetId).then((preset) => {
       upsertWorkflowPreset(preset);
@@ -590,26 +607,32 @@ function AppShell({
   const scopeDimensionsInEffect = useMemo(() => operatingScopeDimensionsForRoute(pathname), [pathname]);
 
   useEffect(() => {
-    const handleCommandShortcut = (event: KeyboardEvent) => {
+    const handleGlobalShortcut = (event: KeyboardEvent) => {
+      const targetIsEditable = isAppShellEditableShortcutTarget(event.target);
       const command = resolveAppShellCommandPaletteShortcut({
         key: event.key,
         ctrlKey: event.ctrlKey,
         metaKey: event.metaKey,
         altKey: event.altKey,
         shiftKey: event.shiftKey,
-        targetIsEditable: isAppShellEditableShortcutTarget(event.target),
+        targetIsEditable,
         commandPaletteOpen: commandOpen
       });
-      if (command !== "toggle-command-palette") {
+      if (command === "toggle-command-palette") {
+        event.preventDefault();
+        setCommandOpen((current) => !current);
         return;
       }
 
-      event.preventDefault();
-      setCommandOpen((current) => !current);
+      // "?" opens the shortcut list; never while typing or while the palette is open.
+      if (!targetIsEditable && !commandOpen && matchesKeyCombo(event, getGlobalKeyBinding("keyboard-help").keys)) {
+        event.preventDefault();
+        setKeyboardHelpOpen(true);
+      }
     };
 
-    window.addEventListener("keydown", handleCommandShortcut);
-    return () => window.removeEventListener("keydown", handleCommandShortcut);
+    window.addEventListener("keydown", handleGlobalShortcut);
+    return () => window.removeEventListener("keydown", handleGlobalShortcut);
   }, [commandOpen, setCommandOpen]);
 
   // Tell any open companion panes when the main workstation window goes away, so
@@ -792,6 +815,7 @@ function AppShell({
     <ScopePickerOpenerProvider open={openScopePicker}>
     <CrossScreenCountsProvider counts={crossScreenCounts}>
     <ShellStatusSignalsProvider value={shellStatusSignals}>
+    <WorkspaceFigureContextProvider value={workspaceFigureContext}>
     <div className="workstation-frame">
       <a className="skip-link" href="#workbench-content">Skip to workbench</a>
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
@@ -991,6 +1015,7 @@ function AppShell({
         })}
       />
 
+      <KeyboardShortcutsSheet open={keyboardHelpOpen} onOpenChange={setKeyboardHelpOpen} />
       <CommandPalette
         open={commandOpen}
         onOpenChange={setCommandOpen}
@@ -1041,6 +1066,7 @@ function AppShell({
         </SheetContent>
       </Sheet>
     </div>
+    </WorkspaceFigureContextProvider>
     </ShellStatusSignalsProvider>
     </CrossScreenCountsProvider>
     </ScopePickerOpenerProvider>
