@@ -327,6 +327,7 @@ public static partial class LedgerEndpoints
             string? account,
             string? symbol,
             string? financialAccountId,
+            string? dimensions,
             HttpContext context) =>
         {
             if (!HasLedgerReadPermission(context))
@@ -337,6 +338,11 @@ public static partial class LedgerEndpoints
             if (string.IsNullOrWhiteSpace(account))
             {
                 return Results.BadRequest(new { error = "Query parameter 'account' is required." });
+            }
+
+            if (!TryParseRunningBalanceDimensionScope(dimensions, jsonOptions, out var dimensionScope))
+            {
+                return Results.BadRequest(new { error = "Query parameter 'dimensions' must be a JSON ledger dimension set." });
             }
 
             var journalStore = ResolveJournalStore(context);
@@ -362,8 +368,12 @@ public static partial class LedgerEndpoints
                     new LedgerJournalEntryQuery(LedgerBookId: bookId, PeriodId: periodId, AccountName: accountName),
                     context.RequestAborted)
                 .ConfigureAwait(false);
+            var book = dimensionScope is null
+                ? null
+                : await journalStore.GetLedgerBookAsync(bookId, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(
-                BuildAccountRunningBalance(entries, periodId, bookId, accountName, symbol, financialAccountId),
+                BuildAccountRunningBalance(
+                    entries, periodId, bookId, accountName, symbol, financialAccountId, dimensionScope, book?.FundProfileId),
                 jsonOptions);
         })
         .WithName("GetLedgerPeriodAccountRunningBalance").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports)

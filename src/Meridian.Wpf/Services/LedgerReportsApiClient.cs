@@ -42,7 +42,8 @@ public interface ILedgerReportsApiClient
 
     /// <summary>Posting history and running balance for one account of a ledger period.</summary>
     Task<ApiResponse<LedgerAccountRunningBalanceDto>> GetAccountRunningBalanceAsync(
-        Guid periodId, string accountName, string? symbol, string? financialAccountId, CancellationToken ct = default)
+        Guid periodId, string accountName, string? symbol, string? financialAccountId,
+        LedgerDimensionSetDto? dimensions, CancellationToken ct = default)
         => Task.FromResult(ApiResponse<LedgerAccountRunningBalanceDto>.Fail("Account postings are unavailable in this session."));
 
     Task<ApiResponse<EvidencePacketDto>> GetAmountProofAsync(
@@ -101,12 +102,15 @@ public sealed class LedgerReportsApiClient : ILedgerReportsApiClient
             BuildAmountProofRoute(subjectId, ledgerBookId, periodId, fundProfileId), ct);
 
     public Task<ApiResponse<LedgerAccountRunningBalanceDto>> GetAccountRunningBalanceAsync(
-        Guid periodId, string accountName, string? symbol, string? financialAccountId, CancellationToken ct = default)
+        Guid periodId, string accountName, string? symbol, string? financialAccountId,
+        LedgerDimensionSetDto? dimensions, CancellationToken ct = default)
         => _apiClient.GetWithResponseAsync<LedgerAccountRunningBalanceDto>(
-            BuildAccountRunningBalanceRoute(periodId, accountName, symbol, financialAccountId), ct);
+            BuildAccountRunningBalanceRoute(periodId, accountName, symbol, financialAccountId, dimensions), ct);
+
+    private static readonly JsonSerializerOptions DimensionScopeJsonOptions = new(JsonSerializerDefaults.Web);
 
     internal static string BuildAccountRunningBalanceRoute(
-        Guid periodId, string accountName, string? symbol, string? financialAccountId)
+        Guid periodId, string accountName, string? symbol, string? financialAccountId, LedgerDimensionSetDto? dimensions)
     {
         var route = $"{BuildPeriodRoute(UiApiRoutes.LedgerPeriodAccountRunningBalance, periodId)}?account={Uri.EscapeDataString(accountName)}";
         // Both scope filters are always sent. An empty value selects postings with no symbol or
@@ -114,6 +118,9 @@ public sealed class LedgerReportsApiClient : ILedgerReportsApiClient
         // account-scoped postings of the same account name.
         route += $"&symbol={Uri.EscapeDataString(symbol?.Trim() ?? string.Empty)}";
         route += $"&financialAccountId={Uri.EscapeDataString(financialAccountId?.Trim() ?? string.Empty)}";
+        // The selected trial-balance row's dimension set (JSON; `null` for a row without one), so
+        // the postings are limited to that row rather than every dimension set of the account.
+        route += $"&dimensions={Uri.EscapeDataString(JsonSerializer.Serialize(dimensions, DimensionScopeJsonOptions))}";
         return route;
     }
 

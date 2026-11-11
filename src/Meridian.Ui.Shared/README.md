@@ -1945,8 +1945,9 @@ Browser and WPF command surfaces should consume that shared workflow instead of 
 accounting-record launch lists.
 
 `/api/ledger/periods/{periodId}/accounts/running-balance?account=...` returns one account's
-postings in the period with a running balance, optionally narrowed by `symbol` and
-`financialAccountId`, under the same ledger read permission as the other period routes.
+postings in the period with a running balance, optionally narrowed by `symbol`,
+`financialAccountId` and `dimensions` (the JSON dimension set of one trial-balance row, matched
+exactly after the book's fund is defaulted as the period trial balance does), under the same ledger read permission as the other period routes.
 
 `DirectLendingOperationsReadService` adds a subledger-to-GL tie-out when a ledger journal store is
 registered: servicing principal, accrued interest and accrued PIK are compared with the net

@@ -11,6 +11,7 @@ import {
 import type {
   LedgerAccountRunningBalance,
   LedgerBook,
+  LedgerDimensionSet,
   LedgerPeriod,
   LedgerPeriodPnlSummary,
   LedgerPeriodTrialBalanceLine,
@@ -43,13 +44,20 @@ export function getLedgerPeriodJournalEntries(periodId: string) {
   return apiGetJson<LedgerPostedJournalEntry[]>(ledgerPeriodJournalEntriesEndpoint(periodId));
 }
 
+export interface LedgerAccountRunningBalanceQuery {
+  account: string;
+  symbol?: string | null;
+  financialAccountId?: string | null;
+  dimensions?: LedgerDimensionSet | null;
+}
+
 /**
  * Route for one account's posting history in a ledger period. Lives here rather than in
  * `workstation-endpoints.ts`, which is at its file-size limit.
  */
 export function ledgerPeriodAccountRunningBalanceEndpoint(
   periodId: string,
-  query: { account: string; symbol?: string | null; financialAccountId?: string | null }
+  query: LedgerAccountRunningBalanceQuery
 ): string {
   // `undefined` omits a filter (any value); `null` or "" is sent empty and selects postings that
   // have no symbol / no financial account, so an unscoped trial-balance row does not also return
@@ -61,6 +69,12 @@ export function ledgerPeriodAccountRunningBalanceEndpoint(
   if (query.financialAccountId !== undefined) {
     params.set("financialAccountId", query.financialAccountId ?? "");
   }
+  // The trial balance has one row per account per dimension set. Sending the selected row's set
+  // (JSON; `null` for a row without one) limits the postings to that row; omitting it returns
+  // every dimension set of the account.
+  if (query.dimensions !== undefined) {
+    params.set("dimensions", JSON.stringify(query.dimensions));
+  }
 
   return `${routeWithParam(UI_API_ROUTES.LedgerPeriodAccountRunningBalance, "periodId", periodId)}?${params.toString()}`;
 }
@@ -68,7 +82,7 @@ export function ledgerPeriodAccountRunningBalanceEndpoint(
 /** Posting history and running balance for one account of a ledger period (durable book of record). */
 export function getLedgerPeriodAccountRunningBalance(
   periodId: string,
-  query: { account: string; symbol?: string | null; financialAccountId?: string | null }
+  query: LedgerAccountRunningBalanceQuery
 ) {
   return apiGetJson<LedgerAccountRunningBalance>(ledgerPeriodAccountRunningBalanceEndpoint(periodId, query));
 }

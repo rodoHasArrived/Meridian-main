@@ -48,14 +48,6 @@ export function AccountingPostedLedgerSection({ workstream }: { workstream: Acco
   const { view } = viewModel;
   const selectedTrialBalanceRow =
     view.trialBalance.rows.find((row) => row.rowId === view.trialBalance.selectedRowId) ?? null;
-  const selectedAccountRowCount = selectedTrialBalanceRow
-    ? view.trialBalance.rows.filter(
-        (row) =>
-          row.accountName === selectedTrialBalanceRow.accountName &&
-          row.symbol === selectedTrialBalanceRow.symbol &&
-          row.financialAccountId === selectedTrialBalanceRow.financialAccountId
-      ).length
-    : 0;
 
   return (
     <section aria-labelledby="posted-ledger-title" className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
@@ -218,7 +210,7 @@ export function AccountingPostedLedgerSection({ workstream }: { workstream: Acco
                       accountName={selectedTrialBalanceRow.accountName}
                       symbol={selectedTrialBalanceRow.symbol}
                       financialAccountId={selectedTrialBalanceRow.financialAccountId}
-                      combinedAcrossScopes={selectedAccountRowCount > 1}
+                      dimensions={selectedTrialBalanceRow.dimensions ?? null}
                       formatAmount={(value) =>
                         view.baseCurrency ? formatCurrencyForCode(value, view.baseCurrency) : formatCurrency(value)
                       }

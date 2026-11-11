@@ -1,6 +1,8 @@
+using System.Text.Json;
 using Meridian.Contracts.Ledger;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -19,7 +21,9 @@ public static partial class LedgerEndpoints
         Guid ledgerBookId,
         string accountName,
         string? symbol,
-        string? financialAccountId)
+        string? financialAccountId,
+        RunningBalanceDimensionScope? dimensionScope = null,
+        string? bookFundProfileId = null)
     {
         // An omitted filter (null) matches any value; a filter sent empty selects the lines that
         // have no symbol or no financial account. Without that distinction, picking the unscoped
@@ -33,6 +37,11 @@ public static partial class LedgerEndpoints
             .Where(item => string.Equals(item.Line.Account.Name, accountName, StringComparison.OrdinalIgnoreCase))
             .Where(item => MatchesOptionalAccountScope(item.Line.Account.Symbol, symbolFilter))
             .Where(item => MatchesOptionalAccountScope(item.Line.Account.FinancialAccountId, financialAccountFilter))
+            .Where(item => dimensionScope is null
+                || string.Equals(
+                    TrialBalanceDimensionSignature(ResolveLineDimensions(item.Record, item.Line), bookFundProfileId),
+                    TrialBalanceDimensionSignature(dimensionScope.Dimensions, bookFundProfileId),
+                    StringComparison.Ordinal))
             .ToArray();
 
         LedgerAccountType? accountType = lines.Length > 0 ? lines[0].Line.Account.AccountType : null;
@@ -64,6 +73,64 @@ public static partial class LedgerEndpoints
             lines.Sum(static item => item.Line.Credit),
             balance,
             points);
+    }
+
+    /// <summary>
+    /// The dimension set of one trial-balance row, as sent back by a client. A row with no
+    /// dimensions is a scope too (<see cref="Dimensions"/> is null), distinct from sending no
+    /// scope at all, which selects every dimension set of the account.
+    /// </summary>
+    internal sealed record RunningBalanceDimensionScope(LedgerDimensionSetDto? Dimensions);
+
+    /// <summary>
+    /// Reads the optional <c>dimensions</c> query value: absent means no dimension scope, otherwise
+    /// it is the JSON of the selected trial-balance row's dimension set (<c>null</c> or empty for a
+    /// row without one). Returns false when the value is present but not a dimension set.
+    /// </summary>
+    internal static bool TryParseRunningBalanceDimensionScope(
+        string? dimensions,
+        JsonSerializerOptions jsonOptions,
+        out RunningBalanceDimensionScope? scope)
+    {
+        scope = null;
+        if (dimensions is null)
+        {
+            return true;
+        }
+
+        if (string.IsNullOrWhiteSpace(dimensions))
+        {
+            scope = new RunningBalanceDimensionScope(null);
+            return true;
+        }
+
+        try
+        {
+            scope = new RunningBalanceDimensionScope(
+                JsonSerializer.Deserialize<LedgerDimensionSetDto>(dimensions, jsonOptions));
+            return true;
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+    }
+
+    // Same precedence the journal-entry DTOs and the period trial balance use for a line:
+    // line dimensions, then line-scoped metadata tags, then the entry's own.
+    private static LedgerDimensionSetDto? ResolveLineDimensions(LedgerJournalEntryRecord record, LedgerEntry line)
+        => BuildDimensions(line.Dimensions)
+           ?? BuildDimensions(record.Entry.Metadata, line.EntryId)
+           ?? BuildDimensions(record.Entry.Metadata);
+
+    // The period trial balance stamps the book's fund onto every row that names none, so a row and
+    // the lines behind it are compared after the same defaulting.
+    private static string TrialBalanceDimensionSignature(LedgerDimensionSetDto? dimensions, string? bookFundProfileId)
+    {
+        var canonical = CanonicalizeDimensions(dimensions);
+        var fundId = NormalizeOptional(canonical?.FundId) ?? NormalizeOptional(bookFundProfileId);
+        return BuildDimensionSignature(
+            canonical is null ? new LedgerDimensionSetDto(FundId: fundId) : canonical with { FundId = fundId });
     }
 
     private static bool MatchesOptionalAccountScope(string? actual, string? filter)

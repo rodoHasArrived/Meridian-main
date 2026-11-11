@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import { getLedgerPeriodAccountRunningBalance } from "@/lib/ledger-reports-api";
-import type { LedgerAccountRunningBalance } from "@/types";
+import type { LedgerAccountRunningBalance, LedgerDimensionSet } from "@/types";
 
 export interface LedgerAccountRunningBalancePanelProps {
   periodId: string;
@@ -9,11 +9,10 @@ export interface LedgerAccountRunningBalancePanelProps {
   symbol?: string | null;
   financialAccountId?: string | null;
   /**
-   * True when the trial balance shows this account on more than one row (one per dimension
-   * scope). The postings route is not scoped by dimension, so the list and its ending balance
-   * then cover every scope of the account, not only the selected row.
+   * The selected trial-balance row's dimension set (`null` for a row without one). The postings
+   * are limited to this set, so the ending balance is the selected row's balance.
    */
-  combinedAcrossScopes?: boolean;
+  dimensions?: LedgerDimensionSet | null;
   /** Formats an amount in the selected book's currency. */
   formatAmount: (value: number) => string;
 }
@@ -26,18 +25,20 @@ type RunningBalanceState =
 /**
  * Account drill-down for the posted ledger: every posting to the selected trial-balance account
  * in the period, with the balance after each one. Reads the governed book of record. Postings are
- * selected by account, symbol and financial account, not by dimension scope; when the account has
- * several trial-balance rows the panel says the list combines them.
+ * selected by the row's account, symbol, financial account and dimension set, so the last balance
+ * is the selected row's balance.
  */
 export function LedgerAccountRunningBalancePanel({
   periodId,
   accountName,
   symbol = null,
   financialAccountId = null,
-  combinedAcrossScopes = false,
+  dimensions = null,
   formatAmount
 }: LedgerAccountRunningBalancePanelProps) {
   const [state, setState] = useState<RunningBalanceState>({ status: "loading" });
+  // Row objects are rebuilt on every render; key the effect on the set's content, not identity.
+  const dimensionsKey = JSON.stringify(dimensions ?? null);
 
   useEffect(() => {
     let cancelled = false;
@@ -47,7 +48,8 @@ export function LedgerAccountRunningBalancePanel({
         const data = await getLedgerPeriodAccountRunningBalance(periodId, {
           account: accountName,
           symbol,
-          financialAccountId
+          financialAccountId,
+          dimensions: JSON.parse(dimensionsKey) as LedgerDimensionSet | null
         });
         if (!cancelled) {
           setState({ status: "ready", data });
@@ -65,19 +67,13 @@ export function LedgerAccountRunningBalancePanel({
     return () => {
       cancelled = true;
     };
-  }, [periodId, accountName, symbol, financialAccountId]);
+  }, [periodId, accountName, symbol, financialAccountId, dimensionsKey]);
 
   const title = `Postings to ${accountName}`;
   return (
     <section role="region" aria-label={title} className="row-detail-panel min-w-0">
       <div className="eyebrow-label">Account running balance</div>
       <h3 className="mt-1 text-sm font-semibold text-foreground">{title}</h3>
-      {combinedAcrossScopes ? (
-        <p className="mt-2 text-sm text-muted-foreground">
-          This account appears on more than one trial-balance row. The postings and ending balance below cover all
-          of its dimension scopes, not only the selected row.
-        </p>
-      ) : null}
       {state.status === "loading" ? (
         <p role="status" className="mt-2 text-sm text-muted-foreground">Loading postings…</p>
       ) : state.status === "error" ? (

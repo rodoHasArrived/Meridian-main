@@ -18,4 +18,23 @@ describe("ledgerPeriodAccountRunningBalanceEndpoint", () => {
       ledgerPeriodAccountRunningBalanceEndpoint(periodId, { account: "Cash", symbol: null, financialAccountId: null })
     ).toBe(`/api/ledger/periods/${periodId}/accounts/running-balance?account=Cash&symbol=&financialAccountId=`);
   });
+
+  it("sends the selected trial-balance row's dimension set, including an explicit null", () => {
+    const scoped = new URL(
+      ledgerPeriodAccountRunningBalanceEndpoint(periodId, { account: "Cash", dimensions: { fundId: "alpha", sleeveId: "s1" } }),
+      "http://localhost"
+    );
+    expect(JSON.parse(scoped.searchParams.get("dimensions") ?? "")).toEqual({ fundId: "alpha", sleeveId: "s1" });
+
+    const unscoped = new URL(
+      ledgerPeriodAccountRunningBalanceEndpoint(periodId, { account: "Cash", dimensions: null }),
+      "http://localhost"
+    );
+    expect(unscoped.searchParams.get("dimensions")).toBe("null");
+    expect(
+      new URL(ledgerPeriodAccountRunningBalanceEndpoint(periodId, { account: "Cash" }), "http://localhost").searchParams.has(
+        "dimensions"
+      )
+    ).toBe(false);
+  });
 });

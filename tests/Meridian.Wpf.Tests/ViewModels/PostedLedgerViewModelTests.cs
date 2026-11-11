@@ -86,11 +86,12 @@ public sealed class PostedLedgerViewModelTests
     public async Task SelectingATrialBalanceRow_LoadsItsPostingsWithARunningBalance()
     {
         var periodId = Guid.NewGuid();
+        var cashDimensions = new LedgerDimensionSetDto(FundId: "alpha-fund", SleeveId: "sleeve-1");
         var client = new FakeLedgerReportsApiClient
         {
             Periods = ApiResponse<List<LedgerPeriodDto>>.Ok([Period(periodId)]),
             TrialBalance = ApiResponse<List<LedgerPeriodTrialBalanceLineDto>>.Ok(
-                [Line("Cash", 120500m), Line("Financing payable", -120500m)]),
+                [Line("Cash", 120500m) with { Dimensions = cashDimensions }, Line("Financing payable", -120500m)]),
             Pnl = ApiResponse<LedgerPeriodPnlSummaryDto>.Ok(Pnl(periodId)),
             RunningBalance = ApiResponse<LedgerAccountRunningBalanceDto>.Ok(new LedgerAccountRunningBalanceDto(
                 periodId,
@@ -124,6 +125,8 @@ public sealed class PostedLedgerViewModelTests
         await viewModel.LoadAccountPostingsAsync(cash);
 
         client.RunningBalanceRequests.Should().Contain((periodId, "Cash", null, "1000"));
+        client.RunningBalanceDimensions.Should().OnlyContain(dimensions => ReferenceEquals(dimensions, cashDimensions),
+            "the drill-down is limited to the selected row's dimension set");
         viewModel.AccountPostings.Select(row => (row.PostedLabel, row.Description)).Should().Equal(
             ("2026-07-03", "Capital call receipt"),
             ("2026-07-20", "Financing draw"));
@@ -643,9 +646,13 @@ public sealed class PostedLedgerViewModelTests
 
         public List<(Guid PeriodId, string Account, string? Symbol, string? FinancialAccountId)> RunningBalanceRequests { get; } = [];
 
+        public List<LedgerDimensionSetDto?> RunningBalanceDimensions { get; } = [];
+
         public Task<ApiResponse<LedgerAccountRunningBalanceDto>> GetAccountRunningBalanceAsync(
-            Guid periodId, string accountName, string? symbol, string? financialAccountId, CancellationToken ct = default)
+            Guid periodId, string accountName, string? symbol, string? financialAccountId,
+            LedgerDimensionSetDto? dimensions, CancellationToken ct = default)
         {
+            RunningBalanceDimensions.Add(dimensions);
             RunningBalanceRequests.Add((periodId, accountName, symbol, financialAccountId));
             return Task.FromResult(RunningBalance);
         }

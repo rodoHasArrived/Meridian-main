@@ -1136,5 +1136,5 @@ Acceptance and commands: [W10 posted amount provenance](../../docs/testing/w10-a
 period into `AccountPostings` through `ILedgerReportsApiClient.GetAccountRunningBalanceAsync`,
 the same shared running-balance route the browser workstation uses. A response for a row or period
 that is no longer selected is discarded, and reloading the trial balance clears the selection.
-When the account has more than one trial-balance row the status line says the postings cover all
-of its dimension scopes, because the route is not scoped by dimension.
+The request carries the selected row's symbol, financial account and dimension set, so the postings
+and ending balance are those of that row only.

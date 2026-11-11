@@ -69,26 +69,33 @@ describe("LedgerAccountRunningBalancePanel", () => {
     expect(ledgerReportsApi.getLedgerPeriodAccountRunningBalance).toHaveBeenCalledWith(PERIOD_ID, {
       account: "Management fees",
       symbol: "AAPL",
-      financialAccountId: null
+      financialAccountId: null,
+      dimensions: null
     });
     expect(screen.getByRole("region", { name: "Postings to Management fees" })).toBeInTheDocument();
     expect(screen.getAllByRole("row")).toHaveLength(3);
     expect(screen.getByText(/2 postings; ending balance/)).toHaveTextContent("$300.00");
   });
 
-  it("states when the postings combine several trial-balance rows of the account", async () => {
+  it("limits the request to the selected row's dimension set", async () => {
     vi.mocked(ledgerReportsApi.getLedgerPeriodAccountRunningBalance).mockResolvedValue(makeRunningBalance());
 
     render(
       <LedgerAccountRunningBalancePanel
         periodId={PERIOD_ID}
         accountName="Management fees"
-        combinedAcrossScopes
+        dimensions={{ fundId: "alpha", sleeveId: "s1" }}
         formatAmount={formatAmount}
       />
     );
 
-    expect(await screen.findByText(/cover all\s+of its dimension scopes/)).toBeInTheDocument();
+    await screen.findByText("June management fee");
+    expect(ledgerReportsApi.getLedgerPeriodAccountRunningBalance).toHaveBeenCalledWith(PERIOD_ID, {
+      account: "Management fees",
+      symbol: null,
+      financialAccountId: null,
+      dimensions: { fundId: "alpha", sleeveId: "s1" }
+    });
   });
 
   it("says so when the account has no postings in the period", async () => {
