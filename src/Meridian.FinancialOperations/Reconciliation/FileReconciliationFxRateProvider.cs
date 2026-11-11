@@ -42,7 +42,7 @@ public static class FileReconciliationFxRateProvider
                 .Where(static quote => quote is not null)
                 .Select(static quote => new ReconciliationFxQuote(quote!.From, quote.To, quote.Rate, quote.AsOf));
             // The content digest identifies the exact table revision a posted rate came from.
-            var revision = Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(content)));
+            var revision = Meridian.Contracts.Integrity.Sha256Digest.ComputeUtf8(content);
             return new TableReconciliationFxRateProvider(quotes, document?.PivotCurrency, $"{RelativePath} sha256:{revision}");
         }
         catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
